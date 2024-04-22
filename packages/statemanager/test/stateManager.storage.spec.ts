@@ -77,7 +77,7 @@ describe('StateManager -> Storage', () => {
         await stateManager.putAccount(address, account)
 
         const key = zeros(32)
-        const value = hexToBytes('0x' + 'aa'.repeat(33))
+        const value = hexToBytes(`0x${'aa'.repeat(33)}`)
         try {
           await stateManager.putContractStorage(address, key, value)
           assert.fail('did not throw')
@@ -93,14 +93,14 @@ describe('StateManager -> Storage', () => {
         await stateManager.putAccount(address, account)
 
         const key0 = zeros(32)
-        const value0 = hexToBytes('0x' + '00' + 'aa'.repeat(30)) // put a value of 31-bytes length with a leading zero byte
+        const value0 = hexToBytes(`0x00${'aa'.repeat(30)}`) // put a value of 31-bytes length with a leading zero byte
         const expect0 = unpadBytes(value0)
         await stateManager.putContractStorage(address, key0, value0)
         const slot0 = await stateManager.getContractStorage(address, key0)
         assert.ok(equalsBytes(slot0, expect0), 'value of 31 bytes padded correctly')
 
         const key1 = concatBytes(zeros(31), hexToBytes('0x01'))
-        const value1 = hexToBytes('0x' + '0000' + 'aa'.repeat(1)) // put a value of 1-byte length with two leading zero bytes
+        const value1 = hexToBytes(`0x0000${'aa'.repeat(1)}`) // put a value of 1-byte length with two leading zero bytes
         const expect1 = unpadBytes(value1)
         await stateManager.putContractStorage(address, key1, value1)
         const slot1 = await stateManager.getContractStorage(address, key1)

@@ -5,6 +5,8 @@ import { DefaultStateManager } from '../src/index.js'
 
 import { createAccount } from './util.js'
 
+import type { AccountData } from '@ethereumjs/util'
+
 describe('StateManager -> Code', () => {
   for (const accountCacheOpts of [
     { deactivate: false },
@@ -16,7 +18,7 @@ describe('StateManager -> Code', () => {
         This test is mostly an example of why a code prefix is necessary
         I an address, we put two storage values. The preimage of the (storage trie) root hash is known
         This preimage is used as codeHash
-  
+        
         NOTE: Currently, the only problem which this code prefix fixes, is putting 0x80 as contract code
         -> This hashes to the empty trie node hash (0x80 = RLP([])), so keccak256(0x80) = empty trie node hash
         -> Therefore, each empty state trie now points to 0x80, which is not a valid trie node, which crashes @ethereumjs/trie
@@ -27,15 +29,14 @@ describe('StateManager -> Code', () => {
       const codeStateManager = new DefaultStateManager({ accountCacheOpts })
       const address1 = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const account = createAccount()
-      const key1 = hexToBytes('0x' + '00'.repeat(32))
-      const key2 = hexToBytes('0x' + '00'.repeat(31) + '01')
+      const key1 = hexToBytes(`0x${'00'.repeat(32)}`)
+      const key2 = hexToBytes(`0x${'00'.repeat(31)}01`)
 
       await stateManager.putAccount(address1, account)
       await stateManager.putContractStorage(address1, key1, key2)
       await stateManager.putContractStorage(address1, key2, key2)
       const root = await stateManager.getStateRoot()
-      // @ts-expect-error
-      const rawNode = await stateManager._trie._db.get(root)
+      const rawNode = await stateManager['_trie']['_db'].get(root)
 
       await codeStateManager.putContractCode(address1, rawNode!)
 
@@ -85,10 +86,9 @@ describe('StateManager -> Code', () => {
       const code = hexToBytes(
         '0x73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157'
       )
-      const raw = {
+      const raw: AccountData = {
         nonce: '0x0',
         balance: '0x03e7',
-        stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
         codeHash: '0xb30fb32201fe0486606ad451e1a61e2ae1748343cd3d411ed992ffcc0774edd4',
       }
       const account = Account.fromAccountData(raw)
@@ -101,7 +101,7 @@ describe('StateManager -> Code', () => {
     it(`should not get code if is not contract`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
-      const raw = {
+      const raw: AccountData = {
         nonce: '0x0',
         balance: '0x03e7',
       }
@@ -114,7 +114,7 @@ describe('StateManager -> Code', () => {
     it(`should set empty code`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
-      const raw = {
+      const raw: AccountData = {
         nonce: '0x0',
         balance: '0x03e7',
       }

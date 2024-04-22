@@ -20,7 +20,8 @@ import { BlobEIP4844Transaction, TransactionFactory } from '../src/index.js'
 
 import blobTx from './json/serialized4844tx.json'
 
-import type { Kzg } from '@ethereumjs/util'
+import type { BlobEIP4844TxData } from '../src/index.js'
+import type { Kzg, PrefixedHexString } from '@ethereumjs/util'
 
 const pk = randomBytes(32)
 describe('EIP4844 addSignature tests', () => {
@@ -165,7 +166,7 @@ describe('fromTxData using from a json', () => {
       chainId: Number(txData.chainId),
     })
     try {
-      const tx = BlobEIP4844Transaction.fromTxData(txData, { common: c })
+      const tx = BlobEIP4844Transaction.fromTxData(txData as BlobEIP4844TxData, { common: c })
       assert.ok(true, 'Should be able to parse a json data and hash it')
 
       assert.equal(typeof tx.maxFeePerBlobGas, 'bigint', 'should be able to parse correctly')
@@ -182,7 +183,7 @@ describe('fromTxData using from a json', () => {
       )
 
       const fromSerializedTx = BlobEIP4844Transaction.fromSerializedTx(
-        hexToBytes(txMeta.serialized),
+        hexToBytes(txMeta.serialized as PrefixedHexString),
         { common: c }
       )
       assert.equal(
@@ -327,7 +328,7 @@ describe('Network wrapper tests', () => {
         BlobEIP4844Transaction.fromTxData(
           {
             blobsData: ['hello world'],
-            blobs: ['hello world'],
+            blobs: ['hello world' as any],
             maxFeePerBlobGas: 100000000n,
             gasLimit: 0xffffffn,
             to: randomBytes(20),
@@ -617,8 +618,7 @@ describe('Network wrapper deserialization test', () => {
     const commitments = blobsToCommitments(kzg, blobs)
     const proofs = blobsToProofs(kzg, blobs, commitments)
 
-    /* eslint-disable @typescript-eslint/no-use-before-define */
-    const wrapper = hexToBytes(blobTx.tx)
+    const wrapper = hexToBytes(blobTx.tx as PrefixedHexString)
     const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(wrapper, {
       common,
     })

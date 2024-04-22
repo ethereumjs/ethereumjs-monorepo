@@ -1,5 +1,5 @@
 import { Common } from '@ethereumjs/common'
-import { bytesToHex, toBytes } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import minimist from 'minimist'
 import { assert, describe, it } from 'vitest'
 
@@ -8,6 +8,7 @@ import { TransactionFactory } from '../src/index.js'
 import { getTests } from './testLoader.js'
 
 import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file
@@ -62,7 +63,7 @@ describe('TransactionTests', async () => {
           const shouldBeInvalid = forkTestData.exception !== undefined
 
           try {
-            const rawTx = toBytes(testData.txbytes)
+            const rawTx = hexToBytes(testData.txbytes as PrefixedHexString)
             const hardfork = forkNameMap[forkName]
             const common = new Common({ chain: 1, hardfork })
             const activateEIPs = EIPs[forkName]

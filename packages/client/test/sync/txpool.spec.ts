@@ -340,7 +340,7 @@ describe('[TxPool]', async () => {
     const hashes = []
     for (let i = 1; i <= TX_RETRIEVAL_LIMIT + 1; i++) {
       // One more than TX_RETRIEVAL_LIMIT
-      hashes.push(hexToBytes('0x' + i.toString().padStart(64, '0'))) // '0000000000000000000000000000000000000000000000000000000000000001',...
+      hashes.push(hexToBytes(`0x${i.toString().padStart(64, '0')}`)) // '0x0000000000000000000000000000000000000000000000000000000000000001',...
     }
 
     await pool.handleAnnouncedTxHashes(hashes, peer as any, peerPool)
@@ -491,8 +491,8 @@ describe('[TxPool]', async () => {
     const txs = []
     for (let account = 0; account < 51; account++) {
       const pkey = concatBytes(
-        hexToBytes('0x' + 'aa'.repeat(31)),
-        hexToBytes('0x' + account.toString(16).padStart(2, '0'))
+        hexToBytes(`0x${'aa'.repeat(31)}`),
+        hexToBytes(`0x${account.toString(16).padStart(2, '0')}`)
       )
       const from = {
         address: privateToAddress(pkey),
@@ -572,7 +572,7 @@ describe('[TxPool]', async () => {
           maxFeePerGas: 1000000000,
           maxPriorityFeePerGas: 1000000000,
           nonce: 0,
-          data: '0x' + '00'.repeat(128 * 1024 + 1),
+          data: `0x${'00'.repeat(128 * 1024 + 1)}`,
         },
         { common }
       ).sign(A.privateKey)

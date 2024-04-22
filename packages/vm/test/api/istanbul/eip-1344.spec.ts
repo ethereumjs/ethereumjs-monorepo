@@ -16,7 +16,7 @@ const code = ['46', '60', '00', '53', '60', '01', '60', '00', 'f3']
 describe('Istanbul: EIP-1344', () => {
   it('CHAINID', async () => {
     const runCodeArgs = {
-      code: hexToBytes('0x' + code.join('')),
+      code: hexToBytes(`0x${code.join('')}`),
       gasLimit: BigInt(0xffff),
     }
 

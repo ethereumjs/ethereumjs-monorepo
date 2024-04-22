@@ -36,6 +36,7 @@ import type {
   LegacyTransaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type {
   EIP4844BlobTxReceipt,
   PostByzantiumTxReceipt,
@@ -49,9 +50,9 @@ const EMPTY_SLOT = `0x${'00'.repeat(32)}`
 type GetLogsParams = {
   fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")
   toBlock?: string // QUANTITY, block number or "latest" (default: "latest")
-  address?: string // DATA, 20 Bytes, contract address from which logs should originate
-  topics?: string[] // DATA, array, topics are order-dependent
-  blockHash?: string // DATA, 32 Bytes. With the addition of EIP-234,
+  address?: PrefixedHexString // DATA, 20 Bytes, contract address from which logs should originate
+  topics?: PrefixedHexString[] // DATA, array, topics are order-dependent
+  blockHash?: PrefixedHexString // DATA, 32 Bytes. With the addition of EIP-234,
   // blockHash restricts the logs returned to the single block with
   // the 32-byte hash blockHash. Using blockHash is equivalent to
   // fromBlock = toBlock = the block number with hash blockHash.
@@ -616,7 +617,7 @@ export class Eth {
    *   1. a block hash
    *   2. boolean - if true returns the full transaction objects, if false only the hashes of the transactions.
    */
-  async getBlockByHash(params: [string, boolean]) {
+  async getBlockByHash(params: [PrefixedHexString, boolean]) {
     const [blockHash, includeTransactions] = params
 
     try {
@@ -646,7 +647,7 @@ export class Eth {
    * Returns the transaction count for a block given by the block hash.
    * @param params An array of one parameter: A block hash
    */
-  async getBlockTransactionCountByHash(params: [string]) {
+  async getBlockTransactionCountByHash(params: [PrefixedHexString]) {
     const [blockHash] = params
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
@@ -688,7 +689,7 @@ export class Eth {
    *   2. integer of the position in the storage
    *   3. integer block number, or the string "latest", "earliest" or "pending"
    */
-  async getStorageAt(params: [string, string, string]) {
+  async getStorageAt(params: [string, PrefixedHexString, string]) {
     const [addressHex, keyHex, blockOpt] = params
 
     if (blockOpt === 'pending') {
@@ -724,7 +725,7 @@ export class Eth {
    *   1. a block hash
    *   2. an integer of the transaction index position encoded as a hexadecimal.
    */
-  async getTransactionByBlockHashAndIndex(params: [string, string]) {
+  async getTransactionByBlockHashAndIndex(params: [PrefixedHexString, string]) {
     try {
       const [blockHash, txIndexHex] = params
       const txIndex = parseInt(txIndexHex, 16)
@@ -748,7 +749,7 @@ export class Eth {
    * @param params An array of one parameter:
    *   1. hash of the transaction
    */
-  async getTransactionByHash(params: [string]) {
+  async getTransactionByHash(params: [PrefixedHexString]) {
     const [txHash] = params
     if (!this.receiptsManager) throw new Error('missing receiptsManager')
     const result = await this.receiptsManager.getReceiptByTxHash(hexToBytes(txHash))
@@ -823,7 +824,7 @@ export class Eth {
    * @param params An array of one parameter:
    *  1: Transaction hash
    */
-  async getTransactionReceipt(params: [string]) {
+  async getTransactionReceipt(params: [PrefixedHexString]) {
     const [txHash] = params
 
     if (!this.receiptsManager) throw new Error('missing receiptsManager')
@@ -947,15 +948,15 @@ export class Eth {
         return hexToBytes(t)
       }
     })
-    let addrs
+    let addressBytes: Uint8Array[] | undefined
     if (address !== undefined) {
       if (Array.isArray(address)) {
-        addrs = address.map((a) => hexToBytes(a))
+        addressBytes = address.map((a) => hexToBytes(a))
       } else {
-        addrs = [hexToBytes(address)]
+        addressBytes = [hexToBytes(address)]
       }
     }
-    const logs = await this.receiptsManager.getLogs(from, to, addrs, formattedTopics)
+    const logs = await this.receiptsManager.getLogs(from, to, addressBytes, formattedTopics)
     return Promise.all(
       logs.map(({ log, block, tx, txIndex, logIndex }) =>
         jsonRpcLog(log, block, tx, txIndex, logIndex)
@@ -969,7 +970,7 @@ export class Eth {
    *   1. the signed transaction data
    * @returns a 32-byte tx hash or the zero hash if the tx is not yet available.
    */
-  async sendRawTransaction(params: [string]) {
+  async sendRawTransaction(params: [PrefixedHexString]) {
     const [serializedTx] = params
 
     const { syncTargetHeight } = this.client.config
@@ -1062,7 +1063,9 @@ export class Eth {
    *   3. integer block number, or the string "latest" or "earliest"
    * @returns The {@link Proof}
    */
-  async getProof(params: [string, string[], string]): Promise<Proof> {
+  async getProof(
+    params: [PrefixedHexString, PrefixedHexString[], PrefixedHexString]
+  ): Promise<Proof> {
     const [addressHex, slotsHex, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 

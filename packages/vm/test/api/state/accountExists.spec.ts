@@ -4,6 +4,8 @@ import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
+
 describe('correctly apply new account gas fee on pre-Spurious Dragon hardforks', () => {
   it('should work', async () => {
     // This transaction https://etherscan.io/tx/0x26ea8719eeca5737f8ca872bca1ac53cea9bf6e11462dd83317c2e66a4e43d7b produced an error
@@ -68,9 +70,11 @@ describe('do not apply new account gas fee for empty account in DB on pre-Spurio
     // add empty account to DB
     const emptyAddress = new Address(hexToBytes('0xf48a1bdc65d9ccb4b569ffd4bffff415b90783d6'))
     await vm.stateManager.putAccount(emptyAddress, new Account())
-    const emptyAccount = await vm.stateManager.getAccount(emptyAddress)
-    //@ts-ignore
-    await vm.stateManager._trie.put(toBytes(emptyAddress), emptyAccount.serialize())
+    const emptyAccount = (await vm.stateManager.getAccount(emptyAddress)) as Account
+    await (vm.stateManager as DefaultStateManager)['_trie'].put(
+      toBytes(emptyAddress),
+      emptyAccount.serialize()
+    )
     await vm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
     await vm.stateManager.putContractStorage(
       contractAddress,

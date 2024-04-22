@@ -3,14 +3,16 @@ import { assert, describe, it } from 'vitest'
 
 import { getEOFCode } from '../src/eof.js'
 
-function generateEOFCode(code: string) {
+import type { PrefixedHexString } from '@ethereumjs/util'
+
+function generateEOFCode(code: string): PrefixedHexString {
   const len = (code.length / 2).toString(16).padStart(4, '0')
-  return '0xEF000101' + len + '00' + code
+  return `0xEF000101${len}00${code}`
 }
 
-function generateInvalidEOFCode(code: string) {
+function generateInvalidEOFCode(code: string): PrefixedHexString {
   const len = (code.length / 2 + 1).toString(16).padStart(4, '0') // len will be 1 too long
-  return '0xEF000101' + len + '00' + code
+  return `0xEF000101${len}00${code}`
 }
 
 describe('getEOFCode()', () => {

@@ -7,8 +7,9 @@ import { EVM, getActivePrecompiles } from '../../src/index.js'
 import fuzzer from './modexp-testdata.json'
 
 import type { PrecompileFunc } from '../../src/precompiles/types.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
-const fuzzerTests = fuzzer.data
+const fuzzerTests = fuzzer.data as PrefixedHexString[][]
 describe('Precompiles: MODEXP', () => {
   let common: Common
   let evm: EVM

@@ -25,7 +25,7 @@ describe('VM.runCode: initial program counter', () => {
 
     for (const [i, testData] of testCases.entries()) {
       const runCodeArgs = {
-        code: hexToBytes('0x' + testData.code.join('')),
+        code: hexToBytes(`0x${testData.code.join('')}`),
         pc: testData.pc,
         gasLimit: BigInt(0xffff),
       }
@@ -61,7 +61,7 @@ describe('VM.runCode: interpreter', () => {
 
     const INVALID_opcode = 'fe'
     const runCodeArgs = {
-      code: hexToBytes('0x' + INVALID_opcode),
+      code: hexToBytes(`0x${INVALID_opcode}`),
       gasLimit: BigInt(0xffff),
     }
 
@@ -90,7 +90,7 @@ describe('VM.runCode: interpreter', () => {
 
     const SSTORE = '55'
     const runCodeArgs = {
-      code: hexToBytes('0x' + [PUSH1, '01', PUSH1, '05', SSTORE].join('')),
+      code: hexToBytes(`0x${[PUSH1, '01', PUSH1, '05', SSTORE].join('')}`),
       gasLimit: BigInt(0xffff),
     }
 

@@ -284,10 +284,8 @@ export class RLPx {
           this._peersQueue.push({
             peer: {
               id: peer.getId()!,
-              // @ts-ignore
-              address: peer._socket.remoteAddress,
-              // @ts-ignore
-              tcpPort: peer._socket.remotePort,
+              address: peer['_socket'].remoteAddress,
+              tcpPort: peer['_socket'].remotePort,
             },
             ts: (Date.now() + 300000) as number, // 5 min * 60 * 1000
           })

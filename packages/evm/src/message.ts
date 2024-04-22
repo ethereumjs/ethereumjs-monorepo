@@ -2,6 +2,7 @@ import { Address, BIGINT_0 } from '@ethereumjs/util'
 
 import type { PrecompileFunc } from './precompiles/index.js'
 import type { AccessWitness } from '@ethereumjs/statemanager'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const defaults = {
   value: BIGINT_0,
@@ -29,11 +30,11 @@ interface MessageOpts {
   /**
    * A set of addresses to selfdestruct, see {@link Message.selfdestruct}
    */
-  selfdestruct?: Set<string>
+  selfdestruct?: Set<PrefixedHexString>
   /**
    * Map of addresses which were created (used in EIP 6780)
    */
-  createdAddresses?: Set<string>
+  createdAddresses?: Set<PrefixedHexString>
   delegatecall?: boolean
   authcallOrigin?: Address
   gasRefund?: bigint
@@ -58,11 +59,11 @@ export class Message {
   /**
    * Set of addresses to selfdestruct. Key is the unprefixed address.
    */
-  selfdestruct?: Set<string>
+  selfdestruct?: Set<PrefixedHexString>
   /**
    * Map of addresses which were created (used in EIP 6780)
    */
-  createdAddresses?: Set<string>
+  createdAddresses?: Set<PrefixedHexString>
   delegatecall: boolean
   /**
    * This is used to store the origin of the AUTHCALL,

@@ -5,13 +5,15 @@ import { assert, describe, it } from 'vitest'
 import { EVM } from '../../src/evm.js'
 import { getActivePrecompiles } from '../../src/index.js'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 const precompileAddressStart = 0x0b
 const precompileAddressEnd = 0x13
 
-const precompiles: string[] = []
+const precompiles: PrefixedHexString[] = []
 
 for (let address = precompileAddressStart; address <= precompileAddressEnd; address++) {
-  precompiles.push('0x' + address.toString(16).padStart(40, '0'))
+  precompiles.push(`0x${address.toString(16).padStart(40, '0')}`)
 }
 
 describe('EIP-2537 BLS tests', () => {
@@ -75,7 +77,7 @@ describe('EIP-2537 BLS tests', () => {
     assert.ok(true, 'BLS precompiles throw correctly on empty inputs')
   })
 
-  /* 
+  /*
     The following tests validate that the various precompiles associated with EIP2537 produce expected results against test vectors
     pulled from this collection of test data provided by Matter Labs here -
     https://github.com/matter-labs/eip1962/tree/master/src/test/test_vectors/eip2537

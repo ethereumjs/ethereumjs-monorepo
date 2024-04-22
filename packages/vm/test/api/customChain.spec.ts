@@ -11,9 +11,10 @@ import { VM } from '../../src/vm'
 import * as testChain from './testdata/testnet.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
-import type { AccountState } from '@ethereumjs/util'
+import type { ChainConfig } from '@ethereumjs/common'
+import type { AccountState, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 
-const storage: Array<[string, string]> = [
+const storage: Array<[PrefixedHexString, PrefixedHexString]> = [
   [
     '0x0000000000000000000000000000000000000000000000000000000000000000',
     '0x0000000000000000000000000000000000000000000000000000000000000004',
@@ -37,7 +38,7 @@ const accountState: AccountState = [
  */
 
 const contractAddress = '0x3651539F2E119a27c606cF0cB615410eCDaAE62a'
-const genesisState = {
+const genesisState: GenesisState = {
   '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b': '0x6d6172697573766477000000',
   '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c': '0x6d6172697573766477000000',
   [contractAddress]: accountState,
@@ -46,7 +47,7 @@ const genesisState = {
 const common = new Common({
   chain: 'testnet',
   hardfork: Hardfork.Chainstart,
-  customChains: [testChain],
+  customChains: [testChain] as ChainConfig[],
 })
 const block = Block.fromBlockData(
   {
@@ -92,7 +93,9 @@ describe('VM initialized with custom state', () => {
     const blockchain = await Blockchain.create({ common, genesisState })
     common.setHardfork(Hardfork.London)
     const vm = await VM.create({ blockchain, common, genesisState })
-    const sigHash = new Interface(['function retrieve()']).getSighash('retrieve')
+    const sigHash = new Interface(['function retrieve()']).getSighash(
+      'retrieve'
+    ) as PrefixedHexString
 
     const callResult = await vm.evm.runCall({
       to: Address.fromString(contractAddress),
@@ -107,7 +110,7 @@ describe('VM initialized with custom state', () => {
   })
 
   it('setHardfork', async () => {
-    const customChains = [testnetMerge]
+    const customChains = [testnetMerge] as ChainConfig[]
     const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
     let vm = await VM.create({ common, setHardfork: true, genesisState: {} })

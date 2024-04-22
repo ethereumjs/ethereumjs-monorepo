@@ -174,11 +174,10 @@ export class Peer {
   _sendAck() {
     if (this._closed) return
     this._logger(
-      // @ts-ignore
-      `Send ack (EIP8: ${this._eciesSession._gotEIP8Auth}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`
+      `Send ack (EIP8: ${this._eciesSession['_gotEIP8Auth']}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`
     )
-    // @ts-ignore
-    if (this._eciesSession._gotEIP8Auth) {
+
+    if (this._eciesSession['_gotEIP8Auth']) {
       const ackEIP8 = this._eciesSession.createAckEIP8()
       if (!ackEIP8) return
       this._socket.write(ackEIP8)
@@ -315,13 +314,11 @@ export class Peer {
   _handleAuth() {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.subarray(0, bytesCount)
-    // @ts-ignore
-    if (!this._eciesSession._gotEIP8Auth) {
+    if (!this._eciesSession['_gotEIP8Auth']) {
       if (parseData.subarray(0, 1) === hexToBytes('0x04')) {
         this._eciesSession.parseAuthPlain(parseData)
       } else {
-        // @ts-ignore
-        this._eciesSession._gotEIP8Auth = true
+        this._eciesSession['_gotEIP8Auth'] = true
         this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2
         return
       }
@@ -340,16 +337,14 @@ export class Peer {
   _handleAck() {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.subarray(0, bytesCount)
-    // @ts-ignore
-    if (!this._eciesSession._gotEIP8Ack) {
+    if (!this._eciesSession['_gotEIP8Ack']) {
       if (parseData.subarray(0, 1) === hexToBytes('0x04')) {
         this._eciesSession.parseAckPlain(parseData)
         this._logger(
           `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`
         )
       } else {
-        // @ts-ignore
-        this._eciesSession._gotEIP8Ack = true
+        this._eciesSession['_gotEIP8Ack'] = true
         this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2
         return
       }
