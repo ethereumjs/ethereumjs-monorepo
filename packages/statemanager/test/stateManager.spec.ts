@@ -14,6 +14,8 @@ import { assert, describe, it } from 'vitest'
 
 import { CacheType, DefaultStateManager } from '../src/index.js'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 export const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 function verifyAccount(
   account: Account,
@@ -299,7 +301,7 @@ describe('StateManager -> General', () => {
       await sm.putAccount(address2, account2)
       await sm.putContractStorage(address, setLengthLeft(intToBytes(0), 32), intToBytes(32))
       const storage = await sm.dumpStorage(address)
-      const keys = Object.keys(storage)
+      const keys = Object.keys(storage) as PrefixedHexString[]
       const proof = await sm.getProof(
         address,
         keys.map((key) => hexToBytes(key))

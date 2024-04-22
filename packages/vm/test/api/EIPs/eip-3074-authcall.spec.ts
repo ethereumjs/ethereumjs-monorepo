@@ -855,7 +855,7 @@ describe('EIP-3074 AUTHCALL', () => {
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const callInput = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      hexToBytes(`0x${'00'.repeat(31)} 02`)
+      hexToBytes(`0x${'00'.repeat(31)}02`)
     )
     assert.deepEqual(callInput, input, 'authcall input ok')
     assert.deepEqual(result.execResult.returnValue, input, 'authcall output ok')

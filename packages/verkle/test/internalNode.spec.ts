@@ -5,13 +5,11 @@ import { NODE_WIDTH, VerkleNodeType } from '../src/node/index.js'
 import { InternalNode } from '../src/node/internalNode.js'
 import { POINT_IDENTITY } from '../src/util/crypto.js'
 
-import type { Point } from '../src/types.js'
-
 describe('verkle node - internal', () => {
   it('constructor should create an internal node', async () => {
     const commitment = randomBytes(32)
     const depth = 2
-    const node = new InternalNode({ commitment: commitment as unknown as Point, depth })
+    const node = new InternalNode({ commitment, depth })
 
     assert.equal(node.type, VerkleNodeType.Internal, 'type should be set')
     assert.ok(

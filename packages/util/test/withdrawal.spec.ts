@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { Withdrawal, bigIntToHex, bytesToHex, hexToBytes, intToHex } from '../src/index.js'
 
-import type { WithdrawalBytes } from '../src/index.js'
+import type { WithdrawalBytes, WithdrawalData } from '../src/index.js'
 
 const withdrawalsVector = [
   {
@@ -69,14 +69,18 @@ describe('Withdrawal', () => {
   const gethWithdrawalsBuffer = decode(hexToBytes(gethWithdrawals8BlockRlp))[3]!
   const gethWithdrawalsRlp = bytesToHex(encode(gethWithdrawalsBuffer))
   it('fromWithdrawalData and toBytesArray', () => {
-    const withdrawals = withdrawalsGethVector.map(Withdrawal.fromWithdrawalData)
+    const withdrawals = withdrawalsGethVector.map((withdrawal) =>
+      Withdrawal.fromWithdrawalData(withdrawal as WithdrawalData)
+    )
     const withdrawalstoBytesArr = withdrawals.map((wt) => wt.raw())
     const withdrawalsToRlp = bytesToHex(encode(withdrawalstoBytesArr))
     assert.equal(gethWithdrawalsRlp, withdrawalsToRlp, 'The withdrawals to buffer should match')
   })
 
   it('toBytesArray from withdrawalData', () => {
-    const withdrawalsDatatoBytesArr = withdrawalsGethVector.map(Withdrawal.toBytesArray)
+    const withdrawalsDatatoBytesArr = withdrawalsGethVector.map((withdrawal) =>
+      Withdrawal.toBytesArray(withdrawal as WithdrawalData)
+    )
     const withdrawalsDataToRlp = bytesToHex(encode(withdrawalsDatatoBytesArr))
     assert.equal(gethWithdrawalsRlp, withdrawalsDataToRlp, 'The withdrawals to buffer should match')
   })
