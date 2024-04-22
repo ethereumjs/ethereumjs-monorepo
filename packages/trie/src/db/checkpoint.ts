@@ -55,7 +55,6 @@ export class CheckpointDB implements DB {
     this.checkpoints = []
 
     if (this.cacheSize > 0) {
-      // @ts-ignore
       this._cache = new LRUCache({
         max: this.cacheSize,
         updateAgeOnGet: true,

@@ -23,6 +23,7 @@ import type {
   PreByzantiumTxReceipt,
   RunBlockOpts,
 } from '../../src/types'
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
@@ -35,20 +36,17 @@ describe('runBlock() -> successful API parameter usage', async () => {
     const blockRlp = toBytes(testData.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
-    //@ts-ignore
     await setupPreConditions(vm.stateManager, testData)
 
     assert.deepEqual(
-      //@ts-ignore
-      vm.stateManager._trie.root(),
+      (vm.stateManager as DefaultStateManager)['_trie'].root(),
       genesis.header.stateRoot,
       'genesis state root should match calculated state root'
     )
 
     const res = await vm.runBlock({
       block,
-      // @ts-ignore
-      root: vm.stateManager._trie.root(),
+      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -70,8 +68,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     const block1 = Block.fromRLPSerializedBlock(block1Rlp, { common })
     await vm.runBlock({
       block: block1,
-      // @ts-ignore
-      root: vm.stateManager._trie.root(),
+      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -80,8 +77,8 @@ describe('runBlock() -> successful API parameter usage', async () => {
     const block2 = Block.fromRLPSerializedBlock(block2Rlp, { common })
     await vm.runBlock({
       block: block2,
-      // @ts-ignore
-      root: vm.stateManager._trie.root(),
+
+      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -90,8 +87,8 @@ describe('runBlock() -> successful API parameter usage', async () => {
     const block3 = Block.fromRLPSerializedBlock(block3Rlp, { common })
     await vm.runBlock({
       block: block3,
-      // @ts-ignore
-      root: vm.stateManager._trie.root(),
+
+      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -214,7 +211,6 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
 
     const block = Block.fromBlockData({
       header: {
-        ...testData.blocks[0].header,
         gasLimit: hexToBytes('0x8000000000000000'),
       },
     })
@@ -290,7 +286,7 @@ describe('runBlock() -> runtime behavior', async () => {
     // edit extra data of this block to "dao-hard-fork"
     block1[0][12] = utf8ToBytes('dao-hard-fork')
     const block = Block.fromValuesArray(block1, { common })
-    // @ts-ignore
+
     await setupPreConditions(vm.stateManager, testData)
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
@@ -427,7 +423,6 @@ async function runWithHf(hardfork: string) {
   const blockRlp = toBytes(testData.blocks[0].rlp)
   const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
-  // @ts-ignore
   await setupPreConditions(vm.stateManager, testData)
 
   const res = await vm.runBlock({
@@ -464,15 +459,14 @@ describe('runBlock() -> tx types', async () => {
     const blockRlp = toBytes(testData.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
 
-    //@ts-ignore overwrite transactions
+    //@e transactions
     block.transactions = transactions
 
     if (transactions.some((t) => t.supports(Capability.EIP1559FeeMarket))) {
-      // @ts-ignore overwrite read-only property
+      // @e read-only property
       block.header.baseFeePerGas = BigInt(7)
     }
 
-    //@ts-ignore
     await setupPreConditions(vm.stateManager, testData)
 
     const res = await vm.runBlock({

@@ -99,8 +99,7 @@ describe(`valid verkle network setup`, async () => {
         testData = JSON.parse(readFileSync(fileName, 'utf8'))[testCase]
         isBeaconData = false
       } else {
-        // @ts-expect-error -- Typescript complains that `testCase` can't index the `blocks` object
-        testData = blocks[testCase]
+        testData = blocks[testCase as keyof typeof blocks]
         isBeaconData = true
       }
       if (testData === undefined) {

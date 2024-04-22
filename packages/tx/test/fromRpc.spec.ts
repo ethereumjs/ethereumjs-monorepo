@@ -9,6 +9,8 @@ import optimismTx from './json/optimismTx.json'
 import rpcTx from './json/rpcTx.json'
 import v0Tx from './json/v0tx.json'
 
+import type { TypedTxData } from '../src/index.js'
+
 const txTypes = [
   TransactionType.Legacy,
   TransactionType.AccessListEIP2930,
@@ -77,7 +79,7 @@ describe('fromRPC: interpret v/r/s vals of 0x0 as undefined for Optimism system 
   it('should work', async () => {
     for (const txType of txTypes) {
       ;(optimismTx as any).type = txType
-      const tx = await TransactionFactory.fromRPC(optimismTx)
+      const tx = await TransactionFactory.fromRPC(optimismTx as TypedTxData)
       assert.ok(tx.v === undefined)
       assert.ok(tx.s === undefined)
       assert.ok(tx.r === undefined)
@@ -96,7 +98,7 @@ describe('fromRPC: ensure `v="0x0"` is correctly decoded for signed txs', () => 
         continue
       }
       ;(v0Tx as any).type = txType
-      const tx = await TransactionFactory.fromRPC(v0Tx)
+      const tx = await TransactionFactory.fromRPC(v0Tx as TypedTxData)
       assert.ok(tx.isSigned())
     }
   })

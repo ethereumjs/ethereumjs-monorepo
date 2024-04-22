@@ -995,8 +995,7 @@ async function run() {
       chain: chainName,
       mergeForkIdPostMerge: args.mergeForkIdPostMerge,
     })
-    //@ts-ignore
-    common.customCrypto = cryptoFunctions
+    ;(common.customCrypto as any) = cryptoFunctions
     customGenesisState = parseGethGenesisState(genesisFile)
   }
 

@@ -28,10 +28,8 @@ export class SNAP extends Protocol {
     if (this.DEBUG) {
       this.debug(
         this.getMsgPrefix(code),
-        // @ts-ignore
-        `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
-          // @ts-ignore
-          this._peer._socket.remotePort
+        `Received ${this.getMsgPrefix(code)} message from ${this._peer['_socket'].remoteAddress}:${
+          this._peer['_socket'].remotePort
         }: ${formatLogData(bytesToHex(data), this._verbose)}`
       )
     }
@@ -66,10 +64,8 @@ export class SNAP extends Protocol {
     if (this.DEBUG) {
       this.debug(
         this.getMsgPrefix(code),
-        // @ts-ignore
-        `Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${
-          // @ts-ignore
-          this._peer._socket.remotePort
+        `Send ${this.getMsgPrefix(code)} message to ${this._peer['_socket'].remoteAddress}:${
+          this._peer['_socket'].remotePort
         }: ${formatLogData(utils.bytesToHex(RLP.encode(payload)), this._verbose)}`
       )
     }
@@ -91,8 +87,7 @@ export class SNAP extends Protocol {
     payload = RLP.encode(payload)
 
     // Use snappy compression if peer supports DevP2P >=v5
-    // @ts-ignore
-    const protocolVersion = this._peer._hello?.protocolVersion
+    const protocolVersion = this._peer['_hello']?.protocolVersion
     if (protocolVersion !== undefined && protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
