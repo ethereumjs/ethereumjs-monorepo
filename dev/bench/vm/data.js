@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1713775150535,
+  "lastUpdate": 1713788844708,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a35bf07bc8e4288a3f605977fb176f487ff6632e",
-          "message": "Implement eth_feeHistory (#3295)\n\n* implement effective priority fee retrieval\r\n\r\nimplement fee history rpc method\r\n\r\nrefactor and adjust return values\r\n\r\nadd integer validation\r\n\r\nadd test for maximum base fee increase\r\n\r\nfix backward compatibility\r\n\r\nadd remaining tests\r\n\r\nuse calcNextBaseFee from parent block header\r\n\r\nuse bigint array instead of number array for the optional param\r\n\r\nremove redundant bigIntMax\r\n\r\nretrieve initial base fee from common\r\n\r\n* client: fix build\r\n\r\n* client: partial fix tests\r\n\r\n* client: edit feeHistory tests\r\n\r\n* client/tx address some review\r\n\r\n* tx: make getEffectivePriorityFee redunt\r\n\r\n* tx: add getEffectivePriorityFee tests\r\n\r\n* vm: add todo\r\n\r\n* client: eth_feeHistory fixes + test additions\r\n\r\n* client/rpc: add rewardPrcentile check\r\n\r\n* client: add validation tests for the ratio\r\n\r\n* client: eth_feeHistory fix rewards?\r\n\r\n* Add partial tests for reward percentiles\r\n\r\n* client: feeHistory sort txs by prioFee\r\n\r\n* add more tests\r\n\r\n* client: add extra feeHistory rewards tests\r\n\r\n* vm: use getEffectivePriorityFee\r\n\r\n* client: update mock blockhash\r\n\r\n* add blob fee to feeHistory\r\n\r\n* block: add calcNextBlobGasPrice\r\n\r\n* client: fix feeHistory implementation and add test output\r\n\r\n* client: lint\r\n\r\n* separate validators for rewardPercentile and array\r\n\r\n* client: test rewardPercentile validator\r\n\r\n* Apply comments and add tests\r\n\r\n---------\r\n\r\nCo-authored-by: Marko <marko.ivankovic650@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: ScottyPoi <scott.simpson@ethereum.org>\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>",
-          "timestamp": "2024-03-07T13:48:01-05:00",
-          "tree_id": "d9aaa60ec353cfc13f7c4b1f0ce459b3b7cd4436",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a35bf07bc8e4288a3f605977fb176f487ff6632e"
-        },
-        "date": 1709837455749,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42115,
-            "range": "±1.74%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39565,
-            "range": "±2.84%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40875,
-            "range": "±1.51%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37024,
-            "range": "±5.43%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38911,
-            "range": "±1.68%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.73%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "02e8054ed57cbf4d3378d27d3e32c512f5375d5f",
+          "message": "Client: Increase timeout for beaconsync integration tests (#3362)",
+          "timestamp": "2024-04-22T14:24:53+02:00",
+          "tree_id": "98a1e44d1ad38a34de398e8ef9850326a221c8ef",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/02e8054ed57cbf4d3378d27d3e32c512f5375d5f"
+        },
+        "date": 1713788844060,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41944,
+            "range": "±3.10%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41030,
+            "range": "±1.35%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40818,
+            "range": "±1.50%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37324,
+            "range": "±5.89%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38708,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
