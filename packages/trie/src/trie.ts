@@ -1,6 +1,7 @@
 // Some more secure presets when using e.g. JS `call`
 'use strict'
 
+import { RLP } from '@ethereumjs/rlp'
 import {
   KeyEncoding,
   Lock,
@@ -568,8 +569,11 @@ export class Trie {
       const deleteHashes = stack.map((e) => this.hash(e.serialize()))
       // Just as with `put`, the stack items all will have their keyhashes updated
       // So after deleting the node, one can safely delete these from the DB
-      ops = deleteHashes.map((e) => {
-        const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, e) : e
+
+      ops = deleteHashes.map((deletedHash) => {
+        const key = this._opts.keyPrefix
+          ? concatBytes(this._opts.keyPrefix, deletedHash)
+          : deletedHash
         return {
           type: 'del',
           key,
@@ -1020,9 +1024,11 @@ export class Trie {
       // Since this branch is deleted, one can thus also delete this branch from the DB
       // So add this to the `opStack` and mark the keyhash to be deleted
       if (this._opts.useNodePruning) {
+        // If the branchNode has length < 32, it will be a Uint8Array[] instead of a Uint8Array
+        // In that case, we need to serialize and hash it into a Uint8Array, otherwise the operation will throw
         opStack.push({
           type: 'del',
-          key: branchNode as Uint8Array,
+          key: key instanceof Uint8Array ? key : this.appliedKey(RLP.encode(key)),
         })
       }
 
