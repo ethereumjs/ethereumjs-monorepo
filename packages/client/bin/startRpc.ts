@@ -176,7 +176,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       rpcDebug,
       rpcDebugVerbose,
       logger,
-    }) //@ts-ignore
+    })
     servers.push(server)
     const rpcHttpServer = createRPCServerListener({
       rpcCors,

@@ -23,7 +23,7 @@ type CreateRPCServerOpts = {
   logger?: Logger
 }
 type CreateRPCServerReturn = {
-  server: any
+  server: jayson.Server
   methods: { [key: string]: Function }
   namespaces: string
 }
