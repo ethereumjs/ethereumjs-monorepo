@@ -15,7 +15,7 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { short } from '../../util/index.js'
+import { short } from '@ethereumjs/util'
 
 import { Fetcher } from './fetcher.js'
 import { getInitFecherDoneFlags } from './types.js'
