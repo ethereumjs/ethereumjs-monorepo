@@ -378,22 +378,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     // TODOs:
     // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
     // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
-    this.debug('dbg100')
-    const latestHeader = await peer?.latest()
-    if (latestHeader !== undefined) {
-      const latestStateRoot = (latestHeader as BlockHeader).stateRoot
-      this.debug(this.root)
-      this.debug(bytesToHex(latestStateRoot))
-      if (!equalsBytes(this.root, latestStateRoot)) {
-        this.debug(
-          `updating fetcher roots from ${bytesToHex(this.root)} over to ${bytesToHex(
-            latestStateRoot
-          )}`
-        )
-        this.updateStateRoot(latestStateRoot)
-      }
-    }
-
+    await peer?.latest()
     const origin = this.getOrigin(job)
     const limit = this.getLimit(job)
 

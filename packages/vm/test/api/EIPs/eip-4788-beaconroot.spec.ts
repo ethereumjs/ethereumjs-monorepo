@@ -26,7 +26,7 @@ import { assert, describe, it } from 'vitest'
 import { VM } from '../../../src'
 
 import type { TransactionType, TxData } from '@ethereumjs/tx'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
 const common = new Common({
   chain: Chain.Mainnet,
@@ -34,7 +34,7 @@ const common = new Common({
   eips: [4788],
 })
 
-const pkey = hexToBytes('0x' + '20'.repeat(32))
+const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const contractAddress = Address.fromString('0x' + 'c0de'.repeat(10))
 
 function beaconrootBlock(
@@ -85,13 +85,12 @@ function beaconrootBlock(
  */
 
 const BROOT_AddressString = '000F3df6D732807Ef1319fB7B8bB8522d0Beac02'
-const CODE =
-  '0x365F5F375F5F365F5F' +
+const CODE = ('0x365F5F375F5F365F5F' +
   // push broot contract address on stack
   '73' +
   BROOT_AddressString +
   // remaining contract
-  '5AF15F553D5F5F3E3D5FF3'
+  '5AF15F553D5F5F3E3D5FF3') as PrefixedHexString
 const BROOT_CODE =
   '0x3373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500'
 const BROOT_Address = Address.fromString(`0x${BROOT_AddressString}`)

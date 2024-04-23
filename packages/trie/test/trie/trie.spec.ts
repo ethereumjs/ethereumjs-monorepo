@@ -90,13 +90,11 @@ for (const { constructor, defaults, title } of [
         useRootPersistence: true,
       })
 
-      // @ts-expect-error
-      assert.equal(await trie._db.get(ROOT_DB_KEY), undefined)
+      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
 
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
-      // @ts-expect-error
-      assert.equal(bytesToHex(await trie._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
+      assert.equal(bytesToHex((await trie['_db'].get(ROOT_DB_KEY))!), EXPECTED_ROOTS)
     })
 
     it('persist the root if the `root` option is given', async () => {
@@ -107,13 +105,11 @@ for (const { constructor, defaults, title } of [
         useRootPersistence: true,
       })
 
-      // @ts-expect-error
-      assert.ok(equalsBytes((await trie._db.get(ROOT_DB_KEY))!, KECCAK256_RLP))
+      assert.ok(equalsBytes((await trie['_db'].get(ROOT_DB_KEY))!, KECCAK256_RLP))
 
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
-      // @ts-expect-error
-      assert.isFalse(equalsBytes((await trie._db.get(ROOT_DB_KEY))!, KECCAK256_RLP))
+      assert.isFalse(equalsBytes((await trie['_db'].get(ROOT_DB_KEY))!, KECCAK256_RLP))
     })
 
     it('does not persist the root if the `useRootPersistence` option is `false`', async () => {
@@ -123,41 +119,34 @@ for (const { constructor, defaults, title } of [
         useRootPersistence: false,
       })
 
-      // @ts-expect-error
-      assert.equal(await trie._db.get(ROOT_DB_KEY), undefined)
+      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
 
       await trie.put(utf8ToBytes('do_not_persist_with_db'), utf8ToBytes('bar'))
 
-      // @ts-expect-error
-      assert.equal(await trie._db.get(ROOT_DB_KEY), undefined)
+      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
     })
 
     it('persists the root if the `db` option is not provided', async () => {
       const trie = await constructor.create({ ...defaults, useRootPersistence: true })
 
-      // @ts-expect-error
-      assert.equal(await trie._db.get(ROOT_DB_KEY), undefined)
+      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
 
       await trie.put(utf8ToBytes('do_not_persist_without_db'), utf8ToBytes('bar'))
 
-      // @ts-expect-error
-      assert.notEqual(await trie._db.get(ROOT_DB_KEY), undefined)
+      assert.notEqual(await trie['_db'].get(ROOT_DB_KEY), undefined)
     })
 
     it('persist and restore the root', async () => {
       const db = new MapDB<string, string>()
 
       const trie = await constructor.create({ ...defaults, db, useRootPersistence: true })
-      // @ts-expect-error
-      assert.equal(await trie._db.get(ROOT_DB_KEY), undefined)
+      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
-      // @ts-expect-error
-      assert.equal(bytesToHex(await trie._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
+      assert.equal(bytesToHex((await trie['_db'].get(ROOT_DB_KEY))!), EXPECTED_ROOTS)
 
       // Using the same database as `trie` so we should have restored the root
       const copy = await constructor.create({ ...defaults, db, useRootPersistence: true })
-      // @ts-expect-error
-      assert.equal(bytesToHex(await copy._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
+      assert.equal(bytesToHex((await copy['_db'].get(ROOT_DB_KEY))!), EXPECTED_ROOTS)
 
       // New trie with a new database so we shouldn't find a root to restore
       const empty = await constructor.create({
@@ -165,8 +154,7 @@ for (const { constructor, defaults, title } of [
         db: new MapDB(),
         useRootPersistence: true,
       })
-      // @ts-expect-error
-      assert.equal(await empty._db.get(ROOT_DB_KEY), undefined)
+      assert.equal(await empty['_db'].get(ROOT_DB_KEY), undefined)
     })
 
     it('put fails if the key is the ROOT_DB_KEY', async () => {

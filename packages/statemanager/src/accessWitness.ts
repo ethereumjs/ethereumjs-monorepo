@@ -411,7 +411,7 @@ export function decodeAccessedState(treeIndex: number | bigint, chunkIndex: numb
   }
 }
 
-export function decodeValue(type: AccessedStateType, value: string | null): string {
+export function decodeValue(type: AccessedStateType, value: PrefixedHexString | null): string {
   if (value === null) {
     return ''
   }

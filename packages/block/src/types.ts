@@ -253,7 +253,6 @@ export interface JsonRpcBlock {
   executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
 }
 
-// Note: all these strings are 0x-prefixed
 export type WithdrawalV1 = {
   index: PrefixedHexString // Quantity, 8 Bytes
   validatorIndex: PrefixedHexString // Quantity, 8 bytes

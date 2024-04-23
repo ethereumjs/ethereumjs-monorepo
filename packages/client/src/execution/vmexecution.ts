@@ -35,6 +35,7 @@ import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
 import type { Block } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
 export enum ExecStatus {
@@ -474,7 +475,7 @@ export class VMExecution extends Execution {
     return true
   }
 
-  async savePreimages(preimages: Map<string, Uint8Array>) {
+  async savePreimages(preimages: Map<PrefixedHexString, Uint8Array>) {
     if (this.preimagesManager !== undefined) {
       for (const [key, preimage] of preimages) {
         await this.preimagesManager.savePreimage(hexToBytes(key), preimage)

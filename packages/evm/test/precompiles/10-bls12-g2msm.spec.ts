@@ -107,7 +107,7 @@ describe('Precompiles: BLS12-G2-MSM', () => {
 
     for (const testVector of testData) {
       const result = await BLS12G2MSM({
-        data: hexToBytes('0x' + testVector.Input),
+        data: hexToBytes(`0x${testVector.Input}`),
         gasLimit: BigInt(5000000),
         common,
         _EVM: evm,

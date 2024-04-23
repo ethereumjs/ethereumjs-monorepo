@@ -23,12 +23,13 @@ describe('[HeaderFetcher]', async () => {
     const fetcher = new HeaderFetcher({ config, pool, flow })
     const headers = [{ number: 1 }, { number: 2 }]
     assert.deepEqual(
-      //@ts-ignore
-      fetcher.process({ task: { count: 2 }, peer: 'peer0' }, { headers, bv: BigInt(1) }),
+      fetcher.process(
+        { task: { count: 2 }, peer: 'peer0' } as any,
+        { headers, bv: BigInt(1) } as any
+      ),
       headers as any,
       'got results'
     )
-    //@ts-ignore
     assert.notOk(
       fetcher.process({ task: { count: 2 } } as any, { headers: [], bv: BigInt(1) } as any),
       'bad results'

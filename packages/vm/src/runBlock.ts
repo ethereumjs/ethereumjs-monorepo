@@ -40,6 +40,7 @@ import type {
 import type { VM } from './vm.js'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -621,7 +622,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   return {
     bloom,
     gasUsed,
-    preimages: new Map<string, Uint8Array>(),
+    preimages: new Map<PrefixedHexString, Uint8Array>(),
     receiptsRoot,
     receipts,
     results: txResults,

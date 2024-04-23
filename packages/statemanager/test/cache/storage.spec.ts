@@ -17,7 +17,7 @@ describe('Storage Cache: put and get account', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new StorageCache({ size: 100, type })
 
-    const addr = new Address(hexToBytes('0x' + '10'.repeat(20)))
+    const addr = new Address(hexToBytes(`0x${'10'.repeat(20)}`))
     const key = hexToBytes('0x01')
     const value = hexToBytes('0x01')
 
@@ -48,7 +48,7 @@ describe('Storage Cache: put and get account', () => {
 
 describe('Storage Cache: checkpointing', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
-    const addr = new Address(hexToBytes('0x' + '10'.repeat(20)))
+    const addr = new Address(hexToBytes(`0x${'10'.repeat(20)}`))
     const key = hexToBytes('0x01')
     const value = hexToBytes('0x01')
 

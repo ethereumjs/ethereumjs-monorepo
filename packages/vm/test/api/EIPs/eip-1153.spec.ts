@@ -6,6 +6,7 @@ import { assert, describe, it } from 'vitest'
 import { VM } from '../../../src/vm'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 interface Test {
   steps: { expectedOpcode: string; expectedGasUsed: number; expectedStack: bigint[] }[]
@@ -53,7 +54,7 @@ describe('EIP 1153: transient storage', () => {
     })
 
     for (const { code, address } of test.contracts) {
-      await vm.stateManager.putContractCode(address, hexToBytes(code))
+      await vm.stateManager.putContractCode(address, hexToBytes(code as PrefixedHexString))
     }
 
     const fromAddress = new Address(privateToAddress(senderKey))

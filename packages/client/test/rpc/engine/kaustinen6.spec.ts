@@ -9,7 +9,7 @@ import genesisJSON from '../../testdata/geth-genesis/kaustinen6.json'
 import { getRpcClient, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain'
-import type { BeaconPayloadJson } from '@ethereumjs/block'
+import type { BeaconPayloadJson, VerkleExecutionWitness } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { HttpClient } from 'jayson/promise'
 const genesisVerkleStateRoot = '0x1fbf85345a3cbba9a6d44f991b721e55620a22397c2a93ee8d5011136ac300ee'
@@ -99,8 +99,7 @@ describe(`valid verkle network setup`, async () => {
         testData = JSON.parse(readFileSync(fileName, 'utf8'))[testCase]
         isBeaconData = false
       } else {
-        // @ts-expect-error -- Typescript complains that `testCase` can't index the `blocks` object
-        testData = blocks[testCase]
+        testData = blocks[testCase as keyof typeof blocks]
         isBeaconData = true
       }
       if (testData === undefined) {
@@ -163,7 +162,7 @@ async function loadGethVectors(vectorsDirPath: string, opts: { common: Common })
   // set chain id to 1 for geth vectors
   opts.common['_chainParams'].chainId = BigInt(1)
   const stateDiffVec = JSON.parse(readFileSync(`${vectorsDirPath}/statediffs.json`, 'utf8'))
-  const executionWitness0 = {
+  const executionWitness0: VerkleExecutionWitness = {
     stateDiff: [],
     verkleProof: {
       commitmentsByPath: [],
@@ -178,7 +177,7 @@ async function loadGethVectors(vectorsDirPath: string, opts: { common: Common })
     },
   }
 
-  const executionWitness1 = {
+  const executionWitness1: VerkleExecutionWitness = {
     stateDiff: stateDiffVec[0],
     verkleProof: {
       commitmentsByPath: [],
@@ -193,7 +192,7 @@ async function loadGethVectors(vectorsDirPath: string, opts: { common: Common })
     },
   }
 
-  const executionWitness2 = {
+  const executionWitness2: VerkleExecutionWitness = {
     stateDiff: stateDiffVec[1],
     verkleProof: {
       commitmentsByPath: [],

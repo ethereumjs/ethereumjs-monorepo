@@ -750,7 +750,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         continue
       }
 
-      let canonicalValue: string | null | undefined = this._postState[chunkKey]
+      let canonicalValue: PrefixedHexString | null | undefined = this._postState[chunkKey]
 
       if (canonicalValue === undefined) {
         debug(

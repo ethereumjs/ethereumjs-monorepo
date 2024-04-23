@@ -5,6 +5,8 @@ import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
 describe('EIP 2929: gas cost tests', () => {
   const initialGas = BigInt(0xffffffffff)
@@ -61,7 +63,7 @@ describe('EIP 2929: gas cost tests', () => {
     return result
   }
 
-  const runCodeTest = async function (code: string, expectedGasUsed: bigint) {
+  const runCodeTest = async function (code: PrefixedHexString, expectedGasUsed: bigint) {
     // setup the accounts for this test
     const privateKey = hexToBytes(
       '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
@@ -269,10 +271,10 @@ describe('EIP 2929: gas cost tests', () => {
     // call to address 0xFFFF..FF
     const callFF = '6000808080806000195AF1'
     // call address 0xFF..FF, now call same contract again, call 0xFF..FF again (it is now warm)
-    await runCodeTest('0x' + callFF + '60003415601B57600080808080305AF15B00', BigInt(23909))
+    await runCodeTest(`0x${callFF}60003415601B57600080808080305AF15B00`, BigInt(23909))
     // call to contract, call 0xFF..FF, revert, call 0xFF..FF (should be cold)
     await runCodeTest(
-      '0x341515601557' + callFF + '600080FD5B600080808080305AF1' + callFF + '00',
+      `0x341515601557${callFF}600080FD5B600080808080305AF1${callFF}00`,
       BigInt(26414)
     )
   })

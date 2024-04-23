@@ -56,8 +56,7 @@ describe('DPT simulator tests', () => {
         dpts[0].banPeer(peer)
       })
       dpts[0].events.once('peer:removed', async (peer) => {
-        // @ts-ignore
-        assert.equal(dpts[0]._banlist.has(peer), true, 'ban-list should contain peer')
+        assert.equal(dpts[0]['_banlist'].has(peer), true, 'ban-list should contain peer')
         assert.equal(
           dpts[0].getPeers().length,
           0,
@@ -142,8 +141,7 @@ describe('DPT simulator tests', () => {
       dpts[0].destroy()
       assert.ok(true, 'got peer from DNS')
     }
-    // @ts-ignore
-    dpts[0]._dns.__setNativeDNSModuleResolve(mockDns)
+    dpts[0]['_dns'].__setNativeDNSModuleResolve(mockDns)
     await dpts[0].refresh()
   })
 })
