@@ -1,8 +1,8 @@
 {
-  "extends": "../../config/tsconfig.prod.cjs.json",
+  "extends": "../../config/tsconfig.prod.esm.json",
   "include": ["bin", "src", "package.json"],
   "compilerOptions": {
-    "outDir": "dist/cjs",
+    "outDir": "dist/esm",
     "typeRoots": ["node_modules/@types", "src/@types"],
     "composite": true
   },

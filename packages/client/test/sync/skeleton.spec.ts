@@ -4,12 +4,12 @@ import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain'
-import { Config } from '../../src/config'
-import { getLogger } from '../../src/logging'
-import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync'
-import { short } from '../../src/util'
-import { wait } from '../integration/util'
+import { Chain } from '../../src/blockchain/index.js'
+import { Config } from '../../src/config.js'
+import { getLogger } from '../../src/logging.js'
+import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.js'
+import { short } from '../../src/util/index.js'
+import { wait } from '../integration/util.js'
 import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 type Subchain = {
   head: bigint

@@ -1,17 +1,18 @@
-import { json as jsonParser } from 'body-parser'
+import bodyParser from 'body-parser'
+import Connect from 'connect'
+import cors from 'cors'
 import { createServer } from 'http'
-import { Server as RPCServer } from 'jayson/promise'
-import { decode } from 'jwt-simple'
+import jayson from 'jayson/promise/index.js'
+import jwt from 'jwt-simple'
 import { inspect } from 'util'
 
-import type { Logger } from '../logging'
-import type { RPCManager } from '../rpc'
+import type { Logger } from '../logging.js'
+import type { RPCManager } from '../rpc/index.js'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
 import type { TAlgorithm } from 'jwt-simple'
-
-const Connect = require('connect')
-const cors = require('cors')
+const { json: jsonParser } = bodyParser
+const { decode } = jwt
 
 const algorithm: TAlgorithm = 'HS256'
 
@@ -22,13 +23,13 @@ type CreateRPCServerOpts = {
   logger?: Logger
 }
 type CreateRPCServerReturn = {
-  server: RPCServer
+  server: jayson.Server
   methods: { [key: string]: Function }
   namespaces: string
 }
 type CreateRPCServerListenerOpts = {
   rpcCors?: string
-  server: RPCServer
+  server: any
   withEngineMiddleware?: WithEngineMiddleware
 }
 type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: HttpServer }
@@ -159,11 +160,12 @@ export function createRPCServer(
     }
   }
 
-  const server = new RPCServer(methods)
+  const server = new jayson.Server(methods)
   server.on('request', onRequest)
   server.on('response', onBatchResponse)
   const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
 
+  //@ts-ignore
   return { server, methods, namespaces }
 }
 
@@ -204,7 +206,7 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
       }
     })
   }
-
+  //@ts-ignore
   app.use(server.middleware())
   const httpServer = createServer(app)
   return httpServer
@@ -222,7 +224,6 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
     if (typeof rpcCors === 'string') app.use(cors({ origin: rpcCors }))
     httpServer = createServer(app)
   }
-
   const wss = server.websocket({ noServer: true })
 
   httpServer.on('upgrade', (req, socket, head) => {

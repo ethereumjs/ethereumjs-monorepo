@@ -1,18 +1,18 @@
 import { bytesToUnprefixedHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
-import { RPCManager, saveReceiptsMethods } from '../src/rpc'
-import * as modules from '../src/rpc/modules'
+import { RPCManager, saveReceiptsMethods } from '../src/rpc/index.js'
+import * as modules from '../src/rpc/modules/index.js'
 import {
   MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
-} from '../src/util'
+} from '../src/util/index.js'
 
-import type { EthereumClient } from '../src/client'
-import type { Config } from '../src/config'
-import type { Server as RPCServer } from 'jayson/promise'
+import type { EthereumClient } from '../src/client.js'
+import type { Config } from '../src/config.js'
+import type jayson from 'jayson/promise/index.js'
 
 export type RPCArgs = {
   rpc: boolean
@@ -74,7 +74,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
  */
 export function startRPCServers(client: EthereumClient, args: RPCArgs) {
   const { config } = client
-  const servers: RPCServer[] = []
+  const servers: jayson.Server[] = []
   const {
     rpc,
     rpcAddr,

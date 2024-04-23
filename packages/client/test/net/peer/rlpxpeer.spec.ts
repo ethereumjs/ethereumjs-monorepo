@@ -1,8 +1,8 @@
 import { EventEmitter } from 'events'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Config } from '../../../src/config'
-import { Event } from '../../../src/types'
+import { Config } from '../../../src/config.js'
+import { Event } from '../../../src/types.js'
 
 describe('[RlpxPeer]', async () => {
   vi.mock('@ethereumjs/devp2p', async () => {

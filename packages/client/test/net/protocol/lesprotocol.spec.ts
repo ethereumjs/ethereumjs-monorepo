@@ -1,9 +1,9 @@
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../../src/blockchain'
-import { Config } from '../../../src/config'
-import { FlowControl, LesProtocol } from '../../../src/net/protocol'
+import { Chain } from '../../../src/blockchain/index.js'
+import { Config } from '../../../src/config.js'
+import { FlowControl, LesProtocol } from '../../../src/net/protocol/index.js'
 
 describe('[LesProtocol]', () => {
   it('should get properties', async () => {

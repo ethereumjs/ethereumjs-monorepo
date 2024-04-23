@@ -9,13 +9,13 @@ import {
 import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../src/blockchain'
-import { Config } from '../../src/config'
-import { FullEthereumService } from '../../src/service'
-import { Event } from '../../src/types'
+import { Chain } from '../../src/blockchain/index.js'
+import { Config } from '../../src/config.js'
+import { FullEthereumService } from '../../src/service/index.js'
+import { Event } from '../../src/types.js'
 
-import { MockServer } from './mocks/mockserver'
-import { destroy, setup } from './util'
+import { MockServer } from './mocks/mockserver.js'
+import { destroy, setup } from './util.js'
 
 import type { CliqueConsensus } from '@ethereumjs/blockchain'
 
