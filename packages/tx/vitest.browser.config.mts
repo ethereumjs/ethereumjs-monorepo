@@ -1,4 +1,4 @@
-import { configDefaults, defineConfig, mergeConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 
 import wasm from 'vite-plugin-wasm'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
