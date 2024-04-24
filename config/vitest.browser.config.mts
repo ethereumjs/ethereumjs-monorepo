@@ -6,10 +6,9 @@ const config = defineConfig({
   test: {
     browser: {
       enabled: true,
-      name: 'chrome',
       headless: true,
-      fileParallelism: false,
-      isolate: false
+      isolate: true,
+      name: 'chrome'
     },
   },
   plugins: [
