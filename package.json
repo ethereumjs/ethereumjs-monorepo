@@ -17,7 +17,7 @@
     "prepare": "git config --local core.hooksPath .githooks",
     "prettier": "prettier --write \"./**/*.{js,json,md,ts,yml}\"",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",
-    "install-browser-deps": "npm install webdriverio @vitest/browser web-streams-polyfill"
+    "install-browser-deps": "npm install webdriverio @vitest/browser"
   },
   "devDependencies": {
     "@types/estree": "^1.0.1",
@@ -55,8 +55,8 @@
     "vitest": "^1.2.2"
   },
   "peerDependencies": {
-    "@vitest/browser": "^1.5.0",
-    "webdriverio": "^8.36.0"
+    "@vitest/browser": "^1.5.1",
+    "webdriverio": "^8.36.1"
   },
   "peerDependenciesMeta": {
     "playwright": {
