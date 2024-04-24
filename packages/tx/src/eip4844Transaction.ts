@@ -553,6 +553,13 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     return Legacy.getSenderPublicKey(this)
   }
 
+  /**
+   * Returns the EIP 4844 transaction data in JSON format similar to toJson, but with additional
+   * blobs, commitments, and proofs fields
+   * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
+   * @param opts any TxOptions defined
+   * @returns JsonTx data with additional blobs, commitments, and proofs fields
+   */
   public static networkWrapperToJson(serialized: Uint8Array, opts?: TxOptions): ExtendedJsonTx {
     const tx = this.fromSerializedBlobTxNetworkWrapper(serialized, opts)
 
