@@ -159,7 +159,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const address = new Address(addressBytes)
 
         let charge2929Gas = true
-        if (common.isActivatedEIP(6800) === true && !address.isPrecompileOrSystemAddress()) {
+        if (
+          common.isActivatedEIP(6800) === true &&
+          runState.interpreter._evm.getPrecompile(address) === undefined
+        ) {
           let coldAccessGas = BIGINT_0
           coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
@@ -195,7 +198,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, memOffset, dataLength, common)
 
         let charge2929Gas = true
-        if (common.isActivatedEIP(6800) === true && !address.isPrecompileOrSystemAddress()) {
+        if (
+          common.isActivatedEIP(6800) === true &&
+          runState.interpreter._evm.getPrecompile(address) === undefined
+        ) {
           let coldAccessGas = BIGINT_0
           coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
@@ -490,7 +496,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, outOffset, outLength, common)
 
         let charge2929Gas = true
-        if (common.isActivatedEIP(6800) && !toAddress.isPrecompileOrSystemAddress()) {
+        if (
+          common.isActivatedEIP(6800) &&
+          runState.interpreter._evm.getPrecompile(toAddress) === undefined
+        ) {
           // TODO: add check if toAddress is not a precompile
           const coldAccessGas = runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
           if (value !== BIGINT_0) {
@@ -564,7 +573,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, outOffset, outLength, common)
 
         let charge2929Gas = true
-        if (common.isActivatedEIP(6800) && !toAddress.isPrecompileOrSystemAddress()) {
+        if (
+          common.isActivatedEIP(6800) &&
+          runState.interpreter._evm.getPrecompile(toAddress) === undefined
+        ) {
           // TODO: add check if toAddress is not a precompile
           const coldAccessGas = runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
 
@@ -617,7 +629,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, outOffset, outLength, common)
 
         let charge2929Gas = true
-        if (common.isActivatedEIP(6800) && !toAddress.isPrecompileOrSystemAddress()) {
+        if (
+          common.isActivatedEIP(6800) &&
+          runState.interpreter._evm.getPrecompile(toAddress) === undefined
+        ) {
           // TODO: add check if toAddress is not a precompile
           const coldAccessGas = runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
 
@@ -832,7 +847,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         let selfDestructToCharge2929Gas = true
         if (common.isActivatedEIP(6800) === true) {
           // read accesses for version and code size
-          if (!contractAddress.isPrecompileOrSystemAddress()) {
+          if (runState.interpreter._evm.getPrecompile(contractAddress) === undefined) {
             gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
               contractAddress,
               0,
