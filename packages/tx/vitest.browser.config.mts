@@ -12,6 +12,8 @@ export default mergeConfig(
         // wrong ethereum-tests path reference (../ is stripped)
         'test/transactionRunner.spec.ts',
       ],
+      fileParallelism: false,
+      isolate: true
     },
   })
 )
