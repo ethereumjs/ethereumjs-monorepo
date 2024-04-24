@@ -294,7 +294,7 @@ describe('Network wrapper tests', () => {
       assert.equal(b1, b2, 'contains the same blobs')
     }
     assert.equal(
-      jsonData.kzgCommitments?.length,
+      jsonData.kzgCommitments.length,
       signedTx.kzgCommitments!.length,
       'contains the correct number of commitments'
     )
