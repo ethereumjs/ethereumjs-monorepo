@@ -461,7 +461,7 @@ export interface JsonTx {
   blobVersionedHashes?: PrefixedHexString[]
 }
 
-export type ExtendedJsonTx = JsonTx & {
+export type JsonBlobTxNetworkWrapper = JsonTx & {
   blobs: PrefixedHexString[]
   kzgCommitments: PrefixedHexString[]
   kzgProofs: PrefixedHexString[]

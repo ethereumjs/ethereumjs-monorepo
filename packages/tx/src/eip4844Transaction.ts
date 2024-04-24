@@ -32,7 +32,7 @@ import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
   BlobEIP4844NetworkValuesArray,
-  ExtendedJsonTx,
+  JsonBlobTxNetworkWrapper,
   JsonTx,
   TxOptions,
 } from './types.js'
@@ -560,7 +560,10 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * @param opts any TxOptions defined
    * @returns JsonTx data with additional blobs, commitments, and proofs fields
    */
-  public static networkWrapperToJson(serialized: Uint8Array, opts?: TxOptions): ExtendedJsonTx {
+  public static networkWrapperToJson(
+    serialized: Uint8Array,
+    opts?: TxOptions
+  ): JsonBlobTxNetworkWrapper {
     const tx = this.fromSerializedBlobTxNetworkWrapper(serialized, opts)
 
     const accessListJSON = AccessLists.getAccessListJSON(tx.accessList)
