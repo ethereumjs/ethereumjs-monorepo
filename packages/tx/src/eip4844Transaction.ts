@@ -366,7 +366,6 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * @param opts any TxOptions defined
    * @returns a BlobEIP4844Transaction
    */
-
   public static fromSerializedBlobTxNetworkWrapper(
     serialized: Uint8Array,
     opts?: TxOptions
