@@ -577,7 +577,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           common.isActivatedEIP(6800) &&
           runState.interpreter._evm.getPrecompile(toAddress) === undefined
         ) {
-          // TODO: add check if toAddress is not a precompile
           const coldAccessGas = runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
 
           gas += coldAccessGas
