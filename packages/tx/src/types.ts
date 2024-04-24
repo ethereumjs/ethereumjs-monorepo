@@ -461,6 +461,12 @@ export interface JsonTx {
   blobVersionedHashes?: PrefixedHexString[]
 }
 
+export type JsonBlobTxNetworkWrapper = JsonTx & {
+  blobs: PrefixedHexString[]
+  kzgCommitments: PrefixedHexString[]
+  kzgProofs: PrefixedHexString[]
+}
+
 /*
  * Based on https://ethereum.org/en/developers/docs/apis/json-rpc/
  */
