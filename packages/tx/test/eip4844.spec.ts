@@ -285,6 +285,35 @@ describe('Network wrapper tests', () => {
     const signedTx = unsignedTx.sign(pk)
     const sender = signedTx.getSenderAddress().toString()
     const wrapper = signedTx.serializeNetworkWrapper()
+
+    const jsonData = BlobEIP4844Transaction.networkWrapperToJson(wrapper, { common })
+    assert.equal(jsonData.blobs?.length, blobs.length, 'contains the correct number of blobs')
+    for (let i = 0; i < jsonData.blobs.length; i++) {
+      const b1 = jsonData.blobs[i]
+      const b2 = bytesToHex(signedTx.blobs![i])
+      assert.equal(b1, b2, 'contains the same blobs')
+    }
+    assert.equal(
+      jsonData.kzgCommitments?.length,
+      signedTx.kzgCommitments!.length,
+      'contains the correct number of commitments'
+    )
+    for (let i = 0; i < jsonData.kzgCommitments.length; i++) {
+      const c1 = jsonData.kzgCommitments[i]
+      const c2 = bytesToHex(signedTx.kzgCommitments![i])
+      assert.equal(c1, c2, 'contains the same commitments')
+    }
+    assert.equal(
+      jsonData.kzgProofs?.length,
+      signedTx.kzgProofs!.length,
+      'contains the correct number of proofs'
+    )
+    for (let i = 0; i < jsonData.kzgProofs.length; i++) {
+      const p1 = jsonData.kzgProofs[i]
+      const p2 = bytesToHex(signedTx.kzgProofs![i])
+      assert.equal(p1, p2, 'contains the same proofs')
+    }
+
     const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(wrapper, {
       common,
     })
