@@ -7,7 +7,7 @@ const config = defineConfig({
     browser: {
       enabled: true,
       headless: true,
-      isolate: false,
+      isolate: true,
       name: 'chrome'
     },
   },
