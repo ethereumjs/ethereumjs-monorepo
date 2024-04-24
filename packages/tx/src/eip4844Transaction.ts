@@ -32,6 +32,7 @@ import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
   BlobEIP4844NetworkValuesArray,
+  ExtendedJsonTx,
   JsonTx,
   TxOptions,
 } from './types.js'
@@ -551,6 +552,26 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    */
   public getSenderPublicKey(): Uint8Array {
     return Legacy.getSenderPublicKey(this)
+  }
+
+  public static networkWrapperToJson(serialized: Uint8Array, opts?: TxOptions): ExtendedJsonTx {
+    const tx = this.fromSerializedBlobTxNetworkWrapper(serialized, opts)
+
+    const accessListJSON = AccessLists.getAccessListJSON(tx.accessList)
+    const baseJson = tx.toJSON()
+
+    return {
+      ...baseJson,
+      chainId: bigIntToHex(tx.chainId),
+      maxPriorityFeePerGas: bigIntToHex(tx.maxPriorityFeePerGas),
+      maxFeePerGas: bigIntToHex(tx.maxFeePerGas),
+      accessList: accessListJSON,
+      maxFeePerBlobGas: bigIntToHex(tx.maxFeePerBlobGas),
+      blobVersionedHashes: tx.blobVersionedHashes.map((hash) => bytesToHex(hash)),
+      blobs: tx.blobs!.map((bytes) => bytesToHex(bytes)),
+      kzgCommitments: tx.kzgCommitments!.map((bytes) => bytesToHex(bytes)),
+      kzgProofs: tx.kzgProofs!.map((bytes) => bytesToHex(bytes)),
+    }
   }
 
   toJSON(): JsonTx {
