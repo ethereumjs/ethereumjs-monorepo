@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1713970571650,
+  "lastUpdate": 1713994583789,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "6766a5dc4a531813c9d601e35e5021651c640641",
-          "message": "EVM/VM create() Static Constructor Reworking (#3315)\n\n* EVM: make bn128 internal again (remove type in options), rename bn128 -> _bn128 for consistency, deprecate main constructor\r\n\r\n* EVM: move Common, Blockchain and StateManager initialization to async create constructor\r\n\r\n* Move all VM initialization to async create() constructor, kill _init() method and isInitialized parameter, move to async create() initializations where applicable\r\n\r\n* fix vm tests\r\n\r\n* fix remaining client test\r\n\r\n* blockchain: remove _init\r\n\r\n* Client test fixes\r\n\r\n* client: fix tests\r\n\r\n* Remove obsolete reference to blockchain._init\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-03-12T12:49:47-04:00",
-          "tree_id": "7c72ee9c6d0d055be844d13e8ce20863c0b29b5e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6766a5dc4a531813c9d601e35e5021651c640641"
-        },
-        "date": 1710262353517,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 44481,
-            "range": "±1.71%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41589,
-            "range": "±3.91%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 42712,
-            "range": "±1.67%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 41290,
-            "range": "±1.55%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 40619,
-            "range": "±1.58%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.67%",
             "unit": "ops/sec",
             "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b997dc8f5922bff0833d22842c7a662bf34f6887",
+          "message": "evm: ignore precompile addresses for some target access events (#3366)\n\n* evm: ignore precompile addresses for some target access events\r\n\r\n* fix the precompile check\r\n\r\n* remove comment",
+          "timestamp": "2024-04-24T17:27:30-04:00",
+          "tree_id": "2ea9fc6311da7a16b4389b028a8784da27c16296",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b997dc8f5922bff0833d22842c7a662bf34f6887"
+        },
+        "date": 1713994582851,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41887,
+            "range": "±3.03%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41437,
+            "range": "±1.27%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40965,
+            "range": "±1.46%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37531,
+            "range": "±5.34%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 39109,
+            "range": "±1.58%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
