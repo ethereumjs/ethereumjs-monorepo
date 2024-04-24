@@ -558,7 +558,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * blobs, commitments, and proofs fields
    * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
    * @param opts any TxOptions defined
-   * @returns JsonTx data with additional blobs, commitments, and proofs fields
+   * @returns JsonBlobTxNetworkWrapper with blobs, KZG commitments, and KZG proofs fields
    */
   public static networkWrapperToJson(serialized: Uint8Array, opts?: TxOptions): ExtendedJsonTx {
     const tx = this.fromSerializedBlobTxNetworkWrapper(serialized, opts)
