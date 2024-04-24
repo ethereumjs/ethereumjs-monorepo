@@ -554,7 +554,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
   }
 
   /**
-   * Returns the EIP 4844 transaction data in JSON format similar to toJson, but with additional
+   * Returns the EIP 4844 transaction network wrapper in JSON format similar to toJSON, including
    * blobs, commitments, and proofs fields
    * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
    * @param opts any TxOptions defined
