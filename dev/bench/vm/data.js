@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1713994583789,
+  "lastUpdate": 1714061972870,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "yann.levreau@gmail.com",
-            "name": "yann300",
-            "username": "yann300"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "906b36257645bab19999c3559efde9817266bb70",
-          "message": "export getOpcodesForHF (#3322)\n\n* Update index.ts\r\n\r\nThis simply export `getOpcodesForHF`.\r\n\r\n* linting",
-          "timestamp": "2024-03-14T21:17:32-04:00",
-          "tree_id": "d2a4412279853e2e83fbd91a70658f318c3003e7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/906b36257645bab19999c3559efde9817266bb70"
-        },
-        "date": 1710465763614,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 44040,
-            "range": "±1.74%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41881,
-            "range": "±2.99%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 42728,
-            "range": "±1.50%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 41423,
-            "range": "±1.55%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 40280,
-            "range": "±1.80%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.58%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7a4602c5d6947c23d3190b2885350e73da88e3e6",
+          "message": "common: add osaka hardfork and shift verkle to osaka (#3371)\n\n* common: add osaka hardfork and shift verkle to osaka\r\n\r\n* fix the kaustinene 6 startup and transition to the verkle vm",
+          "timestamp": "2024-04-25T21:46:50+05:30",
+          "tree_id": "71f43414e05ee58005482204b93294df60269dbe",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7a4602c5d6947c23d3190b2885350e73da88e3e6"
+        },
+        "date": 1714061972210,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41934,
+            "range": "±2.18%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40087,
+            "range": "±2.46%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40225,
+            "range": "±1.72%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39604,
+            "range": "±1.65%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35867,
+            "range": "±6.28%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
