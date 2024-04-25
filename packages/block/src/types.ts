@@ -5,10 +5,10 @@ import type {
   AddressLike,
   BigIntLike,
   BytesLike,
+  CLRequest,
   JsonRpcWithdrawal,
   PrefixedHexString,
   RequestBytes,
-  RequestData,
   WithdrawalBytes,
   WithdrawalData,
 } from '@ethereumjs/util'
@@ -152,7 +152,7 @@ export interface BlockData {
   transactions?: Array<TxData[TransactionType]>
   uncleHeaders?: Array<HeaderData>
   withdrawals?: Array<WithdrawalData>
-  requests?: Array<RequestData>
+  requests?: Array<CLRequest>
   /**
    * EIP-6800: Verkle Proof Data (experimental)
    */

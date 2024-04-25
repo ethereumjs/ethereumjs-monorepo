@@ -4,7 +4,6 @@ import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   BIGINT_0,
-  CLRequest,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   Withdrawal,
@@ -42,7 +41,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import type { EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
+import type { CLRequest, CLRequestType, EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -52,7 +51,7 @@ export class Block {
   public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
-  public readonly requests?: CLRequest[]
+  public readonly requests?: CLRequestType<any>[]
   public readonly common: Common
   protected keccakFunction: (msg: Uint8Array) => Uint8Array
 
@@ -122,7 +121,7 @@ export class Block {
       uncleHeaders: uhsData,
       withdrawals: withdrawalsData,
       executionWitness: executionWitnessData,
-      requests: requestsData,
+      requests: clRequests,
     } = blockData
 
     const header = BlockHeader.fromHeaderData(headerData, opts)
@@ -161,13 +160,13 @@ export class Block {
     // stub till that time
     const executionWitness = executionWitnessData
 
-    // Requests are sorted in ascending order based on type
-    // NOTE: This is a huge issue right now because there's no specific ordering within types so
-    // the requestsRoot corresponding to the requests is nondeterministic when you have multiple requests
-    // of the same type since the EIP explicitly does not specify the "intra-type" order
+    // Requests are sorted in ascending order based on type and then the internal
+    // ordering logic defined by the request type
 
-    // TODO: Decide if we should require requests to be sorted correctly or just do it automatically
-    const requests = requestsData?.map(CLRequest.fromRequestsData).sort((a, b) => a.type - b.type)
+    const requests = clRequests?.sort((a, b) => {
+      if (a.type !== b.type) return a.type - b.type
+      return a.greaterThan(b) === true ? 1 : -1
+    })
 
     return new Block(
       header,

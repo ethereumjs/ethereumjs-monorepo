@@ -1,10 +1,35 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { CLRequest, KECCAK256_RLP, bytesToHex, equalsBytes, randomBytes } from '@ethereumjs/util'
+import {
+  CLRequest,
+  KECCAK256_RLP,
+  bytesToBigInt,
+  bytesToHex,
+  concatBytes,
+  hexToBytes,
+  randomBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Block } from '../src/index.js'
 
-import type { RequestData } from '@ethereumjs/util'
+import type { CLRequestType } from '@ethereumjs/util'
+
+class NumberRequest extends CLRequest implements CLRequestType<NumberRequest> {
+  constructor(type: number, bytes: Uint8Array) {
+    super(type, bytes)
+  }
+
+  public static fromRequestData(bytes: Uint8Array): CLRequestType<NumberRequest> {
+    return new NumberRequest(0x1, bytes)
+  }
+  public greaterThan(a: NumberRequest): boolean {
+    return bytesToBigInt(a.bytes) < bytesToBigInt(this.bytes)
+  }
+
+  serialize() {
+    return concatBytes(Uint8Array.from([this.type]), this.bytes)
+  }
+}
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [7685] })
 describe('7685 tests', () => {
@@ -16,8 +41,8 @@ describe('7685 tests', () => {
     assert.equal(block2.requests?.length, 0)
   })
   it('should instantiate a block with requests', async () => {
-    const request: RequestData = { type: 0x1, data: randomBytes(32) }
-    const requestsRoot = await Block.genRequestsTrieRoot([CLRequest.fromRequestsData(request)])
+    const request = new NumberRequest(0x1, randomBytes(32))
+    const requestsRoot = await Block.genRequestsTrieRoot([request])
     const block = Block.fromBlockData(
       {
         requests: [request],
@@ -29,7 +54,7 @@ describe('7685 tests', () => {
     assert.deepEqual(block.header.requestsRoot, requestsRoot)
   })
   it('RequestsRootIsValid should return false when requestsRoot is invalid', async () => {
-    const request: RequestData = { type: 0x1, data: randomBytes(32) }
+    const request = new NumberRequest(0x1, randomBytes(32))
     const block = Block.fromBlockData(
       {
         requests: [request],
@@ -41,9 +66,9 @@ describe('7685 tests', () => {
     assert.equal(await block.requestsTrieIsValid(), false)
   })
   it('should produce order requests correctly', async () => {
-    const request1: RequestData = { type: 0x1, data: '0x1234' }
-    const request2: RequestData = { type: 0x2, data: '0x2345' }
-    const requests = [CLRequest.fromRequestsData(request1), CLRequest.fromRequestsData(request2)]
+    const request1 = new NumberRequest(0x1, hexToBytes('0x1234'))
+    const request2 = new NumberRequest(0x1, hexToBytes('0x2345'))
+    const requests = [request1, request2]
     const requestsRoot = await Block.genRequestsTrieRoot(requests)
     const block = Block.fromBlockData(
       {
@@ -53,6 +78,6 @@ describe('7685 tests', () => {
       { common }
     )
     assert.equal(block.requests![0].type, 0x1)
-    assert.equal(bytesToHex(block.requests![1].data), '0x2345')
+    assert.equal(bytesToHex(block.requests![1].bytes), '0x2345')
   })
 })

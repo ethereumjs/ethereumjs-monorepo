@@ -1,29 +1,30 @@
 import { concatBytes } from 'ethereum-cryptography/utils'
 
-import { toBytes } from './bytes.js'
-
-import type { BytesLike } from './types.js'
-
 export type RequestBytes = Uint8Array
 
 export interface RequestData {
   type: number
-  data: BytesLike
-}
-export class CLRequest {
-  type: number
   data: Uint8Array
-  constructor(type: number, data?: Uint8Array) {
+}
+
+export interface CLRequestType<T> {
+  readonly type: number
+  readonly bytes: Uint8Array
+  greaterThan(a: T): boolean
+  serialize(): Uint8Array
+}
+
+export abstract class CLRequest implements CLRequestType<any> {
+  type: number
+  bytes: Uint8Array = new Uint8Array()
+  constructor(type: number, bytes: Uint8Array) {
     if (type === undefined) throw new Error('request type is required')
     this.type = type
-    this.data = data ?? new Uint8Array()
+    this.bytes = bytes
   }
+  public abstract greaterThan(a: CLRequestType<any>): boolean
 
-  public static fromRequestsData = (requestData: RequestData) => {
-    return new CLRequest(requestData.type, toBytes(requestData.data))
-  }
-
-  serialize = () => {
-    return concatBytes(Uint8Array.from([this.type]), this.data)
+  serialize() {
+    return concatBytes(Uint8Array.from([this.type]), this.bytes)
   }
 }
