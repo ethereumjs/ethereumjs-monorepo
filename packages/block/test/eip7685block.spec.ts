@@ -68,16 +68,26 @@ describe('7685 tests', () => {
   it('should order requests correctly in block', async () => {
     const request1 = new NumberRequest(0x1, hexToBytes('0x1234'))
     const request2 = new NumberRequest(0x1, hexToBytes('0x2345'))
+    const request3 = new NumberRequest(0x2, hexToBytes('0x2345'))
     const requests = [request1, request2]
     const requestsRoot = await Block.genRequestsTrieRoot(requests)
     const block = Block.fromBlockData(
       {
-        requests: [request2, request1],
+        requests: [request2, request1, request3],
+        header: { requestsRoot },
+      },
+      { common }
+    )
+    const block2 = Block.fromBlockData(
+      {
+        requests: [request1, request3, request2],
         header: { requestsRoot },
       },
       { common }
     )
     assert.equal(block.requests![0].type, 0x1)
     assert.equal(bytesToHex(block.requests![1].bytes), '0x2345')
+    assert.equal(block.requests![2].type, 0x2)
+    assert.equal(block.requests![2].type, block2.requests![2].type)
   })
 })
