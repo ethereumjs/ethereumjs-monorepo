@@ -162,6 +162,10 @@ export class Block {
     const executionWitness = executionWitnessData
 
     // Requests are sorted in ascending order based on type
+    // NOTE: This is a huge issue right now because there's no specific ordering within types so
+    // the requestsRoot corresponding to the requests is nondeterministic when you have multiple requests
+    // of the same type since the EIP explicitly does not specify the "intra-type" order
+
     // TODO: Decide if we should require requests to be sorted correctly or just do it automatically
     const requests = requestsData?.map(CLRequest.fromRequestsData).sort((a, b) => a.type - b.type)
 
