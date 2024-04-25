@@ -16,11 +16,11 @@ import {
   zeros,
 } from '@ethereumjs/util'
 
-import { short, timeDuration } from '../util'
-import { DBKey, MetaDBManager } from '../util/metaDBManager'
+import { short, timeDuration } from '../util/index.js'
+import { DBKey, MetaDBManager } from '../util/metaDBManager.js'
 
-import type { SnapFetcherDoneFlags } from '../sync/fetcher/types'
-import type { MetaDBManagerOptions } from '../util/metaDBManager'
+import type { SnapFetcherDoneFlags } from '../sync/fetcher/types.js'
+import type { MetaDBManagerOptions } from '../util/metaDBManager.js'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { Hardfork } from '@ethereumjs/common'
 

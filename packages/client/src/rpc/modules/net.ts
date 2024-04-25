@@ -1,12 +1,12 @@
 import { addHexPrefix } from '@ethereumjs/util'
 
-import { callWithStackTrace } from '../helpers'
-import { middleware } from '../validation'
+import { callWithStackTrace } from '../helpers.js'
+import { middleware } from '../validation.js'
 
-import type { EthereumClient } from '../..'
-import type { Chain } from '../../blockchain'
-import type { PeerPool } from '../../net/peerpool'
-import type { Service } from '../../service/service'
+import type { Chain } from '../../blockchain/index.js'
+import type { EthereumClient } from '../../index.js'
+import type { PeerPool } from '../../net/peerpool.js'
+import type { Service } from '../../service/service.js'
 
 /**
  * net_* RPC module

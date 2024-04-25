@@ -1,13 +1,13 @@
 import { Block } from '@ethereumjs/block'
 import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, equalsBytes } from '@ethereumjs/util'
 
-import { Event } from '../../types'
+import { Event } from '../../types.js'
 
-import { BlockFetcherBase } from './blockfetcherbase'
+import { BlockFetcherBase } from './blockfetcherbase.js'
 
-import type { Peer } from '../../net/peer'
-import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
-import type { Job } from './types'
+import type { Peer } from '../../net/peer/index.js'
+import type { BlockFetcherOptions, JobTask } from './blockfetcherbase.js'
+import type { Job } from './types.js'
 import type { BlockBytes } from '@ethereumjs/block'
 
 /**

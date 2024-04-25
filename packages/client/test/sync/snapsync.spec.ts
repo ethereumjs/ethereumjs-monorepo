@@ -1,8 +1,8 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain'
-import { Config } from '../../src/config'
+import { Chain } from '../../src/blockchain/index.js'
+import { Config } from '../../src/config.js'
 
 describe('[SnapSynchronizer]', async () => {
   class PeerPool {
@@ -33,13 +33,13 @@ describe('[SnapSynchronizer]', async () => {
   AccountFetcher.prototype.fetch = vi.fn()
   AccountFetcher.prototype.clear = vi.fn()
   AccountFetcher.prototype.destroy = vi.fn()
-  vi.doMock('../../src/sync/fetcher', () => {
+  vi.doMock('../../src/sync/fetcher/index.js', () => {
     return {
       default: () => AccountFetcher,
     }
   })
 
-  const { SnapSynchronizer } = await import('../../src/sync/snapsync')
+  const { SnapSynchronizer } = await import('../../src/sync/snapsync.js')
 
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })

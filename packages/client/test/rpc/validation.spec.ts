@@ -2,10 +2,10 @@ import { bytesToHex, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../src/rpc/error-code'
-import { middleware, validators } from '../../src/rpc/validation'
+import { INVALID_PARAMS } from '../../src/rpc/error-code.js'
+import { middleware, validators } from '../../src/rpc/validation.js'
 
-import { startRPC } from './helpers'
+import { startRPC } from './helpers.js'
 
 import type { AddressInfo } from 'node:net'
 

@@ -3,10 +3,10 @@ import { EventEmitter } from 'events'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../../src/config'
-import { BoundProtocol } from '../../../src/net/protocol'
-import { Sender } from '../../../src/net/protocol/sender'
-import { Event } from '../../../src/types'
+import { Config } from '../../../src/config.js'
+import { BoundProtocol } from '../../../src/net/protocol/index.js'
+import { Sender } from '../../../src/net/protocol/sender.js'
+import { Event } from '../../../src/types.js'
 
 describe('[BoundProtocol]', () => {
   const peer = td.object('Peer') as any

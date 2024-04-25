@@ -1,17 +1,17 @@
 import { BIGINT_0, bytesToHex, equalsBytes } from '@ethereumjs/util'
 
-import { Event } from '../types'
-import { short } from '../util'
+import { Event } from '../types.js'
+import { short } from '../util/index.js'
 
-import { AccountFetcher } from './fetcher'
-import { getInitFecherDoneFlags } from './fetcher/types'
-import { Synchronizer } from './sync'
+import { AccountFetcher } from './fetcher/index.js'
+import { getInitFecherDoneFlags } from './fetcher/types.js'
+import { Synchronizer } from './sync.js'
 
-import type { VMExecution } from '../execution'
-import type { Peer } from '../net/peer/peer'
-import type { Skeleton } from '../service/skeleton'
-import type { SnapFetcherDoneFlags } from './fetcher/types'
-import type { SynchronizerOptions } from './sync'
+import type { VMExecution } from '../execution/index.js'
+import type { Peer } from '../net/peer/peer.js'
+import type { Skeleton } from '../service/skeleton.js'
+import type { SnapFetcherDoneFlags } from './fetcher/types.js'
+import type { SynchronizerOptions } from './sync.js'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
 interface SnapSynchronizerOptions extends SynchronizerOptions {

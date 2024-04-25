@@ -24,16 +24,16 @@ import {
 import { VM } from '@ethereumjs/vm'
 import { writeFileSync } from 'fs'
 
-import { Event } from '../types'
-import { short } from '../util'
-import { debugCodeReplayBlock } from '../util/debug'
+import { Event } from '../types.js'
+import { debugCodeReplayBlock } from '../util/debug.js'
+import { short } from '../util/index.js'
 
-import { Execution } from './execution'
-import { LevelDB } from './level'
-import { PreimagesManager } from './preimage'
-import { ReceiptsManager } from './receipt'
+import { Execution } from './execution.js'
+import { LevelDB } from './level.js'
+import { PreimagesManager } from './preimage.js'
+import { ReceiptsManager } from './receipt.js'
 
-import type { ExecutionOptions } from './execution'
+import type { ExecutionOptions } from './execution.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
@@ -590,7 +590,7 @@ export class VMExecution extends Execution {
    * @returns number of blocks executed
    */
   async run(loop = true, runOnlybatched = false): Promise<number> {
-    if (this.running || !this.started || this.config.shutdown) return 0
+    if (this.running || !this.started || !this.config.execution || this.config.shutdown) return 0
 
     return this.runWithLock<number>(async () => {
       try {

@@ -3,8 +3,8 @@ import { EventEmitter } from 'events'
 import { multiaddr } from 'multiaddr'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Config } from '../../../src/config'
-import { Event } from '../../../src/types'
+import { Config } from '../../../src/config.js'
+import { Event } from '../../../src/types.js'
 
 class RlpxPeer extends EventEmitter {
   accept(_: any, _2: any) {}

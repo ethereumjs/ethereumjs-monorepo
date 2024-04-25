@@ -66,7 +66,7 @@ describe('simple mainnet test run', async () => {
     withPeer: process.env.WITH_PEER,
   })
 
-  if (result.includes('Geth')) {
+  if (result.includes('Geth') === true) {
     assert.ok(true, 'connected to Geth')
   } else {
     assert.fail('connected to wrong client')

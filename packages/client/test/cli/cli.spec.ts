@@ -4,7 +4,7 @@ import * as fs from 'fs'
 import { Client } from 'jayson/promise'
 import { assert, describe, it } from 'vitest'
 
-import { wait } from '../integration/util'
+import { wait } from '../integration/util.js'
 
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 

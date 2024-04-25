@@ -1,6 +1,6 @@
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bigIntToHex, bytesToBigInt, bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, beforeEach, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -8,7 +8,7 @@ import genesisJSON from '../../testdata/geth-genesis/debug.json'
 import { dummy, getRpcClient, setupChain } from '../helpers.js'
 
 import type { Block } from '@ethereumjs/block'
-import type { StorageRange } from '@ethereumjs/common/src'
+import type { StorageRange } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { HttpClient } from 'jayson/promise'
 

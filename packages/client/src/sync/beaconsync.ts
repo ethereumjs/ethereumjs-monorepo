@@ -1,15 +1,15 @@
 import { BIGINT_0, BIGINT_1, bytesToHex } from '@ethereumjs/util'
 
-import { Event } from '../types'
-import { short } from '../util'
+import { Event } from '../types.js'
+import { short } from '../util/index.js'
 
-import { ReverseBlockFetcher } from './fetcher'
-import { Synchronizer } from './sync'
+import { ReverseBlockFetcher } from './fetcher/index.js'
+import { Synchronizer } from './sync.js'
 
-import type { VMExecution } from '../execution'
-import type { Peer } from '../net/peer/peer'
-import type { Skeleton } from '../service/skeleton'
-import type { SynchronizerOptions } from './sync'
+import type { VMExecution } from '../execution/index.js'
+import type { Peer } from '../net/peer/peer.js'
+import type { Skeleton } from '../service/skeleton.js'
+import type { SynchronizerOptions } from './sync.js'
 import type { Block } from '@ethereumjs/block'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {

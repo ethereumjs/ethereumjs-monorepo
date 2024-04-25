@@ -28,11 +28,9 @@ import {
 } from '@polkadot/wasm-crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
-import { sha256 } from 'ethereum-cryptography/sha256'
-import { existsSync, writeFileSync } from 'fs'
-import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import * as http from 'http'
-import { Server as RPCServer } from 'jayson/promise'
 import { loadKZG } from 'kzg-wasm'
 import { Level } from 'level'
 import { homedir } from 'os'
@@ -43,24 +41,25 @@ import * as url from 'url'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { EthereumClient } from '../src/client'
-import { Config, DataDirectory, SyncMode } from '../src/config'
-import { LevelDB } from '../src/execution/level'
-import { getLogger } from '../src/logging'
-import { Event } from '../src/types'
-import { parseMultiaddrs } from '../src/util'
-import { setupMetrics } from '../src/util/metrics'
+import { EthereumClient } from '../src/client.js'
+import { Config, DataDirectory, SyncMode } from '../src/config.js'
+import { LevelDB } from '../src/execution/level.js'
+import { getLogger } from '../src/logging.js'
+import { Event } from '../src/types.js'
+import { parseMultiaddrs } from '../src/util/index.js'
+import { setupMetrics } from '../src/util/metrics.js'
 
-import { helprpc, startRPCServers } from './startRpc'
+import { helprpc, startRPCServers } from './startRpc.js'
 
-import type { Logger } from '../src/logging'
-import type { FullEthereumService } from '../src/service'
-import type { ClientOpts } from '../src/types'
-import type { RPCArgs } from './startRpc'
+import type { Logger } from '../src/logging.js'
+import type { FullEthereumService } from '../src/service/index.js'
+import type { ClientOpts } from '../src/types.js'
+import type { RPCArgs } from './startRpc.js'
 import type { BlockBytes } from '@ethereumjs/block'
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
+import type { Server as RPCServer } from 'jayson/promise/index.js'
 
 type Account = [address: Address, privateKey: Uint8Array]
 
@@ -488,17 +487,23 @@ function initDBs(config: Config): {
 } {
   // Chain DB
   const chainDataDir = config.getDataDirectory(DataDirectory.Chain)
-  ensureDirSync(chainDataDir)
+  mkdirSync(chainDataDir, {
+    recursive: true,
+  })
   const chainDB = new Level<string | Uint8Array, string | Uint8Array>(chainDataDir)
 
   // State DB
   const stateDataDir = config.getDataDirectory(DataDirectory.State)
-  ensureDirSync(stateDataDir)
+  mkdirSync(stateDataDir, {
+    recursive: true,
+  })
   const stateDB = new Level<string | Uint8Array, string | Uint8Array>(stateDataDir)
 
   // Meta DB (receipts, logs, indexes, skeleton chain)
   const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
-  ensureDirSync(metaDataDir)
+  mkdirSync(metaDataDir, {
+    recursive: true,
+  })
   const metaDB = new Level<string | Uint8Array, string | Uint8Array>(metaDataDir)
 
   return { chainDB, stateDB, metaDB }
@@ -870,7 +875,8 @@ const stopClient = async (
     config.logger.info('Shutting down the client and the servers...')
     const { client, servers } = clientHandle
     for (const s of servers) {
-      s instanceof RPCServer ? (s as RPCServer).http().close() : (s as http.Server).close()
+      // @ts-expect-error jayson.Server type doesn't play well with ESM for some reason
+      s['http'] !== undefined ? (s as RPCServer).http().close() : (s as http.Server).close()
     }
     await client.stop()
     config.logger.info('Exiting.')
@@ -963,7 +969,7 @@ async function run() {
     args.discDns = false
     if (accounts.length === 0) {
       // If generating new keys delete old chain data to prevent genesis block mismatch
-      removeSync(`${args.dataDir}/devnet`)
+      rmSync(`${args.dataDir}/devnet`, { recursive: true, force: true })
       // Create new account
       accounts.push(generateAccount())
     }
@@ -1009,7 +1015,9 @@ async function run() {
   const datadir = args.dataDir ?? Config.DATADIR_DEFAULT
   const networkDir = `${datadir}/${common.chainName()}`
   const configDirectory = `${networkDir}/config`
-  ensureDirSync(configDirectory)
+  mkdirSync(configDirectory, {
+    recursive: true,
+  })
   const key = await Config.getClientKey(datadir, common)
 
   // logFile is either filename or boolean true or false to enable (with default) or disable
