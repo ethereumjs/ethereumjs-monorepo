@@ -18,6 +18,7 @@ import {
   intToHex,
   isHexPrefixed,
 } from '@ethereumjs/util'
+import { equal } from 'assert'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { executionPayloadFromBeaconPayload } from './from-beacon-payload.js'
@@ -66,6 +67,7 @@ export class Block {
   protected cache: {
     txTrieRoot?: Uint8Array
     withdrawalsTrieRoot?: Uint8Array
+    requestsRoot?: Uint8Array
   } = {}
 
   /**
@@ -579,6 +581,25 @@ export class Block {
     return result
   }
 
+  async requestsTrieIsValid(): Promise<boolean> {
+    if (!this.common.isActivatedEIP(7685)) {
+      throw new Error('EIP 7685 is not activated')
+    }
+
+    let result
+    if (this.requests!.length === 0) {
+      result = equalsBytes(this.header.requestsRoot!, KECCAK256_RLP)
+      return result
+    }
+
+    if (this.cache.requestsRoot === undefined) {
+      this.cache.requestsRoot = await Block.genRequestsTrieRoot(this.requests!)
+    }
+
+    result = equalsBytes(this.cache.requestsRoot, this.header.requestsRoot!)
+
+    return result
+  }
   /**
    * Validates transaction signatures and minimum gas requirements.
    * @returns {string[]} an array of error strings

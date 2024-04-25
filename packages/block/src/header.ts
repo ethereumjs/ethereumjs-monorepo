@@ -224,7 +224,7 @@ export class BlockHeader {
       blobGasUsed: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       excessBlobGas: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? zeros(32) : undefined,
-      requestsRoot: this.common.isActivatedEIP(7685) ? zeros(32) : undefined,
+      requestsRoot: this.common.isActivatedEIP(7685) ? KECCAK256_RLP : undefined,
     }
 
     const baseFeePerGas =
