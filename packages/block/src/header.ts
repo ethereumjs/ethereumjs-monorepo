@@ -21,6 +21,7 @@ import {
   ecsign,
   equalsBytes,
   hexToBytes,
+  toBytes,
   toType,
   zeros,
 } from '@ethereumjs/util'
@@ -63,6 +64,7 @@ export class BlockHeader {
   public readonly blobGasUsed?: bigint
   public readonly excessBlobGas?: bigint
   public readonly parentBeaconBlockRoot?: Uint8Array
+  public readonly requestsRoot?: Uint8Array
 
   public readonly common: Common
 
@@ -119,15 +121,15 @@ export class BlockHeader {
     const headerData = valuesArrayToHeaderData(values)
     const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot } = headerData
     const header = BlockHeader.fromHeaderData(headerData, opts)
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
       const eip1559ActivationBlock = bigIntToBytes(header.common.eipBlock(1559)!)
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      if (eip1559ActivationBlock && equalsBytes(eip1559ActivationBlock, number as Uint8Array)) {
+      if (
+        eip1559ActivationBlock !== undefined &&
+        equalsBytes(eip1559ActivationBlock, number as Uint8Array)
+      ) {
         throw new Error('invalid header. baseFeePerGas should be provided')
       }
     }
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (header.common.isActivatedEIP(4844)) {
       if (excessBlobGas === undefined) {
         throw new Error('invalid header. excessBlobGas should be provided')
@@ -222,6 +224,7 @@ export class BlockHeader {
       blobGasUsed: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       excessBlobGas: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? zeros(32) : undefined,
+      requestsRoot: this.common.isActivatedEIP(7685) ? zeros(32) : undefined,
     }
 
     const baseFeePerGas =
@@ -235,6 +238,8 @@ export class BlockHeader {
     const parentBeaconBlockRoot =
       toType(headerData.parentBeaconBlockRoot, TypeOutput.Uint8Array) ??
       hardforkDefaults.parentBeaconBlockRoot
+    const requestsRoot =
+      toType(headerData.requestsRoot, TypeOutput.Uint8Array) ?? hardforkDefaults.requestsRoot
 
     if (!this.common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
       throw new Error('A base fee for a block can only be set with EIP1559 being activated')
@@ -262,6 +267,10 @@ export class BlockHeader {
       )
     }
 
+    if (!this.common.isActivatedEIP(7685) && requestsRoot !== undefined) {
+      throw new Error('requestsRoot can only be provided with EIP 7685 activated')
+    }
+
     this.parentHash = parentHash
     this.uncleHash = uncleHash
     this.coinbase = coinbase
@@ -282,6 +291,7 @@ export class BlockHeader {
     this.blobGasUsed = blobGasUsed
     this.excessBlobGas = excessBlobGas
     this.parentBeaconBlockRoot = parentBeaconBlockRoot
+    this.requestsRoot = requestsRoot
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -404,6 +414,13 @@ export class BlockHeader {
             this.parentBeaconBlockRoot!.length
           } bytes`
         )
+        throw new Error(msg)
+      }
+    }
+
+    if (this.common.isActivatedEIP(7685) === true) {
+      if (this.requestsRoot === undefined) {
+        const msg = this._errorMsg('EIP7685 block has no requestsRoot field')
         throw new Error(msg)
       }
     }

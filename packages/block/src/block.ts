@@ -4,6 +4,7 @@ import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   BIGINT_0,
+  CLRequest,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   Withdrawal,
@@ -51,6 +52,7 @@ export class Block {
   public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
+  public readonly requests?: CLRequest[]
   public readonly common: Common
   protected keccakFunction: (msg: Uint8Array) => Uint8Array
 
@@ -93,6 +95,20 @@ export class Block {
   }
 
   /**
+   * Returns the requests trie root for an array of CLRequests
+   * @param requests an array of CLRequests
+   * @param emptyTrie optional empty trie used to generate the root
+   * @returns a 32 byte Uint8Array representing the requests trie root
+   */
+  public static async genRequestsTrieRoot(requests: CLRequest[], emptyTrie?: Trie) {
+    const trie = emptyTrie ?? new Trie()
+    for (const [i, req] of requests.entries()) {
+      await trie.put(RLP.encode(i), RLP.encode(req.serialize()))
+    }
+    return trie.root()
+  }
+
+  /**
    * Static constructor to create a block from a block data dictionary
    *
    * @param blockData
@@ -105,6 +121,7 @@ export class Block {
       uncleHeaders: uhsData,
       withdrawals: withdrawalsData,
       executionWitness: executionWitnessData,
+      requests: requestsData,
     } = blockData
 
     const header = BlockHeader.fromHeaderData(headerData, opts)
@@ -143,7 +160,17 @@ export class Block {
     // stub till that time
     const executionWitness = executionWitnessData
 
-    return new Block(header, transactions, uncleHeaders, withdrawals, opts, executionWitness)
+    const requests = requestsData?.map(CLRequest.fromRequestsData)
+
+    return new Block(
+      header,
+      transactions,
+      uncleHeaders,
+      withdrawals,
+      opts,
+      executionWitness,
+      requests
+    )
   }
 
   /**
@@ -414,7 +441,8 @@ export class Block {
     uncleHeaders: BlockHeader[] = [],
     withdrawals?: Withdrawal[],
     opts: BlockOptions = {},
-    executionWitness?: VerkleExecutionWitness | null
+    executionWitness?: VerkleExecutionWitness | null,
+    requests: CLRequest[] = []
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this.common = this.header.common
@@ -423,6 +451,7 @@ export class Block {
     this.transactions = transactions
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
     this.executionWitness = executionWitness
+    this.requests = requests ?? (this.common.isActivatedEIP(7685) ? [] : undefined)
     // null indicates an intentional absence of value or unavailability
     // undefined indicates that the executionWitness should be initialized with the default state
     if (this.common.isActivatedEIP(6800) && this.executionWitness === undefined) {
@@ -469,6 +498,10 @@ export class Block {
       executionWitness !== null
     ) {
       throw new Error(`Cannot have executionWitness field if EIP 6800 is not active `)
+    }
+
+    if (!this.common.isActivatedEIP(7685) && requests !== undefined) {
+      throw new Error(`Cannot have requests field if EIP 7685 is not active`)
     }
 
     const freeze = opts?.freeze ?? true

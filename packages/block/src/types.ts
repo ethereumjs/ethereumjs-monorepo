@@ -7,6 +7,8 @@ import type {
   BytesLike,
   JsonRpcWithdrawal,
   PrefixedHexString,
+  RequestBytes,
+  RequestData,
   WithdrawalBytes,
   WithdrawalData,
 } from '@ethereumjs/util'
@@ -136,6 +138,7 @@ export interface HeaderData {
   blobGasUsed?: BigIntLike
   excessBlobGas?: BigIntLike
   parentBeaconBlockRoot?: BytesLike
+  requestsRoot?: BytesLike
 }
 
 /**
@@ -149,6 +152,7 @@ export interface BlockData {
   transactions?: Array<TxData[TransactionType]>
   uncleHeaders?: Array<HeaderData>
   withdrawals?: Array<WithdrawalData>
+  requests?: Array<RequestData>
   /**
    * EIP-6800: Verkle Proof Data (experimental)
    */
@@ -218,6 +222,7 @@ export interface JsonHeader {
   blobGasUsed?: PrefixedHexString
   excessBlobGas?: PrefixedHexString
   parentBeaconBlockRoot?: PrefixedHexString
+  requestsRoot?: PrefixedHexString
 }
 
 /*
@@ -251,6 +256,7 @@ export interface JsonRpcBlock {
   excessBlobGas?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
   parentBeaconBlockRoot?: PrefixedHexString // If EIP-4788 is enabled for this block, returns parent beacon block root
   executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
+  requestsRoot?: PrefixedHexString // If EIP-7685 is enabled for this block, returns the requests root
 }
 
 export type WithdrawalV1 = {
@@ -282,4 +288,5 @@ export type ExecutionPayload = {
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
   // VerkleExecutionWitness is already a hex serialized object
   executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
+  requests?: RequestBytes[]
 }
