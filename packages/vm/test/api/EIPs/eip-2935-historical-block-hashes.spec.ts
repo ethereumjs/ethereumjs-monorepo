@@ -1,12 +1,18 @@
+import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork } from '@ethereumjs/common'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import {
+  Account,
   Address,
   BIGINT_1,
   bigIntToBytes,
   bigIntToHex,
+  bytesToHex,
   equalsBytes,
+  privateToAddress,
   setLengthLeft,
+  unprefixedHexToBytes,
   zeros,
 } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
@@ -76,6 +82,13 @@ commonGenesis.setHardforkBy({
 const historyAddress = Address.fromString(
   bigIntToHex(commonGenesis.param('vm', 'historyStorageAddress'))
 )
+const contract2935Code = unprefixedHexToBytes(
+  '60203611603157600143035f35116029575f356120000143116029576120005f3506545f5260205ff35b5f5f5260205ff35b5f5ffd00'
+)
+
+const callerPrivateKey = hexToBytes(`0x${'44'.repeat(32)}`)
+const callerAddress = new Address(privateToAddress(callerPrivateKey))
+const PREBALANCE = BigInt(10000000)
 
 describe('EIP 2935: historical block hashes', () => {
   it('should save genesis block hash to the history block hash contract', async () => {
@@ -86,6 +99,7 @@ describe('EIP 2935: historical block hashes', () => {
       validateConsensus: false,
     })
     const vm = await VM.create({ common: commonGenesis, blockchain })
+
     commonGenesis.setHardforkBy({
       timestamp: 1,
     })
@@ -165,6 +179,61 @@ describe('EIP 2935: historical block hashes', () => {
       } else {
         assert.ok(equalsBytes(ret.execResult.returnValue, zeros(64)))
       }
+    }
+
+    // validate the contract code cases
+    // const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const block = Block.fromBlockData(
+      {
+        header: {
+          baseFeePerGas: BigInt(7),
+          number: blocksToBuild,
+        },
+      },
+      { common }
+    )
+
+    // should be able to resolve blockhash via contract code
+    for (const iNum of [0, 1, blocksActivation, blocksToBuild - 1]) {
+      const i = BigInt(iNum)
+      const tx = LegacyTransaction.fromTxData({
+        to: historyAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+        data: bytesToHex(setLengthLeft(bigIntToBytes(i), 32)),
+      }).sign(callerPrivateKey)
+
+      await vm.stateManager.putAccount(callerAddress, new Account())
+      const account = await vm.stateManager.getAccount(callerAddress)
+      account!.balance = PREBALANCE
+      await vm.stateManager.putAccount(callerAddress, account!)
+      await vm.stateManager.putContractCode(historyAddress, contract2935Code)
+
+      const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+      const blockHashi = result.execResult.returnValue
+      const blocki = await vm.blockchain.getBlock(i)
+      assert.ok(equalsBytes(blockHashi, blocki.hash()))
+    }
+
+    // should be able to return 0 if input >= current block
+    for (const iNum of [blocksToBuild, blocksToBuild + 100]) {
+      const i = BigInt(iNum)
+      const tx = LegacyTransaction.fromTxData({
+        to: historyAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+        data: bytesToHex(setLengthLeft(bigIntToBytes(i), 32)),
+      }).sign(callerPrivateKey)
+
+      await vm.stateManager.putAccount(callerAddress, new Account())
+      const account = await vm.stateManager.getAccount(callerAddress)
+      account!.balance = PREBALANCE
+      await vm.stateManager.putAccount(callerAddress, account!)
+      await vm.stateManager.putContractCode(historyAddress, contract2935Code)
+
+      const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+      const blockHashi = result.execResult.returnValue
+      assert.ok(equalsBytes(blockHashi, setLengthLeft(bigIntToBytes(BigInt(0)), 32)))
     }
   })
 })
