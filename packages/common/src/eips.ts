@@ -222,7 +222,7 @@ export const EIPs: EIPsDict = {
     requiredEIPs: [],
     vm: {
       historyStorageAddress: {
-        v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
+        v: BigInt('0x25a219378dad9b3503c8268c9ca836a52427a4fb'),
         d: 'The address where the historical blockhashes are stored',
       },
       historyServeWindow: {
