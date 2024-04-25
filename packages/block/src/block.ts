@@ -96,14 +96,18 @@ export class Block {
 
   /**
    * Returns the requests trie root for an array of CLRequests
-   * @param requests an array of CLRequests
+   * @param requests - an array of CLRequests
    * @param emptyTrie optional empty trie used to generate the root
    * @returns a 32 byte Uint8Array representing the requests trie root
    */
   public static async genRequestsTrieRoot(requests: CLRequest[], emptyTrie?: Trie) {
+    const sortedRequests = requests?.sort((a, b) => {
+      if (a.type !== b.type) return a.type - b.type
+      return a.greaterThan(b) === true ? 1 : -1
+    })
     const trie = emptyTrie ?? new Trie()
-    for (const [i, req] of requests.entries()) {
-      await trie.put(RLP.encode(i), RLP.encode(req.serialize()))
+    for (const [i, req] of sortedRequests.entries()) {
+      await trie.put(RLP.encode(i), req.serialize())
     }
     return trie.root()
   }
