@@ -103,7 +103,7 @@ describe(`valid verkle network setup`, async () => {
   // unschedule verkle
   const unschedulePragueJson = {
     ...genesisJSON,
-    config: { ...genesisJSON.config, pragueTime: undefined },
+    config: { ...genesisJSON.config, osakaTime: undefined },
   }
   const { server, chain, common, execution } = await setupChain(
     unschedulePragueJson,

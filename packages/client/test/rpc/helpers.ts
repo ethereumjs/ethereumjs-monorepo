@@ -234,7 +234,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   // currently we don't have a way to create verkle genesis root so we will
   // use genesisStateRoot for blockchain init as well as to start of the stateless
   // client. else the stateroot could have been generated out of box
-  const genesisMeta = common.gteHardfork(Hardfork.Prague) ? { genesisStateRoot } : { genesisState }
+  const genesisMeta = common.gteHardfork(Hardfork.Osaka) ? { genesisStateRoot } : { genesisState }
   const blockchain = await Blockchain.create({
     common,
     validateBlocks: false,

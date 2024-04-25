@@ -192,7 +192,7 @@ export class FullEthereumService extends Service {
     // it will open execution when done (or if doesn't need to snap sync)
     if (this.snapsync !== undefined) {
       // set up execution vm to avoid undefined error in syncWithPeer when vm is being passed to accountfetcher
-      if (this.execution.config.execCommon.gteHardfork(Hardfork.Prague)) {
+      if (this.execution.config.execCommon.gteHardfork(Hardfork.Osaka)) {
         if (!this.execution.config.statelessVerkle) {
           throw Error(`Currently stateful verkle execution not supported`)
         }
