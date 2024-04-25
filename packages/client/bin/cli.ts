@@ -587,7 +587,7 @@ async function startExecutionFrom(client: EthereumClient) {
   })
 
   if (
-    client.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Prague) &&
+    client.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Osaka) &&
     client.config.statelessVerkle
   ) {
     // for stateless verkle sync execution witnesses are available and hence we can blindly set the vmHead
