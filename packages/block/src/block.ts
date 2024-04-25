@@ -448,7 +448,7 @@ export class Block {
     withdrawals?: Withdrawal[],
     opts: BlockOptions = {},
     executionWitness?: VerkleExecutionWitness | null,
-    requests: CLRequest[] = []
+    requests?: CLRequest[]
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this.common = this.header.common

@@ -65,7 +65,7 @@ describe('7685 tests', () => {
 
     assert.equal(await block.requestsTrieIsValid(), false)
   })
-  it('should produce order requests correctly', async () => {
+  it('should order requests correctly in block', async () => {
     const request1 = new NumberRequest(0x1, hexToBytes('0x1234'))
     const request2 = new NumberRequest(0x1, hexToBytes('0x2345'))
     const requests = [request1, request2]
