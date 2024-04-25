@@ -534,6 +534,12 @@ export const EIPs: EIPsDict = {
         v: 0,
         d: 'Gas cost of the first read of storage from a given location (per transaction)',
       },
+      // kaustinen 6 current uses this address, however this will be updated to correct address
+      // in next iteration
+      historyStorageAddress: {
+        v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
+        d: 'The address where the historical blockhashes are stored',
+      },
     },
   },
   7002: {
