@@ -18,7 +18,6 @@ import {
   intToHex,
   isHexPrefixed,
 } from '@ethereumjs/util'
-import { equal } from 'assert'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { executionPayloadFromBeaconPayload } from './from-beacon-payload.js'
@@ -162,7 +161,9 @@ export class Block {
     // stub till that time
     const executionWitness = executionWitnessData
 
-    const requests = requestsData?.map(CLRequest.fromRequestsData)
+    // Requests are sorted in ascending order based on type
+    // TODO: Decide if we should require requests to be sorted correctly or just do it automatically
+    const requests = requestsData?.map(CLRequest.fromRequestsData).sort((a, b) => a.type - b.type)
 
     return new Block(
       header,

@@ -21,7 +21,6 @@ import {
   ecsign,
   equalsBytes,
   hexToBytes,
-  toBytes,
   toType,
   zeros,
 } from '@ethereumjs/util'
