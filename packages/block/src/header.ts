@@ -77,7 +77,7 @@ export class BlockHeader {
    * EIP-4399: After merge to PoS, `mixHash` supplanted as `prevRandao`
    */
   get prevRandao() {
-    if (this.common.isActivatedEIP(4399) === false) {
+    if (!this.common.isActivatedEIP(4399)) {
       const msg = this._errorMsg(
         'The prevRandao parameter can only be accessed when EIP-4399 is activated'
       )
@@ -372,7 +372,7 @@ export class BlockHeader {
     }
 
     // Validation for EIP-1559 blocks
-    if (this.common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559)) {
       if (typeof this.baseFeePerGas !== 'bigint') {
         const msg = this._errorMsg('EIP1559 block has no base fee field')
         throw new Error(msg)
@@ -391,7 +391,7 @@ export class BlockHeader {
       }
     }
 
-    if (this.common.isActivatedEIP(4895) === true) {
+    if (this.common.isActivatedEIP(4895)) {
       if (this.withdrawalsRoot === undefined) {
         const msg = this._errorMsg('EIP4895 block has no withdrawalsRoot field')
         throw new Error(msg)
@@ -404,9 +404,9 @@ export class BlockHeader {
       }
     }
 
-    if (this.common.isActivatedEIP(6110) === true) {
+    if (this.common.isActivatedEIP(6110)) {
       if (this.depositsRoot === undefined) {
-        const msg = this._errorMsg('EIP4895 block has no depositsRoot field')
+        const msg = this._errorMsg('EIP6110 block has no depositsRoot field')
         throw new Error(msg)
       }
       if (this.depositsRoot?.length !== 32) {
@@ -417,7 +417,7 @@ export class BlockHeader {
       }
     }
 
-    if (this.common.isActivatedEIP(4788) === true) {
+    if (this.common.isActivatedEIP(4788)) {
       if (this.parentBeaconBlockRoot === undefined) {
         const msg = this._errorMsg('EIP4788 block has no parentBeaconBlockRoot field')
         throw new Error(msg)
@@ -574,7 +574,7 @@ export class BlockHeader {
    * Calculates the base fee for a potential next block
    */
   public calcNextBaseFee(): bigint {
-    if (this.common.isActivatedEIP(1559) === false) {
+    if (!this.common.isActivatedEIP(1559)) {
       const msg = this._errorMsg(
         'calcNextBaseFee() can only be called with EIP1559 being activated'
       )
@@ -695,30 +695,30 @@ export class BlockHeader {
       this.nonce,
     ]
 
-    if (this.common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559)) {
       rawItems.push(bigIntToUnpaddedBytes(this.baseFeePerGas!))
     }
 
-    if (this.common.isActivatedEIP(4895) === true) {
+    if (this.common.isActivatedEIP(4895)) {
       rawItems.push(this.withdrawalsRoot!)
     }
 
-    if (this.common.isActivatedEIP(6110) === true) {
+    if (this.common.isActivatedEIP(6110)) {
       rawItems.push(this.depositsRoot!)
     }
 
     // in kaunstinen 2 verkle is scheduled after withdrawals, will eventually be post deneb hopefully
-    if (this.common.isActivatedEIP(6800) === true) {
+    if (this.common.isActivatedEIP(6800)) {
       // execution witness is not mandatory part of the the block so nothing to push here
       // but keep this comment segment for clarity regarding the same and move it according as per the
       // HF sequence eventually planned
     }
 
-    if (this.common.isActivatedEIP(4844) === true) {
+    if (this.common.isActivatedEIP(4844)) {
       rawItems.push(bigIntToUnpaddedBytes(this.blobGasUsed!))
       rawItems.push(bigIntToUnpaddedBytes(this.excessBlobGas!))
     }
-    if (this.common.isActivatedEIP(4788) === true) {
+    if (this.common.isActivatedEIP(4788)) {
       rawItems.push(this.parentBeaconBlockRoot!)
     }
 
@@ -779,7 +779,7 @@ export class BlockHeader {
     // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
     let dif!: bigint
 
-    if (this.common.gteHardfork(Hardfork.Byzantium) === true) {
+    if (this.common.gteHardfork(Hardfork.Byzantium)) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
       const uncleAddend = equalsBytes(parentBlockHeader.uncleHash, KECCAK256_RLP_ARRAY) ? 1 : 2
       let a = BigInt(uncleAddend) - (blockTs - parentTs) / BigInt(9)
@@ -791,13 +791,13 @@ export class BlockHeader {
       dif = parentDif + offset * a
     }
 
-    if (this.common.gteHardfork(Hardfork.Byzantium) === true) {
+    if (this.common.gteHardfork(Hardfork.Byzantium)) {
       // Get delay as parameter from common
       num = num - this.common.param('pow', 'difficultyBombDelay')
       if (num < BIGINT_0) {
         num = BIGINT_0
       }
-    } else if (this.common.gteHardfork(Hardfork.Homestead) === true) {
+    } else if (this.common.gteHardfork(Hardfork.Homestead)) {
       // 1 - (block_timestamp - parent_timestamp) // 10
       let a = BIGINT_1 - (blockTs - parentTs) / BigInt(10)
       const cutoff = BigInt(-99)
@@ -980,14 +980,14 @@ export class BlockHeader {
       mixHash: bytesToHex(this.mixHash),
       nonce: bytesToHex(this.nonce),
     }
-    if (this.common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559)) {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
     }
-    if (this.common.isActivatedEIP(4844) === true) {
+    if (this.common.isActivatedEIP(4844)) {
       jsonDict.blobGasUsed = bigIntToHex(this.blobGasUsed!)
       jsonDict.excessBlobGas = bigIntToHex(this.excessBlobGas!)
     }
-    if (this.common.isActivatedEIP(4788) === true) {
+    if (this.common.isActivatedEIP(4788)) {
       jsonDict.parentBeaconBlockRoot = bytesToHex(this.parentBeaconBlockRoot!)
     }
     return jsonDict
@@ -998,7 +998,7 @@ export class BlockHeader {
    * activation block (see: https://blog.slock.it/hard-fork-specification-24b889e70703)
    */
   protected _validateDAOExtraData() {
-    if (this.common.hardforkIsActiveOnBlock(Hardfork.Dao, this.number) === false) {
+    if (!this.common.hardforkIsActiveOnBlock(Hardfork.Dao, this.number)) {
       return
     }
     const DAOActivationBlock = this.common.hardforkBlock(Hardfork.Dao)
