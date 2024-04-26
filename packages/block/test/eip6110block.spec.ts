@@ -9,8 +9,8 @@ import { BlockHeader } from '../src/header.js'
 import type { DepositData } from '@ethereumjs/util'
 
 const common = new Common({
-  chain: Chain.Kaustinen4,
-  hardfork: Hardfork.Prague,
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.Cancun,
   eips: [6110],
 })
 
