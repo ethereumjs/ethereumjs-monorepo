@@ -101,12 +101,16 @@ export class Block {
    * @returns a 32 byte Uint8Array representing the requests trie root
    */
   public static async genRequestsTrieRoot(requests: CLRequest[], emptyTrie?: Trie) {
-    const sortedRequests = requests?.sort((a, b) => {
-      if (a.type !== b.type) return a.type - b.type
-      return a.greaterThan(b) === true ? 1 : -1
-    })
+    // Requests should be sorted in monotonically ascending order based on type
+    // and whatever internal sorting logic is defined by each request type
+    if (requests.length > 1) {
+      for (let x = 1; x < requests.length; x++) {
+        if (requests[x].type < requests[x - 1].type)
+          throw new Error('requests are not sorted in ascending order')
+      }
+    }
     const trie = emptyTrie ?? new Trie()
-    for (const [i, req] of sortedRequests.entries()) {
+    for (const [i, req] of requests.entries()) {
       await trie.put(RLP.encode(i), req.serialize())
     }
     return trie.root()
