@@ -8,7 +8,8 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import { rejects } from 'assert'
+import { assert, describe, expect, it } from 'vitest'
 
 import { Block } from '../src/index.js'
 
@@ -65,18 +66,18 @@ describe('7685 tests', () => {
 
     assert.equal(await block.requestsTrieIsValid(), false)
   })
-  it('should order requests correctly in block and produce correct requestsRoot', async () => {
+  it('should validate requests order', async () => {
     const request1 = new NumberRequest(0x1, hexToBytes('0x1234'))
     const request2 = new NumberRequest(0x1, hexToBytes('0x2345'))
     const request3 = new NumberRequest(0x2, hexToBytes('0x2345'))
     const requests = [request1, request2, request3]
     const requestsRoot = await Block.genRequestsTrieRoot(requests)
 
-    // Construct 2 blocks with differently ordered requests and verify requestsRoot is valid for both
+    // Construct block with requests in correct order
 
     const block = Block.fromBlockData(
       {
-        requests: [request2, request1, request3],
+        requests,
         header: { requestsRoot },
       },
       { common }
@@ -84,20 +85,15 @@ describe('7685 tests', () => {
 
     assert.ok(await block.requestsTrieIsValid())
 
-    const block2 = Block.fromBlockData(
-      {
-        requests: [request1, request3, request2],
-        header: { requestsRoot },
-      },
-      { common }
-    )
-
-    assert.ok(await block2.requestsTrieIsValid())
-
-    // Verifies that requests are in same sort order
-    assert.deepEqual(block.requests!, block2.requests!)
-    assert.equal(bytesToHex(block.requests![1].bytes), '0x2345')
-    assert.equal(block.requests![2].type, 0x2)
-    assert.equal(block.requests![2].type, block2.requests![2].type)
+    // Throws when requests are not ordered correctly
+    await expect(async () =>
+      Block.fromBlockData(
+        {
+          requests: [request1, request3, request2],
+          header: { requestsRoot },
+        },
+        { common }
+      )
+    ).rejects.toThrow('ascending order')
   })
 })

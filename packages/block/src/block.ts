@@ -160,17 +160,18 @@ export class Block {
     }
 
     const withdrawals = withdrawalsData?.map(Withdrawal.fromWithdrawalData)
+
+    // Requests should be sorted in monotonically ascending order based on type
+    // and whatever internal sorting logic is defined by each request type
+    if (clRequests !== undefined && clRequests.length > 1) {
+      for (let x = 1; x < clRequests.length; x++) {
+        if (clRequests[x].type < clRequests[x - 1].type)
+          throw new Error('requests are not sorted in ascending order')
+      }
+    }
     // The witness data is planned to come in rlp serialized bytes so leave this
     // stub till that time
     const executionWitness = executionWitnessData
-
-    // Requests are sorted in ascending order based on type and then the internal
-    // ordering logic defined by the request type
-
-    const requests = clRequests?.sort((a, b) => {
-      if (a.type !== b.type) return a.type - b.type
-      return a.greaterThan(b) === true ? 1 : -1
-    })
 
     return new Block(
       header,
@@ -178,7 +179,7 @@ export class Block {
       uncleHeaders,
       withdrawals,
       opts,
-      requests,
+      clRequests,
       executionWitness
     )
   }

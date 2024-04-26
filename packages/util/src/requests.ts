@@ -10,7 +10,6 @@ export interface RequestData {
 export interface CLRequestType<T> {
   readonly type: number
   readonly bytes: Uint8Array
-  greaterThan(a: T): boolean
   serialize(): Uint8Array
 }
 
@@ -22,7 +21,6 @@ export abstract class CLRequest implements CLRequestType<any> {
     this.type = type
     this.bytes = bytes
   }
-  public abstract greaterThan(a: CLRequestType<any>): boolean
 
   serialize() {
     return concatBytes(Uint8Array.from([this.type]), this.bytes)

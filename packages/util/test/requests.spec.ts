@@ -18,9 +18,6 @@ class NumberRequest extends CLRequest implements CLRequestType<NumberRequest> {
   public static fromRequestData(bytes: Uint8Array): CLRequestType<NumberRequest> {
     return new NumberRequest(0x1, bytes)
   }
-  public greaterThan(a: NumberRequest): boolean {
-    return bytesToBigInt(a.bytes) < bytesToBigInt(this.bytes)
-  }
 
   serialize() {
     return concatBytes(Uint8Array.from([this.type]), this.bytes)
@@ -43,7 +40,5 @@ describe('should create a request', () => {
     const request2 = NumberRequest.fromRequestData(bigIntToBytes(123n))
     assert.equal(request2.type, 0x1)
     assert.equal(bytesToBigInt(request2.bytes), 123n)
-
-    assert.ok(request1.greaterThan(request2))
   })
 })
