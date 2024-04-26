@@ -7,8 +7,8 @@ import type { Config } from '../../../config.js'
 import type {
   ExecutionPayloadV1,
   ExecutionPayloadV2,
-  ExecutionPayloadV6110,
   ExecutionPayloadV3,
+  ExecutionPayloadV6110,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadStatusV1,
