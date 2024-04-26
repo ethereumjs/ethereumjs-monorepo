@@ -74,7 +74,7 @@ describe('encoding', () => {
     const result = pathToHexKey(path, extension, 'hex')
 
     // Calculate the expected result manually based on the functions used in the pathToHexKey function
-    const b = hexToBytes('0x' + path)
+    const b = hexToBytes(`0x${path}`)
     const n = byteTypeToNibbleType(b)
     const expected = nibbleTypeToByteType(n.concat(extension))
 
@@ -91,7 +91,7 @@ describe('encoding', () => {
     const result = pathToHexKey(path, extension, 'keybyte')
 
     // Calculate the expected result manually based on the functions used in the pathToHexKey function
-    const b = hexToBytes('0x' + path)
+    const b = hexToBytes(`0x${path}`)
     const n = byteTypeToNibbleType(b)
     const expected = nibbleTypeToPackedBytes(n.concat(extension))
 

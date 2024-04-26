@@ -79,7 +79,7 @@ describe(method, () => {
       gasLimit: 21000,
       gasPrice: 0,
       nonce: 0,
-    }).sign(hexToBytes('0x' + '42'.repeat(32)))
+    }).sign(hexToBytes(`0x${'42'.repeat(32)}`))
 
     const txData = bytesToHex(transaction.serialize())
 
@@ -217,7 +217,7 @@ describe(method, () => {
     // Disable block header consensus format validation
     const consensusFormatValidation = BlockHeader.prototype['_consensusFormatValidation']
     BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
-    const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
+    const gethGenesis = await import('../../../../block/test/testdata/4844-hardfork.json')
 
     const kzg = await loadKZG()
 

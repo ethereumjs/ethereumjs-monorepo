@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 import { INTERNAL_ERROR } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullSynchronizer } from '../../../src/sync'
+import type { FullSynchronizer } from '../../../src/sync/index.js'
 
 const method = 'eth_syncing'
 
@@ -42,9 +42,13 @@ describe(method, () => {
     const manager = createManager(client)
     const rpcServer = startRPC(manager.getMethods())
     const rpc = getRpcClient(rpcServer)
-    const synchronizer = client.services[0].synchronizer!
-    synchronizer.best = td.func<typeof synchronizer['best']>()
-    td.when(synchronizer.best()).thenResolve('peer')
+    const sync = client.services[0].synchronizer!
+    sync.best = td.func<typeof sync['best']>()
+    td.when(sync.best()).thenResolve({
+      latest: () => {
+        return
+      },
+    } as any)
 
     client.config.synchronized = false
     assert.equal(client.config.synchronized, false, 'not synchronized yet')
@@ -60,11 +64,16 @@ describe(method, () => {
     const manager = createManager(client)
     const rpcServer = startRPC(manager.getMethods())
     const rpc = getRpcClient(rpcServer)
-    const synchronizer = client.services[0].synchronizer as FullSynchronizer
-    synchronizer.best = td.func<typeof synchronizer['best']>()
-    synchronizer.latest = td.func<typeof synchronizer['latest']>()
-    td.when(synchronizer.best()).thenResolve('peer')
-    td.when(synchronizer.latest('peer' as any)).thenResolve({ number: BigInt(2) })
+    const sync = client.services[0].synchronizer as FullSynchronizer
+    sync.best = td.func<typeof sync['best']>()
+    td.when(sync.best()).thenResolve({
+      latest: () => {
+        return {
+          number: BigInt(2),
+          hash: () => new Uint8Array(0),
+        }
+      },
+    } as any)
 
     client.config.synchronized = false
     assert.equal(client.config.synchronized, false, 'not synchronized yet')

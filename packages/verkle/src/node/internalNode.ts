@@ -6,13 +6,12 @@ import { BaseVerkleNode } from './baseVerkleNode.js'
 import { LeafNode } from './leafNode.js'
 import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
-import type { Point } from '../types.js'
 import type { VerkleNode, VerkleNodeOptions } from './types.js'
 
 export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   // Array of references to children nodes
   public children: Array<VerkleNode | null>
-  public copyOnWrite: Record<string, Point>
+  public copyOnWrite: Record<string, Uint8Array>
   public type = VerkleNodeType.Internal
 
   /* TODO: options.children is not actually used here */
@@ -22,7 +21,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     this.copyOnWrite = options.copyOnWrite ?? {}
   }
 
-  commit(): Point {
+  commit(): Uint8Array {
     throw new Error('Not implemented')
   }
 
@@ -46,7 +45,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     }
 
     // TODO: Generate Point from rawNode value
-    const commitment = rawNode[rawNode.length - 1] as unknown as Point
+    const commitment = rawNode[rawNode.length - 1]
 
     return new InternalNode({ commitment, depth })
   }

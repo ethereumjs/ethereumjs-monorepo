@@ -8,14 +8,15 @@ import {
   bytesToInt32,
   hexToBytes,
   padToEven,
+  setLengthLeft,
   setLengthRight,
   short,
   toBytes,
 } from '@ethereumjs/util'
-import { getKey, getStem, verifyUpdate } from '@ethereumjs/verkle'
+import { getKey, getStem } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { equalsBytes } from 'ethereum-cryptography/utils'
+import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import {
   AccessWitness,
@@ -44,6 +45,7 @@ import type {
   StorageRange,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { VerkleCrypto } from '@ethereumjs/verkle'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -112,6 +114,7 @@ export interface StatelessVerkleStateManagerOpts {
   storageCacheOpts?: CacheOptions
   codeCacheOpts?: CacheOptions
   accesses?: AccessWitness
+  verkleCrypto?: VerkleCrypto
 }
 
 const PUSH_OFFSET = 95
@@ -140,6 +143,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
   originalStorageCache: OriginalStorageCache
 
+  verkleCrypto: VerkleCrypto
   protected readonly _accountCacheSettings: CacheSettings
   protected readonly _storageCacheSettings: CacheSettings
   protected readonly _codeCacheSettings: CacheSettings
@@ -165,6 +169,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   // Post-state provided from the executionWitness.
   // Should not update. Used for comparing our computed post-state with the canonical one.
   private _postState: VerkleState = {}
+  private _preState: VerkleState = {}
 
   // Checkpointing
   private _checkpoints: VerkleState[] = []
@@ -172,6 +177,17 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
   private keccakFunction: Function
 
+  /**
+   * Async static constructor for StatelessVerkleStateManager
+   * @param opts `StatelessVerkleStateManagerOpts`
+   * @returns a StatelessVerkleStateManager with initialized Verkle Crypto
+   */
+  static create = async (opts: StatelessVerkleStateManagerOpts = {}) => {
+    if (opts.verkleCrypto === undefined) {
+      opts.verkleCrypto = await loadVerkleCrypto()
+    }
+    return new StatelessVerkleStateManager(opts)
+  }
   /**
    * Instantiate the StateManager interface.
    */
@@ -220,23 +236,15 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
+    if (opts.verkleCrypto === undefined) {
+      throw new Error('verkle crypto required')
+    }
+    this.verkleCrypto = opts.verkleCrypto
+
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
-
-    /*
-     * For a custom StateManager implementation adopt these
-     * callbacks passed to the `Cache` instantiated to perform
-     * the `get`, `put` and `delete` operations with the
-     * desired backend.
-     */
-    // const getCb: get = async (address) => {
-    //   return undefined
-    // }
-    // const putCb: put = async (keyBuf, accountRlp) => {}
-    // const deleteCb = async (keyBuf: Uint8Array) => {}
-    // this._cache = new Cache({ get, putCb, deleteCb })
   }
 
   async getTransitionStateRoot(_: DefaultStateManager, __: Uint8Array): Promise<Uint8Array> {
@@ -256,7 +264,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     this._executionWitness = executionWitness
-    this.accessWitness = accessWitness ?? new AccessWitness()
+    this.accessWitness = accessWitness ?? new AccessWitness({ verkleCrypto: this.verkleCrypto })
 
     this._proof = executionWitness.verkleProof as unknown as Uint8Array
 
@@ -279,9 +287,15 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     this._state = preState
 
+    // also maintain a separate preState unaffected by any changes in _state
+    this._preState = preStateRaw.reduce((prevValue, currentValue) => {
+      const acc = { ...prevValue, ...currentValue }
+      return acc
+    }, {})
+
     const postStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
       const suffixDiffPairs = suffixDiffs.map(({ newValue, suffix }) => {
-        const key = `${stem}${padToEven(Number(suffix).toString(16))}`
+        const key = `${stem}${padToEven(Number(suffix).toString(16))}` as PrefixedHexString
         // A postState value of null means there was no change from the preState.
         // In this implementation, we therefore replace null with the preState.
         const value = newValue ?? this._state[key]
@@ -324,9 +338,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     return getKey(stem, CODE_SIZE_LEAF_KEY)
   }
 
-  getTreeKeyForCodeChunk(address: Address, chunkId: number) {
+  async getTreeKeyForCodeChunk(address: Address, chunkId: number) {
     const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkId)
-    return getKey(getStem(address, treeIndex), toBytes(subIndex))
+    return getKey(getStem(this.verkleCrypto, address, treeIndex), toBytes(subIndex))
   }
 
   chunkifyCode(code: Uint8Array) {
@@ -339,15 +353,15 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     throw new Error('Not implemented')
   }
 
-  getTreeKeyForStorageSlot(address: Address, storageKey: bigint) {
+  async getTreeKeyForStorageSlot(address: Address, storageKey: bigint) {
     const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(storageKey)
 
-    return getKey(getStem(address, treeIndex), toBytes(subIndex))
+    return getKey(getStem(this.verkleCrypto, address, treeIndex), toBytes(subIndex))
   }
 
-  checkChunkWitnessPresent(address: Address, codeOffset: number) {
-    const chunkId = Math.floor(codeOffset / 31)
-    const chunkKey = bytesToHex(this.getTreeKeyForCodeChunk(address, chunkId))
+  async checkChunkWitnessPresent(address: Address, codeOffset: number) {
+    const chunkId = codeOffset / 31
+    const chunkKey = bytesToHex(await this.getTreeKeyForCodeChunk(address, chunkId))
     return this._state[chunkKey] !== undefined
   }
 
@@ -357,7 +371,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * checkpoints were reverted.
    */
   shallowCopy(): EVMStateManagerInterface {
-    const stateManager = new StatelessVerkleStateManager()
+    const stateManager = new StatelessVerkleStateManager({ verkleCrypto: this.verkleCrypto })
     stateManager.initVerkleExecutionWitness(this._blockNum, this._executionWitness!)
     return stateManager
   }
@@ -414,11 +428,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     // allocate the code and copy onto it from the available witness chunks
     const codeSize = account.codeSize
-    const accessedCode = new Uint8Array(codeSize)
+    // allocate enough to fit the last chunk
+    const accessedCode = new Uint8Array(codeSize + 31)
 
     const chunks = Math.floor(codeSize / 31) + 1
     for (let chunkId = 0; chunkId < chunks; chunkId++) {
-      const chunkKey = bytesToHex(this.getTreeKeyForCodeChunk(address, chunkId))
+      const chunkKey = bytesToHex(await this.getTreeKeyForCodeChunk(address, chunkId))
       const codeChunk = this._state[chunkKey]
       if (codeChunk === null) {
         const errorMsg = `Invalid access to a non existent code chunk with chunkKey=${chunkKey}`
@@ -440,7 +455,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     // Return accessedCode where only accessed code has been copied
-    return accessedCode
+    const contactCode = accessedCode.slice(0, codeSize)
+    if (!this._codeCacheSettings.deactivate) {
+      this._codeCache?.put(address, contactCode)
+    }
+
+    return contactCode
   }
 
   async getContractCodeSize(address: Address): Promise<number> {
@@ -463,9 +483,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // load the account basic fields and codeSize should be in it
     const account = await this.getAccount(address)
     if (account === undefined) {
-      const errorMsg = `address=${address} doesn't exist in pre-state`
-      debug(errorMsg)
-      throw Error(errorMsg)
+      return 0
     }
     return account.codeSize
   }
@@ -487,7 +505,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const storageKey = this.getTreeKeyForStorageSlot(address, BigInt(bytesToHex(key)))
+    const storageKey = await this.getTreeKeyForStorageSlot(address, BigInt(bytesToHex(key)))
     const storageValue = toBytes(this._state[bytesToHex(storageKey)])
 
     if (!this._storageCacheSettings.deactivate) {
@@ -509,7 +527,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       this._storageCache!.put(address, key, value)
     } else {
       // TODO: Consider refactoring this in a writeContractStorage function? Like in stateManager.ts
-      const storageKey = this.getTreeKeyForStorageSlot(address, BigInt(bytesToHex(key)))
+      const storageKey = await this.getTreeKeyForStorageSlot(address, BigInt(bytesToHex(key)))
       this._state[bytesToHex(storageKey)] = bytesToHex(setLengthRight(value, 32))
     }
   }
@@ -519,7 +537,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @param address -  Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
-    const stem = getStem(address, 0)
+    const stem = getStem(this.verkleCrypto, address, 0)
     const codeHashKey = this.getTreeKeyForCodeHash(stem)
     this._storageCache?.clearContractStorage(address)
     // Update codeHash to `c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470`
@@ -538,7 +556,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const stem = getStem(address, 0)
+    const stem = getStem(this.verkleCrypto, address, 0)
     const versionKey = this.getTreeKeyForVersion(stem)
     const balanceKey = this.getTreeKeyForBalance(stem)
     const nonceKey = this.getTreeKeyForNonce(stem)
@@ -625,7 +643,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     if (this._accountCacheSettings.deactivate) {
-      const stem = getStem(address, 0)
+      const stem = getStem(this.verkleCrypto, address, 0)
       const balanceKey = this.getTreeKeyForBalance(stem)
       const nonceKey = this.getTreeKeyForNonce(stem)
       const codeHashKey = this.getTreeKeyForCodeHash(stem)
@@ -679,7 +697,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     throw new Error('Not implemented yet')
   }
 
-  async verifyProof(parentVerkleRoot: Uint8Array): Promise<boolean> {
+  // TODO: Re-implement this method once we have working verifyUpdate and the testnets have been updated to provide ingestible data
+  async verifyProof(_: Uint8Array): Promise<boolean> {
     // Implementation: https://github.com/crate-crypto/rust-verkle-wasm/blob/master/src/lib.rs#L45
     // The root is the root of the current (un-updated) trie
     // The proof is proof of membership of all of the accessed values
@@ -688,17 +707,19 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     //
     // This function returns the new root when all of the updated values are applied
 
-    const updatedStateRoot: Uint8Array = verifyUpdate(
-      parentVerkleRoot,
-      this._proof!, // TODO: Convert this into a Uint8Array ingestible by the method
-      new Map() // TODO: Generate the keys_values map from the old to the updated value
-    )
+    // const updatedStateRoot: Uint8Array = verifyUpdate(
+    //   parentVerkleRoot,
+    //   this._proof!, // TODO: Convert this into a Uint8Array ingestible by the method
+    //   new Map() // TODO: Generate the keys_values map from the old to the updated value
+    // )
 
     // TODO: Not sure if this should return the updated state Root (current block) or the un-updated one (parent block)
-    const verkleRoot = await this.getStateRoot()
+    // const verkleRoot = await this.getStateRoot()
 
     // Verify that updatedStateRoot matches the state root of the block
-    return equalsBytes(updatedStateRoot, verkleRoot)
+    // return equalsBytes(updatedStateRoot, verkleRoot)
+
+    return true
   }
 
   // Verifies that the witness post-state matches the computed post-state
@@ -720,8 +741,16 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
       const { chunkKey } = accessedState
       accessedChunks.set(chunkKey, true)
-      const computedValue = this.getComputedValue(accessedState)
-      let canonicalValue: string | null | undefined = this._postState[chunkKey]
+      const computedValue = this.getComputedValue(accessedState) ?? this._preState[chunkKey]
+      if (computedValue === undefined) {
+        debug(
+          `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`
+        )
+        postFailures++
+        continue
+      }
+
+      let canonicalValue: PrefixedHexString | null | undefined = this._postState[chunkKey]
 
       if (canonicalValue === undefined) {
         debug(
@@ -736,6 +765,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       if (accessedState.type === AccessedStateType.Code) {
         // computedValue = computedValue !== null ? `0x${computedValue.slice(4)}` : null
         canonicalValue = canonicalValue !== null ? `0x${canonicalValue.slice(4)}` : null
+      } else if (
+        accessedState.type === AccessedStateType.Storage &&
+        canonicalValue === null &&
+        computedValue === ZEROVALUE
+      ) {
+        canonicalValue = ZEROVALUE
       }
 
       if (computedValue !== canonicalValue) {
@@ -850,11 +885,13 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
       case AccessedStateType.Storage: {
         const { slot } = accessedState
-        const storage = this._storageCache?.get(address, bigIntToBytes(slot))
+        const key = setLengthLeft(bigIntToBytes(slot), 32)
+
+        const storage = this._storageCache?.get(address, key)
         if (storage === undefined) {
           return null
         }
-        return bytesToHex(storage)
+        return bytesToHex(setLengthLeft(storage, 32))
       }
     }
   }

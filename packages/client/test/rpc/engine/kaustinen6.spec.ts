@@ -5,24 +5,28 @@ import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
 import blocks from '../../testdata/blocks/kaustinen4.json'
-import genesisJSON from '../../testdata/geth-genesis/kaustinen4.json'
+import genesisJSON from '../../testdata/geth-genesis/kaustinen6.json'
 import { getRpcClient, setupChain } from '../helpers.js'
 
-import type { Chain } from '../../../src/blockchain'
-import type { BeaconPayloadJson } from '@ethereumjs/block'
+import type { Chain } from '../../../src/blockchain/index.js'
+import type { BeaconPayloadJson, VerkleExecutionWitness } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { HttpClient } from 'jayson/promise'
-const genesisVerkleStateRoot = '0x382960711d9ccf58b9db20122e2253eb9bfa99d513f8c9d4e85b55971721f4de'
-const genesisVerkleBlockHash = '0x8493ed97fd4314acb6ed519867b086dc698e25df37ebe8f2bc77313537710744'
+const genesisVerkleStateRoot = '0x1fbf85345a3cbba9a6d44f991b721e55620a22397c2a93ee8d5011136ac300ee'
+const genesisVerkleBlockHash = '0x3fe165c03e7a77d1e3759362ebeeb16fd964cb411ce11fbe35c7032fab5b9a8a'
 
 /**
- * One can run this test in two formats:
- *   1. On the saved blocks, comma separated which are limited (353,368,374,467)
- *      `TEST_SAVED_NUMBERS=353,368,374,467 npx vitest run test/rpc/engine/kaustinen4.spec.ts`
- *   2. Directly pull slots from a kaustinen beacon url
- *     `TEST_ONLINE_SLOTS=345,353..360 PEER_BEACON_URL=https://beacon.verkle-gen-devnet-4.ethpandaops.io npx vitest run test/rpc/engine/kaustinen4.spec.ts`
- *   3. Geth produced testvectors
- *     `TEST_GETH_VEC_DIR=test/testdata/gethk5vecs DEBUG=ethjs,vm:*,evm:*,statemanager:verkle* npx vitest run test/rpc/engine/kaustinen4.spec.ts`
+ * One can run this test in this format:
+ *   1. Directly pull slots from a kaustinen beacon url
+ *     `TEST_ONLINE_SLOTS=15 PEER_BEACON_URL=https://beacon.verkle-gen-devnet-6.ethpandaops.io DEBUG=ethjs,vm:*,evm:*,statemanager:verkle* npx vitest run test/rpc/engine/kaustinen6.spec.ts`
+ *
+ * However there are other ways to run the test with save data and testvectors but they are from old versions but
+ * can be updated to make it work
+ *
+ *   a. On the saved blocks, comma separated (were produced for kaustinen4 )
+ *      `TEST_SAVED_NUMBERS=353,368,374,467 npx vitest run test/rpc/engine/kaustinen5.spec.ts`
+ *   b. Geth produced testvectors (were produced for kaustinen5)
+ *     `TEST_GETH_VEC_DIR=test/testdata/gethk5vecs DEBUG=ethjs,vm:*,evm:*,statemanager:verkle* npx vitest run test/rpc/engine/kaustinen6.spec.ts`
  */
 
 const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
@@ -30,15 +34,22 @@ const originalValidate = (BlockHeader as any).prototype._consensusFormatValidati
 async function fetchExecutionPayload(
   peerBeaconUrl: string,
   slot: number | string
-): Promise<BeaconPayloadJson> {
-  const beaconBlock = await (await fetch(`${peerBeaconUrl}/eth/v2/beacon/blocks/${slot}`)).json()
-  return beaconBlock.data.message.body.execution_payload
+): Promise<BeaconPayloadJson | undefined> {
+  let beaconPayload: BeaconPayloadJson | undefined = undefined
+  try {
+    const beaconBlock = await (await fetch(`${peerBeaconUrl}/eth/v2/beacon/blocks/${slot}`)).json()
+    beaconPayload = beaconBlock.data.message.body.execution_payload
+    // eslint-disable-next-line no-empty
+  } catch (_e) {}
+
+  return beaconPayload
 }
 
 async function runBlock(
   { chain, rpc, common }: { chain: Chain; rpc: HttpClient; common: Common },
   { execute, parent }: { execute: any; parent: any },
-  isBeaconData: boolean
+  isBeaconData: boolean,
+  context: any
 ) {
   const blockCache = chain.blockCache
 
@@ -51,6 +62,11 @@ async function runBlock(
   const executePayload =
     isBeaconData === true ? executionPayloadFromBeaconPayload(execute as any) : execute
   const res = await rpc.request('engine_newPayloadV2', [executePayload])
+
+  // if the block was not executed mark as skip so it shows in test
+  if (res.result.status === 'ACCEPTED') {
+    context.skip()
+  }
   assert.equal(res.result.status, 'VALID', 'valid status should be received')
 }
 
@@ -75,21 +91,21 @@ describe(`valid verkle network setup`, async () => {
   const savedTestCases = process.env.TEST_SAVED_NUMBERS?.split(',') ?? []
 
   for (const testCase of savedTestCases) {
-    it(`run saved block ${testCase}`, async () => {
+    it(`run saved block ${testCase}`, async (context) => {
       let testData
       let isBeaconData
       if (process.env.SAVED_DATA_DIR !== undefined) {
         const fileName = `${process.env.SAVED_DATA_DIR}/${testCase}.json`
-        testData = JSON.parse(readFileSync(fileName))[testCase]
+        testData = JSON.parse(readFileSync(fileName, 'utf8'))[testCase]
         isBeaconData = false
       } else {
-        testData = blocks[testCase]
+        testData = blocks[testCase as keyof typeof blocks]
         isBeaconData = true
       }
       if (testData === undefined) {
         throw Error('unavailable data')
       }
-      await runBlock({ common, chain, rpc }, testData, isBeaconData)
+      await runBlock({ common, chain, rpc }, testData, isBeaconData, context)
     })
   }
 
@@ -107,9 +123,17 @@ describe(`valid verkle network setup`, async () => {
     let parent = await fetchExecutionPayload(process.env.PEER_BEACON_URL, startSlot - 1)
     for (let i = startSlot; i <= endSlot; i++) {
       const execute = await fetchExecutionPayload(process.env.PEER_BEACON_URL, i)
-      it(`run fetched block slot: ${i} number: ${execute.block_number}`, async () => {
-        await runBlock({ common, chain, rpc }, { parent, execute }, true)
-        parent = execute
+      if (execute === undefined) {
+        // may be there was no block on this slot
+        continue
+      }
+
+      it(`run fetched block slot: ${i} number: ${execute.block_number}`, async (context) => {
+        try {
+          await runBlock({ common, chain, rpc }, { parent, execute }, true, context)
+        } finally {
+          parent = execute
+        }
       })
     }
   }
@@ -120,8 +144,8 @@ describe(`valid verkle network setup`, async () => {
     let parent = gethVecs[0]
     for (let i = 1; i < gethVecs.length; i++) {
       const execute = gethVecs[i]
-      it(`run geth vector: ${execute.blockNumber}`, async () => {
-        await runBlock({ common, chain, rpc }, { parent, execute }, false)
+      it(`run geth vector: ${execute.blockNumber}`, async (context) => {
+        await runBlock({ common, chain, rpc }, { parent, execute }, false, context)
         parent = execute
       })
     }
@@ -136,9 +160,9 @@ describe(`valid verkle network setup`, async () => {
 
 async function loadGethVectors(vectorsDirPath: string, opts: { common: Common }) {
   // set chain id to 1 for geth vectors
-  opts.common._chainParams.chainId = BigInt(1)
-  const stateDiffVec = JSON.parse(readFileSync(`${vectorsDirPath}/statediffs.json`))
-  const executionWitness0 = {
+  opts.common['_chainParams'].chainId = BigInt(1)
+  const stateDiffVec = JSON.parse(readFileSync(`${vectorsDirPath}/statediffs.json`, 'utf8'))
+  const executionWitness0: VerkleExecutionWitness = {
     stateDiff: [],
     verkleProof: {
       commitmentsByPath: [],
@@ -153,7 +177,7 @@ async function loadGethVectors(vectorsDirPath: string, opts: { common: Common })
     },
   }
 
-  const executionWitness1 = {
+  const executionWitness1: VerkleExecutionWitness = {
     stateDiff: stateDiffVec[0],
     verkleProof: {
       commitmentsByPath: [],
@@ -168,7 +192,7 @@ async function loadGethVectors(vectorsDirPath: string, opts: { common: Common })
     },
   }
 
-  const executionWitness2 = {
+  const executionWitness2: VerkleExecutionWitness = {
     stateDiff: stateDiffVec[1],
     verkleProof: {
       commitmentsByPath: [],

@@ -3,10 +3,10 @@ import { Hardfork } from '@ethereumjs/common'
 import { KECCAK256_RLP } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/chain'
-import { Config } from '../../../src/config'
-import { Event } from '../../../src/types'
-import { wait } from '../../integration/util'
+import { Chain } from '../../../src/blockchain/chain.js'
+import { Config } from '../../../src/config.js'
+import { Event } from '../../../src/types.js'
+import { wait } from '../../integration/util.js'
 class PeerPool {
   idle() {}
   ban() {}
@@ -14,7 +14,7 @@ class PeerPool {
 PeerPool.prototype.idle = vi.fn()
 PeerPool.prototype.ban = vi.fn()
 
-const { BlockFetcher } = await import('../../../src/sync/fetcher/blockfetcher')
+const { BlockFetcher } = await import('../../../src/sync/fetcher/blockfetcher.js')
 
 describe('[BlockFetcher]', async () => {
   it('should start/stop', async () => {
@@ -179,6 +179,7 @@ describe('[BlockFetcher]', async () => {
       },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
@@ -227,6 +228,7 @@ describe('[BlockFetcher]', async () => {
       },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, task }
     const resp = await fetcher.request(job as any)

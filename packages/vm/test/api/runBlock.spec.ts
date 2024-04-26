@@ -23,32 +23,33 @@ import type {
   PreByzantiumTxReceipt,
   RunBlockOpts,
 } from '../../src/types'
+import type { BlockBytes } from '@ethereumjs/block'
+import type { ChainConfig } from '@ethereumjs/common'
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 describe('runBlock() -> successful API parameter usage', async () => {
   async function simpleRun(vm: VM) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const genesisRlp = toBytes(testData.genesisRLP)
+    const genesisRlp = hexToBytes(testData.genesisRLP as PrefixedHexString)
     const genesis = Block.fromRLPSerializedBlock(genesisRlp, { common })
 
-    const blockRlp = toBytes(testData.blocks[0].rlp)
+    const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
-    //@ts-ignore
     await setupPreConditions(vm.stateManager, testData)
 
     assert.deepEqual(
-      //@ts-ignore
-      vm.stateManager._trie.root(),
+      (vm.stateManager as DefaultStateManager)['_trie'].root(),
       genesis.header.stateRoot,
       'genesis state root should match calculated state root'
     )
 
     const res = await vm.runBlock({
       block,
-      // @ts-ignore
-      root: vm.stateManager._trie.root(),
+      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -66,32 +67,31 @@ describe('runBlock() -> successful API parameter usage', async () => {
     await setupPreConditions(vm.stateManager, testData)
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const block1Rlp = toBytes(testData.blocks[0].rlp)
+    const block1Rlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
     const block1 = Block.fromRLPSerializedBlock(block1Rlp, { common })
     await vm.runBlock({
       block: block1,
-      // @ts-ignore
-      root: vm.stateManager._trie.root(),
+      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
 
-    const block2Rlp = toBytes(testData.blocks[1].rlp)
+    const block2Rlp = hexToBytes(testData.blocks[1].rlp as PrefixedHexString)
     const block2 = Block.fromRLPSerializedBlock(block2Rlp, { common })
     await vm.runBlock({
       block: block2,
-      // @ts-ignore
-      root: vm.stateManager._trie.root(),
+
+      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
 
-    const block3Rlp = toBytes(testData.blocks[2].rlp)
+    const block3Rlp = toBytes(testData.blocks[2].rlp as PrefixedHexString)
     const block3 = Block.fromRLPSerializedBlock(block3Rlp, { common })
     await vm.runBlock({
       block: block3,
-      // @ts-ignore
-      root: vm.stateManager._trie.root(),
+
+      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -125,7 +125,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
   })
 
   it('PoW block, Common custom chain (Common customChains constructor option)', async () => {
-    const customChains = [testnet]
+    const customChains = [testnet] as ChainConfig[]
     const common = new Common({ chain: 'testnet', hardfork: Hardfork.Berlin, customChains })
     const vm = await setupVM({ common })
     await simpleRun(vm)
@@ -198,7 +198,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
 
   it('should fail when runTx fails', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const blockRlp = toBytes(testData.blocks[0].rlp)
+    const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
     // The mocked VM uses a mocked runTx
@@ -214,7 +214,6 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
 
     const block = Block.fromBlockData({
       header: {
-        ...testData.blocks[0].header,
         gasLimit: hexToBytes('0x8000000000000000'),
       },
     })
@@ -227,7 +226,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   it('should fail when block validation fails', async () => {
     const vm = await VM.create({ common })
 
-    const blockRlp = toBytes(testData.blocks[0].rlp)
+    const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
     const block = Object.create(Block.fromRLPSerializedBlock(blockRlp, { common }))
 
     await vm
@@ -243,7 +242,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
 
   it('should fail when no `validateHeader` method exists on blockchain class', async () => {
     const vm = await VM.create({ common })
-    const blockRlp = toBytes(testData.blocks[0].rlp)
+    const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
     const block = Object.create(Block.fromRLPSerializedBlock(blockRlp, { common }))
     ;(vm.blockchain as any).validateHeader = undefined
     try {
@@ -260,7 +259,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   it('should fail when tx gas limit higher than block gas limit', async () => {
     const vm = await VM.create({ common })
 
-    const blockRlp = toBytes(testData.blocks[0].rlp)
+    const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
     const block = Object.create(Block.fromRLPSerializedBlock(blockRlp, { common }))
     // modify first tx's gasLimit
     const { nonce, gasPrice, to, value, data, v, r, s } = block.transactions[0]
@@ -286,11 +285,10 @@ describe('runBlock() -> runtime behavior', async () => {
 
     const vm = await setupVM({ common })
 
-    const block1: any = RLP.decode(testData.blocks[0].rlp)
+    const block1 = RLP.decode(testData.blocks[0].rlp as PrefixedHexString) as NestedUint8Array
     // edit extra data of this block to "dao-hard-fork"
     block1[0][12] = utf8ToBytes('dao-hard-fork')
-    const block = Block.fromValuesArray(block1, { common })
-    // @ts-ignore
+    const block = Block.fromValuesArray(block1 as BlockBytes, { common })
     await setupPreConditions(vm.stateManager, testData)
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
@@ -424,10 +422,9 @@ async function runWithHf(hardfork: string) {
   const common = new Common({ chain: Chain.Mainnet, hardfork })
   const vm = await setupVM({ common })
 
-  const blockRlp = toBytes(testData.blocks[0].rlp)
+  const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
   const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
-  // @ts-ignore
   await setupPreConditions(vm.stateManager, testData)
 
   const res = await vm.runBlock({
@@ -461,18 +458,17 @@ describe('runBlock() -> tx types', async () => {
   async function simpleRun(vm: VM, transactions: TypedTransaction[]) {
     const common = vm.common
 
-    const blockRlp = toBytes(testData.blocks[0].rlp)
+    const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
 
-    //@ts-ignore overwrite transactions
+    //@e transactions
     block.transactions = transactions
 
     if (transactions.some((t) => t.supports(Capability.EIP1559FeeMarket))) {
-      // @ts-ignore overwrite read-only property
+      // @e read-only property
       block.header.baseFeePerGas = BigInt(7)
     }
 
-    //@ts-ignore
     await setupPreConditions(vm.stateManager, testData)
 
     const res = await vm.runBlock({

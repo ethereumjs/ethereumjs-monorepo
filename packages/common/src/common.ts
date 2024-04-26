@@ -881,7 +881,7 @@ export class Common {
         blockOrTime !== prevBlockOrTime &&
         name !== Hardfork.Paris
       ) {
-        const hfBlockBytes = hexToBytes('0x' + blockOrTime.toString(16).padStart(16, '0'))
+        const hfBlockBytes = hexToBytes(`0x${blockOrTime.toString(16).padStart(16, '0')}`)
         hfBytes = concatBytes(hfBytes, hfBlockBytes)
         prevBlockOrTime = blockOrTime
       }

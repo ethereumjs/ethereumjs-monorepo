@@ -1,8 +1,8 @@
 import { BIGINT_0, bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
 
-import { INTERNAL_ERROR, INVALID_BLOCK, INVALID_PARAMS } from './error-code'
+import { INTERNAL_ERROR, INVALID_BLOCK, INVALID_PARAMS } from './error-code.js'
 
-import type { Chain } from '../blockchain'
+import type { Chain } from '../blockchain/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { JsonRpcTx, TypedTransaction } from '@ethereumjs/tx'
 

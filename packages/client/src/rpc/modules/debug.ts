@@ -1,14 +1,15 @@
 import { Address, TypeOutput, bigIntToHex, bytesToHex, hexToBytes, toType } from '@ethereumjs/util'
 
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
-import { callWithStackTrace, getBlockByOption } from '../helpers'
-import { middleware, validators } from '../validation'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code.js'
+import { callWithStackTrace, getBlockByOption } from '../helpers.js'
+import { middleware, validators } from '../validation.js'
 
-import type { EthereumClient } from '../..'
-import type { Chain } from '../../blockchain'
-import type { FullEthereumService } from '../../service'
-import type { RpcTx } from '../types'
+import type { Chain } from '../../blockchain/index.js'
+import type { EthereumClient } from '../../index.js'
+import type { FullEthereumService } from '../../service/index.js'
+import type { RpcTx } from '../types.js'
 import type { Block } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
 
 export interface tracerOpts {
@@ -118,7 +119,7 @@ export class Debug {
    *     1. string representing the transaction hash
    *     2. an optional tracer options object
    */
-  async traceTransaction(params: [string, tracerOpts]) {
+  async traceTransaction(params: [PrefixedHexString, tracerOpts]) {
     const [txHash, config] = params
 
     // Validate configuration and parameters
@@ -296,7 +297,9 @@ export class Debug {
    * @returns A {@link StorageRange} object that will contain at most `limit` entries in its `storage` field.
    * The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
    */
-  async storageRangeAt(params: [string, number, string, string, number]) {
+  async storageRangeAt(
+    params: [PrefixedHexString, number, PrefixedHexString, PrefixedHexString, number]
+  ) {
     const [blockHash, txIndex, account, startKey, limit] = params
 
     if (this.vm === undefined) {

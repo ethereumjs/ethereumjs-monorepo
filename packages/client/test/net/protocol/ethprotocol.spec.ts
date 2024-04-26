@@ -5,9 +5,9 @@ import { Address, bigIntToBytes, bytesToBigInt, hexToBytes, randomBytes } from '
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/chain'
-import { Config } from '../../../src/config'
-import { EthProtocol } from '../../../src/net/protocol'
+import { Chain } from '../../../src/blockchain/chain.js'
+import { Config } from '../../../src/config.js'
+import { EthProtocol } from '../../../src/net/protocol/index.js'
 
 describe('[EthProtocol]', () => {
   it('should get properties', async () => {
@@ -224,7 +224,7 @@ describe('[EthProtocol]', () => {
     const eip2929Tx = TransactionFactory.fromTxData({ type: 1 }, { common: config.chainCommon })
     const eip1559Tx = TransactionFactory.fromTxData({ type: 2 }, { common: config.chainCommon })
     const blobTx = TransactionFactory.fromTxData(
-      { type: 3, to: Address.zero(), blobVersionedHashes: [hexToBytes('0x01' + '00'.repeat(31))] },
+      { type: 3, to: Address.zero(), blobVersionedHashes: [hexToBytes(`0x01${'00'.repeat(31)}`)] },
       { common: config.chainCommon }
     )
     const res = p.encode(p.messages.filter((message) => message.name === 'Transactions')[0], [

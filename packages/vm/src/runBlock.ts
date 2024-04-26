@@ -40,6 +40,7 @@ import type {
 import type { VM } from './vm.js'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -449,40 +450,55 @@ export async function accumulateParentBlockHash(
     throw new Error('EIP 2935 should be activated by timestamp')
   }
 
-  if ((await this.stateManager.getAccount(historyAddress)) === undefined) {
-    await this.evm.journal.putAccount(historyAddress, new Account())
+  // getAccount with historyAddress will throw error as witnesses are not bundeled
+  // but we need to put account so as to query later for slot
+  try {
+    if ((await this.stateManager.getAccount(historyAddress)) === undefined) {
+      const emptyHistoryAcc = new Account(BigInt(1))
+      await this.evm.journal.putAccount(historyAddress, emptyHistoryAcc)
+    }
+  } catch (_e) {
+    const emptyHistoryAcc = new Account(BigInt(1))
+    await this.evm.journal.putAccount(historyAddress, emptyHistoryAcc)
   }
 
   async function putBlockHash(vm: VM, hash: Uint8Array, number: bigint) {
+    // ringKey is the key the hash is actually put in (it is a ring buffer)
+    const ringKey = number % historyServeWindow
+
     // generate access witness
     if (vm.common.isActivatedEIP(6800) === true) {
-      const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
+      const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(ringKey)
       // just create access witnesses without charging for the gas
       ;(
         vm.stateManager as StatelessVerkleStateManager
       ).accessWitness!.touchAddressOnWriteAndComputeGas(historyAddress, treeIndex, subIndex)
     }
-    // ringKey is the key the hash is actually put in (it is a ring buffer)
-    const ringKey = number % historyServeWindow
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
     await vm.stateManager.putContractStorage(historyAddress, key, hash)
   }
   await putBlockHash(this, parentHash, currentBlockNumber - BIGINT_1)
 
-  const parentBlock = await this.blockchain.getBlock(parentHash)
+  // in stateless execution parentBlock is not in blockchain but in chain's blockCache
+  // need to move the blockCache to the blockchain, in any case we can ignore forkblock
+  // which is where we need this code segment
+  try {
+    const parentBlock = await this.blockchain.getBlock(parentHash)
 
-  // If on the fork block, store the old block hashes as well
-  if (parentBlock.header.timestamp < forkTime) {
-    let ancestor = parentBlock
-    for (let i = 0; i < Number(historyServeWindow) - 1; i++) {
-      if (ancestor.header.number === BIGINT_0) {
-        break
+    // If on the fork block, store the old block hashes as well
+    if (parentBlock.header.timestamp < forkTime) {
+      let ancestor = parentBlock
+      for (let i = 0; i < Number(historyServeWindow) - 1; i++) {
+        if (ancestor.header.number === BIGINT_0) {
+          break
+        }
+
+        ancestor = await this.blockchain.getBlock(ancestor.header.parentHash)
+        await putBlockHash(this, ancestor.hash(), ancestor.header.number)
       }
-
-      ancestor = await this.blockchain.getBlock(ancestor.header.parentHash)
-      await putBlockHash(this, ancestor.hash(), ancestor.header.number)
     }
-  }
+    // eslint-disable-next-line no-empty
+  } catch (_e) {}
 }
 
 export async function accumulateParentBeaconBlockRoot(
@@ -606,7 +622,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   return {
     bloom,
     gasUsed,
-    preimages: new Map<string, Uint8Array>(),
+    preimages: new Map<PrefixedHexString, Uint8Array>(),
     receiptsRoot,
     receipts,
     results: txResults,
@@ -692,7 +708,7 @@ export async function rewardAccount(
 
   if (common?.isActivatedEIP(6800) === true) {
     // use this utility to build access but the computed gas is not charged and hence free
-    ;(evm.stateManager as StatelessVerkleStateManager).accessWitness!.touchTxExistingAndComputeGas(
+    ;(evm.stateManager as StatelessVerkleStateManager).accessWitness!.touchTxTargetAndComputeGas(
       address,
       { sendsValue: true }
     )

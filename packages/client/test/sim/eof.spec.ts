@@ -9,7 +9,9 @@ import {
   runTxHelper,
   startNetwork,
   waitForELStart,
-} from './simutils'
+} from './simutils.js'
+
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const pkey = hexToBytes('0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e')
 const sender = bytesToHex(privateToAddress(pkey))
@@ -19,7 +21,7 @@ const network = 'eof'
 const eofJson = require(`./configs/${network}.json`)
 const common = Common.fromGethGenesis(eofJson, { chain: network })
 
-export async function runTx(data: string, to?: string, value?: bigint) {
+export async function runTx(data: PrefixedHexString | '', to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
 
@@ -71,7 +73,12 @@ describe('EOF ephemeral hardfork tests', async () => {
   })
   // ------------EIP 3540 tests-------------------------------
   it('EIP 3540 tests', async () => {
-    const data = '0x6B' + 'EF0001' + '01000102000100' + '00' + 'AA' + '600052600C6014F3'
+    const data = ('0x6B' +
+      'EF0001' +
+      '01000102000100' +
+      '00' +
+      'AA' +
+      '600052600C6014F3') as PrefixedHexString
 
     const res = await runTx(data)
 

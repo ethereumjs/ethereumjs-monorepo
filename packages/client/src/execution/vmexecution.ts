@@ -24,17 +24,18 @@ import {
 import { VM } from '@ethereumjs/vm'
 import { writeFileSync } from 'fs'
 
-import { Event } from '../types'
-import { short } from '../util'
-import { debugCodeReplayBlock } from '../util/debug'
+import { Event } from '../types.js'
+import { debugCodeReplayBlock } from '../util/debug.js'
+import { short } from '../util/index.js'
 
-import { Execution } from './execution'
-import { LevelDB } from './level'
-import { PreimagesManager } from './preimage'
-import { ReceiptsManager } from './receipt'
+import { Execution } from './execution.js'
+import { LevelDB } from './level.js'
+import { PreimagesManager } from './preimage.js'
+import { ReceiptsManager } from './receipt.js'
 
-import type { ExecutionOptions } from './execution'
+import type { ExecutionOptions } from './execution.js'
 import type { Block } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
 export enum ExecStatus {
@@ -188,9 +189,8 @@ export class VMExecution extends Execution {
     if (this.verkleVM !== undefined) {
       return
     }
-
     this.config.logger.info(`Setting up verkleVM`)
-    const stateManager = new StatelessVerkleStateManager()
+    const stateManager = await StatelessVerkleStateManager.create()
     this.verkleVM = await VM.create({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
@@ -259,7 +259,7 @@ export class VMExecution extends Execution {
       this.config.execCommon.setHardforkBy({ blockNumber: number, td, timestamp })
       this.hardfork = this.config.execCommon.hardfork()
 
-      if (this.config.execCommon.gteHardfork(Hardfork.Prague)) {
+      if (this.config.execCommon.gteHardfork(Hardfork.Osaka)) {
         if (!this.config.statelessVerkle) {
           throw Error(`Currently stateful verkle execution not supported`)
         }
@@ -324,7 +324,7 @@ export class VMExecution extends Execution {
       td,
       timestamp,
     })
-    if (this.config.execCommon.gteHardfork(Hardfork.Prague)) {
+    if (this.config.execCommon.gteHardfork(Hardfork.Osaka)) {
       // verkleVM should already exist but we can still do an allocation just to be safe
       await this.setupVerkleVM()
       this.vm = this.verkleVM!
@@ -394,8 +394,8 @@ export class VMExecution extends Execution {
 
           let vm = this.vm
           if (
-            !this.config.execCommon.gteHardfork(Hardfork.Prague) &&
-            this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Prague)
+            !this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
+            this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Osaka)
           ) {
             // see if this is a transition block
             const parentBlock =
@@ -407,7 +407,7 @@ export class VMExecution extends Execution {
               timestamp: parentBlock.header.timestamp,
             })
 
-            if (!this.config.execCommon.hardforkGteHardfork(parentHf, Hardfork.Prague)) {
+            if (!this.config.execCommon.hardforkGteHardfork(parentHf, Hardfork.Osaka)) {
               await this.transitionToVerkle(parentBlock.header.stateRoot, false)
             }
             if (this.verkleVM === undefined) {
@@ -475,7 +475,7 @@ export class VMExecution extends Execution {
     return true
   }
 
-  async savePreimages(preimages: Map<string, Uint8Array>) {
+  async savePreimages(preimages: Map<PrefixedHexString, Uint8Array>) {
     if (this.preimagesManager !== undefined) {
       for (const [key, preimage] of preimages) {
         await this.preimagesManager.savePreimage(hexToBytes(key), preimage)
@@ -553,8 +553,8 @@ export class VMExecution extends Execution {
         timestamp: vmHeadBlock.header.timestamp,
       })
       if (
-        !this.config.execCommon.gteHardfork(Hardfork.Prague) &&
-        this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Prague)
+        !this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
+        this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Osaka)
       ) {
         // verkle transition should have happened by now
         if (this.verkleVM === undefined) {
@@ -590,7 +590,7 @@ export class VMExecution extends Execution {
    * @returns number of blocks executed
    */
   async run(loop = true, runOnlybatched = false): Promise<number> {
-    if (this.running || !this.started || this.config.shutdown) return 0
+    if (this.running || !this.started || !this.config.execution || this.config.shutdown) return 0
 
     return this.runWithLock<number>(async () => {
       try {
@@ -681,7 +681,7 @@ export class VMExecution extends Execution {
                     timestamp,
                   })
                   if (hardfork !== this.hardfork) {
-                    const wasPrePrague = !this.config.execCommon.gteHardfork(Hardfork.Prague)
+                    const wasPrePrague = !this.config.execCommon.gteHardfork(Hardfork.Osaka)
                     const hash = short(block.hash())
                     this.config.superMsg(
                       `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
@@ -691,16 +691,16 @@ export class VMExecution extends Execution {
                       td,
                       timestamp,
                     })
-                    const isPostPrague = this.config.execCommon.gteHardfork(Hardfork.Prague)
-                    if (wasPrePrague && isPostPrague) {
+                    const isPostOsaka = this.config.execCommon.gteHardfork(Hardfork.Osaka)
+                    if (wasPrePrague && isPostOsaka) {
                       await this.transitionToVerkle(parentState!)
                       clearCache = false
                     }
                   }
                   if (
-                    (!this.config.execCommon.gteHardfork(Hardfork.Prague) &&
+                    (!this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
                       this.vm.stateManager instanceof StatelessVerkleStateManager) ||
-                    (this.config.execCommon.gteHardfork(Hardfork.Prague) &&
+                    (this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
                       this.vm.stateManager instanceof DefaultStateManager)
                   ) {
                     throw Error(

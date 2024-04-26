@@ -32,6 +32,7 @@ import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
   BlobEIP4844NetworkValuesArray,
+  JsonBlobTxNetworkWrapper,
   JsonTx,
   TxOptions,
 } from './types.js'
@@ -124,10 +125,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas === '' ? '0x' : maxFeePerGas))
-    this.maxPriorityFeePerGas = bytesToBigInt(
-      toBytes(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
-    )
+    this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
+    this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
     this._validateCannotExceedMaxInteger({
       maxFeePerGas: this.maxFeePerGas,
@@ -367,7 +366,6 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * @param opts any TxOptions defined
    * @returns a BlobEIP4844Transaction
    */
-
   public static fromSerializedBlobTxNetworkWrapper(
     serialized: Uint8Array,
     opts?: TxOptions
@@ -553,6 +551,36 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    */
   public getSenderPublicKey(): Uint8Array {
     return Legacy.getSenderPublicKey(this)
+  }
+
+  /**
+   * Returns the EIP 4844 transaction network wrapper in JSON format similar to toJSON, including
+   * blobs, commitments, and proofs fields
+   * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
+   * @param opts any TxOptions defined
+   * @returns JsonBlobTxNetworkWrapper with blobs, KZG commitments, and KZG proofs fields
+   */
+  public static networkWrapperToJson(
+    serialized: Uint8Array,
+    opts?: TxOptions
+  ): JsonBlobTxNetworkWrapper {
+    const tx = this.fromSerializedBlobTxNetworkWrapper(serialized, opts)
+
+    const accessListJSON = AccessLists.getAccessListJSON(tx.accessList)
+    const baseJson = tx.toJSON()
+
+    return {
+      ...baseJson,
+      chainId: bigIntToHex(tx.chainId),
+      maxPriorityFeePerGas: bigIntToHex(tx.maxPriorityFeePerGas),
+      maxFeePerGas: bigIntToHex(tx.maxFeePerGas),
+      accessList: accessListJSON,
+      maxFeePerBlobGas: bigIntToHex(tx.maxFeePerBlobGas),
+      blobVersionedHashes: tx.blobVersionedHashes.map((hash) => bytesToHex(hash)),
+      blobs: tx.blobs!.map((bytes) => bytesToHex(bytes)),
+      kzgCommitments: tx.kzgCommitments!.map((bytes) => bytesToHex(bytes)),
+      kzgProofs: tx.kzgProofs!.map((bytes) => bytesToHex(bytes)),
+    }
   }
 
   toJSON(): JsonTx {

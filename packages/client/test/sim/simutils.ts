@@ -20,13 +20,14 @@ import * as net from 'node:net'
 import qs from 'qs'
 
 import { EthereumClient } from '../../src/client'
-import { Config } from '../../src/config'
+import { Config } from '../../src/config.js'
 import { LevelDB } from '../../src/execution/level'
 import { RPCManager } from '../../src/rpc'
 import { Event } from '../../src/types'
 
 import type { Common } from '@ethereumjs/common'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
 
@@ -268,8 +269,8 @@ export async function startNetwork(
 
 export async function runTxHelper(
   opts: { client: Client; common: Common; sender: string; pkey: Uint8Array },
-  data: string,
-  to?: string,
+  data: PrefixedHexString | '',
+  to?: PrefixedHexString,
   value?: bigint
 ) {
   const { client, common, sender, pkey } = opts
@@ -313,7 +314,7 @@ export const runBlobTx = async (
   client: Client,
   blobSize: number,
   pkey: Uint8Array,
-  to?: string,
+  to?: PrefixedHexString,
   value?: bigint,
   opts?: TxOptions
 ) => {
@@ -373,7 +374,7 @@ export const createBlobTxs = async (
   pkey: Uint8Array,
   startNonce: number = 0,
   txMeta: {
-    to?: string
+    to?: PrefixedHexString
     value?: bigint
     chainId?: number
     maxFeePerBlobGas: bigint

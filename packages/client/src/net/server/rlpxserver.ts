@@ -1,13 +1,13 @@
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
 import { bytesToUnprefixedHex, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 
-import { Event } from '../../types'
-import { getClientVersion } from '../../util'
-import { RlpxPeer } from '../peer/rlpxpeer'
+import { Event } from '../../types.js'
+import { getClientVersion } from '../../util/index.js'
+import { RlpxPeer } from '../peer/rlpxpeer.js'
 
-import { Server } from './server'
+import { Server } from './server.js'
 
-import type { ServerOptions } from './server'
+import type { ServerOptions } from './server.js'
 import type { Peer as Devp2pRLPxPeer } from '@ethereumjs/devp2p'
 
 export interface RlpxServerOptions extends ServerOptions {
@@ -267,14 +267,10 @@ export class RlpxServer extends Server {
         let peer: RlpxPeer | null = new RlpxPeer({
           config: this.config,
           id: bytesToUnprefixedHex(rlpxPeer.getId()!),
-          // @ts-ignore
-          host: rlpxPeer._socket.remoteAddress!,
-          // @ts-ignore
-          port: rlpxPeer._socket.remotePort!,
+          host: rlpxPeer['_socket'].remoteAddress!,
+          port: rlpxPeer['_socket'].remotePort!,
           protocols: Array.from(this.protocols),
-          // @ts-ignore: Property 'server' does not exist on type 'Socket'.
-          // TODO: check this error
-          inbound: rlpxPeer._socket.server !== undefined,
+          inbound: (rlpxPeer['_socket'] as any).server !== undefined,
         })
         try {
           await peer.accept(rlpxPeer, this)

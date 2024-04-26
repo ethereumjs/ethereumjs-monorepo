@@ -20,6 +20,7 @@ import { setupPreConditions, verifyPostConditions } from '../../util'
 
 import type { EthashConsensus } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type * as tape from 'tape'
 
 function formatBlockHeader(data: any) {
@@ -121,12 +122,12 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     const expectException = (raw[paramFork] ??
       raw[paramAll1] ??
       raw[paramAll2] ??
-      raw.blockHeader === undefined) as string | boolean
+      raw.blockHeader === undefined) as PrefixedHexString | boolean
 
     // Here we decode the rlp to extract the block number
     // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
     try {
-      const blockRlp = hexToBytes(raw.rlp as string)
+      const blockRlp = hexToBytes(raw.rlp as PrefixedHexString)
       const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
       currentBlock = bytesToBigInt(decodedRLP[0][8])
     } catch (e: any) {
@@ -135,7 +136,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     }
 
     try {
-      const blockRlp = hexToBytes(raw.rlp as string)
+      const blockRlp = hexToBytes(raw.rlp as PrefixedHexString)
       // Update common HF
       let TD: bigint | undefined = undefined
       let timestamp: bigint | undefined = undefined
@@ -164,7 +165,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         >[]) {
           const shouldFail = txData.valid === 'false'
           try {
-            const txRLP = hexToBytes(txData.rawBytes)
+            const txRLP = hexToBytes(txData.rawBytes as PrefixedHexString)
             const tx = TransactionFactory.fromSerializedData(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {

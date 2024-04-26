@@ -1,9 +1,10 @@
 {
   "extends": "../../config/tsconfig.prod.cjs.json",
-  "include": ["bin", "src"],
+  "include": ["bin", "src", "package.json"],
   "compilerOptions": {
-    "outDir": "dist",
-    "typeRoots": ["node_modules/@types", "src/@types"]
+    "outDir": "dist/cjs",
+    "typeRoots": ["node_modules/@types", "src/@types"],
+    "composite": true
   },
   "references": [
     { "path": "../block/tsconfig.prod.cjs.json" },

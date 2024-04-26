@@ -2,12 +2,12 @@ import { Block } from '@ethereumjs/block'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/chain'
-import { Config } from '../../../src/config'
-import { getLogger } from '../../../src/logging'
-import { Skeleton } from '../../../src/service/skeleton'
-import { Event } from '../../../src/types'
-import { wait } from '../../integration/util'
+import { Chain } from '../../../src/blockchain/chain.js'
+import { Config } from '../../../src/config.js'
+import { getLogger } from '../../../src/logging.js'
+import { Skeleton } from '../../../src/service/skeleton.js'
+import { Event } from '../../../src/types.js'
+import { wait } from '../../integration/util.js'
 
 class PeerPool {
   idle() {}
@@ -16,7 +16,7 @@ class PeerPool {
 PeerPool.prototype.idle = vi.fn()
 PeerPool.prototype.ban = vi.fn()
 
-const { ReverseBlockFetcher } = await import('../../../src/sync/fetcher/reverseblockfetcher')
+const { ReverseBlockFetcher } = await import('../../../src/sync/fetcher/reverseblockfetcher.js')
 describe('[ReverseBlockFetcher]', async () => {
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })
@@ -169,6 +169,7 @@ describe('[ReverseBlockFetcher]', async () => {
       },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)

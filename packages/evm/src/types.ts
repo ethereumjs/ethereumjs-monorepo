@@ -9,7 +9,7 @@ import type { CustomPrecompile } from './precompiles/index.js'
 import type { PrecompileFunc } from './precompiles/types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { AccessWitness } from '@ethereumjs/statemanager'
-import type { Account, Address, AsyncEventEmitter } from '@ethereumjs/util'
+import type { Account, Address, AsyncEventEmitter, PrefixedHexString } from '@ethereumjs/util'
 
 export type DeleteOpcode = {
   opcode: number
@@ -72,7 +72,7 @@ interface EVMRunOpts {
   /**
    * Addresses to selfdestruct. Defaults to the empty set.
    */
-  selfdestruct?: Set<string>
+  selfdestruct?: Set<PrefixedHexString>
   /**
    * The address of the account that is executing this code (`address(this)`). Defaults to the zero address.
    */
@@ -105,7 +105,7 @@ export interface EVMRunCallOpts extends EVMRunOpts {
   /**
    * Created addresses in current context. Used in EIP 6780
    */
-  createdAddresses?: Set<string>
+  createdAddresses?: Set<PrefixedHexString>
   /**
    * Skip balance checks if true. If caller balance is less than message value,
    * sets balance to message value to ensure execution doesn't fail.
@@ -150,7 +150,7 @@ export interface EVMInterface {
     putAccount(address: Address, account: Account): Promise<void>
     deleteAccount(address: Address): Promise<void>
     accessList?: Map<string, Set<string>>
-    preimages?: Map<string, Uint8Array>
+    preimages?: Map<PrefixedHexString, Uint8Array>
     addAlwaysWarmAddress(address: string, addToAccessList?: boolean): void
     addAlwaysWarmSlot(address: string, slot: string, addToAccessList?: boolean): void
     startReportingAccessList(): void
@@ -316,11 +316,11 @@ export interface ExecResult {
   /**
    * A set of accounts to selfdestruct
    */
-  selfdestruct?: Set<string>
+  selfdestruct?: Set<PrefixedHexString>
   /**
    * Map of addresses which were created (used in EIP 6780)
    */
-  createdAddresses?: Set<string>
+  createdAddresses?: Set<PrefixedHexString>
   /**
    * The gas refund counter
    */
@@ -386,7 +386,7 @@ export class DefaultBlockchain implements Blockchain {
  * The BN128 curve package (`rustbn-wasm`)
  */
 export interface bn128 {
-  ec_pairing: (input_str: string) => string
-  ec_add: (input_str: string) => string
-  ec_mul: (input_hex: string) => string
+  ec_pairing: (input_str: string) => PrefixedHexString
+  ec_add: (input_str: string) => PrefixedHexString
+  ec_mul: (input_hex: string) => PrefixedHexString
 }

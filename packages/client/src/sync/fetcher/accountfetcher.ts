@@ -17,22 +17,22 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Event } from '../../types'
-import { short } from '../../util'
+import { Event } from '../../types.js'
+import { short } from '../../util/index.js'
 
-import { ByteCodeFetcher } from './bytecodefetcher'
-import { Fetcher } from './fetcher'
-import { StorageFetcher } from './storagefetcher'
-import { TrieNodeFetcher } from './trienodefetcher'
-import { getInitFecherDoneFlags } from './types'
+import { ByteCodeFetcher } from './bytecodefetcher.js'
+import { Fetcher } from './fetcher.js'
+import { StorageFetcher } from './storagefetcher.js'
+import { TrieNodeFetcher } from './trienodefetcher.js'
+import { getInitFecherDoneFlags } from './types.js'
 
-import type { Peer } from '../../net/peer'
-import type { AccountData } from '../../net/protocol/snapprotocol'
-import type { FetcherOptions } from './fetcher'
-import type { StorageRequest } from './storagefetcher'
-import type { Job, SnapFetcherDoneFlags } from './types'
+import type { Peer } from '../../net/peer/index.js'
+import type { AccountData } from '../../net/protocol/snapprotocol.js'
+import type { FetcherOptions } from './fetcher.js'
+import type { StorageRequest } from './storagefetcher.js'
+import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
@@ -372,6 +372,11 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     job: Job<JobTask, AccountData[], AccountData>
   ): Promise<AccountDataResponse | undefined> {
     const { peer } = job
+    // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
+    // TODOs:
+    // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
+    // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
+    await peer?.latest()
     const origin = this.getOrigin(job)
     const limit = this.getLimit(job)
 

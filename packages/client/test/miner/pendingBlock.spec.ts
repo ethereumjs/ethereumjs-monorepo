@@ -23,11 +23,11 @@ import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it, vi } from 'vitest'
 
 import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
-import { Config } from '../../src/config'
-import { getLogger } from '../../src/logging'
-import { PendingBlock } from '../../src/miner'
-import { TxPool } from '../../src/service/txpool'
-import { mockBlockchain } from '../rpc/mockBlockchain'
+import { Config } from '../../src/config.js'
+import { getLogger } from '../../src/logging.js'
+import { PendingBlock } from '../../src/miner/index.js'
+import { TxPool } from '../../src/service/txpool.js'
+import { mockBlockchain } from '../rpc/mockBlockchain.js'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 
@@ -55,12 +55,15 @@ common
   .map((hf) => {
     hf.timestamp = undefined
   })
-
+const txGauge: any = {
+  inc: () => {},
+}
 const config = new Config({
   common,
   accountCache: 10000,
   storageCache: 1000,
   logger: getLogger({ loglevel: 'debug' }),
+  prometheusMetrics: txGauge,
 })
 
 const setup = () => {
@@ -431,7 +434,7 @@ describe('[PendingBlock]', async () => {
   })
 
   it('should exclude missingBlobTx', async () => {
-    const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
+    const gethGenesis = await import('../../../block/test/testdata/4844-hardfork.json')
     const kzg = await loadKZG()
 
     const common = Common.fromGethGenesis(gethGenesis, {

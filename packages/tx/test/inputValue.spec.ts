@@ -11,10 +11,10 @@ import {
 } from '../src/index.js'
 
 import type { TxValuesArray } from '../src/index.js'
-import type { AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
+import type { AddressLike, BigIntLike, BytesLike, PrefixedHexString } from '@ethereumjs/util'
 
 // @returns: Array with subtypes of the AddressLike type for a given address
-function generateAddressLikeValues(address: string): AddressLike[] {
+function generateAddressLikeValues(address: PrefixedHexString): AddressLike[] {
   return [address, toBytes(address), new Address(toBytes(address))]
 }
 
@@ -24,7 +24,7 @@ function generateBigIntLikeValues(value: number): BigIntLike[] {
 }
 
 // @returns: Array with subtypes of the BytesLike type for a given string
-function generateBytesLikeValues(value: string): BytesLike[] {
+function generateBytesLikeValues(value: PrefixedHexString): BytesLike[] {
   return [value, toBytes(value)]
 }
 
@@ -153,7 +153,7 @@ describe('[Invalid Array Input values]', () => {
       for (const txType of txTypes) {
         let tx = TransactionFactory.fromTxData({ type: txType })
         if (signed) {
-          tx = tx.sign(hexToBytes('0x' + '42'.repeat(32)))
+          tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
         }
         const rawValues = tx.raw()
         for (let x = 0; x < rawValues.length; x++) {
@@ -222,14 +222,14 @@ describe('[Invalid Access Lists]', () => {
               accessList: <any>invalidAccessListItem,
             })
             if (signed) {
-              tx = tx.sign(hexToBytes('0x' + '42'.repeat(32)))
+              tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
             }
             assert.fail('did not fail on `fromTxData`')
           } catch (e: any) {
             assert.ok(true, 'failed ok on decoding in `fromTxData`')
             tx = TransactionFactory.fromTxData({ type: txType })
             if (signed) {
-              tx = tx.sign(hexToBytes('0x' + '42'.repeat(32)))
+              tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
             }
           }
           const rawValues = tx!.raw()

@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToHex, zeros } from '@ethereumjs/util'
+import { bytesToHex, randomBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -9,7 +9,7 @@ import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseSetup, batchBlocks, getRpcClient, setupChain } from '../helpers.js'
 
-const crypto = require('crypto')
+import type { BlockData } from '@ethereumjs/block'
 
 const method = 'engine_forkchoiceUpdatedV1'
 
@@ -30,7 +30,7 @@ const validPayloadAttributes = {
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 
 function createBlock(parentBlock: Block) {
-  const prevRandao = crypto.randomBytes(32)
+  const prevRandao = randomBytes(32)
   const block = Block.fromBlockData(
     {
       header: {
@@ -174,7 +174,7 @@ describe(method, () => {
           difficulty: 1,
           extraData: new Uint8Array(97),
         },
-      },
+      } as BlockData,
       { common, skipConsensusFormatValidation: true }
     )
 

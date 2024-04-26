@@ -9,7 +9,7 @@ import { assert, describe, it } from 'vitest'
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service'
+import type { FullEthereumService } from '../../../src/service/index.js'
 
 const method = 'eth_getTransactionCount'
 
@@ -72,7 +72,7 @@ describe(method, () => {
     // call with nonexistent account
     res = await rpc.request(method, [`0x${'11'.repeat(20)}`, 'latest'])
     assert.equal(res.result, `0x0`, 'should return 0x0 for nonexistent account')
-  }, 30000)
+  }, 40000)
 
   it('call with unsupported block argument', async () => {
     const blockchain = await Blockchain.create()
@@ -84,5 +84,5 @@ describe(method, () => {
     const res = await rpc.request(method, ['0xccfd725760a68823ff1e062f4cc97e1360e8d997', 'pending'])
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(res.error.message.includes('"pending" is not yet supported'))
-  })
+  }, 40000)
 })

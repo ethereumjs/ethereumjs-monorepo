@@ -1,18 +1,17 @@
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Config } from '../../../src/config'
-import { Fetcher } from '../../../src/sync/fetcher/fetcher'
-import { Event } from '../../../src/types'
+import { Config } from '../../../src/config.js'
+import { Fetcher } from '../../../src/sync/fetcher/fetcher.js'
+import { Event } from '../../../src/types.js'
 
-import type { Job } from '../../../src/sync/fetcher/types'
+import type { Job } from '../../../src/sync/fetcher/types.js'
 
 class FetcherTest extends Fetcher<any, any, any> {
   process(_job: any, res: any) {
     return res
   }
   async request(_job: any, _peer: any) {
-    console.trace(_job)
     return _job
   }
   async store(_store: any) {}
@@ -66,7 +65,7 @@ describe('should handle expiration', async () => {
       timeout: 5,
     })
     const job = { index: 0 }
-    const peer = { idle: true }
+    const peer = { idle: true, latest: vi.fn() }
     fetcher.peer = vi.fn().mockReturnValue(() => peer)
     fetcher.request = vi.fn().mockImplementationOnce(async (job, peer) => {
       await new Promise((resolve) => {

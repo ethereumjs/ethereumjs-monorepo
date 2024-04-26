@@ -17,6 +17,7 @@ import txFixturesEip155 from './json/ttTransactionTestEip155VitaliksTests.json'
 import txFixtures from './json/txs.json'
 
 import type { TransactionType, TxData, TypedTransaction } from '../src/index.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('[Transaction]', () => {
   const transactions: TypedTransaction[] = []
@@ -60,7 +61,7 @@ describe('[Transaction]', () => {
       'should initialize on a pre-Berlin Harfork (EIP-2930 not activated)'
     )
 
-    const txData = txFixtures[3].raw.map(toBytes)
+    const txData = txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
     txData[6] = intToBytes(45) // v with 0-parity and chain ID 5
     let tx = LegacyTransaction.fromValuesArray(txData)
     assert.ok(
@@ -94,7 +95,7 @@ describe('[Transaction]', () => {
 
   it('Initialization -> decode with fromValuesArray()', () => {
     for (const tx of txFixtures.slice(0, 4)) {
-      const txData = tx.raw.map(toBytes)
+      const txData = tx.raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
       const pt = LegacyTransaction.fromValuesArray(txData)
 
       assert.equal(bytesToHex(unpadBytes(toBytes(pt.nonce))), tx.raw[0])
@@ -112,7 +113,7 @@ describe('[Transaction]', () => {
   })
 
   it('Initialization -> should accept lesser r values', () => {
-    const tx = LegacyTransaction.fromTxData({ r: bytesToBigInt(toBytes('0x0005')) })
+    const tx = LegacyTransaction.fromTxData({ r: bytesToBigInt(hexToBytes('0x0005')) })
     assert.equal(tx.r!.toString(16), '5')
   })
 
@@ -120,7 +121,7 @@ describe('[Transaction]', () => {
     let common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Petersburg })
     let tx = LegacyTransaction.fromTxData({}, { common })
     assert.equal(tx.common.chainId(), BigInt(5))
-    const privKey = hexToBytes('0x' + txFixtures[0].privateKey)
+    const privKey = hexToBytes(`0x${txFixtures[0].privateKey}`)
     tx = tx.sign(privKey)
     const serialized = tx.serialize()
     common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
@@ -135,7 +136,7 @@ describe('[Transaction]', () => {
   })
 
   it('addSignature() -> correctly adds correct signature values', () => {
-    const privKey = hexToBytes('0x' + txFixtures[0].privateKey)
+    const privKey = hexToBytes(`0x${txFixtures[0].privateKey}`)
     const tx = LegacyTransaction.fromTxData({})
     const signedTx = tx.sign(privKey)
     const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
@@ -144,7 +145,7 @@ describe('[Transaction]', () => {
   })
 
   it('addSignature() -> correctly adds correct signature values from ecrecover with ChainID protection enabled', () => {
-    const privKey = hexToBytes('0x' + txFixtures[0].privateKey)
+    const privKey = hexToBytes(`0x${txFixtures[0].privateKey}`)
     const tx = LegacyTransaction.fromTxData({}, { common: new Common({ chain: Chain.Sepolia }) })
     const signedTx = tx.sign(privKey)
     // `convertV` set to false, since we use the raw value from the signed tx
@@ -155,7 +156,7 @@ describe('[Transaction]', () => {
   })
 
   it('addSignature() -> throws when adding the wrong v value', () => {
-    const privKey = hexToBytes('0x' + txFixtures[0].privateKey)
+    const privKey = hexToBytes(`0x${txFixtures[0].privateKey}`)
     const tx = LegacyTransaction.fromTxData({}, { common: new Common({ chain: Chain.Sepolia }) })
     const signedTx = tx.sign(privKey)
     // `convertV` set to true: this will apply EIP-155 replay transaction twice, so it should throw!
@@ -185,10 +186,15 @@ describe('[Transaction]', () => {
     let tx = LegacyTransaction.fromTxData({})
     assert.equal(tx.getDataFee(), BigInt(0))
 
-    tx = LegacyTransaction.fromValuesArray(txFixtures[3].raw.map(toBytes))
+    tx = LegacyTransaction.fromValuesArray(
+      txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
+    )
     assert.equal(tx.getDataFee(), BigInt(1716))
 
-    tx = LegacyTransaction.fromValuesArray(txFixtures[3].raw.map(toBytes), { freeze: false })
+    tx = LegacyTransaction.fromValuesArray(
+      txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
+      { freeze: false }
+    )
     assert.equal(tx.getDataFee(), BigInt(1716))
   })
 
@@ -197,17 +203,23 @@ describe('[Transaction]', () => {
     let tx = LegacyTransaction.fromTxData({}, { common })
     assert.equal(tx.getDataFee(), BigInt(0))
 
-    tx = LegacyTransaction.fromValuesArray(txFixtures[3].raw.map(toBytes), {
-      common,
-    })
+    tx = LegacyTransaction.fromValuesArray(
+      txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
+      {
+        common,
+      }
+    )
     assert.equal(tx.getDataFee(), BigInt(1716))
   })
 
   it('getDataFee() -> should invalidate cached value on hardfork change', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
-    const tx = LegacyTransaction.fromValuesArray(txFixtures[0].raw.map(toBytes), {
-      common,
-    })
+    const tx = LegacyTransaction.fromValuesArray(
+      txFixtures[0].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
+      {
+        common,
+      }
+    )
     assert.equal(tx.getDataFee(), BigInt(656))
     tx.common.setHardfork(Hardfork.Istanbul)
     assert.equal(tx.getDataFee(), BigInt(240))
@@ -257,9 +269,12 @@ describe('[Transaction]', () => {
       hardfork: Hardfork.TangerineWhistle,
     })
 
-    let tx = LegacyTransaction.fromValuesArray(txFixtures[3].raw.slice(0, 6).map(toBytes), {
-      common,
-    })
+    let tx = LegacyTransaction.fromValuesArray(
+      txFixtures[3].raw.slice(0, 6).map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
+      {
+        common,
+      }
+    )
     assert.throws(
       () => {
         tx.hash()
@@ -268,9 +283,12 @@ describe('[Transaction]', () => {
       undefined,
       'should throw calling hash with unsigned tx'
     )
-    tx = LegacyTransaction.fromValuesArray(txFixtures[3].raw.map(toBytes), {
-      common,
-    })
+    tx = LegacyTransaction.fromValuesArray(
+      txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
+      {
+        common,
+      }
+    )
     assert.deepEqual(
       tx.hash(),
       hexToBytes('0x375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa')
@@ -287,7 +305,9 @@ describe('[Transaction]', () => {
   })
 
   it('hash() -> with defined chainId', () => {
-    const tx = LegacyTransaction.fromValuesArray(txFixtures[4].raw.map(toBytes))
+    const tx = LegacyTransaction.fromValuesArray(
+      txFixtures[4].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
+    )
     assert.equal(
       bytesToHex(tx.hash()),
       '0x0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
@@ -304,10 +324,10 @@ describe('[Transaction]', () => {
 
   it("getHashedMessageToSign(), getSenderPublicKey() (implicit call) -> verify EIP155 signature based on Vitalik's tests", () => {
     for (const tx of txFixturesEip155) {
-      const pt = LegacyTransaction.fromSerializedTx(toBytes(tx.rlp))
-      assert.equal(bytesToHex(pt.getHashedMessageToSign()), '0x' + tx.hash)
+      const pt = LegacyTransaction.fromSerializedTx(hexToBytes(tx.rlp as PrefixedHexString))
+      assert.equal(bytesToHex(pt.getHashedMessageToSign()), `0x${tx.hash}`)
       assert.equal(bytesToHex(pt.serialize()), tx.rlp)
-      assert.equal(pt.getSenderAddress().toString(), '0x' + tx.sender)
+      assert.equal(pt.getSenderAddress().toString(), `0x${tx.sender}`)
     }
   })
 
@@ -324,7 +344,9 @@ describe('[Transaction]', () => {
     const privateKey = hexToBytes(
       '0x4646464646464646464646464646464646464646464646464646464646464646'
     )
-    const pt = LegacyTransaction.fromValuesArray(txRaw.map(toBytes))
+    const pt = LegacyTransaction.fromValuesArray(
+      txRaw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
+    )
 
     // Note that Vitalik's example has a very similar value denoted "signing data".
     // It's not the output of `serialize()`, but the pre-image of the hash returned by `tx.hash(false)`.
@@ -347,11 +369,14 @@ describe('[Transaction]', () => {
   it('sign(), getSenderPublicKey() (implicit call) -> EIP155 hashing when singing', () => {
     const common = new Common({ chain: 1, hardfork: Hardfork.Petersburg })
     for (const txData of txFixtures.slice(0, 3)) {
-      const tx = LegacyTransaction.fromValuesArray(txData.raw.slice(0, 6).map(toBytes), {
-        common,
-      })
+      const tx = LegacyTransaction.fromValuesArray(
+        txData.raw.slice(0, 6).map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
+        {
+          common,
+        }
+      )
 
-      const privKey = hexToBytes('0x' + txData.privateKey)
+      const privKey = hexToBytes(`0x${txData.privateKey}`)
       const txSigned = tx.sign(privKey)
 
       assert.equal(
@@ -375,7 +400,10 @@ describe('[Transaction]', () => {
       '0xDE3128752F183E8930D7F00A2AAA302DCB5E700B2CBA2D8CA5795660F07DEFD5'
     )
     const common = Common.custom({ chainId: 3 })
-    const tx = LegacyTransaction.fromValuesArray(txRaw.map(toBytes), { common })
+    const tx = LegacyTransaction.fromValuesArray(
+      txRaw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
+      { common }
+    )
     const signedTx = tx.sign(privateKey)
     assert.equal(
       bytesToHex(signedTx.serialize()),
@@ -463,7 +491,7 @@ describe('[Transaction]', () => {
     let tx = LegacyTransaction.fromTxData({}, { common })
     assert.equal(tx.common.chainId(), BigInt(5))
 
-    const privKey = hexToBytes('0x' + txFixtures[0].privateKey)
+    const privKey = hexToBytes(`0x${txFixtures[0].privateKey}`)
     tx = tx.sign(privKey)
 
     const serialized = tx.serialize()
@@ -476,14 +504,14 @@ describe('[Transaction]', () => {
   it('freeze property propagates from unsigned tx to signed tx', () => {
     const tx = LegacyTransaction.fromTxData({}, { freeze: false })
     assert.notOk(Object.isFrozen(tx), 'tx object is not frozen')
-    const privKey = hexToBytes('0x' + txFixtures[0].privateKey)
+    const privKey = hexToBytes(`0x${txFixtures[0].privateKey}`)
     const signedTxn = tx.sign(privKey)
     assert.notOk(Object.isFrozen(signedTxn), 'tx object is not frozen')
   })
 
   it('common propagates from the common of tx, not the common in TxOptions', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const pkey = hexToBytes('0x' + txFixtures[0].privateKey)
+    const pkey = hexToBytes(`0x${txFixtures[0].privateKey}`)
     const txn = LegacyTransaction.fromTxData({}, { common, freeze: false })
     const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')

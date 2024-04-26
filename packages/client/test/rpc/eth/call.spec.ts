@@ -5,10 +5,11 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex, bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service'
+import type { FullEthereumService } from '../../../src/service/index.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_call'
 
@@ -77,7 +78,7 @@ describe(method, () => {
     const estimateTxData = {
       to: createdAddress!.toString(),
       from: address.toString(),
-      data: `0x${funcHash}`,
+      data: `0x${funcHash}` as PrefixedHexString,
       gasLimit: bigIntToHex(BigInt(53000)),
     }
     const estimateTx = LegacyTransaction.fromTxData(estimateTxData, { freeze: false })

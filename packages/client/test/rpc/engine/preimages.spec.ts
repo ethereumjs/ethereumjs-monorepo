@@ -103,7 +103,7 @@ describe(`valid verkle network setup`, async () => {
   // unschedule verkle
   const unschedulePragueJson = {
     ...genesisJSON,
-    config: { ...genesisJSON.config, pragueTime: undefined },
+    config: { ...genesisJSON.config, osakaTime: undefined },
   }
   const { server, chain, common, execution } = await setupChain(
     unschedulePragueJson,
@@ -137,7 +137,7 @@ describe(`valid verkle network setup`, async () => {
     {
       name: 'block 1 no txs',
       blockData: {
-        transactions: [] as string[],
+        transactions: [] as PrefixedHexString[],
         blockNumber: '0x01',
         stateRoot: '0x78026f1e4f2ff57c340634f844f47cb241beef4c965be86a483c855793e4b07d',
         receiptTrie: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
@@ -154,7 +154,7 @@ describe(`valid verkle network setup`, async () => {
     {
       name: 'block 2 having kaustinen2 block 12 txs',
       blockData: {
-        transactions: blocks.block12.execute.transactions,
+        transactions: blocks.block12.execute.transactions as PrefixedHexString[],
         blockNumber: '0x02',
         stateRoot: '0xa86d54279c8faebed72e112310b29115d3600e8cc6ff2a2e4466a788b8776ad9',
         receiptTrie: '0xd95b673818fa493deec414e01e610d97ee287c9421c8eff4102b1647c1a184e4',
@@ -183,7 +183,7 @@ describe(`valid verkle network setup`, async () => {
     {
       name: 'block 3 no txs with just withdrawals but zero coinbase',
       blockData: {
-        transactions: [] as string[],
+        transactions: [] as PrefixedHexString[],
         blockNumber: '0x03',
         stateRoot: '0xe4538f9d7531eb76e82edf7480e4578bc2be5f454ab02db4d9db6187dfa1f9ca',
         receiptTrie: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
@@ -208,7 +208,7 @@ describe(`valid verkle network setup`, async () => {
     {
       name: 'block 4 with kaustinen block13 txs and withdrawals',
       blockData: {
-        transactions: blocks.block13.execute.transactions,
+        transactions: blocks.block13.execute.transactions as PrefixedHexString[],
         blockNumber: '0x04',
         stateRoot: '0x57e675e1d6b2ab5d65601e81658de1468afad77752a271a48364dcefda856614',
         receiptTrie: '0x6a0be0e8208f625225e43681258eb9901ed753e2656f0cd6c0a3971fada5f190',
@@ -238,7 +238,7 @@ describe(`valid verkle network setup`, async () => {
     },
   ] as const
 
-  let parentHash = genesisBlockHash
+  let parentHash: PrefixedHexString = genesisBlockHash
   for (const testCase of testCases) {
     const { name, blockData, preimages } = testCase
     it(`run ${name}`, async () => {

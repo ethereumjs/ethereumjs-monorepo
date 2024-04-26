@@ -20,7 +20,8 @@ import { BlobEIP4844Transaction, TransactionFactory } from '../src/index.js'
 
 import blobTx from './json/serialized4844tx.json'
 
-import type { Kzg } from '@ethereumjs/util'
+import type { BlobEIP4844TxData } from '../src/index.js'
+import type { Kzg, PrefixedHexString } from '@ethereumjs/util'
 
 const pk = randomBytes(32)
 describe('EIP4844 addSignature tests', () => {
@@ -165,7 +166,7 @@ describe('fromTxData using from a json', () => {
       chainId: Number(txData.chainId),
     })
     try {
-      const tx = BlobEIP4844Transaction.fromTxData(txData, { common: c })
+      const tx = BlobEIP4844Transaction.fromTxData(txData as BlobEIP4844TxData, { common: c })
       assert.ok(true, 'Should be able to parse a json data and hash it')
 
       assert.equal(typeof tx.maxFeePerBlobGas, 'bigint', 'should be able to parse correctly')
@@ -182,7 +183,7 @@ describe('fromTxData using from a json', () => {
       )
 
       const fromSerializedTx = BlobEIP4844Transaction.fromSerializedTx(
-        hexToBytes(txMeta.serialized),
+        hexToBytes(txMeta.serialized as PrefixedHexString),
         { common: c }
       )
       assert.equal(
@@ -284,6 +285,35 @@ describe('Network wrapper tests', () => {
     const signedTx = unsignedTx.sign(pk)
     const sender = signedTx.getSenderAddress().toString()
     const wrapper = signedTx.serializeNetworkWrapper()
+
+    const jsonData = BlobEIP4844Transaction.networkWrapperToJson(wrapper, { common })
+    assert.equal(jsonData.blobs?.length, blobs.length, 'contains the correct number of blobs')
+    for (let i = 0; i < jsonData.blobs.length; i++) {
+      const b1 = jsonData.blobs[i]
+      const b2 = bytesToHex(signedTx.blobs![i])
+      assert.equal(b1, b2, 'contains the same blobs')
+    }
+    assert.equal(
+      jsonData.kzgCommitments.length,
+      signedTx.kzgCommitments!.length,
+      'contains the correct number of commitments'
+    )
+    for (let i = 0; i < jsonData.kzgCommitments.length; i++) {
+      const c1 = jsonData.kzgCommitments[i]
+      const c2 = bytesToHex(signedTx.kzgCommitments![i])
+      assert.equal(c1, c2, 'contains the same commitments')
+    }
+    assert.equal(
+      jsonData.kzgProofs?.length,
+      signedTx.kzgProofs!.length,
+      'contains the correct number of proofs'
+    )
+    for (let i = 0; i < jsonData.kzgProofs.length; i++) {
+      const p1 = jsonData.kzgProofs[i]
+      const p2 = bytesToHex(signedTx.kzgProofs![i])
+      assert.equal(p1, p2, 'contains the same proofs')
+    }
+
     const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(wrapper, {
       common,
     })
@@ -327,7 +357,7 @@ describe('Network wrapper tests', () => {
         BlobEIP4844Transaction.fromTxData(
           {
             blobsData: ['hello world'],
-            blobs: ['hello world'],
+            blobs: ['hello world' as any],
             maxFeePerBlobGas: 100000000n,
             gasLimit: 0xffffffn,
             to: randomBytes(20),
@@ -617,8 +647,7 @@ describe('Network wrapper deserialization test', () => {
     const commitments = blobsToCommitments(kzg, blobs)
     const proofs = blobsToProofs(kzg, blobs, commitments)
 
-    /* eslint-disable @typescript-eslint/no-use-before-define */
-    const wrapper = hexToBytes(blobTx.tx)
+    const wrapper = hexToBytes(blobTx.tx as PrefixedHexString)
     const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(wrapper, {
       common,
     })

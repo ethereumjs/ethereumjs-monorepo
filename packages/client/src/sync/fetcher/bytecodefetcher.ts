@@ -9,12 +9,12 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { Fetcher } from './fetcher'
-import { getInitFecherDoneFlags } from './types'
+import { Fetcher } from './fetcher.js'
+import { getInitFecherDoneFlags } from './types.js'
 
-import type { Peer } from '../../net/peer'
-import type { FetcherOptions } from './fetcher'
-import type { Job, SnapFetcherDoneFlags } from './types'
+import type { Peer } from '../../net/peer/index.js'
+import type { FetcherOptions } from './fetcher.js'
+import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
@@ -86,6 +86,11 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     job: Job<JobTask, Uint8Array[], Uint8Array>
   ): Promise<ByteCodeDataResponse | undefined> {
     const { task, peer } = job
+    // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
+    // TODOs:
+    // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
+    // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
+    await peer?.latest()
 
     this.debug(`requested code hashes: ${Array.from(task.hashes).map((h) => bytesToHex(h))}`)
 

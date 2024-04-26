@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
-
-const DuplexPair = require('it-pair/duplex')
+//@ts-ignore
+import DuplexPair from 'it-pair/duplex'
 
 const Stream = function (protocols: string[]) {
   const [local, remote] = DuplexPair()

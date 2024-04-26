@@ -3,6 +3,8 @@ import { assert, describe, it } from 'vitest'
 
 import { VerkleTree } from '../src/verkleTree.js'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 // Testdata from https://github.com/gballet/go-ethereum/blob/kaustinen-with-shapella/trie/verkle_test.go
 const presentKeys = [
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
@@ -18,7 +20,7 @@ const presentKeys = [
   '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526404',
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d00',
   '0x18fb432d3b859ec3a1803854e8cceea75d092e52d0d4a4398d13022496745a01',
-].map(hexToBytes)
+].map((key) => hexToBytes(key as PrefixedHexString))
 
 // Corresponding values for the present keys
 const values = [
@@ -35,13 +37,13 @@ const values = [
   '0x0000000000000000000000000000000000000000000000000000000000000000',
   '0x0000000000000000000000000000000000000000000000000000000000000000',
   '0xe703000000000000000000000000000000000000000000000000000000000000',
-].map(hexToBytes)
+].map((key) => hexToBytes(key as PrefixedHexString))
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const absentKeys = [
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d03',
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d04',
-].map(hexToBytes)
+].map((key) => hexToBytes(key as PrefixedHexString))
 
 describe('Verkle tree', () => {
   it.todo('should insert and retrieve values', async () => {

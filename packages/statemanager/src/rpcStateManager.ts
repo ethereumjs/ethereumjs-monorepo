@@ -23,7 +23,7 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
@@ -242,7 +242,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
       params: [address.toString(), [] as any, this._blockTag],
     })
 
-    const proofBuf = proof.accountProof.map((proofNode: string) => toBytes(proofNode))
+    const proofBuf = proof.accountProof.map((proofNode: PrefixedHexString) => toBytes(proofNode))
 
     const verified = await Trie.verifyProof(address.bytes, proofBuf, {
       useKeyHashing: true,
@@ -252,10 +252,8 @@ export class RPCStateManager implements EVMStateManagerInterface {
   }
 
   /**
-   * Gets the code corresponding to the provided `address`.
-   * @param address - Address to get the `account` for
-   * @returns {Promise<Uint8Array>} - Resolves with the code corresponding to the provided address.
-   * Returns an empty `Uint8Array` if the account has no associated code.
+   * Gets the account associated with `address` or `undefined` if account does not exist
+   * @param address - Address of the `account` to get
    */
   async getAccount(address: Address): Promise<Account | undefined> {
     const elem = this._accountCache?.get(address)
@@ -265,11 +263,13 @@ export class RPCStateManager implements EVMStateManagerInterface {
         : undefined
     }
 
-    const rlp = (await this.getAccountFromProvider(address)).serialize()
+    const accountFromProvider = await this.getAccountFromProvider(address)
     const account =
-      equalsBytes(rlp, KECCAK256_RLP_EMPTY_ACCOUNT) === false
-        ? Account.fromRlpSerializedAccount(rlp)
-        : undefined
+      equalsBytes(accountFromProvider.codeHash, new Uint8Array(32).fill(0)) ||
+      equalsBytes(accountFromProvider.serialize(), KECCAK256_RLP_EMPTY_ACCOUNT)
+        ? undefined
+        : Account.fromRlpSerializedAccount(accountFromProvider.serialize())
+
     this._accountCache?.put(address, account)
 
     return account

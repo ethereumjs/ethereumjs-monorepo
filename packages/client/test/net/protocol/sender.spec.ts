@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { Sender } from '../../../src/net/protocol'
+import { Sender } from '../../../src/net/protocol/index.js'
 
 describe('[Sender]', () => {
   it('should get/set status', () => {

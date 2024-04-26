@@ -25,8 +25,8 @@ import {
 } from './simutils'
 
 import type { EthereumClient } from '../../src/client'
-import type { RlpxServer } from '../../src/net/server'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const client = Client.http({ port: 8545 })
 
@@ -49,7 +49,7 @@ let stateManager: DefaultStateManager | undefined = undefined
 const EOATransferToAccount = '0x3dA33B9A0894b908DdBb00d96399e506515A1009'
 let EOATransferToBalance = BigInt(0)
 
-export async function runTx(data: string, to?: string, value?: bigint) {
+export async function runTx(data: PrefixedHexString | '', to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
 
@@ -66,7 +66,7 @@ describe('simple mainnet test run', async () => {
     withPeer: process.env.WITH_PEER,
   })
 
-  if (result.includes('Geth')) {
+  if (result.includes('Geth') === true) {
     assert.ok(true, 'connected to Geth')
   } else {
     assert.fail('connected to wrong client')
@@ -130,12 +130,16 @@ describe('simple mainnet test run', async () => {
         beaconSyncRelayer: relayer,
       } =
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        (await createSnapClient(common, customGenesisState, [nodeInfo.enode], peerBeaconUrl).catch(
-          (e) => {
-            console.log(e)
-            return null
-          }
-        )) ?? {
+        (await createSnapClient(
+          common,
+          customGenesisState,
+          [nodeInfo.enode],
+          peerBeaconUrl,
+          ''
+        ).catch((e) => {
+          console.log(e)
+          return null
+        })) ?? {
           ejsInlineClient: null,
           peerConnectedPromise: Promise.reject('Client creation error'),
           beaconSyncRelayer: null,
@@ -146,7 +150,7 @@ describe('simple mainnet test run', async () => {
       snapCompleted = snapSyncCompletedPromise
       assert.ok(ejsClient !== null, 'ethereumjs client started')
 
-      const enode = (ejsClient!.server('rlpx') as RlpxServer)!.getRlpxInfo().enode
+      const enode = ejsClient!.server()!.getRlpxInfo().enode
       const res = await client.request('admin_addPeer', [enode])
       assert.equal(res.result, true, 'successfully requested Geth add EthereumJS as peer')
 
@@ -176,7 +180,7 @@ describe('simple mainnet test run', async () => {
           // call sync if not has been called yet
           void ejsClient.services[0].synchronizer?.sync()
           await Promise.race([
-            snapCompleted.then(([root, syncedStateManager]) => {
+            (snapCompleted as any).then(([root, syncedStateManager]: [any, any]) => {
               syncedSnapRoot = root
               stateManager = syncedStateManager
             }),
@@ -208,13 +212,13 @@ describe('simple mainnet test run', async () => {
         undefined,
         undefined,
         BigInt(0),
-      ]
-      customGenesisState[sender][0] = `0x${senderBalance.toString(16)}`
+      ] as any
+      ;(customGenesisState[sender][0] as any) = `0x${senderBalance.toString(16)}`
     }
 
     for (const addressString of Object.keys(customGenesisState)) {
       const address = Address.fromString(addressString)
-      const account = await stateManager.getAccount(address)
+      const account = await stateManager?.getAccount(address)
       assert.equal(
         account?.balance,
         BigInt(customGenesisState[addressString][0]),

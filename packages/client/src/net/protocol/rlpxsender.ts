@@ -1,4 +1,4 @@
-import { Sender } from './sender'
+import { Sender } from './sender.js'
 
 import type { ETH as Devp2pETH, LES as Devp2pLES, SNAP as Devp2pSNAP } from '@ethereumjs/devp2p'
 

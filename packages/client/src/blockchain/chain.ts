@@ -3,10 +3,10 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { BIGINT_0, BIGINT_1, equalsBytes } from '@ethereumjs/util'
 
-import { LevelDB } from '../execution/level'
-import { Event } from '../types'
+import { LevelDB } from '../execution/level.js'
+import { Event } from '../types.js'
 
-import type { Config } from '../config'
+import type { Config } from '../config.js'
 import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 

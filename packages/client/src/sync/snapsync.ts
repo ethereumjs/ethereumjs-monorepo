@@ -1,17 +1,17 @@
 import { BIGINT_0, bytesToHex, equalsBytes } from '@ethereumjs/util'
 
-import { Event } from '../types'
-import { short } from '../util'
+import { Event } from '../types.js'
+import { short } from '../util/index.js'
 
-import { AccountFetcher } from './fetcher'
-import { getInitFecherDoneFlags } from './fetcher/types'
-import { Synchronizer } from './sync'
+import { AccountFetcher } from './fetcher/index.js'
+import { getInitFecherDoneFlags } from './fetcher/types.js'
+import { Synchronizer } from './sync.js'
 
-import type { VMExecution } from '../execution'
-import type { Peer } from '../net/peer/peer'
-import type { Skeleton } from '../service/skeleton'
-import type { SnapFetcherDoneFlags } from './fetcher/types'
-import type { SynchronizerOptions } from './sync'
+import type { VMExecution } from '../execution/index.js'
+import type { Peer } from '../net/peer/peer.js'
+import type { Skeleton } from '../service/skeleton.js'
+import type { SnapFetcherDoneFlags } from './fetcher/types.js'
+import type { SynchronizerOptions } from './sync.js'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
 interface SnapSynchronizerOptions extends SynchronizerOptions {
@@ -84,8 +84,8 @@ export class SnapSynchronizer extends Synchronizer {
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
-      const latest = await this.latest(peer)
-      if (latest) {
+      const latest = await peer.latest()
+      if (latest !== undefined) {
         const { number } = latest
         if (
           (!best &&
@@ -97,20 +97,6 @@ export class SnapSynchronizer extends Synchronizer {
       }
     }
     return best ? best[0] : undefined
-  }
-
-  /**
-   * Get latest header of peer
-   */
-  async latest(peer: Peer) {
-    // TODO: refine the way to query latest to fetch for the peer
-    const blockHash = peer.eth!.status.bestHash
-    // const blockHash = this.skeleton?.headHash() ?? peer.eth!.status.bestHash
-    const result = await peer.eth?.getBlockHeaders({
-      block: blockHash,
-      max: 1,
-    })
-    return result ? result[1][0] : undefined
   }
 
   /**
@@ -206,7 +192,7 @@ export class SnapSynchronizer extends Synchronizer {
       return false
     }
 
-    const latest = peer ? await this.latest(peer) : undefined
+    const latest = peer ? await peer.latest() : undefined
     if (!latest) {
       return false
     }

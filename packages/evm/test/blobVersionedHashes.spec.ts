@@ -5,6 +5,7 @@ import { assert, describe, it } from 'vitest'
 import { EVM } from '../src/index.js'
 
 import type { EVMRunCallOpts } from '../src/types.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
   it('should work', async () => {
@@ -57,8 +58,7 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
 
     for (const callCode of ['F1', 'F4', 'F2', 'FA']) {
       // Call the contract via static call and return the returned BLOBHASH
-      const staticCallCode =
-        '0x' +
+      const staticCallCode = ('0x' +
         // return, args and value
         '5F5F5F5F5F' +
         // push 20 bytes address of contract to call
@@ -67,7 +67,7 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
         '5A' +
         callCode +
         // copy returndata to memory offset and then return the same
-        '60205F5F3E60206000F3'
+        '60205F5F3E60206000F3') as PrefixedHexString
 
       // setup the call arguments
       const runCallArgs: EVMRunCallOpts = {
@@ -107,8 +107,7 @@ describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () =>
 
     for (const createOP of ['F0', 'F5']) {
       // Call the contract via static call and return the returned BLOBHASH
-      const staticCallCode =
-        '0x' +
+      const staticCallCode = ('0x' +
         // push initcode
         '7F' +
         getBlobHashIndex0Code +
@@ -121,7 +120,7 @@ describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () =>
         // run CREATE(2)
         createOP +
         // copy the return stack item to memory (this is the created address)
-        '5F5260206000F3'
+        '5F5260206000F3') as PrefixedHexString
 
       // setup the call arguments
       const runCallArgs: EVMRunCallOpts = {

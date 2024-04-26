@@ -1,14 +1,14 @@
 import { Lock } from '@ethereumjs/util'
 
-import { Event } from '../../types'
+import { Event } from '../../types.js'
 
-import type { Config } from '../../config'
-import type { Peer } from '../peer/peer'
-import type { EthProtocolMethods } from './ethprotocol'
-import type { LesProtocolMethods } from './lesprotocol'
-import type { Message, Protocol } from './protocol'
-import type { Sender } from './sender'
-import type { AccountData, SnapProtocolMethods, StorageData } from './snapprotocol'
+import type { Config } from '../../config.js'
+import type { Peer } from '../peer/peer.js'
+import type { EthProtocolMethods } from './ethprotocol.js'
+import type { LesProtocolMethods } from './lesprotocol.js'
+import type { Message, Protocol } from './protocol.js'
+import type { Sender } from './sender.js'
+import type { AccountData, SnapProtocolMethods, StorageData } from './snapprotocol.js'
 import type { BlockBodyBytes, BlockHeader } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { TxReceipt } from '@ethereumjs/vm'
@@ -42,6 +42,15 @@ export class BoundProtocol {
   private _status: any
   private resolvers: Map<string | number, any>
   private messageQueue: Message[] = []
+
+  /**
+   * An eventual updated best head.
+   *
+   * If set this is by design known to be greater or equal the block hash from
+   * the initial `STATUS` exchange (`_status` property here) and `updatedBestHash`
+   * number/hash should take precedence.
+   */
+  public updatedBestHeader?: BlockHeader
 
   /**
    * Create bound protocol

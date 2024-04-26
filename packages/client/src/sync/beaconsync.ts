@@ -1,15 +1,15 @@
 import { BIGINT_0, BIGINT_1, bytesToHex } from '@ethereumjs/util'
 
-import { Event } from '../types'
-import { short } from '../util'
+import { Event } from '../types.js'
+import { short } from '../util/index.js'
 
-import { ReverseBlockFetcher } from './fetcher'
-import { Synchronizer } from './sync'
+import { ReverseBlockFetcher } from './fetcher/index.js'
+import { Synchronizer } from './sync.js'
 
-import type { VMExecution } from '../execution'
-import type { Peer } from '../net/peer/peer'
-import type { Skeleton } from '../service/skeleton'
-import type { SynchronizerOptions } from './sync'
+import type { VMExecution } from '../execution/index.js'
+import type { Peer } from '../net/peer/peer.js'
+import type { Skeleton } from '../service/skeleton.js'
+import type { SynchronizerOptions } from './sync.js'
 import type { Block } from '@ethereumjs/block'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
@@ -115,8 +115,8 @@ export class BeaconSynchronizer extends Synchronizer {
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
-      const latest = await this.latest(peer)
-      if (latest) {
+      const latest = await peer.latest()
+      if (latest !== undefined) {
         const { number } = latest
         if (!best || best[1] < number) {
           best = [peer, number]
@@ -124,17 +124,6 @@ export class BeaconSynchronizer extends Synchronizer {
       }
     }
     return best ? best[0] : undefined
-  }
-
-  /**
-   * Get latest header of peer
-   */
-  async latest(peer: Peer) {
-    const result = await peer.eth?.getBlockHeaders({
-      block: peer.eth!.status.bestHash,
-      max: 1,
-    })
-    return result ? result[1][0] : undefined
   }
 
   /**
@@ -221,7 +210,7 @@ export class BeaconSynchronizer extends Synchronizer {
       return false
     }
 
-    const latest = peer ? await this.latest(peer) : undefined
+    const latest = peer ? await peer.latest() : undefined
     if (!latest) return false
 
     const height = latest.number

@@ -6,9 +6,11 @@ import * as postMergeJSON from './data/geth-genesis/post-merge.json'
 import * as testnetMerge from './data/merge/testnetMerge.json'
 import * as testnetPOS from './data/merge/testnetPOS.json'
 
+import type { ChainConfig } from '../src/index.js'
+
 describe('[Common]: Merge/POS specific logic', () => {
   it('hardforkTTD()', () => {
-    const customChains = [testnetMerge]
+    const customChains = [testnetMerge] as ChainConfig[]
     const c = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
     assert.equal(c.hardforkTTD(Hardfork.Paris), BigInt(5000), 'should get the HF total difficulty')
     assert.equal(
@@ -19,7 +21,7 @@ describe('[Common]: Merge/POS specific logic', () => {
   })
 
   it('getHardforkBy(), merge block null, with total difficulty', () => {
-    const customChains = [testnetMerge]
+    const customChains = [testnetMerge] as ChainConfig[]
     const c = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
     let msg = 'block number < last HF block number set, without TD set'
@@ -76,7 +78,7 @@ describe('[Common]: Merge/POS specific logic', () => {
     testnetMergeWithBlockNumber['hardforks'][8]['block'] = 16
     // Set Shanghai block to 18
     testnetMergeWithBlockNumber['hardforks'][9]['block'] = 18
-    const customChains = [testnetMergeWithBlockNumber]
+    const customChains = [testnetMergeWithBlockNumber] as ChainConfig[]
     const c = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
     const msg = 'block number > last HF block number set, TD set and higher'
@@ -84,7 +86,7 @@ describe('[Common]: Merge/POS specific logic', () => {
   })
 
   it('setHardforkBy(), merge block null, with total difficulty', () => {
-    const customChains = [testnetMerge]
+    const customChains = [testnetMerge] as ChainConfig[]
     const c = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
     let msg = 'block number < last HF block number set, without TD set'
@@ -151,7 +153,7 @@ describe('[Common]: Merge/POS specific logic', () => {
   })
 
   it('Pure POS testnet', () => {
-    const customChains = [testnetPOS]
+    const customChains = [testnetPOS] as ChainConfig[]
     const c = new Common({ chain: 'testnetPOS', hardfork: Hardfork.Chainstart, customChains })
 
     assert.equal(
@@ -165,7 +167,7 @@ describe('[Common]: Merge/POS specific logic', () => {
   })
 
   it('Should fail setting invalid hardfork', () => {
-    const customChains = [testnetPOS]
+    const customChains = [testnetPOS] as ChainConfig[]
     const f = () => {
       new Common({ chain: 'testnetPOS', hardfork: Hardfork.Istanbul, customChains })
     }

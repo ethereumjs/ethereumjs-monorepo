@@ -1,10 +1,12 @@
+import { BIGINT_0, short } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 
-import { BoundEthProtocol, BoundLesProtocol, BoundSnapProtocol } from '../protocol'
+import { BoundEthProtocol, BoundLesProtocol, BoundSnapProtocol } from '../protocol/index.js'
 
-import type { Config } from '../../config'
-import type { BoundProtocol, Protocol, Sender } from '../protocol'
-import type { Server } from '../server'
+import type { Config } from '../../config.js'
+import type { BoundProtocol, Protocol, Sender } from '../protocol/index.js'
+import type { Server } from '../server/index.js'
+import type { BlockHeader } from '@ethereumjs/block'
 
 export interface PeerOptions {
   /* Config */
@@ -91,6 +93,64 @@ export abstract class Peer extends EventEmitter {
   abstract connect(): Promise<void>
 
   /**
+   * Eventually updates and returns the latest header of peer
+   */
+  async latest(): Promise<BlockHeader | undefined> {
+    if (!this.eth) {
+      return
+    }
+    let block: bigint | Uint8Array
+    if (!this.eth!.updatedBestHeader) {
+      // If there is no updated best header stored yet, start with the status hash
+      block = this.eth!.status.bestHash
+    } else {
+      block = this.getPotentialBestHeaderNum()
+    }
+    const result = await this.eth!.getBlockHeaders({
+      block,
+      max: 1,
+    })
+    if (result !== undefined) {
+      const latest = result[1][0]
+      this.eth!.updatedBestHeader = latest
+      if (latest !== undefined) {
+        const height = latest.number
+        if (
+          height > BIGINT_0 &&
+          (this.config.syncTargetHeight === undefined ||
+            this.config.syncTargetHeight === BIGINT_0 ||
+            this.config.syncTargetHeight < latest.number)
+        ) {
+          this.config.syncTargetHeight = height
+          this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
+        }
+      }
+    }
+    return this.eth!.updatedBestHeader
+  }
+
+  /**
+   * Returns a potential best block header number for the peer
+   * (not necessarily verified by block request) derived from
+   * either the client-wide sync target height or the last best
+   * header timestamp "forward-calculated" by block/slot times (12s).
+   */
+  getPotentialBestHeaderNum(): bigint {
+    let forwardCalculatedNum = BIGINT_0
+    const bestSyncTargetNum = this.config.syncTargetHeight ?? BIGINT_0
+    if (this.eth?.updatedBestHeader !== undefined) {
+      const bestHeaderNum = this.eth!.updatedBestHeader.number
+      const nowSec = Math.floor(Date.now() / 1000)
+      const diffSec = nowSec - Number(this.eth!.updatedBestHeader.timestamp)
+      const SLOT_TIME = 12
+      const diffBlocks = BigInt(Math.floor(diffSec / SLOT_TIME))
+      forwardCalculatedNum = bestHeaderNum + diffBlocks
+    }
+    const best = forwardCalculatedNum > bestSyncTargetNum ? forwardCalculatedNum : bestSyncTargetNum
+    return best
+  }
+
+  /**
    * Handle unhandled messages along handshake
    */
   handleMessageQueue() {
@@ -108,28 +168,25 @@ export abstract class Peer extends EventEmitter {
 
     if (protocol.name === 'eth') {
       bound = new BoundEthProtocol(boundOpts)
+
+      await bound!.handshake(sender)
+
+      this.eth = <BoundEthProtocol>bound
     } else if (protocol.name === 'les') {
       bound = new BoundLesProtocol(boundOpts)
+
+      await bound!.handshake(sender)
+
+      this.les = <BoundLesProtocol>bound
     } else if (protocol.name === 'snap') {
       bound = new BoundSnapProtocol(boundOpts)
+      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
+
+      this.snap = <BoundSnapProtocol>bound
     } else {
       throw new Error(`addProtocol: ${protocol.name} protocol not supported`)
     }
 
-    // Handshake only when snap, else
-    if (protocol.name !== 'snap') {
-      await bound!.handshake(sender)
-    } else {
-      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
-    }
-
-    if (protocol.name === 'eth') {
-      this.eth = <BoundEthProtocol>bound
-    } else if (protocol.name === 'snap') {
-      this.snap = <BoundSnapProtocol>bound
-    } else if (protocol.name === 'les') {
-      this.les = <BoundLesProtocol>bound
-    }
     this.boundProtocols.push(bound)
   }
 

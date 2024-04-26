@@ -4,33 +4,33 @@ import type { ExecutionPayload, VerkleExecutionWitness } from './types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 type BeaconWithdrawal = {
-  index: string
-  validator_index: string
-  address: string
-  amount: string
+  index: PrefixedHexString
+  validator_index: PrefixedHexString
+  address: PrefixedHexString
+  amount: PrefixedHexString
 }
 
 // Payload json that one gets using the beacon apis
 // curl localhost:5052/eth/v2/beacon/blocks/56610 | jq .data.message.body.execution_payload
 export type BeaconPayloadJson = {
-  parent_hash: string
-  fee_recipient: string
-  state_root: string
-  receipts_root: string
-  logs_bloom: string
-  prev_randao: string
-  block_number: string
-  gas_limit: string
-  gas_used: string
-  timestamp: string
-  extra_data: string
-  base_fee_per_gas: string
-  block_hash: string
-  transactions: string[]
+  parent_hash: PrefixedHexString
+  fee_recipient: PrefixedHexString
+  state_root: PrefixedHexString
+  receipts_root: PrefixedHexString
+  logs_bloom: PrefixedHexString
+  prev_randao: PrefixedHexString
+  block_number: PrefixedHexString
+  gas_limit: PrefixedHexString
+  gas_used: PrefixedHexString
+  timestamp: PrefixedHexString
+  extra_data: PrefixedHexString
+  base_fee_per_gas: PrefixedHexString
+  block_hash: PrefixedHexString
+  transactions: PrefixedHexString[]
   withdrawals?: BeaconWithdrawal[]
-  blob_gas_used?: string
-  excess_blob_gas?: string
-  parent_beacon_block_root?: string
+  blob_gas_used?: PrefixedHexString
+  excess_blob_gas?: PrefixedHexString
+  parent_beacon_block_root?: PrefixedHexString
   // the casing of VerkleExecutionWitness remains same camel case for now
   execution_witness?: VerkleExecutionWitness
 }

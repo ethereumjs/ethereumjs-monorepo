@@ -25,7 +25,7 @@ import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
 import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { AccessWitness, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
-import type { Address } from '@ethereumjs/util'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 const { debug: createDebugLogger } = debugDefault
 
 const debugGas = createDebugLogger('evm:gas')
@@ -43,12 +43,12 @@ export interface RunResult {
   /**
    * A set of accounts to selfdestruct
    */
-  selfdestruct: Set<string>
+  selfdestruct: Set<PrefixedHexString>
 
   /**
    * A map which tracks which addresses were created (used in EIP 6780)
    */
-  createdAddresses?: Set<string>
+  createdAddresses?: Set<PrefixedHexString>
 }
 
 export interface Env {
@@ -270,11 +270,11 @@ export class Interpreter {
         this._runState.env.chargeCodeAccesses === true
       ) {
         const contract = this._runState.interpreter.getAddress()
+
         if (
-          !(this._runState.stateManager as StatelessVerkleStateManager).checkChunkWitnessPresent(
-            contract,
-            programCounter
-          )
+          !(await (
+            this._runState.stateManager as StatelessVerkleStateManager
+          ).checkChunkWitnessPresent(contract, programCounter))
         ) {
           throw Error(`Invalid witness with missing codeChunk for pc=${programCounter}`)
         }
@@ -957,7 +957,7 @@ export class Interpreter {
 
     // empty the return data Uint8Array
     this._runState.returnBytes = new Uint8Array(0)
-    let createdAddresses: Set<string>
+    let createdAddresses: Set<PrefixedHexString>
     if (this.common.isActivatedEIP(6780)) {
       createdAddresses = new Set(this._result.createdAddresses)
       msg.createdAddresses = createdAddresses
@@ -1068,7 +1068,7 @@ export class Interpreter {
       accessWitness: this._env.accessWitness,
     })
 
-    let createdAddresses: Set<string>
+    let createdAddresses: Set<PrefixedHexString>
     if (this.common.isActivatedEIP(6780)) {
       createdAddresses = new Set(this._result.createdAddresses)
       message.createdAddresses = createdAddresses

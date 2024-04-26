@@ -16,8 +16,8 @@ import {
 import { BuildStatus } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import type { Config } from '../config'
-import type { TxPool } from '../service/txpool'
+import type { Config } from '../config.js'
+import type { TxPool } from '../service/txpool.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { DepositData, WithdrawalData } from '@ethereumjs/util'
@@ -382,7 +382,7 @@ export class PendingBlock {
         }
       } else if ((error as Error).message.includes('blobs missing')) {
         // Remove the blob tx which doesn't has blobs bundled
-        this.txPool.removeByHash(bytesToHex(tx.hash()))
+        this.txPool.removeByHash(bytesToHex(tx.hash()), tx)
         this.config.logger.error(
           `Pending: Removed from txPool a blob tx ${bytesToHex(tx.hash())} with missing blobs`
         )

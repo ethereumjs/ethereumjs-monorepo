@@ -10,6 +10,8 @@ import * as payload87335 from './testdata/payload-slot-87335.json'
 import * as payload87475 from './testdata/payload-slot-87475.json'
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 
+import type { BeaconPayloadJson, VerkleExecutionWitness } from '../src/index.js'
+
 describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   let common: Common
   beforeAll(async () => {
@@ -27,7 +29,7 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   it('reconstruct cancun block with blob txs', async () => {
     for (const payload of [payload87335, payload87475]) {
       try {
-        const block = await Block.fromBeaconPayloadJson(payload, { common })
+        const block = await Block.fromBeaconPayloadJson(payload as BeaconPayloadJson, { common })
         const parentHeader = BlockHeader.fromHeaderData(
           { excessBlobGas: BigInt(0), blobGasUsed: block.header.excessBlobGas! + BigInt(393216) },
           { common }
@@ -44,7 +46,10 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
     try {
       // construct a payload with differing block hash
       await Block.fromBeaconPayloadJson(
-        { ...payload87335, block_hash: payload87475.block_hash },
+        {
+          ...payload87335,
+          block_hash: payload87475.block_hash,
+        } as BeaconPayloadJson,
         { common }
       )
       assert.fail(`should have failed constructing the block`)
@@ -61,7 +66,7 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
         {
           ...payload87475,
           block_hash: '0x573714bdd0ca5e47bc32008751c4fc74237f8cb354fbc1475c1d0ece38236ea4',
-        },
+        } as BeaconPayloadJson,
         { common }
       )
       const parentHeader = BlockHeader.fromHeaderData({ excessBlobGas: BigInt(0) }, { common })
@@ -84,12 +89,14 @@ describe('[fromExecutionPayloadJson]: kaustinen', () => {
   })
   it('reconstruct kaustinen block', async () => {
     assert.ok(common.isActivatedEIP(6800), 'verkle eip should be activated')
-    const block = await Block.fromBeaconPayloadJson(payloadKaustinen, { common })
+    const block = await Block.fromBeaconPayloadJson(payloadKaustinen as BeaconPayloadJson, {
+      common,
+    })
     // the witness object in payload has camel casing for now
     // the current block hash doesn't include witness data so deep match is required
     assert.deepEqual(
       block.executionWitness,
-      payloadKaustinen.execution_witness,
+      payloadKaustinen.execution_witness as VerkleExecutionWitness,
       'execution witness should match'
     )
   })

@@ -4,10 +4,10 @@ import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { OrderedMap } from 'js-sdsl'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain'
-import { Config } from '../../../src/config'
-import { SnapProtocol } from '../../../src/net/protocol'
-import { wait } from '../../integration/util'
+import { Chain } from '../../../src/blockchain/index.js'
+import { Config } from '../../../src/config.js'
+import { SnapProtocol } from '../../../src/net/protocol/index.js'
+import { wait } from '../../integration/util.js'
 
 import type { BranchNode } from '@ethereumjs/trie'
 
@@ -28,7 +28,7 @@ describe('[TrieNodeFetcher]', async () => {
   PeerPool.prototype.idle = vi.fn()
   PeerPool.prototype.ban = vi.fn()
 
-  const { TrieNodeFetcher } = await import('../../../src/sync/fetcher/trienodefetcher')
+  const { TrieNodeFetcher } = await import('../../../src/sync/fetcher/trienodefetcher.js')
 
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })
@@ -109,6 +109,7 @@ describe('[TrieNodeFetcher]', async () => {
       },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
@@ -148,6 +149,7 @@ describe('[TrieNodeFetcher]', async () => {
       snap: { getTrieNodes: mockedGetTrieNodes },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const task = {
       pathStrings: [''],

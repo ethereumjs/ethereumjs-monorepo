@@ -13,21 +13,21 @@ import { Client, Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 import { assert } from 'vitest'
 
-import { Chain } from '../../src/blockchain/chain'
-import { Config } from '../../src/config'
-import { VMExecution } from '../../src/execution'
-import { getLogger } from '../../src/logging'
-import { RlpxServer } from '../../src/net/server/rlpxserver'
-import { RPCManager as Manager } from '../../src/rpc'
-import { Skeleton } from '../../src/service/skeleton'
-import { TxPool } from '../../src/service/txpool'
-import { Event } from '../../src/types'
-import { createRPCServerListener, createWsRPCServerListener } from '../../src/util'
+import { Chain } from '../../src/blockchain/chain.js'
+import { Config } from '../../src/config.js'
+import { VMExecution } from '../../src/execution/index.js'
+import { getLogger } from '../../src/logging.js'
+import { RlpxServer } from '../../src/net/server/rlpxserver.js'
+import { RPCManager as Manager } from '../../src/rpc/index.js'
+import { Skeleton } from '../../src/service/skeleton.js'
+import { TxPool } from '../../src/service/txpool.js'
+import { Event } from '../../src/types.js'
+import { createRPCServerListener, createWsRPCServerListener } from '../../src/util/index.js'
 
-import { mockBlockchain } from './mockBlockchain'
+import { mockBlockchain } from './mockBlockchain.js'
 
-import type { EthereumClient } from '../../src/client'
-import type { FullEthereumService } from '../../src/service'
+import type { EthereumClient } from '../../src/client.js'
+import type { FullEthereumService } from '../../src/service/index.js'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
@@ -99,12 +99,11 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
     accountCache: 10000,
     storageCache: 1000,
     savePreimages: clientOpts.savePreimages,
+    logger: getLogger({}),
   })
-  const blockchain = clientOpts.blockchain ?? mockBlockchain()
+  const blockchain = clientOpts.blockchain ?? (mockBlockchain() as unknown as Blockchain)
 
-  const chain =
-    // @ts-ignore TODO Move to async Chain.create() initialization
-    clientOpts.chain ?? new Chain({ config, blockchain: blockchain as any, genesisState })
+  const chain = clientOpts.chain ?? (await Chain.create({ config, blockchain, genesisState }))
   chain.opened = true
 
   // if blockchain has not been bundled with chain, add the mock blockchain
@@ -235,7 +234,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   // currently we don't have a way to create verkle genesis root so we will
   // use genesisStateRoot for blockchain init as well as to start of the stateless
   // client. else the stateroot could have been generated out of box
-  const genesisMeta = common.gteHardfork(Hardfork.Prague) ? { genesisStateRoot } : { genesisState }
+  const genesisMeta = common.gteHardfork(Hardfork.Osaka) ? { genesisStateRoot } : { genesisState }
   const blockchain = await Blockchain.create({
     common,
     validateBlocks: false,

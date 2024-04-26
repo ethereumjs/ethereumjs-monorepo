@@ -25,6 +25,7 @@ import eip2930Fixtures from './json/eip2930txs.json'
 import legacyFixtures from './json/txs.json'
 
 import type { BaseTransaction } from '../src/baseTransaction.js'
+import type { AccessListEIP2930TxData, FeeMarketEIP1559TxData, LegacyTxData } from '../src/index.js'
 
 describe('[BaseTransaction]', () => {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
@@ -32,17 +33,21 @@ describe('[BaseTransaction]', () => {
 
   const legacyTxs: BaseTransaction<TransactionType.Legacy>[] = []
   for (const tx of legacyFixtures.slice(0, 4)) {
-    legacyTxs.push(LegacyTransaction.fromTxData(tx.data, { common }))
+    legacyTxs.push(LegacyTransaction.fromTxData(tx.data as LegacyTxData, { common }))
   }
 
   const eip2930Txs: BaseTransaction<TransactionType.AccessListEIP2930>[] = []
   for (const tx of eip2930Fixtures) {
-    eip2930Txs.push(AccessListEIP2930Transaction.fromTxData(tx.data, { common }))
+    eip2930Txs.push(
+      AccessListEIP2930Transaction.fromTxData(tx.data as AccessListEIP2930TxData, { common })
+    )
   }
 
   const eip1559Txs: BaseTransaction<TransactionType.FeeMarketEIP1559>[] = []
   for (const tx of eip1559Fixtures) {
-    eip1559Txs.push(FeeMarketEIP1559Transaction.fromTxData(tx.data, { common }))
+    eip1559Txs.push(
+      FeeMarketEIP1559Transaction.fromTxData(tx.data as FeeMarketEIP1559TxData, { common })
+    )
   }
 
   const zero = new Uint8Array(0)
@@ -274,7 +279,7 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          assert.ok(tx.sign(hexToBytes('0x' + privateKey)), `${txType.name}: should sign tx`)
+          assert.ok(tx.sign(hexToBytes(`0x${privateKey}`)), `${txType.name}: should sign tx`)
         }
 
         assert.throws(
@@ -316,7 +321,7 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey, sendersAddress } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          const signedTx = tx.sign(hexToBytes('0x' + privateKey))
+          const signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
           assert.equal(
             signedTx.getSenderAddress().toString(),
             `0x${sendersAddress}`,
@@ -332,9 +337,9 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          const signedTx = tx.sign(hexToBytes('0x' + privateKey))
+          const signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
           const txPubKey = signedTx.getSenderPublicKey()
-          const pubKeyFromPriv = privateToPublic(hexToBytes('0x' + privateKey))
+          const pubKeyFromPriv = privateToPublic(hexToBytes(`0x${privateKey}`))
           assert.ok(
             equalsBytes(txPubKey, pubKeyFromPriv),
             `${txType.name}: should get sender's public key after signing it`
@@ -351,7 +356,7 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          let signedTx = tx.sign(hexToBytes('0x' + privateKey))
+          let signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
           signedTx = JSON.parse(JSON.stringify(signedTx)) // deep clone
           ;(signedTx as any).s = SECP256K1_ORDER + BigInt(1)
           assert.throws(
@@ -372,7 +377,7 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          const signedTx = tx.sign(hexToBytes('0x' + privateKey))
+          const signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
           assert.ok(signedTx.verifySignature(), `${txType.name}: should verify signing it`)
         }
       }
@@ -382,15 +387,15 @@ describe('[BaseTransaction]', () => {
   it('initialization with defaults', () => {
     const bufferZero = toBytes('0x')
     const tx = LegacyTransaction.fromTxData({
-      nonce: '',
-      gasLimit: '',
-      gasPrice: '',
-      to: '',
-      value: '',
-      data: '',
-      v: '',
-      r: '',
-      s: '',
+      nonce: undefined,
+      gasLimit: undefined,
+      gasPrice: undefined,
+      to: undefined,
+      value: undefined,
+      data: undefined,
+      v: undefined,
+      r: undefined,
+      s: undefined,
     })
     assert.equal(tx.v, undefined)
     assert.equal(tx.r, undefined)

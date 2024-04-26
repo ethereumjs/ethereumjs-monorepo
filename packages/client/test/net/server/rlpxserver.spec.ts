@@ -3,8 +3,8 @@ import { EventEmitter } from 'events'
 import { multiaddr } from 'multiaddr'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Config } from '../../../src/config'
-import { Event } from '../../../src/types'
+import { Config } from '../../../src/config.js'
+import { Event } from '../../../src/types.js'
 
 class RlpxPeer extends EventEmitter {
   accept(_: any, _2: any) {}
@@ -159,7 +159,6 @@ describe('should return rlpx server info with ip4 as default', async () => {
   }
   ;(server as any).rlpx = { destroy: vi.fn() }
 
-  // @ts-ignore
   server.rlpx!.id = hexToBytes('0x' + mockId)
   await server.start()
   const nodeInfo = server.getRlpxInfo()
@@ -209,7 +208,6 @@ describe('should return rlpx server info with ip6', async () => {
   }
   ;(server as any).rlpx = { destroy: vi.fn() }
 
-  // @ts-ignore
   server.rlpx!.id = hexToBytes('0x' + mockId)
 
   config.events.on(Event.SERVER_ERROR, (err) => {
@@ -346,8 +344,6 @@ describe('should init rlpx', async () => {
   ;(server as any).peers.set('01', { id: '01' } as any)
   server.rlpx!.events.emit('peer:removed', rlpxPeer)
   server.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
-
-  // @ts-ignore
-  server.rlpx!.id = hexToBytes('0xff')
+  ;(server.rlpx!.id as any) = hexToBytes('0xff')
   server.rlpx!.events.emit('listening')
 })

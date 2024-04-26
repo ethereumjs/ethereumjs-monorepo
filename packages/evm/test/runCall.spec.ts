@@ -82,8 +82,7 @@ describe('RunCall tests', () => {
         value: BigInt(value), // call with this value (the value is used in the contract as an argument, see above's code)
       }
 
-      const hexString = '0x' + padToEven(value.toString(16))
-      let valueBytes = hexToBytes(hexString)
+      let valueBytes = hexToBytes(`0x${padToEven(value.toString(16))}`)
       // pad bytes
       if (valueBytes.length < 32) {
         const diff = 32 - valueBytes.length
@@ -179,7 +178,7 @@ describe('RunCall tests', () => {
     await evm.stateManager.putContractStorage(
       address,
       new Uint8Array(32),
-      hexToBytes('0x' + '00'.repeat(31) + '01')
+      hexToBytes(`0x${'00'.repeat(31)}01`)
     )
 
     // setup the call arguments
@@ -371,7 +370,7 @@ describe('RunCall tests', () => {
     // setup the accounts for this test
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee')) // caller address
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
-    const slot = hexToBytes('0x' + '00'.repeat(32))
+    const slot = hexToBytes(`0x${'00'.repeat(32)}`)
     const emptyBytes = hexToBytes('0x')
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })

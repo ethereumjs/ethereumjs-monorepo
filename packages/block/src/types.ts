@@ -219,68 +219,67 @@ export interface JsonBlock {
 }
 
 /**
- * An object with the block header's data represented as strings.
+ * An object with the block header's data represented as 0x-prefixed hex strings.
  */
 export interface JsonHeader {
-  parentHash?: string
-  uncleHash?: string
-  coinbase?: string
-  stateRoot?: string
-  transactionsTrie?: string
-  receiptTrie?: string
-  logsBloom?: string
-  difficulty?: string
-  number?: string
-  gasLimit?: string
-  gasUsed?: string
-  timestamp?: string
-  extraData?: string
-  mixHash?: string
-  nonce?: string
-  baseFeePerGas?: string
-  withdrawalsRoot?: string
-  depositsRoot?: string
-  blobGasUsed?: string
-  excessBlobGas?: string
-  parentBeaconBlockRoot?: string
+  parentHash?: PrefixedHexString
+  uncleHash?: PrefixedHexString
+  coinbase?: PrefixedHexString
+  stateRoot?: PrefixedHexString
+  transactionsTrie?: PrefixedHexString
+  receiptTrie?: PrefixedHexString
+  logsBloom?: PrefixedHexString
+  difficulty?: PrefixedHexString
+  number?: PrefixedHexString
+  gasLimit?: PrefixedHexString
+  gasUsed?: PrefixedHexString
+  timestamp?: PrefixedHexString
+  extraData?: PrefixedHexString
+  mixHash?: PrefixedHexString
+  nonce?: PrefixedHexString
+  baseFeePerGas?: PrefixedHexString
+  withdrawalsRoot?: PrefixedHexString
+  depositsRoot?: PrefixedHexString
+  blobGasUsed?: PrefixedHexString
+  excessBlobGas?: PrefixedHexString
+  parentBeaconBlockRoot?: PrefixedHexString
 }
 
 /*
  * Based on https://ethereum.org/en/developers/docs/apis/json-rpc/
  */
 export interface JsonRpcBlock {
-  number: string // the block number. null when pending block.
-  hash: string // hash of the block. null when pending block.
-  parentHash: string // hash of the parent block.
-  mixHash?: string // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block.
-  nonce: string // hash of the generated proof-of-work. null when pending block.
-  sha3Uncles: string // SHA3 of the uncles data in the block.
-  logsBloom: string // the bloom filter for the logs of the block. null when pending block.
-  transactionsRoot: string // the root of the transaction trie of the block.
-  stateRoot: string // the root of the final state trie of the block.
-  receiptsRoot: string // the root of the receipts trie of the block.
-  miner: string // the address of the beneficiary to whom the mining rewards were given.
-  difficulty: string // integer of the difficulty for this block.
-  totalDifficulty: string // integer of the total difficulty of the chain until this block.
-  extraData: string // the “extra data” field of this block.
-  size: string // integer the size of this block in bytes.
-  gasLimit: string // the maximum gas allowed in this block.
-  gasUsed: string // the total used gas by all transactions in this block.
-  timestamp: string // the unix timestamp for when the block was collated.
-  transactions: Array<JsonRpcTx | string> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
-  uncles: string[] // Array of uncle hashes
-  baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
+  number: PrefixedHexString // the block number. null when pending block.
+  hash: PrefixedHexString // hash of the block. null when pending block.
+  parentHash: PrefixedHexString // hash of the parent block.
+  mixHash?: PrefixedHexString // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block.
+  nonce: PrefixedHexString // hash of the generated proof-of-work. null when pending block.
+  sha3Uncles: PrefixedHexString // SHA3 of the uncles data in the block.
+  logsBloom: PrefixedHexString // the bloom filter for the logs of the block. null when pending block.
+  transactionsRoot: PrefixedHexString // the root of the transaction trie of the block.
+  stateRoot: PrefixedHexString // the root of the final state trie of the block.
+  receiptsRoot: PrefixedHexString // the root of the receipts trie of the block.
+  miner: PrefixedHexString // the address of the beneficiary to whom the mining rewards were given.
+  difficulty: PrefixedHexString // integer of the difficulty for this block.
+  totalDifficulty: PrefixedHexString // integer of the total difficulty of the chain until this block.
+  extraData: PrefixedHexString // the “extra data” field of this block.
+  size: PrefixedHexString // integer the size of this block in bytes.
+  gasLimit: PrefixedHexString // the maximum gas allowed in this block.
+  gasUsed: PrefixedHexString // the total used gas by all transactions in this block.
+  timestamp: PrefixedHexString // the unix timestamp for when the block was collated.
+  transactions: Array<JsonRpcTx | PrefixedHexString> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
+  uncles: PrefixedHexString[] // Array of uncle hashes
+  baseFeePerGas?: PrefixedHexString // If EIP-1559 is enabled for this block, returns the base fee per gas
   withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
-  withdrawalsRoot?: string // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
+  withdrawalsRoot?: PrefixedHexString // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
   deposits?: Array<JsonRpcDeposit> // If EIP-6110 is enabled for this block, array of deposits
-  depositsRoot?: string // If EIP-6110 is enabled for this block, the root of the deposit trie of the block.
-  blobGasUsed?: string // If EIP-4844 is enabled for this block, returns the blob gas used for the block
-  excessBlobGas?: string // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
-  parentBeaconBlockRoot?: string // If EIP-4788 is enabled for this block, returns parent beacon block root
+  depositsRoot?: PrefixedHexString // If EIP-6110 is enabled for this block, the root of the deposit trie of the block.
+  blobGasUsed?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the blob gas used for the block
+  excessBlobGas?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
+  parentBeaconBlockRoot?: PrefixedHexString // If EIP-4788 is enabled for this block, returns parent beacon block root
   executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
 }
 
-// Note: all these strings are 0x-prefixed
 export type WithdrawalV1 = {
   index: PrefixedHexString // Quantity, 8 Bytes
   validatorIndex: PrefixedHexString // Quantity, 8 bytes
@@ -318,5 +317,5 @@ export type ExecutionPayload = {
   excessBlobGas?: PrefixedHexString // QUANTITY, 64 Bits
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
   // VerkleExecutionWitness is already a hex serialized object
-  executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null imples not available
+  executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
 }

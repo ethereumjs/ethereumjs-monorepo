@@ -16,10 +16,11 @@ import {
   setupEngineUpdateRelay,
   startNetwork,
   waitForELStart,
-} from './simutils'
+} from './simutils.js'
 
-import type { EthereumClient } from '../../src/client'
-import type { RlpxServer } from '../../src/net/server'
+import type { EthereumClient } from '../../src/client.js'
+import type { RlpxServer } from '../../src/net/server/index.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const client = Client.http({ port: 8545 })
 
@@ -39,7 +40,7 @@ let beaconSyncRelayer: any = null
 const EOATransferToAccount = '0x3dA33B9A0894b908DdBb00d96399e506515A1009'
 let EOATransferToBalance = BigInt(0)
 
-export async function runTx(data: string, to?: string, value?: bigint) {
+export async function runTx(data: PrefixedHexString | '', to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
 

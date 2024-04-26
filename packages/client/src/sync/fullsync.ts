@@ -1,16 +1,16 @@
 import { Hardfork } from '@ethereumjs/common'
 import { BIGINT_0, BIGINT_1, equalsBytes } from '@ethereumjs/util'
 
-import { Event } from '../types'
-import { short } from '../util'
+import { Event } from '../types.js'
+import { short } from '../util/index.js'
 
-import { BlockFetcher } from './fetcher'
-import { Synchronizer } from './sync'
+import { BlockFetcher } from './fetcher/index.js'
+import { Synchronizer } from './sync.js'
 
-import type { VMExecution } from '../execution'
-import type { Peer } from '../net/peer/peer'
-import type { TxPool } from '../service/txpool'
-import type { SynchronizerOptions } from './sync'
+import type { VMExecution } from '../execution/index.js'
+import type { Peer } from '../net/peer/peer.js'
+import type { TxPool } from '../service/txpool.js'
+import type { SynchronizerOptions } from './sync.js'
 import type { Block } from '@ethereumjs/block'
 
 interface FullSynchronizerOptions extends SynchronizerOptions {
@@ -139,17 +139,6 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   /**
-   * Get latest header of peer
-   */
-  async latest(peer: Peer) {
-    const result = await peer.eth?.getBlockHeaders({
-      block: peer.eth!.status.bestHash,
-      max: 1,
-    })
-    return result ? result[1][0] : undefined
-  }
-
-  /**
    * Checks if tx pool should be started
    */
   checkTxPoolState() {
@@ -175,7 +164,7 @@ export class FullSynchronizer extends Synchronizer {
    * @returns a boolean if the setup was successful
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    const latest = peer ? await this.latest(peer) : undefined
+    const latest = peer ? await peer.latest() : undefined
     if (!latest) return false
 
     const height = latest.number

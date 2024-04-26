@@ -6,9 +6,10 @@ import { assert, describe, it } from 'vitest'
 import { VM } from '../../../src/vm'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
-const address = new Address(hexToBytes('0x' + '11'.repeat(20)))
-const pkey = hexToBytes('0x' + '20'.repeat(32))
+const address = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
+const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 
 const testCases = [
   {
@@ -125,16 +126,16 @@ describe('EIP-3529 tests', () => {
     })
 
     const gasLimit = BigInt(100000)
-    const key = hexToBytes('0x' + '00'.repeat(32))
+    const key = hexToBytes(`0x${'00'.repeat(32)}`)
 
     for (const testCase of testCases) {
-      const code = hexToBytes(testCase.code + '00') // add a STOP opcode (0 gas) so we can find the gas used / effective gas
+      const code = hexToBytes(`${testCase.code as PrefixedHexString}00`) // add a STOP opcode (0 gas) so we can find the gas used / effective gas
 
       await vm.stateManager.putAccount(address, new Account())
       await vm.stateManager.putContractStorage(
         address,
         key,
-        hexToBytes('0x' + testCase.original.toString().padStart(64, '0'))
+        hexToBytes(`0x${testCase.original.toString().padStart(64, '0')}`)
       )
 
       await vm.stateManager.getContractStorage(address, key)
@@ -192,22 +193,22 @@ describe('EIP-3529 tests', () => {
       }
     })
 
-    const address = new Address(hexToBytes('0x' + '20'.repeat(20)))
+    const address = new Address(hexToBytes(`0x${'20'.repeat(20)}`))
 
-    const value = hexToBytes('0x' + '01'.repeat(32))
+    const value = hexToBytes(`0x${'01'.repeat(32)}`)
 
-    let code = '0x'
+    let code: PrefixedHexString = '0x'
 
     for (let i = 0; i < 100; i++) {
-      const key = hexToBytes('0x' + i.toString(16).padStart(64, '0'))
+      const key = hexToBytes(`0x${i.toString(16).padStart(64, '0')}`)
       await vm.stateManager.putAccount(address, new Account())
       await vm.stateManager.putContractStorage(address, key, value)
       const hex = i.toString(16).padStart(2, '0')
       // push 0 push <hex> sstore
-      code += '600060' + hex + '55'
+      code = `${code}600060${hex}55`
     }
 
-    code += '00'
+    code = `${code}00`
 
     await vm.stateManager.putContractCode(address, hexToBytes(code))
 

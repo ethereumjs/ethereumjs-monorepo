@@ -5,7 +5,7 @@ export enum Chain {
   Goerli = 5,
   Sepolia = 11155111,
   Holesky = 17000,
-  Kaustinen4 = 69420,
+  Kaustinen6 = 69420,
 }
 
 /**
@@ -44,10 +44,10 @@ export const ChainGenesis: Record<Chain, GenesisState> = {
     blockNumber: BIGINT_0,
     stateRoot: hexToBytes('0x69d8c9d72f6fa4ad42d4702b433707212f90db395eb54dc20bc85de253788783'),
   },
-  [Chain.Kaustinen4]: {
-    name: 'kaustinen4',
+  [Chain.Kaustinen6]: {
+    name: 'kaustinen6',
     blockNumber: BIGINT_0,
-    stateRoot: hexToBytes('0x382960711d9ccf58b9db20122e2253eb9bfa99d513f8c9d4e85b55971721f4de'),
+    stateRoot: hexToBytes('0x1fbf85345a3cbba9a6d44f991b721e55620a22397c2a93ee8d5011136ac300ee'),
   },
 }
 
@@ -71,6 +71,7 @@ export enum Hardfork {
   Shanghai = 'shanghai',
   Cancun = 'cancun',
   Prague = 'prague',
+  Osaka = 'osaka',
 }
 
 export enum ConsensusType {

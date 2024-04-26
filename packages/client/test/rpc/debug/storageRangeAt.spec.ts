@@ -1,6 +1,6 @@
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bigIntToHex, bytesToBigInt, bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, beforeEach, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -8,7 +8,7 @@ import genesisJSON from '../../testdata/geth-genesis/debug.json'
 import { dummy, getRpcClient, setupChain } from '../helpers.js'
 
 import type { Block } from '@ethereumjs/block'
-import type { StorageRange } from '@ethereumjs/common/src'
+import type { StorageRange } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { HttpClient } from 'jayson/promise'
 
@@ -36,12 +36,12 @@ const method = 'debug_storageRangeAt'
   }
   ```
 */
-const storageBytecode: string =
+const storageBytecode =
   '0x608060405234801561001057600080fd5b5060426000819055506001808190555060028081905550610123806100366000396000f3fe6080604052348015600f57600080fd5b506004361060465760003560e01c80630c55699c14604b578063a2e62045146065578063a56dfe4a14606d578063c5d7802e146087575b600080fd5b605160a1565b604051605c919060d4565b60405180910390f35b606b60a7565b005b607360b1565b604051607e919060d4565b60405180910390f35b608d60b7565b6040516098919060d4565b60405180910390f35b60005481565b6043600081905550565b60015481565b60025481565b6000819050919050565b60ce8160bd565b82525050565b600060208201905060e7600083018460c7565b9291505056fea2646970667358221220702e3426f9487bc4c75cca28733223e1292e723c32bbea553973c1ebeaeeb87d64736f6c63430008120033'
 /*
   Function selector of the contract's update() function.
  */
-const updateBytecode: string = '0xa2e62045'
+const updateBytecode = '0xa2e62045'
 /*
   Contract used to test storageRangeAt(), compiled with solc 0.8.18+commit.87f61d96
   ```sol
@@ -53,7 +53,7 @@ const updateBytecode: string = '0xa2e62045'
   }
   ```
 */
-const noStorageBytecode: string =
+const noStorageBytecode =
   '0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea26469706673582212202f85c21c604b5e0fde9dca0615b4dd49a586dd18ada5ad8b85aa950462e1e73664736f6c63430008120033'
 
 describe(method, () => {

@@ -4,9 +4,9 @@ import { Client } from 'jayson/promise'
 import { encode } from 'jwt-simple'
 import { assert, describe, it } from 'vitest'
 
-import { METHOD_NOT_FOUND } from '../../src/rpc/error-code'
+import { METHOD_NOT_FOUND } from '../../src/rpc/error-code.js'
 
-import { startRPC } from './helpers'
+import { startRPC } from './helpers.js'
 
 import type { TAlgorithm } from 'jwt-simple'
 

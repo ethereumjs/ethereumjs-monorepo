@@ -11,19 +11,18 @@ import {
   bytesToHex,
   compareBytes,
   setLengthLeft,
+  short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { short } from '../../util'
+import { Fetcher } from './fetcher.js'
+import { getInitFecherDoneFlags } from './types.js'
 
-import { Fetcher } from './fetcher'
-import { getInitFecherDoneFlags } from './types'
-
-import type { Peer } from '../../net/peer'
-import type { StorageData } from '../../net/protocol/snapprotocol'
-import type { FetcherOptions } from './fetcher'
-import type { Job, SnapFetcherDoneFlags } from './types'
+import type { Peer } from '../../net/peer/index.js'
+import type { StorageData } from '../../net/protocol/snapprotocol.js'
+import type { FetcherOptions } from './fetcher.js'
+import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
@@ -219,6 +218,12 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     job: Job<JobTask, StorageData[][], StorageData[]>
   ): Promise<StorageDataResponse | undefined> {
     const { task, peer } = job
+    // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
+    // TODOs:
+    // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
+    // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
+    await peer?.latest()
+
     const origin = this.getOrigin(job)
     const limit = this.getLimit(job)
 
