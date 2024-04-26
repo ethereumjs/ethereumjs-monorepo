@@ -1,9 +1,19 @@
 import { Block } from '@ethereumjs/block'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { CLRequest, bytesToBigInt, concatBytes, randomBytes } from '@ethereumjs/util'
+import {
+  Address,
+  CLRequest,
+  KECCAK256_RLP,
+  bytesToBigInt,
+  concatBytes,
+  hexToBytes,
+  randomBytes,
+} from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
-import { setupVM } from '../utils.js'
+import { VM } from '../../../src/vm.js'
+import { setBalance, setupVM } from '../utils.js'
 
 import type { CLRequestType } from '@ethereumjs/util'
 
@@ -26,7 +36,7 @@ class NumberRequest extends CLRequest implements CLRequestType<NumberRequest> {
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [7685] })
 
-describe('EIP-7685 tests', () => {
+describe('EIP-7685 runBlock tests', () => {
   it('should not error when a valid requestsRoot is provided', async () => {
     const vm = await setupVM({ common })
     const emptyBlock = Block.fromBlockData({}, { common })
@@ -76,5 +86,53 @@ describe('EIP-7685 tests', () => {
     await expect(() => vm.runBlock({ block, generate: true })).rejects.toThrow(
       'invalid requestsRoot'
     )
+  })
+})
+
+describe('EIP 7685 buildBlock tests', () => {
+  it('should build a block without a request and a valid requestsRoot', async () => {
+    const common = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.Shanghai,
+      eips: [7685, 1559, 4895],
+    })
+    const genesisBlock = Block.fromBlockData(
+      { header: { gasLimit: 50000, baseFeePerGas: 100 } },
+      { common }
+    )
+    const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
+    const vm = await VM.create({ common, blockchain })
+    const blockBuilder = await vm.buildBlock({
+      parentBlock: genesisBlock,
+      blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
+    })
+
+    const block = await blockBuilder.build()
+
+    assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
+  })
+
+  it('should build a block with a request and a valid requestsRoot', async () => {
+    const request = new NumberRequest(0x1, randomBytes(32))
+    const common = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.Shanghai,
+      eips: [7685, 1559, 4895],
+    })
+    const genesisBlock = Block.fromBlockData(
+      { header: { gasLimit: 50000, baseFeePerGas: 100 } },
+      { common }
+    )
+    const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
+    const vm = await VM.create({ common, blockchain })
+    const blockBuilder = await vm.buildBlock({
+      parentBlock: genesisBlock,
+      blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
+    })
+
+    const block = await blockBuilder.build({ requests: [request] })
+
+    assert.deepEqual(block.requests!.length, 1)
+    assert.deepEqual(block.header.requestsRoot, await Block.genRequestsTrieRoot([request]))
   })
 })

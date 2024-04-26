@@ -4,7 +4,13 @@ import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
-import type { BigIntLike, GenesisState, PrefixedHexString, WithdrawalData } from '@ethereumjs/util'
+import type {
+  BigIntLike,
+  CLRequest,
+  GenesisState,
+  PrefixedHexString,
+  WithdrawalData,
+} from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
 
 /**
@@ -208,6 +214,11 @@ export interface SealBlockOpts {
    * Overrides the value passed in the constructor.
    */
   mixHash?: Uint8Array
+
+  /**
+   * An array of CLRequests
+   */
+  requests?: CLRequest[]
 }
 
 /**
