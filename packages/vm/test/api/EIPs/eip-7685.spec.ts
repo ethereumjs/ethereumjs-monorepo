@@ -1,19 +1,11 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import {
-  Address,
-  CLRequest,
-  KECCAK256_RLP,
-  bytesToBigInt,
-  concatBytes,
-  hexToBytes,
-  randomBytes,
-} from '@ethereumjs/util'
+import { CLRequest, KECCAK256_RLP, bytesToBigInt, concatBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
 import { VM } from '../../../src/vm.js'
-import { setBalance, setupVM } from '../utils.js'
+import { setupVM } from '../utils.js'
 
 import type { CLRequestType } from '@ethereumjs/util'
 
