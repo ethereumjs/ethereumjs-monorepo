@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1714061972870,
+  "lastUpdate": 1714152939050,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a70312d8314b1ecab8b1fc03ace146ccfafb16ec",
-          "message": "Integrate Simplified kzg-wasm Version / Deprecate Util.initKZG() (#3321)\n\n* Remove all Util.initKZG() calls\r\n\r\n* Remove all Util initKZG imports\r\n\r\n* Temporarily reference PR kzg-wasm version from GitHub in package.json files\r\n\r\n* More Util.initKZG() and import removals\r\n\r\n* Rename kzg-wasm createKZG() -> initKZG() (last step to avoid naming collisions)\r\n\r\n* various cleanup\r\n\r\n* Add finalized kzg-wasm version\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Remove kzg-wasm dependency from root package.json\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Rework Util blobsToCommitments() to not rely on a global kzg object (easy cases)\r\n\r\n* Rework Util blobsToCommitments() to not rely on a global kzg object (somewhat harder cases)\r\n\r\n* Fix blobsToCommitments() usage in the tx library 4844 tx initialization\r\n\r\n* Test fixes\r\n\r\n* Rename Util.initKZG() to original method name, some clean-ups\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-03-15T12:16:45+01:00",
-          "tree_id": "59392cc03552acded20ff1b2c50b0d3b26123d60",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a70312d8314b1ecab8b1fc03ace146ccfafb16ec"
-        },
-        "date": 1710501591813,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 43941,
-            "range": "±1.70%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41771,
-            "range": "±2.74%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 42256,
-            "range": "±1.57%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 41647,
-            "range": "±1.57%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37091,
-            "range": "±5.76%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±6.28%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "barnabas.busa@ethereum.org",
+            "name": "Barnabas Busa",
+            "username": "barnabasbusa"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2a1124c657e268e42ce6427aacb4f5d2cb418116",
+          "message": "fix: Dockerfile entrypoint typo (#3374)",
+          "timestamp": "2024-04-26T13:29:35-04:00",
+          "tree_id": "631bb01a99b224c421bbf9ff3d46d638a46ace1c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2a1124c657e268e42ce6427aacb4f5d2cb418116"
+        },
+        "date": 1714152938383,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41874,
+            "range": "±2.58%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41217,
+            "range": "±1.41%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40981,
+            "range": "±1.47%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 40171,
+            "range": "±1.70%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36210,
+            "range": "±6.77%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
