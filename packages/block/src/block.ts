@@ -178,8 +178,8 @@ export class Block {
       uncleHeaders,
       withdrawals,
       opts,
-      executionWitness,
-      requests
+      requests,
+      executionWitness
     )
   }
 

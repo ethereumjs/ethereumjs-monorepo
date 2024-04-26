@@ -285,6 +285,12 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     preimages: result.preimages,
   }
 
+  if (this.common.isActivatedEIP(7685)) {
+    if (block.requests === undefined) throw new Error('requests object required on 7685 block')
+    if ((await block.requestsTrieIsValid()) === false)
+      throw new Error('invalid requestsRoot provided with block')
+    // Add further request specific validations here
+  }
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
 
   /**
