@@ -684,6 +684,12 @@ export class Blockchain implements BlockchainInterface {
         throw new Error(`expected blob gas: ${expectedExcessBlobGas}, got: ${header.excessBlobGas}`)
       }
     }
+
+    if (header.common.isActivatedEIP(7685) === true) {
+      if (header.requestsRoot === undefined) {
+        throw new Error(`requestsRoot must be provided when EIP-7685 is active`)
+      }
+    }
   }
 
   /**
@@ -699,6 +705,7 @@ export class Blockchain implements BlockchainInterface {
     // (one for each uncle header and then for validateBlobTxs).
     const parentBlock = await this.getBlock(block.header.parentHash)
     block.validateBlobTransactions(parentBlock.header)
+    await block.requestsTrieIsValid()
   }
   /**
    * The following rules are checked in this method:

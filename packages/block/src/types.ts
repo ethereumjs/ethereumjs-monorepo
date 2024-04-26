@@ -160,16 +160,19 @@ export interface BlockData {
 }
 
 export type WithdrawalsBytes = WithdrawalBytes[]
+export type RequestsBytes = RequestBytes[]
 export type ExecutionWitnessBytes = Uint8Array
 
 export type BlockBytes =
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes]
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes]
+  | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes, RequestsBytes]
   | [
       BlockHeaderBytes,
       TransactionsBytes,
       UncleHeadersBytes,
       WithdrawalsBytes,
+      RequestsBytes,
       ExecutionWitnessBytes
     ]
 
@@ -177,7 +180,12 @@ export type BlockBytes =
  * BlockHeaderBuffer is a Buffer array, except for the Verkle PreState which is an array of prestate arrays.
  */
 export type BlockHeaderBytes = Uint8Array[]
-export type BlockBodyBytes = [TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes?]
+export type BlockBodyBytes = [
+  TransactionsBytes,
+  UncleHeadersBytes,
+  WithdrawalsBytes?,
+  RequestBytes?
+]
 /**
  * TransactionsBytes can be an array of serialized txs for Typed Transactions or an array of Uint8Array Arrays for legacy transactions.
  */
@@ -195,6 +203,8 @@ export interface JsonBlock {
   transactions?: JsonTx[]
   uncleHeaders?: JsonHeader[]
   withdrawals?: JsonRpcWithdrawal[]
+  // TODO: Define JsonRequest (if possible)
+  requests?: any | null
   executionWitness?: VerkleExecutionWitness | null
 }
 
@@ -255,8 +265,8 @@ export interface JsonRpcBlock {
   blobGasUsed?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the blob gas used for the block
   excessBlobGas?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
   parentBeaconBlockRoot?: PrefixedHexString // If EIP-4788 is enabled for this block, returns parent beacon block root
-  executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
   requestsRoot?: PrefixedHexString // If EIP-7685 is enabled for this block, returns the requests root
+  executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
 }
 
 export type WithdrawalV1 = {
@@ -288,5 +298,4 @@ export type ExecutionPayload = {
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
   // VerkleExecutionWitness is already a hex serialized object
   executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
-  requests?: RequestBytes[]
 }

@@ -3,12 +3,10 @@ import {
   CLRequest,
   KECCAK256_RLP,
   bytesToBigInt,
-  bytesToHex,
   concatBytes,
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { rejects } from 'assert'
 import { assert, describe, expect, it } from 'vitest'
 
 import { Block } from '../src/index.js'

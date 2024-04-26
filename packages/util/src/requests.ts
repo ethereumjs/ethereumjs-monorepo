@@ -7,13 +7,13 @@ export interface RequestData {
   data: Uint8Array
 }
 
-export interface CLRequestType<T> {
+export interface CLRequestType {
   readonly type: number
   readonly bytes: Uint8Array
   serialize(): Uint8Array
 }
 
-export abstract class CLRequest implements CLRequestType<any> {
+export class CLRequest implements CLRequestType {
   type: number
   bytes: Uint8Array = new Uint8Array()
   constructor(type: number, bytes: Uint8Array) {

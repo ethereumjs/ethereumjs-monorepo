@@ -4,6 +4,7 @@ import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   BIGINT_0,
+  CLRequest,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   Withdrawal,
@@ -41,7 +42,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import type { CLRequest, CLRequestType, EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
+import type { CLRequestType, EthersProvider, RequestBytes, WithdrawalBytes } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -219,7 +220,8 @@ export class Block {
 
     // First try to load header so that we can use its common (in case of setHardfork being activated)
     // to correctly make checks on the hardforks
-    const [headerData, txsData, uhsData, withdrawalBytes, executionWitnessBytes] = values
+    const [headerData, txsData, uhsData, withdrawalBytes, requestBytes, executionWitnessBytes] =
+      values
     const header = BlockHeader.fromValuesArray(headerData, opts)
 
     if (
@@ -269,6 +271,12 @@ export class Block {
       }))
       ?.map(Withdrawal.fromWithdrawalData)
 
+    let requests
+    if (header.common.isActivatedEIP(7685)) {
+      requests = (requestBytes as RequestBytes[]).map(
+        (bytes) => new CLRequest(bytes[0], bytes.slice(1))
+      )
+    }
     // executionWitness are not part of the EL fetched blocks via eth_ bodies method
     // they are currently only available via the engine api constructed blocks
     let executionWitness
@@ -284,7 +292,15 @@ export class Block {
       }
     }
 
-    return new Block(header, transactions, uncleHeaders, withdrawals, opts, executionWitness)
+    return new Block(
+      header,
+      transactions,
+      uncleHeaders,
+      withdrawals,
+      opts,
+      requests,
+      executionWitness
+    )
   }
 
   /**
