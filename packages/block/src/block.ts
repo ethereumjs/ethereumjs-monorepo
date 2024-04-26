@@ -52,7 +52,7 @@ export class Block {
   public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
-  public readonly requests?: CLRequestType<any>[]
+  public readonly requests?: CLRequestType[]
   public readonly common: Common
   protected keccakFunction: (msg: Uint8Array) => Uint8Array
 
