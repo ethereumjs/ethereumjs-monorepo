@@ -119,10 +119,10 @@ describe('EIP6110 tests', () => {
     assert.ok(await validBlock.depositsTrieIsValid(), 'should validate empty deposits root')
 
     const deposit = <DepositData>{
-      pubkey: hexToBytes('0x' + '20'.repeat(48)),
-      withdrawalCredentials: hexToBytes('0x' + '20'.repeat(32)),
+      pubkey: hexToBytes(`0x${'20'.repeat(48)}`),
+      withdrawalCredentials: hexToBytes(`0x${'20'.repeat(32)}`),
       amount: BigInt(1000),
-      signature: hexToBytes('0x' + '20'.repeat(96)),
+      signature: hexToBytes(`0x${'20'.repeat(96)}`),
       index: BigInt(0),
     }
 
@@ -145,10 +145,10 @@ describe('EIP6110 tests', () => {
     )
 
     const deposit2 = <DepositData>{
-      pubkey: hexToBytes('0x' + '30'.repeat(48)),
-      withdrawalCredentials: hexToBytes('0x' + '30'.repeat(32)),
+      pubkey: hexToBytes(`0x${'30'.repeat(48)}`),
+      withdrawalCredentials: hexToBytes(`0x${'30'.repeat(32)}`),
       amount: BigInt(2000),
-      signature: hexToBytes('0x' + '30'.repeat(96)),
+      signature: hexToBytes(`0x${'30'.repeat(96)}`),
       index: BigInt(1),
     }
 

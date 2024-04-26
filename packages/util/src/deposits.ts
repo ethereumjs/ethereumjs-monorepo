@@ -2,7 +2,7 @@ import { bigIntToHex, bytesToHex } from './bytes.js'
 import { BIGINT_0 } from './constants.js'
 import { TypeOutput, toType } from './types.js'
 
-import type { BigIntLike, BytesLike } from './types.js'
+import type { BigIntLike, BytesLike, PrefixedHexString } from './types.js'
 
 export type DepositData = {
   pubkey: BytesLike
@@ -13,11 +13,11 @@ export type DepositData = {
 }
 
 export interface JsonRpcDeposit {
-  pubkey: string // DATA - 48 bytes
-  withdrawalCredentials: string // DATA - 32 bytes
-  amount: string // QUANTITY, 64 bytes
-  signature: string // DATA - 96 bytes
-  index: string // QUANTITY - 64 bytes
+  pubkey: PrefixedHexString // DATA - 48 bytes
+  withdrawalCredentials: PrefixedHexString // DATA - 32 bytes
+  amount: PrefixedHexString // QUANTITY, 64 bytes
+  signature: PrefixedHexString // DATA - 96 bytes
+  index: PrefixedHexString // QUANTITY - 64 bytes
 }
 
 export type DepositBytes = [Uint8Array, Uint8Array, Uint8Array, Uint8Array, Uint8Array]

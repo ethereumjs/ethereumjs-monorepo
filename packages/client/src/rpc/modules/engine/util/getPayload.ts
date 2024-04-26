@@ -11,8 +11,9 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
   const blockJson = block.toJSON()
   const header = blockJson.header!
   const transactions = block.transactions.map((tx) => bytesToHex(tx.serialize())) ?? []
-  const withdrawalsArr = blockJson.withdrawals ? { withdrawals: blockJson.withdrawals } : {}
-  const depositsArr = blockJson.deposits ? { deposits: blockJson.deposits } : {}
+  const withdrawalsArr =
+    blockJson.withdrawals !== undefined ? { withdrawals: blockJson.withdrawals } : {}
+  const depositsArr = blockJson.deposits !== undefined ? { deposits: blockJson.deposits } : {}
   const blobsBundle: BlobsBundleV1 | undefined = bundle
     ? {
         commitments: bundle.commitments.map(bytesToHex),
