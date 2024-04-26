@@ -49,4 +49,32 @@ describe('EIP-7685 tests', () => {
       })
     ).rejects.toThrow('invalid requestsRoot')
   })
+  it('should not error when valid requests are provided', async () => {
+    const vm = await setupVM({ common })
+    const request = new NumberRequest(0x1, randomBytes(32))
+    const requestsRoot = await Block.genRequestsTrieRoot([request])
+    const block = Block.fromBlockData(
+      {
+        requests: [request],
+        header: { requestsRoot },
+      },
+      { common }
+    )
+    const res = await vm.runBlock({ block, generate: true })
+    assert.equal(res.gasUsed, 0n)
+  })
+  it('should  error when requestsRoot does not match requests provided', async () => {
+    const vm = await setupVM({ common })
+    const request = new NumberRequest(0x1, randomBytes(32))
+    const block = Block.fromBlockData(
+      {
+        requests: [request],
+        header: { requestsRoot: randomBytes(32) },
+      },
+      { common }
+    )
+    await expect(() => vm.runBlock({ block, generate: true })).rejects.toThrow(
+      'invalid requestsRoot'
+    )
+  })
 })
