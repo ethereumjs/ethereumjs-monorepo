@@ -87,6 +87,7 @@ export class EVM implements EVMInterface {
     Hardfork.Shanghai,
     Hardfork.Cancun,
     Hardfork.Prague,
+    Hardfork.Osaka,
   ]
   protected _tx?: {
     gasPrice: bigint
