@@ -129,6 +129,16 @@ export class Common {
           opts
         )
       }
+      if (chainParamsOrName === CustomChain.PolygonAmoy) {
+        return Common.custom(
+          {
+            name: CustomChain.PolygonAmoy,
+            chainId: 80002,
+            networkId: 80002,
+          },
+          opts
+        )
+      }
       if (chainParamsOrName === CustomChain.ArbitrumOne) {
         return Common.custom(
           {
