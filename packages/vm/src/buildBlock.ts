@@ -322,6 +322,7 @@ export class BlockBuilder {
     let requestsRoot = undefined
     if (this.vm.common.isActivatedEIP(7685)) {
       requestsRoot = await Block.genRequestsTrieRoot(sealOpts?.requests ?? [])
+      // Do other validations per request type
     }
 
     const headerData = {
