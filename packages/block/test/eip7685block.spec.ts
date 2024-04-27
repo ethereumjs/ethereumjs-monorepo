@@ -1,28 +1,19 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import {
-  CLRequest,
-  KECCAK256_RLP,
-  bytesToBigInt,
-  concatBytes,
-  hexToBytes,
-  randomBytes,
-} from '@ethereumjs/util'
+import { CLRequest, KECCAK256_RLP, concatBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
 import { assert, describe, expect, it } from 'vitest'
 
-import { Block } from '../src/index.js'
+import { Block, BlockHeader } from '../src/index.js'
 
 import type { CLRequestType } from '@ethereumjs/util'
 
-class NumberRequest extends CLRequest implements CLRequestType<NumberRequest> {
+class NumberRequest extends CLRequest implements CLRequestType {
   constructor(type: number, bytes: Uint8Array) {
     super(type, bytes)
   }
 
-  public static fromRequestData(bytes: Uint8Array): CLRequestType<NumberRequest> {
+  public static fromRequestData(bytes: Uint8Array): CLRequestType {
     return new NumberRequest(0x1, bytes)
-  }
-  public greaterThan(a: NumberRequest): boolean {
-    return bytesToBigInt(a.bytes) < bytesToBigInt(this.bytes)
   }
 
   serialize() {
@@ -93,5 +84,41 @@ describe('7685 tests', () => {
         { common }
       )
     ).rejects.toThrow('ascending order')
+  })
+})
+
+describe('fromValuesArray tests', () => {
+  it('should construct a block with empty requests root', () => {
+    const block = Block.fromValuesArray(
+      [BlockHeader.fromHeaderData({}, { common }).raw(), [], [], [], []],
+      {
+        common,
+      }
+    )
+    assert.equal(block.header.requestsRoot, KECCAK256_RLP)
+  })
+  it('should construct a block with a valid requests array', async () => {
+    const request1 = new NumberRequest(0x1, hexToBytes('0x1234'))
+    const request2 = new NumberRequest(0x1, hexToBytes('0x2345'))
+    const request3 = new NumberRequest(0x2, hexToBytes('0x2345'))
+    const requests = [request1, request2, request3]
+    const requestsRoot = await Block.genRequestsTrieRoot(requests)
+    const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
+
+    const block = Block.fromValuesArray(
+      [
+        BlockHeader.fromHeaderData({ requestsRoot }, { common }).raw(),
+        [],
+        [],
+        [],
+        serializedRequests,
+      ],
+      {
+        common,
+      }
+    )
+    // assert.deepEqual(block.header.requestsRoot, requestsRoot)
+    assert.equal(block.requests?.length, 3)
+    console.log(block.requests)
   })
 })

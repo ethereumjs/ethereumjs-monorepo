@@ -118,7 +118,14 @@ export class BlockHeader {
    */
   public static fromValuesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
     const headerData = valuesArrayToHeaderData(values)
-    const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot } = headerData
+    const {
+      number,
+      baseFeePerGas,
+      excessBlobGas,
+      blobGasUsed,
+      parentBeaconBlockRoot,
+      requestsRoot,
+    } = headerData
     const header = BlockHeader.fromHeaderData(headerData, opts)
     if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
       const eip1559ActivationBlock = bigIntToBytes(header.common.eipBlock(1559)!)
@@ -138,6 +145,10 @@ export class BlockHeader {
     }
     if (header.common.isActivatedEIP(4788) && parentBeaconBlockRoot === undefined) {
       throw new Error('invalid header. parentBeaconBlockRoot should be provided')
+    }
+
+    if (header.common.isActivatedEIP(7685) && requestsRoot === undefined) {
+      throw new Error('invalid header. requestsRoot should be provided')
     }
     return header
   }
@@ -708,6 +719,9 @@ export class BlockHeader {
     }
     if (this.common.isActivatedEIP(4788) === true) {
       rawItems.push(this.parentBeaconBlockRoot!)
+    }
+    if (this.common.isActivatedEIP(7685) === true) {
+      rawItems.push(this.requestsRoot!)
     }
 
     return rawItems

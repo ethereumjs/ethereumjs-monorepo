@@ -705,7 +705,7 @@ export class Blockchain implements BlockchainInterface {
     // (one for each uncle header and then for validateBlobTxs).
     const parentBlock = await this.getBlock(block.header.parentHash)
     block.validateBlobTransactions(parentBlock.header)
-    await block.requestsTrieIsValid()
+    if (block.common.isActivatedEIP(7685)) await block.requestsTrieIsValid()
   }
   /**
    * The following rules are checked in this method:

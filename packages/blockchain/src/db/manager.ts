@@ -126,15 +126,19 @@ export class DBManager {
         }
         if (body.length < 3) body.push([])
       }
-      // If requests root exists, validate that requests
+      // If requests root exists, validate that requests array exists or insert it
       if (header.requestsRoot !== undefined) {
         if (
-          (equalsBytes(header.requestsRoot, KECCAK256_RLP) && body.length < 4) ||
-          body[3]?.length === 0
+          !equalsBytes(header.requestsRoot, KECCAK256_RLP) &&
+          (body.length < 4 || body[3]?.length === 0)
         ) {
           throw new Error('requestsRoot should be equal to hash of null when no requests')
         }
-        if (body.length < 4) body.push([])
+        if (body.length < 4) {
+          for (let x = 0; x < 4 - body.length; x++) {
+            body.push([])
+          }
+        }
       }
     }
 
@@ -145,6 +149,7 @@ export class DBManager {
     } else {
       opts.setHardfork = await this.getTotalDifficulty(header.parentHash, number - BIGINT_1)
     }
+    console.log(blockData)
     return Block.fromValuesArray(blockData, opts)
   }
 
