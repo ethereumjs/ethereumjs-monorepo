@@ -20,7 +20,7 @@ export function accessAddressEIP2929(
   chargeGas = true,
   isSelfdestructOrAuthcall = false
 ): bigint {
-  if (common.isActivatedEIP(2929) === false) return BIGINT_0
+  if (!common.isActivatedEIP(2929)) return BIGINT_0
 
   // Cold
   if (!runState.interpreter.journal.isWarmedAddress(address)) {
@@ -29,7 +29,7 @@ export function accessAddressEIP2929(
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
     // if verkle not activated
-    if (chargeGas && common.isActivatedEIP(6800) === false) {
+    if (chargeGas && !common.isActivatedEIP(6800)) {
       return common.param('gasPrices', 'coldaccountaccess')
     }
     // Warm: (selfdestruct beneficiary address reads are not charged when warm)
@@ -54,7 +54,7 @@ export function accessStorageEIP2929(
   common: Common,
   chargeGas = true
 ): bigint {
-  if (common.isActivatedEIP(2929) === false) return BIGINT_0
+  if (!common.isActivatedEIP(2929)) return BIGINT_0
 
   const address = runState.interpreter.getAddress().bytes
   const slotIsCold = !runState.interpreter.journal.isWarmedStorage(address, key)
@@ -62,10 +62,10 @@ export function accessStorageEIP2929(
   // Cold (SLOAD and SSTORE)
   if (slotIsCold) {
     runState.interpreter.journal.addWarmedStorage(address, key)
-    if (chargeGas && common.isActivatedEIP(6800) === false) {
+    if (chargeGas && !common.isActivatedEIP(6800)) {
       return common.param('gasPrices', 'coldsload')
     }
-  } else if (chargeGas && (!isSstore || common.isActivatedEIP(6800) === true)) {
+  } else if (chargeGas && (!isSstore || common.isActivatedEIP(6800))) {
     return common.param('gasPrices', 'warmstorageread')
   }
   return BIGINT_0
@@ -88,7 +88,7 @@ export function adjustSstoreGasEIP2929(
   costName: string,
   common: Common
 ): bigint {
-  if (common.isActivatedEIP(2929) === false) return defaultCost
+  if (!common.isActivatedEIP(2929)) return defaultCost
 
   const address = runState.interpreter.getAddress().bytes
   const warmRead = common.param('gasPrices', 'warmstorageread')

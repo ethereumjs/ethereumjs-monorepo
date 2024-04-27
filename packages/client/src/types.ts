@@ -1,8 +1,8 @@
 import { EventEmitter } from 'events'
 
-import type { SyncMode } from '.'
-import type { Peer } from './net/peer'
-import type { Server } from './net/server'
+import type { SyncMode } from './index.js'
+import type { Peer } from './net/peer/index.js'
+import type { Server } from './net/server/index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'

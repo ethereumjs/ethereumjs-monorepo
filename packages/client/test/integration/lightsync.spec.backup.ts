@@ -1,9 +1,9 @@
 import { assert, describe, it } from 'vitest'
 
-import { SyncMode } from '../../src/config'
-import { Event } from '../../src/types'
+import { SyncMode } from '../../src/config.js'
+import { Event } from '../../src/types.js'
 
-import { destroy, setup, wait } from './util'
+import { destroy, setup, wait } from './util.js'
 
 describe(
   'should sync headers',

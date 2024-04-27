@@ -3,10 +3,10 @@ import { MemoryLevel } from 'memory-level'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain'
-import { Config } from '../../src/config'
-import { Skeleton } from '../../src/sync'
-import { ReverseBlockFetcher } from '../../src/sync/fetcher/reverseblockfetcher'
+import { Chain } from '../../src/blockchain/index.js'
+import { Config } from '../../src/config.js'
+import { ReverseBlockFetcher } from '../../src/sync/fetcher/reverseblockfetcher.js'
+import { Skeleton } from '../../src/sync/index.js'
 
 describe('[BeaconSynchronizer]', async () => {
   const execution: any = { run: () => {} }
@@ -29,8 +29,10 @@ describe('[BeaconSynchronizer]', async () => {
   ReverseBlockFetcher.prototype.clear = td.func<any>()
   ReverseBlockFetcher.prototype.destroy = td.func<any>()
 
-  vi.doMock('../../src/sync/fetcher/reverseblockfetcher', () => td.constructor(ReverseBlockFetcher))
-  const { BeaconSynchronizer } = await import('../../src/sync/beaconsync')
+  vi.doMock('../../src/sync/fetcher/reverseblockfetcher.js', () =>
+    td.constructor(ReverseBlockFetcher)
+  )
+  const { BeaconSynchronizer } = await import('../../src/sync/beaconsync.js')
 
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })

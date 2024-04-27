@@ -3,21 +3,21 @@ import { TransactionType } from '@ethereumjs/tx'
 import { concatBytes, hexToBytes } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm'
 
-import { SyncMode } from '../config'
-import { VMExecution } from '../execution'
-import { Miner } from '../miner'
-import { EthProtocol } from '../net/protocol/ethprotocol'
-import { LesProtocol } from '../net/protocol/lesprotocol'
-import { SnapProtocol } from '../net/protocol/snapprotocol'
-import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync'
-import { Event } from '../types'
+import { SyncMode } from '../config.js'
+import { VMExecution } from '../execution/index.js'
+import { Miner } from '../miner/index.js'
+import { EthProtocol } from '../net/protocol/ethprotocol.js'
+import { LesProtocol } from '../net/protocol/lesprotocol.js'
+import { SnapProtocol } from '../net/protocol/snapprotocol.js'
+import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync/index.js'
+import { Event } from '../types.js'
 
-import { Service, type ServiceOptions } from './service'
-import { Skeleton } from './skeleton'
-import { TxPool } from './txpool'
+import { Service, type ServiceOptions } from './service.js'
+import { Skeleton } from './skeleton.js'
+import { TxPool } from './txpool.js'
 
-import type { Peer } from '../net/peer/peer'
-import type { Protocol } from '../net/protocol'
+import type { Peer } from '../net/peer/peer.js'
+import type { Protocol } from '../net/protocol/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { BlobEIP4844Transaction } from '@ethereumjs/tx'
 
@@ -192,7 +192,7 @@ export class FullEthereumService extends Service {
     // it will open execution when done (or if doesn't need to snap sync)
     if (this.snapsync !== undefined) {
       // set up execution vm to avoid undefined error in syncWithPeer when vm is being passed to accountfetcher
-      if (this.execution.config.execCommon.gteHardfork(Hardfork.Prague)) {
+      if (this.execution.config.execCommon.gteHardfork(Hardfork.Osaka)) {
         if (!this.execution.config.statelessVerkle) {
           throw Error(`Currently stateful verkle execution not supported`)
         }

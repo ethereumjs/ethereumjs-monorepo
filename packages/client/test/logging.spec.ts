@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { getLogger } from '../src/logging'
+import { getLogger } from '../src/logging.js'
 
 describe('[Logging]', () => {
   const logger = getLogger({ logLevel: 'info', logFile: 'ethereumjs.log', logLevelFile: 'info' })

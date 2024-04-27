@@ -1,12 +1,12 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { getClientVersion } from '../../util'
-import { callWithStackTrace } from '../helpers'
-import { middleware } from '../validation'
+import { getClientVersion } from '../../util/index.js'
+import { callWithStackTrace } from '../helpers.js'
+import { middleware } from '../validation.js'
 
-import type { Chain } from '../../blockchain'
-import type { EthereumClient } from '../../client'
-import type { Service } from '../../service'
+import type { Chain } from '../../blockchain/index.js'
+import type { EthereumClient } from '../../client.js'
+import type { Service } from '../../service/index.js'
 
 /**
  * admin_* RPC module

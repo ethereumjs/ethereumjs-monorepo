@@ -2,11 +2,11 @@ import { BlockHeader } from '@ethereumjs/block'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain'
-import { Config } from '../../src/config'
-import { Peer } from '../../src/net/peer/peer'
-import { HeaderFetcher } from '../../src/sync/fetcher/headerfetcher'
-import { Event } from '../../src/types'
+import { Chain } from '../../src/blockchain/index.js'
+import { Config } from '../../src/config.js'
+import { Peer } from '../../src/net/peer/peer.js'
+import { HeaderFetcher } from '../../src/sync/fetcher/headerfetcher.js'
+import { Event } from '../../src/types.js'
 
 class PeerPool {
   open() {}
@@ -19,12 +19,12 @@ PeerPool.prototype.close = td.func<any>()
 HeaderFetcher.prototype.fetch = td.func<any>()
 HeaderFetcher.prototype.clear = td.func<any>()
 HeaderFetcher.prototype.destroy = td.func<any>()
-vi.mock('../../src/sync/fetcher/headerfetcher', () => td.object())
+vi.mock('../../src/sync/fetcher/headerfetcher.js', () => td.object())
 
 Peer.prototype.latest = td.func<any>()
-vi.mock('../../src/net/peer/peer', () => td.object())
+vi.mock('../../src/net/peer/peer.js', () => td.object())
 
-const { LightSynchronizer } = await import('../../src/sync/lightsync')
+const { LightSynchronizer } = await import('../../src/sync/lightsync.js')
 describe('[LightSynchronizer]', async () => {
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -154,7 +154,7 @@ describe('import headers', () => {
     Peer.prototype.latest = td.func<any>()
     vi.mock('../../src/net/peer/peer', () => td.object())
 
-    const { LightSynchronizer } = await import('../../src/sync/lightsync')
+    const { LightSynchronizer } = await import('../../src/sync/lightsync.js')
     const config = new Config({
       accountCache: 10000,
       storageCache: 1000,

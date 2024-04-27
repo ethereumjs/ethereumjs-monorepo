@@ -8,7 +8,7 @@ import blocks from '../../testdata/blocks/kaustinen4.json'
 import genesisJSON from '../../testdata/geth-genesis/kaustinen6.json'
 import { getRpcClient, setupChain } from '../helpers.js'
 
-import type { Chain } from '../../../src/blockchain'
+import type { Chain } from '../../../src/blockchain/index.js'
 import type { BeaconPayloadJson, VerkleExecutionWitness } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { HttpClient } from 'jayson/promise'

@@ -2,10 +2,10 @@ import { Block } from '@ethereumjs/block'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain'
-import { Config } from '../../src/config'
-import { Event } from '../../src/types'
-import { wait } from '../integration/util'
+import { Chain } from '../../src/blockchain/index.js'
+import { Config } from '../../src/config.js'
+import { Event } from '../../src/types.js'
+import { wait } from '../integration/util.js'
 
 describe('[FullSynchronizer]', async () => {
   const txPool: any = { removeNewBlockTxs: () => {}, checkRunState: () => {} }
@@ -27,13 +27,13 @@ describe('[FullSynchronizer]', async () => {
   BlockFetcher.prototype.fetch = vi.fn()
   BlockFetcher.prototype.clear = vi.fn()
   BlockFetcher.prototype.destroy = vi.fn()
-  vi.doMock('../../src/sync/fetcher', () => {
+  vi.doMock('../../src/sync/fetcher/index.js', () => {
     return {
       default: () => ({ BlockFetcher }),
     }
   })
 
-  const { FullSynchronizer } = await import('../../src/sync/fullsync')
+  const { FullSynchronizer } = await import('../../src/sync/fullsync.js')
 
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })

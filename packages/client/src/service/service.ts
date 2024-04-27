@@ -1,13 +1,13 @@
-import { Chain } from '../blockchain'
-import { PeerPool } from '../net/peerpool'
-import { FlowControl } from '../net/protocol'
-import { Event } from '../types'
-import { type V8Engine, getV8Engine } from '../util'
+import { Chain } from '../blockchain/index.js'
+import { PeerPool } from '../net/peerpool.js'
+import { FlowControl } from '../net/protocol/index.js'
+import { Event } from '../types.js'
+import { type V8Engine, getV8Engine } from '../util/index.js'
 
-import type { Config } from '../config'
-import type { Peer } from '../net/peer/peer'
-import type { Protocol } from '../net/protocol'
-import type { Synchronizer } from '../sync'
+import type { Config } from '../config.js'
+import type { Peer } from '../net/peer/peer.js'
+import type { Protocol } from '../net/protocol/index.js'
+import type { Synchronizer } from '../sync/index.js'
 import type { AbstractLevel } from 'abstract-level'
 
 export interface ServiceOptions {

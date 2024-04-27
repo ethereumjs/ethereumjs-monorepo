@@ -87,7 +87,7 @@ export class BlockBuilder {
     this.withdrawals = opts.withdrawals?.map(Withdrawal.fromWithdrawalData)
 
     if (
-      this.vm.common.isActivatedEIP(1559) === true &&
+      this.vm.common.isActivatedEIP(1559) &&
       typeof this.headerData.baseFeePerGas === 'undefined'
     ) {
       if (this.headerData.number === vm.common.hardforkBlock(Hardfork.London)) {
@@ -106,7 +106,7 @@ export class BlockBuilder {
     }
 
     if (
-      this.vm.common.isActivatedEIP(4844) === true &&
+      this.vm.common.isActivatedEIP(4844) &&
       typeof this.headerData.excessBlobGas === 'undefined'
     ) {
       this.headerData.excessBlobGas = opts.parentBlock.header.calcNextExcessBlobGas()
@@ -224,7 +224,7 @@ export class BlockBuilder {
     }
     let blobGasUsed = undefined
     if (tx instanceof BlobEIP4844Transaction) {
-      if (this.blockOpts.common?.isActivatedEIP(4844) !== true) {
+      if (this.blockOpts.common?.isActivatedEIP(4844) === false) {
         throw Error('eip4844 not activated yet for adding a blob transaction')
       }
       const blobTx = tx as BlobEIP4844Transaction
@@ -312,7 +312,7 @@ export class BlockBuilder {
     const timestamp = this.headerData.timestamp ?? BIGINT_0
 
     let blobGasUsed = undefined
-    if (this.vm.common.isActivatedEIP(4844) === true) {
+    if (this.vm.common.isActivatedEIP(4844)) {
       blobGasUsed = this.blobGasUsed
     }
 

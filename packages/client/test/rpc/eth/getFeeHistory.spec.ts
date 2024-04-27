@@ -16,10 +16,10 @@ import { assert, describe, it } from 'vitest'
 
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
 import pow from '../../testdata/geth-genesis/pow.json'
-import { getRpcClient, gethGenesisStartLondon, setupChain } from '../helpers'
+import { getRpcClient, gethGenesisStartLondon, setupChain } from '../helpers.js'
 
-import type { Chain } from '../../../src/blockchain'
-import type { VMExecution } from '../../../src/execution'
+import type { Chain } from '../../../src/blockchain/index.js'
+import type { VMExecution } from '../../../src/execution/index.js'
 
 const method = 'eth_feeHistory'
 

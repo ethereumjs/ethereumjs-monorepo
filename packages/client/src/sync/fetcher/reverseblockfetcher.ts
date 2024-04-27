@@ -1,12 +1,12 @@
 import { BIGINT_0 } from '@ethereumjs/util'
 
-import { errSyncMerged } from '../../service/skeleton'
-import { Event } from '../../types'
+import { errSyncMerged } from '../../service/skeleton.js'
+import { Event } from '../../types.js'
 
-import { BlockFetcher } from './blockfetcher'
+import { BlockFetcher } from './blockfetcher.js'
 
-import type { Skeleton } from '../../service/skeleton'
-import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
+import type { Skeleton } from '../../service/skeleton.js'
+import type { BlockFetcherOptions, JobTask } from './blockfetcherbase.js'
 import type { Block } from '@ethereumjs/block'
 
 interface ReverseBlockFetcherOptions extends BlockFetcherOptions {
