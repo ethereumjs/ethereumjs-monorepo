@@ -124,3 +124,31 @@ describe('fromValuesArray tests', () => {
     assert.equal(block.requests?.length, 3)
   })
 })
+
+describe('fromRPC tests', () => {
+  it('should construct a block from a JSON object', async () => {
+    const request1 = new NumberRequest(0x1, hexToBytes('0x1234'))
+    const request2 = new NumberRequest(0x1, hexToBytes('0x2345'))
+    const request3 = new NumberRequest(0x2, hexToBytes('0x2345'))
+    const requests = [request1, request2, request3]
+    const requestsRoot = await Block.genRequestsTrieRoot(requests)
+    const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
+
+    const block = Block.fromValuesArray(
+      [
+        BlockHeader.fromHeaderData({ requestsRoot }, { common }).raw(),
+        [],
+        [],
+        [],
+        serializedRequests,
+      ],
+      {
+        common,
+      }
+    )
+    const jsonBlock = block.toJSON()
+    const rpcBlock: any = { ...jsonBlock.header, requests: jsonBlock.requests }
+    const blockFromJson = Block.fromRPC(rpcBlock, undefined, { common })
+    assert.deepEqual(block.hash(), blockFromJson.hash())
+  })
+})

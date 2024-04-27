@@ -1,5 +1,5 @@
 import { TransactionFactory } from '@ethereumjs/tx'
-import { TypeOutput, setLengthLeft, toBytes, toType } from '@ethereumjs/util'
+import { CLRequest, TypeOutput, hexToBytes, setLengthLeft, toBytes, toType } from '@ethereumjs/util'
 
 import { blockHeaderFromRpc } from './header-from-rpc.js'
 
@@ -54,8 +54,12 @@ export function blockFromRpc(
 
   const uncleHeaders = uncles.map((uh) => blockHeaderFromRpc(uh, options))
 
+  const requests = blockParams.requests?.map((req) => {
+    const bytes = hexToBytes(req)
+    return new CLRequest(bytes[0], bytes.slice(1))
+  })
   return Block.fromBlockData(
-    { header, transactions, uncleHeaders, withdrawals: blockParams.withdrawals },
+    { header, transactions, uncleHeaders, withdrawals: blockParams.withdrawals, requests },
     options
   )
 }

@@ -203,8 +203,7 @@ export interface JsonBlock {
   transactions?: JsonTx[]
   uncleHeaders?: JsonHeader[]
   withdrawals?: JsonRpcWithdrawal[]
-  // TODO: Define JsonRequest (if possible)
-  requests?: any | null
+  requests?: PrefixedHexString[] | null
   executionWitness?: VerkleExecutionWitness | null
 }
 
@@ -265,8 +264,9 @@ export interface JsonRpcBlock {
   blobGasUsed?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the blob gas used for the block
   excessBlobGas?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
   parentBeaconBlockRoot?: PrefixedHexString // If EIP-4788 is enabled for this block, returns parent beacon block root
-  requestsRoot?: PrefixedHexString // If EIP-7685 is enabled for this block, returns the requests root
   executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
+  requestsRoot?: PrefixedHexString // If EIP-7685 is enabled for this block, returns the requests root
+  requests?: Array<PrefixedHexString> // If EIP-7685 is enabled for this block, array of serialized CL requests
 }
 
 export type WithdrawalV1 = {
@@ -298,4 +298,5 @@ export type ExecutionPayload = {
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
   // VerkleExecutionWitness is already a hex serialized object
   executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
+  // TODO: Determine if we need the requestsRoot here
 }

@@ -990,6 +990,9 @@ export class BlockHeader {
     if (this.common.isActivatedEIP(4788)) {
       jsonDict.parentBeaconBlockRoot = bytesToHex(this.parentBeaconBlockRoot!)
     }
+    if (this.common.isActivatedEIP(7685)) {
+      jsonDict.requestsRoot = bytesToHex(this.requestsRoot!)
+    }
     return jsonDict
   }
 

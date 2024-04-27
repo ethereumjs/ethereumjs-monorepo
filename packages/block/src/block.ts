@@ -899,6 +899,7 @@ export class Block {
       transactions: this.transactions.map((tx) => tx.toJSON()),
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
       ...withdrawalsAttr,
+      requests: this.requests?.map((req) => bytesToHex(req.serialize())),
     }
   }
 
