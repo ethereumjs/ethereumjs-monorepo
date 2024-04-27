@@ -527,7 +527,7 @@ export class Trie {
           // (This is the path from the root node to wherever it needs to insert nodes)
           // The items change, because the leaf value is updated, thus all keyhashes in the
           // stack should be updated as well, so that it points to the right key/value pairs of the path
-          const deleteHashes = stack.map((e) => this.hash(e.serialize()))
+          const deleteHashes = stack.map((e) => this.appliedKey(e.serialize()))
           ops = deleteHashes.map((e) => {
             const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, e) : e
             return {
@@ -1175,7 +1175,7 @@ export class Trie {
       // Track if key is found
       let found = false
       try {
-        await this.walkTrie(this.root(), async function (nodeRef, node, key, controller) {
+        await this.walkTrie(this.root(), async function (_, node, key, controller) {
           if (found) {
             // Abort all other children checks
             return
@@ -1183,7 +1183,13 @@ export class Trie {
           if (node instanceof BranchNode) {
             for (const item of node._branches) {
               // If one of the branches matches the key, then it is found
-              if (item !== null && bytesToUnprefixedHex(item as Uint8Array) === dbkey) {
+              if (
+                item !== null &&
+                item.length !== 0 &&
+                bytesToUnprefixedHex(
+                  isRawNode(item) ? controller.trie.appliedKey(RLP.encode(item)) : item
+                ) === dbkey
+              ) {
                 found = true
                 return
               }
