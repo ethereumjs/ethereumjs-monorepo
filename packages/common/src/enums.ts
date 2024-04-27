@@ -128,4 +128,12 @@ export enum CustomChain {
    * - [Documentation](https://community.optimism.io/docs/developers/tutorials.html)
    */
   OptimisticEthereum = 'optimistic-ethereum',
+
+  /**
+   * Polygon (Matic) Amoy Testnet
+   *
+   * - [Block Explorer](https://amoy.polygonscan.com/)
+   */
+  PolygonAmoy = 'polygon-amoy',
+
 }
