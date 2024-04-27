@@ -559,7 +559,7 @@ export class Block {
     // eslint-disable-next-line prefer-const
     for (let [i, tx] of this.transactions.entries()) {
       const errs = tx.getValidationErrors()
-      if (this.common.isActivatedEIP(1559) === true) {
+      if (this.common.isActivatedEIP(1559)) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
           tx = tx as FeeMarketEIP1559Transaction
           if (tx.maxFeePerGas < this.header.baseFeePerGas!) {
@@ -572,7 +572,7 @@ export class Block {
           }
         }
       }
-      if (this.common.isActivatedEIP(4844) === true) {
+      if (this.common.isActivatedEIP(4844)) {
         if (tx instanceof BlobEIP4844Transaction) {
           blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
           if (blobGasUsed > blobGasLimit) {
@@ -587,7 +587,7 @@ export class Block {
       }
     }
 
-    if (this.common.isActivatedEIP(4844) === true) {
+    if (this.common.isActivatedEIP(4844)) {
       if (blobGasUsed !== this.header.blobGasUsed) {
         errors.push(`invalid blobGasUsed expected=${this.header.blobGasUsed} actual=${blobGasUsed}`)
       }

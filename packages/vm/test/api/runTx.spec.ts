@@ -254,10 +254,9 @@ describe('runTx() -> successful API parameter usage', async () => {
             ? tx.maxPriorityFeePerGas
             : tx.maxFeePerGas - baseFee
           : tx.gasPrice - baseFee
-      const expectedCoinbaseBalance =
-        common.isActivatedEIP(1559) === true
-          ? result.totalGasSpent * inclusionFeePerGas
-          : result.amountSpent
+      const expectedCoinbaseBalance = common.isActivatedEIP(1559)
+        ? result.totalGasSpent * inclusionFeePerGas
+        : result.amountSpent
 
       assert.equal(
         coinbaseAccount!.balance,
