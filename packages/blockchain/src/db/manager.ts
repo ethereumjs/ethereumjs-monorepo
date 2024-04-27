@@ -149,7 +149,6 @@ export class DBManager {
     } else {
       opts.setHardfork = await this.getTotalDifficulty(header.parentHash, number - BIGINT_1)
     }
-    console.log(blockData)
     return Block.fromValuesArray(blockData, opts)
   }
 
