@@ -1,6 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { CLRequest, KECCAK256_RLP, concatBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
-import { bytesToHex } from 'ethereum-cryptography/utils.js'
 import { assert, describe, expect, it } from 'vitest'
 
 import { Block, BlockHeader } from '../src/index.js'
@@ -21,7 +20,11 @@ class NumberRequest extends CLRequest implements CLRequestType {
   }
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [7685] })
+const common = new Common({
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.Cancun,
+  eips: [7685, 4844, 4788],
+})
 describe('7685 tests', () => {
   it('should instantiate block with defaults', () => {
     const block = Block.fromBlockData({}, { common })
@@ -95,7 +98,7 @@ describe('fromValuesArray tests', () => {
         common,
       }
     )
-    assert.equal(block.header.requestsRoot, KECCAK256_RLP)
+    assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
   })
   it('should construct a block with a valid requests array', async () => {
     const request1 = new NumberRequest(0x1, hexToBytes('0x1234'))
@@ -117,8 +120,7 @@ describe('fromValuesArray tests', () => {
         common,
       }
     )
-    // assert.deepEqual(block.header.requestsRoot, requestsRoot)
+    assert.deepEqual(block.header.requestsRoot, requestsRoot)
     assert.equal(block.requests?.length, 3)
-    console.log(block.requests)
   })
 })

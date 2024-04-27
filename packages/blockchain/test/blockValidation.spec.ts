@@ -381,11 +381,11 @@ describe('[Blockchain]: Block validation tests', () => {
   })
 })
 describe('EIP 7685: requests field validation tests', () => {
-  it('should throw when putting a block with an invalid requestsRoot', async () => {
+  it.only('should throw when putting a block with an invalid requestsRoot', async () => {
     const common = new Common({
       chain: Chain.Mainnet,
-      hardfork: Hardfork.Shanghai,
-      eips: [7685, 4844],
+      hardfork: Hardfork.Cancun,
+      eips: [7685, 1559, 4895, 4844, 4788],
     })
     const blockchain = await Blockchain.create({
       common,

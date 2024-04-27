@@ -547,7 +547,7 @@ export const EIPs: EIPsDict = {
     url: 'https://eips.ethereum.org/EIPS/eip-7685',
     status: Status.Draft,
     // TODO: Set correct minimum hardfork
-    minimumHardfork: Hardfork.Shanghai,
+    minimumHardfork: Hardfork.Cancun,
     requiredEIPs: [],
     gasPrices: {},
   },
