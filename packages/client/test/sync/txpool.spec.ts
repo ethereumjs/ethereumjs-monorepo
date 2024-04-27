@@ -20,7 +20,7 @@ import { getLogger } from '../../src/logging.js'
 import { PeerPool } from '../../src/net/peerpool.js'
 import { TxPool } from '../../src/service/txpool.js'
 
-import type { PrometheusMetrics } from '../../src/types'
+import type { PrometheusMetrics } from '../../src/types.js'
 
 let prometheusMetrics: PrometheusMetrics | undefined
 

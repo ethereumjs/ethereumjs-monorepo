@@ -266,8 +266,10 @@ export const unpadHex = (a: PrefixedHexString): PrefixedHexString => {
   return `0x${stripZeros(stripHexPrefix(a))}`
 }
 
+// TODO: remove the string type from this function (only keep PrefixedHexString)
 export type ToBytesInputTypes =
   | PrefixedHexString
+  | string
   | number
   | bigint
   | Uint8Array

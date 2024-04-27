@@ -41,7 +41,11 @@ export const assembleBlock = async (
   } catch (error) {
     const validationError = `Error assembling block from payload: ${error}`
     config.logger.error(validationError)
-    const latestValidHash = await validHash(hexToBytes(payload.parentHash), chain, chainCache)
+    const latestValidHash = await validHash(
+      hexToBytes(payload.parentHash as PrefixedHexString),
+      chain,
+      chainCache
+    )
     const response = {
       status: `${error}`.includes('Invalid blockHash') ? Status.INVALID_BLOCK_HASH : Status.INVALID,
       latestValidHash,
