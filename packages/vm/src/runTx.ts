@@ -137,12 +137,9 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Typed transaction specific setup tasks
-  if (
-    opts.tx.supports(Capability.EIP2718TypedTransaction) &&
-    this.common.isActivatedEIP(2718) === true
-  ) {
+  if (opts.tx.supports(Capability.EIP2718TypedTransaction) && this.common.isActivatedEIP(2718)) {
     // Is it an Access List transaction?
-    if (this.common.isActivatedEIP(2930) === false) {
+    if (!this.common.isActivatedEIP(2930)) {
       await this.evm.journal.revert()
       const msg = _errorMsg(
         'Cannot run transaction: EIP 2930 is not activated.',
@@ -152,10 +149,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       )
       throw new Error(msg)
     }
-    if (
-      opts.tx.supports(Capability.EIP1559FeeMarket) &&
-      this.common.isActivatedEIP(1559) === false
-    ) {
+    if (opts.tx.supports(Capability.EIP1559FeeMarket) && !this.common.isActivatedEIP(1559)) {
       await this.evm.journal.revert()
       const msg = _errorMsg(
         'Cannot run transaction: EIP 1559 is not activated.',
@@ -190,7 +184,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     throw e
   } finally {
-    if (this.common.isActivatedEIP(2929) === true) {
+    if (this.common.isActivatedEIP(2929)) {
       this.evm.journal.cleanJournal()
     }
     this.evm.stateManager.originalStorageCache.clear()
@@ -245,7 +239,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     )
   }
 
-  if (this.common.isActivatedEIP(2929) === true) {
+  if (this.common.isActivatedEIP(2929)) {
     // Add origin and precompiles to warm addresses
     const activePrecompiles = this.evm.precompiles
     for (const [addressStr] of activePrecompiles.entries()) {
@@ -256,7 +250,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
       this.evm.journal.addAlwaysWarmAddress(bytesToUnprefixedHex(tx.to.bytes))
     }
-    if (this.common.isActivatedEIP(3651) === true) {
+    if (this.common.isActivatedEIP(3651)) {
       this.evm.journal.addAlwaysWarmAddress(bytesToUnprefixedHex(block.header.coinbase.bytes))
     }
   }
@@ -280,7 +274,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debugGas(`Subtracting base fee (${txBaseFee}) from gasLimit (-> ${gasLimit})`)
   }
 
-  if (this.common.isActivatedEIP(1559) === true) {
+  if (this.common.isActivatedEIP(1559)) {
     // EIP-1559 spec:
     // Ensure that the user was willing to at least pay the base fee
     // assert transaction.max_fee_per_gas >= block.base_fee_per_gas
@@ -315,10 +309,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(`Sender's pre-tx balance is ${balance}`)
   }
   // EIP-3607: Reject transactions from senders with deployed code
-  if (
-    this.common.isActivatedEIP(3607) === true &&
-    !equalsBytes(fromAccount.codeHash, KECCAK256_NULL)
-  ) {
+  if (this.common.isActivatedEIP(3607) && !equalsBytes(fromAccount.codeHash, KECCAK256_NULL)) {
     const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', this, block, tx)
     throw new Error(msg)
   }
@@ -428,7 +419,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   } else {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
     gasPrice = (<LegacyTransaction>tx).gasPrice
-    if (this.common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559)) {
       const baseFee = block.header.baseFeePerGas!
       inclusionFeePerGas = (<LegacyTransaction>tx).gasPrice - baseFee
     }
@@ -582,10 +573,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     minerAccount = new Account()
   }
   // add the amount spent on gas to the miner's account
-  results.minerValue =
-    this.common.isActivatedEIP(1559) === true
-      ? results.totalGasSpent * inclusionFeePerGas!
-      : results.amountSpent
+  results.minerValue = this.common.isActivatedEIP(1559)
+    ? results.totalGasSpent * inclusionFeePerGas!
+    : results.amountSpent
   minerAccount.balance += results.minerValue
 
   if (this.common.isActivatedEIP(6800)) {

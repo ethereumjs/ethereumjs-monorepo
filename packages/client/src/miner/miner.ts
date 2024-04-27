@@ -264,7 +264,7 @@ export class Miner {
         this.config.chainCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559) ?? BIGINT_0
       // Set initial EIP1559 block gas limit to 2x parent gas limit per logic in `block.validateGasLimit`
       gasLimit = gasLimit * BIGINT_2
-    } else if (this.config.chainCommon.isActivatedEIP(1559) === true) {
+    } else if (this.config.chainCommon.isActivatedEIP(1559)) {
       baseFeePerGas = parentBlock.header.calcNextBaseFee()
     }
 

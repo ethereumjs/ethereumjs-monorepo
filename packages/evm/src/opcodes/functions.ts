@@ -627,7 +627,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         )
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
-        if (common.isActivatedEIP(6800) === true) {
+        if (common.isActivatedEIP(6800)) {
           const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
           // create witnesses and charge gas
           const statelessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
