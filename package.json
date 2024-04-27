@@ -72,8 +72,5 @@
   "engines": {
     "node": ">=18",
     "npm": ">=7"
-  },
-  "dependencies": {
-    "web-streams-polyfill": "^4.0.0"
   }
 }
