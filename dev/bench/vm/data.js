@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1714152939050,
+  "lastUpdate": 1714217766888,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e38a521e76963434c508371db46f3f4a6c7dd150",
-          "message": "Fix RPCStateManager Inconsistincy (#3323)\n\n* Check if rlp is empty account instead of null\r\n\r\n* Add test to make sure RPCSM and DSM behave similarly when getting an account that does not exist",
-          "timestamp": "2024-03-18T11:09:01+01:00",
-          "tree_id": "84851421a9606b0ea3e105bf944e921b33eedb36",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e38a521e76963434c508371db46f3f4a6c7dd150"
-        },
-        "date": 1710756725298,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42885,
-            "range": "±2.70%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41351,
-            "range": "±2.20%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41896,
-            "range": "±1.45%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 40649,
-            "range": "±1.64%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36334,
-            "range": "±5.97%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±6.77%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ae08197f19c5e979c4c0b9bf3cb926190c08a759",
+          "message": "Remove unnecessary boolean comparisons when using isActivatedEIP (#3377)\n\n* Remove unnecessary boolean comparisons when using isActivatedEIP\n\n* Fix lint issues\n\n* Fix errors",
+          "timestamp": "2024-04-27T07:33:25-04:00",
+          "tree_id": "25427563e86b3aa344da8421f1a1260bc153e405",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ae08197f19c5e979c4c0b9bf3cb926190c08a759"
+        },
+        "date": 1714217765706,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41692,
+            "range": "±3.06%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41199,
+            "range": "±1.43%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41042,
+            "range": "±1.50%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37323,
+            "range": "±5.75%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 39039,
+            "range": "±1.78%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
