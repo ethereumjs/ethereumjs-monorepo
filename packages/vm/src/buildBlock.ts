@@ -224,7 +224,7 @@ export class BlockBuilder {
     }
     let blobGasUsed = undefined
     if (tx instanceof BlobEIP4844Transaction) {
-      if (!this.blockOpts.common?.isActivatedEIP(4844)) {
+      if (this.blockOpts.common?.isActivatedEIP(4844) === false) {
         throw Error('eip4844 not activated yet for adding a blob transaction')
       }
       const blobTx = tx as BlobEIP4844Transaction
