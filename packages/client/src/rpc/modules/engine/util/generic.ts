@@ -2,10 +2,10 @@ import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { BIGINT_1, bytesToHex, bytesToUnprefixedHex, equalsBytes } from '@ethereumjs/util'
 
-import { UNSUPPORTED_FORK } from '../../../error-code'
-import { type ChainCache } from '../types'
+import { UNSUPPORTED_FORK } from '../../../error-code.js'
+import { type ChainCache } from '../types.js'
 
-import type { Chain } from '../../../../blockchain'
+import type { Chain } from '../../../../blockchain/index.js'
 import type { Common } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 

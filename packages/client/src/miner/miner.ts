@@ -4,13 +4,13 @@ import { Ethash } from '@ethereumjs/ethash'
 import { BIGINT_0, BIGINT_1, BIGINT_2, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
-import { LevelDB } from '../execution/level'
-import { Event } from '../types'
+import { LevelDB } from '../execution/level.js'
+import { Event } from '../types.js'
 
-import type { Config } from '../config'
-import type { VMExecution } from '../execution'
-import type { FullEthereumService } from '../service'
-import type { FullSynchronizer } from '../sync'
+import type { Config } from '../config.js'
+import type { VMExecution } from '../execution/index.js'
+import type { FullEthereumService } from '../service/index.js'
+import type { FullSynchronizer } from '../sync/index.js'
 import type { CliqueConsensus } from '@ethereumjs/blockchain'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { Miner as EthashMiner, Solution } from '@ethereumjs/ethash'
@@ -264,7 +264,7 @@ export class Miner {
         this.config.chainCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559) ?? BIGINT_0
       // Set initial EIP1559 block gas limit to 2x parent gas limit per logic in `block.validateGasLimit`
       gasLimit = gasLimit * BIGINT_2
-    } else if (this.config.chainCommon.isActivatedEIP(1559) === true) {
+    } else if (this.config.chainCommon.isActivatedEIP(1559)) {
       baseFeePerGas = parentBlock.header.calcNextBaseFee()
     }
 

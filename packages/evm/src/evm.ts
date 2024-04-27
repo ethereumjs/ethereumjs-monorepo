@@ -87,6 +87,7 @@ export class EVM implements EVMInterface {
     Hardfork.Shanghai,
     Hardfork.Cancun,
     Hardfork.Prague,
+    Hardfork.Osaka,
   ]
   protected _tx?: {
     gasPrice: bigint
@@ -588,7 +589,7 @@ export class EVM implements EVMInterface {
     // fee for size of the return value
     let totalGas = result.executionGasUsed
     let returnFee = BIGINT_0
-    if (!result.exceptionError && this.common.isActivatedEIP(6800) === false) {
+    if (!result.exceptionError && !this.common.isActivatedEIP(6800)) {
       returnFee =
         BigInt(result.returnValue.length) * BigInt(this.common.param('gasPrices', 'createData'))
       totalGas = totalGas + returnFee
@@ -904,7 +905,7 @@ export class EVM implements EVMInterface {
 
     await this._emit('beforeMessage', message)
 
-    if (!message.to && this.common.isActivatedEIP(2929) === true) {
+    if (!message.to && this.common.isActivatedEIP(2929)) {
       message.code = message.data
       this.journal.addWarmedAddress((await this._generateAddress(message)).bytes)
     }

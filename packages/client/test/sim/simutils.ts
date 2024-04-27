@@ -20,7 +20,7 @@ import * as net from 'node:net'
 import qs from 'qs'
 
 import { EthereumClient } from '../../src/client'
-import { Config } from '../../src/config'
+import { Config } from '../../src/config.js'
 import { LevelDB } from '../../src/execution/level'
 import { RPCManager } from '../../src/rpc'
 import { Event } from '../../src/types'

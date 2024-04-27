@@ -3,16 +3,16 @@ import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain'
-import { Config, SyncMode } from '../../src/config'
-import { RlpxServer } from '../../src/net/server'
-import { Event } from '../../src/types'
+import { Chain } from '../../src/blockchain/index.js'
+import { Config, SyncMode } from '../../src/config.js'
+import { RlpxServer } from '../../src/net/server/index.js'
+import { Event } from '../../src/types.js'
 import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import type { BeaconSynchronizer } from '../../src/sync'
 import type { Log } from '@ethereumjs/evm'
 
-vi.mock('../../src/net/peerpool', () => {
+vi.mock('../../src/net/peerpool.js', () => {
   const PeerPool = vi.fn()
   PeerPool.prototype.open = vi.fn()
   PeerPool.prototype.close = vi.fn()
@@ -21,19 +21,19 @@ vi.mock('../../src/net/peerpool', () => {
   return { PeerPool }
 })
 
-vi.mock('../../src/net/protocol/ethprotocol', () => {
+vi.mock('../../src/net/protocol/ethprotocol.js', () => {
   const EthProtocol = vi.fn()
   EthProtocol.prototype.name = 'eth'
   return { EthProtocol }
 })
 
-vi.mock('../../src/net/protocol/lesprotocol', () => {
+vi.mock('../../src/net/protocol/lesprotocol.js', () => {
   const LesProtocol = vi.fn()
   LesProtocol.prototype.name = 'les'
   return { LesProtocol }
 })
 
-vi.mock('../../src/sync/fullsync', () => {
+vi.mock('../../src/sync/fullsync.js', () => {
   const FullSynchronizer = vi.fn()
   FullSynchronizer.prototype.start = vi.fn()
   FullSynchronizer.prototype.stop = vi.fn()
@@ -45,7 +45,7 @@ vi.mock('../../src/sync/fullsync', () => {
 
   return { FullSynchronizer }
 })
-vi.mock('../../src/sync/beaconsync', () => {
+vi.mock('../../src/sync/beaconsync.js', () => {
   const BeaconSynchronizer = vi.fn()
   BeaconSynchronizer.prototype.start = vi.fn()
   BeaconSynchronizer.prototype.stop = vi.fn()
@@ -57,9 +57,9 @@ vi.mock('../../src/sync/beaconsync', () => {
   }
 })
 
-vi.mock('../../src/net/server')
-vi.mock('../../src/execution')
-const { FullEthereumService } = await import('../../src/service/fullethereumservice')
+vi.mock('../../src/net/server/index.js')
+vi.mock('../../src/execution/index.js')
+const { FullEthereumService } = await import('../../src/service/fullethereumservice.js')
 
 describe('initialize', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })

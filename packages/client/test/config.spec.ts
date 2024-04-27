@@ -1,7 +1,7 @@
 import { Chain, Common } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { Config, DataDirectory } from '../src/config'
+import { Config, DataDirectory } from '../src/config.js'
 
 describe('[Config]', () => {
   it('Initialization with default parameters', () => {

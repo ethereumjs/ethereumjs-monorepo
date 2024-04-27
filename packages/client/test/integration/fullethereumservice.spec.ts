@@ -7,13 +7,13 @@ import { Account, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereum
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src/config'
-import { FullEthereumService } from '../../src/service'
-import { Event } from '../../src/types'
+import { Config } from '../../src/config.js'
+import { FullEthereumService } from '../../src/service/index.js'
+import { Event } from '../../src/types.js'
 
-import { MockChain } from './mocks/mockchain'
-import { MockServer } from './mocks/mockserver'
-import { destroy } from './util'
+import { MockChain } from './mocks/mockchain.js'
+import { MockServer } from './mocks/mockserver.js'
+import { destroy } from './util.js'
 
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
 

@@ -2,7 +2,7 @@
 /// <reference path="./testdouble.d.ts" />
 import { assert, describe, it, vi } from 'vitest'
 
-import { FlowControl } from '../../../src/net/protocol'
+import { FlowControl } from '../../../src/net/protocol/index.js'
 
 vi.useFakeTimers()
 

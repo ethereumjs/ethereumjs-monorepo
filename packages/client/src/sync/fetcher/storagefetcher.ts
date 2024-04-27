@@ -11,19 +11,18 @@ import {
   bytesToHex,
   compareBytes,
   setLengthLeft,
+  short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { short } from '../../util'
+import { Fetcher } from './fetcher.js'
+import { getInitFecherDoneFlags } from './types.js'
 
-import { Fetcher } from './fetcher'
-import { getInitFecherDoneFlags } from './types'
-
-import type { Peer } from '../../net/peer'
-import type { StorageData } from '../../net/protocol/snapprotocol'
-import type { FetcherOptions } from './fetcher'
-import type { Job, SnapFetcherDoneFlags } from './types'
+import type { Peer } from '../../net/peer/index.js'
+import type { StorageData } from '../../net/protocol/snapprotocol.js'
+import type { FetcherOptions } from './fetcher.js'
+import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 

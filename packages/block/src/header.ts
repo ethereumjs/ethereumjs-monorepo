@@ -76,7 +76,7 @@ export class BlockHeader {
    * EIP-4399: After merge to PoS, `mixHash` supplanted as `prevRandao`
    */
   get prevRandao() {
-    if (this.common.isActivatedEIP(4399) === false) {
+    if (!this.common.isActivatedEIP(4399)) {
       const msg = this._errorMsg(
         'The prevRandao parameter can only be accessed when EIP-4399 is activated'
       )
@@ -361,7 +361,7 @@ export class BlockHeader {
     }
 
     // Validation for EIP-1559 blocks
-    if (this.common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559)) {
       if (typeof this.baseFeePerGas !== 'bigint') {
         const msg = this._errorMsg('EIP1559 block has no base fee field')
         throw new Error(msg)
@@ -380,7 +380,7 @@ export class BlockHeader {
       }
     }
 
-    if (this.common.isActivatedEIP(4895) === true) {
+    if (this.common.isActivatedEIP(4895)) {
       if (this.withdrawalsRoot === undefined) {
         const msg = this._errorMsg('EIP4895 block has no withdrawalsRoot field')
         throw new Error(msg)
@@ -393,7 +393,7 @@ export class BlockHeader {
       }
     }
 
-    if (this.common.isActivatedEIP(4788) === true) {
+    if (this.common.isActivatedEIP(4788)) {
       if (this.parentBeaconBlockRoot === undefined) {
         const msg = this._errorMsg('EIP4788 block has no parentBeaconBlockRoot field')
         throw new Error(msg)
@@ -550,7 +550,7 @@ export class BlockHeader {
    * Calculates the base fee for a potential next block
    */
   public calcNextBaseFee(): bigint {
-    if (this.common.isActivatedEIP(1559) === false) {
+    if (!this.common.isActivatedEIP(1559)) {
       const msg = this._errorMsg(
         'calcNextBaseFee() can only be called with EIP1559 being activated'
       )
@@ -671,26 +671,26 @@ export class BlockHeader {
       this.nonce,
     ]
 
-    if (this.common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559)) {
       rawItems.push(bigIntToUnpaddedBytes(this.baseFeePerGas!))
     }
 
-    if (this.common.isActivatedEIP(4895) === true) {
+    if (this.common.isActivatedEIP(4895)) {
       rawItems.push(this.withdrawalsRoot!)
     }
 
     // in kaunstinen 2 verkle is scheduled after withdrawals, will eventually be post deneb hopefully
-    if (this.common.isActivatedEIP(6800) === true) {
+    if (this.common.isActivatedEIP(6800)) {
       // execution witness is not mandatory part of the the block so nothing to push here
       // but keep this comment segment for clarity regarding the same and move it according as per the
       // HF sequence eventually planned
     }
 
-    if (this.common.isActivatedEIP(4844) === true) {
+    if (this.common.isActivatedEIP(4844)) {
       rawItems.push(bigIntToUnpaddedBytes(this.blobGasUsed!))
       rawItems.push(bigIntToUnpaddedBytes(this.excessBlobGas!))
     }
-    if (this.common.isActivatedEIP(4788) === true) {
+    if (this.common.isActivatedEIP(4788)) {
       rawItems.push(this.parentBeaconBlockRoot!)
     }
 
@@ -950,14 +950,14 @@ export class BlockHeader {
       mixHash: bytesToHex(this.mixHash),
       nonce: bytesToHex(this.nonce),
     }
-    if (this.common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559)) {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
     }
-    if (this.common.isActivatedEIP(4844) === true) {
+    if (this.common.isActivatedEIP(4844)) {
       jsonDict.blobGasUsed = bigIntToHex(this.blobGasUsed!)
       jsonDict.excessBlobGas = bigIntToHex(this.excessBlobGas!)
     }
-    if (this.common.isActivatedEIP(4788) === true) {
+    if (this.common.isActivatedEIP(4788)) {
       jsonDict.parentBeaconBlockRoot = bytesToHex(this.parentBeaconBlockRoot!)
     }
     return jsonDict

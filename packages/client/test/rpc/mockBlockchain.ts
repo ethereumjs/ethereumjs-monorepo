@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { equalsBytes, toBytes } from '@ethereumjs/util'
 
-import { dummy } from './helpers'
+import { dummy } from './helpers.js'
 
 export function mockBlockchain(options: any = {}) {
   const number = options.number ?? '0x444444'

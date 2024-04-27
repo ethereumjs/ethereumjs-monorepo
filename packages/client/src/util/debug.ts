@@ -1,8 +1,8 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { DataDirectory } from '..'
+import { DataDirectory } from '../index.js'
 
-import type { VMExecution } from '../execution'
+import type { VMExecution } from '../execution/index.js'
 import type { Block } from '@ethereumjs/block'
 
 /**

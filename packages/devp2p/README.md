@@ -122,7 +122,7 @@ Creates new DPT object
 
 #### `dpt.bootstrap(peer)` (`async`)
 
-Uses a peer as new bootstrap peer and calls `findNeighbouts`.
+Uses a peer as new bootstrap peer and calls `findNeighbours`.
 
 - `peer` - Peer to be added, format `{ address: [ADDRESS], udpPort: [UDPPORT], tcpPort: [TCPPORT] }`.
 

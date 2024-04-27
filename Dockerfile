@@ -14,8 +14,7 @@ WORKDIR /usr/app
 COPY --from=build /usr/app .
 
 # Sanity check
-#RUN node /usr/app/packages/client/dist/bin/cli.js --help
-RUN node /usr/app/node_modules/.bin/ethereumjs --help
+RUN node /usr/app/packages/client/dist/esm/bin/cli.js --help
 
 
 # NodeJS applications have a default memory limit of 2.5GB.
@@ -23,4 +22,4 @@ RUN node /usr/app/node_modules/.bin/ethereumjs --help
 # since memory may spike during certain network conditions.
 ENV NODE_OPTIONS=--max_old_space_size=6144
 
-ENTRYPOINT ["node", "/usr/app/node_modules/.bin/ethereumjs"]
+ENTRYPOINT ["node", "/usr/app/packages/client/dist/esm/bin/cli.js"]

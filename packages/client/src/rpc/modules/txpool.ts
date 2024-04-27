@@ -1,9 +1,9 @@
-import { callWithStackTrace, jsonRpcTx } from '../helpers'
-import { middleware } from '../validation'
+import { callWithStackTrace, jsonRpcTx } from '../helpers.js'
+import { middleware } from '../validation.js'
 
-import type { EthereumClient } from '../..'
-import type { FullEthereumService } from '../../service'
-import type { TxPool as Pool } from '../../service/txpool'
+import type { EthereumClient } from '../../index.js'
+import type { FullEthereumService } from '../../service/index.js'
+import type { TxPool as Pool } from '../../service/txpool.js'
 import type { VM } from '@ethereumjs/vm'
 
 /**
