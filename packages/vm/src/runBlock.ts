@@ -214,7 +214,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       header: { ...block.header, ...generatedFields },
     }
     block = Block.fromBlockData(blockData, { common: this.common })
-  } else if (this.common.isActivatedEIP(6800) === false) {
+  } else if (!this.common.isActivatedEIP(6800)) {
     // Only validate the following headers if verkle blocks aren't activated
     if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
       if (this.DEBUG) {
@@ -262,7 +262,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       )
       throw new Error(msg)
     }
-  } else if (this.common.isActivatedEIP(6800) === true) {
+  } else if (this.common.isActivatedEIP(6800)) {
     // If verkle is activated, only validate the post-state
     if ((this._opts.stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
       throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
@@ -473,7 +473,7 @@ export async function accumulateParentBlockHash(
     const ringKey = number % historyServeWindow
 
     // generate access witness
-    if (vm.common.isActivatedEIP(6800) === true) {
+    if (vm.common.isActivatedEIP(6800)) {
       const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(ringKey)
       // just create access witnesses without charging for the gas
       ;(
@@ -575,7 +575,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     const tx = block.transactions[txIdx]
 
     let maxGasLimit
-    if (this.common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559)) {
       maxGasLimit = block.header.gasLimit * this.common.param('gasConfig', 'elasticityMultiplier')
     } else {
       maxGasLimit = block.header.gasLimit

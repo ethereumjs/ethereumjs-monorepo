@@ -662,7 +662,7 @@ export class Blockchain implements BlockchainInterface {
     }
 
     // check blockchain dependent EIP1559 values
-    if (header.common.isActivatedEIP(1559) === true) {
+    if (header.common.isActivatedEIP(1559)) {
       // check if the base fee is correct
       let expectedBaseFee
       const londonHfBlock = this.common.hardforkBlock(Hardfork.London)
@@ -678,7 +678,7 @@ export class Blockchain implements BlockchainInterface {
       }
     }
 
-    if (header.common.isActivatedEIP(4844) === true) {
+    if (header.common.isActivatedEIP(4844)) {
       const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
       if (header.excessBlobGas !== expectedExcessBlobGas) {
         throw new Error(`expected blob gas: ${expectedExcessBlobGas}, got: ${header.excessBlobGas}`)
