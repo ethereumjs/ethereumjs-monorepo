@@ -11,6 +11,7 @@
 - [OptimisticKovan](CustomChain.md#optimistickovan)
 - [PolygonMainnet](CustomChain.md#polygonmainnet)
 - [PolygonMumbai](CustomChain.md#polygonmumbai)
+- [PolygonAmoy](CustomChain.md#polygonamoy)
 - [xDaiChain](CustomChain.md#xdaichain)
 
 ## Enumeration Members
@@ -84,6 +85,20 @@ Polygon (Matic) Mumbai Testnet
 [enums.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L101)
 
 ___
+### PolygonAmoy
+
+• **PolygonAmoy** = ``"polygon-amoy"``
+
+Polygon (Matic) Amoy Testnet
+
+- [Block Explorer](https://amoy.polygonscan.com/)
+
+#### Defined in
+
+[enums.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L137)
+
+___
+
 
 ### xDaiChain
 

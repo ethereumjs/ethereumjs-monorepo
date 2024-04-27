@@ -98,6 +98,52 @@ describe('[Common]: Custom chains', () => {
     }
   })
 
+  it('custom() -> behavior', () => {
+    let common = Common.custom({ chainId: 123 })
+    assert.deepEqual(common.networkId(), BigInt(1), 'should default to mainnet base chain')
+    assert.equal(common.chainName(), 'custom-chain', 'should set default custom chain name')
+
+    common = Common.custom(CustomChain.PolygonAmoy)
+    assert.deepEqual(
+      common.networkId(),
+      BigInt(80002),
+      'supported chain -> should initialize with correct chain ID'
+    )
+    for (const customChain of Object.values(CustomChain)) {
+      common = Common.custom(customChain)
+      assert.equal(
+        common.chainName(),
+        customChain,
+        `supported chain -> should initialize with enum name (${customChain})`
+      )
+    }
+
+    common = Common.custom(CustomChain.PolygonAmoy)
+    assert.equal(
+      common.hardfork(),
+      common.DEFAULT_HARDFORK,
+      'uses default hardfork when no options are present'
+    )
+
+    common = Common.custom(CustomChain.OptimisticEthereum, { hardfork: Hardfork.Byzantium })
+    assert.equal(
+      common.hardfork(),
+      Hardfork.Byzantium,
+      'should correctly set an option (default options present)'
+    )
+
+    try {
+      //@ts-ignore TypeScript complains, nevertheless do the test for JS behavior
+      Common.custom('this-chain-is-not-supported')
+      assert.fail('test should fail')
+    } catch (e: any) {
+      assert.ok(
+        e.message.includes('not supported'),
+        'supported chain -> should throw if chain name is not supported'
+      )
+    }
+  })
+
   it('customChains parameter: initialization exception', () => {
     try {
       new Common({ chain: testnet, customChains: [testnet] as ChainConfig[] })

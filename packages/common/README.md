@@ -257,6 +257,7 @@ The following custom chains are currently supported:
 
 - `PolygonMainnet`
 - `PolygonMumbai`
+- `PolygonAmoy`
 - `ArbitrumRinkebyTestnet`
 - `xDaiChain`
 - `OptimisticKovan`
