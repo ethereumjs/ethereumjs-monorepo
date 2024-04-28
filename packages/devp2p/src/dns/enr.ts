@@ -1,13 +1,10 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import { protocols } from '@multiformats/multiaddr'
-// import { convertToString } from '@multiformats/multiaddr/convert'
 import { base32, base64url } from '@scure/base'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
 import { sscanf } from 'scanf'
-
-import { toNewUint8Array } from '../util.js'
 
 import type { PeerInfo } from '../types.js'
 import type { Common } from '@ethereumjs/common'
@@ -28,6 +25,11 @@ type ENRRootValues = {
 type ENRTreeValues = {
   publicKey: string
   domain: string
+}
+
+function bytes2port(bytes: Uint8Array): number {
+  const view = new DataView(bytes.buffer)
+  return view.getUint16(bytes.byteOffset)
 }
 
 export class ENR {
@@ -84,9 +86,9 @@ export class ENR {
     // const { ipCode, tcpCode, udpCode } = this._getIpProtocolConversionCodes(obj.id)
 
     const peerInfo: PeerInfo = {
-      address: '', // convertToString(ipCode, obj.ip),
-      tcpPort: 0, //Number(convertToString(tcpCode, toNewUint8Array(obj.tcp))),
-      udpPort: 0, //Number(convertToString(udpCode, toNewUint8Array(obj.udp))),
+      address: obj.ip.toString(),
+      tcpPort: bytes2port(obj.tcp),
+      udpPort: bytes2port(obj.udp),
     }
 
     return peerInfo
