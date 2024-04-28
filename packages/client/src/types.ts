@@ -6,7 +6,7 @@ import type { Server } from './net/server/index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
-import type { Multiaddr } from 'multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type * as promClient from 'prom-client'
 
 /**
