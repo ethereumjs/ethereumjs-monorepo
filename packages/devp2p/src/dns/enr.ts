@@ -1,6 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import { protocols } from '@multiformats/multiaddr'
+import { convertToString } from '@multiformats/multiaddr/dist/src/convert.js'
 import { base32, base64url } from '@scure/base'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
@@ -83,12 +84,12 @@ export class ENR {
 
     if (!isVerified) throw new Error('Unable to verify ENR signature')
 
-    // const { ipCode, tcpCode, udpCode } = this._getIpProtocolConversionCodes(obj.id)
+    const { ipCode, tcpCode, udpCode } = this._getIpProtocolConversionCodes(obj.id)
 
     const peerInfo: PeerInfo = {
-      address: obj.ip.toString(),
-      tcpPort: bytes2port(obj.tcp),
-      udpPort: bytes2port(obj.udp),
+      address: convertToString(ipCode, obj.ip),
+      tcpPort: Number(convertToString(tcpCode, obj.tcp)),
+      udpPort: Number(convertToString(udpCode, obj.udp)),
     }
 
     return peerInfo
