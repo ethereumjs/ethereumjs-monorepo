@@ -1,6 +1,7 @@
 // Some more secure presets when using e.g. JS `call`
 'use strict'
 
+import { RLP } from '@ethereumjs/rlp'
 import {
   KeyEncoding,
   Lock,
@@ -527,8 +528,11 @@ export class Trie {
           // The items change, because the leaf value is updated, thus all keyhashes in the
           // stack should be updated as well, so that it points to the right key/value pairs of the path
           const deleteHashes = stack.map((e) => this.hash(e.serialize()))
-          ops = deleteHashes.map((e) => {
-            const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, e) : e
+          ops = deleteHashes.map((deletedHash) => {
+            const key = this._opts.keyPrefix
+              ? concatBytes(this._opts.keyPrefix, deletedHash)
+              : deletedHash
+
             return {
               type: 'del',
               key,
@@ -568,8 +572,11 @@ export class Trie {
       const deleteHashes = stack.map((e) => this.hash(e.serialize()))
       // Just as with `put`, the stack items all will have their keyhashes updated
       // So after deleting the node, one can safely delete these from the DB
-      ops = deleteHashes.map((e) => {
-        const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, e) : e
+
+      ops = deleteHashes.map((deletedHash) => {
+        const key = this._opts.keyPrefix
+          ? concatBytes(this._opts.keyPrefix, deletedHash)
+          : deletedHash
         return {
           type: 'del',
           key,
@@ -1020,9 +1027,11 @@ export class Trie {
       // Since this branch is deleted, one can thus also delete this branch from the DB
       // So add this to the `opStack` and mark the keyhash to be deleted
       if (this._opts.useNodePruning) {
+        // If the branchNode has length < 32, it will be a RawNode (Uint8Array[]) instead of a Uint8Array
+        // In that case, we need to serialize and hash it into a Uint8Array, otherwise the operation will throw
         opStack.push({
           type: 'del',
-          key: branchNode as Uint8Array,
+          key: isRawNode(branchNode) ? this.appliedKey(RLP.encode(branchNode)) : branchNode,
         })
       }
 
@@ -1055,24 +1064,24 @@ export class Trie {
 
     // update nodes
     while (stack.length) {
-      const node = stack.pop() as TrieNode
-      if (node instanceof LeafNode) {
+      const node = stack.pop()
+      if (node === undefined) {
+        throw new Error('saveStack: missing node')
+      }
+      if (node instanceof LeafNode || node instanceof ExtensionNode) {
         key.splice(key.length - node.key().length)
-      } else if (node instanceof ExtensionNode) {
-        key.splice(key.length - node.key().length)
-        if (lastRoot) {
-          node.value(lastRoot)
-        }
-      } else if (node instanceof BranchNode) {
-        if (lastRoot) {
-          const branchKey = key.pop()
-          node.setBranch(branchKey!, lastRoot)
-        }
+      }
+      if (node instanceof ExtensionNode && lastRoot !== undefined) {
+        node.value(lastRoot)
+      }
+      if (node instanceof BranchNode && lastRoot !== undefined) {
+        const branchKey = key.pop()
+        node.setBranch(branchKey!, lastRoot)
       }
       lastRoot = this._formatNode(node, stack.length === 0, opStack) as Uint8Array
     }
 
-    if (lastRoot) {
+    if (lastRoot !== undefined) {
       this.root(lastRoot)
     }
 
@@ -1169,7 +1178,7 @@ export class Trie {
       // Track if key is found
       let found = false
       try {
-        await this.walkTrie(this.root(), async function (nodeRef, node, key, controller) {
+        await this.walkTrie(this.root(), async function (_, node, key, controller) {
           if (found) {
             // Abort all other children checks
             return
@@ -1177,7 +1186,12 @@ export class Trie {
           if (node instanceof BranchNode) {
             for (const item of node._branches) {
               // If one of the branches matches the key, then it is found
-              if (item !== null && bytesToUnprefixedHex(item as Uint8Array) === dbkey) {
+              if (
+                item !== null &&
+                bytesToUnprefixedHex(
+                  isRawNode(item) ? controller.trie.appliedKey(RLP.encode(item)) : item
+                ) === dbkey
+              ) {
                 found = true
                 return
               }
