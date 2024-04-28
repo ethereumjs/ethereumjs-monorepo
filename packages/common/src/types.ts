@@ -40,14 +40,15 @@ export interface ChainConfig {
   consensus: ConsensusConfig
 }
 
+// TODO: Remove the string type and only keep PrefixedHexString
 export interface GenesisBlockConfig {
-  timestamp?: PrefixedHexString
-  gasLimit: number | PrefixedHexString
-  difficulty: number | PrefixedHexString
-  nonce: PrefixedHexString
-  extraData: PrefixedHexString
-  baseFeePerGas?: PrefixedHexString
-  excessBlobGas?: PrefixedHexString
+  timestamp?: PrefixedHexString | string
+  gasLimit: number | PrefixedHexString | string
+  difficulty: number | PrefixedHexString | string
+  nonce: PrefixedHexString | string
+  extraData: PrefixedHexString | string
+  baseFeePerGas?: PrefixedHexString | string
+  excessBlobGas?: PrefixedHexString | string
 }
 
 export interface HardforkTransitionConfig {
@@ -157,10 +158,11 @@ export interface GethConfigOpts extends BaseOpts {
   mergeForkIdPostMerge?: boolean
 }
 
+// TODO: Deprecate the string type and only keep BigIntLike
 export interface HardforkByOpts {
-  blockNumber?: BigIntLike
-  timestamp?: BigIntLike
-  td?: BigIntLike
+  blockNumber?: BigIntLike | string
+  timestamp?: BigIntLike | string
+  td?: BigIntLike | string
 }
 
 type ParamDict = {
