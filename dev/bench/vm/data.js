@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1714271259364,
+  "lastUpdate": 1714338118472,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "48e6a301f32274d13e72ced26ba60df10ce2008a",
-          "message": "4844 Browser Readiness Releases (#3297)\n\n* Add 4844-browser-readiness and KZG WASM setup instructions to tx CHANGELOG and README\r\n\r\n* Add all CHANGELOG files\r\n\r\n* Bump versions for block, blockchain, client and common, give internal verkle dependencies a caret range\r\n\r\n* Bump versions for devp2p, ethash, evm and genesis\r\n\r\n* Bump versions for statemanager, trie, tx and util\r\n\r\n* Bump versions for verkle, vm and wallet\r\n\r\n* Add changes from Preimage PR #3143\r\n\r\n* Added monorepo-wide docs:build command to root package.json\r\n\r\n* Rebuild docs\r\n\r\n* Update README and example files\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Add various continued work PRs to the CHANGELOG entries\r\n\r\n* Bump EVM to v3.0.0 and VM to v8.0.0 (in-between breaking releases due to new EVM async create() constructor)\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Add additional EVM/VM breaking release CHANGELOG notes, slight simplification of EVM.create() constructor calling\r\n\r\n* Add additional EVM/VM breaking release README notes\r\n\r\n* Rebuild docs\r\n\r\n* Some TypeScript test fixes\r\n\r\n* More CHANGELOG additions\r\n\r\n* Update CHANGELOG files (small PRs)\r\n\r\n* Update KZG related CHANGELOG and README entries and example code\r\n\r\n* EVM: make main constructor protected",
-          "timestamp": "2024-03-18T13:21:44+01:00",
-          "tree_id": "bd3a07636455f586ce7af9aeb2c3473d04211f91",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/48e6a301f32274d13e72ced26ba60df10ce2008a"
-        },
-        "date": 1710764840975,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42879,
-            "range": "±1.69%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40387,
-            "range": "±3.78%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41189,
-            "range": "±1.48%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 40254,
-            "range": "±1.76%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 39548,
-            "range": "±1.83%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.59%",
             "unit": "ops/sec",
             "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c4a9f006770c4f4d3fd015ce90f403fbb5e41a42",
+          "message": "trie: fix del stack operation key formatting (#3378)",
+          "timestamp": "2024-04-28T13:59:17-07:00",
+          "tree_id": "18892d3df0cb2b475c4d09fdc569572481654a6d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c4a9f006770c4f4d3fd015ce90f403fbb5e41a42"
+        },
+        "date": 1714338117259,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41689,
+            "range": "±2.83%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41124,
+            "range": "±1.42%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41066,
+            "range": "±1.53%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37348,
+            "range": "±6.53%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38539,
+            "range": "±1.97%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
