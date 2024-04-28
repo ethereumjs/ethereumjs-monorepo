@@ -1028,7 +1028,7 @@ export class Trie {
         // In that case, we need to serialize and hash it into a Uint8Array, otherwise the operation will throw
         opStack.push({
           type: 'del',
-          key: key instanceof Uint8Array ? key : this.appliedKey(RLP.encode(key)),
+          key: isRawNode(branchNode) ? this.appliedKey(RLP.encode(branchNode)) : branchNode,
         })
       }
 
