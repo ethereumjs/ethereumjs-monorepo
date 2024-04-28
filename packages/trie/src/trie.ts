@@ -527,9 +527,12 @@ export class Trie {
           // (This is the path from the root node to wherever it needs to insert nodes)
           // The items change, because the leaf value is updated, thus all keyhashes in the
           // stack should be updated as well, so that it points to the right key/value pairs of the path
-          const deleteHashes = stack.map((e) => this.appliedKey(e.serialize()))
-          ops = deleteHashes.map((e) => {
-            const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, e) : e
+          const deleteHashes = stack.map((e) => this.hash(e.serialize()))
+          ops = deleteHashes.map((deletedHash) => {
+            const key = this._opts.keyPrefix
+              ? concatBytes(this._opts.keyPrefix, deletedHash)
+              : deletedHash
+
             return {
               type: 'del',
               key,
