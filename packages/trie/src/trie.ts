@@ -1024,7 +1024,7 @@ export class Trie {
       // Since this branch is deleted, one can thus also delete this branch from the DB
       // So add this to the `opStack` and mark the keyhash to be deleted
       if (this._opts.useNodePruning) {
-        // If the branchNode has length < 32, it will be a Uint8Array[] instead of a Uint8Array
+        // If the branchNode has length < 32, it will be a RawNode (Uint8Array[]) instead of a Uint8Array
         // In that case, we need to serialize and hash it into a Uint8Array, otherwise the operation will throw
         opStack.push({
           type: 'del',
@@ -1061,24 +1061,24 @@ export class Trie {
 
     // update nodes
     while (stack.length) {
-      const node = stack.pop() as TrieNode
-      if (node instanceof LeafNode) {
+      const node = stack.pop()
+      if (node === undefined) {
+        throw new Error('saveStack: missing node')
+      }
+      if (node instanceof LeafNode || node instanceof ExtensionNode) {
         key.splice(key.length - node.key().length)
-      } else if (node instanceof ExtensionNode) {
-        key.splice(key.length - node.key().length)
-        if (lastRoot) {
-          node.value(lastRoot)
-        }
-      } else if (node instanceof BranchNode) {
-        if (lastRoot) {
-          const branchKey = key.pop()
-          node.setBranch(branchKey!, lastRoot)
-        }
+      }
+      if (node instanceof ExtensionNode && lastRoot !== undefined) {
+        node.value(lastRoot)
+      }
+      if (node instanceof BranchNode && lastRoot !== undefined) {
+        const branchKey = key.pop()
+        node.setBranch(branchKey!, lastRoot)
       }
       lastRoot = this._formatNode(node, stack.length === 0, opStack) as Uint8Array
     }
 
-    if (lastRoot) {
+    if (lastRoot !== undefined) {
       this.root(lastRoot)
     }
 
@@ -1185,7 +1185,6 @@ export class Trie {
               // If one of the branches matches the key, then it is found
               if (
                 item !== null &&
-                item.length !== 0 &&
                 bytesToUnprefixedHex(
                   isRawNode(item) ? controller.trie.appliedKey(RLP.encode(item)) : item
                 ) === dbkey
