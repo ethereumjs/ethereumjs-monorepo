@@ -1,7 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
-import { protocols } from '@multiformats/multiaddr'
-import { convertToString } from '@multiformats/multiaddr/dist/src/convert.js'
 import { base32, base64url } from '@scure/base'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
@@ -9,12 +7,6 @@ import { sscanf } from 'scanf'
 
 import type { PeerInfo } from '../types.js'
 import type { Common } from '@ethereumjs/common'
-
-type ProtocolCodes = {
-  ipCode: number
-  tcpCode: number
-  udpCode: number
-}
 
 type ENRRootValues = {
   eRoot: string
@@ -28,6 +20,41 @@ type ENRTreeValues = {
   domain: string
 }
 
+// Copied (with minor simplifications for our use-case) from: https://github.com/multiformats/js-multiaddr/blob/main/src/ip.ts
+function ipBytesToString(bytes: Uint8Array): string {
+  const length = bytes.length
+  const view = new DataView(bytes.buffer)
+
+  if (length === 4) {
+    const result = []
+
+    // IPv4
+    for (let i = 0; i < length; i++) {
+      result.push(bytes[i])
+    }
+
+    return result.join('.')
+  }
+
+  if (length === 16) {
+    const result = []
+
+    // IPv6
+    for (let i = 0; i < length; i += 2) {
+      result.push(view.getUint16(i).toString(16))
+    }
+
+    return result
+      .join(':')
+      .replace(/(^|:)0(:0)*:0(:|$)/, '$1::$3')
+      .replace(/:{3,4}/, '::')
+  }
+
+  return ''
+}
+
+// Copied over from the multiaddr repo: https://github.com/multiformats/js-multiaddr/blob/main/src/convert.ts
+// TODO: Can we import this directly from the multiaddr repo? Doing so makes CI fail
 function bytes2port(bytes: Uint8Array): number {
   const view = new DataView(bytes.buffer)
   return view.getUint16(bytes.byteOffset)
@@ -84,12 +111,10 @@ export class ENR {
 
     if (!isVerified) throw new Error('Unable to verify ENR signature')
 
-    const { ipCode, tcpCode, udpCode } = this._getIpProtocolConversionCodes(obj.id)
-
     const peerInfo: PeerInfo = {
-      address: convertToString(ipCode, obj.ip),
-      tcpPort: Number(convertToString(tcpCode, obj.tcp)),
-      udpPort: Number(convertToString(udpCode, obj.udp)),
+      address: ipBytesToString(obj.ip),
+      tcpPort: bytes2port(obj.tcp),
+      udpPort: bytes2port(obj.udp),
     }
 
     return peerInfo
@@ -181,31 +206,5 @@ export class ENR {
       throw new Error(`ENR branch entry must start with '${this.BRANCH_PREFIX}'`)
 
     return branch.split(this.BRANCH_PREFIX)[1].split(',')
-  }
-
-  /**
-   * Gets relevant multiaddr conversion codes for ipv4, ipv6 and tcp, udp formats
-   * @param  {Uint8Array}        protocolId
-   * @return {ProtocolCodes}
-   */
-  static _getIpProtocolConversionCodes(protocolId: Uint8Array): ProtocolCodes {
-    let ipCode
-
-    switch (bytesToUtf8(protocolId)) {
-      case 'v4':
-        ipCode = protocols(4).code
-        break
-      case 'v6':
-        ipCode = protocols(41).code
-        break
-      default:
-        throw new Error("IP protocol must be 'v4' or 'v6'")
-    }
-
-    return {
-      ipCode,
-      tcpCode: protocols('tcp').code,
-      udpCode: protocols('udp').code,
-    }
   }
 }
