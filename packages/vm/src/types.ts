@@ -214,11 +214,6 @@ export interface SealBlockOpts {
    * Overrides the value passed in the constructor.
    */
   mixHash?: Uint8Array
-
-  /**
-   * An array of CLRequests
-   */
-  requests?: CLRequest[]
 }
 
 /**
@@ -335,6 +330,15 @@ export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
    * The bloom filter of the LOGs (events) after executing the block
    */
   logsBloom: Uint8Array
+
+  /**
+   * The requestsRoot for any CL requests in the block
+   */
+  requestsRoot?: Uint8Array
+  /**
+   * Any CL requests that were processed in the course of this block
+   */
+  requests?: CLRequest[]
 }
 
 export interface AfterBlockEvent extends RunBlockResult {

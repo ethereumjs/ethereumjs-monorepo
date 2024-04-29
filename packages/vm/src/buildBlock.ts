@@ -21,6 +21,7 @@ import { Bloom } from './bloom/index.js'
 import {
   accumulateParentBeaconBlockRoot,
   accumulateParentBlockHash,
+  accumulateRequests,
   calculateMinerReward,
   encodeReceipt,
   rewardAccount,
@@ -319,9 +320,11 @@ export class BlockBuilder {
       blobGasUsed = this.blobGasUsed
     }
 
+    const requests = await accumulateRequests(this.vm)
+
     let requestsRoot = undefined
     if (this.vm.common.isActivatedEIP(7685)) {
-      requestsRoot = await Block.genRequestsTrieRoot(sealOpts?.requests ?? [])
+      requestsRoot = await Block.genRequestsTrieRoot(requests)
       // Do other validations per request type
     }
 
@@ -348,7 +351,7 @@ export class BlockBuilder {
       header: headerData,
       transactions: this.transactions,
       withdrawals: this.withdrawals,
-      requests: sealOpts?.requests,
+      requests,
     }
     const block = Block.fromBlockData(blockData, blockOpts)
 
