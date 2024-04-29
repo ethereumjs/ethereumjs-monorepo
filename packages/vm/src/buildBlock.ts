@@ -320,10 +320,10 @@ export class BlockBuilder {
       blobGasUsed = this.blobGasUsed
     }
 
-    const requests = await accumulateRequests(this.vm)
-
-    let requestsRoot = undefined
+    let requests
+    let requestsRoot
     if (this.vm.common.isActivatedEIP(7685)) {
+      const requests = await accumulateRequests(this.vm)
       requestsRoot = await Block.genRequestsTrieRoot(requests)
       // Do other validations per request type
     }
@@ -353,6 +353,7 @@ export class BlockBuilder {
       withdrawals: this.withdrawals,
       requests,
     }
+    console.log(blockData)
     const block = Block.fromBlockData(blockData, blockOpts)
 
     if (this.blockOpts.putBlockIntoBlockchain === true) {
