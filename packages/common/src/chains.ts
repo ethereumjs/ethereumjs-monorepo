@@ -574,7 +574,7 @@ export const chains: ChainsDict = {
     name: 'kaustinen6',
     chainId: 69420,
     networkId: 69420,
-    defaultHardfork: 'prague',
+    defaultHardfork: 'osaka',
     consensus: {
       type: 'pos',
       algorithm: 'casper',
@@ -644,7 +644,7 @@ export const chains: ChainsDict = {
         timestamp: '0',
       },
       {
-        name: 'prague',
+        name: 'osaka',
         block: null,
         timestamp: '1712848500',
       },

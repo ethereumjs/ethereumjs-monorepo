@@ -109,11 +109,11 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     this.common = this._getCommon(opts.common, chainId)
     this.chainId = this.common.chainId()
 
-    if (this.common.isActivatedEIP(1559) === false) {
+    if (!this.common.isActivatedEIP(1559)) {
       throw new Error('EIP-1559 not enabled on Common')
     }
 
-    if (this.common.isActivatedEIP(4844) === false) {
+    if (!this.common.isActivatedEIP(4844)) {
       throw new Error('EIP-4844 not enabled on Common')
     }
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])

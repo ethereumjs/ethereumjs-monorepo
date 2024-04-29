@@ -41,7 +41,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import type { EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
+import type { EthersProvider, PrefixedHexString, WithdrawalBytes } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -340,9 +340,12 @@ export class Block {
     const txs = []
     for (const [index, serializedTx] of transactions.entries()) {
       try {
-        const tx = TransactionFactory.fromSerializedData(hexToBytes(serializedTx), {
-          common: opts?.common,
-        })
+        const tx = TransactionFactory.fromSerializedData(
+          hexToBytes(serializedTx as PrefixedHexString),
+          {
+            common: opts?.common,
+          }
+        )
         txs.push(tx)
       } catch (error) {
         const validationError = `Invalid tx at index ${index}: ${error}`
@@ -380,7 +383,7 @@ export class Block {
       throw Error('Missing executionWitness for EIP-6800 activated executionPayload')
     }
     // Verify blockHash matches payload
-    if (!equalsBytes(block.hash(), hexToBytes(payload.blockHash))) {
+    if (!equalsBytes(block.hash(), hexToBytes(payload.blockHash as PrefixedHexString))) {
       const validationError = `Invalid blockHash, expected: ${
         payload.blockHash
       }, received: ${bytesToHex(block.hash())}`
@@ -559,7 +562,7 @@ export class Block {
     // eslint-disable-next-line prefer-const
     for (let [i, tx] of this.transactions.entries()) {
       const errs = tx.getValidationErrors()
-      if (this.common.isActivatedEIP(1559) === true) {
+      if (this.common.isActivatedEIP(1559)) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
           tx = tx as FeeMarketEIP1559Transaction
           if (tx.maxFeePerGas < this.header.baseFeePerGas!) {
@@ -572,7 +575,7 @@ export class Block {
           }
         }
       }
-      if (this.common.isActivatedEIP(4844) === true) {
+      if (this.common.isActivatedEIP(4844)) {
         if (tx instanceof BlobEIP4844Transaction) {
           blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
           if (blobGasUsed > blobGasLimit) {
@@ -587,7 +590,7 @@ export class Block {
       }
     }
 
-    if (this.common.isActivatedEIP(4844) === true) {
+    if (this.common.isActivatedEIP(4844)) {
       if (blobGasUsed !== this.header.blobGasUsed) {
         errors.push(`invalid blobGasUsed expected=${this.header.blobGasUsed} actual=${blobGasUsed}`)
       }
