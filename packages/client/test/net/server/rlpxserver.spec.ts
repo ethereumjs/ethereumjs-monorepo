@@ -1,6 +1,6 @@
 import { equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { multiaddr } from '@multiformats/multiaddr'
 import { EventEmitter } from 'events'
-import { multiaddr } from 'multiaddr'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src/config.js'

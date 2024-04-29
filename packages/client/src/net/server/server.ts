@@ -3,7 +3,7 @@ import { parseKey, parseMultiaddrs } from '../../util/parse.js'
 import type { Config } from '../../config.js'
 import type { DnsNetwork, KeyLike, MultiaddrLike } from '../../types.js'
 import type { Protocol } from '../protocol/protocol.js'
-import type { Multiaddr } from 'multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface ServerOptions {
   /* Config */
