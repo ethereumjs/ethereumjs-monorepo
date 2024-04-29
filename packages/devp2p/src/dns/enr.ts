@@ -23,7 +23,6 @@ type ENRTreeValues = {
 }
 
 // Copied over from the multiaddr repo: https://github.com/multiformats/js-multiaddr/blob/main/src/convert.ts
-// TODO: Can we import this directly from the multiaddr repo? Doing so makes CI fail
 function bytesToPort(bytes: Uint8Array): number {
   const view = new DataView(bytes.buffer)
   return view.getUint16(bytes.byteOffset)
