@@ -289,12 +289,7 @@ export class PendingBlock {
 
     const { skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
 
-    // Add pending CL requests
-    let requests
-    if (vm.common.isActivatedEIP(7685)) {
-      // Add pending CL requests by type
-    }
-    const block = await builder.build({ requests })
+    const block = await builder.build()
 
     // Construct blobs bundle
     const blobs = block.common.isActivatedEIP(4844)
