@@ -7,6 +7,7 @@ import { Block } from './index.js'
 
 import type { BlockOptions, JsonRpcBlock } from './index.js'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
@@ -55,7 +56,7 @@ export function blockFromRpc(
   const uncleHeaders = uncles.map((uh) => blockHeaderFromRpc(uh, options))
 
   const requests = blockParams.requests?.map((req) => {
-    const bytes = hexToBytes(req)
+    const bytes = hexToBytes(req as PrefixedHexString)
     return new CLRequest(bytes[0], bytes.slice(1))
   })
   return Block.fromBlockData(

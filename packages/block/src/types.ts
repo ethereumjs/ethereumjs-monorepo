@@ -268,8 +268,8 @@ export interface JsonRpcBlock {
   excessBlobGas?: PrefixedHexString | string // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
   parentBeaconBlockRoot?: PrefixedHexString | string // If EIP-4788 is enabled for this block, returns parent beacon block root
   executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
-  requestsRoot?: PrefixedHexString // If EIP-7685 is enabled for this block, returns the requests root
-  requests?: Array<PrefixedHexString> // If EIP-7685 is enabled for this block, array of serialized CL requests
+  requestsRoot?: PrefixedHexString | string // If EIP-7685 is enabled for this block, returns the requests root
+  requests?: Array<PrefixedHexString | string> // If EIP-7685 is enabled for this block, array of serialized CL requests
 }
 
 export type WithdrawalV1 = {
