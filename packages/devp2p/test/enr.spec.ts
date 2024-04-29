@@ -1,4 +1,3 @@
-import { utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { ENR } from '../src/dns/index.js'
@@ -116,32 +115,12 @@ describe('ENR tests', () => {
     assert.equal(udpPort, 30303, 'returns correct udpPort')
   })
 
-  it('ENR (enr): should return correct multiaddr conversion codes for ipv6', () => {
-    const expected = { ipCode: 41, tcpCode: 6, udpCode: 273 }
-    const protocolId = utf8ToBytes('v6')
-    const codes = ENR._getIpProtocolConversionCodes(protocolId)
-
-    assert.deepEqual(codes, expected, 'returns correct codes')
-  })
-
   it('ENR (enr): should error if record mis-prefixed', () => {
     try {
       ENR.parseAndVerifyRecord(dns.enrBadPrefix)
     } catch (e: any) {
       assert.ok(
         e.toString().includes("String encoded ENR must start with 'enr:'"),
-        'has correct error message'
-      )
-    }
-  })
-
-  it('ENR (enr): should error when converting to unrecognized ip protocol id', () => {
-    const protocolId = utf8ToBytes('v7')
-    try {
-      ENR._getIpProtocolConversionCodes(protocolId)
-    } catch (e: any) {
-      assert.ok(
-        e.toString().includes("IP protocol must be 'v4' or 'v6'"),
         'has correct error message'
       )
     }
