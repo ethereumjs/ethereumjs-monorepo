@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1714338118472,
+  "lastUpdate": 1714410576280,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "willcory10@gmail.com",
-            "name": "Will Cory",
-            "username": "roninjin10"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "30667e8424be5b8ff974c1011662ea0bcd0d2602",
-          "message": "chore(common): Update Optimism hardfork (#3325)\n\n* chore(common): Update Optimism hardfork\r\n\r\n* Update packages/common/src/common.ts\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-03-20T13:36:21+01:00",
-          "tree_id": "7a46828c802aa0f3efc611068b7cb78a5104b9e4",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/30667e8424be5b8ff974c1011662ea0bcd0d2602"
-        },
-        "date": 1710938360559,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 43471,
-            "range": "±2.38%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41070,
-            "range": "±2.88%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41683,
-            "range": "±1.54%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 40534,
-            "range": "±1.59%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 39843,
-            "range": "±1.83%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.97%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "510331854223150b93e721766c10b117abda303b",
+          "message": "client: update multiaddr dep (#3384)\n\n* client: update multiaddr dep\r\n\r\n* client: update multiaddr usage\r\n\r\n* devp2p: update multiaddr usage\r\n\r\n* devp2p: test ci\r\n\r\n* devp2p: fix convert to string\r\n\r\n* devp2p: try to fix convert iport\r\n\r\n* devp2p: remove multiaddr dep\r\n\r\n* devp2p: remove util method that was already in the repo\r\n\r\n* remove todo\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-04-29T13:04:13-04:00",
+          "tree_id": "786c05bddc4e9c92950fe94c31f7feb7742ab260",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/510331854223150b93e721766c10b117abda303b"
+        },
+        "date": 1714410575667,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42675,
+            "range": "±1.66%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40438,
+            "range": "±3.31%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41101,
+            "range": "±1.52%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 40563,
+            "range": "±1.57%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 39174,
+            "range": "±1.77%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
