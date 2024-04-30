@@ -9,11 +9,16 @@ import {
   Address,
   BIGINT_0,
   BIGINT_1,
+  BIGINT_2,
+  BIGINT_3,
   BIGINT_8,
+  CLRequest,
   GWEI_TO_WEI,
   KECCAK256_RLP,
+  bigIntMin,
   bigIntToBytes,
   bigIntToHex,
+  bytesToBigInt,
   bytesToHex,
   concatBytes,
   equalsBytes,
@@ -21,6 +26,7 @@ import {
   intToBytes,
   setLengthLeft,
   short,
+  unpadBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -40,7 +46,7 @@ import type {
 import type { VM } from './vm.js'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
-import type { CLRequest, PrefixedHexString } from '@ethereumjs/util'
+import type { CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -951,17 +957,140 @@ const DAOConfig = {
   DAORefundContract: 'bf4ed7b27f1d666546e30d74d50d173d20bca754',
 }
 
+export class ValidatorWithdrawalRequest extends CLRequest implements CLRequestType {
+  constructor(type: number, bytes: Uint8Array) {
+    super(type, bytes)
+  }
+
+  serialize() {
+    return concatBytes(Uint8Array.from([this.type]), this.bytes)
+  }
+}
+
 /**
  * This helper method generates a list of all CL requests that can be included in a pending block
  * @param _vm VM instance from which to derive CL requests
  * @returns an list of CL requests in ascending order by type
  */
-export const accumulateRequests = async (_vm: VM): Promise<CLRequest[]> => {
+export const accumulateRequests = async (vm: VM): Promise<CLRequest[]> => {
   const requests: CLRequest[] = []
+  const common = vm.common
 
   // TODO: Add in code to accumulate deposits (EIP-6110)
 
-  // TODO: Add in code to accumulate partial withdrawals (EIP-7002)
+  if (common.isActivatedEIP(7002)) {
+    // Partial withdrawals logic
+    const addressBigInt = common.param('vm', 'withdrawalRequestPredeployAddress')
+    const withdrawalsAddress = Address.fromString(bigIntToHex(addressBigInt))
+
+    const withdrawalsType = Number(common.param('vm', 'withdrawalRequestType'))
+
+    const excessWithdrawalsSlot = setLengthLeft(
+      bigIntToBytes(common.param('vm', 'excessWithdrawalsRequestStorageSlot')),
+      32
+    )
+    const withdrawalsCountSlot = setLengthLeft(
+      bigIntToBytes(common.param('vm', 'withdrawalsRequestCountStorage')),
+      32
+    )
+    const queueHeadSlot = setLengthLeft(
+      bigIntToBytes(common.param('vm', 'withdrawalsRequestQueueHeadStorageSlot')),
+      32
+    )
+    const queueTailSlot = setLengthLeft(
+      bigIntToBytes(common.param('vm', 'withdrawalsRequestTailHeadStorageSlot')),
+      32
+    )
+
+    const maxWithdrawalsPerBlock = common.param('vm', 'maxWithdrawalRequestsPerBlock')
+    const targetWithdrawalRequestsPerBlock = common.param('vm', 'targetWithdrawalRequestsPerBlock')
+    const offset = common.param('vm', 'withdrawalsRequestQueueStorageOffset')
+
+    // Dequeue withdrawal requests
+
+    const queueHeadIndex = bytesToBigInt(
+      await vm.stateManager.getContractStorage(withdrawalsAddress, queueHeadSlot)
+    )
+    const queueTailIndex = bytesToBigInt(
+      await vm.stateManager.getContractStorage(withdrawalsAddress, queueTailSlot)
+    )
+    const numInQueue = queueTailIndex - queueHeadIndex
+    const numDequeued = Number(bigIntMin(numInQueue, maxWithdrawalsPerBlock))
+
+    for (let i = 0; i < numDequeued; i++) {
+      const queueStorageSlot = offset + (queueHeadIndex + BigInt(i)) * BIGINT_3
+      const sourceAddress = setLengthLeft(
+        await vm.stateManager.getContractStorage(
+          withdrawalsAddress,
+          setLengthLeft(bigIntToBytes(queueStorageSlot), 32)
+        ),
+        32
+      ).slice(12, 32)
+
+      const slot1Data = setLengthLeft(
+        await vm.stateManager.getContractStorage(
+          withdrawalsAddress,
+          setLengthLeft(bigIntToBytes(queueStorageSlot + BIGINT_1), 32)
+        ),
+        32
+      )
+      const slot2Data = setLengthLeft(
+        await vm.stateManager.getContractStorage(
+          withdrawalsAddress,
+          setLengthLeft(bigIntToBytes(queueStorageSlot + BIGINT_2), 32)
+        ),
+        32
+      )
+
+      const concatenatedData = concatBytes(slot1Data, slot2Data)
+      const validatorPubkey = concatenatedData.slice(0, 48)
+
+      const amount = unpadBytes(concatenatedData.slice(48, 56))
+
+      const RLPdBytes = RLP.encode([sourceAddress, validatorPubkey, amount])
+      const request = new ValidatorWithdrawalRequest(withdrawalsType, RLPdBytes)
+      requests.push(request)
+    }
+
+    const newQueueHeadIndex = queueHeadIndex + BigInt(numDequeued)
+
+    if (newQueueHeadIndex === queueTailIndex) {
+      await vm.stateManager.putContractStorage(withdrawalsAddress, queueHeadSlot, new Uint8Array())
+      await vm.stateManager.putContractStorage(withdrawalsAddress, queueTailSlot, new Uint8Array())
+    } else {
+      await vm.stateManager.putContractStorage(
+        withdrawalsAddress,
+        queueHeadSlot,
+        bigIntToBytes(newQueueHeadIndex)
+      )
+    }
+
+    // Update the excess withdrawal requests
+    const previousExcess = bytesToBigInt(
+      await vm.stateManager.getContractStorage(withdrawalsAddress, excessWithdrawalsSlot)
+    )
+    const count = bytesToBigInt(
+      await vm.stateManager.getContractStorage(withdrawalsAddress, withdrawalsCountSlot)
+    )
+
+    let newExcess = BIGINT_0
+    if (previousExcess + count > targetWithdrawalRequestsPerBlock) {
+      newExcess = previousExcess + count - targetWithdrawalRequestsPerBlock
+    }
+
+    await vm.stateManager.putContractStorage(
+      withdrawalsAddress,
+      withdrawalsCountSlot,
+      bigIntToBytes(newExcess)
+    )
+
+    // Reset the withdrawals count
+    await vm.stateManager.putContractStorage(
+      withdrawalsAddress,
+      withdrawalsCountSlot,
+      new Uint8Array()
+    )
+  }
 
   if (requests.length > 1) {
     for (let x = 1; x < requests.length; x++) {
