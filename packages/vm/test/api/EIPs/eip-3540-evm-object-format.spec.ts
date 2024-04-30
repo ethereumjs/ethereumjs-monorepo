@@ -150,11 +150,11 @@ const create2offset = '15'
 const CREATE2Deploy = `0x600060${create2offset}380360${create2offset}60003960${create2offset}380360006000F500`
 
 function deployCreateCode(initcode: string): PrefixedHexString {
-  return `${CREATEDeploy}${initcode}`
+  return `${CREATEDeploy}${initcode}` as PrefixedHexString
 }
 
 function deployCreate2Code(initcode: string): PrefixedHexString {
-  return `${CREATE2Deploy}${initcode}`
+  return `${CREATE2Deploy}${initcode}` as PrefixedHexString
 }
 
 describe('ensure invalid EOF initcode in EIP-3540 does not consume all gas', () => {
