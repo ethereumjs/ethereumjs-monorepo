@@ -135,5 +135,4 @@ export enum CustomChain {
    * - [Block Explorer](https://amoy.polygonscan.com/)
    */
   PolygonAmoy = 'polygon-amoy',
-
 }
