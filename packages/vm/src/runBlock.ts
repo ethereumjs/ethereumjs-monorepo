@@ -980,8 +980,11 @@ export const accumulateRequests = async (vm: VM): Promise<CLRequest[]> => {
 
   if (common.isActivatedEIP(7002)) {
     // Partial withdrawals logic
-    const addressBigInt = common.param('vm', 'withdrawalRequestPredeployAddress')
-    const withdrawalsAddress = Address.fromString(bigIntToHex(addressBigInt))
+    const addressBytes = setLengthLeft(
+      bigIntToBytes(common.param('vm', 'withdrawalRequestPredeployAddress')),
+      20
+    )
+    const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
 
     const withdrawalsType = Number(common.param('vm', 'withdrawalRequestType'))
 
