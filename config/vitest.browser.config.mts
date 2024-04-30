@@ -7,8 +7,9 @@ const config = defineConfig({
     browser: {
       enabled: true,
       headless: true,
-      isolate: true,
-      name: 'chrome'
+      isolate: false,
+      name: 'chrome',
+      fileParallelism: true
     },
   },
   plugins: [

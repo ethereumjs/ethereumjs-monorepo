@@ -37,7 +37,7 @@ jobs:
       - run: npm run test:browser -w=@ethereumjs/util
       - run: npm run test:browser -w=@ethereumjs/common
       - run: npm run test:browser -w=@ethereumjs/trie
-    #  - run: npm run test:browser -w=@ethereumjs/tx
+      - run: npm run test:browser -w=@ethereumjs/tx
       - run: npm run test:browser -w=@ethereumjs/block
       #     No browser tests for devp2p
       - run: npm run test:browser -w=@ethereumjs/blockchain
