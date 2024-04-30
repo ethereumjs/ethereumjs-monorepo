@@ -1,9 +1,9 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToHex } from '@ethereumjs/util'
+import { KECCAK256_RLP, bytesToHex, randomBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 
 import { Blockchain } from '../src/index.js'
 
@@ -378,5 +378,51 @@ describe('[Blockchain]: Block validation tests', () => {
       'should create block even with pre-London uncle and common evaluated with london since uncle is given default base fee'
     )
     assert.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
+  })
+})
+describe('EIP 7685: requests field validation tests', () => {
+  it('should throw when putting a block with an invalid requestsRoot', async () => {
+    const common = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.Cancun,
+      eips: [7685, 1559, 4895, 4844, 4788],
+    })
+    const blockchain = await Blockchain.create({
+      common,
+      validateConsensus: false,
+    })
+    const block = Block.fromBlockData(
+      {
+        header: {
+          number: 1n,
+          requestsRoot: randomBytes(32),
+          withdrawalsRoot: KECCAK256_RLP,
+          parentHash: blockchain.genesisBlock.hash(),
+          timestamp: blockchain.genesisBlock.header.timestamp + 1n,
+          gasLimit: 5000,
+        },
+      },
+      { common }
+    )
+
+    await expect(async () => blockchain.putBlock(block)).rejects.toThrow('invalid requestsRoot')
+
+    const blockWithRequest = Block.fromBlockData(
+      {
+        header: {
+          number: 1n,
+          requestsRoot: randomBytes(32),
+          withdrawalsRoot: KECCAK256_RLP,
+          parentHash: blockchain.genesisBlock.hash(),
+          timestamp: blockchain.genesisBlock.header.timestamp + 1n,
+          gasLimit: 5000,
+        },
+        requests: [{ type: 0x1, bytes: randomBytes(12), serialize: () => randomBytes(32) }],
+      },
+      { common }
+    )
+    await expect(async () => blockchain.putBlock(blockWithRequest)).rejects.toThrow(
+      'invalid requestsRoot'
+    )
   })
 })
