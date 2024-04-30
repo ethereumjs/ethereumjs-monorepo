@@ -171,15 +171,6 @@ export class Block {
     }
 
     const withdrawals = withdrawalsData?.map(Withdrawal.fromWithdrawalData)
-
-    // Requests should be sorted in monotonically ascending order based on type
-    // and whatever internal sorting logic is defined by each request type
-    if (clRequests !== undefined && clRequests.length > 1) {
-      for (let x = 1; x < clRequests.length; x++) {
-        if (clRequests[x].type < clRequests[x - 1].type)
-          throw new Error('requests are not sorted in ascending order')
-      }
-    }
     // The witness data is planned to come in rlp serialized bytes so leave this
     // stub till that time
     const executionWitness = executionWitnessData
@@ -544,6 +535,14 @@ export class Block {
       throw new Error(`Cannot have requests field if EIP 7685 is not active`)
     }
 
+    // Requests should be sorted in monotonically ascending order based on type
+    // and whatever internal sorting logic is defined by each request type
+    if (requests !== undefined && requests.length > 1) {
+      for (let x = 1; x < requests.length; x++) {
+        if (requests[x].type < requests[x - 1].type)
+          throw new Error('requests are not sorted in ascending order')
+      }
+    }
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)

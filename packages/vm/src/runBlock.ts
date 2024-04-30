@@ -195,7 +195,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   let requestsRoot
   let requests: CLRequest[] | undefined
   if (block.common.isActivatedEIP(7685)) {
-    const requests = await accumulateRequests(this)
+    requests = await accumulateRequests(this)
     requestsRoot = await Block.genRequestsTrieRoot(requests)
   }
 
