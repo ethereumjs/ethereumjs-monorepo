@@ -302,5 +302,5 @@ export type ExecutionPayload = {
   parentBeaconBlockRoot?: PrefixedHexString | string // QUANTITY, 64 Bits
   // VerkleExecutionWitness is already a hex serialized object
   executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
-  // TODO: Determine if we need the requestsRoot here
+  requestsRoot?: PrefixedHexString | string | null // DATA, 32 bytes, null implies EIP 7685 not active yet
 }

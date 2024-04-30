@@ -548,7 +548,7 @@ export const EIPs: EIPsDict = {
     status: Status.Draft,
     // TODO: Set correct minimum hardfork
     minimumHardfork: Hardfork.Cancun,
-    requiredEIPs: [],
+    requiredEIPs: [3675],
     gasPrices: {},
   },
 }

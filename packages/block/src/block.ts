@@ -389,6 +389,7 @@ export class Block {
       feeRecipient: coinbase,
       transactions,
       withdrawals: withdrawalsData,
+      requestsRoot,
       executionWitness,
     } = payload
 
@@ -408,6 +409,7 @@ export class Block {
       }
     }
 
+    const reqRoot = requestsRoot === null ? undefined : requestsRoot
     const transactionsTrie = await Block.genTransactionsTrieRoot(
       txs,
       new Trie({ common: opts?.common })
@@ -424,6 +426,7 @@ export class Block {
       withdrawalsRoot,
       mixHash,
       coinbase,
+      requestsRoot: reqRoot,
     }
 
     // we are not setting setHardfork as common is already set to the correct hf

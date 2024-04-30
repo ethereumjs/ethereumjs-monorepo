@@ -15,7 +15,7 @@ export interface CLRequestType {
 
 export class CLRequest implements CLRequestType {
   type: number
-  bytes: Uint8Array = new Uint8Array()
+  bytes: Uint8Array
   constructor(type: number, bytes: Uint8Array) {
     if (type === undefined) throw new Error('request type is required')
     this.type = type

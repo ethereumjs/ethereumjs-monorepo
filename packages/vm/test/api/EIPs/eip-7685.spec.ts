@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { CLRequest, KECCAK256_RLP, concatBytes, randomBytes } from '@ethereumjs/util'
+import { CLRequest, KECCAK256_RLP, concatBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
 import { VM } from '../../../src/vm.js'
@@ -9,6 +9,9 @@ import { setupVM } from '../utils.js'
 
 import type { CLRequestType } from '@ethereumjs/util'
 
+const invalidRequestsRoot = hexToBytes(
+  '0xc98048d6605eb79ecc08d90b8817f44911ec474acd8d11688453d2c6ef743bc5'
+)
 class NumberRequest extends CLRequest implements CLRequestType {
   constructor(type: number, bytes: Uint8Array) {
     super(type, bytes)
@@ -37,8 +40,9 @@ describe('EIP-7685 runBlock tests', () => {
   })
   it('should error when an invalid requestsRoot is provided', async () => {
     const vm = await setupVM({ common })
+
     const emptyBlock = Block.fromBlockData(
-      { header: { requestsRoot: randomBytes(32) } },
+      { header: { requestsRoot: invalidRequestsRoot } },
       { common }
     )
     await expect(async () =>
@@ -66,7 +70,7 @@ describe('EIP-7685 runBlock tests', () => {
     const block = Block.fromBlockData(
       {
         requests: [request],
-        header: { requestsRoot: randomBytes(32) },
+        header: { requestsRoot: invalidRequestsRoot },
       },
       { common }
     )
