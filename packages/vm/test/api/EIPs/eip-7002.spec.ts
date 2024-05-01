@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import {
   Account,
@@ -7,11 +8,12 @@ import {
   bigIntToBytes,
   bytesToHex,
   concatBytes,
+  equalsBytes,
   hexToBytes,
   setLengthLeft,
   zeros,
 } from '@ethereumjs/util'
-import { describe, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { setupVM } from '../utils.js'
 
@@ -106,8 +108,17 @@ describe('EIP-7002 tests', () => {
       generate: true,
     })
 
-    console.log(bytesToHex(generatedBlock!.header.requestsRoot!))
-    console.log(generatedBlock!.requests)
+    assert.ok(generatedBlock!.requests!.length === 1)
+
+    const requestDecoded = RLP.decode(generatedBlock!.requests![0].bytes)
+
+    const sourceAddressRequest = requestDecoded[0] as Uint8Array
+    const validatorPubkeyRequest = requestDecoded[1] as Uint8Array
+    const amountRequest = requestDecoded[2] as Uint8Array
+
+    assert.ok(equalsBytes(sourceAddressRequest, tx.getSenderAddress().bytes))
+    assert.ok(equalsBytes(validatorPubkey, validatorPubkeyRequest))
+    assert.ok(equalsBytes(amountBytes, amountRequest))
 
     //await vm.runBlock({ block: generatedBlock!, skipHeaderValidation: true, root })
   })
