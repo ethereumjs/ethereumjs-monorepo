@@ -11,9 +11,8 @@ import {
   setLengthLeft,
   zeros,
 } from '@ethereumjs/util'
-import { assert, describe, expect, it } from 'vitest'
+import { describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm.js'
 import { setupVM } from '../utils.js'
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
@@ -56,15 +55,18 @@ describe('EIP-7002 tests', () => {
     await vm.stateManager.putAccount(addr, acc)
 
     // Deploy withdrawals contract
-    await vm.runBlock({
+    const results = await vm.runBlock({
       block,
       skipHeaderValidation: true,
       skipBlockValidation: true,
       generate: true,
     })
 
+    const root = results.stateRoot
+
     const validatorPubkey = hexToBytes(`0x${'20'.repeat(48)}`)
-    const amount = setLengthLeft(new Uint8Array(100), 8)
+    const amount = BigInt(12345678)
+    const amountBytes = setLengthLeft(bigIntToBytes(amount), 8)
 
     const addressBytes = setLengthLeft(
       bigIntToBytes(common.param('vm', 'withdrawalRequestPredeployAddress')),
@@ -74,10 +76,10 @@ describe('EIP-7002 tests', () => {
 
     const tx = LegacyTransaction.fromTxData({
       gasPrice: BigInt(100),
-      data: concatBytes(validatorPubkey, amount),
+      data: concatBytes(validatorPubkey, amountBytes),
       value: BigInt(1),
       to: withdrawalsAddress,
-      gasLimit: 100_000,
+      gasLimit: 200_000,
     }).sign(pkey)
 
     // Call withdrawals contract with a withdrawals request
@@ -92,16 +94,21 @@ describe('EIP-7002 tests', () => {
       { common }
     )
 
-    vm.evm.events?.on('step', (e) => {
-      console.log(e.opcode.name, e.stack)
+    let generatedBlock: Block
+    vm.events.on('afterBlock', (e) => {
+      generatedBlock = e.block
     })
 
-    const res = await vm.runBlock({
+    await vm.runBlock({
       block: block2,
       skipHeaderValidation: true,
       skipBlockValidation: true,
       generate: true,
     })
-    console.log(res.requests)
+
+    console.log(bytesToHex(generatedBlock!.header.requestsRoot!))
+    console.log(generatedBlock!.requests)
+
+    //await vm.runBlock({ block: generatedBlock!, skipHeaderValidation: true, root })
   })
 })

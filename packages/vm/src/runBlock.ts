@@ -9,16 +9,12 @@ import {
   Address,
   BIGINT_0,
   BIGINT_1,
-  BIGINT_2,
-  BIGINT_3,
   BIGINT_8,
   CLRequest,
   GWEI_TO_WEI,
   KECCAK256_RLP,
-  bigIntMin,
   bigIntToBytes,
   bigIntToHex,
-  bytesToBigInt,
   bytesToHex,
   concatBytes,
   equalsBytes,
@@ -26,7 +22,6 @@ import {
   intToBytes,
   setLengthLeft,
   short,
-  unpadBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -979,120 +974,7 @@ export const accumulateRequests = async (vm: VM): Promise<CLRequest[]> => {
   // TODO: Add in code to accumulate deposits (EIP-6110)
 
   if (common.isActivatedEIP(7002)) {
-    // Partial withdrawals logic
-    const addressBytes = setLengthLeft(
-      bigIntToBytes(common.param('vm', 'withdrawalRequestPredeployAddress')),
-      20
-    )
-    const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
-
-    const withdrawalsType = Number(common.param('vm', 'withdrawalRequestType'))
-
-    const excessWithdrawalsSlot = setLengthLeft(
-      bigIntToBytes(common.param('vm', 'excessWithdrawalsRequestStorageSlot')),
-      32
-    )
-    const withdrawalsCountSlot = setLengthLeft(
-      bigIntToBytes(common.param('vm', 'withdrawalsRequestCountStorage')),
-      32
-    )
-    const queueHeadSlot = setLengthLeft(
-      bigIntToBytes(common.param('vm', 'withdrawalsRequestQueueHeadStorageSlot')),
-      32
-    )
-    const queueTailSlot = setLengthLeft(
-      bigIntToBytes(common.param('vm', 'withdrawalsRequestTailHeadStorageSlot')),
-      32
-    )
-
-    const maxWithdrawalsPerBlock = common.param('vm', 'maxWithdrawalRequestsPerBlock')
-    const targetWithdrawalRequestsPerBlock = common.param('vm', 'targetWithdrawalRequestsPerBlock')
-    const offset = common.param('vm', 'withdrawalsRequestQueueStorageOffset')
-
-    // Dequeue withdrawal requests
-
-    const queueHeadIndex = bytesToBigInt(
-      await vm.stateManager.getContractStorage(withdrawalsAddress, queueHeadSlot)
-    )
-    const queueTailIndex = bytesToBigInt(
-      await vm.stateManager.getContractStorage(withdrawalsAddress, queueTailSlot)
-    )
-    const numInQueue = queueTailIndex - queueHeadIndex
-    const numDequeued = Number(bigIntMin(numInQueue, maxWithdrawalsPerBlock))
-
-    for (let i = 0; i < numDequeued; i++) {
-      const queueStorageSlot = offset + (queueHeadIndex + BigInt(i)) * BIGINT_3
-      const sourceAddress = setLengthLeft(
-        await vm.stateManager.getContractStorage(
-          withdrawalsAddress,
-          setLengthLeft(bigIntToBytes(queueStorageSlot), 32)
-        ),
-        32
-      ).slice(12, 32)
-
-      const slot1Data = setLengthLeft(
-        await vm.stateManager.getContractStorage(
-          withdrawalsAddress,
-          setLengthLeft(bigIntToBytes(queueStorageSlot + BIGINT_1), 32)
-        ),
-        32
-      )
-      const slot2Data = setLengthLeft(
-        await vm.stateManager.getContractStorage(
-          withdrawalsAddress,
-          setLengthLeft(bigIntToBytes(queueStorageSlot + BIGINT_2), 32)
-        ),
-        32
-      )
-
-      const concatenatedData = concatBytes(slot1Data, slot2Data)
-      const validatorPubkey = concatenatedData.slice(0, 48)
-
-      const amount = unpadBytes(concatenatedData.slice(48, 56))
-
-      const RLPdBytes = RLP.encode([sourceAddress, validatorPubkey, amount])
-      const request = new ValidatorWithdrawalRequest(withdrawalsType, RLPdBytes)
-      requests.push(request)
-    }
-
-    const newQueueHeadIndex = queueHeadIndex + BigInt(numDequeued)
-
-    if (newQueueHeadIndex === queueTailIndex) {
-      await vm.stateManager.putContractStorage(withdrawalsAddress, queueHeadSlot, new Uint8Array())
-      await vm.stateManager.putContractStorage(withdrawalsAddress, queueTailSlot, new Uint8Array())
-    } else {
-      await vm.stateManager.putContractStorage(
-        withdrawalsAddress,
-        queueHeadSlot,
-        bigIntToBytes(newQueueHeadIndex)
-      )
-    }
-
-    // Update the excess withdrawal requests
-    const previousExcess = bytesToBigInt(
-      await vm.stateManager.getContractStorage(withdrawalsAddress, excessWithdrawalsSlot)
-    )
-    const count = bytesToBigInt(
-      await vm.stateManager.getContractStorage(withdrawalsAddress, withdrawalsCountSlot)
-    )
-
-    let newExcess = BIGINT_0
-    if (previousExcess + count > targetWithdrawalRequestsPerBlock) {
-      newExcess = previousExcess + count - targetWithdrawalRequestsPerBlock
-    }
-
-    await vm.stateManager.putContractStorage(
-      withdrawalsAddress,
-      withdrawalsCountSlot,
-      bigIntToBytes(newExcess)
-    )
-
-    // Reset the withdrawals count
-    await vm.stateManager.putContractStorage(
-      withdrawalsAddress,
-      withdrawalsCountSlot,
-      new Uint8Array()
-    )
+    await _accumulateEIP7002Requests(vm, requests)
   }
 
   if (requests.length > 1) {
@@ -1102,4 +984,42 @@ export const accumulateRequests = async (vm: VM): Promise<CLRequest[]> => {
     }
   }
   return requests
+}
+
+const _accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promise<void> => {
+  console.log('Perform system call')
+  // TODO PERFORM LOGIC TO CHECK IF CONTRACT EXISTS
+  // Partial withdrawals logic
+  const addressBytes = setLengthLeft(
+    bigIntToBytes(vm.common.param('vm', 'withdrawalRequestPredeployAddress')),
+    20
+  )
+  const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
+
+  const systemAddressBytes = setLengthLeft(
+    bigIntToBytes(vm.common.param('vm', 'systemAddress')),
+    20
+  )
+  const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
+
+  const results = await vm.evm.runCall({
+    caller: systemAddress,
+    gasLimit: BigInt(1_000_000),
+    to: withdrawalsAddress,
+  })
+
+  const resultsBytes = results.execResult.returnValue
+  if (resultsBytes.length > 0) {
+    const withdrawalRequestType = Number(vm.common.param('vm', 'withdrawalRequestType'))
+    // Each request is 76 bytes
+    for (let startByte = 0; startByte < resultsBytes.length; startByte += 76) {
+      const slicedBytes = resultsBytes.slice(startByte, startByte + 76)
+      const sourceAddress = slicedBytes.slice(0, 20)
+      const validatorPubkey = slicedBytes.slice(20, 20 + 48)
+      const amount = slicedBytes.slice(20 + 48, 20 + 48 + 8)
+      const rlpData = RLP.encode([sourceAddress, validatorPubkey, amount])
+      const request = new ValidatorWithdrawalRequest(withdrawalRequestType, rlpData)
+      requests.push(request)
+    }
+  }
 }
