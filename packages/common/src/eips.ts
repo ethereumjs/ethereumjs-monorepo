@@ -74,7 +74,7 @@ export const EIPs: EIPsDict = {
     gasConfig: {},
     gasPrices: {
       Bls12381G1AddGas: {
-        v: 600,
+        v: 500,
         d: 'Gas cost of a single BLS12-381 G1 addition precompile-call',
       },
       Bls12381G1MulGas: {
@@ -82,11 +82,11 @@ export const EIPs: EIPsDict = {
         d: 'Gas cost of a single BLS12-381 G1 multiplication precompile-call',
       },
       Bls12381G2AddGas: {
-        v: 4500,
+        v: 800,
         d: 'Gas cost of a single BLS12-381 G2 addition precompile-call',
       },
       Bls12381G2MulGas: {
-        v: 55000,
+        v: 45000,
         d: 'Gas cost of a single BLS12-381 G2 multiplication precompile-call',
       },
       Bls12381PairingBaseGas: {
@@ -102,7 +102,7 @@ export const EIPs: EIPsDict = {
         d: 'Gas cost of BLS12-381 map field element to G1',
       },
       Bls12381MapG2Gas: {
-        v: 110000,
+        v: 75000,
         d: 'Gas cost of BLS12-381 map field element to G2',
       },
     },
