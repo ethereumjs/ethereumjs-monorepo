@@ -22,6 +22,8 @@ const addr = Address.fromPrivateKey(pkey)
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7685, 7002] })
 
+// Note: this deployment tx data is the deployment tx in order to setup the EIP-7002 contract
+// It is taken from the EIP
 const deploymentTxData = {
   nonce: BigInt(0),
   gasLimit: BigInt('0x3d090'),
@@ -112,6 +114,7 @@ describe('EIP-7002 tests', () => {
       generate: true,
     })
 
+    // Ensure the request is generated
     assert.ok(generatedBlock!.requests!.length === 1)
 
     const requestDecoded = RLP.decode(generatedBlock!.requests![0].bytes)
@@ -120,10 +123,60 @@ describe('EIP-7002 tests', () => {
     const validatorPubkeyRequest = requestDecoded[1] as Uint8Array
     const amountRequest = requestDecoded[2] as Uint8Array
 
+    // Ensure the requests are correct
     assert.ok(equalsBytes(sourceAddressRequest, tx.getSenderAddress().bytes))
     assert.ok(equalsBytes(validatorPubkey, validatorPubkeyRequest))
     assert.ok(equalsBytes(amountBytes, amountRequest))
 
     await vm.runBlock({ block: generatedBlock!, skipHeaderValidation: true, root })
+
+    // Run block with 2 requests
+
+    const tx2 = generateTx(BigInt(1))
+    const tx3 = generateTx(BigInt(2))
+
+    const block3 = Block.fromBlockData(
+      {
+        header: {
+          number: 3,
+          parentBeaconBlockRoot: zeros(32),
+        },
+        transactions: [tx2, tx3],
+      },
+      { common }
+    )
+
+    await vm.runBlock({
+      block: block3,
+      skipHeaderValidation: true,
+      skipBlockValidation: true,
+      generate: true,
+    })
+
+    // Note: generatedBlock is now overridden with the new generated block (this is thus block number 3)
+    // Ensure there are 2 requests
+    assert.ok(generatedBlock!.requests!.length === 2)
+  })
+
+  it('should throw when contract is not deployed', async () => {
+    const vm = await setupVM({ common })
+    const block = Block.fromBlockData(
+      {
+        header: {
+          number: 1,
+        },
+      },
+      { common }
+    )
+    try {
+      await vm.runBlock({
+        block,
+        skipHeaderValidation: true,
+        skipBlockValidation: true,
+        generate: true,
+      })
+    } catch (e: any) {
+      assert.ok(e.message.includes('Attempt to accumulate EIP-7002 requests failed'))
+    }
   })
 })

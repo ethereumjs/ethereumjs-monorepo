@@ -996,6 +996,14 @@ const _accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promis
   )
   const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
 
+  const code = await vm.stateManager.getContractCode(withdrawalsAddress)
+
+  if (code.length === 0) {
+    throw new Error(
+      'Attempt to accumulate EIP-7002 requests failed: the contract does not exist. Ensure the deployment tx has been run, or that the required contract code is stored'
+    )
+  }
+
   const systemAddressBytes = setLengthLeft(
     bigIntToBytes(vm.common.param('vm', 'systemAddress')),
     20
