@@ -10,6 +10,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_8,
+  CLRequest,
   GWEI_TO_WEI,
   KECCAK256_RLP,
   bigIntToBytes,
@@ -40,7 +41,7 @@ import type {
 import type { VM } from './vm.js'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
-import type { CLRequest, PrefixedHexString } from '@ethereumjs/util'
+import type { CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -225,6 +226,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     }
     const blockData = {
       ...block,
+      requests,
       header: { ...block.header, ...generatedFields },
     }
     block = Block.fromBlockData(blockData, { common: this.common })
@@ -951,17 +953,30 @@ const DAOConfig = {
   DAORefundContract: 'bf4ed7b27f1d666546e30d74d50d173d20bca754',
 }
 
+export class ValidatorWithdrawalRequest extends CLRequest implements CLRequestType {
+  constructor(type: number, bytes: Uint8Array) {
+    super(type, bytes)
+  }
+
+  serialize() {
+    return concatBytes(Uint8Array.from([this.type]), this.bytes)
+  }
+}
+
 /**
  * This helper method generates a list of all CL requests that can be included in a pending block
  * @param _vm VM instance from which to derive CL requests
  * @returns an list of CL requests in ascending order by type
  */
-export const accumulateRequests = async (_vm: VM): Promise<CLRequest[]> => {
+export const accumulateRequests = async (vm: VM): Promise<CLRequest[]> => {
   const requests: CLRequest[] = []
+  const common = vm.common
 
   // TODO: Add in code to accumulate deposits (EIP-6110)
 
-  // TODO: Add in code to accumulate partial withdrawals (EIP-7002)
+  if (common.isActivatedEIP(7002)) {
+    await _accumulateEIP7002Requests(vm, requests)
+  }
 
   if (requests.length > 1) {
     for (let x = 1; x < requests.length; x++) {
@@ -970,4 +985,48 @@ export const accumulateRequests = async (_vm: VM): Promise<CLRequest[]> => {
     }
   }
   return requests
+}
+
+const _accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promise<void> => {
+  // Partial withdrawals logic
+  const addressBytes = setLengthLeft(
+    bigIntToBytes(vm.common.param('vm', 'withdrawalRequestPredeployAddress')),
+    20
+  )
+  const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
+
+  const code = await vm.stateManager.getContractCode(withdrawalsAddress)
+
+  if (code.length === 0) {
+    throw new Error(
+      'Attempt to accumulate EIP-7002 requests failed: the contract does not exist. Ensure the deployment tx has been run, or that the required contract code is stored'
+    )
+  }
+
+  const systemAddressBytes = setLengthLeft(
+    bigIntToBytes(vm.common.param('vm', 'systemAddress')),
+    20
+  )
+  const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
+
+  const results = await vm.evm.runCall({
+    caller: systemAddress,
+    gasLimit: BigInt(1_000_000),
+    to: withdrawalsAddress,
+  })
+
+  const resultsBytes = results.execResult.returnValue
+  if (resultsBytes.length > 0) {
+    const withdrawalRequestType = Number(vm.common.param('vm', 'withdrawalRequestType'))
+    // Each request is 76 bytes
+    for (let startByte = 0; startByte < resultsBytes.length; startByte += 76) {
+      const slicedBytes = resultsBytes.slice(startByte, startByte + 76)
+      const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
+      const validatorPubkey = slicedBytes.slice(20, 68) // 48 Bytes
+      const amount = slicedBytes.slice(68, 76) // 8 Bytes / Uint64
+      const rlpData = RLP.encode([sourceAddress, validatorPubkey, amount])
+      const request = new ValidatorWithdrawalRequest(withdrawalRequestType, rlpData)
+      requests.push(request)
+    }
+  }
 }
