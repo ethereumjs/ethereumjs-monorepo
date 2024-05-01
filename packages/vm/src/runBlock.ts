@@ -988,7 +988,6 @@ export const accumulateRequests = async (vm: VM): Promise<CLRequest[]> => {
 }
 
 const _accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promise<void> => {
-  // TODO PERFORM LOGIC TO CHECK IF CONTRACT EXISTS
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
     bigIntToBytes(vm.common.param('vm', 'withdrawalRequestPredeployAddress')),
@@ -1022,9 +1021,9 @@ const _accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promis
     // Each request is 76 bytes
     for (let startByte = 0; startByte < resultsBytes.length; startByte += 76) {
       const slicedBytes = resultsBytes.slice(startByte, startByte + 76)
-      const sourceAddress = slicedBytes.slice(0, 20)
-      const validatorPubkey = slicedBytes.slice(20, 20 + 48)
-      const amount = slicedBytes.slice(20 + 48, 20 + 48 + 8)
+      const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
+      const validatorPubkey = slicedBytes.slice(20, 68) // 48 Bytes
+      const amount = slicedBytes.slice(68, 76) // 8 Bytes / Uint64
       const rlpData = RLP.encode([sourceAddress, validatorPubkey, amount])
       const request = new ValidatorWithdrawalRequest(withdrawalRequestType, rlpData)
       requests.push(request)
