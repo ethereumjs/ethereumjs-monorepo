@@ -7,10 +7,11 @@ const config = defineConfig({
     browser: {
       enabled: true,
       headless: true,
-      isolate: false,
+      isolate: true,
       name: 'chrome',
-      fileParallelism: true
+      fileParallelism: false
     },
+    maxConcurrency: 1
   },
   plugins: [
     wasm(),
