@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1714410576280,
+  "lastUpdate": 1714589528686,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "willcory10@gmail.com",
-            "name": "Will Cory",
-            "username": "roninjin10"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f5b3aa34d7c4aaef1089e58c915b61d9d53d0b27",
-          "message": "fix: Export EVMOpts (#3334)\n\n* fix: Export EVMOpts\r\n\r\nEVMOpts are part of the EVM class but not publically available. Making it public has a few benefits:\r\n1. Makes it so typedoc can properly link to docs for EVMOpts\r\n2. Makes it so external users extend these options\r\n\r\n* fix: linter\r\n\r\n* docs: regenerate\r\n\r\n---------\r\n\r\nCo-authored-by: Will Cory <willcory@Wills-MacBook-Pro.local>",
-          "timestamp": "2024-03-25T10:40:54+01:00",
-          "tree_id": "156a89c245e7c0ea1b8874f13aa82bdc385df6db",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f5b3aa34d7c4aaef1089e58c915b61d9d53d0b27"
-        },
-        "date": 1711359836871,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42934,
-            "range": "±2.15%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41104,
-            "range": "±2.48%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41361,
-            "range": "±1.57%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 40522,
-            "range": "±1.56%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36361,
-            "range": "±5.22%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.77%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "willcory10@gmail.com",
+            "name": "Will Cory",
+            "username": "roninjin10"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2dd8a4252437e62b3f4a9493b214a126be9436d5",
+          "message": "fix: Bug in error message (#3386)\n\nError message had a typo",
+          "timestamp": "2024-05-01T14:49:27-04:00",
+          "tree_id": "2b1061f2ad7a197b8b7804a0ee128d1736f965aa",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2dd8a4252437e62b3f4a9493b214a126be9436d5"
+        },
+        "date": 1714589527469,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40166,
+            "range": "±2.99%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39667,
+            "range": "±1.34%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39814,
+            "range": "±1.36%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38785,
+            "range": "±1.58%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35076,
+            "range": "±7.02%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
