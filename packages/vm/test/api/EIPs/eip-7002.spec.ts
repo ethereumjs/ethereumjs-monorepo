@@ -40,6 +40,27 @@ const upfrontCost = deploymentTx.getUpfrontCost()
 const acc = new Account()
 acc.balance = upfrontCost
 
+const validatorPubkey = hexToBytes(`0x${'20'.repeat(48)}`)
+const amount = BigInt(12345678)
+const amountBytes = setLengthLeft(bigIntToBytes(amount), 8)
+
+function generateTx(nonce: bigint) {
+  const addressBytes = setLengthLeft(
+    bigIntToBytes(common.param('vm', 'withdrawalRequestPredeployAddress')),
+    20
+  )
+  const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
+
+  return LegacyTransaction.fromTxData({
+    nonce,
+    gasPrice: BigInt(100),
+    data: concatBytes(validatorPubkey, amountBytes),
+    value: BigInt(1),
+    to: withdrawalsAddress,
+    gasLimit: 200_000,
+  }).sign(pkey)
+}
+
 describe('EIP-7002 tests', () => {
   it('should correctly create requests', async () => {
     const vm = await setupVM({ common })
@@ -47,7 +68,6 @@ describe('EIP-7002 tests', () => {
       {
         header: {
           number: 1,
-          parentBeaconBlockRoot: zeros(32),
         },
         transactions: [deploymentTx],
       },
@@ -66,23 +86,7 @@ describe('EIP-7002 tests', () => {
 
     const root = results.stateRoot
 
-    const validatorPubkey = hexToBytes(`0x${'20'.repeat(48)}`)
-    const amount = BigInt(12345678)
-    const amountBytes = setLengthLeft(bigIntToBytes(amount), 8)
-
-    const addressBytes = setLengthLeft(
-      bigIntToBytes(common.param('vm', 'withdrawalRequestPredeployAddress')),
-      20
-    )
-    const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
-
-    const tx = LegacyTransaction.fromTxData({
-      gasPrice: BigInt(100),
-      data: concatBytes(validatorPubkey, amountBytes),
-      value: BigInt(1),
-      to: withdrawalsAddress,
-      gasLimit: 200_000,
-    }).sign(pkey)
+    const tx = generateTx(BigInt(0))
 
     // Call withdrawals contract with a withdrawals request
     const block2 = Block.fromBlockData(
@@ -120,6 +124,6 @@ describe('EIP-7002 tests', () => {
     assert.ok(equalsBytes(validatorPubkey, validatorPubkeyRequest))
     assert.ok(equalsBytes(amountBytes, amountRequest))
 
-    //await vm.runBlock({ block: generatedBlock!, skipHeaderValidation: true, root })
+    await vm.runBlock({ block: generatedBlock!, skipHeaderValidation: true, root })
   })
 })
