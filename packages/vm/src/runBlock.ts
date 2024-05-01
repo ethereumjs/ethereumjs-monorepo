@@ -40,7 +40,7 @@ import type {
 import type { VM } from './vm.js'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { CLRequest, PrefixedHexString } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -192,6 +192,13 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     throw err
   }
 
+  let requestsRoot
+  let requests: CLRequest[] | undefined
+  if (block.common.isActivatedEIP(7685)) {
+    requests = await accumulateRequests(this)
+    requestsRoot = await Block.genRequestsTrieRoot(requests)
+  }
+
   // Persist state
   await this.evm.journal.commit()
   if (this.DEBUG) {
@@ -208,66 +215,89 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     const gasUsed = result.gasUsed
     const receiptTrie = result.receiptsRoot
     const transactionsTrie = await _genTxTrie(block)
-    const generatedFields = { stateRoot, bloom, gasUsed, receiptTrie, transactionsTrie }
+    const generatedFields = {
+      stateRoot,
+      bloom,
+      gasUsed,
+      receiptTrie,
+      transactionsTrie,
+      requestsRoot,
+    }
     const blockData = {
       ...block,
       header: { ...block.header, ...generatedFields },
     }
     block = Block.fromBlockData(blockData, { common: this.common })
-  } else if (!this.common.isActivatedEIP(6800)) {
-    // Only validate the following headers if verkle blocks aren't activated
-    if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
-      if (this.DEBUG) {
-        debug(
-          `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
-            block.header.receiptTrie
-          )}`
-        )
+  } else {
+    if (this.common.isActivatedEIP(7685)) {
+      const valid = await block.requestsTrieIsValid()
+      if (!valid) {
+        const validRoot = await Block.genRequestsTrieRoot(block.requests!)
+        if (this.DEBUG)
+          debug(
+            `Invalid requestsRoot received=${bytesToHex(
+              block.header.requestsRoot!
+            )} expected=${bytesToHex(validRoot)}`
+          )
+        const msg = _errorMsg('invalid requestsRoot', this, block)
+        throw new Error(msg)
       }
-      const msg = _errorMsg('invalid receiptTrie', this, block)
-      throw new Error(msg)
     }
-    if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
-      if (this.DEBUG) {
-        debug(
-          `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
-            block.header.logsBloom
-          )}`
-        )
+    if (!this.common.isActivatedEIP(6800)) {
+      // Only validate the following headers if verkle blocks aren't activated
+      if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
+        if (this.DEBUG) {
+          debug(
+            `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
+              block.header.receiptTrie
+            )}`
+          )
+        }
+        const msg = _errorMsg('invalid receiptTrie', this, block)
+        throw new Error(msg)
       }
-      const msg = _errorMsg('invalid bloom', this, block)
-      throw new Error(msg)
-    }
-    if (result.gasUsed !== block.header.gasUsed) {
-      if (this.DEBUG) {
-        debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
+      if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
+        if (this.DEBUG) {
+          debug(
+            `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
+              block.header.logsBloom
+            )}`
+          )
+        }
+        const msg = _errorMsg('invalid bloom', this, block)
+        throw new Error(msg)
       }
-      const msg = _errorMsg('invalid gasUsed', this, block)
-      throw new Error(msg)
-    }
-    if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
-      if (this.DEBUG) {
-        debug(
-          `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
+      if (result.gasUsed !== block.header.gasUsed) {
+        if (this.DEBUG) {
+          debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
+        }
+        const msg = _errorMsg('invalid gasUsed', this, block)
+        throw new Error(msg)
+      }
+      if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
+        if (this.DEBUG) {
+          debug(
+            `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
+              block.header.stateRoot
+            )}`
+          )
+        }
+        const msg = _errorMsg(
+          `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
             block.header.stateRoot
-          )}`
+          )}`,
+          this,
+          block
         )
+        throw new Error(msg)
       }
-      const msg = _errorMsg(
-        `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
-          block.header.stateRoot
-        )}`,
-        this,
-        block
-      )
-      throw new Error(msg)
+    } else if (this.common.isActivatedEIP(6800)) {
+      // If verkle is activated, only validate the post-state
+      if ((this._opts.stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
+        throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
+      }
+      debug(`Verkle post state verification succeeded`)
     }
-  } else if (this.common.isActivatedEIP(6800)) {
-    // If verkle is activated, only validate the post-state
-    if ((this._opts.stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
-      throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
-    }
-    debug(`Verkle post state verification succeeded`)
   }
 
   if (enableProfiler) {
@@ -283,6 +313,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     gasUsed: result.gasUsed,
     receiptsRoot: result.receiptsRoot,
     preimages: result.preimages,
+    requestsRoot,
+    requests,
   }
 
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
@@ -917,4 +949,25 @@ const DAOConfig = {
     '807640a13483f8ac783c557fcdf27be11ea4ac7a',
   ],
   DAORefundContract: 'bf4ed7b27f1d666546e30d74d50d173d20bca754',
+}
+
+/**
+ * This helper method generates a list of all CL requests that can be included in a pending block
+ * @param _vm VM instance from which to derive CL requests
+ * @returns an list of CL requests in ascending order by type
+ */
+export const accumulateRequests = async (_vm: VM): Promise<CLRequest[]> => {
+  const requests: CLRequest[] = []
+
+  // TODO: Add in code to accumulate deposits (EIP-6110)
+
+  // TODO: Add in code to accumulate partial withdrawals (EIP-7002)
+
+  if (requests.length > 1) {
+    for (let x = 1; x < requests.length; x++) {
+      if (requests[x].type < requests[x - 1].type)
+        throw new Error('requests are not in ascending order')
+    }
+  }
+  return requests
 }

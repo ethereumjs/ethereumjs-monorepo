@@ -542,4 +542,13 @@ export const EIPs: EIPsDict = {
       },
     },
   },
+  7685: {
+    comment: 'General purpose execution layer requests',
+    url: 'https://eips.ethereum.org/EIPS/eip-7685',
+    status: Status.Draft,
+    // TODO: Set correct minimum hardfork
+    minimumHardfork: Hardfork.Cancun,
+    requiredEIPs: [3675],
+    gasPrices: {},
+  },
 }

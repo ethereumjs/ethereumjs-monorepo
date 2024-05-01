@@ -21,6 +21,7 @@ import { Bloom } from './bloom/index.js'
 import {
   accumulateParentBeaconBlockRoot,
   accumulateParentBlockHash,
+  accumulateRequests,
   calculateMinerReward,
   encodeReceipt,
   rewardAccount,
@@ -280,7 +281,7 @@ export class BlockBuilder {
   }
 
   /**
-   * This method returns the finalized block.
+   * This method constructs the finalized block, including withdrawals and any CLRequests.
    * It also:
    *  - Assigns the reward for miner (PoW)
    *  - Commits the checkpoint on the StateManager
@@ -289,6 +290,9 @@ export class BlockBuilder {
    * which is validated along with the block number and difficulty by ethash.
    * For PoA, please pass `blockOption.cliqueSigner` into the buildBlock constructor,
    * as the signer will be awarded the txs amount spent on gas as they are added.
+   *
+   * Note: we add CLRequests here because they can be generated at any time during the
+   * lifecycle of a pending block so need to be provided only when the block is finalized.
    */
   async build(sealOpts?: SealBlockOpts) {
     this.checkStatus()
@@ -316,6 +320,14 @@ export class BlockBuilder {
       blobGasUsed = this.blobGasUsed
     }
 
+    let requests
+    let requestsRoot
+    if (this.vm.common.isActivatedEIP(7685)) {
+      requests = await accumulateRequests(this.vm)
+      requestsRoot = await Block.genRequestsTrieRoot(requests)
+      // Do other validations per request type
+    }
+
     const headerData = {
       ...this.headerData,
       stateRoot,
@@ -327,6 +339,7 @@ export class BlockBuilder {
       timestamp,
       // correct excessBlobGas should already be part of headerData used above
       blobGasUsed,
+      requestsRoot,
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {
@@ -338,7 +351,9 @@ export class BlockBuilder {
       header: headerData,
       transactions: this.transactions,
       withdrawals: this.withdrawals,
+      requests,
     }
+
     const block = Block.fromBlockData(blockData, blockOpts)
 
     if (this.blockOpts.putBlockIntoBlockchain === true) {

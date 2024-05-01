@@ -44,9 +44,10 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     blobGasUsed,
     excessBlobGas,
     parentBeaconBlockRoot,
+    requestsRoot,
   ] = values
 
-  if (values.length > 20) {
+  if (values.length > 21) {
     throw new Error(
       `invalid header. More values than expected were received. Max: 20, got: ${values.length}`
     )
@@ -78,6 +79,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     blobGasUsed,
     excessBlobGas,
     parentBeaconBlockRoot,
+    requestsRoot,
   }
 }
 
