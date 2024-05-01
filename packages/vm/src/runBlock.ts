@@ -226,6 +226,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     }
     const blockData = {
       ...block,
+      requests,
       header: { ...block.header, ...generatedFields },
     }
     block = Block.fromBlockData(blockData, { common: this.common })
@@ -987,7 +988,6 @@ export const accumulateRequests = async (vm: VM): Promise<CLRequest[]> => {
 }
 
 const _accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promise<void> => {
-  console.log('Perform system call')
   // TODO PERFORM LOGIC TO CHECK IF CONTRACT EXISTS
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
