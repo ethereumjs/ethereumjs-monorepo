@@ -5,8 +5,10 @@ import type {
   AddressLike,
   BigIntLike,
   BytesLike,
+  CLRequest,
   JsonRpcWithdrawal,
   PrefixedHexString,
+  RequestBytes,
   WithdrawalBytes,
   WithdrawalData,
 } from '@ethereumjs/util'
@@ -137,6 +139,7 @@ export interface HeaderData {
   blobGasUsed?: BigIntLike | string
   excessBlobGas?: BigIntLike | string
   parentBeaconBlockRoot?: BytesLike | string
+  requestsRoot?: BytesLike | string
 }
 
 /**
@@ -150,6 +153,7 @@ export interface BlockData {
   transactions?: Array<TxData[TransactionType]>
   uncleHeaders?: Array<HeaderData>
   withdrawals?: Array<WithdrawalData>
+  requests?: Array<CLRequest>
   /**
    * EIP-6800: Verkle Proof Data (experimental)
    */
@@ -157,16 +161,19 @@ export interface BlockData {
 }
 
 export type WithdrawalsBytes = WithdrawalBytes[]
+export type RequestsBytes = RequestBytes[]
 export type ExecutionWitnessBytes = Uint8Array
 
 export type BlockBytes =
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes]
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes]
+  | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes, RequestsBytes]
   | [
       BlockHeaderBytes,
       TransactionsBytes,
       UncleHeadersBytes,
       WithdrawalsBytes,
+      RequestsBytes,
       ExecutionWitnessBytes
     ]
 
@@ -174,7 +181,12 @@ export type BlockBytes =
  * BlockHeaderBuffer is a Buffer array, except for the Verkle PreState which is an array of prestate arrays.
  */
 export type BlockHeaderBytes = Uint8Array[]
-export type BlockBodyBytes = [TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes?]
+export type BlockBodyBytes = [
+  TransactionsBytes,
+  UncleHeadersBytes,
+  WithdrawalsBytes?,
+  RequestBytes?
+]
 /**
  * TransactionsBytes can be an array of serialized txs for Typed Transactions or an array of Uint8Array Arrays for legacy transactions.
  */
@@ -192,6 +204,7 @@ export interface JsonBlock {
   transactions?: JsonTx[]
   uncleHeaders?: JsonHeader[]
   withdrawals?: JsonRpcWithdrawal[]
+  requests?: PrefixedHexString[] | null
   executionWitness?: VerkleExecutionWitness | null
 }
 
@@ -220,6 +233,7 @@ export interface JsonHeader {
   blobGasUsed?: PrefixedHexString | string
   excessBlobGas?: PrefixedHexString | string
   parentBeaconBlockRoot?: PrefixedHexString | string
+  requestsRoot?: PrefixedHexString | string
 }
 
 /*
@@ -254,6 +268,8 @@ export interface JsonRpcBlock {
   excessBlobGas?: PrefixedHexString | string // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
   parentBeaconBlockRoot?: PrefixedHexString | string // If EIP-4788 is enabled for this block, returns parent beacon block root
   executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
+  requestsRoot?: PrefixedHexString | string // If EIP-7685 is enabled for this block, returns the requests root
+  requests?: Array<PrefixedHexString | string> // If EIP-7685 is enabled for this block, array of serialized CL requests
 }
 
 export type WithdrawalV1 = {
@@ -286,4 +302,5 @@ export type ExecutionPayload = {
   parentBeaconBlockRoot?: PrefixedHexString | string // QUANTITY, 64 Bits
   // VerkleExecutionWitness is already a hex serialized object
   executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
+  requestsRoot?: PrefixedHexString | string | null // DATA, 32 bytes, null implies EIP 7685 not active yet
 }

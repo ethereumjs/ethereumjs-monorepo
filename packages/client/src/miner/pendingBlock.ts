@@ -288,7 +288,9 @@ export class PendingBlock {
     )
 
     const { skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
+
     const block = await builder.build()
+
     // Construct blobs bundle
     const blobs = block.common.isActivatedEIP(4844)
       ? this.constructBlobsBundle(payloadId, blobTxs)
