@@ -19,6 +19,9 @@ const common = new Common({
   eips: [7685, 6110, 4844, 4788, 1559, 4895],
 })
 
+const DEPOSIT_HEX =
+  '0xac842878bb70009552a4cfcad801d6e659c50bd50d7d03306790cb455ce7363c5b6972f0159d170f625a99b2064dbefc'
+
 describe('EIP-7685 runBlock tests', () => {
   it('should generate a valid deposit request', async () => {
     const vm = await setupVM({ common })
@@ -50,10 +53,7 @@ describe('EIP-7685 runBlock tests', () => {
     )
     const res = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
     assert.equal(res.requests?.length, 1)
-    assert.equal(
-      bytesToHex((RLP.decode(res.requests![0].bytes) as Uint8Array[])[0]),
-      '0xac842878bb70009552a4cfcad801d6e659c50bd50d7d03306790cb455ce7363c5b6972f0159d170f625a99b2064dbefc'
-    )
+    assert.equal(bytesToHex((RLP.decode(res.requests![0].bytes) as Uint8Array[])[0]), DEPOSIT_HEX)
   })
 })
 
@@ -82,16 +82,15 @@ describe('EIP-7685 buildBlock tests', () => {
     )
     const block = Block.fromBlockData(
       {
-        transactions: [depositTx],
+        transactions: [],
       },
       { common }
     )
-    console.log(block)
-    // console.log(vm.blockchain)
     vm.blockchain['dbManager']['getHeader'] = () => block.header
     const blockBuilder = await vm.buildBlock({ parentBlock: block })
-    const result = await blockBuilder.build()
-    console.log(result)
-    assert.deepEqual(result.requests, block.requests)
+    await blockBuilder.addTransaction(depositTx)
+    const res = await blockBuilder.build()
+    assert.equal(res.requests?.length, 1)
+    assert.equal(bytesToHex((RLP.decode(res.requests![0].bytes) as Uint8Array[])[0]), DEPOSIT_HEX)
   })
 })
