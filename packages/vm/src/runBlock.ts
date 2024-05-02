@@ -196,7 +196,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   let requestsRoot
   let requests: CLRequest[] | undefined
   if (block.common.isActivatedEIP(7685)) {
-    requests = await accumulateRequests(this)
+    requests = await accumulateRequests(this, result.results)
     requestsRoot = await Block.genRequestsTrieRoot(requests)
   }
 
@@ -968,11 +968,16 @@ export class ValidatorWithdrawalRequest extends CLRequest implements CLRequestTy
  * @param _vm VM instance from which to derive CL requests
  * @returns an list of CL requests in ascending order by type
  */
-export const accumulateRequests = async (vm: VM): Promise<CLRequest[]> => {
+export const accumulateRequests = async (
+  vm: VM,
+  txResults: RunTxResult[]
+): Promise<CLRequest[]> => {
   const requests: CLRequest[] = []
   const common = vm.common
 
-  // TODO: Add in code to accumulate deposits (EIP-6110)
+  if (common.isActivatedEIP(6110)) {
+    await accumulateDeposits(txResults, requests)
+  }
 
   if (common.isActivatedEIP(7002)) {
     await _accumulateEIP7002Requests(vm, requests)
@@ -1027,6 +1032,19 @@ const _accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promis
       const rlpData = RLP.encode([sourceAddress, validatorPubkey, amount])
       const request = new ValidatorWithdrawalRequest(withdrawalRequestType, rlpData)
       requests.push(request)
+    }
+  }
+}
+
+export const DEPOSIT_CONTRACT_ADDRESS = '0x00000000219ab540356cBB839Cbe05303d7705Fa'
+const accumulateDeposits = async (txResults: RunTxResult[], requests: CLRequest[]) => {
+  for (const [_, tx] of txResults.entries()) {
+    for (let i = 0; i < tx.receipt.logs.length; i++) {
+      const log = tx.receipt.logs[i]
+      if (bytesToHex(log[0]).toLowerCase() === DEPOSIT_CONTRACT_ADDRESS.toLowerCase()) {
+        console.log(log[1])
+        requests.push(new CLRequest(0x0, log[2]))
+      }
     }
   }
 }
