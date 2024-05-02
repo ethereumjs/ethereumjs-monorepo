@@ -464,11 +464,15 @@ export class Block {
       : undefined
     const header: HeaderData = {
       ...payload,
+      //@ts-ignore
       number,
+      //@ts-ignore
       receiptTrie,
       transactionsTrie,
       withdrawalsRoot,
+      //@ts-ignore
       mixHash,
+      //@ts-ignore
       coinbase,
       requestsRoot: reqRoot,
     }

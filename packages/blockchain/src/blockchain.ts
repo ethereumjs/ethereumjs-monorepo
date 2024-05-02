@@ -1437,7 +1437,7 @@ export class Blockchain implements BlockchainInterface {
       td: BigInt(common.genesis().difficulty),
       timestamp: common.genesis().timestamp,
     })
-
+    //@ts-ignore
     const header: HeaderData = {
       ...common.genesis(),
       number: 0,
@@ -1448,6 +1448,7 @@ export class Blockchain implements BlockchainInterface {
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {
         // Ensure exta data is populated from genesis data if provided
+        //@ts-ignore
         header.extraData = common.genesis().extraData
       } else {
         // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes

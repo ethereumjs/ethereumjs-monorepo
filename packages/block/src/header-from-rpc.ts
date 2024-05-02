@@ -36,21 +36,36 @@ export function blockHeaderFromRpc(blockParams: JsonRpcBlock, options?: BlockOpt
 
   const blockHeader = BlockHeader.fromHeaderData(
     {
+      //@ts-ignore
       parentHash,
+      //@ts-ignore
       uncleHash: sha3Uncles,
+      //@ts-ignore
       coinbase: miner,
+      //@ts-ignore
       stateRoot,
+      //@ts-ignore
       transactionsTrie: transactionsRoot,
+      //@ts-ignore
       receiptTrie: receiptsRoot,
+      //@ts-ignore
       logsBloom,
       difficulty: numberToHex(difficulty),
+      //@ts-ignore
       number,
+      //@ts-ignore
       gasLimit,
+      //@ts-ignore
       gasUsed,
+      //@ts-ignore
       timestamp,
+      //@ts-ignore
       extraData,
+      //@ts-ignore
       mixHash,
+      //@ts-ignore
       nonce,
+      //@ts-ignore
       baseFeePerGas,
       withdrawalsRoot,
       blobGasUsed,
