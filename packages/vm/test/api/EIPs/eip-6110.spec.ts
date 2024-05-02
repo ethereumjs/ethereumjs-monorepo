@@ -1,22 +1,12 @@
 import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory } from '@ethereumjs/tx'
-import {
-  Account,
-  Address,
-  KECCAK256_RLP,
-  bytesToHex,
-  concatBytes,
-  hexToBytes,
-  randomBytes,
-} from '@ethereumjs/util'
+import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { DEPOSIT_CONTRACT_ADDRESS } from '../../../src/runBlock.js'
-import { VM } from '../../../src/vm.js'
 import { setupVM } from '../utils.js'
 
 const depositContractByteCode = hexToBytes(
@@ -29,7 +19,7 @@ const common = new Common({
 })
 
 describe('EIP-7685 runBlock tests', () => {
-  it('should not error when a valid requestsRoot is provided', async () => {
+  it('should generate a valid deposit request', async () => {
     const vm = await setupVM({ common })
     const pk = randomBytes(32)
     const sender = Address.fromPrivateKey(pk)
@@ -58,5 +48,10 @@ describe('EIP-7685 runBlock tests', () => {
       { common }
     )
     const res = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    assert.equal(res.requests?.length, 1)
+    assert.equal(
+      bytesToHex((RLP.decode(res.requests![0].bytes) as Uint8Array[])[0]),
+      '0xac842878bb70009552a4cfcad801d6e659c50bd50d7d03306790cb455ce7363c5b6972f0159d170f625a99b2064dbefc'
+    )
   })
 })
