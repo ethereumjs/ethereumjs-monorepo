@@ -16,6 +16,7 @@ import {
   bigIntToBytes,
   bigIntToHex,
   bytesToHex,
+  bytesToInt,
   concatBytes,
   equalsBytes,
   hexToBytes,
@@ -1042,8 +1043,26 @@ const accumulateDeposits = async (txResults: RunTxResult[], requests: CLRequest[
     for (let i = 0; i < tx.receipt.logs.length; i++) {
       const log = tx.receipt.logs[i]
       if (bytesToHex(log[0]).toLowerCase() === DEPOSIT_CONTRACT_ADDRESS.toLowerCase()) {
-        console.log(log[1])
-        requests.push(new CLRequest(0x0, log[2]))
+        const pubKeyIdx = bytesToInt(log[2].slice(0, 32))
+        const pubKeySize = bytesToInt(log[2].slice(pubKeyIdx, pubKeyIdx + 32))
+        const withcredsIdx = bytesToInt(log[2].slice(32, 64))
+        const withcredsSize = bytesToInt(log[2].slice(withcredsIdx, withcredsIdx + 32))
+        const amountIdx = bytesToInt(log[2].slice(64, 96))
+        const amountSize = bytesToInt(log[2].slice(amountIdx, amountIdx + 32))
+        const sigIdx = bytesToInt(log[2].slice(96, 128))
+        const sigSize = bytesToInt(log[2].slice(sigIdx, sigIdx + 32))
+        const indexIdx = bytesToInt(log[2].slice(128, 160))
+        const indexSize = bytesToInt(log[2].slice(indexIdx, indexIdx + 32))
+        const pubkey = bytesToHex(log[2].slice(pubKeyIdx + 32, pubKeyIdx + 32 + pubKeySize))
+        const withdrawalCreds = bytesToHex(
+          log[2].slice(withcredsIdx + 32, withcredsIdx + 32 + withcredsSize)
+        )
+        const amount = bytesToHex(log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize))
+        const signature = bytesToHex(log[2].slice(sigIdx + 32, sigIdx + 32 + sigSize))
+        const index = bytesToHex(log[2].slice(indexIdx + 32, indexIdx + 32 + indexSize))
+        requests.push(
+          new CLRequest(0x0, RLP.encode([pubkey, withdrawalCreds, amount, signature, index]))
+        )
       }
     }
   }
