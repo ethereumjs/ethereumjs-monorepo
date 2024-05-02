@@ -428,7 +428,7 @@ export class BlockHeader {
       }
     }
 
-    if (this.common.isActivatedEIP(7685) === true) {
+    if (this.common.isActivatedEIP(7685)) {
       if (this.requestsRoot === undefined) {
         const msg = this._errorMsg('EIP7685 block has no requestsRoot field')
         throw new Error(msg)
@@ -720,7 +720,7 @@ export class BlockHeader {
     if (this.common.isActivatedEIP(4788)) {
       rawItems.push(this.parentBeaconBlockRoot!)
     }
-    if (this.common.isActivatedEIP(7685) === true) {
+    if (this.common.isActivatedEIP(7685)) {
       rawItems.push(this.requestsRoot!)
     }
 
