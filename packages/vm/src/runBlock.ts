@@ -10,6 +10,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_8,
+  CLRequest,
   GWEI_TO_WEI,
   KECCAK256_RLP,
   bigIntToBytes,
@@ -40,7 +41,7 @@ import type {
 import type { VM } from './vm.js'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -192,6 +193,13 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     throw err
   }
 
+  let requestsRoot
+  let requests: CLRequest[] | undefined
+  if (block.common.isActivatedEIP(7685)) {
+    requests = await accumulateRequests(this)
+    requestsRoot = await Block.genRequestsTrieRoot(requests)
+  }
+
   // Persist state
   await this.evm.journal.commit()
   if (this.DEBUG) {
@@ -208,66 +216,90 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     const gasUsed = result.gasUsed
     const receiptTrie = result.receiptsRoot
     const transactionsTrie = await _genTxTrie(block)
-    const generatedFields = { stateRoot, bloom, gasUsed, receiptTrie, transactionsTrie }
+    const generatedFields = {
+      stateRoot,
+      bloom,
+      gasUsed,
+      receiptTrie,
+      transactionsTrie,
+      requestsRoot,
+    }
     const blockData = {
       ...block,
+      requests,
       header: { ...block.header, ...generatedFields },
     }
     block = Block.fromBlockData(blockData, { common: this.common })
-  } else if (this.common.isActivatedEIP(6800) === false) {
-    // Only validate the following headers if verkle blocks aren't activated
-    if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
-      if (this.DEBUG) {
-        debug(
-          `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
-            block.header.receiptTrie
-          )}`
-        )
+  } else {
+    if (this.common.isActivatedEIP(7685)) {
+      const valid = await block.requestsTrieIsValid()
+      if (!valid) {
+        const validRoot = await Block.genRequestsTrieRoot(block.requests!)
+        if (this.DEBUG)
+          debug(
+            `Invalid requestsRoot received=${bytesToHex(
+              block.header.requestsRoot!
+            )} expected=${bytesToHex(validRoot)}`
+          )
+        const msg = _errorMsg('invalid requestsRoot', this, block)
+        throw new Error(msg)
       }
-      const msg = _errorMsg('invalid receiptTrie', this, block)
-      throw new Error(msg)
     }
-    if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
-      if (this.DEBUG) {
-        debug(
-          `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
-            block.header.logsBloom
-          )}`
-        )
+    if (!this.common.isActivatedEIP(6800)) {
+      // Only validate the following headers if verkle blocks aren't activated
+      if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
+        if (this.DEBUG) {
+          debug(
+            `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
+              block.header.receiptTrie
+            )}`
+          )
+        }
+        const msg = _errorMsg('invalid receiptTrie', this, block)
+        throw new Error(msg)
       }
-      const msg = _errorMsg('invalid bloom', this, block)
-      throw new Error(msg)
-    }
-    if (result.gasUsed !== block.header.gasUsed) {
-      if (this.DEBUG) {
-        debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
+      if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
+        if (this.DEBUG) {
+          debug(
+            `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
+              block.header.logsBloom
+            )}`
+          )
+        }
+        const msg = _errorMsg('invalid bloom', this, block)
+        throw new Error(msg)
       }
-      const msg = _errorMsg('invalid gasUsed', this, block)
-      throw new Error(msg)
-    }
-    if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
-      if (this.DEBUG) {
-        debug(
-          `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
+      if (result.gasUsed !== block.header.gasUsed) {
+        if (this.DEBUG) {
+          debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
+        }
+        const msg = _errorMsg('invalid gasUsed', this, block)
+        throw new Error(msg)
+      }
+      if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
+        if (this.DEBUG) {
+          debug(
+            `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
+              block.header.stateRoot
+            )}`
+          )
+        }
+        const msg = _errorMsg(
+          `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
             block.header.stateRoot
-          )}`
+          )}`,
+          this,
+          block
         )
+        throw new Error(msg)
       }
-      const msg = _errorMsg(
-        `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
-          block.header.stateRoot
-        )}`,
-        this,
-        block
-      )
-      throw new Error(msg)
+    } else if (this.common.isActivatedEIP(6800)) {
+      // If verkle is activated, only validate the post-state
+      if ((this._opts.stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
+        throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
+      }
+      debug(`Verkle post state verification succeeded`)
     }
-  } else if (this.common.isActivatedEIP(6800) === true) {
-    // If verkle is activated, only validate the post-state
-    if ((this._opts.stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
-      throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
-    }
-    debug(`Verkle post state verification succeeded`)
   }
 
   if (enableProfiler) {
@@ -283,6 +315,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     gasUsed: result.gasUsed,
     receiptsRoot: result.receiptsRoot,
     preimages: result.preimages,
+    requestsRoot,
+    requests,
   }
 
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
@@ -467,7 +501,7 @@ export async function accumulateParentBlockHash(
     const ringKey = number % historyServeWindow
 
     // generate access witness
-    if (vm.common.isActivatedEIP(6800) === true) {
+    if (vm.common.isActivatedEIP(6800)) {
       const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(ringKey)
       // just create access witnesses without charging for the gas
       ;(
@@ -569,7 +603,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     const tx = block.transactions[txIdx]
 
     let maxGasLimit
-    if (this.common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559)) {
       maxGasLimit = block.header.gasLimit * this.common.param('gasConfig', 'elasticityMultiplier')
     } else {
       maxGasLimit = block.header.gasLimit
@@ -917,4 +951,82 @@ const DAOConfig = {
     '807640a13483f8ac783c557fcdf27be11ea4ac7a',
   ],
   DAORefundContract: 'bf4ed7b27f1d666546e30d74d50d173d20bca754',
+}
+
+export class ValidatorWithdrawalRequest extends CLRequest implements CLRequestType {
+  constructor(type: number, bytes: Uint8Array) {
+    super(type, bytes)
+  }
+
+  serialize() {
+    return concatBytes(Uint8Array.from([this.type]), this.bytes)
+  }
+}
+
+/**
+ * This helper method generates a list of all CL requests that can be included in a pending block
+ * @param _vm VM instance from which to derive CL requests
+ * @returns an list of CL requests in ascending order by type
+ */
+export const accumulateRequests = async (vm: VM): Promise<CLRequest[]> => {
+  const requests: CLRequest[] = []
+  const common = vm.common
+
+  // TODO: Add in code to accumulate deposits (EIP-6110)
+
+  if (common.isActivatedEIP(7002)) {
+    await _accumulateEIP7002Requests(vm, requests)
+  }
+
+  if (requests.length > 1) {
+    for (let x = 1; x < requests.length; x++) {
+      if (requests[x].type < requests[x - 1].type)
+        throw new Error('requests are not in ascending order')
+    }
+  }
+  return requests
+}
+
+const _accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promise<void> => {
+  // Partial withdrawals logic
+  const addressBytes = setLengthLeft(
+    bigIntToBytes(vm.common.param('vm', 'withdrawalRequestPredeployAddress')),
+    20
+  )
+  const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
+
+  const code = await vm.stateManager.getContractCode(withdrawalsAddress)
+
+  if (code.length === 0) {
+    throw new Error(
+      'Attempt to accumulate EIP-7002 requests failed: the contract does not exist. Ensure the deployment tx has been run, or that the required contract code is stored'
+    )
+  }
+
+  const systemAddressBytes = setLengthLeft(
+    bigIntToBytes(vm.common.param('vm', 'systemAddress')),
+    20
+  )
+  const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
+
+  const results = await vm.evm.runCall({
+    caller: systemAddress,
+    gasLimit: BigInt(1_000_000),
+    to: withdrawalsAddress,
+  })
+
+  const resultsBytes = results.execResult.returnValue
+  if (resultsBytes.length > 0) {
+    const withdrawalRequestType = Number(vm.common.param('vm', 'withdrawalRequestType'))
+    // Each request is 76 bytes
+    for (let startByte = 0; startByte < resultsBytes.length; startByte += 76) {
+      const slicedBytes = resultsBytes.slice(startByte, startByte + 76)
+      const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
+      const validatorPubkey = slicedBytes.slice(20, 68) // 48 Bytes
+      const amount = slicedBytes.slice(68, 76) // 8 Bytes / Uint64
+      const rlpData = RLP.encode([sourceAddress, validatorPubkey, amount])
+      const request = new ValidatorWithdrawalRequest(withdrawalRequestType, rlpData)
+      requests.push(request)
+    }
+  }
 }

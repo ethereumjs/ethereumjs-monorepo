@@ -8,8 +8,10 @@ import type {
   DepositBytes,
   DepositData,
   JsonRpcDeposit,
+  CLRequest,
   JsonRpcWithdrawal,
   PrefixedHexString,
+  RequestBytes,
   WithdrawalBytes,
   WithdrawalData,
 } from '@ethereumjs/util'
@@ -118,6 +120,7 @@ export interface VerkleExecutionWitness {
 /**
  * A block header's data.
  */
+// TODO: Deprecate the string type and only keep BytesLike/AddressLike/BigIntLike
 export interface HeaderData {
   parentHash?: BytesLike
   uncleHash?: BytesLike
@@ -140,6 +143,7 @@ export interface HeaderData {
   blobGasUsed?: BigIntLike
   excessBlobGas?: BigIntLike
   parentBeaconBlockRoot?: BytesLike
+  requestsRoot?: BytesLike | string
 }
 
 /**
@@ -153,6 +157,7 @@ export interface BlockData {
   transactions?: Array<TxData[TransactionType]>
   uncleHeaders?: Array<HeaderData>
   withdrawals?: Array<WithdrawalData>
+  requests?: Array<CLRequest>
   /**
    * EIP-6800: Verkle Proof Data (experimental)
    */
@@ -165,18 +170,12 @@ export interface BlockData {
 
 export type WithdrawalsBytes = WithdrawalBytes[]
 export type DepositsBytes = DepositBytes[]
+export type RequestsBytes = RequestBytes[]
 export type ExecutionWitnessBytes = Uint8Array
 
 export type BlockBytes =
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes]
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes]
-  | [
-      BlockHeaderBytes,
-      TransactionsBytes,
-      UncleHeadersBytes,
-      WithdrawalsBytes,
-      ExecutionWitnessBytes
-    ]
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes, DepositsBytes]
   | [
       BlockHeaderBytes,
@@ -184,6 +183,15 @@ export type BlockBytes =
       UncleHeadersBytes,
       WithdrawalsBytes,
       DepositsBytes,
+      RequestsBytes
+    ]
+  | [
+      BlockHeaderBytes,
+      TransactionsBytes,
+      UncleHeadersBytes,
+      WithdrawalsBytes,
+      DepositsBytes,
+      RequestsBytes,
       ExecutionWitnessBytes
     ]
 
@@ -195,7 +203,8 @@ export type BlockBodyBytes = [
   TransactionsBytes,
   UncleHeadersBytes,
   WithdrawalsBytes?,
-  DepositsBytes?
+  DepositsBytes?,
+  RequestBytes?
 ]
 /**
  * TransactionsBytes can be an array of serialized txs for Typed Transactions or an array of Uint8Array Arrays for legacy transactions.
@@ -215,12 +224,14 @@ export interface JsonBlock {
   uncleHeaders?: JsonHeader[]
   withdrawals?: JsonRpcWithdrawal[]
   deposits?: JsonRpcDeposit[]
+  requests?: PrefixedHexString[] | null
   executionWitness?: VerkleExecutionWitness | null
 }
 
 /**
  * An object with the block header's data represented as 0x-prefixed hex strings.
  */
+// TODO: Remove the string type and only keep PrefixedHexString
 export interface JsonHeader {
   parentHash?: PrefixedHexString
   uncleHash?: PrefixedHexString
@@ -243,33 +254,35 @@ export interface JsonHeader {
   blobGasUsed?: PrefixedHexString
   excessBlobGas?: PrefixedHexString
   parentBeaconBlockRoot?: PrefixedHexString
+  requestsRoot?: PrefixedHexString | string
 }
 
 /*
  * Based on https://ethereum.org/en/developers/docs/apis/json-rpc/
  */
+// TODO: Remove the string type and only keep PrefixedHexString
 export interface JsonRpcBlock {
-  number: PrefixedHexString // the block number. null when pending block.
-  hash: PrefixedHexString // hash of the block. null when pending block.
-  parentHash: PrefixedHexString // hash of the parent block.
-  mixHash?: PrefixedHexString // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block.
-  nonce: PrefixedHexString // hash of the generated proof-of-work. null when pending block.
-  sha3Uncles: PrefixedHexString // SHA3 of the uncles data in the block.
-  logsBloom: PrefixedHexString // the bloom filter for the logs of the block. null when pending block.
-  transactionsRoot: PrefixedHexString // the root of the transaction trie of the block.
-  stateRoot: PrefixedHexString // the root of the final state trie of the block.
-  receiptsRoot: PrefixedHexString // the root of the receipts trie of the block.
-  miner: PrefixedHexString // the address of the beneficiary to whom the mining rewards were given.
-  difficulty: PrefixedHexString // integer of the difficulty for this block.
-  totalDifficulty: PrefixedHexString // integer of the total difficulty of the chain until this block.
-  extraData: PrefixedHexString // the “extra data” field of this block.
-  size: PrefixedHexString // integer the size of this block in bytes.
-  gasLimit: PrefixedHexString // the maximum gas allowed in this block.
-  gasUsed: PrefixedHexString // the total used gas by all transactions in this block.
-  timestamp: PrefixedHexString // the unix timestamp for when the block was collated.
-  transactions: Array<JsonRpcTx | PrefixedHexString> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
-  uncles: PrefixedHexString[] // Array of uncle hashes
-  baseFeePerGas?: PrefixedHexString // If EIP-1559 is enabled for this block, returns the base fee per gas
+  number: PrefixedHexString | string // the block number. null when pending block.
+  hash: PrefixedHexString | string // hash of the block. null when pending block.
+  parentHash: PrefixedHexString | string // hash of the parent block.
+  mixHash?: PrefixedHexString | string // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block.
+  nonce: PrefixedHexString | string // hash of the generated proof-of-work. null when pending block.
+  sha3Uncles: PrefixedHexString | string // SHA3 of the uncles data in the block.
+  logsBloom: PrefixedHexString | string // the bloom filter for the logs of the block. null when pending block.
+  transactionsRoot: PrefixedHexString | string // the root of the transaction trie of the block.
+  stateRoot: PrefixedHexString | string // the root of the final state trie of the block.
+  receiptsRoot: PrefixedHexString | string // the root of the receipts trie of the block.
+  miner: PrefixedHexString | string // the address of the beneficiary to whom the mining rewards were given.
+  difficulty: PrefixedHexString | string // integer of the difficulty for this block.
+  totalDifficulty: PrefixedHexString | string // integer of the total difficulty of the chain until this block.
+  extraData: PrefixedHexString | string // the “extra data” field of this block.
+  size: PrefixedHexString | string // integer the size of this block in bytes.
+  gasLimit: PrefixedHexString | string // the maximum gas allowed in this block.
+  gasUsed: PrefixedHexString | string // the total used gas by all transactions in this block.
+  timestamp: PrefixedHexString | string // the unix timestamp for when the block was collated.
+  transactions: Array<JsonRpcTx | PrefixedHexString | string> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
+  uncles: PrefixedHexString[] | string[] // Array of uncle hashes
+  baseFeePerGas?: PrefixedHexString | string // If EIP-1559 is enabled for this block, returns the base fee per gas
   withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
   withdrawalsRoot?: PrefixedHexString // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
   deposits?: Array<JsonRpcDeposit> // If EIP-6110 is enabled for this block, array of deposits
@@ -278,6 +291,8 @@ export interface JsonRpcBlock {
   excessBlobGas?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
   parentBeaconBlockRoot?: PrefixedHexString // If EIP-4788 is enabled for this block, returns parent beacon block root
   executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
+  requestsRoot?: PrefixedHexString | string // If EIP-7685 is enabled for this block, returns the requests root
+  requests?: Array<PrefixedHexString | string> // If EIP-7685 is enabled for this block, array of serialized CL requests
 }
 
 export type WithdrawalV1 = {
@@ -296,21 +311,22 @@ export type DepositV1 = {
 }
 
 // Note: all these strings are 0x-prefixed
+// TODO: Remove the string type and only keep PrefixedHexString
 export type ExecutionPayload = {
-  parentHash: PrefixedHexString // DATA, 32 Bytes
-  feeRecipient: PrefixedHexString // DATA, 20 Bytes
-  stateRoot: PrefixedHexString // DATA, 32 Bytes
-  receiptsRoot: PrefixedHexString // DATA, 32 bytes
-  logsBloom: PrefixedHexString // DATA, 256 Bytes
-  prevRandao: PrefixedHexString // DATA, 32 Bytes
-  blockNumber: PrefixedHexString // QUANTITY, 64 Bits
-  gasLimit: PrefixedHexString // QUANTITY, 64 Bits
-  gasUsed: PrefixedHexString // QUANTITY, 64 Bits
-  timestamp: PrefixedHexString // QUANTITY, 64 Bits
-  extraData: PrefixedHexString // DATA, 0 to 32 Bytes
-  baseFeePerGas: PrefixedHexString // QUANTITY, 256 Bits
-  blockHash: PrefixedHexString // DATA, 32 Bytes
-  transactions: PrefixedHexString[] // Array of DATA - Array of transaction rlp strings,
+  parentHash: PrefixedHexString | string // DATA, 32 Bytes
+  feeRecipient: PrefixedHexString | string // DATA, 20 Bytes
+  stateRoot: PrefixedHexString | string // DATA, 32 Bytes
+  receiptsRoot: PrefixedHexString | string // DATA, 32 bytes
+  logsBloom: PrefixedHexString | string // DATA, 256 Bytes
+  prevRandao: PrefixedHexString | string // DATA, 32 Bytes
+  blockNumber: PrefixedHexString | string // QUANTITY, 64 Bits
+  gasLimit: PrefixedHexString | string // QUANTITY, 64 Bits
+  gasUsed: PrefixedHexString | string // QUANTITY, 64 Bits
+  timestamp: PrefixedHexString | string // QUANTITY, 64 Bits
+  extraData: PrefixedHexString | string // DATA, 0 to 32 Bytes
+  baseFeePerGas: PrefixedHexString | string // QUANTITY, 256 Bits
+  blockHash: PrefixedHexString | string // DATA, 32 Bytes
+  transactions: PrefixedHexString[] | string[] // Array of DATA - Array of transaction rlp strings,
   withdrawals?: WithdrawalV1[] // Array of withdrawal objects
   deposits?: DepositV1[] // Array of deposit objects
   blobGasUsed?: PrefixedHexString // QUANTITY, 64 Bits
@@ -318,4 +334,5 @@ export type ExecutionPayload = {
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
   // VerkleExecutionWitness is already a hex serialized object
   executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
+  requestsRoot?: PrefixedHexString | string | null // DATA, 32 bytes, null implies EIP 7685 not active yet
 }

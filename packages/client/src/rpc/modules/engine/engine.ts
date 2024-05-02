@@ -70,6 +70,7 @@ import type {
   TransitionConfigurationV1,
 } from './types.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
 
 const zeroBlockHash = zeros(32)
@@ -370,7 +371,11 @@ export class Engine {
       if (!response) {
         const validationError = `Error assembling block from payload during initialization`
         this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(hexToBytes(parentHash), this.chain, this.chainCache)
+        const latestValidHash = await validHash(
+          hexToBytes(parentHash as PrefixedHexString),
+          this.chain,
+          this.chainCache
+        )
         response = { status: Status.INVALID, latestValidHash, validationError }
       }
       // skip marking the block invalid as this is more of a data issue from CL
@@ -391,14 +396,22 @@ export class Engine {
       // if there was a validation error return invalid
       if (validationError !== null) {
         this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(hexToBytes(parentHash), this.chain, this.chainCache)
+        const latestValidHash = await validHash(
+          hexToBytes(parentHash as PrefixedHexString),
+          this.chain,
+          this.chainCache
+        )
         const response = { status: Status.INVALID, latestValidHash, validationError }
         // skip marking the block invalid as this is more of a data issue from CL
         return response
       }
     } else if (blobVersionedHashes !== undefined && blobVersionedHashes !== null) {
       const validationError = `Invalid blobVersionedHashes before EIP-4844 is activated`
-      const latestValidHash = await validHash(hexToBytes(parentHash), this.chain, this.chainCache)
+      const latestValidHash = await validHash(
+        hexToBytes(parentHash as PrefixedHexString),
+        this.chain,
+        this.chainCache
+      )
       const response = { status: Status.INVALID, latestValidHash, validationError }
       // skip marking the block invalid as this is more of a data issue from CL
       return response
@@ -424,9 +437,9 @@ export class Engine {
        * to run basic validations based on parent
        */
       const parent =
-        (await this.skeleton.getBlockByHash(hexToBytes(parentHash), true)) ??
+        (await this.skeleton.getBlockByHash(hexToBytes(parentHash as PrefixedHexString), true)) ??
         this.remoteBlocks.get(parentHash.slice(2)) ??
-        (await this.chain.getBlock(hexToBytes(parentHash)))
+        (await this.chain.getBlock(hexToBytes(parentHash as PrefixedHexString)))
 
       // Validations with parent
       if (!parent.common.gteHardfork(Hardfork.Paris)) {
@@ -455,7 +468,7 @@ export class Engine {
         } catch (error: any) {
           const validationError = `Invalid 4844 transactions: ${error}`
           const latestValidHash = await validHash(
-            hexToBytes(parentHash),
+            hexToBytes(parentHash as PrefixedHexString),
             this.chain,
             this.chainCache
           )
@@ -470,7 +483,7 @@ export class Engine {
        */
       const executedParentExists =
         this.executedBlocks.get(parentHash.slice(2)) ??
-        (await validExecutedChainBlock(hexToBytes(parentHash), this.chain))
+        (await validExecutedChainBlock(hexToBytes(parentHash as PrefixedHexString), this.chain))
       // If the parent is not executed throw an error, it will be caught and return SYNCING or ACCEPTED.
       if (!executedParentExists) {
         throw new Error(`Parent block not yet executed number=${parent.header.number}`)
@@ -576,11 +589,11 @@ export class Engine {
     // some pre-executed stateroot can be sent
     const executedBlockExists =
       this.executedBlocks.get(blockHash.slice(2)) ??
-      (await validExecutedChainBlock(hexToBytes(blockHash), this.chain))
+      (await validExecutedChainBlock(hexToBytes(blockHash as PrefixedHexString), this.chain))
     if (executedBlockExists) {
       const response = {
         status: Status.VALID,
-        latestValidHash: blockHash,
+        latestValidHash: blockHash as PrefixedHexString,
         validationError: null,
       }
       return response

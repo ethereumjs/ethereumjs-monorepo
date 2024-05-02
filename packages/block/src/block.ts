@@ -5,6 +5,7 @@ import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereu
 import {
   BIGINT_0,
   Deposit,
+  CLRequest,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   Withdrawal,
@@ -42,7 +43,14 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import type { DepositBytes, EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
+import type {
+  DepositBytes,
+  EthersProvider,
+  WithdrawalBytes,
+  CLRequestType,
+  PrefixedHexString,
+  RequestBytes,
+} from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -53,6 +61,7 @@ export class Block {
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
   public readonly deposits?: Deposit[]
+  public readonly requests?: CLRequestType[]
   public readonly common: Common
   protected keccakFunction: (msg: Uint8Array) => Uint8Array
 
@@ -66,6 +75,7 @@ export class Block {
   protected cache: {
     txTrieRoot?: Uint8Array
     withdrawalsTrieRoot?: Uint8Array
+    requestsRoot?: Uint8Array
   } = {}
 
   public static async genDepositsTrieRoot(deposits: Deposit[], emptyTrie?: Trie) {
@@ -103,6 +113,28 @@ export class Block {
   }
 
   /**
+   * Returns the requests trie root for an array of CLRequests
+   * @param requests - an array of CLRequests
+   * @param emptyTrie optional empty trie used to generate the root
+   * @returns a 32 byte Uint8Array representing the requests trie root
+   */
+  public static async genRequestsTrieRoot(requests: CLRequest[], emptyTrie?: Trie) {
+    // Requests should be sorted in monotonically ascending order based on type
+    // and whatever internal sorting logic is defined by each request type
+    if (requests.length > 1) {
+      for (let x = 1; x < requests.length; x++) {
+        if (requests[x].type < requests[x - 1].type)
+          throw new Error('requests are not sorted in ascending order')
+      }
+    }
+    const trie = emptyTrie ?? new Trie()
+    for (const [i, req] of requests.entries()) {
+      await trie.put(RLP.encode(i), req.serialize())
+    }
+    return trie.root()
+  }
+
+  /**
    * Static constructor to create a block from a block data dictionary
    *
    * @param blockData
@@ -116,6 +148,7 @@ export class Block {
       withdrawals: withdrawalsData,
       executionWitness: executionWitnessData,
       deposits: depositData,
+      requests: clRequests,
     } = blockData
 
     const header = BlockHeader.fromHeaderData(headerData, opts)
@@ -162,8 +195,9 @@ export class Block {
       uncleHeaders,
       withdrawals,
       opts,
-      executionWitness,
-      deposits
+      deposits,
+      clRequests,
+      executionWitness
     )
   }
 
@@ -198,8 +232,15 @@ export class Block {
 
     // First try to load header so that we can use its common (in case of setHardfork being activated)
     // to correctly make checks on the hardforks
-    const [headerData, txsData, uhsData, withdrawalBytes, depositBytes, executionWitnessBytes] =
-      values
+    const [
+      headerData,
+      txsData,
+      uhsData,
+      withdrawalBytes,
+      depositBytes,
+      requestBytes,
+      executionWitnessBytes,
+    ] = values
     const header = BlockHeader.fromValuesArray(headerData, opts)
 
     if (
@@ -270,6 +311,12 @@ export class Block {
           ?.map(Deposit.fromDepositData)
       : undefined
 
+    let requests
+    if (header.common.isActivatedEIP(7685)) {
+      requests = (requestBytes as RequestBytes[]).map(
+        (bytes) => new CLRequest(bytes[0], bytes.slice(1))
+      )
+    }
     // executionWitness are not part of the EL fetched blocks via eth_ bodies method
     // they are currently only available via the engine api constructed blocks
     let executionWitness
@@ -291,8 +338,9 @@ export class Block {
       uncleHeaders,
       withdrawals,
       opts,
-      executionWitness,
-      deposits
+      deposits,
+      requests,
+      executionWitness
     )
   }
 
@@ -385,15 +433,19 @@ export class Block {
       feeRecipient: coinbase,
       transactions,
       withdrawals: withdrawalsData,
+      requestsRoot,
       executionWitness,
     } = payload
 
     const txs = []
     for (const [index, serializedTx] of transactions.entries()) {
       try {
-        const tx = TransactionFactory.fromSerializedData(hexToBytes(serializedTx), {
-          common: opts?.common,
-        })
+        const tx = TransactionFactory.fromSerializedData(
+          hexToBytes(serializedTx as PrefixedHexString),
+          {
+            common: opts?.common,
+          }
+        )
         txs.push(tx)
       } catch (error) {
         const validationError = `Invalid tx at index ${index}: ${error}`
@@ -401,6 +453,7 @@ export class Block {
       }
     }
 
+    const reqRoot = requestsRoot === null ? undefined : requestsRoot
     const transactionsTrie = await Block.genTransactionsTrieRoot(
       txs,
       new Trie({ common: opts?.common })
@@ -417,6 +470,7 @@ export class Block {
       withdrawalsRoot,
       mixHash,
       coinbase,
+      requestsRoot: reqRoot,
     }
 
     // we are not setting setHardfork as common is already set to the correct hf
@@ -431,7 +485,7 @@ export class Block {
       throw Error('Missing executionWitness for EIP-6800 activated executionPayload')
     }
     // Verify blockHash matches payload
-    if (!equalsBytes(block.hash(), hexToBytes(payload.blockHash))) {
+    if (!equalsBytes(block.hash(), hexToBytes(payload.blockHash as PrefixedHexString))) {
       const validationError = `Invalid blockHash, expected: ${
         payload.blockHash
       }, received: ${bytesToHex(block.hash())}`
@@ -465,8 +519,9 @@ export class Block {
     uncleHeaders: BlockHeader[] = [],
     withdrawals?: Withdrawal[],
     opts: BlockOptions = {},
-    executionWitness?: VerkleExecutionWitness | null,
-    deposits?: Deposit[]
+    deposits?: Deposit[],
+    requests?: CLRequest[],
+    executionWitness?: VerkleExecutionWitness | null
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this.common = this.header.common
@@ -476,6 +531,7 @@ export class Block {
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
     this.deposits = deposits ?? (this.common.isActivatedEIP(6110) ? [] : undefined)
     this.executionWitness = executionWitness
+    this.requests = requests ?? (this.common.isActivatedEIP(7685) ? [] : undefined)
     // null indicates an intentional absence of value or unavailability
     // undefined indicates that the executionWitness should be initialized with the default state
     if (this.common.isActivatedEIP(6800) && this.executionWitness === undefined) {
@@ -528,6 +584,18 @@ export class Block {
       throw new Error(`Cannot have executionWitness field if EIP 6800 is not active `)
     }
 
+    if (!this.common.isActivatedEIP(7685) && requests !== undefined) {
+      throw new Error(`Cannot have requests field if EIP 7685 is not active`)
+    }
+
+    // Requests should be sorted in monotonically ascending order based on type
+    // and whatever internal sorting logic is defined by each request type
+    if (requests !== undefined && requests.length > 1) {
+      for (let x = 1; x < requests.length; x++) {
+        if (requests[x].type < requests[x - 1].type)
+          throw new Error('requests are not sorted in ascending order')
+      }
+    }
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -607,6 +675,25 @@ export class Block {
     return result
   }
 
+  async requestsTrieIsValid(): Promise<boolean> {
+    if (!this.common.isActivatedEIP(7685)) {
+      throw new Error('EIP 7685 is not activated')
+    }
+
+    let result
+    if (this.requests!.length === 0) {
+      result = equalsBytes(this.header.requestsRoot!, KECCAK256_RLP)
+      return result
+    }
+
+    if (this.cache.requestsRoot === undefined) {
+      this.cache.requestsRoot = await Block.genRequestsTrieRoot(this.requests!)
+    }
+
+    result = equalsBytes(this.cache.requestsRoot, this.header.requestsRoot!)
+
+    return result
+  }
   /**
    * Validates transaction signatures and minimum gas requirements.
    * @returns {string[]} an array of error strings
@@ -620,7 +707,7 @@ export class Block {
     // eslint-disable-next-line prefer-const
     for (let [i, tx] of this.transactions.entries()) {
       const errs = tx.getValidationErrors()
-      if (this.common.isActivatedEIP(1559) === true) {
+      if (this.common.isActivatedEIP(1559)) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
           tx = tx as FeeMarketEIP1559Transaction
           if (tx.maxFeePerGas < this.header.baseFeePerGas!) {
@@ -633,7 +720,7 @@ export class Block {
           }
         }
       }
-      if (this.common.isActivatedEIP(4844) === true) {
+      if (this.common.isActivatedEIP(4844)) {
         if (tx instanceof BlobEIP4844Transaction) {
           blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
           if (blobGasUsed > blobGasLimit) {
@@ -648,7 +735,7 @@ export class Block {
       }
     }
 
-    if (this.common.isActivatedEIP(4844) === true) {
+    if (this.common.isActivatedEIP(4844)) {
       if (blobGasUsed !== this.header.blobGasUsed) {
         errors.push(`invalid blobGasUsed expected=${this.header.blobGasUsed} actual=${blobGasUsed}`)
       }
@@ -892,6 +979,7 @@ export class Block {
       header: this.header.toJSON(),
       transactions: this.transactions.map((tx) => tx.toJSON()),
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
+      requests: this.requests?.map((req) => bytesToHex(req.serialize())),
       ...withdrawalsAttr,
       ...depositsAttr,
     }

@@ -461,11 +461,11 @@ describe('runBlock() -> tx types', async () => {
     const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
 
-    //@e transactions
+    //@ts-ignore read-only property
     block.transactions = transactions
 
     if (transactions.some((t) => t.supports(Capability.EIP1559FeeMarket))) {
-      // @e read-only property
+      // @ts-ignore read-only property
       block.header.baseFeePerGas = BigInt(7)
     }
 

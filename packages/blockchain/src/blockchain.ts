@@ -670,7 +670,7 @@ export class Blockchain implements BlockchainInterface {
     }
 
     // check blockchain dependent EIP1559 values
-    if (header.common.isActivatedEIP(1559) === true) {
+    if (header.common.isActivatedEIP(1559)) {
       // check if the base fee is correct
       let expectedBaseFee
       const londonHfBlock = this.common.hardforkBlock(Hardfork.London)
@@ -686,10 +686,16 @@ export class Blockchain implements BlockchainInterface {
       }
     }
 
-    if (header.common.isActivatedEIP(4844) === true) {
+    if (header.common.isActivatedEIP(4844)) {
       const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
       if (header.excessBlobGas !== expectedExcessBlobGas) {
         throw new Error(`expected blob gas: ${expectedExcessBlobGas}, got: ${header.excessBlobGas}`)
+      }
+    }
+
+    if (header.common.isActivatedEIP(7685) === true) {
+      if (header.requestsRoot === undefined) {
+        throw new Error(`requestsRoot must be provided when EIP-7685 is active`)
       }
     }
   }
@@ -707,6 +713,12 @@ export class Blockchain implements BlockchainInterface {
     // (one for each uncle header and then for validateBlobTxs).
     const parentBlock = await this.getBlock(block.header.parentHash)
     block.validateBlobTransactions(parentBlock.header)
+    if (block.common.isActivatedEIP(7685)) {
+      const valid = await block.requestsTrieIsValid()
+      if (!valid) {
+        throw new Error('invalid requestsRoot')
+      }
+    }
   }
   /**
    * The following rules are checked in this method:
