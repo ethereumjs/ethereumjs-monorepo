@@ -121,7 +121,7 @@ export class DBManager {
   async getBody(blockHash: Uint8Array, blockNumber: bigint): Promise<BlockBodyBytes> {
     const body = await this.get(DBTarget.Body, { blockHash, blockNumber })
     if (body === undefined) {
-      return [[], []]
+      throw Error('Body not found')
     }
     return RLP.decode(body) as BlockBodyBytes
   }
