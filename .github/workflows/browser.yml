@@ -33,19 +33,19 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run test:browser -w=@ethereumjs/rlp
-      - run: npm run test:browser -w=@ethereumjs/util
-      - run: npm run test:browser -w=@ethereumjs/common
-      - run: npm run test:browser -w=@ethereumjs/trie
-      - run: npm run test:browser -w=@ethereumjs/tx
-      - run: npm run test:browser -w=@ethereumjs/block
+      - run: VITEST_BROWSER_DEBUG=true npm run test:browser -w=@ethereumjs/rlp
+      - run: VITEST_BROWSER_DEBUG=true npm run test:browser -w=@ethereumjs/util
+      - run: VITEST_BROWSER_DEBUG=true npm run test:browser -w=@ethereumjs/common
+      - run: VITEST_BROWSER_DEBUG=true npm run test:browser -w=@ethereumjs/trie
+      - run: VITEST_BROWSER_DEBUG=true npm run test:browser -w=@ethereumjs/tx
+      - run: VITEST_BROWSER_DEBUG=true npm run test:browser -w=@ethereumjs/block
       #     No browser tests for devp2p
-      - run: npm run test:browser -w=@ethereumjs/blockchain
+      - run: VITEST_BROWSER_DEBUG=true npm run test:browser -w=@ethereumjs/blockchain
       #     No browser tests for ethash
-      - run: npm run test:browser -w=@ethereumjs/wallet
-      - run: npm run test:browser -w=@ethereumjs/statemanager
-      - run: npm run test:browser -w=@ethereumjs/evm
-      - run: npm run test:browser -w=@ethereumjs/vm
-      - run: npm run test:browser -w=@ethereumjs/verkle
+      - run: VITEST_BROWSER_DEBUG=true npm run test:browser -w=@ethereumjs/wallet
+      - run: VITEST_BROWSER_DEBUG=true npm run test:browser -w=@ethereumjs/statemanager
+      - run: VITEST_BROWSER_DEBUG=true npm run test:browser -w=@ethereumjs/evm
+      - run: VITEST_BROWSER_DEBUG=true npm run test:browser -w=@ethereumjs/vm
+      - run: VITEST_BROWSER_DEBUG=true npm run test:browser -w=@ethereumjs/verkle
 
 
