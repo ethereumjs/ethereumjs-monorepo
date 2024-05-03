@@ -1,3 +1,4 @@
+import { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
@@ -25,7 +26,11 @@ export const accumulateRequests = async (
   const common = vm.common
 
   if (common.isActivatedEIP(6110)) {
-    await accumulateDeposits(txResults, requests)
+    const depositContractAddress =
+      Common.getInitializedChains()[vm.common.chainName()].depositContractAddress
+    if (depositContractAddress === undefined)
+      throw new Error('deposit contract address required with EIP 6110')
+    await accumulateDeposits(depositContractAddress, txResults, requests)
   }
 
   if (common.isActivatedEIP(7002)) {
@@ -85,12 +90,15 @@ const accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promise
   }
 }
 
-export const DEPOSIT_CONTRACT_ADDRESS = '0x00000000219ab540356cBB839Cbe05303d7705Fa'
-const accumulateDeposits = async (txResults: RunTxResult[], requests: CLRequest[]) => {
+const accumulateDeposits = async (
+  depositContractAddress: string,
+  txResults: RunTxResult[],
+  requests: CLRequest[]
+) => {
   for (const [_, tx] of txResults.entries()) {
     for (let i = 0; i < tx.receipt.logs.length; i++) {
       const log = tx.receipt.logs[i]
-      if (bytesToHex(log[0]).toLowerCase() === DEPOSIT_CONTRACT_ADDRESS.toLowerCase()) {
+      if (bytesToHex(log[0]).toLowerCase() === depositContractAddress.toLowerCase()) {
         // Extracts validator pubkey, withdrawal credential, deposit amount, signature,
         // and validator index from Deposit Event log.
         // The event fields are non-indexed so contained in one byte array (log[2]) so parsing is as follows:
