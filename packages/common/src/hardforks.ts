@@ -849,6 +849,6 @@ export const hardforks: HardforksDict = {
       'Next feature hardfork after prague, internally used for verkle testing/implementation (incomplete/experimental)',
     url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/osaka.md',
     status: Status.Draft,
-    eips: [6800, 2935],
+    eips: [2935, 6800],
   },
 }

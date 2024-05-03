@@ -222,7 +222,7 @@ export const EIPs: EIPsDict = {
     requiredEIPs: [],
     vm: {
       historyStorageAddress: {
-        v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
+        v: BigInt('0x25a219378dad9b3503c8268c9ca836a52427a4fb'),
         d: 'The address where the historical blockhashes are stored',
       },
       historyServeWindow: {
@@ -533,6 +533,14 @@ export const EIPs: EIPsDict = {
       coldsload: {
         v: 0,
         d: 'Gas cost of the first read of storage from a given location (per transaction)',
+      },
+    },
+    vm: {
+      // kaustinen 6 current uses this address, however this will be updated to correct address
+      // in next iteration
+      historyStorageAddress: {
+        v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
+        d: 'The address where the historical blockhashes are stored',
       },
     },
   },
