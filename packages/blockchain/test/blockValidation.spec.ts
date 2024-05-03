@@ -401,6 +401,7 @@ describe('EIP 7685: requests field validation tests', () => {
           timestamp: blockchain.genesisBlock.header.timestamp + 1n,
           gasLimit: 5000,
         },
+        requests: [],
       },
       { common }
     )
