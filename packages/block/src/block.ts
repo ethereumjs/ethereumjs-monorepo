@@ -597,6 +597,12 @@ export class Block {
     if (withdrawalsRaw) {
       bytesArray.push(withdrawalsRaw)
     }
+
+    const requestsRaw = this.requests?.map((req) => req.serialize())
+    if (requestsRaw) {
+      bytesArray.push(requestsRaw)
+    }
+
     if (this.executionWitness !== undefined && this.executionWitness !== null) {
       const executionWitnessBytes = RLP.encode(JSON.stringify(this.executionWitness))
       bytesArray.push(executionWitnessBytes as any)
