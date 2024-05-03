@@ -6,7 +6,7 @@ import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereum
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { DEPOSIT_CONTRACT_ADDRESS } from '../../../src/runBlock.js'
+import { DEPOSIT_CONTRACT_ADDRESS } from '../../../src/requests.js'
 import { setupVM } from '../utils.js'
 
 const depositContractByteCode = hexToBytes(
@@ -79,13 +79,8 @@ describe('EIP-7685 buildBlock tests', () => {
       sender,
       Account.fromAccountData({ balance: 540000000030064771065n })
     )
-    const block = Block.fromBlockData(
-      {
-        transactions: [],
-      },
-      { common }
-    )
-    vm.blockchain['dbManager']['getHeader'] = () => block.header
+    const block = Block.fromBlockData({}, { common })
+    ;(vm.blockchain as any)['dbManager']['getHeader'] = () => block.header
     const blockBuilder = await vm.buildBlock({ parentBlock: block })
     await blockBuilder.addTransaction(depositTx)
     const res = await blockBuilder.build()
