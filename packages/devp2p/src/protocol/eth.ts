@@ -160,7 +160,7 @@ export class ETH extends Protocol {
       throw new Error(msg)
     }
 
-    if (c.hardforkGteHardfork(peerFork.name, this._hardfork) === false) {
+    if (!c.hardforkGteHardfork(peerFork.name, this._hardfork)) {
       const nextHardforkBlock = c.nextHardforkBlockOrTimestamp(peerFork.name)
       if (
         peerNextFork === null ||
