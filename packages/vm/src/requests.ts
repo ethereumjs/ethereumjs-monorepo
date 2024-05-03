@@ -5,6 +5,7 @@ import {
   BIGINT_0,
   CLRequest,
   bigIntToBytes,
+  bytesToBigInt,
   bytesToHex,
   bytesToInt,
   setLengthLeft,
@@ -144,18 +145,26 @@ const accumulateDeposits = async (
         const signature = log[2].slice(sigIdx + 32, sigIdx + 32 + sigSize)
 
         const indexBytes = log[2].slice(indexIdx + 32, indexIdx + 32 + indexSize)
-        const indexDV = new DataView(
-          indexBytes.buffer,
-          indexBytes.byteOffset,
-          indexBytes.byteLength
-        )
-        const indexBigInt = indexDV.getBigUint64(0, true)
+
+        // Convert the little-endian array to big-endian array
+        const swapped = new Uint8Array([
+          indexBytes[7],
+          indexBytes[6],
+          indexBytes[5],
+          indexBytes[4],
+          indexBytes[3],
+          indexBytes[2],
+          indexBytes[1],
+          indexBytes[0],
+        ])
+        const indexBigInt = bytesToBigInt(swapped)
 
         let index: Uint8Array
+
         if (indexBigInt === BIGINT_0) {
           index = new Uint8Array()
         } else {
-          index = bigIntToBytes(amountBigInt)
+          index = bigIntToBytes(indexBigInt)
         }
 
         requests.push(
