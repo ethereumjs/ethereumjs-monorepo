@@ -15,7 +15,7 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import { VM } from '../../../dist/cjs'
+import { VM } from '../../../src/vm'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
 import type { EthashConsensus } from '@ethereumjs/blockchain'
@@ -232,6 +232,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       await handleError(error, expectException)
     }
   }
+
   t.equal(
     bytesToHex((blockchain as any)._headHeaderHash),
     '0x' + testData.lastblockhash,
