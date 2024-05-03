@@ -781,7 +781,7 @@ export class BlockHeader {
     // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
     let dif!: bigint
 
-    if (this.common.gteHardfork(Hardfork.Byzantium) === true) {
+    if (this.common.gteHardfork(Hardfork.Byzantium)) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
       const uncleAddend = equalsBytes(parentBlockHeader.uncleHash, KECCAK256_RLP_ARRAY) ? 1 : 2
       let a = BigInt(uncleAddend) - (blockTs - parentTs) / BigInt(9)
@@ -793,13 +793,13 @@ export class BlockHeader {
       dif = parentDif + offset * a
     }
 
-    if (this.common.gteHardfork(Hardfork.Byzantium) === true) {
+    if (this.common.gteHardfork(Hardfork.Byzantium)) {
       // Get delay as parameter from common
       num = num - this.common.param('pow', 'difficultyBombDelay')
       if (num < BIGINT_0) {
         num = BIGINT_0
       }
-    } else if (this.common.gteHardfork(Hardfork.Homestead) === true) {
+    } else if (this.common.gteHardfork(Hardfork.Homestead)) {
       // 1 - (block_timestamp - parent_timestamp) // 10
       let a = BIGINT_1 - (blockTs - parentTs) / BigInt(10)
       const cutoff = BigInt(-99)

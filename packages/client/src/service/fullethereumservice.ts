@@ -88,7 +88,7 @@ export class FullEthereumService extends Service {
     })
 
     if (this.config.syncmode === SyncMode.Full) {
-      if (this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
+      if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
         // skip opening the beacon synchronizer before everything else (chain, execution etc)
         // as it resets and messes up the entire chain
         //
@@ -386,7 +386,7 @@ export class FullEthereumService extends Service {
         break
       }
       case 'NewBlockHashes': {
-        if (this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
+        if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
           this.config.logger.debug(
             `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`
           )
@@ -401,7 +401,7 @@ export class FullEthereumService extends Service {
         break
       }
       case 'NewBlock': {
-        if (this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
+        if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
           this.config.logger.debug(
             `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`
           )
