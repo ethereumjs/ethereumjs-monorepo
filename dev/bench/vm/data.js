@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1714734662049,
+  "lastUpdate": 1714746950447,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f3feabc34ec4ecdafbba4eaf09c9ef9d419f5ad4",
-          "message": "common: configure and fix kaustinen4 verkle testnet sync (#3269)\n\n* common: configure syncing kaustinen3 verkle testnet\r\n\r\n* fix the vmexecution  for verkle stateless init\r\n\r\n* track and ignore the BLOCKHASH witness to avoid k3 blockhash issues\r\n\r\n* remove the tx to/from access fees\r\n\r\n* setup kaunstinen3 block15 stateless test execution for debugging\r\n\r\n* fix charging and waiving of tx origin/dest access fees\r\n\r\n* configure to run kaustinen4\r\n\r\n* setup to test the failing block 368\r\n\r\n* debug and fix the code chunking boundary conditions\r\n\r\n* skip missing chunk lookup on the invalid opcode if code not loaded from state/witness\r\n\r\n* setup to debug the failing block374 in spec\r\n\r\n* fix genesis spec\r\n\r\n* add block353 to the test spec and help debug nethermind/besu for access costs\r\n\r\n* add partial account functionality and set stateless verkle manager to use it\r\n\r\n* load all partial basic data in account and use the same in the get contact size/code\r\n\r\n* debug and fix block372 working including stem hack for k4\r\n\r\n* sync further and now setup failing block 479 for debugging\r\n\r\n* change stem formation for addresses less than 20 bytes to match kaustinen4 spec\r\n\r\n* update test to test more than one block\r\n\r\n* add capability to test spec run blocks off beacon url\r\n\r\n* debug and handle if CL returns payload with snake case witness\r\n\r\n* fix the comment\r\n\r\n* vm: clear verkle cache in runBlock if opt is true\r\n\r\n* add functionality to start stateless execution from any block in chain\r\n\r\n* configure client to decouple execution and keep syncing despite chain exec failing\r\n\r\n* modify the client to continue syncing ignoring block failures\r\n\r\n* save failing blocks if indicated by the flag\r\n\r\n* update test to pick generated testcases from dir\r\n\r\n* debug and add missing data in toexecutionwitness\r\n\r\n* fix the test spec for various scenarios\r\n\r\n* add witness errors to the debug log\r\n\r\n* debug and fix the issue for slot mismatch of a valid block - 521\r\n\r\n* add hack to get over the stem matching issue of kaustinen4 by bruteforcing actual and modifed stem calcs\r\n\r\n* allow one to provide witnesses to a rlped block via opts\r\n\r\n* restore stem calc to correct one\r\n\r\n* apply fix for codechunk comparision and better post state mismatches tracking\r\n\r\n* setup the kaustinen4 spec test to use geth test vectors\r\n\r\n* remove the code creation cost and fix the code creation write cost and fix the missing pass of witness\r\n\r\n* fix charging code read acceses for codecopy if from calldata and remoce gas charge on non zero value transfer\r\n\r\n* debug and match the create opcode gas consumptions\r\n\r\n* commit new vestors and a fix for the contract create costs to not charge sendvalue\r\n\r\n* add blockhash set/get accesses and remove ignoring them from post state witness checks\r\n\r\n* remove cold cost for sload and sstore\r\n\r\n* debug and fix 3 testcases in verkle stateless manager spec\r\n\r\n* fix rest of spec\r\n\r\n* make the get contract size optional in interface\r\n\r\n* fix lint\r\n\r\n* fix vm api test\r\n\r\n* restore kaustinen2 genesis for preimages spec\r\n\r\n* client spec and lint fixes\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
-          "timestamp": "2024-03-26T16:19:38+01:00",
-          "tree_id": "2aeee6a5b9b6d243fe4248cc21aaee72c061beed",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f3feabc34ec4ecdafbba4eaf09c9ef9d419f5ad4"
-        },
-        "date": 1711466567111,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42895,
-            "range": "±3.09%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 42417,
-            "range": "±1.28%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 42406,
-            "range": "±1.35%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 40710,
-            "range": "±1.52%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37224,
-            "range": "±6.52%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±4.77%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8735f48cd645576176dd004fbb8530c27128323d",
+          "message": "Revise EIP 6610  (#3390)\n\n* 6110 changes, part 1\r\n\r\n* Properly decode deposit log\r\n\r\n* Add test for deposit requests with buildBlock\r\n\r\n* Update test\r\n\r\n* Fix lint issues\r\n\r\n---------\r\n\r\nCo-authored-by: Amir <indigophi@protonmail.com>",
+          "timestamp": "2024-05-03T10:30:56-04:00",
+          "tree_id": "35a2bd6f35ef27ae2c02799c85715f70732ee26b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8735f48cd645576176dd004fbb8530c27128323d"
+        },
+        "date": 1714746949124,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42257,
+            "range": "±2.40%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40895,
+            "range": "±1.57%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41093,
+            "range": "±1.46%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39794,
+            "range": "±1.68%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35608,
+            "range": "±6.93%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
