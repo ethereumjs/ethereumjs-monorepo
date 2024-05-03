@@ -128,12 +128,17 @@ const accumulateDeposits = async (
           withdrawalCredsIdx + 32 + withdrawalCredsSize
         )
         const amountBytes = log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize)
-        const amountDV = new DataView(
-          amountBytes.buffer,
-          amountBytes.byteOffset,
-          amountBytes.byteLength
-        )
-        const amountBigInt = amountDV.getBigUint64(0, true)
+        const amountBytesBigEndian = new Uint8Array([
+          amountBytes[7],
+          amountBytes[6],
+          amountBytes[5],
+          amountBytes[4],
+          amountBytes[3],
+          amountBytes[2],
+          amountBytes[1],
+          amountBytes[0],
+        ])
+        const amountBigInt = bytesToBigInt(amountBytesBigEndian)
 
         let amount: Uint8Array
         if (amountBigInt === BIGINT_0) {
@@ -147,7 +152,7 @@ const accumulateDeposits = async (
         const indexBytes = log[2].slice(indexIdx + 32, indexIdx + 32 + indexSize)
 
         // Convert the little-endian array to big-endian array
-        const swapped = new Uint8Array([
+        const indexBytesBigEndian = new Uint8Array([
           indexBytes[7],
           indexBytes[6],
           indexBytes[5],
@@ -157,7 +162,7 @@ const accumulateDeposits = async (
           indexBytes[1],
           indexBytes[0],
         ])
-        const indexBigInt = bytesToBigInt(swapped)
+        const indexBigInt = bytesToBigInt(indexBytesBigEndian)
 
         let index: Uint8Array
 

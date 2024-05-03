@@ -198,15 +198,6 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   if (block.common.isActivatedEIP(7685)) {
     requests = await accumulateRequests(this, result.results)
     requestsRoot = await Block.genRequestsTrieRoot(requests)
-
-    /*for (let i = 0; i < requests.length; i++) {
-      console.log(bytesToHex(requests[i].bytes))
-      console.log(bytesToHex(requests[i].bytes) === bytesToHex(block.requests![i].bytes))
-    }
-    console.log('----')
-    for (let i = 0; i < block.requests!.length; i++) {
-      console.log(bytesToHex(block.requests![i].bytes))
-    }*/
   }
 
   // Persist state
