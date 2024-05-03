@@ -111,13 +111,14 @@ const accumulateDeposits = async (txResults: RunTxResult[], requests: CLRequest[
         const sigSize = bytesToInt(log[2].slice(sigIdx, sigIdx + 32))
         const indexIdx = bytesToInt(log[2].slice(128, 160))
         const indexSize = bytesToInt(log[2].slice(indexIdx, indexIdx + 32))
-        const pubkey = bytesToHex(log[2].slice(pubKeyIdx + 32, pubKeyIdx + 32 + pubKeySize))
-        const withdrawalCreds = bytesToHex(
-          log[2].slice(withdrawalCredsIdx + 32, withdrawalCredsIdx + 32 + withdrawalCredsSize)
+        const pubkey = log[2].slice(pubKeyIdx + 32, pubKeyIdx + 32 + pubKeySize)
+        const withdrawalCreds = log[2].slice(
+          withdrawalCredsIdx + 32,
+          withdrawalCredsIdx + 32 + withdrawalCredsSize
         )
-        const amount = bytesToHex(log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize))
-        const signature = bytesToHex(log[2].slice(sigIdx + 32, sigIdx + 32 + sigSize))
-        const index = bytesToHex(log[2].slice(indexIdx + 32, indexIdx + 32 + indexSize))
+        const amount = log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize)
+        const signature = log[2].slice(sigIdx + 32, sigIdx + 32 + sigSize)
+        const index = log[2].slice(indexIdx + 32, indexIdx + 32 + indexSize)
         requests.push(
           new CLRequest(0x0, RLP.encode([pubkey, withdrawalCreds, amount, signature, index]))
         )
