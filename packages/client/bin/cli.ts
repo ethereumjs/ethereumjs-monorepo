@@ -1130,10 +1130,10 @@ async function run() {
     useStringValueTrieDB: args.useStringValueTrieDB,
     txLookupLimit: args.txLookupLimit,
     pruneEngineCache: args.pruneEngineCache,
-    statelessVerkle: args.ignoreStatelessInvalidExecs !== false ? true : args.statelessVerkle,
+    statelessVerkle: args.ignoreStatelessInvalidExecs === true ? true : args.statelessVerkle,
     startExecution: args.startExecutionFrom !== undefined ? true : args.startExecution,
     engineNewpayloadMaxExecute:
-      args.ignoreStatelessInvalidExecs !== false || args.skipEngineExec === true
+      args.ignoreStatelessInvalidExecs === true || args.skipEngineExec === true
         ? 0
         : args.engineNewpayloadMaxExecute,
     ignoreStatelessInvalidExecs: args.ignoreStatelessInvalidExecs,
