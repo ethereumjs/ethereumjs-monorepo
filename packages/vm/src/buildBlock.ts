@@ -323,7 +323,7 @@ export class BlockBuilder {
     let requests
     let requestsRoot
     if (this.vm.common.isActivatedEIP(7685)) {
-      requests = await accumulateRequests(this.vm)
+      requests = await accumulateRequests(this.vm, this.transactionResults)
       requestsRoot = await Block.genRequestsTrieRoot(requests)
       // Do other validations per request type
     }

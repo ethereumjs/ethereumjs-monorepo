@@ -16,6 +16,7 @@ import {
   bigIntToBytes,
   bigIntToHex,
   bytesToHex,
+  bytesToInt,
   concatBytes,
   equalsBytes,
   hexToBytes,
@@ -196,7 +197,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   let requestsRoot
   let requests: CLRequest[] | undefined
   if (block.common.isActivatedEIP(7685)) {
-    requests = await accumulateRequests(this)
+    requests = await accumulateRequests(this, result.results)
     requestsRoot = await Block.genRequestsTrieRoot(requests)
   }
 
@@ -968,11 +969,16 @@ export class ValidatorWithdrawalRequest extends CLRequest implements CLRequestTy
  * @param _vm VM instance from which to derive CL requests
  * @returns an list of CL requests in ascending order by type
  */
-export const accumulateRequests = async (vm: VM): Promise<CLRequest[]> => {
+export const accumulateRequests = async (
+  vm: VM,
+  txResults: RunTxResult[]
+): Promise<CLRequest[]> => {
   const requests: CLRequest[] = []
   const common = vm.common
 
-  // TODO: Add in code to accumulate deposits (EIP-6110)
+  if (common.isActivatedEIP(6110)) {
+    await accumulateDeposits(txResults, requests)
+  }
 
   if (common.isActivatedEIP(7002)) {
     await _accumulateEIP7002Requests(vm, requests)
@@ -1027,6 +1033,37 @@ const _accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promis
       const rlpData = RLP.encode([sourceAddress, validatorPubkey, amount])
       const request = new ValidatorWithdrawalRequest(withdrawalRequestType, rlpData)
       requests.push(request)
+    }
+  }
+}
+
+export const DEPOSIT_CONTRACT_ADDRESS = '0x00000000219ab540356cBB839Cbe05303d7705Fa'
+const accumulateDeposits = async (txResults: RunTxResult[], requests: CLRequest[]) => {
+  for (const [_, tx] of txResults.entries()) {
+    for (let i = 0; i < tx.receipt.logs.length; i++) {
+      const log = tx.receipt.logs[i]
+      if (bytesToHex(log[0]).toLowerCase() === DEPOSIT_CONTRACT_ADDRESS.toLowerCase()) {
+        const pubKeyIdx = bytesToInt(log[2].slice(0, 32))
+        const pubKeySize = bytesToInt(log[2].slice(pubKeyIdx, pubKeyIdx + 32))
+        const withcredsIdx = bytesToInt(log[2].slice(32, 64))
+        const withcredsSize = bytesToInt(log[2].slice(withcredsIdx, withcredsIdx + 32))
+        const amountIdx = bytesToInt(log[2].slice(64, 96))
+        const amountSize = bytesToInt(log[2].slice(amountIdx, amountIdx + 32))
+        const sigIdx = bytesToInt(log[2].slice(96, 128))
+        const sigSize = bytesToInt(log[2].slice(sigIdx, sigIdx + 32))
+        const indexIdx = bytesToInt(log[2].slice(128, 160))
+        const indexSize = bytesToInt(log[2].slice(indexIdx, indexIdx + 32))
+        const pubkey = bytesToHex(log[2].slice(pubKeyIdx + 32, pubKeyIdx + 32 + pubKeySize))
+        const withdrawalCreds = bytesToHex(
+          log[2].slice(withcredsIdx + 32, withcredsIdx + 32 + withcredsSize)
+        )
+        const amount = bytesToHex(log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize))
+        const signature = bytesToHex(log[2].slice(sigIdx + 32, sigIdx + 32 + sigSize))
+        const index = bytesToHex(log[2].slice(indexIdx + 32, indexIdx + 32 + indexSize))
+        requests.push(
+          new CLRequest(0x0, RLP.encode([pubkey, withdrawalCreds, amount, signature, index]))
+        )
+      }
     }
   }
 }
