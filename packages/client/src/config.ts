@@ -337,7 +337,7 @@ export interface ConfigOptions {
    */
   statelessVerkle?: boolean
   startExecution?: boolean
-  ignoreStatelessInvalidExecs?: boolean | string
+  ignoreStatelessInvalidExecs?: boolean
 
   /**
    * Enables Prometheus Metrics that can be collected for monitoring client health
@@ -450,7 +450,7 @@ export class Config {
 
   public readonly statelessVerkle: boolean
   public readonly startExecution: boolean
-  public readonly ignoreStatelessInvalidExecs: boolean | string
+  public readonly ignoreStatelessInvalidExecs: boolean
 
   public synchronized: boolean
   public lastsyncronized?: boolean
@@ -644,6 +644,10 @@ export class Config {
   getNetworkDirectory(): string {
     const networkDirName = this.chainCommon.chainName()
     return `${this.datadir}/${networkDirName}`
+  }
+
+  getInvalidPayloadsDir(): string {
+    return `${this.getNetworkDirectory()}/invalidPayloads`
   }
 
   /**

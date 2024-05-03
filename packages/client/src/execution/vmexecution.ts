@@ -828,13 +828,10 @@ export class VMExecution extends Execution {
                   }
 
                   // headBlock should be parent of errorBlock and not undefined
-                  if (
-                    typeof this.config.ignoreStatelessInvalidExecs === 'string' &&
-                    headBlock !== undefined
-                  ) {
+                  if (headBlock !== undefined) {
                     // save the data in spec test compatible manner
                     const blockNumStr = `${errorBlock.header.number}`
-                    const file = `${this.config.ignoreStatelessInvalidExecs}/${blockNumStr}.json`
+                    const file = `${this.config.getInvalidPayloadsDir()}/${blockNumStr}.json`
                     const jsonDump = {
                       [blockNumStr]: {
                         parent: headBlock.toExecutionPayload(),
@@ -842,9 +839,7 @@ export class VMExecution extends Execution {
                       },
                     }
                     writeFileSync(file, JSON.stringify(jsonDump, null, 2))
-                    this.config.logger.warn(
-                      `${errorMsg}:\n${error} payload saved to=${this.config.ignoreStatelessInvalidExecs}`
-                    )
+                    this.config.logger.warn(`${errorMsg}:\n${error} payload saved to=${file}`)
                   } else {
                     this.config.logger.warn(`${errorMsg}:\n${error}`)
                   }

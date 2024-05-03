@@ -445,11 +445,8 @@ const args: ClientOpts = yargs
   })
   .option('ignoreStatelessInvalidExecs', {
     describe:
-      'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution faliures may stall the CL client. Useful for debugging the verkle. If provided a valid filename as arg, the invalid blocks will be stored there which one may use later for debugging',
-    coerce: (arg: string | boolean) =>
-      typeof arg === 'string' && arg !== 'true' && arg !== 'false'
-        ? path.resolve(arg)
-        : arg === true || arg === 'true',
+      'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution faliures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
+    boolean: true,
     hidden: true,
   })
   .option('useJsCrypto', {
@@ -1018,6 +1015,11 @@ async function run() {
   mkdirSync(configDirectory, {
     recursive: true,
   })
+  const invalidPayloadsDir = `${networkDir}/invalidPayloads`
+  mkdirSync(invalidPayloadsDir, {
+    recursive: true,
+  })
+
   const key = await Config.getClientKey(datadir, common)
 
   // logFile is either filename or boolean true or false to enable (with default) or disable
