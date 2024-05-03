@@ -4,7 +4,7 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
 
-import { VM } from '../../../dist/cjs'
+import { VM } from '../../../src/vm'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
