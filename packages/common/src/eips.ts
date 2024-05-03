@@ -505,6 +505,13 @@ export const EIPs: EIPsDict = {
       },
     },
   },
+  6110: {
+    comment: 'Supply validator deposits on chain',
+    url: 'https://eips.ethereum.org/EIPS/eip-6110',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Cancun,
+    requiredEIPs: [7685],
+  },
   6780: {
     comment: 'SELFDESTRUCT only in same transaction',
     url: 'https://eips.ethereum.org/EIPS/eip-6780',
@@ -526,6 +533,63 @@ export const EIPs: EIPsDict = {
       coldsload: {
         v: 0,
         d: 'Gas cost of the first read of storage from a given location (per transaction)',
+      },
+    },
+  },
+  7002: {
+    comment: 'Execution layer triggerable withdrawals (experimental)',
+    url: 'https://github.com/ethereum/EIPs/blob/3b5fcad6b35782f8aaeba7d4ac26004e8fbd720f/EIPS/eip-7002.md',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Paris,
+    requiredEIPs: [7685],
+    vm: {
+      withdrawalRequestType: {
+        v: BigInt(0x01),
+        d: 'The withdrawal request type for EIP-7685',
+      },
+      excessWithdrawalsRequestStorageSlot: {
+        v: BigInt(0),
+        d: 'The storage slot of the excess withdrawals',
+      },
+      withdrawalsRequestCountStorage: {
+        v: BigInt(1),
+        d: 'The storage slot of the withdrawal request count',
+      },
+      withdrawalsRequestQueueHeadStorageSlot: {
+        v: BigInt(2),
+        d: 'The storage slot of the withdrawal request head of the queue',
+      },
+      withdrawalsRequestTailHeadStorageSlot: {
+        v: BigInt(3),
+        d: 'The storage slot of the withdrawal request tail of the queue',
+      },
+      withdrawalsRequestQueueStorageOffset: {
+        v: BigInt(4),
+        d: 'The storage slot of the withdrawal request queue offset',
+      },
+      maxWithdrawalRequestsPerBlock: {
+        v: BigInt(16),
+        d: 'The max withdrawal requests per block',
+      },
+      targetWithdrawalRequestsPerBlock: {
+        v: BigInt(2),
+        d: 'The target withdrawal requests per block',
+      },
+      minWithdrawalRequestFee: {
+        v: BigInt(1),
+        d: 'The minimum withdrawal request fee (in wei)',
+      },
+      withdrawalRequestFeeUpdateFraction: {
+        v: BigInt(17),
+        d: 'The withdrawal request fee update fraction (used in the fake exponential)',
+      },
+      systemAddress: {
+        v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
+        d: 'The system address to perform operations on the withdrawal requests predeploy address',
+      },
+      withdrawalRequestPredeployAddress: {
+        v: BigInt('0x00A3ca265EBcb825B45F985A16CEFB49958cE017'),
+        d: 'Address of the validator excess address',
       },
     },
   },
