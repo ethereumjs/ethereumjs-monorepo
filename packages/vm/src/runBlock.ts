@@ -478,11 +478,7 @@ export async function accumulateParentBlockHash(
   )
   const historyServeWindow = this.common.param('vm', 'historyServeWindow')
 
-  // Is this the fork block?
   const forkTime = this.common.eipTimestamp(2935)
-  if (forkTime === null) {
-    throw new Error('EIP 2935 should be activated by timestamp')
-  }
 
   // getAccount with historyAddress will throw error as witnesses are not bundeled
   // but we need to put account so as to query later for slot
@@ -520,7 +516,8 @@ export async function accumulateParentBlockHash(
     const parentBlock = await this.blockchain.getBlock(parentHash)
 
     // If on the fork block, store the old block hashes as well
-    if (parentBlock.header.timestamp < forkTime) {
+    if (forkTime !== null && parentBlock.header.timestamp < forkTime) {
+      // forkTime could be null in test fixtures
       let ancestor = parentBlock
       for (let i = 0; i < Number(historyServeWindow) - 1; i++) {
         if (ancestor.header.number === BIGINT_0) {
