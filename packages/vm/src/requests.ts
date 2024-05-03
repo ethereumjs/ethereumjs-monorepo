@@ -2,6 +2,7 @@ import { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
+  BIGINT_0,
   CLRequest,
   bigIntToBytes,
   bytesToHex,
@@ -125,9 +126,38 @@ const accumulateDeposits = async (
           withdrawalCredsIdx + 32,
           withdrawalCredsIdx + 32 + withdrawalCredsSize
         )
-        const amount = log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize)
+        const amountBytes = log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize)
+        const amountDV = new DataView(
+          amountBytes.buffer,
+          amountBytes.byteOffset,
+          amountBytes.byteLength
+        )
+        const amountBigInt = amountDV.getBigUint64(0, true)
+
+        let amount: Uint8Array
+        if (amountBigInt === BIGINT_0) {
+          amount = new Uint8Array()
+        } else {
+          amount = bigIntToBytes(amountBigInt)
+        }
+
         const signature = log[2].slice(sigIdx + 32, sigIdx + 32 + sigSize)
-        const index = log[2].slice(indexIdx + 32, indexIdx + 32 + indexSize)
+
+        const indexBytes = log[2].slice(indexIdx + 32, indexIdx + 32 + indexSize)
+        const indexDV = new DataView(
+          indexBytes.buffer,
+          indexBytes.byteOffset,
+          indexBytes.byteLength
+        )
+        const indexBigInt = indexDV.getBigUint64(0, true)
+
+        let index: Uint8Array
+        if (indexBigInt === BIGINT_0) {
+          index = new Uint8Array()
+        } else {
+          index = bigIntToBytes(amountBigInt)
+        }
+
         requests.push(
           new CLRequest(0x0, RLP.encode([pubkey, withdrawalCreds, amount, signature, index]))
         )
