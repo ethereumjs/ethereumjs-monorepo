@@ -18,10 +18,10 @@ import {
 } from '@ethereumjs/util'
 
 import { Bloom } from './bloom/index.js'
+import { accumulateRequests } from './requests.js'
 import {
   accumulateParentBeaconBlockRoot,
   accumulateParentBlockHash,
-  accumulateRequests,
   calculateMinerReward,
   encodeReceipt,
   rewardAccount,
