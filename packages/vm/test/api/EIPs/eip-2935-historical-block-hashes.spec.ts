@@ -90,6 +90,25 @@ const callerPrivateKey = hexToBytes(`0x${'44'.repeat(32)}`)
 const callerAddress = new Address(privateToAddress(callerPrivateKey))
 const PREBALANCE = BigInt(10000000)
 
+async function testBlockhashContract(vm: VM, block: Block, i: bigint): Promise<Uint8Array> {
+  const tx = LegacyTransaction.fromTxData({
+    to: historyAddress,
+    gasLimit: 1000000,
+    gasPrice: 10,
+    data: bytesToHex(setLengthLeft(bigIntToBytes(i), 32)),
+  }).sign(callerPrivateKey)
+
+  await vm.stateManager.putAccount(callerAddress, new Account())
+  const account = await vm.stateManager.getAccount(callerAddress)
+  account!.balance = PREBALANCE
+  await vm.stateManager.putAccount(callerAddress, account!)
+  await vm.stateManager.putContractCode(historyAddress, contract2935Code)
+
+  const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+  const blockHashi = result.execResult.returnValue
+  return blockHashi
+}
+
 describe('EIP 2935: historical block hashes', () => {
   it('should save genesis block hash to the history block hash contract', async () => {
     commonGenesis.setHardfork(Hardfork.Chainstart)
@@ -194,45 +213,15 @@ describe('EIP 2935: historical block hashes', () => {
     )
 
     // should be able to resolve blockhash via contract code
-    for (const iNum of [0, 1, blocksActivation, blocksToBuild - 1]) {
-      const i = BigInt(iNum)
-      const tx = LegacyTransaction.fromTxData({
-        to: historyAddress,
-        gasLimit: 1000000,
-        gasPrice: 10,
-        data: bytesToHex(setLengthLeft(bigIntToBytes(i), 32)),
-      }).sign(callerPrivateKey)
-
-      await vm.stateManager.putAccount(callerAddress, new Account())
-      const account = await vm.stateManager.getAccount(callerAddress)
-      account!.balance = PREBALANCE
-      await vm.stateManager.putAccount(callerAddress, account!)
-      await vm.stateManager.putContractCode(historyAddress, contract2935Code)
-
-      const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
-      const blockHashi = result.execResult.returnValue
+    for (const i of [0, 1, blocksActivation, blocksToBuild - 1]) {
+      const blockHashi = await testBlockhashContract(vm, block, BigInt(i))
       const blocki = await vm.blockchain.getBlock(i)
       assert.ok(equalsBytes(blockHashi, blocki.hash()))
     }
 
     // should be able to return 0 if input >= current block
-    for (const iNum of [blocksToBuild, blocksToBuild + 100]) {
-      const i = BigInt(iNum)
-      const tx = LegacyTransaction.fromTxData({
-        to: historyAddress,
-        gasLimit: 1000000,
-        gasPrice: 10,
-        data: bytesToHex(setLengthLeft(bigIntToBytes(i), 32)),
-      }).sign(callerPrivateKey)
-
-      await vm.stateManager.putAccount(callerAddress, new Account())
-      const account = await vm.stateManager.getAccount(callerAddress)
-      account!.balance = PREBALANCE
-      await vm.stateManager.putAccount(callerAddress, account!)
-      await vm.stateManager.putContractCode(historyAddress, contract2935Code)
-
-      const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
-      const blockHashi = result.execResult.returnValue
+    for (const i of [blocksToBuild, blocksToBuild + 100]) {
+      const blockHashi = await testBlockhashContract(vm, block, BigInt(i))
       assert.ok(equalsBytes(blockHashi, setLengthLeft(bigIntToBytes(BigInt(0)), 32)))
     }
   })
