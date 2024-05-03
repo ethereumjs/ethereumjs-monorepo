@@ -512,7 +512,7 @@ describe('blockchain test', () => {
     await blockchain.putBlock(blocks[3])
   })
 
-  it('should not reconstruct nil bodies / throw', async () => {
+  it('should test nil bodies / throw', async () => {
     const blocks = generateBlocks(3)
     const blockchain = await Blockchain.create({
       validateBlocks: false,
@@ -520,6 +520,9 @@ describe('blockchain test', () => {
       genesisBlock: blocks[0],
     })
     await blockchain.putHeader(blocks[1].header)
+    // Should be able to get the block
+    await blockchain.getBlock(BigInt(1))
+
     const block2HeaderValuesArray = blocks[2].header.raw()
 
     block2HeaderValuesArray[1] = new Uint8Array(32)
@@ -531,7 +534,11 @@ describe('blockchain test', () => {
       await blockchain.getBlock(BigInt(2))
       assert.fail('block should not be constucted')
     } catch (e: any) {
-      assert.equal(e.message, 'Body not found', 'block not constructed from empty bodies')
+      assert.equal(
+        e.message,
+        'uncle hash should be equal to hash of empty array',
+        'block not constructed from empty bodies'
+      )
     }
   })
 

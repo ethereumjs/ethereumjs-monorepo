@@ -3,8 +3,11 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
   BIGINT_1,
+  KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
   bytesToBigInt,
   bytesToHex,
+  equalsBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
@@ -103,7 +106,40 @@ export class DBManager {
 
     if (hash === undefined || number === undefined) return undefined
     const header = await this.getHeader(hash, number)
-    const body = await this.getBody(hash, number)
+    let body = await this.getBody(hash, number)
+
+    // be backward compatible where we didn't use to store a body with no txs, uncles, withdrawals
+    // otherwise the body is never partially stored and if we have some body, its in entirity
+    if (body === undefined) {
+      body = [[], []] as BlockBodyBytes
+      // Do extra validations on the header since we are assuming empty transactions and uncles
+      if (!equalsBytes(header.transactionsTrie, KECCAK256_RLP)) {
+        throw new Error('transactionsTrie root should be equal to hash of null')
+      }
+
+      if (!equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY)) {
+        throw new Error('uncle hash should be equal to hash of empty array')
+      }
+
+      // If this block had empty withdrawals push an empty array in body
+      if (header.withdrawalsRoot !== undefined) {
+        // Do extra validations for withdrawal before assuming empty withdrawals
+        if (!equalsBytes(header.withdrawalsRoot, KECCAK256_RLP)) {
+          throw new Error('withdrawals root shoot be equal to hash of null when no withdrawals')
+        } else {
+          body.push([])
+        }
+      }
+
+      // If requests root exists, validate that requests array exists or insert it
+      if (header.requestsRoot !== undefined) {
+        if (!equalsBytes(header.requestsRoot, KECCAK256_RLP)) {
+          throw new Error('requestsRoot should be equal to hash of null when no requests')
+        } else {
+          body.push([])
+        }
+      }
+    }
 
     const blockData = [header.raw(), ...body] as BlockBytes
     const opts: BlockOptions = { common: this.common }
@@ -118,12 +154,9 @@ export class DBManager {
   /**
    * Fetches body of a block given its hash and number.
    */
-  async getBody(blockHash: Uint8Array, blockNumber: bigint): Promise<BlockBodyBytes> {
+  async getBody(blockHash: Uint8Array, blockNumber: bigint): Promise<BlockBodyBytes | undefined> {
     const body = await this.get(DBTarget.Body, { blockHash, blockNumber })
-    if (body === undefined) {
-      throw Error('Body not found')
-    }
-    return RLP.decode(body) as BlockBodyBytes
+    return body !== undefined ? (RLP.decode(body) as BlockBodyBytes) : undefined
   }
 
   /**
