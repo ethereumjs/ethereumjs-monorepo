@@ -233,9 +233,9 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     block = Block.fromBlockData(blockData, { common: this.common })
   } else {
     if (this.common.isActivatedEIP(7685)) {
-      const valid = await block.requestsTrieIsValid()
+      const valid = await block.requestsTrieIsValid(requests)
       if (!valid) {
-        const validRoot = await Block.genRequestsTrieRoot(block.requests!)
+        const validRoot = await Block.genRequestsTrieRoot(requests!)
         if (this.DEBUG)
           debug(
             `Invalid requestsRoot received=${bytesToHex(
