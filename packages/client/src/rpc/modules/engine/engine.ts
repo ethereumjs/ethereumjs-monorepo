@@ -1042,7 +1042,7 @@ export class Engine {
       // if the execution is stalled because it hit an invalid block which we need to hop over
       if (
         this.execution.chainStatus?.status === ExecStatus.IGNORE_INVALID &&
-        this.config.ignoreStatelessInvalidExecs !== false
+        this.config.ignoreStatelessInvalidExecs === true
       ) {
         // jump the vm head to failing block so that next block can be executed
         this.config.logger.debug(
