@@ -30,10 +30,13 @@ import type {
   BlockData,
   BlockOptions,
   ExecutionPayload,
+  ExecutionWitnessBytes,
   HeaderData,
   JsonBlock,
   JsonRpcBlock,
+  RequestsBytes,
   VerkleExecutionWitness,
+  WithdrawalsBytes,
 } from './types.js'
 import type { Common } from '@ethereumjs/common'
 import type {
@@ -217,9 +220,21 @@ export class Block {
 
     // First try to load header so that we can use its common (in case of setHardfork being activated)
     // to correctly make checks on the hardforks
-    const [headerData, txsData, uhsData, withdrawalBytes, requestBytes, executionWitnessBytes] =
-      values
+    const [headerData, txsData, uhsData, ...valuesTail] = values
     const header = BlockHeader.fromValuesArray(headerData, opts)
+
+    // conditional assignment of rest of values and splicing them out from the valuesTail
+    const withdrawalBytes = header.common.isActivatedEIP(4895)
+      ? (valuesTail.splice(0, 1)[0] as WithdrawalsBytes)
+      : undefined
+    const requestBytes = header.common.isActivatedEIP(7685)
+      ? (valuesTail.splice(0, 1)[0] as RequestsBytes)
+      : undefined
+    // if witness bytes are not present that we should assume that witness has not been provided
+    // in that scenario pass null as undefined is used for default witness assignment
+    const executionWitnessBytes = header.common.isActivatedEIP(6800)
+      ? (valuesTail.splice(0, 1)[0] as ExecutionWitnessBytes)
+      : null
 
     if (
       header.common.isActivatedEIP(4895) &&
@@ -227,6 +242,21 @@ export class Block {
     ) {
       throw new Error(
         'Invalid serialized block input: EIP-4895 is active, and no withdrawals were provided as array'
+      )
+    }
+
+    if (
+      header.common.isActivatedEIP(7685) &&
+      (requestBytes === undefined || !Array.isArray(requestBytes))
+    ) {
+      throw new Error(
+        'Invalid serialized block input: EIP-7685 is active, and no requestBytes were provided as array'
+      )
+    }
+
+    if (header.common.isActivatedEIP(6800) && executionWitnessBytes === undefined) {
+      throw new Error(
+        'Invalid serialized block input: EIP-6800 is active, and execution witness is undefined'
       )
     }
 

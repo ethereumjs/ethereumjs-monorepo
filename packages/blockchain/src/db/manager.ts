@@ -3,11 +3,8 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
   BIGINT_1,
-  KECCAK256_RLP,
-  KECCAK256_RLP_ARRAY,
   bytesToBigInt,
   bytesToHex,
-  equalsBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
@@ -107,40 +104,6 @@ export class DBManager {
     if (hash === undefined || number === undefined) return undefined
     const header = await this.getHeader(hash, number)
     const body = await this.getBody(hash, number)
-    if (body[0].length === 0 && body[1].length === 0) {
-      // Do extra validations on the header since we are assuming empty transactions and uncles
-      if (!equalsBytes(header.transactionsTrie, KECCAK256_RLP)) {
-        throw new Error('transactionsTrie root should be equal to hash of null')
-      }
-      if (!equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY)) {
-        throw new Error('uncle hash should be equal to hash of empty array')
-      }
-      // If this block had empty withdrawals push an empty array in body
-      if (header.withdrawalsRoot !== undefined) {
-        // Do extra validations for withdrawal before assuming empty withdrawals
-        if (
-          !equalsBytes(header.withdrawalsRoot, KECCAK256_RLP) &&
-          (body.length < 3 || body[2]?.length === 0)
-        ) {
-          throw new Error('withdrawals root shoot be equal to hash of null when no withdrawals')
-        }
-        if (body.length < 3) body.push([])
-      }
-      // If requests root exists, validate that requests array exists or insert it
-      if (header.requestsRoot !== undefined) {
-        if (
-          !equalsBytes(header.requestsRoot, KECCAK256_RLP) &&
-          (body.length < 4 || body[3]?.length === 0)
-        ) {
-          throw new Error('requestsRoot should be equal to hash of null when no requests')
-        }
-        if (body.length < 4) {
-          for (let x = 0; x < 4 - body.length; x++) {
-            body.push([])
-          }
-        }
-      }
-    }
 
     const blockData = [header.raw(), ...body] as BlockBytes
     const opts: BlockOptions = { common: this.common }
