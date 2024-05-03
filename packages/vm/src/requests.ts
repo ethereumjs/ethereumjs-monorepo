@@ -27,7 +27,8 @@ export const accumulateRequests = async (
 
   if (common.isActivatedEIP(6110)) {
     const depositContractAddress =
-      Common.getInitializedChains()[vm.common.chainName()].depositContractAddress
+      Common.getInitializedChains()[vm.common.chainName()]?.depositContractAddress ??
+      Common.getInitializedChains().mainnet.depositContractAddress
     if (depositContractAddress === undefined)
       throw new Error('deposit contract address required with EIP 6110')
     await accumulateDeposits(depositContractAddress, txResults, requests)
