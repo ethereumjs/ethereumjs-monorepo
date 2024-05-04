@@ -193,7 +193,7 @@ export class Journal {
    * Also cleanups any other internal fields
    */
   async cleanup(): Promise<void> {
-    if (this.common.gteHardfork(Hardfork.SpuriousDragon) === true) {
+    if (this.common.gteHardfork(Hardfork.SpuriousDragon)) {
       for (const addressHex of this.touched) {
         const address = new Address(hexToBytes(`0x${addressHex}`))
         const account = await this.stateManager.getAccount(address)

@@ -1168,7 +1168,7 @@ async function run() {
           ? startRPCServers(client, args as RPCArgs)
           : []
       if (
-        client.config.chainCommon.gteHardfork(Hardfork.Paris) === true &&
+        client.config.chainCommon.gteHardfork(Hardfork.Paris) &&
         (args.rpcEngine === false || args.rpcEngine === undefined)
       ) {
         config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)

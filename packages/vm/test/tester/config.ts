@@ -223,7 +223,7 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
   for (const hf of hardforks) {
     // check if we enable this hf
     // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
-    if (mainnetCommon.gteHardfork(hf.name) === true && hf.name !== Hardfork.Dao) {
+    if (mainnetCommon.gteHardfork(hf.name) && hf.name !== Hardfork.Dao) {
       // this hardfork should be activated at block 0
       testHardforks.push({
         name: hf.name,
@@ -320,7 +320,7 @@ export function getCommon(network: string, kzg?: Kzg): Common {
     const hardforks = mainnetCommon.hardforks()
     const testHardforks = []
     for (const hf of hardforks) {
-      if (mainnetCommon.gteHardfork(hf.name) === true) {
+      if (mainnetCommon.gteHardfork(hf.name)) {
         // this hardfork should be activated at block 0
         const forkBlockNumber = transitionForks[hf.name as keyof typeof transitionForks] as
           | number
