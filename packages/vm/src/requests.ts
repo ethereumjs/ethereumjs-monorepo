@@ -72,6 +72,8 @@ const accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promise
   )
   const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
 
+  const addrIsEmpty = (await vm.stateManager.getAccount(systemAddress)) === undefined
+
   const results = await vm.evm.runCall({
     caller: systemAddress,
     gasLimit: BigInt(1_000_000),
@@ -91,6 +93,10 @@ const accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promise
       const request = new CLRequest(withdrawalRequestType, rlpData)
       requests.push(request)
     }
+  }
+
+  if (addrIsEmpty) {
+    await vm.stateManager.deleteAccount(systemAddress)
   }
 }
 
