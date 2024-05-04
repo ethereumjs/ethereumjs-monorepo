@@ -103,20 +103,9 @@ export class DepositRequest extends CLRequest<CLRequestType.Deposit> {
   }
 
   serialize() {
-    let indexBytes: Uint8Array
+    const indexBytes = this.index === BIGINT_0 ? new Uint8Array() : bigIntToBytes(this.index)
 
-    if (this.index === BIGINT_0) {
-      indexBytes = new Uint8Array()
-    } else {
-      indexBytes = bigIntToBytes(this.index)
-    }
-
-    let amountBytes: Uint8Array
-    if (this.amount === BIGINT_0) {
-      amountBytes = new Uint8Array()
-    } else {
-      amountBytes = bigIntToBytes(this.amount)
-    }
+    const amountBytes = this.amount === BIGINT_0 ? new Uint8Array() : bigIntToBytes(this.amount)
 
     return concatBytes(
       Uint8Array.from([this.type]),
@@ -172,12 +161,7 @@ export class WithdrawalRequest extends CLRequest<CLRequestType.Withdrawal> {
   }
 
   serialize() {
-    let amountBytes: Uint8Array
-    if (this.amount === BIGINT_0) {
-      amountBytes = new Uint8Array()
-    } else {
-      amountBytes = bigIntToBytes(this.amount)
-    }
+    const amountBytes = this.amount === BIGINT_0 ? new Uint8Array() : bigIntToBytes(this.amount)
 
     return concatBytes(
       Uint8Array.from([this.type]),
