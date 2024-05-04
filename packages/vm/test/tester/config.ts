@@ -302,6 +302,8 @@ export function getCommon(network: string, kzg?: Kzg): Common {
     return setupCommonWithNetworks(startNetwork, TTD, undefined, kzg)
   } else if (networkLowercase === 'shanghaitocancunattime15k') {
     return setupCommonWithNetworks('Shanghai', undefined, 15000, kzg)
+  } else if (networkLowercase === 'cancuntopragueattime15k') {
+    return setupCommonWithNetworks('Cancun', undefined, 15000, kzg)
   } else {
     // Case 3: this is not a "default fork" network, but it is a "transition" network. Test the VM if it transitions the right way
     const transitionForks =
