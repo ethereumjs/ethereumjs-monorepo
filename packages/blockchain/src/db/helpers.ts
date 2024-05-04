@@ -43,14 +43,7 @@ function DBSetBlockOrHeader(blockBody: Block | BlockHeader): DBOp[] {
 
   const isGenesis = header.number === BIGINT_0
 
-  if (
-    isGenesis ||
-    (blockBody instanceof Block &&
-      (blockBody.transactions.length ||
-        (blockBody.withdrawals?.length ?? 0) ||
-        blockBody.uncleHeaders.length ||
-        (blockBody.executionWitness !== null && blockBody.executionWitness !== undefined)))
-  ) {
+  if (isGenesis || blockBody instanceof Block) {
     const bodyValue = RLP.encode(blockBody.raw().slice(1))
     dbOps.push(
       DBOp.set(DBTarget.Body, bodyValue, {

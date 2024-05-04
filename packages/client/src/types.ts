@@ -173,7 +173,7 @@ export interface ClientOpts {
   statelessVerkle?: boolean
   engineNewpayloadMaxExecute?: number
   skipEngineExec?: boolean
-  ignoreStatelessInvalidExecs?: string | boolean
+  ignoreStatelessInvalidExecs?: boolean
   useJsCrypto?: boolean
 }
 
