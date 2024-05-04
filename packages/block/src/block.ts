@@ -657,24 +657,26 @@ export class Block {
     return result
   }
 
-  async requestsTrieIsValid(): Promise<boolean> {
+  async requestsTrieIsValid(requestsInput?: CLRequest[]): Promise<boolean> {
     if (!this.common.isActivatedEIP(7685)) {
       throw new Error('EIP 7685 is not activated')
     }
 
-    let result
-    if (this.requests!.length === 0) {
-      result = equalsBytes(this.header.requestsRoot!, KECCAK256_RLP)
-      return result
+    const requests = requestsInput ?? this.requests!
+
+    if (requests!.length === 0) {
+      return equalsBytes(this.header.requestsRoot!, KECCAK256_RLP)
     }
 
-    if (this.cache.requestsRoot === undefined) {
-      this.cache.requestsRoot = await Block.genRequestsTrieRoot(this.requests!)
+    if (requestsInput === undefined) {
+      if (this.cache.requestsRoot === undefined) {
+        this.cache.requestsRoot = await Block.genRequestsTrieRoot(this.requests!)
+      }
+      return equalsBytes(this.cache.requestsRoot, this.header.requestsRoot!)
+    } else {
+      const reportedRoot = await Block.genRequestsTrieRoot(requests)
+      return equalsBytes(reportedRoot, this.header.requestsRoot!)
     }
-
-    result = equalsBytes(this.cache.requestsRoot, this.header.requestsRoot!)
-
-    return result
   }
   /**
    * Validates transaction signatures and minimum gas requirements.
