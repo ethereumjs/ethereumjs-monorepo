@@ -178,6 +178,9 @@ export const validators = {
   get bytes48() {
     return (params: any[], index: number) => bytes(48, params, index)
   },
+  get bytes96() {
+    return (params: any[], index: number) => bytes(96, params, index)
+  },
   get bytes256() {
     return (params: any[], index: number) => bytes(256, params, index)
   },
@@ -419,6 +422,110 @@ export const validators = {
         // validate hex
         for (const field of [wt.index, wt.validatorIndex, wt.amount]) {
           const v = validate(field, this.hex)
+          if (v !== undefined) return v
+        }
+      }
+    }
+  },
+
+  get depositRequest() {
+    return (
+      requiredFields: string[] = ['pubkey', 'withdrawalCredentials', 'amount', 'signature', 'index']
+    ) => {
+      return (params: any[], index: number) => {
+        if (typeof params[index] !== 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument must be an object`,
+          }
+        }
+
+        const wt = params[index]
+
+        for (const field of requiredFields) {
+          if (wt[field] === undefined) {
+            return {
+              code: INVALID_PARAMS,
+              message: `invalid argument ${index}: required field ${field}`,
+            }
+          }
+        }
+
+        const validate = (field: any, validator: Function) => {
+          if (field === undefined) return
+          const v = validator([field], 0)
+          if (v !== undefined) return v
+        }
+
+        // validate pubkey
+        for (const field of [wt.pubkey]) {
+          const v = validate(field, this.bytes48)
+          if (v !== undefined) return v
+        }
+
+        // validate withdrawalCredentials
+        for (const field of [wt.withdrawalCredentials]) {
+          const v = validate(field, this.bytes32)
+          if (v !== undefined) return v
+        }
+
+        // validate amount, index
+        for (const field of [wt.amount, wt.index]) {
+          const v = validate(field, this.bytes8)
+          if (v !== undefined) return v
+        }
+
+        // validate signature
+        for (const field of [wt.signature]) {
+          const v = validate(field, this.bytes96)
+          if (v !== undefined) return v
+        }
+      }
+    }
+  },
+
+  get withdrawalRequest() {
+    return (requiredFields: string[] = ['sourceAddress', 'validatorPublicKey', 'amount']) => {
+      return (params: any[], index: number) => {
+        if (typeof params[index] !== 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument must be an object`,
+          }
+        }
+
+        const wt = params[index]
+
+        for (const field of requiredFields) {
+          if (wt[field] === undefined) {
+            return {
+              code: INVALID_PARAMS,
+              message: `invalid argument ${index}: required field ${field}`,
+            }
+          }
+        }
+
+        const validate = (field: any, validator: Function) => {
+          if (field === undefined) return
+          const v = validator([field], 0)
+          if (v !== undefined) return v
+        }
+
+        // validate sourceAddress
+        for (const field of [wt.sourceAddress]) {
+          const v = validate(field, this.address)
+          if (v !== undefined) return v
+        }
+
+        // validate validatorPublicKey
+        for (const field of [wt.validatorPublicKey]) {
+          const v = validate(field, this.bytes48)
+          if (v !== undefined) return v
+        }
+
+        // validate amount
+        for (const field of [wt.amount]) {
+          const v = validate(field, this.bytes8)
           if (v !== undefined) return v
         }
       }
