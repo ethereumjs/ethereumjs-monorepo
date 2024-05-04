@@ -866,7 +866,7 @@ export class Engine {
     } else if (eip4844Timestamp === null || ts < eip4844Timestamp) {
       throw {
         code: UNSUPPORTED_FORK,
-        message: 'NewPayloadV{1|2|3} MUST be used before Cancun is activated',
+        message: 'NewPayloadV{1|2} MUST be used before Cancun is activated',
       }
     }
 
