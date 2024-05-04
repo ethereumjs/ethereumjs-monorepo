@@ -41,7 +41,7 @@ import type {
 import type { VM } from './vm.js'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
-import type { CLRequest, PrefixedHexString } from '@ethereumjs/util'
+import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -194,7 +194,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   }
 
   let requestsRoot
-  let requests: CLRequest[] | undefined
+  let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
     requests = await accumulateRequests(this, result.results)
     requestsRoot = await Block.genRequestsTrieRoot(requests)

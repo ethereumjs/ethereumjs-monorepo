@@ -539,3 +539,7 @@ export function bigInt64ToBytes(value: bigint, littleEndian: boolean = false): U
 
 // eslint-disable-next-line no-restricted-imports
 export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
+
+export function hexToBigInt(input: PrefixedHexString): bigint {
+  return bytesToBigInt(hexToBytes(input))
+}

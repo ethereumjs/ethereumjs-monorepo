@@ -1,23 +1,35 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { CLRequest, KECCAK256_RLP, concatBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
+import {
+  DepositRequest,
+  KECCAK256_RLP,
+  WithdrawalRequest,
+  bytesToBigInt,
+  randomBytes,
+} from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
 import { Block, BlockHeader } from '../src/index.js'
 
-import type { CLRequestType } from '@ethereumjs/util'
+import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 
-class NumberRequest extends CLRequest implements CLRequestType {
-  constructor(type: number, bytes: Uint8Array) {
-    super(type, bytes)
+function getRandomDepositRequest(): CLRequest<CLRequestType> {
+  const depositRequestData = {
+    pubkey: randomBytes(48),
+    withdrawalCredentials: randomBytes(32),
+    amount: bytesToBigInt(randomBytes(8)),
+    signature: randomBytes(96),
+    index: bytesToBigInt(randomBytes(8)),
   }
+  return DepositRequest.fromRequestData(depositRequestData) as CLRequest<CLRequestType>
+}
 
-  public static fromRequestData(bytes: Uint8Array): CLRequestType {
-    return new NumberRequest(0x1, bytes)
+function getRandomWithdrawalRequest(): CLRequest<CLRequestType> {
+  const withdrawalRequestData = {
+    sourceAddress: randomBytes(20),
+    validatorPublicKey: randomBytes(48),
+    amount: bytesToBigInt(randomBytes(8)),
   }
-
-  serialize() {
-    return concatBytes(Uint8Array.from([this.type]), this.bytes)
-  }
+  return WithdrawalRequest.fromRequestData(withdrawalRequestData) as CLRequest<CLRequestType>
 }
 
 const common = new Common({
@@ -34,7 +46,7 @@ describe('7685 tests', () => {
     assert.equal(block2.requests?.length, 0)
   })
   it('should instantiate a block with requests', async () => {
-    const request = new NumberRequest(0x1, randomBytes(32))
+    const request = getRandomDepositRequest()
     const requestsRoot = await Block.genRequestsTrieRoot([request])
     const block = Block.fromBlockData(
       {
@@ -47,7 +59,7 @@ describe('7685 tests', () => {
     assert.deepEqual(block.header.requestsRoot, requestsRoot)
   })
   it('RequestsRootIsValid should return false when requestsRoot is invalid', async () => {
-    const request = new NumberRequest(0x1, randomBytes(32))
+    const request = getRandomDepositRequest()
     const block = Block.fromBlockData(
       {
         requests: [request],
@@ -59,9 +71,9 @@ describe('7685 tests', () => {
     assert.equal(await block.requestsTrieIsValid(), false)
   })
   it('should validate requests order', async () => {
-    const request1 = new NumberRequest(0x1, hexToBytes('0x1234'))
-    const request2 = new NumberRequest(0x1, hexToBytes('0x2345'))
-    const request3 = new NumberRequest(0x2, hexToBytes('0x2345'))
+    const request1 = getRandomDepositRequest()
+    const request2 = getRandomDepositRequest()
+    const request3 = getRandomWithdrawalRequest()
     const requests = [request1, request2, request3]
     const requestsRoot = await Block.genRequestsTrieRoot(requests)
 
@@ -101,9 +113,9 @@ describe('fromValuesArray tests', () => {
     assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
   })
   it('should construct a block with a valid requests array', async () => {
-    const request1 = new NumberRequest(0x1, hexToBytes('0x1234'))
-    const request2 = new NumberRequest(0x1, hexToBytes('0x2345'))
-    const request3 = new NumberRequest(0x2, hexToBytes('0x2345'))
+    const request1 = getRandomDepositRequest()
+    const request2 = getRandomWithdrawalRequest()
+    const request3 = getRandomWithdrawalRequest()
     const requests = [request1, request2, request3]
     const requestsRoot = await Block.genRequestsTrieRoot(requests)
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
@@ -127,9 +139,9 @@ describe('fromValuesArray tests', () => {
 
 describe('fromRPC tests', () => {
   it('should construct a block from a JSON object', async () => {
-    const request1 = new NumberRequest(0x1, hexToBytes('0x1234'))
-    const request2 = new NumberRequest(0x1, hexToBytes('0x2345'))
-    const request3 = new NumberRequest(0x2, hexToBytes('0x2345'))
+    const request1 = getRandomDepositRequest()
+    const request2 = getRandomDepositRequest()
+    const request3 = getRandomWithdrawalRequest()
     const requests = [request1, request2, request3]
     const requestsRoot = await Block.genRequestsTrieRoot(requests)
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
