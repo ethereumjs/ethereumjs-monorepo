@@ -9,6 +9,7 @@ import {
   bytesToHex,
   bytesToInt,
   setLengthLeft,
+  unpadBytes,
 } from '@ethereumjs/util'
 
 import type { RunTxResult } from './types'
@@ -85,7 +86,7 @@ const accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promise
       const slicedBytes = resultsBytes.slice(startByte, startByte + 76)
       const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
       const validatorPubkey = slicedBytes.slice(20, 68) // 48 Bytes
-      const amount = slicedBytes.slice(68, 76) // 8 Bytes / Uint64
+      const amount = unpadBytes(slicedBytes.slice(68, 76)) // 8 Bytes / Uint64
       const rlpData = RLP.encode([sourceAddress, validatorPubkey, amount])
       const request = new CLRequest(withdrawalRequestType, rlpData)
       requests.push(request)
