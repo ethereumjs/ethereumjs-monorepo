@@ -7,6 +7,7 @@ import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type {
   BigIntLike,
   CLRequest,
+  CLRequestType,
   GenesisState,
   PrefixedHexString,
   WithdrawalData,
@@ -338,7 +339,7 @@ export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
   /**
    * Any CL requests that were processed in the course of this block
    */
-  requests?: CLRequest[]
+  requests?: CLRequest<CLRequestType>[]
 }
 
 export interface AfterBlockEvent extends RunBlockResult {

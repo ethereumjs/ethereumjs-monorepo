@@ -4,10 +4,13 @@ import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   BIGINT_0,
-  CLRequest,
+  CLRequestFactory,
+  CLRequestType,
+  DepositRequest,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   Withdrawal,
+  WithdrawalRequest,
   bigIntToHex,
   bytesToHex,
   bytesToUtf8,
@@ -46,7 +49,7 @@ import type {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import type {
-  CLRequestType,
+  CLRequest,
   EthersProvider,
   PrefixedHexString,
   RequestBytes,
@@ -61,7 +64,7 @@ export class Block {
   public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
-  public readonly requests?: CLRequestType[]
+  public readonly requests?: CLRequest<CLRequestType>[]
   public readonly common: Common
   protected keccakFunction: (msg: Uint8Array) => Uint8Array
 
@@ -110,7 +113,7 @@ export class Block {
    * @param emptyTrie optional empty trie used to generate the root
    * @returns a 32 byte Uint8Array representing the requests trie root
    */
-  public static async genRequestsTrieRoot(requests: CLRequest[], emptyTrie?: Trie) {
+  public static async genRequestsTrieRoot(requests: CLRequest<CLRequestType>[], emptyTrie?: Trie) {
     // Requests should be sorted in monotonically ascending order based on type
     // and whatever internal sorting logic is defined by each request type
     if (requests.length > 1) {
@@ -300,8 +303,8 @@ export class Block {
 
     let requests
     if (header.common.isActivatedEIP(7685)) {
-      requests = (requestBytes as RequestBytes[]).map(
-        (bytes) => new CLRequest(bytes[0], bytes.slice(1))
+      requests = (requestBytes as RequestBytes[]).map((bytes) =>
+        CLRequestFactory.fromSerializedRequest(bytes)
       )
     }
     // executionWitness are not part of the EL fetched blocks via eth_ bodies method
@@ -420,6 +423,8 @@ export class Block {
       transactions,
       withdrawals: withdrawalsData,
       requestsRoot,
+      depositRequests,
+      withdrawalRequests,
       executionWitness,
     } = payload
 
@@ -459,9 +464,25 @@ export class Block {
       requestsRoot: reqRoot,
     }
 
+    const hasDepositRequests = depositRequests !== undefined && depositRequests !== null
+    const hasWithdrawalRequests = withdrawalRequests !== undefined && withdrawalRequests !== null
+    const requests =
+      hasDepositRequests || hasWithdrawalRequests ? ([] as CLRequest<CLRequestType>[]) : undefined
+
+    if (depositRequests !== undefined && depositRequests !== null) {
+      for (const dJson of depositRequests) {
+        requests!.push(DepositRequest.fromJSON(dJson))
+      }
+    }
+    if (withdrawalRequests !== undefined && withdrawalRequests !== null) {
+      for (const wJson of withdrawalRequests) {
+        requests!.push(WithdrawalRequest.fromJSON(wJson))
+      }
+    }
+
     // we are not setting setHardfork as common is already set to the correct hf
     const block = Block.fromBlockData(
-      { header, transactions: txs, withdrawals, executionWitness },
+      { header, transactions: txs, withdrawals, executionWitness, requests },
       opts
     )
     if (
@@ -505,7 +526,7 @@ export class Block {
     uncleHeaders: BlockHeader[] = [],
     withdrawals?: Withdrawal[],
     opts: BlockOptions = {},
-    requests?: CLRequest[],
+    requests?: CLRequest<CLRequestType>[],
     executionWitness?: VerkleExecutionWitness | null
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
@@ -657,7 +678,7 @@ export class Block {
     return result
   }
 
-  async requestsTrieIsValid(requestsInput?: CLRequest[]): Promise<boolean> {
+  async requestsTrieIsValid(requestsInput?: CLRequest<CLRequestType>[]): Promise<boolean> {
     if (!this.common.isActivatedEIP(7685)) {
       throw new Error('EIP 7685 is not activated')
     }
@@ -978,6 +999,29 @@ export class Block {
       ...withdrawalsArr,
       parentBeaconBlockRoot: header.parentBeaconBlockRoot,
       executionWitness: this.executionWitness,
+
+      // lets add the  request fields first and then iterate over requests to fill them up
+      depositRequests: this.common.isActivatedEIP(6110) ? [] : undefined,
+      withdrawalRequests: this.common.isActivatedEIP(7002) ? [] : undefined,
+    }
+
+    if (this.requests !== undefined) {
+      for (const request of this.requests) {
+        switch (request.type) {
+          case CLRequestType.Deposit:
+            executionPayload.depositRequests!.push((request as DepositRequest).toJSON())
+            continue
+
+          case CLRequestType.Withdrawal:
+            executionPayload.withdrawalRequests!.push((request as WithdrawalRequest).toJSON())
+            continue
+        }
+      }
+    } else if (
+      executionPayload.depositRequests !== undefined ||
+      executionPayload.withdrawalRequests !== undefined
+    ) {
+      throw Error(`Undefined requests for activated deposit or withdrawal requests`)
     }
 
     return executionPayload
