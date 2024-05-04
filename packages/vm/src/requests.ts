@@ -2,8 +2,10 @@ import { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
+  BIGINT_0,
   CLRequest,
   bigIntToBytes,
+  bytesToBigInt,
   bytesToHex,
   bytesToInt,
   setLengthLeft,
@@ -125,9 +127,51 @@ const accumulateDeposits = async (
           withdrawalCredsIdx + 32,
           withdrawalCredsIdx + 32 + withdrawalCredsSize
         )
-        const amount = log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize)
+        const amountBytes = log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize)
+        const amountBytesBigEndian = new Uint8Array([
+          amountBytes[7],
+          amountBytes[6],
+          amountBytes[5],
+          amountBytes[4],
+          amountBytes[3],
+          amountBytes[2],
+          amountBytes[1],
+          amountBytes[0],
+        ])
+        const amountBigInt = bytesToBigInt(amountBytesBigEndian)
+
+        let amount: Uint8Array
+        if (amountBigInt === BIGINT_0) {
+          amount = new Uint8Array()
+        } else {
+          amount = bigIntToBytes(amountBigInt)
+        }
+
         const signature = log[2].slice(sigIdx + 32, sigIdx + 32 + sigSize)
-        const index = log[2].slice(indexIdx + 32, indexIdx + 32 + indexSize)
+
+        const indexBytes = log[2].slice(indexIdx + 32, indexIdx + 32 + indexSize)
+
+        // Convert the little-endian array to big-endian array
+        const indexBytesBigEndian = new Uint8Array([
+          indexBytes[7],
+          indexBytes[6],
+          indexBytes[5],
+          indexBytes[4],
+          indexBytes[3],
+          indexBytes[2],
+          indexBytes[1],
+          indexBytes[0],
+        ])
+        const indexBigInt = bytesToBigInt(indexBytesBigEndian)
+
+        let index: Uint8Array
+
+        if (indexBigInt === BIGINT_0) {
+          index = new Uint8Array()
+        } else {
+          index = bigIntToBytes(indexBigInt)
+        }
+
         requests.push(
           new CLRequest(0x0, RLP.encode([pubkey, withdrawalCreds, amount, signature, index]))
         )
