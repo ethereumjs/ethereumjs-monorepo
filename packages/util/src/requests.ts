@@ -1,7 +1,14 @@
 import { RLP } from '@ethereumjs/rlp'
 import { concatBytes } from 'ethereum-cryptography/utils'
 
-import { bigIntToBytes, bigIntToHex, bytesToHex, hexToBigInt, hexToBytes } from './bytes.js'
+import {
+  bigIntToBytes,
+  bigIntToHex,
+  bytesToBigInt,
+  bytesToHex,
+  hexToBigInt,
+  hexToBytes,
+} from './bytes.js'
 import { BIGINT_0 } from './constants.js'
 
 import type { PrefixedHexString } from './types.js'
@@ -127,8 +134,17 @@ export class DepositRequest extends CLRequest<CLRequestType.Deposit> {
     }
   }
 
-  public static deserialize(_bytes: Uint8Array): DepositRequest {
-    throw Error('not implemented')
+  public static deserialize(bytes: Uint8Array): DepositRequest {
+    const [pubkey, withdrawalCredentials, amount, signature, index] = RLP.decode(
+      bytes.slice(1)
+    ) as [Uint8Array, Uint8Array, Uint8Array, Uint8Array, Uint8Array]
+    return this.fromRequestData({
+      pubkey,
+      withdrawalCredentials,
+      amount: bytesToBigInt(amount),
+      signature,
+      index: bytesToBigInt(index),
+    })
   }
 }
 
@@ -177,8 +193,17 @@ export class WithdrawalRequest extends CLRequest<CLRequestType.Withdrawal> {
     }
   }
 
-  public static deserialize(_bytes: Uint8Array): WithdrawalRequest {
-    throw Error('not implemented')
+  public static deserialize(bytes: Uint8Array): WithdrawalRequest {
+    const [sourceAddress, validatorPublicKey, amount] = RLP.decode(bytes.slice(1)) as [
+      Uint8Array,
+      Uint8Array,
+      Uint8Array
+    ]
+    return this.fromRequestData({
+      sourceAddress,
+      validatorPublicKey,
+      amount: bytesToBigInt(amount),
+    })
   }
 }
 
