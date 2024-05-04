@@ -62,7 +62,6 @@ describe('EIP-7685 runBlock tests', () => {
       },
       { common }
     )
-    // await expect(async () => vm.runBlock({ block })).rejects.toThrow('invalid block stateRoot')
     await expect(async () => vm.runBlock({ block })).rejects.toThrow(/invalid requestsRoot/)
   })
   it('should error when requestsRoot does not match requests provided', async () => {
