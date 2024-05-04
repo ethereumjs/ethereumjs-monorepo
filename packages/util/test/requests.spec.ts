@@ -1,44 +1,59 @@
 import { assert, describe, it } from 'vitest'
 
+import { bytesToBigInt, randomBytes } from '../src/bytes.js'
 import {
-  bigIntToBytes,
-  bytesToBigInt,
-  bytesToHex,
-  concatBytes,
-  hexToBytes,
-  randomBytes,
-} from '../src/bytes.js'
-import { CLRequest, type CLRequestType } from '../src/requests.js'
+  CLRequestFactory,
+  CLRequestType,
+  DepositRequest,
+  WithdrawalRequest,
+} from '../src/requests.js'
 
-class NumberRequest extends CLRequest implements CLRequestType<NumberRequest> {
-  constructor(type: number, bytes: Uint8Array) {
-    super(type, bytes)
-  }
+import type { CLRequest } from '../src/requests.js'
 
-  public static fromRequestData(bytes: Uint8Array): CLRequestType<NumberRequest> {
-    return new NumberRequest(0x1, bytes)
-  }
+describe('Requests', () => {
+  it('deposit request', () => {
+    const depositRequestData = {
+      pubkey: randomBytes(48),
+      withdrawalCredentials: randomBytes(32),
+      amount: bytesToBigInt(randomBytes(8)),
+      signature: randomBytes(96),
+      index: bytesToBigInt(randomBytes(8)),
+    }
 
-  serialize() {
-    return concatBytes(Uint8Array.from([this.type]), this.bytes)
-  }
-}
-describe('should create a request', () => {
-  it('should create a request', () => {
-    const requestType = 0x1
-    const data = randomBytes(32)
-    const request = new NumberRequest(0x1, data)
-    const serialized = request.serialize()
-    assert.equal(serialized[0], requestType)
-    assert.deepEqual(serialized.slice(1), data)
+    const depositObject = DepositRequest.fromRequestData(
+      depositRequestData
+    ) as CLRequest<CLRequestType>
+    const depositJSON = depositObject.toJSON()
+    const serialized = depositObject.serialize()
+    assert.equal(serialized[0], CLRequestType.Deposit)
+
+    const deserialized = CLRequestFactory.fromSerializedRequest(serialized)
+    const deserializedJSON = deserialized.toJSON()
+    assert.deepEqual(deserializedJSON, depositJSON)
+
+    const reserialized = deserialized.serialize()
+    assert.deepEqual(serialized, reserialized)
   })
-  it('should create a request from RequestData', () => {
-    const request1 = NumberRequest.fromRequestData(hexToBytes('0x1234'))
-    assert.equal(request1.type, 0x1)
-    assert.equal(bytesToHex(request1.bytes), '0x1234')
 
-    const request2 = NumberRequest.fromRequestData(bigIntToBytes(123n))
-    assert.equal(request2.type, 0x1)
-    assert.equal(bytesToBigInt(request2.bytes), 123n)
+  it('withdrawal request', () => {
+    const withdrawalRequestData = {
+      sourceAddress: randomBytes(20),
+      validatorPublicKey: randomBytes(48),
+      amount: bytesToBigInt(randomBytes(8)),
+    }
+
+    const withdrawalObject = WithdrawalRequest.fromRequestData(
+      withdrawalRequestData
+    ) as CLRequest<CLRequestType>
+    const withdrawalJSON = withdrawalObject.toJSON()
+    const serialized = withdrawalObject.serialize()
+    assert.equal(serialized[0], CLRequestType.Withdrawal)
+
+    const deserialized = CLRequestFactory.fromSerializedRequest(serialized)
+    const deserializedJSON = deserialized.toJSON()
+    assert.deepEqual(deserializedJSON, withdrawalJSON)
+
+    const reserialized = deserialized.serialize()
+    assert.deepEqual(serialized, reserialized)
   })
 })

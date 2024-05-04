@@ -1,6 +1,5 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -8,6 +7,7 @@ import { assert, describe, it } from 'vitest'
 
 import { setupVM } from '../utils.js'
 
+import type { DepositRequest } from '../../../../util/src/requests.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const depositContractByteCode = hexToBytes(
@@ -59,7 +59,8 @@ describe('EIP-6110 runBlock tests', () => {
     )
     const res = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
     assert.equal(res.requests?.length, 1)
-    assert.equal(bytesToHex((RLP.decode(res.requests![0].bytes) as Uint8Array[])[0]), pubkey)
+    const reqPubkey = (res.requests![0] as DepositRequest).pubkey
+    assert.equal(bytesToHex(reqPubkey), pubkey)
   })
 })
 
@@ -92,6 +93,7 @@ describe('EIP-7685 buildBlock tests', () => {
     await blockBuilder.addTransaction(depositTx)
     const res = await blockBuilder.build()
     assert.equal(res.requests?.length, 1)
-    assert.equal(bytesToHex((RLP.decode(res.requests![0].bytes) as Uint8Array[])[0]), pubkey)
+    const reqPubkey = (res.requests![0] as DepositRequest).pubkey
+    assert.equal(bytesToHex(reqPubkey), pubkey)
   })
 })

@@ -6,11 +6,14 @@ import type {
   BigIntLike,
   BytesLike,
   CLRequest,
+  CLRequestType,
+  DepositRequestV1,
   JsonRpcWithdrawal,
   PrefixedHexString,
   RequestBytes,
   WithdrawalBytes,
   WithdrawalData,
+  WithdrawalRequestV1,
 } from '@ethereumjs/util'
 
 /**
@@ -153,7 +156,7 @@ export interface BlockData {
   transactions?: Array<TxData[TransactionType]>
   uncleHeaders?: Array<HeaderData>
   withdrawals?: Array<WithdrawalData>
-  requests?: Array<CLRequest>
+  requests?: Array<CLRequest<CLRequestType>>
   /**
    * EIP-6800: Verkle Proof Data (experimental)
    */
@@ -303,4 +306,6 @@ export type ExecutionPayload = {
   // VerkleExecutionWitness is already a hex serialized object
   executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
   requestsRoot?: PrefixedHexString | string | null // DATA, 32 bytes, null implies EIP 7685 not active yet
+  depositRequests?: DepositRequestV1[] // Array of 6110 deposit requests
+  withdrawalRequests?: WithdrawalRequestV1[] // Array of 7002 withdrawal requests
 }
