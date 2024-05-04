@@ -15,6 +15,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { bytesToBigInt } from '../../../../util/src/bytes.js'
 import { setupVM } from '../utils.js'
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
@@ -117,7 +118,7 @@ describe('EIP-7002 tests', () => {
     // Ensure the request is generated
     assert.ok(generatedBlock!.requests!.length === 1)
 
-    const requestDecoded = RLP.decode(generatedBlock!.requests![0].bytes)
+    const requestDecoded = RLP.decode(generatedBlock!.requests![0].serialize().slice(1))
 
     const sourceAddressRequest = requestDecoded[0] as Uint8Array
     const validatorPubkeyRequest = requestDecoded[1] as Uint8Array
@@ -126,7 +127,9 @@ describe('EIP-7002 tests', () => {
     // Ensure the requests are correct
     assert.ok(equalsBytes(sourceAddressRequest, tx.getSenderAddress().bytes))
     assert.ok(equalsBytes(validatorPubkey, validatorPubkeyRequest))
-    assert.ok(equalsBytes(amountBytes, amountRequest))
+    // the direct byte comparision fails because leadign zeros have been stripped
+    // off the amountBytes because it was serialized in request from bigint
+    assert.ok(bytesToBigInt(amountBytes), bytesToBigInt(amountRequest))
 
     await vm.runBlock({ block: generatedBlock!, skipHeaderValidation: true, root })
 
