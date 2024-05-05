@@ -145,10 +145,15 @@ export const gasDiscountPairs = [
   [127, 175],
   [128, 174],
 ]
-// convert an input Uint8Array to a mcl G1 point
-// this does /NOT/ do any input checks. the input Uint8Array needs to be of length 128
-// it does raise an error if the point is not on the curve.
-function BLS12_381_ToG1Point(input: Uint8Array, mcl: any): any {
+/**
+ * Converts an Uint8Array to a MCL G1 point. Raises errors if the point is not on the curve
+ * and (if activated) if the point is in the subgroup / order check.
+ * @param input Input Uint8Array. Should be 128 bytes
+ * @param mcl MCL instance
+ * @param verifyOrder Perform the subgroup check (defaults to true)
+ * @returns MCL G1 point
+ */
+function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): any {
   const p_x = bytesToUnprefixedHex(input.subarray(16, 64))
   const p_y = bytesToUnprefixedHex(input.subarray(80, 128))
 
@@ -171,7 +176,8 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any): any {
   G1.setY(Fp_Y)
   G1.setZ(One)
 
-  if (G1.isValidOrder() === false) {
+  mcl.verifyOrderG1(verifyOrder)
+  if (verifyOrder && G1.isValidOrder() === false) {
     throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
@@ -206,9 +212,15 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
   return concatBytes(xBuffer, yBuffer)
 }
 
-// convert an input Uint8Array to a mcl G2 point
-// this does /NOT/ do any input checks. the input Uint8Array needs to be of length 256
-function BLS12_381_ToG2Point(input: Uint8Array, mcl: any): any {
+/**
+ * Converts an Uint8Array to a MCL G2 point. Raises errors if the point is not on the curve
+ * and (if activated) if the point is in the subgroup / order check.
+ * @param input Input Uint8Array. Should be 256 bytes
+ * @param mcl MCL instance
+ * @param verifyOrder Perform the subgroup check (defaults to true)
+ * @returns MCL G2 point
+ */
+function BLS12_381_ToG2Point(input: Uint8Array, mcl: any, verifyOrder = true): any {
   const p_x_1 = input.subarray(0, 64)
   const p_x_2 = input.subarray(64, 128)
   const p_y_1 = input.subarray(128, 192)
@@ -245,7 +257,8 @@ function BLS12_381_ToG2Point(input: Uint8Array, mcl: any): any {
   mclPoint.setY(Fp2Y)
   mclPoint.setZ(Fp2One)
 
-  if (mclPoint.isValidOrder() === false) {
+  mcl.verifyOrderG2(verifyOrder)
+  if (verifyOrder && mclPoint.isValidOrder() === false) {
     throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 

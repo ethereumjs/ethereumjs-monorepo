@@ -60,8 +60,8 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
   let mclPoint1
   let mclPoint2
   try {
-    mclPoint1 = BLS12_381_ToG1Point(opts.data.subarray(0, 128), mcl)
-    mclPoint2 = BLS12_381_ToG1Point(opts.data.subarray(128, 256), mcl)
+    mclPoint1 = BLS12_381_ToG1Point(opts.data.subarray(0, 128), mcl, false)
+    mclPoint2 = BLS12_381_ToG1Point(opts.data.subarray(128, 256), mcl, false)
   } catch (e: any) {
     if (opts._debug !== undefined) {
       opts._debug(`BLS12G1ADD (0x0b) failed: ${e.message}`)

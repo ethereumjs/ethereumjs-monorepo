@@ -67,8 +67,8 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   let mclPoint2
 
   try {
-    mclPoint1 = BLS12_381_ToG2Point(opts.data.subarray(0, 256), mcl)
-    mclPoint2 = BLS12_381_ToG2Point(opts.data.subarray(256, 512), mcl)
+    mclPoint1 = BLS12_381_ToG2Point(opts.data.subarray(0, 256), mcl, false)
+    mclPoint2 = BLS12_381_ToG2Point(opts.data.subarray(256, 512), mcl, false)
   } catch (e: any) {
     return EvmErrorResult(e, opts.gasLimit)
   }
