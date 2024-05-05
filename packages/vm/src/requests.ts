@@ -1,9 +1,8 @@
 import { Common } from '@ethereumjs/common'
-import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
-  BIGINT_0,
-  CLRequest,
+  DepositRequest,
+  WithdrawalRequest,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
@@ -14,6 +13,7 @@ import {
 
 import type { RunTxResult } from './types'
 import type { VM } from './vm.js'
+import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 
 /**
  * This helper method generates a list of all CL requests that can be included in a pending block
@@ -24,8 +24,8 @@ import type { VM } from './vm.js'
 export const accumulateRequests = async (
   vm: VM,
   txResults: RunTxResult[]
-): Promise<CLRequest[]> => {
-  const requests: CLRequest[] = []
+): Promise<CLRequest<CLRequestType>[]> => {
+  const requests: CLRequest<CLRequestType>[] = []
   const common = vm.common
 
   if (common.isActivatedEIP(6110)) {
@@ -50,7 +50,10 @@ export const accumulateRequests = async (
   return requests
 }
 
-const accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promise<void> => {
+const accumulateEIP7002Requests = async (
+  vm: VM,
+  requests: CLRequest<CLRequestType>[]
+): Promise<void> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
     bigIntToBytes(vm.common.param('vm', 'withdrawalRequestPredeployAddress')),
@@ -82,16 +85,15 @@ const accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promise
 
   const resultsBytes = results.execResult.returnValue
   if (resultsBytes.length > 0) {
-    const withdrawalRequestType = Number(vm.common.param('vm', 'withdrawalRequestType'))
     // Each request is 76 bytes
     for (let startByte = 0; startByte < resultsBytes.length; startByte += 76) {
       const slicedBytes = resultsBytes.slice(startByte, startByte + 76)
       const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
-      const validatorPubkey = slicedBytes.slice(20, 68) // 48 Bytes
-      const amount = unpadBytes(slicedBytes.slice(68, 76)) // 8 Bytes / Uint64
-      const rlpData = RLP.encode([sourceAddress, validatorPubkey, amount])
-      const request = new CLRequest(withdrawalRequestType, rlpData)
-      requests.push(request)
+      const validatorPublicKey = slicedBytes.slice(20, 68) // 48 Bytes
+      const amount = bytesToBigInt(unpadBytes(slicedBytes.slice(68, 76))) // 8 Bytes / Uint64
+      requests.push(
+        WithdrawalRequest.fromRequestData({ sourceAddress, validatorPublicKey, amount })
+      )
     }
   }
 
@@ -103,7 +105,7 @@ const accumulateEIP7002Requests = async (vm: VM, requests: CLRequest[]): Promise
 const accumulateDeposits = async (
   depositContractAddress: string,
   txResults: RunTxResult[],
-  requests: CLRequest[]
+  requests: CLRequest<CLRequestType>[]
 ) => {
   for (const [_, tx] of txResults.entries()) {
     for (let i = 0; i < tx.receipt.logs.length; i++) {
@@ -130,7 +132,7 @@ const accumulateDeposits = async (
         const indexIdx = bytesToInt(log[2].slice(128, 160))
         const indexSize = bytesToInt(log[2].slice(indexIdx, indexIdx + 32))
         const pubkey = log[2].slice(pubKeyIdx + 32, pubKeyIdx + 32 + pubKeySize)
-        const withdrawalCreds = log[2].slice(
+        const withdrawalCredentials = log[2].slice(
           withdrawalCredsIdx + 32,
           withdrawalCredsIdx + 32 + withdrawalCredsSize
         )
@@ -145,14 +147,7 @@ const accumulateDeposits = async (
           amountBytes[1],
           amountBytes[0],
         ])
-        const amountBigInt = bytesToBigInt(amountBytesBigEndian)
-
-        let amount: Uint8Array
-        if (amountBigInt === BIGINT_0) {
-          amount = new Uint8Array()
-        } else {
-          amount = bigIntToBytes(amountBigInt)
-        }
+        const amount = bytesToBigInt(amountBytesBigEndian)
 
         const signature = log[2].slice(sigIdx + 32, sigIdx + 32 + sigSize)
 
@@ -169,18 +164,15 @@ const accumulateDeposits = async (
           indexBytes[1],
           indexBytes[0],
         ])
-        const indexBigInt = bytesToBigInt(indexBytesBigEndian)
-
-        let index: Uint8Array
-
-        if (indexBigInt === BIGINT_0) {
-          index = new Uint8Array()
-        } else {
-          index = bigIntToBytes(indexBigInt)
-        }
-
+        const index = bytesToBigInt(indexBytesBigEndian)
         requests.push(
-          new CLRequest(0x0, RLP.encode([pubkey, withdrawalCreds, amount, signature, index]))
+          DepositRequest.fromRequestData({
+            pubkey,
+            withdrawalCredentials,
+            amount,
+            signature,
+            index,
+          })
         )
       }
     }
