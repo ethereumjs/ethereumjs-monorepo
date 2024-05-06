@@ -20,7 +20,7 @@ export enum CLRequestType {
   Withdrawal = 0x01,
 }
 
-export type DepositRequestV1 = {
+export type DepositReceiptV1 = {
   pubkey: PrefixedHexString // DATA 48 bytes
   withdrawalCredentials: PrefixedHexString // DATA 32 bytes
   amount: PrefixedHexString // QUANTITY 8 bytes in gwei
@@ -35,7 +35,7 @@ export type WithdrawalRequestV1 = {
 }
 
 export interface RequestJSON {
-  [CLRequestType.Deposit]: DepositRequestV1
+  [CLRequestType.Deposit]: DepositReceiptV1
   [CLRequestType.Withdrawal]: WithdrawalRequestV1
 }
 
@@ -91,7 +91,7 @@ export class DepositRequest extends CLRequest<CLRequestType.Deposit> {
     return new DepositRequest(pubkey, withdrawalCredentials, amount, signature, index)
   }
 
-  public static fromJSON(jsonData: DepositRequestV1): DepositRequest {
+  public static fromJSON(jsonData: DepositReceiptV1): DepositRequest {
     const { pubkey, withdrawalCredentials, amount, signature, index } = jsonData
     return this.fromRequestData({
       pubkey: hexToBytes(pubkey),
@@ -113,7 +113,7 @@ export class DepositRequest extends CLRequest<CLRequestType.Deposit> {
     )
   }
 
-  toJSON(): DepositRequestV1 {
+  toJSON(): DepositReceiptV1 {
     return {
       pubkey: bytesToHex(this.pubkey),
       withdrawalCredentials: bytesToHex(this.withdrawalCredentials),

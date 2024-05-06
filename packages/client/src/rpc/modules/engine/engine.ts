@@ -42,6 +42,7 @@ import {
   executionPayloadV1FieldValidators,
   executionPayloadV2FieldValidators,
   executionPayloadV3FieldValidators,
+  executionPayloadV4FieldValidators,
   forkchoiceFieldValidators,
   payloadAttributesFieldValidatorsV1,
   payloadAttributesFieldValidatorsV2,
@@ -60,6 +61,7 @@ import type {
   ExecutionPayloadV1,
   ExecutionPayloadV2,
   ExecutionPayloadV3,
+  ExecutionPayloadV4,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadAttributes,
@@ -197,6 +199,20 @@ export class Engine {
         3,
         [
           [validators.object(executionPayloadV3FieldValidators)],
+          [validators.array(validators.bytes32)],
+          [validators.bytes32],
+        ],
+        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot']
+      ),
+      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
+    )
+
+    this.newPayloadV4 = cmMiddleware(
+      middleware(
+        callWithStackTrace(this.newPayloadV4.bind(this), this._rpcDebug),
+        3,
+        [
+          [validators.object(executionPayloadV4FieldValidators)],
           [validators.array(validators.bytes32)],
           [validators.bytes32],
         ],
@@ -839,11 +855,36 @@ export class Engine {
    */
   async newPayloadV3(params: [ExecutionPayloadV3, Bytes32[], Bytes32]): Promise<PayloadStatusV1> {
     const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
+    const pragueTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
+
     const ts = parseInt(params[0].timestamp)
-    if (eip4844Timestamp === null || ts < eip4844Timestamp) {
+    if (pragueTimestamp !== null && ts >= pragueTimestamp) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'NewPayloadV4 MUST be used after Prague is activated',
+      }
+    } else if (eip4844Timestamp === null || ts < eip4844Timestamp) {
       throw {
         code: UNSUPPORTED_FORK,
         message: 'NewPayloadV{1|2} MUST be used before Cancun is activated',
+      }
+    }
+
+    const newPayloadRes = await this.newPayload(params)
+    if (newPayloadRes.status === Status.INVALID_BLOCK_HASH) {
+      newPayloadRes.status = Status.INVALID
+      newPayloadRes.latestValidHash = null
+    }
+    return newPayloadRes
+  }
+
+  async newPayloadV4(params: [ExecutionPayloadV4, Bytes32[], Bytes32]): Promise<PayloadStatusV1> {
+    const pragueTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
+    const ts = parseInt(params[0].timestamp)
+    if (pragueTimestamp === null || ts < pragueTimestamp) {
+      throw {
+        code: UNSUPPORTED_FORK,
+        message: 'NewPayloadV{1|2|3} MUST be used before Prague is activated',
       }
     }
 
@@ -1354,6 +1395,11 @@ export class Engine {
       let checkNotAfterHf: Hardfork | null
 
       switch (payloadVersion) {
+        case 4:
+          checkNotBeforeHf = Hardfork.Prague
+          checkNotAfterHf = Hardfork.Prague
+          break
+
         case 3:
           checkNotBeforeHf = Hardfork.Cancun
           checkNotAfterHf = Hardfork.Cancun
@@ -1421,6 +1467,10 @@ export class Engine {
    */
   async getPayloadV3(params: [Bytes8]) {
     return this.getPayload(params, 3)
+  }
+
+  async getPayloadV4(params: [Bytes8]) {
+    return this.getPayload(params, 4)
   }
   /**
    * Compare transition configuration parameters.

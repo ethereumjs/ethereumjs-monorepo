@@ -26,6 +26,12 @@ export const executionPayloadV3FieldValidators = {
   excessBlobGas: validators.uint64,
 }
 
+export const executionPayloadV4FieldValidators = {
+  ...executionPayloadV3FieldValidators,
+  depositReceipts: validators.array(validators.depositReceipt()),
+  withdrawalRequests: validators.array(validators.withdrawalRequest()),
+}
+
 export const forkchoiceFieldValidators = {
   headBlockHash: validators.blockHash,
   safeBlockHash: validators.blockHash,
