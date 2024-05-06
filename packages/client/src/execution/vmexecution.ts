@@ -989,8 +989,36 @@ export class VMExecution extends Execution {
    */
   async executeBlocks(first: number, last: number, txHashes: string[]) {
     this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
-    const vm = await this.vm.shallowCopy(false)
 
+    let vm
+    const block = await this.vm.blockchain.getBlock(first)
+    const parentBlock = await this.vm.blockchain.getBlock(block.header.parentHash)
+    const startExecutionParentTd = await this.chain.getTd(block.hash(), parentBlock.header.number)
+
+    const startExecutionHardfork = this.config.execCommon.getHardforkBy({
+      blockNumber: block.header.number,
+      td: startExecutionParentTd,
+      timestamp: block.header.timestamp,
+    })
+
+    // Setup VM with verkle state manager if Osaka is active
+    if (
+      this.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Osaka) &&
+      this.config.statelessVerkle
+    ) {
+      const verkleSM = await StatelessVerkleStateManager.create({
+        common: this.vm.common,
+        verkleCrypto: (this.vm.stateManager as StatelessVerkleStateManager).verkleCrypto,
+      })
+      verkleSM.initVerkleExecutionWitness(parentBlock.header.number, parentBlock.executionWitness!)
+      vm = await VM.create({
+        stateManager: verkleSM,
+        common: this.vm.common,
+        blockchain: this.vm.blockchain,
+      })
+    } else {
+      vm = await this.vm.shallowCopy(false)
+    }
     for (let blockNumber = first; blockNumber <= last; blockNumber++) {
       const block = await vm.blockchain.getBlock(blockNumber)
       const parentBlock = await vm.blockchain.getBlock(block.header.parentHash)
