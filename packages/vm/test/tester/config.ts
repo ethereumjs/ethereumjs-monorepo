@@ -233,13 +233,13 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
       })
     } else {
       // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
-      if (ttd === undefined) {
+      if (ttd === undefined && timestamp === undefined) {
         testHardforks.push({
           name: hf.name,
           //forkHash: hf.forkHash,
           block: null,
         })
-      } else if (hf.name === 'paris') {
+      } else if (hf.name === 'paris' && ttd !== undefined) {
         // merge will currently always be after a hardfork, so add it here
         testHardforks.push({
           name: hf.name,
