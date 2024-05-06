@@ -7,11 +7,12 @@ export default mergeConfig(
   defineConfig({
     test: {
       exclude: [
-
         ...configDefaults.exclude,
-        // default export for minimist
-        // wrong ethereum-tests path reference (../ is stripped)
-        'test/transactionRunner.spec.ts',
+        // path.resolve is not a function
+        'test/tester/config.spec.ts',
+        // Cannot read properties of undefined (reading 'pedersen_hash')
+        'test/api/EIPs/eip-6800-verkle.spec.ts'
       ],
-    }
-  }))
+    },
+  }
+  ))
