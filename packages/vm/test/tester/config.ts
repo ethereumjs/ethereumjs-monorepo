@@ -233,13 +233,13 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
       })
     } else {
       // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
-      if (ttd === undefined) {
+      if (ttd === undefined && timestamp === undefined) {
         testHardforks.push({
           name: hf.name,
           //forkHash: hf.forkHash,
           block: null,
         })
-      } else if (hf.name === 'paris') {
+      } else if (hf.name === 'paris' && ttd !== undefined) {
         // merge will currently always be after a hardfork, so add it here
         testHardforks.push({
           name: hf.name,
@@ -302,6 +302,8 @@ export function getCommon(network: string, kzg?: Kzg): Common {
     return setupCommonWithNetworks(startNetwork, TTD, undefined, kzg)
   } else if (networkLowercase === 'shanghaitocancunattime15k') {
     return setupCommonWithNetworks('Shanghai', undefined, 15000, kzg)
+  } else if (networkLowercase === 'cancuntopragueattime15k') {
+    return setupCommonWithNetworks('Cancun', undefined, 15000, kzg)
   } else {
     // Case 3: this is not a "default fork" network, but it is a "transition" network. Test the VM if it transitions the right way
     const transitionForks =

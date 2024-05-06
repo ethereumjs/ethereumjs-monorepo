@@ -8,6 +8,7 @@ import {
   bytesToHex,
   bytesToInt,
   setLengthLeft,
+  unpadBytes,
 } from '@ethereumjs/util'
 
 import type { RunTxResult } from './types'
@@ -74,6 +75,8 @@ const accumulateEIP7002Requests = async (
   )
   const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
 
+  const addrIsEmpty = (await vm.stateManager.getAccount(systemAddress)) === undefined
+
   const results = await vm.evm.runCall({
     caller: systemAddress,
     gasLimit: BigInt(1_000_000),
@@ -87,11 +90,15 @@ const accumulateEIP7002Requests = async (
       const slicedBytes = resultsBytes.slice(startByte, startByte + 76)
       const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
       const validatorPublicKey = slicedBytes.slice(20, 68) // 48 Bytes
-      const amount = bytesToBigInt(slicedBytes.slice(68, 76)) // 8 Bytes / Uint64
+      const amount = bytesToBigInt(unpadBytes(slicedBytes.slice(68, 76))) // 8 Bytes / Uint64
       requests.push(
         WithdrawalRequest.fromRequestData({ sourceAddress, validatorPublicKey, amount })
       )
     }
+  }
+
+  if (addrIsEmpty) {
+    await vm.stateManager.deleteAccount(systemAddress)
   }
 }
 
