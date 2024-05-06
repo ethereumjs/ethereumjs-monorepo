@@ -84,7 +84,7 @@ export class Account {
     if (this._balance !== null) {
       return this._balance
     } else {
-      throw Error(`bonce=${this._balance} not loaded`)
+      throw Error(`balance=${this._balance} not loaded`)
     }
   }
   set balance(_balance: bigint) {
@@ -393,6 +393,15 @@ export class Account {
    * "An account is considered empty when it has no code and zero nonce and zero balance."
    */
   isEmpty(): boolean {
+    // helpful for determination in partial accounts
+    if (
+      (this._balance !== null && this.balance !== BIGINT_0) ||
+      (this._nonce === null && this.nonce !== BIGINT_0) ||
+      (this._codeHash !== null && !equalsBytes(this.codeHash, KECCAK256_NULL))
+    ) {
+      return false
+    }
+
     return (
       this.balance === BIGINT_0 &&
       this.nonce === BIGINT_0 &&
