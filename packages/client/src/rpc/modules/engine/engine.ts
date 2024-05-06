@@ -861,7 +861,7 @@ export class Engine {
     if (pragueTimestamp !== null && ts >= pragueTimestamp) {
       throw {
         code: INVALID_PARAMS,
-        message: 'NewPayloadV4 MUST be used after Cancun is activated',
+        message: 'NewPayloadV4 MUST be used after Prague is activated',
       }
     } else if (eip4844Timestamp === null || ts < eip4844Timestamp) {
       throw {
