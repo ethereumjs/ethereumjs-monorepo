@@ -28,8 +28,8 @@ export type ExecutionPayloadV1 = ExecutionPayload
 export type ExecutionPayloadV2 = ExecutionPayloadV1 & { withdrawals: WithdrawalV1[] }
 // parentBeaconBlockRoot comes separate in new payloads and needs to be added to payload data
 export type ExecutionPayloadV3 = ExecutionPayloadV2 & { excessBlobGas: Uint64; blobGasUsed: Uint64 }
-export type ExecutionPayloadV4 = ExecutionPayloadV2 & {
-  depositRequests: DepositRequestV1[]
+export type ExecutionPayloadV4 = ExecutionPayloadV3 & {
+  depositReceipts: DepositReceiptV1[]
   withdrawalRequests: WithdrawalRequestV1[]
 }
 

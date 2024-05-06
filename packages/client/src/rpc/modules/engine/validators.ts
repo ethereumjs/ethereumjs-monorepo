@@ -28,7 +28,7 @@ export const executionPayloadV3FieldValidators = {
 
 export const executionPayloadV4FieldValidators = {
   ...executionPayloadV3FieldValidators,
-  depositRequests: validators.array(validators.depositRequest()),
+  depositReceipts: validators.array(validators.depositReceipt()),
   withdrawalRequests: validators.array(validators.withdrawalRequest()),
 }
 

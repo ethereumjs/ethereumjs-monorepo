@@ -858,7 +858,7 @@ export class Engine {
     const pragueTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
 
     const ts = parseInt(params[0].timestamp)
-    if (pragueTimestamp !== null && ts > pragueTimestamp) {
+    if (pragueTimestamp !== null && ts >= pragueTimestamp) {
       throw {
         code: INVALID_PARAMS,
         message: 'NewPayloadV4 MUST be used after Cancun is activated',
