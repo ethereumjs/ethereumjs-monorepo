@@ -1010,7 +1010,6 @@ export class VMExecution extends Execution {
         common: this.vm.common,
         verkleCrypto: (this.vm.stateManager as StatelessVerkleStateManager).verkleCrypto,
       })
-      verkleSM.initVerkleExecutionWitness(block.header.number, block.executionWitness!)
       vm = await VM.create({
         stateManager: verkleSM,
         common: this.vm.common,
@@ -1080,6 +1079,9 @@ export class VMExecution extends Execution {
         }
       }
     }
+
+    // Shutdown client after execution completes
+    process.kill(process.pid)
   }
 
   stats() {
