@@ -372,7 +372,6 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   shallowCopy(): EVMStateManagerInterface {
     const stateManager = new StatelessVerkleStateManager({ verkleCrypto: this.verkleCrypto })
-    stateManager.initVerkleExecutionWitness(this._blockNum, this._executionWitness!)
     return stateManager
   }
 

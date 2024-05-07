@@ -990,7 +990,6 @@ export class VMExecution extends Execution {
   async executeBlocks(first: number, last: number, txHashes: string[]) {
     this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
 
-    let vm
     const block = await this.vm.blockchain.getBlock(first)
     const parentBlock = await this.vm.blockchain.getBlock(block.header.parentHash)
     const startExecutionParentTd = await this.chain.getTd(block.hash(), parentBlock.header.number)
@@ -1006,18 +1005,10 @@ export class VMExecution extends Execution {
       this.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Osaka) &&
       this.config.statelessVerkle
     ) {
-      const verkleSM = await StatelessVerkleStateManager.create({
-        common: this.vm.common,
-        verkleCrypto: (this.vm.stateManager as StatelessVerkleStateManager).verkleCrypto,
-      })
-      vm = await VM.create({
-        stateManager: verkleSM,
-        common: this.vm.common,
-        blockchain: this.vm.blockchain,
-      })
-    } else {
-      vm = await this.vm.shallowCopy(false)
+      await this.transitionToVerkle(block.header.stateRoot, true)
     }
+    const vm = await this.vm.shallowCopy(false)
+
     for (let blockNumber = first; blockNumber <= last; blockNumber++) {
       const block = await vm.blockchain.getBlock(blockNumber)
       const parentBlock = await vm.blockchain.getBlock(block.header.parentHash)
@@ -1079,9 +1070,6 @@ export class VMExecution extends Execution {
         }
       }
     }
-
-    // Shutdown client after execution completes
-    process.kill(process.pid)
   }
 
   stats() {
