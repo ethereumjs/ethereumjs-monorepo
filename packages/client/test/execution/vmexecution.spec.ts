@@ -85,7 +85,7 @@ const shanghaiPayload = {
   ],
 }
 
-describe('[VMExecution]', async () => {
+describe('[VMExecution]', () => {
   it('Initialization', async () => {
     const vm = await VM.create()
     const config = new Config({ vm, accountCache: 10000, storageCache: 1000 })
@@ -140,7 +140,9 @@ describe('[VMExecution]', async () => {
       validateBlocks: true,
       validateConsensus: false,
     })
+
     exec = await testSetup(blockchain)
+
     await exec.run()
 
     assert.doesNotThrow(
@@ -234,4 +236,4 @@ describe('[VMExecution]', async () => {
 
     closeRPC(server)
   })
-})
+}, 30000)
