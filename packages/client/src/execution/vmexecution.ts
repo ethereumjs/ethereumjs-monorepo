@@ -1010,7 +1010,7 @@ export class VMExecution extends Execution {
         common: this.vm.common,
         verkleCrypto: (this.vm.stateManager as StatelessVerkleStateManager).verkleCrypto,
       })
-      verkleSM.initVerkleExecutionWitness(parentBlock.header.number, parentBlock.executionWitness!)
+      verkleSM.initVerkleExecutionWitness(block.header.number, block.executionWitness!)
       vm = await VM.create({
         stateManager: verkleSM,
         common: this.vm.common,
