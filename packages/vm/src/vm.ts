@@ -59,7 +59,9 @@ export class VM {
    * set to public due to implementation internals
    * @hidden
    */
-  public readonly _emit: (topic: string, data: any) => Promise<void>
+  public _emit(topic: keyof VMEvents, data: any): Promise<void> {
+    return new Promise((resolve) => this.events.emit(topic, data, resolve))
+  }
 
   /**
    * VM is run in DEBUG mode (default: false)
@@ -167,10 +169,6 @@ export class VM {
     this._opts = opts
 
     this._setHardfork = opts.setHardfork ?? false
-
-    this._emit = async (topic: string, data: any): Promise<void> => {
-      return new Promise((resolve) => this.events.emit(topic as keyof VMEvents, data, resolve))
-    }
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
