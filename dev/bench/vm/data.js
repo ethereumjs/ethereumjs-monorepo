@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715101546302,
+  "lastUpdate": 1715103320041,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e8f6ac5465cd74b409488f6c5c4036fd76123b25",
-          "message": "common: configure kaustinen6 network (#3355)\n\n* fix the history length and charge blockhash gas\r\n\r\n* fix the historial window typo\r\n\r\n* fix the code offset outof bounds error and failing post state verification because of missing cache persist\r\n\r\n* allow the kautistine spec to handle missed slots\r\n\r\n* overhaul and fix/remove the 2929 charges when cold access charges have been charged",
-          "timestamp": "2024-04-16T10:28:12-04:00",
-          "tree_id": "7e5399fe6502c9fc181c44d60ef4cf4c04c79097",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e8f6ac5465cd74b409488f6c5c4036fd76123b25"
-        },
-        "date": 1713277991823,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41744,
-            "range": "±1.93%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39315,
-            "range": "±3.75%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40242,
-            "range": "±1.55%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39038,
-            "range": "±1.88%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34076,
-            "range": "±8.45%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.56%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "willcory10@gmail.com",
+            "name": "Will Cory",
+            "username": "roninjin10"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a03ce4b53c33a8a07e7071fcc03bc367fb3dec4d",
+          "message": "chore: Small cleanup to vm._emit (#3396)\n\n- Move it to an instance method. There shouldn't be any issues with it being an instance method since the underlying event emitter is still per object.\r\n- Make it more typesafe by taking keyof Events rather than string\r\n\r\nSyntax error\r\n\r\nfix broken build\r\n\r\nrun linter\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-05-07T13:30:22-04:00",
+          "tree_id": "295a9b646fb4e1b4f6aa2704ef25520d5399a512",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a03ce4b53c33a8a07e7071fcc03bc367fb3dec4d"
+        },
+        "date": 1715103318640,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42382,
+            "range": "±2.59%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41517,
+            "range": "±1.23%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41709,
+            "range": "±1.32%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37830,
+            "range": "±5.92%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 39792,
+            "range": "±1.64%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
           }
         ]
       }
