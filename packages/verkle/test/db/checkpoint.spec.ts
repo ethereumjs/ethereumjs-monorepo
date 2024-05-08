@@ -1,6 +1,7 @@
-import { assert, beforeAll, describe, it } from 'vitest'
-import { CheckpointDB } from '../../src/db/checkpoint.js'
 import { MapDB, hexToBytes } from '@ethereumjs/util'
+import { assert, beforeAll, describe, it } from 'vitest'
+
+import { CheckpointDB } from '../../src/db/checkpoint.js'
 
 describe('CheckpointDB', () => {
   let db: CheckpointDB
@@ -21,7 +22,7 @@ describe('CheckpointDB', () => {
 
   it('should commit the latest checkpoint', async () => {
     // Add some data to the latest checkpoint
-    db.put(hexToBytes('0x123'), hexToBytes('0x456'))
+    await db.put(hexToBytes('0x123'), hexToBytes('0x456'))
 
     await db.commit()
 
