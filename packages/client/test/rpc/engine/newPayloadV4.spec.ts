@@ -28,7 +28,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
       withdrawals: [],
       blobGasUsed: '0x0',
       excessBlobGas: '0x0',
-      depositReceipts: [],
+      depositRequests: [],
       withdrawalRequests: [],
       blockHash: '0x87994ea69d14924d908ed979bf2aadd91f0954f95792c3fcf442d2513af957c4',
       stateRoot: '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
