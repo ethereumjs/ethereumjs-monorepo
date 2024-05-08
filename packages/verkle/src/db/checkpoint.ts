@@ -109,6 +109,7 @@ export class CheckpointDB implements DB {
             opts: { keyEncoding: KeyEncoding.Bytes, valueEncoding: ValueEncoding.Bytes },
           })
         }
+        this._stats.db.writes += 1
       }
       await this.batch(batchOp)
     } else {
