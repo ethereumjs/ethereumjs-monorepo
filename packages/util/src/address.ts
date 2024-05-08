@@ -1,3 +1,5 @@
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+
 import {
   generateAddress,
   generateAddress2,
@@ -129,7 +131,20 @@ export class Address {
    * Returns hex encoding of address.
    */
   toString(): PrefixedHexString {
-    return bytesToHex(this.bytes)
+    const unprefixedString = bytesToHex(this.bytes).substring(2).split('')
+
+    const hash = keccak256(this.bytes)
+
+    for (let i = 0; i < 40; i += 2) {
+      if (hash[i >> 1] >> 4 >= 8 && unprefixedString[i]) {
+        unprefixedString[i] = unprefixedString[i].toUpperCase()
+      }
+      if ((hash[i >> 1] & 0x0f) >= 8 && unprefixedString[i + 1]) {
+        unprefixedString[i + 1] = unprefixedString[i + 1].toUpperCase()
+      }
+    }
+
+    return `0x${unprefixedString.join('')}`
   }
 
   /**

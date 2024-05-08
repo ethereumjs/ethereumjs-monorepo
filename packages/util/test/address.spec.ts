@@ -40,7 +40,7 @@ describe('Address', () => {
     const pubKey = hexToBytes(
       '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     )
-    const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
+    const str = '0x2f015c60E0BE116b1f0cd534704Db9c92118FB6a'
     const addr = Address.fromPublicKey(pubKey)
     assert.equal(addr.toString(), str)
   })
@@ -55,7 +55,7 @@ describe('Address', () => {
   it('should instantiate from private key', () => {
     // prettier-ignore
     const privateKey = Uint8Array.from([234, 84, 189, 197, 45, 22, 63, 136, 201, 58, 176, 97, 87, 130, 207, 113, 138, 46, 251, 158, 81, 167, 152, 154, 171, 27, 8, 6, 126, 156, 28, 95])
-    const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
+    const str = '0x2f015c60E0BE116b1f0cd534704Db9c92118FB6a'
     const addr = Address.fromPrivateKey(privateKey)
     assert.equal(addr.toString(), str)
   })
@@ -63,10 +63,10 @@ describe('Address', () => {
   it('should generate address for created contract', () => {
     const from = Address.fromString('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39')
     const addr = Address.generate(from, BigInt(14))
-    assert.equal(addr.toString(), '0xd658a4b8247c14868f3c512fa5cbb6e458e4a989')
+    assert.equal(addr.toString(), '0xd658a4b8247C14868F3c512fa5cBB6e458e4A989')
 
     const addr2 = Address.generate(from, BigInt(0))
-    assert.equal(addr2.toString(), '0xbfa69ba91385206bfdd2d8b9c1a5d6c10097a85b')
+    assert.equal(addr2.toString(), '0xbFA69bA91385206BFdD2D8B9c1a5d6C10097a85b')
   })
 
   it('should provide correct precompile check', () => {
@@ -94,10 +94,11 @@ describe('Address', () => {
 
   it('should provide a Uint8Array that does not mutate the original address', () => {
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
+    const checksumStr = '0x2f015c60E0BE116b1f0cd534704Db9c92118FB6a'
     const address = Address.fromString(str)
     const addressBytes = address.toBytes()
     addressBytes.fill(0)
-    assert.equal(address.toString(), str)
+    assert.equal(address.toString(), checksumStr)
   })
 
   it('should compare equality properly', () => {

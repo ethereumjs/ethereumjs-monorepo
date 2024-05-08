@@ -13,7 +13,7 @@
     "salt": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "initCode": "0x00",
     "gas": "32006",
-    "result": "0xb928f69bb1d91cd65274e3c79d8986362984fda3"
+    "result": "0xB928F69Bb1D91cD65274e3C79D8986362984FdA3"
   },
   {
     "comment": "Example 2",
@@ -21,7 +21,7 @@
     "salt": "0x000000000000000000000000feed000000000000000000000000000000000000",
     "initCode": "0x00",
     "gas": "32006",
-    "result": "0xd04116cdd17bebe565eb2422f2497e06cc1c9833"
+    "result": "0xD04116CdD17BEBE565EB2422F2497E06cc1c9833"
   },
   {
     "comment": "Example 3",
@@ -29,7 +29,7 @@
     "salt": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "initCode": "0xdeadbeef",
     "gas": "32006",
-    "result": "0x70f2b2914a2a4b783faefb75f459a580616fcb5e"
+    "result": "0x70f2B2914A2a4b783FAEfb75f459a580616fCb5e"
   },
   {
     "comment": "Example 4",
@@ -37,7 +37,7 @@
     "salt": "0x00000000000000000000000000000000000000000000000000000000cafebabe",
     "initCode": "0xdeadbeef",
     "gas": "32006",
-    "result": "0x60f3f640a8508fc6a86d45df051962668e1e8ac7"
+    "result": "0x60f3F640a8508Fc6a86D45dF051962668e1e8ac7"
   },
   {
     "comment": "Example 5",
@@ -45,7 +45,7 @@
     "salt": "0x00000000000000000000000000000000000000000000000000000000cafebabe",
     "initCode": "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
     "gas": "32012",
-    "result": "0x1d8bfdc5d46dc4f61d6b6115972536ebe6a8854c"
+    "result": "0x1D8BfDC5d46Dc4f61d6b6115972536ebe6A8854c"
   },
   {
     "comment": "Example 6",
@@ -53,6 +53,6 @@
     "salt": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "initCode": "0x",
     "gas": "32000",
-    "result": "0xe33c0c7f7df4809055c3eba6c09cfe4baf1bd9e0"
+    "result": "0xE33c0c7F7Df4809055C3Eba6c09cfe4baF1BD9E0"
   }
 ]
