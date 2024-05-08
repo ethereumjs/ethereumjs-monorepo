@@ -102,8 +102,8 @@ describe(`${method}: call with executionPayloadV4`, () => {
     res = await rpc.request('engine_getPayloadV4', [payloadId])
     const { executionPayload } = res.result
     assert.ok(
-      executionPayload.depositRequests !== undefined,
-      'depositRequests field should be received'
+      executionPayload.depositRequests?.length === 1,
+      'depositRequests should have 1 deposit request'
     )
     assert.ok(
       executionPayload.withdrawalRequests !== undefined,
