@@ -80,7 +80,6 @@ describe(`${method}: call with executionPayloadV4`, () => {
     }
 
     res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
-    // TODO: start the genesis state with deployed 7002 contract
     assert.equal(res.result.status, 'VALID')
 
     res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
