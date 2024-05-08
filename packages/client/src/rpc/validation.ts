@@ -428,7 +428,7 @@ export const validators = {
     }
   },
 
-  get depositReceipt() {
+  get depositRequest() {
     return (
       requiredFields: string[] = ['pubkey', 'withdrawalCredentials', 'amount', 'signature', 'index']
     ) => {
