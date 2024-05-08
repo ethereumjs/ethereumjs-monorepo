@@ -2,7 +2,7 @@ import { UNKNOWN_PAYLOAD } from '../../error-code.js'
 
 import type { Skeleton } from '../../../service/index.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
-import type { DepositReceiptV1, PrefixedHexString, WithdrawalRequestV1 } from '@ethereumjs/util'
+import type { DepositRequestV1, PrefixedHexString, WithdrawalRequestV1 } from '@ethereumjs/util'
 
 export enum Status {
   ACCEPTED = 'ACCEPTED',
@@ -29,7 +29,7 @@ export type ExecutionPayloadV2 = ExecutionPayloadV1 & { withdrawals: WithdrawalV
 // parentBeaconBlockRoot comes separate in new payloads and needs to be added to payload data
 export type ExecutionPayloadV3 = ExecutionPayloadV2 & { excessBlobGas: Uint64; blobGasUsed: Uint64 }
 export type ExecutionPayloadV4 = ExecutionPayloadV3 & {
-  depositReceipts: DepositReceiptV1[]
+  depositRequests: DepositRequestV1[]
   withdrawalRequests: WithdrawalRequestV1[]
 }
 
