@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715190617520,
+  "lastUpdate": 1715192295433,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f3cbb2e015da98e9548010a0ac3049674578e8bd",
-          "message": "monorepo: PrefixedHexString related type fixes (#3357)\n\n* vm: fix eip3540 tests\r\n\r\n* util: improve bytes util typing and natspec\r\n\r\n* vm: fix some tests\r\n\r\n* monorepo: improve and fix some msc types\r\n\r\n* client: fix type issues in eth rpc module\r\n\r\n* block: remove unnecessary comment\r\n\r\n* client: fixes related to PrefixedHexString type\r\n\r\n* evm: PrefixedHexString adjustments\r\n\r\n* vm: preimages type\r\n\r\n* util: isNestedUint8Array typeguard\r\n\r\n* client: fix type\r\n\r\n* util: fix type issues in bytes\r\n\r\n* monorepo: more type improvements\r\n\r\n* monorepo: more type fixes\r\n\r\n* monorepo: address outstanding type issues\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2024-04-22T10:36:32+02:00",
-          "tree_id": "6134fb4be0e63745335f5cef446190256ae2fdcf",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f3cbb2e015da98e9548010a0ac3049674578e8bd"
-        },
-        "date": 1713775149328,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41778,
-            "range": "±2.70%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41159,
-            "range": "±1.35%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40814,
-            "range": "±1.50%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36935,
-            "range": "±6.09%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38955,
-            "range": "±1.73%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 38735,
             "range": "±1.79%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0e06ddf085be343853dfd3f42630fafb88f48ca1",
+          "message": "Clean up access to deposit address in `common` (#3411)\n\n* add test for custom deposit address\n\n* Clean up deposit contract address access\n\n* Merge remote-tracking branch 'origin/master' into add-depositContractAddress-test\n\n* Merge remote-tracking branch 'origin/master' into add-depositContractAddress-test",
+          "timestamp": "2024-05-08T14:13:19-04:00",
+          "tree_id": "4a1b562c9686acc2f4bd4078574acb4d3bf57383",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0e06ddf085be343853dfd3f42630fafb88f48ca1"
+        },
+        "date": 1715192294838,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42194,
+            "range": "±2.05%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39737,
+            "range": "±4.08%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40624,
+            "range": "±1.45%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39908,
+            "range": "±1.67%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38806,
+            "range": "±1.87%",
             "unit": "ops/sec",
             "extra": "86 samples"
           }
