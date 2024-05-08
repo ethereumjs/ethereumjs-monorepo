@@ -149,7 +149,7 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
 
   // requests
   if (payload.deposit_receipts !== undefined && payload.deposit_receipts !== null) {
-    executionPayload.depositReceipts = payload.deposit_receipts.map((breq) => ({
+    executionPayload.depositRequests = payload.deposit_receipts.map((breq) => ({
       pubkey: breq.pubkey,
       withdrawalCredentials: breq.withdrawal_credentials,
       amount: breq.amount,

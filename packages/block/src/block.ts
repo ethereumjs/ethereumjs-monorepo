@@ -423,7 +423,7 @@ export class Block {
       transactions,
       withdrawals: withdrawalsData,
       requestsRoot,
-      depositReceipts,
+      depositRequests,
       withdrawalRequests,
       executionWitness,
     } = payload
@@ -464,13 +464,13 @@ export class Block {
       requestsRoot: reqRoot,
     }
 
-    const hasDepositRequests = depositReceipts !== undefined && depositReceipts !== null
+    const hasDepositRequests = depositRequests !== undefined && depositRequests !== null
     const hasWithdrawalRequests = withdrawalRequests !== undefined && withdrawalRequests !== null
     const requests =
       hasDepositRequests || hasWithdrawalRequests ? ([] as CLRequest<CLRequestType>[]) : undefined
 
-    if (depositReceipts !== undefined && depositReceipts !== null) {
-      for (const dJson of depositReceipts) {
+    if (depositRequests !== undefined && depositRequests !== null) {
+      for (const dJson of depositRequests) {
         requests!.push(DepositRequest.fromJSON(dJson))
       }
     }
@@ -1001,7 +1001,7 @@ export class Block {
       executionWitness: this.executionWitness,
 
       // lets add the  request fields first and then iterate over requests to fill them up
-      depositReceipts: this.common.isActivatedEIP(6110) ? [] : undefined,
+      depositRequests: this.common.isActivatedEIP(6110) ? [] : undefined,
       withdrawalRequests: this.common.isActivatedEIP(7002) ? [] : undefined,
     }
 
@@ -1009,7 +1009,7 @@ export class Block {
       for (const request of this.requests) {
         switch (request.type) {
           case CLRequestType.Deposit:
-            executionPayload.depositReceipts!.push((request as DepositRequest).toJSON())
+            executionPayload.depositRequests!.push((request as DepositRequest).toJSON())
             continue
 
           case CLRequestType.Withdrawal:
@@ -1018,7 +1018,7 @@ export class Block {
         }
       }
     } else if (
-      executionPayload.depositReceipts !== undefined ||
+      executionPayload.depositRequests !== undefined ||
       executionPayload.withdrawalRequests !== undefined
     ) {
       throw Error(`Undefined requests for activated deposit or withdrawal requests`)

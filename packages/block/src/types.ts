@@ -7,7 +7,7 @@ import type {
   BytesLike,
   CLRequest,
   CLRequestType,
-  DepositReceiptV1,
+  DepositRequestV1,
   JsonRpcWithdrawal,
   PrefixedHexString,
   RequestBytes,
@@ -306,6 +306,6 @@ export type ExecutionPayload = {
   // VerkleExecutionWitness is already a hex serialized object
   executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
   requestsRoot?: PrefixedHexString | string | null // DATA, 32 bytes, null implies EIP 7685 not active yet
-  depositReceipts?: DepositReceiptV1[] // Array of 6110 deposit requests
+  depositRequests?: DepositRequestV1[] // Array of 6110 deposit requests
   withdrawalRequests?: WithdrawalRequestV1[] // Array of 7002 withdrawal requests
 }
