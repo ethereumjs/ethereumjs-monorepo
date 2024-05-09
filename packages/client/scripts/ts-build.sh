@@ -1,6 +1,7 @@
 #!/bin/sh
-
 set -e
+# Purposefully not using `set -o xtrace`, for friendlier output.
+
 
 # Presentational variables and functions declaration.
 
@@ -27,9 +28,28 @@ dim() {
     printf "${DIM}$1${NOCOLOR}"
 }
 
+
+# Build function declaration.
+build_esm() {
+    if [ -f ./tsconfig.prod.esm.json ];
+    then
+        blue "[ESM build] "
+        echo "Using tsconfig.prod.esm.json"
+
+        echo "> tsc --build ./tsconfig.prod.esm.json"
+        printf "${BLUE}[ESM build] Working... "
+
+        tsc --build ./tsconfig.prod.esm.json
+        green "DONE"
+    else
+        echo "Skipping ESM build (no config available)."
+    fi
+    echo "\n";
+}
+
 post_build_fixes() {
     blue "[Post Build Fixes]"
-    if [ -f ./dist/esm/bin/cli.js ];
+    if [ -f ./dist/esm/index.js ];
     then
         echo "Adding ./dist/esm/package.json"
         rm -f ./dist/esm/package.json
@@ -44,4 +64,8 @@ EOT
     echo "\n";
 }
 
+
+# Begin build process.
+build_esm
 post_build_fixes
+
