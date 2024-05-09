@@ -285,6 +285,13 @@ export class Engine {
       () => this.connectionManager.updateStatus()
     )
 
+    this.getPayloadV4 = cmMiddleware(
+      middleware(callWithStackTrace(this.getPayloadV4.bind(this), this._rpcDebug), 1, [
+        [validators.bytes8],
+      ]),
+      () => this.connectionManager.updateStatus()
+    )
+
     /**
      * exchangeTransitionConfiguration
      */
