@@ -234,6 +234,7 @@ export class CheckpointDB implements DB {
         } else if (op.type === 'del') {
           await this.del(op.key)
         }
+        this._stats.db.writes += 1
       }
     } else {
       const convertedOps = opStack.map((op) => {
@@ -248,6 +249,7 @@ export class CheckpointDB implements DB {
           type: op.type,
           opts: { ...op.opts, ...{ valueEncoding: this.valueEncoding } },
         }
+        this._stats.db.writes += 1
         if (op.type === 'put' && this.valueEncoding === ValueEncoding.String) {
           convertedOp.value = bytesToUnprefixedHex(<Uint8Array>convertedOp.value)
         }

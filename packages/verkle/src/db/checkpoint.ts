@@ -109,7 +109,6 @@ export class CheckpointDB implements DB {
             opts: { keyEncoding: KeyEncoding.Bytes, valueEncoding: ValueEncoding.Bytes },
           })
         }
-        this._stats.db.writes += 1
       }
       await this.batch(batchOp)
     } else {
@@ -223,6 +222,7 @@ export class CheckpointDB implements DB {
         } else if (op.type === 'del') {
           await this.del(op.key)
         }
+        this._stats.db.writes += 1
       }
     } else {
       const convertedOps = opStack.map((op) => {
@@ -232,6 +232,7 @@ export class CheckpointDB implements DB {
           type: op.type,
           opts: op.opts,
         }
+        this._stats.db.writes += 1
         if (op.type === 'put') return convertedOp as PutBatch<Uint8Array, Uint8Array>
         else return convertedOp as DelBatch<Uint8Array>
       })
