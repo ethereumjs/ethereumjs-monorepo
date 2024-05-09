@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715192295433,
+  "lastUpdate": 1715274470241,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "02e8054ed57cbf4d3378d27d3e32c512f5375d5f",
-          "message": "Client: Increase timeout for beaconsync integration tests (#3362)",
-          "timestamp": "2024-04-22T14:24:53+02:00",
-          "tree_id": "98a1e44d1ad38a34de398e8ef9850326a221c8ef",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/02e8054ed57cbf4d3378d27d3e32c512f5375d5f"
-        },
-        "date": 1713788844060,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41944,
-            "range": "±3.10%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41030,
-            "range": "±1.35%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40818,
-            "range": "±1.50%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37324,
-            "range": "±5.89%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38708,
-            "range": "±1.80%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.87%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3dd3bec3562b34c3dda08842f2c33f9635a71690",
+          "message": "vm: fix the gathering of stateroot only after requests have been accumulated (#3413)",
+          "timestamp": "2024-05-09T22:35:09+05:30",
+          "tree_id": "11552511433451e218ce11593f12644f48b12a03",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3dd3bec3562b34c3dda08842f2c33f9635a71690"
+        },
+        "date": 1715274469567,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42124,
+            "range": "±2.70%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41598,
+            "range": "±1.30%",
+            "unit": "ops/sec",
+            "extra": "92 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41494,
+            "range": "±1.40%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 40412,
+            "range": "±1.52%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36038,
+            "range": "±5.47%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
