@@ -27,9 +27,8 @@ describe('DB tests', () => {
   })
 
   it('should commit the latest checkpoint', async () => {
-    db.checkpoint(new Uint8Array())
-
     // Add some data to the latest checkpoint
+    db.checkpoint(new Uint8Array())
     await db.put(hexToBytes('0x123'), hexToBytes('0x456'))
 
     await db.commit()

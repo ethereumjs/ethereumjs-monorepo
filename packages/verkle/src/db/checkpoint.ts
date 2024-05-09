@@ -231,6 +231,7 @@ export class CheckpointDB implements DB {
           type: op.type,
           opts: op.opts,
         }
+        this._stats.db.writes += 1
         if (op.type === 'put') return convertedOp as PutBatch<Uint8Array, Uint8Array>
         else return convertedOp as DelBatch<Uint8Array>
       })
