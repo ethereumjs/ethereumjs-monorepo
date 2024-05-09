@@ -126,7 +126,12 @@ export class EthereumClient {
     }
     const name = this.config.chainCommon.chainName()
     const chainId = this.config.chainCommon.chainId()
-    const packageJson = JSON.parse(readFileSync('package.json', 'utf-8'))
+    const packageJson = JSON.parse(
+      readFileSync(
+        '/' + import.meta.url.split('client')[0].split('file:///')[1] + 'client/package.json',
+        'utf-8'
+      )
+    )
     this.config.logger.info(
       `Initializing Ethereumjs client version=v${packageJson.version} network=${name} chainId=${chainId}`
     )
