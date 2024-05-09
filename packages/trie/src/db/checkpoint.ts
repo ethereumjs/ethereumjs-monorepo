@@ -234,7 +234,6 @@ export class CheckpointDB implements DB {
         } else if (op.type === 'del') {
           await this.del(op.key)
         }
-        this._stats.db.writes += 1
       }
     } else {
       const convertedOps = opStack.map((op) => {
