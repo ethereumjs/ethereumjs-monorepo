@@ -46,7 +46,7 @@ export type BeaconPayloadJson = {
   excess_blob_gas?: PrefixedHexString
   parent_beacon_block_root?: PrefixedHexString
   // requests data
-  deposit_receipts?: BeaconDepositRequest[]
+  deposit_requests?: BeaconDepositRequest[]
   withdrawal_requests?: BeaconWithdrawalRequest[]
 
   // the casing of VerkleExecutionWitness remains same camel case for now
@@ -148,8 +148,8 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
   }
 
   // requests
-  if (payload.deposit_receipts !== undefined && payload.deposit_receipts !== null) {
-    executionPayload.depositReceipts = payload.deposit_receipts.map((breq) => ({
+  if (payload.deposit_requests !== undefined && payload.deposit_requests !== null) {
+    executionPayload.depositRequests = payload.deposit_requests.map((breq) => ({
       pubkey: breq.pubkey,
       withdrawalCredentials: breq.withdrawal_credentials,
       amount: breq.amount,

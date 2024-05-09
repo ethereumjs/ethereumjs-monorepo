@@ -422,8 +422,7 @@ export class Block {
       feeRecipient: coinbase,
       transactions,
       withdrawals: withdrawalsData,
-      requestsRoot,
-      depositReceipts,
+      depositRequests,
       withdrawalRequests,
       executionWitness,
     } = payload
@@ -444,7 +443,6 @@ export class Block {
       }
     }
 
-    const reqRoot = requestsRoot === null ? undefined : requestsRoot
     const transactionsTrie = await Block.genTransactionsTrieRoot(
       txs,
       new Trie({ common: opts?.common })
@@ -453,6 +451,27 @@ export class Block {
     const withdrawalsRoot = withdrawals
       ? await Block.genWithdrawalsTrieRoot(withdrawals, new Trie({ common: opts?.common }))
       : undefined
+
+    const hasDepositRequests = depositRequests !== undefined && depositRequests !== null
+    const hasWithdrawalRequests = withdrawalRequests !== undefined && withdrawalRequests !== null
+    const requests =
+      hasDepositRequests || hasWithdrawalRequests ? ([] as CLRequest<CLRequestType>[]) : undefined
+
+    if (depositRequests !== undefined && depositRequests !== null) {
+      for (const dJson of depositRequests) {
+        requests!.push(DepositRequest.fromJSON(dJson))
+      }
+    }
+    if (withdrawalRequests !== undefined && withdrawalRequests !== null) {
+      for (const wJson of withdrawalRequests) {
+        requests!.push(WithdrawalRequest.fromJSON(wJson))
+      }
+    }
+
+    const requestsRoot = requests
+      ? await Block.genRequestsTrieRoot(requests, new Trie({ common: opts?.common }))
+      : undefined
+
     const header: HeaderData = {
       ...payload,
       number,
@@ -461,23 +480,7 @@ export class Block {
       withdrawalsRoot,
       mixHash,
       coinbase,
-      requestsRoot: reqRoot,
-    }
-
-    const hasDepositRequests = depositReceipts !== undefined && depositReceipts !== null
-    const hasWithdrawalRequests = withdrawalRequests !== undefined && withdrawalRequests !== null
-    const requests =
-      hasDepositRequests || hasWithdrawalRequests ? ([] as CLRequest<CLRequestType>[]) : undefined
-
-    if (depositReceipts !== undefined && depositReceipts !== null) {
-      for (const dJson of depositReceipts) {
-        requests!.push(DepositRequest.fromJSON(dJson))
-      }
-    }
-    if (withdrawalRequests !== undefined && withdrawalRequests !== null) {
-      for (const wJson of withdrawalRequests) {
-        requests!.push(WithdrawalRequest.fromJSON(wJson))
-      }
+      requestsRoot,
     }
 
     // we are not setting setHardfork as common is already set to the correct hf
@@ -1001,7 +1004,7 @@ export class Block {
       executionWitness: this.executionWitness,
 
       // lets add the  request fields first and then iterate over requests to fill them up
-      depositReceipts: this.common.isActivatedEIP(6110) ? [] : undefined,
+      depositRequests: this.common.isActivatedEIP(6110) ? [] : undefined,
       withdrawalRequests: this.common.isActivatedEIP(7002) ? [] : undefined,
     }
 
@@ -1009,7 +1012,7 @@ export class Block {
       for (const request of this.requests) {
         switch (request.type) {
           case CLRequestType.Deposit:
-            executionPayload.depositReceipts!.push((request as DepositRequest).toJSON())
+            executionPayload.depositRequests!.push((request as DepositRequest).toJSON())
             continue
 
           case CLRequestType.Withdrawal:
@@ -1018,7 +1021,7 @@ export class Block {
         }
       }
     } else if (
-      executionPayload.depositReceipts !== undefined ||
+      executionPayload.depositRequests !== undefined ||
       executionPayload.withdrawalRequests !== undefined
     ) {
       throw Error(`Undefined requests for activated deposit or withdrawal requests`)
