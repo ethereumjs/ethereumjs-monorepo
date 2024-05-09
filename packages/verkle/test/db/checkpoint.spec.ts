@@ -1,12 +1,18 @@
-import { MapDB, hexToBytes } from '@ethereumjs/util'
-import { assert, beforeAll, describe, it } from 'vitest'
+import { MapDB, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { assert, beforeEach, describe, it } from 'vitest'
 
-import { CheckpointDB } from '../../src/db/checkpoint.js'
+import { CheckpointDB } from '../../src/index.js'
 
-describe('CheckpointDB', () => {
+import type { BatchDBOp } from '@ethereumjs/util'
+
+describe('DB tests', () => {
   let db: CheckpointDB
+  const k = utf8ToBytes('k1')
+  const v = utf8ToBytes('v1')
+  const v2 = utf8ToBytes('v2')
+  const v3 = utf8ToBytes('v3')
 
-  beforeAll(() => {
+  beforeEach(() => {
     // Set up a new CheckpointDB instance for each test
     db = new CheckpointDB({ db: new MapDB() })
   })
@@ -22,6 +28,7 @@ describe('CheckpointDB', () => {
 
   it('should commit the latest checkpoint', async () => {
     // Add some data to the latest checkpoint
+    db.checkpoint(new Uint8Array())
     await db.put(hexToBytes('0x123'), hexToBytes('0x456'))
 
     await db.commit()
@@ -56,7 +63,7 @@ describe('CheckpointDB', () => {
     const actualValue = await db.get(key1)
 
     // Ensure that the value is correct
-    assert.equal(actualValue, val1)
+    assert.deepEqual(actualValue, val1)
   })
 
   it('should put a value', async () => {
@@ -70,7 +77,7 @@ describe('CheckpointDB', () => {
     const actualValue = await db.get(key1)
 
     // Ensure that the value is correct
-    assert.equal(actualValue, val1)
+    assert.deepEqual(actualValue, val1)
   })
 
   it('should delete a value', async () => {
@@ -86,5 +93,60 @@ describe('CheckpointDB', () => {
     // Ensure that the value is deleted
     const actualValue = await db.get(key1)
     assert(actualValue === undefined, 'deleted value should be undefined')
+  })
+
+  it('Checkpointing: revert -> put (add)', async () => {
+    db.checkpoint(hexToBytes('0x01'))
+    await db.put(k, v)
+    assert.deepEqual(await db.get(k), v, 'before revert: v1')
+    await db.revert()
+    assert.deepEqual(await db.get(k), undefined, 'after revert: null')
+  })
+
+  it('Checkpointing: revert -> put (update)', async () => {
+    await db.put(k, v)
+    assert.deepEqual(await db.get(k), v, 'before CP: v1')
+    db.checkpoint(hexToBytes('0x01'))
+    await db.put(k, v2)
+    await db.put(k, v3)
+    await db.revert()
+    assert.deepEqual(await db.get(k), v, 'after revert: v1')
+  })
+
+  it('Checkpointing: revert -> put (update) batched', async () => {
+    await db.put(k, v)
+    assert.deepEqual(await db.get(k), v, 'before CP: v1')
+    db.checkpoint(hexToBytes('0x01'))
+    const ops = [
+      { type: 'put', key: k, value: v2 },
+      { type: 'put', key: k, value: v3 },
+    ] as BatchDBOp[]
+    await db.batch(ops)
+    await db.revert()
+    assert.deepEqual(await db.get(k), v, 'after revert: v1')
+  })
+
+  it('Checkpointing: revert -> del', async () => {
+    await db.put(k, v)
+    assert.deepEqual(await db.get(k), v, 'before CP: v1')
+    db.checkpoint(hexToBytes('0x01'))
+    await db.del(k)
+    assert.deepEqual(await db.get(k), undefined, 'before revert: undefined')
+    await db.revert()
+    assert.deepEqual(await db.get(k), v, 'after revert: v1')
+  })
+
+  it('Checkpointing: nested checkpoints -> commit -> revert', async () => {
+    await db.put(k, v)
+
+    assert.deepEqual(await db.get(k), v, 'before CP: v1')
+    db.checkpoint(hexToBytes('0x01'))
+    await db.put(k, v2)
+    db.checkpoint(hexToBytes('0x02'))
+    await db.put(k, v3)
+    await db.commit()
+    assert.deepEqual(await db.get(k), v3, 'after commit (second CP): v3')
+    await db.revert()
+    assert.deepEqual(await db.get(k), v, 'after revert (first CP): v1')
   })
 })

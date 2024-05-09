@@ -1,18 +1,102 @@
 import { MapDB, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import { assert, beforeEach, describe, it } from 'vitest'
 
 import { CheckpointDB } from '../../src/index.js'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 
 describe('DB tests', () => {
+  let db: CheckpointDB
   const k = utf8ToBytes('k1')
   const v = utf8ToBytes('v1')
   const v2 = utf8ToBytes('v2')
   const v3 = utf8ToBytes('v3')
 
+  beforeEach(() => {
+    // Set up a new CheckpointDB instance for each test
+    db = new CheckpointDB({ db: new MapDB() })
+  })
+
+  it('should initialize with empty checkpoints', () => {
+    assert(db.checkpoints.length === 0)
+  })
+
+  it('should add a checkpoint', () => {
+    db.checkpoint(new Uint8Array())
+    assert(db.checkpoints.length === 1)
+  })
+
+  it('should commit the latest checkpoint', async () => {
+    db.checkpoint(new Uint8Array())
+
+    // Add some data to the latest checkpoint
+    await db.put(hexToBytes('0x123'), hexToBytes('0x456'))
+
+    await db.commit()
+
+    // Ensure that the checkpoint is removed and the data is committed
+    assert(db.checkpoints.length === 0)
+    assert(db._stats.db.writes === 1)
+  })
+
+  it('should revert the latest checkpoint', async () => {
+    const expectedRoot = new Uint8Array()
+
+    // Add a checkpoint
+    db.checkpoint(expectedRoot)
+
+    // Revert the checkpoint
+    const actualRoot = await db.revert()
+
+    // Ensure that the latest checkpoint is removed and the root is returned
+    assert(db.checkpoints.length === 0)
+    assert.equal(actualRoot, expectedRoot, 'roots should match')
+  })
+
+  it('should get a value', async () => {
+    const key1 = hexToBytes('0x123')
+    const val1 = hexToBytes('0x456')
+
+    // Add some data
+    await db.put(key1, val1)
+
+    // Get the value
+    const actualValue = await db.get(key1)
+
+    // Ensure that the value is correct
+    assert.deepEqual(actualValue, val1)
+  })
+
+  it('should put a value', async () => {
+    const key1 = hexToBytes('0x123')
+    const val1 = hexToBytes('0x456')
+
+    // Put a value
+    await db.put(key1, val1)
+
+    // Get the value
+    const actualValue = await db.get(key1)
+
+    // Ensure that the value is correct
+    assert.deepEqual(actualValue, val1)
+  })
+
+  it('should delete a value', async () => {
+    const key1 = hexToBytes('0x123')
+    const val1 = hexToBytes('0x456')
+
+    // Add some data
+    await db.put(key1, val1)
+
+    // Delete the value
+    await db.del(key1)
+
+    // Ensure that the value is deleted
+    const actualValue = await db.get(key1)
+    assert(actualValue === undefined, 'deleted value should be undefined')
+  })
+
   it('Checkpointing: revert -> put (add)', async () => {
-    const db = new CheckpointDB({ db: new MapDB() })
     db.checkpoint(hexToBytes('0x01'))
     await db.put(k, v)
     assert.deepEqual(await db.get(k), v, 'before revert: v1')
@@ -21,7 +105,6 @@ describe('DB tests', () => {
   })
 
   it('Checkpointing: revert -> put (update)', async () => {
-    const db = new CheckpointDB({ db: new MapDB() })
     await db.put(k, v)
     assert.deepEqual(await db.get(k), v, 'before CP: v1')
     db.checkpoint(hexToBytes('0x01'))
@@ -32,7 +115,6 @@ describe('DB tests', () => {
   })
 
   it('Checkpointing: revert -> put (update) batched', async () => {
-    const db = new CheckpointDB({ db: new MapDB() })
     await db.put(k, v)
     assert.deepEqual(await db.get(k), v, 'before CP: v1')
     db.checkpoint(hexToBytes('0x01'))
@@ -46,7 +128,6 @@ describe('DB tests', () => {
   })
 
   it('Checkpointing: revert -> del', async () => {
-    const db = new CheckpointDB({ db: new MapDB() })
     await db.put(k, v)
     assert.deepEqual(await db.get(k), v, 'before CP: v1')
     db.checkpoint(hexToBytes('0x01'))
@@ -57,7 +138,6 @@ describe('DB tests', () => {
   })
 
   it('Checkpointing: nested checkpoints -> commit -> revert', async () => {
-    const db = new CheckpointDB({ db: new MapDB() })
     await db.put(k, v)
 
     assert.deepEqual(await db.get(k), v, 'before CP: v1')
