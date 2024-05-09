@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715274470241,
+  "lastUpdate": 1715284238120,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "46d09ca7677e51e948ec3a80c123bfff8a541202",
-          "message": "Client: New Mechanism to Keep Peer Latest Block Updated (#3354)\n\n* Client -> Peer: add lastEthStatusUpdate property to Peer, set initially on protocol binding, small local refactor\r\n\r\n* Redo handshake in client peer pool periodically, add force option to sendStatus for devp2p protocols\r\n\r\n* Some basic refinement of peer pool periodic request logic (refactor preparation)\r\n\r\n* Client: consolidate latest() method in base Synchronizer class\r\n\r\n* Client: add preparatory updatedBestHeader to Peer, refactor latest() to move from Sync -> Peer\r\n\r\n* Client: add potential best header num differentiated logic to Peer, latest() call on peers in peer pool\r\n\r\n* Client: add Fetcher hack to call peer.latest()\r\n\r\n* Various cleanups\r\n\r\n* Client: Fix lightsync.spec.ts tests\r\n\r\n* Some clean-ups\r\n\r\n* Client: Fix beaconsync.spec.ts tests\r\n\r\n* Client: Fix fullsync.spec.tst tests\r\n\r\n* Client: Fix snapsync.spec.ts tests\r\n\r\n* Client: Fix fetcher tests\r\n\r\n* Client: Fix eth syncing.spec.ts tests\r\n\r\n* Client: Fix integration tests\r\n\r\n* Client: Backup lightsync integration tests (lightsync not supported anymore)\r\n\r\n* Lightsync tests deprecation note\r\n\r\n* Make lightsync tests run (but fail)\r\n\r\n* Client: Removed doubled lightsync integration test file\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>",
-          "timestamp": "2024-04-22T14:46:01+02:00",
-          "tree_id": "5834b8dd2130f800fe6dc62764a5f498ea3abda4",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/46d09ca7677e51e948ec3a80c123bfff8a541202"
-        },
-        "date": 1713790111646,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42830,
-            "range": "±2.06%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40450,
-            "range": "±2.51%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41152,
-            "range": "±1.49%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 40123,
-            "range": "±1.81%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36208,
-            "range": "±5.72%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±5.47%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ded3c6bc1cb589c04246c787cde7cf130f913441",
+          "message": "Verkle checkpoint db tests (#3407)\n\n* Update db write stats on commits\r\n\r\n* Add unit tests for verkle checkpoint db implemenation\r\n\r\n* Fix linting issues\r\n\r\n* Update write stats in batch function of CheckpointDB implementations\r\n\r\n* Update trie and verkle CheckpointDB tests\r\n\r\n* Remove redundant stats update\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
+          "timestamp": "2024-05-09T15:47:53-04:00",
+          "tree_id": "f5d0dc5a2492b36cbc265d97d51c8671bc20d39e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ded3c6bc1cb589c04246c787cde7cf130f913441"
+        },
+        "date": 1715284237515,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41902,
+            "range": "±3.45%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41260,
+            "range": "±1.32%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41107,
+            "range": "±1.42%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38094,
+            "range": "±4.85%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38275,
+            "range": "±3.22%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
           }
         ]
       }
