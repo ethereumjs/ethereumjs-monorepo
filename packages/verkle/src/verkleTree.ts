@@ -15,7 +15,7 @@ import {
 import { WalkController, matchingBytesLength } from './util/index.js'
 
 import type { VerkleNode } from './node/types.js'
-import type { FoundNodeFunction } from './types.js'
+import type { FoundNodeFunction, VerkleCrypto } from './types.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 
 interface Path {
@@ -43,7 +43,7 @@ export class VerkleTree {
   protected _lock = new Lock()
   protected _root: Uint8Array
 
-  protected verkleCrypto: any
+  protected verkleCrypto: VerkleCrypto
   /**
    * Creates a new verkle tree.
    * @param opts Options for instantiating the verkle tree

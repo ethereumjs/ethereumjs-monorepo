@@ -1,4 +1,5 @@
-import { equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { MapDB, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { VerkleTree } from '../src/verkleTree.js'
@@ -46,8 +47,13 @@ const absentKeys = [
 ].map((key) => hexToBytes(key as PrefixedHexString))
 
 describe('Verkle tree', () => {
-  it.todo('should insert and retrieve values', async () => {
-    const tree = new VerkleTree()
+  it('should insert and retrieve values', async () => {
+    const verkleCrypto = await loadVerkleCrypto()
+    const tree = await VerkleTree.create({
+      verkleCrypto,
+    })
+    const db = new MapDB<Uint8Array, Uint8Array>()
+    tree.database(db)
     for (let i = 0; i < presentKeys.length; i++) {
       await tree.put(presentKeys[i], values[i])
     }
