@@ -19,7 +19,12 @@ export function short(bytes: Uint8Array | string): string {
 }
 
 export function getClientVersion() {
-  const packageJson = JSON.parse(readFileSync('package.json', 'utf-8'))
+  const packageJson = JSON.parse(
+    readFileSync(
+      '/' + import.meta.url.split('client')[0].split('file:///')[1] + 'client/package.json',
+      'utf-8'
+    )
+  )
   const { version } = process
   return `EthereumJS/${packageJson.version}/${platform()}/node${version.substring(1)}`
 }
