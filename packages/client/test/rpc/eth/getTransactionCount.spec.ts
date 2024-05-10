@@ -2,11 +2,10 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { LegacyTransaction, TransactionFactory } from '@ethereumjs/tx'
+import { Account, Address, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
@@ -74,15 +73,34 @@ describe(method, () => {
     assert.equal(res.result, `0x0`, 'should return 0x0 for nonexistent account')
   }, 40000)
 
-  it('call with unsupported block argument', async () => {
+  it('call with pending block argument', async () => {
     const blockchain = await Blockchain.create()
 
     const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)
+    const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const res = await rpc.request(method, ['0xccfd725760a68823ff1e062f4cc97e1360e8d997', 'pending'])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('"pending" is not yet supported'))
+    const pk = hexToBytes('0x266682876da8fd86410d001ec33c7c281515aeeb640d175693534062e2599238')
+    const address = Address.fromPrivateKey(pk)
+    await service.execution.vm.stateManager.putAccount(address, new Account())
+    const account = await service.execution.vm.stateManager.getAccount(address)
+    account!.balance = 0xffffffffffffffn
+    await service.execution.vm.stateManager.putAccount(address, account!)
+    const tx = TransactionFactory.fromTxData({
+      to: randomBytes(20),
+      value: 1,
+      maxFeePerGas: 0xffffff,
+    }).sign(pk)
+
+    // Set stubs so getTxCount won't validate txns or mess up state root
+    service.txPool['validate'] = () => Promise.resolve(undefined)
+    service.execution.vm.stateManager.setStateRoot = () => Promise.resolve(undefined)
+    service.execution.vm.shallowCopy = () => Promise.resolve(service.execution.vm)
+
+    await service.txPool.add(tx, true)
+
+    const res = await rpc.request(method, [address.toString(), 'pending'])
+    assert.equal(res.result, '0x1')
   }, 40000)
 })

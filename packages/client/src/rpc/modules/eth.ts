@@ -770,7 +770,9 @@ export class Eth {
    */
   async getTransactionCount(params: [string, string]) {
     const [addressHex, blockOpt] = params
-    const block = await getBlockByOption(blockOpt, this._chain)
+    let block
+    if (blockOpt !== 'pending') block = await getBlockByOption(blockOpt, this._chain)
+    else block = await getBlockByOption('latest', this._chain)
 
     if (this._vm === undefined) {
       throw new Error('missing vm')
@@ -784,7 +786,16 @@ export class Eth {
     if (account === undefined) {
       return '0x0'
     }
-    return bigIntToHex(account.nonce)
+
+    let pendingTxsCount = BIGINT_0
+
+    // Add pending txns to nonce if blockOpt is 'pending'
+    if (blockOpt === 'pending') {
+      pendingTxsCount = BigInt(
+        (this.service as FullEthereumService).txPool.pool.get(addressHex.slice(2))?.length ?? 0
+      )
+    }
+    return bigIntToHex(account.nonce + pendingTxsCount)
   }
 
   /**
