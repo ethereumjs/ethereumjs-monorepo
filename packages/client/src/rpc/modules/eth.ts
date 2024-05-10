@@ -1,3 +1,4 @@
+import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
@@ -28,7 +29,7 @@ import type { EthereumClient } from '../../index.js'
 import type { EthProtocol } from '../../net/protocol/index.js'
 import type { FullEthereumService, Service } from '../../service/index.js'
 import type { RpcTx } from '../types.js'
-import type { Block, JsonRpcBlock } from '@ethereumjs/block'
+import type { JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
 import type {
@@ -542,11 +543,11 @@ export class Eth {
     }
 
     if (transaction.gasPrice === undefined && transaction.maxFeePerGas === undefined) {
-      // If no gas price or maxFeePerGas provided, use current block base fee for gas estimates
+      // If no gas price or maxFeePerGas provided, set maxFeePerGas to the next base fee
       if (transaction.type !== undefined && parseInt(transaction.type) === 2) {
-        transaction.maxFeePerGas = `0x${block.header.baseFeePerGas?.toString(16)}`
+        transaction.maxFeePerGas = `0x${block.header.calcNextBaseFee()?.toString(16)}`
       } else if (block.header.baseFeePerGas !== undefined) {
-        transaction.gasPrice = `0x${block.header.baseFeePerGas?.toString(16)}`
+        transaction.gasPrice = `0x${block.header.calcNextBaseFee()?.toString(16)}`
       }
     }
 
@@ -554,6 +555,25 @@ export class Eth {
       ...transaction,
       gasLimit: transaction.gas,
     }
+
+    const blockToRunOn = Block.fromBlockData(
+      {
+        header: {
+          parentHash: block.hash(),
+          number: block.header.number + BIGINT_1,
+          timestamp: block.header.timestamp + BIGINT_1,
+          baseFeePerGas: block.common.isActivatedEIP(1559)
+            ? block.header.calcNextBaseFee()
+            : undefined,
+        },
+      },
+      { common: vm.common, setHardfork: true }
+    )
+
+    vm.common.setHardforkBy({
+      timestamp: blockToRunOn.header.timestamp,
+      blockNumber: blockToRunOn.header.number,
+    })
 
     const tx = TransactionFactory.fromTxData(txData, { common: vm.common, freeze: false })
 
@@ -563,12 +583,13 @@ export class Eth {
     tx.getSenderAddress = () => {
       return from
     }
+
     const { totalGasSpent } = await vm.runTx({
       tx,
       skipNonce: true,
       skipBalance: true,
       skipBlockGasLimitValidation: true,
-      block,
+      block: blockToRunOn,
     })
     return `0x${totalGasSpent.toString(16)}`
   }
