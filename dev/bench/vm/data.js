@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715369646393,
+  "lastUpdate": 1715378966024,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "3125eacb852a7b4775e34df5e62bbf438642fb1d",
-          "message": "Extend EIP 4844 transaction toJson data to include additional fields (#3365)\n\n* Add networkWrapperToJson with extended eip 4844 data included\r\n\r\n* Test networkWrapperToJson function\r\n\r\n* Fix linting issue\r\n\r\n* Add docstring\r\n\r\n* Update packages/tx/test/eip4844.spec.ts\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* Update packages/tx/src/eip4844Transaction.ts\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* Update packages/tx/src/eip4844Transaction.ts\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* Rename ExtendedJsonTx to JsonBlobTxNetworkWrapper\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-04-24T10:53:28-04:00",
-          "tree_id": "18fb811827beade033fb44b862f0be9f615ba07d",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3125eacb852a7b4775e34df5e62bbf438642fb1d"
-        },
-        "date": 1713970570175,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42696,
-            "range": "±2.07%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40194,
-            "range": "±3.34%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41085,
-            "range": "±1.42%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 40222,
-            "range": "±1.52%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38941,
-            "range": "±1.67%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±6.32%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "79a33166ef55a4e174a434ad3e91944278d80aaf",
+          "message": "fix estimateGas (#3416)\n\n* fix estimateGas\r\n\r\n* client: cleanup estimateGas\r\n\r\n* client: fix eth_estimateGas test and improve reliability of eth_estimateGas\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2024-05-10T18:06:51-04:00",
+          "tree_id": "08dfa6c3fe1b042e7763e07fe622c0b098a67567",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/79a33166ef55a4e174a434ad3e91944278d80aaf"
+        },
+        "date": 1715378965431,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40920,
+            "range": "±2.50%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40172,
+            "range": "±1.47%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40118,
+            "range": "±1.49%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38675,
+            "range": "±2.76%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35589,
+            "range": "±5.98%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
