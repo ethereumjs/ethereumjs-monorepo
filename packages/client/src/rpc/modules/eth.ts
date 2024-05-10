@@ -792,8 +792,7 @@ export class Eth {
     // Add pending txns to nonce if blockOpt is 'pending'
     if (blockOpt === 'pending') {
       pendingTxsCount = BigInt(
-        (this.client.service('eth') as FullEthereumService).txPool.pool.get(addressHex.slice(2))
-          ?.length ?? 0
+        (this.service as FullEthereumService).txPool.pool.get(addressHex.slice(2))?.length ?? 0
       )
     }
     return bigIntToHex(account.nonce + pendingTxsCount)
