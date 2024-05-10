@@ -536,11 +536,6 @@ export class Eth {
     const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    this.client.config.logger.error(
-      `***************** estimate gas with base fee ${transaction.gas} and block number ${
-        block.header.number
-      } and base fee ${block.header.calcNextBaseFee()} and blockOpt ${blockOpt}`
-    )
     if (transaction.gas === undefined) {
       // If no gas limit is specified use the last block gas limit as an upper bound.
       const latest = await this._chain.getCanonicalHeadHeader()
@@ -570,7 +565,7 @@ export class Eth {
       return from
     }
 
-    const goodBlock = Block.fromBlockData(
+    const blockToRunOn = Block.fromBlockData(
       {
         header: {
           parentHash: block.hash(),
@@ -586,7 +581,7 @@ export class Eth {
       skipNonce: true,
       skipBalance: true,
       skipBlockGasLimitValidation: true,
-      block: goodBlock,
+      block: blockToRunOn,
     })
     return `0x${totalGasSpent.toString(16)}`
   }
@@ -1224,7 +1219,6 @@ export class Eth {
       }
     }
 
-    this.client.config.logger.error(`--------------------------Computed base fee ${gasPrice}`)
     return bigIntToHex(gasPrice)
   }
 
