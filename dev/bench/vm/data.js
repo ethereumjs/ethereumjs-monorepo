@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715343000072,
+  "lastUpdate": 1715369646393,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "effraga@amazon.com",
-            "name": "Ev",
-            "username": "evertonfraga"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "61acbd3596b876a95e8aaf737c5bf2b214960256",
-          "message": "[devp2p] typo fix (#3364)\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-04-23T11:09:49+02:00",
-          "tree_id": "a77b6c861bbe036b617e457aeba2eef55dccbb71",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/61acbd3596b876a95e8aaf737c5bf2b214960256"
-        },
-        "date": 1713863557946,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41396,
-            "range": "±2.89%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40303,
-            "range": "±1.34%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40270,
-            "range": "±1.66%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39598,
-            "range": "±1.65%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35894,
-            "range": "±5.43%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±6.30%",
             "unit": "ops/sec",
             "extra": "76 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c6aae92177f0d22ddb415b928a17a2684953eb4a",
+          "message": "Add support for `pending` in `getTransactionCount` (#3415)\n\n* add support for pending in getTxCount\r\n\r\n* Add test for pending block arg\r\n\r\n* lint",
+          "timestamp": "2024-05-10T21:31:31+02:00",
+          "tree_id": "e01cdff562a4649e71262d9fca9c3171b5c96919",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c6aae92177f0d22ddb415b928a17a2684953eb4a"
+        },
+        "date": 1715369645539,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42199,
+            "range": "±2.47%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41506,
+            "range": "±1.41%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41669,
+            "range": "±1.56%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39460,
+            "range": "±3.50%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36869,
+            "range": "±6.32%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
