@@ -1,3 +1,4 @@
+import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
@@ -28,7 +29,7 @@ import type { EthereumClient } from '../../index.js'
 import type { EthProtocol } from '../../net/protocol/index.js'
 import type { FullEthereumService, Service } from '../../service/index.js'
 import type { RpcTx } from '../types.js'
-import type { Block, JsonRpcBlock } from '@ethereumjs/block'
+import type { JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
 import type {
@@ -535,6 +536,11 @@ export class Eth {
     const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
+    this.client.config.logger.error(
+      `***************** estimate gas with base fee ${transaction.gas} and block number ${
+        block.header.number
+      } and base fee ${block.header.calcNextBaseFee()} and blockOpt ${blockOpt}`
+    )
     if (transaction.gas === undefined) {
       // If no gas limit is specified use the last block gas limit as an upper bound.
       const latest = await this._chain.getCanonicalHeadHeader()
@@ -563,12 +569,24 @@ export class Eth {
     tx.getSenderAddress = () => {
       return from
     }
+
+    const goodBlock = Block.fromBlockData(
+      {
+        header: {
+          parentHash: block.hash(),
+          number: block.header.number + BIGINT_1,
+          timestamp: block.header.timestamp + BIGINT_1,
+          baseFeePerGas: block.header.calcNextBaseFee(),
+        },
+      },
+      { common: block.common, setHardfork: true }
+    )
     const { totalGasSpent } = await vm.runTx({
       tx,
       skipNonce: true,
       skipBalance: true,
       skipBlockGasLimitValidation: true,
-      block,
+      block: goodBlock,
     })
     return `0x${totalGasSpent.toString(16)}`
   }
@@ -1206,6 +1224,7 @@ export class Eth {
       }
     }
 
+    this.client.config.logger.error(`--------------------------Computed base fee ${gasPrice}`)
     return bigIntToHex(gasPrice)
   }
 
