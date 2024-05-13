@@ -1,5 +1,18 @@
 import { BIGINT_0, bytesToBigInt, bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
-import { getKey, getStem } from '@ethereumjs/verkle'
+import {
+  BALANCE_LEAF_KEY,
+  CODE_KECCAK_LEAF_KEY,
+  CODE_OFFSET,
+  CODE_SIZE_LEAF_KEY,
+  HEADER_STORAGE_OFFSET,
+  MAIN_STORAGE_OFFSET,
+  NONCE_LEAF_KEY,
+  VERKLE_NODE_WIDTH,
+  VERSION_LEAF_KEY,
+  getKey,
+  getStem,
+  getTreeIndicesForCodeChunk,
+} from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
@@ -11,17 +24,6 @@ const debug = createDebugLogger('statemanager:verkle:aw')
 /**
  * Tree key constants.
  */
-export const VERSION_LEAF_KEY = toBytes(0)
-export const BALANCE_LEAF_KEY = toBytes(1)
-export const NONCE_LEAF_KEY = toBytes(2)
-export const CODE_KECCAK_LEAF_KEY = toBytes(3)
-export const CODE_SIZE_LEAF_KEY = toBytes(4)
-
-export const HEADER_STORAGE_OFFSET = 64
-export const CODE_OFFSET = 128
-export const VERKLE_NODE_WIDTH = 256
-export const MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(31)
-
 const WitnessBranchReadCost = BigInt(1900)
 const WitnessChunkReadCost = BigInt(200)
 const WitnessBranchWriteCost = BigInt(3000)
@@ -351,29 +353,6 @@ export class AccessWitness {
       yield { ...accessedState, address, chunkKey }
     }
   }
-}
-
-export function getTreeIndexesForStorageSlot(storageKey: bigint): {
-  treeIndex: bigint
-  subIndex: number
-} {
-  let position: bigint
-  if (storageKey < CODE_OFFSET - HEADER_STORAGE_OFFSET) {
-    position = BigInt(HEADER_STORAGE_OFFSET) + storageKey
-  } else {
-    position = MAIN_STORAGE_OFFSET + storageKey
-  }
-
-  const treeIndex = position / BigInt(VERKLE_NODE_WIDTH)
-  const subIndex = Number(position % BigInt(VERKLE_NODE_WIDTH))
-
-  return { treeIndex, subIndex }
-}
-
-export function getTreeIndicesForCodeChunk(chunkId: number) {
-  const treeIndex = Math.floor((CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH)
-  const subIndex = (CODE_OFFSET + chunkId) % VERKLE_NODE_WIDTH
-  return { treeIndex, subIndex }
 }
 
 export function decodeAccessedState(treeIndex: number | bigint, chunkIndex: number): AccessedState {
