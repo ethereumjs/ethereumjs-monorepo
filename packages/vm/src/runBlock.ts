@@ -530,6 +530,9 @@ export async function accumulateParentBlockHash(
     }
     // eslint-disable-next-line no-empty
   } catch (_e) {}
+
+  // do cleanup if the code was not deployed
+  await this.evm.journal.cleanup()
 }
 
 export async function accumulateParentBeaconBlockRoot(
@@ -566,6 +569,9 @@ export async function accumulateParentBeaconBlockRoot(
     setLengthLeft(bigIntToBytes(timestampExtended), 32),
     root
   )
+
+  // do cleanup if the code was not deployed
+  await this.evm.journal.cleanup()
 }
 
 /**
