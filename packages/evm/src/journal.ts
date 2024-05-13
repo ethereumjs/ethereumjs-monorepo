@@ -2,7 +2,6 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   Address,
   RIPEMD160_ADDRESS_STRING,
-  bigIntToHex,
   bytesToHex,
   bytesToUnprefixedHex,
   stripHexPrefix,
