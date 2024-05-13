@@ -1,4 +1,4 @@
-import { setLengthRight, toBytes } from '@ethereumjs/util'
+import { concatBytes, setLengthRight, toBytes } from '@ethereumjs/util'
 
 import {
   BALANCE_LEAF_KEY,
@@ -13,25 +13,34 @@ import {
   leafType,
 } from '../types.js'
 
-import { getKey, getStem } from './crypto.js'
+import { getStem } from './crypto.js'
 
 import type { VerkleCrypto } from '../types.js'
 import type { Address } from '@ethereumjs/util'
 
-export const getTreeKey = (stem: Uint8Array, leaf: leafType) => {
+/**
+ * @dev Returns the tree key for a given verkle tree stem, and sub index.
+ * @dev Assumes that the verkle node width = 256
+ * @param stem The 31-bytes verkle tree stem as a Uint8Array.
+ * @param subIndex The sub index of the tree to generate the key for as a Uint8Array.
+ * @return The tree key as a Uint8Array.
+ */
+
+export const getKey = (stem: Uint8Array, leaf: leafType) => {
   switch (leaf) {
     case leafType.version:
-      return getKey(stem, VERSION_LEAF_KEY)
+      return concatBytes(stem, VERSION_LEAF_KEY)
     case leafType.balance:
-      return getKey(stem, BALANCE_LEAF_KEY)
+      return concatBytes(stem, BALANCE_LEAF_KEY)
     case leafType.nonce:
-      return getKey(stem, NONCE_LEAF_KEY)
+      return concatBytes(stem, NONCE_LEAF_KEY)
     case leafType.codeKeccak:
-      return getKey(stem, CODE_KECCAK_LEAF_KEY)
+      return concatBytes(stem, CODE_KECCAK_LEAF_KEY)
     case leafType.codeSize:
-      return getKey(stem, CODE_SIZE_LEAF_KEY)
+      return concatBytes(stem, CODE_SIZE_LEAF_KEY)
     default:
-      throw new Error('unknown leaf key')
+      // TODO: Figure out how to add generic leaf key to this
+      return concatBytes(stem, Uint8Array.from([leaf]))
   }
 }
 
@@ -64,7 +73,7 @@ export const getTreeKeyForCodeChunk = async (
   verkleCrypto: VerkleCrypto
 ) => {
   const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkId)
-  return getKey(getStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
+  return concatBytes(getStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
 }
 
 export const chunkifyCode = (code: Uint8Array) => {
@@ -84,5 +93,5 @@ export const getTreeKeyForStorageSlot = async (
 ) => {
   const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(storageKey)
 
-  return getKey(getStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
+  return concatBytes(getStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
 }
