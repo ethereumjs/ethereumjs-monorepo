@@ -712,11 +712,32 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     //   new Map() // TODO: Generate the keys_values map from the old to the updated value
     // )
 
-    // TODO: Not sure if this should return the updated state Root (current block) or the un-updated one (parent block)
-    // const verkleRoot = await this.getStateRoot()
-
     // Verify that updatedStateRoot matches the state root of the block
     // return equalsBytes(updatedStateRoot, verkleRoot)
+
+    return true
+  }
+
+  // Verifies that all of the witness pre-state are necessary by comparing them against accesses
+  verifyPreStateAccesses(): boolean {
+    // return true
+    // const accesses = this.accessWitness!.rawAccesses()
+    for (const preStateKey of Object.keys(this._preState)) {
+      let found: boolean = false
+      for (const accessedState of this.accessWitness!.accesses()) {
+        // console.log('preState key', preStateKey)
+        if (accessedState.chunkKey === preStateKey) {
+          // If the preState is found in the accessedState, we can break out of the loop
+          found = true
+          break
+        }
+      }
+
+      if (!found) {
+        debug(`PreState key ${preStateKey} not accessed in the block`)
+        return false
+      }
+    }
 
     return true
   }
@@ -724,7 +745,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   // Verifies that the witness post-state matches the computed post-state
   verifyPostState(): boolean {
     // track what all chunks were accessed so as to compare in the end if any chunks were missed
-    // in access while comparising against the provided poststate in the execution witness
+    // in access while comparing against the provided poststate in the execution witness
     const accessedChunks = new Map<string, boolean>()
     // switch to false if postVerify fails
     let postFailures = 0

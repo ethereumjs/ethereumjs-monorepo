@@ -294,6 +294,13 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
         throw new Error(msg)
       }
     } else if (this.common.isActivatedEIP(6800)) {
+      // Validate that all preState keys have been accessed (i.e. verify that no unnecessary witness is included in the block)
+      if (
+        (this._opts.stateManager as StatelessVerkleStateManager).verifyPreStateAccesses() === false
+      ) {
+        throw new Error(`Verkle pre state verification failed on block ${block.header.number}`)
+      }
+
       // If verkle is activated, only validate the post-state
       if ((this._opts.stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
         throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
