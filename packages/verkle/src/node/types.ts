@@ -37,8 +37,8 @@ interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {
 interface VerkleLeafNodeOptions extends BaseVerkleNodeOptions {
   stem: Uint8Array
   values: Uint8Array[]
-  c1: Point
-  c2: Point
+  c1?: Point
+  c2?: Point
 }
 
 export interface VerkleNodeOptions {

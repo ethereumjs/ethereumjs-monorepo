@@ -22,7 +22,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   }
 
   static create(stem: Uint8Array, values: Uint8Array[]): LeafNode {
-    throw new Error('Not implemented')
+    return new LeafNode({ stem, values })
   }
 
   static fromRawNode(rawNode: Uint8Array[], depth: number): LeafNode {

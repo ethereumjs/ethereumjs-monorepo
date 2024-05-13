@@ -176,11 +176,10 @@ export class VerkleTree {
     await this._db.put(key, value)
 
     // Find or create the leaf node
-    const leafNode = await this.findLeafNode(key, false)
+    let leafNode = await this.findLeafNode(key, false)
     if (leafNode === null) {
       // If leafNode is missing, create it
-      // leafNode = LeafNode.create()
-      throw new Error('Not implemented')
+      leafNode = LeafNode.create(key.slice(0, 31), [value])
     }
 
     // Walk up the tree and update internal nodes

@@ -1,0 +1,21 @@
+participants:
+  - el_type: ethereumjs
+    el_image: ethereumjs:local
+    cl_type: grandine
+    cl_image: ethpandaops/grandine:feature-electra
+
+  - el_type: ethereumjs
+    el_image: ethereumjs:local
+    cl_type: grandine
+    cl_image: ethpandaops/grandine:feature-electra
+
+network_params:
+  electra_fork_epoch: 1
+  electra_fork_version: "0x50000038"
+    #global_log_level: debug
+additional_services:
+  - dora
+  - tx_spammer
+  - blob_spammer
+
+snooper_enabled: true
