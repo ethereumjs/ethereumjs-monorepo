@@ -1,4 +1,4 @@
-import { intToHex, isHexPrefixed, stripHexPrefix } from '@ethereumjs/util'
+import { intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
 import { Hardfork } from './enums.js'
 
@@ -16,7 +16,7 @@ function formatNonce(nonce: string): PrefixedHexString {
   if (!nonce || nonce === '0x0') {
     return '0x0000000000000000'
   }
-  if (isHexPrefixed(nonce)) {
+  if (isHexString(nonce)) {
     return `0x${stripHexPrefix(nonce).padStart(16, '0')}`
   }
   return `0x${nonce.padStart(16, '0')}`
@@ -67,7 +67,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     unparsedExtraData === '' ? '0x' : (unparsedExtraData as PrefixedHexString)
 
   // geth may use number for timestamp
-  const timestamp: PrefixedHexString = isHexPrefixed(unparsedTimestamp)
+  const timestamp: PrefixedHexString = isHexString(unparsedTimestamp)
     ? unparsedTimestamp
     : intToHex(parseInt(unparsedTimestamp))
 

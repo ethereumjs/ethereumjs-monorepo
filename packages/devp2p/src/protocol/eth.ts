@@ -8,7 +8,7 @@ import {
   bytesToUnprefixedHex,
   hexToBytes,
   intToBytes,
-  isHexPrefixed,
+  isHexString,
 } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
@@ -286,7 +286,7 @@ export class ETH extends Protocol {
         this._latestBlock = latestBlock
       }
       const forkHashB = hexToBytes(
-        isHexPrefixed(this._forkHash) ? this._forkHash : `0x${this._forkHash}`
+        isHexString(this._forkHash) ? this._forkHash : `0x${this._forkHash}`
       )
 
       const nextForkB =
