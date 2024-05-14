@@ -118,7 +118,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
     const balanceKey = getKey(stem, LeafType.Balance)
     const nonceKey = getKey(stem, LeafType.Nonce)
-    const codeHashKey = getKey(stem, LeafType.CodeKeccak)
+    const codeHashKey = getKey(stem, LeafType.CodeHash)
 
     const balanceRaw = stateManager['_state'][bytesToHex(balanceKey)]
     const nonceRaw = stateManager['_state'][bytesToHex(nonceKey)]
