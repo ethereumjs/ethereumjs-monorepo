@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715706876116,
+  "lastUpdate": 1715712261272,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e418c176a91f35fbe36cb06528a6b96aed152c4f",
-          "message": "monorepo: revert and adjust some prefixedHexTypes (#3382)",
-          "timestamp": "2024-04-27T22:25:04-04:00",
-          "tree_id": "778fed5fd24d1968aafe0e094763a2aab3b298d0",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e418c176a91f35fbe36cb06528a6b96aed152c4f"
-        },
-        "date": 1714271258787,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 43831,
-            "range": "±1.70%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40979,
-            "range": "±2.93%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41372,
-            "range": "±1.49%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37921,
-            "range": "±5.86%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 39632,
-            "range": "±1.59%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±6.44%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8cae3bb3f8749f025f4d1f8a3353676295c8550e",
+          "message": "verkle: rename code keccak (#3426)\n\n* verkle: rename code keccak\r\n\r\n* verkle: rename code keccak\r\n\r\n* verkle: rename code keccak",
+          "timestamp": "2024-05-14T14:39:38-04:00",
+          "tree_id": "6f5e0c2efc013ea788672e9f3ef5c52725f3cfd2",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8cae3bb3f8749f025f4d1f8a3353676295c8550e"
+        },
+        "date": 1715712260035,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41222,
+            "range": "±2.71%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40764,
+            "range": "±1.36%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40325,
+            "range": "±1.46%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36948,
+            "range": "±4.83%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38644,
+            "range": "±1.79%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
