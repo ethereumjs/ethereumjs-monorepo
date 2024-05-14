@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715378966024,
+  "lastUpdate": 1715698018240,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b997dc8f5922bff0833d22842c7a662bf34f6887",
-          "message": "evm: ignore precompile addresses for some target access events (#3366)\n\n* evm: ignore precompile addresses for some target access events\r\n\r\n* fix the precompile check\r\n\r\n* remove comment",
-          "timestamp": "2024-04-24T17:27:30-04:00",
-          "tree_id": "2ea9fc6311da7a16b4389b028a8784da27c16296",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b997dc8f5922bff0833d22842c7a662bf34f6887"
-        },
-        "date": 1713994582851,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41887,
-            "range": "±3.03%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41437,
-            "range": "±1.27%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40965,
-            "range": "±1.46%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37531,
-            "range": "±5.34%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 39109,
-            "range": "±1.58%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±5.98%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0786896bc16a5e0f805fc653887d85ce7c2c9152",
+          "message": "vm: missing beaconroot account verkle fix (#3421)",
+          "timestamp": "2024-05-14T10:44:17-04:00",
+          "tree_id": "5fd5e6db62c7ebd98736f88bddac73bfb0575300",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0786896bc16a5e0f805fc653887d85ce7c2c9152"
+        },
+        "date": 1715698017528,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41957,
+            "range": "±2.18%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40190,
+            "range": "±2.86%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40674,
+            "range": "±1.59%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 40063,
+            "range": "±1.77%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38739,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
