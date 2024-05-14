@@ -51,6 +51,13 @@ export function getKey(stem: Uint8Array, subIndex: Uint8Array): Uint8Array {
   return treeKey
 }
 
+/**
+ * Verifies that the executionWitness is valid for the given prestateRoot.
+ * @param ffi The verkle ffi object from verkle-crypotography-wasm.
+ * @param prestateRoot The prestateRoot matching the executionWitness.
+ * @param executionWitness The verkle execution witness.
+ * @returns {boolean} Whether or not the executionWitness belongs to the prestateRoot.
+ */
 export function verifyProof(
   ffi: VerkleCrypto,
   prestateRoot: Uint8Array,
