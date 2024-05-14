@@ -117,7 +117,7 @@ Genesis related interfaces and helpers.
 
 ### Module: [internal](src/internal.ts)
 
-Internalized simple helper methods like `isHexString`. Note that methods from this module might get deprectared in the future.
+Internalized simple helper methods like `isHexString`. Note that methods from this module might get deprecated in the future.
 
 ### Module: [kzg](src/kzg.ts)
 
