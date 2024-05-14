@@ -27,7 +27,7 @@ import { bytesToUnprefixedHex, utf8ToBytes } from './bytes.js'
 import type { PrefixedHexString } from './types.js'
 
 /**
- * Returns a boolean on whether or not the the input starts with '0x' and if matches the optional length
+ * Returns a boolean on whether or not the the input starts with '0x' and matches the optional length
  * @param {string} value the string input value
  * @param {number|undefined} length the optional length of the hex string in bytes
  * @returns {boolean} Whether or not the string is a valid PrefixedHexString matching the optional length
