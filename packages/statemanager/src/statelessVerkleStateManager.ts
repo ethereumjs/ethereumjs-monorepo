@@ -35,7 +35,7 @@ import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { DefaultStateManager } from './stateManager.js'
-import type { VerkleExecutionWitness } from '@ethereumjs/block'
+import type { VerkleExecutionWitness, VerkleProof } from '@ethereumjs/block'
 import type {
   AccountFields,
   Common,
@@ -161,7 +161,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   private _blockNum = BigInt(0)
   private _executionWitness?: VerkleExecutionWitness
 
-  private _proof: Uint8Array | undefined
+  private _proof: VerkleProof | undefined
 
   // State along execution (should update)
   private _state: VerkleState = {}
@@ -266,7 +266,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._executionWitness = executionWitness
     this.accessWitness = accessWitness ?? new AccessWitness({ verkleCrypto: this.verkleCrypto })
 
-    this._proof = executionWitness.verkleProof as unknown as Uint8Array
+    this._proof = executionWitness.verkleProof
 
     // Populate the pre-state and post-state from the executionWitness
     const preStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
@@ -697,7 +697,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   }
 
   // TODO: Re-implement this method once we have working verifyUpdate and the testnets have been updated to provide ingestible data
-  async verifyProof(_: Uint8Array): Promise<boolean> {
+  async verifyProof(parentStateRoot: Uint8Array): Promise<boolean> {
     // Implementation: https://github.com/crate-crypto/rust-verkle-wasm/blob/master/src/lib.rs#L45
     // The root is the root of the current (un-updated) trie
     // The proof is proof of membership of all of the accessed values
@@ -707,13 +707,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // This function returns the new root when all of the updated values are applied
 
     // const updatedStateRoot: Uint8Array = verifyUpdate(
-    //   parentVerkleRoot,
-    //   this._proof!, // TODO: Convert this into a Uint8Array ingestible by the method
+    //   parentStateRoot,
+    //   this._proof, // TODO: Convert this into a Uint8Array ingestible by the method
     //   new Map() // TODO: Generate the keys_values map from the old to the updated value
     // )
-
-    // TODO: Not sure if this should return the updated state Root (current block) or the un-updated one (parent block)
-    // const verkleRoot = await this.getStateRoot()
 
     // Verify that updatedStateRoot matches the state root of the block
     // return equalsBytes(updatedStateRoot, verkleRoot)
