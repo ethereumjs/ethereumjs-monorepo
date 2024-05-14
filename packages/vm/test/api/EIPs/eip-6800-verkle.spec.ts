@@ -6,17 +6,21 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { describe, it } from 'vitest'
 
-import * as verkleBlockJSON from '../../../../statemanager/test/testdata/verkleKaustinenBlock.json'
+import * as verkleBlockJSON from '../../../../statemanager/test/testdata/verkleKaustinen6Block72.json'
 import { VM } from '../../../src'
 
 import type { BlockData } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const customChainParams = { name: 'custom', chainId: 69420, networkId: 678 }
-const common = Common.custom(customChainParams, { hardfork: Hardfork.Cancun, eips: [4895, 6800] })
+const common = Common.custom(customChainParams, {
+  hardfork: Hardfork.Cancun,
+  eips: [2935, 4895, 6800],
+})
 const decodedTxs = verkleBlockJSON.transactions.map((tx) =>
   TransactionFactory.fromSerializedData(hexToBytes(tx as PrefixedHexString))
 )
+
 const block = Block.fromBlockData({ ...verkleBlockJSON, transactions: decodedTxs } as BlockData, {
   common,
 })
@@ -32,6 +36,7 @@ describe('EIP 6800 tests', () => {
     })
     verkleStateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
-    await vm.runBlock({ block })
+    // We need to skip validation of the header validation as otherwise the vm will attempt retrieving the parent block, which is not available statelessly
+    await vm.runBlock({ block, skipHeaderValidation: true })
   })
 })
