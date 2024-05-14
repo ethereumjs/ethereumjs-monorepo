@@ -15,7 +15,7 @@ import {
   bytesToHex,
   equalsBytes,
   hexToBytes,
-  isHexPrefixed,
+  isHexString,
   setLengthLeft,
   toBytes,
 } from '@ethereumjs/util'
@@ -84,7 +84,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
     return new Uint8Array()
   }
 
-  if (typeof a === 'string' && isHexPrefixed(a)) {
+  if (typeof a === 'string' && isHexString(a)) {
     a = a.slice(2)
     if (a.length % 2) a = '0' + a
     a = hexToBytes(`0x${a}`)
@@ -145,7 +145,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
     const keyMap: any = {}
 
     for (const key in testData) {
-      const hash = bytesToHex(keccak256(hexToBytes(isHexPrefixed(key) ? key : `0x${key}`)))
+      const hash = bytesToHex(keccak256(hexToBytes(isHexString(key) ? key : `0x${key}`)))
       hashedAccounts[hash] = testData[key]
       keyMap[hash] = key
     }
@@ -215,7 +215,7 @@ export function verifyAccountPostConditions(
     const hashedStorage: any = {}
     for (const key in acctData.storage) {
       hashedStorage[
-        bytesToHex(keccak256(setLengthLeft(hexToBytes(isHexPrefixed(key) ? key : `0x${key}`), 32)))
+        bytesToHex(keccak256(setLengthLeft(hexToBytes(isHexString(key) ? key : `0x${key}`), 32)))
       ] = acctData.storage[key]
     }
 
