@@ -531,6 +531,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
   }
 
+  // Note from Gabriel: This is actually not possible in Verkle.
+  // This is because the storage keys are scattered throughout the verkle tree.
   /**
    * Clears all storage entries for the account corresponding to `address`.
    * @param address -  Address to clear the storage of
@@ -541,8 +543,6 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._storageCache?.clearContractStorage(address)
     // Update codeHash to `c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470`
     this._state[bytesToHex(codeHashKey)] = KECCAK256_NULL_S
-
-    // TODO: Clear all storage slots (how?)
   }
 
   async getAccount(address: Address): Promise<Account | undefined> {
