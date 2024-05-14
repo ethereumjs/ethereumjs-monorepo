@@ -55,7 +55,6 @@ export {
   fromUtf8,
   getBinarySize,
   getKeys,
-  isHexPrefixed,
   isHexString,
   padToEven,
   stripHexPrefix,
