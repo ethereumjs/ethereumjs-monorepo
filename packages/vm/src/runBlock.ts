@@ -487,7 +487,7 @@ export async function accumulateParentBlockHash(
 
   const forkTime = this.common.eipTimestamp(2935)
 
-  // getAccount with historyAddress will throw error as witnesses are not bundeled
+  // getAccount with historyAddress will throw error as witnesses are not bundled
   // but we need to put account so as to query later for slot
   try {
     if ((await this.stateManager.getAccount(historyAddress)) === undefined) {
@@ -559,7 +559,16 @@ export async function accumulateParentBeaconBlockRoot(
    * All ethereum accounts have empty storage by default
    */
 
-  if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+  /**
+   * Note: (by Gabriel)
+   * Get account will throw an error in stateless execution b/c witnesses are not bundled
+   * But we do need an account so we are able to put the storage
+   */
+  try {
+    if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+      await this.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
+    }
+  } catch (_) {
     await this.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
   }
 
