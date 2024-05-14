@@ -1,4 +1,3 @@
-import { getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
 import {
   Account,
   Address,
@@ -32,6 +31,7 @@ import {
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
+import { getTreeIndexesForStorageSlot } from '@ethereumjs/verkle'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { ERROR } from '../exceptions.js'

@@ -2,7 +2,6 @@ import {
   type Address,
   bigIntToBytes,
   bytesToHex,
-  concatBytes,
   int32ToBytes,
   setLengthLeft,
   setLengthRight,
@@ -36,19 +35,6 @@ export function getStem(
   const treeStem = ffi.getTreeKey(address32, treeIndexBytes, 0).slice(0, 31)
 
   return treeStem
-}
-
-/**
- * @dev Returns the tree key for a given verkle tree stem, and sub index.
- * @dev Assumes that the verkle node width = 256
- * @param stem The 31-bytes verkle tree stem as a Uint8Array.
- * @param subIndex The sub index of the tree to generate the key for as a Uint8Array.
- * @return The tree key as a Uint8Array.
- */
-
-export function getKey(stem: Uint8Array, subIndex: Uint8Array): Uint8Array {
-  const treeKey = concatBytes(stem, subIndex)
-  return treeKey
 }
 
 /**
