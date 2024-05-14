@@ -32,10 +32,6 @@ describe('EIP 6800 tests', () => {
     })
     verkleStateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
-    //await vm.runBlock({ block })
-
-    for (let i = 0; i < block.transactions.length; i++) {
-      await vm.runTx({ tx: block.transactions[i], block })
-    }
+    await vm.runBlock({ block })
   })
 })
