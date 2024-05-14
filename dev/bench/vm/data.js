@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715705985248,
+  "lastUpdate": 1715706876116,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ae08197f19c5e979c4c0b9bf3cb926190c08a759",
-          "message": "Remove unnecessary boolean comparisons when using isActivatedEIP (#3377)\n\n* Remove unnecessary boolean comparisons when using isActivatedEIP\n\n* Fix lint issues\n\n* Fix errors",
-          "timestamp": "2024-04-27T07:33:25-04:00",
-          "tree_id": "25427563e86b3aa344da8421f1a1260bc153e405",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ae08197f19c5e979c4c0b9bf3cb926190c08a759"
-        },
-        "date": 1714217765706,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41692,
-            "range": "±3.06%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41199,
-            "range": "±1.43%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41042,
-            "range": "±1.50%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37323,
-            "range": "±5.75%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 39039,
-            "range": "±1.78%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±5.78%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "36ca22023bbbf46d6947b4c0c2e633a0cd21d46c",
+          "message": "Update verkle crypto dep (#3424)",
+          "timestamp": "2024-05-14T13:12:00-04:00",
+          "tree_id": "b0bbe15b8fe4b1eccc5c2b91cdc6734b881be8b3",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/36ca22023bbbf46d6947b4c0c2e633a0cd21d46c"
+        },
+        "date": 1715706875494,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42506,
+            "range": "±2.94%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41418,
+            "range": "±1.31%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41354,
+            "range": "±1.48%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39705,
+            "range": "±2.58%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35861,
+            "range": "±6.44%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
