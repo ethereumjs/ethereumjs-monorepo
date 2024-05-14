@@ -107,6 +107,7 @@ export const bytesToInt = (bytes: Uint8Array): number => {
   return res
 }
 
+// TODO: Restrict the input type to only PrefixedHexString
 /**
  * Converts a {@link PrefixedHexString} to a {@link Uint8Array}
  * @param {PrefixedHexString | string} hex The 0x-prefixed hex string to convert
@@ -256,12 +257,13 @@ export const unpadArray = (a: number[]): number[] => {
   return stripZeros(a)
 }
 
+// TODO: Restrict the input type to only PrefixedHexString
 /**
  * Trims leading zeros from a `PrefixedHexString`.
- * @param {PrefixedHexString} a
+ * @param {PrefixedHexString | string} a
  * @return {PrefixedHexString}
  */
-export const unpadHex = (a: PrefixedHexString): PrefixedHexString => {
+export const unpadHex = (a: PrefixedHexString | string): PrefixedHexString => {
   assertIsHexString(a)
   return `0x${stripZeros(stripHexPrefix(a))}`
 }
