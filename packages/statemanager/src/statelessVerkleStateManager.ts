@@ -501,7 +501,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   async clearContractStorage(address: Address): Promise<void> {
     const stem = getStem(this.verkleCrypto, address, 0)
-    const codeHashKey = getKey(stem, LeafType.CodeKeccak)
+    const codeHashKey = getKey(stem, LeafType.CodeHash)
     this._storageCache?.clearContractStorage(address)
     // Update codeHash to `c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470`
     this._state[bytesToHex(codeHashKey)] = KECCAK256_NULL_S
@@ -521,7 +521,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const versionKey = getKey(stem, LeafType.Version)
     const balanceKey = getKey(stem, LeafType.Balance)
     const nonceKey = getKey(stem, LeafType.Nonce)
-    const codeHashKey = getKey(stem, LeafType.CodeKeccak)
+    const codeHashKey = getKey(stem, LeafType.CodeHash)
     const codeSizeKey = getKey(stem, LeafType.CodeSize)
 
     const versionRaw = this._state[bytesToHex(versionKey)]
@@ -607,7 +607,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       const stem = getStem(this.verkleCrypto, address, 0)
       const balanceKey = getKey(stem, LeafType.Balance)
       const nonceKey = getKey(stem, LeafType.Nonce)
-      const codeHashKey = getKey(stem, LeafType.CodeKeccak)
+      const codeHashKey = getKey(stem, LeafType.CodeHash)
 
       const balanceBuf = setLengthRight(bigIntToBytes(account.balance, true), 32)
       const nonceBuf = setLengthRight(bigIntToBytes(account.nonce, true), 32)
