@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715712261272,
+  "lastUpdate": 1715716559211,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c4a9f006770c4f4d3fd015ce90f403fbb5e41a42",
-          "message": "trie: fix del stack operation key formatting (#3378)",
-          "timestamp": "2024-04-28T13:59:17-07:00",
-          "tree_id": "18892d3df0cb2b475c4d09fdc569572481654a6d",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c4a9f006770c4f4d3fd015ce90f403fbb5e41a42"
-        },
-        "date": 1714338117259,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41689,
-            "range": "±2.83%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41124,
-            "range": "±1.42%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41066,
-            "range": "±1.53%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37348,
-            "range": "±6.53%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38539,
-            "range": "±1.97%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.79%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bc648e746b670be56e23c8bd247a9b74860fc256",
+          "message": "util: revert some PrefixedHexString breaking changes (#3427)\n\n* util: remove redundant isHexPrefixed since we have isHexString\r\n\r\n* util: re-add string type support\r\n\r\n* util: misc fixes\r\n\r\n* docs: undo readme docs change\r\n\r\n* Update packages/util/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/util/src/internal.ts\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n---------\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>",
+          "timestamp": "2024-05-14T12:51:23-07:00",
+          "tree_id": "1ce41ee7d6b8e643b6420839d905ba15eea3f4c7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bc648e746b670be56e23c8bd247a9b74860fc256"
+        },
+        "date": 1715716558558,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42789,
+            "range": "±1.75%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40736,
+            "range": "±2.62%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41410,
+            "range": "±1.48%",
+            "unit": "ops/sec",
+            "extra": "92 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 40185,
+            "range": "±1.53%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35625,
+            "range": "±6.22%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
