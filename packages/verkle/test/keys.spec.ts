@@ -1,4 +1,4 @@
-import { concatBytes, hexToBytes } from '@ethereumjs/util'
+import { concatBytes, hexToBytes, intToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { LeafType, getKey } from '../src/index.js'
@@ -15,7 +15,7 @@ describe('should generate valid tree keys', () => {
     ]) {
       const key = getKey(stem, leaf)
       assert.equal(key.length, 32)
-      assert.deepEqual(key, concatBytes(stem, Uint8Array.from([leaf])))
+      assert.deepEqual(key, concatBytes(stem, intToBytes(leaf)))
     }
   })
 })
