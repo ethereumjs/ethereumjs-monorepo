@@ -154,7 +154,7 @@ describe('[Block]: block functions', () => {
 
   it('should test block validation on pow chain', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
     try {
       Block.fromRLPSerializedBlock(blockRlp, { common })
       assert.ok(true, 'should pass')
@@ -180,7 +180,7 @@ describe('[Block]: block functions', () => {
   }
 
   it('should test transaction validation - invalid tx trie', async () => {
-    const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
@@ -221,7 +221,7 @@ describe('[Block]: block functions', () => {
 
   it('should test transaction validation with legacy tx in london', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
     ;(block.transactions[0] as any).gasPrice = BigInt(0)
@@ -234,7 +234,7 @@ describe('[Block]: block functions', () => {
 
   it('should test uncles hash validation', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = toBytes(testDataPreLondon2.blocks[2].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(testDataPreLondon2.blocks[2].rlp as PrefixedHexString)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     assert.equal(block.uncleHashIsValid(), true)
     ;(block.header as any).uncleHash = new Uint8Array(32)

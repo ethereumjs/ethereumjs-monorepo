@@ -3,7 +3,6 @@ import {
   Account,
   hexToBytes,
   isHexString,
-  toBytes,
   unpadBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
@@ -29,15 +28,15 @@ export async function genesisStateRoot(genesisState: GenesisState) {
         account.balance = BigInt(balance)
       }
       if (code !== undefined) {
-        const codeBytes = isHexString(code) ? toBytes(code) : unprefixedHexToBytes(code)
+        const codeBytes = isHexString(code) ? hexToBytes(code) : unprefixedHexToBytes(code)
         account.codeHash = keccak256(codeBytes)
       }
       if (storage !== undefined) {
         const storageTrie = new Trie({ useKeyHashing: true })
         for (const [k, val] of storage) {
-          const storageKey = isHexString(k) ? toBytes(k) : unprefixedHexToBytes(k)
+          const storageKey = isHexString(k) ? hexToBytes(k) : unprefixedHexToBytes(k)
           const storageVal = RLP.encode(
-            unpadBytes(isHexString(val) ? toBytes(val) : unprefixedHexToBytes(val))
+            unpadBytes(isHexString(val) ? hexToBytes(val) : unprefixedHexToBytes(val))
           )
           await storageTrie.put(storageKey, storageVal)
         }

@@ -20,10 +20,9 @@ describe('internal', () => {
   it('isHexString', () => {
     assert.isTrue(isHexString('0x123'))
     assert.isTrue(isHexString('0xabc'))
-    assert.isTrue(isHexString('abc'))
+    assert.isFalse(isHexString('abc'))
     assert.isFalse(isHexString('123'))
-    assert.equal(isHexString('0x0000000000000000000000000000000000000000'), true)
-    assert.equal(isHexString('123'), false)
+    assert.isTrue(isHexString('0x0000000000000000000000000000000000000000'))
   })
   it('stripHexPrefix', () => {
     assert.equal(stripHexPrefix('0xabc'), 'abc')
