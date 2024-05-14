@@ -3,13 +3,13 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { hexToBytes } from '@ethereumjs/util'
-import { describe, it } from 'vitest'
+import { bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
+import { describe, expect, it } from 'vitest'
 
 import * as verkleBlockJSON from '../../../../statemanager/test/testdata/verkleKaustinenBlock.json'
 import { VM } from '../../../src'
 
-import type { BlockData } from '@ethereumjs/block'
+import type { BlockData, VerkleStateDiff } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const customChainParams = { name: 'custom', chainId: 69420, networkId: 678 }
@@ -32,10 +32,41 @@ describe('EIP 6800 tests', () => {
     })
     verkleStateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
-    //await vm.runBlock({ block })
+    await vm.runBlock({ block })
 
-    for (let i = 0; i < block.transactions.length; i++) {
-      await vm.runTx({ tx: block.transactions[i], block })
+    expect(verkleStateManager.verifyPreStateAccesses()).toBe(true)
+  })
+
+  it('throws an error if the block witness contains extra preState data', async () => {
+    const verkleStateManager = await StatelessVerkleStateManager.create({ common })
+    const evm = await EVM.create({ common, stateManager: verkleStateManager })
+    const vm = await VM.create({
+      common,
+      evm,
+      stateManager: verkleStateManager,
+    })
+
+    const extraStateDiff: VerkleStateDiff = {
+      stem: bytesToHex(randomBytes(31)),
+      suffixDiffs: [
+        {
+          currentValue: bytesToHex(randomBytes(32)),
+          newValue: bytesToHex(randomBytes(32)),
+          suffix: 0,
+        },
+        {
+          currentValue: bytesToHex(randomBytes(32)),
+          newValue: bytesToHex(randomBytes(32)),
+          suffix: 1,
+        },
+      ],
     }
+
+    // Add the extraStateDiff to the block execution witness
+    block.executionWitness!.stateDiff = block.executionWitness!.stateDiff.concat(extraStateDiff)
+
+    verkleStateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
+
+    expect(await vm.runBlock({ block })).toThrowError('Verkle pre state verification failed')
   })
 })
