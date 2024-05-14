@@ -1,12 +1,15 @@
+import { VerkleProof } from '@ethereumjs/block'
 import {
   type Address,
   bigIntToBytes,
+  bytesToHex,
   concatBytes,
   int32ToBytes,
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
 
+import type { VerkleExecutionWitness } from '@ethereumjs/block'
 import type { VerkleCrypto } from 'verkle-cryptography-wasm'
 
 /**
@@ -47,6 +50,17 @@ export function getStem(
 export function getKey(stem: Uint8Array, subIndex: Uint8Array): Uint8Array {
   const treeKey = concatBytes(stem, subIndex)
   return treeKey
+}
+
+export function verifyProof(
+  ffi: VerkleCrypto,
+  prestateRoot: Uint8Array,
+  executionWitness: VerkleExecutionWitness
+): boolean {
+  return ffi.verifyExecutionWitnessPreState(
+    bytesToHex(prestateRoot),
+    JSON.stringify(executionWitness)
+  )
 }
 
 export const POINT_IDENTITY = new Uint8Array(0)
