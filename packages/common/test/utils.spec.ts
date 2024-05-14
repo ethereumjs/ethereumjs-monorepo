@@ -173,6 +173,42 @@ describe('[Utils/Parse]', () => {
     )
     assert.equal(common.hardfork(), Hardfork.Shanghai, 'should correctly infer common hardfork')
   })
+
+  it('should successfully assign mainnet deposit contract address when none provided', async () => {
+    const common = Common.fromGethGenesis(postMergeHardforkJSON, {
+      chain: 'customChain',
+    })
+    const depositContractAddress =
+      common['_chainParams'].depositContractAddress ??
+      Common.getInitializedChains().mainnet.depositContractAddress
+
+    assert.equal(
+      depositContractAddress,
+      Common.getInitializedChains().mainnet.depositContractAddress,
+      'should assign mainnet deposit contract'
+    )
+  })
+
+  it('should correctly parse deposit contract adddress', async () => {
+    // clone json out to not have side effects
+    const customJson = JSON.parse(JSON.stringify(postMergeHardforkJSON))
+    Object.assign(customJson.config, {
+      depositContractAddress: '0x4242424242424242424242424242424242424242',
+    })
+
+    const common = Common.fromGethGenesis(customJson, {
+      chain: 'customChain',
+    })
+    const depositContractAddress =
+      common['_chainParams'].depositContractAddress ??
+      Common.getInitializedChains().mainnet.depositContractAddress
+
+    assert.equal(
+      depositContractAddress,
+      '0x4242424242424242424242424242424242424242',
+      'should parse correct address'
+    )
+  })
 })
 
 const kilnForkHashes: any = {

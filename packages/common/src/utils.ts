@@ -57,7 +57,10 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     timestamp: string
   } = json
   const genesisTimestamp = Number(unparsedTimestamp)
-  const { chainId }: { chainId: number } = config
+  const {
+    chainId,
+    depositContractAddress,
+  }: { chainId: number; depositContractAddress: PrefixedHexString } = config
 
   // geth is not strictly putting empty fields with a 0x prefix
   const extraData: PrefixedHexString =
@@ -84,6 +87,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     name,
     chainId,
     networkId: chainId,
+    depositContractAddress,
     genesis: {
       timestamp,
       gasLimit,
