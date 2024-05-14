@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715698018240,
+  "lastUpdate": 1715703954338,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "7a4602c5d6947c23d3190b2885350e73da88e3e6",
-          "message": "common: add osaka hardfork and shift verkle to osaka (#3371)\n\n* common: add osaka hardfork and shift verkle to osaka\r\n\r\n* fix the kaustinene 6 startup and transition to the verkle vm",
-          "timestamp": "2024-04-25T21:46:50+05:30",
-          "tree_id": "71f43414e05ee58005482204b93294df60269dbe",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7a4602c5d6947c23d3190b2885350e73da88e3e6"
-        },
-        "date": 1714061972210,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41934,
-            "range": "±2.18%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40087,
-            "range": "±2.46%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40225,
-            "range": "±1.72%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39604,
-            "range": "±1.65%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35867,
-            "range": "±6.28%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.80%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f79a6f2e73cdcaf3ace1325514ab307ab22588f5",
+          "message": "common: parse depositContractAddress from genesis (#3422)",
+          "timestamp": "2024-05-14T12:20:00-04:00",
+          "tree_id": "fdd3e569ac624ba5145280676b943ec135a147ff",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f79a6f2e73cdcaf3ace1325514ab307ab22588f5"
+        },
+        "date": 1715703953455,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42930,
+            "range": "±1.79%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40624,
+            "range": "±2.73%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40873,
+            "range": "±1.49%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 40501,
+            "range": "±1.55%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35974,
+            "range": "±5.96%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
