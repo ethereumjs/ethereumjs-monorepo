@@ -1,12 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
 import {
-  BALANCE_LEAF_KEY,
-  CODE_KECCAK_LEAF_KEY,
-  CODE_SIZE_LEAF_KEY,
-  VERSION_LEAF_KEY,
-  getTreeIndexesForStorageSlot,
-} from '@ethereumjs/statemanager'
-import {
   Account,
   Address,
   BIGINT_0,
@@ -17,6 +10,13 @@ import {
   bigIntToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+import {
+  BALANCE_LEAF_KEY,
+  CODE_KECCAK_LEAF_KEY,
+  CODE_SIZE_LEAF_KEY,
+  VERSION_LEAF_KEY,
+  getTreeIndexesForStorageSlot,
+} from '@ethereumjs/verkle'
 
 import { ERROR } from '../exceptions.js'
 
