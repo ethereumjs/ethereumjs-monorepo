@@ -9,7 +9,7 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { getKey, getStem, leafType } from '@ethereumjs/verkle'
+import { LeafType, getKey, getStem } from '@ethereumjs/verkle'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it, test } from 'vitest'
 
@@ -116,9 +116,9 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const address = Address.fromString('0x6177843db3138ae69679a54b95cf345ed759450d')
     const stem = getStem(stateManager.verkleCrypto, address, 0n)
 
-    const balanceKey = getKey(stem, leafType.balance)
-    const nonceKey = getKey(stem, leafType.nonce)
-    const codeHashKey = getKey(stem, leafType.codeKeccak)
+    const balanceKey = getKey(stem, LeafType.Balance)
+    const nonceKey = getKey(stem, LeafType.Nonce)
+    const codeHashKey = getKey(stem, LeafType.CodeKeccak)
 
     const balanceRaw = stateManager['_state'][bytesToHex(balanceKey)]
     const nonceRaw = stateManager['_state'][bytesToHex(nonceKey)]

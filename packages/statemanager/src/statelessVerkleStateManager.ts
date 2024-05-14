@@ -14,11 +14,11 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 import {
+  LeafType,
   getKey,
   getStem,
   getTreeKeyForCodeChunk,
   getTreeKeyForStorageSlot,
-  leafType,
 } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -499,7 +499,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   async clearContractStorage(address: Address): Promise<void> {
     const stem = getStem(this.verkleCrypto, address, 0)
-    const codeHashKey = getKey(stem, leafType.codeKeccak)
+    const codeHashKey = getKey(stem, LeafType.CodeKeccak)
     this._storageCache?.clearContractStorage(address)
     // Update codeHash to `c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470`
     this._state[bytesToHex(codeHashKey)] = KECCAK256_NULL_S
@@ -518,11 +518,11 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     const stem = getStem(this.verkleCrypto, address, 0)
-    const versionKey = getKey(stem, leafType.version)
-    const balanceKey = getKey(stem, leafType.balance)
-    const nonceKey = getKey(stem, leafType.nonce)
-    const codeHashKey = getKey(stem, leafType.codeKeccak)
-    const codeSizeKey = getKey(stem, leafType.codeSize)
+    const versionKey = getKey(stem, LeafType.Version)
+    const balanceKey = getKey(stem, LeafType.Balance)
+    const nonceKey = getKey(stem, LeafType.Nonce)
+    const codeHashKey = getKey(stem, LeafType.CodeKeccak)
+    const codeSizeKey = getKey(stem, LeafType.CodeSize)
 
     const versionRaw = this._state[bytesToHex(versionKey)]
     const balanceRaw = this._state[bytesToHex(balanceKey)]
@@ -605,9 +605,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     if (this._accountCacheSettings.deactivate) {
       const stem = getStem(this.verkleCrypto, address, 0)
-      const balanceKey = getKey(stem, leafType.balance)
-      const nonceKey = getKey(stem, leafType.nonce)
-      const codeHashKey = getKey(stem, leafType.codeKeccak)
+      const balanceKey = getKey(stem, LeafType.Balance)
+      const nonceKey = getKey(stem, LeafType.Nonce)
+      const codeHashKey = getKey(stem, LeafType.CodeKeccak)
 
       const balanceBuf = setLengthRight(bigIntToBytes(account.balance, true), 32)
       const nonceBuf = setLengthRight(bigIntToBytes(account.nonce, true), 32)

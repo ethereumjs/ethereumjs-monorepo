@@ -6,11 +6,11 @@ import {
   CODE_OFFSET,
   CODE_SIZE_LEAF_KEY,
   HEADER_STORAGE_OFFSET,
+  LeafType,
   MAIN_STORAGE_OFFSET,
   NONCE_LEAF_KEY,
   VERKLE_NODE_WIDTH,
   VERSION_LEAF_KEY,
-  leafType,
 } from '../types.js'
 
 import { getStem } from './crypto.js'
@@ -26,21 +26,20 @@ import type { Address } from '@ethereumjs/util'
  * @return The tree key as a Uint8Array.
  */
 
-export const getKey = (stem: Uint8Array, leaf: leafType) => {
+export const getKey = (stem: Uint8Array, leaf: LeafType | Uint8Array) => {
   switch (leaf) {
-    case leafType.version:
+    case LeafType.Version:
       return concatBytes(stem, VERSION_LEAF_KEY)
-    case leafType.balance:
+    case LeafType.Balance:
       return concatBytes(stem, BALANCE_LEAF_KEY)
-    case leafType.nonce:
+    case LeafType.Nonce:
       return concatBytes(stem, NONCE_LEAF_KEY)
-    case leafType.codeKeccak:
+    case LeafType.CodeKeccak:
       return concatBytes(stem, CODE_KECCAK_LEAF_KEY)
-    case leafType.codeSize:
+    case LeafType.CodeSize:
       return concatBytes(stem, CODE_SIZE_LEAF_KEY)
     default:
-      // TODO: Figure out how to add generic leaf key to this
-      return concatBytes(stem, Uint8Array.from([leaf]))
+      return concatBytes(stem, leaf)
   }
 }
 

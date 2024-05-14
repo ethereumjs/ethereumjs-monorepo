@@ -1,4 +1,4 @@
-import { BIGINT_0, bytesToBigInt, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { BIGINT_0, bytesToBigInt, bytesToHex, hexToBytes, intToBytes } from '@ethereumjs/util'
 import {
   BALANCE_LEAF_KEY,
   CODE_KECCAK_LEAF_KEY,
@@ -272,8 +272,10 @@ export class AccessWitness {
       this.stems.set(accessedStemHex, accessedStem)
     }
 
-    // TODO: Update getKey method for chunks
-    const accessedChunkKey = getKey(accessedStemKey, subIndex as any)
+    const accessedChunkKey = getKey(
+      accessedStemKey,
+      typeof subIndex === 'number' ? intToBytes(subIndex) : subIndex
+    )
     const accessedChunkKeyHex = bytesToHex(accessedChunkKey)
     let accessedChunk = this.chunks.get(accessedChunkKeyHex)
     if (accessedChunk === undefined) {

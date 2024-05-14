@@ -1,4 +1,4 @@
-import { toBytes, utf8ToBytes } from '@ethereumjs/util'
+import { intToBytes, utf8ToBytes } from '@ethereumjs/util'
 
 import type { VerkleNode } from './node/index.js'
 import type { WalkController } from './util/walkController.js'
@@ -124,19 +124,19 @@ export const ROOT_DB_KEY = utf8ToBytes('__root__')
 
 export type VerkleCrypto = VerkleFFI
 
-export enum leafType {
-  version = 0,
-  balance = 1,
-  nonce = 2,
-  codeKeccak = 3,
-  codeSize = 4,
+export enum LeafType {
+  Version = 0,
+  Balance = 1,
+  Nonce = 2,
+  CodeKeccak = 3,
+  CodeSize = 4,
 }
 
-export const VERSION_LEAF_KEY = toBytes(0)
-export const BALANCE_LEAF_KEY = toBytes(1)
-export const NONCE_LEAF_KEY = toBytes(2)
-export const CODE_KECCAK_LEAF_KEY = toBytes(3)
-export const CODE_SIZE_LEAF_KEY = toBytes(4)
+export const VERSION_LEAF_KEY = intToBytes(LeafType.Version)
+export const BALANCE_LEAF_KEY = intToBytes(LeafType.Balance)
+export const NONCE_LEAF_KEY = intToBytes(LeafType.Nonce)
+export const CODE_KECCAK_LEAF_KEY = intToBytes(LeafType.CodeKeccak)
+export const CODE_SIZE_LEAF_KEY = intToBytes(LeafType.CodeSize)
 
 export const HEADER_STORAGE_OFFSET = 64
 export const CODE_OFFSET = 128
