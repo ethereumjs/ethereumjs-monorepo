@@ -1,4 +1,3 @@
-import { VerkleProof } from '@ethereumjs/block'
 import {
   type Address,
   bigIntToBytes,
