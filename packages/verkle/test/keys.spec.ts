@@ -10,7 +10,7 @@ describe('should generate valid tree keys', () => {
       LeafType.Version,
       LeafType.Balance,
       LeafType.Nonce,
-      LeafType.CodeKeccak,
+      LeafType.CodeHash,
       LeafType.CodeSize,
     ]) {
       const key = getKey(stem, leaf)

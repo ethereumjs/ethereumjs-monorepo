@@ -1,7 +1,7 @@
 import { BIGINT_0, bytesToBigInt, bytesToHex, hexToBytes, intToBytes } from '@ethereumjs/util'
 import {
   BALANCE_LEAF_KEY,
-  CODE_KECCAK_LEAF_KEY,
+  CODE_HASH_LEAF_KEY,
   CODE_OFFSET,
   CODE_SIZE_LEAF_KEY,
   HEADER_STORAGE_OFFSET,
@@ -97,7 +97,7 @@ export class AccessWitness {
     gas += this.touchAddressOnReadAndComputeGas(address, 0, VERSION_LEAF_KEY)
     gas += this.touchAddressOnReadAndComputeGas(address, 0, BALANCE_LEAF_KEY)
     gas += this.touchAddressOnReadAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, CODE_KECCAK_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(address, 0, CODE_HASH_LEAF_KEY)
     gas += this.touchAddressOnReadAndComputeGas(address, 0, NONCE_LEAF_KEY)
 
     return gas
@@ -136,7 +136,7 @@ export class AccessWitness {
     gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERSION_LEAF_KEY)
     gas += this.touchAddressOnWriteAndComputeGas(address, 0, BALANCE_LEAF_KEY)
     gas += this.touchAddressOnWriteAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, CODE_KECCAK_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(address, 0, CODE_HASH_LEAF_KEY)
     gas += this.touchAddressOnWriteAndComputeGas(address, 0, NONCE_LEAF_KEY)
 
     return gas
@@ -147,7 +147,7 @@ export class AccessWitness {
 
     gas += this.touchAddressOnReadAndComputeGas(origin, 0, VERSION_LEAF_KEY)
     gas += this.touchAddressOnReadAndComputeGas(origin, 0, CODE_SIZE_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(origin, 0, CODE_KECCAK_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(origin, 0, CODE_HASH_LEAF_KEY)
 
     gas += this.touchAddressOnWriteAndComputeGas(origin, 0, NONCE_LEAF_KEY)
     gas += this.touchAddressOnWriteAndComputeGas(origin, 0, BALANCE_LEAF_KEY)
@@ -160,7 +160,7 @@ export class AccessWitness {
 
     gas += this.touchAddressOnReadAndComputeGas(target, 0, VERSION_LEAF_KEY)
     gas += this.touchAddressOnReadAndComputeGas(target, 0, CODE_SIZE_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(target, 0, CODE_KECCAK_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(target, 0, CODE_HASH_LEAF_KEY)
     gas += this.touchAddressOnReadAndComputeGas(target, 0, NONCE_LEAF_KEY)
 
     if (sendsValue === true) {

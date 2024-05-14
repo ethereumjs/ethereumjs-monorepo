@@ -2,7 +2,7 @@ import { concatBytes, setLengthRight, toBytes } from '@ethereumjs/util'
 
 import {
   BALANCE_LEAF_KEY,
-  CODE_KECCAK_LEAF_KEY,
+  CODE_HASH_LEAF_KEY,
   CODE_OFFSET,
   CODE_SIZE_LEAF_KEY,
   HEADER_STORAGE_OFFSET,
@@ -34,8 +34,8 @@ export const getKey = (stem: Uint8Array, leaf: LeafType | Uint8Array) => {
       return concatBytes(stem, BALANCE_LEAF_KEY)
     case LeafType.Nonce:
       return concatBytes(stem, NONCE_LEAF_KEY)
-    case LeafType.CodeKeccak:
-      return concatBytes(stem, CODE_KECCAK_LEAF_KEY)
+    case LeafType.CodeHash:
+      return concatBytes(stem, CODE_HASH_LEAF_KEY)
     case LeafType.CodeSize:
       return concatBytes(stem, CODE_SIZE_LEAF_KEY)
     default:
