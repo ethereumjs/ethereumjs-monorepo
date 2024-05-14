@@ -128,14 +128,14 @@ export enum LeafType {
   Version = 0,
   Balance = 1,
   Nonce = 2,
-  CodeKeccak = 3,
+  CodeHash = 3,
   CodeSize = 4,
 }
 
 export const VERSION_LEAF_KEY = intToBytes(LeafType.Version)
 export const BALANCE_LEAF_KEY = intToBytes(LeafType.Balance)
 export const NONCE_LEAF_KEY = intToBytes(LeafType.Nonce)
-export const CODE_KECCAK_LEAF_KEY = intToBytes(LeafType.CodeKeccak)
+export const CODE_KECCAK_LEAF_KEY = intToBytes(LeafType.CodeHash)
 export const CODE_SIZE_LEAF_KEY = intToBytes(LeafType.CodeSize)
 
 export const HEADER_STORAGE_OFFSET = 64
