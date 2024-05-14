@@ -144,7 +144,7 @@
 - [intToBytes](README.md#inttobytes)
 - [intToHex](README.md#inttohex)
 - [intToUnpaddedBytes](README.md#inttounpaddedbytes)
-- [isHexPrefixed](README.md#ishexprefixed)
+- [isHexString](README.md#isHexString)
 - [isHexString](README.md#ishexstring)
 - [isValidAddress](README.md#isvalidaddress)
 - [isValidChecksumAddress](README.md#isvalidchecksumaddress)
@@ -1951,9 +1951,9 @@ Convert value from number to an unpadded Uint8Array
 
 ___
 
-### isHexPrefixed
+### isHexString
 
-▸ **isHexPrefixed**(`str`): `boolean`
+▸ **isHexString**(`str`): `boolean`
 
 Returns a `Boolean` on whether or not the a `String` starts with '0x'
 

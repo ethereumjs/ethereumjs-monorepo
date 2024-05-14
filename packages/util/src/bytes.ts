@@ -3,7 +3,7 @@ import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 import { bytesToHex as _bytesToUnprefixedHex } from 'ethereum-cryptography/utils.js'
 
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
-import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal.js'
+import { isHexString, padToEven, stripHexPrefix } from './internal.js'
 
 import type { PrefixedHexString, TransformabletoBytes } from './types.js'
 
@@ -109,11 +109,11 @@ export const bytesToInt = (bytes: Uint8Array): number => {
 
 /**
  * Converts a {@link PrefixedHexString} to a {@link Uint8Array}
- * @param {PrefixedHexString} hex The 0x-prefixed hex string to convert
+ * @param {PrefixedHexString | string} hex The 0x-prefixed hex string to convert
  * @returns {Uint8Array} The converted bytes
  * @throws If the input is not a valid 0x-prefixed hex string
  */
-export const hexToBytes = (hex: PrefixedHexString): Uint8Array => {
+export const hexToBytes = (hex: PrefixedHexString | string): Uint8Array => {
   if (typeof hex !== 'string') {
     throw new Error(`hex argument type ${typeof hex} must be of type string`)
   }
@@ -353,7 +353,7 @@ export const addHexPrefix = (str: string): PrefixedHexString => {
     return str
   }
 
-  return isHexPrefixed(str) ? str : `0x${str}`
+  return isHexString(str) ? str : `0x${str}`
 }
 
 /**
@@ -540,6 +540,7 @@ export function bigInt64ToBytes(value: bigint, littleEndian: boolean = false): U
 // eslint-disable-next-line no-restricted-imports
 export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 
-export function hexToBigInt(input: PrefixedHexString): bigint {
-  return bytesToBigInt(hexToBytes(input))
+// TODO: Restrict the input type to only PrefixedHexString
+export function hexToBigInt(input: PrefixedHexString | string): bigint {
+  return bytesToBigInt(hexToBytes(isHexString(input) ? input : `0x${input}`))
 }

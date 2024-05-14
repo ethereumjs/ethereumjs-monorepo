@@ -19,7 +19,7 @@ import {
   getProvider,
   hexToBytes,
   intToHex,
-  isHexPrefixed,
+  isHexString,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -370,7 +370,7 @@ export class Block {
         params: [bigIntToHex(blockTag), true],
       })
     } else if (
-      isHexPrefixed(blockTag) ||
+      isHexString(blockTag) ||
       blockTag === 'latest' ||
       blockTag === 'earliest' ||
       blockTag === 'pending' ||
