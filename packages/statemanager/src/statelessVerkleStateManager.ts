@@ -13,7 +13,7 @@ import {
   short,
   toBytes,
 } from '@ethereumjs/util'
-import { getKey, getStem } from '@ethereumjs/verkle'
+import { getKey, getStem, verifyProof } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
@@ -531,7 +531,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
   }
 
-  // Note from Gabriel: This is actually not possible in Verkle.
+  // Note from Gabriel: Clearing storage is not actually not possible in Verkle.
   // This is because the storage keys are scattered throughout the verkle tree.
   /**
    * Clears all storage entries for the account corresponding to `address`.
@@ -695,27 +695,18 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   getProof(_: Address, __: Uint8Array[] = []): Promise<Proof> {
     throw new Error('Not implemented yet')
   }
+  /**
+   * Verifies whether the execution witness matches the stateRoot
+   * @param {Uint8Array} stateRoot - The stateRoot to verify the executionWitness against
+   * @returns {boolean} - Returns true if the executionWitness matches the provided stateRoot, otherwise false
+   */
+  verifyProof(stateRoot: Uint8Array): boolean {
+    if (this._executionWitness === undefined) {
+      debug('Missing executionWitness')
+      return false
+    }
 
-  // TODO: Re-implement this method once we have working verifyUpdate and the testnets have been updated to provide ingestible data
-  async verifyProof(parentStateRoot: Uint8Array): Promise<boolean> {
-    // Implementation: https://github.com/crate-crypto/rust-verkle-wasm/blob/master/src/lib.rs#L45
-    // The root is the root of the current (un-updated) trie
-    // The proof is proof of membership of all of the accessed values
-    // keys_values is a map from the key of the accessed value to a tuple
-    // the tuple contains the old value and the updated value
-    //
-    // This function returns the new root when all of the updated values are applied
-
-    // const updatedStateRoot: Uint8Array = verifyUpdate(
-    //   parentStateRoot,
-    //   this._proof, // TODO: Convert this into a Uint8Array ingestible by the method
-    //   new Map() // TODO: Generate the keys_values map from the old to the updated value
-    // )
-
-    // Verify that updatedStateRoot matches the state root of the block
-    // return equalsBytes(updatedStateRoot, verkleRoot)
-
-    return true
+    return verifyProof(this.verkleCrypto, stateRoot, this._executionWitness)
   }
 
   // Verifies that the witness post-state matches the computed post-state
