@@ -12,7 +12,7 @@ import {
 } from '@ethereumjs/util'
 import {
   BALANCE_LEAF_KEY,
-  CODE_KECCAK_LEAF_KEY,
+  CODE_HASH_LEAF_KEY,
   CODE_SIZE_LEAF_KEY,
   VERSION_LEAF_KEY,
   getTreeIndexesForStorageSlot,
@@ -275,7 +275,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             codeAddress,
             0,
-            CODE_KECCAK_LEAF_KEY
+            CODE_HASH_LEAF_KEY
           )
 
           gas += coldAccessGas
