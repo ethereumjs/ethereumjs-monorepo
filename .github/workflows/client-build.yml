@@ -84,3 +84,13 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: cd ${{github.workspace}}/packages/client && npx vitest run test/cli/cli
+
+  assertoor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Kurtosis Assertoor GitHub Action
+        uses: ethpandaops/kurtosis-assertoor-github-action@v1
+        with:
+          ethereum_package_args: ./kurtosis-args.yaml
