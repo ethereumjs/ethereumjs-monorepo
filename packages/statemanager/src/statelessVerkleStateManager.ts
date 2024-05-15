@@ -111,6 +111,7 @@ export interface StatelessVerkleStateManagerOpts {
   codeCacheOpts?: CacheOptions
   accesses?: AccessWitness
   verkleCrypto?: VerkleCrypto
+  initialStateRoot?: Uint8Array
 }
 
 const PUSH_OFFSET = 95
@@ -136,6 +137,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   _accountCache?: AccountCache
   _storageCache?: StorageCache
   _codeCache?: CodeCache
+  _cachedStateRoot?: Uint8Array
 
   originalStorageCache: OriginalStorageCache
 
@@ -229,6 +231,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         type: this._codeCacheSettings.type,
       })
     }
+
+    this._cachedStateRoot = opts.initialStateRoot
 
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
@@ -892,21 +896,26 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   async flush(): Promise<void> {}
 
   /**
-   * Gets the verkle root.
-   * NOTE: this needs some examination in the code where this is needed
-   * and if we have the verkle root present
-   * @returns {Promise<Uint8Array>} - Returns the verkle root of the `StateManager`
+   * Gets the cache state root.
+   * This is used to persist the stateRoot between blocks, so that blocks can retrieve the stateRoot of the parent block.
+   * This is required to verify and prove verkle execution witnesses.
+   * @returns {Promise<Uint8Array>} - Returns the cached state root
    */
   async getStateRoot(): Promise<Uint8Array> {
-    return new Uint8Array(0)
+    if (this._cachedStateRoot === undefined) {
+      throw new Error('Cache state root missing')
+    }
+    return this._cachedStateRoot
   }
 
   /**
-   * TODO: needed?
-   * Maybe in this context: reset to original pre state suffice
-   * @param stateRoot - The verkle root to reset the instance to
+   * Sets the cache state root.
+   * This is used to persist the stateRoot between blocks, so that blocks can retrieve the stateRoot of the parent block.
+   * @param stateRoot - The stateRoot to set
    */
-  async setStateRoot(_: Uint8Array): Promise<void> {}
+  async setStateRoot(stateRoot: Uint8Array): Promise<void> {
+    this._cachedStateRoot = stateRoot
+  }
 
   /**
    * Dumps the RLP-encoded storage values for an `account` specified by `address`.

@@ -190,7 +190,9 @@ export class VMExecution extends Execution {
       return
     }
     this.config.logger.info(`Setting up verkleVM`)
-    const stateManager = await StatelessVerkleStateManager.create()
+    const stateManager = await StatelessVerkleStateManager.create({
+      initialStateRoot: this.config.initialVerkleStateRoot,
+    })
     this.verkleVM = await VM.create({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
@@ -439,6 +441,7 @@ export class VMExecution extends Execution {
           const result = await vm.runBlock({
             clearCache,
             ...opts,
+            parentStateRoot: prevVMStateRoot,
             skipHeaderValidation,
             reportPreimages,
           })
