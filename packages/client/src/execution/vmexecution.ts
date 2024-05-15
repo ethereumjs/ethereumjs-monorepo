@@ -736,6 +736,7 @@ export class VMExecution extends Execution {
                     skipBlockValidation,
                     skipHeaderValidation: true,
                     reportPreimages: this.config.savePreimages,
+                    parentStateRoot: parentState,
                   })
                   const afterTS = Date.now()
                   const diffSec = Math.round((afterTS - beforeTS) / 1000)
