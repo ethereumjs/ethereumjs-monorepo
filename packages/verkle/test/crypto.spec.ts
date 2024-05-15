@@ -1,4 +1,4 @@
-import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
@@ -37,12 +37,11 @@ describe('Verkle cryptographic helpers', () => {
     assert.isTrue(verifyProof(verkle, prestateRoot, executionWitness))
   })
 
-  // TODO: This currently throws, but should just return false
-  // it('verifyProof(): should return false for invalid verkle proofs', () => {
-  //   // Random preStateRoot
-  //   const prestateRoot = randomBytes(32)
-  //   const executionWitness = verkleBlockJSON.executionWitness as VerkleExecutionWitness
-  //   // Modify the proof to make it invalid
-  //   assert.isFalse(verifyProof(verkle, prestateRoot, executionWitness))
-  // })
+  it('verifyProof(): should return false for invalid verkle proofs', () => {
+    // Random preStateRoot
+    const prestateRoot = randomBytes(32)
+    const executionWitness = verkleBlockJSON.executionWitness as VerkleExecutionWitness
+    // Modify the proof to make it invalid
+    assert.isFalse(verifyProof(verkle, prestateRoot, executionWitness))
+  })
 })
