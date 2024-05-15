@@ -154,7 +154,7 @@ export class VerkleTree {
    */
   async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
     const node = await this.findLeafNode(key, throwIfMissing)
-    if (node !== null) {
+    if (typeof node !== 'number') {
       const keyLastByte = key[key.length - 1]
 
       // The retrieved leaf node contains an array of 256 possible values.
@@ -177,9 +177,9 @@ export class VerkleTree {
 
     // Find or create the leaf node
     let leafNode = await this.findLeafNode(key, false)
-    if (leafNode === null) {
+    if (typeof leafNode === 'number') {
       // If leafNode is missing, create it
-      leafNode = LeafNode.create(key.slice(0, 31), [value])
+      leafNode = LeafNode.create(key.slice(0, 31), [value], leafNode)
     }
 
     // Walk up the tree and update internal nodes
@@ -279,13 +279,14 @@ export class VerkleTree {
    * @param key - the search key
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
-  async findLeafNode(key: Uint8Array, throwIfMissing = false): Promise<LeafNode | null> {
-    const { node } = await this.findPath(key, throwIfMissing)
+  async findLeafNode(key: Uint8Array, throwIfMissing = false): Promise<LeafNode | number> {
+    const { node, stack } = await this.findPath(key, throwIfMissing)
     if (!(node instanceof LeafNode)) {
       if (throwIfMissing) {
         throw new Error('leaf node not found')
       }
-      return null
+      // return depth of remaining nodes
+      return stack.length
     }
     return node
   }

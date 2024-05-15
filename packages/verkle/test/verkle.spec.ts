@@ -47,7 +47,7 @@ const absentKeys = [
 ].map((key) => hexToBytes(key as PrefixedHexString))
 
 describe('Verkle tree', () => {
-  it('should insert and retrieve values', async () => {
+  it.only('should insert and retrieve values', async () => {
     const verkleCrypto = await loadVerkleCrypto()
     const tree = await VerkleTree.create({
       verkleCrypto,

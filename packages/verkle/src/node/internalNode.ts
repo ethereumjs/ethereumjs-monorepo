@@ -98,7 +98,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
 
       // Next word differs, so this was the last level.
       // Insert it directly into its final slot.
-      const leafNode = LeafNode.create(stem, values)
+      const leafNode = LeafNode.create(stem, values, this.depth + 1)
 
       leafNode.setDepth(this.depth + 2)
       newBranch.cowChild(nextByteInInsertedKey)

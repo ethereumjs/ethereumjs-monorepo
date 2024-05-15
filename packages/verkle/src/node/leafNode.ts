@@ -8,8 +8,8 @@ import type { VerkleNodeOptions } from './types.js'
 export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   public stem: Uint8Array
   public values: Uint8Array[]
-  public c1: Point
-  public c2: Point
+  public c1?: Point
+  public c2?: Point
   public type = VerkleNodeType.Leaf
 
   constructor(options: VerkleNodeOptions[VerkleNodeType.Leaf]) {
@@ -21,8 +21,13 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     this.c2 = options.c2
   }
 
-  static create(stem: Uint8Array, values: Uint8Array[]): LeafNode {
-    return new LeafNode({ stem, values })
+  static create(
+    stem: Uint8Array,
+    values: Uint8Array[],
+    depth: number,
+    commitment?: Uint8Array
+  ): LeafNode {
+    return new LeafNode({ stem, values, depth, commitment: commitment ?? new Uint8Array() })
   }
 
   static fromRawNode(rawNode: Uint8Array[], depth: number): LeafNode {
@@ -73,8 +78,8 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       new Uint8Array([VerkleNodeType.Leaf]),
       this.stem,
       this.commitment,
-      this.c1.bytes(),
-      this.c2.bytes(),
+      this.c1?.bytes() ?? new Uint8Array(),
+      this.c2?.bytes() ?? new Uint8Array(),
       ...this.values,
     ]
   }

@@ -1,10 +1,11 @@
-import { equalsBytes, randomBytes } from '@ethereumjs/util'
+import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VerkleNodeType } from '../src/node/index.js'
 import { LeafNode } from '../src/node/leafNode.js'
 
 import type { Point } from '../src/types.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('verkle node - leaf', () => {
   it('constructor should create an leaf node', async () => {
@@ -38,8 +39,18 @@ describe('verkle node - leaf', () => {
     assert.equal(node.depth, depth, 'depth should be set')
   })
 
-  it.only('create method should create an leaf node', () => {
-    const nodeData = values[1]
-    // const node = LeafNode.create()
+  it('create method should create an leaf node', () => {
+    const presentKeys = ['0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01'].map(
+      (key) => hexToBytes(key as PrefixedHexString)
+    )
+
+    // Corresponding values for the present keys
+    const values = ['0x320122e8584be00d000000000000000000000000000000000000000000000000'].map(
+      (key) => hexToBytes(key as PrefixedHexString)
+    )
+    const stem = presentKeys[0].slice(0, 31)
+    const nodeData = values
+    const node = LeafNode.create(stem, nodeData, 0)
+    assert.ok(node instanceof LeafNode)
   })
 })
