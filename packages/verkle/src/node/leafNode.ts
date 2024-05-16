@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { BaseVerkleNode } from './baseVerkleNode.js'
 import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
