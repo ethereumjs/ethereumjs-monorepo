@@ -10,7 +10,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   hexToBytes,
-  isHexPrefixed,
+  isHexString,
   stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
@@ -26,7 +26,7 @@ import type * as tape from 'tape'
 function formatBlockHeader(data: any) {
   const formatted: any = {}
   for (const [key, value] of Object.entries(data) as [string, string][]) {
-    formatted[key] = isHexPrefixed(value) ? value : BigInt(value)
+    formatted[key] = isHexString(value) ? value : BigInt(value)
   }
   return formatted
 }

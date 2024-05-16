@@ -38,7 +38,7 @@ export interface ChainConfig {
   bootstrapNodes: BootstrapNodeConfig[]
   dnsNetworks?: string[]
   consensus: ConsensusConfig
-  depositContractAddress?: string
+  depositContractAddress?: PrefixedHexString
 }
 
 // TODO: Remove the string type and only keep PrefixedHexString

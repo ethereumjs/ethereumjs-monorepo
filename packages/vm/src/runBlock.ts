@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager, getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
+import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
@@ -23,6 +23,7 @@ import {
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
+import { getTreeIndexesForStorageSlot } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 
 import { Bloom } from './bloom/index.js'
@@ -555,7 +556,16 @@ export async function accumulateParentBeaconBlockRoot(
    * All ethereum accounts have empty storage by default
    */
 
-  if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+  /**
+   * Note: (by Gabriel)
+   * Get account will throw an error in stateless execution b/c witnesses are not bundled
+   * But we do need an account so we are able to put the storage
+   */
+  try {
+    if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+      await this.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
+    }
+  } catch (_) {
     await this.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
   }
 
