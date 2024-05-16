@@ -544,6 +544,8 @@ export class Config {
     this.statelessVerkle = options.statelessVerkle ?? true
     this.startExecution = options.startExecution ?? false
     this.ignoreStatelessInvalidExecs = options.ignoreStatelessInvalidExecs ?? false
+
+    this.metrics = options.prometheusMetrics
     this.initialVerkleStateRoot = options.initialVerkleStateRoot ?? new Uint8Array()
 
     // Start it off as synchronized if this is configured to mine or as single node
