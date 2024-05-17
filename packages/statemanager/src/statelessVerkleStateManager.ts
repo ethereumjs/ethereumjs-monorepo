@@ -111,7 +111,6 @@ export interface StatelessVerkleStateManagerOpts {
   codeCacheOpts?: CacheOptions
   accesses?: AccessWitness
   verkleCrypto?: VerkleCrypto
-  initialStateRoot?: Uint8Array
 }
 
 const PUSH_OFFSET = 95
@@ -231,8 +230,6 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         type: this._codeCacheSettings.type,
       })
     }
-
-    this._cachedStateRoot = opts.initialStateRoot
 
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
