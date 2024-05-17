@@ -15,6 +15,8 @@ import {
 } from '@ethereumjs/util'
 import {
   LeafType,
+  decodeLeafBasicData,
+  encodeLeafBasicData,
   getKey,
   getStem,
   getTreeKeyForCodeChunk,
@@ -520,27 +522,16 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     const stem = getStem(this.verkleCrypto, address, 0)
-    const versionKey = getKey(stem, LeafType.Version)
-    const balanceKey = getKey(stem, LeafType.Balance)
-    const nonceKey = getKey(stem, LeafType.Nonce)
+    const basicDataKey = getKey(stem, LeafType.BasicData)
     const codeHashKey = getKey(stem, LeafType.CodeHash)
-    const codeSizeKey = getKey(stem, LeafType.CodeSize)
 
-    const versionRaw = this._state[bytesToHex(versionKey)]
-    const balanceRaw = this._state[bytesToHex(balanceKey)]
-    const nonceRaw = this._state[bytesToHex(nonceKey)]
+    const basicDataRaw = this._state[bytesToHex(basicDataKey)]
     const codeHashRaw = this._state[bytesToHex(codeHashKey)]
-    const codeSizeRaw = this._state[bytesToHex(codeSizeKey)]
 
     // check if the account didn't exist if any of the basic keys have null
-    if (versionRaw === null || balanceRaw === null || nonceRaw === null || codeHashRaw === null) {
+    if (basicDataRaw === null || codeHashRaw === null) {
       // check any of the other key shouldn't have string input available as this account didn't exist
-      if (
-        typeof versionRaw === `string` ||
-        typeof balanceRaw === 'string' ||
-        typeof nonceRaw === 'string' ||
-        typeof codeHashRaw === 'string'
-      ) {
+      if (typeof basicDataRaw === `string` || typeof codeHashRaw === 'string') {
         const errorMsg = `Invalid witness for a non existing address=${address} stem=${bytesToHex(
           stem
         )}`
@@ -560,32 +551,23 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       throw Error(errorMsg)
     }
 
-    if (
-      versionRaw === undefined &&
-      balanceRaw === undefined &&
-      nonceRaw === undefined &&
-      codeHashRaw === undefined &&
-      codeSizeRaw === undefined
-    ) {
+    if (basicDataRaw === undefined && codeHashRaw === undefined) {
       const errorMsg = `No witness bundled for address=${address} stem=${bytesToHex(stem)}`
       debug(errorMsg)
       throw Error(errorMsg)
     }
 
+    const { version, balance, nonce, codeSize } = decodeLeafBasicData(hexToBytes(basicDataRaw))
+
     const account = Account.fromPartialAccountData({
-      version: typeof versionRaw === 'string' ? bytesToInt32(hexToBytes(versionRaw), true) : null,
-      balance: typeof balanceRaw === 'string' ? bytesToBigInt(hexToBytes(balanceRaw), true) : null,
-      nonce: typeof nonceRaw === 'string' ? bytesToBigInt(hexToBytes(nonceRaw), true) : null,
+      version,
+      balance,
+      nonce,
       codeHash: typeof codeHashRaw === 'string' ? hexToBytes(codeHashRaw) : null,
       // if codeSizeRaw is null, it means account didnt exist or it was EOA either way codeSize is 0
       // if codeSizeRaw is undefined, then we pass in null which in our context of partial account means
       // not specified
-      codeSize:
-        typeof codeSizeRaw === 'string'
-          ? bytesToInt32(hexToBytes(codeSizeRaw), true)
-          : codeSizeRaw === null
-          ? 0
-          : null,
+      codeSize,
       storageRoot: null,
     })
 
@@ -607,16 +589,15 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     if (this._accountCacheSettings.deactivate) {
       const stem = getStem(this.verkleCrypto, address, 0)
-      const balanceKey = getKey(stem, LeafType.Balance)
-      const nonceKey = getKey(stem, LeafType.Nonce)
-      const codeHashKey = getKey(stem, LeafType.CodeHash)
+      const basicDataKey = getKey(stem, LeafType.BasicData)
+      const basicDataBytes = encodeLeafBasicData({
+        version: account.version,
+        balance: account.balance,
+        nonce: account.nonce,
+        codeSize: account.codeSize,
+      })
 
-      const balanceBuf = setLengthRight(bigIntToBytes(account.balance, true), 32)
-      const nonceBuf = setLengthRight(bigIntToBytes(account.nonce, true), 32)
-
-      this._state[bytesToHex(balanceKey)] = bytesToHex(balanceBuf)
-      this._state[bytesToHex(nonceKey)] = bytesToHex(nonceBuf)
-      this._state[bytesToHex(codeHashKey)] = bytesToHex(account.codeHash)
+      this._state[bytesToHex(basicDataKey)] = bytesToHex(basicDataBytes)
     } else {
       if (account !== undefined) {
         this._accountCache!.put(address, account, true)

@@ -1,14 +1,11 @@
 import { BIGINT_0, bytesToBigInt, bytesToHex, hexToBytes, intToBytes } from '@ethereumjs/util'
 import {
-  BALANCE_LEAF_KEY,
+  BASIC_DATA_LEAF_KEY,
   CODE_HASH_LEAF_KEY,
   CODE_OFFSET,
-  CODE_SIZE_LEAF_KEY,
   HEADER_STORAGE_OFFSET,
   MAIN_STORAGE_OFFSET,
-  NONCE_LEAF_KEY,
   VERKLE_NODE_WIDTH,
-  VERSION_LEAF_KEY,
   getKey,
   getStem,
   getTreeIndicesForCodeChunk,
@@ -94,11 +91,8 @@ export class AccessWitness {
   touchAndChargeProofOfAbsence(address: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, BALANCE_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(address, 0, BASIC_DATA_LEAF_KEY)
     gas += this.touchAddressOnReadAndComputeGas(address, 0, CODE_HASH_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, NONCE_LEAF_KEY)
 
     return gas
   }
@@ -106,8 +100,7 @@ export class AccessWitness {
   touchAndChargeMessageCall(address: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(address, 0, BASIC_DATA_LEAF_KEY)
 
     return gas
   }
@@ -115,8 +108,8 @@ export class AccessWitness {
   touchAndChargeValueTransfer(caller: Address, target: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnWriteAndComputeGas(caller, 0, BALANCE_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(target, 0, BALANCE_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(caller, 0, BASIC_DATA_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(target, 0, BASIC_DATA_LEAF_KEY)
 
     return gas
   }
@@ -124,8 +117,7 @@ export class AccessWitness {
   touchAndChargeContractCreateInit(address: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, NONCE_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(address, 0, BASIC_DATA_LEAF_KEY)
 
     return gas
   }
@@ -133,11 +125,8 @@ export class AccessWitness {
   touchAndChargeContractCreateCompleted(address: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, BALANCE_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(address, 0, BASIC_DATA_LEAF_KEY)
     gas += this.touchAddressOnWriteAndComputeGas(address, 0, CODE_HASH_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, NONCE_LEAF_KEY)
 
     return gas
   }
@@ -145,12 +134,8 @@ export class AccessWitness {
   touchTxOriginAndComputeGas(origin: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnReadAndComputeGas(origin, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(origin, 0, CODE_SIZE_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(origin, 0, BASIC_DATA_LEAF_KEY)
     gas += this.touchAddressOnReadAndComputeGas(origin, 0, CODE_HASH_LEAF_KEY)
-
-    gas += this.touchAddressOnWriteAndComputeGas(origin, 0, NONCE_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(origin, 0, BALANCE_LEAF_KEY)
 
     return gas
   }
@@ -158,15 +143,10 @@ export class AccessWitness {
   touchTxTargetAndComputeGas(target: Address, { sendsValue }: { sendsValue?: boolean } = {}) {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnReadAndComputeGas(target, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(target, 0, CODE_SIZE_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(target, 0, CODE_HASH_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(target, 0, NONCE_LEAF_KEY)
-
     if (sendsValue === true) {
-      gas += this.touchAddressOnWriteAndComputeGas(target, 0, BALANCE_LEAF_KEY)
+      gas += this.touchAddressOnWriteAndComputeGas(target, 0, BASIC_DATA_LEAF_KEY)
     } else {
-      gas += this.touchAddressOnReadAndComputeGas(target, 0, BALANCE_LEAF_KEY)
+      gas += this.touchAddressOnReadAndComputeGas(target, 0, BASIC_DATA_LEAF_KEY)
     }
 
     return gas
