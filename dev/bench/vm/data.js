@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715868896175,
+  "lastUpdate": 1715940956701,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "willcory10@gmail.com",
-            "name": "Will Cory",
-            "username": "roninjin10"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "2dd8a4252437e62b3f4a9493b214a126be9436d5",
-          "message": "fix: Bug in error message (#3386)\n\nError message had a typo",
-          "timestamp": "2024-05-01T14:49:27-04:00",
-          "tree_id": "2b1061f2ad7a197b8b7804a0ee128d1736f965aa",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2dd8a4252437e62b3f4a9493b214a126be9436d5"
-        },
-        "date": 1714589527469,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40166,
-            "range": "±2.99%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39667,
-            "range": "±1.34%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39814,
-            "range": "±1.36%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38785,
-            "range": "±1.58%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35076,
-            "range": "±7.02%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.04%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c95499c5b9bbdb4b36cc05f6785dd62e8a4d91a3",
+          "message": "verkle: implement verkle proof verification  (#3423)\n\n* statemanager: proper type for verkleproof\n\n* verkle: add verifyProof wrapper in verkle crypto\n\n* verkle: remove unused import\n\n* chore: update package lock\n\n* statemanageR: add verifyProof implementation to stateless verkle statemanager\n\n* verkle: add jsdoc for verkle verifyProof method\n\n* verkle: verkle proof test\n\n* verkle: add failing test case\n\n* client: add the ability to provide and use the parentStateRoot\n\n* Update verkle crypto dep\n\n* Activate invalid proof test\n\n* src: cleanup\n\n* Update packages/client/src/config.ts\n\n* vm: move up error check\n\n---------\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-05-17T06:13:09-04:00",
+          "tree_id": "2622159a0e91aa4a6494af43d4841b2906227d73",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c95499c5b9bbdb4b36cc05f6785dd62e8a4d91a3"
+        },
+        "date": 1715940955501,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42541,
+            "range": "±1.60%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40127,
+            "range": "±4.71%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40933,
+            "range": "±1.85%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39923,
+            "range": "±1.60%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38660,
+            "range": "±2.09%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
