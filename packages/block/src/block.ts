@@ -544,6 +544,8 @@ export class Block {
     // undefined indicates that the executionWitness should be initialized with the default state
     if (this.common.isActivatedEIP(6800) && this.executionWitness === undefined) {
       this.executionWitness = {
+        // TODO: Evaluate how default parentStateRoot should be handled?
+        parentStateRoot: '0x',
         stateDiff: [],
         verkleProof: {
           commitmentsByPath: [],
