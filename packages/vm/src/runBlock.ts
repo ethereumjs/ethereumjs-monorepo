@@ -68,7 +68,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     console.time(entireBlockLabel)
   }
 
-  const state = this.stateManager
+  const stateManager = this.stateManager
 
   const { root } = opts
   const clearCache = opts.clearCache ?? true
@@ -125,26 +125,40 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Set provided state root ${bytesToHex(root)} clearCache=${clearCache}`)
     }
-    await state.setStateRoot(root, clearCache)
+    await stateManager.setStateRoot(root, clearCache)
   }
 
   if (this.common.isActivatedEIP(6800)) {
-    if (!(state instanceof StatelessVerkleStateManager)) {
+    if (!(stateManager instanceof StatelessVerkleStateManager)) {
       throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
     }
+
+    if (opts.parentStateRoot === undefined) {
+      throw Error(`Parent state root is required for StatelessVerkleStateManager execution`)
+    }
+
     if (this.DEBUG) {
       debug(`Initializing StatelessVerkleStateManager executionWitness`)
     }
     if (clearCache) {
-      ;(this._opts.stateManager as StatelessVerkleStateManager).clearCaches()
+      stateManager.clearCaches()
     }
 
-    ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
-      block.header.number,
-      block.executionWitness
-    )
+    // Update the stateRoot cache
+    await stateManager.setStateRoot(block.header.stateRoot)
+
+    // Populate the execution witness
+    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
+
+    if (stateManager.verifyProof(opts.parentStateRoot) === false) {
+      throw Error(`Verkle proof verification failed`)
+    }
+
+    if (this.DEBUG) {
+      debug(`Verkle proof verification succeeded`)
+    }
   } else {
-    if (state instanceof StatelessVerkleStateManager) {
+    if (stateManager instanceof StatelessVerkleStateManager) {
       throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
     }
   }
@@ -194,7 +208,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     throw err
   }
 
-  let requestsRoot
+  let requestsRoot: Uint8Array | undefined
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
     requests = await accumulateRequests(this, result.results)
@@ -207,7 +221,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(`block checkpoint committed`)
   }
 
-  const stateRoot = await state.getStateRoot()
+  const stateRoot = await stateManager.getStateRoot()
 
   // Given the generate option, either set resulting header
   // values to the current block, or validate the resulting
