@@ -13,6 +13,7 @@ import {
   type VerkleTreeOptsWithDefaults,
 } from './types.js'
 import { WalkController, matchingBytesLength } from './util/index.js'
+import { verifyKeyLength } from './util/keys.js'
 
 import type { VerkleNode } from './node/types.js'
 import type { FoundNodeFunction, VerkleCrypto } from './types.js'
@@ -153,6 +154,7 @@ export class VerkleTree {
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
   async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
+    verifyKeyLength(key)
     const node = await this._db.get(key)
     if (node !== undefined && node instanceof LeafNode)
       if (node instanceof LeafNode) {
@@ -174,19 +176,22 @@ export class VerkleTree {
    * @returns A Promise that resolves once value is stored.
    */
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
+    verifyKeyLength(key)
     await this._db.put(key, value)
 
     // Find or create the leaf node
     let leafNode = await this.findLeafNode(key, false)
     if (!(leafNode instanceof LeafNode)) {
       // If leafNode is missing, create it
-      const commitment = this.verkleCrypto.updateCommitment(this.verkleCrypto.zeroCommitment)
-      leafNode = LeafNode.create(
-        key.slice(0, 31),
-        [value],
-        leafNode.length,
-        leafNode[leafNode.length - 1].commitment
-      )
+      const values = new Array(256) as Uint8Array[] // Create new empty array of 256 values
+      const suffix = key[31]
+      values[suffix] = value // Set value at key suffix
+
+      // Generate a commitment for the new leaf node, using the zero commitment as a base
+      const commitment = this.verkleCrypto.zeroCommitment
+      // TODO: Confirm the old/new scalar values we're passing in here are correct
+      this.verkleCrypto.updateCommitment(commitment, suffix, new Uint8Array(), value)
+      leafNode = LeafNode.create(key.slice(0, 31), values, leafNode.length, commitment)
     }
 
     // Walk up the tree and update internal nodes

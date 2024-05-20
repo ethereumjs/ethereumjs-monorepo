@@ -6,7 +6,7 @@ import type { VerkleNodeOptions } from './types.js'
 
 export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   public stem: Uint8Array
-  public values: Uint8Array[]
+  public values: Uint8Array[] // Array of 256 possible values represented as 32 byte Uint8Arrays
   public c1?: Point
   public c2?: Point
   public type = VerkleNodeType.Leaf
@@ -24,9 +24,9 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     stem: Uint8Array,
     values: Uint8Array[],
     depth: number,
-    commitment?: Uint8Array
+    commitment: Uint8Array
   ): LeafNode {
-    return new LeafNode({ stem, values, depth, commitment: commitment ?? new Uint8Array() })
+    return new LeafNode({ stem, values, depth, commitment })
   }
 
   static fromRawNode(rawNode: Uint8Array[], depth: number): LeafNode {
@@ -63,7 +63,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     this.insertStem(key.slice(0, 31), values, nodeResolverFn)
   }
 
-  insertMultiple(key: Uint8Array, values: Uint8Array[]): void {
+  insertMultiple(keys: Uint8Array[], values: Uint8Array[]): void {
     throw new Error('Not implemented')
   }
 
