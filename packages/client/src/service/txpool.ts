@@ -9,16 +9,19 @@ import {
 import {
   Account,
   Address,
+  BIGINT_0,
+  BIGINT_2,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
+import Heap from 'qheap'
 
-import type { Config } from '../config'
-import type { Peer } from '../net/peer'
-import type { PeerPool } from '../net/peerpool'
-import type { FullEthereumService } from './fullethereumservice'
+import type { Config } from '../config.js'
+import type { Peer } from '../net/peer/peer.js'
+import type { PeerPool } from '../net/peerpool.js'
+import type { FullEthereumService } from './fullethereumservice.js'
 import type { Block } from '@ethereumjs/block'
 import type {
   FeeMarketEIP1559Transaction,
@@ -27,8 +30,6 @@ import type {
 } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
 import type QHeap from 'qheap'
-
-const Heap = require('qheap')
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10
@@ -84,7 +85,6 @@ type GasPrice = {
 export class TxPool {
   private config: Config
   private service: FullEthereumService
-  private vm: VM
 
   private opened: boolean
 
@@ -168,7 +168,6 @@ export class TxPool {
   constructor(options: TxPoolOptions) {
     this.config = options.config
     this.service = options.service
-    this.vm = this.service.execution.vm
 
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
     this.txsInPool = 0
@@ -209,7 +208,7 @@ export class TxPool {
       this._logInterval = setInterval(this._logPoolStats.bind(this), this.LOG_STATISTICS_INTERVAL)
     }
     this.running = true
-    this.config.logger.info('TxPool started.')
+    this.config.superMsg('TxPool started.')
     return true
   }
 
@@ -223,7 +222,7 @@ export class TxPool {
     // If height gte target, we are close enough to the
     // head of the chain that the tx pool can be started
     const target =
-      (this.config.syncTargetHeight ?? BigInt(0)) -
+      (this.config.syncTargetHeight ?? BIGINT_0) -
       BigInt(this.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
     if (this.service.chain.headers.height >= target) {
       this.start()
@@ -241,7 +240,9 @@ export class TxPool {
       existingTxGasPrice.maxFee +
       (existingTxGasPrice.maxFee * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
     if (newGasPrice.tip < minTipCap || newGasPrice.maxFee < minFeeCap) {
-      throw new Error('replacement gas too low')
+      throw new Error(
+        `replacement gas too low, got tip ${newGasPrice.tip}, min: ${minTipCap}, got fee ${newGasPrice.maxFee}, min: ${minFeeCap}`
+      )
     }
 
     if (addedTx instanceof BlobEIP4844Transaction && existingTx instanceof BlobEIP4844Transaction) {
@@ -249,7 +250,9 @@ export class TxPool {
         existingTx.maxFeePerBlobGas +
         (existingTx.maxFeePerBlobGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
       if (addedTx.maxFeePerBlobGas < minblobGasFee) {
-        throw new Error('replacement blob gas too low')
+        throw new Error(
+          `replacement blob gas too low, got: ${addedTx.maxFeePerBlobGas}, min: ${minblobGasFee}`
+        )
       }
     }
   }
@@ -300,8 +303,8 @@ export class TxPool {
       }
     }
     const block = await this.service.chain.getCanonicalHeadHeader()
-    if (typeof block.baseFeePerGas === 'bigint' && block.baseFeePerGas !== BigInt(0)) {
-      if (currentGasPrice.maxFee < block.baseFeePerGas / BigInt(2) && !isLocalTransaction) {
+    if (typeof block.baseFeePerGas === 'bigint' && block.baseFeePerGas !== BIGINT_0) {
+      if (currentGasPrice.maxFee < block.baseFeePerGas / BIGINT_2 && !isLocalTransaction) {
         throw new Error(
           `Tx cannot pay basefee of ${block.baseFeePerGas}, have ${currentGasPrice.maxFee} (not within 50% range of current basefee)`
         )
@@ -314,7 +317,7 @@ export class TxPool {
     }
 
     // Copy VM in order to not overwrite the state root of the VMExecution module which may be concurrently running blocks
-    const vmCopy = await this.vm.shallowCopy()
+    const vmCopy = await this.service.execution.vm.shallowCopy()
     // Set state root to latest block so that account balance is correct when doing balance check
     await vmCopy.stateManager.setStateRoot(block.stateRoot)
     let account = await vmCopy.stateManager.getAccount(senderAddress)
@@ -358,7 +361,21 @@ export class TxPool {
       add.push({ tx, added, hash })
       this.pool.set(address, add)
       this.handled.set(hash, { address, added })
+
       this.txsInPool++
+
+      if (isLegacyTx(tx)) {
+        this.config.metrics?.legacyTxGauge?.inc()
+      }
+      if (isAccessListEIP2930Tx(tx)) {
+        this.config.metrics?.accessListEIP2930TxGauge?.inc()
+      }
+      if (isFeeMarketEIP1559Tx(tx)) {
+        this.config.metrics?.feeMarketEIP1559TxGauge?.inc()
+      }
+      if (isBlobEIP4844Tx(tx)) {
+        this.config.metrics?.blobEIP4844TxGauge?.inc()
+      }
     } catch (e) {
       this.handled.set(hash, { address, added, error: e as Error })
       throw e
@@ -387,15 +404,30 @@ export class TxPool {
   /**
    * Removes the given tx from the pool
    * @param txHash Hash of the transaction
+   * @param tx Optional, the transaction object itself can be included for collecting metrics
    */
-  removeByHash(txHash: UnprefixedHash) {
+  removeByHash(txHash: UnprefixedHash, tx?: any) {
     const handled = this.handled.get(txHash)
     if (!handled) return
     const { address } = handled
     const poolObjects = this.pool.get(address)
     if (!poolObjects) return
     const newPoolObjects = poolObjects.filter((poolObj) => poolObj.hash !== txHash)
+
     this.txsInPool--
+    if (isLegacyTx(tx)) {
+      this.config.metrics?.legacyTxGauge?.dec()
+    }
+    if (isAccessListEIP2930Tx(tx)) {
+      this.config.metrics?.accessListEIP2930TxGauge?.dec()
+    }
+    if (isFeeMarketEIP1559Tx(tx)) {
+      this.config.metrics?.feeMarketEIP1559TxGauge?.dec()
+    }
+    if (isBlobEIP4844Tx(tx)) {
+      this.config.metrics?.blobEIP4844TxGauge?.dec()
+    }
+
     if (newPoolObjects.length === 0) {
       // List of txs for address is now empty, can delete
       this.pool.delete(address)
@@ -569,7 +601,7 @@ export class TxPool {
    * @param peerPool Reference to the peer pool
    */
   async handleAnnouncedTxHashes(txHashes: Uint8Array[], peer: Peer, peerPool: PeerPool) {
-    if (!this.running || txHashes.length === 0) return
+    if (!this.running || txHashes === undefined || txHashes.length === 0) return
     this.addToKnownByPeer(txHashes, peer)
 
     const reqHashes = []
@@ -627,7 +659,7 @@ export class TxPool {
     for (const block of newBlocks) {
       for (const tx of block.transactions) {
         const txHash: UnprefixedHash = bytesToUnprefixedHex(tx.hash())
-        this.removeByHash(txHash)
+        this.removeByHash(txHash, tx)
       }
     }
   }
@@ -672,7 +704,7 @@ export class TxPool {
    */
   private normalizedGasPrice(tx: TypedTransaction, baseFee?: bigint) {
     const supports1559 = tx.supports(Capability.EIP1559FeeMarket)
-    if (typeof baseFee === 'bigint' && baseFee !== BigInt(0)) {
+    if (typeof baseFee === 'bigint' && baseFee !== BIGINT_0) {
       if (supports1559) {
         return (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
       } else {
@@ -745,7 +777,7 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      let account = await vm.stateManager.getAccount(new Address(hexToBytes('0x' + address)))
+      let account = await vm.stateManager.getAccount(new Address(hexToBytes(`0x${address}`)))
       if (account === undefined) {
         account = new Account()
       }
@@ -756,7 +788,7 @@ export class TxPool {
         skippedStats.byNonce += txsSortedByNonce.length
         continue
       }
-      if (typeof baseFee === 'bigint' && baseFee !== BigInt(0)) {
+      if (typeof baseFee === 'bigint' && baseFee !== BIGINT_0) {
         // If any tx has an insufficient gasPrice,
         // remove all txs after that since they cannot be executed
         const found = txsSortedByNonce.findIndex((tx) => this.normalizedGasPrice(tx) < baseFee)
@@ -770,7 +802,7 @@ export class TxPool {
     // Initialize a price based heap with the head transactions
     const byPrice = new Heap({
       comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
-        this.normalizedGasPrice(b, baseFee) - this.normalizedGasPrice(a, baseFee) < BigInt(0),
+        this.normalizedGasPrice(b, baseFee) - this.normalizedGasPrice(a, baseFee) < BIGINT_0,
     }) as QHeap<TypedTransaction>
     for (const [address, txs] of byNonce) {
       byPrice.insert(txs[0])
@@ -837,6 +869,12 @@ export class TxPool {
     this.pool.clear()
     this.handled.clear()
     this.txsInPool = 0
+    if (this.config.metrics !== undefined) {
+      // TODO: Only clear the metrics related to the transaction pool here
+      for (const [_, metric] of Object.entries(this.config.metrics)) {
+        metric.set(0)
+      }
+    }
     this.opened = false
   }
 

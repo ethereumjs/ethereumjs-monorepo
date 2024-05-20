@@ -10,20 +10,19 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../../src/blockchain'
-import { Config } from '../../../src/config'
-import { LevelDB } from '../../../src/execution/level'
-import { SnapProtocol } from '../../../src/net/protocol'
+import { Chain } from '../../../src/blockchain/index.js'
+import { Config } from '../../../src/config.js'
+import { SnapProtocol } from '../../../src/net/protocol/index.js'
 ;(BigInt.prototype as any).toJSON = function () {
   return this.toString()
 }
 
 describe('[SnapProtocol]', () => {
   it('should get properties', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     assert.ok(typeof p.name === 'string', 'get name')
@@ -32,7 +31,7 @@ describe('[SnapProtocol]', () => {
   })
 
   it('should open correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     await p.open()
@@ -41,7 +40,7 @@ describe('[SnapProtocol]', () => {
   })
 
   it('GetAccountRange should encode/decode correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     const root = new Uint8Array(0)
@@ -94,7 +93,7 @@ describe('[SnapProtocol]', () => {
   })
 
   it('AccountRange should encode/decode correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     /* eslint-disable @typescript-eslint/no-use-before-define */
@@ -136,7 +135,7 @@ describe('[SnapProtocol]', () => {
   })
 
   it('AccountRange encode/decode should handle account slim body correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const pSlim = new SnapProtocol({ config, chain })
     const pFull = new SnapProtocol({ config, chain, convertSlimBody: true })
@@ -172,7 +171,7 @@ describe('[SnapProtocol]', () => {
   })
 
   it('AccountRange should verify a real sample', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
@@ -189,18 +188,12 @@ describe('[SnapProtocol]', () => {
       resData
     )
 
-    const trie = new Trie({ db: new LevelDB() })
     try {
       const keys = accounts.map((acc: any) => acc.hash)
       const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
-      await trie.verifyRangeProof(
-        stateRoot,
-        keys[0],
-        keys[keys.length - 1],
-        keys,
-        values,
-        <any>proof
-      )
+      await Trie.verifyRangeProof(stateRoot, keys[0], keys[keys.length - 1], keys, values, proof, {
+        useKeyHashingFunction: keccak256,
+      })
     } catch (e) {
       assert.fail(`AccountRange proof verification failed with message=${(e as Error).message}`)
     }
@@ -211,7 +204,7 @@ describe('[SnapProtocol]', () => {
   })
 
   it('GetStorageRanges should encode/decode correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     const root = new Uint8Array(0)
@@ -273,7 +266,7 @@ describe('[SnapProtocol]', () => {
   })
 
   it('StorageRanges should encode/decode correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
@@ -306,7 +299,7 @@ describe('[SnapProtocol]', () => {
   })
 
   it('StorageRanges should verify a real sample', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
@@ -328,17 +321,19 @@ describe('[SnapProtocol]', () => {
     // lastAccount
     const lastAccountSlots = slots[0]
     const lastAccountStorageRoot = (lastAccount.body as any)[2]
-    const trie = new Trie({ db: new LevelDB() })
     try {
       const keys = lastAccountSlots.map((acc: any) => acc.hash)
       const values = lastAccountSlots.map((acc: any) => acc.body)
-      await trie.verifyRangeProof(
+      await Trie.verifyRangeProof(
         lastAccountStorageRoot,
         keys[0],
         keys[keys.length - 1],
         keys,
         values,
-        <any>proof
+        proof,
+        {
+          useKeyHashingFunction: keccak256,
+        }
       )
     } catch (e) {
       assert.fail(`StorageRange proof verification failed with message=${(e as Error).message}`)
@@ -350,7 +345,7 @@ describe('[SnapProtocol]', () => {
   })
 
   it('GetByteCodes should encode/decode correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     const reqId = BigInt(1)
@@ -389,7 +384,7 @@ describe('[SnapProtocol]', () => {
   })
 
   it('ByteCodes should encode/decode correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
@@ -412,7 +407,7 @@ describe('[SnapProtocol]', () => {
   })
 
   it('ByteCodes should verify a real sample', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
@@ -433,7 +428,7 @@ describe('[SnapProtocol]', () => {
   })
 
   it('GetTrieNodes should encode/decode correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
@@ -474,7 +469,7 @@ describe('[SnapProtocol]', () => {
   })
 
   it('TrieNodes should encode/decode correctly with real sample', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 

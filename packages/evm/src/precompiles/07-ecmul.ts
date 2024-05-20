@@ -1,8 +1,8 @@
 import { bytesToHex, bytesToUnprefixedHex, hexToBytes, short } from '@ethereumjs/util'
-import { ec_mul } from 'rustbn-wasm'
 
 import { OOGResult } from '../evm.js'
 
+import type { EVM } from '../evm.js'
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
@@ -24,7 +24,7 @@ export function precompile07(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = hexToBytes(ec_mul(inputData))
+  const returnData = hexToBytes((opts._EVM as EVM)['_bn128'].ec_mul(inputData))
 
   // check ecmul success or failure by comparing the output length
   if (returnData.length !== 64) {

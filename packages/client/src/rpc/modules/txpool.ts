@@ -1,9 +1,9 @@
-import { jsonRpcTx } from '../helpers'
-import { middleware } from '../validation'
+import { callWithStackTrace, jsonRpcTx } from '../helpers.js'
+import { middleware } from '../validation.js'
 
-import type { EthereumClient } from '../..'
-import type { FullEthereumService } from '../../service'
-import type { TxPool as Pool } from '../../service/txpool'
+import type { EthereumClient } from '../../index.js'
+import type { FullEthereumService } from '../../service/index.js'
+import type { TxPool as Pool } from '../../service/txpool.js'
 import type { VM } from '@ethereumjs/vm'
 
 /**
@@ -13,15 +13,19 @@ import type { VM } from '@ethereumjs/vm'
 export class TxPool {
   private _txpool: Pool
   private _vm: VM
+  private _rpcDebug: boolean
+
   /**
    * Create web3_* RPC module
    * @param client Client to which the module binds
    */
-  constructor(client: EthereumClient) {
+  constructor(client: EthereumClient, rpcDebug: boolean) {
     const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
     this._txpool = service.txPool
     this._vm = service.execution.vm
-    this.content = middleware(this.content.bind(this), 0, [])
+    this._rpcDebug = rpcDebug
+
+    this.content = middleware(callWithStackTrace(this.content.bind(this), this._rpcDebug), 0, [])
   }
 
   /**

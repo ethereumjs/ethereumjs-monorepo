@@ -13,6 +13,7 @@
 ### Properties
 
 - [chain](GethConfigOpts.md#chain)
+- [customCrypto](GethConfigOpts.md#customcrypto)
 - [eips](GethConfigOpts.md#eips)
 - [genesisHash](GethConfigOpts.md#genesishash)
 - [hardfork](GethConfigOpts.md#hardfork)
@@ -26,7 +27,30 @@
 
 #### Defined in
 
-[types.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L120)
+[types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L151)
+
+___
+
+### customCrypto
+
+• `Optional` **customCrypto**: [`CustomCrypto`](CustomCrypto.md)
+
+This option can be used to replace the most common crypto primitives
+(keccak256 hashing e.g.) within the EthereumJS ecosystem libraries
+with alternative implementations (e.g. more performant WASM libraries).
+
+Note: please be aware that this is adding new dependencies for your
+system setup to be used for sensitive/core parts of the functionality
+and a choice on the libraries to add should be handled with care
+and be made with eventual security implications considered.
+
+#### Inherited from
+
+BaseOpts.customCrypto
+
+#### Defined in
+
+[types.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L112)
 
 ___
 
@@ -43,7 +67,7 @@ BaseOpts.eips
 
 #### Defined in
 
-[types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L81)
+[types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L101)
 
 ___
 
@@ -53,7 +77,7 @@ ___
 
 #### Defined in
 
-[types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L121)
+[types.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L152)
 
 ___
 
@@ -71,7 +95,7 @@ BaseOpts.hardfork
 
 #### Defined in
 
-[types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L76)
+[types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L96)
 
 ___
 
@@ -81,4 +105,4 @@ ___
 
 #### Defined in
 
-[types.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L122)
+[types.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L153)

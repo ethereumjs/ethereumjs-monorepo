@@ -1,11 +1,11 @@
-import { Event } from '../../types'
+import { Event } from '../../types.js'
 
-import { BlockFetcherBase } from './blockfetcherbase'
+import { BlockFetcherBase } from './blockfetcherbase.js'
 
-import type { Peer } from '../../net/peer'
-import type { FlowControl } from '../../net/protocol'
-import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
-import type { Job } from './types'
+import type { Peer } from '../../net/peer/index.js'
+import type { FlowControl } from '../../net/protocol/index.js'
+import type { BlockFetcherOptions, JobTask } from './blockfetcherbase.js'
+import type { Job } from './types.js'
 import type { BlockHeader } from '@ethereumjs/block'
 
 export interface HeaderFetcherOptions extends BlockFetcherOptions {
@@ -37,6 +37,13 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
    */
   async request(job: Job<JobTask, BlockHeaderResult, BlockHeader>) {
     const { task, peer, partialResult } = job
+
+    // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
+    // TODOs:
+    // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
+    // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
+    await peer?.latest()
+
     if (this.flow.maxRequestCount(peer!, 'GetBlockHeaders') < this.config.maxPerRequest) {
       // we reached our request limit. try with a different peer.
       return

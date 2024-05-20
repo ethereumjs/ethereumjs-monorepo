@@ -9,6 +9,8 @@ import optimismTx from './json/optimismTx.json'
 import rpcTx from './json/rpcTx.json'
 import v0Tx from './json/v0tx.json'
 
+import type { TypedTxData } from '../src/index.js'
+
 const txTypes = [
   TransactionType.Legacy,
   TransactionType.AccessListEIP2930,
@@ -27,6 +29,8 @@ describe('[fromJsonRpcProvider]', () => {
       if (json.params[0] === '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0') {
         const txData = await import(`./json/rpcTx.json`)
         return {
+          ok: true,
+          status: 200,
           json: () => {
             return {
               result: txData,
@@ -35,6 +39,8 @@ describe('[fromJsonRpcProvider]', () => {
         }
       } else {
         return {
+          ok: true,
+          status: 200,
           json: () => {
             return {
               result: null, // This is the value Infura returns if no transaction is found matching the provided hash
@@ -73,7 +79,7 @@ describe('fromRPC: interpret v/r/s vals of 0x0 as undefined for Optimism system 
   it('should work', async () => {
     for (const txType of txTypes) {
       ;(optimismTx as any).type = txType
-      const tx = await TransactionFactory.fromRPC(optimismTx)
+      const tx = await TransactionFactory.fromRPC(optimismTx as TypedTxData)
       assert.ok(tx.v === undefined)
       assert.ok(tx.s === undefined)
       assert.ok(tx.r === undefined)
@@ -92,7 +98,7 @@ describe('fromRPC: ensure `v="0x0"` is correctly decoded for signed txs', () => 
         continue
       }
       ;(v0Tx as any).type = txType
-      const tx = await TransactionFactory.fromRPC(v0Tx)
+      const tx = await TransactionFactory.fromRPC(v0Tx as TypedTxData)
       assert.ok(tx.isSigned())
     }
   })

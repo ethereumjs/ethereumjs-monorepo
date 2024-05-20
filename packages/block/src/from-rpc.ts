@@ -1,5 +1,12 @@
 import { TransactionFactory } from '@ethereumjs/tx'
-import { TypeOutput, setLengthLeft, toBytes, toType } from '@ethereumjs/util'
+import {
+  CLRequestFactory,
+  TypeOutput,
+  hexToBytes,
+  setLengthLeft,
+  toBytes,
+  toType,
+} from '@ethereumjs/util'
 
 import { blockHeaderFromRpc } from './header-from-rpc.js'
 
@@ -7,6 +14,7 @@ import { Block } from './index.js'
 
 import type { BlockOptions, JsonRpcBlock } from './index.js'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
@@ -54,8 +62,12 @@ export function blockFromRpc(
 
   const uncleHeaders = uncles.map((uh) => blockHeaderFromRpc(uh, options))
 
+  const requests = blockParams.requests?.map((req) => {
+    const bytes = hexToBytes(req as PrefixedHexString)
+    return CLRequestFactory.fromSerializedRequest(bytes)
+  })
   return Block.fromBlockData(
-    { header, transactions, uncleHeaders, withdrawals: blockParams.withdrawals },
+    { header, transactions, uncleHeaders, withdrawals: blockParams.withdrawals, requests },
     options
   )
 }

@@ -1,10 +1,6 @@
-import type { HardforkConfig } from './types.js'
+import type { HardforksDict } from './types.js'
 
-type HardforksDict = {
-  [key: string]: HardforkConfig
-}
-
-enum Status {
+export enum Status {
   Draft = 'draft',
   Review = 'review',
   Final = 'final',
@@ -834,9 +830,25 @@ export const hardforks: HardforksDict = {
   cancun: {
     name: 'cancun',
     comment:
-      'Next feature hardfork after the shanghai having proto-danksharding EIP 4844 blobs (still WIP hence not for production use), transient storage opcodes, parent beacon block root availability in EVM and selfdestruct only in same transaction',
+      'Next feature hardfork after shanghai, includes proto-danksharding EIP 4844 blobs (still WIP hence not for production use), transient storage opcodes, parent beacon block root availability in EVM, selfdestruct only in same transaction, and blob base fee opcode',
     url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/cancun.md',
     status: Status.Final,
-    eips: [1153, 4844, 4788, 5656, 6780],
+    eips: [1153, 4844, 4788, 5656, 6780, 7516],
+  },
+  prague: {
+    name: 'prague',
+    comment:
+      'Next feature hardfork after cancun, internally used for pectra testing/implementation (incomplete/experimental)',
+    url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/prague.md',
+    status: Status.Draft,
+    eips: [2537, 2935, 3074, 6110, 7002, 7685],
+  },
+  osaka: {
+    name: 'osaka',
+    comment:
+      'Next feature hardfork after prague, internally used for verkle testing/implementation (incomplete/experimental)',
+    url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/osaka.md',
+    status: Status.Draft,
+    eips: [2935, 6800],
   },
 }

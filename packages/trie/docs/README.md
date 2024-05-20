@@ -18,7 +18,10 @@
 ### Interfaces
 
 - [CheckpointDBOpts](interfaces/CheckpointDBOpts.md)
+- [CommonInterface](interfaces/CommonInterface.md)
+- [Path](interfaces/Path.md)
 - [TrieOpts](interfaces/TrieOpts.md)
+- [TrieShallowCopyOpts](interfaces/TrieShallowCopyOpts.md)
 
 ### Type Aliases
 
@@ -69,7 +72,7 @@
 
 #### Defined in
 
-[packages/trie/src/types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L95)
+[packages/trie/src/types.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L135)
 
 ___
 
@@ -106,7 +109,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L17)
+[packages/trie/src/types.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L29)
 
 ___
 
@@ -130,7 +133,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L24)
+[packages/trie/src/types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L36)
 
 ___
 
@@ -170,7 +173,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L75)
+[packages/trie/src/types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L105)
 
 ## Variables
 
@@ -180,7 +183,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L102)
+[packages/trie/src/types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L142)
 
 ## Functions
 
@@ -250,13 +253,13 @@ ___
 
 ### decodeNode
 
-▸ **decodeNode**(`raw`): [`BranchNode`](classes/BranchNode.md) \| [`ExtensionNode`](classes/ExtensionNode.md) \| [`LeafNode`](classes/LeafNode.md)
+▸ **decodeNode**(`node`): [`BranchNode`](classes/BranchNode.md) \| [`ExtensionNode`](classes/ExtensionNode.md) \| [`LeafNode`](classes/LeafNode.md)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `raw` | `Uint8Array` |
+| `node` | `Uint8Array` |
 
 #### Returns
 
@@ -264,7 +267,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/node/util.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L24)
+[packages/trie/src/node/util.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L30)
 
 ___
 
@@ -284,7 +287,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/node/util.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L10)
+[packages/trie/src/node/util.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L12)
 
 ___
 
@@ -355,21 +358,21 @@ ___
 
 ### isRawNode
 
-▸ **isRawNode**(`n`): `boolean`
+▸ **isRawNode**(`n`): n is Uint8Array[]
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `n` | `any` |
+| `n` | `Uint8Array` \| `NestedUint8Array` |
 
 #### Returns
 
-`boolean`
+n is Uint8Array[]
 
 #### Defined in
 
-[packages/trie/src/node/util.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L32)
+[packages/trie/src/node/util.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L26)
 
 ___
 
@@ -535,12 +538,12 @@ NOTE: Currently only supports verification when the length of firstKey and lastK
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `rootHash` | `Uint8Array` | root hash. |
-| `firstKey` | ``null`` \| [`Nibbles`](README.md#nibbles) | first key. |
-| `lastKey` | ``null`` \| [`Nibbles`](README.md#nibbles) | last key. |
-| `keys` | [`Nibbles`](README.md#nibbles)[] | key list. |
-| `values` | `Uint8Array`[] | value list, one-to-one correspondence with keys. |
-| `proof` | ``null`` \| `Uint8Array`[] | proof node list, if proof is null, both `firstKey` and `lastKey` must be null |
+| `rootHash` | `Uint8Array` | root hash of state trie this proof is being verified against. |
+| `firstKey` | ``null`` \| [`Nibbles`](README.md#nibbles) | first key of range being proven. |
+| `lastKey` | ``null`` \| [`Nibbles`](README.md#nibbles) | last key of range being proven. |
+| `keys` | [`Nibbles`](README.md#nibbles)[] | key list of leaf data being proven. |
+| `values` | `Uint8Array`[] | value list of leaf data being proven, one-to-one correspondence with keys. |
+| `proof` | ``null`` \| `Uint8Array`[] | proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well |
 | `useKeyHashingFunction` | [`HashKeysFunction`](README.md#hashkeysfunction) | - |
 
 #### Returns
@@ -551,4 +554,4 @@ a flag to indicate whether there exists more trie node in the trie
 
 #### Defined in
 
-[packages/trie/src/proof/range.ts:413](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L413)
+[packages/trie/src/proof/range.ts:411](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L411)

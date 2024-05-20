@@ -10,8 +10,17 @@ import {
   toBytes,
   utf8ToBytes,
 } from './bytes.js'
-import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants.js'
+import {
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_2,
+  BIGINT_27,
+  SECP256K1_ORDER,
+  SECP256K1_ORDER_DIV_2,
+} from './constants.js'
 import { assertIsBytes } from './helpers.js'
+
+import type { PrefixedHexString } from './types.js'
 
 export interface ECDSASignature {
   v: bigint
@@ -38,22 +47,22 @@ export function ecsign(
   const v =
     chainId === undefined
       ? BigInt(sig.recovery! + 27)
-      : BigInt(sig.recovery! + 35) + BigInt(chainId) * BigInt(2)
+      : BigInt(sig.recovery! + 35) + BigInt(chainId) * BIGINT_2
 
   return { r, s, v }
 }
 
-function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
-  if (v === BigInt(0) || v === BigInt(1)) return v
+export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
+  if (v === BIGINT_0 || v === BIGINT_1) return v
 
   if (chainId === undefined) {
-    return v - BigInt(27)
+    return v - BIGINT_27
   }
-  return v - (chainId * BigInt(2) + BigInt(35))
+  return v - (chainId * BIGINT_2 + BigInt(35))
 }
 
 function isValidSigRecovery(recovery: bigint): boolean {
-  return recovery === BigInt(0) || recovery === BigInt(1)
+  return recovery === BIGINT_0 || recovery === BIGINT_1
 }
 
 /**
@@ -117,7 +126,7 @@ export const toCompactSig = function (
   }
 
   const ss = Uint8Array.from([...s])
-  if ((v > BigInt(28) && v % BigInt(2) === BigInt(1)) || v === BigInt(1) || v === BigInt(28)) {
+  if ((v > BigInt(28) && v % BIGINT_2 === BIGINT_1) || v === BIGINT_1 || v === BigInt(28)) {
     ss[0] |= 0x80
   }
 
@@ -132,7 +141,7 @@ export const toCompactSig = function (
  * NOTE: After EIP1559, `v` could be `0` or `1` but this function assumes
  * it's a signed message (EIP-191 or EIP-712) adding `27` at the end. Remove if needed.
  */
-export const fromRpcSig = function (sig: string): ECDSASignature {
+export const fromRpcSig = function (sig: PrefixedHexString): ECDSASignature {
   const bytes: Uint8Array = toBytes(sig)
 
   let r: Uint8Array
@@ -154,7 +163,7 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
 
   // support both versions of `eth_sign` responses
   if (v < 27) {
-    v = v + BigInt(27)
+    v = v + BIGINT_27
   }
 
   return {
@@ -188,9 +197,9 @@ export const isValidSignature = function (
   const sBigInt = bytesToBigInt(s)
 
   if (
-    rBigInt === BigInt(0) ||
+    rBigInt === BIGINT_0 ||
     rBigInt >= SECP256K1_ORDER ||
-    sBigInt === BigInt(0) ||
+    sBigInt === BIGINT_0 ||
     sBigInt >= SECP256K1_ORDER
   ) {
     return false

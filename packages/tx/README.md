@@ -23,30 +23,43 @@ npm install @ethereumjs/tx
 
 ### KZG Setup
 
-This library supports an experimental version of `EIP-4844` blob transactions (see usage instructions below) starting with `v4.1.0`.
+This library now fully supports `EIP-4844` blob transactions (see usage instructions below) starting with `v5.2.0`.
 
-For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized once in a global scope. The functionality is then available for all KZG usages throughout different libraries (Transaction, Block, EVM).
+For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized in the `common` instance to be used in instantiating blob transactions.
 
-#### Manual Installation
+Note: starting with the `v5.3` release of this library and associated releases of upstream EthereumJS libraries the old `c-kzg` centered recommended setup has been replaced by using our own WASM build of the `c-kzg` library which has been released as a separate package [kzg-wasm](https://github.com/ethereumjs/kzg-wasm) on npm.
 
-The following two manual installation steps for a KZG library and the trusted setup are needed.
+This new setup is now both browser compatible 🎉 and the official KZG setup file has been integrated by default and the new setup is now the default recommended setup to be used.
 
-1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option [c-kzg](https://github.com/ethereum/c-kzg-4844) by simply running `npm install c-kzg`.
-2. Download the trusted setup required for the KZG module. It can be found [here](../client/src/trustedSetups/trusted_setup.txt) within the client package.
+#### KZG Initialization
 
-#### Global Initialization
+As a first step add the `kzg-wasm` package as a dependency to your `package.json` file and install the library.
 
-Global initialization can then be done like this (using the `c-kzg` module for our KZG dependency):
+Initialization can then be done like the following:
 
-```typescript
-import { initKZG } from '@ethereumjs/util'
+```ts
+// ./examples/initKzg.ts
 
-// Make the kzg library available globally
-import * as kzg from 'c-kzg'
+import { loadKZG } from 'kzg-wasm'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 
-// Initialize the trusted setup
-initKZG(kzg, 'path/to/my/trusted_setup.txt')
+const main = async () => {
+  const kzg = await loadKZG()
+
+  // Instantiate `common`
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
+  })
+
+  console.log(common.customCrypto.kzg) // should output the KZG API as an object
+}
+
+main()
 ```
+
+Note: Manual addition is necessary because we did not want to bundle our libraries with WASM code by default, since some projects are then prevented from using our libraries.
 
 ## Usage
 
@@ -79,6 +92,10 @@ Hardforks adding features and/or tx types:
 | `london`         | `v3.2.0`   | `EIP-1559` Transactions                                                                                 |
 | `cancun`         | `v5.0.0`   | `EIP-4844` Transactions                                                                                 |
 
+### WASM Crypto Support
+
+This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification. See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
+
 ### Transaction Types
 
 This library supports the following transaction types ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)):
@@ -95,9 +112,7 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 - Activation: `cancun`
 - Type: `3`
 
-This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7) EIP version from July 2023 deployed along [4844-devnet-7](https://github.com/ethpandaops/4844-testnet) (July 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) and following.
-
-**Note:** 4844 support is not yet completely stable and there will still be (4844-)breaking changes along all types of library releases.
+This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
 
 **Note:** This functionality needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
@@ -105,37 +120,48 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 
 See the following code snipped for an example on how to instantiate (using the `c-kzg` module for our KZG dependency).
 
-```typescript
+```ts
+// ./examples/blobTx.ts
+
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { initKZG } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+import { bytesToHex } from '@ethereumjs/util'
+import { loadKZG } from 'kzg-wasm'
 
-initKZG(kzg, 'path/to/my/trusted_setup.txt')
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+const main = async () => {
+  const kzg = await loadKZG()
 
-const txData = {
-  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-  gasLimit: '0x02625a00',
-  maxPriorityFeePerGas: '0x01',
-  maxFeePerGas: '0xff',
-  maxFeePerDataGas: '0xfff',
-  nonce: '0x00',
-  to: '0xcccccccccccccccccccccccccccccccccccccccc',
-  value: '0x0186a0',
-  v: '0x01',
-  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
-  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
-  chainId: '0x01',
-  accessList: [],
-  type: '0x05',
-  versionedHashes: ['0xabc...'], // Test with empty array on a first run
-  kzgCommitments: ['0xdef...'], // Test with empty array on a first run
-  blobs: ['0xghi...'], // Test with empty array on a first run
-  proofs: ['0xabcd...'], //
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Shanghai,
+    eips: [4844],
+    customCrypto: { kzg },
+  })
+
+  const txData = {
+    data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+    gasLimit: '0x02625a00',
+    maxPriorityFeePerGas: '0x01',
+    maxFeePerGas: '0xff',
+    maxFeePerDataGas: '0xfff',
+    nonce: '0x00',
+    to: '0xcccccccccccccccccccccccccccccccccccccccc',
+    value: '0x0186a0',
+    v: '0x01',
+    r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+    s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+    chainId: '0x01',
+    accessList: [],
+    type: '0x05',
+    blobsData: ['abcd'],
+  }
+
+  const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
+
+  console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
 }
 
-const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
+main()
 ```
 
 Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes, `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
@@ -152,9 +178,12 @@ See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage i
 
 This is the recommended tx type starting with the activation of the `london` HF, see the following code snipped for an example on how to instantiate:
 
-```typescript
+```ts
+// ./examples/londonTx.ts
+
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
@@ -175,6 +204,7 @@ const txData = {
 }
 
 const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
+console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced321887937c95b03779358ec8a
 ```
 
 #### Access List Transactions (EIP-2930)
@@ -185,9 +215,12 @@ const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
 
 This transaction type has been introduced along the `berlin` HF. See the following code snipped for an example on how to instantiate:
 
-```typescript
+```ts
+// ./examples/accessListTx.ts
+
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 
@@ -215,6 +248,7 @@ const txData = {
 }
 
 const tx = AccessListEIP2930Transaction.fromTxData(txData, { common })
+console.log(bytesToHex(tx.hash())) // 0x9150cdebad74e88b038e6c6b964d99af705f9c0883d7f0bbc0f3e072358f5b1d
 ```
 
 For generating access lists from tx data based on a certain network state there is a `reportAccessList` option
@@ -229,9 +263,12 @@ on the `Vm.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementatio
 Legacy transaction are still valid transaction within Ethereum `mainnet` but will likely be deprecated at some point.
 See this [example script](./examples/transactions.ts) or the following code example on how to use.
 
-```typescript
+```ts
+// ./examples/legacyTx.ts
+
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
 
 const txParams = {
   nonce: '0x00',
@@ -253,23 +290,28 @@ const privateKey = Buffer.from(
 const signedTx = tx.sign(privateKey)
 
 const serializedTx = signedTx.serialize()
+console.log(bytesToHex(signedTx.hash())) // 0x894b72d87f8333fccd29d1b3aca39af69d97a6bc281e7e7a3a60640690a3cd2b
 ```
 
 ### Transaction Factory
 
 If you only know on runtime which tx type will be used within your code or if you want to keep your code transparent to tx types, this library comes with a `TransactionFactory` for your convenience which can be used as follows:
 
-```typescript
+```ts
+// ./examples/txFactory.ts
+
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { Capability, EIP1559CompatibleTx, TransactionFactory } from '@ethereumjs/tx'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
-const txData = {} // Use data from the different tx type examples
+const txData = { type: 2, maxFeePerGas: BigInt(20) } // Creates an EIP-1559 compatible transac
 const tx = TransactionFactory.fromTxData(txData, { common })
 
-if (tx.supports(Capability.EIP2930AccessLists)) {
-  // Do something which only makes sense for txs with support for access lists
+if (tx.supports(Capability.EIP1559FeeMarket)) {
+  console.log(
+    `The max fee per gas for this transaction is ${(tx as EIP1559CompatibleTx).maxFeePerGas}`
+  )
 }
 ```
 
@@ -288,19 +330,18 @@ The correct tx type class for instantiation will then be chosen on runtime based
 
 This library has been tested to work with various L2 networks (`v3.3.0`+). All predefined supported custom chains introduced with `Common` `v2.4.0` or higher are supported, the following is a simple example to send a tx to the xDai chain:
 
-```typescript
-import { Common } from '@ethereumjs/common'
+```ts
+// ./examples/l2tx.ts
+
+import { Common, CustomChain } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
-import { hexToBytes } from '@ethereumjs/util'
+import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 
-const from = 'PUBLIC_KEY'
-const PRIV_KEY = process.argv[2]
-const to = 'DESTINATION_ETHEREUM_ADDRESS'
-
+const pk = hexToBytes('0x076247989df60a82f6e86e58104368676096f84e60972282ee00d4673a2bc9b9')
+const to = Address.fromString('0x256e8f0ba532ad83a0debde7501669511a41a1f3')
 const common = Common.custom(CustomChain.xDaiChain)
 
 const txData = {
-  from,
   nonce: 0,
   gasPrice: 1000000000,
   gasLimit: 21000,
@@ -309,7 +350,8 @@ const txData = {
 }
 
 const tx = LegacyTransaction.fromTxData(txData, { common })
-const signedTx = tx.sign(hexToBytes(PRIV_KEY))
+const signedTx = tx.sign(pk)
+console.log(bytesToHex(signedTx.hash())) // 0xbf98f6f8700812ed6f2314275070256e11945fa48afd80fb301265f6a41a2dc2
 ```
 
 The following L2 networks have been tested to work with `@ethereumjs/tx`, see usage examples as well as some notes on peculiarities in the issues linked below:
@@ -328,7 +370,7 @@ The London hardfork is targeted to implement on Optimism in Q1.22.
 
 For a non-predefined custom chain it is also possible to just provide a chain ID as well as other parameters to `Common`:
 
-```typescript
+```ts
 const common = Common.custom({ chainId: 1234 })
 ```
 
@@ -348,7 +390,7 @@ A legacy transaction will return a Buffer list of the values, and a Typed Transa
 
 Here is an example of signing txs with `@ledgerhq/hw-app-eth` as of `v6.5.0`:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 import { LegacyTransaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
@@ -359,7 +401,7 @@ const eth = new Eth(transport)
 const common = new Common({ chain: Chain.Sepolia })
 
 let txData: any = { value: 1 }
-let tx: Transaction | FeeMarketEIP1559Transaction
+let tx: LegacyTransaction | FeeMarketEIP1559Transaction
 let unsignedTx: Uint8Array[] | Uint8Array
 let signedTx: typeof tx
 const bip32Path = "44'/60'/0'/0/0"
@@ -367,48 +409,24 @@ const bip32Path = "44'/60'/0'/0/0"
 const run = async () => {
   // Signing a legacy tx
   tx = LegacyTransaction.fromTxData(txData, { common })
-  unsignedTx = tx.getMessageToSign()
-  unsignedTx = RLP.encode(unsignedTx) // ledger signTransaction API expects it to be serialized
-  let { v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)
-  txData = { ...txData, v, r, s }
-  signedTx = LegacyTransaction.fromTxData(txData, { common })
-  let from = bytesToHex(signedTx.getSenderAddress())
-  console.log(`signedTx: ${bytesToHex(signedTx.serialize())}\nfrom: ${from}`)
+  tx = tx.getMessageToSign()
+  // ledger signTransaction API expects it to be serialized
+  let { v, r, s } = await eth.signTransaction(bip32Path, RLP.encode(tx))
+  tx.addSignature(v, r, s, true)
+  let from = tx.getSenderAddress().toString()
+  console.log(`signedTx: ${bytesToHex(tx.serialize())}\nfrom: ${from}`)
 
   // Signing a 1559 tx
   txData = { value: 1 }
   tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
-  unsignedTx = tx.getMessageToSign()
+  tx = tx.getMessageToSign()
   ;({ v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)) // this syntax is: object destructuring - assignment without declaration
-  txData = { ...txData, v, r, s }
-  signedTx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
-  from = bytesToHex(signedTx.getSenderAddress())
-  console.log(`signedTx: ${bytesToHex(signedTx.serialize())}\nfrom: ${from}`)
+  tx.addSignature(v, r, s)
+  from = tx.getSenderAddress().toString()
+  console.log(`signedTx: ${bytesToHex(tx.serialize())}\nfrom: ${from}`)
 }
 
 run()
-```
-
-### Fake Transaction
-
-Creating a fake transaction for use in e.g. `VM.runTx()` is simple, just overwrite `getSenderAddress()` with a custom [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md) like so:
-
-```typescript
-import { Address } from '@ethereumjs/util'
-import { Transaction } from '@ethereumjs/tx'
-
-_getFakeTransaction(txParams: TxParams): Transaction {
-  const from = Address.fromString(txParams.from)
-  delete txParams.from
-
-  const opts = { common: this._common, freeze: false }
-  const tx = LegacyTransaction.fromTxData(txParams, opts)
-
-  // override getSenderAddress
-  tx.getSenderAddress = () => { return from }
-
-  return tx
-}
 ```
 
 ## API
@@ -423,13 +441,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 

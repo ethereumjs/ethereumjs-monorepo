@@ -55,7 +55,6 @@ export {
   fromUtf8,
   getBinarySize,
   getKeys,
-  isHexPrefixed,
   isHexString,
   padToEven,
   stripHexPrefix,
@@ -65,3 +64,4 @@ export * from './kzg.js'
 export * from './lock.js'
 export * from './mapDB.js'
 export * from './provider.js'
+export * from './requests.js'

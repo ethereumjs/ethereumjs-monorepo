@@ -6,6 +6,8 @@ import { _walkTrie } from '../../src/util/asyncWalk.js'
 import { bytesToNibbles } from '../../src/util/nibbles.js'
 import trieTests from '../fixtures/trietest.json'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 describe('walk the tries from official tests', async () => {
   const testNames = Object.keys(trieTests.tests)
 
@@ -14,7 +16,7 @@ describe('walk the tries from official tests', async () => {
     describe(testName, async () => {
       const inputs = (trieTests as any).tests[testName].in
       const expect = (trieTests as any).tests[testName].root
-      const testKeys: Map<string, Uint8Array | null> = new Map()
+      const testKeys: Map<PrefixedHexString, Uint8Array | null> = new Map()
       const testStrings: Map<string, [string, string | null]> = new Map()
       for await (const [idx, input] of inputs.entries()) {
         const stringPair: [string, string] = [inputs[idx][0], inputs[idx][1] ?? 'null']
@@ -77,11 +79,10 @@ describe('walk a sparse trie', async () => {
   // Generate a proof for inputs[0]
   const proofKey = inputs[0][0]
   const proof = await trie.createProof(proofKey)
-  assert.ok(await trie.verifyProof(trie.root(), proofKey, proof))
+  assert.ok(await Trie.verifyProof(proofKey, proof))
 
   // Build a sparse trie from the proof
-  const fromProof = new Trie()
-  await fromProof.fromProof(proof)
+  const fromProof = await Trie.fromProof(proof, { root: trie.root() })
 
   // Walk the sparse trie
   const walker = fromProof.walkTrieIterable(fromProof.root())
@@ -100,7 +101,7 @@ describe('walk a sparse trie', async () => {
     // Count the nodes...nodes from the proof should be only nodes in the trie
     found++
   }
-  assert.equal(found, proof.length)
+  assert.equal(found, proof.length, `found: ${found} should equal proof length: ${proof.length}`)
   assert.ok(true, 'Walking sparse trie should not throw error')
 
   // Walk the same sparse trie with WalkController

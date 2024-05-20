@@ -6,8 +6,8 @@ import {
   hexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { createHash } from 'crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 
 import { ROOT_DB_KEY, Trie } from '../../src/index.js'
@@ -28,6 +28,22 @@ describe('SecureTrie', () => {
     const t = trie.shallowCopy()
     const res = await t.get(k)
     assert.ok(equalsBytes(v, res!))
+    assert.isUndefined(t['_opts']['keyPrefix'])
+  })
+
+  it('copy trie (new key prefix / default 0 size cache)', async () => {
+    const keyPrefix = hexToBytes('0x1234')
+    const t = trie.shallowCopy(true, { keyPrefix })
+    assert.ok(equalsBytes(t['_opts']['keyPrefix'] as Uint8Array, keyPrefix))
+    assert.equal(t['_opts']['cacheSize'] as number, 0)
+    assert.equal(trie['_opts']['cacheSize'] as number, 0)
+  })
+
+  it('copy trie (new cache size)', async () => {
+    const cacheSize = 1000
+    const t = trie.shallowCopy(true, { cacheSize })
+    assert.equal(t['_opts']['cacheSize'] as number, cacheSize)
+    assert.equal(trie['_opts']['cacheSize'] as number, 0)
   })
 })
 
@@ -37,8 +53,10 @@ describe('SecureTrie proof', () => {
     await trie.put(utf8ToBytes('key1aa'), utf8ToBytes('01234'))
 
     const proof = await trie.createProof(utf8ToBytes('key1aa'))
-    const val = await trie.verifyProof(trie.root(), utf8ToBytes('key1aa'), proof)
-    assert.equal(bytesToUtf8(val!), '01234')
+    const val = await Trie.verifyProof(utf8ToBytes('key1aa'), proof, {
+      useKeyHashing: true,
+    })
+    assert.deepEqual(val, utf8ToBytes('01234'))
   })
 
   it('read back data written with hashed key', async () => {
@@ -185,7 +203,7 @@ describe('SecureTrie.copy', () => {
     const trie = new Trie({
       db: new MapDB(),
       useKeyHashing: true,
-      useKeyHashingFunction: (value) => createHash('sha256').update(value).digest(),
+      useKeyHashingFunction: sha256,
     })
 
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))

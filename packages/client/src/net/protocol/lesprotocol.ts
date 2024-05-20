@@ -1,5 +1,6 @@
 import { BlockHeader } from '@ethereumjs/block'
 import {
+  BIGINT_0,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToInt,
@@ -7,11 +8,11 @@ import {
   intToBytes,
 } from '@ethereumjs/util'
 
-import { Protocol } from './protocol'
+import { Protocol } from './protocol.js'
 
-import type { Chain } from '../../blockchain'
-import type { FlowControl } from './flowcontrol'
-import type { Message, ProtocolOptions } from './protocol'
+import type { Chain } from '../../blockchain/index.js'
+import type { FlowControl } from './flowcontrol.js'
+import type { Message, ProtocolOptions } from './protocol.js'
 import type { BlockHeaderBytes } from '@ethereumjs/block'
 
 export interface LesProtocolOptions extends ProtocolOptions {
@@ -52,7 +53,7 @@ export class LesProtocol extends Protocol {
   private chain: Chain
   private flow: FlowControl | undefined
   private isServer: boolean
-  private nextReqId = BigInt(0)
+  private nextReqId = BIGINT_0
 
   /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [

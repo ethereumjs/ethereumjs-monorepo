@@ -2,6 +2,11 @@ import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@eth
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_2,
+  BIGINT_27,
+  BIGINT_7,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   TypeOutput,
@@ -10,6 +15,7 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
+  bytesToUtf8,
   concatBytes,
   ecrecover,
   ecsign,
@@ -57,10 +63,13 @@ export class BlockHeader {
   public readonly blobGasUsed?: bigint
   public readonly excessBlobGas?: bigint
   public readonly parentBeaconBlockRoot?: Uint8Array
+  public readonly requestsRoot?: Uint8Array
 
   public readonly common: Common
 
-  private cache: HeaderCache = {
+  protected keccakFunction: (msg: Uint8Array) => Uint8Array
+
+  protected cache: HeaderCache = {
     hash: undefined,
   }
 
@@ -68,7 +77,7 @@ export class BlockHeader {
    * EIP-4399: After merge to PoS, `mixHash` supplanted as `prevRandao`
    */
   get prevRandao() {
-    if (this.common.isActivatedEIP(4399) === false) {
+    if (!this.common.isActivatedEIP(4399)) {
       const msg = this._errorMsg(
         'The prevRandao parameter can only be accessed when EIP-4399 is activated'
       )
@@ -109,17 +118,24 @@ export class BlockHeader {
    */
   public static fromValuesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
     const headerData = valuesArrayToHeaderData(values)
-    const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot } = headerData
+    const {
+      number,
+      baseFeePerGas,
+      excessBlobGas,
+      blobGasUsed,
+      parentBeaconBlockRoot,
+      requestsRoot,
+    } = headerData
     const header = BlockHeader.fromHeaderData(headerData, opts)
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
       const eip1559ActivationBlock = bigIntToBytes(header.common.eipBlock(1559)!)
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      if (eip1559ActivationBlock && equalsBytes(eip1559ActivationBlock, number as Uint8Array)) {
+      if (
+        eip1559ActivationBlock !== undefined &&
+        equalsBytes(eip1559ActivationBlock, number as Uint8Array)
+      ) {
         throw new Error('invalid header. baseFeePerGas should be provided')
       }
     }
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (header.common.isActivatedEIP(4844)) {
       if (excessBlobGas === undefined) {
         throw new Error('invalid header. excessBlobGas should be provided')
@@ -130,6 +146,10 @@ export class BlockHeader {
     if (header.common.isActivatedEIP(4788) && parentBeaconBlockRoot === undefined) {
       throw new Error('invalid header. parentBeaconBlockRoot should be provided')
     }
+
+    if (header.common.isActivatedEIP(7685) && requestsRoot === undefined) {
+      throw new Error('invalid header. requestsRoot should be provided')
+    }
     return header
   }
   /**
@@ -139,16 +159,17 @@ export class BlockHeader {
    * varying data types. For a default empty header, use {@link BlockHeader.fromHeaderData}.
    *
    */
-  constructor(headerData: HeaderData, options: BlockOptions = {}) {
-    if (options.common) {
-      this.common = options.common.copy()
+  constructor(headerData: HeaderData, opts: BlockOptions = {}) {
+    if (opts.common) {
+      this.common = opts.common.copy()
     } else {
       this.common = new Common({
         chain: Chain.Mainnet, // default
       })
     }
+    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
 
-    const skipValidateConsensusFormat = options.skipConsensusFormatValidation ?? false
+    const skipValidateConsensusFormat = opts.skipConsensusFormatValidation ?? false
 
     const defaults = {
       parentHash: zeros(32),
@@ -158,11 +179,11 @@ export class BlockHeader {
       transactionsTrie: KECCAK256_RLP,
       receiptTrie: KECCAK256_RLP,
       logsBloom: zeros(256),
-      difficulty: BigInt(0),
-      number: BigInt(0),
+      difficulty: BIGINT_0,
+      number: BIGINT_0,
       gasLimit: DEFAULT_GAS_LIMIT,
-      gasUsed: BigInt(0),
-      timestamp: BigInt(0),
+      gasUsed: BIGINT_0,
+      timestamp: BIGINT_0,
       extraData: new Uint8Array(0),
       mixHash: zeros(32),
       nonce: zeros(8),
@@ -188,7 +209,7 @@ export class BlockHeader {
     const mixHash = toType(headerData.mixHash, TypeOutput.Uint8Array) ?? defaults.mixHash
     const nonce = toType(headerData.nonce, TypeOutput.Uint8Array) ?? defaults.nonce
 
-    const setHardfork = options.setHardfork ?? false
+    const setHardfork = opts.setHardfork ?? false
     if (setHardfork === true) {
       this.common.setHardforkBy({
         blockNumber: number,
@@ -207,12 +228,13 @@ export class BlockHeader {
       baseFeePerGas: this.common.isActivatedEIP(1559)
         ? number === this.common.hardforkBlock(Hardfork.London)
           ? this.common.param('gasConfig', 'initialBaseFee')
-          : BigInt(7)
+          : BIGINT_7
         : undefined,
       withdrawalsRoot: this.common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
-      blobGasUsed: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
-      excessBlobGas: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
+      blobGasUsed: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
+      excessBlobGas: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? zeros(32) : undefined,
+      requestsRoot: this.common.isActivatedEIP(7685) ? KECCAK256_RLP : undefined,
     }
 
     const baseFeePerGas =
@@ -226,6 +248,8 @@ export class BlockHeader {
     const parentBeaconBlockRoot =
       toType(headerData.parentBeaconBlockRoot, TypeOutput.Uint8Array) ??
       hardforkDefaults.parentBeaconBlockRoot
+    const requestsRoot =
+      toType(headerData.requestsRoot, TypeOutput.Uint8Array) ?? hardforkDefaults.requestsRoot
 
     if (!this.common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
       throw new Error('A base fee for a block can only be set with EIP1559 being activated')
@@ -253,6 +277,10 @@ export class BlockHeader {
       )
     }
 
+    if (!this.common.isActivatedEIP(7685) && requestsRoot !== undefined) {
+      throw new Error('requestsRoot can only be provided with EIP 7685 activated')
+    }
+
     this.parentHash = parentHash
     this.uncleHash = uncleHash
     this.coinbase = coinbase
@@ -273,6 +301,7 @@ export class BlockHeader {
     this.blobGasUsed = blobGasUsed
     this.excessBlobGas = excessBlobGas
     this.parentBeaconBlockRoot = parentBeaconBlockRoot
+    this.requestsRoot = requestsRoot
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -280,14 +309,14 @@ export class BlockHeader {
     // `difficulty` value (defaults to 0). If we have a `calcDifficultyFromHeader`
     // block option parameter, we instead set difficulty to this value.
     if (
-      options.calcDifficultyFromHeader &&
+      opts.calcDifficultyFromHeader &&
       this.common.consensusAlgorithm() === ConsensusAlgorithm.Ethash
     ) {
-      this.difficulty = this.ethashCanonicalDifficulty(options.calcDifficultyFromHeader)
+      this.difficulty = this.ethashCanonicalDifficulty(opts.calcDifficultyFromHeader)
     }
 
     // If cliqueSigner is provided, seal block with provided privateKey.
-    if (options.cliqueSigner) {
+    if (opts.cliqueSigner) {
       // Ensure extraData is at least length CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       const minExtraDataLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       if (this.extraData.length < minExtraDataLength) {
@@ -295,13 +324,13 @@ export class BlockHeader {
         this.extraData = concatBytes(this.extraData, new Uint8Array(remainingLength))
       }
 
-      this.extraData = this.cliqueSealBlock(options.cliqueSigner)
+      this.extraData = this.cliqueSealBlock(opts.cliqueSigner)
     }
 
     // Validate consensus format after block is sealed (if applicable) so extraData checks will pass
     if (skipValidateConsensusFormat === false) this._consensusFormatValidation()
 
-    const freeze = options?.freeze ?? true
+    const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
     }
@@ -345,12 +374,14 @@ export class BlockHeader {
 
     // check if the block used too much gas
     if (this.gasUsed > this.gasLimit) {
-      const msg = this._errorMsg('Invalid block: too much gas used')
+      const msg = this._errorMsg(
+        `Invalid block: too much gas used. Used: ${this.gasUsed}, gas limit: ${this.gasLimit}`
+      )
       throw new Error(msg)
     }
 
     // Validation for EIP-1559 blocks
-    if (this.common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559)) {
       if (typeof this.baseFeePerGas !== 'bigint') {
         const msg = this._errorMsg('EIP1559 block has no base fee field')
         throw new Error(msg)
@@ -358,7 +389,7 @@ export class BlockHeader {
       const londonHfBlock = this.common.hardforkBlock(Hardfork.London)
       if (
         typeof londonHfBlock === 'bigint' &&
-        londonHfBlock !== BigInt(0) &&
+        londonHfBlock !== BIGINT_0 &&
         this.number === londonHfBlock
       ) {
         const initialBaseFee = this.common.param('gasConfig', 'initialBaseFee')
@@ -369,7 +400,7 @@ export class BlockHeader {
       }
     }
 
-    if (this.common.isActivatedEIP(4895) === true) {
+    if (this.common.isActivatedEIP(4895)) {
       if (this.withdrawalsRoot === undefined) {
         const msg = this._errorMsg('EIP4895 block has no withdrawalsRoot field')
         throw new Error(msg)
@@ -382,7 +413,7 @@ export class BlockHeader {
       }
     }
 
-    if (this.common.isActivatedEIP(4788) === true) {
+    if (this.common.isActivatedEIP(4788)) {
       if (this.parentBeaconBlockRoot === undefined) {
         const msg = this._errorMsg('EIP4788 block has no parentBeaconBlockRoot field')
         throw new Error(msg)
@@ -396,6 +427,13 @@ export class BlockHeader {
         throw new Error(msg)
       }
     }
+
+    if (this.common.isActivatedEIP(7685)) {
+      if (this.requestsRoot === undefined) {
+        const msg = this._errorMsg('EIP7685 block has no requestsRoot field')
+        throw new Error(msg)
+      }
+    }
   }
 
   /**
@@ -404,14 +442,13 @@ export class BlockHeader {
    */
   protected _consensusFormatValidation() {
     const { nonce, uncleHash, difficulty, extraData, number } = this
-    const hardfork = this.common.hardfork()
 
     // Consensus type dependent checks
     if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
       // PoW/Ethash
       if (
-        number > BigInt(0) &&
-        this.extraData.length > this.common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
+        number > BIGINT_0 &&
+        this.extraData.length > this.common.param('vm', 'maxExtraDataSize')
       ) {
         // Check length of data on all post-genesis blocks
         const msg = this._errorMsg('invalid amount of extra data')
@@ -462,9 +499,9 @@ export class BlockHeader {
         )})`
         error = true
       }
-      if (number !== BigInt(0)) {
+      if (number !== BIGINT_0) {
         // Skip difficulty, nonce, and extraData check for PoS genesis block as genesis block may have non-zero difficulty (if TD is > 0)
-        if (difficulty !== BigInt(0)) {
+        if (difficulty !== BIGINT_0) {
           errorMsg += `, difficulty: ${difficulty} (expected: 0)`
           error = true
         }
@@ -499,33 +536,38 @@ export class BlockHeader {
     const londonHardforkBlock = this.common.hardforkBlock(Hardfork.London)
     if (
       typeof londonHardforkBlock === 'bigint' &&
-      londonHardforkBlock !== BigInt(0) &&
+      londonHardforkBlock !== BIGINT_0 &&
       this.number === londonHardforkBlock
     ) {
       const elasticity = this.common.param('gasConfig', 'elasticityMultiplier')
       parentGasLimit = parentGasLimit * elasticity
     }
     const gasLimit = this.gasLimit
-    const hardfork = this.common.hardfork()
 
-    const a =
-      parentGasLimit / this.common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)
+    const a = parentGasLimit / this.common.param('gasConfig', 'gasLimitBoundDivisor')
     const maxGasLimit = parentGasLimit + a
     const minGasLimit = parentGasLimit - a
 
     if (gasLimit >= maxGasLimit) {
-      const msg = this._errorMsg('gas limit increased too much')
+      const msg = this._errorMsg(
+        `gas limit increased too much. Gas limit: ${gasLimit}, max gas limit: ${maxGasLimit}`
+      )
       throw new Error(msg)
     }
 
     if (gasLimit <= minGasLimit) {
-      const msg = this._errorMsg('gas limit decreased too much')
+      const msg = this._errorMsg(
+        `gas limit decreased too much. Gas limit: ${gasLimit}, min gas limit: ${minGasLimit}`
+      )
       throw new Error(msg)
     }
 
-    if (gasLimit < this.common.paramByHardfork('gasConfig', 'minGasLimit', hardfork)) {
+    if (gasLimit < this.common.param('gasConfig', 'minGasLimit')) {
       const msg = this._errorMsg(
-        `gas limit decreased below minimum gas limit for hardfork=${hardfork}`
+        `gas limit decreased below minimum gas limit. Gas limit: ${gasLimit}, minimum gas limit: ${this.common.param(
+          'gasConfig',
+          'minGasLimit'
+        )}`
       )
       throw new Error(msg)
     }
@@ -535,7 +577,7 @@ export class BlockHeader {
    * Calculates the base fee for a potential next block
    */
   public calcNextBaseFee(): bigint {
-    if (this.common.isActivatedEIP(1559) === false) {
+    if (!this.common.isActivatedEIP(1559)) {
       const msg = this._errorMsg(
         'calcNextBaseFee() can only be called with EIP1559 being activated'
       )
@@ -556,8 +598,7 @@ export class BlockHeader {
 
       const calculatedDelta =
         (this.baseFeePerGas! * gasUsedDelta) / parentGasTarget / baseFeeMaxChangeDenominator
-      nextBaseFee =
-        (calculatedDelta > BigInt(1) ? calculatedDelta : BigInt(1)) + this.baseFeePerGas!
+      nextBaseFee = (calculatedDelta > BIGINT_1 ? calculatedDelta : BIGINT_1) + this.baseFeePerGas!
     } else {
       const gasUsedDelta = parentGasTarget - this.gasUsed
       const baseFeeMaxChangeDenominator = this.common.param(
@@ -568,9 +609,9 @@ export class BlockHeader {
       const calculatedDelta =
         (this.baseFeePerGas! * gasUsedDelta) / parentGasTarget / baseFeeMaxChangeDenominator
       nextBaseFee =
-        this.baseFeePerGas! - calculatedDelta > BigInt(0)
+        this.baseFeePerGas! - calculatedDelta > BIGINT_0
           ? this.baseFeePerGas! - calculatedDelta
-          : BigInt(0)
+          : BIGINT_0
     }
     return nextBaseFee
   }
@@ -583,9 +624,17 @@ export class BlockHeader {
     if (this.excessBlobGas === undefined) {
       throw new Error('header must have excessBlobGas field populated')
     }
+    return this._getBlobGasPrice(this.excessBlobGas)
+  }
+
+  /**
+   * Returns the blob gas price depending upon the `excessBlobGas` value
+   * @param excessBlobGas
+   */
+  private _getBlobGasPrice(excessBlobGas: bigint) {
     return fakeExponential(
       this.common.param('gasPrices', 'minBlobGasPrice'),
-      this.excessBlobGas,
+      excessBlobGas,
       this.common.param('gasConfig', 'blobGasPriceUpdateFraction')
     )
   }
@@ -609,14 +658,22 @@ export class BlockHeader {
    */
   public calcNextExcessBlobGas(): bigint {
     // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
-    const targetGasConsumed = (this.excessBlobGas ?? BigInt(0)) + (this.blobGasUsed ?? BigInt(0))
+    const targetGasConsumed = (this.excessBlobGas ?? BIGINT_0) + (this.blobGasUsed ?? BIGINT_0)
     const targetBlobGasPerBlock = this.common.param('gasConfig', 'targetBlobGasPerBlock')
 
     if (targetGasConsumed <= targetBlobGasPerBlock) {
-      return BigInt(0)
+      return BIGINT_0
     } else {
       return targetGasConsumed - targetBlobGasPerBlock
     }
+  }
+
+  /**
+   * Calculate the blob gas price of the block built on top of this one
+   * @returns The blob gas price
+   */
+  public calcNextBlobGasPrice(): bigint {
+    return this._getBlobGasPrice(this.calcNextExcessBlobGas())
   }
 
   /**
@@ -635,25 +692,36 @@ export class BlockHeader {
       bigIntToUnpaddedBytes(this.number),
       bigIntToUnpaddedBytes(this.gasLimit),
       bigIntToUnpaddedBytes(this.gasUsed),
-      bigIntToUnpaddedBytes(this.timestamp ?? BigInt(0)),
+      bigIntToUnpaddedBytes(this.timestamp ?? BIGINT_0),
       this.extraData,
       this.mixHash,
       this.nonce,
     ]
 
-    if (this.common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559)) {
       rawItems.push(bigIntToUnpaddedBytes(this.baseFeePerGas!))
     }
 
-    if (this.common.isActivatedEIP(4895) === true) {
+    if (this.common.isActivatedEIP(4895)) {
       rawItems.push(this.withdrawalsRoot!)
     }
-    if (this.common.isActivatedEIP(4844) === true) {
+
+    // in kaunstinen 2 verkle is scheduled after withdrawals, will eventually be post deneb hopefully
+    if (this.common.isActivatedEIP(6800)) {
+      // execution witness is not mandatory part of the the block so nothing to push here
+      // but keep this comment segment for clarity regarding the same and move it according as per the
+      // HF sequence eventually planned
+    }
+
+    if (this.common.isActivatedEIP(4844)) {
       rawItems.push(bigIntToUnpaddedBytes(this.blobGasUsed!))
       rawItems.push(bigIntToUnpaddedBytes(this.excessBlobGas!))
     }
-    if (this.common.isActivatedEIP(4788) === true) {
+    if (this.common.isActivatedEIP(4788)) {
       rawItems.push(this.parentBeaconBlockRoot!)
+    }
+    if (this.common.isActivatedEIP(7685)) {
+      rawItems.push(this.requestsRoot!)
     }
 
     return rawItems
@@ -665,18 +733,18 @@ export class BlockHeader {
   hash(): Uint8Array {
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = keccak256(RLP.encode(this.raw()))
+        this.cache.hash = this.keccakFunction(RLP.encode(this.raw())) as Uint8Array
       }
       return this.cache.hash
     }
-    return keccak256(RLP.encode(this.raw()))
+    return this.keccakFunction(RLP.encode(this.raw()))
   }
 
   /**
    * Checks if the block header is a genesis header.
    */
   isGenesis(): boolean {
-    return this.number === BigInt(0)
+    return this.number === BIGINT_0
   }
 
   protected _requireClique(name: string) {
@@ -704,18 +772,16 @@ export class BlockHeader {
       )
       throw new Error(msg)
     }
-    const hardfork = this.common.hardfork()
     const blockTs = this.timestamp
     const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
-    const minimumDifficulty = this.common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
-    const offset =
-      parentDif / this.common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)
+    const minimumDifficulty = this.common.param('pow', 'minimumDifficulty')
+    const offset = parentDif / this.common.param('pow', 'difficultyBoundDivisor')
     let num = this.number
 
     // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
     let dif!: bigint
 
-    if (this.common.hardforkGteHardfork(hardfork, Hardfork.Byzantium) === true) {
+    if (this.common.gteHardfork(Hardfork.Byzantium)) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
       const uncleAddend = equalsBytes(parentBlockHeader.uncleHash, KECCAK256_RLP_ARRAY) ? 1 : 2
       let a = BigInt(uncleAddend) - (blockTs - parentTs) / BigInt(9)
@@ -727,15 +793,15 @@ export class BlockHeader {
       dif = parentDif + offset * a
     }
 
-    if (this.common.hardforkGteHardfork(hardfork, Hardfork.Byzantium) === true) {
+    if (this.common.gteHardfork(Hardfork.Byzantium)) {
       // Get delay as parameter from common
       num = num - this.common.param('pow', 'difficultyBombDelay')
-      if (num < BigInt(0)) {
-        num = BigInt(0)
+      if (num < BIGINT_0) {
+        num = BIGINT_0
       }
-    } else if (this.common.hardforkGteHardfork(hardfork, Hardfork.Homestead) === true) {
+    } else if (this.common.gteHardfork(Hardfork.Homestead)) {
       // 1 - (block_timestamp - parent_timestamp) // 10
-      let a = BigInt(1) - (blockTs - parentTs) / BigInt(10)
+      let a = BIGINT_1 - (blockTs - parentTs) / BigInt(10)
       const cutoff = BigInt(-99)
       // MAX(cutoff, a)
       if (cutoff > a) {
@@ -744,16 +810,16 @@ export class BlockHeader {
       dif = parentDif + offset * a
     } else {
       // pre-homestead
-      if (parentTs + this.common.paramByHardfork('pow', 'durationLimit', hardfork) > blockTs) {
+      if (parentTs + this.common.param('pow', 'durationLimit') > blockTs) {
         dif = offset + parentDif
       } else {
         dif = parentDif - offset
       }
     }
 
-    const exp = num / BigInt(100000) - BigInt(2)
+    const exp = num / BigInt(100000) - BIGINT_2
     if (exp >= 0) {
-      dif = dif + BigInt(2) ** exp
+      dif = dif + BIGINT_2 ** exp
     }
 
     if (dif < minimumDifficulty) {
@@ -770,7 +836,7 @@ export class BlockHeader {
     this._requireClique('cliqueSigHash')
     const raw = this.raw()
     raw[12] = this.extraData.subarray(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
-    return keccak256(RLP.encode(raw))
+    return this.keccakFunction(RLP.encode(raw))
   }
 
   /**
@@ -782,7 +848,7 @@ export class BlockHeader {
     const epoch = BigInt((this.common.consensusConfig() as CliqueConfig).epoch)
     // Epoch transition block if the block number has no
     // remainder on the division by the epoch length
-    return this.number % epoch === BigInt(0)
+    return this.number % epoch === BIGINT_0
   }
 
   /**
@@ -811,12 +877,9 @@ export class BlockHeader {
   private cliqueSealBlock(privateKey: Uint8Array) {
     this._requireClique('cliqueSealBlock')
 
-    const signature = ecsign(this.cliqueSigHash(), privateKey)
-    const signatureB = concatBytes(
-      signature.r,
-      signature.s,
-      bigIntToBytes(signature.v - BigInt(27))
-    )
+    const ecSignFunction = this.common.customCrypto?.ecsign ?? ecsign
+    const signature = ecSignFunction(this.cliqueSigHash(), privateKey)
+    const signatureB = concatBytes(signature.r, signature.s, bigIntToBytes(signature.v - BIGINT_27))
 
     const extraDataWithoutSeal = this.extraData.subarray(
       0,
@@ -880,7 +943,7 @@ export class BlockHeader {
     }
     const r = extraSeal.subarray(0, 32)
     const s = extraSeal.subarray(32, 64)
-    const v = bytesToBigInt(extraSeal.subarray(64, 65)) + BigInt(27)
+    const v = bytesToBigInt(extraSeal.subarray(64, 65)) + BIGINT_27
     const pubKey = ecrecover(this.cliqueSigHash(), v, r, s)
     return Address.fromPublicKey(pubKey)
   }
@@ -917,15 +980,18 @@ export class BlockHeader {
       mixHash: bytesToHex(this.mixHash),
       nonce: bytesToHex(this.nonce),
     }
-    if (this.common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559)) {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
     }
-    if (this.common.isActivatedEIP(4844) === true) {
+    if (this.common.isActivatedEIP(4844)) {
       jsonDict.blobGasUsed = bigIntToHex(this.blobGasUsed!)
       jsonDict.excessBlobGas = bigIntToHex(this.excessBlobGas!)
     }
-    if (this.common.isActivatedEIP(4788) === true) {
+    if (this.common.isActivatedEIP(4788)) {
       jsonDict.parentBeaconBlockRoot = bytesToHex(this.parentBeaconBlockRoot!)
+    }
+    if (this.common.isActivatedEIP(7685)) {
+      jsonDict.requestsRoot = bytesToHex(this.requestsRoot!)
     }
     return jsonDict
   }
@@ -935,7 +1001,7 @@ export class BlockHeader {
    * activation block (see: https://blog.slock.it/hard-fork-specification-24b889e70703)
    */
   protected _validateDAOExtraData() {
-    if (this.common.hardforkIsActiveOnBlock(Hardfork.Dao, this.number) === false) {
+    if (!this.common.hardforkIsActiveOnBlock(Hardfork.Dao, this.number)) {
       return
     }
     const DAOActivationBlock = this.common.hardforkBlock(Hardfork.Dao)
@@ -946,7 +1012,11 @@ export class BlockHeader {
     const DAO_ForceExtraDataRange = BigInt(9)
     const drift = this.number - DAOActivationBlock
     if (drift <= DAO_ForceExtraDataRange && !equalsBytes(this.extraData, DAO_ExtraData)) {
-      const msg = this._errorMsg("extraData should be 'dao-hard-fork'")
+      const msg = this._errorMsg(
+        `extraData should be 'dao-hard-fork', got ${bytesToUtf8(this.extraData)} (hex: ${bytesToHex(
+          this.extraData
+        )})`
+      )
       throw new Error(msg)
     }
   }

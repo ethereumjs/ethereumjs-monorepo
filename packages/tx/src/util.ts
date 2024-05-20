@@ -1,8 +1,8 @@
-import { bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
+import { type PrefixedHexString, bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 
 import { isAccessList } from './types.js'
 
-import type { AccessList, AccessListBytes, AccessListItem } from './types.js'
+import type { AccessList, AccessListBytes, AccessListItem, TransactionType } from './types.js'
 import type { Common } from '@ethereumjs/common'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {
@@ -42,7 +42,7 @@ export class AccessLists {
       for (let i = 0; i < bufferAccessList.length; i++) {
         const data = bufferAccessList[i]
         const address = bytesToHex(data[0])
-        const storageKeys: string[] = []
+        const storageKeys: PrefixedHexString[] = []
         for (let item = 0; item < data[1].length; item++) {
           storageKeys.push(bytesToHex(data[1][item]))
         }
@@ -114,4 +114,8 @@ export class AccessLists {
     const addresses = accessList.length
     return addresses * Number(accessListAddressCost) + slots * Number(accessListStorageKeyCost)
   }
+}
+
+export function txTypeBytes(txType: TransactionType): Uint8Array {
+  return hexToBytes(`0x${txType.toString(16).padStart(2, '0')}`)
 }

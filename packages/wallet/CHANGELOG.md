@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.0.3 - 2024-03-05
+
+Maintenance release with downstream dependency updates, see PR [#3297](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3297)
+
+## 2.0.2 - 2024-02-08
+
+### Self-Contained (and Working 🙂) README Examples
+
+All code examples in `EthereumJS` monorepo library README files are now self-contained and can be executed "out of the box" by simply copying them over and running "as is", see tracking issue [#3234](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3234) for an overview. Additionally all examples can now be found in the respective library [examples](./examples/) folder (in fact the README examples are now auto-embedded from over there). As a nice side effect all examples are now run in CI on new PRs and so do not risk to get outdated or broken over time.
+
+### Other Changes
+
+- Dependency version updates, PR [#3261](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3261)
+
+## 2.0.1 - 2023-10-26
+
+- Add `fromMnemonic()` static constructor to BIP32 HD wallet, PR [#192](https://github.com/ethereumjs/ethereumjs-wallet/pull/192)
+
 ## 2.0.0 - 2023-08-09
 
 Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
@@ -34,7 +52,7 @@ All default exports for the libraries have been removed since these cause reoccu
 
 So imports needs to be updated as follows:
 
-```typescript
+```ts
 import Wallet from 'ethereumjs-wallet'
 import { Wallet } from '@ethereumjs/wallet'
 
@@ -55,14 +73,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -81,7 +99,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
-```typescript
+```ts
 // wallet
 Wallet.fromPrivateKey()
 Wallet.getPublicKey()
@@ -166,7 +184,7 @@ Wallet.fromPublicKey = function (pub, nonStrict) {
 
 and here the new `TypeScript` code:
 
-```typescript
+```ts
 public static fromPublicKey(publicKey: Buffer, nonStrict: boolean = false): Wallet {
   if (nonStrict) {
     publicKey = importPublic(publicKey)

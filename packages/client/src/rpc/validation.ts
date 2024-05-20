@@ -1,4 +1,4 @@
-import { INVALID_PARAMS } from './error-code'
+import { INVALID_PARAMS } from './error-code.js'
 
 /**
  * middleware for parameters validation
@@ -178,6 +178,9 @@ export const validators = {
   get bytes48() {
     return (params: any[], index: number) => bytes(48, params, index)
   },
+  get bytes96() {
+    return (params: any[], index: number) => bytes(96, params, index)
+  },
   get bytes256() {
     return (params: any[], index: number) => bytes(256, params, index)
   },
@@ -304,6 +307,23 @@ export const validators = {
   },
 
   /**
+   * number validator to check if type is integer
+   * @param params parameters of method
+   * @param index index of parameter
+   */
+
+  get integer() {
+    return (params: any[], index: number) => {
+      if (!Number.isInteger(params[index])) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument is not an integer`,
+        }
+      }
+    }
+  },
+
+  /**
    * validator to ensure required transaction fields are present, and checks for valid address and hex values.
    * @param requiredFields array of required fields
    * @returns validator function with params:
@@ -408,6 +428,110 @@ export const validators = {
     }
   },
 
+  get depositRequest() {
+    return (
+      requiredFields: string[] = ['pubkey', 'withdrawalCredentials', 'amount', 'signature', 'index']
+    ) => {
+      return (params: any[], index: number) => {
+        if (typeof params[index] !== 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument must be an object`,
+          }
+        }
+
+        const wt = params[index]
+
+        for (const field of requiredFields) {
+          if (wt[field] === undefined) {
+            return {
+              code: INVALID_PARAMS,
+              message: `invalid argument ${index}: required field ${field}`,
+            }
+          }
+        }
+
+        const validate = (field: any, validator: Function) => {
+          if (field === undefined) return
+          const v = validator([field], 0)
+          if (v !== undefined) return v
+        }
+
+        // validate pubkey
+        for (const field of [wt.pubkey]) {
+          const v = validate(field, this.bytes48)
+          if (v !== undefined) return v
+        }
+
+        // validate withdrawalCredentials
+        for (const field of [wt.withdrawalCredentials]) {
+          const v = validate(field, this.bytes32)
+          if (v !== undefined) return v
+        }
+
+        // validate amount, index
+        for (const field of [wt.amount, wt.index]) {
+          const v = validate(field, this.bytes8)
+          if (v !== undefined) return v
+        }
+
+        // validate signature
+        for (const field of [wt.signature]) {
+          const v = validate(field, this.bytes96)
+          if (v !== undefined) return v
+        }
+      }
+    }
+  },
+
+  get withdrawalRequest() {
+    return (requiredFields: string[] = ['sourceAddress', 'validatorPublicKey', 'amount']) => {
+      return (params: any[], index: number) => {
+        if (typeof params[index] !== 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument must be an object`,
+          }
+        }
+
+        const wt = params[index]
+
+        for (const field of requiredFields) {
+          if (wt[field] === undefined) {
+            return {
+              code: INVALID_PARAMS,
+              message: `invalid argument ${index}: required field ${field}`,
+            }
+          }
+        }
+
+        const validate = (field: any, validator: Function) => {
+          if (field === undefined) return
+          const v = validator([field], 0)
+          if (v !== undefined) return v
+        }
+
+        // validate sourceAddress
+        for (const field of [wt.sourceAddress]) {
+          const v = validate(field, this.address)
+          if (v !== undefined) return v
+        }
+
+        // validate validatorPublicKey
+        for (const field of [wt.validatorPublicKey]) {
+          const v = validate(field, this.bytes48)
+          if (v !== undefined) return v
+        }
+
+        // validate amount
+        for (const field of [wt.amount]) {
+          const v = validate(field, this.bytes8)
+          if (v !== undefined) return v
+        }
+      }
+    }
+  },
+
   /**
    * object validator to check if type is object with
    * required keys and expected validation of values
@@ -460,6 +584,75 @@ export const validators = {
           const result = validator([value], 0)
           if (result !== undefined) return result
         }
+      }
+    }
+  },
+
+  /**
+   * Verification of rewardPercentile value
+   *
+   * description: Floating point value between 0 and 100.
+   * type: number
+   *
+   */
+  get rewardPercentile() {
+    return (params: any[], i: number) => {
+      const ratio = params[i]
+      if (typeof ratio !== 'number') {
+        return {
+          code: INVALID_PARAMS,
+          message: `entry at ${i} is not a number`,
+        }
+      }
+      if (ratio < 0) {
+        return {
+          code: INVALID_PARAMS,
+          message: `entry at ${i} is lower than 0`,
+        }
+      }
+      if (ratio > 100) {
+        return {
+          code: INVALID_PARAMS,
+          message: `entry at ${i} is higher than 100`,
+        }
+      }
+      return ratio
+    }
+  },
+
+  /**
+   * Verification of rewardPercentiles array
+   *
+   *  description: A monotonically increasing list of percentile values. For each block in the requested range, the transactions will be sorted in ascending order by effective tip per gas and the coresponding effective tip for the percentile will be determined, accounting for gas consumed.
+   *  type: array
+   *    items: rewardPercentile value
+   *
+   */
+  get rewardPercentiles() {
+    return (params: any[], index: number) => {
+      const field = params[index]
+      if (!Array.isArray(field)) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument is not array`,
+        }
+      }
+      let low = -1
+      for (let i = 0; i < field.length; i++) {
+        const ratio = this.rewardPercentile(field, i)
+        if (typeof ratio === 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: ${ratio.message}`,
+          }
+        }
+        if (ratio <= low) {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: array is not monotonically increasing`,
+          }
+        }
+        low = ratio
       }
     }
   },

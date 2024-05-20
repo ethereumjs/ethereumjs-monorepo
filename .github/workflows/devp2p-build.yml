@@ -25,21 +25,22 @@ jobs:
       matrix:
         node-version: [18]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - run: npm ci
+      - run: npm ci --omit=peer
         working-directory: ${{github.workspace}}
 
-      - uses: nick-fields/retry@v2
+      - run: npm run coverage
+
+      - uses: codecov/codecov-action@v3
         with:
-          timeout_minutes: 10
-          max_attempts: 3
-          command: cd ${{github.workspace}}/packages/devp2p && npm run coverage
+          files: ${{ env.cwd }}/coverage/lcov.info
+          flags: devp2p
 
       - run: npm run lint

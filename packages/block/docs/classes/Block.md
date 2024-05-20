@@ -13,9 +13,9 @@ An object that represents the block.
 ### Properties
 
 - [common](Block.md#common)
+- [executionWitness](Block.md#executionwitness)
 - [header](Block.md#header)
 - [transactions](Block.md#transactions)
-- [txTrie](Block.md#txtrie)
 - [uncleHeaders](Block.md#uncleheaders)
 - [withdrawals](Block.md#withdrawals)
 
@@ -52,7 +52,7 @@ An object that represents the block.
 
 ### constructor
 
-• **new Block**(`header?`, `transactions?`, `uncleHeaders?`, `withdrawals?`, `opts?`)
+• **new Block**(`header?`, `transactions?`, `uncleHeaders?`, `withdrawals?`, `opts?`, `executionWitness?`)
 
 This constructor takes the values, validates them, assigns them and freezes the object.
 Use the static factory methods to assist in creating a Block object from varying data types and options.
@@ -66,10 +66,11 @@ Use the static factory methods to assist in creating a Block object from varying
 | `uncleHeaders` | [`BlockHeader`](BlockHeader.md)[] | `[]` |
 | `withdrawals?` | `Withdrawal`[] | `undefined` |
 | `opts` | [`BlockOptions`](../interfaces/BlockOptions.md) | `{}` |
+| `executionWitness?` | ``null`` \| [`VerkleExecutionWitness`](../interfaces/VerkleExecutionWitness.md) | `undefined` |
 
 #### Defined in
 
-[block.ts:360](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L360)
+[block.ts:405](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L405)
 
 ## Properties
 
@@ -79,7 +80,21 @@ Use the static factory methods to assist in creating a Block object from varying
 
 #### Defined in
 
-[block.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L51)
+[block.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L53)
+
+___
+
+### executionWitness
+
+• `Optional` `Readonly` **executionWitness**: ``null`` \| [`VerkleExecutionWitness`](../interfaces/VerkleExecutionWitness.md)
+
+EIP-6800: Verkle Proof Data (experimental)
+null implies that the non default executionWitness might exist but not available
+and will not lead to execution of the block via vm with verkle stateless manager
+
+#### Defined in
+
+[block.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L61)
 
 ___
 
@@ -89,23 +104,13 @@ ___
 
 #### Defined in
 
-[block.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L46)
+[block.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L49)
 
 ___
 
 ### transactions
 
 • `Readonly` **transactions**: `TypedTransaction`[] = `[]`
-
-#### Defined in
-
-[block.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L47)
-
-___
-
-### txTrie
-
-• `Readonly` **txTrie**: `Trie`
 
 #### Defined in
 
@@ -119,7 +124,7 @@ ___
 
 #### Defined in
 
-[block.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L48)
+[block.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L51)
 
 ___
 
@@ -129,7 +134,7 @@ ___
 
 #### Defined in
 
-[block.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L49)
+[block.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L52)
 
 ## Methods
 
@@ -145,7 +150,7 @@ Return a compact error string representation of the object
 
 #### Defined in
 
-[block.ts:698](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L698)
+[block.ts:806](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L806)
 
 ___
 
@@ -167,23 +172,23 @@ Returns the canonical difficulty for this block.
 
 #### Defined in
 
-[block.ts:664](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L664)
+[block.ts:772](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L772)
 
 ___
 
 ### genTxTrie
 
-▸ **genTxTrie**(): `Promise`<`void`\>
+▸ **genTxTrie**(): `Promise`<`Uint8Array`\>
 
 Generates transaction trie for validation.
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`<`Uint8Array`\>
 
 #### Defined in
 
-[block.ts:441](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L441)
+[block.ts:520](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L520)
 
 ___
 
@@ -201,7 +206,7 @@ an array of error strings
 
 #### Defined in
 
-[block.ts:469](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L469)
+[block.ts:547](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L547)
 
 ___
 
@@ -217,7 +222,7 @@ Returns the hash of the block.
 
 #### Defined in
 
-[block.ts:420](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L420)
+[block.ts:499](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L499)
 
 ___
 
@@ -233,7 +238,7 @@ Determines if this block is the genesis block.
 
 #### Defined in
 
-[block.ts:427](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L427)
+[block.ts:506](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L506)
 
 ___
 
@@ -241,7 +246,7 @@ ___
 
 ▸ **raw**(): [`BlockBytes`](../README.md#blockbytes)
 
-Returns a Array of the raw Bytes Arays of this block, in order.
+Returns a Array of the raw Bytes Arrays of this block, in order.
 
 #### Returns
 
@@ -249,7 +254,7 @@ Returns a Array of the raw Bytes Arays of this block, in order.
 
 #### Defined in
 
-[block.ts:402](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L402)
+[block.ts:477](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L477)
 
 ___
 
@@ -265,7 +270,7 @@ Returns the rlp encoding of the block.
 
 #### Defined in
 
-[block.ts:434](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L434)
+[block.ts:513](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L513)
 
 ___
 
@@ -281,7 +286,7 @@ Returns the block in JSON format.
 
 #### Defined in
 
-[block.ts:681](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L681)
+[block.ts:789](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L789)
 
 ___
 
@@ -299,7 +304,7 @@ True if all transactions are valid, false otherwise
 
 #### Defined in
 
-[block.ts:519](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L519)
+[block.ts:597](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L597)
 
 ___
 
@@ -318,7 +323,7 @@ True if the transaction trie is valid, false otherwise
 
 #### Defined in
 
-[block.ts:451](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L451)
+[block.ts:529](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L529)
 
 ___
 
@@ -336,7 +341,7 @@ true if the uncle's hash is valid, false otherwise.
 
 #### Defined in
 
-[block.ts:613](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L613)
+[block.ts:718](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L718)
 
 ___
 
@@ -360,13 +365,13 @@ blob gas per block
 
 #### Defined in
 
-[block.ts:567](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L567)
+[block.ts:670](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L670)
 
 ___
 
 ### validateData
 
-▸ **validateData**(`onlyHeader?`): `Promise`<`void`\>
+▸ **validateData**(`onlyHeader?`, `verifyTxs?`): `Promise`<`void`\>
 
 Validates the block data, throwing if invalid.
 This can be checked on the Block itself without needing access to any parent block
@@ -380,6 +385,7 @@ It checks:
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
 | `onlyHeader` | `boolean` | `false` | if only passed the header, skip validating txTrie and unclesHash (default: false) |
+| `verifyTxs` | `boolean` | `true` | if set to `false`, will not check for transaction validation errors (default: true) |
 
 #### Returns
 
@@ -387,7 +393,7 @@ It checks:
 
 #### Defined in
 
-[block.ts:534](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L534)
+[block.ts:613](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L613)
 
 ___
 
@@ -410,7 +416,7 @@ Throws if invalid
 
 #### Defined in
 
-[block.ts:674](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L674)
+[block.ts:782](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L782)
 
 ___
 
@@ -432,7 +438,7 @@ Header does not count an uncle twice.
 
 #### Defined in
 
-[block.ts:640](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L640)
+[block.ts:748](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L748)
 
 ___
 
@@ -450,13 +456,13 @@ true if the withdrawals trie root is valid, false otherwise
 
 #### Defined in
 
-[block.ts:623](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L623)
+[block.ts:728](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L728)
 
 ___
 
 ### fromBeaconPayloadJson
 
-▸ `Static` **fromBeaconPayloadJson**(`payload`, `options?`): `Promise`<[`Block`](Block.md)\>
+▸ `Static` **fromBeaconPayloadJson**(`payload`, `opts?`): `Promise`<[`Block`](Block.md)\>
 
 Method to retrieve a block from a beacon payload json
 
@@ -465,7 +471,7 @@ Method to retrieve a block from a beacon payload json
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `payload` | `BeaconPayloadJson` | json of a beacon beacon fetched from beacon apis |
-| `options?` | [`BlockOptions`](../interfaces/BlockOptions.md) | - |
+| `opts?` | [`BlockOptions`](../interfaces/BlockOptions.md) | [BlockOptions](../interfaces/BlockOptions.md) |
 
 #### Returns
 
@@ -475,7 +481,7 @@ the block constructed block
 
 #### Defined in
 
-[block.ts:348](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L348)
+[block.ts:393](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L393)
 
 ___
 
@@ -498,22 +504,22 @@ Static constructor to create a block from a block data dictionary
 
 #### Defined in
 
-[block.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L85)
+[block.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L99)
 
 ___
 
 ### fromExecutionPayload
 
-▸ `Static` **fromExecutionPayload**(`payload`, `options?`): `Promise`<[`Block`](Block.md)\>
+▸ `Static` **fromExecutionPayload**(`payload`, `opts?`): `Promise`<[`Block`](Block.md)\>
 
 Method to retrieve a block from an execution payload
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `payload` | [`ExecutionPayload`](../README.md#executionpayload) |
-| `options?` | [`BlockOptions`](../interfaces/BlockOptions.md) |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `payload` | [`ExecutionPayload`](../README.md#executionpayload) | - |
+| `opts?` | [`BlockOptions`](../interfaces/BlockOptions.md) | [BlockOptions](../interfaces/BlockOptions.md) |
 
 #### Returns
 
@@ -523,7 +529,7 @@ the block constructed block
 
 #### Defined in
 
-[block.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L288)
+[block.ts:320](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L320)
 
 ___
 
@@ -549,7 +555,7 @@ the block specified by `blockTag`
 
 #### Defined in
 
-[block.ts:228](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L228)
+[block.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L260)
 
 ___
 
@@ -572,7 +578,7 @@ Static constructor to create a block from a RLP-serialized block
 
 #### Defined in
 
-[block.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L134)
+[block.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L153)
 
 ___
 
@@ -588,7 +594,7 @@ Creates a new block object from Ethereum JSON RPC.
 | :------ | :------ | :------ |
 | `blockData` | [`JsonRpcBlock`](../interfaces/JsonRpcBlock.md) | - |
 | `uncles?` | `any`[] | Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex) |
-| `opts?` | [`BlockOptions`](../interfaces/BlockOptions.md) | - |
+| `opts?` | [`BlockOptions`](../interfaces/BlockOptions.md) | An object describing the blockchain |
 
 #### Returns
 
@@ -596,7 +602,7 @@ Creates a new block object from Ethereum JSON RPC.
 
 #### Defined in
 
-[block.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L217)
+[block.ts:249](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L249)
 
 ___
 
@@ -619,7 +625,7 @@ Static constructor to create a block from an array of Bytes values
 
 #### Defined in
 
-[block.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L150)
+[block.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L169)
 
 ___
 
@@ -642,7 +648,7 @@ Returns the txs trie root for array of TypedTransaction
 
 #### Defined in
 
-[block.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L71)
+[block.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L85)
 
 ___
 
@@ -665,4 +671,4 @@ Returns the withdrawals trie root for array of Withdrawal.
 
 #### Defined in
 
-[block.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L58)
+[block.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L72)

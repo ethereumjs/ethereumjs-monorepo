@@ -1,10 +1,13 @@
 import { assert, describe, it } from 'vitest'
 
+import { Status } from '../src/hardforks.js'
 import { Chain, Common, ConsensusType, CustomChain, Hardfork } from '../src/index.js'
 
 import * as testnet from './data/testnet.json'
 import * as testnet2 from './data/testnet2.json'
 import * as testnet3 from './data/testnet3.json'
+
+import type { ChainConfig, HardforkTransitionConfig } from '../src/index.js'
 
 describe('[Common]: Custom chains', () => {
   it('chain -> object: should provide correct access to private network chain parameters', () => {
@@ -26,7 +29,7 @@ describe('[Common]: Custom chains', () => {
       /Missing required/,
       undefined,
       'should throw an exception on missing parameter'
-    ) // eslint-disable-line no-new
+    )
   })
 
   it('custom() -> base functionality', () => {
@@ -97,7 +100,7 @@ describe('[Common]: Custom chains', () => {
 
   it('customChains parameter: initialization exception', () => {
     try {
-      new Common({ chain: testnet, customChains: [testnet] })
+      new Common({ chain: testnet, customChains: [testnet] as ChainConfig[] })
       assert.fail('should throw')
     } catch (e: any) {
       assert.ok(
@@ -113,7 +116,7 @@ describe('[Common]: Custom chains', () => {
     let c = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.Byzantium,
-      customChains: [testnet],
+      customChains: [testnet] as ChainConfig[],
     })
     assert.equal(c.chainName(), 'mainnet', 'customChains, chain set to supported chain')
     assert.equal(c.hardforkBlock()!, BigInt(4370000), 'customChains, chain set to supported chain')
@@ -125,12 +128,12 @@ describe('[Common]: Custom chains', () => {
     c = new Common({
       chain: 'testnet',
       hardfork: Hardfork.Byzantium,
-      customChains: [testnet],
+      customChains: [testnet] as ChainConfig[],
     })
     assert.equal(c.chainName(), 'testnet', 'customChains, chain initialized with custom chain')
     assert.equal(c.hardforkBlock()!, BigInt(4), 'customChains, chain initialized with custom chain')
 
-    const customChains = [testnet, testnet2, testnet3]
+    const customChains = [testnet, testnet2, testnet3] as ChainConfig[]
     c = new Common({
       chain: 'testnet2',
       hardfork: Hardfork.Istanbul,
@@ -143,6 +146,18 @@ describe('[Common]: Custom chains', () => {
       'customChains, chain initialized with custom chain'
     )
 
+    const customChainParams: Partial<ChainConfig> = {
+      name: 'custom',
+      chainId: 123,
+      networkId: 678,
+      depositContractAddress: '0x4242424242424242424242424242424242424242',
+    }
+    const customChainCommon = Common.custom(customChainParams, { hardfork: Hardfork.Byzantium })
+
+    assert.equal(
+      customChainCommon['_chainParams'].depositContractAddress,
+      customChainParams.depositContractAddress
+    )
     c.setChain('testnet')
     assert.equal(c.chainName(), 'testnet', 'customChains, should allow to switch custom chain')
     assert.equal(
@@ -150,6 +165,58 @@ describe('[Common]: Custom chains', () => {
       ConsensusType.ProofOfWork,
       'customChains, should allow to switch custom chain'
     )
+  })
+
+  it('customHardforks parameter: initialization and transition tests', () => {
+    const c = Common.custom({
+      customHardforks: {
+        testEIP2935Hardfork: {
+          name: 'testEIP2935Hardfork',
+          comment: 'Hardfork to test EIP 2935',
+          url: '',
+          status: Status.Final,
+          eips: [2935],
+        },
+      },
+      hardforks: [
+        {
+          name: 'chainstart',
+          block: 0,
+        },
+        {
+          name: 'berlin',
+          block: null,
+          timestamp: 999,
+        },
+        {
+          // Note: this custom hardfork name MUST be in customHardforks as field
+          // If this is not the case, Common will throw with a random error
+          // Should we throw early with a descriptive error? TODO
+          name: 'testEIP2935Hardfork',
+          block: null,
+          timestamp: 1000,
+        },
+      ],
+    })
+    // Note: default HF of Common is currently Shanghai
+    // Did not pass any "hardfork" param
+    assert.equal(c.hardfork(), Hardfork.Shanghai)
+    c.setHardforkBy({
+      blockNumber: 0,
+    })
+    assert.equal(c.hardfork(), Hardfork.Chainstart)
+    c.setHardforkBy({
+      blockNumber: 1,
+      timestamp: 999,
+    })
+    assert.equal(c.hardfork(), Hardfork.Berlin)
+    assert.notOk(c.isActivatedEIP(2935))
+    c.setHardforkBy({
+      blockNumber: 1,
+      timestamp: 1000,
+    })
+    assert.equal(c.hardfork(), 'testEIP2935Hardfork')
+    assert.ok(c.isActivatedEIP(2935))
   })
 })
 
@@ -166,8 +233,7 @@ describe('custom chain setup with hardforks with undefined/null block numbers', 
     ]
 
     assert.throws(
-      //@ts-expect-error -- Disabling type check to verify that error is thrown
-      () => Common.custom({ hardforks: undefinedHardforks }),
+      () => Common.custom({ hardforks: undefinedHardforks as HardforkTransitionConfig[] }),
       undefined,
       undefined,
       'throws when a hardfork with an undefined block number is passed'

@@ -24,7 +24,7 @@
 
 #### Defined in
 
-[types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L158)
+[types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L163)
 
 ___
 
@@ -37,6 +37,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `accessList?` | `Map`<`string`, `Set`<`string`\>\> |
+| `preimages?` | `Map`<`string`, `Uint8Array`\> |
 | `addAlwaysWarmAddress` | (`address`: `string`, `addToAccessList?`: `boolean`) => `void` |
 | `addAlwaysWarmSlot` | (`address`: `string`, `slot`: `string`, `addToAccessList?`: `boolean`) => `void` |
 | `checkpoint` | () => `Promise`<`void`\> |
@@ -47,10 +48,11 @@ ___
 | `putAccount` | (`address`: `Address`, `account`: `Account`) => `Promise`<`void`\> |
 | `revert` | () => `Promise`<`void`\> |
 | `startReportingAccessList` | () => `void` |
+| `startReportingPreimages?` | () => `void` |
 
 #### Defined in
 
-[types.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L141)
+[types.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L144)
 
 ___
 
@@ -60,7 +62,7 @@ ___
 
 #### Defined in
 
-[types.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L155)
+[types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L160)
 
 ___
 
@@ -70,7 +72,7 @@ ___
 
 #### Defined in
 
-[types.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L154)
+[types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L159)
 
 ## Methods
 
@@ -82,7 +84,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `opts` | `EVMRunCallOpts` |
+| `opts` | [`EVMRunCallOpts`](EVMRunCallOpts.md) |
 
 #### Returns
 
@@ -90,7 +92,7 @@ ___
 
 #### Defined in
 
-[types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L156)
+[types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L161)
 
 ___
 
@@ -102,7 +104,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `opts` | `EVMRunCodeOpts` |
+| `opts` | [`EVMRunCodeOpts`](EVMRunCodeOpts.md) |
 
 #### Returns
 
@@ -110,4 +112,4 @@ ___
 
 #### Defined in
 
-[types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L157)
+[types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L162)

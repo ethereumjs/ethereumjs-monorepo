@@ -3,10 +3,10 @@ import {
   compareBytes,
   concatBytes,
   hexToBytes,
+  randomBytes,
   setLengthLeft,
   toBytes,
 } from '@ethereumjs/util'
-import * as crypto from 'crypto'
 import { assert, describe, it } from 'vitest'
 
 import { Trie } from '../../src/index.js'
@@ -36,8 +36,8 @@ async function randomTrie(db: DB<string, string>, addKey: boolean = true) {
   }
 
   for (let i = 0; i < TRIE_SIZE; i++) {
-    const key = crypto.randomBytes(32)
-    const val = crypto.randomBytes(20)
+    const key = randomBytes(32)
+    const val = randomBytes(20)
     if ((await trie.get(key)) === null) {
       await trie.put(key, val)
       entries.push([key, val])
@@ -141,8 +141,8 @@ describe('simple merkle range proofs generation and verification', () => {
     }
 
     // Special case, two edge proofs for two edge key.
-    const startKey = hexToBytes('0x' + '00'.repeat(32))
-    const endKey = hexToBytes('0x' + 'ff'.repeat(32))
+    const startKey = hexToBytes(`0x${'00'.repeat(32)}`)
+    const endKey = hexToBytes(`0x${'ff'.repeat(32)}`)
     assert.equal(await verify(trie, entries, 0, entries.length - 1, startKey, endKey), false)
   })
 
@@ -200,12 +200,10 @@ describe('simple merkle range proofs generation and verification', () => {
 
     // Test the mini trie with only a single element.
     const tinyTrie = new Trie()
-    const tinyEntries: [Uint8Array, Uint8Array][] = [
-      [crypto.randomBytes(32), crypto.randomBytes(20)],
-    ]
+    const tinyEntries: [Uint8Array, Uint8Array][] = [[randomBytes(32), randomBytes(20)]]
     await tinyTrie.put(tinyEntries[0][0], tinyEntries[0][1])
 
-    const tinyStartKey = hexToBytes('0x' + '00'.repeat(32))
+    const tinyStartKey = hexToBytes(`0x${'00'.repeat(32)}`)
     assert.equal(await verify(tinyTrie, tinyEntries, 0, 0, tinyStartKey), false)
   })
 
@@ -234,15 +232,15 @@ describe('simple merkle range proofs generation and verification', () => {
         entries,
         0,
         entries.length - 1,
-        hexToBytes('0x' + '00'.repeat(32)),
-        hexToBytes('0x' + 'ff'.repeat(32))
+        hexToBytes(`0x${'00'.repeat(32)}`),
+        hexToBytes(`0x${'ff'.repeat(32)}`)
       ),
       false
     )
   })
 
   it('create a single side range proof and verify it', async () => {
-    const startKey = hexToBytes('0x' + '00'.repeat(32))
+    const startKey = hexToBytes(`0x${'00'.repeat(32)}`)
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
@@ -252,7 +250,7 @@ describe('simple merkle range proofs generation and verification', () => {
   })
 
   it('create a revert single side range proof and verify it', async () => {
-    const endKey = hexToBytes('0x' + 'ff'.repeat(32))
+    const endKey = hexToBytes(`0x${'ff'.repeat(32)}`)
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
@@ -282,7 +280,7 @@ describe('simple merkle range proofs generation and verification', () => {
       const start = getRandomIntInclusive(0, entries.length - 2)
       const end = getRandomIntInclusive(start + 1, entries.length - 1)
       const targetIndex = getRandomIntInclusive(start, end)
-      entries[targetIndex][0] = crypto.randomBytes(32)
+      entries[targetIndex][0] = randomBytes(32)
       await verify(trie, entries, start, end)
     })
 
@@ -291,7 +289,7 @@ describe('simple merkle range proofs generation and verification', () => {
       const start = getRandomIntInclusive(0, entries.length - 2)
       const end = getRandomIntInclusive(start + 1, entries.length - 1)
       const targetIndex = getRandomIntInclusive(start, end)
-      entries[targetIndex][1] = crypto.randomBytes(20)
+      entries[targetIndex][1] = randomBytes(20)
       await verify(trie, entries, start, end)
     })
 
@@ -455,14 +453,14 @@ describe('simple merkle range proofs generation and verification', () => {
 
       if (start === -1) {
         start = 0
-        startKey = hexToBytes('0x' + '00'.repeat(32))
+        startKey = hexToBytes(`0x${'00'.repeat(32)}`)
       } else {
         startKey = entries[start][0]
       }
 
       if (end === -1) {
         end = entries.length - 1
-        endKey = hexToBytes('0x' + 'ff'.repeat(32))
+        endKey = hexToBytes(`0x${'ff'.repeat(32)}`)
       } else {
         endKey = entries[end][0]
       }

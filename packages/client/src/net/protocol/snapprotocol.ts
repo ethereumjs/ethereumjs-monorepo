@@ -1,4 +1,5 @@
 import {
+  BIGINT_0,
   accountBodyFromSlim,
   accountBodyToSlim,
   bigIntToUnpaddedBytes,
@@ -6,10 +7,10 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import { Protocol } from './protocol'
+import { Protocol } from './protocol.js'
 
-import type { Chain } from '../../blockchain'
-import type { Message, ProtocolOptions } from './protocol'
+import type { Chain } from '../../blockchain/index.js'
+import type { Message, ProtocolOptions } from './protocol.js'
 import type { AccountBodyBytes } from '@ethereumjs/util'
 
 interface SnapProtocolOptions extends ProtocolOptions {
@@ -99,7 +100,7 @@ export class SnapProtocol extends Protocol {
   private chain: Chain
   /** If to convert slim body received of an account to normal */
   private convertSlimBody?: boolean
-  private nextReqId = BigInt(0)
+  private nextReqId = BIGINT_0
 
   /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [

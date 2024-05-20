@@ -6,14 +6,14 @@ import {
 } from '@ethereumjs/devp2p'
 import { randomBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
-import { Event } from '../../types'
-import { RlpxSender } from '../protocol'
+import { Event } from '../../types.js'
+import { RlpxSender } from '../protocol/index.js'
 
-import { Peer } from './peer'
+import { Peer } from './peer.js'
 
-import type { Protocol } from '../protocol'
-import type { RlpxServer } from '../server'
-import type { PeerOptions } from './peer'
+import type { Protocol } from '../protocol/index.js'
+import type { RlpxServer } from '../server/index.js'
+import type { PeerOptions } from './peer.js'
 import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
 const devp2pCapabilities = {
   snap1: Devp2pSNAP.snap,
@@ -37,7 +37,7 @@ export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transpor
  * Devp2p/RLPx peer
  * @memberof module:net/peer
  * @example
- * ```typescript
+ * ```ts
  * import { RlpxPeer } from './src/net/peer'
  * import { Chain } from './src/blockchain'
  * import { EthProtocol } from './src/net/protocol'
@@ -61,7 +61,6 @@ export class RlpxPeer extends Peer {
   public rlpx: Devp2pRLPx | null
   public rlpxPeer: Devp2pRlpxPeer | null
   public connected: boolean
-
   /**
    * Create new devp2p/rlpx peer
    */
@@ -169,7 +168,7 @@ export class RlpxPeer extends Peer {
         // handshake, and can just use the eth handshake
         if (protocol && name !== 'snap') {
           const sender = new RlpxSender(rlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP)
-          return this.bindProtocol(protocol, sender).then(() => {
+          return this.addProtocol(sender, protocol).then(() => {
             if (name === 'eth') {
               const snapRlpxProtocol = rlpxPeer
                 .getProtocols()
@@ -184,7 +183,7 @@ export class RlpxPeer extends Peer {
                 const snapSender = new RlpxSender(
                   snapRlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP
                 )
-                return this.bindProtocol(snapProtocol, snapSender)
+                return this.addProtocol(snapSender, snapProtocol)
               }
             }
           })

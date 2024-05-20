@@ -1,11 +1,10 @@
 import { Hardfork } from '@ethereumjs/common'
 
-import { Event } from '../types'
+import { Event } from '../types.js'
 
-import { RlpxServer } from './server'
+import { type Peer, RlpxPeer } from './peer/index.js'
 
-import type { Config } from '../config'
-import type { Peer } from './peer'
+import type { Config } from '../config.js'
 
 export interface PeerPoolOptions {
   /* Config */
@@ -33,7 +32,13 @@ export class PeerPool {
    */
   private DEFAULT_STATUS_CHECK_INTERVAL = 20000
 
+  /**
+   * Default peer best header update interval (in ms)
+   */
+  private DEFAULT_PEER_BEST_HEADER_UPDATE_INTERVAL = 5000
+
   private _statusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
+  private _peerBestHeaderUpdateInterval: NodeJS.Timeout | undefined
   private _reconnectTimeout: NodeJS.Timeout | undefined
 
   /**
@@ -89,6 +94,12 @@ export class PeerPool {
       this.DEFAULT_STATUS_CHECK_INTERVAL
     )
 
+    this._peerBestHeaderUpdateInterval = setInterval(
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      await this._peerBestHeaderUpdate.bind(this),
+      this.DEFAULT_PEER_BEST_HEADER_UPDATE_INTERVAL
+    )
+
     this.running = true
     return true
   }
@@ -101,6 +112,7 @@ export class PeerPool {
       await this.close()
     }
     clearInterval(this._statusCheckInterval as NodeJS.Timeout)
+    clearInterval(this._peerBestHeaderUpdateInterval as NodeJS.Timeout)
     clearTimeout(this._reconnectTimeout as NodeJS.Timeout)
     this.running = false
     return true
@@ -236,27 +248,35 @@ export class PeerPool {
       this.noPeerPeriods += 1
       if (this.noPeerPeriods >= NO_PEER_PERIOD_COUNT) {
         this.noPeerPeriods = 0
-        const promises = this.config.servers.map(async (server) => {
-          if (server instanceof RlpxServer) {
-            this.config.logger.info('Restarting RLPx server')
-            await server.stop()
-            await server.start()
-            this.config.logger.info('Reinitiating server bootstrap')
-            await server.bootstrap()
-          }
-        })
-        await Promise.all(promises)
+        if (this.config.server !== undefined) {
+          this.config.logger.info('Restarting RLPx server')
+          await this.config.server.stop()
+          await this.config.server.start()
+          this.config.logger.info('Reinitiating server bootstrap')
+          await this.config.server.bootstrap()
+        }
       } else {
         let tablesize: number | undefined = 0
-        for (const server of this.config.servers) {
-          if (server instanceof RlpxServer && server.discovery) {
-            tablesize = server.dpt?.getPeers().length
-            this.config.logger.info(`Looking for suited peers: peertablesize=${tablesize}`)
-          }
+        if (this.config.server !== undefined && this.config.server.discovery) {
+          tablesize = this.config.server.dpt?.getPeers().length
+          this.config.logger.info(`Looking for suited peers: peertablesize=${tablesize}`)
         }
       }
     } else {
       this.noPeerPeriods = 0
+    }
+  }
+
+  /**
+   * Periodically update the latest best known header for peers
+   */
+  async _peerBestHeaderUpdate() {
+    for (const p of this.peers) {
+      if (p.idle && p.eth !== undefined && p instanceof RlpxPeer) {
+        p.idle = false
+        await p.latest()
+        p.idle = true
+      }
     }
   }
 }

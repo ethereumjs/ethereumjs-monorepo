@@ -1,5 +1,9 @@
+import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
+  Address,
+  BIGINT_1,
+  BIGINT_2,
   TypeOutput,
   bigIntToUnpaddedBytes,
   bytesToHex,
@@ -12,8 +16,8 @@ import {
 import { BuildStatus } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import type { Config } from '../config'
-import type { TxPool } from '../service/txpool'
+import type { Config } from '../config.js'
+import type { TxPool } from '../service/txpool.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { WithdrawalData } from '@ethereumjs/util'
@@ -96,9 +100,27 @@ export class PendingBlock {
     headerData: Partial<HeaderData> = {},
     withdrawals?: WithdrawalData[]
   ) {
-    const number = parentBlock.header.number + BigInt(1)
-    const { timestamp, mixHash, parentBeaconBlockRoot } = headerData
-    const { gasLimit } = parentBlock.header
+    const number = parentBlock.header.number + BIGINT_1
+    const { timestamp, mixHash, parentBeaconBlockRoot, coinbase } = headerData
+    let { gasLimit } = parentBlock.header
+
+    if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
+      throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
+    }
+    const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
+    vm.common.setHardforkBy({
+      blockNumber: number,
+      td,
+      timestamp,
+    })
+
+    const baseFeePerGas = parentBlock.header.common.isActivatedEIP(1559)
+      ? parentBlock.header.calcNextBaseFee()
+      : undefined
+
+    if (number === vm.common.hardforkBlock(Hardfork.London)) {
+      gasLimit = gasLimit * BIGINT_2
+    }
 
     // payload is uniquely defined by timestamp, parent and mixHash, gasLimit can also be
     // potentially included in the fcU in future and can be safely added in uniqueness calc
@@ -107,15 +129,36 @@ export class PendingBlock {
     const mixHashBuf = toType(mixHash!, TypeOutput.Uint8Array) ?? zeros(32)
     const parentBeaconBlockRootBuf =
       toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
+    const coinbaseBuf = toType(coinbase ?? zeros(20), TypeOutput.Uint8Array)
+
+    let withdrawalsBuf = zeros(0)
+
+    if (withdrawals !== undefined && withdrawals !== null) {
+      const withdrawalsBufTemp: Uint8Array[] = []
+      for (const withdrawal of withdrawals) {
+        const indexBuf = bigIntToUnpaddedBytes(toType(withdrawal.index ?? 0, TypeOutput.BigInt))
+        const validatorIndex = bigIntToUnpaddedBytes(
+          toType(withdrawal.validatorIndex ?? 0, TypeOutput.BigInt)
+        )
+        const address = toType(withdrawal.address ?? Address.zero(), TypeOutput.Uint8Array)
+        const amount = bigIntToUnpaddedBytes(toType(withdrawal.amount ?? 0, TypeOutput.BigInt))
+        withdrawalsBufTemp.push(concatBytes(indexBuf, validatorIndex, address, amount))
+      }
+      withdrawalsBuf = concatBytes(...withdrawalsBufTemp)
+    }
+
+    const keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
     const payloadIdBytes = toBytes(
-      keccak256(
+      keccakFunction(
         concatBytes(
           parentBlock.hash(),
           mixHashBuf,
           timestampBuf,
           gasLimitBuf,
-          parentBeaconBlockRootBuf
+          parentBeaconBlockRootBuf,
+          coinbaseBuf,
+          withdrawalsBuf
         )
       ).subarray(0, 8)
     )
@@ -128,20 +171,6 @@ export class PendingBlock {
 
     // Prune the builders and blobsbundles
     this.pruneSetToMax(MAX_PAYLOAD_CACHE)
-
-    if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
-      throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
-    }
-    const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
-    vm.common.setHardforkBy({
-      blockNumber: number,
-      td,
-      timestamp,
-    })
-
-    const baseFeePerGas = vm.common.isActivatedEIP(1559)
-      ? parentBlock.header.calcNextBaseFee()
-      : undefined
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
@@ -225,7 +254,12 @@ export class PendingBlock {
     }
     const blockStatus = builder.getStatus()
     if (blockStatus.status === BuildStatus.Build) {
-      return [blockStatus.block, builder.transactionReceipts, builder.minerValue]
+      return [
+        blockStatus.block,
+        builder.transactionReceipts,
+        builder.minerValue,
+        this.blobsBundles.get(payloadId),
+      ]
     }
     const { vm, headerData } = builder as unknown as { vm: VM; headerData: HeaderData }
 
@@ -254,7 +288,9 @@ export class PendingBlock {
     )
 
     const { skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
+
     const block = await builder.build()
+
     // Construct blobs bundle
     const blobs = block.common.isActivatedEIP(4844)
       ? this.constructBlobsBundle(payloadId, blobTxs)
@@ -327,7 +363,7 @@ export class PendingBlock {
         }
       } else if ((error as Error).message.includes('blobs missing')) {
         // Remove the blob tx which doesn't has blobs bundled
-        this.txPool.removeByHash(bytesToHex(tx.hash()))
+        this.txPool.removeByHash(bytesToHex(tx.hash()), tx)
         this.config.logger.error(
           `Pending: Removed from txPool a blob tx ${bytesToHex(tx.hash())} with missing blobs`
         )

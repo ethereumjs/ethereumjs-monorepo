@@ -6,8 +6,10 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'events'
+import { LRUCache } from 'lru-cache'
 import * as net from 'net'
 import * as os from 'os'
 
@@ -20,12 +22,9 @@ import type { DPT } from '../dpt/index.js'
 import type { Capabilities, PeerInfo, RLPxOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
-import type LRUCache from 'lru-cache'
 const { debug: createDebugLogger } = debugDefault
 
 // note: relative path only valid in .js file in dist
-
-const LRU = require('lru-cache')
 
 const DEBUG_BASE_NAME = 'rlpx'
 const verbose = createDebugLogger('verbose').enabled
@@ -51,6 +50,10 @@ export class RLPx {
 
   protected _refillIntervalId: NodeJS.Timeout
   protected _refillIntervalSelectionCounter: number = 0
+
+  protected _keccakFunction: (msg: Uint8Array) => Uint8Array
+
+  private DEBUG: boolean
 
   constructor(privateKey: Uint8Array, options: RLPxOptions) {
     this.events = new EventEmitter()
@@ -109,22 +112,31 @@ export class RLPx {
         : devp2pDebug.extend(DEBUG_BASE_NAME)
     this._peers = new Map()
     this._peersQueue = []
-    this._peersLRU = new LRU({ max: 25000 })
+    this._peersLRU = new LRUCache({ max: 25000 })
     const REFILL_INTERVALL = 10000 // 10 sec * 1000
     const refillIntervalSubdivided = Math.floor(REFILL_INTERVALL / 10)
     this._refillIntervalId = setInterval(() => this._refillConnections(), refillIntervalSubdivided)
+
+    this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak256
+
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   listen(...args: any[]) {
     this._isAliveCheck()
-    this._debug('call .listen')
+    if (this.DEBUG) {
+      this._debug('call .listen')
+    }
 
     if (this._server) this._server.listen(...args)
   }
 
   destroy(...args: any[]) {
     this._isAliveCheck()
-    this._debug('call .destroy')
+    if (this.DEBUG) {
+      this._debug('call .destroy')
+    }
 
     clearInterval(this._refillIntervalId)
 
@@ -144,7 +156,11 @@ export class RLPx {
     if (this._peers.has(peerKey)) throw new Error('Already connected')
     if (this._getOpenSlots() === 0) throw new Error('Too many peers already connected')
 
-    this._debug(`connect to ${peer.address}:${peer.tcpPort} (id: ${formatLogId(peerKey, verbose)})`)
+    if (this.DEBUG) {
+      this._debug(
+        `connect to ${peer.address}:${peer.tcpPort} (id: ${formatLogId(peerKey, verbose)})`
+      )
+    }
     const deferred = createDeferred()
 
     const socket = new net.Socket()
@@ -199,7 +215,9 @@ export class RLPx {
   }
 
   _onConnect(socket: net.Socket, peerId: Uint8Array | null) {
-    this._debug(`connected to ${socket.remoteAddress}:${socket.remotePort}, handshake waiting..`)
+    if (this.DEBUG) {
+      this._debug(`connected to ${socket.remoteAddress}:${socket.remotePort}, handshake waiting..`)
+    }
 
     const peer: Peer = new Peer({
       socket,
@@ -225,16 +243,16 @@ export class RLPx {
     peer.events.once('connect', () => {
       let msg = `handshake with ${socket.remoteAddress}:${socket.remotePort} was successful`
 
-      // @ts-ignore
-      if (peer._eciesSession._gotEIP8Auth === true) {
+      if (peer['_eciesSession']['_gotEIP8Auth'] === true) {
         msg += ` (peer eip8 auth)`
       }
 
-      // @ts-ignore
-      if (peer._eciesSession._gotEIP8Ack === true) {
+      if (peer['_eciesSession']['_gotEIP8Ack'] === true) {
         msg += ` (peer eip8 ack)`
       }
-      this._debug(msg)
+      if (this.DEBUG) {
+        this._debug(msg)
+      }
       const id = peer.getId()
       if (id && equalsBytes(id, this.id)) {
         return peer.disconnect(DISCONNECT_REASON.SAME_IDENTITY)
@@ -252,10 +270,12 @@ export class RLPx {
 
     peer.events.once('close', (reason, disconnectWe) => {
       if (disconnectWe === true) {
-        this._debug(
-          `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASON[reason]}`,
-          `disconnect`
-        )
+        if (this.DEBUG) {
+          this._debug(
+            `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASON[reason]}`,
+            `disconnect`
+          )
+        }
       }
 
       if (disconnectWe !== true && reason === DISCONNECT_REASON.TOO_MANY_PEERS) {
@@ -264,10 +284,8 @@ export class RLPx {
           this._peersQueue.push({
             peer: {
               id: peer.getId()!,
-              // @ts-ignore
-              address: peer._socket.remoteAddress,
-              // @ts-ignore
-              tcpPort: peer._socket.remotePort,
+              address: peer['_socket'].remoteAddress,
+              tcpPort: peer['_socket'].remotePort,
             },
             ts: (Date.now() + 300000) as number, // 5 min * 60 * 1000
           })
@@ -286,13 +304,15 @@ export class RLPx {
   _refillConnections() {
     if (!this._isAlive()) return
     if (this._refillIntervalSelectionCounter === 0) {
-      this._debug(
-        `Restart connection refill .. with selector ${
-          this._refillIntervalSelectionCounter
-        } peers: ${this._peers.size}, queue size: ${
-          this._peersQueue.length
-        }, open slots: ${this._getOpenSlots()}`
-      )
+      if (this.DEBUG) {
+        this._debug(
+          `Restart connection refill .. with selector ${
+            this._refillIntervalSelectionCounter
+          } peers: ${this._peers.size}, queue size: ${
+            this._peersQueue.length
+          }, open slots: ${this._getOpenSlots()}`
+        )
+      }
     }
     // Rotating selection counter going in loop from 0..9
     this._refillIntervalSelectionCounter = (this._refillIntervalSelectionCounter + 1) % 10

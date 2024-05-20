@@ -3,6 +3,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
+  BlobEIP4844Transaction,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
 } from '@ethereumjs/tx'
@@ -14,9 +15,8 @@ import {
   bytesToHex,
   equalsBytes,
   hexToBytes,
-  isHexPrefixed,
+  isHexString,
   setLengthLeft,
-  stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -84,10 +84,10 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
     return new Uint8Array()
   }
 
-  if (typeof a === 'string' && isHexPrefixed(a)) {
+  if (typeof a === 'string' && isHexString(a)) {
     a = a.slice(2)
     if (a.length % 2) a = '0' + a
-    a = hexToBytes('0x' + a)
+    a = hexToBytes(`0x${a}`)
   } else if (!isHex) {
     try {
       a = bigIntToBytes(BigInt(a))
@@ -96,7 +96,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
     }
   } else {
     if (a.length % 2) a = '0' + a
-    a = hexToBytes('0x' + a)
+    a = hexToBytes(`0x${a}`)
   }
 
   if (toZero && bytesToHex(a) === '0x') {
@@ -110,14 +110,20 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
  * Make a tx using JSON from tests repo
  * @param {Object} txData The tx object from tests repo
  * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
- * @returns {FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction} Transaction to be passed to VM.runTx function
+ * @returns {BlobEIP4844Transaction | FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction} Transaction to be passed to VM.runTx function
  */
 export function makeTx(
   txData: any,
   opts?: TxOptions
-): FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction {
+):
+  | BlobEIP4844Transaction
+  | FeeMarketEIP1559Transaction
+  | AccessListEIP2930Transaction
+  | LegacyTransaction {
   let tx
-  if (txData.maxFeePerGas !== undefined) {
+  if (txData.blobVersionedHashes !== undefined) {
+    tx = BlobEIP4844Transaction.fromTxData(txData, opts)
+  } else if (txData.maxFeePerGas !== undefined) {
     tx = FeeMarketEIP1559Transaction.fromTxData(txData, opts)
   } else if (txData.accessLists !== undefined) {
     tx = AccessListEIP2930Transaction.fromTxData(txData, opts)
@@ -139,7 +145,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
     const keyMap: any = {}
 
     for (const key in testData) {
-      const hash = bytesToHex(keccak256(hexToBytes(stripHexPrefix(key))))
+      const hash = bytesToHex(keccak256(hexToBytes(isHexString(key) ? key : `0x${key}`)))
       hashedAccounts[hash] = testData[key]
       keyMap[hash] = key
     }
@@ -208,8 +214,9 @@ export function verifyAccountPostConditions(
 
     const hashedStorage: any = {}
     for (const key in acctData.storage) {
-      hashedStorage[bytesToHex(keccak256(setLengthLeft(hexToBytes(key.slice(2)), 32)))] =
-        acctData.storage[key]
+      hashedStorage[
+        bytesToHex(keccak256(setLengthLeft(hexToBytes(isHexString(key) ? key : `0x${key}`), 32)))
+      ] = acctData.storage[key]
     }
 
     state.root(account.storageRoot)
@@ -277,6 +284,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     previousHash,
     currentCoinbase,
     currentDifficulty,
+    currentExcessBlobGas,
     currentNumber,
     currentBaseFee,
     currentRandom,
@@ -309,6 +317,9 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   if (opts?.common && opts.common.gteHardfork('paris')) {
     headerData['mixHash'] = currentRandom
     headerData['difficulty'] = 0
+  }
+  if (opts?.common && opts.common.gteHardfork('cancun')) {
+    headerData['excessBlobGas'] = currentExcessBlobGas
   }
   return BlockHeader.fromHeaderData(headerData, opts)
 }

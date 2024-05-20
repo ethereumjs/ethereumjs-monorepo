@@ -2,12 +2,11 @@
  * @module util
  */
 import { bytesToHex } from '@ethereumjs/util'
+import { readFileSync } from 'fs'
 import { platform } from 'os'
 
-import { version as packageVersion } from '../../package.json'
-
-export * from './parse'
-export * from './rpc'
+export * from './parse.js'
+export * from './rpc.js'
 
 export function short(bytes: Uint8Array | string): string {
   if (bytes === null || bytes === undefined || bytes === '') return ''
@@ -20,8 +19,14 @@ export function short(bytes: Uint8Array | string): string {
 }
 
 export function getClientVersion() {
+  const packageJson = JSON.parse(
+    readFileSync(
+      '/' + import.meta.url.split('client')[0].split('file:///')[1] + 'client/package.json',
+      'utf-8'
+    )
+  )
   const { version } = process
-  return `EthereumJS/${packageVersion}/${platform()}/node${version.substring(1)}`
+  return `EthereumJS/${packageJson.version}/${platform()}/node${version.substring(1)}`
 }
 
 /**

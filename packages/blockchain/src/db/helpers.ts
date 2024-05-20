@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
+import { BIGINT_0 } from '@ethereumjs/util'
 
 import { bytesBE8 } from './constants.js'
 import { DBOp, DBTarget } from './operation.js'
@@ -40,15 +41,9 @@ function DBSetBlockOrHeader(blockBody: Block | BlockHeader): DBOp[] {
     })
   )
 
-  const isGenesis = header.number === BigInt(0)
+  const isGenesis = header.number === BIGINT_0
 
-  if (
-    isGenesis ||
-    (blockBody instanceof Block &&
-      (blockBody.transactions.length ||
-        (blockBody.withdrawals?.length ?? 0) ||
-        blockBody.uncleHeaders.length))
-  ) {
+  if (isGenesis || blockBody instanceof Block) {
     const bodyValue = RLP.encode(blockBody.raw().slice(1))
     dbOps.push(
       DBOp.set(DBTarget.Body, bodyValue, {

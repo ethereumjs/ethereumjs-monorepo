@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/genesis",
-  "version": "0.1.0",
+  "version": "0.2.2",
   "description": "A module to provide genesis states of well known networks",
   "keywords": [
     "ethereum",
@@ -45,21 +45,26 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",
+    "examples": "tsx ../../scripts/examples-runner.ts -- genesis",
+    "examples:build": "npx embedme README.md",
     "docs:build": "typedoc --options typedoc.cjs",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node",
-    "test:browser": "vitest run test/* --browser.name=chrome --browser.headless",
+    "test:browser": "npx vitest run --config=../../config/vitest.browser.config.mts",
     "test:node": "vitest run test/*",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^4.0.0",
-    "@ethereumjs/util": "^9.0.0"
+    "@ethereumjs/common": "^4.3.0",
+    "@ethereumjs/util": "^9.0.3"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "@ethereumjs/trie": "^6.2.0"
   }
 }

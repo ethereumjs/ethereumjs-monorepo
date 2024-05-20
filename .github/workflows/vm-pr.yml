@@ -19,11 +19,11 @@ jobs:
   vm-api:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
@@ -44,14 +44,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fork: ['London', 'Berlin', 'Paris', 'MuirGlacier', 'Istanbul', 'Shanghai']
+        fork: ['Berlin', 'London', 'Paris', 'Shanghai', 'Cancun']
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
@@ -68,6 +68,7 @@ jobs:
       matrix:
         fork:
           [
+            'Cancun',
             'Shanghai',
             'Paris',
             'London',
@@ -84,10 +85,10 @@ jobs:
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
@@ -107,25 +108,19 @@ jobs:
         # Tests were split with --dir and --excludeDir to balance execution times below the 9min mark.
         args:
           [
-            '--fork=Berlin --dir=GeneralStateTests/stTimeConsuming',
-            '--fork=Berlin --excludeDir=stTimeConsuming',
-            '--fork=London --dir=GeneralStateTests/stTimeConsuming',
-            '--fork=London --excludeDir=stTimeConsuming',
-            '--fork=Istanbul --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
-            '--fork=Istanbul --excludeDir=stTimeConsuming --expected-test-amount=19817',
-            '--fork=Paris --dir=GeneralStateTests/stTimeConsuming',
-            '--fork=Paris --excludeDir=stTimeConsuming',
-            '--fork=ArrowGlacierToMergeAtDiffC0000',
-            '--fork=Shanghai --dir=GeneralStateTests/stTimeConsuming',
-            '--fork=Shanghai --excludeDir=stTimeConsuming',
+            '--fork=Berlin --verify-test-amount-alltests',
+            '--fork=London --verify-test-amount-alltests',
+            '--fork=Paris --verify-test-amount-alltests',
+            '--fork=Shanghai --verify-test-amount-alltests',
+            '--fork=Cancun --verify-test-amount-alltests',
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
@@ -156,6 +151,7 @@ jobs:
             '--fork=London --verify-test-amount-alltests',
             '--fork=Paris --verify-test-amount-alltests',
             '--fork=Shanghai --verify-test-amount-alltests',
+            '--fork=Cancun --verify-test-amount-alltests',
             '--fork=ByzantiumToConstantinopleFixAt5 --verify-test-amount-alltests',
             '--fork=EIP158ToByzantiumAt5 --verify-test-amount-alltests',
             '--fork=FrontierToHomesteadAt5 --verify-test-amount-alltests',
@@ -165,10 +161,10 @@ jobs:
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
@@ -181,9 +177,9 @@ jobs:
   vm-benchmarks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'

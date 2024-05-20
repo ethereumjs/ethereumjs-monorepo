@@ -1,19 +1,17 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { Address, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
-import { removeSync } from 'fs-extra'
+import { rmSync } from 'fs'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src'
-import { createInlineClient } from '../sim/simutils'
-
-import type { EthereumClient } from '../../src'
+import { Config } from '../../src/index.js'
+import { createInlineClient } from '../sim/simutils.js'
 
 const pk = hexToBytes('0x95a602ff1ae30a2243f400dcf002561b9743b2ae9827b1008e3714a5cc1c0cfe')
 const minerAddress = Address.fromPrivateKey(pk)
 
 async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
   if (cleanStart) {
-    removeSync(`datadir/devnet`)
+    rmSync(`datadir/devnet`, { recursive: true, force: true })
   }
   const addr = prefundAddress.toString().slice(2)
   const consensusConfig = { ethash: true }
@@ -56,7 +54,6 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
 
   const config = new Config({
     common,
-    transports: ['rlpx'],
     bootnodes: [],
     multiaddrs: [],
     discDns: false,
@@ -73,24 +70,24 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
   return client
 }
 
-const mineBlockAndstopClient = async (client: EthereumClient) => {
-  await new Promise((resolve) => {
-    client.config.logger.on('data', (data) => {
-      if (data.message.includes('Miner: Found PoW solution') === true && client.started) {
-        assert.ok(true, 'found a PoW solution')
-        void client.stop().then(() => {
-          assert.ok(!client.started, 'client stopped successfully')
-          resolve(undefined)
-        })
+describe('PoW client test', async () => {
+  const client = await setupPowDevnet(minerAddress, true)
+  const started = client.started
+  it('starts the client successfully', () => {
+    assert.ok(started, 'client started successfully')
+  }, 60000)
+  const message: string = await new Promise((resolve) => {
+    client.config.logger.on('data', (data: any) => {
+      if (data.message.includes('Miner: Found PoW solution') === true) {
+        resolve(data.message)
       }
     })
   })
-}
-
-describe('PoW client test', async () => {
-  it('starts the client successfully', async () => {
-    const client = await setupPowDevnet(minerAddress, true)
-    assert.ok(client.started, 'client started successfully')
-    await mineBlockAndstopClient(client)
-  }, 60000)
+  it('should find a PoW solution', () => {
+    assert.ok(message.includes('Miner: Found PoW solution'))
+  })
+  await client.stop()
+  it('should stop client', () => {
+    assert.ok(client.started === false, 'client stopped successfully')
+  })
 })

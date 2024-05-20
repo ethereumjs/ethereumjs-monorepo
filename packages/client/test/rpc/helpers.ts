@@ -1,32 +1,38 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
+import { Chain as ChainEnum, Common, Hardfork, parseGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { Address, KECCAK256_RLP, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
-import { Server as RPCServer } from 'jayson/promise'
+import {
+  Address,
+  BIGINT_1,
+  KECCAK256_RLP,
+  hexToBytes,
+  parseGethGenesisState,
+} from '@ethereumjs/util'
+import { Client, Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 import { assert } from 'vitest'
 
-import { Chain } from '../../src/blockchain/chain'
-import { Config } from '../../src/config'
-import { VMExecution } from '../../src/execution'
-import { getLogger } from '../../src/logging'
-import { RlpxServer } from '../../src/net/server/rlpxserver'
-import { RPCManager as Manager } from '../../src/rpc'
-import { TxPool } from '../../src/service/txpool'
-import { Event } from '../../src/types'
-import { createRPCServerListener, createWsRPCServerListener } from '../../src/util'
+import { Chain } from '../../src/blockchain/chain.js'
+import { Config } from '../../src/config.js'
+import { VMExecution } from '../../src/execution/index.js'
+import { getLogger } from '../../src/logging.js'
+import { RlpxServer } from '../../src/net/server/rlpxserver.js'
+import { RPCManager as Manager } from '../../src/rpc/index.js'
+import { Skeleton } from '../../src/service/skeleton.js'
+import { TxPool } from '../../src/service/txpool.js'
+import { Event } from '../../src/types.js'
+import { createRPCServerListener, createWsRPCServerListener } from '../../src/util/index.js'
 
-import { mockBlockchain } from './mockBlockchain'
+import { mockBlockchain } from './mockBlockchain.js'
 
-import type { EthereumClient } from '../../src/client'
-import type { FullEthereumService } from '../../src/service'
+import type { EthereumClient } from '../../src/client.js'
+import type { FullEthereumService } from '../../src/service/index.js'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
-import type { HttpServer } from 'jayson/promise'
-
-const request = require('supertest')
+import type { HttpClient, HttpServer } from 'jayson/promise'
+import type { AddressInfo } from 'node:net'
 
 const config: any = {}
 config.logger = getLogger(config)
@@ -35,6 +41,7 @@ type StartRPCOpts = { port?: number; wsServer?: boolean }
 type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMessage) => boolean }
 
 type createClientArgs = {
+  minerCoinbase: string
   includeVM: boolean // Instantiates the VM when creating the test client
   commonChain: Common
   enableMetaDB: boolean
@@ -45,6 +52,8 @@ type createClientArgs = {
   chain: any // Could be anything that implements a portion of the Chain interface (varies by test)
   opened: boolean
   genesisState: GenesisState
+  genesisStateRoot: Uint8Array
+  savePreimages: boolean
 }
 export function startRPC(
   methods: any,
@@ -62,6 +71,12 @@ export function startRPC(
   return httpServer
 }
 
+/** Returns a basic RPC client with no authentication */
+
+export function getRpcClient(server: HttpServer) {
+  const rpc = Client.http({ port: (server.address()! as AddressInfo).port })
+  return rpc
+}
 export function closeRPC(server: HttpServer) {
   server.close()
 }
@@ -70,23 +85,31 @@ export function createManager(client: EthereumClient) {
   return new Manager(client, client.config)
 }
 
-export function createClient(clientOpts: Partial<createClientArgs> = {}) {
+export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
   const genesisState = clientOpts.genesisState ?? getGenesis(Number(common.chainId())) ?? {}
   const config = new Config({
-    transports: [],
+    minerCoinbase:
+      clientOpts.minerCoinbase !== undefined
+        ? Address.fromString(clientOpts.minerCoinbase)
+        : undefined,
     common,
     saveReceipts: clientOpts.enableMetaDB,
     txLookupLimit: clientOpts.txLookupLimit,
     accountCache: 10000,
     storageCache: 1000,
+    savePreimages: clientOpts.savePreimages,
+    logger: getLogger({}),
   })
-  const blockchain = clientOpts.blockchain ?? mockBlockchain()
+  const blockchain = clientOpts.blockchain ?? (mockBlockchain() as unknown as Blockchain)
 
-  const chain =
-    // @ts-ignore TODO Move to async Chain.create() initialization
-    clientOpts.chain ?? new Chain({ config, blockchain: blockchain as any, genesisState })
+  const chain = clientOpts.chain ?? (await Chain.create({ config, blockchain, genesisState }))
   chain.opened = true
+
+  // if blockchain has not been bundled with chain, add the mock blockchain
+  if (chain.blockchain === undefined) {
+    chain.blockchain = blockchain
+  }
 
   const defaultClientConfig = {
     opened: true,
@@ -128,12 +151,15 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   if (!(clientOpts.includeVM === false)) {
     const metaDB: any = clientOpts.enableMetaDB === true ? new MemoryLevel() : undefined
     execution = new VMExecution({ config, chain, metaDB })
+    await execution.open()
   }
 
   let peers = [1, 2, 3]
   if (clientOpts.noPeers === true) {
     peers = []
   }
+
+  const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
 
   const client: any = {
     synchronized: false,
@@ -143,6 +169,7 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
       {
         name: 'eth',
         chain,
+        skeleton,
         pool: { peers },
         protocols: [
           {
@@ -155,6 +182,7 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
         switchToBeaconSync: () => {
           return undefined
         },
+        buildHeadState: () => {},
       },
     ],
     servers,
@@ -171,52 +199,17 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   return client as EthereumClient
 }
 
-export function baseSetup(clientOpts: any = {}) {
-  const client = createClient(clientOpts)
+export async function baseSetup(clientOpts: any = {}) {
+  const client = await createClient(clientOpts)
   const manager = createManager(client)
   const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
   const server = startRPC({ ...manager.getMethods(), ...engineMethods })
+  const host = server.address() as AddressInfo
+  const rpc = Client.http({ port: host.port })
   server.once('close', () => {
     client.config.events.emit(Event.CLIENT_SHUTDOWN)
   })
-  return { server, manager, client }
-}
-
-export function params(method: string, params: Array<any> = []) {
-  const req = {
-    jsonrpc: '2.0',
-    method,
-    params,
-    id: 1,
-  }
-  return req
-}
-
-export async function baseRequest(
-  server: HttpServer,
-  req: Object,
-  expect: number,
-  expectRes: Function,
-  endOnFinish = true,
-  doCloseRPCOnSuccess = true
-) {
-  try {
-    await request(server)
-      .post('/')
-      .set('Content-Type', 'application/json')
-      .send(req)
-      .expect(expect)
-      .expect(expectRes)
-    if (doCloseRPCOnSuccess) {
-      closeRPC(server)
-    }
-    if (endOnFinish) {
-      assert.ok(true)
-    }
-  } catch (err) {
-    closeRPC(server)
-    assert.notOk(err)
-  }
+  return { server, manager, client, rpc }
 }
 
 /**
@@ -225,32 +218,43 @@ export async function baseRequest(
 export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts: any = {}) {
   const genesisParams = parseGethGenesis(genesisFile, chainName)
   const genesisState = parseGethGenesisState(genesisFile)
+  const genesisStateRoot = clientOpts.genesisStateRoot
 
   const common = new Common({
     chain: chainName,
     customChains: [genesisParams],
+    customCrypto: clientOpts.customCrypto,
   })
   common.setHardforkBy({
     blockNumber: 0,
     td: genesisParams.genesis.difficulty,
+    timestamp: genesisParams.genesis.timestamp,
   })
 
+  // currently we don't have a way to create verkle genesis root so we will
+  // use genesisStateRoot for blockchain init as well as to start of the stateless
+  // client. else the stateroot could have been generated out of box
+  const genesisMeta = common.gteHardfork(Hardfork.Osaka) ? { genesisStateRoot } : { genesisState }
   const blockchain = await Blockchain.create({
     common,
     validateBlocks: false,
     validateConsensus: false,
-    genesisState,
+    ...genesisMeta,
   })
-  const client = createClient({
+
+  // for the client we can pass both genesisState and genesisStateRoot and let it s
+  const client = await createClient({
     ...clientOpts,
     commonChain: common,
     blockchain,
     includeVM: true,
     enableMetaDB: true,
     genesisState,
+    genesisStateRoot,
   })
   const manager = createManager(client)
   const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
+  const modules = manager['_modules']
   const server = startRPC({ ...manager.getMethods(), ...engineMethods })
   server.once('close', () => {
     client.config.events.emit(Event.CLIENT_SHUTDOWN)
@@ -258,12 +262,13 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
 
   const { chain } = client
   const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
-  const { execution } = service
+  const { execution, skeleton } = service
 
   await chain.open()
+  await skeleton?.open()
   await execution?.open()
   await chain.update()
-  return { chain, common, execution: execution!, server, service, blockchain }
+  return { chain, common, execution: execution!, server, service, blockchain, modules }
 }
 
 /**
@@ -282,7 +287,7 @@ export async function runBlockWithTxs(
   const blockBuilder = await vmCopy.buildBlock({
     parentBlock,
     headerData: {
-      timestamp: parentBlock.header.timestamp + BigInt(1),
+      timestamp: parentBlock.header.timestamp + BIGINT_1,
     },
     blockOpts: {
       calcDifficultyFromHeader: parentBlock.header,
@@ -319,4 +324,17 @@ export function gethGenesisStartLondon(gethGenesis: any) {
 export const dummy = {
   addr: new Address(hexToBytes('0xcde098d93535445768e8a2345a2f869139f45641')),
   privKey: hexToBytes('0x5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8'),
+}
+
+/**
+ *
+ * @param t Test suite
+ * @param server HttpServer
+ * @param inputBlocks Array of valid ExecutionPayloadV1 data
+ */
+export const batchBlocks = async (rpc: HttpClient, inputBlocks: any[]) => {
+  for (let i = 0; i < inputBlocks.length; i++) {
+    const res = await rpc.request('engine_newPayloadV1', [inputBlocks[i]])
+    assert.equal(res.result.status, 'VALID')
+  }
 }

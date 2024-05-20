@@ -3,7 +3,6 @@ import {
   bytesToHex,
   computeVersionedHash,
   concatBytes,
-  kzg,
   setLengthLeft,
   short,
 } from '@ethereumjs/util'
@@ -21,6 +20,9 @@ export const BLS_MODULUS = BigInt(
 const modulusBuffer = setLengthLeft(bigIntToBytes(BLS_MODULUS), 32)
 
 export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
+  if (opts.common.customCrypto?.kzg === undefined) {
+    throw new Error('kzg not initialized')
+  }
   const gasUsed = opts.common.param('gasPrices', 'kzgPointEvaluationGasPrecompilePrice')
   if (opts._debug !== undefined) {
     opts._debug(
@@ -41,8 +43,8 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
-  const version = Number(opts.common.paramByEIP('sharding', 'blobCommitmentVersionKzg', 4844))
-  const fieldElementsPerBlob = opts.common.paramByEIP('sharding', 'fieldElementsPerBlob', 4844)!
+  const version = Number(opts.common.param('sharding', 'blobCommitmentVersionKzg'))
+  const fieldElementsPerBlob = opts.common.param('sharding', 'fieldElementsPerBlob')
   const versionedHash = opts.data.subarray(0, 32)
   const z = opts.data.subarray(32, 64)
   const y = opts.data.subarray(64, 96)
@@ -64,7 +66,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     )
   }
   try {
-    const res = kzg.verifyKzgProof(commitment, z, y, kzgProof)
+    const res = opts.common.customCrypto?.kzg?.verifyKzgProof(commitment, z, y, kzgProof)
     if (res === false) {
       return EvmErrorResult(new EvmError(ERROR.INVALID_PROOF), opts.gasLimit)
     }

@@ -1,16 +1,16 @@
 import { Hardfork } from '@ethereumjs/common'
-import { equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, equalsBytes } from '@ethereumjs/util'
 
-import { Event } from '../types'
-import { short } from '../util'
+import { Event } from '../types.js'
+import { short } from '../util/index.js'
 
-import { BlockFetcher } from './fetcher'
-import { Synchronizer } from './sync'
+import { BlockFetcher } from './fetcher/index.js'
+import { Synchronizer } from './sync.js'
 
-import type { VMExecution } from '../execution'
-import type { Peer } from '../net/peer/peer'
-import type { TxPool } from '../service/txpool'
-import type { SynchronizerOptions } from './sync'
+import type { VMExecution } from '../execution/index.js'
+import type { Peer } from '../net/peer/peer.js'
+import type { TxPool } from '../service/txpool.js'
+import type { SynchronizerOptions } from './sync.js'
 import type { Block } from '@ethereumjs/block'
 
 interface FullSynchronizerOptions extends SynchronizerOptions {
@@ -63,6 +63,22 @@ export class FullSynchronizer extends Synchronizer {
 
   set fetcher(fetcher: BlockFetcher | null) {
     this._fetcher = fetcher
+  }
+
+  async sync() {
+    const syncWithFetcher = super.sync()
+    const syncEvent: Promise<boolean> = new Promise((resolve) => {
+      // This event listener listens for other instances of the fetcher that might be syncing from a different peer
+      // and reach the head of the chain before the current fetcher.
+      this.config.events.once(Event.SYNC_SYNCHRONIZED, (height?: number) => {
+        this.resolveSync(height)
+        resolve(true)
+      })
+    })
+
+    // This "race" ensures that either the current fetcher (or any other fetcher that happens to be syncing)
+    // resolve this current call to `sync` so we don't have orphan processes running in the background
+    return Promise.race([syncWithFetcher, syncEvent])
   }
 
   /**
@@ -123,23 +139,12 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   /**
-   * Get latest header of peer
-   */
-  async latest(peer: Peer) {
-    const result = await peer.eth?.getBlockHeaders({
-      block: peer.eth!.status.bestHash,
-      max: 1,
-    })
-    return result ? result[1][0] : undefined
-  }
-
-  /**
    * Checks if tx pool should be started
    */
   checkTxPoolState() {
     if (
       this.config.syncTargetHeight === undefined ||
-      this.config.syncTargetHeight === BigInt(0) ||
+      this.config.syncTargetHeight === BIGINT_0 ||
       this.txPool.running
     ) {
       return
@@ -159,13 +164,13 @@ export class FullSynchronizer extends Synchronizer {
    * @returns a boolean if the setup was successful
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    const latest = peer ? await this.latest(peer) : undefined
+    const latest = peer ? await peer.latest() : undefined
     if (!latest) return false
 
     const height = latest.number
     if (
       this.config.syncTargetHeight === undefined ||
-      this.config.syncTargetHeight === BigInt(0) ||
+      this.config.syncTargetHeight === BIGINT_0 ||
       this.config.syncTargetHeight < latest.number
     ) {
       this.config.syncTargetHeight = height
@@ -176,10 +181,10 @@ export class FullSynchronizer extends Synchronizer {
     // due to a reorg, it would make sense to step back and refetch.
     const first =
       this.chain.blocks.height >= BigInt(this.config.safeReorgDistance)
-        ? this.chain.blocks.height - BigInt(this.config.safeReorgDistance) + BigInt(1)
-        : BigInt(1)
-    const count = height - first + BigInt(1)
-    if (count < BigInt(0)) return false
+        ? this.chain.blocks.height - BigInt(this.config.safeReorgDistance) + BIGINT_1
+        : BIGINT_1
+    const count = height - first + BIGINT_1
+    if (count < BIGINT_0) return false
     if (!this.fetcher || this.fetcher.syncErrored) {
       this.fetcher = new BlockFetcher({
         config: this.config,
@@ -191,7 +196,7 @@ export class FullSynchronizer extends Synchronizer {
         destroyWhenDone: false,
       })
     } else {
-      const fetcherHeight = this.fetcher.first + this.fetcher.count - BigInt(1)
+      const fetcherHeight = this.fetcher.first + this.fetcher.count - BIGINT_1
       if (height > fetcherHeight) {
         this.fetcher.count += height - fetcherHeight
         this.config.logger.info(`Updated fetcher target to height=${height} peer=${peer} `)
@@ -204,7 +209,7 @@ export class FullSynchronizer extends Synchronizer {
    * Process blocks fetched from the fetcher.
    */
   async processBlocks(blocks: Block[]) {
-    if (this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       if (this.fetcher !== null) {
         // If we are beyond the merge block we should stop the fetcher
         this.config.logger.info('Paris (Merge) hardfork reached, stopping block fetcher')
@@ -222,10 +227,9 @@ export class FullSynchronizer extends Synchronizer {
     const first = BigInt(blocks[0].header.number)
     const last = BigInt(blocks[blocks.length - 1].header.number)
     const hash = short(blocks[0].hash())
-    const baseFeeAdd =
-      this.config.chainCommon.gteHardfork(Hardfork.London) === true
-        ? `baseFee=${blocks[0].header.baseFeePerGas} `
-        : ''
+    const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
+      ? `baseFee=${blocks[0].header.baseFeePerGas} `
+      : ''
 
     let attentionHF: string | null = null
     const nextHFBlockNum = this.config.chainCommon.nextHardforkBlockOrTimestamp()
@@ -239,7 +243,7 @@ export class FullSynchronizer extends Synchronizer {
     } else {
       if (
         this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition &&
-        this.config.chainCommon.gteHardfork(Hardfork.Paris) === false
+        !this.config.chainCommon.gteHardfork(Hardfork.Paris)
       ) {
         const mergeTTD = this.config.chainCommon.hardforkTTD(Hardfork.Paris)!
         const td = this.chain.blocks.td
@@ -306,7 +310,7 @@ export class FullSynchronizer extends Synchronizer {
       // Don't send NEW_BLOCK announcement to peer that sent original new block message
       this.addToKnownByPeer(block.hash(), peer)
     }
-    if (block.header.number > this.chain.headers.height + BigInt(1)) {
+    if (block.header.number > this.chain.headers.height + BIGINT_1) {
       // If the block number exceeds one past our height we cannot validate it
       return
     }
@@ -336,7 +340,7 @@ export class FullSynchronizer extends Synchronizer {
       const blockNumber = block.header.number
       if (
         this.config.syncTargetHeight === undefined ||
-        this.config.syncTargetHeight === BigInt(0) ||
+        this.config.syncTargetHeight === BIGINT_0 ||
         blockNumber > this.config.syncTargetHeight
       ) {
         this.config.syncTargetHeight = blockNumber
@@ -373,7 +377,7 @@ export class FullSynchronizer extends Synchronizer {
       if (newSyncHeight && blockNumber <= newSyncHeight[1]) continue
       if (
         typeof this.config.syncTargetHeight === 'bigint' &&
-        this.config.syncTargetHeight !== BigInt(0) &&
+        this.config.syncTargetHeight !== BIGINT_0 &&
         blockNumber <= this.config.syncTargetHeight
       )
         continue
@@ -397,7 +401,7 @@ export class FullSynchronizer extends Synchronizer {
     // Batch the execution if we are not close to the head
     const shouldRunOnlyBatched =
       typeof this.config.syncTargetHeight === 'bigint' &&
-      this.config.syncTargetHeight !== BigInt(0) &&
+      this.config.syncTargetHeight !== BIGINT_0 &&
       this.chain.blocks.height <= this.config.syncTargetHeight - BigInt(50)
     this.execution.run(true, shouldRunOnlyBatched).catch((e) => {
       this.config.logger.error(`Full sync execution trigger errored`, {}, e)

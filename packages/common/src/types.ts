@@ -1,5 +1,5 @@
 import type { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { BigIntLike, ECDSASignature, Kzg, PrefixedHexString } from '@ethereumjs/util'
 
 export interface ChainName {
   [chainId: string]: string
@@ -34,19 +34,22 @@ export interface ChainConfig {
   url?: string
   genesis: GenesisBlockConfig
   hardforks: HardforkTransitionConfig[]
+  customHardforks?: HardforksDict
   bootstrapNodes: BootstrapNodeConfig[]
   dnsNetworks?: string[]
   consensus: ConsensusConfig
+  depositContractAddress?: PrefixedHexString
 }
 
+// TODO: Remove the string type and only keep PrefixedHexString
 export interface GenesisBlockConfig {
-  timestamp?: string
-  gasLimit: number | string
-  difficulty: number | string
-  nonce: string
-  extraData: string
-  baseFeePerGas?: string
-  excessBlobGas?: string
+  timestamp?: PrefixedHexString | string
+  gasLimit: number | PrefixedHexString | string
+  difficulty: number | PrefixedHexString | string
+  nonce: PrefixedHexString | string
+  extraData: PrefixedHexString | string
+  baseFeePerGas?: PrefixedHexString | string
+  excessBlobGas?: PrefixedHexString | string
 }
 
 export interface HardforkTransitionConfig {
@@ -54,7 +57,7 @@ export interface HardforkTransitionConfig {
   block: number | null // null is used for hardforks that should not be applied -- since `undefined` isn't a valid value in JSON
   ttd?: bigint | string
   timestamp?: number | string
-  forkHash?: string | null
+  forkHash?: PrefixedHexString | null
 }
 
 export interface BootstrapNodeConfig {
@@ -67,6 +70,25 @@ export interface BootstrapNodeConfig {
   comment: string
 }
 
+export interface CustomCrypto {
+  /**
+   * Interface for providing custom cryptographic primitives in place of `ethereum-cryptography` variants
+   */
+  keccak256?: (msg: Uint8Array) => Uint8Array
+  ecrecover?: (
+    msgHash: Uint8Array,
+    v: bigint,
+    r: Uint8Array,
+    s: Uint8Array,
+    chainId?: bigint
+  ) => Uint8Array
+  sha256?: (msg: Uint8Array) => Uint8Array
+  ecsign?: (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => ECDSASignature
+  ecdsaSign?: (msg: Uint8Array, pk: Uint8Array) => { signature: Uint8Array; recid: number }
+  ecdsaRecover?: (sig: Uint8Array, recId: number, hash: Uint8Array) => Uint8Array
+  kzg?: Kzg
+}
+
 interface BaseOpts {
   /**
    * String identifier ('byzantium') for hardfork or {@link Hardfork} enum.
@@ -76,9 +98,24 @@ interface BaseOpts {
   hardfork?: string | Hardfork
   /**
    * Selected EIPs which can be activated, please use an array for instantiation
-   * (e.g. `eips: [ 1559, 3860 ]`)
+   * (e.g. `eips: [ 2537, ]`)
+   *
+   * Currently supported:
+   *
+   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
    */
   eips?: number[]
+  /**
+   * This option can be used to replace the most common crypto primitives
+   * (keccak256 hashing e.g.) within the EthereumJS ecosystem libraries
+   * with alternative implementations (e.g. more performant WASM libraries).
+   *
+   * Note: please be aware that this is adding new dependencies for your
+   * system setup to be used for sensitive/core parts of the functionality
+   * and a choice on the libraries to add should be handled with care
+   * and be made with eventual security implications considered.
+   */
+  customCrypto?: CustomCrypto
 }
 
 /**
@@ -122,10 +159,11 @@ export interface GethConfigOpts extends BaseOpts {
   mergeForkIdPostMerge?: boolean
 }
 
+// TODO: Deprecate the string type and only keep BigIntLike
 export interface HardforkByOpts {
-  blockNumber?: BigIntLike
-  timestamp?: BigIntLike
-  td?: BigIntLike
+  blockNumber?: BigIntLike | string
+  timestamp?: BigIntLike | string
+  td?: BigIntLike | string
 }
 
 type ParamDict = {
@@ -133,7 +171,7 @@ type ParamDict = {
   d: string
 }
 
-type EIPOrHFConfig = {
+export type EIPOrHFConfig = {
   comment: string
   url: string
   status: string
@@ -164,3 +202,7 @@ export type HardforkConfig = {
   eips?: number[]
   consensus?: ConsensusConfig
 } & EIPOrHFConfig
+
+export type HardforksDict = {
+  [key: string]: HardforkConfig
+}

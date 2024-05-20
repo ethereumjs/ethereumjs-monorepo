@@ -1,9 +1,9 @@
 import { Chain, Common } from '@ethereumjs/common'
 import {
   Address,
+  BIGINT_0,
   MAX_INTEGER,
   MAX_UINT64,
-  SECP256K1_ORDER_DIV_2,
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
@@ -19,21 +19,13 @@ import { checkMaxInitCodeSize } from './util.js'
 import type {
   JsonTx,
   Transaction,
+  TransactionCache,
   TransactionInterface,
   TxData,
   TxOptions,
   TxValuesArray,
 } from './types.js'
-import type { Hardfork } from '@ethereumjs/common'
 import type { BigIntLike } from '@ethereumjs/util'
-
-interface TransactionCache {
-  hash: Uint8Array | undefined
-  dataFee?: {
-    value: bigint
-    hardfork: string | Hardfork
-  }
-}
 
 /**
  * This base class will likely be subject to further
@@ -59,9 +51,10 @@ export abstract class BaseTransaction<T extends TransactionType>
 
   public readonly common!: Common
 
-  protected cache: TransactionCache = {
+  public cache: TransactionCache = {
     hash: undefined,
     dataFee: undefined,
+    senderPubKey: undefined,
   }
 
   protected readonly txOptions: TxOptions
@@ -90,14 +83,14 @@ export abstract class BaseTransaction<T extends TransactionType>
     this.txOptions = opts
 
     const toB = toBytes(to === '' ? '0x' : to)
-    const vB = toBytes(v === '' ? '0x' : v)
-    const rB = toBytes(r === '' ? '0x' : r)
-    const sB = toBytes(s === '' ? '0x' : s)
+    const vB = toBytes(v)
+    const rB = toBytes(r)
+    const sB = toBytes(s)
 
-    this.nonce = bytesToBigInt(toBytes(nonce === '' ? '0x' : nonce))
-    this.gasLimit = bytesToBigInt(toBytes(gasLimit === '' ? '0x' : gasLimit))
+    this.nonce = bytesToBigInt(toBytes(nonce))
+    this.gasLimit = bytesToBigInt(toBytes(gasLimit))
     this.to = toB.length > 0 ? new Address(toB) : undefined
-    this.value = bytesToBigInt(toBytes(value === '' ? '0x' : value))
+    this.value = bytesToBigInt(toBytes(value))
     this.data = toBytes(data === '' ? '0x' : data)
 
     this.v = vB.length > 0 ? bytesToBigInt(vB) : undefined
@@ -177,28 +170,6 @@ export abstract class BaseTransaction<T extends TransactionType>
     return errors.length === 0
   }
 
-  protected _validateYParity() {
-    const { v } = this
-    if (v !== undefined && v !== BigInt(0) && v !== BigInt(1)) {
-      const msg = this._errorMsg('The y-parity of the transaction should either be 0 or 1')
-      throw new Error(msg)
-    }
-  }
-
-  /**
-   * EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2are considered invalid.
-   * Reasoning: https://ethereum.stackexchange.com/a/55728
-   */
-  protected _validateHighS() {
-    const { s } = this
-    if (this.common.gteHardfork('homestead') && s !== undefined && s > SECP256K1_ORDER_DIV_2) {
-      const msg = this._errorMsg(
-        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      )
-      throw new Error(msg)
-    }
-  }
-
   /**
    * The minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
    */
@@ -220,7 +191,7 @@ export abstract class BaseTransaction<T extends TransactionType>
     const txDataZero = this.common.param('gasPrices', 'txDataZero')
     const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
 
-    let cost = BigInt(0)
+    let cost = BIGINT_0
     for (let i = 0; i < this.data.length; i++) {
       this.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
     }
@@ -233,6 +204,13 @@ export abstract class BaseTransaction<T extends TransactionType>
 
     return cost
   }
+
+  /**
+   * Returns the effective priority fee. This is the priority fee which the coinbase will receive
+   * once it is included in the block
+   * @param baseFee Optional baseFee of the block. Note for EIP1559 and EIP4844 this is required.
+   */
+  abstract getEffectivePriorityFee(baseFee: bigint | undefined): bigint
 
   /**
    * The up front amount that an account must have for this transaction to be valid
@@ -337,8 +315,9 @@ export abstract class BaseTransaction<T extends TransactionType>
     }
 
     const msgHash = this.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privateKey)
-    const tx = this._processSignature(v, r, s)
+    const ecSignFunction = this.common.customCrypto?.ecsign ?? ecsign
+    const { v, r, s } = ecSignFunction(msgHash, privateKey)
+    const tx = this.addSignature(v, r, s, true)
 
     // Hack part 2
     if (hackApplied) {
@@ -368,8 +347,21 @@ export abstract class BaseTransaction<T extends TransactionType>
     }
   }
 
-  // Accept the v,r,s values from the `sign` method, and convert this into a T
-  protected abstract _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): Transaction[T]
+  /**
+   * Returns a new transaction with the same data fields as the current, but now signed
+   * @param v The `v` value of the signature
+   * @param r The `r` value of the signature
+   * @param s The `s` value of the signature
+   * @param convertV Set this to `true` if the raw output of `ecsign` is used. If this is `false` (default)
+   *                 then the raw value passed for `v` will be used for the signature. For legacy transactions,
+   *                 if this is set to `true`, it will also set the right `v` value for the chain id.
+   */
+  abstract addSignature(
+    v: bigint,
+    r: Uint8Array | bigint,
+    s: Uint8Array | bigint,
+    convertV?: boolean
+  ): Transaction[T]
 
   /**
    * Does chain ID checks on common and returns a common
@@ -385,7 +377,9 @@ export abstract class BaseTransaction<T extends TransactionType>
       const chainIdBigInt = bytesToBigInt(toBytes(chainId))
       if (common) {
         if (common.chainId() !== chainIdBigInt) {
-          const msg = this._errorMsg('The chain ID does not match the chain ID of Common')
+          const msg = this._errorMsg(
+            `The chain ID does not match the chain ID of Common. Got: ${chainIdBigInt}, expected: ${common.chainId()}`
+          )
           throw new Error(msg)
         }
         // Common provided, chain ID does match

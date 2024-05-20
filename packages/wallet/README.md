@@ -35,13 +35,23 @@ You can import the `Wallet` class like this
 Node.js / ES6:
 
 ```js
+// ./examples/wallet.js
+
 const { Wallet } = require('@ethereumjs/wallet')
+
+const wallet = Wallet.generate()
+console.log(wallet.getAddressString()) // should output an Ethereum address
 ```
 
 ESM / TypeScript:
 
-```js
+```ts
+// ./examples/wallet.ts
+
 import { Wallet } from '@ethereumjs/wallet'
+
+const wallet = Wallet.generate()
+console.log(wallet.getAddressString()) // should output an Ethereum address
 ```
 
 ## Thirdparty API
@@ -51,13 +61,23 @@ Importing various third party wallets is possible through the `thirdparty` submo
 Node.js / ES5:
 
 ```js
+// ./examples/thirdparty.js
+
 const { thirdparty } = require('@ethereumjs/wallet')
+
+const wallet = thirdparty.fromQuorumWallet('mySecretQuorumWalletPassphrase', 'myPublicQuorumUserId')
+console.log(wallet.getAddressString()) // An Ethereum address
 ```
 
 ESM / TypeScript:
 
-```js
+```ts
+// ./examples/thirdparty.ts
+
 import { thirdparty } from '@ethereumjs/wallet'
+
+const wallet = thirdparty.fromQuorumWallet('mySecretQuorumWalletPassphrase', 'myPublicQuorumUserId')
+console.log(wallet.getAddressString()) // An Ethereum address
 ```
 
 Please go to [./docs/README.md](./docs/README.md) for more info.
@@ -69,13 +89,27 @@ To use BIP32 HD wallets, first include the `hdkey` submodule:
 Node.js / ES5:
 
 ```js
+// ./examples/hdKey.js
+
 const { hdkey } = require('@ethereumjs/wallet')
+
+const wallet = hdkey.EthereumHDKey.fromMnemonic(
+  'clown galaxy face oxygen birth round modify fame correct stumble kind excess'
+)
+console.log(wallet.getWallet().getAddressString()) // Should print an Ethereum address
 ```
 
 ESM / TypeScript:
 
-```js
+```ts
+// ./examples/hdKey.ts
+
 import { hdkey } from '@ethereumjs/wallet'
+
+const wallet = hdkey.EthereumHDKey.fromMnemonic(
+  'clown galaxy face oxygen birth round modify fame correct stumble kind excess'
+)
+console.log(wallet.getWallet().getAddressString()) // Should print an Ethereum address
 ```
 
 Please go to [./docs/classes/ethereumhdkey.md](./docs/classes/ethereumhdkey.md) for more info.

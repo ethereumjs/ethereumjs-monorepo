@@ -4,7 +4,7 @@ import { Account, Address, bytesToHex, hexToBytes, privateToAddress } from '@eth
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
-const pkey = hexToBytes('0x' + '20'.repeat(32))
+const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
@@ -29,9 +29,9 @@ describe('EIP 3860 tests', () => {
     const txCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const tx = FeeMarketEIP1559Transaction.fromTxData(
       {
-        data:
-          '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3' +
-          bytesToHex(bytes).slice(2),
+        data: `0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3${bytesToHex(
+          bytes
+        ).slice(2)}`,
         gasLimit: 100000000000,
         maxFeePerGas: 7,
         nonce: 0,

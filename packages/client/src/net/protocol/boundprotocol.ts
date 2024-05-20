@@ -1,11 +1,17 @@
 import { Lock } from '@ethereumjs/util'
 
-import { Event } from '../../types'
+import { Event } from '../../types.js'
 
-import type { Config } from '../../config'
-import type { Peer } from '../peer/peer'
-import type { Message, Protocol } from './protocol'
-import type { Sender } from './sender'
+import type { Config } from '../../config.js'
+import type { Peer } from '../peer/peer.js'
+import type { EthProtocolMethods } from './ethprotocol.js'
+import type { LesProtocolMethods } from './lesprotocol.js'
+import type { Message, Protocol } from './protocol.js'
+import type { Sender } from './sender.js'
+import type { AccountData, SnapProtocolMethods, StorageData } from './snapprotocol.js'
+import type { BlockBodyBytes, BlockHeader } from '@ethereumjs/block'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type { TxReceipt } from '@ethereumjs/vm'
 
 export interface BoundProtocolOptions {
   /* Config */
@@ -29,13 +35,22 @@ export class BoundProtocol {
   public config: Config
   public name: string
   private protocol: Protocol
-  private peer: Peer
+  protected peer: Peer
   private sender: Sender
   private versions: number[]
   private timeout: number
   private _status: any
   private resolvers: Map<string | number, any>
   private messageQueue: Message[] = []
+
+  /**
+   * An eventual updated best head.
+   *
+   * If set this is by design known to be greater or equal the block hash from
+   * the initial `STATUS` exchange (`_status` property here) and `updatedBestHash`
+   * number/hash should take precedence.
+   */
+  public updatedBestHeader?: BlockHeader
 
   /**
    * Create bound protocol
@@ -71,7 +86,6 @@ export class BoundProtocol {
     this.sender.on('error', (error: Error) =>
       this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
     )
-    this.addMethods()
   }
 
   get status(): any {
@@ -161,7 +175,7 @@ export class BoundProtocol {
    * @param name message to wait for
    * @param args message arguments
    */
-  async request(name: string, args: any[]): Promise<any> {
+  async request(name: string, args: any): Promise<any> {
     const message = this.send(name, args)
     let lock
     if (
@@ -198,21 +212,132 @@ export class BoundProtocol {
       }, this.timeout)
     })
   }
+}
 
-  /**
-   * Add methods to the bound protocol for each protocol message that has a
-   * corresponding response message.
-   */
-  addMethods() {
-    const messages = this.protocol.messages.filter((m) => m.response)
-    for (const message of messages) {
-      const name = message.name
-      const camel = name[0].toLowerCase() + name.slice(1)
-      ;(this as any)[camel] = async (args: any[]) =>
-        this.request(name, args).catch((error: Error) => {
-          this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
-          return undefined
-        })
-    }
+export class BoundEthProtocol extends BoundProtocol implements EthProtocolMethods {
+  name = 'eth' // public name: string
+
+  constructor(options: BoundProtocolOptions) {
+    super(options)
+  }
+
+  async getBlockHeaders(opts: {
+    reqId?: bigint | undefined
+    block: bigint | Uint8Array
+    max: number
+    skip?: number | undefined
+    reverse?: boolean | undefined
+  }): Promise<[bigint, BlockHeader[]]> {
+    return this.request('GetBlockHeaders', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
+  }
+  async getBlockBodies(opts: {
+    reqId?: bigint | undefined
+    hashes: Uint8Array[]
+  }): Promise<[bigint, BlockBodyBytes[]]> {
+    return this.request('GetBlockBodies', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
+  }
+  async getPooledTransactions(opts: {
+    reqId?: bigint | undefined
+    hashes: Uint8Array[]
+  }): Promise<[bigint, TypedTransaction[]]> {
+    return this.request('GetPooledTransactions', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
+  }
+  async getReceipts(opts: {
+    reqId?: bigint | undefined
+    hashes: Uint8Array[]
+  }): Promise<[bigint, TxReceipt[]]> {
+    return this.request('GetReceipts', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
+  }
+}
+
+export class BoundSnapProtocol extends BoundProtocol implements SnapProtocolMethods {
+  name = 'snap' // public name: string
+
+  constructor(options: BoundProtocolOptions) {
+    super(options)
+  }
+  async getAccountRange(opts: {
+    reqId?: bigint | undefined
+    root: Uint8Array
+    origin: Uint8Array
+    limit: Uint8Array
+    bytes: bigint
+  }): Promise<{ reqId: bigint; accounts: AccountData[]; proof: Uint8Array[] }> {
+    return this.request('GetAccountRange', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
+  }
+  async getStorageRanges(opts: {
+    reqId?: bigint | undefined
+    root: Uint8Array
+    accounts: Uint8Array[]
+    origin: Uint8Array
+    limit: Uint8Array
+    bytes: bigint
+  }): Promise<{
+    reqId: bigint
+    slots: StorageData[][]
+    proof: Uint8Array[]
+  }> {
+    return this.request('GetStorageRanges', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
+  }
+  async getByteCodes(opts: {
+    reqId?: bigint | undefined
+    hashes: Uint8Array[]
+    bytes: bigint
+  }): Promise<{ reqId: bigint; codes: Uint8Array[] }> {
+    return this.request('GetByteCodes', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
+  }
+  async getTrieNodes(opts: {
+    reqId?: bigint | undefined // so this adds a guard here if something goes wrong
+    // so this adds a guard here if something goes wrong
+    root: Uint8Array
+    paths: Uint8Array[][]
+    bytes: bigint
+  }): Promise<{ reqId: bigint; nodes: Uint8Array[] }> {
+    return this.request('GetTrieNodes', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
+  }
+}
+
+export class BoundLesProtocol extends BoundProtocol implements LesProtocolMethods {
+  name = 'les' // public name: string
+
+  constructor(options: BoundProtocolOptions) {
+    super(options)
+  }
+
+  async getBlockHeaders(opts: {
+    reqId?: bigint | undefined
+    block: bigint | Uint8Array
+    max: number
+    skip?: number | undefined
+    reverse?: boolean | undefined
+  }): Promise<{ reqId: bigint; bv: bigint; headers: BlockHeader[] }> {
+    return this.request('GetBlockHeaders', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
 }

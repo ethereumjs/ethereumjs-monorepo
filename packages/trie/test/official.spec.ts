@@ -1,4 +1,4 @@
-import { bytesToHex, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes, isHexString, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Trie } from '../src/index.js'
@@ -41,13 +41,13 @@ describe('official tests any order', async () => {
       for (key of keys) {
         let val = test.in[key]
 
-        if (typeof key === 'string' && key.slice(0, 2) === '0x') {
+        if (typeof key === 'string' && isHexString(key)) {
           key = hexToBytes(key)
         } else if (typeof key === 'string') {
           key = utf8ToBytes(key)
         }
 
-        if (typeof val === 'string' && val.slice(0, 2) === '0x') {
+        if (typeof val === 'string' && isHexString(val)) {
           val = hexToBytes(val)
         } else if (typeof val === 'string') {
           val = utf8ToBytes(val)

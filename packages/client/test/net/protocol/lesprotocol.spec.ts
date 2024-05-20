@@ -1,13 +1,13 @@
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../../src/blockchain'
-import { Config } from '../../../src/config'
-import { FlowControl, LesProtocol } from '../../../src/net/protocol'
+import { Chain } from '../../../src/blockchain/index.js'
+import { Config } from '../../../src/config.js'
+import { FlowControl, LesProtocol } from '../../../src/net/protocol/index.js'
 
 describe('[LesProtocol]', () => {
   it('should get properties', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new LesProtocol({ config, chain })
     assert.ok(typeof p.name === 'string', 'get name')
@@ -16,7 +16,7 @@ describe('[LesProtocol]', () => {
   })
 
   it('should open correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new LesProtocol({ config, chain })
     await p.open()
@@ -25,7 +25,7 @@ describe('[LesProtocol]', () => {
   })
 
   it('should encode/decode status', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const flow = new FlowControl({
       bl: 1000,

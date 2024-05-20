@@ -4,6 +4,7 @@ import {
   Address,
   bytesToHex,
   bytesToUnprefixedHex,
+  equalsBytes,
   hexToBytes,
   randomBytes,
   zeros,
@@ -17,7 +18,62 @@ import * as ropsten_contractWithStorage from './testdata/ropsten_contractWithSto
 import * as ropsten_nonexistentAccount from './testdata/ropsten_nonexistentAccount.json'
 import * as ropsten_validAccount from './testdata/ropsten_validAccount.json'
 
+import type { Proof } from '@ethereumjs/common'
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 describe('ProofStateManager', () => {
+  it(`should return quantity-encoded RPC representation`, async () => {
+    const address = Address.zero()
+    const key = zeros(32)
+    const stateManager = new DefaultStateManager()
+
+    const proof = await stateManager.getProof(address, [key])
+    assert.equal(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.equal(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+  })
+
+  it(`should correctly return the right storage root / account root`, async () => {
+    const address = Address.zero()
+    const key = zeros(32)
+    const stateManager = new DefaultStateManager()
+
+    await stateManager.putAccount(address, new Account(BigInt(100), BigInt(200)))
+    const storageRoot = (await stateManager.getAccount(address))!.storageRoot
+
+    await stateManager.putContractStorage(address, key, new Uint8Array([10]))
+
+    const proof = await stateManager.getProof(address, [key])
+    assert.ok(!equalsBytes(hexToBytes(proof.storageHash), storageRoot))
+  })
+
+  it(`should return quantity-encoded RPC representation for existing accounts`, async () => {
+    const address = Address.zero()
+    const key = zeros(32)
+    const stateManager = new DefaultStateManager()
+
+    const account = new Account()
+    await stateManager.putAccount(address, account)
+
+    const proof = await stateManager.getProof(address, [key])
+    assert.equal(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.equal(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+
+    account.balance = BigInt(1)
+    await stateManager.putAccount(address, account)
+
+    const proof2 = await stateManager.getProof(address, [key])
+    assert.equal(proof2.balance, '0x1', 'Balance correctly encoded')
+    assert.equal(proof2.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+
+    account.balance = BigInt(0)
+    account.nonce = BigInt(1)
+    await stateManager.putAccount(address, account)
+
+    const proof3 = await stateManager.getProof(address, [key])
+    assert.equal(proof3.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.equal(proof3.nonce, '0x1', 'Nonce is correctly encoded')
+  })
+
   it(`should get and verify EIP 1178 proofs`, async () => {
     const address = Address.zero()
     const key = zeros(32)
@@ -32,7 +88,7 @@ describe('ProofStateManager', () => {
     account!.balance = BigInt(1)
     account!.nonce = BigInt(2)
     await stateManager.putAccount(address, account!)
-    const address2 = new Address(hexToBytes('0x' + '20'.repeat(20)))
+    const address2 = new Address(hexToBytes(`0x${'20'.repeat(20)}`))
     const account2 = await stateManager.getAccount(address2)
     account!.nonce = BigInt(2)
     await stateManager.putAccount(address2, account2!)
@@ -60,13 +116,12 @@ describe('ProofStateManager', () => {
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropsten_validAccount.accountProof) {
-      const bufferData = hexToBytes(proofData)
+      const bufferData = hexToBytes(proofData as PrefixedHexString)
       const key = keccak256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
-      // @ts-expect-error
-      await trie._db.put(key, bufferData)
+      await trie['_db'].put(key, bufferData)
     }
     trie.root(stateRoot!)
     const proof = await stateManager.getProof(address)
@@ -85,19 +140,17 @@ describe('ProofStateManager', () => {
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropsten_nonexistentAccount.accountProof) {
-      const bufferData = hexToBytes(proofData)
+      const bufferData = hexToBytes(proofData as PrefixedHexString)
       const key = keccak256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
-      // @ts-expect-error
-      await trie._db.put(key, bufferData)
+      await trie['_db'].put(key, bufferData)
     }
     trie.root(stateRoot!)
-    await stateManager.putAccount(address, new Account())
     const proof = await stateManager.getProof(address)
     assert.deepEqual((ropsten_nonexistentAccount as any).default, proof)
-    assert.ok(await stateManager.verifyProof(ropsten_nonexistentAccount))
+    assert.ok(await stateManager.verifyProof(ropsten_nonexistentAccount as Proof))
   })
 
   it('should report data equal to geth output for EIP 1178 proofs - account with storage', async () => {
@@ -111,33 +164,31 @@ describe('ProofStateManager', () => {
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropsten_contractWithStorage.accountProof) {
-      const bufferData = hexToBytes(proofData)
+      const bufferData = hexToBytes(proofData as PrefixedHexString)
       const key = keccak256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
-      // @ts-expect-error
-      await trie._db.put(key, bufferData)
+      await trie['_db'].put(key, bufferData)
     }
-    const storageRoot = ropsten_contractWithStorage.storageHash
+    const storageRoot = ropsten_contractWithStorage.storageHash as PrefixedHexString
     const storageTrie = new Trie({ useKeyHashing: true })
     const storageKeys: Uint8Array[] = []
     for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
-      storageKeys.push(hexToBytes(storageProofsData.key))
+      storageKeys.push(hexToBytes(storageProofsData.key as PrefixedHexString))
       for (const storageProofData of storageProofsData.proof) {
-        const key = keccak256(hexToBytes(storageProofData))
-        // @ts-expect-error
-        await storageTrie._db.put(key, hexToBytes(storageProofData))
+        const key = keccak256(hexToBytes(storageProofData as PrefixedHexString))
+        await storageTrie['_db'].put(key, hexToBytes(storageProofData as PrefixedHexString))
       }
     }
     storageTrie.root(hexToBytes(storageRoot))
-    const addressHex = bytesToUnprefixedHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(keccak256(address.bytes))
     stateManager['_storageTries'][addressHex] = storageTrie
     trie.root(stateRoot!)
 
     const proof = await stateManager.getProof(address, storageKeys)
     assert.deepEqual((ropsten_contractWithStorage as any).default, proof)
-    await stateManager.verifyProof(ropsten_contractWithStorage)
+    await stateManager.verifyProof(ropsten_contractWithStorage as Proof)
   })
 
   it(`should throw on invalid proofs - existing accounts/slots`, async () => {
@@ -151,23 +202,21 @@ describe('ProofStateManager', () => {
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropsten_contractWithStorage.accountProof) {
-      const bufferData = hexToBytes(proofData)
+      const bufferData = hexToBytes(proofData as PrefixedHexString)
       const key = keccak256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
-      // @ts-expect-error
-      await trie._db.put(key, bufferData)
+      await trie['_db'].put(key, bufferData)
     }
-    const storageRoot = ropsten_contractWithStorage.storageHash
+    const storageRoot = ropsten_contractWithStorage.storageHash as PrefixedHexString
     const storageTrie = new Trie({ useKeyHashing: true })
     const storageKeys: Uint8Array[] = []
     for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
-      storageKeys.push(hexToBytes(storageProofsData.key))
+      storageKeys.push(hexToBytes(storageProofsData.key as PrefixedHexString))
       for (const storageProofData of storageProofsData.proof) {
-        const key = keccak256(hexToBytes(storageProofData))
-        // @ts-expect-error
-        await storageTrie._db.put(key, hexToBytes(storageProofData))
+        const key = keccak256(hexToBytes(storageProofData as PrefixedHexString))
+        await storageTrie['_db'].put(key, hexToBytes(storageProofData as PrefixedHexString))
       }
     }
     storageTrie.root(hexToBytes(storageRoot))
@@ -219,15 +268,14 @@ describe('ProofStateManager', () => {
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropsten_nonexistentAccount.accountProof) {
-      const bufferData = hexToBytes(proofData)
+      const bufferData = hexToBytes(proofData as PrefixedHexString)
       const key = keccak256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
-      // @ts-expect-error
-      await trie._db.put(key, bufferData)
+      await trie['_db'].put(key, bufferData)
     }
-    const storageRoot = ropsten_nonexistentAccount.storageHash
+    const storageRoot = ropsten_nonexistentAccount.storageHash as PrefixedHexString
     const storageTrie = new Trie({ useKeyHashing: true })
     storageTrie.root(hexToBytes(storageRoot))
     const addressHex = bytesToHex(address.bytes)

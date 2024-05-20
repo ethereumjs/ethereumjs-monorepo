@@ -1,12 +1,13 @@
+import { MemoryLevel } from 'memory-level'
 import { assert, describe, it, vi } from 'vitest'
 
-import { EthereumClient } from '../src/client'
-import { Config } from '../src/config'
-import { PeerPool } from '../src/net/peerpool'
-import { RlpxServer } from '../src/net/server'
+import { EthereumClient } from '../src/client.js'
+import { Config } from '../src/config.js'
+import { PeerPool } from '../src/net/peerpool.js'
+import { RlpxServer } from '../src/net/server/index.js'
 
 describe('[EthereumClient]', async () => {
-  const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+  const config = new Config({ accountCache: 10000, storageCache: 1000 })
   class FullEthereumService {
     open() {}
     start() {}
@@ -17,7 +18,7 @@ describe('[EthereumClient]', async () => {
   FullEthereumService.prototype.open = vi.fn().mockResolvedValue(null)
   FullEthereumService.prototype.start = vi.fn().mockResolvedValue(null)
   FullEthereumService.prototype.stop = vi.fn().mockResolvedValue(null)
-  vi.doMock('../src/service', () => {
+  vi.doMock('../src/service/index.js', () => {
     {
       FullEthereumService
     }
@@ -33,14 +34,14 @@ describe('[EthereumClient]', async () => {
   Server.prototype.start = vi.fn().mockResolvedValue(null)
   Server.prototype.stop = vi.fn().mockResolvedValue(null)
   Server.prototype.bootstrap = vi.fn().mockResolvedValue(null)
-  vi.doMock('../src/net/server/server', () => {
+  vi.doMock('../src/net/server/server.js', () => {
     {
       Server
     }
   })
 
   it('should initialize correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config })
     assert.ok('lightserv' in client.services[0], 'added FullEthereumService')
     assert.ok('execution' in client.services[0], 'added FullEthereumService')
@@ -48,9 +49,9 @@ describe('[EthereumClient]', async () => {
   })
 
   it('should open', async () => {
-    const servers = [new RlpxServer({ config: new Config() })]
-    const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
-    const client = await EthereumClient.create({ config })
+    const server = new RlpxServer({ config: new Config() })
+    const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
+    const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
 
     await client.open()
     assert.ok(client.opened, 'opened')
@@ -58,9 +59,10 @@ describe('[EthereumClient]', async () => {
   }, 30000)
 
   it('should start/stop', async () => {
-    const servers = [new Server()] as any
-    const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
-    const client = await EthereumClient.create({ config })
+    const server = new Server() as any
+    const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
+    const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
+    await (client.services[0] as any)['execution'].setupMerkleVM()
     await client.start()
     assert.ok(client.started, 'started')
     assert.equal(await client.start(), false, 'already started')

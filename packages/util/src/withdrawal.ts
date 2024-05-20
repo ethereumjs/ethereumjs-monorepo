@@ -1,8 +1,9 @@
 import { Address } from './address.js'
 import { bigIntToHex, bytesToHex, toBytes } from './bytes.js'
+import { BIGINT_0 } from './constants.js'
 import { TypeOutput, toType } from './types.js'
 
-import type { AddressLike, BigIntLike } from './types.js'
+import type { AddressLike, BigIntLike, PrefixedHexString } from './types.js'
 
 /**
  * Flexible input data type for EIP-4895 withdrawal data with amount in Gwei to
@@ -20,10 +21,10 @@ export type WithdrawalData = {
  * match CL representation and for eventual ssz withdrawalsRoot
  */
 export interface JsonRpcWithdrawal {
-  index: string // QUANTITY - bigint 8 bytes
-  validatorIndex: string // QUANTITY - bigint 8 bytes
-  address: string // DATA, 20 Bytes  address to withdraw to
-  amount: string // QUANTITY - bigint amount in Gwei 8 bytes
+  index: PrefixedHexString // QUANTITY - bigint 8 bytes
+  validatorIndex: PrefixedHexString // QUANTITY - bigint 8 bytes
+  address: PrefixedHexString // DATA, 20 Bytes  address to withdraw to
+  amount: PrefixedHexString // QUANTITY - bigint amount in Gwei 8 bytes
 }
 
 export type WithdrawalBytes = [Uint8Array, Uint8Array, Uint8Array, Uint8Array]
@@ -78,18 +79,18 @@ export class Withdrawal {
   public static toBytesArray(withdrawal: Withdrawal | WithdrawalData): WithdrawalBytes {
     const { index, validatorIndex, address, amount } = withdrawal
     const indexBytes =
-      toType(index, TypeOutput.BigInt) === BigInt(0)
+      toType(index, TypeOutput.BigInt) === BIGINT_0
         ? new Uint8Array()
         : toType(index, TypeOutput.Uint8Array)
     const validatorIndexBytes =
-      toType(validatorIndex, TypeOutput.BigInt) === BigInt(0)
+      toType(validatorIndex, TypeOutput.BigInt) === BIGINT_0
         ? new Uint8Array()
         : toType(validatorIndex, TypeOutput.Uint8Array)
     const addressBytes =
       address instanceof Address ? (<Address>address).bytes : toType(address, TypeOutput.Uint8Array)
 
     const amountBytes =
-      toType(amount, TypeOutput.BigInt) === BigInt(0)
+      toType(amount, TypeOutput.BigInt) === BIGINT_0
         ? new Uint8Array()
         : toType(amount, TypeOutput.Uint8Array)
 

@@ -1,10 +1,11 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_2,
+  BIGINT_8,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  ecrecover,
   toBytes,
   unpadBytes,
   validateNoLeadingZeroes,
@@ -12,6 +13,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { BaseTransaction } from './baseTransaction.js'
+import * as Legacy from './capabilities/legacy.js'
 import { Capability, TransactionType } from './types.js'
 
 import type {
@@ -38,6 +40,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   public readonly gasPrice: bigint
 
   public readonly common: Common
+  private keccakFunction: (msg: Uint8Array) => Uint8Array
 
   /**
    * Instantiate a transaction from a data dictionary.
@@ -111,13 +114,14 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     super({ ...txData, type: TransactionType.Legacy }, opts)
 
     this.common = this._validateTxV(this.v, opts.common)
-
-    this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice === '' ? '0x' : txData.gasPrice))
+    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
+    this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice))
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = this._errorMsg('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
       throw new Error(msg)
     }
+
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
     BaseTransaction._validateNotArray(txData)
 
@@ -141,6 +145,10 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     if (freeze) {
       Object.freeze(this)
     }
+  }
+
+  getEffectivePriorityFee(baseFee?: bigint): bigint {
+    return Legacy.getEffectivePriorityFee(this.gasPrice, baseFee)
   }
 
   /**
@@ -221,25 +229,14 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    */
   getHashedMessageToSign() {
     const message = this.getMessageToSign()
-    return keccak256(RLP.encode(message))
+    return this.keccakFunction(RLP.encode(message))
   }
 
   /**
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
-      return this.cache.dataFee.value
-    }
-
-    if (Object.isFrozen(this)) {
-      this.cache.dataFee = {
-        value: super.getDataFee(),
-        hardfork: this.common.hardfork(),
-      }
-    }
-
-    return super.getDataFee()
+    return Legacy.getDataFee(this)
   }
 
   /**
@@ -256,19 +253,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   hash(): Uint8Array {
-    if (!this.isSigned()) {
-      const msg = this._errorMsg('Cannot call hash method if transaction is not signed')
-      throw new Error(msg)
-    }
-
-    if (Object.isFrozen(this)) {
-      if (!this.cache.hash) {
-        this.cache.hash = keccak256(RLP.encode(this.raw()))
-      }
-      return this.cache.hash
-    }
-
-    return keccak256(RLP.encode(this.raw()))
+    return Legacy.hash(this)
   }
 
   /**
@@ -286,32 +271,19 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * Returns the public key of the sender
    */
   getSenderPublicKey(): Uint8Array {
-    const msgHash = this.getMessageToVerifySignature()
-
-    const { v, r, s } = this
-
-    this._validateHighS()
-
-    try {
-      return ecrecover(
-        msgHash,
-        v!,
-        bigIntToUnpaddedBytes(r!),
-        bigIntToUnpaddedBytes(s!),
-        this.supports(Capability.EIP155ReplayProtection) ? this.common.chainId() : undefined
-      )
-    } catch (e: any) {
-      const msg = this._errorMsg('Invalid Signature')
-      throw new Error(msg)
-    }
+    return Legacy.getSenderPublicKey(this)
   }
 
-  /**
-   * Process the v, r, s values from the `sign` method of the base transaction.
-   */
-  protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
-    if (this.supports(Capability.EIP155ReplayProtection)) {
-      v += this.common.chainId() * BigInt(2) + BigInt(8)
+  addSignature(
+    v: bigint,
+    r: Uint8Array | bigint,
+    s: Uint8Array | bigint,
+    convertV: boolean = false
+  ): LegacyTransaction {
+    r = toBytes(r)
+    s = toBytes(s)
+    if (convertV && this.supports(Capability.EIP155ReplayProtection)) {
+      v += this.common.chainId() * BIGINT_2 + BIGINT_8
     }
 
     const opts = { ...this.txOptions, common: this.common }
@@ -383,7 +355,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
           numSub = 36
         }
         // Use derived chain ID to create a proper Common
-        chainIdBigInt = BigInt(v - numSub) / BigInt(2)
+        chainIdBigInt = BigInt(v - numSub) / BIGINT_2
       }
     }
     return this._getCommon(common, chainIdBigInt)
@@ -405,6 +377,6 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return `${msg} (${this.errorStr()})`
+    return Legacy.errorMsg(this, msg)
   }
 }

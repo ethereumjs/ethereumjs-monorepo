@@ -9,7 +9,8 @@ import blocksData from './testdata/blocks_mainnet.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util.js'
 
-import type { BlockOptions } from '@ethereumjs/block'
+import type { BlockData, BlockOptions } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('blockchain test', () => {
   it('should not crash on getting head of a blockchain without a genesis', async () => {
@@ -40,9 +41,21 @@ describe('blockchain test', () => {
     )
   })
 
+  it('should initialize holesky correctly', async () => {
+    // Taken from: https://github.com/eth-clients/holesky/blob/f1d14b9a80085c3f0cb9d729fea9172cde445588/README.md#hole%C5%A1ky-hole%C5%A1ovice-testnet
+    const holeskyHash = '0xb5f7f912443c940f21fd611f12828d75b534364ed9e95ca4e307729a4661bde4'
+    const common = new Common({ chain: Chain.Holesky })
+    const blockchain = await Blockchain.create({
+      common,
+    })
+    const genesisHash = blockchain.genesisBlock.hash()
+
+    assert.deepEqual(bytesToHex(genesisHash), holeskyHash, 'correct genesis hash for holesky')
+  })
+
   it('should initialize correctly with Blockchain.fromBlocksData()', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await Blockchain.fromBlocksData(blocksData, {
+    const blockchain = await Blockchain.fromBlocksData(blocksData as BlockData[], {
       validateBlocks: true,
       validateConsensus: false,
       common,
@@ -561,7 +574,7 @@ describe('blockchain test', () => {
 
   it('should add block with body', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisRlp = hexToBytes(testDataPreLondon.genesisRLP)
+    const genesisRlp = hexToBytes(testDataPreLondon.genesisRLP as PrefixedHexString)
     const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
     const blockchain = await Blockchain.create({
       validateBlocks: true,
@@ -569,7 +582,7 @@ describe('blockchain test', () => {
       genesisBlock,
     })
 
-    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp)
+    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
     await blockchain.putBlock(block)
   })
@@ -832,7 +845,7 @@ describe('initialization tests', () => {
     } catch (e: any) {
       assert.equal(
         e.message,
-        'Cannot put a genesis block: create a new Blockchain',
+        'Cannot put a different genesis block than current blockchain genesis: create a new Blockchain',
         'putting a genesis block did throw (otherGenesisBlock not found in chain)'
       )
     }

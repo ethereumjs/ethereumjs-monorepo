@@ -1,11 +1,13 @@
 import { bytesToHex, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
+import { Client } from 'jayson/promise'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../src/rpc/error-code'
-import { middleware, validators } from '../../src/rpc/validation'
+import { INVALID_PARAMS } from '../../src/rpc/error-code.js'
+import { middleware, validators } from '../../src/rpc/validation.js'
 
-import { baseRequest, startRPC } from './helpers'
-import { checkError } from './util'
+import { startRPC } from './helpers.js'
+
+import type { AddressInfo } from 'node:net'
 
 const prefix = 'rpc/validation:'
 
@@ -15,16 +17,10 @@ describe(prefix, () => {
     const server = startRPC({
       [mockMethodName]: middleware((_params: any) => true, 0, []),
     })
+    const rpc = Client.http({ port: (server.address()! as AddressInfo).port })
 
-    const req = {
-      jsonrpc: '2.0',
-      method: mockMethodName,
-      id: 1,
-    }
-    const expectRes = (res: any) => {
-      assert.equal(res.body.error, undefined, 'should not return an error object')
-    }
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(mockMethodName, [])
+    assert.isUndefined(res.error, 'should not return an error object')
   })
 
   it('should return error without `params` when it is required', async () => {
@@ -32,16 +28,11 @@ describe(prefix, () => {
     const server = startRPC({
       [mockMethodName]: middleware((_params: any) => true, 1, []),
     })
+    const rpc = Client.http({ port: (server.address()! as AddressInfo).port })
 
-    const req = {
-      jsonrpc: '2.0',
-      method: mockMethodName,
-      id: 1,
-    }
+    const res = await rpc.request(mockMethodName, [])
 
-    const expectRes = checkError(INVALID_PARAMS, 'missing value for required argument 0')
-
-    await baseRequest(server, req, 200, expectRes)
+    assert.equal(res.error.code, INVALID_PARAMS, 'missing value for required argument 0')
   })
 
   const validatorResult = (result: Object | undefined) => {
@@ -599,6 +590,61 @@ describe(prefix, () => {
       validatorResult(validators.array(validators.bool)([['0x123', '0x456', '0x789']], 0))
     )
     assert.notOk(validatorResult(validators.array(validators.bool)([[true, 'true']], 0)))
+  })
+
+  it('rewardPercentile', () => {
+    // valid
+    assert.equal(validators.rewardPercentile([0], 0), 0)
+    assert.equal(validators.rewardPercentile([0.1], 0), 0.1)
+    assert.equal(validators.rewardPercentile([10], 0), 10)
+    assert.equal(validators.rewardPercentile([100], 0), 100)
+
+    // invalid
+    assert.deepEqual(validators.rewardPercentile([-1], 0), {
+      code: INVALID_PARAMS,
+      message: `entry at 0 is lower than 0`,
+    })
+    assert.deepEqual(validators.rewardPercentile([101], 0), {
+      code: INVALID_PARAMS,
+      message: `entry at 0 is higher than 100`,
+    })
+    assert.deepEqual(validators.rewardPercentile([], 0), {
+      code: INVALID_PARAMS,
+      message: `entry at 0 is not a number`,
+    })
+    assert.deepEqual(validators.rewardPercentile(['0'], 0), {
+      code: INVALID_PARAMS,
+      message: `entry at 0 is not a number`,
+    })
+  })
+
+  it('rewardPercentiles', () => {
+    // valid
+    assert.ok(validatorResult(validators.rewardPercentiles([[]], 0)))
+    assert.ok(validatorResult(validators.rewardPercentiles([[0]], 0)))
+    assert.ok(validatorResult(validators.rewardPercentiles([[100]], 0)))
+    assert.ok(validatorResult(validators.rewardPercentiles([[0, 2, 5, 30, 100]], 0)))
+    assert.ok(validatorResult(validators.rewardPercentiles([[0, 2.1, 5.35, 30.999, 60, 100]], 0)))
+
+    // invalid
+    assert.notOk(validatorResult(validators.rewardPercentiles([[[]]], 0))) // Argument is not number
+    assert.notOk(validatorResult(validators.rewardPercentiles([[-1]], 0))) // Argument < 0
+    assert.notOk(validatorResult(validators.rewardPercentiles([[100.1]], 0))) // Argument > 100
+    assert.notOk(validatorResult(validators.rewardPercentiles([[1, 2, 3, 2.5]], 0))) // Not monotonically increasing
+    assert.notOk(validatorResult(validators.rewardPercentiles([0], 0))) // Input not array
+  })
+
+  it('integer', () => {
+    //valid
+    assert.ok(validatorResult(validators.integer([1], 0)))
+    assert.ok(validatorResult(validators.integer([-1], 0)))
+    assert.ok(validatorResult(validators.integer([0], 0)))
+
+    //invalid
+    assert.notOk(validatorResult(validators.integer(['a'], 0)))
+    assert.notOk(validatorResult(validators.integer([1.234], 0)))
+    assert.notOk(validatorResult(validators.integer([undefined], 0)))
+    assert.notOk(validatorResult(validators.integer([null], 0)))
   })
 
   it('values', () => {

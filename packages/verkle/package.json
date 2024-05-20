@@ -1,0 +1,64 @@
+{
+  "name": "@ethereumjs/verkle",
+  "version": "0.0.2",
+  "description": "Implementation of verkle trees as used in Ethereum.",
+  "keywords": [
+    "verkle",
+    "tree",
+    "trie",
+    "ethereum"
+  ],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/verkle#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+verkle%22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "license": "MIT",
+  "author": "EthereumJS Team",
+  "contributors": [
+    {
+      "name": "Gabriel Rocheleau",
+      "url": "https://github.com/gabrocheleau"
+    }
+  ],
+  "main": "dist/cjs/index.js",
+  "type": "commonjs",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
+    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "docs:build": "typedoc --options typedoc.cjs",
+    "lint": "../../config/cli/lint.sh",
+    "lint:diff": "../../config/cli/lint-diff.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
+    "test": "npm run test:node",
+    "test:node": "npx vitest run",
+    "test:browser": "npx vitest run --config=../../config/vitest.browser.config.mts",
+    "tsc": "../../config/cli/ts-compile.sh"
+  },
+  "dependencies": {
+    "lru-cache": "10.1.0",
+    "verkle-cryptography-wasm": "^0.4.2",
+    "@ethereumjs/block": "^5.2.0",
+    "@ethereumjs/rlp": "^5.0.2",
+    "@ethereumjs/util": "^9.0.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -3,10 +3,10 @@ import { MemoryLevel } from 'memory-level'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain'
-import { Config } from '../../src/config'
-import { Skeleton } from '../../src/sync'
-import { ReverseBlockFetcher } from '../../src/sync/fetcher/reverseblockfetcher'
+import { Chain } from '../../src/blockchain/index.js'
+import { Config } from '../../src/config.js'
+import { ReverseBlockFetcher } from '../../src/sync/fetcher/reverseblockfetcher.js'
+import { Skeleton } from '../../src/sync/index.js'
 
 describe('[BeaconSynchronizer]', async () => {
   const execution: any = { run: () => {} }
@@ -29,11 +29,13 @@ describe('[BeaconSynchronizer]', async () => {
   ReverseBlockFetcher.prototype.clear = td.func<any>()
   ReverseBlockFetcher.prototype.destroy = td.func<any>()
 
-  vi.doMock('../../src/sync/fetcher/reverseblockfetcher', () => td.constructor(ReverseBlockFetcher))
-  const { BeaconSynchronizer } = await import('../../src/sync/beaconsync')
+  vi.doMock('../../src/sync/fetcher/reverseblockfetcher.js', () =>
+    td.constructor(ReverseBlockFetcher)
+  )
+  const { BeaconSynchronizer } = await import('../../src/sync/beaconsync.js')
 
   it('should initialize correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -42,7 +44,7 @@ describe('[BeaconSynchronizer]', async () => {
   })
 
   it('should open', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -56,30 +58,54 @@ describe('[BeaconSynchronizer]', async () => {
   })
 
   it('should get height', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
-    const peer = { eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash' } } }
+    const peer = {
+      eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash' } },
+      latest: async () => {
+        return {
+          number: BigInt(5),
+          hash: () => new Uint8Array(0),
+        }
+      },
+    }
     const headers = [{ number: BigInt(5) }]
     td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve([BigInt(1), headers])
-    const latest = await sync.latest(peer as any)
+    const latest = await peer.latest()
     assert.ok(latest!.number === BigInt(5), 'got height')
     await sync.stop()
     await sync.close()
   })
 
   it('should find best', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     ;(sync as any).running = true
     const peers = [
-      { eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash1' }, inbound: false } },
-      { eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash2' }, inbound: false } },
+      {
+        eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash1' }, inbound: false },
+        latest: () => {
+          return {
+            number: BigInt(5),
+            hash: () => new Uint8Array(0),
+          }
+        },
+      },
+      {
+        eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash2' }, inbound: false },
+        latest: () => {
+          return {
+            number: BigInt(10),
+            hash: () => new Uint8Array(0),
+          }
+        },
+      },
     ]
     td.when(peers[0].eth.getBlockHeaders({ block: 'hash1', max: 1 })).thenResolve([
       BigInt(1),
@@ -98,7 +124,6 @@ describe('[BeaconSynchronizer]', async () => {
 
   it('should sync to next subchain head or chain height', async () => {
     const config = new Config({
-      transports: [],
       safeReorgDistance: 0,
       skeletonSubchainMergeMinimum: 0,
       accountCache: 10000,
@@ -112,13 +137,15 @@ describe('[BeaconSynchronizer]', async () => {
 
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     sync.best = td.func<typeof sync['best']>()
-    sync.latest = td.func<typeof sync['latest']>()
-    td.when(sync.best()).thenResolve('peer')
-    td.when(sync.latest('peer' as any)).thenResolve({
-      number: BigInt(2),
-      hash: () => new Uint8Array(0),
-    })
-    td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 3 }).thenResolve(undefined)
+    td.when(sync.best()).thenResolve({
+      latest: () => {
+        return {
+          number: BigInt(2),
+          hash: () => new Uint8Array(0),
+        }
+      },
+    } as any)
+    td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 3 }).thenResolve(false)
     ;(skeleton as any).status.progress.subchains = [
       { head: BigInt(10), tail: BigInt(6) },
       { head: BigInt(4), tail: BigInt(2) },
@@ -151,7 +178,6 @@ describe('[BeaconSynchronizer]', async () => {
 
   it('should not sync pre-genesis', async () => {
     const config = new Config({
-      transports: [],
       safeReorgDistance: 0,
       skeletonSubchainMergeMinimum: 1000,
       accountCache: 10000,
@@ -164,13 +190,15 @@ describe('[BeaconSynchronizer]', async () => {
     await skeleton.open()
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     sync.best = td.func<typeof sync['best']>()
-    sync.latest = td.func<typeof sync['latest']>()
-    td.when(sync.best()).thenResolve('peer')
-    td.when(sync.latest('peer' as any)).thenResolve({
-      number: BigInt(2),
-      hash: () => new Uint8Array(0),
-    })
-    td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 1 }).thenResolve(undefined)
+    td.when(sync.best()).thenResolve({
+      latest: () => {
+        return {
+          number: BigInt(2),
+          hash: () => new Uint8Array(0),
+        }
+      },
+    } as any)
+    td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 1 }).thenResolve(false)
     ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
     ;(sync as any).chain = {
       // Make height > tail so that skeletonSubchainMergeMinimum is triggered
@@ -185,7 +213,7 @@ describe('[BeaconSynchronizer]', async () => {
   })
 
   it('should extend and set with a valid head', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -216,7 +244,7 @@ describe('[BeaconSynchronizer]', async () => {
   })
 
   it('syncWithPeer should return early if skeleton is already linked', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })

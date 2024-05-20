@@ -1,6 +1,8 @@
+import { loadKZG } from 'kzg-wasm'
 import * as minimist from 'minimist'
 import * as path from 'path'
 import * as process from 'process'
+import { initRustBN } from 'rustbn-wasm'
 import * as tape from 'tape'
 
 import {
@@ -17,6 +19,7 @@ import { runStateTest } from './runners/GeneralStateTestsRunner'
 import { getTestFromSource, getTestsFromArgs } from './testLoader'
 
 import type { Common } from '@ethereumjs/common'
+import type { bn128 } from '@ethereumjs/evm'
 
 /**
  * Test runner
@@ -42,9 +45,11 @@ import type { Common } from '@ethereumjs/common'
  * --expected-test-amount: number.        If passed, check after tests are ran if at least this amount of tests have passed (inclusive)
  * --verify-test-amount-alltests: number. If passed, get the expected amount from tests and verify afterwards if this is the count of tests (expects tests are ran with default settings)
  * --reps: number.                        If passed, each test case will be run the number of times indicated
+ * --profile                              If this flag is passed, the state/blockchain tests will profile
  */
 
-const argv = minimist(process.argv.slice(2))
+//@ts-expect-error Typescript thinks there isn't a default export on minimist but there is
+const argv = minimist.default(process.argv.slice(2))
 
 async function runTests() {
   let name: 'GeneralStateTests' | 'BlockchainTests'
@@ -59,6 +64,8 @@ async function runTests() {
     console.log(`Test type not supported or provided`)
     process.exit(1)
   }
+
+  const RUN_PROFILER: boolean = argv.profile ?? false
 
   const FORK_CONFIG: string = argv.fork !== undefined ? argv.fork : DEFAULT_FORK_CONFIG
   const FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(FORK_CONFIG)
@@ -95,6 +102,8 @@ async function runTests() {
   /**
    * Run-time configuration
    */
+  const kzg = await loadKZG()
+  const bn128 = (await initRustBN()) as bn128
   const runnerArgs: {
     forkConfigVM: string
     forkConfigTestSuite: string
@@ -106,10 +115,12 @@ async function runTests() {
     value?: number
     debug?: boolean
     reps?: number
+    profile: boolean
+    bn128: bn128
   } = {
     forkConfigVM: FORK_CONFIG_VM,
     forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
-    common: getCommon(FORK_CONFIG_VM),
+    common: getCommon(FORK_CONFIG_VM, kzg),
     jsontrace: argv.jsontrace,
     dist: argv.dist,
     data: argv.data, // GeneralStateTests
@@ -117,6 +128,8 @@ async function runTests() {
     value: argv.value, // GeneralStateTests
     debug: argv.debug, // BlockchainTests
     reps: argv.reps, // test repetitions
+    profile: RUN_PROFILER,
+    bn128,
   }
 
   /**
@@ -186,6 +199,7 @@ async function runTests() {
 
   if (argv.customStateTest !== undefined) {
     const fileName: string = argv.customStateTest
+    //@ts-ignore tsx/esbuild can't figure out this namespace import thing but it works fine :shrug:
     tape(name, (t) => {
       getTestFromSource(fileName, async (err: string | null, test: any) => {
         if (err !== null) {
@@ -197,10 +211,10 @@ async function runTests() {
       })
     })
   } else {
-    tape(name, async (t) => {
+    //@ts-ignore tsx/esbuild can't figure out this namespace import thing but it works fine :shrug:
+    tape.default(name, async (t) => {
       let testIdentifier: string
       const failingTests: Record<string, string[] | undefined> = {}
-
       ;(t as any).on('result', (o: any) => {
         if (
           typeof o.ok !== 'undefined' &&
@@ -218,6 +232,7 @@ async function runTests() {
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
 
       const dirs = getTestDirs(FORK_CONFIG_VM, name)
+      console.time('Total (including setup)')
       for (const dir of dirs) {
         await new Promise<void>((resolve, reject) => {
           if (argv.customTestsPath !== undefined) {
@@ -262,6 +277,9 @@ async function runTests() {
         const { assertCount } = t as any
         t.ok(assertCount >= expectedTests, `expected ${expectedTests} checks, got ${assertCount}`)
       }
+
+      console.log()
+      console.timeEnd('Total (including setup)')
 
       t.end()
     })

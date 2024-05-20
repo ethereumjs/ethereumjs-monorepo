@@ -1,8 +1,8 @@
 import { EventEmitter } from 'events'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Config } from '../../../src/config'
-import { Event } from '../../../src/types'
+import { Config } from '../../../src/config.js'
+import { Event } from '../../../src/types.js'
 
 describe('[RlpxPeer]', async () => {
   vi.mock('@ethereumjs/devp2p', async () => {
@@ -20,10 +20,10 @@ describe('[RlpxPeer]', async () => {
     }
   })
 
-  const { RlpxPeer } = await import('../../../src/net/peer/rlpxpeer')
+  const { RlpxPeer } = await import('../../../src/net/peer/rlpxpeer.js')
 
   it('should initialize correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const peer = new RlpxPeer({
       config,
       id: 'abcdef0123',
@@ -57,7 +57,7 @@ describe('[RlpxPeer]', async () => {
   })
 
   it('should connect to peer', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const proto0 = { name: 'les', versions: [4] } as any
     const peer = new RlpxPeer({
       config,
@@ -73,8 +73,13 @@ describe('[RlpxPeer]', async () => {
   })
 
   it('should handle peer events', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
-    const peer = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
+    const peer = new RlpxPeer({
+      config,
+      id: 'abcdef0123',
+      host: '10.0.0.1',
+      port: 1234,
+    })
     const rlpxPeer = { id: 'zyx321', getDisconnectPrefix: vi.fn() } as any
     ;(peer as any).bindProtocols = vi.fn().mockResolvedValue(undefined)
     peer.rlpxPeer = rlpxPeer
@@ -115,8 +120,13 @@ describe('[RlpxPeer]', async () => {
   })
 
   it('should accept peer connection', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
-    const peer: any = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
+    const peer: any = new RlpxPeer({
+      config,
+      id: 'abcdef0123',
+      host: '10.0.0.1',
+      port: 1234,
+    })
     peer.bindProtocols = vi.fn().mockResolvedValue(null)
 
     await peer.accept('rlpxpeer' as any, 'server')
@@ -124,7 +134,7 @@ describe('[RlpxPeer]', async () => {
   })
 
   it('should bind protocols', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const protocols = [{ name: 'proto0' }] as any
     const peer = new RlpxPeer({
       config,
@@ -144,10 +154,10 @@ describe('[RlpxPeer]', async () => {
     const rlpxPeer = {
       getProtocols: vi.fn().mockReturnValue([proto0]),
     } as any
-    peer['bindProtocol'] = vi.fn().mockResolvedValue(undefined)
+    peer['addProtocol'] = vi.fn().mockResolvedValue(undefined)
 
-    await (peer as any).bindProtocols(rlpxPeer)
-    expect((peer as any).bindProtocol).toBeCalled()
+    await peer['bindProtocols'](rlpxPeer)
+    expect(peer.addProtocol).toBeCalled()
     assert.ok(peer.connected, 'connected set to true')
   })
 })

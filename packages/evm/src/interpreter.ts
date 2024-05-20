@@ -1,6 +1,8 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import {
   Account,
+  BIGINT_0,
+  BIGINT_1,
   MAX_UINT64,
   bigIntToHex,
   bytesToBigInt,
@@ -11,6 +13,7 @@ import debugDefault from 'debug'
 
 import { EOF } from './eof.js'
 import { ERROR, EvmError } from './exceptions.js'
+import { type EVMPerformanceLogger, type Timer } from './logger.js'
 import { Memory } from './memory.js'
 import { Message } from './message.js'
 import { trap } from './opcodes/index.js'
@@ -18,10 +21,11 @@ import { Stack } from './stack.js'
 
 import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
-import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes/index.js'
-import type { Block, Blockchain, EVMResult, Log } from './types.js'
+import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
+import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+import type { AccessWitness, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 const { debug: createDebugLogger } = debugDefault
 
 const debugGas = createDebugLogger('evm:gas')
@@ -39,12 +43,12 @@ export interface RunResult {
   /**
    * A set of accounts to selfdestruct
    */
-  selfdestruct: Set<string>
+  selfdestruct: Set<PrefixedHexString>
 
   /**
    * A map which tracks which addresses were created (used in EIP 6780)
    */
-  createdAddresses?: Set<string>
+  createdAddresses?: Set<PrefixedHexString>
 }
 
 export interface Env {
@@ -62,8 +66,10 @@ export interface Env {
   codeAddress: Address /* Different than address for DELEGATECALL and CALLCODE */
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
   containerCode?: Uint8Array /** Full container code for EOF1 contracts */
-  versionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
+  blobVersionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
+  accessWitness?: AccessWitness
+  chargeCodeAccesses?: boolean
 }
 
 export interface RunState {
@@ -73,10 +79,10 @@ export interface RunState {
   memoryWordCount: bigint
   highestMemCost: bigint
   stack: Stack
-  returnStack: Stack
   code: Uint8Array
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
+  cachedPushes: { [pc: number]: bigint }
   stateManager: EVMStateManagerInterface
   blockchain: Blockchain
   env: Env
@@ -98,7 +104,6 @@ export interface InterpreterStep {
   gasRefund: bigint
   stateManager: EVMStateManagerInterface
   stack: bigint[]
-  returnStack: bigint[]
   pc: number
   depth: number
   opcode: {
@@ -133,6 +138,9 @@ export class Interpreter {
   // Opcode debuggers (e.g. { 'push': [debug Object], 'sstore': [debug Object], ...})
   private opDebuggers: { [key: string]: (debug: string) => void } = {}
 
+  private profilerOpts?: EVMProfilerOpts
+  private performanceLogger: EVMPerformanceLogger
+
   // TODO remove gasLeft as constructor argument
   constructor(
     evm: EVM,
@@ -140,7 +148,9 @@ export class Interpreter {
     blockchain: Blockchain,
     env: Env,
     gasLeft: bigint,
-    journal: Journal
+    journal: Journal,
+    performanceLogs: EVMPerformanceLogger,
+    profilerOpts?: EVMProfilerOpts
   ) {
     this._evm = evm
     this._stateManager = stateManager
@@ -149,12 +159,12 @@ export class Interpreter {
       programCounter: 0,
       opCode: 0xfe, // INVALID opcode
       memory: new Memory(),
-      memoryWordCount: BigInt(0),
-      highestMemCost: BigInt(0),
+      memoryWordCount: BIGINT_0,
+      highestMemCost: BIGINT_0,
       stack: new Stack(),
-      returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: new Uint8Array(0),
       validJumps: Uint8Array.from([]),
+      cachedPushes: {},
       stateManager: this._stateManager,
       blockchain,
       env,
@@ -171,6 +181,8 @@ export class Interpreter {
       returnValue: undefined,
       selfdestruct: new Set(),
     }
+    this.profilerOpts = profilerOpts
+    this.performanceLogger = performanceLogs
   }
 
   async run(code: Uint8Array, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
@@ -218,22 +230,70 @@ export class Interpreter {
     }
 
     let err
+    let cachedOpcodes: OpcodeMapEntry[]
+    let doJumpAnalysis = true
+
+    let timer: Timer | undefined
+    let overheadTimer: Timer | undefined
+    if (this.profilerOpts?.enabled === true && this.performanceLogger.hasTimer()) {
+      timer = this.performanceLogger.pauseTimer()
+      overheadTimer = this.performanceLogger.startTimer('Overhead')
+    }
+
     // Iterate through the given ops until something breaks or we hit STOP
     while (this._runState.programCounter < this._runState.code.length) {
-      const opCode = this._runState.code[this._runState.programCounter]
-      if (
-        this._runState.shouldDoJumpAnalysis &&
-        (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e)
-      ) {
+      const programCounter = this._runState.programCounter
+      let opCode: number
+      let opCodeObj: OpcodeMapEntry
+      if (doJumpAnalysis) {
+        opCode = this._runState.code[programCounter]
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
-        this._runState.validJumps = this._getValidJumpDests(this._runState.code)
-        this._runState.shouldDoJumpAnalysis = false
+        if (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e) {
+          const { jumps, pushes, opcodesCached } = this._getValidJumpDests(this._runState.code)
+          this._runState.validJumps = jumps
+          this._runState.cachedPushes = pushes
+          this._runState.shouldDoJumpAnalysis = false
+          cachedOpcodes = opcodesCached
+          doJumpAnalysis = false
+        }
+      } else {
+        opCodeObj = cachedOpcodes![programCounter]
+        opCode = opCodeObj.opcodeInfo.code
       }
-      this._runState.opCode = opCode
+
+      // if its an invalid opcode with verkle activated, then check if its because of a missing code
+      // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcod
+      if (
+        opCode === 0xfe &&
+        this.common.isActivatedEIP(6800) &&
+        // is this a code loaded from state using witnesses
+        this._runState.env.chargeCodeAccesses === true
+      ) {
+        const contract = this._runState.interpreter.getAddress()
+
+        if (
+          !(await (
+            this._runState.stateManager as StatelessVerkleStateManager
+          ).checkChunkWitnessPresent(contract, programCounter))
+        ) {
+          throw Error(`Invalid witness with missing codeChunk for pc=${programCounter}`)
+        }
+      }
+
+      this._runState.opCode = opCode!
 
       try {
-        await this.runStep()
+        if (overheadTimer !== undefined) {
+          this.performanceLogger.pauseTimer()
+        }
+        await this.runStep(opCodeObj!)
+        if (overheadTimer !== undefined) {
+          this.performanceLogger.unpauseTimer(overheadTimer)
+        }
       } catch (e: any) {
+        if (overheadTimer !== undefined) {
+          this.performanceLogger.unpauseTimer(overheadTimer)
+        }
         // re-throw on non-VM errors
         if (!('errorType' in e && e.errorType === 'EvmError')) {
           throw e
@@ -246,6 +306,11 @@ export class Interpreter {
       }
     }
 
+    if (timer !== undefined) {
+      this.performanceLogger.stopTimer(overheadTimer!, 0)
+      this.performanceLogger.unpauseTimer(timer)
+    }
+
     return {
       runState: this._runState,
       exceptionError: err,
@@ -256,64 +321,84 @@ export class Interpreter {
    * Executes the opcode to which the program counter is pointing,
    * reducing its base gas cost, and increments the program counter.
    */
-  async runStep(): Promise<void> {
-    const opInfo = this.lookupOpInfo(this._runState.opCode)
+  async runStep(opcodeObj?: OpcodeMapEntry): Promise<void> {
+    const opEntry = opcodeObj ?? this.lookupOpInfo(this._runState.opCode)
+    const opInfo = opEntry.opcodeInfo
 
-    let gas = BigInt(opInfo.fee)
-    // clone the gas limit; call opcodes can add stipend,
-    // which makes it seem like the gas left increases
-    const gasLimitClone = this.getGasLeft()
+    let timer: Timer
 
-    if (opInfo.dynamicGas) {
-      const dynamicGasHandler = (this._evm as any)._dynamicGasHandlers.get(this._runState.opCode)!
-      // This function updates the gas in-place.
-      // It needs the base fee, for correct gas limit calculation for the CALL opcodes
-      gas = await dynamicGasHandler(this._runState, gas, this.common)
+    if (this.profilerOpts?.enabled === true) {
+      timer = this.performanceLogger.startTimer(opInfo.name)
     }
 
-    if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
-      // Only run this stepHook function if there is an event listener (e.g. test runner)
-      // or if the vm is running in debug mode (to display opcode debug logs)
-      await this._runStepHook(gas, gasLimitClone)
+    let gas = opInfo.feeBigInt
+
+    try {
+      if (opInfo.dynamicGas) {
+        // This function updates the gas in-place.
+        // It needs the base fee, for correct gas limit calculation for the CALL opcodes
+        gas = await opEntry.gasHandler(this._runState, gas, this.common)
+      }
+      if (this.common.isActivatedEIP(6800) && this._env.chargeCodeAccesses === true) {
+        const contract = this._runState.interpreter.getAddress()
+        const statelessGas =
+          this._runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+            contract,
+            this._runState.programCounter,
+            this._runState.programCounter
+          )
+        gas += statelessGas
+        debugGas(`codechunk accessed statelessGas=${statelessGas} (-> ${gas})`)
+      }
+
+      if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
+        // Only run this stepHook function if there is an event listener (e.g. test runner)
+        // or if the vm is running in debug mode (to display opcode debug logs)
+        await this._runStepHook(gas, this.getGasLeft())
+      }
+
+      // Check for invalid opcode
+      if (opInfo.isInvalid) {
+        throw new EvmError(ERROR.INVALID_OPCODE)
+      }
+
+      // Reduce opcode's base fee
+      this.useGas(gas, opInfo)
+
+      // Advance program counter
+      this._runState.programCounter++
+
+      // Execute opcode handler
+      const opFn = opEntry.opHandler
+
+      if (opInfo.isAsync) {
+        await (opFn as AsyncOpHandler).apply(null, [this._runState, this.common])
+      } else {
+        opFn.apply(null, [this._runState, this.common])
+      }
+    } finally {
+      if (this.profilerOpts?.enabled === true) {
+        this.performanceLogger.stopTimer(
+          timer!,
+          Number(gas),
+          'opcodes',
+          opInfo.fee,
+          Number(gas) - opInfo.fee
+        )
+      }
     }
-
-    // Check for invalid opcode
-    if (opInfo.name === 'INVALID') {
-      throw new EvmError(ERROR.INVALID_OPCODE)
-    }
-
-    // Reduce opcode's base fee
-    this.useGas(gas, `${opInfo.name} fee`)
-    // Advance program counter
-    this._runState.programCounter++
-
-    // Execute opcode handler
-    const opFn = this.getOpHandler(opInfo)
-
-    if (opInfo.isAsync) {
-      await (opFn as AsyncOpHandler).apply(null, [this._runState, this.common])
-    } else {
-      opFn.apply(null, [this._runState, this.common])
-    }
-  }
-
-  /**
-   * Get the handler function for an opcode.
-   */
-  getOpHandler(opInfo: Opcode): OpHandler {
-    return (this._evm as any)._handlers.get(opInfo.code)!
   }
 
   /**
    * Get info for an opcode from EVM's list of opcodes.
    */
-  lookupOpInfo(op: number): Opcode {
-    // if not found, return 0xfe: INVALID
-    return this._evm.opcodes.get(op) ?? this._evm.opcodes.get(0xfe)!
+  lookupOpInfo(op: number): OpcodeMapEntry {
+    return (<any>this._evm)._opcodeMap[op]
   }
 
   async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {
-    const opcode = this.lookupOpInfo(this._runState.opCode)
+    const opcodeInfo = this.lookupOpInfo(this._runState.opCode)
+    const opcode = opcodeInfo.opcodeInfo
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
       gasLeft,
@@ -324,8 +409,7 @@ export class Interpreter {
         dynamicFee,
         isAsync: opcode.isAsync,
       },
-      stack: this._runState.stack._store,
-      returnStack: this._runState.returnStack._store,
+      stack: this._runState.stack.getStack(),
       depth: this._env.depth,
       address: this._env.address,
       account: this._env.contract,
@@ -388,23 +472,27 @@ export class Interpreter {
   // Returns all valid jump and jumpsub destinations.
   _getValidJumpDests(code: Uint8Array) {
     const jumps = new Uint8Array(code.length).fill(0)
+    const pushes: { [pc: number]: bigint } = {}
+
+    const opcodesCached = Array(code.length)
 
     for (let i = 0; i < code.length; i++) {
       const opcode = code[i]
+      opcodesCached[i] = this.lookupOpInfo(opcode)
       // skip over PUSH0-32 since no jump destinations in the middle of a push block
       if (opcode <= 0x7f) {
         if (opcode >= 0x60) {
-          i += opcode - 0x5f
+          const extraSteps = opcode - 0x5f
+          const push = bytesToBigInt(code.slice(i + 1, i + opcode - 0x5e))
+          pushes[i + 1] = push
+          i += extraSteps
         } else if (opcode === 0x5b) {
           // Define a JUMPDEST as a 1 in the valid jumps array
           jumps[i] = 1
-        } else if (opcode === 0x5c) {
-          // Define a BEGINSUB as a 2 in the valid jumps array
-          jumps[i] = 2
         }
       }
     }
-    return jumps
+    return { jumps, pushes, opcodesCached }
   }
 
   /**
@@ -413,17 +501,19 @@ export class Interpreter {
    * @param context - Usage context for debugging
    * @throws if out of gas
    */
-  useGas(amount: bigint, context?: string): void {
+  useGas(amount: bigint, context?: string | Opcode): void {
     this._runState.gasLeft -= amount
     if (this._evm.DEBUG) {
-      debugGas(
-        `${typeof context === 'string' ? context + ': ' : ''}used ${amount} gas (-> ${
-          this._runState.gasLeft
-        })`
-      )
+      let tstr = ''
+      if (typeof context === 'string') {
+        tstr = context + ': '
+      } else if (context !== undefined) {
+        tstr = `${context.name} fee: `
+      }
+      debugGas(`${tstr}used ${amount} gas (-> ${this._runState.gasLeft})`)
     }
-    if (this._runState.gasLeft < BigInt(0)) {
-      this._runState.gasLeft = BigInt(0)
+    if (this._runState.gasLeft < BIGINT_0) {
+      this._runState.gasLeft = BIGINT_0
       trap(ERROR.OUT_OF_GAS)
     }
   }
@@ -458,8 +548,8 @@ export class Interpreter {
       )
     }
     this._runState.gasRefund -= amount
-    if (this._runState.gasRefund < BigInt(0)) {
-      this._runState.gasRefund = BigInt(0)
+    if (this._runState.gasRefund < BIGINT_0) {
+      this._runState.gasRefund = BIGINT_0
       trap(ERROR.REFUND_EXHAUSTED)
     }
   }
@@ -712,7 +802,7 @@ export class Interpreter {
   }
 
   /**
-   * Returns the Base Fee of the block as proposed in [EIP-3198](https;//eips.etheruem.org/EIPS/eip-3198)
+   * Returns the Base Fee of the block as proposed in [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198)
    */
   getBlockBaseFee(): bigint {
     const baseFee = this._env.block.header.baseFeePerGas
@@ -721,6 +811,18 @@ export class Interpreter {
       throw new Error('Block has no Base Fee')
     }
     return baseFee
+  }
+
+  /**
+   * Returns the Blob Base Fee of the block as proposed in [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516)
+   */
+  getBlobBaseFee(): bigint {
+    const blobBaseFee = this._env.block.header.getBlobGasPrice()
+    if (blobBaseFee === undefined) {
+      // Sanity check
+      throw new Error('Block has no Blob Base Fee')
+    }
+    return blobBaseFee
   }
 
   /**
@@ -743,7 +845,8 @@ export class Interpreter {
       data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
-      versionedHashes: this._env.versionedHashes,
+      blobVersionedHashes: this._env.blobVersionedHashes,
+      accessWitness: this._env.accessWitness,
     })
 
     return this._baseCall(msg)
@@ -767,7 +870,8 @@ export class Interpreter {
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
       authcallOrigin: this._env.address,
-      versionedHashes: this._env.versionedHashes,
+      blobVersionedHashes: this._env.blobVersionedHashes,
+      accessWitness: this._env.accessWitness,
     })
 
     return this._baseCall(msg)
@@ -791,7 +895,8 @@ export class Interpreter {
       data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
-      versionedHashes: this._env.versionedHashes,
+      blobVersionedHashes: this._env.blobVersionedHashes,
+      accessWitness: this._env.accessWitness,
     })
 
     return this._baseCall(msg)
@@ -816,7 +921,8 @@ export class Interpreter {
       data,
       isStatic: true,
       depth: this._env.depth + 1,
-      versionedHashes: this._env.versionedHashes,
+      blobVersionedHashes: this._env.blobVersionedHashes,
+      accessWitness: this._env.accessWitness,
     })
 
     return this._baseCall(msg)
@@ -842,7 +948,8 @@ export class Interpreter {
       isStatic: this._env.isStatic,
       delegatecall: true,
       depth: this._env.depth + 1,
-      versionedHashes: this._env.versionedHashes,
+      blobVersionedHashes: this._env.blobVersionedHashes,
+      accessWitness: this._env.accessWitness,
     })
 
     return this._baseCall(msg)
@@ -855,7 +962,7 @@ export class Interpreter {
 
     // empty the return data Uint8Array
     this._runState.returnBytes = new Uint8Array(0)
-    let createdAddresses: Set<string>
+    let createdAddresses: Set<PrefixedHexString>
     if (this.common.isActivatedEIP(6780)) {
       createdAddresses = new Set(this._result.createdAddresses)
       msg.createdAddresses = createdAddresses
@@ -869,7 +976,7 @@ export class Interpreter {
       this._env.depth >= Number(this.common.param('vm', 'stackLimit')) ||
       (msg.delegatecall !== true && this._env.contract.balance < msg.value)
     ) {
-      return BigInt(0)
+      return BIGINT_0
     }
 
     const results = await this._evm.runCall({ message: msg })
@@ -906,7 +1013,7 @@ export class Interpreter {
         throw new Error('could not read contract account')
       }
       this._env.contract = account
-      this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
+      this._runState.gasRefund = results.execResult.gasRefund ?? BIGINT_0
     }
 
     return this._getReturnCode(results)
@@ -933,15 +1040,15 @@ export class Interpreter {
       this._env.depth >= Number(this.common.param('vm', 'stackLimit')) ||
       this._env.contract.balance < value
     ) {
-      return BigInt(0)
+      return BIGINT_0
     }
 
     // EIP-2681 check
     if (this._env.contract.nonce >= MAX_UINT64) {
-      return BigInt(0)
+      return BIGINT_0
     }
 
-    this._env.contract.nonce += BigInt(1)
+    this._env.contract.nonce += BIGINT_1
     await this.journal.putAccount(this._env.address, this._env.contract)
 
     if (this.common.isActivatedEIP(3860)) {
@@ -949,7 +1056,7 @@ export class Interpreter {
         data.length > Number(this.common.param('vm', 'maxInitCodeSize')) &&
         this._evm.allowUnlimitedInitCodeSize === false
       ) {
-        return BigInt(0)
+        return BIGINT_0
       }
     }
 
@@ -962,10 +1069,11 @@ export class Interpreter {
       depth,
       selfdestruct,
       gasRefund: this._runState.gasRefund,
-      versionedHashes: this._env.versionedHashes,
+      blobVersionedHashes: this._env.blobVersionedHashes,
+      accessWitness: this._env.accessWitness,
     })
 
-    let createdAddresses: Set<string>
+    let createdAddresses: Set<PrefixedHexString>
     if (this.common.isActivatedEIP(6780)) {
       createdAddresses = new Set(this._result.createdAddresses)
       message.createdAddresses = createdAddresses
@@ -1007,7 +1115,7 @@ export class Interpreter {
         throw new Error('could not read contract account')
       }
       this._env.contract = account
-      this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
+      this._runState.gasRefund = results.execResult.gasRefund ?? BIGINT_0
       if (results.createdAddress) {
         // push the created address to the stack
         return bytesToBigInt(results.createdAddress.bytes)
@@ -1078,7 +1186,7 @@ export class Interpreter {
     // Set contract balance to 0
     if (doModify) {
       await this._stateManager.modifyAccountFields(this._env.address, {
-        balance: BigInt(0),
+        balance: BIGINT_0,
       })
     }
 
@@ -1103,9 +1211,9 @@ export class Interpreter {
 
   private _getReturnCode(results: EVMResult) {
     if (results.execResult.exceptionError) {
-      return BigInt(0)
+      return BIGINT_0
     } else {
-      return BigInt(1)
+      return BIGINT_1
     }
   }
 }

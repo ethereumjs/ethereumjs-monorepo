@@ -1,7 +1,9 @@
 import { KECCAK256_RLP, equalsBytes, hexToBytes, randomBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../../src/index.js'
+import { Trie, isRawNode } from '../../src/index.js'
+
+import type { BranchNode } from '../../src/index.js'
 
 describe('Pruned trie tests', () => {
   it('should default to not prune the trie', async () => {
@@ -50,7 +52,7 @@ describe('Pruned trie tests', () => {
     const values = ['00', '02', '03', '04', '05']
 
     for (let i = 0; i < keys.length; i++) {
-      await trie.put(hexToBytes('0x' + keys[i]), hexToBytes('0x' + values[i]))
+      await trie.put(hexToBytes(`0x${keys[i]}`), hexToBytes(`0x${values[i]}`))
     }
   })
 
@@ -149,6 +151,36 @@ describe('Pruned trie tests', () => {
       }
       assert.ok(dbKeys === 0, 'db is empty')
     }
+  })
+
+  it('should successfully delete branch nodes that are <32 bytes length with node pruning', async () => {
+    // This test case was added after issue #3333 uncovered a problem with pruning trie paths that reference
+    // nodes with their unhashed values (occurs when nodes are less than <32 bytes).
+    const trie = new Trie({
+      useNodePruning: true,
+    })
+
+    await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
+    const initialRoot = trie.root()
+
+    await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
+
+    // Because of the small values, the leaf nodes will be less than 32 bytes in length.
+    // As per the MPT spec, they will therefore be referenced directly and not by their hash.
+    // We should therefore expect two BranchNode branches that reference these 2 leaf nodes directly, instead of by their hashes.
+    // If a node is referenced directly, the item will be a RawNode (a Uint8Array[]). If it's referenced by its hash, it will be a Uint8Array
+    const path = await trie.findPath(utf8ToBytes('key1'))
+    const parentBranchNode = path.stack[1] as BranchNode
+    // Hex ASCII value for for `1` is 31, and for `2` is 32. We should expect a branching out at indexes 1 an 2.
+    assert.ok(isRawNode(parentBranchNode._branches[1]!), 'key1 node is not a rawNode')
+    assert.ok(isRawNode(parentBranchNode._branches[2]!), 'key2 node is not a rawNode')
+
+    assert.notOk(equalsBytes(trie.root(), initialRoot), 'Root should have changed')
+
+    // Delete the branch node
+    await trie.del(utf8ToBytes('key2'))
+
+    assert.ok(equalsBytes(trie.root(), initialRoot), 'Root should be the same as the initial root')
   })
 
   it('verifyPrunedIntegrity() => should correctly report unpruned Tries', async () => {

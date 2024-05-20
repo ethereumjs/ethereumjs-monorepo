@@ -1,6 +1,14 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToHex, equalsBytes, hexToBytes, toBytes, zeros } from '@ethereumjs/util'
+import { LegacyTransaction } from '@ethereumjs/tx'
+import {
+  KECCAK256_RLP_ARRAY,
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
+  toBytes,
+  zeros,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { blockFromRpc } from '../src/from-rpc.js'
@@ -12,8 +20,9 @@ import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
-import type { BlockBytes } from '../src/index.js'
-import type { NestedUint8Array } from '@ethereumjs/util'
+import type { BlockBytes, JsonRpcBlock } from '../src/index.js'
+import type { ChainConfig } from '@ethereumjs/common'
+import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
 describe('[Block]: block functions', () => {
   it('should test block initialization', () => {
@@ -43,7 +52,7 @@ describe('[Block]: block functions', () => {
     )
 
     const zero = new Uint8Array(0)
-    const headerArray = []
+    const headerArray: Uint8Array[] = []
     for (let item = 0; item < 15; item++) {
       headerArray.push(zero)
     }
@@ -74,7 +83,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({
       chain: 'testnetMerge',
       hardfork: Hardfork.Istanbul,
-      customChains,
+      customChains: customChains as ChainConfig[],
     })
 
     let block = Block.fromBlockData(
@@ -145,7 +154,7 @@ describe('[Block]: block functions', () => {
 
   it('should test block validation on pow chain', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp)
+    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
     try {
       Block.fromRLPSerializedBlock(blockRlp, { common })
       assert.ok(true, 'should pass')
@@ -158,7 +167,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
 
     try {
-      blockFromRpc(testDataFromRpcGoerli, [], { common })
+      blockFromRpc(testDataFromRpcGoerli as JsonRpcBlock, [], { common })
       assert.ok(true, 'does not throw')
     } catch (error: any) {
       assert.fail('error thrown')
@@ -170,8 +179,8 @@ describe('[Block]: block functions', () => {
     assert.ok(block.getTransactionsValidationErrors().length === 0)
   }
 
-  it('should test transaction validation', async () => {
-    const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp)
+  it('should test transaction validation - invalid tx trie', async () => {
+    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
@@ -184,6 +193,27 @@ describe('[Block]: block functions', () => {
     }
   })
 
+  it('should test transaction validation - transaction not signed', async () => {
+    const tx = LegacyTransaction.fromTxData({
+      gasLimit: 53000,
+      gasPrice: 7,
+    })
+    const blockTest = Block.fromBlockData({ transactions: [tx] })
+    const txTrie = await blockTest.genTxTrie()
+    const block = Block.fromBlockData({
+      header: {
+        transactionsTrie: txTrie,
+      },
+      transactions: [tx],
+    })
+    try {
+      await block.validateData()
+      assert.fail('should throw')
+    } catch (error: any) {
+      assert.ok((error.message as string).includes('unsigned'))
+    }
+  })
+
   it('should test transaction validation with empty transaction list', async () => {
     const block = Block.fromBlockData({})
     await testTransactionValidation(block)
@@ -191,7 +221,7 @@ describe('[Block]: block functions', () => {
 
   it('should test transaction validation with legacy tx in london', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp)
+    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
     ;(block.transactions[0] as any).gasPrice = BigInt(0)
@@ -204,7 +234,7 @@ describe('[Block]: block functions', () => {
 
   it('should test uncles hash validation', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = toBytes(testDataPreLondon2.blocks[2].rlp)
+    const blockRlp = hexToBytes(testDataPreLondon2.blocks[2].rlp as PrefixedHexString)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     assert.equal(block.uncleHashIsValid(), true)
     ;(block.header as any).uncleHash = new Uint8Array(32)
@@ -216,6 +246,74 @@ describe('[Block]: block functions', () => {
     }
   })
 
+  it('should test data integrity', async () => {
+    const unsignedTx = LegacyTransaction.fromTxData({})
+    const txRoot = await Block.genTransactionsTrieRoot([unsignedTx])
+
+    let block = Block.fromBlockData({
+      transactions: [unsignedTx],
+      header: {
+        transactionsTrie: txRoot,
+      },
+    })
+
+    // Verifies that the "signed tx check" is skipped
+    await block.validateData(false, false)
+
+    async function checkThrowsAsync(fn: Promise<void>, errorMsg: string) {
+      try {
+        await fn
+        assert.fail('should throw')
+      } catch (e: any) {
+        assert.ok((e.message as string).includes(errorMsg))
+      }
+    }
+
+    const zeroRoot = zeros(32)
+
+    // Tx root
+    block = Block.fromBlockData({
+      transactions: [unsignedTx],
+      header: {
+        transactionsTrie: zeroRoot,
+      },
+    })
+    await checkThrowsAsync(block.validateData(false, false), 'invalid transaction trie')
+
+    // Withdrawals root
+    block = Block.fromBlockData(
+      {
+        header: {
+          withdrawalsRoot: zeroRoot,
+          uncleHash: KECCAK256_RLP_ARRAY,
+        },
+      },
+      { common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai }) }
+    )
+    await checkThrowsAsync(block.validateData(false, false), 'invalid withdrawals trie')
+
+    // Uncle root
+    block = Block.fromBlockData(
+      {
+        header: {
+          uncleHash: zeroRoot,
+        },
+      },
+      { common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart }) }
+    )
+    await checkThrowsAsync(block.validateData(false, false), 'invalid uncle hash')
+
+    // Verkle withness
+    const common = new Common({ chain: Chain.Mainnet, eips: [6800], hardfork: Hardfork.Cancun })
+    // Note: `executionWitness: undefined` will still initialize an execution witness in the block
+    // So, only testing for `null` here
+    block = Block.fromBlockData({ executionWitness: null }, { common })
+    await checkThrowsAsync(
+      block.validateData(false, false),
+      'Invalid block: ethereumjs stateless client needs executionWitness'
+    )
+  })
+
   it('should test isGenesis (mainnet default)', () => {
     const block = Block.fromBlockData({ header: { number: 1 } })
     assert.notEqual(block.isGenesis(), true)
@@ -225,10 +323,30 @@ describe('[Block]: block functions', () => {
 
   it('should test genesis hashes (mainnet default)', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const rlp = hexToBytes('0x' + testDataGenesis.test.genesis_rlp_hex)
-    const hash = hexToBytes('0x' + testDataGenesis.test.genesis_hash)
+    const rlp = hexToBytes(`0x${testDataGenesis.test.genesis_rlp_hex}`)
+    const hash = hexToBytes(`0x${testDataGenesis.test.genesis_hash}`)
     const block = Block.fromRLPSerializedBlock(rlp, { common })
     assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
+  })
+
+  it('should test hash() method (mainnet default)', () => {
+    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const rlp = hexToBytes(`0x${testDataGenesis.test.genesis_rlp_hex}`)
+    const hash = hexToBytes(`0x${testDataGenesis.test.genesis_hash}`)
+    let block = Block.fromRLPSerializedBlock(rlp, { common })
+    assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
+
+    common = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.Chainstart,
+      customCrypto: {
+        keccak256: () => {
+          return new Uint8Array([1])
+        },
+      },
+    })
+    block = Block.fromRLPSerializedBlock(rlp, { common })
+    assert.deepEqual(block.hash(), new Uint8Array([1]), 'custom crypto applied on hash() method')
   })
 
   it('should error on invalid params', () => {
@@ -252,23 +370,31 @@ describe('[Block]: block functions', () => {
 
   it('should return the same block data from raw()', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const block = Block.fromRLPSerializedBlock(toBytes(testDataPreLondon2.blocks[2].rlp), {
-      common,
-    })
+    const block = Block.fromRLPSerializedBlock(
+      toBytes(testDataPreLondon2.blocks[2].rlp as PrefixedHexString),
+      {
+        common,
+      }
+    )
     const blockFromRaw = Block.fromValuesArray(block.raw(), { common })
     assert.ok(equalsBytes(block.hash(), blockFromRaw.hash()))
   })
 
   it('should test toJSON', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const block = Block.fromRLPSerializedBlock(toBytes(testDataPreLondon2.blocks[2].rlp), {
-      common,
-    })
+    const block = Block.fromRLPSerializedBlock(
+      toBytes(testDataPreLondon2.blocks[2].rlp as PrefixedHexString),
+      {
+        common,
+      }
+    )
     assert.equal(typeof block.toJSON(), 'object')
   })
 
   it('DAO hardfork', () => {
-    const blockData = RLP.decode(testDataPreLondon2.blocks[0].rlp) as NestedUint8Array
+    const blockData = RLP.decode(
+      testDataPreLondon2.blocks[0].rlp as PrefixedHexString
+    ) as NestedUint8Array
     // Set block number from test block to mainnet DAO fork block 1920000
     blockData[0][8] = hexToBytes('0x1D4C00')
 

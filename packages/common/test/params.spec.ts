@@ -4,7 +4,7 @@ import { Chain, Common, Hardfork } from '../src/index.js'
 
 describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
   it('Basic usage', () => {
-    const c = new Common({ chain: Chain.Mainnet })
+    const c = new Common({ chain: Chain.Mainnet, eips: [2537] })
     let msg = 'Should return correct value when HF directly provided'
     assert.equal(c.paramByHardfork('gasPrices', 'ecAdd', 'byzantium'), BigInt(500), msg)
 
@@ -19,6 +19,15 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     msg = 'Should return 0n for non-existing value'
     assert.equal(c.param('gasPrices', 'notexistingvalue'), BigInt(0), msg)
     assert.equal(c.paramByHardfork('gasPrices', 'notexistingvalue', 'byzantium'), BigInt(0), msg)
+
+    /*
+    // Manual test since no test triggering EIP config available
+    // TODO: recheck on addition of new EIP configs
+    // To run please manually add an "ecAdd" entry with value 12345 to EIP2537 config
+    // and uncomment the test
+    msg = 'EIP config should take precedence over HF config'
+    assert.equal(c.param('gasPrices', 'ecAdd'), 12345, msg)
+    */
   })
 
   it('Error cases for param(), paramByHardfork()', () => {
@@ -80,14 +89,31 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     )
   })
 
+  it('Access on copied Common instances', () => {
+    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    let msg = 'Should correctly access param with param() on original Common'
+    assert.equal(c.param('pow', 'minerReward'), BigInt(2000000000000000000), msg)
+
+    const cCopy = c.copy()
+    cCopy.setHardfork(Hardfork.Chainstart)
+
+    msg = 'Should correctly access param with param() on copied Common with hardfork changed'
+    assert.equal(cCopy.param('pow', 'minerReward'), BigInt(5000000000000000000), msg)
+
+    msg =
+      'Should correctly access param with param() on original Common after copy and HF change on copied Common'
+    assert.equal(c.param('pow', 'minerReward'), BigInt(2000000000000000000), msg)
+  })
+
   it('EIP param access, paramByEIP()', () => {
     const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'Should return undefined for non-existing value'
     assert.equal(c.paramByEIP('gasConfig', 'notexistingvalue', 1559), undefined, msg)
+    assert.equal(c.paramByEIP('gasPrices', 'notexistingvalue', 2537), undefined, msg)
 
     const UNSUPPORTED_EIP = 1000000
-    const f = function () {
+    let f = function () {
       c.paramByEIP('gasPrices', 'Bls12381G1AddGas', UNSUPPORTED_EIP)
     }
     msg = 'Should throw for using paramByEIP() with an unsupported EIP'
@@ -95,6 +121,14 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
 
     msg = 'Should return undefined for paramByEIP() with a not existing topic'
     assert.equal(c.paramByEIP('notExistingTopic', 'Bls12381G1AddGas', 1559), undefined, msg)
+    f = function () {
+      c.paramByEIP('notExistingTopic', 'Bls12381G1AddGas', 2537)
+    }
+    msg = 'Should return undefined for paramByEIP() with a not existing topic'
+    assert.equal(f(), undefined, msg)
+
+    msg = 'Should return Bls12381G1AddGas gas price for EIP2537'
+    assert.equal(c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537), BigInt(500), msg)
   })
 
   it('returns the right block delay for EIP3554', () => {

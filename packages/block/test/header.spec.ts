@@ -8,7 +8,6 @@ import {
   concatBytes,
   equalsBytes,
   hexToBytes,
-  toBytes,
   zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -21,6 +20,7 @@ import * as blocksGoerli from './testdata/blocks_goerli.json'
 import * as blocksMainnet from './testdata/blocks_mainnet.json'
 
 import type { CliqueConfig } from '@ethereumjs/common'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('[Block]: Header functions', () => {
   it('should create with default constructor', () => {
@@ -162,7 +162,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('Initialization -> fromValuesArray() -> error cases', () => {
-    const headerArray = Array(21).fill(new Uint8Array(0))
+    const headerArray = Array(22).fill(new Uint8Array(0))
 
     // mock header data (if set to zeros(0) header throws)
     headerArray[0] = zeros(32) //parentHash
@@ -457,12 +457,14 @@ describe('[Block]: Header functions', () => {
     const bcBlockGasLimitTestData = testData.tests.BlockGasLimit2p63m1
 
     for (const key of Object.keys(bcBlockGasLimitTestData)) {
-      const genesisRlp = toBytes(
-        bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData].genesisRLP
+      const genesisRlp = hexToBytes(
+        bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData]
+          .genesisRLP as PrefixedHexString
       )
       const parentBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
-      const blockRlp = toBytes(
-        bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData].blocks[0].rlp
+      const blockRlp = hexToBytes(
+        bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData].blocks[0]
+          .rlp as PrefixedHexString
       )
       const block = Block.fromRLPSerializedBlock(blockRlp, { common })
       assert.doesNotThrow(() => block.validateGasLimit(parentBlock))

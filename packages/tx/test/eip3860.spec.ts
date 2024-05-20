@@ -15,7 +15,7 @@ const txTypes = [
   TransactionType.Legacy,
   TransactionType.AccessListEIP2930,
   TransactionType.FeeMarketEIP1559,
-  TransactionType.BlobEIP4844,
+  //TransactionType.BlobEIP4844, // Explicitly commented out: BlobEIP4844 txs cannot create contracts
 ]
 const addressZero = Address.zero()
 

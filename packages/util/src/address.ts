@@ -5,7 +5,17 @@ import {
   privateToAddress,
   pubToAddress,
 } from './account.js'
-import { bigIntToBytes, bytesToBigInt, bytesToHex, equalsBytes, toBytes, zeros } from './bytes.js'
+import {
+  bigIntToBytes,
+  bytesToBigInt,
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
+  zeros,
+} from './bytes.js'
+import { BIGINT_0 } from './constants.js'
+
+import type { PrefixedHexString } from './types.js'
 
 /**
  * Handling and generating Ethereum addresses
@@ -35,7 +45,7 @@ export class Address {
     if (!isValidAddress(str)) {
       throw new Error('Invalid address')
     }
-    return new Address(toBytes(str))
+    return new Address(hexToBytes(str))
   }
 
   /**
@@ -110,7 +120,7 @@ export class Address {
    */
   isPrecompileOrSystemAddress(): boolean {
     const address = bytesToBigInt(this.bytes)
-    const rangeMin = BigInt(0)
+    const rangeMin = BIGINT_0
     const rangeMax = BigInt('0xffff')
     return address >= rangeMin && address <= rangeMax
   }
@@ -118,7 +128,7 @@ export class Address {
   /**
    * Returns hex encoding of address.
    */
-  toString(): string {
+  toString(): PrefixedHexString {
     return bytesToHex(this.bytes)
   }
 

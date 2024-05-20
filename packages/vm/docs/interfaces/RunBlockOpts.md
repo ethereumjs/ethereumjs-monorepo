@@ -11,6 +11,7 @@ Options for running a block.
 - [block](RunBlockOpts.md#block)
 - [clearCache](RunBlockOpts.md#clearcache)
 - [generate](RunBlockOpts.md#generate)
+- [reportPreimages](RunBlockOpts.md#reportpreimages)
 - [root](RunBlockOpts.md#root)
 - [setHardfork](RunBlockOpts.md#sethardfork)
 - [skipBalance](RunBlockOpts.md#skipbalance)
@@ -29,7 +30,7 @@ The @ethereumjs/block to process
 
 #### Defined in
 
-[vm/src/types.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L207)
+[vm/src/types.ts:220](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L220)
 
 ___
 
@@ -45,7 +46,7 @@ Default: true
 
 #### Defined in
 
-[vm/src/types.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L219)
+[vm/src/types.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L232)
 
 ___
 
@@ -60,7 +61,20 @@ Defaults to `false`.
 
 #### Defined in
 
-[vm/src/types.ts:226](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L226)
+[vm/src/types.ts:239](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L239)
+
+___
+
+### reportPreimages
+
+• `Optional` **reportPreimages**: `boolean`
+
+If true, adds a hashedKey -> preimages mapping of all touched accounts
+to the `RunTxResult` returned.
+
+#### Defined in
+
+[vm/src/types.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L282)
 
 ___
 
@@ -72,7 +86,7 @@ Root of the state trie
 
 #### Defined in
 
-[vm/src/types.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L211)
+[vm/src/types.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L224)
 
 ___
 
@@ -90,7 +104,7 @@ Default: `false` (HF is set to whatever default HF is set by the Common instance
 
 #### Defined in
 
-[vm/src/types.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L263)
+[vm/src/types.ts:276](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L276)
 
 ___
 
@@ -103,7 +117,7 @@ balance equal equal to the upfront cost (gas limit * gas price + transaction val
 
 #### Defined in
 
-[vm/src/types.ts:253](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L253)
+[vm/src/types.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L266)
 
 ___
 
@@ -117,7 +131,7 @@ the transactions, the transaction trie and the uncle hash.
 
 #### Defined in
 
-[vm/src/types.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L232)
+[vm/src/types.ts:245](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L245)
 
 ___
 
@@ -130,7 +144,7 @@ and tx
 
 #### Defined in
 
-[vm/src/types.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L237)
+[vm/src/types.ts:250](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L250)
 
 ___
 
@@ -145,7 +159,7 @@ consensus of the chain has moved ahead.
 
 #### Defined in
 
-[vm/src/types.ts:244](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L244)
+[vm/src/types.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L257)
 
 ___
 
@@ -157,4 +171,4 @@ If true, skips the nonce check
 
 #### Defined in
 
-[vm/src/types.ts:248](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L248)
+[vm/src/types.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L261)

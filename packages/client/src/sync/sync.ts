@@ -1,13 +1,20 @@
 import { Hardfork } from '@ethereumjs/common'
+import { BIGINT_0 } from '@ethereumjs/util'
 
-import { FlowControl } from '../net/protocol'
-import { Event } from '../types'
+import { FlowControl } from '../net/protocol/index.js'
+import { Event } from '../types.js'
+import { wait } from '../util/wait.js'
 
-import type { Chain } from '../blockchain'
-import type { Config } from '../config'
-import type { Peer } from '../net/peer/peer'
-import type { PeerPool } from '../net/peerpool'
-import type { AccountFetcher, BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
+import type { Chain } from '../blockchain/index.js'
+import type { Config } from '../config.js'
+import type { Peer } from '../net/peer/peer.js'
+import type { PeerPool } from '../net/peerpool.js'
+import type {
+  AccountFetcher,
+  BlockFetcher,
+  HeaderFetcher,
+  ReverseBlockFetcher,
+} from './fetcher/index.js'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -62,7 +69,7 @@ export abstract class Synchronizer {
     this.opened = false
     this.running = false
     this.forceSync = false
-    this.startingBlock = BigInt(0)
+    this.startingBlock = BIGINT_0
 
     this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
       if (this.syncable(peer)) {
@@ -109,7 +116,7 @@ export abstract class Synchronizer {
    * Start synchronization
    */
   async start(): Promise<void | boolean> {
-    if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
+    if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       return false
     }
     this.running = true
@@ -122,13 +129,13 @@ export abstract class Synchronizer {
     const timeout = setTimeout(() => {
       this.forceSync = true
     }, this.interval * 30)
-    while (this.running && this.config.chainCommon.gteHardfork(Hardfork.Paris) === false) {
+    while (this.running && !this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       try {
         await this.sync()
       } catch (error: any) {
         this.config.events.emit(Event.SYNC_ERROR, error)
       }
-      await new Promise((resolve) => setTimeout(resolve, this.interval))
+      await wait(this.interval)
     }
     this.running = false
     clearTimeout(timeout)
@@ -137,6 +144,29 @@ export abstract class Synchronizer {
   abstract best(): Promise<Peer | undefined>
 
   abstract syncWithPeer(peer?: Peer): Promise<boolean>
+
+  resolveSync(height?: number) {
+    this.clearFetcher()
+    const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
+    this.config.logger.debug(`Finishing up sync with the current fetcher ${heightStr}`)
+    return true
+  }
+
+  async syncWithFetcher() {
+    try {
+      if (this._fetcher) {
+        await this._fetcher.blockingFetch()
+      }
+      this.config.logger.debug(`Fetcher finished fetching...`)
+      return this.resolveSync()
+    } catch (error: any) {
+      this.config.logger.error(
+        `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
+      )
+      this.clearFetcher()
+      throw error
+    }
+  }
 
   /**
    * Fetch all blocks from current height up to highest found amongst peers
@@ -147,36 +177,19 @@ export abstract class Synchronizer {
     let numAttempts = 1
     while (!peer && this.opened) {
       this.config.logger.debug(`Waiting for best peer (attempt #${numAttempts})`)
-      await new Promise((resolve) => setTimeout(resolve, 5000))
+      await wait(5000)
       peer = await this.best()
       numAttempts += 1
     }
 
     if (!(await this.syncWithPeer(peer))) return false
 
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve, reject) => {
-      const resolveSync = (height?: number) => {
-        this.clearFetcher()
-        resolve(true)
-        const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
-        this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
-      }
-      this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
-      try {
-        if (this._fetcher) {
-          await this._fetcher.fetch()
-        }
-        this.config.logger.debug(`Fetcher finished fetching...`)
-        resolveSync()
-      } catch (error: any) {
-        this.config.logger.error(
-          `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
-        )
-        this.clearFetcher()
-        reject(error)
-      }
-    })
+    // syncWithFetcher should auto resolve when sync completes even if from any other independent
+    // fetcher. We shouldn't be auto resolving the fetchers on sync events because SYNC events are
+    // not precision based but we need precision to resolve the fetchers
+    //
+    // TODO: check this for the forward fetcher that it resolves on being close/on head or post merge
+    return this.syncWithFetcher()
   }
 
   /**

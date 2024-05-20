@@ -2,5 +2,5 @@
  * @module net/server
  */
 
-export * from './rlpxserver'
-export * from './server'
+export * from './rlpxserver.js'
+export * from './server.js'

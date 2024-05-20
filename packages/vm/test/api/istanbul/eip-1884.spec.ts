@@ -17,7 +17,7 @@ describe('Istanbul: EIP-1884', () => {
   it('SELFBALANCE', async () => {
     const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     const runCodeArgs = {
-      code: hexToBytes('0x' + code.join('')),
+      code: hexToBytes(`0x${code.join('')}`),
       gasLimit: BigInt(0xffff),
       to: addr,
     }

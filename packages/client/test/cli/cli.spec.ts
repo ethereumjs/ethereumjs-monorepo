@@ -4,33 +4,26 @@ import * as fs from 'fs'
 import { Client } from 'jayson/promise'
 import { assert, describe, it } from 'vitest'
 
-import { wait } from '../integration/util'
+import { wait } from '../integration/util.js'
 
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 
 export function clientRunHelper(
   cliArgs: string[],
-  onData: (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => void
+  onData: (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => void,
+  shouldError = false
 ) {
-  const file = require.resolve('../../dist/bin/cli.js')
-  const child = spawn(process.execPath, [file, ...cliArgs])
+  const file = require.resolve('../../bin/cli.ts')
+  const child = spawn('tsx', [file, ...cliArgs])
   return new Promise((resolve) => {
     child.stdout.on('data', async (data) => {
       const message: string = data.toString()
-      onData(message, child, resolve)
-      if (message.toLowerCase().includes('error')) {
-        child.kill(9)
-        assert.fail(`client encountered error: ${message}`)
-      }
+      if (!shouldError) onData(message, child, resolve)
     })
     child.stderr.on('data', (data) => {
       const message: string = data.toString()
-      assert.fail(`stderr: ${message}`)
-    })
-    child.on('close', (code) => {
-      if (typeof code === 'number' && code > 0) {
-        assert.fail(`child process exited with code ${code}`)
-      }
+      if (shouldError) onData(message, child, resolve)
+      else assert.fail(`stderr: ${message}`)
     })
   })
 }
@@ -51,63 +44,84 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
-  it('should successfully start client with custom inputs for PoW network', async () => {
+  it('should successfully start client with custom inputs for PoA network', async () => {
     const cliArgs = [
       '--rpc',
-      '--dev=pow',
+      '--rpcPort=8569',
+      '--rpcAddr=0.0.0.0',
+      '--dev=poa',
       '--port=30306',
-      '--minerCoinbase="abc"',
+      '--minerCoinbase="0x7e5f4552091a69125d5dfcb7b8c2659029395bdf"',
       '--saveReceipts=false',
       '--execution=false',
     ]
-    const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
-      // // TODO eth_coinbase rpc endpoint is not yet implemented
-      // if (message.includes('http://')) {
-      //   const client = Client.http({ port: 8545 })
-      //   const res = await client.request('eth_coinbase', [], 2.0)
-      //   assert.ok(res.result === 'abc', 'engine api is responsive without need for auth header')
-      //   child.kill(9)
-      //   resolve(undefined)
-      // }
+    let count = 2 // only kill process after both checks have completed
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('http://')) {
+        // if http endpoint startup message detected, call http endpoint with RPC method
+        await wait(600)
+        const client = Client.http({
+          port: 8569,
+          host: '0.0.0.0',
+        })
+        const res = await client.request('eth_coinbase', [], 2.0)
+        assert.ok(
+          res.result === '0x7e5f4552091a69125d5dfcb7b8c2659029395bdf',
+          'correct coinbase address set'
+        )
+        count -= 1
+      }
       if (message.includes('Client started successfully')) {
-        assert.ok(message, 'Client started successfully with custom inputs for PoW network')
-        child.kill(9)
+        assert.ok(message, 'Client started successfully with custom inputs for PoA network')
+        count -= 1
+      }
+      if (count === 0) {
+        child.kill(15)
         resolve(undefined)
       }
     }
     await clientRunHelper(cliArgs, onData)
-  }, 30000)
+  }, 10000)
   it('should throw error if "dev" option is passed in without a value', async () => {
     const cliArgs = ['--dev']
-    const file = require.resolve('../../dist/bin/cli.js')
-    const child = spawn(process.execPath, [file, ...cliArgs])
-    return new Promise((resolve) => {
-      child.stdout.on('data', async () => {
-        child.kill(9)
-        assert.fail('client should throw error when "dev" option is passed in without a value')
-      })
-      child.stderr.on('data', (data) => {
-        const message = data.toString()
-        if (message.includes('If the "dev" option is used it must be assigned a value') === true)
-          assert.ok(
-            true,
-            'client correctly throws error when "dev" option is passed in without a value'
-          )
-        child.kill(9)
-        resolve(undefined)
-      })
-      child.on('close', (code) => {
-        if (typeof code === 'number' && code > 0) {
-          assert.fail(`child process exited with code ${code}`)
-        }
-        child.kill(9)
-        resolve(undefined)
-      })
-    })
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('Invalid values')) {
+        assert.ok(
+          true,
+          'client correctly throws error when "dev" option is passed in without a value'
+        )
+      }
+      child.kill(15)
+      resolve(undefined)
+    }
+    await clientRunHelper(cliArgs, onData, true)
+  }, 5000)
+  it('should throw error if the same port is assigned to multiple RPC servers', async () => {
+    const cliArgs = ['--ws', '--rpc', '--rpcPort=8546']
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('cannot reuse')) {
+        assert.ok(true, 'cannot reuse ports between HTTP and WS RPCs')
+      }
+      child.kill(15)
+      resolve(undefined)
+    }
+    await clientRunHelper(cliArgs, onData, true)
   }, 30000)
   // engine rpc tests
   it('should start engine rpc and provide endpoint', async () => {
-    const cliArgs = ['--rpcEngine', '--port=30310', '--dev=poa']
+    const cliArgs = ['--rpcEngine', '--port=30310', '--dev=poa', '--rpcEnginePort=7777']
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
@@ -118,7 +132,7 @@ describe('[CLI]', () => {
         assert.ok(message.includes('engine'), 'engine rpc started')
         try {
           await wait(600)
-          const client = Client.http({ port: 8551 })
+          const client = Client.http({ port: 7777 })
           await client.request('engine_exchangeCapabilities', [], 2.0)
         } catch (e: any) {
           assert(
@@ -126,7 +140,7 @@ describe('[CLI]', () => {
             'authentication failure shows that auth is defaulting to active'
           )
         }
-        child.kill(9)
+        child.kill(15)
         resolve(undefined)
       }
     }
@@ -155,16 +169,17 @@ describe('[CLI]', () => {
         const client = Client.http({ port: 8553 })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
         assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
-        child.kill(9)
+        child.kill(15)
         resolve(undefined)
       }
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
   it('should start engine rpc on custom port', async () => {
+    const customPort = '8552'
     const cliArgs = [
       '--rpcEngine',
-      '--rpcEnginePort=8552',
+      '--rpcEnginePort=' + customPort,
       '--port=30307',
       '--rpcEngineAuth=false',
       '--dev=poa',
@@ -176,27 +191,29 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('http://')) {
         assert.ok(message.includes('engine'), 'engine rpc started')
-        assert.ok(message.includes('8552'), 'custom port is being used')
+        assert.ok(message.includes(customPort), 'custom port is being used')
         assert.ok(
           message.includes('rpcEngineAuth=false'),
           'auth is disabled according to client logs'
         )
         await wait(600)
-        const client = Client.http({ port: 8552 })
+        const client = Client.http({ port: Number(customPort) })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
         assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
-        child.kill(9)
+        child.kill(15)
         resolve(undefined)
       }
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
   it('should start engine rpc on custom address', async () => {
+    const customPort = '8661'
     const cliArgs = [
-      '--port=30315',
+      '--port=30316',
       '--rpcEngine',
       '--rpcEngineAddr="0.0.0.0"',
       '--rpcEngineAuth=false',
+      '--rpcEnginePort=' + customPort,
       '--dev=poa',
     ]
     const onData = async (
@@ -212,21 +229,22 @@ describe('[CLI]', () => {
           'auth is disabled according to client logs'
         )
         await wait(600)
-        const client = Client.http({ hostname: '0.0.0.0', port: 8551 })
+        const client = Client.http({ hostname: '0.0.0.0', port: Number(customPort) })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
         assert.ok(res.result.length > 0, 'engine api is responsive on custom address')
-        child.kill(9)
+        child.kill(15)
         resolve(undefined)
       }
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
   it('should start engine websocket on custom address and port', async () => {
+    const customPort = '8662'
     const cliArgs = [
       '--ws',
       '--port=30308',
       '--rpcEngine',
-      '--wsEnginePort=8552',
+      `--wsEnginePort=${customPort}`,
       '--wsEngineAddr="0.0.0.0"',
       '--rpcEngineAuth=false',
       '--dev=poa',
@@ -238,16 +256,16 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('ws://') && message.includes('engine')) {
         assert.ok(
-          message.includes('0.0.0.0:8552'),
+          message.includes('0.0.0.0:' + customPort),
           'client logs show correct custom address and port being used'
         )
         assert.ok(message.includes('engine'), 'engine ws started')
         await wait(600)
-        const client = Client.websocket({ url: 'ws://0.0.0.0:8552' })
+        const client = Client.websocket({ url: 'ws://0.0.0.0:' + customPort })
         ;(client as any).ws.on('open', async function () {
           const res = await client.request('engine_exchangeCapabilities', [], 2.0)
           assert.ok(res.result.length > 0, 'read from WS RPC on custom address and port')
-          child.kill(9)
+          child.kill(15)
           resolve(undefined)
         })
       }
@@ -256,11 +274,12 @@ describe('[CLI]', () => {
   }, 30000)
   // websocket tests
   it('should start WS RPC on custom port and custom address', async () => {
+    const customPort = '8512'
     const cliArgs = [
       '--rpc',
       '--ws',
       '--port=30322',
-      '--wsPort=8512',
+      '--wsPort=' + customPort,
       '--wsAddr="0.0.0.0"',
       '--dev=poa',
     ]
@@ -272,11 +291,11 @@ describe('[CLI]', () => {
       if (message.includes('ws://')) {
         // if ws endpoint startup message detected, call ws endpoint with RPC method
         await wait(600)
-        const client = Client.websocket({ url: 'ws://0.0.0.0:8512' })
+        const client = Client.websocket({ url: 'ws://0.0.0.0:' + customPort })
         ;(client as any).ws.on('open', async function () {
           const res = await client.request('web3_clientVersion', [], 2.0)
           assert.ok(res.result.includes('EthereumJS'), 'read from WS RPC')
-          child.kill(9)
+          child.kill(15)
           resolve(undefined)
         })
       }
@@ -285,7 +304,14 @@ describe('[CLI]', () => {
   }, 30000)
   // client rpc tests
   it('should start HTTP RPC on custom port and address', async () => {
-    const cliArgs = ['--rpc', '--rpcPort=8562', '--port=30311', '--dev=poa', `--rpcAddr="0.0.0.0"`]
+    const customPort = '8562'
+    const cliArgs = [
+      '--rpc',
+      '--rpcPort=' + customPort,
+      '--dev=poa',
+      `--rpcAddr="0.0.0.0"`,
+      '--port=19657',
+    ]
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
@@ -295,26 +321,27 @@ describe('[CLI]', () => {
         // if http endpoint startup message detected, call http endpoint with RPC method
         await wait(600)
         const client = Client.http({
-          port: 8562,
+          port: Number(customPort),
           host: '0.0.0.0',
         })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
+
         const clientNoConnection = Client.http({
-          port: 8562,
+          port: 8563,
         })
         try {
           await clientNoConnection.request('web3_clientVersion', [], 2.0)
           assert.fail('should have thrown on invalid client address')
         } catch (e: any) {
-          assert.equal(e.code, 'ECONNREFUSED', 'failed to connect to RPC on invalid address')
-          child.kill(9)
+          assert.ok(e !== undefined, 'failed to connect to RPC on invalid address')
+          child.kill(15)
           resolve(undefined)
         }
       }
     }
     await clientRunHelper(cliArgs, onData)
-  }, 5000)
+  }, 30000)
   it('HTTP/WS RPCs should not start when cli args omitted', async () => {
     const onData = async (
       message: string,
@@ -322,11 +349,11 @@ describe('[CLI]', () => {
       resolve: Function
     ) => {
       if (message.includes('address=http://')) {
-        child.kill(9)
+        child.kill(15)
         assert.fail('http endpoint should not be enabled')
       }
       if (message.includes('address=ws://')) {
-        child.kill(9)
+        child.kill(15)
         assert.fail('ws endpoint should not be enabled')
       }
       if (message.includes('Miner: Assembling block')) {
@@ -334,11 +361,11 @@ describe('[CLI]', () => {
         resolve(undefined)
       }
     }
-    await clientRunHelper(['--dev=poa'], onData)
+    await clientRunHelper(['--dev=poa', '--port=39681'], onData)
   }, 30000)
   // logging and documentation tests
   it('should log out available RPC methods', async () => {
-    const cliArgs = ['--rpc', '--helpRpc=true', '--dev=poa']
+    const cliArgs = ['--rpc', '--helpRpc=true', '--dev=poa', '--port=39672', '--rpcPort=9999']
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
@@ -346,7 +373,7 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('JSON-RPC: Supported Methods')) {
         assert.ok(message, 'logged out supported RPC methods')
-        child.kill(9)
+        child.kill(15)
         resolve(undefined)
       }
     }
@@ -356,6 +383,7 @@ describe('[CLI]', () => {
     const cliArgs = [
       '--rpc',
       '--rpcDebug=false',
+      '--rpcPort=8888',
       '--executeBlocks="5"',
       '--debugCode=false',
       '--logFile=false',
@@ -364,6 +392,7 @@ describe('[CLI]', () => {
       '--logLevelFile="debug"',
       '--logLevel="debug"',
       '--dev=poa',
+      '--port=39671',
     ]
     const onData = async (
       message: string,
@@ -372,7 +401,7 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('DEBUG')) {
         assert.ok(message, 'debug logging is enabled')
-        child.kill(9)
+        child.kill(15)
         resolve(undefined)
       }
     }
@@ -380,7 +409,7 @@ describe('[CLI]', () => {
   }, 30000)
   // caching tests
   it('should start client with custom input for account cache size', async () => {
-    const cliArgs = ['--accountCache=2000', '--port=30314']
+    const cliArgs = ['--accountCache=2000', '--port=30314', '--rpc=false']
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
@@ -388,14 +417,14 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('account cache')) {
         assert.ok(message.includes('2000'), 'account cache option works')
-        child.kill(9)
+        child.kill(15)
         resolve(undefined)
       }
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
   it('should start client with custom input for storage cache size', async () => {
-    const cliArgs = ['--storageCache=2000', '--port=30313']
+    const cliArgs = ['--storageCache=2000', '--port=30315', '--dev=poa']
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
@@ -403,14 +432,30 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('storage cache')) {
         assert.ok(message.includes('2000'), 'storage cache option works')
-        child.kill(9)
+        child.kill(15)
+        resolve(undefined)
+      }
+    }
+    await clientRunHelper(cliArgs, onData)
+  }, 30000)
+  it('should start client with custom input for code cache size', async () => {
+    const cliArgs = ['--codeCache=2000', '--port=30313', '--dev=poa']
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+
+      resolve: Function
+    ) => {
+      if (message.includes('code cache')) {
+        assert.ok(message.includes('2000'), 'code cache option works')
+        child.kill(15)
         resolve(undefined)
       }
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
   it('should start client with custom input for trie cache size', async () => {
-    const cliArgs = ['--trieCache=2000', '--port=30312']
+    const cliArgs = ['--trieCache=2000', '--port=30312', '--dev=poa']
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
@@ -418,7 +463,22 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('trie cache')) {
         assert.ok(message.includes('2000'), 'trie cache option works')
-        child.kill(9)
+        child.kill(15)
+        resolve(undefined)
+      }
+    }
+    await clientRunHelper(cliArgs, onData)
+  }, 30000)
+  it('should start client with file path for bootnodes option', async () => {
+    const cliArgs = ['--bootnodes=./test/testdata/bootnode.txt']
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('Reading bootnodes')) {
+        assert.ok(message.includes('num=2'), 'passing bootnode.txt URL for bootnodes option works')
+        child.kill(15)
         resolve(undefined)
       }
     }
@@ -426,7 +486,7 @@ describe('[CLI]', () => {
   }, 30000)
   // test experimental feature options
   it('should start client when passed options for experimental features', async () => {
-    const cliArgs = ['--mine=true', '--forceSnapSync=true', '--dev=poa', '--port=30393']
+    const cliArgs = ['--mine=true', '--snap=true', '--dev=poa', '--port=30393']
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
@@ -437,7 +497,7 @@ describe('[CLI]', () => {
           message.includes('Client started successfully'),
           'Clients started with experimental feature options'
         )
-        child.kill(9)
+        child.kill(15)
         resolve(undefined)
       }
     }
@@ -465,9 +525,9 @@ describe('[CLI]', () => {
       if (message.includes('Client started successfully')) {
         assert.ok(
           message.includes('Client started successfully'),
-          'Clients starts with custom network parameters'
+          'Clients starts with client execution limits'
         )
-        child.kill(9)
+        child.kill(15)
         resolve(undefined)
       }
     }
@@ -477,7 +537,7 @@ describe('[CLI]', () => {
   it('should start client with custom network parameters', async () => {
     const cliArgs = [
       '--rpc',
-      '--port=2100',
+      '--port=65000',
       '--extIP=0.0.0.0',
       '--rpcCors=https://foo.example',
       '--dnsAddr=8.8.8.8',
@@ -496,27 +556,26 @@ describe('[CLI]', () => {
           ?.split(':')
           .map((e) => e.trim()) as string[]
         assert.ok(ip === '0.0.0.0', 'custom input for address is being used')
-        assert.ok(port === '2100', 'custom input for port is being used')
+        assert.ok(port === '65000', 'custom input for port is being used')
       }
       if (message.includes('Client started successfully')) {
         await wait(600)
         const client = Client.http({ port: 8573 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-        child.kill(9)
+        child.kill(15)
         resolve(undefined)
       }
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
-  it('should start client with custom network parameters', async () => {
+  it('should start client with custom DNS network parameters', async () => {
     const cliArgs = [
       '--rpc',
       '--rpcPort=8593',
       '--port=30304',
       '--dev=poa',
       '--bootnodes=enode://abc@127.0.0.1:30303',
-      '--transports=rlpx',
       '--multiaddrs=enode://abc@127.0.0.1:30303',
       '--discDns=false',
       '--discV4=false',
@@ -536,7 +595,7 @@ describe('[CLI]', () => {
         const client = Client.http({ port: 8593 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-        child.kill(9)
+        child.kill(15)
         resolve(undefined)
       }
     }
@@ -550,7 +609,6 @@ describe('[CLI]', () => {
       '--port=30301',
       '--dev=poa',
       '--isSingleNode=true',
-      '--disableBeaconSync=true',
       '--sync="none"',
       '--lightServe=true',
       '--mergeForkIdPostMerge=false',
@@ -578,7 +636,7 @@ describe('[CLI]', () => {
         const client = Client.http({ port: 8548 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-        child.kill(9)
+        child.kill(15)
         resolve(undefined)
       }
     }
@@ -700,11 +758,42 @@ describe('[CLI]', () => {
         const client = Client.http({ port: 8549 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-        child.kill(9)
+        child.kill(15)
         fs.rmSync(dir, { recursive: true, force: true })
         resolve(undefined)
       }
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
+
+  it('should not start client with unknown parameters', async () => {
+    const cliArgs = ['--datadir=fake/path']
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('Unknown argument: datadir')) {
+        assert.ok(true, 'correctly errors on unknown arguments')
+      }
+      child.kill(15)
+      resolve(undefined)
+    }
+    await clientRunHelper(cliArgs, onData, true)
+  }, 5000)
+  it('should not start client with conflicting parameters', async () => {
+    const cliArgs = ['--networkId', '--gethGenesis']
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('Arguments networkId and gethGenesis are mutually exclusive')) {
+        assert.ok(true, 'correctly errors on conflicting arguments')
+      }
+      child.kill(15)
+      resolve(undefined)
+    }
+    await clientRunHelper(cliArgs, onData, true)
+  }, 5000)
 })

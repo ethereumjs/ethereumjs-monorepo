@@ -16,6 +16,7 @@ Options for instantiating a [Common](../classes/Common.md) instance.
 
 - [chain](CommonOpts.md#chain)
 - [customChains](CommonOpts.md#customchains)
+- [customCrypto](CommonOpts.md#customcrypto)
 - [eips](CommonOpts.md#eips)
 - [hardfork](CommonOpts.md#hardfork)
 
@@ -31,7 +32,7 @@ passed in via [customChains](CommonOpts.md#customchains).
 
 #### Defined in
 
-[types.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L93)
+[types.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L124)
 
 ___
 
@@ -51,7 +52,30 @@ const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomCha
 
 #### Defined in
 
-[types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L105)
+[types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L136)
+
+___
+
+### customCrypto
+
+• `Optional` **customCrypto**: [`CustomCrypto`](CustomCrypto.md)
+
+This option can be used to replace the most common crypto primitives
+(keccak256 hashing e.g.) within the EthereumJS ecosystem libraries
+with alternative implementations (e.g. more performant WASM libraries).
+
+Note: please be aware that this is adding new dependencies for your
+system setup to be used for sensitive/core parts of the functionality
+and a choice on the libraries to add should be handled with care
+and be made with eventual security implications considered.
+
+#### Inherited from
+
+BaseOpts.customCrypto
+
+#### Defined in
+
+[types.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L112)
 
 ___
 
@@ -68,7 +92,7 @@ BaseOpts.eips
 
 #### Defined in
 
-[types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L81)
+[types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L101)
 
 ___
 
@@ -86,4 +110,4 @@ BaseOpts.hardfork
 
 #### Defined in
 
-[types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L76)
+[types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L96)

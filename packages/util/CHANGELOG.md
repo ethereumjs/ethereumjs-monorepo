@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 9.0.3 - 2024-03-05
+
+- Allow optional `trustedSetupPath` for the `initKZG()` method, PR [#3296](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3296)
+
+## 9.0.2 - 2024-02-08
+
+### Self-Contained (and Working 🙂) README Examples
+
+All code examples in `EthereumJS` monorepo library README files are now self-contained and can be executed "out of the box" by simply copying them over and running "as is", see tracking issue [#3234](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3234) for an overview. Additionally all examples can now be found in the respective library [examples](./examples/) folder (in fact the README examples are now auto-embedded from over there). As a nice side effect all examples are now run in CI on new PRs and so do not risk to get outdated or broken over time.
+
+### Other Changes
+
+- Adjust byte bigint utils, PR [#3159](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3159)
+- Check that hex to byte conversion is valid in `hexToBytes`, PR [#3185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3185)
+- Performance-optimized `hexToBytes`, PR [#3203](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3203)
+
+## 9.0.1 - 2023-10-26
+
+### Dencun devnet-11 Compatibility
+
+This release contains various fixes and spec updates related to the Dencun (Deneb/Cancun) HF and is now compatible with the specs as used in [devnet-11](https://github.com/ethpandaops/dencun-testnet) (October 2023).
+
+- Update peer dependency for `kzg` module to use the official trusted setup for `mainnet`, PR [#3107](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3107)
+
+### Other Changes
+
+- Performance: New reoccurringly used BigInt constants (`BIGINT_0`, `BIGINT_32`, `BIGINT_2EXP96`,...) in the `bytes` module for reusage along performance optimizations, PR [#3050](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3050)
+- Performance: `bytesToBigInt()` performance optimization for 1-byte bytes, PR [#3054](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3054)
+- Fix a bug in `fromUtf8()`, PR [#3112](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3112)
+
 ## 9.0.0 - 2023-08-09
 
 Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
@@ -50,14 +80,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -76,7 +106,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
-```typescript
+```ts
 // account
 new Account()
 Account.fromAccountData(accountData: AccountData) // AccountData interface values
@@ -440,7 +470,7 @@ The static factory methods assist in creating an `Account` object from varying d
 
 Example usage:
 
-```typescript
+```ts
 import { Account, BN } from 'ethereumjs-util'
 
 const account = new Account(
@@ -480,7 +510,7 @@ with a new `Address` class and type which can be used for creating and represent
 
 Example usage:
 
-```typescript
+```ts
 import { Address } from 'ethereumjs-util'
 
 const pubKey = Buffer.from(

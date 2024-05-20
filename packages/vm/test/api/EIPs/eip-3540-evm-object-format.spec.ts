@@ -6,11 +6,13 @@ import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
-const pkey = hexToBytes('0x' + '20'.repeat(32))
+import type { PrefixedHexString } from '@ethereumjs/util'
+
+const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
-async function runTx(vm: VM, data: string, nonce: number) {
+async function runTx(vm: VM, data: PrefixedHexString, nonce: number) {
   const tx = FeeMarketEIP1559Transaction.fromTxData({
     data,
     gasLimit: 1000000,
@@ -76,12 +78,10 @@ describe('EIP 3540 tests', () => {
     account!.balance = balance
     await vm.stateManager.putAccount(sender, account!)
 
-    let data = '0x67' + 'EF0001' + '01000100' + '00' + '60005260086018F3'
-    let res = await runTx(vm, data, 0)
+    let res = await runTx(vm, '0x67ef0001010001000060005260086018f3', 0)
     assert.ok(res.code.length > 0, 'code section with no data section')
 
-    data = '0x6B' + 'EF0001' + '01000102000100' + '00' + 'AA' + '600052600C6014F3'
-    res = await runTx(vm, data, 1)
+    res = await runTx(vm, '0x6BEF00010100010200010000AA600052600C6014F3', 1)
     assert.ok(res.code.length > 0, 'code section with data section')
   })
 
@@ -93,61 +93,68 @@ describe('EIP 3540 tests', () => {
     account!.balance = balance
     await vm.stateManager.putAccount(sender, account!)
 
-    let data = '0x60EF60005360016000F3'
-    let res = await runTx(vm, data, 0)
+    let res = await runTx(vm, '0x60EF60005360016000F3', 0)
     assert.ok(res.code.length === 0, 'no magic')
 
-    data = '0x7FEF0000000000000000000000000000000000000000000000000000000000000060005260206000F3'
-    res = await runTx(vm, data, 1)
+    res = await runTx(
+      vm,
+      '0x7FEF0000000000000000000000000000000000000000000000000000000000000060005260206000F3',
+      1
+    )
     assert.ok(res.code.length === 0, 'invalid header')
 
-    data = '0x7FEF0002000000000000000000000000000000000000000000000000000000000060005260206000F3'
-    res = await runTx(vm, data, 2)
+    res = await runTx(
+      vm,
+      '0x7FEF0002000000000000000000000000000000000000000000000000000000000060005260206000F3',
+      2
+    )
     assert.ok(res.code.length === 0, 'valid header but invalid EOF version')
 
-    data = '0x7FEF0001000000000000000000000000000000000000000000000000000000000060005260206000F3'
-    res = await runTx(vm, data, 3)
+    res = await runTx(
+      vm,
+      '0x7FEF0001000000000000000000000000000000000000000000000000000000000060005260206000F3',
+      3
+    )
     assert.ok(res.code.length === 0, 'valid header and version but no code section')
 
-    data = '0x7FEF0001030000000000000000000000000000000000000000000000000000000060005260206000F3'
-    res = await runTx(vm, data, 4)
+    res = await runTx(
+      vm,
+      '0x7FEF0001030000000000000000000000000000000000000000000000000000000060005260206000F3',
+      4
+    )
     assert.ok(res.code.length === 0, 'valid header and version but unknown section type')
 
-    data = '0x7FEF0001010002006000DEADBEEF0000000000000000000000000000000000000060005260206000F3'
-    res = await runTx(vm, data, 5)
+    res = await runTx(
+      vm,
+      '0x7FEF0001010002006000DEADBEEF0000000000000000000000000000000000000060005260206000F3',
+      5
+    )
     assert.ok(res.code.length === 0, 'code section with trailing bytes')
   })
 })
 
-function generateEOFCode(code: string) {
+function generateEOFCode(code: string): PrefixedHexString {
   const len = (code.length / 2).toString(16).padStart(4, '0')
-  return '0xEF000101' + len + '00' + code
+  return `0xEF000101${len}00${code}`
 }
 
-function generateInvalidEOFCode(code: string) {
+function generateInvalidEOFCode(code: string): PrefixedHexString {
   const len = (code.length / 2 + 1).toString(16).padStart(4, '0') // len will be 1 too long
-  return '0xEF000101' + len + '00' + code
+  return `0xEF000101${len}00${code}`
 }
 
 const offset = '13'
-const CREATEDeploy = '0x60' + offset + '380360' + offset + '60003960' + offset + '380360006000F000'
+const CREATEDeploy = `0x60${offset}380360${offset}60003960${offset}380360006000F000`
 
 const create2offset = '15'
-const CREATE2Deploy =
-  '0x600060' +
-  create2offset +
-  '380360' +
-  create2offset +
-  '60003960' +
-  create2offset +
-  '380360006000F500'
+const CREATE2Deploy = `0x600060${create2offset}380360${create2offset}60003960${create2offset}380360006000F500`
 
-function deployCreateCode(initcode: string) {
-  return CREATEDeploy + initcode
+function deployCreateCode(initcode: string): PrefixedHexString {
+  return `${CREATEDeploy}${initcode}` as PrefixedHexString
 }
 
-function deployCreate2Code(initcode: string) {
-  return CREATE2Deploy + initcode
+function deployCreate2Code(initcode: string): PrefixedHexString {
+  return `${CREATE2Deploy}${initcode}` as PrefixedHexString
 }
 
 describe('ensure invalid EOF initcode in EIP-3540 does not consume all gas', () => {
@@ -164,11 +171,9 @@ describe('ensure invalid EOF initcode in EIP-3540 does not consume all gas', () 
     account!.balance = balance
     await vm.stateManager.putAccount(sender, account!)
 
-    let data = generateEOFCode('60016001F3')
-    const res = await runTx(vm, data, 0)
+    const res = await runTx(vm, generateEOFCode('60016001F3'), 0)
 
-    data = generateInvalidEOFCode('60016001F3')
-    const res2 = await runTx(vm, data, 1)
+    const res2 = await runTx(vm, generateInvalidEOFCode('60016001F3'), 1)
     assert.ok(
       res.result.totalGasSpent > res2.result.totalGasSpent,
       'invalid initcode did not consume all gas'
@@ -188,11 +193,13 @@ describe('ensure invalid EOF initcode in EIP-3540 does not consume all gas', () 
     account!.balance = balance
     await vm.stateManager.putAccount(sender, account!)
 
-    let data = deployCreateCode(generateEOFCode('60016001F3').substring(2))
-    const res = await runTx(vm, data, 0)
+    const res = await runTx(vm, deployCreateCode(generateEOFCode('60016001F3').substring(2)), 0)
 
-    data = deployCreateCode(generateInvalidEOFCode('60016001F3').substring(2))
-    const res2 = await runTx(vm, data, 1)
+    const res2 = await runTx(
+      vm,
+      deployCreateCode(generateInvalidEOFCode('60016001F3').substring(2)),
+      1
+    )
 
     assert.ok(
       res.result.totalGasSpent > res2.result.totalGasSpent,
@@ -213,11 +220,13 @@ describe('ensure invalid EOF initcode in EIP-3540 does not consume all gas', () 
     account!.balance = balance
     await vm.stateManager.putAccount(sender, account!)
 
-    let data = deployCreate2Code(generateEOFCode('60016001F3').substring(2))
-    const res = await runTx(vm, data, 0)
+    const res = await runTx(vm, deployCreate2Code(generateEOFCode('60016001F3').substring(2)), 0)
 
-    data = deployCreate2Code(generateInvalidEOFCode('60016001F3').substring(2))
-    const res2 = await runTx(vm, data, 1)
+    const res2 = await runTx(
+      vm,
+      deployCreate2Code(generateInvalidEOFCode('60016001F3').substring(2)),
+      1
+    )
     assert.ok(
       res.result.totalGasSpent > res2.result.totalGasSpent,
       'invalid initcode did not consume all gas'

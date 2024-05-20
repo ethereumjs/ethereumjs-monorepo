@@ -1,16 +1,16 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
-import { bytesToHex, equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, BIGINT_2, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
-import { LevelDB } from '../execution/level'
-import { Event } from '../types'
+import { LevelDB } from '../execution/level.js'
+import { Event } from '../types.js'
 
-import type { Config } from '../config'
-import type { VMExecution } from '../execution'
-import type { FullEthereumService } from '../service'
-import type { FullSynchronizer } from '../sync'
+import type { Config } from '../config.js'
+import type { VMExecution } from '../execution/index.js'
+import type { FullEthereumService } from '../service/index.js'
+import type { FullSynchronizer } from '../sync/index.js'
 import type { CliqueConsensus } from '@ethereumjs/blockchain'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { Miner as EthashMiner, Solution } from '@ethereumjs/ethash'
@@ -89,7 +89,7 @@ export class Miner {
 
     // Check if the new block to be minted isn't PoS
     const nextBlockHf = this.config.chainCommon.getHardforkBy({
-      blockNumber: this.service.chain.headers.height + BigInt(1),
+      blockNumber: this.service.chain.headers.height + BIGINT_1,
       td: this.service.chain.headers.td,
     })
     if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Paris)) {
@@ -107,7 +107,7 @@ export class Miner {
       const { blockchain } = this.service.chain
       const parentBlock = this.service.chain.blocks.latest!
       //eslint-disable-next-line
-      const number = parentBlock.header.number + BigInt(1)
+      const number = parentBlock.header.number + BIGINT_1
       const inTurn = await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         signerAddress,
         number
@@ -155,7 +155,7 @@ export class Miner {
     this.ethashMiner?.stop()
     const latestBlockHeader = this.latestBlockHeader()
     const target = Number(latestBlockHeader.timestamp) * 1000 + this.period - Date.now()
-    const timeout = BigInt(0) > target ? 0 : target
+    const timeout = BIGINT_0 > target ? 0 : target
     this.config.logger.debug(
       `Miner: Chain updated with block ${
         latestBlockHeader.number
@@ -203,7 +203,7 @@ export class Miner {
 
     const parentBlock = this.service.chain.blocks.latest!
     //eslint-disable-next-line
-    const number = parentBlock.header.number + BigInt(1)
+    const number = parentBlock.header.number + BIGINT_1
     let { gasLimit } = parentBlock.header
 
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
@@ -256,15 +256,15 @@ export class Miner {
     const londonHardforkBlock = this.config.chainCommon.hardforkBlock(Hardfork.London)
     if (
       typeof londonHardforkBlock === 'bigint' &&
-      londonHardforkBlock !== BigInt(0) &&
+      londonHardforkBlock !== BIGINT_0 &&
       number === londonHardforkBlock
     ) {
       // Get baseFeePerGas from `paramByEIP` since 1559 not currently active on common
       baseFeePerGas =
-        this.config.chainCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559) ?? BigInt(0)
+        this.config.chainCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559) ?? BIGINT_0
       // Set initial EIP1559 block gas limit to 2x parent gas limit per logic in `block.validateGasLimit`
-      gasLimit = gasLimit * BigInt(2)
-    } else if (this.config.chainCommon.isActivatedEIP(1559) === true) {
+      gasLimit = gasLimit * BIGINT_2
+    } else if (this.config.chainCommon.isActivatedEIP(1559)) {
       baseFeePerGas = parentBlock.header.calcNextBaseFee()
     }
 
@@ -295,7 +295,7 @@ export class Miner {
     const txs = await this.service.txPool.txsByPriceAndNonce(vmCopy, { baseFee: baseFeePerGas })
     this.config.logger.info(
       `Miner: Assembling block from ${txs.length} eligible txs ${
-        typeof baseFeePerGas === 'bigint' && baseFeePerGas !== BigInt(0)
+        typeof baseFeePerGas === 'bigint' && baseFeePerGas !== BIGINT_0
           ? `(baseFee: ${baseFeePerGas})`
           : ''
       }`

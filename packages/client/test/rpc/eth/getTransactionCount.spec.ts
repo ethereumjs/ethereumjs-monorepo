@@ -2,19 +2,17 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { LegacyTransaction, TransactionFactory } from '@ethereumjs/tx'
+import { Account, Address, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
-import { checkError } from '../util'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service'
+import type { FullEthereumService } from '../../../src/service/index.js'
 
 const method = 'eth_getTransactionCount'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
 
 describe(method, () => {
   it('call with valid arguments', async () => {
@@ -24,9 +22,9 @@ describe(method, () => {
       validateConsensus: false,
     })
 
-    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
@@ -40,12 +38,8 @@ describe(method, () => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // verify nonce is 0
-    let req = params(method, [address.toString(), 'latest'])
-    let expectRes = (res: any) => {
-      const msg = 'should return the correct nonce (0)'
-      assert.equal(res.body.result, '0x0', msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    let res = await rpc.request(method, [address.toString(), 'latest'])
+    assert.equal(res.result, '0x0', 'should return the correct nonce (0)')
 
     // construct block with tx
     const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
@@ -71,31 +65,42 @@ describe(method, () => {
     await vm.blockchain.putBlock(ranBlock!)
 
     // verify nonce increments after a tx
-    req = params(method, [address.toString(), 'latest'])
-    expectRes = (res: any) => {
-      const msg = 'should return the correct nonce (1)'
-      assert.equal(res.body.result, '0x1', msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    res = await rpc.request(method, [address.toString(), 'latest'])
+    assert.equal(res.result, '0x1', 'should return the correct nonce (1)')
 
     // call with nonexistent account
-    req = params(method, [`0x${'11'.repeat(20)}`, 'latest'])
-    expectRes = (res: any) => {
-      const msg = 'should return 0x0 for nonexistent account'
-      assert.equal(res.body.result, `0x0`, msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
-  })
+    res = await rpc.request(method, [`0x${'11'.repeat(20)}`, 'latest'])
+    assert.equal(res.result, `0x0`, 'should return 0x0 for nonexistent account')
+  }, 40000)
 
-  it('call with unsupported block argument', async () => {
+  it('call with pending block argument', async () => {
     const blockchain = await Blockchain.create()
 
-    const client = createClient({ blockchain, includeVM: true })
+    const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, ['0xccfd725760a68823ff1e062f4cc97e1360e8d997', 'pending'])
-    const expectRes = checkError(INVALID_PARAMS, '"pending" is not yet supported')
-    await baseRequest(server, req, 200, expectRes)
-  })
+    const pk = hexToBytes('0x266682876da8fd86410d001ec33c7c281515aeeb640d175693534062e2599238')
+    const address = Address.fromPrivateKey(pk)
+    await service.execution.vm.stateManager.putAccount(address, new Account())
+    const account = await service.execution.vm.stateManager.getAccount(address)
+    account!.balance = 0xffffffffffffffn
+    await service.execution.vm.stateManager.putAccount(address, account!)
+    const tx = TransactionFactory.fromTxData({
+      to: randomBytes(20),
+      value: 1,
+      maxFeePerGas: 0xffffff,
+    }).sign(pk)
+
+    // Set stubs so getTxCount won't validate txns or mess up state root
+    service.txPool['validate'] = () => Promise.resolve(undefined)
+    service.execution.vm.stateManager.setStateRoot = () => Promise.resolve(undefined)
+    service.execution.vm.shallowCopy = () => Promise.resolve(service.execution.vm)
+
+    await service.txPool.add(tx, true)
+
+    const res = await rpc.request(method, [address.toString(), 'pending'])
+    assert.equal(res.result, '0x1')
+  }, 40000)
 })

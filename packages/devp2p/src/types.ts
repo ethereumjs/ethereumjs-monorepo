@@ -37,6 +37,11 @@ export type DNSOptions = {
    * @type {string}
    */
   dnsServerAddress?: string
+
+  /**
+   * Common instance to allow for crypto primitive (e.g. keccak) replacement
+   */
+  common?: Common
 }
 
 export interface DPTOptions {
@@ -77,6 +82,18 @@ export interface DPTOptions {
   shouldFindNeighbours?: boolean
 
   /**
+   * Send findNeighbour requests to and only answer with respective peers
+   * being confirmed by calling the `confirmPeer()` method
+   *
+   * (allows for a more selective and noise reduced discovery)
+   *
+   * Note: Bootstrap nodes are confirmed by default.
+   *
+   * Default: false
+   */
+  onlyConfirmed?: boolean
+
+  /**
    * Toggles whether or not peers should be discovered by querying EIP-1459 DNS lists
    *
    * Default: false
@@ -102,6 +119,11 @@ export interface DPTOptions {
    * DNS server to query DNS TXT records from for peer discovery
    */
   dnsAddr?: string
+
+  /**
+   * Common instance to allow for crypto primitive (e.g. keccak) replacement
+   */
+  common?: Common
 }
 
 export interface DPTServerOptions {
@@ -125,6 +147,11 @@ export interface DPTServerOptions {
    * Default: dgram-created socket
    */
   createSocket?: Function
+
+  /**
+   * Common instance to allow for crypto primitive (e.g. keccak) replacement
+   */
+  common?: Common
 }
 
 export enum ProtocolType {

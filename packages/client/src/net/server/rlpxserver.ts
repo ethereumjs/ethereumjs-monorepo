@@ -1,13 +1,13 @@
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
 import { bytesToUnprefixedHex, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 
-import { Event } from '../../types'
-import { getClientVersion } from '../../util'
-import { RlpxPeer } from '../peer/rlpxpeer'
+import { Event } from '../../types.js'
+import { getClientVersion } from '../../util/index.js'
+import { RlpxPeer } from '../peer/rlpxpeer.js'
 
-import { Server } from './server'
+import { Server } from './server.js'
 
-import type { ServerOptions } from './server'
+import type { ServerOptions } from './server.js'
 import type { Peer as Devp2pRLPxPeer } from '@ethereumjs/devp2p'
 
 export interface RlpxServerOptions extends ServerOptions {
@@ -216,22 +216,35 @@ export class RlpxServer extends Server {
           udpPort: null,
           tcpPort: null,
         },
+        onlyConfirmed: this.config.chainCommon.chainName() === 'mainnet' ? false : true,
         shouldFindNeighbours: this.config.discV4,
         shouldGetDnsPeers: this.config.discDns,
         dnsRefreshQuantity: this.config.maxPeers,
         dnsNetworks: this.dnsNetworks,
         dnsAddr: this.config.dnsAddr,
+        common: this.config.chainCommon,
       })
 
-      this.dpt.events.on('error', (e: Error) => this.error(e))
+      this.dpt.events.on('error', (e: Error) => {
+        this.error(e)
+        // If DPT can't bind to port, resolve anyway so client startup doesn't hang
+        if (e.message.includes('EADDRINUSE')) resolve()
+      })
 
       this.dpt.events.on('listening', () => {
         resolve()
       })
 
+      this.config.events.on(Event.PEER_CONNECTED, (peer) => {
+        this.dpt?.confirmPeer(peer.id)
+      })
+
       if (typeof this.config.port === 'number') {
         this.dpt.bind(this.config.port, '0.0.0.0')
       }
+      this.config.logger.info(
+        `Started discovery service discV4=${this.config.discV4} dns=${this.config.discDns} refreshInterval=${this.refreshInterval}`
+      )
     })
   }
 
@@ -254,14 +267,10 @@ export class RlpxServer extends Server {
         let peer: RlpxPeer | null = new RlpxPeer({
           config: this.config,
           id: bytesToUnprefixedHex(rlpxPeer.getId()!),
-          // @ts-ignore
-          host: rlpxPeer._socket.remoteAddress!,
-          // @ts-ignore
-          port: rlpxPeer._socket.remotePort!,
+          host: rlpxPeer['_socket'].remoteAddress!,
+          port: rlpxPeer['_socket'].remotePort!,
           protocols: Array.from(this.protocols),
-          // @ts-ignore: Property 'server' does not exist on type 'Socket'.
-          // TODO: check this error
-          inbound: rlpxPeer._socket.server !== undefined,
+          inbound: (rlpxPeer['_socket'] as any).server !== undefined,
         })
         try {
           await peer.accept(rlpxPeer, this)
@@ -292,7 +301,11 @@ export class RlpxServer extends Server {
         this.error(error)
       )
 
-      this.rlpx.events.on('error', (e: Error) => this.error(e))
+      this.rlpx.events.on('error', (e: Error) => {
+        this.error(e)
+        // If DPT can't bind to port, resolve anyway so client startup doesn't hang
+        if (e.message.includes('EADDRINUSE')) resolve()
+      })
 
       this.rlpx.events.on('listening', () => {
         this.config.events.emit(Event.SERVER_LISTENING, {

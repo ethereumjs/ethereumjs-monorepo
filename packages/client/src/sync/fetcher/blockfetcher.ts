@@ -1,13 +1,13 @@
 import { Block } from '@ethereumjs/block'
 import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, equalsBytes } from '@ethereumjs/util'
 
-import { Event } from '../../types'
+import { Event } from '../../types.js'
 
-import { BlockFetcherBase } from './blockfetcherbase'
+import { BlockFetcherBase } from './blockfetcherbase.js'
 
-import type { Peer } from '../../net/peer'
-import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
-import type { Job } from './types'
+import type { Peer } from '../../net/peer/index.js'
+import type { BlockFetcherOptions, JobTask } from './blockfetcherbase.js'
+import type { Job } from './types.js'
 import type { BlockBytes } from '@ethereumjs/block'
 
 /**
@@ -28,6 +28,12 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
    */
   async request(job: Job<JobTask, Block[], Block>): Promise<Block[]> {
     const { task, peer, partialResult } = job
+    // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
+    // TODOs:
+    // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
+    // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
+    await peer?.latest()
+
     let { first, count } = task
     if (partialResult) {
       first = !this.reverse
@@ -86,7 +92,11 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       }
       // Supply the common from the corresponding block header already set on correct fork
       const block = Block.fromValuesArray(values, { common: headers[i].common })
-      await block.validateData()
+      // Only validate the data integrity
+      // Upon putting blocks into blockchain (for BlockFetcher), `validateData` is called again
+      // In ReverseBlockFetcher we do not need to validate the entire block, since CL
+      // expects us to sync with the requested chain tip header
+      await block.validateData(false, false)
       blocks.push(block)
     }
     this.debug(
@@ -104,12 +114,14 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   process(job: Job<JobTask, Block[], Block>, result: Block[]) {
     result = (job.partialResult ?? []).concat(result)
     job.partialResult = undefined
-    if (result.length === job.task.count) {
-      return result
-    } else if (result.length > 0 && result.length < job.task.count) {
-      // Save partial result to re-request missing items.
-      job.partialResult = result
-      this.debug(`Partial result received=${result.length} expected=${job.task.count}`)
+    if (result !== undefined) {
+      if (result.length === job.task.count) {
+        return result
+      } else if (result.length > 0 && result.length < job.task.count) {
+        // Save partial result to re-request missing items.
+        job.partialResult = result
+        this.debug(`Partial result received=${result.length} expected=${job.task.count}`)
+      }
     }
     return
   }

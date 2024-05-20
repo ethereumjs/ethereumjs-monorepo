@@ -1,7 +1,7 @@
 import { Chain, Common } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { Config, DataDirectory } from '../src/config'
+import { Config, DataDirectory } from '../src/config.js'
 
 describe('[Config]', () => {
   it('Initialization with default parameters', () => {
@@ -36,17 +36,6 @@ describe('[Config]', () => {
     assert.equal(config.discV4, true, 'enables DNS peer discovery for mainnet')
   })
 
-  it('peer discovery default testnet settings', () => {
-    let config
-
-    for (const chain of [Chain.Goerli, Chain.Sepolia]) {
-      const common = new Common({ chain })
-      config = new Config({ common })
-      assert.equal(config.discDns, true, `enables DNS peer discovery for ${chain}`)
-      assert.equal(config.discV4, false, `disables V4 peer discovery for ${chain}`)
-    }
-  })
-
   it('--discDns=true/false', () => {
     let common, config, chain
 
@@ -67,11 +56,11 @@ describe('[Config]', () => {
     chain = Chain.Mainnet
     common = new Common({ chain })
     config = new Config({ common, discV4: false })
-    assert.equal(config.discDns, false, `default discV4 setting can be overridden to false`)
+    assert.equal(config.discV4, false, `default discV4 setting can be overridden to false`)
 
     chain = Chain.Goerli
     common = new Common({ chain })
     config = new Config({ common, discV4: true })
-    assert.equal(config.discDns, true, `default discV4 setting can be overridden to true`)
+    assert.equal(config.discV4, true, `default discV4 setting can be overridden to true`)
   })
 })

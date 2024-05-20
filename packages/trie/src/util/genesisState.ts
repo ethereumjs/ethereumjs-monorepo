@@ -1,5 +1,11 @@
 import { RLP } from '@ethereumjs/rlp'
-import { Account, isHexPrefixed, toBytes, unpadBytes, unprefixedHexToBytes } from '@ethereumjs/util'
+import {
+  Account,
+  hexToBytes,
+  isHexString,
+  unpadBytes,
+  unprefixedHexToBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Trie } from '../trie.js'
@@ -12,7 +18,7 @@ import type { AccountState, GenesisState } from '@ethereumjs/util'
 export async function genesisStateRoot(genesisState: GenesisState) {
   const trie = new Trie({ useKeyHashing: true })
   for (const [key, value] of Object.entries(genesisState)) {
-    const address = isHexPrefixed(key) ? toBytes(key) : unprefixedHexToBytes(key)
+    const address = isHexString(key) ? hexToBytes(key) : unprefixedHexToBytes(key)
     const account = new Account()
     if (typeof value === 'string') {
       account.balance = BigInt(value)
@@ -22,15 +28,15 @@ export async function genesisStateRoot(genesisState: GenesisState) {
         account.balance = BigInt(balance)
       }
       if (code !== undefined) {
-        const codeBytes = isHexPrefixed(code) ? toBytes(code) : unprefixedHexToBytes(code)
+        const codeBytes = isHexString(code) ? hexToBytes(code) : unprefixedHexToBytes(code)
         account.codeHash = keccak256(codeBytes)
       }
       if (storage !== undefined) {
         const storageTrie = new Trie({ useKeyHashing: true })
         for (const [k, val] of storage) {
-          const storageKey = isHexPrefixed(k) ? toBytes(k) : unprefixedHexToBytes(k)
+          const storageKey = isHexString(k) ? hexToBytes(k) : unprefixedHexToBytes(k)
           const storageVal = RLP.encode(
-            unpadBytes(isHexPrefixed(val) ? toBytes(val) : unprefixedHexToBytes(val))
+            unpadBytes(isHexString(val) ? hexToBytes(val) : unprefixedHexToBytes(val))
           )
           await storageTrie.put(storageKey, storageVal)
         }

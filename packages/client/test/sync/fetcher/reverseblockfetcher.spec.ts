@@ -1,26 +1,25 @@
 import { Block } from '@ethereumjs/block'
 import { MemoryLevel } from 'memory-level'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/chain'
-import { Config } from '../../../src/config'
-import { Skeleton } from '../../../src/sync'
-import { Event } from '../../../src/types'
-import { wait } from '../../integration/util'
+import { Chain } from '../../../src/blockchain/chain.js'
+import { Config } from '../../../src/config.js'
+import { getLogger } from '../../../src/logging.js'
+import { Skeleton } from '../../../src/service/skeleton.js'
+import { Event } from '../../../src/types.js'
+import { wait } from '../../integration/util.js'
 
+class PeerPool {
+  idle() {}
+  ban() {}
+}
+PeerPool.prototype.idle = vi.fn()
+PeerPool.prototype.ban = vi.fn()
+
+const { ReverseBlockFetcher } = await import('../../../src/sync/fetcher/reverseblockfetcher.js')
 describe('[ReverseBlockFetcher]', async () => {
-  class PeerPool {
-    idle() {}
-    ban() {}
-  }
-  PeerPool.prototype.idle = td.func<any>()
-  PeerPool.prototype.ban = td.func<any>()
-
-  const { ReverseBlockFetcher } = await import('../../../src/sync/fetcher/reverseblockfetcher')
-
   it('should start/stop', async () => {
-    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -47,7 +46,7 @@ describe('[ReverseBlockFetcher]', async () => {
   })
 
   it('should generate max tasks', async () => {
-    const config = new Config({ maxPerRequest: 5, maxFetcherJobs: 10, transports: [] })
+    const config = new Config({ maxPerRequest: 5, maxFetcherJobs: 10 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -74,7 +73,7 @@ describe('[ReverseBlockFetcher]', async () => {
   })
 
   it('should process', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -95,7 +94,7 @@ describe('[ReverseBlockFetcher]', async () => {
   })
 
   it('should adopt correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -123,8 +122,9 @@ describe('[ReverseBlockFetcher]', async () => {
   })
 
   it('should find a fetchable peer', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
+    pool.idle = vi.fn(() => 'peer0')
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const fetcher = new ReverseBlockFetcher({
@@ -135,12 +135,12 @@ describe('[ReverseBlockFetcher]', async () => {
       first: BigInt(10),
       count: BigInt(2),
     })
-    td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
+    // td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
     assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 
   it('should request correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -156,71 +156,31 @@ describe('[ReverseBlockFetcher]', async () => {
 
     const task = { first: BigInt(10), count: 5 }
     const peer = {
-      eth: { getBlockBodies: td.func<any>(), getBlockHeaders: td.func<any>() },
+      eth: {
+        getBlockBodies: vi.fn(),
+        getBlockHeaders: vi.fn((input) => {
+          const expected = {
+            block: task.first - BigInt(partialResult.length),
+            max: task.count - partialResult.length,
+            reverse: true,
+          }
+          assert.deepEqual(expected, input)
+        }),
+      },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
-    td.verify(
-      job.peer.eth.getBlockHeaders({
-        block: job.task.first - BigInt(partialResult.length),
-        max: job.task.count - partialResult.length,
-        reverse: true,
-      })
-    )
-  })
-
-  it('store()', async () => {
-    td.reset()
-    const config = new Config({ maxPerRequest: 5, transports: [] })
-    const pool = new PeerPool() as any
-    const chain = await Chain.create({ config })
-    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    skeleton.putBlocks = td.func<any>()
-    const fetcher = new ReverseBlockFetcher({
-      config,
-      pool,
-      chain,
-      skeleton,
-      first: BigInt(10),
-      count: BigInt(10),
-      timeout: 5,
-    })
-    td.when(skeleton.putBlocks(td.matchers.anything())).thenReject(
-      new Error(`Blocks don't extend canonical subchain`)
-    )
-    try {
-      await fetcher.store([])
-      assert.fail('fetcher store should have errored')
-    } catch (err: any) {
-      assert.ok(
-        err.message === `Blocks don't extend canonical subchain`,
-        'store() threw on invalid block'
-      )
-      const { destroyFetcher, banPeer } = fetcher.processStoreError(err, {
-        first: BigInt(10),
-        count: 10,
-      })
-      assert.equal(destroyFetcher, false, 'fetcher should not be destroyed on this error')
-      assert.equal(banPeer, true, 'peer should be banned on this error')
-    }
-    td.reset()
-    skeleton.putBlocks = td.func<any>()
-    td.when(skeleton.putBlocks(td.matchers.anything())).thenResolve(1)
-    config.events.on(Event.SYNC_FETCHED_BLOCKS, () =>
-      assert.ok(true, 'store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')
-    )
-    await fetcher.store([])
   })
 
   it('should restart the fetcher when subchains are merged', async () => {
-    td.reset()
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       skeletonSubchainMergeMinimum: 0,
+      logger: getLogger({ logLevel: 'debug' }),
     })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
@@ -251,11 +211,24 @@ describe('[ReverseBlockFetcher]', async () => {
       },
       { setHardfork: true }
     )
+    const block4 = Block.fromBlockData(
+      {
+        header: { number: BigInt(4), difficulty: BigInt(1) },
+      },
+      { setHardfork: true }
+    )
+    const block5 = Block.fromBlockData(
+      {
+        header: { number: BigInt(5), difficulty: BigInt(1), parentHash: block4.hash() },
+      },
+      { setHardfork: true }
+    )
     ;(skeleton as any).status.progress.subchains = [
       { head: BigInt(100), tail: BigInt(50), next: block49.hash() },
-      { head: BigInt(48), tail: BigInt(5) },
+      { head: BigInt(48), tail: BigInt(5), next: block4.hash() },
     ]
     await (skeleton as any).putBlock(block47)
+    await (skeleton as any).putBlock(block5)
     await fetcher.store([block49, block48])
     assert.ok(
       (skeleton as any).status.progress.subchains.length === 1,
@@ -270,8 +243,47 @@ describe('[ReverseBlockFetcher]', async () => {
     assert.equal((fetcher as any).in.length, 0, 'fetcher in should be cleared')
     assert.equal((fetcher as any).out.length, 0, 'fetcher out should be cleared')
   })
-
-  it('should reset td', () => {
-    td.reset()
+})
+describe('store()', async () => {
+  const config = new Config({ maxPerRequest: 5 })
+  const pool = new PeerPool() as any
+  const chain = await Chain.create({ config })
+  const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+  const fetcher = new ReverseBlockFetcher({
+    config,
+    pool,
+    chain,
+    skeleton,
+    first: BigInt(10),
+    count: BigInt(10),
+    timeout: 5,
   })
+  it('should error', async () => {
+    skeleton.putBlocks = vi.fn(() => {
+      throw new Error(`Blocks don't extend canonical subchain`)
+    })
+    try {
+      await fetcher.store([])
+      assert.fail('fetcher store should have errored')
+    } catch (err: any) {
+      assert.equal(
+        err.message,
+        `Blocks don't extend canonical subchain`,
+        'store() threw on invalid block'
+      )
+      const { destroyFetcher, banPeer } = fetcher.processStoreError(err, {
+        first: BigInt(10),
+        count: 10,
+      })
+      assert.equal(destroyFetcher, false, 'fetcher should not be destroyed on this error')
+      assert.equal(banPeer, true, 'peer should be banned on this error')
+    }
+  })
+  skeleton.putBlocks = vi.fn().mockResolvedValueOnce(1)
+  config.events.on(Event.SYNC_FETCHED_BLOCKS, () =>
+    it('should emit event on put blocks', async () => {
+      assert.ok(true, 'store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')
+    })
+  )
+  await fetcher.store([])
 })

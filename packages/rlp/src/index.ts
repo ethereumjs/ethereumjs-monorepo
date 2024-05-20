@@ -84,7 +84,10 @@ export function decode(input: Input, stream = false): Uint8Array | NestedUint8Ar
   const decoded = _decode(inputBytes)
 
   if (stream) {
-    return decoded
+    return {
+      data: decoded.data,
+      remainder: decoded.remainder.slice(),
+    }
   }
   if (decoded.remainder.length !== 0) {
     throw new Error('invalid RLP: remainder must be zero')
@@ -103,7 +106,7 @@ function _decode(input: Uint8Array): Decoded {
     // a single byte whose value is in the [0x00, 0x7f] range, that byte is its own RLP encoding.
     return {
       data: input.slice(0, 1),
-      remainder: input.slice(1),
+      remainder: input.subarray(1),
     }
   } else if (firstByte <= 0xb7) {
     // string is 0-55 bytes long. A single byte with value 0x80 plus the length of the string followed by the string
@@ -123,7 +126,7 @@ function _decode(input: Uint8Array): Decoded {
 
     return {
       data,
-      remainder: input.slice(length),
+      remainder: input.subarray(length),
     }
   } else if (firstByte <= 0xbf) {
     // string is greater than 55 bytes long. A single byte with the value (0xb7 plus the length of the length),
@@ -140,7 +143,7 @@ function _decode(input: Uint8Array): Decoded {
 
     return {
       data,
-      remainder: input.slice(length + llength),
+      remainder: input.subarray(length + llength),
     }
   } else if (firstByte <= 0xf7) {
     // a list between 0-55 bytes long
@@ -154,7 +157,7 @@ function _decode(input: Uint8Array): Decoded {
 
     return {
       data: decoded,
-      remainder: input.slice(length),
+      remainder: input.subarray(length),
     }
   } else {
     // a list over 55 bytes long
@@ -178,7 +181,7 @@ function _decode(input: Uint8Array): Decoded {
 
     return {
       data: decoded,
-      remainder: input.slice(totalLength),
+      remainder: input.subarray(totalLength),
     }
   }
 }
@@ -250,7 +253,7 @@ function padToEven(a: string): string {
 }
 
 /** Check if a string is prefixed by 0x */
-function isHexPrefixed(str: string): boolean {
+function isHexString(str: string): boolean {
   return str.length >= 2 && str[0] === '0' && str[1] === 'x'
 }
 
@@ -259,7 +262,7 @@ function stripHexPrefix(str: string): string {
   if (typeof str !== 'string') {
     return str
   }
-  return isHexPrefixed(str) ? str.slice(2) : str
+  return isHexString(str) ? str.slice(2) : str
 }
 
 /** Transform anything into a Uint8Array */
@@ -268,7 +271,7 @@ function toBytes(v: Input): Uint8Array {
     return v
   }
   if (typeof v === 'string') {
-    if (isHexPrefixed(v)) {
+    if (isHexString(v)) {
       return hexToBytes(padToEven(stripHexPrefix(v)))
     }
     return utf8ToBytes(v)

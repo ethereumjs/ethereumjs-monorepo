@@ -414,7 +414,7 @@ describe('EIP1559 tests', () => {
         maxPriorityFeePerGas: BigInt(0),
       },
       { common }
-    ).sign(hexToBytes('0x' + '46'.repeat(32)))
+    ).sign(hexToBytes(`0x${'46'.repeat(32)}`))
     const block = Block.fromBlockData(
       {
         header: {

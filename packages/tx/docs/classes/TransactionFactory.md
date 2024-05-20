@@ -16,7 +16,7 @@
 
 ### fromBlockBodyData
 
-▸ `Static` **fromBlockBodyData**(`data`, `txOptions?`): [`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md) \| [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md) \| [`BlobEIP4844Transaction`](BlobEIP4844Transaction.md) \| [`LegacyTransaction`](LegacyTransaction.md)
+▸ `Static` **fromBlockBodyData**(`data`, `txOptions?`): [`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md) \| [`LegacyTransaction`](LegacyTransaction.md) \| [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md) \| [`BlobEIP4844Transaction`](BlobEIP4844Transaction.md)
 
 When decoding a BlockBody, in the transactions field, a field is either:
 A Uint8Array (a TypedTransaction - encoded as TransactionType || rlp(TransactionPayload))
@@ -32,7 +32,7 @@ This method returns the right transaction.
 
 #### Returns
 
-[`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md) \| [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md) \| [`BlobEIP4844Transaction`](BlobEIP4844Transaction.md) \| [`LegacyTransaction`](LegacyTransaction.md)
+[`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md) \| [`LegacyTransaction`](LegacyTransaction.md) \| [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md) \| [`BlobEIP4844Transaction`](BlobEIP4844Transaction.md)
 
 #### Defined in
 
@@ -42,7 +42,7 @@ ___
 
 ### fromJsonRpcProvider
 
-▸ `Static` **fromJsonRpcProvider**(`provider`, `txHash`, `txOptions?`): `Promise`<[`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md) \| [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md) \| [`BlobEIP4844Transaction`](BlobEIP4844Transaction.md) \| [`LegacyTransaction`](LegacyTransaction.md)\>
+▸ `Static` **fromJsonRpcProvider**(`provider`, `txHash`, `txOptions?`): `Promise`<[`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md) \| [`LegacyTransaction`](LegacyTransaction.md) \| [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md) \| [`BlobEIP4844Transaction`](BlobEIP4844Transaction.md)\>
 
 Method to retrieve a transaction from the provider
 
@@ -56,7 +56,7 @@ Method to retrieve a transaction from the provider
 
 #### Returns
 
-`Promise`<[`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md) \| [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md) \| [`BlobEIP4844Transaction`](BlobEIP4844Transaction.md) \| [`LegacyTransaction`](LegacyTransaction.md)\>
+`Promise`<[`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md) \| [`LegacyTransaction`](LegacyTransaction.md) \| [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md) \| [`BlobEIP4844Transaction`](BlobEIP4844Transaction.md)\>
 
 the transaction specified by `txHash`
 

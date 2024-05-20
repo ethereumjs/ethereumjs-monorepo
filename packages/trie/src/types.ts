@@ -2,7 +2,7 @@ import { utf8ToBytes } from '@ethereumjs/util'
 
 import type { BranchNode, ExtensionNode, LeafNode } from './node/index.js'
 import type { WalkController } from './util/walkController.js'
-import type { DB } from '@ethereumjs/util'
+import type { DB, ValueEncoding } from '@ethereumjs/util'
 
 export type TrieNode = BranchNode | ExtensionNode | LeafNode
 
@@ -13,6 +13,18 @@ export type Nibbles = number[]
 export type EmbeddedNode = Uint8Array | Uint8Array[]
 
 export type Proof = Uint8Array[]
+
+export interface CommonInterface {
+  customCrypto: {
+    keccak256?: (msg: Uint8Array) => Uint8Array
+  }
+}
+
+export interface Path {
+  node: TrieNode | null
+  remaining: Nibbles
+  stack: TrieNode[]
+}
 
 export type FoundNodeFunction = (
   nodeRef: Uint8Array,
@@ -27,7 +39,7 @@ export interface TrieOpts {
   /**
    * A database instance.
    */
-  db?: DB<string, string>
+  db?: DB<string, string | Uint8Array>
 
   /**
    * A `Uint8Array` for the root of a previously stored trie
@@ -54,6 +66,19 @@ export interface TrieOpts {
   useKeyHashingFunction?: HashKeysFunction
 
   /**
+   * Add a prefix to the trie node keys
+   *
+   * (potential performance benefits if multiple tries are stored within the same DB,
+   * e.g. all storage tries being stored in the outer account state DB)
+   */
+  keyPrefix?: Uint8Array
+
+  /**
+   * ValueEncoding of the database (the values which are `put`/`get` in the db are of this type). Defaults to `string`
+   */
+  valueEncoding?: ValueEncoding
+
+  /**
    * Store the root inside the database after every `write` operation
    */
   useRootPersistence?: boolean
@@ -70,6 +95,11 @@ export interface TrieOpts {
    * Default: 0 (deactivated)
    */
   cacheSize?: number
+
+  /**
+   * @ethereumjs/common `Common` instance (an alternative to passing in a `customHashingFunction`)
+   */
+  common?: CommonInterface
 }
 
 export type TrieOptsWithDefaults = TrieOpts & {
@@ -80,11 +110,21 @@ export type TrieOptsWithDefaults = TrieOpts & {
   cacheSize: number
 }
 
+export interface TrieShallowCopyOpts {
+  keyPrefix?: Uint8Array
+  cacheSize?: number
+}
+
 export interface CheckpointDBOpts {
   /**
    * A database instance.
    */
-  db: DB<string, string>
+  db: DB<string, string | Uint8Array>
+
+  /**
+   * ValueEncoding of the database (the values which are `put`/`get` in the db are of this type). Defaults to `string`
+   */
+  valueEncoding?: ValueEncoding
 
   /**
    * Cache size (default: 0)

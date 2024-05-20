@@ -1,35 +1,35 @@
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain'
-import { Config } from '../../../src/config'
-import { Event } from '../../../src/types'
+import { Chain } from '../../../src/blockchain/index.js'
+import { Config } from '../../../src/config.js'
+import { Event } from '../../../src/types.js'
 
+class PeerPool {
+  idle() {}
+  ban() {}
+}
+PeerPool.prototype.idle = vi.fn()
+PeerPool.prototype.ban = vi.fn()
+vi.mock('../../src/net/peerpool.js', () => {
+  return PeerPool
+})
+
+const { HeaderFetcher } = await import('../../../src/sync/fetcher/headerfetcher.js')
 describe('[HeaderFetcher]', async () => {
-  class PeerPool {
-    idle() {}
-    ban() {}
-  }
-  PeerPool.prototype.idle = vi.fn()
-  PeerPool.prototype.ban = vi.fn()
-  vi.mock('../../src/net/peerpool', () => {
-    return PeerPool
-  })
-
-  const { HeaderFetcher } = await import('../../../src/sync/fetcher/headerfetcher')
-
   it('should process', () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool()
     const flow = { handleReply: vi.fn() }
     const fetcher = new HeaderFetcher({ config, pool, flow })
     const headers = [{ number: 1 }, { number: 2 }]
     assert.deepEqual(
-      //@ts-ignore
-      fetcher.process({ task: { count: 2 }, peer: 'peer0' }, { headers, bv: BigInt(1) }),
+      fetcher.process(
+        { task: { count: 2 }, peer: 'peer0' } as any,
+        { headers, bv: BigInt(1) } as any
+      ),
       headers as any,
       'got results'
     )
-    //@ts-ignore
     assert.notOk(
       fetcher.process({ task: { count: 2 } } as any, { headers: [], bv: BigInt(1) } as any),
       'bad results'
@@ -38,7 +38,7 @@ describe('[HeaderFetcher]', async () => {
   })
 
   it('should adopt correctly', () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const flow = { handleReply: vi.fn() }
     const fetcher = new HeaderFetcher({
@@ -63,7 +63,7 @@ describe('[HeaderFetcher]', async () => {
   })
 
   it('should find a fetchable peer', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool()
     const fetcher = new HeaderFetcher({ config, pool })
     ;(fetcher as any).pool.idle.mockReturnValueOnce('peer0')
@@ -71,7 +71,7 @@ describe('[HeaderFetcher]', async () => {
   })
 
   it('should request correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const flow = { handleReply: vi.fn(), maxRequestCount: vi.fn() }
     const fetcher = new HeaderFetcher({
@@ -85,6 +85,7 @@ describe('[HeaderFetcher]', async () => {
       les: { getBlockHeaders: vi.fn() },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
@@ -94,35 +95,38 @@ describe('[HeaderFetcher]', async () => {
       reverse: false,
     })
   })
-
-  it('store()', async () => {
-    const config = new Config({ maxPerRequest: 5, transports: [] })
-    const pool = new PeerPool() as any
-    const chain = await Chain.create({ config })
-    const fetcher = new HeaderFetcher({
-      config,
-      pool,
-      chain,
-      first: BigInt(1),
-      count: BigInt(10),
-      timeout: 5,
-    })
-
+})
+describe('store()', async () => {
+  const config = new Config({ maxPerRequest: 5 })
+  const pool = new PeerPool() as any
+  const chain = await Chain.create({ config })
+  const fetcher = new HeaderFetcher({
+    config,
+    pool,
+    chain,
+    first: BigInt(1),
+    count: BigInt(10),
+    timeout: 5,
+  })
+  it('should handle bad header', async () => {
     chain.putHeaders = vi.fn((input) => {
       if (input[0] === 0) throw new Error('err0')
     }) as any
     try {
       await fetcher.store([0 as any])
+      assert.fail('should fail')
     } catch (err: any) {
       assert.equal(err.message, 'err0', 'store() threw on invalid header')
     }
-
-    chain.putHeaders = vi.fn((input) => {
-      if (input[0] === 1) return 1
-    }) as any
-    config.events.on(Event.SYNC_FETCHED_HEADERS, () =>
-      assert.ok(true, 'store() emitted SYNC_FETCHED_HEADERS event on putting headers')
-    )
-    await fetcher.store([1 as any])
   })
+
+  chain.putHeaders = vi.fn((input) => {
+    if (input[0] === 1) return 1
+  }) as any
+  config.events.on(Event.SYNC_FETCHED_HEADERS, () =>
+    it('should emit event on put headers', () => {
+      assert.ok(true, 'store() emitted SYNC_FETCHED_HEADERS event on putting headers')
+    })
+  )
+  await fetcher.store([1 as any])
 })

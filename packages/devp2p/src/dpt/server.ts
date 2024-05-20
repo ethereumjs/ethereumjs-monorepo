@@ -2,6 +2,7 @@ import { bytesToHex, bytesToUnprefixedHex } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import * as dgram from 'dgram'
 import { EventEmitter } from 'events'
+import { LRUCache } from 'lru-cache'
 
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
@@ -9,12 +10,10 @@ import { decode, encode } from './message.js'
 
 import type { DPTServerOptions, PeerInfo } from '../types.js'
 import type { DPT } from './dpt.js'
+import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
-import type LRUCache from 'lru-cache'
 const { debug: createDebugLogger } = debugDefault
-
-const LRU = require('lru-cache')
 
 const DEBUG_BASE_NAME = 'dpt:server'
 const verbose = createDebugLogger('verbose').enabled
@@ -32,6 +31,10 @@ export class Server {
   protected _socket: DgramSocket | null
   private _debug: Debugger
 
+  protected _common?: Common
+
+  private DEBUG: boolean
+
   constructor(dpt: DPT, privateKey: Uint8Array, options: DPTServerOptions) {
     this.events = new EventEmitter()
     this._dpt = dpt
@@ -40,7 +43,7 @@ export class Server {
     this._timeout = options.timeout ?? 4000 // 4 * 1000
     this._endpoint = options.endpoint ?? { address: '0.0.0.0', udpPort: null, tcpPort: null }
     this._requests = new Map()
-    this._requestsCache = new LRU({ max: 1000, ttl: 1000, stale: false }) // 1 sec * 1000
+    this._requestsCache = new LRUCache({ max: 1000, ttl: 1000 }) // 1 sec * 1000
 
     const createSocket = options.createSocket ?? dgram.createSocket.bind(null, { type: 'udp4' })
     this._socket = createSocket()
@@ -57,18 +60,27 @@ export class Server {
         }
       })
     }
+
+    this._common = options.common
+
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   bind(...args: any[]) {
     this._isAliveCheck()
-    this._debug('call .bind')
+    if (this.DEBUG) {
+      this._debug('call .bind')
+    }
 
     if (this._socket) this._socket.bind(...args)
   }
 
   destroy(...args: any[]) {
     this._isAliveCheck()
-    this._debug('call .destroy')
+    if (this.DEBUG) {
+      this._debug('call .destroy')
+    }
 
     if (this._socket) {
       this._socket.close(...args)
@@ -96,11 +108,13 @@ export class Server {
       deferred,
       timeoutId: setTimeout(() => {
         if (this._requests.get(rkey) !== undefined) {
-          this._debug(
-            `ping timeout: ${peer.address}:${peer.udpPort} ${
-              peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
-            }`
-          )
+          if (this.DEBUG) {
+            this._debug(
+              `ping timeout: ${peer.address}:${peer.udpPort} ${
+                peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
+              }`
+            )
+          }
           this._requests.delete(rkey)
           deferred.reject(new Error(`Timeout error: ping ${peer.address}:${peer.udpPort}`))
         } else {
@@ -122,14 +136,16 @@ export class Server {
   }
 
   _send(peer: PeerInfo, typename: string, data: any) {
-    this.debug(
-      typename,
-      `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
-        peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
-      })`
-    )
+    if (this.DEBUG) {
+      this.debug(
+        typename,
+        `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
+          peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
+        })`
+      )
+    }
 
-    const msg = encode(typename, data, this._privateKey)
+    const msg = encode(typename, data, this._privateKey, this._common)
 
     if (this._socket && typeof peer.udpPort === 'number')
       this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
@@ -137,15 +153,17 @@ export class Server {
   }
 
   _handler(msg: Uint8Array, rinfo: RemoteInfo) {
-    const info = decode(msg) // Dgram serializes everything to `Uint8Array`
+    const info = decode(msg, this._common) // Dgram serializes everything to `Uint8Array`
     const peerId = pk2id(info.publicKey)
-    this.debug(
-      info.typename.toString(),
-      `received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${formatLogId(
-        bytesToHex(peerId),
-        verbose
-      )})`
-    )
+    if (this.DEBUG) {
+      this.debug(
+        info.typename.toString(),
+        `received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${formatLogId(
+          bytesToHex(peerId),
+          verbose
+        )})`
+      )
+    }
 
     // add peer if not in our table
     const peer = this._dpt.getPeer(peerId)

@@ -1,6 +1,13 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Address, KECCAK256_RLP, Withdrawal, hexToBytes, zeros } from '@ethereumjs/util'
+import {
+  Address,
+  KECCAK256_RLP,
+  Withdrawal,
+  hexToBytes,
+  randomBytes,
+  zeros,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Block } from '../src/block.js'
@@ -31,7 +38,7 @@ common.hardforkBlock = function (hardfork: string | undefined) {
 describe('EIP4895 tests', () => {
   it('should correctly generate withdrawalsRoot', async () => {
     // get withdwalsArray
-    const gethBlockBytesArray = RLP.decode(hexToBytes('0x' + gethWithdrawals8BlockRlp))
+    const gethBlockBytesArray = RLP.decode(hexToBytes(`0x${gethWithdrawals8BlockRlp}`))
     const withdrawals = (gethBlockBytesArray[3] as WithdrawalBytes[]).map((wa) =>
       Withdrawal.fromValuesArray(wa)
     )
@@ -153,7 +160,7 @@ describe('EIP4895 tests', () => {
     const withdrawal = <WithdrawalData>{
       index: BigInt(0),
       validatorIndex: BigInt(0),
-      address: new Address(hexToBytes('0x' + '20'.repeat(20))),
+      address: new Address(hexToBytes(`0x${'20'.repeat(20)}`)),
       amount: BigInt(1000),
     }
 
@@ -178,7 +185,7 @@ describe('EIP4895 tests', () => {
     const withdrawal2 = <WithdrawalData>{
       index: BigInt(1),
       validatorIndex: BigInt(11),
-      address: new Address(hexToBytes('0x' + '30'.repeat(20))),
+      address: new Address(hexToBytes(`0x${'30'.repeat(20)}`)),
       amount: BigInt(2000),
     }
 
@@ -222,6 +229,16 @@ describe('EIP4895 tests', () => {
       undefined,
       undefined,
       'should provide withdrawals array when 4895 is active'
+    )
+  })
+
+  it('should return early when withdrawals root equals KECCAK256_RLP', async () => {
+    const block = Block.fromBlockData({}, { common })
+    // Set invalid withdrawalsRoot in cache
+    block['cache'].withdrawalsTrieRoot = randomBytes(32)
+    assert.ok(
+      await block.withdrawalsTrieIsValid(),
+      'correctly executed code path where withdrawals length is 0'
     )
   })
 })

@@ -1,16 +1,11 @@
 import debugDefault from 'debug'
+import * as dns from 'dns'
 
 import { ENR } from './enr.js'
 
 import type { DNSOptions, PeerInfo } from '../types.js'
+import type { Common } from '@ethereumjs/common'
 const { debug: createDebugLogger } = debugDefault
-
-let dns: any
-try {
-  dns = require('dns')
-} catch (e: any) {
-  dns = require('../browser/dns.js')
-}
 
 const debug = createDebugLogger('devp2p:dns:dns')
 
@@ -24,12 +19,21 @@ export class DNS {
   protected _DNSTreeCache: { [key: string]: string }
   protected readonly _errorTolerance: number = 10
 
+  protected _common?: Common
+
+  private DEBUG: boolean
+
   constructor(options: DNSOptions = {}) {
     this._DNSTreeCache = {}
 
     if (typeof options.dnsServerAddress === 'string') {
-      dns.setServers([options.dnsServerAddress])
+      dns.promises.setServers([options.dnsServerAddress])
     }
+
+    this._common = options.common
+
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   /**
@@ -60,7 +64,9 @@ export class DNS {
 
       if (this._isNewPeer(peer, peers)) {
         peers.push(peer)
-        debug(`got new peer candidate from DNS address=${peer.address}`)
+        if (this.DEBUG) {
+          debug(`got new peer candidate from DNS address=${peer.address}`)
+        }
       }
 
       totalSearches++
@@ -86,19 +92,21 @@ export class DNS {
     try {
       switch (this._getEntryType(entry)) {
         case ENR.ROOT_PREFIX:
-          next = ENR.parseAndVerifyRoot(entry, context.publicKey)
+          next = ENR.parseAndVerifyRoot(entry, context.publicKey, this._common)
           return await this._search(next, context)
         case ENR.BRANCH_PREFIX:
           branches = ENR.parseBranch(entry)
           next = this._selectRandomPath(branches, context)
           return await this._search(next, context)
         case ENR.RECORD_PREFIX:
-          return ENR.parseAndVerifyRecord(entry)
+          return ENR.parseAndVerifyRecord(entry, this._common)
         default:
           return null
       }
     } catch (error: any) {
-      debug(`Errored searching DNS tree at subdomain ${subdomain}: ${error}`)
+      if (this.DEBUG) {
+        debug(`Errored searching DNS tree at subdomain ${subdomain}: ${error}`)
+      }
       return null
     }
   }

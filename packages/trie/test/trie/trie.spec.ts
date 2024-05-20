@@ -1,4 +1,13 @@
-import { KECCAK256_RLP, MapDB, bytesToHex, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  KECCAK256_RLP,
+  MapDB,
+  bytesToHex,
+  concatBytes,
+  equalsBytes,
+  randomBytes,
+  unprefixedHexToBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
@@ -81,13 +90,11 @@ for (const { constructor, defaults, title } of [
         useRootPersistence: true,
       })
 
-      // @ts-expect-error
-      assert.equal(await trie._db.get(ROOT_DB_KEY), undefined)
+      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
 
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
-      // @ts-expect-error
-      assert.equal(bytesToHex(await trie._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
+      assert.equal(bytesToHex((await trie['_db'].get(ROOT_DB_KEY))!), EXPECTED_ROOTS)
     })
 
     it('persist the root if the `root` option is given', async () => {
@@ -98,13 +105,11 @@ for (const { constructor, defaults, title } of [
         useRootPersistence: true,
       })
 
-      // @ts-expect-error
-      assert.ok(equalsBytes((await trie._db.get(ROOT_DB_KEY))!, KECCAK256_RLP))
+      assert.ok(equalsBytes((await trie['_db'].get(ROOT_DB_KEY))!, KECCAK256_RLP))
 
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
-      // @ts-expect-error
-      assert.isFalse(equalsBytes((await trie._db.get(ROOT_DB_KEY))!, KECCAK256_RLP))
+      assert.isFalse(equalsBytes((await trie['_db'].get(ROOT_DB_KEY))!, KECCAK256_RLP))
     })
 
     it('does not persist the root if the `useRootPersistence` option is `false`', async () => {
@@ -114,41 +119,34 @@ for (const { constructor, defaults, title } of [
         useRootPersistence: false,
       })
 
-      // @ts-expect-error
-      assert.equal(await trie._db.get(ROOT_DB_KEY), undefined)
+      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
 
       await trie.put(utf8ToBytes('do_not_persist_with_db'), utf8ToBytes('bar'))
 
-      // @ts-expect-error
-      assert.equal(await trie._db.get(ROOT_DB_KEY), undefined)
+      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
     })
 
     it('persists the root if the `db` option is not provided', async () => {
       const trie = await constructor.create({ ...defaults, useRootPersistence: true })
 
-      // @ts-expect-error
-      assert.equal(await trie._db.get(ROOT_DB_KEY), undefined)
+      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
 
       await trie.put(utf8ToBytes('do_not_persist_without_db'), utf8ToBytes('bar'))
 
-      // @ts-expect-error
-      assert.notEqual(await trie._db.get(ROOT_DB_KEY), undefined)
+      assert.notEqual(await trie['_db'].get(ROOT_DB_KEY), undefined)
     })
 
     it('persist and restore the root', async () => {
       const db = new MapDB<string, string>()
 
       const trie = await constructor.create({ ...defaults, db, useRootPersistence: true })
-      // @ts-expect-error
-      assert.equal(await trie._db.get(ROOT_DB_KEY), undefined)
+      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
-      // @ts-expect-error
-      assert.equal(bytesToHex(await trie._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
+      assert.equal(bytesToHex((await trie['_db'].get(ROOT_DB_KEY))!), EXPECTED_ROOTS)
 
       // Using the same database as `trie` so we should have restored the root
       const copy = await constructor.create({ ...defaults, db, useRootPersistence: true })
-      // @ts-expect-error
-      assert.equal(bytesToHex(await copy._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
+      assert.equal(bytesToHex((await copy['_db'].get(ROOT_DB_KEY))!), EXPECTED_ROOTS)
 
       // New trie with a new database so we shouldn't find a root to restore
       const empty = await constructor.create({
@@ -156,8 +154,7 @@ for (const { constructor, defaults, title } of [
         db: new MapDB(),
         useRootPersistence: true,
       })
-      // @ts-expect-error
-      assert.equal(await empty._db.get(ROOT_DB_KEY), undefined)
+      assert.equal(await empty['_db'].get(ROOT_DB_KEY), undefined)
     })
 
     it('put fails if the key is the ROOT_DB_KEY', async () => {
@@ -171,4 +168,121 @@ for (const { constructor, defaults, title } of [
       }
     })
   })
+
+  describe(`${title} (Check Root)`, async () => {
+    const keyvals = Array.from({ length: 100 }, () => {
+      const key = randomBytes(20)
+      const value = randomBytes(10)
+      return { key, value }
+    })
+    const trie = await constructor.create({
+      ...defaults,
+      db: new MapDB(),
+    })
+    for await (const { key, value } of keyvals) {
+      await trie.put(key, value)
+    }
+    const roots = [...(<any>trie.database().db)._database.keys()]
+    it('should return true for all nodes in the trie', async () => {
+      assert.isTrue(await trie.checkRoot(trie.root()), 'Should return true for root node')
+      for (const root of roots) {
+        assert.isTrue(
+          await trie.checkRoot(unprefixedHexToBytes(root)),
+          'Should return true for all nodes in trie'
+        )
+      }
+    })
+    it('should return false for nodes not in the trie', async () => {
+      for (let i = 0; i < 10; i++) {
+        const key = unprefixedHexToBytes(`${i}`.repeat(64))
+        assert.isFalse(await trie.checkRoot(key), 'Should return false for nodes not in trie')
+      }
+    })
+    it('should return false for all keys if trie is empty', async () => {
+      const emptyTrie = await constructor.create({
+        ...defaults,
+        db: new MapDB(),
+      })
+      assert.deepEqual(emptyTrie.EMPTY_TRIE_ROOT, emptyTrie.root(), 'Should return empty trie root')
+      assert.isTrue(
+        await emptyTrie.checkRoot(emptyTrie.EMPTY_TRIE_ROOT),
+        'Should return true for empty root'
+      )
+      assert.isFalse(
+        await emptyTrie.checkRoot(emptyTrie['appliedKey'](ROOT_DB_KEY)),
+        'Should return false for persistence key'
+      )
+      for (const root of roots) {
+        assert.isFalse(
+          await emptyTrie.checkRoot(unprefixedHexToBytes(root)),
+          'Should always return false'
+        )
+      }
+    })
+    it('Should throw on unrelated errors', async () => {
+      const emptyTrie = await constructor.create({
+        ...defaults,
+        db: new MapDB(),
+        useRootPersistence: true,
+      })
+      await emptyTrie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
+      await emptyTrie.persistRoot()
+      try {
+        await emptyTrie.checkRoot(ROOT_DB_KEY)
+        assert.fail('Should throw')
+      } catch (e: any) {
+        assert.notEqual(
+          'Missing node in DB',
+          e.message,
+          'Should throw when error is unrelated to checkroot'
+        )
+      }
+    })
+  })
 }
+
+describe('keyHashingFunction', async () => {
+  it('uses correct hash function', async () => {
+    const keyHashingFunction = (msg: Uint8Array) => {
+      return concatBytes(msg, Uint8Array.from([1]))
+    }
+    const c = {
+      customCrypto: {
+        keccak256: (msg: Uint8Array) => msg,
+      },
+    }
+
+    const trieWithHashFunction = await Trie.create({ useKeyHashingFunction: keyHashingFunction })
+    const trieWithCommon = await Trie.create({ common: c })
+
+    assert.equal(
+      bytesToHex(trieWithHashFunction.root()),
+      '0x8001',
+      'used hash function from customKeyHashingFunction'
+    )
+    assert.equal(bytesToHex(trieWithCommon.root()), '0x80', 'used hash function from common')
+  })
+
+  it('shallow copy uses correct hash function', async () => {
+    const keyHashingFunction = (msg: Uint8Array) => {
+      return concatBytes(msg, Uint8Array.from([1]))
+    }
+    const c = {
+      customCrypto: {
+        keccak256: (msg: Uint8Array) => msg,
+      },
+    }
+
+    const trieWithHashFunction = await Trie.create({ useKeyHashingFunction: keyHashingFunction })
+    const trieWithHashFunctionCopy = trieWithHashFunction.shallowCopy()
+    const trieWithCommon = await Trie.create({ common: c })
+    const trieWithCommonCopy = trieWithCommon.shallowCopy()
+
+    assert.equal(
+      bytesToHex(trieWithHashFunctionCopy.root()),
+      '0x8001',
+      'used hash function from customKeyHashingFunction'
+    )
+    assert.equal(bytesToHex(trieWithCommonCopy.root()), '0x80', 'used hash function from common')
+  })
+})

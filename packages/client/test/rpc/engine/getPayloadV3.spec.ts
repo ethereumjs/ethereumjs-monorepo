@@ -10,15 +10,13 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
   hexToBytes,
-  initKZG,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import { baseRequest, baseSetup, params, setupChain } from '../helpers'
-import { checkError } from '../util'
+import { baseSetup, getRpcClient, setupChain } from '../helpers.js'
 
 // Since the genesis is copy of withdrawals with just sharding hardfork also started
 // at 0, we can re-use the same payload args
@@ -42,30 +40,22 @@ const validPayload = [
   },
 ]
 
-try {
-  initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
-  // eslint-disable-next-line
-} catch {}
 const method = 'engine_getPayloadV3'
 
 describe(method, () => {
   it('call with invalid payloadId', async () => {
-    const { server } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
-    const req = params(method, [1])
-    const expectRes = checkError(
-      INVALID_PARAMS,
-      'invalid argument 0: argument must be a hex string'
-    )
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, [1])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('invalid argument 0: argument must be a hex string'))
   })
 
   it('call with unknown payloadId', async () => {
-    const { server } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
-    const req = params(method, ['0x123'])
-    const expectRes = checkError(-32001, 'Unknown payload')
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, ['0x123'])
+    assert.equal(res.error.code, -32001, 'Unknown payload')
   })
 
   it('call with known payload', async () => {
@@ -76,10 +66,16 @@ describe(method, () => {
     DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
+
+    const kzg = await loadKZG()
+
     const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
     })
+
+    const rpc = getRpcClient(server)
     common.setHardfork(Hardfork.Cancun)
     const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
     const address = Address.fromPrivateKey(pkey)
@@ -88,24 +84,19 @@ describe(method, () => {
 
     account!.balance = 0xfffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
-    let req = params('engine_forkchoiceUpdatedV3', validPayload)
-    let payloadId
-    let expectRes = (res: any) => {
-      payloadId = res.body.result.payloadId
-      assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
-    ;(service.txPool as any).vm.common.setHardfork(Hardfork.Cancun)
+    let res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
+    const payloadId = res.result.payloadId
+    assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
 
     const txBlobs = getBlobs('hello world')
-    const txCommitments = blobsToCommitments(txBlobs)
+    const txCommitments = blobsToCommitments(kzg, txBlobs)
     const txVersionedHashes = commitmentsToVersionedHashes(txCommitments)
-    const txProofs = blobsToProofs(txBlobs, txCommitments)
+    const txProofs = blobsToProofs(kzg, txBlobs, txCommitments)
 
     const tx = TransactionFactory.fromTxData(
       {
         type: 0x03,
-        versionedHashes: txVersionedHashes,
+        blobVersionedHashes: txVersionedHashes,
         blobs: txBlobs,
         kzgCommitments: txCommitments,
         kzgProofs: txProofs,
@@ -113,34 +104,32 @@ describe(method, () => {
         maxFeePerGas: 10000000000n,
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
+        to: Address.zero(),
       },
       { common }
     ).sign(pkey)
 
-    service.txPool['vm'].common.setHardfork(Hardfork.Cancun)
     await service.txPool.add(tx, true)
-    req = params('engine_getPayloadV3', [payloadId])
-    expectRes = (res: any) => {
-      const { executionPayload, blobsBundle } = res.body.result
-      assert.equal(
-        executionPayload.blockHash,
-        '0x0a4f946a9dac3f6d2b86d02dfa6cf221b4fe72bbaff51b50cee4c5784156dd52',
-        'built expected block'
-      )
-      assert.equal(executionPayload.excessBlobGas, '0x0', 'correct execess blob gas')
-      assert.equal(executionPayload.blobGasUsed, '0x20000', 'correct blob gas used')
-      const { commitments, proofs, blobs } = blobsBundle
-      assert.ok(
-        commitments.length === proofs.length && commitments.length === blobs.length,
-        'equal commitments, proofs and blobs'
-      )
-      assert.equal(blobs.length, 1, '1 blob should be returned')
-      assert.equal(proofs[0], bytesToHex(txProofs[0]), 'proof should match')
-      assert.equal(commitments[0], bytesToHex(txCommitments[0]), 'commitment should match')
-      assert.equal(blobs[0], bytesToHex(txBlobs[0]), 'blob should match')
-    }
+    res = await rpc.request('engine_getPayloadV3', [payloadId])
 
-    await baseRequest(server, req, 200, expectRes, false, false)
+    const { executionPayload, blobsBundle } = res.result
+    assert.equal(
+      executionPayload.blockHash,
+      '0x8c71ad199a3dda94de6a1c31cc50a26b1f03a8a4924e9ea3fd7420c6411cac42',
+      'built expected block'
+    )
+    assert.equal(executionPayload.excessBlobGas, '0x0', 'correct execess blob gas')
+    assert.equal(executionPayload.blobGasUsed, '0x20000', 'correct blob gas used')
+    const { commitments, proofs, blobs } = blobsBundle
+    assert.ok(
+      commitments.length === proofs.length && commitments.length === blobs.length,
+      'equal commitments, proofs and blobs'
+    )
+    assert.equal(blobs.length, 1, '1 blob should be returned')
+    assert.equal(proofs[0], bytesToHex(txProofs[0]), 'proof should match')
+    assert.equal(commitments[0], bytesToHex(txCommitments[0]), 'commitment should match')
+    assert.equal(blobs[0], bytesToHex(txBlobs[0]), 'blob should match')
+
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
     DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
   })

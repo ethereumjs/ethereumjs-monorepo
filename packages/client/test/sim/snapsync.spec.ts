@@ -1,5 +1,4 @@
 import { Common } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   Address,
   bytesToHex,
@@ -20,13 +19,14 @@ import {
   filterKeywords,
   filterOutWords,
   runTxHelper,
+  setupEngineUpdateRelay,
   startNetwork,
   waitForELStart,
 } from './simutils'
 
 import type { EthereumClient } from '../../src/client'
-import type { RlpxServer } from '../../src/net/server'
-import type { Trie } from '@ethereumjs/trie'
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const client = Client.http({ port: 8545 })
 
@@ -41,18 +41,22 @@ const sender = bytesToHex(privateToAddress(pkey))
 let senderBalance = BigInt(customGenesisState[sender][0])
 
 let ejsClient: EthereumClient | null = null
+let beaconSyncRelayer: any = null
 let snapCompleted: Promise<unknown> | undefined = undefined
-let syncedTrie: Trie | undefined = undefined
+let stateManager: DefaultStateManager | undefined = undefined
 
 // This account doesn't exist in the genesis so starting balance is zero
 const EOATransferToAccount = '0x3dA33B9A0894b908DdBb00d96399e506515A1009'
 let EOATransferToBalance = BigInt(0)
 
-export async function runTx(data: string, to?: string, value?: bigint) {
+export async function runTx(data: PrefixedHexString | '', to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
 
 describe('simple mainnet test run', async () => {
+  if (process.env.EXTRA_CL_PARAMS === undefined) {
+    process.env.EXTRA_CL_PARAMS = '--params.CAPELLA_FORK_EPOCH 0'
+  }
   // Better add it as a option in startnetwork
   process.env.NETWORKID = `${common.networkId()}`
   const { teardownCallBack, result } = await startNetwork(network, client, {
@@ -62,7 +66,7 @@ describe('simple mainnet test run', async () => {
     withPeer: process.env.WITH_PEER,
   })
 
-  if (result.includes('Geth')) {
+  if (result.includes('Geth') === true) {
     assert.ok(true, 'connected to Geth')
   } else {
     assert.fail('connected to wrong client')
@@ -116,21 +120,37 @@ describe('simple mainnet test run', async () => {
   it.skipIf(process.env.SNAP_SYNC === undefined)(
     'setup snap sync',
     async () => {
-      // start client inline here for snap sync, no need for beacon
-      const { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise } =
+      // start client inline here for snap sync while playing updates from peer beacon
+      const peerBeaconUrl = 'http://127.0.0.1:9596'
+
+      const {
+        ejsInlineClient,
+        peerConnectedPromise,
+        snapSyncCompletedPromise,
+        beaconSyncRelayer: relayer,
+      } =
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        (await createSnapClient(common, customGenesisState, [nodeInfo.enode]).catch((e) => {
+        (await createSnapClient(
+          common,
+          customGenesisState,
+          [nodeInfo.enode],
+          peerBeaconUrl,
+          ''
+        ).catch((e) => {
           console.log(e)
           return null
         })) ?? {
           ejsInlineClient: null,
           peerConnectedPromise: Promise.reject('Client creation error'),
+          beaconSyncRelayer: null,
         }
+
       ejsClient = ejsInlineClient
+      beaconSyncRelayer = relayer
       snapCompleted = snapSyncCompletedPromise
       assert.ok(ejsClient !== null, 'ethereumjs client started')
 
-      const enode = (ejsClient!.server('rlpx') as RlpxServer)!.getRlpxInfo().enode
+      const enode = ejsClient!.server()!.getRlpxInfo().enode
       const res = await client.request('admin_addPeer', [enode])
       assert.equal(res.result, true, 'successfully requested Geth add EthereumJS as peer')
 
@@ -145,10 +165,13 @@ describe('simple mainnet test run', async () => {
     60_000
   )
 
-  it(
+  it.skipIf(process.env.SNAP_SYNC === undefined)(
     'should snap sync and finish',
     async () => {
-      if (ejsClient !== null && snapCompleted !== undefined) {
+      if (ejsClient !== null && snapCompleted !== undefined && beaconSyncRelayer !== null) {
+        // node should be in syncing or valid state, when snap sync fully implemented should just
+        // check for VALID
+        const beaconSyncPromise = beaconSyncRelayer.start({ waitForStates: ['VALID'] })
         // wait on the sync promise to complete if it has been called independently
         const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 8 * 60_000))
         let syncedSnapRoot: Uint8Array | undefined = undefined
@@ -157,13 +180,14 @@ describe('simple mainnet test run', async () => {
           // call sync if not has been called yet
           void ejsClient.services[0].synchronizer?.sync()
           await Promise.race([
-            snapCompleted.then(([root, trie]) => {
+            (snapCompleted as any).then(([root, syncedStateManager]: [any, any]) => {
               syncedSnapRoot = root
-              syncedTrie = trie
+              stateManager = syncedStateManager
             }),
             snapSyncTimeout,
           ])
-          await ejsClient.stop()
+
+          await Promise.race([beaconSyncPromise, snapSyncTimeout])
           assert.ok(true, 'completed snap sync')
         } catch (e) {
           assert.fail('could not complete snap sync in 8 minutes')
@@ -180,7 +204,7 @@ describe('simple mainnet test run', async () => {
     10 * 60_000
   )
 
-  it.skipIf(syncedTrie !== undefined)('should match entire state', async () => {
+  it.skipIf(stateManager !== undefined)('should match entire state', async () => {
     // update customGenesisState to reflect latest changes and match entire customGenesisState
     if (process.env.ADD_EOA_STATE !== undefined) {
       customGenesisState[EOATransferToAccount] = [
@@ -188,17 +212,15 @@ describe('simple mainnet test run', async () => {
         undefined,
         undefined,
         BigInt(0),
-      ]
-      customGenesisState[sender][0] = `0x${senderBalance.toString(16)}`
+      ] as any
+      ;(customGenesisState[sender][0] as any) = `0x${senderBalance.toString(16)}`
     }
-
-    const stateManager = new DefaultStateManager({ trie: syncedTrie })
 
     for (const addressString of Object.keys(customGenesisState)) {
       const address = Address.fromString(addressString)
-      const account = await stateManager.getAccount(address)
+      const account = await stateManager?.getAccount(address)
       assert.equal(
-        account.balance,
+        account?.balance,
         BigInt(customGenesisState[addressString][0]),
         `${addressString} balance should match`
       )
@@ -207,6 +229,8 @@ describe('simple mainnet test run', async () => {
 
   it('network cleanup', async () => {
     try {
+      beaconSyncRelayer?.close()
+      await ejsClient?.stop()
       await teardownCallBack()
       assert.ok(true, 'network cleaned')
     } catch (e) {
@@ -215,13 +239,18 @@ describe('simple mainnet test run', async () => {
   }, 60_000)
 })
 
-async function createSnapClient(common: any, customGenesisState: any, bootnodes: any) {
+async function createSnapClient(
+  common: any,
+  customGenesisState: any,
+  bootnodes: any,
+  peerBeaconUrl: any,
+  datadir: any
+) {
   // Turn on `debug` logs, defaults to all client logging
   debug.enable(process.env.DEBUG_SNAP ?? '')
   const logger = getLogger({ logLevel: 'debug' })
   const config = new Config({
     common,
-    transports: ['rlpx'],
     bootnodes,
     multiaddrs: [],
     logger,
@@ -230,7 +259,8 @@ async function createSnapClient(common: any, customGenesisState: any, bootnodes:
     discDns: false,
     discV4: false,
     port: 30304,
-    forceSnapSync: true,
+    enableSnapSync: true,
+    // syncmode: 'none',
     // Keep the single job sync range high as the state is not big
     maxAccountRange: (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10),
     maxFetcherJobs: 10,
@@ -239,13 +269,17 @@ async function createSnapClient(common: any, customGenesisState: any, bootnodes:
     config.events.once(Event.PEER_CONNECTED, (peer: any) => resolve(peer))
   })
   const snapSyncCompletedPromise = new Promise((resolve) => {
-    config.events.once(Event.SYNC_SNAPSYNC_COMPLETE, (stateRoot: Uint8Array, trie: Trie) =>
-      resolve([stateRoot, trie])
+    config.events.once(
+      Event.SYNC_SNAPSYNC_COMPLETE,
+      (stateRoot: Uint8Array, stateManager: DefaultStateManager) =>
+        resolve([stateRoot, stateManager])
     )
   })
 
-  const ejsInlineClient = await createInlineClient(config, common, customGenesisState)
-  return { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise }
+  const ejsInlineClient = await createInlineClient(config, common, customGenesisState, datadir)
+  const beaconSyncRelayer = await setupEngineUpdateRelay(ejsInlineClient, peerBeaconUrl)
+
+  return { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise, beaconSyncRelayer }
 }
 
 process.on('uncaughtException', (err, origin) => {

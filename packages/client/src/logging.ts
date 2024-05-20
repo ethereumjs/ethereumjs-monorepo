@@ -1,9 +1,9 @@
-import * as chalk from 'chalk'
-import { createLogger, format, transports as wTransports } from 'winston'
+import chalk from 'chalk'
+import * as winston from 'winston'
+import DailyRotateFile from 'winston-daily-rotate-file'
 
 import type { Logger as WinstonLogger } from 'winston'
-
-const DailyRotateFile = require('winston-daily-rotate-file')
+const { createLogger, format, transports: wTransports } = winston
 
 export type Logger = WinstonLogger
 type LoggerArgs = { logFile: string; logLevelFile: 'error' | 'warn' | 'info' | 'debug' } & {
@@ -121,11 +121,12 @@ function logFileTransport(args: LoggerArgs) {
     // Insert %DATE% before the last period
     const lastPeriod = filename.lastIndexOf('.')
     filename = `${filename.substring(0, lastPeriod)}.%DATE%${filename.substring(lastPeriod)}`
-    return new DailyRotateFile({
+    const logger = new DailyRotateFile({
       ...opts,
       filename,
       maxFiles: args.logMaxFiles,
     })
+    return logger
   }
 }
 

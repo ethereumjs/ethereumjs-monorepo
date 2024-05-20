@@ -1,17 +1,20 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { TWO_POW256, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { TWO_POW256, ecsign, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { FeeMarketEIP1559Transaction } from '../src/index.js'
 
 import testdata from './json/eip1559.json' // Source: Besu
 
+import type { FeeMarketEIP1559TxData, JsonTx } from '../src/index.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 const common = Common.custom({ chainId: 4 })
 common.setHardfork(Hardfork.London)
 
-const validAddress = hexToBytes('0x' + '01'.repeat(20))
-const validSlot = hexToBytes('0x' + '01'.repeat(32))
+const validAddress = hexToBytes(`0x${'01'.repeat(20)}`)
+const validSlot = hexToBytes(`0x${'01'.repeat(32)}`)
 const chainId = BigInt(4)
 
 describe('[FeeMarketEIP1559Transaction]', () => {
@@ -85,24 +88,76 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     )
   })
 
+  it('getEffectivePriorityFee()', () => {
+    const tx = FeeMarketEIP1559Transaction.fromTxData(
+      {
+        maxFeePerGas: 10,
+        maxPriorityFeePerGas: 8,
+      },
+      { common }
+    )
+    assert.equal(tx.getEffectivePriorityFee(BigInt(10)), BigInt(0))
+    assert.equal(tx.getEffectivePriorityFee(BigInt(9)), BigInt(1))
+    assert.equal(tx.getEffectivePriorityFee(BigInt(8)), BigInt(2))
+    assert.equal(tx.getEffectivePriorityFee(BigInt(2)), BigInt(8))
+    assert.equal(tx.getEffectivePriorityFee(BigInt(1)), BigInt(8))
+    assert.equal(tx.getEffectivePriorityFee(BigInt(0)), BigInt(8))
+    assert.throws(() => tx.getEffectivePriorityFee(BigInt(11)))
+  })
+
   it('sign()', () => {
     for (let index = 0; index < testdata.length; index++) {
       const data = testdata[index]
-      const pkey = hexToBytes(data.privateKey)
-      const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common })
+      const pkey = hexToBytes(data.privateKey as PrefixedHexString)
+      const txn = FeeMarketEIP1559Transaction.fromTxData(data as FeeMarketEIP1559TxData, { common })
       const signed = txn.sign(pkey)
       const rlpSerialized = RLP.encode(Uint8Array.from(signed.serialize()))
       assert.ok(
-        equalsBytes(rlpSerialized, hexToBytes(data.signedTransactionRLP)),
+        equalsBytes(rlpSerialized, hexToBytes(data.signedTransactionRLP as PrefixedHexString)),
         'Should sign txs correctly'
       )
     }
   })
 
+  it('addSignature() -> correctly adds correct signature values', () => {
+    const privKey = hexToBytes(testdata[0].privateKey as PrefixedHexString)
+    const tx = FeeMarketEIP1559Transaction.fromTxData({})
+    const signedTx = tx.sign(privKey)
+    const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
+
+    assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
+  })
+
+  it('addSignature() -> correctly converts raw ecrecover values', () => {
+    const privKey = hexToBytes(testdata[0].privateKey as PrefixedHexString)
+    const tx = FeeMarketEIP1559Transaction.fromTxData({})
+
+    const msgHash = tx.getHashedMessageToSign()
+    const { v, r, s } = ecsign(msgHash, privKey)
+
+    const signedTx = tx.sign(privKey)
+    const addSignatureTx = tx.addSignature(v, r, s, true)
+
+    assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
+  })
+
+  it('addSignature() -> throws when adding the wrong v value', () => {
+    const privKey = hexToBytes(testdata[0].privateKey as PrefixedHexString)
+    const tx = FeeMarketEIP1559Transaction.fromTxData({})
+
+    const msgHash = tx.getHashedMessageToSign()
+    const { v, r, s } = ecsign(msgHash, privKey)
+
+    assert.throws(() => {
+      // This will throw, since we now try to set either v=27 or v=28
+      tx.addSignature(v, r, s, false)
+    })
+  })
+
   it('hash()', () => {
     const data = testdata[0]
-    const pkey = hexToBytes(data.privateKey)
-    let txn = FeeMarketEIP1559Transaction.fromTxData(data, { common })
+    const pkey = hexToBytes(data.privateKey as PrefixedHexString)
+    let txn = FeeMarketEIP1559Transaction.fromTxData(data as FeeMarketEIP1559TxData, { common })
     let signed = txn.sign(pkey)
     const expectedHash = hexToBytes(
       '0x2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446'
@@ -111,7 +166,10 @@ describe('[FeeMarketEIP1559Transaction]', () => {
       equalsBytes(signed.hash(), expectedHash),
       'Should provide the correct hash when frozen'
     )
-    txn = FeeMarketEIP1559Transaction.fromTxData(data, { common, freeze: false })
+    txn = FeeMarketEIP1559Transaction.fromTxData(data as FeeMarketEIP1559TxData, {
+      common,
+      freeze: false,
+    })
     signed = txn.sign(pkey)
     assert.ok(
       equalsBytes(signed.hash(), expectedHash),
@@ -121,8 +179,11 @@ describe('[FeeMarketEIP1559Transaction]', () => {
 
   it('freeze property propagates from unsigned tx to signed tx', () => {
     const data = testdata[0]
-    const pkey = hexToBytes(data.privateKey)
-    const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common, freeze: false })
+    const pkey = hexToBytes(data.privateKey as PrefixedHexString)
+    const txn = FeeMarketEIP1559Transaction.fromTxData(data as FeeMarketEIP1559TxData, {
+      common,
+      freeze: false,
+    })
     assert.notOk(Object.isFrozen(txn), 'tx object is not frozen')
     const signedTxn = txn.sign(pkey)
     assert.notOk(Object.isFrozen(signedTxn), 'tx object is not frozen')
@@ -130,8 +191,11 @@ describe('[FeeMarketEIP1559Transaction]', () => {
 
   it('common propagates from the common of tx, not the common in TxOptions', () => {
     const data = testdata[0]
-    const pkey = hexToBytes(data.privateKey)
-    const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common, freeze: false })
+    const pkey = hexToBytes(data.privateKey as PrefixedHexString)
+    const txn = FeeMarketEIP1559Transaction.fromTxData(data as FeeMarketEIP1559TxData, {
+      common,
+      freeze: false,
+    })
 
     const newCommon = Common.custom({ chainId: 4 })
     newCommon.setHardfork(Hardfork.Paris)
@@ -176,12 +240,12 @@ describe('[FeeMarketEIP1559Transaction]', () => {
 
   it('toJSON()', () => {
     const data = testdata[0]
-    const pkey = hexToBytes(data.privateKey)
-    const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common })
+    const pkey = hexToBytes(data.privateKey as PrefixedHexString)
+    const txn = FeeMarketEIP1559Transaction.fromTxData(data as FeeMarketEIP1559TxData, { common })
     const signed = txn.sign(pkey)
 
     const json = signed.toJSON()
-    const expectedJSON = {
+    const expectedJSON: JsonTx = {
       type: '0x2',
       chainId: '0x4',
       nonce: '0x333',

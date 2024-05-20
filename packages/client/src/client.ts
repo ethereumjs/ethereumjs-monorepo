@@ -1,12 +1,12 @@
-import { version as packageVersion } from '../package.json'
+import { readFileSync } from 'fs'
 
-import { Chain } from './blockchain'
-import { SyncMode } from './config'
-import { FullEthereumService, LightEthereumService } from './service'
-import { Event } from './types'
+import { Chain } from './blockchain/index.js'
+import { SyncMode } from './config.js'
+import { FullEthereumService, LightEthereumService } from './service/index.js'
+import { Event } from './types.js'
 
-import type { Config } from './config'
-import type { MultiaddrLike } from './types'
+import type { Config } from './config.js'
+import type { MultiaddrLike } from './types.js'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
@@ -53,6 +53,12 @@ export interface EthereumClientOptions {
 
   /* custom genesisState if any for the chain */
   genesisState?: GenesisState
+
+  /* custom genesisStateRoot to be used with post verkle genesis for stateless runs */
+  genesisStateRoot?: Uint8Array
+
+  /* if client can be run stateless post verkle, defaults to true for now */
+  statelessVerkle?: boolean
 }
 
 /**
@@ -120,8 +126,14 @@ export class EthereumClient {
     }
     const name = this.config.chainCommon.chainName()
     const chainId = this.config.chainCommon.chainId()
+    const packageJson = JSON.parse(
+      readFileSync(
+        '/' + import.meta.url.split('client')[0].split('file:///')[1] + 'client/package.json',
+        'utf-8'
+      )
+    )
     this.config.logger.info(
-      `Initializing Ethereumjs client version=v${packageVersion} network=${name} chainId=${chainId}`
+      `Initializing Ethereumjs client version=v${packageJson.version} network=${name} chainId=${chainId}`
     )
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {
@@ -148,8 +160,10 @@ export class EthereumClient {
     this.config.logger.info('Setup networking and services.')
 
     await Promise.all(this.services.map((s) => s.start()))
-    await Promise.all(this.config.servers.map((s) => s.start()))
-    await Promise.all(this.config.servers.map((s) => s.bootstrap()))
+    this.config.server && (await this.config.server.start())
+    // Only call bootstrap if servers are actually started
+    this.config.server && this.config.server.started && (await this.config.server.bootstrap())
+
     this.started = true
   }
 
@@ -162,23 +176,22 @@ export class EthereumClient {
     }
     this.config.events.emit(Event.CLIENT_SHUTDOWN)
     await Promise.all(this.services.map((s) => s.stop()))
-    await Promise.all(this.config.servers.map((s) => s.stop()))
+    this.config.server && this.config.server.started && (await this.config.server.stop())
     this.started = false
   }
 
+  /**
+   *
+   * @returns the RLPx server (if it exists)
+   */
+  server() {
+    return this.config.server
+  }
   /**
    * Returns the service with the specified name.
    * @param name name of service
    */
   service(name: string) {
     return this.services.find((s) => s.name === name)
-  }
-
-  /**
-   * Returns the server with the specified name.
-   * @param name name of server
-   */
-  server(name: string) {
-    return this.config.servers.find((s) => s.name === name)
   }
 }

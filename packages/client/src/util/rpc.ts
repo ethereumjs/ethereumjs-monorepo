@@ -1,33 +1,35 @@
-import { json as jsonParser } from 'body-parser'
+import bodyParser from 'body-parser'
+import Connect from 'connect'
+import cors from 'cors'
 import { createServer } from 'http'
-import { Server as RPCServer } from 'jayson/promise'
-import { decode } from 'jwt-simple'
+import jayson from 'jayson/promise/index.js'
+import jwt from 'jwt-simple'
 import { inspect } from 'util'
 
-import type { Logger } from '../logging'
-import type { RPCManager } from '../rpc'
+import type { Logger } from '../logging.js'
+import type { RPCManager } from '../rpc/index.js'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
 import type { TAlgorithm } from 'jwt-simple'
-
-const Connect = require('connect')
-const cors = require('cors')
+const { json: jsonParser } = bodyParser
+const { decode } = jwt
 
 const algorithm: TAlgorithm = 'HS256'
 
 type CreateRPCServerOpts = {
   methodConfig: MethodConfig
-  rpcDebug: boolean
+  rpcDebug: string
+  rpcDebugVerbose: string
   logger?: Logger
 }
 type CreateRPCServerReturn = {
-  server: RPCServer
+  server: jayson.Server
   methods: { [key: string]: Function }
   namespaces: string
 }
 type CreateRPCServerListenerOpts = {
   rpcCors?: string
-  server: RPCServer
+  server: any
   withEngineMiddleware?: WithEngineMiddleware
 }
 type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: HttpServer }
@@ -41,6 +43,28 @@ export enum MethodConfig {
 
 /** Allowed drift for jwt token issuance is 60 seconds */
 const ALLOWED_DRIFT = 60_000
+
+/**
+ * Check if the `method` matches the comma-separated filter string
+ * @param method - Method to check the filter on
+ * @param filterStringCSV - Comma-separated list of filters to use
+ * @returns
+ */
+function checkFilter(method: string, filterStringCSV: string) {
+  if (!filterStringCSV || filterStringCSV === '') {
+    return false
+  }
+  if (filterStringCSV === 'all') {
+    return true
+  }
+  const filters = filterStringCSV.split(',')
+  for (const filter of filters) {
+    if (method.includes(filter) === true) {
+      return true
+    }
+  }
+  return false
+}
 
 /**
  * Internal util to pretty print params for logging.
@@ -63,32 +87,23 @@ export function createRPCServer(
   manager: RPCManager,
   opts: CreateRPCServerOpts
 ): CreateRPCServerReturn {
-  const { methodConfig, rpcDebug, logger } = opts
-
+  const { methodConfig, rpcDebug, rpcDebugVerbose, logger } = opts
   const onRequest = (request: any) => {
-    let msg = ''
-    if (rpcDebug) {
-      msg += `${request.method} called with params:\n${inspectParams(request.params)}`
-    } else {
-      msg += `${request.method} called with params: ${inspectParams(request.params, 125)}`
+    if (checkFilter(request.method, rpcDebugVerbose)) {
+      logger?.info(`${request.method} called with params:\n${inspectParams(request.params)}`)
+    } else if (checkFilter(request.method, rpcDebug)) {
+      logger?.info(`${request.method} called with params: ${inspectParams(request.params, 125)}`)
     }
-    logger?.debug(msg)
   }
 
   const handleResponse = (request: any, response: any, batchAddOn = '') => {
-    let msg = ''
-    if (rpcDebug) {
-      msg = `${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`
-    } else {
-      msg = `${request.method}${batchAddOn} responded with: `
-      if (response.result !== undefined) {
-        msg += inspectParams(response, 125)
-      }
-      if (response.error !== undefined) {
-        msg += `error: ${response.error.message}`
-      }
+    if (checkFilter(request.method, rpcDebugVerbose)) {
+      logger?.info(`${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`)
+    } else if (checkFilter(request.method, rpcDebug)) {
+      logger?.info(
+        `${request.method}${batchAddOn} responded with:\n${inspectParams(response, 125)}`
+      )
     }
-    logger?.debug(msg)
   }
 
   const onBatchResponse = (request: any, response: any) => {
@@ -107,11 +122,14 @@ export function createRPCServer(
   }
 
   let methods
-  const ethMethods = manager.getMethods()
+  const ethMethods = manager.getMethods(false, rpcDebug !== 'false' && rpcDebug !== '')
 
   switch (methodConfig) {
     case MethodConfig.WithEngine:
-      methods = { ...ethMethods, ...manager.getMethods(true) }
+      methods = {
+        ...ethMethods,
+        ...manager.getMethods(true, rpcDebug !== 'false' && rpcDebug !== ''),
+      }
       break
     case MethodConfig.WithoutEngine:
       methods = { ...ethMethods }
@@ -142,11 +160,12 @@ export function createRPCServer(
     }
   }
 
-  const server = new RPCServer(methods)
+  const server = new jayson.Server(methods)
   server.on('request', onRequest)
   server.on('response', onBatchResponse)
   const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
 
+  //@ts-ignore
   return { server, methods, namespaces }
 }
 
@@ -187,7 +206,7 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
       }
     })
   }
-
+  //@ts-ignore
   app.use(server.middleware())
   const httpServer = createServer(app)
   return httpServer
@@ -205,7 +224,6 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
     if (typeof rpcCors === 'string') app.use(cors({ origin: rpcCors }))
     httpServer = createServer(app)
   }
-
   const wss = server.websocket({ noServer: true })
 
   httpServer.on('upgrade', (req, socket, head) => {

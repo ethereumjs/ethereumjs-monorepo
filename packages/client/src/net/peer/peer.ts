@@ -1,15 +1,12 @@
+import { BIGINT_0, short } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 
-import type { Config } from '../../config'
-import type {
-  BoundProtocol,
-  EthProtocolMethods,
-  LesProtocolMethods,
-  Protocol,
-  Sender,
-  SnapProtocolMethods,
-} from '../protocol'
-import type { Server } from '../server'
+import { BoundEthProtocol, BoundLesProtocol, BoundSnapProtocol } from '../protocol/index.js'
+
+import type { Config } from '../../config.js'
+import type { BoundProtocol, Protocol, Sender } from '../protocol/index.js'
+import type { Server } from '../server/index.js'
+import type { BlockHeader } from '@ethereumjs/block'
 
 export interface PeerOptions {
   /* Config */
@@ -38,16 +35,21 @@ export interface PeerOptions {
  * Network peer
  * @memberof module:net/peer
  */
-export class Peer extends EventEmitter {
+export abstract class Peer extends EventEmitter {
   public config: Config
   public id: string
   public address: string
   public inbound: boolean
   public server: Server | undefined
-  public bound: Map<string, BoundProtocol>
   protected transport: string
   protected protocols: Protocol[]
+  protected boundProtocols: BoundProtocol[] = []
   private _idle: boolean
+
+  // TODO check if this should be moved into RlpxPeer
+  public eth?: BoundEthProtocol
+  public snap?: BoundSnapProtocol
+  public les?: BoundLesProtocol
 
   /*
     If the peer is in the PeerPool.
@@ -56,11 +58,6 @@ export class Peer extends EventEmitter {
     which are handled after the peer is added to the pool.
   */
   public pooled: boolean = false
-
-  // Dynamically bound protocol properties
-  public eth: (BoundProtocol & EthProtocolMethods) | undefined
-  public snap: (BoundProtocol & SnapProtocolMethods) | undefined
-  public les: (BoundProtocol & LesProtocolMethods) | undefined
 
   /**
    * Create new peer
@@ -75,7 +72,6 @@ export class Peer extends EventEmitter {
     this.transport = options.transport
     this.inbound = options.inbound ?? false
     this.protocols = options.protocols ?? []
-    this.bound = new Map()
 
     this._idle = true
   }
@@ -94,51 +90,104 @@ export class Peer extends EventEmitter {
     this._idle = value
   }
 
-  async connect(): Promise<void> {}
+  abstract connect(): Promise<void>
 
   /**
-   * Adds a protocol to this peer given a sender instance. Protocol methods
-   * will be accessible via a field with the same name as protocol. New methods
-   * will be added corresponding to each message defined by the protocol, in
-   * addition to send() and request() methods that takes a message name and message
-   * arguments. send() only sends a message without waiting for a response, whereas
-   * request() also sends the message but will return a promise that resolves with
-   * the response payload.
-   * @param protocol protocol instance
-   * @param sender sender instance provided by subclass
-   * @example
-   * ```typescript
-   * await peer.bindProtocol(ethProtocol, sender)
-   * // Example: Directly call message name as a method on the bound protocol
-   * const headers1 = await peer.eth.getBlockHeaders({ block: BigInt(1), max: 100 })
-   * // Example: Call request() method with message name as first parameter
-   * const headers2 = await peer.eth.request('getBlockHeaders', { block: BigInt(1), max: 100 })
-   * // Example: Call send() method with message name as first parameter and
-   * // wait for response message as an event
-   * peer.eth.send('getBlockHeaders', { block: BigInt(1), max: 100 })
-   * peer.eth.on('message', ({ data }) => console.log(`Received ${data.length} headers`))
-   * ```
+   * Eventually updates and returns the latest header of peer
    */
-  protected async bindProtocol(protocol: Protocol, sender: Sender): Promise<void> {
-    const bound = await protocol.bind(this, sender)
-    this.bound.set(bound.name, bound)
+  async latest(): Promise<BlockHeader | undefined> {
+    if (!this.eth) {
+      return
+    }
+    let block: bigint | Uint8Array
+    if (!this.eth!.updatedBestHeader) {
+      // If there is no updated best header stored yet, start with the status hash
+      block = this.eth!.status.bestHash
+    } else {
+      block = this.getPotentialBestHeaderNum()
+    }
+    const result = await this.eth!.getBlockHeaders({
+      block,
+      max: 1,
+    })
+    if (result !== undefined) {
+      const latest = result[1][0]
+      this.eth!.updatedBestHeader = latest
+      if (latest !== undefined) {
+        const height = latest.number
+        if (
+          height > BIGINT_0 &&
+          (this.config.syncTargetHeight === undefined ||
+            this.config.syncTargetHeight === BIGINT_0 ||
+            this.config.syncTargetHeight < latest.number)
+        ) {
+          this.config.syncTargetHeight = height
+          this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
+        }
+      }
+    }
+    return this.eth!.updatedBestHeader
   }
 
   /**
-   * Return true if peer understand the specified protocol name
-   * @param protocolName
+   * Returns a potential best block header number for the peer
+   * (not necessarily verified by block request) derived from
+   * either the client-wide sync target height or the last best
+   * header timestamp "forward-calculated" by block/slot times (12s).
    */
-  understands(protocolName: string): boolean {
-    return !!this.bound.get(protocolName)
+  getPotentialBestHeaderNum(): bigint {
+    let forwardCalculatedNum = BIGINT_0
+    const bestSyncTargetNum = this.config.syncTargetHeight ?? BIGINT_0
+    if (this.eth?.updatedBestHeader !== undefined) {
+      const bestHeaderNum = this.eth!.updatedBestHeader.number
+      const nowSec = Math.floor(Date.now() / 1000)
+      const diffSec = nowSec - Number(this.eth!.updatedBestHeader.timestamp)
+      const SLOT_TIME = 12
+      const diffBlocks = BigInt(Math.floor(diffSec / SLOT_TIME))
+      forwardCalculatedNum = bestHeaderNum + diffBlocks
+    }
+    const best = forwardCalculatedNum > bestSyncTargetNum ? forwardCalculatedNum : bestSyncTargetNum
+    return best
   }
 
   /**
    * Handle unhandled messages along handshake
    */
   handleMessageQueue() {
-    for (const bound of this.bound.values()) {
-      bound.handleMessageQueue()
+    this.boundProtocols.map((e) => e.handleMessageQueue())
+  }
+
+  async addProtocol(sender: Sender, protocol: Protocol): Promise<void> {
+    let bound: BoundProtocol
+    const boundOpts = {
+      config: protocol.config, // TODO: why cant we use `this.config`?
+      protocol,
+      peer: this,
+      sender,
     }
+
+    if (protocol.name === 'eth') {
+      bound = new BoundEthProtocol(boundOpts)
+
+      await bound!.handshake(sender)
+
+      this.eth = <BoundEthProtocol>bound
+    } else if (protocol.name === 'les') {
+      bound = new BoundLesProtocol(boundOpts)
+
+      await bound!.handshake(sender)
+
+      this.les = <BoundLesProtocol>bound
+    } else if (protocol.name === 'snap') {
+      bound = new BoundSnapProtocol(boundOpts)
+      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
+
+      this.snap = <BoundSnapProtocol>bound
+    } else {
+      throw new Error(`addProtocol: ${protocol.name} protocol not supported`)
+    }
+
+    this.boundProtocols.push(bound)
   }
 
   toString(withFullId = false): string {
@@ -146,7 +195,7 @@ export class Peer extends EventEmitter {
       id: withFullId ? this.id : this.id.substr(0, 8),
       address: this.address,
       transport: this.transport,
-      protocols: Array.from(this.bound.keys()),
+      protocols: this.boundProtocols.map((e) => e.name),
       inbound: this.inbound,
     }
     return Object.entries(properties)

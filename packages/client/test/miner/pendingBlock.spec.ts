@@ -16,19 +16,18 @@ import {
   equalsBytes,
   getBlobs,
   hexToBytes,
-  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import * as kzg from 'c-kzg'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it, vi } from 'vitest'
 
 import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
-import { Config } from '../../src/config'
-import { getLogger } from '../../src/logging'
-import { PendingBlock } from '../../src/miner'
-import { TxPool } from '../../src/service/txpool'
-import { mockBlockchain } from '../rpc/mockBlockchain'
+import { Config } from '../../src/config.js'
+import { getLogger } from '../../src/logging.js'
+import { PendingBlock } from '../../src/miner/index.js'
+import { TxPool } from '../../src/service/txpool.js'
+import { mockBlockchain } from '../rpc/mockBlockchain.js'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 
@@ -56,13 +55,15 @@ common
   .map((hf) => {
     hf.timestamp = undefined
   })
-
+const txGauge: any = {
+  inc: () => {},
+}
 const config = new Config({
-  transports: [],
   common,
   accountCache: 10000,
   storageCache: 1000,
   logger: getLogger({ loglevel: 'debug' }),
+  prometheusMetrics: txGauge,
 })
 
 const setup = () => {
@@ -81,6 +82,7 @@ const setup = () => {
         shallowCopy: () => service.execution.vm,
         setStateRoot: () => {},
         blockchain: mockBlockchain({}),
+        common: new Common({ chain: 'mainnet' }),
       },
     },
   }
@@ -219,7 +221,7 @@ describe('[PendingBlock]', async () => {
 
     // set gas limit low so that can accomodate 2 txs
     const prevGasLimit = common['_chainParams'].genesis.gasLimit
-    common['_chainParams'].genesis.gasLimit = BigInt(50000)
+    common['_chainParams'].genesis.gasLimit = 50000
 
     const vm = await VM.create({ common })
     await setBalance(vm, A.address, BigInt(5000000000000000))
@@ -338,7 +340,9 @@ describe('[PendingBlock]', async () => {
   it('should throw when blockchain does not have getTotalDifficulty function', async () => {
     const { txPool } = setup()
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
-    const vm = (txPool as any).vm
+    const vm = txPool['service'].execution.vm
+    // override total difficulty function to trigger error case
+    vm.blockchain.getTotalDifficulty = undefined
     try {
       await pendingBlock.start(vm, new Block())
       assert.fail('should have thrown')
@@ -351,26 +355,31 @@ describe('[PendingBlock]', async () => {
   })
 
   it('construct blob bundles', async () => {
-    try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
-      // eslint-disable-next-line
-    } catch {}
+    const kzg = await loadKZG()
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      customCrypto: {
+        kzg,
+      },
     })
+
     const { txPool } = setup()
 
     const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
-    const versionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(blobs, commitments)
+    const commitments = blobsToCommitments(kzg, blobs)
+    const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
+    const proofs = blobsToProofs(kzg, blobs, commitments)
 
     // Create 3 txs with 2 blobs each so that only 2 of them can be included in a build
     for (let x = 0; x <= 2; x++) {
       const txA01 = BlobEIP4844Transaction.fromTxData(
         {
-          versionedHashes: [...versionedHashes, ...versionedHashes, ...versionedHashes],
+          blobVersionedHashes: [
+            ...blobVersionedHashes,
+            ...blobVersionedHashes,
+            ...blobVersionedHashes,
+          ],
           blobs: [...blobs, ...blobs, ...blobs],
           kzgCommitments: [...commitments, ...commitments, ...commitments],
           kzgProofs: [...proofs, ...proofs, ...proofs],
@@ -425,26 +434,26 @@ describe('[PendingBlock]', async () => {
   })
 
   it('should exclude missingBlobTx', async () => {
-    try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
-      // eslint-disable-next-line
-    } catch {}
-    const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
+    const gethGenesis = await import('../../../block/test/testdata/4844-hardfork.json')
+    const kzg = await loadKZG()
+
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
     })
+
     const { txPool } = setup()
 
     const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
-    const versionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(blobs, commitments)
+    const commitments = blobsToCommitments(kzg, blobs)
+    const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
+    const proofs = blobsToProofs(kzg, blobs, commitments)
 
     // create a tx with missing blob data which should be excluded from the build
     const missingBlobTx = BlobEIP4844Transaction.fromTxData(
       {
-        versionedHashes,
+        blobVersionedHashes,
         kzgCommitments: commitments,
         kzgProofs: proofs,
         maxFeePerBlobGas: 100000000n,

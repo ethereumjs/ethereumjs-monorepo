@@ -15,6 +15,7 @@ Options to be used with the [custom](../classes/Common.md#custom) static constru
 ### Properties
 
 - [baseChain](CustomCommonOpts.md#basechain)
+- [customCrypto](CustomCommonOpts.md#customcrypto)
 - [eips](CustomCommonOpts.md#eips)
 - [hardfork](CustomCommonOpts.md#hardfork)
 
@@ -29,7 +30,30 @@ a standard chain used to base the custom chain params on.
 
 #### Defined in
 
-[types.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L116)
+[types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L147)
+
+___
+
+### customCrypto
+
+• `Optional` **customCrypto**: [`CustomCrypto`](CustomCrypto.md)
+
+This option can be used to replace the most common crypto primitives
+(keccak256 hashing e.g.) within the EthereumJS ecosystem libraries
+with alternative implementations (e.g. more performant WASM libraries).
+
+Note: please be aware that this is adding new dependencies for your
+system setup to be used for sensitive/core parts of the functionality
+and a choice on the libraries to add should be handled with care
+and be made with eventual security implications considered.
+
+#### Inherited from
+
+BaseOpts.customCrypto
+
+#### Defined in
+
+[types.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L112)
 
 ___
 
@@ -46,7 +70,7 @@ BaseOpts.eips
 
 #### Defined in
 
-[types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L81)
+[types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L101)
 
 ___
 
@@ -64,4 +88,4 @@ BaseOpts.hardfork
 
 #### Defined in
 
-[types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L76)
+[types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L96)

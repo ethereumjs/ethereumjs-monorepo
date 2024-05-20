@@ -1,8 +1,8 @@
 {
   "extends": "../../config/tsconfig.json",
-  "include": ["bin", "src", "test"],
+  "include": ["bin", "src", "test", "package.json"],
   "compilerOptions": {
-    "typeRoots": ["node_modules/@types", "src/@types"]
-  },
-  "exclude": ["browser/index.ts", "browser/util/index.ts"]
+    "typeRoots": ["node_modules/@types", "src/@types"],
+    "moduleResolution": "Node16"
+  }
 }
