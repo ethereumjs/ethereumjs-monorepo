@@ -153,14 +153,15 @@ export class VerkleTree {
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
   async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
-    const node = await this.findLeafNode(key, throwIfMissing)
-    if (typeof node !== 'number') {
-      const keyLastByte = key[key.length - 1]
+    const node = await this._db.get(key)
+    if (node !== undefined && node instanceof LeafNode)
+      if (node instanceof LeafNode) {
+        const keyLastByte = key[key.length - 1]
 
-      // The retrieved leaf node contains an array of 256 possible values.
-      // The index of the value we want is at the key's last byte
-      return node.values?.[keyLastByte] ?? null
-    }
+        // The retrieved leaf node contains an array of 256 possible values.
+        // The index of the value we want is at the key's last byte
+        return node.values?.[keyLastByte] ?? null
+      }
 
     return null
   }
@@ -177,9 +178,15 @@ export class VerkleTree {
 
     // Find or create the leaf node
     let leafNode = await this.findLeafNode(key, false)
-    if (typeof leafNode === 'number') {
+    if (!(leafNode instanceof LeafNode)) {
       // If leafNode is missing, create it
-      leafNode = LeafNode.create(key.slice(0, 31), [value], leafNode)
+      const commitment = this.verkleCrypto.updateCommitment(this.verkleCrypto.zeroCommitment)
+      leafNode = LeafNode.create(
+        key.slice(0, 31),
+        [value],
+        leafNode.length,
+        leafNode[leafNode.length - 1].commitment
+      )
     }
 
     // Walk up the tree and update internal nodes
@@ -279,14 +286,14 @@ export class VerkleTree {
    * @param key - the search key
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
-  async findLeafNode(key: Uint8Array, throwIfMissing = false): Promise<LeafNode | number> {
+  async findLeafNode(key: Uint8Array, throwIfMissing = false): Promise<LeafNode | VerkleNode[]> {
     const { node, stack } = await this.findPath(key, throwIfMissing)
     if (!(node instanceof LeafNode)) {
       if (throwIfMissing) {
         throw new Error('leaf node not found')
       }
       // return depth of remaining nodes
-      return stack.length
+      return stack
     }
     return node
   }
