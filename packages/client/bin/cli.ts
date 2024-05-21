@@ -35,6 +35,7 @@ import { loadKZG } from 'kzg-wasm'
 import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
+import { NetworkId, PortalNetwork } from 'portalnetwork'
 import * as promClient from 'prom-client'
 import * as readline from 'readline'
 import * as url from 'url'
@@ -458,6 +459,11 @@ const args: ClientOpts = yargs
   })
   .option('useJsCrypto', {
     describe: 'Use pure Javascript cryptography functions',
+    boolean: true,
+    default: false,
+  })
+  .option('enablePortal', {
+    describe: 'Use Portal Network for historical block retrieval',
     boolean: true,
     default: false,
   })
@@ -1101,6 +1107,20 @@ async function run() {
     metricsServer.listen(args.prometheusPort)
   }
 
+  let portal
+  if (args.enablePortal === true) {
+    portal = await PortalNetwork.create({
+      bindAddress: '0.0.0.0',
+      supportedNetworks: [NetworkId.HistoryNetwork],
+      bootnodes: [
+        'enr:-Jy4QIs2pCyiKna9YWnAF0zgf7bT0GzlAGoF8MEKFJOExmtofBIqzm71zDvmzRiiLkxaEJcs_Amr7XIhLI74k1rtlXICY5Z0IDAuMS4xLWFscGhhLjEtMTEwZjUwgmlkgnY0gmlwhKEjVaWJc2VjcDI1NmsxoQLSC_nhF1iRwsCw0n3J4jRjqoaRxtKgsEe5a-Dz7y0JloN1ZHCCIyg',
+        'enr:-Jy4QKSLYMpku9F0Ebk84zhIhwTkmn80UnYvE4Z4sOcLukASIcofrGdXVLAUPVHh8oPCfnEOZm1W1gcAxB9kV2FJywkCY5Z0IDAuMS4xLWFscGhhLjEtMTEwZjUwgmlkgnY0gmlwhJO2oc6Jc2VjcDI1NmsxoQLMSGVlxXL62N3sPtaV-n_TbZFCEM5AR7RDyIwOadbQK4N1ZHCCIyg',
+        'enr:-Jy4QH4_H4cW--ejWDl_W7ngXw2m31MM2GT8_1ZgECnfWxMzZTiZKvHDgkmwUS_l2aqHHU54Q7hcFSPz6VGzkUjOqkcCY5Z0IDAuMS4xLWFscGhhLjEtMTEwZjUwgmlkgnY0gmlwhJ31OTWJc2VjcDI1NmsxoQPC0eRkjRajDiETr_DRa5N5VJRm-ttCWDoO1QAMMCg5pIN1ZHCCIyg',
+      ],
+    })
+    portal.enableLog('*')
+    await portal.start()
+  }
   const config = new Config({
     accounts,
     bootnodes,
@@ -1147,6 +1167,7 @@ async function run() {
         : args.engineNewpayloadMaxExecute,
     ignoreStatelessInvalidExecs: args.ignoreStatelessInvalidExecs,
     prometheusMetrics,
+    portal,
   })
   config.events.setMaxListeners(50)
   config.events.on(Event.SERVER_LISTENING, (details) => {

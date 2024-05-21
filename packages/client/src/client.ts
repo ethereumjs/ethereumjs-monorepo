@@ -10,6 +10,7 @@ import type { MultiaddrLike } from './types.js'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
+import type { PortalNetwork } from 'portalnetwork'
 
 export interface EthereumClientOptions {
   /** Client configuration */
@@ -70,6 +71,7 @@ export class EthereumClient {
   public config: Config
   public chain: Chain
   public services: (FullEthereumService | LightEthereumService)[] = []
+  public portal: PortalNetwork | undefined
 
   public opened: boolean
   public started: boolean
