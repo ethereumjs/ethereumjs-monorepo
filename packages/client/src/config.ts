@@ -476,7 +476,7 @@ export class Config {
 
   public readonly metrics: PrometheusMetrics | undefined
 
-  public readonly Portal: PortalNetwork | undefined = undefined
+  public readonly portal: PortalNetwork | undefined = undefined
 
   constructor(options: ConfigOptions = {}) {
     this.events = new EventBus() as EventBusType
@@ -586,6 +586,8 @@ export class Config {
     this.events.once(Event.CLIENT_SHUTDOWN, () => {
       this.shutdown = true
     })
+
+    this.portal = options.portal
   }
 
   /**
