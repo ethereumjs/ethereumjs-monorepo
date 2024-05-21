@@ -1,4 +1,4 @@
-import { equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, bytesToBigInt, equalsBytes } from '@ethereumjs/util'
 
 import { POINT_IDENTITY } from '../util/crypto.js'
 
@@ -6,6 +6,7 @@ import { BaseVerkleNode } from './baseVerkleNode.js'
 import { LeafNode } from './leafNode.js'
 import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
+import type { VerkleCrypto } from '../types.js'
 import type { VerkleNode, VerkleNodeOptions } from './types.js'
 
 export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
@@ -14,9 +15,9 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   public copyOnWrite: Record<string, Uint8Array>
   public type = VerkleNodeType.Internal
 
-  /* TODO: options.children is not actually used here */
   constructor(options: VerkleNodeOptions[VerkleNodeType.Internal]) {
     super(options)
+    // TODO: Decide whether to fill with null or not - personal opinion - should never use null
     this.children = options.children ?? new Array(NODE_WIDTH).fill(null)
     this.copyOnWrite = options.copyOnWrite ?? {}
   }
@@ -63,19 +64,30 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     return this.children?.[index] ?? null
   }
 
-  insert(key: Uint8Array, value: Uint8Array, resolver: () => void): void {
+  insert(
+    key: Uint8Array,
+    value: Uint8Array,
+    resolver: () => void,
+    verkleCrypto?: VerkleCrypto
+  ): void {
     const values = new Array<Uint8Array>(NODE_WIDTH)
     values[key[31]] = value
-    this.insertStem(key.slice(0, 31), values, resolver)
+    this.insertStem(key.slice(0, 31), values, resolver, verkleCrypto!)
   }
 
-  insertStem(stem: Uint8Array, values: Uint8Array[], resolver: () => void): void {
+  insertStem(
+    stem: Uint8Array,
+    values: Uint8Array[],
+    resolver: () => void,
+    verkleCrypto: VerkleCrypto
+  ): void {
     // Index of the child pointed by the next byte in the key
     const childIndex = stem[this.depth]
 
     const child = this.children[childIndex]
 
     if (child instanceof LeafNode) {
+      // TODO: Understand the intent of what cowChild is suppoded to do
       this.cowChild(childIndex)
       if (equalsBytes(child.stem, stem)) {
         return child.insertMultiple(stem, values)
@@ -93,19 +105,26 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
 
       const nextByteInInsertedKey = stem[this.depth + 1]
       if (nextByteInInsertedKey === nextByteInExistingKey) {
-        return newBranch.insertStem(stem, values, resolver)
+        return newBranch.insertStem(stem, values, resolver, verkleCrypto)
       }
 
       // Next word differs, so this was the last level.
       // Insert it directly into its final slot.
-      const leafNode = LeafNode.create(stem, values, this.depth + 1)
+      // TODO: Determine if this is how to create the correct commitment
+      let commitment = verkleCrypto.zeroCommitment
+      for (const [idx, value] of values.entries()) {
+        if (bytesToBigInt(value) > BIGINT_0)
+          commitment = verkleCrypto.updateCommitment(commitment, idx, new Uint8Array(32), value)
+      }
+      const leafNode = LeafNode.create(stem, values, this.depth + 1, commitment)
 
+      // TODO - Why is the leaf node set at depth + 2 instead of + 1)?
       leafNode.setDepth(this.depth + 2)
       newBranch.cowChild(nextByteInInsertedKey)
       newBranch.children[nextByteInInsertedKey] = leafNode
     } else if (child instanceof InternalNode) {
       this.cowChild(childIndex)
-      return child.insertStem(stem, values, resolver)
+      return child.insertStem(stem, values, resolver, verkleCrypto)
     } else {
       throw new Error('Invalid node type')
     }

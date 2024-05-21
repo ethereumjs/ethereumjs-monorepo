@@ -50,7 +50,7 @@ describe('verkle node - leaf', () => {
     )
     const stem = presentKeys[0].slice(0, 31)
     const nodeData = values
-    const node = LeafNode.create(stem, nodeData, 0)
+    const node = LeafNode.create(stem, nodeData, 0, new Uint8Array(32))
     assert.ok(node instanceof LeafNode)
   })
 })

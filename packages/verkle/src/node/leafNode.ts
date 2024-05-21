@@ -63,7 +63,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     this.insertStem(key.slice(0, 31), values, nodeResolverFn)
   }
 
-  insertMultiple(keys: Uint8Array[], values: Uint8Array[]): void {
+  insertMultiple(key: Uint8Array, values: Uint8Array[]): void {
     throw new Error('Not implemented')
   }
 

@@ -190,7 +190,7 @@ export class VerkleTree {
       // Generate a commitment for the new leaf node, using the zero commitment as a base
       const commitment = this.verkleCrypto.zeroCommitment
       // TODO: Confirm the old/new scalar values we're passing in here are correct
-      this.verkleCrypto.updateCommitment(commitment, suffix, new Uint8Array(), value)
+      this.verkleCrypto.updateCommitment(commitment, suffix, new Uint8Array(32), value)
       leafNode = LeafNode.create(key.slice(0, 31), values, leafNode.length, commitment)
     }
 
