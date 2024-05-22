@@ -62,6 +62,12 @@ export enum ERROR {
   INVALID_EOF_MAX_STACK_HEIGHT = 'invalid EOF type section: too high max stack height',
 
   INVALID_EOF_CODE_OPCODE_UNDEFINED = 'invalid EOF bytecode: undefined opcode found',
+
+  INVALID_EOF_DATA_SECTION_SIZE = 'invalid EOF data section size: data section too large',
+
+  INVALID_EOF_FIRST_CODE_SECTION_TYPE = 'invalid EOF: first code section must have 0 inputs and should have 0x80 (non-returning) outputs',
+
+  INVALID_EOF_FINAL_SECTION_OPCODE = 'invalid EOF: code section does not have a valid final (terminating) instruction opcode',
 }
 
 export class EvmError {

@@ -36,7 +36,7 @@ const MAX_STACK_HEIGHT = 0x03ff
 
 function safeSlice(bytes: Uint8Array, start: number, end: number) {
   const sliced = bytes.slice(start, end)
-  if (sliced.length !== end - start + 1) {
+  if (sliced.length !== end - start) {
     throw new Error('Slice out of bounds')
   }
   return sliced
@@ -58,6 +58,8 @@ export const validateEOF = (container: Uint8Array, evm: EVM) => {
       if (container[3] !== KIND_TYPE) {
         throw new Error(ERROR.INVALID_KIND_TYPE)
       }
+      // Note: type_count is the amount of bytes in the type section, so the actual
+      // "amount" of type sections is `type_count / 4`
       const type_count = Number(bytesToBigInt(safeSlice(container, 4, 6)))
       if (type_count < TYPE_MIN || type_count > TYPE_MAX || type_count % TYPE_DIVISOR !== 0) {
         throw new Error(ERROR.INVALID_TYPE_COUNT)
@@ -117,7 +119,7 @@ export const validateEOF = (container: Uint8Array, evm: EVM) => {
       }
 
       slicePtr++
-      const _dataSize = Number(bytesToBigInt(safeSlice(container, slicePtr, (slicePtr += 2))))
+      const dataSize = Number(bytesToBigInt(safeSlice(container, slicePtr, (slicePtr += 2))))
 
       if (container[slicePtr] !== TERMINATOR) {
         throw new Error(ERROR.INVALID_TERMINATOR_BYTE)
@@ -126,20 +128,20 @@ export const validateEOF = (container: Uint8Array, evm: EVM) => {
       slicePtr++
 
       // Remainder the container slice is the body
-      const _body = container.slice(slicePtr)
+      const body = container.slice(slicePtr)
 
       // Reset the slice ptr to validate the body
       slicePtr = 0
 
-      const typesSection = safeSlice(container, slicePtr, (slicePtr += 4 * type_count + 1))
+      const typesSection = safeSlice(body, slicePtr, (slicePtr += type_count))
       const types: {
         inputs: number
         outputs: number
         maxStackHeight: number
       }[] = []
 
-      for (let i = 0; i < type_count; i++) {
-        const type = typesSection.slice(i * 4, i * 4 + 5)
+      for (let i = 0; i < type_count / 4; i++) {
+        const type = safeSlice(typesSection, i * 4, i * 4 + 4)
         const inputs = type[0]
         const outputs = type[1]
         const maxStackHeight = Number(bytesToBigInt(type.slice(3, 5)))
@@ -153,6 +155,13 @@ export const validateEOF = (container: Uint8Array, evm: EVM) => {
         if (maxStackHeight > MAX_STACK_HEIGHT) {
           throw new Error(ERROR.INVALID_EOF_MAX_STACK_HEIGHT)
         }
+
+        if (i === 0) {
+          if (inputs !== 0 || outputs !== 0x80) {
+            throw new Error(ERROR.INVALID_EOF_FIRST_CODE_SECTION_TYPE)
+          }
+        }
+
         types.push({
           inputs,
           outputs,
@@ -162,52 +171,77 @@ export const validateEOF = (container: Uint8Array, evm: EVM) => {
 
       const codes: Uint8Array[] = []
       for (let i = 0; i < code_count; i++) {
-        codes.push(safeSlice(container, slicePtr, (slicePtr += codeSectionsLength[i] + 1)))
+        codes.push(safeSlice(body, slicePtr, (slicePtr += codeSectionsLength[i])))
+      }
+      // Validate each code section
+      const opcodes = evm.getActiveOpcodes()
+
+      const opcodeNumbers = new Set<number>()
+
+      for (const [key] of opcodes) {
+        opcodeNumbers.add(key)
       }
 
-      if (common.isActivatedEIP(3670)) {
-        // Validate each code section
-        const opcodes = evm.getActiveOpcodes()
+      // Add INVALID as valid
+      opcodeNumbers.add(0xfe)
 
-        const opcodeNumbers = new Set<number>()
+      // Remove CODESIZE, CODECOPY, EXTCODESIZE, EXTCODECOPY, EXTCODEHASH, GAS
+      opcodeNumbers.delete(0x38)
+      opcodeNumbers.delete(0x39)
+      opcodeNumbers.delete(0x5a)
+      opcodeNumbers.delete(0x3b)
+      opcodeNumbers.delete(0x3c)
+      opcodeNumbers.delete(0x3f)
 
-        for (const [key] of opcodes) {
-          opcodeNumbers.add(key)
+      // Remove CALLCODE and SELFDESTRUCT
+      opcodeNumbers.delete(0xf2)
+      opcodeNumbers.delete(0xff)
+
+      // TODO omnibus https://github.com/ipsilon/eof/blob/main/spec/eof.md states
+      // JUMP / JUMPI / PC / CREATE / CREATE2 also banned
+      // This is not in the EIPs yet
+
+      // Note: this name might be misleading since this is the list of opcodes which are OK as final opcodes in a code section
+      const terminatingOpcodes = new Set<number>()
+
+      terminatingOpcodes.add(0x00) // STOP
+      terminatingOpcodes.add(0xf3) // RETURN
+      terminatingOpcodes.add(0xfd) // REVERT
+      terminatingOpcodes.add(0xfe) // INVALID
+
+      terminatingOpcodes.add(0xee) // RETURNCONTRACT
+
+      terminatingOpcodes.add(0xe4) // RETF
+      terminatingOpcodes.add(0xe5) // JUMPF
+
+      terminatingOpcodes.add(0xe0) // RJUMPing back into code section is OK
+
+      for (const opcode of terminatingOpcodes) {
+        if (!opcodeNumbers.has(opcode)) {
+          terminatingOpcodes.delete(opcode)
+        }
+      }
+
+      for (const code of codes) {
+        // Validate that each opcode is defined
+        let ptr = 0
+        let lastOpcode: number = 0 // Note: code sections cannot be empty, so this number will always be set
+        while (ptr < code.length) {
+          const opcode = code[ptr]
+          lastOpcode = opcode
+          if (!opcodeNumbers.has(opcode)) {
+            throw new Error(ERROR.INVALID_EOF_CODE_OPCODE_UNDEFINED)
+          }
+          if (opcode >= 0x60 && opcode <= 0x7f) {
+            // PUSH opcodes
+            ptr += opcode - 0x5f
+          }
+          ptr++
         }
 
-        // Add INVALID as valid
-        opcodeNumbers.add(0xfe)
-
-        // Remove CODESIZE, CODECOPY, EXTCODESIZE, EXTCODECOPY, EXTCODEHASH, GAS
-        opcodeNumbers.delete(0x38)
-        opcodeNumbers.delete(0x39)
-        opcodeNumbers.delete(0x5a)
-        opcodeNumbers.delete(0x3b)
-        opcodeNumbers.delete(0x3c)
-        opcodeNumbers.delete(0x3f)
-
-        // Remove CALLCODE and SELFDESTRUCT
-        opcodeNumbers.delete(0xf2)
-        opcodeNumbers.delete(0xff)
-
-        // TODO omnibus https://github.com/ipsilon/eof/blob/main/spec/eof.md states
-        // JUMP / JUMPI / PC / CREATE / CREATE2 also banned
-        // This is not in the EIPs yet
-
-        for (const code of codes) {
-          // Validate that each opcode is defined
-          let ptr = 0
-          while (ptr < code.length) {
-            const opcode = code[ptr]
-            if (!opcodeNumbers.has(opcode)) {
-              throw new Error(ERROR.INVALID_EOF_CODE_OPCODE_UNDEFINED)
-            }
-            if (opcode >= 0x60 && opcode <= 0x7f) {
-              // PUSH opcodes
-              ptr += opcode - 0x5f
-            }
-            ptr++
-          }
+        // Validate that the final opcode terminates
+        if (!terminatingOpcodes.has(lastOpcode)) {
+          throw new Error(ERROR.INVALID_EOF_FINAL_SECTION_OPCODE)
         }
       }
 
@@ -215,9 +249,7 @@ export const validateEOF = (container: Uint8Array, evm: EVM) => {
 
       if (containerSections > 0) {
         for (let i = 0; i < containerSections; i++) {
-          containers.push(
-            safeSlice(container, slicePtr, (slicePtr += containerSectionsLength[i] + 1))
-          )
+          containers.push(safeSlice(body, slicePtr, (slicePtr += containerSectionsLength[i])))
         }
 
         // Recursively validate the containers
@@ -227,6 +259,12 @@ export const validateEOF = (container: Uint8Array, evm: EVM) => {
       }
 
       // Data section validation?
+
+      const dataSection = body.slice(slicePtr)
+
+      if (dataSection.length > dataSize) {
+        throw new Error(ERROR.INVALID_EOF_DATA_SECTION_SIZE)
+      }
     } else {
       // Legacy code
     }
