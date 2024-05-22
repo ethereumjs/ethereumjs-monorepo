@@ -428,8 +428,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     rootAccount?: Account
   ): Trie {
     // use hashed key for lookup from storage cache
-    const inputIsHash: boolean = addressOrHash instanceof Uint8Array
-    const addressBytes: Uint8Array = inputIsHash
+    const addressBytes: Uint8Array = addressOrHash instanceof Uint8Array
       ? addressOrHash
       : this.keccakFunction(addressOrHash.bytes)
     const addressHex: string = bytesToUnprefixedHex(addressBytes)
