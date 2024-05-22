@@ -19,13 +19,8 @@ import type { Chain } from '../../../src/blockchain/chain.js'
 import type { VMExecution } from '../../../src/execution/vmexecution.js'
 const method = 'eth_blobBaseFee'
 
-const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
-const pKeyAddress = Address.fromPrivateKey(privateKey)
-
-const privateKey4844 = hexToBytes(
-  '0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8'
-)
-const p4844Address = Address.fromPrivateKey(privateKey4844)
+const privateKey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
+const accountAddress = Address.fromPrivateKey(privateKey)
 const produceBlockWith4844Tx = async (
   execution: VMExecution,
   chain: Chain,
@@ -38,7 +33,7 @@ const produceBlockWith4844Tx = async (
   const blobVersionedHash = commitmentsToVersionedHashes(commitment)
 
   const { vm } = execution
-  const account = await vm.stateManager.getAccount(p4844Address)
+  const account = await vm.stateManager.getAccount(accountAddress)
   let nonce = account?.nonce ?? BIGINT_0
   const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.shallowCopy()
@@ -80,7 +75,7 @@ const produceBlockWith4844Tx = async (
           maxFeePerBlobGas: BigInt(1000),
         },
         { common: vmCopy.common }
-      ).sign(privateKey4844)
+      ).sign(privateKey)
     )
     nonce++
   }
