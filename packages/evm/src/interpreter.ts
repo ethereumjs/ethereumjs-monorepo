@@ -65,7 +65,6 @@ export interface Env {
   contract: Account
   codeAddress: Address /* Different than address for DELEGATECALL and CALLCODE */
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
-  containerCode?: Uint8Array /** Full container code for EOF1 contracts */
   blobVersionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
   accessWitness?: AccessWitness
@@ -205,7 +204,7 @@ export class Interpreter {
         }
       }
       // Code is EOF1 format
-      const codeSections = EOF.codeAnalysis(code)
+      /*const codeSections = EOF.codeAnalysis(code)
       if (!codeSections) {
         // Code is invalid EOF1 format if `codeSections` is falsy
         return {
@@ -220,7 +219,7 @@ export class Interpreter {
       } else {
         // Set code to EOF container code section which starts at byte position 7 if no data section is present
         this._runState.code = code.subarray(7, 7 + codeSections!.code)
-      }
+      }*/
     }
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
     // Check that the programCounter is in range
@@ -695,14 +694,14 @@ export class Interpreter {
    * Returns the size of code running in current environment.
    */
   getCodeSize(): bigint {
-    return BigInt(this._env.containerCode ? this._env.containerCode.length : this._env.code.length)
+    return BigInt(this._env.code.length)
   }
 
   /**
    * Returns the code running in current environment.
    */
   getCode(): Uint8Array {
-    return this._env.containerCode ?? this._env.code
+    return this._env.code
   }
 
   /**

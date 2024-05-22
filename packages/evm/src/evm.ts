@@ -20,7 +20,7 @@ import debugDefault from 'debug'
 import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
 
-import { EOF, getEOFCode } from './eof.js'
+import { EOF } from './eof.js'
 import { ERROR, EvmError } from './exceptions.js'
 import { Interpreter } from './interpreter.js'
 import { Journal } from './journal.js'
@@ -614,33 +614,12 @@ export class EVM implements EVMInterface {
       if (this.common.isActivatedEIP(3541) && result.returnValue[0] === EOF.FORMAT) {
         if (!this.common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-        }
-        // Begin EOF1 contract code checks
-        // EIP-3540 EOF1 header check
-        const eof1CodeAnalysisResults = EOF.codeAnalysis(result.returnValue)
-        if (typeof eof1CodeAnalysisResults?.code === 'undefined') {
-          result = {
-            ...result,
-            ...INVALID_EOF_RESULT(message.gasLimit),
-          }
-        } else if (this.common.isActivatedEIP(3670)) {
-          // EIP-3670 EOF1 opcode check
-          const codeStart = eof1CodeAnalysisResults.data > 0 ? 10 : 7
-          // The start of the code section of an EOF1 compliant contract will either be
-          // index 7 (if no data section is present) or index 10 (if a data section is present)
-          // in the bytecode of the contract
-          if (
-            !EOF.validOpcodes(
-              result.returnValue.subarray(codeStart, codeStart + eof1CodeAnalysisResults.code)
-            )
-          ) {
-            result = {
-              ...result,
-              ...INVALID_EOF_RESULT(message.gasLimit),
-            }
-          } else {
-            result.executionGasUsed = totalGas
-          }
+        } else if (message.eof === undefined) {
+          // Running into Legacy mode: unable to deploy EOF contract
+          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+        } else {
+          // 3541 is active and current runtime mode is EOF
+          result.executionGasUsed = totalGas
         }
       } else {
         result.executionGasUsed = totalGas
@@ -774,7 +753,6 @@ export class EVM implements EVMInterface {
       contract,
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
-      containerCode: message.containerCode,
       chargeCodeAccesses: message.chargeCodeAccesses,
       blobVersionedHashes: message.blobVersionedHashes ?? [],
       accessWitness: message.accessWitness,
@@ -1049,14 +1027,9 @@ export class EVM implements EVMInterface {
         message.code = precompile
         message.isCompiled = true
       } else {
-        message.containerCode = await this.stateManager.getContractCode(message.codeAddress)
+        message.code = await this.stateManager.getContractCode(message.codeAddress)
         message.isCompiled = false
         message.chargeCodeAccesses = true
-        if (this.common.isActivatedEIP(3540)) {
-          message.code = getEOFCode(message.containerCode)
-        } else {
-          message.code = message.containerCode
-        }
       }
     }
   }
