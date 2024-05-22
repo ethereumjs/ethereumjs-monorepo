@@ -201,7 +201,7 @@ const jsonRpcReceipt = async (
       ? bytesToHex((receipt as PreByzantiumTxReceipt).stateRoot)
       : undefined,
   status:
-    ((receipt as PostByzantiumTxReceipt).status as unknown) instanceof Uint8Array
+    (receipt as PostByzantiumTxReceipt).status !== undefined
       ? intToHex((receipt as PostByzantiumTxReceipt).status)
       : undefined,
   blobGasUsed: blobGasUsed !== undefined ? bigIntToHex(blobGasUsed) : undefined,
