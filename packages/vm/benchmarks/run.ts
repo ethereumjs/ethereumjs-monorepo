@@ -1,11 +1,16 @@
 import Benchmark from 'benchmark'
 import { BenchmarksType } from './util'
 import { mainnetBlocks } from './mainnetBlocks'
+import { bytecode } from './bytecode'
+import { ArgumentParser } from 'argparse'
 
 // Add an import and a BENCHMARKS entry to list a new benchmark
 const BENCHMARKS: BenchmarksType = {
   mainnetBlocks: {
     function: mainnetBlocks,
+  },
+  bytecode: {
+    function: bytecode,
   },
 }
 
@@ -14,39 +19,40 @@ const onCycle = (event: Benchmark.Event) => {
 }
 
 async function main() {
-  const args = process.argv
-
-  // Input validation
-  if (args.length < 4) {
-    console.log(
-      'Please provide at least one benchmark name when running a benchmark or doing profiling.'
-    )
-    console.log(
-      'Usage: npm run benchmarks|profiling -- BENCHMARK_NAME[:NUM_SAMPLES][,BENCHMARK_NAME[:NUM_SAMPLES]]'
-    )
-    console.log(`Benchmarks available: ${Object.keys(BENCHMARKS).join(', ')}`)
-    return process.exit(1)
-  }
+  const parser = new ArgumentParser({ description: 'Benchmark arbitrary bytecode.' })
+  parser.add_argument('mode', {
+    help: 'Mode of running',
+    choices: ['benchmarks', 'profiling'],
+    type: 'str',
+  })
+  parser.add_argument('benchmarks', {
+    help: `Name(s) of benchmaks to run: BENCHMARK_NAME[:NUM_SAMPLES][,BENCHMARK_NAME[:NUM_SAMPLES]]. Benchmarks available: ${Object.keys(
+      BENCHMARKS
+    ).join(', ')}`,
+    type: 'str',
+  })
+  parser.add_argument('-b', '--bytecode', { help: 'Bytecode to run', type: 'str' })
+  parser.add_argument('-p', '--preState', { help: 'File containing prestate to load', type: 'str' })
+  const args = parser.parse_args()
 
   // Initialization
   let suite
   // Choose between benchmarking or profiling (with 0x)
-  if (args[2] === 'benchmarks') {
+  if (args.mode === 'benchmarks') {
     console.log('Benchmarking started...')
     suite = new Benchmark.Suite()
   } else {
     console.log('Profiling started...')
   }
 
-  const benchmarks = args[3].split(',')
-
   // Benchmark execution
+  const benchmarks = args.benchmarks.split(',')
   for (const benchmark of benchmarks) {
     const [name, numSamples] = benchmark.split(':')
 
     if (name in BENCHMARKS) {
       console.log(`Running '${name}':`)
-      await BENCHMARKS[name].function(suite, Number(numSamples))
+      await BENCHMARKS[name].function(suite, Number(numSamples), args.bytecode, args.preState)
     } else {
       console.log(`Benchmark with name ${name} doesn't exist, skipping...`)
     }

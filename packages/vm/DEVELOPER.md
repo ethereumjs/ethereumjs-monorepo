@@ -208,6 +208,12 @@ Then:
 
 To define the number of samples to be run pass in a number like so: `npm run benchmarks -- mainnetBlocks:10`
 
+To benchmark individual bytecode against empty state:
+`npm run benchmarks:bytecode -- -b 60FF60005261FFFF600020`
+
+To benchmark individual bytecode against a state:
+`npm run benchmarks:bytecode -- -b 60FF60005261FFFF600020 -p state.json`
+
 If you want to get a more detailed look to find bottlenecks we can use [0x](https://github.com/davidmarkclements/0x):
 
 ```
