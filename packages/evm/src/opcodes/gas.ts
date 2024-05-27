@@ -450,6 +450,22 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         return gas
       },
     ],
+    /* EOFCREATE */
+    [
+      0xec,
+      async function (_runState, _gas, _common): Promise<bigint> {
+        // TODO: placeholder, change me
+        return BIGINT_0
+      },
+    ],
+    /* RETURNCONTRACT */
+    [
+      0xee,
+      async function (_runState, _gas, _common): Promise<bigint> {
+        // TODO: placeholder, change me
+        return BIGINT_0
+      },
+    ],
     [
       /* CREATE */
       0xf0,
@@ -763,6 +779,22 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         return gas
       },
     ],
+    /* EXTCALL */
+    [
+      0xf8,
+      async function (_runState, _gas, _common): Promise<bigint> {
+        // TODO: placeholder, change me
+        return BIGINT_0
+      },
+    ],
+    /* EXTDELEGATECALL */
+    [
+      0xf9,
+      async function (_runState, _gas, _common): Promise<bigint> {
+        // TODO: placeholder, change me
+        return BIGINT_0
+      },
+    ],
     [
       /* STATICCALL */
       0xfa,
@@ -796,6 +828,14 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         runState.messageGasLimit = gasLimit
         return gas
+      },
+    ],
+    /* EXTSTATICCALL */
+    [
+      0xfb,
+      async function (_runState, _gas, _common): Promise<bigint> {
+        // TODO: placeholder, change me
+        return BIGINT_0
       },
     ],
     [

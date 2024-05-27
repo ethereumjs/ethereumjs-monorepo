@@ -983,6 +983,156 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.interpreter.log(mem, topicsCount, topicsBuf)
     },
   ],
+  // 0xd0: DATALOAD
+  [
+    0xd0,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xd1: DATALOADN
+  [
+    0xd1,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xd2: DATASIZE
+  [
+    0xd2,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xd3: DATACOPY
+  [
+    0xe8,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xe0: RJUMP
+  [
+    0xe0,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xe1: RJUMPI
+  [
+    0xe1,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xe2: RJUMPV
+  [
+    0xe2,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xe3: CALLF
+  [
+    0xe3,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xe4: RETF
+  [
+    0xe4,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xe5: JUMPF
+  [
+    0xe5,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xe6: DUPN
+  [
+    0xe6,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xe7: SWAPN
+  [
+    0xe7,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xe8: EXCHANGE
+  [
+    0xe8,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xec: EOFCREATE
+  [
+    0xec,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xee: RETURNCONTRACT
+  [
+    0xee,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
   // '0xf0' range - closures
   // 0xf0: CREATE
   [
@@ -1195,27 +1345,59 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(BIGINT_1)
     },
   ],
-  // 0xf7: AUTHCALL
+  // 0xf7: AUTHCALL (3074) / RETURNDATALOAD (7069)
   [
     0xf7,
-    async function (runState) {
-      const [_currentGasLimit, addr, value, argsOffset, argsLength, retOffset, retLength] =
-        runState.stack.popN(7)
+    async function (runState, common) {
+      if (common.isActivatedEIP(3074)) {
+        // AUTHCALL logic
+        const [_currentGasLimit, addr, value, argsOffset, argsLength, retOffset, retLength] =
+          runState.stack.popN(7)
 
-      const toAddress = new Address(addresstoBytes(addr))
+        const toAddress = new Address(addresstoBytes(addr))
 
-      const gasLimit = runState.messageGasLimit!
-      runState.messageGasLimit = undefined
+        const gasLimit = runState.messageGasLimit!
+        runState.messageGasLimit = undefined
 
-      let data = new Uint8Array(0)
-      if (argsLength !== BIGINT_0) {
-        data = runState.memory.read(Number(argsOffset), Number(argsLength))
+        let data = new Uint8Array(0)
+        if (argsLength !== BIGINT_0) {
+          data = runState.memory.read(Number(argsOffset), Number(argsLength))
+        }
+
+        const ret = await runState.interpreter.authcall(gasLimit, toAddress, value, data)
+        // Write return data to memory
+        writeCallOutput(runState, retOffset, retLength)
+        runState.stack.push(ret)
+      } else if (common.isActivatedEIP(7069)) {
+        // RETURNDATALOAD logic
+        if (runState.env.eof === undefined) {
+          // Opcode not available in legacy contracts
+          trap(ERROR.INVALID_OPCODE)
+        }
+      } else {
+        // This should be unreachable
+        trap(ERROR.INVALID_OPCODE)
       }
-
-      const ret = await runState.interpreter.authcall(gasLimit, toAddress, value, data)
-      // Write return data to memory
-      writeCallOutput(runState, retOffset, retLength)
-      runState.stack.push(ret)
+    },
+  ],
+  // 0xf8: EXTCALL
+  [
+    0xf8,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+    },
+  ],
+  // 0xf9: EXTDELEGATECALL
+  [
+    0xf9,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
     },
   ],
   // 0xfa: STATICCALL
@@ -1239,6 +1421,16 @@ export const handlers: Map<number, OpHandler> = new Map([
       // Write return data to memory
       writeCallOutput(runState, outOffset, outLength)
       runState.stack.push(ret)
+    },
+  ],
+  // 0xfb: EXTSTATICCALL
+  [
+    0xfb,
+    async function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
     },
   ],
   // 0xf3: RETURN
