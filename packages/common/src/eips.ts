@@ -777,6 +777,14 @@ export const EIPs: EIPsDict = {
     requiredEIPs: [3675],
     gasPrices: {},
   },
+  7692: {
+    comment: 'EVM Object Format (EOFv1) Meta',
+    url: 'https://github.com/ethereum/EIPs/blob/4153e95befd0264082de3c4c2fe3a85cc74d3152/EIPS/eip-7692.md',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Cancun,
+    requiredEIPs: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7698],
+    gasPrices: {},
+  },
   7698: {
     comment: 'EOF - Creation transaction',
     url: 'https://github.com/ethereum/EIPs/blob/bd421962b4e241aa2b00a85d9cf4e57770bdb954/EIPS/eip-7698.md',

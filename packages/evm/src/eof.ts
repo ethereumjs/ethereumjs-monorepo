@@ -200,6 +200,15 @@ export const validateEOF = (container: Uint8Array, evm: EVM) => {
       // TODO omnibus https://github.com/ipsilon/eof/blob/main/spec/eof.md states
       // JUMP / JUMPI / PC / CREATE / CREATE2 also banned
       // This is not in the EIPs yet
+      // Add these opcodes here
+
+      opcodeNumbers.delete(0x56) // JUMP
+      opcodeNumbers.delete(0x57) // JUMPI
+
+      opcodeNumbers.delete(0x58) // PC
+
+      opcodeNumbers.delete(0xf0) // CREATE
+      opcodeNumbers.delete(0xf5) // CREATE2
 
       // Note: this name might be misleading since this is the list of opcodes which are OK as final opcodes in a code section
       const terminatingOpcodes = new Set<number>()

@@ -1,4 +1,3 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -11,9 +10,10 @@ import { default as validTestData } from './eip3540_eof_v1/code_validation/legac
 import { default as example } from './eip3540_eof_v1/eof_example/eof_example.json'
 import { default as customFields } from './eip3540_eof_v1/eof_example/eof_example_custom_fields.json'
 import { default as parameters } from './eip3540_eof_v1/eof_example/eof_example_parameters.json'
+import { getCommon } from './eof-utils.js'
 
 async function getEVM() {
-  const common = new Common({ hardfork: Hardfork.Prague, eips: [3540], chain: Chain.Mainnet })
+  const common = getCommon()
   const evm = EVM.create({
     common,
   })
@@ -40,6 +40,7 @@ describe('EIP 3540 tests', async () => {
             validateEOF(code, evm)
           } else {
             assert.throws(() => {
+              // TODO verify that the correct error is thrown
               validateEOF(code, evm)
             })
           }
