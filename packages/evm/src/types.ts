@@ -389,3 +389,6 @@ export interface bn128 {
   ec_add: (input_str: string) => PrefixedHexString
   ec_mul: (input_hex: string) => PrefixedHexString
 }
+
+// EOF type which holds the execution-related data for EOF
+export type EOF = {}

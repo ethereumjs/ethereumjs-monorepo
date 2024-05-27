@@ -22,7 +22,14 @@ import { Stack } from './stack.js'
 import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
-import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
+import type {
+  Block,
+  Blockchain,
+  EOF as EOFInterface,
+  EVMProfilerOpts,
+  EVMResult,
+  Log,
+} from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { AccessWitness, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
@@ -65,6 +72,7 @@ export interface Env {
   contract: Account
   codeAddress: Address /* Different than address for DELEGATECALL and CALLCODE */
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
+  eof?: EOFInterface /* Optional EOF environment in case of EOF execution */
   blobVersionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
   accessWitness?: AccessWitness
