@@ -1349,7 +1349,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf7,
     async function (runState, common) {
-      if (common.isActivatedEIP(3074)) {
+      if (common.isActivatedEIP(3074) && runState.env.eof === undefined) {
         // AUTHCALL logic
         const [_currentGasLimit, addr, value, argsOffset, argsLength, retOffset, retLength] =
           runState.stack.popN(7)
