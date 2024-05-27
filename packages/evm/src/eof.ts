@@ -3,6 +3,7 @@ import { bytesToBigInt } from '@ethereumjs/util'
 import { ERROR } from './exceptions.js'
 
 import type { EVM } from './evm.js'
+import type { EOFEnv } from './types.js'
 
 export const FORMAT = 0xef
 export const MAGIC = 0x00
@@ -278,6 +279,10 @@ export const validateEOF = (container: Uint8Array, evm: EVM) => {
       // Legacy code
     }
   }
+}
+
+export const setupEOF = (_container: Uint8Array, _evm: EVM): EOFEnv => {
+  return {}
 }
 
 export const EOF = { FORMAT, MAGIC, VERSION, validateEOF }

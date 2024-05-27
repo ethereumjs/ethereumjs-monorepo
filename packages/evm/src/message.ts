@@ -1,7 +1,7 @@
 import { Address, BIGINT_0 } from '@ethereumjs/util'
 
 import type { PrecompileFunc } from './precompiles/index.js'
-import type { EOF } from './types.js'
+import type { EOFEnv } from './types.js'
 import type { AccessWitness } from '@ethereumjs/statemanager'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -55,7 +55,7 @@ export class Message {
   isStatic: boolean
   isCompiled: boolean
   salt?: Uint8Array
-  eof?: EOF
+  eof?: EOFEnv
   chargeCodeAccesses?: boolean
   /**
    * Set of addresses to selfdestruct. Key is the unprefixed address.

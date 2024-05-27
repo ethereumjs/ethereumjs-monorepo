@@ -391,4 +391,4 @@ export interface bn128 {
 }
 
 // EOF type which holds the execution-related data for EOF
-export type EOF = {}
+export type EOFEnv = {}
