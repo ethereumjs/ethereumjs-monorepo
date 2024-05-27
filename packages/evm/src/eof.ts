@@ -3,7 +3,7 @@ import { bytesToBigInt } from '@ethereumjs/util'
 import { ERROR } from './exceptions.js'
 
 import type { EVM } from './evm.js'
-import type { EOFEnv } from './types.js'
+import type { RunState } from './interpreter.js'
 
 export const FORMAT = 0xef
 export const MAGIC = 0x00
@@ -281,8 +281,59 @@ export const validateEOF = (container: Uint8Array, evm: EVM) => {
   }
 }
 
-export const setupEOF = (_container: Uint8Array, _evm: EVM): EOFEnv => {
-  return {}
+/**
+ * Edits the `runState` of the current EVM prior to running EOF code
+ * Note: should only be called on valid (deployed) EOF.
+ * Also note that deployed EOF is guaranteed to be valid EOF
+ */
+const setupEOF = (runState: RunState) => {
+  const container = runState.code
+
+  // CodePTR marks the start of the code section of the EOF body
+  let codePtr = 7 // This is the first byte of the first code_size of the first code_section in the EOF header
+
+  const codeSections = Number(bytesToBigInt(container.slice(7, 9)))
+
+  codePtr += 2 // Move ptr to the first code section size length
+
+  const codeSizes: number[] = []
+
+  for (let i = 0; i < codeSections; i++) {
+    const codeSize = Number(bytesToBigInt(container.slice(codePtr, (codePtr += 2))))
+    codeSizes.push(codeSize)
+  }
+
+  // It is possible codePtr now points to KIND_CONTAINER
+  // Update the codePtr to jump to the start of KIND_DATA
+  if (container[codePtr] === KIND_CONTAINER) {
+    codePtr++
+    const containerSections = Number(bytesToBigInt(container.slice(codePtr, (codePtr += 2))))
+
+    // Jump over all container sections
+    codePtr += containerSections * 2
+  }
+
+  // codePtr is now at data section
+
+  codePtr += 3 // Jump over data section
+  codePtr++ // Jump over the header terminator byte
+
+  codePtr += codeSections * 4 // Jump over the types section of the body
+
+  // Are now at the start of the runtime code
+  const codePCs: number[] = []
+
+  for (let i = 0; i < codeSizes.length; i++) {
+    codePCs.push(codePtr)
+    codePtr += codeSizes[i]
+  }
+
+  runState.env.eof = {
+    returnStack: [],
+    codePCs,
+  }
+
+  runState.programCounter = codePCs[0]
 }
 
-export const EOF = { FORMAT, MAGIC, VERSION, validateEOF }
+export const EOF = { FORMAT, MAGIC, VERSION, setupEOF, validateEOF }

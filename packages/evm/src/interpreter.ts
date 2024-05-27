@@ -204,23 +204,8 @@ export class Interpreter {
           exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
         }
       }
-      // Code is EOF1 format
-      /*const codeSections = EOF.codeAnalysis(code)
-      if (!codeSections) {
-        // Code is invalid EOF1 format if `codeSections` is falsy
-        return {
-          runState: this._runState,
-          exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
-        }
-      }
-
-      if (codeSections.data) {
-        // Set code to EOF container code section which starts at byte position 10 if data section is present
-        this._runState.code = code.subarray(10, 10 + codeSections!.code)
-      } else {
-        // Set code to EOF container code section which starts at byte position 7 if no data section is present
-        this._runState.code = code.subarray(7, 7 + codeSections!.code)
-      }*/
+      this._runState.code = code
+      EOF.setupEOF(this._runState)
     }
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
     // Check that the programCounter is in range

@@ -391,4 +391,7 @@ export interface bn128 {
 }
 
 // EOF type which holds the execution-related data for EOF
-export type EOFEnv = {}
+export type EOFEnv = {
+  returnStack: [number, number][] // [current_section_index, pc_post_instruction][]
+  codePCs: number[] //
+}
