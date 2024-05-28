@@ -1,4 +1,5 @@
 import { EOFError, validationError } from './errors.js'
+import { stackDelta } from './stackDelta.js'
 
 import type { EVM } from '../evm.js'
 import type { EOFContainer } from './container.js'
@@ -9,6 +10,9 @@ export function verifyCode(container: EOFContainer, evm: EVM) {
 }
 
 function validateOpcodes(container: EOFContainer, evm: EVM) {
+  // TODO (?) -> stackDelta currently only has active EOF opcodes, can use it directly (?)
+  // (so no need to generate the valid opcodeNumbers)
+
   // Validate each code section
   const opcodes = evm.getActiveOpcodes()
 
@@ -47,6 +51,8 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
   opcodeNumbers.delete(0xf5) // CREATE2
 
   // Note: this name might be misleading since this is the list of opcodes which are OK as final opcodes in a code section
+  // TODO if using stackDelta for EOF it is possible to add a "termination" boolean for the opcode to mark it as terminating
+  // (so no need to generate this set here)
   const terminatingOpcodes = new Set<number>()
 
   terminatingOpcodes.add(0x00) // STOP
@@ -67,21 +73,25 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
     }
   }
 
+  const validJumps = new Set<number>()
+
   for (const code of container.body.codeSections) {
     // Validate that each opcode is defined
     let ptr = 0
     let lastOpcode: number = 0 // Note: code sections cannot be empty, so this number will always be set
     while (ptr < code.length) {
+      validJumps.add(ptr)
       const opcode = code[ptr]
       lastOpcode = opcode
       if (!opcodeNumbers.has(opcode)) {
         validationError(EOFError.InvalidOpcode)
       }
-      if (opcode >= 0x60 && opcode <= 0x7f) {
-        // PUSH opcodes
-        ptr += opcode - 0x5f
-      }
-      ptr++
+
+      // Move ptr forward over any intermediates (if any)
+      // Note: for EOF this stackDelta is guaranteed to exist
+      const intermediates = stackDelta[opcode].intermediates
+      ptr += intermediates // If the opcode has any intermediates, jump over it
+      ptr++ // Move to next opcode
     }
 
     // Validate that the final opcode terminates

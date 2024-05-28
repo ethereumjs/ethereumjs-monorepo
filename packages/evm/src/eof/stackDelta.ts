@@ -1,4 +1,11 @@
-export const stackDelta = {
+export const stackDelta: {
+  [key: number]: {
+    inputs: number
+    outputs: number
+    name: string
+    intermediates: number
+  }
+} = {
   0x00: { inputs: 0, outputs: 0, name: 'STOP', intermediates: 0 },
   0x01: { inputs: 2, outputs: 1, name: 'ADD', intermediates: 0 },
   0x02: { inputs: 2, outputs: 1, name: 'MUL', intermediates: 0 },
