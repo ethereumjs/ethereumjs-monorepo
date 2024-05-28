@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1716794007486,
+  "lastUpdate": 1716874864552,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d94dc5fbfedac86362011a80d528464e64b62f11",
-          "message": "common: add spec test for 2935 contract code and update history storage address (#3373)\n\n* vm: add spec test for 2935 contract code\r\n\r\n* update the history address\r\n\r\n* reset the hitory address for kaustinen6\r\n\r\n* make sure kaustinen6 still uses old history save address\r\n\r\n* apply dry feedback",
-          "timestamp": "2024-05-03T14:23:54-04:00",
-          "tree_id": "2fc24dcb48667ee2b839f24c3e45faf690e20bf6",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d94dc5fbfedac86362011a80d528464e64b62f11"
-        },
-        "date": 1714760946354,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42364,
-            "range": "±2.96%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41689,
-            "range": "±1.29%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41573,
-            "range": "±1.38%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37944,
-            "range": "±5.55%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 39652,
-            "range": "±1.73%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±5.48%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "40609000+Dappsters@users.noreply.github.com",
+            "name": "Dappsters",
+            "username": "Dappsters"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1566a3030e634f1912e1ffb2cf25e8364fd01304",
+          "message": "StateManager - `_getStorageTrie`: Fix Input Checking Logic (#3434)\n\n* StateManager - `_getStorageTrie`: Fixed input logic and added docs\r\n\r\n* Fix type narrowing by removing flag declaration\r\n\r\n* lint\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-05-28T07:36:19+02:00",
+          "tree_id": "f5fe989fee77ad82ab8b59465fe7c49036330086",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1566a3030e634f1912e1ffb2cf25e8364fd01304"
+        },
+        "date": 1716874863646,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42132,
+            "range": "±2.98%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41842,
+            "range": "±1.35%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41414,
+            "range": "±1.39%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 40346,
+            "range": "±1.55%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36888,
+            "range": "±5.31%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
