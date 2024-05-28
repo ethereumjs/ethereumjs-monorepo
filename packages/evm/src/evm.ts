@@ -20,7 +20,7 @@ import debugDefault from 'debug'
 import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
 
-import { EOF } from './eof.js'
+import { FORMAT } from './eof/constants.js'
 import { ERROR, EvmError } from './exceptions.js'
 import { Interpreter } from './interpreter.js'
 import { Journal } from './journal.js'
@@ -611,7 +611,7 @@ export class EVM implements EVMInterface {
     // If enough gas and allowed code size
     let CodestoreOOG = false
     if (totalGas <= message.gasLimit && (this.allowUnlimitedContractSize || allowedCodeSize)) {
-      if (this.common.isActivatedEIP(3541) && result.returnValue[0] === EOF.FORMAT) {
+      if (this.common.isActivatedEIP(3541) && result.returnValue[0] === FORMAT) {
         if (!this.common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         } else if (message.eof === undefined) {

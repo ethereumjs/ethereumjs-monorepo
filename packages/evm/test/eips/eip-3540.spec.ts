@@ -1,7 +1,7 @@
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { validateEOF } from '../../src/eof.js'
+import { validateEOF } from '../../src/eof/container.js'
 import { EVM } from '../../src/index.js'
 
 // Source: https://github.com/ipsilon/execution-spec-tests/releases/tag/eof-20240515

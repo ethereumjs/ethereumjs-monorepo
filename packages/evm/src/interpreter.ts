@@ -11,7 +11,9 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import { EOF } from './eof.js'
+//import { EOF } from './eof/eof.js'
+import { FORMAT, MAGIC, VERSION } from './eof/constants.js'
+import { setupEOF } from './eof/setup.js'
 import { ERROR, EvmError } from './exceptions.js'
 import { type EVMPerformanceLogger, type Timer } from './logger.js'
 import { Memory } from './memory.js'
@@ -186,18 +188,18 @@ export class Interpreter {
   }
 
   async run(code: Uint8Array, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    if (!this.common.isActivatedEIP(3540) || code[0] !== EOF.FORMAT) {
+    if (!this.common.isActivatedEIP(3540) || code[0] !== FORMAT) {
       // EIP-3540 isn't active and first byte is not 0xEF - treat as legacy bytecode
       this._runState.code = code
     } else if (this.common.isActivatedEIP(3540)) {
-      if (code[1] !== EOF.MAGIC) {
+      if (code[1] !== MAGIC) {
         // Bytecode contains invalid EOF magic byte
         return {
           runState: this._runState,
           exceptionError: new EvmError(ERROR.INVALID_BYTECODE_RESULT),
         }
       }
-      if (code[2] !== EOF.VERSION) {
+      if (code[2] !== VERSION) {
         // Bytecode contains invalid EOF version number
         return {
           runState: this._runState,
@@ -205,7 +207,7 @@ export class Interpreter {
         }
       }
       this._runState.code = code
-      EOF.setupEOF(this._runState)
+      setupEOF(this._runState)
     }
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
     // Check that the programCounter is in range

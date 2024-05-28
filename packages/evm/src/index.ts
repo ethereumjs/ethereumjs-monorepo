@@ -1,4 +1,4 @@
-import { EOF } from './eof.js'
+//import { EOF } from './eof.js'
 import { EVM } from './evm.js'
 import { ERROR as EVMErrorMessage, EvmError } from './exceptions.js'
 import { Message } from './message.js'
@@ -30,4 +30,4 @@ export type {
   PrecompileInput,
 }
 
-export { EOF, EVM, EvmError, EVMErrorMessage, getActivePrecompiles, getOpcodesForHF, Message }
+export { /*EOF,*/ EVM, EvmError, EVMErrorMessage, getActivePrecompiles, getOpcodesForHF, Message }
