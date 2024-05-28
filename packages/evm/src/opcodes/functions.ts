@@ -1030,6 +1030,10 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
+      } else {
+        const code = runState.env.code
+        const rjumpDest = new DataView(code.buffer).getInt16(runState.programCounter)
+        runState.programCounter += 2 + rjumpDest
       }
     },
   ],
@@ -1040,6 +1044,16 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
+      } else {
+        const cond = runState.stack.pop()
+        // Move PC to the PC post instruction
+        if (cond > 0) {
+          const code = runState.env.code
+          const rjumpDest = new DataView(code.buffer).getInt16(runState.programCounter)
+          runState.programCounter += rjumpDest
+        }
+        // In all cases, increment PC with 2 (also in the case if `cond` is `0`)
+        runState.programCounter += 2
       }
     },
   ],
@@ -1050,6 +1064,21 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
+      } else {
+        const code = runState.env.code
+        const jumptableEntries = code[runState.programCounter]
+        const jumptableSize = jumptableEntries * 2
+        // Move PC to start of the jump table
+        runState.programCounter += 1
+        const jumptableCase = runState.stack.pop()
+        if (jumptableCase < jumptableEntries) {
+          const rjumpDest = new DataView(code.buffer).getInt16(
+            runState.programCounter + Number(jumptableCase) * 2
+          )
+          runState.programCounter += jumptableSize + rjumpDest
+        } else {
+          runState.programCounter += jumptableSize
+        }
       }
     },
   ],
