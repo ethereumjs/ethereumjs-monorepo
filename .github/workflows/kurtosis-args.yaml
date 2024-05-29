@@ -3,6 +3,7 @@ participants:
     cl_type: lighthouse
     count: 1
   - el_type: ethereumjs
+    el_image: ethereumjs:local
     cl_type: lodestar
     count: 1
 additional_services:
