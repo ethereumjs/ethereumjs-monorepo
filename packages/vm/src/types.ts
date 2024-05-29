@@ -244,6 +244,12 @@ export interface RunBlockOpts {
    * Defaults to `false`.
    */
   generate?: boolean
+
+  /**
+   * The stateRoot of the parent. Used for verifying the witness proofs in the context of Verkle.
+   */
+  parentStateRoot?: Uint8Array
+
   /**
    * If true, will skip "Block validation":
    * Block validation validates the header (with respect to the blockchain),
