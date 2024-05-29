@@ -2,7 +2,7 @@ participants:
   - el_type: geth
     cl_type: lighthouse
     count: 1
-  - el_type: geth
+  - el_type: ethereumjs
     cl_type: lodestar
     count: 1
 additional_services:
