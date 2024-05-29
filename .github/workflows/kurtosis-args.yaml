@@ -8,7 +8,6 @@ participants:
     count: 1
 additional_services:
   - assertoor
-  - dora
 assertoor_params:
   run_stability_check: false
   run_block_proposal_check: false
