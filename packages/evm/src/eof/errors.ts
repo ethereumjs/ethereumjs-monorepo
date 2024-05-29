@@ -50,6 +50,14 @@ export enum EOFError {
   // Code verifcation
   InvalidOpcode = 'invalid opcode',
   InvalidTerminator = 'invalid terminating opcode',
+  OpcodeIntermediatesOOB = 'invalid opcode: intermediates out-of-bounds',
+
+  InvalidRJUMP = 'invalid rjump* target',
+  InvalidCallTarget = 'invalid callf/jumpf target',
+  InvalidCALLFReturning = 'invalid callf: calls to non-returning function',
+  InvalidJUMPF = 'invalid jumpf target (output count)',
+  InvalidReturningSection = 'invalid returning code section: section is not returning',
+  RJUMPVTableSize0 = 'invalid RJUMPV: table size 0',
 }
 
 export enum SimpleErrors {

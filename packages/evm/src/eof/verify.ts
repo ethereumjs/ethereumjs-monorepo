@@ -9,7 +9,34 @@ export function verifyCode(container: EOFContainer, evm: EVM) {
   validateStack(container, evm)
 }
 
+function readInt16(code: Uint8Array, start: number) {
+  return new DataView(code.buffer).getInt16(start)
+}
+
+function readUint16(code: Uint8Array, start: number) {
+  return new DataView(code.buffer).getUint16(start)
+}
+
 function validateOpcodes(container: EOFContainer, evm: EVM) {
+  // Track the intermediate bytes
+  const intermediateBytes = new Set<number>()
+  // Track the jump locations (for forward jumps it is unknown at the first pass if the byte is intermediate)
+  const jumpLocations = new Set<number>()
+
+  function addJump(location: number) {
+    if (intermediateBytes.has(location)) {
+      validationError(EOFError.InvalidRJUMP)
+    }
+    jumpLocations.add(location)
+  }
+
+  function addIntermediate(location: number) {
+    if (jumpLocations.has(location)) {
+      validationError(EOFError.InvalidRJUMP)
+    }
+    intermediateBytes.add(location)
+  }
+
   // TODO (?) -> stackDelta currently only has active EOF opcodes, can use it directly (?)
   // (so no need to generate the valid opcodeNumbers)
 
@@ -75,22 +102,110 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
 
   const validJumps = new Set<number>()
 
+  let codeSection = -1
   for (const code of container.body.codeSections) {
+    codeSection++
+
+    const returningFunction = container.body.typeSections[codeSection].outputs === 0x80
+
     // Validate that each opcode is defined
     let ptr = 0
     let lastOpcode: number = 0 // Note: code sections cannot be empty, so this number will always be set
     while (ptr < code.length) {
       validJumps.add(ptr)
       const opcode = code[ptr]
+
+      if (returningFunction && opcode === 0xe4) {
+        validationError(EOFError.InvalidReturningSection)
+      }
+
       lastOpcode = opcode
       if (!opcodeNumbers.has(opcode)) {
         validationError(EOFError.InvalidOpcode)
       }
 
+      if (opcode === 0xe0 || opcode === 0xe1) {
+        // RJUMP / RJUMPI
+        const target = readInt16(code, ptr + 1) + ptr + 3
+        if (target < 0 || target >= code.length) {
+          validationError(EOFError.InvalidRJUMP)
+        }
+        addJump(target)
+      } else if (opcode === 0xe2) {
+        // RJUMPV
+        const tableSize = code[ptr + 1] + 1
+
+        if (tableSize === undefined) {
+          validationError(EOFError.OpcodeIntermediatesOOB)
+        } else if (tableSize === 0) {
+          validationError(EOFError.RJUMPVTableSize0)
+        }
+
+        if (ptr + tableSize * 2 + 2 >= code.length) {
+          // Fall-through case
+          validationError(EOFError.OpcodeIntermediatesOOB)
+        }
+
+        const newPc = ptr + 2 + tableSize * 2
+
+        for (let i = 0; i < tableSize; i++) {
+          const newPtr = ptr + 2 + i * 2
+          // Add the table bytes to intermediates
+          addIntermediate(newPtr)
+          addIntermediate(newPtr + 1)
+          const target = readInt16(code, newPtr) + newPc
+          if (target < 0 || target >= code.length) {
+            validationError(EOFError.OpcodeIntermediatesOOB)
+          }
+          addJump(target)
+        }
+
+        // Special case for RJUMPV: move ptr over the table (the immediate starting byte will be added later)
+        ptr += 2 * tableSize
+      } else if (opcode === 0xe3 || opcode === 0xe5) {
+        // CALLF / JUMPF
+        const target = readUint16(code, ptr + 1)
+        if (target >= container.header.codeSizes.length) {
+          validationError(EOFError.InvalidCallTarget)
+        }
+        if (opcode === 0xe3) {
+          if (container.body.typeSections[target].outputs === 0x80) {
+            // CALLF points to non-returning function which is not allowed
+            validationError(EOFError.InvalidCALLFReturning)
+          }
+        } else {
+          // JUMPF
+          const currentOutputs = container.body.typeSections[codeSection].outputs
+          const targetOutputs = container.body.typeSections[target].outputs
+
+          if (targetOutputs > currentOutputs && !(targetOutputs === 0x80)) {
+            validationError(EOFError.InvalidJUMPF)
+          }
+
+          if (returningFunction && targetOutputs <= 0x7f) {
+            validationError(EOFError.InvalidReturningSection)
+          }
+        }
+      } else if (opcode === 0xec) {
+        // EOFCREATE
+      } else if (opcode === 0xee) {
+        // RETURNCONTRACT
+      } else if (opcode === 0xd1) {
+        // DATALOADN
+      }
+
       // Move ptr forward over any intermediates (if any)
       // Note: for EOF this stackDelta is guaranteed to exist
       const intermediates = stackDelta[opcode].intermediates
-      ptr += intermediates // If the opcode has any intermediates, jump over it
+      if (intermediates > 0) {
+        for (let i = 1; i <= intermediates; i++) {
+          addIntermediate(ptr + i)
+        }
+        ptr += intermediates // If the opcode has any intermediates, jump over it
+      }
+      if (ptr >= code.length) {
+        validationError(EOFError.OpcodeIntermediatesOOB)
+      }
       ptr++ // Move to next opcode
     }
 
