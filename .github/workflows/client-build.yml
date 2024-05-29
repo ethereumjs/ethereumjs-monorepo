@@ -93,4 +93,4 @@ jobs:
       - name: Kurtosis Assertoor GitHub Action
         uses: ethpandaops/kurtosis-assertoor-github-action@v1
         with:
-          ethereum_package_args: ./kurtosis-args.yaml
+          ethereum_package_args: ${{github.workspace}}/.github/workflows/kurtosis-args.yaml
