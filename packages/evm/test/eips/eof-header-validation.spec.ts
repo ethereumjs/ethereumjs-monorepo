@@ -37,12 +37,11 @@ await new Promise<void>((resolve, reject) => {
       return
     }
     const name = path.parse(fileName).name
-    describe(`EOF Header valdiation tests - ${name}`, async () => {
+    describe(`EOF Header validation tests - ${name}`, async () => {
       const testData = JSON.parse(<string>content)
-      //console.log(testData)
       const evm = await getEVM()
       for (const key in testData) {
-        it(`Container validation tests ${key}`, () => {
+        it(`Test ${key}`, () => {
           //@ts-ignore
           const input = testData[key]
           for (const testKey in input.vectors) {
