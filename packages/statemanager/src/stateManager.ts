@@ -405,28 +405,38 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const contractCode = await this.getContractCode(address)
     return contractCode.length
   }
+
   /**
-   * Gets the storage trie for an account from the storage
-   * cache or does a lookup.
+   * Gets the storage trie for the EVM-internal account identified by the provided address/hash.
+   * If the storage trie is not in the local cache ('this._storageTries'),
+   *   generates a new storage trie object based on a lookup (shallow copy from 'this._trie'),
+   *   applies the storage root of the provided rootAccount (or an
+   *   empty trie root if no rootAccount is provided), and stores the new entry
+   *   in the local cache.
+   * @param addressOrHash Address (or other object) with populated 'bytes', or a raw Uint8Array.
+   *   Used to identify the requested storage trie in the local cache and define the
+   *   prefix used when creating a new storage trie.
+   * @param  rootAccount (Optional) Account object whose 'storageRoot' is to be used as
+   *   the root of the new storageTrie returned when there is no pre-existing trie.
+   *   If left undefined, the EMPTY_TRIE_ROOT will be used as the root instead.
+   * @returns storage Trie object
    * @private
    */
   // TODO PR: have a better interface for hashed address pull?
-  protected _getStorageTrie(addressOrHash: Address | Uint8Array, account?: Account): Trie {
+  protected _getStorageTrie(
+    addressOrHash: Address | { bytes: Uint8Array } | Uint8Array,
+    rootAccount?: Account
+  ): Trie {
     // use hashed key for lookup from storage cache
-    const addressHex = bytesToUnprefixedHex(
-      addressOrHash instanceof Address ? this.keccakFunction(addressOrHash.bytes) : addressOrHash
-    )
+    const addressBytes: Uint8Array =
+      addressOrHash instanceof Uint8Array ? addressOrHash : this.keccakFunction(addressOrHash.bytes)
+    const addressHex: string = bytesToUnprefixedHex(addressBytes)
     let storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
-      const keyPrefix = this._prefixStorageTrieKeys
-        ? (addressOrHash instanceof Address
-            ? this.keccakFunction(addressOrHash.bytes)
-            : addressOrHash
-          ).slice(0, 7)
-        : undefined
+      const keyPrefix = this._prefixStorageTrieKeys ? addressBytes.slice(0, 7) : undefined
       storageTrie = this._trie.shallowCopy(false, { keyPrefix })
-      if (account !== undefined) {
-        storageTrie.root(account.storageRoot)
+      if (rootAccount !== undefined) {
+        storageTrie.root(rootAccount.storageRoot)
       } else {
         storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
       }
