@@ -84,7 +84,7 @@ export async function bytecode(
       )
     } else {
       let evm = await createEvm()
-      evm.runCode({
+      await evm.runCode({
         code: hexToBytes('0x' + bytecode!),
         gasLimit: BigInt(0xffff),
       })
