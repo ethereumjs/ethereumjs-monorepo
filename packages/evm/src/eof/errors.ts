@@ -61,6 +61,8 @@ export enum EOFError {
   UnreachableCodeSections = 'unreachable code sections',
   UnreachableCode = 'unreachable code (by forward jumps)',
   DataLoadNOutOfBounds = 'DATALOADN reading out of bounds',
+  MaxStackHeightViolation = 'Max stack height does not match the reported max stack height',
+  StackUnderflow = 'Stack underflow',
 }
 
 export enum SimpleErrors {

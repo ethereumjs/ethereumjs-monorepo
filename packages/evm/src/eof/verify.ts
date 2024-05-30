@@ -1,3 +1,5 @@
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
+
 import { EOFError, validationError } from './errors.js'
 import { stackDelta } from './stackDelta.js'
 
@@ -105,9 +107,13 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
   // Add all reachable code sections to
   const reachableSections: { [key: number]: Set<number> } = {}
 
+  console.log(container.body.typeSections)
+
   let codeSection = -1
   for (const code of container.body.codeSections) {
     codeSection++
+
+    console.log(bytesToHex(code))
 
     reachableSections[codeSection] = new Set()
 
@@ -121,12 +127,23 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
     let ptr = 0
     let lastOpcode: number = 0 // Note: code sections cannot be empty, so this number will always be set
 
+    let currentStackHeight = container.body.typeSections[codeSection].inputs
+    let maxStackHeight = currentStackHeight
+
     while (ptr < code.length) {
       if (!reachableOpcodes.has(ptr)) {
         validationError(EOFError.UnreachableCode)
       }
       validJumps.add(ptr)
       const opcode = code[ptr]
+
+      console.log(stackDelta[opcode].name)
+
+      currentStackHeight += stackDelta[opcode].outputs - stackDelta[opcode].inputs
+
+      if (currentStackHeight < 0) {
+        validationError(EOFError.StackUnderflow)
+      }
 
       if (returningFunction && opcode === 0xe4) {
         validationError(EOFError.InvalidReturningSection)
@@ -198,6 +215,8 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
             // CALLF points to non-returning function which is not allowed
             validationError(EOFError.InvalidCALLFReturning)
           }
+          currentStackHeight +=
+            container.body.typeSections[target].outputs - container.body.typeSections[target].inputs
         } else {
           // JUMPF
           const currentOutputs = container.body.typeSections[codeSection].outputs
@@ -242,11 +261,19 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
         // It can be reached by sequential instruction flow
         reachableOpcodes.add(ptr)
       }
+      maxStackHeight = Math.max(currentStackHeight, maxStackHeight)
     }
 
     // Validate that the final opcode terminates
     if (!terminatingOpcodes.has(lastOpcode)) {
       validationError(EOFError.InvalidTerminator)
+    }
+
+    if (container.body.typeSections[codeSection].maxStackHeight !== maxStackHeight) {
+      validationError(EOFError.MaxStackHeightViolation)
+    }
+    if (maxStackHeight > 1023) {
+      validationError(EOFError.MaxStackHeightLimit)
     }
   }
 
