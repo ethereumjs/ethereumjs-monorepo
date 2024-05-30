@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs'
+import { PortalNetwork } from 'portalnetwork'
 
 import { Chain } from './blockchain/index.js'
 import { SyncMode } from './config.js'
@@ -70,6 +71,7 @@ export class EthereumClient {
   public config: Config
   public chain: Chain
   public services: (FullEthereumService | LightEthereumService)[] = []
+  public portal?: PortalNetwork
 
   public opened: boolean
   public started: boolean
