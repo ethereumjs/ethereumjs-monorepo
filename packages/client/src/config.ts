@@ -13,6 +13,7 @@ import type { EventBusType, MultiaddrLike, PrometheusMetrics } from './types.js'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { PortalNetworkOpts } from 'portalnetwork'
 
 export enum DataDirectory {
   Chain = 'chain',
@@ -344,6 +345,11 @@ export interface ConfigOptions {
    * Enables Prometheus Metrics that can be collected for monitoring client health
    */
   prometheusMetrics?: PrometheusMetrics
+
+  /**
+   * Configuration for integrated portal network client
+   */
+  portalNetworkConfig?: Partial<PortalNetworkOpts>
 }
 
 export class Config {
@@ -470,6 +476,8 @@ export class Config {
 
   public readonly metrics: PrometheusMetrics | undefined
 
+  public readonly portalNetworkConfig?: Partial<PortalNetworkOpts>
+
   constructor(options: ConfigOptions = {}) {
     this.events = new EventBus() as EventBusType
 
@@ -578,6 +586,7 @@ export class Config {
     this.events.once(Event.CLIENT_SHUTDOWN, () => {
       this.shutdown = true
     })
+    this.portalNetworkConfig = options.portalNetworkConfig
   }
 
   /**
