@@ -126,6 +126,9 @@ export class EthereumClient {
     if (this.opened) {
       return false
     }
+    if (this.config.portalNetworkConfig) {
+      this.portal = await PortalNetwork.create(this.config.portalNetworkConfig)
+    }
     const name = this.config.chainCommon.chainName()
     const chainId = this.config.chainCommon.chainId()
     const packageJson = JSON.parse(
@@ -162,6 +165,9 @@ export class EthereumClient {
     this.config.logger.info('Setup networking and services.')
 
     await Promise.all(this.services.map((s) => s.start()))
+    if (this.portal) {
+      await this.portal.start()
+    }
     this.config.server && (await this.config.server.start())
     // Only call bootstrap if servers are actually started
     this.config.server && this.config.server.started && (await this.config.server.bootstrap())
