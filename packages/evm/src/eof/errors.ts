@@ -60,6 +60,7 @@ export enum EOFError {
   RJUMPVTableSize0 = 'invalid RJUMPV: table size 0',
   UnreachableCodeSections = 'unreachable code sections',
   UnreachableCode = 'unreachable code (by forward jumps)',
+  DataLoadNOutOfBounds = 'DATALOADN reading out of bounds',
 }
 
 export enum SimpleErrors {
