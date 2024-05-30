@@ -4,9 +4,10 @@ export const stackDelta: {
     outputs: number
     name: string
     intermediates: number
+    terminating?: boolean
   }
 } = {
-  0x00: { inputs: 0, outputs: 0, name: 'STOP', intermediates: 0 },
+  0x00: { inputs: 0, outputs: 0, name: 'STOP', intermediates: 0, terminating: true },
   0x01: { inputs: 2, outputs: 1, name: 'ADD', intermediates: 0 },
   0x02: { inputs: 2, outputs: 1, name: 'MUL', intermediates: 0 },
   0x03: { inputs: 2, outputs: 1, name: 'SUB', intermediates: 0 },
@@ -144,20 +145,20 @@ export const stackDelta: {
   0xe1: { inputs: 1, outputs: 0, name: 'RJUMPI', intermediates: 2 },
   0xe2: { inputs: 1, outputs: 0, name: 'RJUMPV', intermediates: 1 },
   0xe3: { inputs: 0, outputs: 0, name: 'CALLF', intermediates: 2 },
-  0xe4: { inputs: 0, outputs: 0, name: 'RETF', intermediates: 0 },
-  0xe5: { inputs: 0, outputs: 0, name: 'JUMPF', intermediates: 2 },
+  0xe4: { inputs: 0, outputs: 0, name: 'RETF', intermediates: 0, terminating: true },
+  0xe5: { inputs: 0, outputs: 0, name: 'JUMPF', intermediates: 2, terminating: true },
   0xe6: { inputs: 0, outputs: 1, name: 'DUPN', intermediates: 1 },
   0xe7: { inputs: 0, outputs: 0, name: 'SWAPN', intermediates: 1 },
   0xe8: { inputs: 0, outputs: 0, name: 'EXCHANGE', intermediates: 1 },
   0xec: { inputs: 4, outputs: 1, name: 'EOFCREATE', intermediates: 1 },
-  0xee: { inputs: 2, outputs: 1, name: 'RETURNCONTRACT', intermediates: 1 },
-  0xf3: { inputs: 2, outputs: 0, name: 'RETURN', intermediates: 0 },
+  0xee: { inputs: 2, outputs: 1, name: 'RETURNCONTRACT', intermediates: 1, terminating: true },
+  0xf3: { inputs: 2, outputs: 0, name: 'RETURN', intermediates: 0, terminating: true },
   0xf7: { inputs: 1, outputs: 1, name: 'RETURNDATALOAD', intermediates: 0 },
   0xf8: { inputs: 4, outputs: 1, name: 'EXTCALL', intermediates: 0 },
   0xf9: { inputs: 3, outputs: 1, name: 'EXTDELEGATECALL', intermediates: 0 },
   0xfb: { inputs: 3, outputs: 1, name: 'EXTSTATICCALL', intermediates: 0 },
-  0xfd: { inputs: 2, outputs: 0, name: 'REVERT', intermediates: 0 },
-  0xfe: { inputs: 0, outputs: 0, name: 'INVALID', intermediates: 0 },
+  0xfd: { inputs: 2, outputs: 0, name: 'REVERT', intermediates: 0, terminating: true },
+  0xfe: { inputs: 0, outputs: 0, name: 'INVALID', intermediates: 0, terminating: true },
 }
 
 /*

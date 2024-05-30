@@ -102,16 +102,29 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
 
   const validJumps = new Set<number>()
 
+  // Add all reachable code sections to
+  const reachableSections: { [key: number]: Set<number> } = {}
+
   let codeSection = -1
   for (const code of container.body.codeSections) {
     codeSection++
 
+    reachableSections[codeSection] = new Set()
+
     const returningFunction = container.body.typeSections[codeSection].outputs === 0x80
+
+    // Tracking set of reachable opcodes
+    const reachableOpcodes = new Set<number>()
+    reachableOpcodes.add(0)
 
     // Validate that each opcode is defined
     let ptr = 0
     let lastOpcode: number = 0 // Note: code sections cannot be empty, so this number will always be set
+
     while (ptr < code.length) {
+      if (!reachableOpcodes.has(ptr)) {
+        validationError(EOFError.UnreachableCode)
+      }
       validJumps.add(ptr)
       const opcode = code[ptr]
 
@@ -131,6 +144,16 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
           validationError(EOFError.InvalidRJUMP)
         }
         addJump(target)
+        reachableOpcodes.add(target)
+
+        if (opcode === 0xe0) {
+          // For RJUMP check that the instruction after RJUMP is reachable
+          // If this is not the case, then it is not yet targeted by a forward jump
+          // And hence violates the spec
+          if (!reachableOpcodes.has(ptr + 3)) {
+            validationError(EOFError.UnreachableCode)
+          }
+        }
       } else if (opcode === 0xe2) {
         // RJUMPV
         const tableSize = code[ptr + 1] + 1
@@ -158,6 +181,7 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
             validationError(EOFError.OpcodeIntermediatesOOB)
           }
           addJump(target)
+          reachableOpcodes.add(target)
         }
 
         // Special case for RJUMPV: move ptr over the table (the immediate starting byte will be added later)
@@ -165,6 +189,7 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
       } else if (opcode === 0xe3 || opcode === 0xe5) {
         // CALLF / JUMPF
         const target = readUint16(code, ptr + 1)
+        reachableSections[codeSection].add(target)
         if (target >= container.header.codeSizes.length) {
           validationError(EOFError.InvalidCallTarget)
         }
@@ -207,12 +232,37 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
         validationError(EOFError.OpcodeIntermediatesOOB)
       }
       ptr++ // Move to next opcode
+      if (stackDelta[opcode].terminating === undefined) {
+        // If the opcode is not terminating we can add the next opcode to the reachable opcodes
+        // It can be reached by sequential instruction flow
+        reachableOpcodes.add(ptr)
+      }
     }
 
     // Validate that the final opcode terminates
     if (!terminatingOpcodes.has(lastOpcode)) {
       validationError(EOFError.InvalidTerminator)
     }
+  }
+
+  // Verify that each code section can be reached from code section 0
+  const sectionAccumulator = new Set<number>()
+  sectionAccumulator.add(0) // 0 is always reachable
+  const toCheck = [0]
+
+  while (toCheck.length > 0) {
+    const checkArray = reachableSections[toCheck.pop()!]
+    for (const checkSection of checkArray) {
+      if (!sectionAccumulator.has(checkSection)) {
+        // Only check the reachable section if
+        sectionAccumulator.add(checkSection)
+        toCheck.push(checkSection)
+      }
+    }
+  }
+
+  if (sectionAccumulator.size !== container.header.codeSizes.length) {
+    validationError(EOFError.UnreachableCodeSections)
   }
 }
 

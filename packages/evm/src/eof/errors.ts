@@ -58,6 +58,8 @@ export enum EOFError {
   InvalidJUMPF = 'invalid jumpf target (output count)',
   InvalidReturningSection = 'invalid returning code section: section is not returning',
   RJUMPVTableSize0 = 'invalid RJUMPV: table size 0',
+  UnreachableCodeSections = 'unreachable code sections',
+  UnreachableCode = 'unreachable code (by forward jumps)',
 }
 
 export enum SimpleErrors {
