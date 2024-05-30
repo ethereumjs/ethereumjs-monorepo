@@ -217,6 +217,11 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
         // RETURNCONTRACT
       } else if (opcode === 0xd1) {
         // DATALOADN
+        const dataTarget = readUint16(code, ptr + 1)
+        const endOfSlice = dataTarget + 32
+        if (container.header.dataSize < endOfSlice) {
+          validationError(EOFError.DataLoadNOutOfBounds)
+        }
       }
 
       // Move ptr forward over any intermediates (if any)
