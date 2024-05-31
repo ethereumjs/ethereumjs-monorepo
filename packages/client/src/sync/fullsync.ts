@@ -209,7 +209,7 @@ export class FullSynchronizer extends Synchronizer {
    * Process blocks fetched from the fetcher.
    */
   async processBlocks(blocks: Block[]) {
-    if (this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       if (this.fetcher !== null) {
         // If we are beyond the merge block we should stop the fetcher
         this.config.logger.info('Paris (Merge) hardfork reached, stopping block fetcher')
@@ -227,10 +227,9 @@ export class FullSynchronizer extends Synchronizer {
     const first = BigInt(blocks[0].header.number)
     const last = BigInt(blocks[blocks.length - 1].header.number)
     const hash = short(blocks[0].hash())
-    const baseFeeAdd =
-      this.config.chainCommon.gteHardfork(Hardfork.London) === true
-        ? `baseFee=${blocks[0].header.baseFeePerGas} `
-        : ''
+    const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
+      ? `baseFee=${blocks[0].header.baseFeePerGas} `
+      : ''
 
     let attentionHF: string | null = null
     const nextHFBlockNum = this.config.chainCommon.nextHardforkBlockOrTimestamp()
@@ -244,7 +243,7 @@ export class FullSynchronizer extends Synchronizer {
     } else {
       if (
         this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition &&
-        this.config.chainCommon.gteHardfork(Hardfork.Paris) === false
+        !this.config.chainCommon.gteHardfork(Hardfork.Paris)
       ) {
         const mergeTTD = this.config.chainCommon.hardforkTTD(Hardfork.Paris)!
         const td = this.chain.blocks.td

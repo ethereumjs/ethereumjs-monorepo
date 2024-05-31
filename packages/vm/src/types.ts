@@ -7,6 +7,7 @@ import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type {
   BigIntLike,
   CLRequest,
+  CLRequestType,
   GenesisState,
   PrefixedHexString,
   WithdrawalData,
@@ -243,6 +244,12 @@ export interface RunBlockOpts {
    * Defaults to `false`.
    */
   generate?: boolean
+
+  /**
+   * The stateRoot of the parent. Used for verifying the witness proofs in the context of Verkle.
+   */
+  parentStateRoot?: Uint8Array
+
   /**
    * If true, will skip "Block validation":
    * Block validation validates the header (with respect to the blockchain),
@@ -338,7 +345,7 @@ export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
   /**
    * Any CL requests that were processed in the course of this block
    */
-  requests?: CLRequest[]
+  requests?: CLRequest<CLRequestType>[]
 }
 
 export interface AfterBlockEvent extends RunBlockResult {

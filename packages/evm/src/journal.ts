@@ -2,7 +2,6 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   Address,
   RIPEMD160_ADDRESS_STRING,
-  bigIntToHex,
   bytesToHex,
   bytesToUnprefixedHex,
   stripHexPrefix,
@@ -193,18 +192,11 @@ export class Journal {
    * Also cleanups any other internal fields
    */
   async cleanup(): Promise<void> {
-    if (this.common.gteHardfork(Hardfork.SpuriousDragon) === true) {
+    if (this.common.gteHardfork(Hardfork.SpuriousDragon)) {
       for (const addressHex of this.touched) {
         const address = new Address(hexToBytes(`0x${addressHex}`))
         const account = await this.stateManager.getAccount(address)
         if (account === undefined || account.isEmpty()) {
-          if (this.common.isActivatedEIP(2935)) {
-            // The history storage address is exempt of state clearing by EIP-158 if the EIP is activated
-            const addr = bigIntToHex(this.common.param('vm', 'historyStorageAddress')).slice(2)
-            if (addressHex === addr) {
-              continue
-            }
-          }
           await this.deleteAccount(address)
           if (this.DEBUG) {
             this._debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)

@@ -1,4 +1,3 @@
-import { getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
 import {
   Account,
   Address,
@@ -32,6 +31,7 @@ import {
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
+import { getTreeIndexesForStorageSlot } from '@ethereumjs/verkle'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { ERROR } from '../exceptions.js'
@@ -1157,9 +1157,16 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       const expectedAddress = new Address(setLengthLeft(bigIntToBytes(authority), 20).slice(-20))
-      const accountNonce = (
-        (await runState.stateManager.getAccount(expectedAddress)) ?? new Account()
-      ).nonce
+      const account = (await runState.stateManager.getAccount(expectedAddress)) ?? new Account()
+
+      if (account.isContract()) {
+        // EXTCODESIZE > 0
+        runState.stack.push(BIGINT_0)
+        runState.auth = undefined
+        return
+      }
+
+      const accountNonce = account.nonce
 
       const invokedAddress = setLengthLeft(runState.interpreter._env.address.bytes, 32)
       const chainId = setLengthLeft(bigIntToBytes(runState.interpreter.getChainId()), 32)

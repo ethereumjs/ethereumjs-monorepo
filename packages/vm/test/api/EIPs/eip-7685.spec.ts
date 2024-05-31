@@ -1,29 +1,32 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { CLRequest, KECCAK256_RLP, concatBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
+import {
+  DepositRequest,
+  KECCAK256_RLP,
+  bytesToBigInt,
+  hexToBytes,
+  randomBytes,
+} from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
 import { VM } from '../../../src/vm.js'
 import { setupVM } from '../utils.js'
 
-import type { CLRequestType } from '@ethereumjs/util'
+import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 
 const invalidRequestsRoot = hexToBytes(
   '0xc98048d6605eb79ecc08d90b8817f44911ec474acd8d11688453d2c6ef743bc5'
 )
-class NumberRequest extends CLRequest implements CLRequestType {
-  constructor(type: number, bytes: Uint8Array) {
-    super(type, bytes)
+function getRandomDepositRequest(): CLRequest<CLRequestType> {
+  const depositRequestData = {
+    pubkey: randomBytes(48),
+    withdrawalCredentials: randomBytes(32),
+    amount: bytesToBigInt(randomBytes(8)),
+    signature: randomBytes(96),
+    index: bytesToBigInt(randomBytes(8)),
   }
-
-  public static fromRequestData(bytes: Uint8Array): CLRequestType {
-    return new NumberRequest(0x1, bytes)
-  }
-
-  serialize() {
-    return concatBytes(Uint8Array.from([this.type]), this.bytes)
-  }
+  return DepositRequest.fromRequestData(depositRequestData) as CLRequest<CLRequestType>
 }
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7685] })
@@ -53,7 +56,7 @@ describe('EIP-7685 runBlock tests', () => {
   })
   it('should not throw invalid requestsRoot error when valid requests are provided', async () => {
     const vm = await setupVM({ common })
-    const request = new NumberRequest(0x1, randomBytes(32))
+    const request = getRandomDepositRequest()
     const requestsRoot = await Block.genRequestsTrieRoot([request])
     const block = Block.fromBlockData(
       {
@@ -62,11 +65,11 @@ describe('EIP-7685 runBlock tests', () => {
       },
       { common }
     )
-    await expect(async () => vm.runBlock({ block })).rejects.toThrow('invalid block stateRoot')
+    await expect(async () => vm.runBlock({ block })).rejects.toThrow(/invalid requestsRoot/)
   })
   it('should error when requestsRoot does not match requests provided', async () => {
     const vm = await setupVM({ common })
-    const request = new NumberRequest(0x1, randomBytes(32))
+    const request = getRandomDepositRequest()
     const block = Block.fromBlockData(
       {
         requests: [request],

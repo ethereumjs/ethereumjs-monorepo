@@ -190,7 +190,9 @@ export class VMExecution extends Execution {
       return
     }
     this.config.logger.info(`Setting up verkleVM`)
-    const stateManager = await StatelessVerkleStateManager.create()
+    const stateManager = await StatelessVerkleStateManager.create({
+      initialStateRoot: this.config.initialVerkleStateRoot,
+    })
     this.verkleVM = await VM.create({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
@@ -439,6 +441,7 @@ export class VMExecution extends Execution {
           const result = await vm.runBlock({
             clearCache,
             ...opts,
+            parentStateRoot: prevVMStateRoot,
             skipHeaderValidation,
             reportPreimages,
           })
@@ -733,6 +736,7 @@ export class VMExecution extends Execution {
                     skipBlockValidation,
                     skipHeaderValidation: true,
                     reportPreimages: this.config.savePreimages,
+                    parentStateRoot: parentState,
                   })
                   const afterTS = Date.now()
                   const diffSec = Math.round((afterTS - beforeTS) / 1000)
@@ -875,16 +879,14 @@ export class VMExecution extends Execution {
               const firstHash = short(startHeadBlock.hash())
               const lastNumber = endHeadBlock.header.number
               const lastHash = short(endHeadBlock.hash())
-              const baseFeeAdd =
-                this.config.execCommon.gteHardfork(Hardfork.London) === true
-                  ? `baseFee=${endHeadBlock.header.baseFeePerGas} `
-                  : ''
+              const baseFeeAdd = this.config.execCommon.gteHardfork(Hardfork.London)
+                ? `baseFee=${endHeadBlock.header.baseFeePerGas} `
+                : ''
 
-              const tdAdd =
-                this.config.execCommon.gteHardfork(Hardfork.Paris) === true
-                  ? ''
-                  : `td=${this.chain.blocks.td} `
-              ;(this.config.execCommon.gteHardfork(Hardfork.Paris) === true
+              const tdAdd = this.config.execCommon.gteHardfork(Hardfork.Paris)
+                ? ''
+                : `td=${this.chain.blocks.td} `
+              ;(this.config.execCommon.gteHardfork(Hardfork.Paris)
                 ? this.config.logger.debug
                 : this.config.logger.info)(
                 `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
@@ -991,6 +993,24 @@ export class VMExecution extends Execution {
    */
   async executeBlocks(first: number, last: number, txHashes: string[]) {
     this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
+
+    const block = await this.vm.blockchain.getBlock(first)
+    const parentBlock = await this.vm.blockchain.getBlock(block.header.parentHash)
+    const startExecutionParentTd = await this.chain.getTd(block.hash(), parentBlock.header.number)
+
+    const startExecutionHardfork = this.config.execCommon.getHardforkBy({
+      blockNumber: block.header.number,
+      td: startExecutionParentTd,
+      timestamp: block.header.timestamp,
+    })
+
+    // Setup VM with verkle state manager if Osaka is active
+    if (
+      this.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Osaka) &&
+      this.config.statelessVerkle
+    ) {
+      await this.transitionToVerkle(block.header.stateRoot, true)
+    }
     const vm = await this.vm.shallowCopy(false)
 
     for (let blockNumber = first; blockNumber <= last; blockNumber++) {

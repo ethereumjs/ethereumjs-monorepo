@@ -338,6 +338,7 @@ export interface ConfigOptions {
   statelessVerkle?: boolean
   startExecution?: boolean
   ignoreStatelessInvalidExecs?: boolean
+  initialVerkleStateRoot?: Uint8Array
 
   /**
    * Enables Prometheus Metrics that can be collected for monitoring client health
@@ -451,6 +452,7 @@ export class Config {
   public readonly statelessVerkle: boolean
   public readonly startExecution: boolean
   public readonly ignoreStatelessInvalidExecs: boolean
+  public readonly initialVerkleStateRoot: Uint8Array
 
   public synchronized: boolean
   public lastsyncronized?: boolean
@@ -544,6 +546,7 @@ export class Config {
     this.ignoreStatelessInvalidExecs = options.ignoreStatelessInvalidExecs ?? false
 
     this.metrics = options.prometheusMetrics
+    this.initialVerkleStateRoot = options.initialVerkleStateRoot ?? new Uint8Array()
 
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine

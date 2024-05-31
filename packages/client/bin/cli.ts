@@ -449,6 +449,12 @@ const args: ClientOpts = yargs
     boolean: true,
     hidden: true,
   })
+  .option('initialVerkleStateRoot', {
+    describe:
+      'Provides an initial stateRoot to start the StatelessVerkleStateManager. This is required to bootstrap verkle witness proof verification, since they depend on the stateRoot of the parent block',
+    string: true,
+    coerce: (initialVerkleStateRoot: PrefixedHexString) => hexToBytes(initialVerkleStateRoot),
+  })
   .option('useJsCrypto', {
     describe: 'Use pure Javascript cryptography functions',
     boolean: true,
@@ -1168,7 +1174,7 @@ async function run() {
           ? startRPCServers(client, args as RPCArgs)
           : []
       if (
-        client.config.chainCommon.gteHardfork(Hardfork.Paris) === true &&
+        client.config.chainCommon.gteHardfork(Hardfork.Paris) &&
         (args.rpcEngine === false || args.rpcEngine === undefined)
       ) {
         config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)

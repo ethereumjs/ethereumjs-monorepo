@@ -304,7 +304,6 @@ export class BlockBuilder {
     }
     await this.processWithdrawals()
 
-    const stateRoot = await this.vm.stateManager.getStateRoot()
     const transactionsTrie = await this.transactionsTrie()
     const withdrawalsRoot = this.withdrawals
       ? await Block.genWithdrawalsTrieRoot(this.withdrawals, new Trie({ common: this.vm.common }))
@@ -328,6 +327,8 @@ export class BlockBuilder {
       // Do other validations per request type
     }
 
+    // get stateRoot after all the accumulateRequests etc have been done
+    const stateRoot = await this.vm.stateManager.getStateRoot()
     const headerData = {
       ...this.headerData,
       stateRoot,

@@ -846,6 +846,7 @@ export class Interpreter {
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
       blobVersionedHashes: this._env.blobVersionedHashes,
+      accessWitness: this._env.accessWitness,
     })
 
     return this._baseCall(msg)
@@ -870,6 +871,7 @@ export class Interpreter {
       depth: this._env.depth + 1,
       authcallOrigin: this._env.address,
       blobVersionedHashes: this._env.blobVersionedHashes,
+      accessWitness: this._env.accessWitness,
     })
 
     return this._baseCall(msg)
@@ -894,6 +896,7 @@ export class Interpreter {
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
       blobVersionedHashes: this._env.blobVersionedHashes,
+      accessWitness: this._env.accessWitness,
     })
 
     return this._baseCall(msg)
@@ -919,6 +922,7 @@ export class Interpreter {
       isStatic: true,
       depth: this._env.depth + 1,
       blobVersionedHashes: this._env.blobVersionedHashes,
+      accessWitness: this._env.accessWitness,
     })
 
     return this._baseCall(msg)
@@ -945,6 +949,7 @@ export class Interpreter {
       delegatecall: true,
       depth: this._env.depth + 1,
       blobVersionedHashes: this._env.blobVersionedHashes,
+      accessWitness: this._env.accessWitness,
     })
 
     return this._baseCall(msg)

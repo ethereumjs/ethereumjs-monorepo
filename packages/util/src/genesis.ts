@@ -1,5 +1,5 @@
 import { addHexPrefix, bigIntToHex } from './bytes.js'
-import { isHexPrefixed } from './internal.js'
+import { isHexString } from './internal.js'
 
 import type { PrefixedHexString } from './types.js'
 
@@ -50,7 +50,7 @@ export function parseGethGenesisState(json: any) {
     let { balance, code, storage, nonce } = json.alloc[address]
     // create a map with lowercase for easy lookups
     const prefixedAddress = addHexPrefix(address.toLowerCase())
-    balance = isHexPrefixed(balance) ? balance : bigIntToHex(BigInt(balance))
+    balance = isHexString(balance) ? balance : bigIntToHex(BigInt(balance))
     code = code !== undefined ? addHexPrefix(code) : undefined
     storage = storage !== undefined ? Object.entries(storage) : undefined
     nonce = nonce !== undefined ? addHexPrefix(nonce) : undefined
