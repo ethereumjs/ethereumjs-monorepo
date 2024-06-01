@@ -114,7 +114,6 @@ const jsonRpcBlock = async (
           withdrawals: json.withdrawals,
         }
       : {}
-  //const td = await chain.getTd(block.hash(), block.header.number)
   return {
     number: header.number!,
     hash: bytesToHex(block.hash()),
