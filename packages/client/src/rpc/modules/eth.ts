@@ -656,7 +656,6 @@ export class Eth {
           code: INVALID_PARAMS,
           message: 'Unknown block',
         }
-      //@ts-ignore -- Ultralight isn't using the latest EthJS code (which includes Pectra stuff)
       return jsonRpcBlock(block, this._chain, includeTransactions)
     }
     try {
