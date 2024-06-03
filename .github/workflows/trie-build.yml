@@ -42,6 +42,7 @@ jobs:
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: trie
+          token: ${{ secrets.CODECOV_TOKEN }} # required
 
   # trie-benchmarks:
   #   runs-on: ubuntu-latest
