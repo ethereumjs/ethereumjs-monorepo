@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "lru-cache": "10.1.0",
-    "verkle-cryptography-wasm": "^0.4.2",
+    "verkle-cryptography-wasm": "^0.4.3",
     "@ethereumjs/block": "^5.2.0",
     "@ethereumjs/rlp": "^5.0.2",
     "@ethereumjs/util": "^9.0.3"
