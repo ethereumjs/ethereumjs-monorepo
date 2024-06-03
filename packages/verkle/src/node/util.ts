@@ -33,21 +33,23 @@ export function isRawNode(node: Uint8Array | Uint8Array[]): node is Uint8Array[]
 /***
  * Converts 128 32byte values of a leaf node into 16 byte values for generating a commitment for half of a
  * leaf node's values
- * @param values - an array of Uint8Arrays representing the first or second  128 values stored by verkle trie leaf node
+ * @param values - an array of Uint8Arrays representing the first or second 128 values stored by verkle trie leaf node
  * @param deletedValues - an array of booleans where a value of true at a given position indicates a value
  * that is being deleted - should always be false if generating C2 values
  * Returns an array of 256 16byte UintArrays with the leaf marker set for each value that is deleted
  */
-export const createCValues = (values: Uint8Array[], deletedValues: boolean[]) => {
+export const createCValues = (values: Uint8Array[], deletedValues = new Array(128).fill(false)) => {
   if (values.length !== 128 || deletedValues.length !== 128)
     throw new Error(`got wrong number of values, expected 128, got ${values.length}`)
   const expandedValues: Uint8Array[] = new Array(256)
   for (let x = 0; x < 128; x++) {
     // TODO: Improve performance by only flipping the 129th bit of `expandedValues[x]` (instead of bigint addition)
-    expandedValues[x] = deletedValues[x]
-      ? bigIntToBytes(bytesToBigInt(values[x].subarray(0, 16)) + BigInt(2 ** 128))
-      : values[x].subarray(0, 16)
-    expandedValues[x + 1] = values[x].subarray(16)
+    expandedValues[x] =
+      deletedValues[x] === true
+        ? bigIntToBytes(bytesToBigInt(values[x].subarray(0, 16)) + BigInt(2 ** 128))
+        : values[x].slice(0, 16)
+    // TODO: Decide if we should use slice or subarray here (i.e. do we need to copy these slices or not)
+    expandedValues[x + 1] = values[x].slice(16)
   }
   return expandedValues
 }

@@ -1,6 +1,6 @@
-import type { Point } from '../types.js'
 import type { InternalNode } from './internalNode.js'
 import type { LeafNode } from './leafNode.js'
+import type { VerkleCrypto } from 'verkle-cryptography-wasm'
 
 export enum VerkleNodeType {
   Internal,
@@ -16,7 +16,7 @@ export type VerkleNode = TypedVerkleNode[VerkleNodeType]
 
 export interface VerkleNodeInterface {
   commit(): Uint8Array
-  hash(): any
+  hash(verkleCrypto: VerkleCrypto): any
   serialize(): Uint8Array
 }
 
@@ -37,8 +37,8 @@ interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {
 interface VerkleLeafNodeOptions extends BaseVerkleNodeOptions {
   stem: Uint8Array
   values: Uint8Array[]
-  c1?: Point
-  c2?: Point
+  c1?: Uint8Array
+  c2?: Uint8Array
 }
 
 export interface VerkleNodeOptions {

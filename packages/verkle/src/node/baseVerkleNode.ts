@@ -2,6 +2,8 @@ import { RLP } from '@ethereumjs/rlp'
 
 import { type VerkleNodeInterface, type VerkleNodeOptions, type VerkleNodeType } from './types.js'
 
+import type { VerkleCrypto } from 'verkle-cryptography-wasm'
+
 export abstract class BaseVerkleNode<T extends VerkleNodeType> implements VerkleNodeInterface {
   public commitment: Uint8Array
   public depth: number
@@ -14,8 +16,8 @@ export abstract class BaseVerkleNode<T extends VerkleNodeType> implements Verkle
   abstract commit(): Uint8Array
 
   // Hash returns the field representation of the commitment.
-  hash(): Uint8Array {
-    throw new Error('Not implemented')
+  hash(verkleCrypto: VerkleCrypto): Uint8Array {
+    return verkleCrypto.hashCommitment(this.commitment)
   }
 
   abstract insert(key: Uint8Array, value: Uint8Array, nodeResolverFn: () => void): void

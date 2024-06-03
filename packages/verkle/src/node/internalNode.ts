@@ -111,12 +111,27 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
       // Next word differs, so this was the last level.
       // Insert it directly into its final slot.
       // TODO: Determine if this is how to create the correct commitment
-      let commitment = verkleCrypto.zeroCommitment
+      let leafCommitment = verkleCrypto.zeroCommitment
+      let c1 = verkleCrypto.zeroCommitment
+      let c2 = verkleCrypto.zeroCommitment
       for (const [idx, value] of values.entries()) {
-        if (bytesToBigInt(value) > BIGINT_0)
-          commitment = verkleCrypto.updateCommitment(commitment, idx, new Uint8Array(32), value)
+        if (bytesToBigInt(value) > BIGINT_0) {
+          leafCommitment = verkleCrypto.updateCommitment(
+            leafCommitment,
+            idx,
+            new Uint8Array(32),
+            value
+          )
+          if (idx < 128) {
+            // We multiply the commitment index by 2 here because each 32 byte value in the leaf node is represented as two 16 byte arrays
+            c1 = verkleCrypto.updateCommitment(c1, idx * 2, new Uint8Array(32), value)
+          } else {
+            c2 = verkleCrypto.updateCommitment(c2, (idx - 128) * 2, new Uint8Array(32), value)
+          }
+        }
       }
-      const leafNode = LeafNode.create(stem, values, this.depth + 1, commitment)
+
+      const leafNode = LeafNode.create(stem, values, this.depth + 1, leafCommitment, c1, c2)
 
       // TODO - Why is the leaf node set at depth + 2 instead of + 1)?
       leafNode.setDepth(this.depth + 2)

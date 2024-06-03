@@ -1,14 +1,13 @@
 import { BaseVerkleNode } from './baseVerkleNode.js'
 import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
-import type { Point } from '../types.js'
 import type { VerkleNodeOptions } from './types.js'
 
 export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   public stem: Uint8Array
   public values: Uint8Array[] // Array of 256 possible values represented as 32 byte Uint8Arrays
-  public c1?: Point
-  public c2?: Point
+  public c1?: Uint8Array
+  public c2?: Uint8Array
   public type = VerkleNodeType.Leaf
 
   constructor(options: VerkleNodeOptions[VerkleNodeType.Leaf]) {
@@ -24,9 +23,11 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     stem: Uint8Array,
     values: Uint8Array[],
     depth: number,
-    commitment: Uint8Array
+    commitment: Uint8Array,
+    c1: Uint8Array,
+    c2: Uint8Array
   ): LeafNode {
-    return new LeafNode({ stem, values, depth, commitment })
+    return new LeafNode({ stem, values, depth, commitment, c1, c2 })
   }
 
   static fromRawNode(rawNode: Uint8Array[], depth: number): LeafNode {
@@ -43,8 +44,8 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     const stem = rawNode[1]
     // TODO: Convert the rawNode commitments to points
     const commitment = rawNode[2]
-    const c1 = rawNode[3] as unknown as Point
-    const c2 = rawNode[4] as unknown as Point
+    const c1 = rawNode[3]
+    const c2 = rawNode[4]
     const values = rawNode.slice(5, rawNode.length)
 
     return new LeafNode({ depth, stem, values, c1, c2, commitment })
@@ -77,8 +78,8 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       new Uint8Array([VerkleNodeType.Leaf]),
       this.stem,
       this.commitment,
-      this.c1?.bytes() ?? new Uint8Array(),
-      this.c2?.bytes() ?? new Uint8Array(),
+      this.c1 ?? new Uint8Array(),
+      this.c2 ?? new Uint8Array(),
       ...this.values,
     ]
   }
