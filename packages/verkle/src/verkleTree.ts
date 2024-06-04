@@ -1,5 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { KeyEncoding, Lock, ValueEncoding, equalsBytes, zeros } from '@ethereumjs/util'
+import {
+  KeyEncoding,
+  Lock,
+  ValueEncoding,
+  equalsBytes,
+  intToBytes,
+  setLengthLeft,
+  zeros,
+} from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import { CheckpointDB } from './db/checkpoint.js'
@@ -191,15 +199,32 @@ export class VerkleTree {
       let c1 = this.verkleCrypto.zeroCommitment
       let c2 = this.verkleCrypto.zeroCommitment
       if (suffix < 128) {
-        // We multiply the commitment index by 2 here because each 32 byte value in the leaf node is represented as two 16 byte arrays
+        // We multiply the commitment index by 2 here because each 32 byte value in the leaf node is represented as two 16 byte values
         c1 = this.verkleCrypto.updateCommitment(c1, suffix * 2, new Uint8Array(32), value)
       } else {
         c2 = this.verkleCrypto.updateCommitment(c2, (suffix - 128) * 2, new Uint8Array(32), value)
       }
       // Generate a commitment for the new leaf node, using the zero commitment as a base
-      const commitment = this.verkleCrypto.zeroCommitment
-      // TODO: Confirm the old/new scalar values we're passing in here are correct
-      this.verkleCrypto.updateCommitment(commitment, suffix, new Uint8Array(32), value)
+      // 1) Update commitment with Leaf marker (1) in position 0
+      // 2) Update commitment with stem (in little endian format) in position 1
+      // 3) Update commitment with c1
+      // 4) update commitment with c2
+      // TODO: Confirm the commitment process here is correct
+      // TODO: Figure out how to do batch commitment update
+      let commitment = this.verkleCrypto.updateCommitment(
+        this.verkleCrypto.zeroCommitment,
+        0,
+        new Uint8Array(32),
+        intToBytes(1)
+      )
+      commitment = this.verkleCrypto.updateCommitment(
+        commitment,
+        1,
+        new Uint8Array(32),
+        setLengthLeft(key.slice(0, 31), 32)
+      )
+      commitment = this.verkleCrypto.updateCommitment(commitment, 2, new Uint8Array(32), c1)
+      commitment = this.verkleCrypto.updateCommitment(commitment, 3, new Uint8Array(32), c2)
       leafNode = LeafNode.create(key.slice(0, 31), values, leafNode.length, commitment, c1, c2)
     }
 
