@@ -422,6 +422,7 @@ const args: ClientOpts = yargs
   .option('loadBlocksFromRlp', {
     describe: 'path to a file of RLP encoded blocks',
     string: true,
+    array: true,
   })
   .option('pruneEngineCache', {
     describe: 'Enable/Disable pruning engine block cache (disable for testing against hive etc)',
@@ -652,27 +653,29 @@ async function startClient(
 
   if (args.loadBlocksFromRlp !== undefined) {
     // Specifically for Hive simulator, preload blocks provided in RLP format
-    const blockRlp = readFileSync(args.loadBlocksFromRlp)
     const blocks: Block[] = []
-    let buf = RLP.decode(blockRlp, true)
-    while (buf.data?.length > 0 || buf.remainder?.length > 0) {
-      try {
-        const block = Block.fromValuesArray(buf.data as BlockBytes, {
-          common: config.chainCommon,
-          setHardfork: true,
-        })
-        blocks.push(block)
-        buf = RLP.decode(buf.remainder, true)
-        config.logger.info(
-          `Preloading block hash=0x${short(bytesToHex(block.header.hash()))} number=${
-            block.header.number
-          }`
-        )
-      } catch (err: any) {
-        config.logger.info(
-          `Encountered error while while preloading chain data  error=${err.message}`
-        )
-        break
+    for (const rlpBlock of args.loadBlocksFromRlp) {
+      const blockRlp = readFileSync(rlpBlock)
+      let buf = RLP.decode(blockRlp, true)
+      while (buf.data?.length > 0 || buf.remainder?.length > 0) {
+        try {
+          const block = Block.fromValuesArray(buf.data as BlockBytes, {
+            common: config.chainCommon,
+            setHardfork: true,
+          })
+          blocks.push(block)
+          buf = RLP.decode(buf.remainder, true)
+          config.logger.info(
+            `Preloading block hash=0x${short(bytesToHex(block.header.hash()))} number=${
+              block.header.number
+            }`
+          )
+        } catch (err: any) {
+          config.logger.info(
+            `Encountered error while while preloading chain data  error=${err.message}`
+          )
+          break
+        }
       }
     }
 
@@ -681,7 +684,7 @@ async function startClient(
         await client.chain.open()
       }
 
-      await client.chain.putBlocks(blocks)
+      await client.chain.putBlocks(blocks, true)
     }
   }
 
