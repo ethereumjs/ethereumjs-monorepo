@@ -80,7 +80,7 @@ export class WalkController {
     for (const child of children) {
       if (child.nodeRef !== null) {
         const childKey = new Uint8Array([...key, child.keyExtension])
-        this.pushNodeToQueue(child.nodeRef.hash(), childKey)
+        this.pushNodeToQueue(child.nodeRef.hash(undefined as any), childKey)
       }
     }
   }
@@ -128,7 +128,7 @@ export class WalkController {
       throw new Error('Could not get node at childIndex')
     }
     const childKey = new Uint8Array([...key, childIndex])
-    this.pushNodeToQueue(childRef.hash(), childKey, priority ?? childKey.length)
+    this.pushNodeToQueue(childRef.hash(undefined as any), childKey, priority ?? childKey.length)
   }
 
   private processNode(

@@ -6,6 +6,7 @@ import {
   equalsBytes,
   intToBytes,
   setLengthLeft,
+  setLengthRight,
   zeros,
 } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
@@ -192,39 +193,66 @@ export class VerkleTree {
     let leafNode = await this.findLeafNode(key, false)
     if (!(leafNode instanceof LeafNode)) {
       // If leafNode is missing, create it
-      const values = new Array(256) as Uint8Array[] // Create new empty array of 256 values
+      const values: Uint8Array[] = new Array(256).fill(new Uint8Array()) // Create new empty array of 256 values
       const suffix = key[31]
       values[suffix] = value // Set value at key suffix
 
-      let c1 = this.verkleCrypto.zeroCommitment
-      let c2 = this.verkleCrypto.zeroCommitment
-      if (suffix < 128) {
-        // We multiply the commitment index by 2 here because each 32 byte value in the leaf node is represented as two 16 byte values
-        c1 = this.verkleCrypto.updateCommitment(c1, suffix * 2, new Uint8Array(32), value)
-      } else {
-        c2 = this.verkleCrypto.updateCommitment(c2, (suffix - 128) * 2, new Uint8Array(32), value)
-      }
+      // Generate the 16 byte values representing the 32 byte values in the half of the values array that
+      // contain the initial value for the leaf node
+      const cValues =
+        suffix < 128 ? createCValues(values.slice(0, 128)) : createCValues(values.slice(128))
+      // The commitment index is the 2 * the suffix (i.e. the position of the value in the values array)
+      // here because each 32 byte value in the leaf node is represented as two 16 byte values in the
+      // cValues array.
+      const commitmentIndex = suffix < 128 ? suffix * 2 : (suffix - 128) * 2
+      let cCommitment = this.verkleCrypto.zeroCommitment
+      // Update the commitment for the first 16 bytes of the value
+      cCommitment = this.verkleCrypto.updateCommitment(
+        cCommitment,
+        commitmentIndex,
+        new Uint8Array(32),
+        cValues[commitmentIndex]
+      )
+      // Update thecommitment for the second 16 bytes of the value
+      cCommitment = this.verkleCrypto.updateCommitment(
+        cCommitment,
+        commitmentIndex + 1,
+        new Uint8Array(32),
+        cValues[commitmentIndex + 1]
+      )
+      const c1 = suffix < 128 ? cCommitment : this.verkleCrypto.zeroCommitment
+      const c2 = suffix > 127 ? cCommitment : this.verkleCrypto.zeroCommitment
       // Generate a commitment for the new leaf node, using the zero commitment as a base
       // 1) Update commitment with Leaf marker (1) in position 0
       // 2) Update commitment with stem (in little endian format) in position 1
       // 3) Update commitment with c1
       // 4) update commitment with c2
-      // TODO: Confirm the commitment process here is correct
-      // TODO: Figure out how to do batch commitment update
       let commitment = this.verkleCrypto.updateCommitment(
         this.verkleCrypto.zeroCommitment,
         0,
         new Uint8Array(32),
-        intToBytes(1)
+        setLengthLeft(intToBytes(1), 32)
       )
       commitment = this.verkleCrypto.updateCommitment(
         commitment,
         1,
         new Uint8Array(32),
-        setLengthLeft(key.slice(0, 31), 32)
+        setLengthRight(key.slice(0, 31), 32)
       )
-      commitment = this.verkleCrypto.updateCommitment(commitment, 2, new Uint8Array(32), c1)
-      commitment = this.verkleCrypto.updateCommitment(commitment, 3, new Uint8Array(32), c2)
+      commitment = this.verkleCrypto.updateCommitment(
+        commitment,
+        2,
+        new Uint8Array(32),
+        // We hash the commitment when using in the leaf node commitment since c1 is 64 bytes long
+        // and we need a 32 byte input for the scalar value in `updateCommitment`
+        this.verkleCrypto.hashCommitment(c1)
+      )
+      commitment = this.verkleCrypto.updateCommitment(
+        commitment,
+        3,
+        new Uint8Array(32),
+        this.verkleCrypto.hashCommitment(c2)
+      )
       leafNode = LeafNode.create(key.slice(0, 31), values, leafNode.length, commitment, c1, c2)
     }
 
