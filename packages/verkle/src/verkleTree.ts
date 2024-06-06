@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+import { RLP } from '@ethereumjs/rlp'
 import {
   KeyEncoding,
   Lock,
@@ -14,18 +14,17 @@ import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { CheckpointDB } from './db/checkpoint.js'
 import { InternalNode } from './node/internalNode.js'
 import { LeafNode } from './node/leafNode.js'
+import { type VerkleNode, VerkleNodeType } from './node/types.js'
 import { createCValues, decodeNode, decodeRawNode, isRawNode } from './node/util.js'
 import {
   type Proof,
   ROOT_DB_KEY,
   type VerkleTreeOpts,
   type VerkleTreeOptsWithDefaults,
-  zeroCValues,
 } from './types.js'
 import { WalkController, matchingBytesLength } from './util/index.js'
 import { verifyKeyLength } from './util/keys.js'
 
-import type { VerkleNode } from './node/types.js'
 import type { FoundNodeFunction, VerkleCrypto } from './types.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 
@@ -160,13 +159,21 @@ export class VerkleTree {
   /**
    * Gets a value given a `key`
    * @param key - the key to search for
-   * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
-  async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
+  async get(key: Uint8Array): Promise<Uint8Array | null> {
     verifyKeyLength(key)
-    const node = await this._db.get(key)
-    if (node !== undefined && node instanceof LeafNode)
+    const nodeRLP = await this._db.get(key)
+    if (nodeRLP === undefined) return null
+    // We first retrieve the node and decode it
+    const rawNode = RLP.decode(nodeRLP) as Uint8Array[]
+    const node =
+      rawNode[0][0] === VerkleNodeType.Leaf
+        ? // TODO: Figure out how to determine depth from key
+          LeafNode.fromRawNode(rawNode, 1)
+        : InternalNode.fromRawNode(rawNode, 1)
+
+    if (node instanceof LeafNode)
       if (node instanceof LeafNode) {
         const keyLastByte = key[key.length - 1]
 
@@ -187,7 +194,6 @@ export class VerkleTree {
    */
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
     verifyKeyLength(key)
-    await this._db.put(key, value)
 
     // Find or create the leaf node
     let leafNode = await this.findLeafNode(key, false)
@@ -254,6 +260,7 @@ export class VerkleTree {
         this.verkleCrypto.hashCommitment(c2)
       )
       leafNode = LeafNode.create(key.slice(0, 31), values, leafNode.length, commitment, c1, c2)
+      await this._db.put(leafNode.hash(this.verkleCrypto), leafNode.serialize())
     }
 
     // Walk up the tree and update internal nodes

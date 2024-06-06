@@ -7,18 +7,17 @@ import { LeafNode } from './leafNode.js'
 import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
 import type { VerkleCrypto } from '../types.js'
-import type { VerkleNode, VerkleNodeOptions } from './types.js'
+import type { VerkleNodeOptions } from './types.js'
 
 export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
-  // Array of references to children nodes
-  public children: Array<VerkleNode | null>
+  // Array of commitments to child nodes
+  public children: Uint8Array[]
   public copyOnWrite: Record<string, Uint8Array>
   public type = VerkleNodeType.Internal
 
   constructor(options: VerkleNodeOptions[VerkleNodeType.Internal]) {
     super(options)
-    // TODO: Decide whether to fill with null or not - personal opinion - should never use null
-    this.children = options.children ?? new Array(NODE_WIDTH).fill(null)
+    this.children = options.children ?? new Array(NODE_WIDTH).fill(new Uint8Array())
     this.copyOnWrite = options.copyOnWrite ?? {}
   }
 
@@ -30,8 +29,10 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     // Not implemented yet
   }
 
-  setChild(index: number, child: VerkleNode) {
+  // Updates the commitment value for a child node at the corresponding index
+  setChild(index: number, child: Uint8Array) {
     this.children[index] = child
+    // TODO: Update commitment as well
   }
 
   static fromRawNode(rawNode: Uint8Array[], depth: number): InternalNode {
@@ -60,7 +61,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     return node
   }
 
-  getChildren(index: number): VerkleNode | null {
+  getChildren(index: number): Uint8Array | null {
     return this.children?.[index] ?? null
   }
 
@@ -99,7 +100,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
       const nextByteInExistingKey = child.stem[this.depth + 1]
       const newBranch = InternalNode.create(this.depth + 1)
       newBranch.cowChild(nextByteInExistingKey)
-      this.children[childIndex] = newBranch
+      this.children[childIndex] = newBranch.commitment
       newBranch.children[nextByteInExistingKey] = child
       child.depth += 1
 
@@ -110,7 +111,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
 
       // Next word differs, so this was the last level.
       // Insert it directly into its final slot.
-      // TODO: Determine if this is how to create the correct commitment
+      // TODO: Fix this following `trie.put` logic
       let leafCommitment = verkleCrypto.zeroCommitment
       let c1 = verkleCrypto.zeroCommitment
       let c2 = verkleCrypto.zeroCommitment
@@ -147,7 +148,6 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
 
   // TODO: go-verkle also adds the bitlist to the raw format.
   raw(): Uint8Array[] {
-    throw new Error('not implemented yet')
-    // return [new Uint8Array([VerkleNodeType.Internal]), ...this.children, this.commitment]
+    return [new Uint8Array([VerkleNodeType.Internal]), ...this.children, this.commitment]
   }
 }
