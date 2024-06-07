@@ -162,7 +162,9 @@ export class VerkleTree {
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
   async get(key: Uint8Array): Promise<Uint8Array | null> {
-    verifyKeyLength(key)
+    // TODO: Determine if we actually need to do this check.  The key for an internal node will necessarily
+    // be less than 32 bytes since it's the path to that node in the trie
+    // verifyKeyLength(key)
     const nodeRLP = await this._db.get(key)
     if (nodeRLP === undefined) return null
     // We first retrieve the node and decode it
@@ -173,14 +175,13 @@ export class VerkleTree {
           LeafNode.fromRawNode(rawNode, 1, this.verkleCrypto)
         : InternalNode.fromRawNode(rawNode, 1, this.verkleCrypto)
 
-    if (node instanceof LeafNode)
-      if (node instanceof LeafNode) {
-        const keyLastByte = key[key.length - 1]
+    if (node instanceof LeafNode) {
+      const keyLastByte = key[key.length - 1]
 
-        // The retrieved leaf node contains an array of 256 possible values.
-        // The index of the value we want is at the key's last byte
-        return node.values?.[keyLastByte] ?? null
-      }
+      // The retrieved leaf node contains an array of 256 possible values.
+      // The index of the value we want is at the key's last byte
+      return node.values?.[keyLastByte] ?? null
+    }
 
     return null
   }
@@ -219,7 +220,7 @@ export class VerkleTree {
         new Uint8Array(32),
         cValues[commitmentIndex]
       )
-      // Update thecommitment for the second 16 bytes of the value
+      // Update the commitment for the second 16 bytes of the value
       cCommitment = this.verkleCrypto.updateCommitment(
         cCommitment,
         commitmentIndex + 1,
@@ -277,10 +278,23 @@ export class VerkleTree {
     let currentDepth = leafNode.depth
 
     while (currentDepth > 0) {
-      const parentKey = currentKey.slice(0, -1)
       const parentIndex = currentKey[currentKey.length - 1]
-      const parentNode = InternalNode.create(currentDepth, this.verkleCrypto)
-      parentNode.children[parentIndex] = currentNode
+      // Parent key should be at least one shorter than the current key length
+      const parentKey = currentKey.slice(0, currentKey.length - 1)
+      const rawNode = await this.get(parentKey)
+      let parentNode
+      // TODO: Determine how to decide if we need to go further up the tree or create a new internal node here
+      // Currently, this code would insert a new internal node at every step up the trie (which we don't want)
+      if (rawNode !== null) {
+        parentNode = InternalNode.fromRawNode(
+          RLP.decode(rawNode) as Uint8Array[],
+          currentDepth,
+          this.verkleCrypto
+        )
+      } else {
+        parentNode = InternalNode.create(currentDepth, this.verkleCrypto)
+      }
+      parentNode.setChild(parentIndex, currentNode.commitment)
       await this._db.put(parentKey, parentNode.serialize())
 
       currentNode = parentNode

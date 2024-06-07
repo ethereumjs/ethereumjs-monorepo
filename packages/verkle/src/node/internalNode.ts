@@ -10,29 +10,33 @@ import { NODE_WIDTH, VerkleNodeType } from './types.js'
 import type { VerkleNodeOptions } from './types.js'
 
 export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
-  // Array of commitments to child nodes
+  // Array of uncompressed commitments (i.e. 64 byte Uint8Arrays) to child nodes
   public children: Uint8Array[]
-  public copyOnWrite: Record<string, Uint8Array>
   public type = VerkleNodeType.Internal
 
   constructor(options: VerkleNodeOptions[VerkleNodeType.Internal]) {
     super(options)
-    this.children = options.children ?? zeroValues
-    this.copyOnWrite = options.copyOnWrite ?? {}
+    this.children = options.children ?? new Array(64).fill(new Uint8Array(64))
   }
 
   commit(): Uint8Array {
     throw new Error('Not implemented')
   }
 
-  cowChild(_: number): void {
-    // Not implemented yet
-  }
-
   // Updates the commitment value for a child node at the corresponding index
   setChild(index: number, child: Uint8Array) {
+    // Get previous child commitment at `index`
+    const oldChild = this.children[index]
     // Updates the commitment to the child node at `index`
     this.children[index] = child
+    // Updates the overall node commitment based on the update to this child
+    this.commitment = this.verkleCrypto.updateCommitment(
+      this.commitment,
+      index,
+      // The hashed child commitments are used when updating the internal node commitment
+      this.verkleCrypto.hashCommitment(oldChild),
+      this.verkleCrypto.hashCommitment(child)
+    )
   }
 
   static fromRawNode(
@@ -50,7 +54,6 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
       throw new Error('Invalid node length')
     }
 
-    // TODO: Generate Point from rawNode value
     const commitment = rawNode[rawNode.length - 1]
 
     return new InternalNode({ commitment, depth, verkleCrypto })
@@ -72,7 +75,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
    * @returns the commitment for the child node at the `index` position in the children array
    */
   getChildren(index: number): Uint8Array | null {
-    return this.children?.[index] ?? null
+    return this.children[index]
   }
 
   insert(key: Uint8Array, value: Uint8Array, resolver: () => void): void {
@@ -81,6 +84,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     this.insertStem(key.slice(0, 31), values, resolver)
   }
 
+  // TODO: Determine how this function is used and if we need it
   insertStem(stem: Uint8Array, values: Uint8Array[], resolver: () => void): void {
     // Index of the child pointed by the next byte in the key
     const childIndex = stem[this.depth]
@@ -97,7 +101,6 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
       // the moved leaf node can occur.
       const nextByteInExistingKey = child.stem[this.depth + 1]
       const newBranch = InternalNode.create(this.depth + 1, this.verkleCrypto)
-      newBranch.cowChild(nextByteInExistingKey)
       this.children[childIndex] = newBranch.commitment
       newBranch.children[nextByteInExistingKey] = child
       child.depth += 1
@@ -142,7 +145,6 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
 
       // TODO - Why is the leaf node set at depth + 2 instead of + 1)?
       leafNode.setDepth(this.depth + 2)
-      newBranch.cowChild(nextByteInInsertedKey)
       newBranch.children[nextByteInInsertedKey] = leafNode
     } else if (child instanceof InternalNode) {
       this.cowChild(childIndex)
