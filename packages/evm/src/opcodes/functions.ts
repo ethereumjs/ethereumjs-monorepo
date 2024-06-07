@@ -20,8 +20,8 @@ import {
   MAX_INTEGER_BIGINT,
   SECP256K1_ORDER_DIV_2,
   TWO_POW256,
+  bigIntToAddressBytes,
   bigIntToBytes,
-  bigIntToHex,
   bytesToBigInt,
   bytesToHex,
   concatBytes,
@@ -622,8 +622,8 @@ export const handlers: Map<number, OpHandler> = new Map([
           return
         }
 
-        const historyAddress = Address.fromString(
-          bigIntToHex(common.param('vm', 'historyStorageAddress'))
+        const historyAddress = new Address(
+          bigIntToAddressBytes(common.param('vm', 'historyStorageAddress'))
         )
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
@@ -1156,7 +1156,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       }
 
-      const expectedAddress = new Address(setLengthLeft(bigIntToBytes(authority), 20).slice(-20))
+      const expectedAddress = new Address(bigIntToAddressBytes(authority))
       const account = (await runState.stateManager.getAccount(expectedAddress)) ?? new Account()
 
       if (account.isContract()) {
