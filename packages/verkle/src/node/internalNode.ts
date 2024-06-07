@@ -35,7 +35,11 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     // TODO: Update commitment as well
   }
 
-  static fromRawNode(rawNode: Uint8Array[], depth: number): InternalNode {
+  static fromRawNode(
+    rawNode: Uint8Array[],
+    depth: number,
+    verkleCrypto: VerkleCrypto
+  ): InternalNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== VerkleNodeType.Internal) {
       throw new Error('Invalid node type')
@@ -49,13 +53,14 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     // TODO: Generate Point from rawNode value
     const commitment = rawNode[rawNode.length - 1]
 
-    return new InternalNode({ commitment, depth })
+    return new InternalNode({ commitment, depth, verkleCrypto })
   }
 
-  static create(depth: number): InternalNode {
+  static create(depth: number, verkleCrypto: VerkleCrypto): InternalNode {
     const node = new InternalNode({
       commitment: POINT_IDENTITY,
       depth,
+      verkleCrypto,
     })
 
     return node
@@ -98,7 +103,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
       // on the next byte in both keys, a recursion into
       // the moved leaf node can occur.
       const nextByteInExistingKey = child.stem[this.depth + 1]
-      const newBranch = InternalNode.create(this.depth + 1)
+      const newBranch = InternalNode.create(this.depth + 1, this.verkleCrypto)
       newBranch.cowChild(nextByteInExistingKey)
       this.children[childIndex] = newBranch.commitment
       newBranch.children[nextByteInExistingKey] = child
@@ -132,7 +137,15 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
         }
       }
 
-      const leafNode = LeafNode.create(stem, values, this.depth + 1, leafCommitment, c1, c2)
+      const leafNode = LeafNode.create(
+        stem,
+        values,
+        this.depth + 1,
+        leafCommitment,
+        c1,
+        c2,
+        this.verkleCrypto
+      )
 
       // TODO - Why is the leaf node set at depth + 2 instead of + 1)?
       leafNode.setDepth(this.depth + 2)

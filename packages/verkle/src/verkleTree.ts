@@ -170,8 +170,8 @@ export class VerkleTree {
     const node =
       rawNode[0][0] === VerkleNodeType.Leaf
         ? // TODO: Figure out how to determine depth from key
-          LeafNode.fromRawNode(rawNode, 1)
-        : InternalNode.fromRawNode(rawNode, 1)
+          LeafNode.fromRawNode(rawNode, 1, this.verkleCrypto)
+        : InternalNode.fromRawNode(rawNode, 1, this.verkleCrypto)
 
     if (node instanceof LeafNode)
       if (node instanceof LeafNode) {
@@ -259,8 +259,16 @@ export class VerkleTree {
         new Uint8Array(32),
         this.verkleCrypto.hashCommitment(c2)
       )
-      leafNode = LeafNode.create(key.slice(0, 31), values, leafNode.length, commitment, c1, c2)
-      await this._db.put(leafNode.hash(this.verkleCrypto), leafNode.serialize())
+      leafNode = LeafNode.create(
+        key.slice(0, 31),
+        values,
+        leafNode.length,
+        commitment,
+        c1,
+        c2,
+        this.verkleCrypto
+      )
+      await this._db.put(leafNode.hash(), leafNode.serialize())
     }
 
     // Walk up the tree and update internal nodes
@@ -271,7 +279,7 @@ export class VerkleTree {
     while (currentDepth > 0) {
       const parentKey = currentKey.slice(0, -1)
       const parentIndex = currentKey[currentKey.length - 1]
-      const parentNode = InternalNode.create(currentDepth)
+      const parentNode = InternalNode.create(currentDepth, this.verkleCrypto)
       parentNode.children[parentIndex] = currentNode
       await this._db.put(parentKey, parentNode.serialize())
 
@@ -280,7 +288,7 @@ export class VerkleTree {
       currentDepth--
     }
 
-    this._root = currentNode.hash(this.verkleCrypto)
+    this._root = currentNode.hash()
   }
 
   /**

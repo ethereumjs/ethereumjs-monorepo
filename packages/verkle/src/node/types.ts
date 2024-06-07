@@ -24,6 +24,7 @@ interface BaseVerkleNodeOptions {
   // Value of the commitment
   commitment: Uint8Array
   depth: number
+  verkleCrypto: VerkleCrypto
 }
 
 interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {

@@ -1,6 +1,7 @@
 import { BaseVerkleNode } from './baseVerkleNode.js'
 import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
+import type { VerkleCrypto } from '../types.js'
 import type { VerkleNodeOptions } from './types.js'
 
 export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
@@ -25,12 +26,21 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     depth: number,
     commitment: Uint8Array,
     c1: Uint8Array,
-    c2: Uint8Array
+    c2: Uint8Array,
+    verkleCrypto: VerkleCrypto
   ): LeafNode {
-    return new LeafNode({ stem, values, depth, commitment, c1, c2 })
+    return new LeafNode({
+      stem,
+      values,
+      depth,
+      commitment,
+      c1,
+      c2,
+      verkleCrypto,
+    })
   }
 
-  static fromRawNode(rawNode: Uint8Array[], depth: number): LeafNode {
+  static fromRawNode(rawNode: Uint8Array[], depth: number, verkleCrypto: VerkleCrypto): LeafNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== VerkleNodeType.Leaf) {
       throw new Error('Invalid node type')
@@ -48,7 +58,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     const c2 = rawNode[4]
     const values = rawNode.slice(5, rawNode.length)
 
-    return new LeafNode({ depth, stem, values, c1, c2, commitment })
+    return new LeafNode({ depth, stem, values, c1, c2, commitment, verkleCrypto })
   }
   commit(): Uint8Array {
     throw new Error('Not implemented')
