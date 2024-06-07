@@ -96,5 +96,5 @@ export const getTreeKeyForStorageSlot = async (
 }
 
 export const verifyKeyLength = (key: Uint8Array) => {
-  if (key.length !== 32) throw new Error(`expected key with length 32l; got ${key.length}`)
+  if (key.length !== 32) throw new Error(`expected key with length 32; got ${key.length}`)
 }

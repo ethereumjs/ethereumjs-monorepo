@@ -1,12 +1,12 @@
 import { BIGINT_0, bytesToBigInt, equalsBytes } from '@ethereumjs/util'
 
+import { type VerkleCrypto, zeroValues } from '../types.js'
 import { POINT_IDENTITY } from '../util/crypto.js'
 
 import { BaseVerkleNode } from './baseVerkleNode.js'
 import { LeafNode } from './leafNode.js'
 import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
-import type { VerkleCrypto } from '../types.js'
 import type { VerkleNodeOptions } from './types.js'
 
 export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
@@ -17,7 +17,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
 
   constructor(options: VerkleNodeOptions[VerkleNodeType.Internal]) {
     super(options)
-    this.children = options.children ?? new Array(NODE_WIDTH).fill(new Uint8Array())
+    this.children = options.children ?? zeroValues
     this.copyOnWrite = options.copyOnWrite ?? {}
   }
 
@@ -31,8 +31,8 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
 
   // Updates the commitment value for a child node at the corresponding index
   setChild(index: number, child: Uint8Array) {
+    // Updates the commitment to the child node at `index`
     this.children[index] = child
-    // TODO: Update commitment as well
   }
 
   static fromRawNode(
@@ -66,35 +66,28 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     return node
   }
 
+  /**
+   *
+   * @param index The index in the children array to retrieve the child node commitment from
+   * @returns the commitment for the child node at the `index` position in the children array
+   */
   getChildren(index: number): Uint8Array | null {
     return this.children?.[index] ?? null
   }
 
-  insert(
-    key: Uint8Array,
-    value: Uint8Array,
-    resolver: () => void,
-    verkleCrypto?: VerkleCrypto
-  ): void {
+  insert(key: Uint8Array, value: Uint8Array, resolver: () => void): void {
     const values = new Array<Uint8Array>(NODE_WIDTH)
     values[key[31]] = value
-    this.insertStem(key.slice(0, 31), values, resolver, verkleCrypto!)
+    this.insertStem(key.slice(0, 31), values, resolver)
   }
 
-  insertStem(
-    stem: Uint8Array,
-    values: Uint8Array[],
-    resolver: () => void,
-    verkleCrypto: VerkleCrypto
-  ): void {
+  insertStem(stem: Uint8Array, values: Uint8Array[], resolver: () => void): void {
     // Index of the child pointed by the next byte in the key
     const childIndex = stem[this.depth]
 
     const child = this.children[childIndex]
 
     if (child instanceof LeafNode) {
-      // TODO: Understand the intent of what cowChild is suppoded to do
-      this.cowChild(childIndex)
       if (equalsBytes(child.stem, stem)) {
         return child.insertMultiple(stem, values)
       }
@@ -111,18 +104,18 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
 
       const nextByteInInsertedKey = stem[this.depth + 1]
       if (nextByteInInsertedKey === nextByteInExistingKey) {
-        return newBranch.insertStem(stem, values, resolver, verkleCrypto)
+        return newBranch.insertStem(stem, values, resolver)
       }
 
       // Next word differs, so this was the last level.
       // Insert it directly into its final slot.
       // TODO: Fix this following `trie.put` logic
-      let leafCommitment = verkleCrypto.zeroCommitment
-      let c1 = verkleCrypto.zeroCommitment
-      let c2 = verkleCrypto.zeroCommitment
+      let leafCommitment = this.verkleCrypto.zeroCommitment
+      let c1 = this.verkleCrypto.zeroCommitment
+      let c2 = this.verkleCrypto.zeroCommitment
       for (const [idx, value] of values.entries()) {
         if (bytesToBigInt(value) > BIGINT_0) {
-          leafCommitment = verkleCrypto.updateCommitment(
+          leafCommitment = this.verkleCrypto.updateCommitment(
             leafCommitment,
             idx,
             new Uint8Array(32),
@@ -130,9 +123,9 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
           )
           if (idx < 128) {
             // We multiply the commitment index by 2 here because each 32 byte value in the leaf node is represented as two 16 byte arrays
-            c1 = verkleCrypto.updateCommitment(c1, idx * 2, new Uint8Array(32), value)
+            c1 = this.verkleCrypto.updateCommitment(c1, idx * 2, new Uint8Array(32), value)
           } else {
-            c2 = verkleCrypto.updateCommitment(c2, (idx - 128) * 2, new Uint8Array(32), value)
+            c2 = this.verkleCrypto.updateCommitment(c2, (idx - 128) * 2, new Uint8Array(32), value)
           }
         }
       }
@@ -153,13 +146,12 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
       newBranch.children[nextByteInInsertedKey] = leafNode
     } else if (child instanceof InternalNode) {
       this.cowChild(childIndex)
-      return child.insertStem(stem, values, resolver, verkleCrypto)
+      return child.insertStem(stem, values, resolver)
     } else {
       throw new Error('Invalid node type')
     }
   }
 
-  // TODO: go-verkle also adds the bitlist to the raw format.
   raw(): Uint8Array[] {
     return [new Uint8Array([VerkleNodeType.Internal]), ...this.children, this.commitment]
   }

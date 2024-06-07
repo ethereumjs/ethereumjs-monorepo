@@ -33,7 +33,7 @@ export function isRawNode(node: Uint8Array | Uint8Array[]): node is Uint8Array[]
 /***
  * Converts 128 32byte values of a leaf node into 16 byte values for generating a commitment for half of a
  * leaf node's values
- * @param values - an array of Uint8Arrays representing the first or second 128 values stored by verkle trie leaf node
+ * @param values - an array of Uint8Arrays representing the first or second set of 128 values stored by the verkle trie leaf node
  * @param deletedValues - an array of booleans where a value of true at a given position indicates a value
  * that is being deleted - should always be false if generating C2 values
  * Returns an array of 256 16byte UintArrays with the leaf marker set for each value that is deleted
@@ -43,7 +43,7 @@ export const createCValues = (values: Uint8Array[], deletedValues = new Array(12
     throw new Error(`got wrong number of values, expected 128, got ${values.length}`)
   const expandedValues: Uint8Array[] = new Array(256)
   for (let x = 0; x < 128; x++) {
-    // We add 16 trailing zeros to each value since all commitments are to an array of 32 byte values
+    // We add 16 trailing zeros to each value since all commitments are padded to an array of 32 byte values
     expandedValues[x] = setLengthRight(
       deletedValues[x] === true
         ? // TODO: Improve performance by only flipping the 129th bit of `expandedValues[x]` (instead of bigint addition)

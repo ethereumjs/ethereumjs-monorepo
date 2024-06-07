@@ -8,58 +8,6 @@ import type { VerkleCrypto as VerkleFFI } from 'verkle-cryptography-wasm'
 // Field representation of a commitment
 export interface Fr {}
 
-// TODO: Decide if we still need this interface.  Commitments are now all bytes from the JS perspective
-// Elliptic curve point representation of a commitment
-export interface Point {
-  // Bytes returns the compressed serialized version of the element.
-  bytes(): Uint8Array
-  // BytesUncompressed returns the uncompressed serialized version of the element.
-  bytesUncompressed(): Uint8Array
-
-  // SetBytes deserializes a compressed group element from buf.
-  // This method does all the proper checks assuming the bytes come from an
-  // untrusted source.
-  setBytes(bytes: Uint8Array): void
-
-  // SetBytesUncompressed deserializes an uncompressed group element from buf.
-  setBytesUncompressed(bytes: Uint8Array, trusted: boolean): void
-
-  // computes X/Y
-  mapToBaseField(): Point
-
-  // mapToScalarField maps a group element to the scalar field.
-  mapToScalarField(field: Fr): void
-
-  // Equal returns true if p and other represent the same point.
-  equal(secondPoint: Point): boolean
-
-  // SetIdentity sets p to the identity element.
-  setIdentity(): Point
-
-  // Double sets p to 2*p1.
-  double(point1: Point): Point
-
-  // Add sets p to p1+p2.
-  add(point1: Point, point2: Point): Point
-
-  // Sub sets p to p1-p2.
-  sub(point1: Point, point2: Point): Point
-
-  // IsOnCurve returns true if p is on the curve.
-  isOnCurve(): boolean
-
-  normalise(): void
-
-  // Set sets p to p1.
-  set(): Point
-
-  // Neg sets p to -p1.
-  neg(): Point
-
-  // ScalarMul sets p to p1*s.
-  scalarMul(point1: Point, scalarMont: Fr): Point
-}
-
 export type Proof = Uint8Array[]
 
 export interface VerkleTreeOpts {

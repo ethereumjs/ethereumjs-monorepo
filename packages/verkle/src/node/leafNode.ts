@@ -52,7 +52,6 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     }
 
     const stem = rawNode[1]
-    // TODO: Convert the rawNode commitments to points
     const commitment = rawNode[2]
     const c1 = rawNode[3]
     const c2 = rawNode[4]
