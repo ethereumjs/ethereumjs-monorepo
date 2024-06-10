@@ -162,9 +162,7 @@ export class VerkleTree {
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
   async get(key: Uint8Array): Promise<Uint8Array | null> {
-    // TODO: Determine if we actually need to do this check.  The key for an internal node will necessarily
-    // be less than 32 bytes since it's the path to that node in the trie
-    // verifyKeyLength(key)
+    verifyKeyLength(key)
     const nodeRLP = await this._db.get(key)
     if (nodeRLP === undefined) return null
     // We first retrieve the node and decode it
@@ -269,7 +267,7 @@ export class VerkleTree {
         c2,
         this.verkleCrypto
       )
-      await this._db.put(leafNode.hash(), leafNode.serialize())
+      await this._db.put(key, leafNode.serialize())
     }
 
     // Walk up the tree and update internal nodes
@@ -278,22 +276,28 @@ export class VerkleTree {
     let currentDepth = leafNode.depth
 
     while (currentDepth > 0) {
-      const parentIndex = currentKey[currentKey.length - 1]
-      // Parent key should be at least one shorter than the current key length
-      const parentKey = currentKey.slice(0, currentKey.length - 1)
-      const rawNode = await this.get(parentKey)
-      let parentNode
+      let rawNode: Uint8Array | undefined
+      let parentIndex = currentKey[currentKey.length - 1]
+      let parentKey = currentKey.slice(0, currentKey.length - 1)
+      while (!(rawNode instanceof Uint8Array)) {
+        parentIndex = currentKey[currentKey.length - 1]
+        // Parent key should be at least one shorter than the current key length
+        parentKey = currentKey.slice(0, currentKey.length - 1)
+        // Try to retrieve parent node - going back up the path one byte at a time
+        rawNode = await this._db.get(parentKey)
+        if (rawNode === null) continue
+      }
       // TODO: Determine how to decide if we need to go further up the tree or create a new internal node here
       // Currently, this code would insert a new internal node at every step up the trie (which we don't want)
-      if (rawNode !== null) {
-        parentNode = InternalNode.fromRawNode(
-          RLP.decode(rawNode) as Uint8Array[],
-          currentDepth,
-          this.verkleCrypto
-        )
-      } else {
-        parentNode = InternalNode.create(currentDepth, this.verkleCrypto)
-      }
+      // if (rawNode !== null) {
+      const parentNode = InternalNode.fromRawNode(
+        RLP.decode(rawNode) as Uint8Array[],
+        currentDepth,
+        this.verkleCrypto
+      )
+      // } else {
+      //   parentNode = InternalNode.create(currentDepth, this.verkleCrypto)
+      // }
       parentNode.setChild(parentIndex, currentNode.commitment)
       await this._db.put(parentKey, parentNode.serialize())
 
@@ -311,60 +315,57 @@ export class VerkleTree {
    * @param key - the search key
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
-  async findPath(key: Uint8Array, throwIfMissing = false): Promise<Path> {
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve, reject) => {
-      const stack: VerkleNode[] = []
+  async findPath(key: Uint8Array): Promise<Path> {
+    const result: Path = {
+      node: null,
+      stack: [],
+      remaining: key,
+    }
+    if (equalsBytes(this.root(), this.EMPTY_TREE_ROOT)) return result
 
-      const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
-        if (node === null) {
-          return reject(new Error('Path not found'))
-        }
-        const keyRemainder = key.slice(matchingBytesLength(keyProgress, key))
-        stack.push(node)
+    // Check to see if desired node is available
+    let rawNode = await this._db.get(key)
+    let targetNodeBytes: Uint8Array[] = []
+    if (rawNode !== undefined) {
+      // Store target node bytes for deccoding later
+      targetNodeBytes = RLP.decode(rawNode) as Uint8Array[]
+    }
 
-        if (node instanceof InternalNode) {
-          if (keyRemainder.length === 0) {
-            // we exhausted the key without finding a node
-            resolve({ node, remaining: new Uint8Array(0), stack })
-          } else {
-            const childrenIndex = keyRemainder[0]
-            const childNode = node.getChildren(childrenIndex)
-            if (childNode === null) {
-              // There are no more nodes to find and we didn't find the key
-              resolve({ node: null, remaining: keyRemainder, stack })
-            } else {
-              // node found, continue search from children
-              walkController.pushChildrenAtIndex(node, keyProgress, childrenIndex)
-            }
-          }
-        } else if (node instanceof LeafNode) {
-          // The stem of the leaf node should be the full key minus the last byte
-          const stem = key.slice(0, key.length - 1)
-          if (equalsBytes(stem, node.stem)) {
-            // keys match, return node with empty key
-            resolve({ node, remaining: new Uint8Array(0), stack })
-          } else {
-            // reached leaf but keys don't match
-            resolve({ node: null, remaining: keyRemainder, stack })
-          }
-        }
+    let parentKey = key.slice(0, key.length - 1)
+    rawNode = await this._db.get(parentKey)
+    const stack = []
+    // We walk up the parent key from the end of the key to the root
+    while (parentKey.length > 0) {
+      // Try to retrieve parent node - going back up the path one byte at a time
+      rawNode = await this._db.get(parentKey)
+      if (rawNode === undefined) {
+        parentKey = parentKey.slice(0, parentKey.length - 1)
+        continue
       }
-
-      // walk tree and process nodes
-      try {
-        await this.walkTree(this.root(), onFound)
-      } catch (error: any) {
-        if (error.message === 'Missing node in DB' && !throwIfMissing) {
-          // pass
-        } else {
-          reject(error)
-        }
+      const decodedNode = RLP.decode(rawNode) as Uint8Array[]
+      // Store node RLP and its corresponding path for later
+      stack.push([decodedNode, parentKey])
+      parentKey = parentKey.slice(0, parentKey.length - 1)
+    }
+    // Convert RLP of path nodes to stack of verkle nodes
+    result.stack = stack.map((node, idx) =>
+      decodeRawNode(node[0] as Uint8Array[], idx, this.verkleCrypto)
+    )
+    if (targetNodeBytes.length === 0) {
+      if (stack.length === 0) {
+        // Return entire key if no nodes found in trie
+        result.remaining = key
+      } else {
+        // Get path/key of first node in stack which is the node closest to the sought node
+        const lastKey = stack[0][1] as Uint8Array
+        const lastIndex = matchingBytesLength(lastKey, key)
+        result.remaining = key.slice(lastIndex)
       }
-
-      // Resolve if walkTree finishes without finding any nodes
-      resolve({ node: null, remaining: new Uint8Array(0), stack })
-    })
+    } else {
+      result.remaining = new Uint8Array()
+      result.node = decodeRawNode(targetNodeBytes, result.stack.length, this.verkleCrypto)
+    }
+    return result
   }
 
   /**
@@ -383,7 +384,7 @@ export class VerkleTree {
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
   async findLeafNode(key: Uint8Array, throwIfMissing = false): Promise<LeafNode | VerkleNode[]> {
-    const { node, stack } = await this.findPath(key, throwIfMissing)
+    const { node, stack } = await this.findPath(key)
     if (!(node instanceof LeafNode)) {
       if (throwIfMissing) {
         throw new Error('leaf node not found')
@@ -406,16 +407,17 @@ export class VerkleTree {
    * Retrieves a node from db by hash.
    */
   async lookupNode(node: Uint8Array | Uint8Array[]): Promise<VerkleNode | null> {
-    if (isRawNode(node)) {
-      return decodeRawNode(node)
-    }
-    const value = await this._db.get(node)
-    if (value !== undefined) {
-      return decodeNode(value)
-    } else {
-      // Dev note: this error message text is used for error checking in `checkRoot`, `verifyProof`, and `findPath`
-      throw new Error('Missing node in DB')
-    }
+    throw new Error('not implemented')
+    // if (isRawNode(node)) {
+    //   return decodeRawNode(node)
+    // }
+    // const value = await this._db.get(node)
+    // if (value !== undefined) {
+    //   return decodeNode(value)
+    // } else {
+    //   // Dev note: this error message text is used for error checking in `checkRoot`, `verifyProof`, and `findPath`
+    //   throw new Error('Missing node in DB')
+    // }
   }
 
   /**

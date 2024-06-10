@@ -16,7 +16,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
 
   constructor(options: VerkleNodeOptions[VerkleNodeType.Internal]) {
     super(options)
-    this.children = options.children ?? new Array(64).fill(new Uint8Array(64))
+    this.children = options.children ?? new Array(256).fill(new Uint8Array(64))
   }
 
   commit(): Uint8Array {
@@ -72,7 +72,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   /**
    *
    * @param index The index in the children array to retrieve the child node commitment from
-   * @returns the commitment for the child node at the `index` position in the children array
+   * @returns the uncompressed 64byte commitment for the child node at the `index` position in the children array
    */
   getChildren(index: number): Uint8Array | null {
     return this.children[index]

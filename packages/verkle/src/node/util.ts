@@ -5,25 +5,30 @@ import { InternalNode } from './internalNode.js'
 import { LeafNode } from './leafNode.js'
 import { type VerkleNode, VerkleNodeType } from './types.js'
 
-export function decodeRawNode(raw: Uint8Array[]): VerkleNode {
+import type { VerkleCrypto } from '../types.js'
+
+export function decodeRawNode(
+  raw: Uint8Array[],
+  depth: number,
+  verkleCrypto: VerkleCrypto
+): VerkleNode {
   const nodeType = raw[0][0]
-  const depth = 0
   switch (nodeType) {
     case VerkleNodeType.Internal:
-      return InternalNode.fromRawNode(raw, depth)
+      return InternalNode.fromRawNode(raw, depth, verkleCrypto)
     case VerkleNodeType.Leaf:
-      return LeafNode.fromRawNode(raw, depth)
+      return LeafNode.fromRawNode(raw, depth, verkleCrypto)
     default:
       throw new Error('Invalid node type')
   }
 }
 
-export function decodeNode(raw: Uint8Array) {
+export function decodeNode(raw: Uint8Array, depth: number, verkleCrypto: VerkleCrypto) {
   const decoded = RLP.decode(Uint8Array.from(raw)) as Uint8Array[]
   if (!Array.isArray(decoded)) {
     throw new Error('Invalid node')
   }
-  return decodeRawNode(decoded)
+  return decodeRawNode(decoded, depth, verkleCrypto)
 }
 
 export function isRawNode(node: Uint8Array | Uint8Array[]): node is Uint8Array[] {
