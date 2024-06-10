@@ -166,7 +166,7 @@ export interface ClientOpts {
   isSingleNode?: boolean
   vmProfileBlocks?: boolean
   vmProfileTxs?: boolean
-  loadBlocksFromRlp?: string
+  loadBlocksFromRlp?: string[]
   pruneEngineCache?: boolean
   savePreimages?: boolean
   verkleGenesisStateRoot?: Uint8Array
