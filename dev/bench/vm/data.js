@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1717172376498,
+  "lastUpdate": 1718024536149,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9818351f131e94dbf965da0b3ce4ec502b7855ca",
-          "message": "Common refactoring (#3391)\n\n* Remove unnecessary boolean checks when using isActivatedEip\n\n* Remove unnecessary boolean checks when using hardforkIsActiveOnBlock\n\n* Remove unnecessary boolean checks when using hardforkGteHardfork\n\n* Remove unnecessary boolean checks when using gteHardfork\n\n* Fix lint issues\n\n* Fix lint issues\n\n* Merge branch 'master' into common-refactoring\n\n* Merge branch 'master' into common-refactoring",
-          "timestamp": "2024-05-03T22:04:56-04:00",
-          "tree_id": "7b5deef31b7de738c9534b732e5362ef7bc01290",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9818351f131e94dbf965da0b3ce4ec502b7855ca"
-        },
-        "date": 1714788579724,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42293,
-            "range": "±2.80%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41314,
-            "range": "±1.77%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41735,
-            "range": "±1.47%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 40961,
-            "range": "±1.60%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36870,
-            "range": "±5.12%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±6.52%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3f9be25aada4be24591dfc71b43b7275c1c18cd1",
+          "message": "verkle: Add tests for verkle bytes helper (#3441)\n\n* Add tests for verkle bytes helper\r\n\r\n* Optimize matchingBytesLength\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-06-10T08:59:47-04:00",
+          "tree_id": "edcd841f139fa7ef7b4a677e556bdafd1722b42c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3f9be25aada4be24591dfc71b43b7275c1c18cd1"
+        },
+        "date": 1718024535469,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42339,
+            "range": "±1.98%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40051,
+            "range": "±3.35%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41310,
+            "range": "±1.43%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 40056,
+            "range": "±1.58%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38753,
+            "range": "±1.99%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
