@@ -1,11 +1,12 @@
 import { RLP } from '@ethereumjs/rlp'
-import { MapDB, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { MapDB, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { InternalNode, LeafNode, ROOT_DB_KEY } from '../src/index.js'
+import { InternalNode, ROOT_DB_KEY, VerkleNodeType } from '../src/index.js'
 import { VerkleTree } from '../src/verkleTree.js'
 
+import type { LeafNode } from '../src/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 // Testdata from https://github.com/gballet/go-ethereum/blob/kaustinen-with-shapella/trie/verkle_test.go
@@ -56,22 +57,20 @@ describe('Verkle tree', () => {
     })
     const db = new MapDB<Uint8Array, Uint8Array>()
     tree.database(db)
-    // Insert a root node
-    await tree['_db'].put(
-      ROOT_DB_KEY,
-      new InternalNode({
-        commitment: verkleCrypto.zeroCommitment,
-        depth: 0,
-        verkleCrypto,
-      }).serialize()
-    )
+
     const res = await tree.findPath(presentKeys[0])
 
     assert.ok(res.node === null, 'should not find a node when the key is not present')
     assert.deepEqual(res.remaining, presentKeys[0])
 
     await tree.put(presentKeys[0], values[0])
-    console.log(await tree.get(presentKeys[0]))
+    const path = await tree.findPath(presentKeys[0])
+
+    assert.equal(path.node?.depth, 1, 'found a node at the correct depth')
+    assert.equal(path.node?.type, VerkleNodeType.Leaf)
+
+    const value = (path.node! as LeafNode).getValue(presentKeys[0][31])
+    assert.deepEqual(value, values[0], 'retrieved correct leaf node holding correct value')
     // for (let i = 0; i < presentKeys.length; i++) {
     //   console.log('lets put a key')
     //   await tree.put(presentKeys[i], values[i])

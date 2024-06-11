@@ -287,11 +287,12 @@ export class VerkleTree {
         depth: 0,
         verkleCrypto: this.verkleCrypto,
       })
+
       // Update the child node's commitment and path
-      rootNode.children[key[0]].commitment = leafNode.commitment
-      rootNode.children[key[0]].path = key
-      // Update root node commitment
-      this.verkleCrypto.updateCommitment(
+      rootNode.children[key[0]] = { commitment: leafNode.commitment, path: key }
+
+      // Update root node commitment using a zero commitment hash for the old scalar value (since this is a new root node)
+      rootNode.commitment = this.verkleCrypto.updateCommitment(
         rootNode.commitment,
         key[0],
         new Uint8Array(32),
@@ -299,45 +300,51 @@ export class VerkleTree {
       )
       // Put root node in DB
       await this._db.put(ROOT_DB_KEY, rootNode.serialize())
+      // FIXME: This is incorrect.  We should be using `serializeCommitment` here since the root of the trie
+      // should be the compressed form of the commitment so it can be uncompressed when put in a proof
+      // `serializeCommitment` currently isn't part of the public API of `verkle-cryptography-wasm`
+      this.root(this.verkleCrypto.hashCommitment(rootNode.commitment))
       // We're done so return early
       return
     }
-    let currentNode: VerkleNode = res.stack[res.stack.length - 1]
-    let currentKey = leafNode.stem
-    let currentDepth = leafNode.depth
 
-    while (currentDepth > 0) {
-      let rawNode: Uint8Array | undefined
-      let parentIndex = currentKey[currentKey.length - 1]
-      let parentKey = currentKey.slice(0, currentKey.length - 1)
-      while (!(rawNode instanceof Uint8Array)) {
-        parentIndex = currentKey[currentKey.length - 1]
-        // Parent key should be at least one shorter than the current key length
-        parentKey = currentKey.slice(0, currentKey.length - 1)
-        // Try to retrieve parent node - going back up the path one byte at a time
-        rawNode = await this._db.get(parentKey)
-        if (rawNode === null) continue
-      }
-      // TODO: Determine how to decide if we need to go further up the tree or create a new internal node here
-      // Currently, this code would insert a new internal node at every step up the trie (which we don't want)
-      // if (rawNode !== null) {
-      const parentNode = InternalNode.fromRawNode(
-        RLP.decode(rawNode) as Uint8Array[],
-        currentDepth,
-        this.verkleCrypto
-      )
-      // } else {
-      //   parentNode = InternalNode.create(currentDepth, this.verkleCrypto)
-      // }
-      parentNode.setChild(parentIndex, { commitment: currentNode.commitment, path: parentKey })
-      await this._db.put(parentKey, parentNode.serialize())
+    // TODO: Build out rest of logic to update internal nodes and/or insert new ones as needed
+    // let currentNode: VerkleNode = res.stack[res.stack.length - 1]
+    // let currentKey = leafNode.stem
+    // let currentDepth = leafNode.depth
 
-      currentNode = parentNode
-      currentKey = parentKey
-      currentDepth--
-    }
+    // while (currentDepth > 0) {
+    //   let rawNode: Uint8Array | undefined
+    //   let parentIndex = currentKey[currentKey.length - 1]
+    //   let parentKey = currentKey.slice(0, currentKey.length - 1)
+    //   while (!(rawNode instanceof Uint8Array)) {
+    //     parentIndex = currentKey[currentKey.length - 1]
+    //     // Parent key should be at least one shorter than the current key length
+    //     parentKey = currentKey.slice(0, currentKey.length - 1)
+    //     // Try to retrieve parent node - going back up the path one byte at a time
+    //     rawNode = await this._db.get(parentKey)
+    //     if (rawNode === null) continue
+    //   }
+    //   // TODO: Determine how to decide if we need to go further up the tree or create a new internal node here
+    //   // Currently, this code would insert a new internal node at every step up the trie (which we don't want)
+    //   // if (rawNode !== null) {
+    //   const parentNode = InternalNode.fromRawNode(
+    //     RLP.decode(rawNode) as Uint8Array[],
+    //     currentDepth,
+    //     this.verkleCrypto
+    //   )
+    //   // } else {
+    //   //   parentNode = InternalNode.create(currentDepth, this.verkleCrypto)
+    //   // }
+    //   parentNode.setChild(parentIndex, { commitment: currentNode.commitment, path: parentKey })
+    //   await this._db.put(parentKey, parentNode.serialize())
 
-    this._root = currentNode.hash()
+    //   currentNode = parentNode
+    //   currentKey = parentKey
+    //   currentDepth--
+    // }
+
+    // this._root = currentNode.hash()
   }
 
   /**
@@ -367,6 +374,7 @@ export class VerkleTree {
 
     result.stack.push(rootNode)
     let child = rootNode.children[key[0]]
+
     // Root node doesn't contain a child node's commitment on the first byte of the path so we're done
     if (child.commitment === this.verkleCrypto.zeroCommitment) return result
     let finished = false

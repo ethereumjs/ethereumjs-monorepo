@@ -6,12 +6,8 @@ import { BaseVerkleNode } from './baseVerkleNode.js'
 import { LeafNode } from './leafNode.js'
 import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
-import type { VerkleNodeOptions } from './types.js'
+import type { ChildNode, VerkleNodeOptions } from './types.js'
 
-export interface ChildNode {
-  commitment: Uint8Array // 64 byte commitment to child node
-  path: Uint8Array // path/partial stem to child node (used as DB key)
-}
 export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   // Array of tuples of uncompressed commitments (i.e. 64 byte Uint8Arrays) to child nodes along with the path to that child (i.e. the partial stem)
   public children: Array<ChildNode>
@@ -57,14 +53,19 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
       throw new Error('Invalid node type')
     }
 
-    // The length of the rawNode should be the # of children, + 2 for the node type and the commitment
-    if (rawNode.length !== NODE_WIDTH + 2) {
+    // The length of the rawNode should be the # of children * 2 (for commitments and paths) + 2 for the node type and the commitment
+    if (rawNode.length !== NODE_WIDTH * 2 + 2) {
       throw new Error('Invalid node length')
     }
 
     const commitment = rawNode[rawNode.length - 1]
+    const childrenCommitments = rawNode.slice(1, NODE_WIDTH)
+    const childrenPaths = rawNode.slice(NODE_WIDTH + 1, NODE_WIDTH * 2)
 
-    return new InternalNode({ commitment, depth, verkleCrypto })
+    const children = childrenCommitments.map((commitment, idx) => {
+      return { commitment, path: childrenPaths[idx] }
+    })
+    return new InternalNode({ commitment, depth, verkleCrypto, children })
   }
 
   static create(depth: number, verkleCrypto: VerkleCrypto): InternalNode {
@@ -171,6 +172,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     return [
       new Uint8Array([VerkleNodeType.Internal]),
       ...this.children.map((child) => child.commitment),
+      ...this.children.map((child) => child.path),
       this.commitment,
     ]
   }

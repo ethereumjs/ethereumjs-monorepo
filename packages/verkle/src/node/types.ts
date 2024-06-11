@@ -7,6 +7,10 @@ export enum VerkleNodeType {
   Leaf,
 }
 
+export interface ChildNode {
+  commitment: Uint8Array // 64 byte commitment to child node
+  path: Uint8Array // path/partial stem to child node (used as DB key)
+}
 export interface TypedVerkleNode {
   [VerkleNodeType.Internal]: InternalNode
   [VerkleNodeType.Leaf]: LeafNode
@@ -29,7 +33,7 @@ interface BaseVerkleNodeOptions {
 
 interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {
   // Children nodes of this internal node.
-  children?: VerkleNode[]
+  children?: ChildNode[]
 
   // Values of the child commitments before the tree is modified by inserts.
   // This is useful because the delta of the child commitments can be used to efficiently update the node's commitment
