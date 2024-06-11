@@ -9,14 +9,23 @@ import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
 import type { VerkleNodeOptions } from './types.js'
 
+export interface ChildNode {
+  commitment: Uint8Array // 64 byte commitment to child node
+  path: Uint8Array // path/partial stem to child node (used as DB key)
+}
 export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
-  // Array of uncompressed commitments (i.e. 64 byte Uint8Arrays) to child nodes
-  public children: Uint8Array[]
+  // Array of tuples of uncompressed commitments (i.e. 64 byte Uint8Arrays) to child nodes along with the path to that child (i.e. the partial stem)
+  public children: Array<ChildNode>
   public type = VerkleNodeType.Internal
 
   constructor(options: VerkleNodeOptions[VerkleNodeType.Internal]) {
     super(options)
-    this.children = options.children ?? new Array(256).fill(new Uint8Array(64))
+    this.children =
+      options.children ??
+      new Array(256).fill({
+        commitment: options.verkleCrypto.zeroCommitment,
+        path: new Uint8Array(),
+      })
   }
 
   commit(): Uint8Array {
@@ -24,7 +33,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   }
 
   // Updates the commitment value for a child node at the corresponding index
-  setChild(index: number, child: Uint8Array) {
+  setChild(index: number, child: ChildNode) {
     // Get previous child commitment at `index`
     const oldChild = this.children[index]
     // Updates the commitment to the child node at `index`
@@ -34,8 +43,8 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
       this.commitment,
       index,
       // The hashed child commitments are used when updating the internal node commitment
-      this.verkleCrypto.hashCommitment(oldChild),
-      this.verkleCrypto.hashCommitment(child)
+      this.verkleCrypto.hashCommitment(oldChild.commitment),
+      this.verkleCrypto.hashCommitment(child.commitment)
     )
   }
 
@@ -61,7 +70,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
 
   static create(depth: number, verkleCrypto: VerkleCrypto): InternalNode {
     const node = new InternalNode({
-      commitment: POINT_IDENTITY,
+      commitment: verkleCrypto.zeroCommitment,
       depth,
       verkleCrypto,
     })
@@ -74,7 +83,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
    * @param index The index in the children array to retrieve the child node commitment from
    * @returns the uncompressed 64byte commitment for the child node at the `index` position in the children array
    */
-  getChildren(index: number): Uint8Array | null {
+  getChildren(index: number): ChildNode | null {
     return this.children[index]
   }
 
@@ -101,7 +110,10 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
       // the moved leaf node can occur.
       const nextByteInExistingKey = child.stem[this.depth + 1]
       const newBranch = InternalNode.create(this.depth + 1, this.verkleCrypto)
-      this.children[childIndex] = newBranch.commitment
+      this.children[childIndex] = {
+        commitment: newBranch.commitment,
+        path: child.stem.slice(0, this.depth + 1),
+      }
       newBranch.children[nextByteInExistingKey] = child
       child.depth += 1
 
@@ -145,9 +157,11 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
 
       // TODO - Why is the leaf node set at depth + 2 instead of + 1)?
       leafNode.setDepth(this.depth + 2)
-      newBranch.children[nextByteInInsertedKey] = leafNode
+      newBranch.children[nextByteInInsertedKey] = {
+        commitment: leafNode.commitment,
+        path: leafNode.stem,
+      }
     } else if (child instanceof InternalNode) {
-      this.cowChild(childIndex)
       return child.insertStem(stem, values, resolver)
     } else {
       throw new Error('Invalid node type')
@@ -155,6 +169,10 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   }
 
   raw(): Uint8Array[] {
-    return [new Uint8Array([VerkleNodeType.Internal]), ...this.children, this.commitment]
+    return [
+      new Uint8Array([VerkleNodeType.Internal]),
+      ...this.children.map((child) => child.commitment),
+      this.commitment,
+    ]
   }
 }
