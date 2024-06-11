@@ -1,7 +1,6 @@
 import { BIGINT_0, bytesToBigInt, equalsBytes } from '@ethereumjs/util'
 
-import { type VerkleCrypto, zeroValues } from '../types.js'
-import { POINT_IDENTITY } from '../util/crypto.js'
+import { type VerkleCrypto } from '../types.js'
 
 import { BaseVerkleNode } from './baseVerkleNode.js'
 import { LeafNode } from './leafNode.js'

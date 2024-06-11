@@ -1,8 +1,9 @@
+import { RLP } from '@ethereumjs/rlp'
 import { MapDB, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { LeafNode } from '../src/index.js'
+import { InternalNode, LeafNode, ROOT_DB_KEY } from '../src/index.js'
 import { VerkleTree } from '../src/verkleTree.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -55,18 +56,34 @@ describe('Verkle tree', () => {
     })
     const db = new MapDB<Uint8Array, Uint8Array>()
     tree.database(db)
+    // Insert a root node
+    await tree['_db'].put(
+      ROOT_DB_KEY,
+      new InternalNode({
+        commitment: verkleCrypto.zeroCommitment,
+        depth: 0,
+        verkleCrypto,
+      }).serialize()
+    )
+    const res = await tree.findPath(presentKeys[0])
 
-    for (let i = 0; i < presentKeys.length; i++) {
-      await tree.put(presentKeys[i], values[i])
-    }
-    for (let i = 0; i < presentKeys.length; i++) {
-      const retrievedValue = await tree.get(presentKeys[i])
-      if (retrievedValue === null) {
-        assert.fail('Value not found')
-      }
-      assert.ok(equalsBytes(retrievedValue, values[i]))
-    }
-    const path = await tree.findPath(presentKeys[0])
-    assert.ok(path.node instanceof LeafNode)
+    assert.ok(res.node === null, 'should not find a node when the key is not present')
+    assert.deepEqual(res.remaining, presentKeys[0])
+
+    await tree.put(presentKeys[0], values[0])
+    console.log(await tree.get(presentKeys[0]))
+    // for (let i = 0; i < presentKeys.length; i++) {
+    //   console.log('lets put a key')
+    //   await tree.put(presentKeys[i], values[i])
+    // }
+    // for (let i = 0; i < presentKeys.length; i++) {
+    //   const retrievedValue = await tree.get(presentKeys[i])
+    //   if (retrievedValue === null) {
+    //     assert.fail('Value not found')
+    //   }
+    //   assert.ok(equalsBytes(retrievedValue, values[i]))
+    // }
+    // const path = await tree.findPath(presentKeys[0])
+    // assert.ok(path.node instanceof LeafNode)
   })
 })

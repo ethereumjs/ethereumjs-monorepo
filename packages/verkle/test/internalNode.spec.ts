@@ -4,7 +4,6 @@ import { assert, beforeAll, describe, it } from 'vitest'
 
 import { NODE_WIDTH, VerkleNodeType } from '../src/node/index.js'
 import { InternalNode } from '../src/node/internalNode.js'
-import { POINT_IDENTITY } from '../src/util/crypto.js'
 
 import type { VerkleCrypto } from '../src/types.js'
 

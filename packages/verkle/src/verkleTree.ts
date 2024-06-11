@@ -3,6 +3,7 @@ import {
   KeyEncoding,
   Lock,
   ValueEncoding,
+  bytesToHex,
   equalsBytes,
   intToBytes,
   setLengthLeft,
@@ -15,7 +16,7 @@ import { CheckpointDB } from './db/checkpoint.js'
 import { InternalNode } from './node/internalNode.js'
 import { LeafNode } from './node/leafNode.js'
 import { type VerkleNode, VerkleNodeType } from './node/types.js'
-import { createCValues, decodeNode, decodeRawNode, isRawNode } from './node/util.js'
+import { createCValues, decodeRawNode } from './node/util.js'
 import {
   type Proof,
   ROOT_DB_KEY,
@@ -99,12 +100,16 @@ export class VerkleTree {
       }
     }
 
-    if (opts === undefined) {
-      opts = {
-        verkleCrypto: loadVerkleCrypto,
+    if (opts?.verkleCrypto === undefined) {
+      const verkleCrypto = await loadVerkleCrypto()
+      if (opts === undefined)
+        opts = {
+          verkleCrypto,
+        }
+      else {
+        opts.verkleCrypto = verkleCrypto
       }
     }
-    opts.verkleCrypto = await loadVerkleCrypto()
 
     return new VerkleTree(opts)
   }
@@ -173,6 +178,8 @@ export class VerkleTree {
           LeafNode.fromRawNode(rawNode, 1, this.verkleCrypto)
         : InternalNode.fromRawNode(rawNode, 1, this.verkleCrypto)
 
+    // TODO: Decide if we needt this check since this should always be a leaf node
+    // since internal nodes should have never have a key/stem of 31 bytes
     if (node instanceof LeafNode) {
       const keyLastByte = key[key.length - 1]
 
@@ -195,7 +202,8 @@ export class VerkleTree {
     verifyKeyLength(key)
 
     // Find or create the leaf node
-    let leafNode = await this.findLeafNode(key, false)
+    const res = await this.findPath(key)
+    let leafNode = res.node
     if (!(leafNode instanceof LeafNode)) {
       // If leafNode is missing, create it
       const values: Uint8Array[] = new Array(256).fill(new Uint8Array()) // Create new empty array of 256 values
@@ -261,7 +269,7 @@ export class VerkleTree {
       leafNode = LeafNode.create(
         key.slice(0, 31),
         values,
-        leafNode.length,
+        res.stack.length + 1,
         commitment,
         c1,
         c2,
@@ -271,7 +279,30 @@ export class VerkleTree {
     }
 
     // Walk up the tree and update internal nodes
-    let currentNode: VerkleNode = leafNode
+    if (res.stack.length === 0) {
+      // Special case where findPath returned early because no root node exists
+      // Create a root node
+      const rootNode = new InternalNode({
+        commitment: this.verkleCrypto.zeroCommitment,
+        depth: 0,
+        verkleCrypto: this.verkleCrypto,
+      })
+      // Update the child node's commitment and path
+      rootNode.children[key[0]].commitment = leafNode.commitment
+      rootNode.children[key[0]].path = key
+      // Update root node commitment
+      this.verkleCrypto.updateCommitment(
+        rootNode.commitment,
+        key[0],
+        new Uint8Array(32),
+        this.verkleCrypto.hashCommitment(leafNode.commitment)
+      )
+      // Put root node in DB
+      await this._db.put(ROOT_DB_KEY, rootNode.serialize())
+      // We're done so return early
+      return
+    }
+    let currentNode: VerkleNode = res.stack[res.stack.length - 1]
     let currentKey = leafNode.stem
     let currentDepth = leafNode.depth
 
@@ -298,7 +329,7 @@ export class VerkleTree {
       // } else {
       //   parentNode = InternalNode.create(currentDepth, this.verkleCrypto)
       // }
-      parentNode.setChild(parentIndex, currentNode.commitment)
+      parentNode.setChild(parentIndex, { commitment: currentNode.commitment, path: parentKey })
       await this._db.put(parentKey, parentNode.serialize())
 
       currentNode = parentNode
@@ -323,47 +354,54 @@ export class VerkleTree {
     }
     if (equalsBytes(this.root(), this.EMPTY_TREE_ROOT)) return result
 
-    // Check to see if desired node is available
-    let rawNode = await this._db.get(key)
-    let targetNodeBytes: Uint8Array[] = []
-    if (rawNode !== undefined) {
-      // Store target node bytes for deccoding later
-      targetNodeBytes = RLP.decode(rawNode) as Uint8Array[]
-    }
+    // Get root node
+    let rawNode = await this._db.get(ROOT_DB_KEY)
+    if (rawNode === undefined)
+      throw new Error('root node should exist when root not empty tree root')
 
-    let parentKey = key.slice(0, key.length - 1)
-    rawNode = await this._db.get(parentKey)
-    const stack = []
-    // We walk up the parent key from the end of the key to the root
-    while (parentKey.length > 0) {
-      // Try to retrieve parent node - going back up the path one byte at a time
-      rawNode = await this._db.get(parentKey)
-      if (rawNode === undefined) {
-        parentKey = parentKey.slice(0, parentKey.length - 1)
-        continue
+    const rootNode = decodeRawNode(
+      RLP.decode(rawNode) as Uint8Array[],
+      0,
+      this.verkleCrypto
+    ) as InternalNode
+
+    result.stack.push(rootNode)
+    let child = rootNode.children[key[0]]
+    // Root node doesn't contain a child node's commitment on the first byte of the path so we're done
+    if (child.commitment === this.verkleCrypto.zeroCommitment) return result
+    let finished = false
+    while (!finished) {
+      rawNode = await this._db.get(child.path)
+      // We should always find the node if the path is specified in child.path
+      if (rawNode === undefined) throw new Error(`missing node at ${bytesToHex(child.path)}`)
+      const decodedNode = decodeRawNode(
+        RLP.decode(rawNode) as Uint8Array[],
+        result.stack.length,
+        this.verkleCrypto
+      )
+      // Calculate the index of the last matching byte in the key
+      const matchingKeyLength = matchingBytesLength(key, child.path)
+      const foundNode = equalsBytes(key, child.path)
+      if (foundNode || child.path.length >= key.length || decodedNode instanceof LeafNode) {
+        // If the key and child.path are equal, then we found the node
+        // If the child.path is the same length or longer than the key but doesn't match it
+        // or the found node is a leaf node, we've found another node where this node should
+        // be if it existed in the trie
+        // i.e. the node doesn't exist in the trie
+        finished = true
+        if (foundNode) {
+          result.node = decodedNode
+          result.remaining = new Uint8Array()
+          return result
+        }
+        // We found a different node than the one specified by `key`
+        // so the sought node doesn't exist
+        result.remaining = key.slice(matchingKeyLength)
+        return result
       }
-      const decodedNode = RLP.decode(rawNode) as Uint8Array[]
-      // Store node RLP and its corresponding path for later
-      stack.push([decodedNode, parentKey])
-      parentKey = parentKey.slice(0, parentKey.length - 1)
-    }
-    // Convert RLP of path nodes to stack of verkle nodes
-    result.stack = stack.map((node, idx) =>
-      decodeRawNode(node[0] as Uint8Array[], idx, this.verkleCrypto)
-    )
-    if (targetNodeBytes.length === 0) {
-      if (stack.length === 0) {
-        // Return entire key if no nodes found in trie
-        result.remaining = key
-      } else {
-        // Get path/key of first node in stack which is the node closest to the sought node
-        const lastKey = stack[0][1] as Uint8Array
-        const lastIndex = matchingBytesLength(lastKey, key)
-        result.remaining = key.slice(lastIndex)
-      }
-    } else {
-      result.remaining = new Uint8Array()
-      result.node = decodeRawNode(targetNodeBytes, result.stack.length, this.verkleCrypto)
+      // Get the next child node in the path
+      const childIndex = key[matchingKeyLength]
+      child = decodedNode.children[childIndex]
     }
     return result
   }
