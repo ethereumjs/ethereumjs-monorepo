@@ -1156,7 +1156,8 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       }
 
-      const expectedAddress = new Address(bigIntToAddressBytes(authority))
+      // we don't want strick check here on authority being in address range just last 20 bytes
+      const expectedAddress = new Address(bigIntToAddressBytes(authority, false))
       const account = (await runState.stateManager.getAccount(expectedAddress)) ?? new Account()
 
       if (account.isContract()) {

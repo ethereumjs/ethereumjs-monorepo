@@ -430,8 +430,13 @@ export const bigIntToUnpaddedBytes = (value: bigint): Uint8Array => {
   return unpadBytes(bigIntToBytes(value))
 }
 
-export const bigIntToAddressBytes = (value: bigint): Uint8Array => {
-  return setLengthLeft(bigIntToBytes(value), 20).slice(-20)
+export const bigIntToAddressBytes = (value: bigint, strict: boolean = true): Uint8Array => {
+  const addressBytes = setLengthLeft(bigIntToBytes(value), 20)
+  if (strict && addressBytes.length > 20) {
+    throw Error(`Invalid address bytes length=${addressBytes.length} strict=${strict}`)
+  }
+
+  return addressBytes.slice(-20)
 }
 
 /**
