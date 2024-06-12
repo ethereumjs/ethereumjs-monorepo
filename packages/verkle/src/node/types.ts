@@ -19,7 +19,6 @@ export interface TypedVerkleNode {
 export type VerkleNode = TypedVerkleNode[VerkleNodeType]
 
 export interface VerkleNodeInterface {
-  commit(): Uint8Array
   hash(): any
   serialize(): Uint8Array
 }

@@ -14,15 +14,12 @@ export abstract class BaseVerkleNode<T extends VerkleNodeType> implements Verkle
     this.verkleCrypto = options.verkleCrypto
   }
 
-  abstract commit(): Uint8Array
-
   // Hash returns the field representation of the commitment.
   hash(): Uint8Array {
     return this.verkleCrypto.hashCommitment(this.commitment)
   }
 
-  abstract insert(key: Uint8Array, value: Uint8Array, nodeResolverFn: () => void): void
-
+  // Returns an array of Uint8Arrays containing the values necessary to reconstruct a node from the DB (where we store them in a RLP serialized format)
   abstract raw(): Uint8Array[]
 
   /**

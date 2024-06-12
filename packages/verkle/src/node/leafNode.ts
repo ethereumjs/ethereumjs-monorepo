@@ -59,28 +59,18 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
 
     return new LeafNode({ depth, stem, values, c1, c2, commitment, verkleCrypto })
   }
-  commit(): Uint8Array {
-    throw new Error('Not implemented')
-  }
 
-  getValue(index: number): Uint8Array | null {
+  // Retrieve the value at the provided index from the values array
+  getValue(index: number): Uint8Array | undefined {
     return this.values?.[index] ?? null
   }
 
-  insert(key: Uint8Array, value: Uint8Array, nodeResolverFn: () => void): void {
-    const values = new Array<Uint8Array>(NODE_WIDTH)
-    values[key[31]] = value
-    this.insertStem(key.slice(0, 31), values, nodeResolverFn)
+  // Set the value at the provided index from the values array
+  // TODO: Decide whether we need a separate "deleteValue" function since it has special handling
+  // since we never actually delete a node in a verkle trie but overwrite instead
+  setValue(index: number, value: Uint8Array): void {
+    this.values[index] = value
   }
-
-  insertMultiple(key: Uint8Array, values: Uint8Array[]): void {
-    throw new Error('Not implemented')
-  }
-
-  insertStem(key: Uint8Array, value: Uint8Array[], resolver: () => void): void {
-    throw new Error('Not implemented')
-  }
-
   // TODO: go-verkle also adds the bitlist to the raw format.
   raw(): Uint8Array[] {
     return [

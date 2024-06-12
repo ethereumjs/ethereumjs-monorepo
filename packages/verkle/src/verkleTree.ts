@@ -24,10 +24,10 @@ import {
   type VerkleTreeOpts,
   type VerkleTreeOptsWithDefaults,
 } from './types.js'
-import { WalkController, matchingBytesLength } from './util/index.js'
+import { matchingBytesLength } from './util/index.js'
 import { verifyKeyLength } from './util/keys.js'
 
-import type { FoundNodeFunction, VerkleCrypto } from './types.js'
+import type { VerkleCrypto } from './types.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 
 interface Path {
@@ -416,16 +416,6 @@ export class VerkleTree {
   }
 
   /**
-   * Walks a tree until finished.
-   * @param root
-   * @param onFound - callback to call when a node is found. This schedules new tasks. If no tasks are available, the Promise resolves.
-   * @returns Resolves when finished walking tree.
-   */
-  async walkTree(root: Uint8Array, onFound: FoundNodeFunction): Promise<void> {
-    await WalkController.newWalk(onFound, this, root)
-  }
-
-  /**
    * Tries to find the leaf node leading up to the given key, or null if not found.
    * @param key - the search key
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
@@ -446,6 +436,8 @@ export class VerkleTree {
    * Creates the initial node from an empty tree.
    * @private
    */
+
+  // TODO: Decide if we keep this.  I currently have this as part of `put`
   protected async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<void> {
     throw new Error('Not implemented')
   }
@@ -453,6 +445,7 @@ export class VerkleTree {
   /**
    * Retrieves a node from db by hash.
    */
+  // TODO: Decide whether to keep or remove this.  We look up nodes by path/partial path so not sure if we need this or not
   async lookupNode(node: Uint8Array | Uint8Array[]): Promise<VerkleNode | null> {
     throw new Error('not implemented')
     // if (isRawNode(node)) {
@@ -475,6 +468,8 @@ export class VerkleTree {
    * @param keyRemainder
    * @param stack
    */
+
+  // TODO: Decide if we need this.  Looks like it's left over from the MPT `trie` class
   protected async _updateNode(
     k: Uint8Array,
     value: Uint8Array,
@@ -491,29 +486,13 @@ export class VerkleTree {
    * @param stack - a stack of nodes to the value given by the key
    * @param opStack - a stack of levelup operations to commit at the end of this function
    */
+  // TODO: Decide if we will ever use something like this.  Could make sense for batching trie updates but its closely wedded to `level`
+  // and I don't use it in the current `trie.put` logic (though could be helpful)
   async saveStack(
     key: Uint8Array,
     stack: VerkleNode[],
     opStack: PutBatch<Uint8Array, Uint8Array>[]
   ): Promise<void> {
-    throw new Error('Not implemented')
-  }
-
-  /**
-   * Formats node to be saved by `levelup.batch`.
-   * @private
-   * @param node - the node to format.
-   * @param topLevel - if the node is at the top level.
-   * @param opStack - the opStack to push the node's data.
-   * @param remove - whether to remove the node
-   * @returns The node's hash used as the key or the rawNode.
-   */
-  _formatNode(
-    node: VerkleNode,
-    topLevel: boolean,
-    opStack: PutBatch<Uint8Array, Uint8Array>,
-    remove: boolean = false
-  ): Uint8Array {
     throw new Error('Not implemented')
   }
 
@@ -531,6 +510,8 @@ export class VerkleTree {
    * await tree.batch(ops)
    * @param ops
    */
+
+  // TODO: Decide if we keep or not.
   async batch(ops: BatchDBOp[]): Promise<void> {
     throw new Error('Not implemented')
   }
@@ -559,6 +540,9 @@ export class VerkleTree {
    * @throws If proof is found to be invalid.
    * @returns The value from the key, or null if valid proof of non-existence.
    */
+
+  // TODO: Decide if we need this.  We already have the `verifyProof` functionality in the `verkle-cryptography-wasm` functionality
+  // and it doesn't require the use of the trie state to verify.
   async verifyProof(
     rootHash: Uint8Array,
     key: Uint8Array,
@@ -608,16 +592,6 @@ export class VerkleTree {
     if (this._opts.useRootPersistence) {
       await this._db.put(ROOT_DB_KEY, this.root())
     }
-  }
-
-  /**
-   * Finds all nodes that are stored directly in the db
-   * (some nodes are stored raw inside other nodes)
-   * called by {@link ScratchReadStream}
-   * @private
-   */
-  protected async _findDbNodes(onFound: () => void): Promise<void> {
-    throw new Error('Not implemented')
   }
 
   /**
