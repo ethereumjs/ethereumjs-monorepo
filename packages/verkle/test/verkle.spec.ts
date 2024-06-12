@@ -11,6 +11,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 // Testdata from https://github.com/gballet/go-ethereum/blob/kaustinen-with-shapella/trie/verkle_test.go
 const presentKeys = [
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
+  '0x318dca512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
   '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526400',
   '0x18fb432d3b859ec3a1803854e8cceea75d092e52d0d4a4398d13022496745a02',
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
@@ -69,6 +70,10 @@ describe('Verkle tree', () => {
 
     const value = (path.node! as LeafNode).getValue(presentKeys[0][31])
     assert.deepEqual(value, values[0], 'retrieved correct leaf node holding correct value')
+    const pathToNonExistentNode = await tree.findPath(absentKeys[0])
+    assert.equal(pathToNonExistentNode.node, null)
+    assert.equal(pathToNonExistentNode.stack.length, 1, 'contains the root node in the stack')
+
     // for (let i = 0; i < presentKeys.length; i++) {
     //   console.log('lets put a key')
     //   await tree.put(presentKeys[i], values[i])

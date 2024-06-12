@@ -377,7 +377,7 @@ export class VerkleTree {
     let child = rootNode.children[key[0]]
 
     // Root node doesn't contain a child node's commitment on the first byte of the path so we're done
-    if (child.commitment === this.verkleCrypto.zeroCommitment) return result
+    if (equalsBytes(child.commitment, this.verkleCrypto.zeroCommitment)) return result
     let finished = false
     while (!finished) {
       rawNode = await this._db.get(child.path)
