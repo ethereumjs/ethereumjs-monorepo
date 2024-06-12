@@ -18,7 +18,7 @@ export interface VerkleTreeOpts {
   /**
    * A database instance.
    */
-  db?: DB<Uint8Array, Uint8Array>
+  db: DB<Uint8Array, Uint8Array>
 
   /**
    * A `Uint8Array` for the root of a previously stored tree

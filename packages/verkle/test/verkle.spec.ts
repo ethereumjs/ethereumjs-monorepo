@@ -1,9 +1,8 @@
-import { RLP } from '@ethereumjs/rlp'
-import { MapDB, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { MapDB, hexToBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { InternalNode, ROOT_DB_KEY, VerkleNodeType } from '../src/index.js'
+import { VerkleNodeType } from '../src/index.js'
 import { VerkleTree } from '../src/verkleTree.js'
 
 import type { LeafNode } from '../src/index.js'
@@ -54,9 +53,8 @@ describe('Verkle tree', () => {
     const verkleCrypto = await loadVerkleCrypto()
     const tree = await VerkleTree.create({
       verkleCrypto,
+      db: new MapDB<Uint8Array, Uint8Array>(),
     })
-    const db = new MapDB<Uint8Array, Uint8Array>()
-    tree.database(db)
 
     const res = await tree.findPath(presentKeys[0])
 

@@ -2,6 +2,7 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   KeyEncoding,
   Lock,
+  MapDB,
   ValueEncoding,
   bytesToHex,
   equalsBytes,
@@ -43,6 +44,7 @@ export class VerkleTree {
     useRootPersistence: false,
     cacheSize: 0,
     verkleCrypto: undefined,
+    db: new MapDB<Uint8Array, Uint8Array>(),
   }
 
   /** The root for an empty tree */
@@ -105,6 +107,7 @@ export class VerkleTree {
       if (opts === undefined)
         opts = {
           verkleCrypto,
+          db: new MapDB<Uint8Array, Uint8Array>(),
         }
       else {
         opts.verkleCrypto = verkleCrypto
