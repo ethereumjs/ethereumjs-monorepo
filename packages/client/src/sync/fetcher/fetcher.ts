@@ -1,5 +1,4 @@
 import debugDefault from 'debug'
-import Heap from 'qheap'
 import { Readable, Writable } from 'stream'
 
 import { Event } from '../../types.js'
@@ -10,7 +9,8 @@ import type { PeerPool } from '../../net/peerpool.js'
 import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase.js'
 import type { Job } from './types.js'
 import type { Debugger } from 'debug'
-import type QHeap from 'qheap'
+
+import { QHeap } from '../../util/qheap.js'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -92,13 +92,13 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       `Fetcher initialized timeout=${this.timeout} interval=${this.interval} banTime=${this.banTime} maxQueue=${this.maxQueue}`
     )
 
-    this.in = new Heap({
+    this.in = new QHeap({
       comparBefore: (
         a: Job<JobTask, JobResult, StorageItem>,
         b: Job<JobTask, JobResult, StorageItem>
       ) => a.index < b.index,
     }) as QHeap<Job<JobTask, JobResult, StorageItem>>
-    this.out = new Heap({
+    this.out = new QHeap({
       comparBefore: (
         a: Job<JobTask, JobResult, StorageItem>,
         b: Job<JobTask, JobResult, StorageItem>

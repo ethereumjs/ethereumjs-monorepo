@@ -16,8 +16,8 @@ import {
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
-import Heap from 'qheap'
 
+import { QHeap } from '../util/qheap.js'
 import type { Config } from '../config.js'
 import type { Peer } from '../net/peer/peer.js'
 import type { PeerPool } from '../net/peerpool.js'
@@ -29,7 +29,6 @@ import type {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
-import type QHeap from 'qheap'
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10
@@ -800,7 +799,7 @@ export class TxPool {
       byNonce.set(address, txsSortedByNonce)
     }
     // Initialize a price based heap with the head transactions
-    const byPrice = new Heap({
+    const byPrice = new QHeap({
       comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
         this.normalizedGasPrice(b, baseFee) - this.normalizedGasPrice(a, baseFee) < BIGINT_0,
     }) as QHeap<TypedTransaction>
