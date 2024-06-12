@@ -300,10 +300,8 @@ export class VerkleTree {
       )
       // Put root node in DB
       await this._db.put(ROOT_DB_KEY, rootNode.serialize())
-      // FIXME: This is incorrect.  We should be using `serializeCommitment` here since the root of the trie
-      // should be the compressed form of the commitment so it can be uncompressed when put in a proof
-      // `serializeCommitment` currently isn't part of the public API of `verkle-cryptography-wasm`
-      this.root(this.verkleCrypto.hashCommitment(rootNode.commitment))
+      // Set trie root to serialized (aka compressed) commitment for later use in verkle proof
+      this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))
       // We're done so return early
       return
     }
