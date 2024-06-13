@@ -1,5 +1,11 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToBigInt, bytesToHex, equalsBytes, validateNoLeadingZeroes } from '@ethereumjs/util'
+import {
+  bigIntToUnpaddedBytes,
+  bytesToBigInt,
+  bytesToHex,
+  equalsBytes,
+  validateNoLeadingZeroes,
+} from '@ethereumjs/util'
 
 import { TransactionType } from '../types.js'
 import { txTypeBytes, validateNotArray } from '../util.js'
@@ -8,6 +14,9 @@ import { AccessList2930Transaction } from './tx.js'
 
 import type { AccessList, TxOptions } from '../types.js'
 import type { TxData, TxValuesArray } from './tx.js'
+import type { ValueOf } from '@chainsafe/ssz'
+import type { ssz } from '@ethereumjs/util'
+export type Eip2930TransactionType = ValueOf<typeof ssz.Eip2930Transaction>
 
 /**
  * Instantiate a transaction from a data dictionary.
@@ -85,4 +94,44 @@ export function createAccessList2930TxFromRLP(serialized: Uint8Array, opts: TxOp
   }
 
   return createAccessList2930TxFromBytesArray(values as TxValuesArray, opts)
+}
+
+export function createAccessList2930TxFromSszTx(
+  sszWrappedTx: Eip2930TransactionType,
+  opts: TxOptions = {},
+) {
+  const {
+    payload: {
+      nonce,
+      chainId,
+      maxFeesPerGas: { regular: gasPrice },
+      gas: gasLimit,
+      to,
+      value,
+      input: data,
+      accessList,
+    },
+    signature: { ecdsaSignature },
+  } = sszWrappedTx
+
+  const r = bytesToBigInt(ecdsaSignature.slice(0, 32))
+  const s = bytesToBigInt(ecdsaSignature.slice(32, 64))
+  const v = bytesToBigInt(ecdsaSignature.slice(64))
+
+  return createAccessList2930TxFromBytesArray(
+    [
+      bigIntToUnpaddedBytes(chainId),
+      bigIntToUnpaddedBytes(nonce),
+      bigIntToUnpaddedBytes(gasPrice),
+      bigIntToUnpaddedBytes(gasLimit),
+      to,
+      bigIntToUnpaddedBytes(value),
+      data,
+      accessList.map(({ address, storageKeys }) => [address, storageKeys]),
+      bigIntToUnpaddedBytes(v),
+      bigIntToUnpaddedBytes(r),
+      bigIntToUnpaddedBytes(s),
+    ] as TxValuesArray,
+    opts,
+  )
 }

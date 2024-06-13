@@ -346,6 +346,7 @@ export class Engine {
   private async newPayload(
     params: [ExecutionPayload, (Bytes32[] | null)?, (Bytes32 | null)?],
   ): Promise<PayloadStatusV1> {
+    try{
     const [payload, blobVersionedHashes, parentBeaconBlockRoot] = params
     if (this.config.synchronized) {
       this.connectionManager.newPayloadLog()
@@ -744,6 +745,10 @@ export class Engine {
       validationError: null,
     }
     return response
+  }catch(e){
+    console.log("newPayload", e)
+    throw e;
+  }
   }
 
   /**
@@ -1388,6 +1393,7 @@ export class Engine {
       )
       return executionPayload
     } catch (error: any) {
+      console.log("getPayload", error)
       if (validEngineCodes.includes(error.code)) throw error
       throw {
         code: INTERNAL_ERROR,

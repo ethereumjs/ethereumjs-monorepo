@@ -2,7 +2,9 @@ import {
   createBlock,
   createSealedCliqueBlock,
   genRequestsTrieRoot,
+  genTransactionsSszRoot,
   genTransactionsTrieRoot,
+  genWithdrawalsSszRoot,
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
@@ -143,10 +145,19 @@ export class BlockBuilder {
    * Calculates and returns the transactionsTrie for the block.
    */
   public async transactionsTrie() {
-    return genTransactionsTrieRoot(
-      this.transactions,
-      new MerklePatriciaTrie({ common: this.vm.common }),
-    )
+    return this.vm.common.isActivatedEIP(6493)
+      ? genTransactionsSszRoot(this.transactions)
+      : genTransactionsTrieRoot(this.transactions, new MerklePatriciaTrie({ common: this.vm.common }))
+  }
+
+  public async withdrawalsTrie() {
+    if (this.withdrawals === undefined) {
+      return
+    }
+
+    return this.vm.common.isActivatedEIP(6493)
+      ? genWithdrawalsSszRoot(this.withdrawals)
+      : genWithdrawalsTrieRoot(this.withdrawals, new MerklePatriciaTrie({ common: this.vm.common }))
   }
 
   /**
@@ -324,12 +335,7 @@ export class BlockBuilder {
     await this.processWithdrawals()
 
     const transactionsTrie = await this.transactionsTrie()
-    const withdrawalsRoot = this.withdrawals
-      ? await genWithdrawalsTrieRoot(
-          this.withdrawals,
-          new MerklePatriciaTrie({ common: this.vm.common }),
-        )
-      : undefined
+    const withdrawalsRoot = await this.withdrawalsTrie()
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed

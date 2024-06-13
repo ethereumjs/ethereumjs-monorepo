@@ -1,6 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   bigIntToHex,
+  bigIntToUnpaddedBytes,
   blobsToCommitments,
   blobsToProofs,
   bytesToBigInt,
@@ -24,7 +25,10 @@ import type {
   TxOptions,
 } from '../types.js'
 import type { TxData, TxValuesArray } from './tx.js'
-import type { KZG, PrefixedHexString } from '@ethereumjs/util'
+import type { ValueOf } from '@chainsafe/ssz'
+import type { KZG, PrefixedHexString, ssz } from '@ethereumjs/util'
+
+export type Eip4844TransactionType = ValueOf<typeof ssz.Eip4844Transaction>
 
 const validateBlobTransactionNetworkWrapper = (
   blobVersionedHashes: PrefixedHexString[],
@@ -333,4 +337,49 @@ export function blobTxNetworkWrapperToJSON(
     kzgCommitments: tx.kzgCommitments!,
     kzgProofs: tx.kzgProofs!,
   }
+}
+
+export function createBlob4844TxFromSszTx(
+  sszWrappedTx: Eip4844TransactionType,
+  opts: TxOptions = {},
+) {
+  const {
+    payload: {
+      nonce,
+      chainId,
+      maxFeesPerGas: { regular: maxFeePerGas, blob: maxFeePerBlobGas },
+      gas: gasLimit,
+      to,
+      value,
+      input: data,
+      accessList,
+      maxPriorityFeesPerGas: { regular: maxPriorityFeePerGas },
+      blobVersionedHashes,
+    },
+    signature: { ecdsaSignature },
+  } = sszWrappedTx
+
+  const r = bytesToBigInt(ecdsaSignature.slice(0, 32))
+  const s = bytesToBigInt(ecdsaSignature.slice(32, 64))
+  const v = bytesToBigInt(ecdsaSignature.slice(64))
+
+  return createBlob4844TxFromBytesArray(
+    [
+      bigIntToUnpaddedBytes(chainId),
+      bigIntToUnpaddedBytes(nonce),
+      bigIntToUnpaddedBytes(maxPriorityFeePerGas),
+      bigIntToUnpaddedBytes(maxFeePerGas),
+      bigIntToUnpaddedBytes(gasLimit),
+      to,
+      bigIntToUnpaddedBytes(value),
+      data,
+      accessList.map(({ address, storageKeys }) => [address, storageKeys]),
+      bigIntToUnpaddedBytes(maxFeePerBlobGas),
+      blobVersionedHashes,
+      bigIntToUnpaddedBytes(v),
+      bigIntToUnpaddedBytes(r),
+      bigIntToUnpaddedBytes(s),
+    ],
+    opts,
+  )
 }

@@ -34,6 +34,7 @@ export const assembleBlock = async (
     await block.validateData()
     return { block }
   } catch (error) {
+    console.log(error)
     const validationError = `Error assembling block from payload: ${error}`
     config.logger.error(validationError)
     const latestValidHash = await validHash(

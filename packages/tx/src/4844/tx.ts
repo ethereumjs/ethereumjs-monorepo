@@ -8,6 +8,7 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   hexToBytes,
+  setLengthLeft,
   toBytes,
   toType,
 } from '@ethereumjs/util'
@@ -24,6 +25,7 @@ import { AccessLists, validateNotArray } from '../util.js'
 
 import { createBlob4844Tx } from './constructors.js'
 
+import type { SSZTransactionType } from '../baseTransaction.js'
 import type {
   AccessList,
   AccessListBytes,
@@ -215,6 +217,42 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
       this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
       this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : new Uint8Array(0),
     ]
+  }
+
+  sszRaw(): SSZTransactionType {
+    if (this.r === undefined || this.s === undefined || this.v === undefined) {
+      throw Error(`Transaction not signed for sszSerialize`)
+    }
+
+    const payload = {
+      type: BigInt(this.type),
+      chainId: this.chainId,
+      nonce: this.nonce,
+      maxFeesPerGas: { regular: this.maxFeePerGas, blob: this.maxFeePerBlobGas },
+      gas: this.gasLimit,
+      to: this.to?.bytes ?? null,
+      value: this.value,
+      input: this.data,
+      accessList: this.accessList.map(([address, storageKeys]) => ({ address, storageKeys })),
+      maxPriorityFeesPerGas: {
+        regular: this.maxPriorityFeePerGas,
+        blob: this.maxPriorityFeePerGas,
+      },
+      blobVersionedHashes: this.blobVersionedHashes.map((vh) => hexToBytes(vh)),
+    }
+
+    const yParity = this.v
+
+    const signature = {
+      from: this.getSenderAddress().bytes,
+      ecdsaSignature: Uint8Array.from([
+        ...setLengthLeft(bigIntToUnpaddedBytes(this.r), 32),
+        ...setLengthLeft(bigIntToUnpaddedBytes(this.s), 32),
+        ...setLengthLeft(bigIntToUnpaddedBytes(yParity), 1),
+      ]),
+    }
+
+    return { payload, signature }
   }
 
   /**

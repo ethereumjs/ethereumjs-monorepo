@@ -54,6 +54,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "@chainsafe/ssz": "https://github.com/ChainSafe/ssz/raw/cayman/stable-container/packages/ssz/package.tgz",
     "@ethereumjs/common": "^4.4.0",
     "@ethereumjs/rlp": "^5.0.2",
     "@ethereumjs/util": "^9.1.0",

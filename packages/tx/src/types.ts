@@ -576,6 +576,7 @@ export interface JSONRPCTx {
   maxFeePerBlobGas?: string // QUANTITY - max data fee for blob transactions
   blobVersionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
   yParity?: string // DATA - parity of the y-coordinate of the public key
+  inclusionProof?: { merkleBranch: string[]; transactionsRoot: string; transactionRoot: string } // DATA - array of 32 byte merkle hash for eip 6493 inclusion proof with 0 as transactions root
 }
 
 /*

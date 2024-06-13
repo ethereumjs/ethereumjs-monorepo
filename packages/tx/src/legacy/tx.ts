@@ -1,12 +1,17 @@
 import { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_0,
+  BIGINT_1,
   BIGINT_2,
   BIGINT_8,
   MAX_INTEGER,
+  bigIntToBytes,
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
+  calculateSigRecovery,
+  setLengthLeft,
   toBytes,
   unpadBytes,
 } from '@ethereumjs/util'
@@ -20,6 +25,7 @@ import { validateNotArray } from '../util.js'
 
 import { createLegacyTx } from './constructors.js'
 
+import type { SSZTransactionType } from '../baseTransaction.js'
 import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
@@ -126,6 +132,43 @@ export class LegacyTx extends BaseTransaction<TransactionType.Legacy> {
       this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
       this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : new Uint8Array(0),
     ]
+  }
+
+  sszRaw(): SSZTransactionType {
+    if (this.r === undefined || this.s === undefined || this.v === undefined) {
+      throw Error(`Transaction not signed for sszSerialize`)
+    }
+
+    const chainId = this.supports(Capability.EIP155ReplayProtection) ? this.common.chainId() : null
+    const payload = {
+      type: BigInt(this.type),
+      chainId,
+      nonce: this.nonce,
+      maxFeesPerGas: { regular: this.gasPrice, blob: null },
+      gas: this.gasLimit,
+      to: this.to?.bytes ?? null,
+      value: this.value,
+      input: this.data,
+      accessList: null,
+      maxPriorityFeesPerGas: null,
+      blobVersionedHashes: null,
+    }
+
+    const yParity = calculateSigRecovery(this.v, chainId ?? undefined)
+    if (yParity !== BIGINT_0 && yParity !== BIGINT_1) {
+      throw Error(`Invalid yParity=${yParity} v=${this.v} chainid:${this.common.chainId()}`)
+    }
+
+    const signature = {
+      from: this.getSenderAddress().bytes,
+      ecdsaSignature: Uint8Array.from([
+        ...setLengthLeft(bigIntToBytes(this.r), 32),
+        ...setLengthLeft(bigIntToBytes(this.s), 32),
+        ...setLengthLeft(bigIntToBytes(yParity), 1),
+      ]),
+    }
+
+    return { payload, signature }
   }
 
   /**
