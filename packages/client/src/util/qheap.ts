@@ -43,8 +43,7 @@ export class Heap {
   constructor(opts?: QHeapOptions | Function) {
     if (!(this instanceof Heap)) return new Heap(opts as QHeapOptions)
 
-    // @ts-ignore
-    if (typeof opts === 'function') opts = { compar: opts }
+    if (typeof opts === 'function') opts = { compar: opts as any }
 
     // copy out known options to not bind to caller object
     this.options = !opts
@@ -59,12 +58,15 @@ export class Heap {
 
     var self = this
 
-    // @ts-ignore
     this._isBefore = opts.compar
       ? function (a: any, b: any) {
-          return opts.compar!(a, b) < 0
+          // @ts-ignore
+          return opts!.compar!(a, b) < 0
         }
-      : opts.comparBefore || isBeforeDefault
+      : opts.comparBefore ||
+        function (a: any, b: any): boolean {
+          return a < b
+        }
 
     this._sortBefore =
       opts.compar ||
@@ -75,10 +77,6 @@ export class Heap {
 
     this._list = new Array(opts.size || 20)
     this.length = 0
-  }
-
-  private isBeforeDefault(a: any, b: any): boolean {
-    return a < b
   }
 
   /*
