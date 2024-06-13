@@ -5,6 +5,7 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
+  setLengthLeft,
   toBytes,
 } from '@ethereumjs/util'
 
@@ -14,7 +15,7 @@ import * as EIP2930 from '../capabilities/eip2930.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
-import { AccessLists } from '../util.js'
+import { AccessLists, toPayloadJson } from '../util.js'
 
 import { createFeeMarket1559Tx } from './constructors.js'
 
@@ -25,6 +26,8 @@ import type {
   TxValuesArray as AllTypesTxValuesArray,
   Capability,
   JSONTx,
+  SSZTransactionV1,
+  SSZTransactionType,
   TransactionCache,
   TransactionInterface,
   TxOptions,
@@ -232,6 +235,38 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
     ]
   }
 
+  sszRaw(): SSZTransactionType {
+    if (this.r === undefined || this.s === undefined || this.v === undefined) {
+      throw Error(`Transaction not signed for sszSerialize`)
+    }
+
+    const payload = {
+      type: BigInt(this.type),
+      chainId: this.chainId,
+      nonce: this.nonce,
+      maxFeesPerGas: { regular: this.maxFeePerGas, blob: null },
+      gas: this.gasLimit,
+      to: this.to?.bytes ?? null,
+      value: this.value,
+      input: this.data,
+      accessList: this.accessList.map(([address, storageKeys]) => ({ address, storageKeys })),
+      maxPriorityFeesPerGas: { regular: this.maxPriorityFeePerGas, blob: null },
+      blobVersionedHashes: null,
+      authorizationList: null,
+    }
+
+    const yParity = this.v
+    const signature = {
+      secp256k1: Uint8Array.from([
+        ...setLengthLeft(bigIntToUnpaddedBytes(this.r), 32),
+        ...setLengthLeft(bigIntToUnpaddedBytes(this.s), 32),
+        ...setLengthLeft(bigIntToUnpaddedBytes(yParity), 1),
+      ]),
+    }
+
+    return { payload, signature }
+  }
+
   /**
    * Returns the serialized encoding of the EIP-1559 transaction.
    *
@@ -339,6 +374,10 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),
       accessList: accessListJSON,
     }
+  }
+
+  toExecutionPayloadTx(): SSZTransactionV1 {
+    return toPayloadJson(this.sszRaw())
   }
 
   getValidationErrors(): string[] {

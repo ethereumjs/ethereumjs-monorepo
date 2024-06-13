@@ -7,6 +7,7 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   hexToBytes,
+  setLengthLeft,
   toBytes,
   toType,
 } from '@ethereumjs/util'
@@ -17,7 +18,7 @@ import * as EIP2930 from '../capabilities/eip2930.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
-import { AccessLists, validateNotArray } from '../util.js'
+import { AccessLists, validateNotArray, toPayloadJson } from '../util.js'
 
 import { createBlob4844Tx } from './constructors.js'
 
@@ -28,6 +29,8 @@ import type {
   TxValuesArray as AllTypesTxValuesArray,
   Capability,
   JSONTx,
+  SSZTransactionV1,
+  SSZTransactionType,
   TransactionCache,
   TransactionInterface,
   TxOptions,
@@ -295,6 +298,42 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
     ]
   }
 
+  sszRaw(): SSZTransactionType {
+    if (this.r === undefined || this.s === undefined || this.v === undefined) {
+      throw Error(`Transaction not signed for sszSerialize`)
+    }
+
+    const payload = {
+      type: BigInt(this.type),
+      chainId: this.chainId,
+      nonce: this.nonce,
+      maxFeesPerGas: { regular: this.maxFeePerGas, blob: this.maxFeePerBlobGas },
+      gas: this.gasLimit,
+      to: this.to?.bytes ?? null,
+      value: this.value,
+      input: this.data,
+      accessList: this.accessList.map(([address, storageKeys]) => ({ address, storageKeys })),
+      maxPriorityFeesPerGas: {
+        regular: this.maxPriorityFeePerGas,
+        blob: this.maxPriorityFeePerGas,
+      },
+      blobVersionedHashes: this.blobVersionedHashes.map((vh) => hexToBytes(vh)),
+      authorizationList: null,
+    }
+
+    const yParity = this.v
+
+    const signature = {
+      secp256k1: Uint8Array.from([
+        ...setLengthLeft(bigIntToUnpaddedBytes(this.r), 32),
+        ...setLengthLeft(bigIntToUnpaddedBytes(this.s), 32),
+        ...setLengthLeft(bigIntToUnpaddedBytes(yParity), 1),
+      ]),
+    }
+
+    return { payload, signature }
+  }
+
   /**
    * Returns the serialized encoding of the EIP-4844 transaction.
    *
@@ -386,6 +425,10 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
       maxFeePerBlobGas: bigIntToHex(this.maxFeePerBlobGas),
       blobVersionedHashes: this.blobVersionedHashes,
     }
+  }
+
+  toExecutionPayloadTx(): SSZTransactionV1 {
+    return toPayloadJson(this.sszRaw())
   }
 
   addSignature(

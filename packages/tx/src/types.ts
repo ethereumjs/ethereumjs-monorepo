@@ -13,6 +13,11 @@ import type {
   BytesLike,
   PrefixedHexString,
 } from '@ethereumjs/util'
+import type { ValueOf } from '@chainsafe/ssz'
+import type { ssz } from '@ethereumjs/util'
+
+export type SSZTransactionType = ValueOf<typeof ssz.Transaction>
+
 /**
  * Can be used in conjunction with {@link Transaction[TransactionType].supports}
  * to query on tx capabilities
@@ -204,6 +209,7 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   getUpfrontCost(): bigint
   toCreationAddress(): boolean
   raw(): TxValuesArray[T]
+  sszRaw(): SSZTransactionType
   serialize(): Uint8Array
   getMessageToSign(): Uint8Array | Uint8Array[]
   getHashedMessageToSign(): Uint8Array
@@ -217,6 +223,7 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   getSenderPublicKey(): Uint8Array
   sign(privateKey: Uint8Array): Transaction[T]
   toJSON(): JSONTx
+  toExecutionPayloadTx(): ssz.TransactionV1
   errorStr(): string
 
   addSignature(
@@ -552,6 +559,8 @@ export interface JSONTx {
   yParity?: PrefixedHexString
 }
 
+export type SSZTransactionV1 = ssz.TransactionV1;
+
 export type JSONBlobTxNetworkWrapper = JSONTx & {
   blobs: PrefixedHexString[]
   kzgCommitments: PrefixedHexString[]
@@ -584,6 +593,7 @@ export interface JSONRPCTx {
   maxFeePerBlobGas?: string // QUANTITY - max data fee for blob transactions
   blobVersionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
   yParity?: string // DATA - parity of the y-coordinate of the public key
+  inclusionProof?: { merkleBranch: string[]; transactionsRoot: string; transactionRoot: string } // DATA - array of 32 byte merkle hash for eip 6493 inclusion proof with 0 as transactions root
 }
 
 /*

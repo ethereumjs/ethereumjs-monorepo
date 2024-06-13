@@ -86,6 +86,8 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "@chainsafe/persistent-merkle-tree": "^0.7.2",
+    "@chainsafe/ssz": "^0.18.0",
     "@ethereumjs/rlp": "^6.0.0-alpha.1",
     "ethereum-cryptography": "^3.0.0"
   },

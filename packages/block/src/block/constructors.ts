@@ -4,6 +4,7 @@ import {
   type TxOptions,
   createTx,
   createTxFromBlockBodyData,
+  createTxFromExecutionPayloadTx,
   createTxFromRLP,
   normalizeTxParams,
 } from '@ethereumjs/tx'
@@ -21,7 +22,12 @@ import {
 } from '@ethereumjs/util'
 
 import { generateCliqueBlockExtraData } from '../consensus/clique.js'
-import { genTransactionsTrieRoot, genWithdrawalsTrieRoot } from '../helpers.js'
+import {
+  genTransactionsSszRoot,
+  genTransactionsTrieRoot,
+  genWithdrawalsSszRoot,
+  genWithdrawalsTrieRoot,
+} from '../helpers.js'
 import {
   Block,
   createBlockHeader,
@@ -41,6 +47,7 @@ import type {
   JSONRPCBlock,
   WithdrawalsBytes,
 } from '../types.js'
+import type { Common } from '@ethereumjs/common'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { EthersProvider, PrefixedHexString, WithdrawalBytes } from '@ethereumjs/util'
 
@@ -322,7 +329,7 @@ export const createBlockFromJSONRPCProvider = async (
  */
 export async function createBlockFromExecutionPayload(
   payload: ExecutionPayload,
-  opts?: BlockOptions,
+  opts: BlockOptions & { common: Common },
 ): Promise<Block> {
   const {
     blockNumber: number,
@@ -335,11 +342,24 @@ export async function createBlockFromExecutionPayload(
   } = payload
 
   const txs = []
-  for (const [index, serializedTx] of transactions.entries()) {
+  for (const [index, serializedTxOrPayload] of transactions.entries()) {
     try {
-      const tx = createTxFromRLP(hexToBytes(serializedTx as PrefixedHexString), {
-        common: opts?.common,
-      })
+      let tx
+      if (opts.common.isActivatedEIP(6493)) {
+        if (typeof serializedTxOrPayload === 'string') {
+          throw Error('EIP 6493 activated for transaction bytes')
+        }
+        tx = createTxFromExecutionPayloadTx(serializedTxOrPayload, {
+          common: opts?.common,
+        })
+      } else {
+        if (typeof serializedTxOrPayload !== 'string') {
+          throw Error('EIP 6493 not activated for transaction payload')
+        }
+        tx = createTxFromRLP(hexToBytes(serializedTxOrPayload as PrefixedHexString), {
+          common: opts?.common,
+        })
+      }
       txs.push(tx)
     } catch (error) {
       const validationError = `Invalid tx at index ${index}: ${error}`
@@ -347,13 +367,14 @@ export async function createBlockFromExecutionPayload(
     }
   }
 
-  const transactionsTrie = await genTransactionsTrieRoot(
-    txs,
-    new MerklePatriciaTrie({ common: opts?.common }),
-  )
+  const transactionsTrie = opts.common.isActivatedEIP(6493)
+    ? await genTransactionsSszRoot(txs)
+    : await genTransactionsTrieRoot(txs, new MerklePatriciaTrie({ common: opts?.common }))
   const withdrawals = withdrawalsData?.map((wData) => createWithdrawal(wData))
   const withdrawalsRoot = withdrawals
-    ? await genWithdrawalsTrieRoot(withdrawals, new MerklePatriciaTrie({ common: opts?.common }))
+    ? opts.common.isActivatedEIP(6493)
+      ? genWithdrawalsSszRoot(withdrawals)
+      : await genWithdrawalsTrieRoot(withdrawals, new MerklePatriciaTrie({ common: opts?.common }))
     : undefined
 
   const header: HeaderData = {
@@ -393,7 +414,7 @@ export async function createBlockFromExecutionPayload(
  */
 export async function createBlockFromBeaconPayloadJSON(
   payload: BeaconPayloadJSON,
-  opts?: BlockOptions,
+  opts: BlockOptions & { common: Common },
 ): Promise<Block> {
   const executionPayload = executionPayloadFromBeaconPayload(payload)
   return createBlockFromExecutionPayload(executionPayload, opts)

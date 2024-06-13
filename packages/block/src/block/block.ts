@@ -18,6 +18,7 @@ import { sha256 } from 'ethereum-cryptography/sha256'
 // TODO: See if there is an easier way to achieve the same result.
 // See: https://github.com/microsoft/TypeScript/issues/47558
 // (situation will eventually improve on Typescript and/or Eslint update)
+import { genTransactionsSszRoot, genWithdrawalsSszRoot } from '../helpers.js'
 import {
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
@@ -199,10 +200,9 @@ export class Block {
    * Generates transaction trie for validation.
    */
   async genTxTrie(): Promise<Uint8Array> {
-    return genTransactionsTrieRoot(
-      this.transactions,
-      new MerklePatriciaTrie({ common: this.common }),
-    )
+    return this.common.isActivatedEIP(6493)
+      ? genTransactionsSszRoot(this.transactions)
+      : genTransactionsTrieRoot(this.transactions, new MerklePatriciaTrie({ common: this.common }))
   }
 
   /**
@@ -211,16 +211,10 @@ export class Block {
    * @returns True if the transaction trie is valid, false otherwise
    */
   async transactionsTrieIsValid(): Promise<boolean> {
-    let result
-    if (this.transactions.length === 0) {
-      result = equalsBytes(this.header.transactionsTrie, KECCAK256_RLP)
-      return result
-    }
-
     if (this.cache.txTrieRoot === undefined) {
       this.cache.txTrieRoot = await this.genTxTrie()
     }
-    result = equalsBytes(this.cache.txTrieRoot, this.header.transactionsTrie)
+    const result = equalsBytes(this.cache.txTrieRoot, this.header.transactionsTrie)
     return result
   }
 
@@ -319,7 +313,9 @@ export class Block {
     }
 
     if (!(await this.transactionsTrieIsValid())) {
-      const msg = this._errorMsg('invalid transaction trie')
+      const msg = this._errorMsg(
+        `invalid transaction trie expected=${bytesToHex(this.cache.txTrieRoot!)}`,
+      )
       throw new Error(msg)
     }
 
@@ -409,6 +405,12 @@ export class Block {
     return equalsBytes(this.keccakFunction(raw), this.header.uncleHash)
   }
 
+  async genWithdrawalsTrie(): Promise<Uint8Array> {
+    return this.common.isActivatedEIP(6493)
+      ? genWithdrawalsSszRoot(this.withdrawals!)
+      : genWithdrawalsTrieRoot(this.withdrawals!, new MerklePatriciaTrie({ common: this.common }))
+  }
+
   /**
    * Validates the withdrawal root
    * @returns true if the withdrawals trie root is valid, false otherwise
@@ -418,19 +420,10 @@ export class Block {
       throw new Error('EIP 4895 is not activated')
     }
 
-    let result
-    if (this.withdrawals!.length === 0) {
-      result = equalsBytes(this.header.withdrawalsRoot!, KECCAK256_RLP)
-      return result
-    }
-
     if (this.cache.withdrawalsTrieRoot === undefined) {
-      this.cache.withdrawalsTrieRoot = await genWithdrawalsTrieRoot(
-        this.withdrawals!,
-        new MerklePatriciaTrie({ common: this.common }),
-      )
+      this.cache.withdrawalsTrieRoot = await this.genWithdrawalsTrie()
     }
-    result = equalsBytes(this.cache.withdrawalsTrieRoot, this.header.withdrawalsRoot!)
+    const result = equalsBytes(this.cache.withdrawalsTrieRoot, this.header.withdrawalsRoot!)
     return result
   }
 
@@ -498,7 +491,9 @@ export class Block {
   toExecutionPayload(): ExecutionPayload {
     const blockJSON = this.toJSON()
     const header = blockJSON.header!
-    const transactions = this.transactions.map((tx) => bytesToHex(tx.serialize())) ?? []
+    const transactions = this.common.isActivatedEIP(6493)
+      ? this.transactions.map((tx) => tx.toExecutionPayloadTx())
+      : this.transactions.map((tx) => bytesToHex(tx.serialize()))
     const withdrawalsArr = blockJSON.withdrawals ? { withdrawals: blockJSON.withdrawals } : {}
 
     const executionPayload: ExecutionPayload = {
@@ -522,6 +517,7 @@ export class Block {
       parentBeaconBlockRoot: header.parentBeaconBlockRoot,
       requestsHash: header.requestsHash,
       executionWitness: this.executionWitness,
+      systemLogsRoot: this.common.isActivatedEIP(6493) ? header.systemLogsRoot : undefined,
     }
 
     return executionPayload
