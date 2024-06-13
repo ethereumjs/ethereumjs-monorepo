@@ -56,26 +56,26 @@ export class Heap {
         }
     opts = this.options
 
-    var self = this
+    const self = this
 
     this._isBefore = opts.compar
       ? function (a: any, b: any) {
           // @ts-ignore
           return opts!.compar!(a, b) < 0
         }
-      : opts.comparBefore ||
+      : opts.comparBefore ??
         function (a: any, b: any): boolean {
           return a < b
         }
 
     this._sortBefore =
-      opts.compar ||
+      opts.compar ??
       function (a: any, b: any) {
         return self._isBefore(a, b) ? -1 : 1
       }
-    this._freeSpace = opts.freeSpace ? this._trimArraySize : false
+    this._freeSpace = opts.freeSpace === undefined ? this._trimArraySize : false
 
-    this._list = new Array(opts.size || 20)
+    this._list = new Array(opts.size ?? 20)
     this.length = 0
   }
 
@@ -83,15 +83,15 @@ export class Heap {
    * insert new item at end, and bubble up
    */
   public insert(item: any): any {
-    var idx = ++this.length
+    const idx = ++this.length
     return this._bubbleup(idx, item)
   }
   public _bubbleup(idx: number, item: any): void {
-    var list = this._list
+    const list = this._list
     list[idx] = item
     if (idx <= 1) return
     do {
-      var pp = idx >>> 1
+      const pp = idx >>> 1
       if (this._isBefore(item, list[pp])) list[idx] = list[pp]
       else break
       idx = pp
@@ -118,20 +118,20 @@ export class Heap {
    * since its value is the one being bubbled down, so can loop `while (c < len)`.
    */
   public remove(): any {
-    var len = this.length
+    const len = this.length
     if (len < 1) return undefined
     return this._bubbledown(1, len)
   }
   public _bubbledown(r: number, len: number): any {
-    var list = this._list,
+    const list = this._list,
       ret = list[r],
       itm = list[len]
-    var c,
-      _isBefore = this._isBefore
+    let c
+    const _isBefore = this._isBefore
 
     while ((c = r << 1) < len) {
-      var cv = list[c],
-        cv1 = list[c + 1]
+      let cv = list[c]
+      const cv1 = list[c + 1]
       if (_isBefore(cv1, cv)) {
         c++
         cv = cv1
@@ -143,7 +143,8 @@ export class Heap {
     list[r] = itm
     list[len] = 0
     this.length = --len
-    if (this._freeSpace) this._freeSpace(this._list, this.length)
+    if (this._freeSpace !== false && this._freeSpace !== undefined)
+      this._freeSpace(this._list, this.length)
 
     return ret
   }
@@ -155,9 +156,9 @@ export class Heap {
   // builder, not initializer: appends items, not replaces
   // FIXME: more useful to re-initialize from array
   public fromArray(array: any[], base?: number, bound?: number): void {
-    base = base || 0
-    bound = bound || array.length
-    for (var i = base; i < bound; i++) this.insert(array[i])
+    base = (base ?? 0) || 0
+    bound = (bound ?? 0) || array.length
+    for (let i = base; i < bound; i++) this.insert(array[i])
   }
 
   // FIXME: more useful to return sorted values
@@ -179,8 +180,8 @@ export class Heap {
   public gc(options?: { minLength?: number; minFull?: number }): void {
     if (!options) options = {}
 
-    var minListLength = options.minLength || 0
-    var minListFull = options.minFull || 1.0
+    const minListLength = (options.minLength ?? 0) || 0
+    const minListFull = (options.minFull ?? 0) || 1.0
 
     if (this._list.length >= minListLength && this.length < this._list.length * minListFull) {
       this._list.splice(this.length + 1, this._list.length)
@@ -194,9 +195,9 @@ export class Heap {
   }
 
   public _check(): boolean {
-    var _compar = this._sortBefore
+    const _compar = this._sortBefore
 
-    var i,
+    let i,
       p,
       fail = 0
     for (i = this.length; i > 1; i--) {

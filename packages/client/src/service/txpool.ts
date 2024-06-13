@@ -17,10 +17,12 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 
-import { Heap, QHeap } from '../util/qheap.js'
+import { Heap } from '../util/qheap.js'
+
 import type { Config } from '../config.js'
 import type { Peer } from '../net/peer/peer.js'
 import type { PeerPool } from '../net/peerpool.js'
+import type { QHeap } from '../util/qheap.js'
 import type { FullEthereumService } from './fullethereumservice.js'
 import type { Block } from '@ethereumjs/block'
 import type {
