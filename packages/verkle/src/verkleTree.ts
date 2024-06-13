@@ -203,7 +203,8 @@ export class VerkleTree {
    */
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
     verifyKeyLength(key)
-
+    // A stack of nodes to put/update in the DB once the new leaf node is inserted
+    const putStack: [Uint8Array, VerkleNode][] = []
     // Find or create the leaf node
     const res = await this.findPath(key)
     let leafNode = res.node
@@ -278,11 +279,11 @@ export class VerkleTree {
         c2,
         this.verkleCrypto
       )
-      // TODO: Add this to stack of nodes rather than put directly so we can update depth as needed after walking up trie
-      // await this._db.put(key, leafNode.serialize())
+      // Add leaf node to put stack
+      putStack.push([key, leafNode])
     }
 
-    // Walk up the tree and update internal nodes
+    // Walk the tree from the root to the leaf and update/insert internal nodes along the way
     if (res.stack.length === 0) {
       // Special case where findPath returned early because no root node exists
       // Create a root node
@@ -302,8 +303,10 @@ export class VerkleTree {
         new Uint8Array(32),
         this.verkleCrypto.hashCommitment(leafNode.commitment)
       )
-      // Put root node in DB
+      // Add root node to put stack
+      putStack.push([ROOT_DB_KEY, rootNode])
       await this._db.put(ROOT_DB_KEY, rootNode.serialize())
+      await this.saveStack(putStack)
       // Set trie root to serialized (aka compressed) commitment for later use in verkle proof
       this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))
       // We're done so return early
@@ -458,18 +461,18 @@ export class VerkleTree {
   /**
    * Saves a stack of nodes to the database.
    *
-   * @param key - the key. Should follow the stack
-   * @param stack - a stack of nodes to the value given by the key
-   * @param opStack - a stack of levelup operations to commit at the end of this function
+   * @param putStack - an array of tuples of keys (the partial path of the node in the trie) and nodes (VerkleNodes)
    */
-  // TODO: Decide if we will ever use something like this.  Could make sense for batching trie updates but its closely wedded to `level`
-  // and I don't use it in the current `trie.put` logic (though could be helpful)
-  async saveStack(
-    key: Uint8Array,
-    stack: VerkleNode[],
-    opStack: PutBatch<Uint8Array, Uint8Array>[]
-  ): Promise<void> {
-    throw new Error('Not implemented')
+
+  async saveStack(putStack: [Uint8Array, VerkleNode][]): Promise<void> {
+    const opStack = putStack.map(([key, node]) => {
+      return {
+        type: 'put',
+        key,
+        value: node.serialize(),
+      } as PutBatch
+    })
+    await this._db.batch(opStack)
   }
 
   /**
