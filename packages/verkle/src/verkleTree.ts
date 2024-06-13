@@ -16,7 +16,7 @@ import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { CheckpointDB } from './db/checkpoint.js'
 import { InternalNode } from './node/internalNode.js'
 import { LeafNode } from './node/leafNode.js'
-import { type VerkleNode, VerkleNodeType } from './node/types.js'
+import { type ChildNode, type VerkleNode, VerkleNodeType } from './node/types.js'
 import { createCValues, decodeRawNode } from './node/util.js'
 import {
   type Proof,
@@ -313,11 +313,30 @@ export class VerkleTree {
       return
     }
 
-    const currentNode: VerkleNode = res.stack.pop()
+    // Pop the root node off the stack
+    const currentNode: VerkleNode = res.stack.unshift()
     const currentKey = leafNode.stem
-    const currentDepth = leafNode.depth
+    const currentDepth = 0
+    const index = currentKey[0]
 
-    while (currentDepth > 0) {
+    while (res.stack.length > 0) {
+      if (currentNode instanceof InternalNode) {
+        const child = currentNode.getChildren(index)
+        const matchingKeyLength = matchingBytesLength(child!.path, currentKey)
+        if (matchingKeyLength < 31) {
+          // We have to update the internal node referenced by `child`
+          const children = new Array<ChildNode>(256).fill({
+            commitment: this.verkleCrypto.zeroCommitment,
+            path: new Uint8Array(),
+          })
+
+          const newInternalNode = new InternalNode({
+            verkleCrypto: this.verkleCrypto,
+            depth: currentNode.depth + 1,
+            children,
+          })
+        }
+      }
       // Updating inner nodes
       // 1. Update `currentNode` child node commitment to leafnode, commitment of `currentNode`, and depth as needed
       // 2. Walk up result.stack doing the same thing (while inserting new internal nodes as needed and updating lower level node depth as needed)
