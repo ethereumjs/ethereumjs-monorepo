@@ -12,8 +12,8 @@ import {
   BIGINT_8,
   GWEI_TO_WEI,
   KECCAK256_RLP,
+  bigIntToAddressBytes,
   bigIntToBytes,
-  bigIntToHex,
   bytesToHex,
   concatBytes,
   equalsBytes,
@@ -488,8 +488,8 @@ export async function accumulateParentBlockHash(
   if (!this.common.isActivatedEIP(2935)) {
     throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
   }
-  const historyAddress = Address.fromString(
-    bigIntToHex(this.common.param('vm', 'historyStorageAddress'))
+  const historyAddress = new Address(
+    bigIntToAddressBytes(this.common.param('vm', 'historyStorageAddress'))
   )
   const historyServeWindow = this.common.param('vm', 'historyServeWindow')
 
