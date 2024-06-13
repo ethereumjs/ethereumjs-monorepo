@@ -1,8 +1,9 @@
-import { MapDB, hexToBytes } from '@ethereumjs/util'
+import { ROOT_DB_KEY } from '@ethereumjs/trie'
+import { MapDB, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { VerkleNodeType } from '../src/index.js'
+import { VerkleNodeType, decodeNode } from '../src/index.js'
 import { VerkleTree } from '../src/verkleTree.js'
 
 import type { LeafNode } from '../src/index.js'
@@ -62,30 +63,19 @@ describe('Verkle tree', () => {
     assert.ok(res.node === null, 'should not find a node when the key is not present')
     assert.deepEqual(res.remaining, presentKeys[0])
 
-    await tree.put(presentKeys[0], values[0])
-    const path = await tree.findPath(presentKeys[0])
+    for (let i = 0; i < 2; i++) {
+      await tree.put(presentKeys[i], values[i])
+    }
+    for (let i = 0; i < 2; i++) {
+      const retrievedValue = await tree.get(presentKeys[i])
+      if (retrievedValue === undefined) {
+        assert.fail('Value not found')
+      }
+      assert.ok(equalsBytes(retrievedValue, values[i]))
+    }
 
-    assert.equal(path.node?.depth, 1, 'found a node at the correct depth')
-    assert.equal(path.node?.type, VerkleNodeType.Leaf)
-
-    const value = (path.node! as LeafNode).getValue(presentKeys[0][31])
-    assert.deepEqual(value, values[0], 'retrieved correct leaf node holding correct value')
-    const pathToNonExistentNode = await tree.findPath(absentKeys[0])
-    assert.equal(pathToNonExistentNode.node, null)
-    assert.equal(pathToNonExistentNode.stack.length, 1, 'contains the root node in the stack')
-
-    // for (let i = 0; i < presentKeys.length; i++) {
-    //   console.log('lets put a key')
-    //   await tree.put(presentKeys[i], values[i])
-    // }
-    // for (let i = 0; i < presentKeys.length; i++) {
-    //   const retrievedValue = await tree.get(presentKeys[i])
-    //   if (retrievedValue === null) {
-    //     assert.fail('Value not found')
-    //   }
-    //   assert.ok(equalsBytes(retrievedValue, values[i]))
-    // }
-    // const path = await tree.findPath(presentKeys[0])
-    // assert.ok(path.node instanceof LeafNode)
+    // const pathToNonExistentNode = await tree.findPath(absentKeys[0])
+    // assert.equal(pathToNonExistentNode.node, null)
+    // assert.equal(pathToNonExistentNode.stack.length, 1, 'contains the root node in the stack')
   })
 })

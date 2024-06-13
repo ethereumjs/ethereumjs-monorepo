@@ -13,8 +13,8 @@ import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { CheckpointDB } from './db/checkpoint.js'
 import { InternalNode } from './node/internalNode.js'
 import { LeafNode } from './node/leafNode.js'
-import { type ChildNode, type VerkleNode, VerkleNodeType } from './node/types.js'
-import { decodeRawNode } from './node/util.js'
+import { type ChildNode, type VerkleNode } from './node/types.js'
+import { decodeNode } from './node/util.js'
 import {
   type Proof,
   ROOT_DB_KEY,
@@ -164,20 +164,15 @@ export class VerkleTree {
   /**
    * Gets a value given a `key`
    * @param key - the key to search for
-   * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
+   * @returns A Promise that resolves to `Uint8Array` if a value was found or `undefined` if no value was found.
    */
-  async get(key: Uint8Array): Promise<Uint8Array | null> {
+  async get(key: Uint8Array): Promise<Uint8Array | undefined> {
     verifyKeyLength(key)
     const nodeRLP = await this._db.get(key)
-    if (nodeRLP === undefined) return null
-    // We first retrieve the node and decode it
-    const rawNode = RLP.decode(nodeRLP) as Uint8Array[]
-    const node =
-      rawNode[0][0] === VerkleNodeType.Leaf
-        ? // TODO: Figure out how to determine depth from key
-          LeafNode.fromRawNode(rawNode, 1, this.verkleCrypto)
-        : InternalNode.fromRawNode(rawNode, 1, this.verkleCrypto)
 
+    if (nodeRLP === undefined) return
+    // We first retrieve the node and decode it
+    const node = decodeNode(nodeRLP, 0, this.verkleCrypto)
     // TODO: Decide if we need this check since this should always be a leaf node
     // since internal nodes should have never have a key/stem of 31 bytes
     if (node instanceof LeafNode) {
@@ -185,10 +180,11 @@ export class VerkleTree {
 
       // The retrieved leaf node contains an array of 256 possible values.
       // The index of the value we want is at the key's last byte
-      return node.values?.[keyLastByte] ?? null
+      const value = node.getValue(keyLastByte)
+      return value
     }
 
-    return null
+    return
   }
 
   /**
@@ -211,6 +207,7 @@ export class VerkleTree {
       const values: Uint8Array[] = new Array(256).fill(new Uint8Array()) // Create new empty array of 256 values
       values[suffix] = value // Set value at key suffix
 
+      // Create leaf node
       leafNode = await LeafNode.create(
         key.slice(0, 31),
         values,
@@ -218,14 +215,14 @@ export class VerkleTree {
         this.verkleCrypto
       )
     } else {
-      // We found our leaf node so lets update the value and commitment
+      // Found the leaf node so update the value (setValue also updates the commitments)
       leafNode.setValue(suffix, value)
     }
 
     // Add leaf node to put stack
     putStack.push([key, leafNode])
 
-    // Walk the tree from the root to the leaf and update/insert internal nodes along the way
+    // No stack returned from `findPath` indicates no root node so let's create one
     if (res.stack.length === 0) {
       // Special case where findPath returned early because no root node exists
       // Create a root node
@@ -247,7 +244,6 @@ export class VerkleTree {
       )
       // Add root node to put stack
       putStack.push([ROOT_DB_KEY, rootNode])
-      await this._db.put(ROOT_DB_KEY, rootNode.serialize())
       await this.saveStack(putStack)
       // Set trie root to serialized (aka compressed) commitment for later use in verkle proof
       this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))
@@ -255,37 +251,40 @@ export class VerkleTree {
       return
     }
 
-    // Pop the root node off the stack
-    const currentNode: VerkleNode = res.stack.shift()
-    const currentKey = leafNode.stem
-    const currentDepth = 0
-    const index = currentKey[0]
+    // Walk up the tree from the nearest node to the leaf and update/insert internal nodes along the way
 
+    // Updating inner nodes
+    // 1. Update `currentNode` child node commitment to leafnode, commitment of `currentNode`, and depth as needed
+    // 2. Walk up result.stack doing the same thing (while inserting new internal nodes as needed and updating lower level node depth as needed)
+    // 3. Use `saveStack` to put all nodes in DB
     while (res.stack.length > 0) {
+      // Pop the last node off the path stack
+      const currentNode: VerkleNode = res.stack.pop()!
+      const currentKey = leafNode.stem
+      const currentDepth = currentNode.depth
+      const index = currentKey[0]
       if (currentNode instanceof InternalNode) {
-        const child = currentNode.getChildren(index)
-        const matchingKeyLength = matchingBytesLength(child!.path, currentKey)
-        if (matchingKeyLength < 31) {
-          // We have to update the internal node referenced by `child`
-          const children = new Array<ChildNode>(256).fill({
-            commitment: this.verkleCrypto.zeroCommitment,
-            path: new Uint8Array(),
-          })
-
-          const newInternalNode = new InternalNode({
-            verkleCrypto: this.verkleCrypto,
-            depth: currentNode.depth + 1,
-            children,
-          })
+        if (currentDepth === 0) {
+          if (res.stack.length > 0)
+            throw new Error('cannot have node of depth zero and more nodes in path')
+          // We're at the root node.  Just update the child commitment/path
+          // using the key and commitment from the last node in the putStack
+          const child: ChildNode = {
+            commitment: putStack[putStack.length - 1][1].commitment,
+            path: putStack[putStack.length - 1][0],
+          }
+          currentNode.setChild(index, child)
+          putStack.push([ROOT_DB_KEY, currentNode])
+          // Update root
+          this.root(this.verkleCrypto.serializeCommitment(currentNode.commitment))
+          break
         }
+        // const child = currentNode.getChildren(index)
+        // const matchingKeyLength = matchingBytesLength(child!.path, currentKey)
+        // We have to update the internal node referenced by `child`
       }
-      // Updating inner nodes
-      // 1. Update `currentNode` child node commitment to leafnode, commitment of `currentNode`, and depth as needed
-      // 2. Walk up result.stack doing the same thing (while inserting new internal nodes as needed and updating lower level node depth as needed)
-      // 3. Use `saveStack` or whatever to put all nodes in DB
     }
-
-    this._root = this.verkleCrypto.serializeCommitment(currentNode.commitment)
+    await this.saveStack(putStack)
   }
 
   /**
@@ -307,11 +306,7 @@ export class VerkleTree {
     if (rawNode === undefined)
       throw new Error('root node should exist when root not empty tree root')
 
-    const rootNode = decodeRawNode(
-      RLP.decode(rawNode) as Uint8Array[],
-      0,
-      this.verkleCrypto
-    ) as InternalNode
+    const rootNode = decodeNode(rawNode, 0, this.verkleCrypto) as InternalNode
 
     result.stack.push(rootNode)
     let child = rootNode.children[key[0]]
@@ -323,11 +318,7 @@ export class VerkleTree {
       rawNode = await this._db.get(child.path)
       // We should always find the node if the path is specified in child.path
       if (rawNode === undefined) throw new Error(`missing node at ${bytesToHex(child.path)}`)
-      const decodedNode = decodeRawNode(
-        RLP.decode(rawNode) as Uint8Array[],
-        result.stack.length,
-        this.verkleCrypto
-      )
+      const decodedNode = decodeNode(rawNode, result.stack.length, this.verkleCrypto)
       // Calculate the index of the last matching byte in the key
       const matchingKeyLength = matchingBytesLength(key, child.path)
       const foundNode = equalsBytes(key, child.path)
