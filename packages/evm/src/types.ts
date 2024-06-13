@@ -394,4 +394,7 @@ export interface bn128 {
 // EOF type which holds the execution-related data for EOF
 export type EOFEnv = {
   container: EOFContainer
+  eofRunState: {
+    returnStack: number[]
+  }
 }

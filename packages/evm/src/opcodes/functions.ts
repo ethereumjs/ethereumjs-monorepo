@@ -24,6 +24,7 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
+  bytesToInt,
   concatBytes,
   ecrecover,
   hexToBytes,
@@ -34,6 +35,7 @@ import {
 import { getTreeIndexesForStorageSlot } from '@ethereumjs/verkle'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
+import { EOFError, validationError } from '../eof/errors.js'
 import { ERROR } from '../exceptions.js'
 
 import {
@@ -1090,6 +1092,18 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       }
+      const sectionTarget = bytesToInt(
+        runState.code.slice(runState.programCounter, runState.programCounter + 2)
+      )
+      const stackItems = runState.stack.length
+      const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
+      if (1024 < stackItems + typeSection?.inputs - typeSection?.maxStackHeight) {
+        validationError(EOFError.StackOverflow)
+      }
+      runState.env.eof?.eofRunState.returnStack.push(runState.programCounter + 3)
+
+      // Find out the opcode we should jump into
+      runState.programCounter = runState.env.eof!.container.header.getCodePosition(sectionTarget)
     },
   ],
   // 0xe4: RETF
@@ -1100,6 +1114,12 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       }
+      const newPc = runState.env.eof!.eofRunState.returnStack.pop()
+      if (newPc === undefined) {
+        // This should NEVER happen since it is validated that functions either terminate (the call frame) or return
+        validationError(EOFError.RetfNoReturn)
+      }
+      runState.programCounter = newPc
     },
   ],
   // 0xe5: JUMPF

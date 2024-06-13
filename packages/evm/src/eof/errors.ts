@@ -63,6 +63,8 @@ export enum EOFError {
   DataLoadNOutOfBounds = 'DATALOADN reading out of bounds',
   MaxStackHeightViolation = 'Max stack height does not match the reported max stack height',
   StackUnderflow = 'Stack underflow',
+  StackOverflow = 'Stack overflow',
+  RetfNoReturn = 'Trying to return to undefined function', // This should never happen
 }
 
 export enum SimpleErrors {
@@ -165,7 +167,7 @@ export function validationErrorMsg(type: EOFError, ...args: any) {
     }
   }
 }
-export function validationError(type: EOFError, ...args: any) {
+export function validationError(type: EOFError, ...args: any): never {
   switch (type) {
     case EOFError.OutOfBounds: {
       const pos = args[0]

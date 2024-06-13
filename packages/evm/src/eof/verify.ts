@@ -1,5 +1,3 @@
-import { bytesToHex } from 'ethereum-cryptography/utils.js'
-
 import { EOFError, validationError } from './errors.js'
 import { stackDelta } from './stackDelta.js'
 
@@ -107,13 +105,9 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
   // Add all reachable code sections to
   const reachableSections: { [key: number]: Set<number> } = {}
 
-  console.log(container.body.typeSections)
-
   let codeSection = -1
   for (const code of container.body.codeSections) {
     codeSection++
-
-    console.log(bytesToHex(code))
 
     reachableSections[codeSection] = new Set()
 
@@ -136,8 +130,6 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
       }
       validJumps.add(ptr)
       const opcode = code[ptr]
-
-      console.log(stackDelta[opcode].name)
 
       currentStackHeight += stackDelta[opcode].outputs - stackDelta[opcode].inputs
 
