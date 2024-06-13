@@ -927,8 +927,8 @@ export class Engine {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
-    const safe = toBytes(safeBlockHash)
-    const finalized = toBytes(finalizedBlockHash)
+    const safe = hexToBytes(safeBlockHash)
+    const finalized = hexToBytes(finalizedBlockHash)
 
     if (!equalsBytes(finalized, zeroBlockHash) && equalsBytes(safe, zeroBlockHash)) {
       throw {

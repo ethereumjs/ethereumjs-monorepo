@@ -1,12 +1,13 @@
 import {
   type Address,
   bigIntToBytes,
-  concatBytes,
+  bytesToHex,
   int32ToBytes,
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
 
+import type { VerkleExecutionWitness } from '@ethereumjs/block'
 import type { VerkleCrypto } from 'verkle-cryptography-wasm'
 
 /**
@@ -37,16 +38,21 @@ export function getStem(
 }
 
 /**
- * @dev Returns the tree key for a given verkle tree stem, and sub index.
- * @dev Assumes that the verkle node width = 256
- * @param stem The 31-bytes verkle tree stem as a Uint8Array.
- * @param subIndex The sub index of the tree to generate the key for as a Uint8Array.
- * @return The tree key as a Uint8Array.
+ * Verifies that the executionWitness is valid for the given prestateRoot.
+ * @param ffi The verkle ffi object from verkle-crypotography-wasm.
+ * @param prestateRoot The prestateRoot matching the executionWitness.
+ * @param executionWitness The verkle execution witness.
+ * @returns {boolean} Whether or not the executionWitness belongs to the prestateRoot.
  */
-
-export function getKey(stem: Uint8Array, subIndex: Uint8Array): Uint8Array {
-  const treeKey = concatBytes(stem, subIndex)
-  return treeKey
+export function verifyProof(
+  ffi: VerkleCrypto,
+  prestateRoot: Uint8Array,
+  executionWitness: VerkleExecutionWitness
+): boolean {
+  return ffi.verifyExecutionWitnessPreState(
+    bytesToHex(prestateRoot),
+    JSON.stringify(executionWitness)
+  )
 }
 
 export const POINT_IDENTITY = new Uint8Array(0)

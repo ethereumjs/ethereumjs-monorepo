@@ -253,7 +253,7 @@ function padToEven(a: string): string {
 }
 
 /** Check if a string is prefixed by 0x */
-function isHexPrefixed(str: string): boolean {
+function isHexString(str: string): boolean {
   return str.length >= 2 && str[0] === '0' && str[1] === 'x'
 }
 
@@ -262,7 +262,7 @@ function stripHexPrefix(str: string): string {
   if (typeof str !== 'string') {
     return str
   }
-  return isHexPrefixed(str) ? str.slice(2) : str
+  return isHexString(str) ? str.slice(2) : str
 }
 
 /** Transform anything into a Uint8Array */
@@ -271,7 +271,7 @@ function toBytes(v: Input): Uint8Array {
     return v
   }
   if (typeof v === 'string') {
-    if (isHexPrefixed(v)) {
+    if (isHexString(v)) {
       return hexToBytes(padToEven(stripHexPrefix(v)))
     }
     return utf8ToBytes(v)

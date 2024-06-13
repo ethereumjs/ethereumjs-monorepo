@@ -13,29 +13,25 @@ import {
   short,
   toBytes,
 } from '@ethereumjs/util'
-import { getKey, getStem } from '@ethereumjs/verkle'
+import {
+  LeafType,
+  getKey,
+  getStem,
+  getTreeKeyForCodeChunk,
+  getTreeKeyForStorageSlot,
+  verifyProof,
+} from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
-import {
-  AccessWitness,
-  AccessedStateType,
-  BALANCE_LEAF_KEY,
-  CODE_KECCAK_LEAF_KEY,
-  CODE_SIZE_LEAF_KEY,
-  NONCE_LEAF_KEY,
-  VERSION_LEAF_KEY,
-  decodeValue,
-  getTreeIndexesForStorageSlot,
-  getTreeIndicesForCodeChunk,
-} from './accessWitness.js'
+import { AccessWitness, AccessedStateType, decodeValue } from './accessWitness.js'
 import { AccountCache, CacheType, CodeCache, StorageCache } from './cache/index.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { DefaultStateManager } from './stateManager.js'
-import type { VerkleExecutionWitness } from '@ethereumjs/block'
+import type { VerkleExecutionWitness, VerkleProof } from '@ethereumjs/block'
 import type {
   AccountFields,
   Common,
@@ -115,6 +111,7 @@ export interface StatelessVerkleStateManagerOpts {
   codeCacheOpts?: CacheOptions
   accesses?: AccessWitness
   verkleCrypto?: VerkleCrypto
+  initialStateRoot?: Uint8Array
 }
 
 const PUSH_OFFSET = 95
@@ -140,6 +137,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   _accountCache?: AccountCache
   _storageCache?: StorageCache
   _codeCache?: CodeCache
+  _cachedStateRoot?: Uint8Array
 
   originalStorageCache: OriginalStorageCache
 
@@ -161,7 +159,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   private _blockNum = BigInt(0)
   private _executionWitness?: VerkleExecutionWitness
 
-  private _proof: Uint8Array | undefined
+  private _proof: VerkleProof | undefined
 
   // State along execution (should update)
   private _state: VerkleState = {}
@@ -234,6 +232,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       })
     }
 
+    this._cachedStateRoot = opts.initialStateRoot
+
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
     if (opts.verkleCrypto === undefined) {
@@ -266,7 +266,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._executionWitness = executionWitness
     this.accessWitness = accessWitness ?? new AccessWitness({ verkleCrypto: this.verkleCrypto })
 
-    this._proof = executionWitness.verkleProof as unknown as Uint8Array
+    this._proof = executionWitness.verkleProof
 
     // Populate the pre-state and post-state from the executionWitness
     const preStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
@@ -318,50 +318,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     debug('initVerkleExecutionWitness postState', this._postState)
   }
 
-  getTreeKeyForVersion(stem: Uint8Array) {
-    return getKey(stem, VERSION_LEAF_KEY)
-  }
-
-  getTreeKeyForBalance(stem: Uint8Array) {
-    return getKey(stem, BALANCE_LEAF_KEY)
-  }
-
-  getTreeKeyForNonce(stem: Uint8Array) {
-    return getKey(stem, NONCE_LEAF_KEY)
-  }
-
-  getTreeKeyForCodeHash(stem: Uint8Array) {
-    return getKey(stem, CODE_KECCAK_LEAF_KEY)
-  }
-
-  getTreeKeyForCodeSize(stem: Uint8Array) {
-    return getKey(stem, CODE_SIZE_LEAF_KEY)
-  }
-
-  async getTreeKeyForCodeChunk(address: Address, chunkId: number) {
-    const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkId)
-    return getKey(getStem(this.verkleCrypto, address, treeIndex), toBytes(subIndex))
-  }
-
-  chunkifyCode(code: Uint8Array) {
-    // Pad code to multiple of 31 bytes
-    if (code.length % 31 !== 0) {
-      const paddingLength = 31 - (code.length % 31)
-      code = setLengthRight(code, code.length + paddingLength)
-    }
-
-    throw new Error('Not implemented')
-  }
-
-  async getTreeKeyForStorageSlot(address: Address, storageKey: bigint) {
-    const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(storageKey)
-
-    return getKey(getStem(this.verkleCrypto, address, treeIndex), toBytes(subIndex))
-  }
-
   async checkChunkWitnessPresent(address: Address, codeOffset: number) {
     const chunkId = codeOffset / 31
-    const chunkKey = bytesToHex(await this.getTreeKeyForCodeChunk(address, chunkId))
+    const chunkKey = bytesToHex(await getTreeKeyForCodeChunk(address, chunkId, this.verkleCrypto))
     return this._state[chunkKey] !== undefined
   }
 
@@ -432,7 +391,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     const chunks = Math.floor(codeSize / 31) + 1
     for (let chunkId = 0; chunkId < chunks; chunkId++) {
-      const chunkKey = bytesToHex(await this.getTreeKeyForCodeChunk(address, chunkId))
+      const chunkKey = bytesToHex(await getTreeKeyForCodeChunk(address, chunkId, this.verkleCrypto))
       const codeChunk = this._state[chunkKey]
       if (codeChunk === null) {
         const errorMsg = `Invalid access to a non existent code chunk with chunkKey=${chunkKey}`
@@ -504,7 +463,11 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const storageKey = await this.getTreeKeyForStorageSlot(address, BigInt(bytesToHex(key)))
+    const storageKey = await getTreeKeyForStorageSlot(
+      address,
+      BigInt(bytesToHex(key)),
+      this.verkleCrypto
+    )
     const storageValue = toBytes(this._state[bytesToHex(storageKey)])
 
     if (!this._storageCacheSettings.deactivate) {
@@ -526,23 +489,27 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       this._storageCache!.put(address, key, value)
     } else {
       // TODO: Consider refactoring this in a writeContractStorage function? Like in stateManager.ts
-      const storageKey = await this.getTreeKeyForStorageSlot(address, BigInt(bytesToHex(key)))
+      const storageKey = await getTreeKeyForStorageSlot(
+        address,
+        BigInt(bytesToHex(key)),
+        this.verkleCrypto
+      )
       this._state[bytesToHex(storageKey)] = bytesToHex(setLengthRight(value, 32))
     }
   }
 
+  // Note from Gabriel: Clearing storage is not actually not possible in Verkle.
+  // This is because the storage keys are scattered throughout the verkle tree.
   /**
    * Clears all storage entries for the account corresponding to `address`.
    * @param address -  Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
     const stem = getStem(this.verkleCrypto, address, 0)
-    const codeHashKey = this.getTreeKeyForCodeHash(stem)
+    const codeHashKey = getKey(stem, LeafType.CodeHash)
     this._storageCache?.clearContractStorage(address)
     // Update codeHash to `c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470`
     this._state[bytesToHex(codeHashKey)] = KECCAK256_NULL_S
-
-    // TODO: Clear all storage slots (how?)
   }
 
   async getAccount(address: Address): Promise<Account | undefined> {
@@ -556,11 +523,11 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     const stem = getStem(this.verkleCrypto, address, 0)
-    const versionKey = this.getTreeKeyForVersion(stem)
-    const balanceKey = this.getTreeKeyForBalance(stem)
-    const nonceKey = this.getTreeKeyForNonce(stem)
-    const codeHashKey = this.getTreeKeyForCodeHash(stem)
-    const codeSizeKey = this.getTreeKeyForCodeSize(stem)
+    const versionKey = getKey(stem, LeafType.Version)
+    const balanceKey = getKey(stem, LeafType.Balance)
+    const nonceKey = getKey(stem, LeafType.Nonce)
+    const codeHashKey = getKey(stem, LeafType.CodeHash)
+    const codeSizeKey = getKey(stem, LeafType.CodeSize)
 
     const versionRaw = this._state[bytesToHex(versionKey)]
     const balanceRaw = this._state[bytesToHex(balanceKey)]
@@ -643,9 +610,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     if (this._accountCacheSettings.deactivate) {
       const stem = getStem(this.verkleCrypto, address, 0)
-      const balanceKey = this.getTreeKeyForBalance(stem)
-      const nonceKey = this.getTreeKeyForNonce(stem)
-      const codeHashKey = this.getTreeKeyForCodeHash(stem)
+      const balanceKey = getKey(stem, LeafType.Balance)
+      const nonceKey = getKey(stem, LeafType.Nonce)
+      const codeHashKey = getKey(stem, LeafType.CodeHash)
 
       const balanceBuf = setLengthRight(bigIntToBytes(account.balance, true), 32)
       const nonceBuf = setLengthRight(bigIntToBytes(account.nonce, true), 32)
@@ -695,30 +662,18 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   getProof(_: Address, __: Uint8Array[] = []): Promise<Proof> {
     throw new Error('Not implemented yet')
   }
+  /**
+   * Verifies whether the execution witness matches the stateRoot
+   * @param {Uint8Array} stateRoot - The stateRoot to verify the executionWitness against
+   * @returns {boolean} - Returns true if the executionWitness matches the provided stateRoot, otherwise false
+   */
+  verifyProof(stateRoot: Uint8Array): boolean {
+    if (this._executionWitness === undefined) {
+      debug('Missing executionWitness')
+      return false
+    }
 
-  // TODO: Re-implement this method once we have working verifyUpdate and the testnets have been updated to provide ingestible data
-  async verifyProof(_: Uint8Array): Promise<boolean> {
-    // Implementation: https://github.com/crate-crypto/rust-verkle-wasm/blob/master/src/lib.rs#L45
-    // The root is the root of the current (un-updated) trie
-    // The proof is proof of membership of all of the accessed values
-    // keys_values is a map from the key of the accessed value to a tuple
-    // the tuple contains the old value and the updated value
-    //
-    // This function returns the new root when all of the updated values are applied
-
-    // const updatedStateRoot: Uint8Array = verifyUpdate(
-    //   parentVerkleRoot,
-    //   this._proof!, // TODO: Convert this into a Uint8Array ingestible by the method
-    //   new Map() // TODO: Generate the keys_values map from the old to the updated value
-    // )
-
-    // TODO: Not sure if this should return the updated state Root (current block) or the un-updated one (parent block)
-    // const verkleRoot = await this.getStateRoot()
-
-    // Verify that updatedStateRoot matches the state root of the block
-    // return equalsBytes(updatedStateRoot, verkleRoot)
-
-    return true
+    return verifyProof(this.verkleCrypto, stateRoot, this._executionWitness)
   }
 
   // Verifies that the witness post-state matches the computed post-state
@@ -941,21 +896,26 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   async flush(): Promise<void> {}
 
   /**
-   * Gets the verkle root.
-   * NOTE: this needs some examination in the code where this is needed
-   * and if we have the verkle root present
-   * @returns {Promise<Uint8Array>} - Returns the verkle root of the `StateManager`
+   * Gets the cache state root.
+   * This is used to persist the stateRoot between blocks, so that blocks can retrieve the stateRoot of the parent block.
+   * This is required to verify and prove verkle execution witnesses.
+   * @returns {Promise<Uint8Array>} - Returns the cached state root
    */
   async getStateRoot(): Promise<Uint8Array> {
-    return new Uint8Array(0)
+    if (this._cachedStateRoot === undefined) {
+      throw new Error('Cache state root missing')
+    }
+    return this._cachedStateRoot
   }
 
   /**
-   * TODO: needed?
-   * Maybe in this context: reset to original pre state suffice
-   * @param stateRoot - The verkle root to reset the instance to
+   * Sets the cache state root.
+   * This is used to persist the stateRoot between blocks, so that blocks can retrieve the stateRoot of the parent block.
+   * @param stateRoot - The stateRoot to set
    */
-  async setStateRoot(_: Uint8Array): Promise<void> {}
+  async setStateRoot(stateRoot: Uint8Array): Promise<void> {
+    this._cachedStateRoot = stateRoot
+  }
 
   /**
    * Dumps the RLP-encoded storage values for an `account` specified by `address`.

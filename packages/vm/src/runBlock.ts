@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager, getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
+import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
@@ -12,8 +12,8 @@ import {
   BIGINT_8,
   GWEI_TO_WEI,
   KECCAK256_RLP,
+  bigIntToAddressBytes,
   bigIntToBytes,
-  bigIntToHex,
   bytesToHex,
   concatBytes,
   equalsBytes,
@@ -23,6 +23,7 @@ import {
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
+import { getTreeIndexesForStorageSlot } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 
 import { Bloom } from './bloom/index.js'
@@ -67,7 +68,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     console.time(entireBlockLabel)
   }
 
-  const state = this.stateManager
+  const stateManager = this.stateManager
 
   const { root } = opts
   const clearCache = opts.clearCache ?? true
@@ -124,26 +125,40 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Set provided state root ${bytesToHex(root)} clearCache=${clearCache}`)
     }
-    await state.setStateRoot(root, clearCache)
+    await stateManager.setStateRoot(root, clearCache)
   }
 
   if (this.common.isActivatedEIP(6800)) {
-    if (!(state instanceof StatelessVerkleStateManager)) {
+    if (!(stateManager instanceof StatelessVerkleStateManager)) {
       throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
     }
+
+    if (opts.parentStateRoot === undefined) {
+      throw Error(`Parent state root is required for StatelessVerkleStateManager execution`)
+    }
+
     if (this.DEBUG) {
       debug(`Initializing StatelessVerkleStateManager executionWitness`)
     }
     if (clearCache) {
-      ;(this._opts.stateManager as StatelessVerkleStateManager).clearCaches()
+      stateManager.clearCaches()
     }
 
-    ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
-      block.header.number,
-      block.executionWitness
-    )
+    // Update the stateRoot cache
+    await stateManager.setStateRoot(block.header.stateRoot)
+
+    // Populate the execution witness
+    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
+
+    if (stateManager.verifyProof(opts.parentStateRoot) === false) {
+      throw Error(`Verkle proof verification failed`)
+    }
+
+    if (this.DEBUG) {
+      debug(`Verkle proof verification succeeded`)
+    }
   } else {
-    if (state instanceof StatelessVerkleStateManager) {
+    if (stateManager instanceof StatelessVerkleStateManager) {
       throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
     }
   }
@@ -193,7 +208,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     throw err
   }
 
-  let requestsRoot
+  let requestsRoot: Uint8Array | undefined
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
     requests = await accumulateRequests(this, result.results)
@@ -206,7 +221,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(`block checkpoint committed`)
   }
 
-  const stateRoot = await state.getStateRoot()
+  const stateRoot = await stateManager.getStateRoot()
 
   // Given the generate option, either set resulting header
   // values to the current block, or validate the resulting
@@ -473,8 +488,8 @@ export async function accumulateParentBlockHash(
   if (!this.common.isActivatedEIP(2935)) {
     throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
   }
-  const historyAddress = Address.fromString(
-    bigIntToHex(this.common.param('vm', 'historyStorageAddress'))
+  const historyAddress = new Address(
+    bigIntToAddressBytes(this.common.param('vm', 'historyStorageAddress'))
   )
   const historyServeWindow = this.common.param('vm', 'historyServeWindow')
 
@@ -530,6 +545,9 @@ export async function accumulateParentBlockHash(
     }
     // eslint-disable-next-line no-empty
   } catch (_e) {}
+
+  // do cleanup if the code was not deployed
+  await this.evm.journal.cleanup()
 }
 
 export async function accumulateParentBeaconBlockRoot(
@@ -552,7 +570,16 @@ export async function accumulateParentBeaconBlockRoot(
    * All ethereum accounts have empty storage by default
    */
 
-  if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+  /**
+   * Note: (by Gabriel)
+   * Get account will throw an error in stateless execution b/c witnesses are not bundled
+   * But we do need an account so we are able to put the storage
+   */
+  try {
+    if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+      await this.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
+    }
+  } catch (_) {
     await this.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
   }
 
@@ -566,6 +593,9 @@ export async function accumulateParentBeaconBlockRoot(
     setLengthLeft(bigIntToBytes(timestampExtended), 32),
     root
   )
+
+  // do cleanup if the code was not deployed
+  await this.evm.journal.cleanup()
 }
 
 /**

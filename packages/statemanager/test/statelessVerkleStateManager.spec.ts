@@ -9,14 +9,14 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { getStem } from '@ethereumjs/verkle'
+import { LeafType, getKey, getStem } from '@ethereumjs/verkle'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it, test } from 'vitest'
 
 import { CacheType, StatelessVerkleStateManager } from '../src/index.js'
 
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
-import * as verkleBlockJSON from './testdata/verkleKaustinenBlock.json'
+import * as verkleBlockJSON from './testdata/verkleKaustinen6Block72.json'
 
 import type { BlockData } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -29,7 +29,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
   const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
     chain: 'customChain',
-    eips: [4895, 6800],
+    eips: [2935, 4895, 6800],
   })
   const decodedTxs = verkleBlockJSON.transactions.map((tx) =>
     TransactionFactory.fromSerializedData(hexToBytes(tx as PrefixedHexString))
@@ -53,8 +53,8 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
       Address.fromString('0x6177843db3138ae69679a54b95cf345ed759450d')
     )
 
-    assert.equal(account!.balance, 724462229558283876n, 'should have correct balance')
-    assert.equal(account!.nonce, 700n, 'should have correct nonce')
+    assert.equal(account!.balance, 288610978528114322n, 'should have correct balance')
+    assert.equal(account!.nonce, 300n, 'should have correct nonce')
     assert.equal(account!._storageRoot, null, 'stateroot should have not been set')
     assert.equal(
       bytesToHex(account!.codeHash),
@@ -109,16 +109,16 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     )
   })
 
-  it('getTreeKeyFor* functions', async () => {
+  it('getKey function', async () => {
     const stateManager = await StatelessVerkleStateManager.create({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const address = Address.fromString('0x6177843db3138ae69679a54b95cf345ed759450d')
     const stem = getStem(stateManager.verkleCrypto, address, 0n)
 
-    const balanceKey = stateManager.getTreeKeyForBalance(stem)
-    const nonceKey = stateManager.getTreeKeyForNonce(stem)
-    const codeHashKey = stateManager.getTreeKeyForCodeHash(stem)
+    const balanceKey = getKey(stem, LeafType.Balance)
+    const nonceKey = getKey(stem, LeafType.Nonce)
+    const codeHashKey = getKey(stem, LeafType.CodeHash)
 
     const balanceRaw = stateManager['_state'][bytesToHex(balanceKey)]
     const nonceRaw = stateManager['_state'][bytesToHex(nonceKey)]

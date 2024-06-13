@@ -201,7 +201,7 @@ const jsonRpcReceipt = async (
       ? bytesToHex((receipt as PreByzantiumTxReceipt).stateRoot)
       : undefined,
   status:
-    ((receipt as PostByzantiumTxReceipt).status as unknown) instanceof Uint8Array
+    (receipt as PostByzantiumTxReceipt).status !== undefined
       ? intToHex((receipt as PostByzantiumTxReceipt).status)
       : undefined,
   blobGasUsed: blobGasUsed !== undefined ? bigIntToHex(blobGasUsed) : undefined,
@@ -451,6 +451,12 @@ export class Eth {
         [validators.either(validators.hex, validators.blockOption)],
         [validators.rewardPercentiles],
       ]
+    )
+
+    this.blobBaseFee = middleware(
+      callWithStackTrace(this.blobBaseFee.bind(this), this._rpcDebug),
+      0,
+      []
     )
   }
 
@@ -1316,5 +1322,14 @@ export class Eth {
       oldestBlock: bigIntToHex(oldestBlockNumber),
       reward: rewards.map((r) => r.map(bigIntToHex)),
     }
+  }
+
+  /**
+   *
+   * @returns the blob base fee for the next/pending block in wei
+   */
+  async blobBaseFee() {
+    const headBlock = await this._chain.getCanonicalHeadHeader()
+    return bigIntToHex(headBlock.calcNextBlobGasPrice())
   }
 }

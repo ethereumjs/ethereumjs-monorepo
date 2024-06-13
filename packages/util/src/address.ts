@@ -43,7 +43,7 @@ export class Address {
    */
   static fromString(str: string): Address {
     if (!isValidAddress(str)) {
-      throw new Error('Invalid address')
+      throw new Error(`Invalid address input=${str}`)
     }
     return new Address(hexToBytes(str))
   }

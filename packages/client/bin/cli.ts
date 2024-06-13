@@ -422,6 +422,7 @@ const args: ClientOpts = yargs
   .option('loadBlocksFromRlp', {
     describe: 'path to a file of RLP encoded blocks',
     string: true,
+    array: true,
   })
   .option('pruneEngineCache', {
     describe: 'Enable/Disable pruning engine block cache (disable for testing against hive etc)',
@@ -448,6 +449,12 @@ const args: ClientOpts = yargs
       'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution faliures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
     boolean: true,
     hidden: true,
+  })
+  .option('initialVerkleStateRoot', {
+    describe:
+      'Provides an initial stateRoot to start the StatelessVerkleStateManager. This is required to bootstrap verkle witness proof verification, since they depend on the stateRoot of the parent block',
+    string: true,
+    coerce: (initialVerkleStateRoot: PrefixedHexString) => hexToBytes(initialVerkleStateRoot),
   })
   .option('useJsCrypto', {
     describe: 'Use pure Javascript cryptography functions',
@@ -646,27 +653,29 @@ async function startClient(
 
   if (args.loadBlocksFromRlp !== undefined) {
     // Specifically for Hive simulator, preload blocks provided in RLP format
-    const blockRlp = readFileSync(args.loadBlocksFromRlp)
     const blocks: Block[] = []
-    let buf = RLP.decode(blockRlp, true)
-    while (buf.data?.length > 0 || buf.remainder?.length > 0) {
-      try {
-        const block = Block.fromValuesArray(buf.data as BlockBytes, {
-          common: config.chainCommon,
-          setHardfork: true,
-        })
-        blocks.push(block)
-        buf = RLP.decode(buf.remainder, true)
-        config.logger.info(
-          `Preloading block hash=0x${short(bytesToHex(block.header.hash()))} number=${
-            block.header.number
-          }`
-        )
-      } catch (err: any) {
-        config.logger.info(
-          `Encountered error while while preloading chain data  error=${err.message}`
-        )
-        break
+    for (const rlpBlock of args.loadBlocksFromRlp) {
+      const blockRlp = readFileSync(rlpBlock)
+      let buf = RLP.decode(blockRlp, true)
+      while (buf.data?.length > 0 || buf.remainder?.length > 0) {
+        try {
+          const block = Block.fromValuesArray(buf.data as BlockBytes, {
+            common: config.chainCommon,
+            setHardfork: true,
+          })
+          blocks.push(block)
+          buf = RLP.decode(buf.remainder, true)
+          config.logger.info(
+            `Preloading block hash=0x${short(bytesToHex(block.header.hash()))} number=${
+              block.header.number
+            }`
+          )
+        } catch (err: any) {
+          config.logger.info(
+            `Encountered error while while preloading chain data  error=${err.message}`
+          )
+          break
+        }
       }
     }
 
@@ -675,7 +684,7 @@ async function startClient(
         await client.chain.open()
       }
 
-      await client.chain.putBlocks(blocks)
+      await client.chain.putBlocks(blocks, true)
     }
   }
 
