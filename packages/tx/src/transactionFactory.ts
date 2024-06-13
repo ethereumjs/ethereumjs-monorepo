@@ -1,4 +1,4 @@
-import { fetchFromProvider, getProvider } from '@ethereumjs/util'
+import { fetchFromProvider, getProvider, ssz } from '@ethereumjs/util'
 
 import { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
 import { AccessListEIP2930Transaction } from './eip2930Transaction.js'
@@ -12,7 +12,12 @@ import {
   isFeeMarketEIP1559TxData,
   isLegacyTxData,
 } from './types.js'
+import { fromPayloadJson } from './util.js'
 
+import type { Eip1559TransactionType } from './eip1559Transaction.js'
+import type { Eip2930TransactionType } from './eip2930Transaction.js'
+import type { Eip4844TransactionType } from './eip4844Transaction.js'
+import type { LegacyTransactionType, ReplayableTransactionType } from './legacyTransaction.js'
 import type { Transaction, TxData, TxOptions, TypedTxData } from './types.js'
 import type { EthersProvider } from '@ethereumjs/util'
 
@@ -72,6 +77,72 @@ export class TransactionFactory {
       }
     } else {
       return LegacyTransaction.fromSerializedTx(data, txOptions) as Transaction[T]
+    }
+  }
+
+  public static fromSszSerializedData<T extends TransactionType>(
+    data: Uint8Array,
+    txOptions: TxOptions = {}
+  ): Transaction[T] {
+    const sszStableTx = ssz.Transaction.deserialize(data)
+    const txType = Number(sszStableTx.payload.type)
+
+    switch (txType) {
+      case TransactionType.Legacy:
+        return LegacyTransaction.fromSszTx(
+          sszStableTx as ReplayableTransactionType | LegacyTransactionType,
+          txOptions
+        ) as Transaction[T]
+      case TransactionType.AccessListEIP2930:
+        return AccessListEIP2930Transaction.fromSszTx(
+          sszStableTx as Eip2930TransactionType,
+          txOptions
+        ) as Transaction[T]
+      case TransactionType.FeeMarketEIP1559:
+        return FeeMarketEIP1559Transaction.fromSszTx(
+          sszStableTx as Eip1559TransactionType,
+          txOptions
+        ) as Transaction[T]
+      case TransactionType.BlobEIP4844:
+        return BlobEIP4844Transaction.fromSszTx(
+          sszStableTx as Eip4844TransactionType,
+          txOptions
+        ) as Transaction[T]
+      default:
+        throw new Error(`TypedTransaction with ID ${txType} unknown`)
+    }
+  }
+
+  public static fromExecutionPayloadTx<T extends TransactionType>(
+    data: ssz.TransactionV1,
+    txOptions: TxOptions = {}
+  ): Transaction[T] {
+    const sszStableTx = fromPayloadJson(data)
+    const txType = Number(sszStableTx.payload.type)
+
+    switch (txType) {
+      case TransactionType.Legacy:
+        return LegacyTransaction.fromSszTx(
+          sszStableTx as ReplayableTransactionType,
+          txOptions
+        ) as Transaction[T]
+      case TransactionType.AccessListEIP2930:
+        return AccessListEIP2930Transaction.fromSszTx(
+          sszStableTx as Eip2930TransactionType,
+          txOptions
+        ) as Transaction[T]
+      case TransactionType.FeeMarketEIP1559:
+        return FeeMarketEIP1559Transaction.fromSszTx(
+          sszStableTx as Eip1559TransactionType,
+          txOptions
+        ) as Transaction[T]
+      case TransactionType.BlobEIP4844:
+        return BlobEIP4844Transaction.fromSszTx(
+          sszStableTx as Eip4844TransactionType,
+          txOptions
+        ) as Transaction[T]
+      default:
+        throw new Error(`TypedTransaction with ID ${txType} unknown`)
     }
   }
 

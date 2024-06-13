@@ -91,6 +91,8 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "@chainsafe/persistent-merkle-tree": "^0.7.2",
+    "@chainsafe/ssz": "https://github.com/ChainSafe/ssz/raw/cayman/stable-container/packages/ssz/package.tgz",
     "@ethereumjs/rlp": "^5.0.2",
     "ethereum-cryptography": "^2.1.3"
   },

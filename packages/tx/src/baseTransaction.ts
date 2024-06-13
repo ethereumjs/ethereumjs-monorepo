@@ -14,7 +14,7 @@ import {
 } from '@ethereumjs/util'
 
 import { Capability, TransactionType } from './types.js'
-import { checkMaxInitCodeSize } from './util.js'
+import { checkMaxInitCodeSize, toPayloadJson } from './util.js'
 
 import type {
   JsonTx,
@@ -25,7 +25,10 @@ import type {
   TxOptions,
   TxValuesArray,
 } from './types.js'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { ValueOf } from '@chainsafe/ssz'
+import type { BigIntLike, ssz } from '@ethereumjs/util'
+
+export type SSZTransactionType = ValueOf<typeof ssz.Transaction>
 
 /**
  * This base class will likely be subject to further
@@ -235,11 +238,14 @@ export abstract class BaseTransaction<T extends TransactionType>
    * representation for external signing use {@link BaseTransaction.getMessageToSign}.
    */
   abstract raw(): TxValuesArray[T]
+  abstract sszRaw(): SSZTransactionType
 
   /**
    * Returns the encoding of the transaction.
    */
   abstract serialize(): Uint8Array
+
+  abstract sszSerialize(): Uint8Array
 
   // Returns the raw unsigned tx, which is used to sign the transaction.
   abstract getMessageToSign(): Uint8Array | Uint8Array[]
@@ -345,6 +351,10 @@ export abstract class BaseTransaction<T extends TransactionType>
       r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
       s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
     }
+  }
+
+  toExecutionPayloadTx(): ssz.TransactionV1 {
+    return toPayloadJson(this.sszRaw())
   }
 
   /**

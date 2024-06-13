@@ -1,9 +1,18 @@
-import { type PrefixedHexString, bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
+import {
+  type PrefixedHexString,
+  bigIntToHex,
+  bytesToHex,
+  hexToBigInt,
+  hexToBytes,
+  setLengthLeft,
+} from '@ethereumjs/util'
 
 import { isAccessList } from './types.js'
 
 import type { AccessList, AccessListBytes, AccessListItem, TransactionType } from './types.js'
+import type { ValueOf } from '@chainsafe/ssz'
 import type { Common } from '@ethereumjs/common'
+import type { ssz } from '@ethereumjs/util'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {
   const maxInitCodeSize = common.param('vm', 'maxInitCodeSize')
@@ -118,4 +127,121 @@ export class AccessLists {
 
 export function txTypeBytes(txType: TransactionType): Uint8Array {
   return hexToBytes(`0x${txType.toString(16).padStart(2, '0')}`)
+}
+
+function getDataOrNull(elem: PrefixedHexString | null) {
+  if (elem === null) {
+    return null
+  }
+
+  return hexToBytes(elem)
+}
+
+function getQuantityOrNull(elem: PrefixedHexString | null) {
+  if (elem === null) {
+    return null
+  }
+
+  return hexToBigInt(elem)
+}
+
+export type SSZTransaction = ValueOf<typeof ssz.Transaction>
+export function fromPayloadJson(payloadTx: ssz.TransactionV1): SSZTransaction {
+  const { payload, signature } = payloadTx
+  return {
+    payload: {
+      type: getQuantityOrNull(payload.type),
+      chainId: getQuantityOrNull(payload.chainId),
+      nonce: getQuantityOrNull(payload.nonce),
+      maxFeesPerGas: payload.maxFeesPerGas
+        ? {
+            regular: getQuantityOrNull(payload.maxFeesPerGas.regular),
+            blob: getQuantityOrNull(payload.maxFeesPerGas.blob),
+          }
+        : null,
+      gas: getQuantityOrNull(payload.gas),
+      to: getDataOrNull(payload.to),
+      value: getQuantityOrNull(payload.value),
+      input: getDataOrNull(payload.input),
+      accessList: payload.accessList
+        ? payload.accessList.map((pal) => {
+            return {
+              address: hexToBytes(pal.address),
+              storageKeys: pal.storageKeys.map((sk) => hexToBytes(sk)),
+            }
+          })
+        : null,
+      maxPriorityFeesPerGas: payload.maxPriorityFeesPerGas
+        ? {
+            regular: getQuantityOrNull(payload.maxPriorityFeesPerGas.regular),
+            blob: getQuantityOrNull(payload.maxPriorityFeesPerGas.blob),
+          }
+        : null,
+      blobVersionedHashes: payload.blobVersionedHashes
+        ? payload.blobVersionedHashes.map((vh) => hexToBytes(vh))
+        : null,
+    },
+    signature: {
+      from: getDataOrNull(signature.from),
+      ecdsaSignature: getDataOrNull(signature.ecdsaSignature),
+    },
+  }
+}
+
+function setDataOrNull(elem: Uint8Array | null) {
+  if (elem === null) {
+    return null
+  }
+
+  return bytesToHex(elem)
+}
+
+function setQuantityOrNull(elem: bigint | null) {
+  if (elem === null) {
+    return null
+  }
+
+  return bigIntToHex(elem)
+}
+
+export function toPayloadJson(sszTx: SSZTransaction): ssz.TransactionV1 {
+  const { payload, signature } = sszTx
+  return {
+    payload: {
+      type: setQuantityOrNull(payload.type),
+      chainId: setQuantityOrNull(payload.chainId),
+      nonce: setQuantityOrNull(payload.nonce),
+      maxFeesPerGas: payload.maxFeesPerGas
+        ? {
+            regular: setQuantityOrNull(payload.maxFeesPerGas.regular),
+            blob: setQuantityOrNull(payload.maxFeesPerGas.blob),
+          }
+        : null,
+      gas: setQuantityOrNull(payload.gas),
+      to: setDataOrNull(payload.to),
+      value: setQuantityOrNull(payload.value),
+      input: setDataOrNull(payload.input),
+      accessList: payload.accessList
+        ? payload.accessList.map((pal) => {
+            return {
+              address: bytesToHex(pal.address),
+              storageKeys: pal.storageKeys.map((sk) => bytesToHex(sk)),
+            }
+          })
+        : null,
+      maxPriorityFeesPerGas: payload.maxPriorityFeesPerGas
+        ? {
+            regular: setQuantityOrNull(payload.maxPriorityFeesPerGas.regular),
+            blob: setQuantityOrNull(payload.maxPriorityFeesPerGas.blob),
+          }
+        : null,
+      blobVersionedHashes: payload.blobVersionedHashes
+        ? payload.blobVersionedHashes.map((vh) => bytesToHex(vh))
+        : null,
+    },
+    signature: {
+      from: setDataOrNull(signature.from),
+      ecdsaSignature: setDataOrNull(signature.ecdsaSignature),
+    },
+  }
 }

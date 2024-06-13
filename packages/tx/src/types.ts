@@ -492,4 +492,5 @@ export interface JsonRpcTx {
   s: string // DATA, 32 Bytes - ECDSA signature s
   maxFeePerBlobGas?: string // QUANTITY - max data fee for blob transactions
   blobVersionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
+  inclusionProof?: { merkleBranch: string[]; transactionsRoot: string; transactionRoot: string } // DATA - array of 32 byte merkle hash for eip 6493 inclusion proof with 0 as transactions root
 }

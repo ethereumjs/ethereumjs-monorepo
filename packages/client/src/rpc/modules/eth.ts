@@ -15,6 +15,7 @@ import {
   hexToBytes,
   intToHex,
   setLengthLeft,
+  ssz,
   toType,
   utf8ToBytes,
 } from '@ethereumjs/util'
@@ -764,7 +765,18 @@ export class Eth {
       }
 
       const tx = block.transactions[txIndex]
-      return jsonRpcTx(tx, block, txIndex)
+      let inclusionProof = undefined
+      if (block.common.isActivatedEIP(6493)) {
+        inclusionProof = inclusionProof = {
+          transactionsRoot: block.header.transactionsTrie,
+          ...ssz.computeTransactionInclusionProof(
+            block.transactions.map((tx) => tx.sszRaw()),
+            txIndex
+          ),
+        }
+      }
+
+      return jsonRpcTx(tx, block, txIndex, inclusionProof)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
@@ -786,7 +798,17 @@ export class Eth {
     const [_receipt, blockHash, txIndex] = result
     const block = await this._chain.getBlock(blockHash)
     const tx = block.transactions[txIndex]
-    return jsonRpcTx(tx, block, txIndex)
+    let inclusionProof = undefined
+    if (block.common.isActivatedEIP(6493)) {
+      inclusionProof = {
+        transactionsRoot: block.header.transactionsTrie,
+        ...ssz.computeTransactionInclusionProof(
+          block.transactions.map((tx) => tx.sszRaw()),
+          txIndex
+        ),
+      }
+    }
+    return jsonRpcTx(tx, block, txIndex, inclusionProof)
   }
 
   /**

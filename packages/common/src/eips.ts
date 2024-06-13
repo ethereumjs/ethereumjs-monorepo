@@ -512,6 +512,15 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Cancun,
     requiredEIPs: [7685],
   },
+  6493: {
+    comment: 'SSZ Transaction Signature Scheme',
+    url: 'https://eips.ethereum.org/EIPS/eip-6493',
+    status: Status.Draft,
+    // TODO: Set correct minimum hardfork
+    minimumHardfork: Hardfork.Cancun,
+    requiredEIPs: [],
+    gasPrices: {},
+  },
   6780: {
     comment: 'SELFDESTRUCT only in same transaction',
     url: 'https://eips.ethereum.org/EIPS/eip-6780',

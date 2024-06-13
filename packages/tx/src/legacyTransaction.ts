@@ -1,11 +1,16 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_0,
+  BIGINT_1,
   BIGINT_2,
   BIGINT_8,
   MAX_INTEGER,
+  bigIntToBytes,
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
+  setLengthLeft,
+  ssz,
   toBytes,
   unpadBytes,
   validateNoLeadingZeroes,
@@ -16,16 +21,20 @@ import { BaseTransaction } from './baseTransaction.js'
 import * as Legacy from './capabilities/legacy.js'
 import { Capability, TransactionType } from './types.js'
 
+import type { SSZTransactionType } from './baseTransaction.js'
 import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
   JsonTx,
   TxOptions,
 } from './types.js'
+import type { ValueOf } from '@chainsafe/ssz'
 import type { Common } from '@ethereumjs/common'
 
 type TxData = AllTypesTxData[TransactionType.Legacy]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.Legacy]
+export type ReplayableTransactionType = ValueOf<typeof ssz.ReplayableTransaction>
+export type LegacyTransactionType = ValueOf<typeof ssz.LegacyTransaction>
 
 function meetsEIP155(_v: bigint, chainId: bigint) {
   const v = Number(_v)
@@ -67,6 +76,46 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     }
 
     return this.fromValuesArray(values as TxValuesArray, opts)
+  }
+
+  public static fromSszTx(
+    sszWrappedTx: ReplayableTransactionType | LegacyTransactionType,
+    opts: TxOptions = {}
+  ) {
+    const {
+      payload: {
+        nonce,
+        chainId,
+        maxFeesPerGas: { regular: gasPrice },
+        gas: gasLimit,
+        to,
+        value,
+        input: data,
+      },
+      signature: { ecdsaSignature },
+    } = sszWrappedTx as LegacyTransactionType
+
+    const r = bytesToBigInt(ecdsaSignature.slice(0, 32))
+    const s = bytesToBigInt(ecdsaSignature.slice(32, 64))
+    const yParity = bytesToBigInt(ecdsaSignature.slice(64))
+
+    let v
+    if (chainId !== null && chainId !== undefined) {
+      v = yParity + BIGINT_2 * chainId + BigInt(35)
+    } else {
+      v = yParity
+    }
+
+    return this.fromValuesArray(
+      [nonce, gasPrice, gasLimit, to, value, data, v, r, s] as TxValuesArray,
+      opts
+    )
+  }
+
+  // TODO: fix for legacy vs replayable, but anywat remove this unless for pooled?
+  public static fromSszSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
+    const sszWrappedTx = ssz.ReplayableTransaction.deserialize(serialized)
+    return this.fromSszTx(sszWrappedTx, opts)
   }
 
   /**
@@ -178,6 +227,44 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     ]
   }
 
+  sszRaw(): SSZTransactionType {
+    if (this.r === undefined || this.s === undefined || this.v === undefined) {
+      throw Error(`Transaction not signed for sszSerialize`)
+    }
+
+    const payload = {
+      type: BigInt(this.type),
+      chainId: this.supports(Capability.EIP155ReplayProtection) ? this.common.chainId() : null,
+      nonce: this.nonce,
+      maxFeesPerGas: { regular: this.gasPrice, blob: null },
+      gas: this.gasLimit,
+      to: this.to?.bytes ?? null,
+      value: this.value,
+      input: this.data,
+      accessList: null,
+      maxPriorityFeesPerGas: null,
+      blobVersionedHashes: null,
+    }
+
+    const yParity = this.supports(Capability.EIP155ReplayProtection)
+      ? this.v - BIGINT_2 * this.common.chainId() - BigInt(35)
+      : this.v
+    if (yParity !== BIGINT_0 && yParity !== BIGINT_1) {
+      throw Error(`Invalid yParity=${yParity}`)
+    }
+
+    const signature = {
+      from: this.getSenderAddress().bytes,
+      ecdsaSignature: Uint8Array.from([
+        ...setLengthLeft(bigIntToBytes(this.r), 32),
+        ...setLengthLeft(bigIntToBytes(this.s), 32),
+        ...setLengthLeft(bigIntToBytes(yParity), 1),
+      ]),
+    }
+
+    return { payload, signature }
+  }
+
   /**
    * Returns the serialized encoding of the legacy transaction.
    *
@@ -189,6 +276,12 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    */
   serialize(): Uint8Array {
     return RLP.encode(this.raw())
+  }
+
+  sszSerialize(): Uint8Array {
+    const sszTxValue = this.sszRaw() as ReplayableTransactionType
+    const sszTxBytes = ssz.ReplayableTransaction.serialize(sszTxValue)
+    return sszTxBytes
   }
 
   /**

@@ -21,6 +21,7 @@ import {
   hexToBytes,
   intToHex,
   isHexString,
+  ssz,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -41,6 +42,7 @@ import type {
   RequestsBytes,
   WithdrawalsBytes,
 } from './types.js'
+import type { ValueOf } from '@chainsafe/ssz'
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
@@ -56,6 +58,8 @@ import type {
   VerkleExecutionWitness,
   WithdrawalBytes,
 } from '@ethereumjs/util'
+
+export type SszTransactionType = ValueOf<typeof ssz.Transaction>
 
 /**
  * An object that represents the block.
@@ -95,6 +99,11 @@ export class Block {
     return trie.root()
   }
 
+  public static async genWithdrawalsSszRoot(wts: Withdrawal[]) {
+    const withdrawals = wts.map((wt) => wt.toValue())
+    return ssz.Withdrawals.hashTreeRoot(withdrawals)
+  }
+
   /**
    * Returns the txs trie root for array of TypedTransaction
    * @param txs array of TypedTransaction to compute the root of
@@ -106,6 +115,11 @@ export class Block {
       await trie.put(RLP.encode(i), tx.serialize())
     }
     return trie.root()
+  }
+
+  public static async genTransactionsSszRoot(txs: TypedTransaction[]) {
+    const transactions = txs.map((tx) => tx.sszRaw() as unknown as SszTransactionType)
+    return ssz.Transactions.hashTreeRoot(transactions)
   }
 
   /**
@@ -414,7 +428,7 @@ export class Block {
    */
   public static async fromExecutionPayload(
     payload: ExecutionPayload,
-    opts?: BlockOptions
+    opts: BlockOptions & { common: Common }
   ): Promise<Block> {
     const {
       blockNumber: number,
@@ -430,14 +444,29 @@ export class Block {
     } = payload
 
     const txs = []
-    for (const [index, serializedTx] of transactions.entries()) {
+    for (const [index, serializedTxOrPayload] of transactions.entries()) {
       try {
-        const tx = TransactionFactory.fromSerializedData(
-          hexToBytes(serializedTx as PrefixedHexString),
-          {
-            common: opts?.common,
+        let tx
+        if (opts.common.isActivatedEIP(6493)) {
+          if (typeof serializedTxOrPayload === 'string') {
+            throw Error('EIP 6493 activated for transaction bytes')
           }
-        )
+
+          tx = TransactionFactory.fromExecutionPayloadTx(serializedTxOrPayload, {
+            common: opts?.common,
+          })
+        } else {
+          if (typeof serializedTxOrPayload !== 'string') {
+            throw Error('EIP 6493 not activated for transaction payload')
+          }
+          tx = TransactionFactory.fromSerializedData(
+            hexToBytes(serializedTxOrPayload as PrefixedHexString),
+            {
+              common: opts?.common,
+            }
+          )
+        }
+
         txs.push(tx)
       } catch (error) {
         const validationError = `Invalid tx at index ${index}: ${error}`
@@ -445,13 +474,14 @@ export class Block {
       }
     }
 
-    const transactionsTrie = await Block.genTransactionsTrieRoot(
-      txs,
-      new Trie({ common: opts?.common })
-    )
+    const transactionsTrie = opts.common.isActivatedEIP(6493)
+      ? await Block.genTransactionsSszRoot(txs)
+      : await Block.genTransactionsTrieRoot(txs, new Trie({ common: opts?.common }))
     const withdrawals = withdrawalsData?.map((wData) => Withdrawal.fromWithdrawalData(wData))
     const withdrawalsRoot = withdrawals
-      ? await Block.genWithdrawalsTrieRoot(withdrawals, new Trie({ common: opts?.common }))
+      ? opts.common.isActivatedEIP(6493)
+        ? await Block.genWithdrawalsSszRoot(withdrawals)
+        : await Block.genWithdrawalsTrieRoot(withdrawals, new Trie({ common: opts?.common }))
       : undefined
 
     const hasDepositRequests = depositRequests !== undefined && depositRequests !== null
@@ -525,7 +555,7 @@ export class Block {
    */
   public static async fromBeaconPayloadJson(
     payload: BeaconPayloadJson,
-    opts?: BlockOptions
+    opts: BlockOptions & { common: Common }
   ): Promise<Block> {
     const executionPayload = executionPayloadFromBeaconPayload(payload)
     return Block.fromExecutionPayload(executionPayload, opts)
@@ -671,7 +701,9 @@ export class Block {
    * Generates transaction trie for validation.
    */
   async genTxTrie(): Promise<Uint8Array> {
-    return Block.genTransactionsTrieRoot(this.transactions, new Trie({ common: this.common }))
+    return this.common.isActivatedEIP(6493)
+      ? Block.genTransactionsSszRoot(this.transactions)
+      : Block.genTransactionsTrieRoot(this.transactions, new Trie({ common: this.common }))
   }
 
   /**
@@ -680,16 +712,10 @@ export class Block {
    * @returns True if the transaction trie is valid, false otherwise
    */
   async transactionsTrieIsValid(): Promise<boolean> {
-    let result
-    if (this.transactions.length === 0) {
-      result = equalsBytes(this.header.transactionsTrie, KECCAK256_RLP)
-      return result
-    }
-
     if (this.cache.txTrieRoot === undefined) {
       this.cache.txTrieRoot = await this.genTxTrie()
     }
-    result = equalsBytes(this.cache.txTrieRoot, this.header.transactionsTrie)
+    const result = equalsBytes(this.cache.txTrieRoot, this.header.transactionsTrie)
     return result
   }
 
@@ -809,7 +835,9 @@ export class Block {
     }
 
     if (!(await this.transactionsTrieIsValid())) {
-      const msg = this._errorMsg('invalid transaction trie')
+      const msg = this._errorMsg(
+        `invalid transaction trie expected=${bytesToHex(this.cache.txTrieRoot!)}`
+      )
       throw new Error(msg)
     }
 
@@ -907,19 +935,12 @@ export class Block {
       throw new Error('EIP 4895 is not activated')
     }
 
-    let result
-    if (this.withdrawals!.length === 0) {
-      result = equalsBytes(this.header.withdrawalsRoot!, KECCAK256_RLP)
-      return result
-    }
-
     if (this.cache.withdrawalsTrieRoot === undefined) {
-      this.cache.withdrawalsTrieRoot = await Block.genWithdrawalsTrieRoot(
-        this.withdrawals!,
-        new Trie({ common: this.common })
-      )
+      this.cache.withdrawalsTrieRoot = this.common.isActivatedEIP(6493)
+        ? await Block.genWithdrawalsSszRoot(this.withdrawals!)
+        : await Block.genWithdrawalsTrieRoot(this.withdrawals!, new Trie({ common: this.common }))
     }
-    result = equalsBytes(this.cache.withdrawalsTrieRoot, this.header.withdrawalsRoot!)
+    const result = equalsBytes(this.cache.withdrawalsTrieRoot, this.header.withdrawalsRoot!)
     return result
   }
 
@@ -991,7 +1012,9 @@ export class Block {
   toExecutionPayload(): ExecutionPayload {
     const blockJson = this.toJSON()
     const header = blockJson.header!
-    const transactions = this.transactions.map((tx) => bytesToHex(tx.serialize())) ?? []
+    const transactions = this.common.isActivatedEIP(6493)
+      ? this.transactions.map((tx) => tx.toExecutionPayloadTx())
+      : this.transactions.map((tx) => bytesToHex(tx.serialize()))
     const withdrawalsArr = blockJson.withdrawals ? { withdrawals: blockJson.withdrawals } : {}
 
     const executionPayload: ExecutionPayload = {

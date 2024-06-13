@@ -13,6 +13,8 @@ import {
   computeVersionedHash,
   equalsBytes,
   getBlobs,
+  setLengthLeft,
+  ssz,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
@@ -26,6 +28,7 @@ import { LIMIT_BLOBS_PER_TX } from './constants.js'
 import { TransactionType } from './types.js'
 import { AccessLists, txTypeBytes } from './util.js'
 
+import type { SSZTransactionType } from './baseTransaction.js'
 import type {
   AccessList,
   AccessListBytes,
@@ -36,11 +39,13 @@ import type {
   JsonTx,
   TxOptions,
 } from './types.js'
+import type { ValueOf } from '@chainsafe/ssz'
 import type { Common } from '@ethereumjs/common'
 import type { Kzg } from '@ethereumjs/util'
 
 type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
+export type Eip4844TransactionType = ValueOf<typeof ssz.Eip4844Transaction>
 
 const validateBlobTransactionNetworkWrapper = (
   blobVersionedHashes: Uint8Array[],
@@ -290,6 +295,53 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     return BlobEIP4844Transaction.fromValuesArray(values as TxValuesArray, opts)
   }
 
+  public static fromSszTx(sszWrappedTx: Eip4844TransactionType, opts: TxOptions = {}) {
+    const {
+      payload: {
+        nonce,
+        chainId,
+        maxFeesPerGas: { regular: maxFeePerGas, blob: maxFeePerBlobGas },
+        gas: gasLimit,
+        to,
+        value,
+        input: data,
+        accessList,
+        maxPriorityFeesPerGas: { regular: maxPriorityFeePerGas },
+        blobVersionedHashes,
+      },
+      signature: { ecdsaSignature },
+    } = sszWrappedTx
+
+    const r = bytesToBigInt(ecdsaSignature.slice(0, 32))
+    const s = bytesToBigInt(ecdsaSignature.slice(32, 64))
+    const v = bytesToBigInt(ecdsaSignature.slice(64))
+
+    return this.fromValuesArray(
+      [
+        bigIntToUnpaddedBytes(chainId),
+        bigIntToUnpaddedBytes(nonce),
+        bigIntToUnpaddedBytes(maxPriorityFeePerGas),
+        bigIntToUnpaddedBytes(maxFeePerGas),
+        bigIntToUnpaddedBytes(gasLimit),
+        to,
+        bigIntToUnpaddedBytes(value),
+        data,
+        accessList.map(({ address, storageKeys }) => [address, storageKeys]),
+        bigIntToUnpaddedBytes(maxFeePerBlobGas),
+        blobVersionedHashes,
+        bigIntToUnpaddedBytes(v),
+        bigIntToUnpaddedBytes(r),
+        bigIntToUnpaddedBytes(s),
+      ],
+      opts
+    )
+  }
+
+  public static fromSszSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
+    const sszWrappedTx = ssz.Eip4844Transaction.deserialize(serialized)
+    return this.fromSszTx(sszWrappedTx, opts)
+  }
+
   /**
    * Create a transaction from a values array.
    *
@@ -475,6 +527,41 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     ]
   }
 
+  sszRaw(): SSZTransactionType {
+    if (this.r === undefined || this.s === undefined || this.v === undefined) {
+      throw Error(`Transaction not signed for sszSerialize`)
+    }
+
+    const payload = {
+      type: BigInt(this.type),
+      chainId: this.chainId,
+      nonce: this.nonce,
+      maxFeesPerGas: { regular: this.maxFeePerGas, blob: this.maxFeePerBlobGas },
+      gas: this.gasLimit,
+      to: this.to?.bytes ?? null,
+      value: this.value,
+      input: this.data,
+      accessList: this.accessList.map(([address, storageKeys]) => ({ address, storageKeys })),
+      maxPriorityFeesPerGas: {
+        regular: this.maxPriorityFeePerGas,
+        blob: this.maxPriorityFeePerGas,
+      },
+      blobVersionedHashes: this.blobVersionedHashes,
+    }
+
+    const yParity = this.v
+
+    const signature = {
+      from: this.getSenderAddress().bytes,
+      ecdsaSignature: Uint8Array.from([
+        ...setLengthLeft(bigIntToUnpaddedBytes(this.r), 32),
+        ...setLengthLeft(bigIntToUnpaddedBytes(this.s), 32),
+        ...setLengthLeft(bigIntToUnpaddedBytes(yParity), 1),
+      ]),
+    }
+
+    return { payload, signature }
+  }
   /**
    * Returns the serialized encoding of the EIP-4844 transaction.
    *
@@ -487,6 +574,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    */
   serialize(): Uint8Array {
     return EIP2718.serialize(this)
+  }
+
+  sszSerialize(): Uint8Array {
+    const sszTxValue = this.sszRaw() as Eip4844TransactionType
+    const sszTxBytes = ssz.Eip4844Transaction.serialize(sszTxValue)
+    return sszTxBytes
   }
 
   /**

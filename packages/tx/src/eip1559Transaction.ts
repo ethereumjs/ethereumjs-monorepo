@@ -8,6 +8,8 @@ import {
   bytesToBigInt,
   bytesToHex,
   equalsBytes,
+  setLengthLeft,
+  ssz,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
@@ -20,6 +22,7 @@ import * as Legacy from './capabilities/legacy.js'
 import { TransactionType } from './types.js'
 import { AccessLists, txTypeBytes } from './util.js'
 
+import type { SSZTransactionType } from './baseTransaction.js'
 import type {
   AccessList,
   AccessListBytes,
@@ -28,10 +31,12 @@ import type {
   JsonTx,
   TxOptions,
 } from './types.js'
+import type { ValueOf } from '@chainsafe/ssz'
 import type { Common } from '@ethereumjs/common'
 
 type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
+export type Eip1559TransactionType = ValueOf<typeof ssz.Eip1559Transaction>
 
 /**
  * Typed transaction with a new gas fee market mechanism
@@ -88,6 +93,51 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
     }
 
     return FeeMarketEIP1559Transaction.fromValuesArray(values as TxValuesArray, opts)
+  }
+
+  public static fromSszTx(sszWrappedTx: Eip1559TransactionType, opts: TxOptions = {}) {
+    const {
+      payload: {
+        nonce,
+        chainId,
+        maxFeesPerGas: { regular: maxFeePerGas },
+        gas: gasLimit,
+        to,
+        value,
+        input: data,
+        accessList,
+        maxPriorityFeesPerGas: { regular: maxPriorityFeePerGas },
+      },
+      signature: { ecdsaSignature },
+    } = sszWrappedTx
+
+    // TODO: bytes to bigint => bigint to unpadded bytes seem redundant and set for optimization
+    const r = bytesToBigInt(ecdsaSignature.slice(0, 32))
+    const s = bytesToBigInt(ecdsaSignature.slice(32, 64))
+    const v = bytesToBigInt(ecdsaSignature.slice(64))
+
+    return this.fromValuesArray(
+      [
+        bigIntToUnpaddedBytes(chainId),
+        bigIntToUnpaddedBytes(nonce),
+        bigIntToUnpaddedBytes(maxPriorityFeePerGas),
+        bigIntToUnpaddedBytes(maxFeePerGas),
+        bigIntToUnpaddedBytes(gasLimit),
+        to ?? new Uint8Array(0),
+        bigIntToUnpaddedBytes(value),
+        data,
+        accessList.map(({ address, storageKeys }) => [address, storageKeys]),
+        bigIntToUnpaddedBytes(v),
+        bigIntToUnpaddedBytes(r),
+        bigIntToUnpaddedBytes(s),
+      ],
+      opts
+    )
+  }
+
+  public static fromSszSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
+    const sszWrappedTx = ssz.Eip1559Transaction.deserialize(serialized)
+    return this.fromSszTx(sszWrappedTx, opts)
   }
 
   /**
@@ -250,6 +300,38 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
     ]
   }
 
+  sszRaw(): SSZTransactionType {
+    if (this.r === undefined || this.s === undefined || this.v === undefined) {
+      throw Error(`Transaction not signed for sszSerialize`)
+    }
+
+    const payload = {
+      type: BigInt(this.type),
+      chainId: this.chainId,
+      nonce: this.nonce,
+      maxFeesPerGas: { regular: this.maxFeePerGas, blob: null },
+      gas: this.gasLimit,
+      to: this.to?.bytes ?? null,
+      value: this.value,
+      input: this.data,
+      accessList: this.accessList.map(([address, storageKeys]) => ({ address, storageKeys })),
+      maxPriorityFeesPerGas: { regular: this.maxPriorityFeePerGas, blob: null },
+      blobVersionedHashes: null,
+    }
+
+    const yParity = this.v
+    const signature = {
+      from: this.getSenderAddress().bytes,
+      ecdsaSignature: Uint8Array.from([
+        ...setLengthLeft(bigIntToUnpaddedBytes(this.r), 32),
+        ...setLengthLeft(bigIntToUnpaddedBytes(this.s), 32),
+        ...setLengthLeft(bigIntToUnpaddedBytes(yParity), 1),
+      ]),
+    }
+
+    return { payload, signature }
+  }
+
   /**
    * Returns the serialized encoding of the EIP-1559 transaction.
    *
@@ -262,6 +344,12 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    */
   serialize(): Uint8Array {
     return EIP2718.serialize(this)
+  }
+
+  sszSerialize(): Uint8Array {
+    const sszTxValue = this.sszRaw() as Eip1559TransactionType
+    const sszTxBytes = ssz.Eip1559Transaction.serialize(sszTxValue)
+    return sszTxBytes
   }
 
   /**

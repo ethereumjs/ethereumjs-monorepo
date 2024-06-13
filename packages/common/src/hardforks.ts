@@ -843,6 +843,13 @@ export const hardforks: HardforksDict = {
     status: Status.Draft,
     eips: [2537, 2935, 3074, 6110, 7002, 7251, 7685],
   },
+  eip6493: {
+    name: 'eip6493',
+    comment: 'Experimental hardfork to test eip 6493 for 6493 devnets will be removed',
+    url: '',
+    status: Status.Draft,
+    eips: [6493],
+  },
   osaka: {
     name: 'osaka',
     comment:
