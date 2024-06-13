@@ -17,7 +17,7 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 
-import { QHeap } from '../util/qheap.js'
+import { Heap, QHeap } from '../util/qheap.js'
 import type { Config } from '../config.js'
 import type { Peer } from '../net/peer/peer.js'
 import type { PeerPool } from '../net/peerpool.js'
@@ -799,7 +799,7 @@ export class TxPool {
       byNonce.set(address, txsSortedByNonce)
     }
     // Initialize a price based heap with the head transactions
-    const byPrice = new QHeap({
+    const byPrice = new Heap({
       comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
         this.normalizedGasPrice(b, baseFee) - this.normalizedGasPrice(a, baseFee) < BIGINT_0,
     }) as QHeap<TypedTransaction>

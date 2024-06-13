@@ -1,123 +1,217 @@
-export type Comparator<T> = (a: T, b: T) => number
+/**
+ * nodejs heap, classic array implementation
+ *
+ * Items are stored in a balanced binary tree packed into an array where
+ * node is at [i], left child is at [2*i], right at [2*i+1].  Root is at [1].
+ *
+ * Copyright (C) 2014-2021 Andras Radics
+ * Licensed under the Apache License, Version 2.0
+ */
 
-export interface QHeapOptions<T> {
-  comparBefore?(a: T, b: T): boolean
-  compar?(a: T, b: T): number
+/**
+ * QHeap types.
+ * @types/qheap does not exist, so we define it here.
+ * https://www.npmjs.com/package/qheap
+ */
+export type QHeapOptions = {
+  comparBefore?(a: any, b: any): boolean
+  compar?(a: any, b: any): number
   freeSpace?: number
   size?: number
 }
+export type QHeap<T> = {
+  // constructor(opts?: QHeapOptions)
+  insert(item: T): void
+  push(item: T): void
+  enqueue(item: T): void
+  remove(): T | undefined
+  shift(): T | undefined
+  dequeue(): T | undefined
+  peek(): T | undefined
+  length: number
+  gc(opts: { minLength: number; maxLength: number }): void
+}
 
-export class QHeap<T> {
-  private data: T[]
-  private comparator: Comparator<T>
+export class Heap {
+  private _list!: any[]
+  private _isBefore!: (a: any, b: any) => boolean
+  private _sortBefore!: (a: any, b: any) => number
+  private _freeSpace!: ((list: any[], len: number) => void) | false
+  public options!: QHeapOptions
+  public length!: number
 
-  constructor(opts?: QHeapOptions<T>) {
-    this.data = []
-    this.comparator = opts?.compar || ((a: T, b: T) => (a as any) - (b as any))
-    if (opts?.size && opts.size > 0) this.data.length = opts.size
-  }
+  constructor(opts?: QHeapOptions | Function) {
+    if (!(this instanceof Heap)) return new Heap(opts as QHeapOptions)
 
-  private getParentIndex(index: number): number {
-    return Math.floor((index - 1) / 2)
-  }
+    // @ts-ignore
+    if (typeof opts === 'function') opts = { compar: opts }
 
-  private getLeftChildIndex(index: number): number {
-    return 2 * index + 1
-  }
+    // copy out known options to not bind to caller object
+    this.options = !opts
+      ? ({} as QHeapOptions)
+      : {
+          compar: (opts as QHeapOptions).compar,
+          comparBefore: (opts as QHeapOptions).comparBefore,
+          freeSpace: (opts as QHeapOptions).freeSpace,
+          size: (opts as QHeapOptions).size,
+        }
+    opts = this.options
 
-  private getRightChildIndex(index: number): number {
-    return 2 * index + 2
-  }
+    var self = this
 
-  private swap(index1: number, index2: number): void {
-    ;[this.data[index1], this.data[index2]] = [this.data[index2], this.data[index1]]
-  }
+    // @ts-ignore
+    this._isBefore = opts.compar
+      ? function (a: any, b: any) {
+          return opts.compar!(a, b) < 0
+        }
+      : opts.comparBefore || isBeforeDefault
 
-  private bubbleUp(index: number): void {
-    while (index > 0) {
-      const parentIndex = this.getParentIndex(index)
-      if (this.comparator(this.data[parentIndex], this.data[index]) > 0) {
-        this.swap(parentIndex, index)
-        index = parentIndex
-      } else {
-        break
+    this._sortBefore =
+      opts.compar ||
+      function (a: any, b: any) {
+        return self._isBefore(a, b) ? -1 : 1
       }
+    this._freeSpace = opts.freeSpace ? this._trimArraySize : false
+
+    this._list = new Array(opts.size || 20)
+    this.length = 0
+  }
+
+  private isBeforeDefault(a: any, b: any): boolean {
+    return a < b
+  }
+
+  /*
+   * insert new item at end, and bubble up
+   */
+  public insert(item: any): any {
+    var idx = ++this.length
+    return this._bubbleup(idx, item)
+  }
+  public _bubbleup(idx: number, item: any): void {
+    var list = this._list
+    list[idx] = item
+    if (idx <= 1) return
+    do {
+      var pp = idx >>> 1
+      if (this._isBefore(item, list[pp])) list[idx] = list[pp]
+      else break
+      idx = pp
+    } while (idx > 1)
+    list[idx] = item
+  }
+  public append = this.insert
+  public push = this.insert
+  public unshift = this.insert
+  public enqueue = this.insert
+
+  public peek(): any {
+    return this.length > 0 ? this._list[1] : undefined
+  }
+
+  public size(): number {
+    return this.length
+  }
+
+  /*
+   * return the root, and bubble down last item from top root position
+   * when bubbling down, r: root idx, c: child sub-tree root idx, cv: child root value
+   * Note that the child at (c == this.length) does not have to be tested in the loop,
+   * since its value is the one being bubbled down, so can loop `while (c < len)`.
+   */
+  public remove(): any {
+    var len = this.length
+    if (len < 1) return undefined
+    return this._bubbledown(1, len)
+  }
+  public _bubbledown(r: number, len: number): any {
+    var list = this._list,
+      ret = list[r],
+      itm = list[len]
+    var c,
+      _isBefore = this._isBefore
+
+    while ((c = r << 1) < len) {
+      var cv = list[c],
+        cv1 = list[c + 1]
+      if (_isBefore(cv1, cv)) {
+        c++
+        cv = cv1
+      }
+      if (!_isBefore(cv, itm)) break
+      list[r] = cv
+      r = c
+    }
+    list[r] = itm
+    list[len] = 0
+    this.length = --len
+    if (this._freeSpace) this._freeSpace(this._list, this.length)
+
+    return ret
+  }
+
+  public shift = this.remove
+  public pop = this.remove
+  public dequeue = this.remove
+
+  // builder, not initializer: appends items, not replaces
+  // FIXME: more useful to re-initialize from array
+  public fromArray(array: any[], base?: number, bound?: number): void {
+    base = base || 0
+    bound = bound || array.length
+    for (var i = base; i < bound; i++) this.insert(array[i])
+  }
+
+  // FIXME: more useful to return sorted values
+  public toArray(limit?: number): any[] {
+    limit = typeof limit === 'number' ? limit + 1 : this.length + 1
+    return this._list.slice(1, limit)
+  }
+
+  // sort the contents of the storage array
+  public sort(): void {
+    if (this.length < 3) return
+    this._list.splice(this.length + 1)
+    this._list[0] = this._list[1]
+    this._list.sort(this._sortBefore)
+    this._list[0] = 0
+  }
+
+  // Free unused storage slots in the _list.
+  public gc(options?: { minLength?: number; minFull?: number }): void {
+    if (!options) options = {}
+
+    var minListLength = options.minLength || 0
+    var minListFull = options.minFull || 1.0
+
+    if (this._list.length >= minListLength && this.length < this._list.length * minListFull) {
+      this._list.splice(this.length + 1, this._list.length)
     }
   }
 
-  private bubbleDown(index: number): void {
-    const length = this.data.length
-    while (index < length) {
-      let minIndex = index
-      const leftChildIndex = this.getLeftChildIndex(index)
-      const rightChildIndex = this.getRightChildIndex(index)
-
-      if (
-        leftChildIndex < length &&
-        this.comparator(this.data[leftChildIndex], this.data[minIndex]) < 0
-      ) {
-        minIndex = leftChildIndex
-      }
-
-      if (
-        rightChildIndex < length &&
-        this.comparator(this.data[rightChildIndex], this.data[minIndex]) < 0
-      ) {
-        minIndex = rightChildIndex
-      }
-
-      if (minIndex !== index) {
-        this.swap(index, minIndex)
-        index = minIndex
-      } else {
-        break
-      }
+  public _trimArraySize(list: any[], len: number): void {
+    if (len > 10000 && list.length > 4 * len) {
+      list.splice(len + 1, list.length)
     }
   }
 
-  insert(item: T): void {
-    this.data.push(item)
-    this.bubbleUp(this.data.length - 1)
-  }
+  public _check(): boolean {
+    var _compar = this._sortBefore
 
-  push(item: T): void {
-    this.insert(item)
-  }
-
-  enqueue(item: T): void {
-    this.insert(item)
-  }
-
-  remove(): T | undefined {
-    if (this.data.length === 0) return undefined
-    this.swap(0, this.data.length - 1)
-    const removed = this.data.pop()
-    this.bubbleDown(0)
-    return removed
-  }
-
-  shift(): T | undefined {
-    return this.remove()
-  }
-
-  dequeue(): T | undefined {
-    return this.remove()
-  }
-
-  peek(): T | undefined {
-    return this.data.length > 0 ? this.data[0] : undefined
-  }
-
-  get length(): number {
-    return this.data.length
-  }
-
-  gc(opts: { minLength: number; maxLength: number }): void {
-    while (this.data.length > opts.maxLength) {
-      this.remove()
+    var i,
+      p,
+      fail = 0
+    for (i = this.length; i > 1; i--) {
+      // error if parent should go after child, but not if don`t care
+      p = i >>> 1
+      // swapping the values must change their ordering, otherwise the
+      // comparison is a tie.  (Ie, consider the ordering func (a <= b)
+      // that for some values reports both that a < b and b < a.)
+      if (_compar(this._list[p], this._list[i]) > 0 && _compar(this._list[i], this._list[p]) < 0) {
+        fail = i
+      }
     }
-    while (this.data.length < opts.minLength) {
-      this.insert(null as any)
-    }
+    if (fail) console.log('failed at', fail >>> 1, fail)
+    return !fail
   }
 }
