@@ -6,9 +6,6 @@ import {
   ValueEncoding,
   bytesToHex,
   equalsBytes,
-  intToBytes,
-  setLengthLeft,
-  setLengthRight,
   zeros,
 } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
@@ -17,7 +14,7 @@ import { CheckpointDB } from './db/checkpoint.js'
 import { InternalNode } from './node/internalNode.js'
 import { LeafNode } from './node/leafNode.js'
 import { type ChildNode, type VerkleNode, VerkleNodeType } from './node/types.js'
-import { createCValues, decodeRawNode } from './node/util.js'
+import { decodeRawNode } from './node/util.js'
 import {
   type Proof,
   ROOT_DB_KEY,
@@ -181,7 +178,7 @@ export class VerkleTree {
           LeafNode.fromRawNode(rawNode, 1, this.verkleCrypto)
         : InternalNode.fromRawNode(rawNode, 1, this.verkleCrypto)
 
-    // TODO: Decide if we needt this check since this should always be a leaf node
+    // TODO: Decide if we need this check since this should always be a leaf node
     // since internal nodes should have never have a key/stem of 31 bytes
     if (node instanceof LeafNode) {
       const keyLastByte = key[key.length - 1]
@@ -208,80 +205,25 @@ export class VerkleTree {
     // Find or create the leaf node
     const res = await this.findPath(key)
     let leafNode = res.node
+    const suffix = key[31]
     if (!(leafNode instanceof LeafNode)) {
       // If leafNode is missing, create it
       const values: Uint8Array[] = new Array(256).fill(new Uint8Array()) // Create new empty array of 256 values
-      const suffix = key[31]
       values[suffix] = value // Set value at key suffix
 
-      // Generate the 16 byte values representing the 32 byte values in the half of the values array that
-      // contain the initial value for the leaf node
-      const cValues =
-        suffix < 128 ? createCValues(values.slice(0, 128)) : createCValues(values.slice(128))
-      // The commitment index is the 2 * the suffix (i.e. the position of the value in the values array)
-      // here because each 32 byte value in the leaf node is represented as two 16 byte values in the
-      // cValues array.
-      const commitmentIndex = suffix < 128 ? suffix * 2 : (suffix - 128) * 2
-      let cCommitment = this.verkleCrypto.zeroCommitment
-      // Update the commitment for the first 16 bytes of the value
-      cCommitment = this.verkleCrypto.updateCommitment(
-        cCommitment,
-        commitmentIndex,
-        new Uint8Array(32),
-        cValues[commitmentIndex]
-      )
-      // Update the commitment for the second 16 bytes of the value
-      cCommitment = this.verkleCrypto.updateCommitment(
-        cCommitment,
-        commitmentIndex + 1,
-        new Uint8Array(32),
-        cValues[commitmentIndex + 1]
-      )
-      const c1 = suffix < 128 ? cCommitment : this.verkleCrypto.zeroCommitment
-      const c2 = suffix > 127 ? cCommitment : this.verkleCrypto.zeroCommitment
-      // Generate a commitment for the new leaf node, using the zero commitment as a base
-      // 1) Update commitment with Leaf marker (1) in position 0
-      // 2) Update commitment with stem (in little endian format) in position 1
-      // 3) Update commitment with c1
-      // 4) update commitment with c2
-      let commitment = this.verkleCrypto.updateCommitment(
-        this.verkleCrypto.zeroCommitment,
-        0,
-        new Uint8Array(32),
-        setLengthLeft(intToBytes(1), 32)
-      )
-      commitment = this.verkleCrypto.updateCommitment(
-        commitment,
-        1,
-        new Uint8Array(32),
-        setLengthRight(key.slice(0, 31), 32)
-      )
-      commitment = this.verkleCrypto.updateCommitment(
-        commitment,
-        2,
-        new Uint8Array(32),
-        // We hash the commitment when using in the leaf node commitment since c1 is 64 bytes long
-        // and we need a 32 byte input for the scalar value in `updateCommitment`
-        this.verkleCrypto.hashCommitment(c1)
-      )
-      commitment = this.verkleCrypto.updateCommitment(
-        commitment,
-        3,
-        new Uint8Array(32),
-        this.verkleCrypto.hashCommitment(c2)
-      )
-      leafNode = LeafNode.create(
+      leafNode = await LeafNode.create(
         key.slice(0, 31),
         values,
         res.stack.length + 1,
-        commitment,
-        c1,
-        c2,
         this.verkleCrypto
       )
-      // Add leaf node to put stack
-      putStack.push([key, leafNode])
+    } else {
+      // We found our leaf node so lets update the value and commitment
+      leafNode.setValue(suffix, value)
     }
+
+    // Add leaf node to put stack
+    putStack.push([key, leafNode])
 
     // Walk the tree from the root to the leaf and update/insert internal nodes along the way
     if (res.stack.length === 0) {
@@ -314,7 +256,7 @@ export class VerkleTree {
     }
 
     // Pop the root node off the stack
-    const currentNode: VerkleNode = res.stack.unshift()
+    const currentNode: VerkleNode = res.stack.shift()
     const currentKey = leafNode.stem
     const currentDepth = 0
     const index = currentKey[0]

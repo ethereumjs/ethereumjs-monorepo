@@ -49,7 +49,7 @@ export const createCValues = (values: Uint8Array[], deletedValues = new Array(12
   const expandedValues: Uint8Array[] = new Array(256)
   for (let x = 0; x < 128; x++) {
     // We add 16 trailing zeros to each value since all commitments are padded to an array of 32 byte values
-    expandedValues[x] = setLengthRight(
+    expandedValues[x * 2] = setLengthRight(
       deletedValues[x] === true
         ? // TODO: Improve performance by only flipping the 129th bit of `expandedValues[x]` (instead of bigint addition)
           bigIntToBytes(bytesToBigInt(values[x].subarray(0, 16)) + BigInt(2 ** 128))
@@ -57,7 +57,7 @@ export const createCValues = (values: Uint8Array[], deletedValues = new Array(12
       32
     )
     // TODO: Decide if we should use slice or subarray here (i.e. do we need to copy these slices or not)
-    expandedValues[x + 1] = setLengthRight(values[x].slice(16), 32)
+    expandedValues[x * 2 + 1] = setLengthRight(values[x].slice(16), 32)
   }
   return expandedValues
 }
