@@ -168,7 +168,8 @@ export class VerkleTree {
    */
   async get(key: Uint8Array): Promise<Uint8Array | undefined> {
     verifyKeyLength(key)
-    const nodeRLP = await this._db.get(key)
+    const stem = key.slice(0, 31)
+    const nodeRLP = await this._db.get(stem)
 
     if (nodeRLP === undefined) return
     // We first retrieve the node and decode it
@@ -196,6 +197,7 @@ export class VerkleTree {
    */
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
     verifyKeyLength(key)
+    const stem = key.slice(0, 31)
     // A stack of nodes to put/update in the DB once the new leaf node is inserted
     const putStack: [Uint8Array, VerkleNode][] = []
     // Find or create the leaf node
@@ -208,19 +210,14 @@ export class VerkleTree {
       values[suffix] = value // Set value at key suffix
 
       // Create leaf node
-      leafNode = await LeafNode.create(
-        key.slice(0, 31),
-        values,
-        res.stack.length + 1,
-        this.verkleCrypto
-      )
+      leafNode = await LeafNode.create(stem, values, res.stack.length, this.verkleCrypto)
     } else {
       // Found the leaf node so update the value (setValue also updates the commitments)
       leafNode.setValue(suffix, value)
     }
 
     // Add leaf node to put stack
-    putStack.push([key, leafNode])
+    putStack.push([stem, leafNode])
 
     // No stack returned from `findPath` indicates no root node so let's create one
     if (res.stack.length === 0) {
@@ -233,7 +230,7 @@ export class VerkleTree {
       })
 
       // Update the child node's commitment and path
-      rootNode.children[key[0]] = { commitment: leafNode.commitment, path: key }
+      rootNode.children[key[0]] = { commitment: leafNode.commitment, path: stem }
 
       // Update root node commitment using a zero commitment hash for the old scalar value (since this is a new root node)
       rootNode.commitment = this.verkleCrypto.updateCommitment(
@@ -244,6 +241,8 @@ export class VerkleTree {
       )
       // Add root node to put stack
       putStack.push([ROOT_DB_KEY, rootNode])
+      // TODO: Move depth check to putStack
+      putStack[0][1].depth = 1
       await this.saveStack(putStack)
       // Set trie root to serialized (aka compressed) commitment for later use in verkle proof
       this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))

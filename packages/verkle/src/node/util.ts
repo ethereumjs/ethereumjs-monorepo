@@ -7,6 +7,7 @@ import { type VerkleNode, VerkleNodeType } from './types.js'
 
 import type { VerkleCrypto } from '../types.js'
 
+// TODO: Make depth optional since we don't always know what it is
 export function decodeRawNode(
   raw: Uint8Array[],
   depth: number,
