@@ -61,10 +61,10 @@ describe('Verkle tree', () => {
     assert.deepEqual(res.remaining, presentKeys[0])
 
     // Test that two keys with the same stem store values in the same leaf node
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 3; i++) {
       await tree.put(presentKeys[i], values[i])
     }
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 3; i++) {
       const retrievedValue = await tree.get(presentKeys[i])
       if (retrievedValue === undefined) {
         assert.fail('Value not found')

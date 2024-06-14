@@ -169,6 +169,8 @@ export class VerkleTree {
   async get(key: Uint8Array): Promise<Uint8Array | undefined> {
     verifyKeyLength(key)
     const stem = key.slice(0, 31)
+    // TODO: This isn't valid since we should be walking the trie to verify the leaf node is reachable
+    // not just that it's in the db.  We should use `findPath` here
     const nodeRLP = await this._db.get(stem)
 
     if (nodeRLP === undefined) return
