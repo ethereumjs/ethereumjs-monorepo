@@ -9,7 +9,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 // Testdata from https://github.com/gballet/go-ethereum/blob/kaustinen-with-shapella/trie/verkle_test.go
 const presentKeys = [
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
-  '0x318daa512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+  '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
   '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526400',
   '0x18fb432d3b859ec3a1803854e8cceea75d092e52d0d4a4398d13022496745a02',
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
@@ -60,6 +60,7 @@ describe('Verkle tree', () => {
     assert.ok(res.node === null, 'should not find a node when the key is not present')
     assert.deepEqual(res.remaining, presentKeys[0])
 
+    // Test that two keys with the same stem store values in the same leaf node
     for (let i = 0; i < 2; i++) {
       await tree.put(presentKeys[i], values[i])
     }
@@ -71,6 +72,9 @@ describe('Verkle tree', () => {
       assert.ok(equalsBytes(retrievedValue, values[i]))
     }
 
+    // Verify that findPath returns a path that demonstrates the nonexistence of a key
+    // by returning only the root node (in this instance where the trie has only a root internal node and 1 leaf node)
+    // with a different stem than the one passed to `findPath`
     const pathToNonExistentNode = await tree.findPath(absentKeys[0])
     assert.equal(pathToNonExistentNode.node, null)
     assert.equal(pathToNonExistentNode.stack.length, 1, 'contains the root node in the stack')

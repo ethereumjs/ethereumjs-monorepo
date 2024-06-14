@@ -201,7 +201,7 @@ export class VerkleTree {
     // A stack of nodes to put/update in the DB once the new leaf node is inserted
     const putStack: [Uint8Array, VerkleNode][] = []
     // Find or create the leaf node
-    const res = await this.findPath(key)
+    const res = await this.findPath(stem)
     let leafNode = res.node
     const suffix = key[31]
     if (!(leafNode instanceof LeafNode)) {

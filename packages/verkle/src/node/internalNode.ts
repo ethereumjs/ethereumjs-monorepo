@@ -52,8 +52,8 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     }
 
     const commitment = rawNode[rawNode.length - 1]
-    const childrenCommitments = rawNode.slice(1, NODE_WIDTH)
-    const childrenPaths = rawNode.slice(NODE_WIDTH + 1, NODE_WIDTH * 2)
+    const childrenCommitments = rawNode.slice(1, NODE_WIDTH + 1)
+    const childrenPaths = rawNode.slice(NODE_WIDTH + 1, NODE_WIDTH * 2 + 1)
 
     const children = childrenCommitments.map((commitment, idx) => {
       return { commitment, path: childrenPaths[idx] }
