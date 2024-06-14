@@ -1,4 +1,3 @@
-import { RLP } from '@ethereumjs/rlp'
 import {
   KeyEncoding,
   Lock,
@@ -169,21 +168,15 @@ export class VerkleTree {
   async get(key: Uint8Array): Promise<Uint8Array | undefined> {
     verifyKeyLength(key)
     const stem = key.slice(0, 31)
-    // TODO: This isn't valid since we should be walking the trie to verify the leaf node is reachable
-    // not just that it's in the db.  We should use `findPath` here
-    const nodeRLP = await this._db.get(stem)
 
-    if (nodeRLP === undefined) return
-    // We first retrieve the node and decode it
-    const node = decodeNode(nodeRLP, 0, this.verkleCrypto)
-    // TODO: Decide if we need this check since this should always be a leaf node
-    // since internal nodes should have never have a key/stem of 31 bytes
-    if (node instanceof LeafNode) {
+    const res = await this.findPath(stem)
+
+    if (res.node instanceof LeafNode) {
       const keyLastByte = key[key.length - 1]
 
       // The retrieved leaf node contains an array of 256 possible values.
       // The index of the value we want is at the key's last byte
-      const value = node.getValue(keyLastByte)
+      const value = res.node.getValue(keyLastByte)
       return value
     }
 
@@ -345,23 +338,6 @@ export class VerkleTree {
       child = decodedNode.children[childIndex]
     }
     return result
-  }
-
-  /**
-   * Tries to find the leaf node leading up to the given key, or null if not found.
-   * @param key - the search key
-   * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
-   */
-  async findLeafNode(key: Uint8Array, throwIfMissing = false): Promise<LeafNode | VerkleNode[]> {
-    const { node, stack } = await this.findPath(key)
-    if (!(node instanceof LeafNode)) {
-      if (throwIfMissing) {
-        throw new Error('leaf node not found')
-      }
-      // return depth of remaining nodes
-      return stack
-    }
-    return node
   }
 
   /**
