@@ -251,31 +251,68 @@ export class VerkleTree {
     // 1. Update `currentNode` child node commitment to leafnode, commitment of `currentNode`, and depth as needed
     // 2. Walk up result.stack doing the same thing (while inserting new internal nodes as needed and updating lower level node depth as needed)
     // 3. Use `saveStack` to put all nodes in DB
+    const currentKey = leafNode.stem
     while (res.stack.length > 0) {
+      console.log(res)
       // Pop the last node off the path stack
       const currentNode: VerkleNode = res.stack.pop()!
-      const currentKey = leafNode.stem
+
       const currentDepth = currentNode.depth
       const index = currentKey[0]
       if (currentNode instanceof InternalNode) {
         if (currentDepth === 0) {
           if (res.stack.length > 0)
             throw new Error('cannot have node of depth zero and more nodes in path')
-          // We're at the root node.  Just update the child commitment/path
+          // We're at the root node and only need to update the child commitment/path
           // using the key and commitment from the last node in the putStack
-          const child: ChildNode = {
-            commitment: putStack[putStack.length - 1][1].commitment,
-            path: putStack[putStack.length - 1][0],
+          if (res.remaining.length === 0) {
+            // If we're at depth 0 but the remaining key length is greater than 0,
+            // that means theres a partially matching key so there is either an internal
+            // or leaf node that partially matches the path of the leaf node we're inserting
+            // so we need to update and/or insert internal nodes
+            const child: ChildNode = {
+              commitment: putStack[putStack.length - 1][1].commitment,
+              path: putStack[putStack.length - 1][0],
+            }
+            currentNode.setChild(index, child)
+            putStack.push([ROOT_DB_KEY, currentNode])
+            // Update root
+            this.root(this.verkleCrypto.serializeCommitment(currentNode.commitment))
+            break
+          } else {
+            // We need to insert a new internal node
+            // New internal node's path is the partial stem up to the the `remaining` stem in the previous findPath result
+            const partialStem = stem.slice(31 - res.remaining.length)
+            const newInternalNode = InternalNode.create(1, this.verkleCrypto)
+            // Update leaf node commitment value in new internal node at the
+            // byte position immediately after the partial stem
+            // e.g. If stem is is 010003... and partial stem is 0100, the leaf node child reference
+            // are set at position 3 in the new internal node's children array
+            newInternalNode.setChild(stem[partialStem.length], {
+              commitment: leafNode.commitment,
+              // Path to the leaf node is the full stem
+              path: stem,
+            })
+            // Update new internal node value array with previous child reference
+            const oldChild = currentNode.children[partialStem.length]
+            // The position of the "old child" in the new internal node children array
+            // should be the index equal to the value of the byte in the old child's path at position
+            // partialStem.length
+            newInternalNode.setChild(oldChild.path[partialStem.length], oldChild)
+            putStack.push([partialStem, newInternalNode])
+
+            const child: ChildNode = {
+              commitment: newInternalNode.commitment,
+              path: partialStem,
+            }
+            // Current node here is the root node
+            currentNode.setChild(index, child)
+            putStack.push([ROOT_DB_KEY, currentNode])
           }
-          currentNode.setChild(index, child)
-          putStack.push([ROOT_DB_KEY, currentNode])
-          // Update root
-          this.root(this.verkleCrypto.serializeCommitment(currentNode.commitment))
-          break
         }
         // const child = currentNode.getChildren(index)
         // const matchingKeyLength = matchingBytesLength(child!.path, currentKey)
-        // We have to update the internal node referenced by `child`
+        // // We have to update the internal node referenced by `child`
       }
     }
     await this.saveStack(putStack)
@@ -288,6 +325,7 @@ export class VerkleTree {
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
   async findPath(key: Uint8Array): Promise<Path> {
+    // TODO: Decide if we should allow keys longer than 31 bytes (since a verkle stem can never be longer than that)
     const result: Path = {
       node: null,
       stack: [],
