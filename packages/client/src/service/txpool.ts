@@ -20,9 +20,9 @@ import {
 import { Heap } from '../ext/qheap.js'
 
 import type { Config } from '../config.js'
+import type { QHeap } from '../ext/qheap.js'
 import type { Peer } from '../net/peer/peer.js'
 import type { PeerPool } from '../net/peerpool.js'
-import type { QHeap } from '../ext/qheap.js'
 import type { FullEthereumService } from './fullethereumservice.js'
 import type { Block } from '@ethereumjs/block'
 import type {
