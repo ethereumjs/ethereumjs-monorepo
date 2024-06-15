@@ -253,7 +253,6 @@ export class VerkleTree {
     // 3. Use `saveStack` to put all nodes in DB
     const currentKey = leafNode.stem
     while (res.stack.length > 0) {
-      console.log(res)
       // Pop the last node off the path stack
       const currentNode: VerkleNode = res.stack.pop()!
 
@@ -282,22 +281,23 @@ export class VerkleTree {
           } else {
             // We need to insert a new internal node
             // New internal node's path is the partial stem up to the the `remaining` stem in the previous findPath result
-            const partialStem = stem.slice(31 - res.remaining.length)
+            const partialStem = stem.slice(0, 31 - res.remaining.length)
             const newInternalNode = InternalNode.create(1, this.verkleCrypto)
             // Update leaf node commitment value in new internal node at the
             // byte position immediately after the partial stem
             // e.g. If stem is is 010003... and partial stem is 0100, the leaf node child reference
-            // are set at position 3 in the new internal node's children array
+            // is set at position 3 in the new internal node's children array
             newInternalNode.setChild(stem[partialStem.length], {
               commitment: leafNode.commitment,
               // Path to the leaf node is the full stem
               path: stem,
             })
             // Update new internal node value array with previous child reference
-            const oldChild = currentNode.children[partialStem.length]
+            const oldChild = currentNode.children[stem[0]]
             // The position of the "old child" in the new internal node children array
-            // should be the index equal to the value of the byte in the old child's path at position
-            // partialStem.length
+            // should be set at the same index as in the parent node
+            // e.g. If stem is is 010003... the old child reference should be set at
+            // position 1 in the parent node's children array (since this is the root node)
             newInternalNode.setChild(oldChild.path[partialStem.length], oldChild)
             putStack.push([partialStem, newInternalNode])
 
@@ -306,13 +306,12 @@ export class VerkleTree {
               path: partialStem,
             }
             // Current node here is the root node
-            currentNode.setChild(index, child)
+            // Update the child reference in the root node to point to the new internal node
+            currentNode.setChild(stem[0], child)
             putStack.push([ROOT_DB_KEY, currentNode])
           }
         }
-        // const child = currentNode.getChildren(index)
-        // const matchingKeyLength = matchingBytesLength(child!.path, currentKey)
-        // // We have to update the internal node referenced by `child`
+        // TODO: Add logic for updating/adding multiple internal nodes
       }
     }
     await this.saveStack(putStack)
@@ -371,6 +370,8 @@ export class VerkleTree {
         result.remaining = key.slice(matchingKeyLength)
         return result
       }
+      // Push internal node to path stack
+      result.stack.push(decodedNode)
       // Get the next child node in the path
       const childIndex = key[matchingKeyLength]
       child = decodedNode.children[childIndex]
