@@ -1,13 +1,14 @@
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
-import { encode } from 'jwt-simple'
 import { assert, describe, it } from 'vitest'
+
+import jwt from '../../src/ext/jwt-simple.js'
 
 import { createClient, createManager, getRpcClient, startRPC } from './helpers.js'
 
-import type { TAlgorithm } from 'jwt-simple'
 import type { AddressInfo } from 'net'
 
+const encode = jwt.encode
 const jwtSecret = randomBytes(32)
 
 describe('JSON-RPC call', () => {
@@ -49,7 +50,7 @@ describe('JSON-RPC call', () => {
 
   it('auth protected server with an invalid algorithm token', async () => {
     const claims = { iat: Math.floor(new Date().getTime() / 1000) }
-    const token = encode(claims, jwtSecret as never as string, 'HS512' as TAlgorithm)
+    const token = encode(claims, jwtSecret as never as string, 'HS512')
     const server = startRPC({}, undefined, { jwtSecret })
     const rpc = Client.http({
       port: (server.address()! as AddressInfo).port,
@@ -69,7 +70,7 @@ describe('JSON-RPC call', () => {
 
   it('auth protected server with a valid token', async () => {
     const claims = { iat: Math.floor(new Date().getTime() / 1000) }
-    const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
+    const token = encode(claims, jwtSecret as never as string, 'HS256')
     const server = startRPC({}, undefined, { jwtSecret })
 
     const rpc = Client.http({
@@ -89,7 +90,7 @@ describe('JSON-RPC call', () => {
 
   it('auth protected server with a valid but stale token', async () => {
     const claims = { iat: Math.floor(new Date().getTime() / 1000 - 61) }
-    const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
+    const token = encode(claims, jwtSecret as never as string, 'HS256')
 
     const server = startRPC({}, undefined, { jwtSecret })
     const rpc = Client.http({
@@ -147,7 +148,7 @@ describe('JSON-RPC call', () => {
 
   it('auth protected server with protected method with token', async () => {
     const claims = { iat: Math.floor(new Date().getTime() / 1000) }
-    const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
+    const token = encode(claims, jwtSecret as never as string, 'HS256')
     const server = startRPC({}, undefined, {
       jwtSecret,
       unlessFn: (req: any) => !(req.body.method as string).includes('protected_'),

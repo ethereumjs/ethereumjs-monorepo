@@ -3,18 +3,18 @@ import Connect from 'connect'
 import cors from 'cors'
 import { createServer } from 'http'
 import jayson from 'jayson/promise/index.js'
-import jwt from 'jwt-simple'
 import { inspect } from 'util'
+
+import jwt from '../ext/jwt-simple.js'
 
 import type { Logger } from '../logging.js'
 import type { RPCManager } from '../rpc/index.js'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
-import type { TAlgorithm } from 'jwt-simple'
 const { json: jsonParser } = bodyParser
 const { decode } = jwt
 
-const algorithm: TAlgorithm = 'HS256'
+const ALGORITHM = 'HS256'
 
 type CreateRPCServerOpts = {
   methodConfig: MethodConfig
@@ -174,7 +174,7 @@ function checkHeaderAuth(req: any, jwtSecret: Uint8Array): void {
   if (!header) throw Error(`Missing auth header`)
   const token = header.trim().split(' ')[1]
   if (!token) throw Error(`Missing jwt token`)
-  const claims = decode(token.trim(), jwtSecret as never as string, false, algorithm)
+  const claims = decode(token.trim(), jwtSecret as never as string, false, ALGORITHM)
   const drift = Math.abs(new Date().getTime() - claims.iat * 1000 ?? 0)
   if (drift > ALLOWED_DRIFT) {
     throw Error(`Stale jwt token drift=${drift}, allowed=${ALLOWED_DRIFT}`)
