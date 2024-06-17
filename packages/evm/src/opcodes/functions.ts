@@ -993,6 +993,21 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       }
+      const pos = runState.stack.pop()
+      if (pos > runState.env.eof!.container.body.dataSection.length) {
+        runState.stack.push(BIGINT_0)
+        return
+      }
+
+      const i = Number(pos)
+      let loaded = runState.env.eof!.container.body.dataSection.subarray(i, i + 32)
+      loaded = loaded.length ? loaded : Uint8Array.from([0])
+      let r = bytesToBigInt(loaded)
+      // Pad the loaded length with 0 bytes in case it is smaller than 32
+      if (loaded.length < 32) {
+        r = r << (BIGINT_8 * BigInt(32 - loaded.length))
+      }
+      runState.stack.push(r)
     },
   ],
   // 0xd1: DATALOADN
@@ -1003,6 +1018,14 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       }
+      const toLoad = Number(
+        bytesToBigInt(runState.code.subarray(runState.programCounter, runState.programCounter + 2))
+      )
+      const data = bytesToBigInt(
+        runState.env.eof!.container.body.dataSection.subarray(toLoad, toLoad + 32)
+      )
+      runState.stack.push(data)
+      runState.programCounter += 2
     },
   ],
   // 0xd2: DATASIZE
@@ -1013,6 +1036,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       }
+      runState.stack.push(BigInt(runState.env.eof!.container.body.dataSection.length))
     },
   ],
   // 0xd3: DATACOPY
@@ -1022,6 +1046,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
+      }
+      const [memOffset, offset, size] = runState.stack.popN(3)
+      if (size !== BIGINT_0) {
+        const data = getDataSlice(runState.env.eof!.container.body.dataSection, offset, size)
+        const memOffsetNum = Number(memOffset)
+        const dataLengthNum = Number(size)
+        runState.memory.write(memOffsetNum, dataLengthNum, data)
       }
     },
   ],
