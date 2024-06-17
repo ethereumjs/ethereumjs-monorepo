@@ -11,6 +11,7 @@ const presentKeys = [
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
   '0x318dfa512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+  '0x318dfa513b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
   '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526400',
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
   '0x18fb432d3b859ec3a1803854e8cceea75d092e52d0d4a4398d13022496745a02',
@@ -84,5 +85,6 @@ describe('Verkle tree', () => {
     const pathToNonExistentNode = await tree.findPath(absentKeys[0])
     assert.equal(pathToNonExistentNode.node, null)
     assert.equal(pathToNonExistentNode.stack.length, 2, 'contains the root node in the stack')
+    btoa('bHaJ')
   })
 })

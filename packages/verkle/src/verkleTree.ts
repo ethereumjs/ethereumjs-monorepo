@@ -265,7 +265,7 @@ export class VerkleTree {
           // We're at the root node and only need to update the child commitment/path
           // using the key and commitment from the last node in the putStack
           if (res.remaining.length === 0) {
-            // If we're at depth 0 but the remaining key length is greater than 0,
+            // If we're at depth 0 and the remaining key length is 0,
             // that means theres a partially matching key so there is either an internal
             // or leaf node that partially matches the path of the leaf node we're inserting
             // so we need to update and/or insert internal nodes
@@ -279,6 +279,10 @@ export class VerkleTree {
             this.root(this.verkleCrypto.serializeCommitment(currentNode.commitment))
             break
           } else {
+            // If we're at depth 0 but the remaining key length is greater than 0,
+            // that means theres a partially matching key so there is either an internal
+            // or leaf node that partially matches the path of the leaf node we're inserting
+            // so we need to update and/or insert internal nodes
             // We need to insert a new internal node
             // New internal node's path is the partial stem up to the the `remaining` stem in the previous findPath result
             const partialStem = stem.slice(0, 31 - res.remaining.length)
