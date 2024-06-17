@@ -1171,6 +1171,12 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       }
+      const toDup = Number(
+        bytesToBigInt(runState.code.subarray(runState.programCounter, runState.programCounter + 1))
+      )
+      // Note: this throws
+      runState.stack.dup(toDup)
+      runState.programCounter++
     },
   ],
   // 0xe7: SWAPN
@@ -1181,6 +1187,11 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       }
+      const toSwap = Number(
+        bytesToBigInt(runState.code.subarray(runState.programCounter, runState.programCounter + 1))
+      )
+      runState.stack.swap(toSwap)
+      runState.programCounter++
     },
   ],
   // 0xe8: EXCHANGE
@@ -1191,6 +1202,13 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       }
+      const toExchange = Number(
+        bytesToBigInt(runState.code.subarray(runState.programCounter, runState.programCounter + 1))
+      )
+      const n = toExchange >> (4 + 1)
+      const m = toExchange & (0x0f + 1)
+      runState.stack.exchange(n, m)
+      runState.programCounter++
     },
   ],
   // 0xec: EOFCREATE
