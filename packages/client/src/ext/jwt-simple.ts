@@ -48,7 +48,7 @@ jwt.version = '0.5.6'
  */
 
 function assignProperties(dest: any, source: any) {
-  for (const attr in source) {
+  for (const [attr] of Object.entries(source)) {
     if (Object.prototype.hasOwnProperty.call(source, attr)) {
       dest[attr] = source[attr]
     }
