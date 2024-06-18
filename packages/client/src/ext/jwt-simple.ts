@@ -10,7 +10,8 @@
 /**
  * module dependencies
  */
-const crypto = require('crypto')
+import crypto from 'crypto'
+
 /**
  * support algorithm mapping
  */
@@ -46,26 +47,8 @@ jwt.version = '0.5.6'
  * private util functions
  */
 
-function base64urlEscape(str: string) {
-  return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
-}
-
-function base64urlUnescape(str: string) {
-  str += new Array(5 - (str.length % 4)).join('=')
-  return str.replace(/-/g, '+').replace(/_/g, '/')
-}
-
-//TODO migrate Buffer.from to Uint8Array, how to do that?
-function base64urlDecode(str: string) {
-  return Buffer.from(base64urlUnescape(str), 'base64').toString()
-}
-
-function base64urlEncode(str: string) {
-  return base64urlEscape(Buffer.from(str).toString('base64'))
-}
-
 function assignProperties(dest: any, source: any) {
-  for (const attr of source) {
+  for (const attr in source) {
     if (Object.prototype.hasOwnProperty.call(source, attr)) {
       dest[attr] = source[attr]
     }
@@ -76,6 +59,25 @@ function assertAlgorithm(alg: any): asserts alg is Algorithm {
   if (!['HS256', 'HS384', 'HS512', 'RS256'].includes(alg)) {
     throw new Error('Algorithm not supported')
   }
+}
+
+function base64urlUnescape(str: string) {
+  str += new Array(5 - (str.length % 4)).join('=')
+  return str.replace(/-/g, '+').replace(/_/g, '/')
+}
+
+function base64urlEscape(str: string) {
+  return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+}
+
+function base64urlEncode(str: string) {
+  // eslint-disable-next-line ethereumjs/noBuffer
+  return base64urlEscape(Buffer.from(str).toString('base64'))
+}
+
+export function base64urlDecode(str: string) {
+  // eslint-disable-next-line ethereumjs/noBuffer
+  return Buffer.from(base64urlUnescape(str), 'base64').toString()
 }
 
 function sign(input: any, key: string, method: string, type: string) {
@@ -107,7 +109,7 @@ function verify(input: any, key: string, method: string, type: string, signature
 /**
  * Decode jwt
  *
- * @param {String} token
+ * @param {Object} token
  * @param {String} key
  * @param {Boolean} [noVerify]
  * @param {String} [algorithm]
