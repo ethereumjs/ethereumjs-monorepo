@@ -105,6 +105,10 @@ export interface VerkleStateDiff {
  * */
 export interface VerkleExecutionWitness {
   /**
+   * The stateRoot of the parent block
+   */
+  parentStateRoot: PrefixedHexString
+  /**
    * An array of state diffs.
    * Each item corresponding to state accesses or state modifications of the block.
    * In the current design, it also contains the resulting state of the block execution (post-state).

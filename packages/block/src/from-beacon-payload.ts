@@ -75,15 +75,18 @@ type VerkleStateDiffSnakeJson = {
 }
 
 type VerkleExecutionWitnessSnakeJson = {
+  parent_state_root: PrefixedHexString
   state_diff: VerkleStateDiffSnakeJson[]
   verkle_proof: VerkleProofSnakeJson
 }
 
 function parseExecutionWitnessFromSnakeJson({
+  parent_state_root,
   state_diff,
   verkle_proof,
 }: VerkleExecutionWitnessSnakeJson): VerkleExecutionWitness {
   return {
+    parentStateRoot: parent_state_root,
     stateDiff: state_diff.map(({ stem, suffix_diffs }) => ({
       stem,
       suffixDiffs: suffix_diffs.map(({ current_value, new_value, suffix }) => ({
