@@ -97,4 +97,8 @@ Fixes code style according to the rules. Differently from `npm run lint`, this c
 
 Runs the package tests.
 
+#### `npx vitest test/<name>/<filename>.spec.ts`
+
+Run & watch a single test file.
+
 _Note that the VM has several test scopes - refer to [packages/vm/package.json](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/package.json) for more info._
