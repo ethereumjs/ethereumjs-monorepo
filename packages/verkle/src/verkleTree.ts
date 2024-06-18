@@ -30,7 +30,7 @@ import type { Debugger } from 'debug'
 interface Path {
   node: VerkleNode | null
   remaining: Uint8Array
-  stack: VerkleNode[]
+  stack: Array<[VerkleNode, Uint8Array]>
 }
 
 /**
@@ -290,9 +290,9 @@ export class VerkleTree {
     const currentKey = leafNode.stem
     while (res.stack.length > 0) {
       // Pop the last node off the path stack
-      const currentNode: VerkleNode = res.stack.pop()!
+      const [currentNode, currentNodePath] = res.stack.pop()!
       const currentDepth = currentNode.depth
-      // TODO: `index` is computed incorrectly and is invalid at lower levels of the tree.  Figure out how to do this correctly.
+      // TODO: `index` is computed incorrectly and is invalid at lower levels of the tree.  Figure out how to do this correctly (or if needed).
       const index = currentKey[0]
       if (currentNode instanceof InternalNode) {
         if (currentDepth === 0) {
@@ -318,10 +318,7 @@ export class VerkleTree {
             this.root(this.verkleCrypto.serializeCommitment(currentNode.commitment))
             break
           } else {
-            // If we're at depth 0 but the remaining key length is greater than 0,
-            // that means theres a partially matching key so there is either an internal
-            // or leaf node that partially matches the path of the leaf node we're inserting
-            // so we need to update and/or insert internal nodes
+            // TODO: Fix this.  We can't use the res.remaining as a decision point here but should use the last node in the putStack's path
             // We need to insert a new internal node
             // New internal node's path is the partial stem up to the the `remaining` stem in the previous findPath result
             const partialStem = stem.slice(0, 31 - res.remaining.length)
@@ -336,17 +333,20 @@ export class VerkleTree {
               path: stem,
             })
             // Update new internal node value array with previous child reference
-            const oldChild = currentNode.children[stem[0]]
+            const oldChild = { ...currentNode.children[stem[0]] }
+
             // The position of the "old child" in the new internal node children array
             // should be set at the same index as in the parent node
             // e.g. If stem is is 010003... the old child reference should be set at
             // position 1 in the parent node's children array (since this is the root node)
-            newInternalNode.setChild(oldChild.path[partialStem.length], oldChild)
+            newInternalNode.setChild(oldChild.path[0], oldChild)
             newInternalNode.depth = res.stack.length
             putStack.push([partialStem, newInternalNode])
             this.DEBUG &&
               this.debug(
-                `Creating new internal node with partial stem: ${bytesToHex(partialStem)} `,
+                `Creating new internal node at root node with partial stem: ${bytesToHex(
+                  partialStem
+                )} `,
                 ['PUT']
               )
             const child: ChildNode = {
@@ -363,11 +363,11 @@ export class VerkleTree {
             path: putStack[putStack.length - 1][0],
             commitment: putStack[putStack.length - 1][1].commitment,
           }
-          // TODO: Figure out if there's an easy to compute the correct partial stem
-          const partialStem = stem.slice(0, matchingBytesLength(key, updatedChild.path) - 2)
-          this.DEBUG && this.debug(`Updating internal node at partial path ${partialStem}`, ['PUT'])
+
+          this.DEBUG &&
+            this.debug(`Updating internal node at partial path ${currentNodePath}`, ['PUT'])
           currentNode.setChild(updatedChild.path[updatedChild.path.length - 1], updatedChild)
-          putStack.push([partialStem, currentNode])
+          putStack.push([currentNodePath, currentNode])
         }
       } else if (currentNode instanceof LeafNode) {
         // We have a leaf node with a partially matching stem.  We need to insert a new internal node
@@ -404,9 +404,10 @@ export class VerkleTree {
         // Add new internal node to putStack
         putStack.push([partialStem, newInternalNode])
         this.DEBUG &&
-          this.debug(`Creating new internal node with partial stem: ${bytesToHex(partialStem)} `, [
-            'PUT',
-          ])
+          this.debug(
+            `Creating new internal node at depth with partial stem: ${bytesToHex(partialStem)} `,
+            ['PUT']
+          )
       }
     }
     await this.saveStack(putStack)
@@ -437,7 +438,7 @@ export class VerkleTree {
 
     this.DEBUG &&
       this.debug(`Starting with Root Node: [${bytesToHex(rootNode.hash())}]`, ['FIND_PATH'])
-    result.stack.push(rootNode)
+    result.stack.push([rootNode, ROOT_DB_KEY])
     let child = rootNode.children[key[0]]
 
     // Root node doesn't contain a child node's commitment on the first byte of the path so we're done
@@ -485,12 +486,11 @@ export class VerkleTree {
             )} but target node not found.`,
             ['FIND_PATH']
           )
-        result.stack.push(decodedNode)
+        result.stack.push([decodedNode, key.slice(0, matchingKeyLength)])
         return result
       }
       // Push internal node to path stack
-      result.stack.push(decodedNode)
-
+      result.stack.push([decodedNode, key.slice(0, matchingKeyLength)])
       this.DEBUG &&
         this.debug(
           `Partial Path ${bytesToHex(

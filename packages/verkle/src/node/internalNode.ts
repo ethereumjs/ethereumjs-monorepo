@@ -21,17 +21,17 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   }
 
   // Updates the commitment value for a child node at the corresponding index
-  setChild(index: number, child: ChildNode) {
+  setChild(childIndex: number, child: ChildNode) {
     // Get previous child commitment at `index`
-    const oldChild = this.children[index]
+    const oldChildReference = this.children[childIndex]
     // Updates the commitment to the child node at `index`
-    this.children[index] = child
+    this.children[childIndex] = { ...child }
     // Updates the overall node commitment based on the update to this child
     this.commitment = this.verkleCrypto.updateCommitment(
       this.commitment,
-      index,
+      childIndex,
       // The hashed child commitments are used when updating the internal node commitment
-      this.verkleCrypto.hashCommitment(oldChild.commitment),
+      this.verkleCrypto.hashCommitment(oldChildReference.commitment),
       this.verkleCrypto.hashCommitment(child.commitment)
     )
   }
