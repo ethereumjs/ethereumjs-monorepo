@@ -65,6 +65,10 @@ export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
 export type AccessListBytes = AccessListBytesItem[]
 export type AccessList = AccessListItem[]
 
+/*
+ * Generic StateManager interface corresponding with the @ethereumjs/statemanager package
+ *
+ */
 export interface StateManagerInterface {
   getAccount(address: Address): Promise<Account | undefined>
   putAccount(address: Address, account?: Account): Promise<void>
@@ -85,6 +89,13 @@ export interface StateManagerInterface {
   hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
   getAppliedKey?(address: Uint8Array): Uint8Array
+
+  /*
+   * The following optional methods are Verkle related
+   *
+   * Experimental (do not implement)
+   */
+  checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
 }
 
 export interface EVMStateManagerInterface extends StateManagerInterface {
