@@ -10,6 +10,7 @@
 /**
  * module dependencies
  */
+import { base64, base64url } from '@scure/base'
 import crypto from 'crypto'
 
 /**
@@ -71,13 +72,17 @@ function base64urlEscape(str: string) {
 }
 
 function base64urlEncode(str: string) {
-  // eslint-disable-next-line ethereumjs/noBuffer
-  return base64urlEscape(Buffer.from(str).toString('base64'))
+  // return base64urlEscape(Buffer.from(str).toString('base64')) -> 03/2024 migrate to @scure/base to avoid dependency of nodejs
+  const data = new TextEncoder().encode(str)
+  return base64urlEscape(base64.encode(data))
 }
 
 export function base64urlDecode(str: string) {
   // eslint-disable-next-line ethereumjs/noBuffer
-  return Buffer.from(base64urlUnescape(str), 'base64').toString()
+  return Buffer.from(base64urlUnescape(str), 'base64').toString() //-> 03/2024 migrate to @scure/base to avoid dependency of nodejs
+
+  //TODO find how to use base64.decode instead of Buffer.from
+  //return base64.decode(base64urlUnescape(str))
 }
 
 function sign(input: any, key: string, method: string, type: string) {
