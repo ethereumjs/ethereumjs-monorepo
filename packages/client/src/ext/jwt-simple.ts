@@ -10,14 +10,14 @@
 /**
  * module dependencies
  */
-import { base64, base64url } from '@scure/base'
+import { base64 } from '@scure/base'
 import crypto from 'crypto'
 
 /**
  * support algorithm mapping
  */
 export type TAlgorithm = 'HS256' | 'HS384' | 'HS512' | 'RS256'
-const algorithmMap: Record<TAlgorithm, string> = {
+const algorithmMap: Record<string, string> = {
   HS256: 'sha256',
   HS384: 'sha384',
   HS512: 'sha512',
@@ -27,7 +27,7 @@ const algorithmMap: Record<TAlgorithm, string> = {
 /**
  * Map algorithm to hmac or sign type, to determine which crypto function to use
  */
-const typeMap: Record<TAlgorithm, string> = {
+const typeMap: Record<string, string> = {
   HS256: 'hmac',
   HS384: 'hmac',
   HS512: 'hmac',
