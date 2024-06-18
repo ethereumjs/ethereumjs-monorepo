@@ -15,6 +15,7 @@ import {
 } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 
+import type { AccessEventFlags, AccessWitnessInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { VerkleCrypto } from '@ethereumjs/verkle'
 
@@ -35,14 +36,6 @@ type StemAccessEvent = { write?: boolean }
 // chunk fill access event is not being charged right now in kaustinen but will be rectified
 // in upcoming iterations
 type ChunkAccessEvent = StemAccessEvent & { fill?: boolean }
-
-type AccessEventFlags = {
-  stemRead: boolean
-  stemWrite: boolean
-  chunkRead: boolean
-  chunkWrite: boolean
-  chunkFill: boolean
-}
 
 // Since stem is pedersen hashed, it is useful to maintain the reverse relationship
 type StemMeta = { address: Address; treeIndex: number | bigint }
@@ -72,7 +65,7 @@ export type AccessedStateWithAddress = AccessedState & {
   chunkKey: PrefixedHexString
 }
 
-export class AccessWitness {
+export class AccessWitness implements AccessWitnessInterface {
   stems: Map<PrefixedHexString, StemAccessEvent & StemMeta>
   chunks: Map<PrefixedHexString, ChunkAccessEvent>
   verkleCrypto: VerkleCrypto
@@ -225,20 +218,20 @@ export class AccessWitness {
       { isWrite }
     )
 
-    if (stemRead) {
+    if (stemRead === true) {
       gas += WitnessBranchReadCost
     }
-    if (stemWrite) {
+    if (stemWrite === true) {
       gas += WitnessBranchWriteCost
     }
 
-    if (chunkRead) {
+    if (chunkRead === true) {
       gas += WitnessChunkReadCost
     }
-    if (chunkWrite) {
+    if (chunkWrite === true) {
       gas += WitnessChunkWriteCost
     }
-    if (chunkFill) {
+    if (chunkFill === true) {
       gas += WitnessChunkFillCost
     }
 
