@@ -106,7 +106,7 @@
     "it-pushable": "^1.4.2",
     "testdouble": "^3.16.6",
     "testdouble-timers": "^0.1.1",
-    "ws": "^8.14.2"
+    "ws": "^8.17.1"
   },
   "engines": {
     "node": ">=18"
