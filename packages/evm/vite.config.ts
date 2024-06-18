@@ -13,7 +13,7 @@ export default defineConfig({
     lib: {
       entry: 'src/index.ts',
       name: '@ethereumjs/evm',
-      fileName: (format) => `my-library.${format}.js`,
+      fileName: (format) => `ethereumjs-evm-bundle.${format}.js`,
       // only build for es
       formats: ['es'],
     },
