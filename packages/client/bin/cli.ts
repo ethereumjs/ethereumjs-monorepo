@@ -61,6 +61,7 @@ import type { CustomCrypto } from '@ethereumjs/common'
 import type { GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 import type { Server as RPCServer } from 'jayson/promise/index.js'
+import type { NetworkConfig } from 'portalnetwork'
 
 type Account = [address: Address, privateKey: Uint8Array]
 
@@ -462,10 +463,35 @@ const args: ClientOpts = yargs
     boolean: true,
     default: false,
   })
-  .option('enablePortal', {
+  .option('enablePortalHistory', {
     describe: 'Use Portal Network for historical block retrieval',
     boolean: true,
     default: false,
+  })
+  .option('portalHistory', {
+    describe: 'node radius (exponent) for history portal network client',
+    number: true,
+    default: 0,
+  })
+  .option('enablePortalState', {
+    describe: 'Use Portal Network for historical state retrieval',
+    boolean: true,
+    default: false,
+  })
+  .option('portalState', {
+    describe: 'node radius (exponent) for state portal network client',
+    number: true,
+    default: 0,
+  })
+  .option('enablePortalBeacon', {
+    describe: 'Use Portal Network for beacon light client data retrieval',
+    boolean: true,
+    default: false,
+  })
+  .option('portalBeacon', {
+    describe: 'node radius (exponent) for beacon portal network client',
+    number: true,
+    default: 0,
   })
   .completion()
   // strict() ensures that yargs throws when an invalid arg is provided
@@ -1109,10 +1135,33 @@ async function run() {
   }
 
   let portal
-  if (args.enablePortal === true) {
+  if (
+    args.enablePortalHistory === true ||
+    args.enablePortalState === true ||
+    args.enablePortalBeacon === true
+  ) {
+    const supportedNetworks: NetworkConfig[] = []
+    if (args.enablePortalHistory === true) {
+      supportedNetworks.push({
+        networkId: NetworkId.HistoryNetwork,
+        radius: BigInt(2) ** BigInt(args.portalHistory) - BigInt(1),
+      })
+    }
+    if (args.enablePortalState === true) {
+      supportedNetworks.push({
+        networkId: NetworkId.StateNetwork,
+        radius: BigInt(2) ** BigInt(args.portalState) - BigInt(1),
+      })
+    }
+    if (args.enablePortalBeacon === true) {
+      supportedNetworks.push({
+        networkId: NetworkId.BeaconLightClientNetwork,
+        radius: BigInt(2) ** BigInt(args.portalBeacon) - BigInt(1),
+      })
+    }
     portal = await PortalNetwork.create({
       bindAddress: '0.0.0.0',
-      supportedNetworks: [{ networkId: NetworkId.HistoryNetwork, radius: 2n }],
+      supportedNetworks,
       bootnodes: [
         'enr:-Jy4QIs2pCyiKna9YWnAF0zgf7bT0GzlAGoF8MEKFJOExmtofBIqzm71zDvmzRiiLkxaEJcs_Amr7XIhLI74k1rtlXICY5Z0IDAuMS4xLWFscGhhLjEtMTEwZjUwgmlkgnY0gmlwhKEjVaWJc2VjcDI1NmsxoQLSC_nhF1iRwsCw0n3J4jRjqoaRxtKgsEe5a-Dz7y0JloN1ZHCCIyg',
         'enr:-Jy4QKSLYMpku9F0Ebk84zhIhwTkmn80UnYvE4Z4sOcLukASIcofrGdXVLAUPVHh8oPCfnEOZm1W1gcAxB9kV2FJywkCY5Z0IDAuMS4xLWFscGhhLjEtMTEwZjUwgmlkgnY0gmlwhJO2oc6Jc2VjcDI1NmsxoQLMSGVlxXL62N3sPtaV-n_TbZFCEM5AR7RDyIwOadbQK4N1ZHCCIyg',
