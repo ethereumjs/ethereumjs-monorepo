@@ -1,16 +1,16 @@
 import debugDefault from 'debug'
-import Heap from 'qheap'
 import { Readable, Writable } from 'stream'
 
+import { Heap } from '../../ext/qheap.js'
 import { Event } from '../../types.js'
 
 import type { Config } from '../../config.js'
+import type { QHeap } from '../../ext/qheap.js'
 import type { Peer } from '../../net/peer/index.js'
 import type { PeerPool } from '../../net/peerpool.js'
 import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase.js'
 import type { Job } from './types.js'
 import type { Debugger } from 'debug'
-import type QHeap from 'qheap'
 
 const { debug: createDebugLogger } = debugDefault
 

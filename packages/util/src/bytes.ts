@@ -430,6 +430,16 @@ export const bigIntToUnpaddedBytes = (value: bigint): Uint8Array => {
   return unpadBytes(bigIntToBytes(value))
 }
 
+export const bigIntToAddressBytes = (value: bigint, strict: boolean = true): Uint8Array => {
+  const addressBytes = bigIntToBytes(value)
+  if (strict && addressBytes.length > 20) {
+    throw Error(`Invalid address bytes length=${addressBytes.length} strict=${strict}`)
+  }
+
+  // setLength already slices if more than requisite length
+  return setLengthLeft(addressBytes, 20)
+}
+
 /**
  * Convert value from number to an unpadded Uint8Array
  * (useful for RLP transport)
