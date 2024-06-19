@@ -87,6 +87,7 @@
     "level": "^8.0.0",
     "memory-level": "^1.0.0",
     "prom-client": "^15.1.0",
+    "verkle-cryptography-wasm": "^0.4.2",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5",
     "yargs": "^17.7.1"
