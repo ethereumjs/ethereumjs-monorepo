@@ -72,7 +72,7 @@
     "@multiformats/multiaddr": "^12.2.1",
     "@polkadot/util": "^12.6.2",
     "@polkadot/wasm-crypto": "^7.3.2",
-    "@scure/base": "1.1.1",
+    "@scure/base": "^1.1.7",
     "abstract-level": "^1.0.3",
     "body-parser": "^1.19.2",
     "chalk": "^4.1.2",
