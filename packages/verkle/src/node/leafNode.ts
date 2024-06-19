@@ -4,8 +4,8 @@ import { BaseVerkleNode } from './baseVerkleNode.js'
 import { NODE_WIDTH, VerkleNodeType } from './types.js'
 import { createCValues } from './util.js'
 
-import type { VerkleCrypto } from '../types.js'
 import type { VerkleNodeOptions } from './types.js'
+import type { VerkleCrypto } from '@ethereumjs/util'
 
 export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   public stem: Uint8Array
@@ -151,7 +151,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       setLengthRight(value.slice(16), 32)
     )
     // Update the cCommitment corresponding to the index
-    let oldCCommitment
+    let oldCCommitment: Uint8Array | undefined
     if (index < 128) {
       oldCCommitment = this.c1
       this.c1 = cCommitment

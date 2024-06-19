@@ -5,7 +5,7 @@ import { InternalNode } from './internalNode.js'
 import { LeafNode } from './leafNode.js'
 import { type VerkleNode, VerkleNodeType } from './types.js'
 
-import type { VerkleCrypto } from '../types.js'
+import type { VerkleCrypto } from '@ethereumjs/util'
 
 // TODO: Make depth optional since we don't always know what it is
 export function decodeRawNode(

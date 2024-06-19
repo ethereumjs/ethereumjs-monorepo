@@ -24,8 +24,7 @@ import {
 import { matchingBytesLength } from './util/index.js'
 import { verifyKeyLength } from './util/keys.js'
 
-import type { VerkleCrypto } from './types.js'
-import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
+import type { BatchDBOp, DB, PutBatch, VerkleCrypto } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 interface Path {
   node: VerkleNode | null
