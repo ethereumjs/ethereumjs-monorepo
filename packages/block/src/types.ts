@@ -11,6 +11,7 @@ import type {
   JsonRpcWithdrawal,
   PrefixedHexString,
   RequestBytes,
+  VerkleExecutionWitness,
   WithdrawalBytes,
   WithdrawalData,
   WithdrawalRequestV1,

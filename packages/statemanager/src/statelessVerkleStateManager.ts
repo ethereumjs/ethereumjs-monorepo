@@ -28,7 +28,6 @@ import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { DefaultStateManager } from './stateManager.js'
-import type { VerkleExecutionWitness, VerkleProof } from '@ethereumjs/block'
 import type {
   AccountFields,
   Common,
@@ -37,7 +36,13 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { Address, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+import type {
+  Address,
+  PrefixedHexString,
+  VerkleCrypto,
+  VerkleExecutionWitness,
+  VerkleProof,
+} from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
