@@ -111,3 +111,6 @@ datadir*
 
 ## Vitest
 __snapshots__
+
+# Bundle stats generated with npm visualize:bundle
+stats.html

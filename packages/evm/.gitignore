@@ -1,4 +1,2 @@
 .cachedb
 benchmarks/*.js
-# Bundle stats generated with npm visualize:bundle
-stats.html
