@@ -1,10 +1,18 @@
 import { MapDB, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
-import { assert, describe, it } from 'vitest'
+import { assert, beforeAll, describe, it } from 'vitest'
 
+import {
+  InternalNode,
+  LeafNode,
+  ROOT_DB_KEY,
+  decodeNode,
+  matchingBytesLength,
+} from '../src/index.js'
 import { VerkleTree } from '../src/verkleTree.js'
 
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { VerkleNode } from '../src/index.js'
+import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
 // Testdata from https://github.com/gballet/go-ethereum/blob/kaustinen-with-shapella/trie/verkle_test.go
 const presentKeys = [
@@ -112,5 +120,120 @@ describe('Verkle tree', () => {
     const pathToNonExistentNode = await tree.findPath(absentKeys[0])
     assert.equal(pathToNonExistentNode.node, null)
     assert.equal(pathToNonExistentNode.stack.length, 2, 'contains the root node in the stack')
+  })
+})
+
+describe('findPath validation', () => {
+  let verkleCrypto: VerkleCrypto
+  beforeAll(async () => {
+    verkleCrypto = await loadVerkleCrypto()
+  })
+  it('should find the path to various leaf nodes', async () => {
+    const keys = [
+      // Two keys with the same stem but different suffixes
+      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
+      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+      // A key with a partially matching stem 0x318d to above 2 keys
+      '0x318dfa512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+      // A key with a partially matching stem 0x318dfa51 to above key
+      '0x318dfa513b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+    ]
+    const values = [
+      '0x320122e8584be00d000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000001',
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0x0300000000000000000000000000000000000000000000000000000000000000',
+    ]
+    const trie = await VerkleTree.create({
+      verkleCrypto,
+      db: new MapDB<Uint8Array, Uint8Array>(),
+    })
+
+    await trie['_createRootNode']()
+
+    let putStack: [Uint8Array, VerkleNode][] = []
+    const stem1 = hexToBytes(keys[0]).slice(0, 31)
+    // Create first leaf node
+    const leafNode1 = await LeafNode.create(
+      stem1,
+      new Array(256).fill(new Uint8Array(32)),
+      1,
+      verkleCrypto
+    )
+
+    leafNode1.setValue(hexToBytes(keys[0])[31], hexToBytes(values[0]))
+    leafNode1.setValue(hexToBytes(keys[1])[31], hexToBytes(values[1]))
+
+    putStack.push([stem1, leafNode1])
+
+    // Pull root node from DB
+    const rawNode = await trie['_db'].get(ROOT_DB_KEY)
+    const rootNode = decodeNode(rawNode!, 0, verkleCrypto) as InternalNode
+    // Update root node with commitment from leaf node
+    rootNode.setChild(stem1[0], { commitment: leafNode1.commitment, path: stem1 })
+    putStack.push([ROOT_DB_KEY, rootNode])
+    await trie.saveStack(putStack)
+    trie.root(verkleCrypto.serializeCommitment(rootNode.commitment))
+
+    // Verify that path to leaf node can be found from stem
+    const res = await trie.findPath(stem1)
+    assert.deepEqual(res.node?.commitment, leafNode1.commitment)
+
+    // Retrieve a value from the leaf node
+    const val1 = await trie.get(hexToBytes(keys[1]))
+    assert.deepEqual(val1, hexToBytes(values[1]))
+
+    // Put a second leaf node in the tree with a partially matching stem
+    putStack = []
+    const stem2 = hexToBytes(keys[2]).slice(0, 31)
+    const leafNode2 = await LeafNode.create(
+      stem2,
+      new Array(256).fill(new Uint8Array(32)),
+      2,
+      verkleCrypto
+    )
+    leafNode2.setValue(hexToBytes(keys[2])[31], hexToBytes(values[2]))
+    putStack.push([stem2, leafNode2])
+
+    // Update the depth of leafNode1
+    leafNode1.depth = 2
+    putStack.push([stem1, leafNode1])
+
+    // Create new internal node
+    const internalNode1 = InternalNode.create(1, verkleCrypto)
+
+    // Compute the portion of stem1 and stem2 that match
+    // Note: We subtract 1 since we are using 0-indexed arrays
+    const partialMatchingStemIndex = matchingBytesLength(stem1, stem2) - 1
+    // Find the path to the new internal node (the matching portion of stem1 and stem2)
+    const internalNode1Path = stem1.slice(0, partialMatchingStemIndex)
+    // Update the child references for leafNode1 and leafNode 2
+    internalNode1.setChild(stem1[partialMatchingStemIndex], {
+      commitment: leafNode1.commitment,
+      path: stem1,
+    })
+    internalNode1.setChild(stem2[partialMatchingStemIndex], {
+      commitment: leafNode2.commitment,
+      path: stem2,
+    })
+
+    putStack.push([internalNode1Path, internalNode1])
+    // Update rootNode child reference for internal node 1
+    rootNode.setChild(internalNode1Path[0], {
+      commitment: internalNode1.commitment,
+      path: internalNode1Path,
+    })
+    putStack.push([ROOT_DB_KEY, rootNode])
+    await trie.saveStack(putStack)
+    trie.root(verkleCrypto.serializeCommitment(rootNode.commitment))
+    let res2 = await trie.findPath(stem1)
+
+    assert.equal(res2.remaining.length, 0, 'confirm full path was found')
+    assert.equal(res2.stack.length, 2, 'confirm node is at depth 2')
+    res2 = await trie.findPath(stem2)
+    assert.equal(res2.remaining.length, 0, 'confirm full path was found')
+    assert.equal(res2.stack.length, 2, 'confirm node is at depth 2')
+    const val2 = await trie.get(hexToBytes(keys[2]))
+    assert.deepEqual(val2, hexToBytes(values[2]), 'confirm values[2] can be retrieved from trie')
   })
 })

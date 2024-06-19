@@ -451,6 +451,7 @@ export class VerkleTree {
       // We should always find the node if the path is specified in child.path
       if (rawNode === undefined) throw new Error(`missing node at ${bytesToHex(child.path)}`)
       const decodedNode = decodeNode(rawNode, result.stack.length, this.verkleCrypto)
+
       // Calculate the index of the last matching byte in the key
       const matchingKeyLength = matchingBytesLength(key, child.path)
       const foundNode = equalsBytes(key, child.path)
@@ -512,13 +513,24 @@ export class VerkleTree {
   }
 
   /**
-   * Creates the initial node from an empty tree.
+   * Create empty root node for initializing an empty tree.
    * @private
    */
 
-  // TODO: Decide if we keep this.  I currently have this as part of `put`
-  protected async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<void> {
-    throw new Error('Not implemented')
+  protected async _createRootNode(): Promise<void> {
+    const rootNode = new InternalNode({
+      commitment: this.verkleCrypto.zeroCommitment,
+      depth: 0,
+      verkleCrypto: this.verkleCrypto,
+    })
+
+    // Update the child node's commitment and path
+    this.DEBUG && this.debug(`No root node. Creating new root node`, ['INITIALIZE'])
+
+    await this.saveStack([[ROOT_DB_KEY, rootNode]])
+    // Set trie root to serialized (aka compressed) commitment for later use in verkle proof
+    this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))
+    return
   }
 
   /**
