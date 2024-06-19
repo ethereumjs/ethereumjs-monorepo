@@ -23,7 +23,6 @@ import {
 } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import { AccessWitness, AccessedStateType, decodeValue } from './accessWitness.js'
 import { AccountCache, CacheType, CodeCache, StorageCache } from './cache/index.js'
@@ -109,7 +108,7 @@ export interface StatelessVerkleStateManagerOpts {
   storageCacheOpts?: CacheOptions
   codeCacheOpts?: CacheOptions
   accesses?: AccessWitness
-  verkleCrypto?: VerkleCrypto
+  verkleCrypto: VerkleCrypto
   initialStateRoot?: Uint8Array
 }
 
@@ -175,20 +174,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   private keccakFunction: Function
 
   /**
-   * Async static constructor for StatelessVerkleStateManager
-   * @param opts `StatelessVerkleStateManagerOpts`
-   * @returns a StatelessVerkleStateManager with initialized Verkle Crypto
-   */
-  static create = async (opts: StatelessVerkleStateManagerOpts = {}) => {
-    if (opts.verkleCrypto === undefined) {
-      opts.verkleCrypto = await loadVerkleCrypto()
-    }
-    return new StatelessVerkleStateManager(opts)
-  }
-  /**
    * Instantiate the StateManager interface.
    */
-  constructor(opts: StatelessVerkleStateManagerOpts = {}) {
+  constructor(opts: StatelessVerkleStateManagerOpts) {
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
 
     this._accountCacheSettings = {

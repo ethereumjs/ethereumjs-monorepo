@@ -19,8 +19,7 @@ import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 import * as verkleBlockJSON from './testdata/verkleKaustinen6Block72.json'
 
 import type { BlockData } from '@ethereumjs/block'
-import type { PrefixedHexString } from '@ethereumjs/util'
-import type { VerkleCrypto } from '@ethereumjs/verkle'
+import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   let verkleCrypto: VerkleCrypto
@@ -39,14 +38,14 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   it('initPreState()', async () => {
-    const stateManager = await StatelessVerkleStateManager.create({ verkleCrypto })
+    const stateManager = new StatelessVerkleStateManager({ verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     assert.ok(Object.keys(stateManager['_state']).length !== 0, 'should initialize with state')
   })
 
   it('getAccount()', async () => {
-    const stateManager = await StatelessVerkleStateManager.create({ common, verkleCrypto })
+    const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const account = await stateManager.getAccount(
@@ -64,7 +63,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   it('put/delete/modify account', async () => {
-    const stateManager = await StatelessVerkleStateManager.create({ common, verkleCrypto })
+    const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const address = new Address(randomBytes(20))
@@ -110,7 +109,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   it('getKey function', async () => {
-    const stateManager = await StatelessVerkleStateManager.create({ common, verkleCrypto })
+    const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const address = Address.fromString('0x6177843db3138ae69679a54b95cf345ed759450d')
@@ -168,7 +167,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
   // TODO contract storage functions not yet completely implemented
   test.skip('get/put/clear contract storage', async () => {
-    const stateManager = await StatelessVerkleStateManager.create({ common, verkleCrypto })
+    const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const contractAddress = Address.fromString('0x4242424242424242424242424242424242424242')
