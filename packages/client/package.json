@@ -52,7 +52,8 @@
     "test:cli": "npx vitest run ./test/cli/*.spec.ts",
     "test:integration": "npx vitest run ./test/integration/*.spec.ts",
     "test:unit": "npx vitest run test/* -c=./vitest.config.unit.ts",
-    "tsc": "../../config/cli/ts-compile.sh"
+    "tsc": "../../config/cli/ts-compile.sh",
+    "visualize:bundle": "npx vite build"
   },
   "dependencies": {
     "@ethereumjs/block": "5.2.0",

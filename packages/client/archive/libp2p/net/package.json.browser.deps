@@ -54,7 +54,8 @@
     "test:cli": "npm run tape -- 'test/cli/*.spec.ts'",
     "test:integration": "npm run tape -- 'test/integration/**/*.spec.ts'",
     "test:unit": "npm run tape -- 'test/!(integration|cli|sim)/**/*.spec.ts' 'test/*.spec.ts'",
-    "tsc": "../../config/cli/ts-compile.sh"
+    "tsc": "../../config/cli/ts-compile.sh",
+    "visualize:bundle": "npx vite build"
   },
   "dependencies": {
     "@ethereumjs/block": "5.0.1",
