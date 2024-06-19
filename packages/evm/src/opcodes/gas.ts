@@ -2,21 +2,19 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   Account,
   Address,
+  BALANCE_LEAF_KEY,
   BIGINT_0,
   BIGINT_1,
   BIGINT_3,
   BIGINT_31,
   BIGINT_32,
-  bigIntToBytes,
-  setLengthLeft,
-} from '@ethereumjs/util'
-import {
-  BALANCE_LEAF_KEY,
   CODE_HASH_LEAF_KEY,
   CODE_SIZE_LEAF_KEY,
   VERSION_LEAF_KEY,
+  bigIntToBytes,
   getTreeIndexesForStorageSlot,
-} from '@ethereumjs/verkle'
+  setLengthLeft,
+} from '@ethereumjs/util'
 
 import { ERROR } from '../exceptions.js'
 

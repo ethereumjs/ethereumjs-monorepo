@@ -17,13 +17,13 @@ import {
   bytesToHex,
   concatBytes,
   equalsBytes,
+  getTreeIndexesForStorageSlot,
   hexToBytes,
   intToBytes,
   setLengthLeft,
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { getTreeIndexesForStorageSlot } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 
 import { Bloom } from './bloom/index.js'

@@ -26,12 +26,12 @@ import {
   bytesToHex,
   concatBytes,
   ecrecover,
+  getTreeIndexesForStorageSlot,
   hexToBytes,
   publicToAddress,
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
-import { getTreeIndexesForStorageSlot } from '@ethereumjs/verkle'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { ERROR } from '../exceptions.js'
