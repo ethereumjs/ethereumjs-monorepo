@@ -1,10 +1,6 @@
-/*
- * jwt-simple
- *
- * JSON Web Token encode and decode module for node.js
- *
- * Copyright(c) 2011 Kazuhito Hokamura
- * MIT Licensed
+/**
+ * Ported to Typescript from original implementation below:
+ * https://github.com/hokaccha/node-jwt-simple -- MIT licensed
  */
 
 /**
@@ -82,7 +78,7 @@ export function base64urlDecode(str: string) {
   return Buffer.from(base64urlUnescape(str), 'base64').toString() //-> 03/2024 migrate to @scure/base to avoid dependency of nodejs
 
   //TODO find how to use base64.decode instead of Buffer.from
-  //return base64.decode(base64urlUnescape(str))
+  //return base64.decode(base64urlUnescape(str)).toString()
 }
 
 function sign(input: any, key: string, method: string, type: string) {
