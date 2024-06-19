@@ -4,12 +4,14 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import {
   Account,
   Address,
+  LeafType,
   bytesToBigInt,
   bytesToHex,
+  getKey,
+  getStem,
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { LeafType, getKey, getStem } from '@ethereumjs/verkle'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it, test } from 'vitest'
 

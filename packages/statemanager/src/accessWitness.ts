@@ -1,6 +1,6 @@
-import { BIGINT_0, bytesToBigInt, bytesToHex, hexToBytes, intToBytes } from '@ethereumjs/util'
 import {
   BALANCE_LEAF_KEY,
+  BIGINT_0,
   CODE_HASH_LEAF_KEY,
   CODE_OFFSET,
   CODE_SIZE_LEAF_KEY,
@@ -9,10 +9,14 @@ import {
   NONCE_LEAF_KEY,
   VERKLE_NODE_WIDTH,
   VERSION_LEAF_KEY,
+  bytesToBigInt,
+  bytesToHex,
   getKey,
   getStem,
   getTreeIndicesForCodeChunk,
-} from '@ethereumjs/verkle'
+  hexToBytes,
+  intToBytes,
+} from '@ethereumjs/util'
 import debugDefault from 'debug'
 
 import type { AccessEventFlags, AccessWitnessInterface } from '@ethereumjs/common'

@@ -2,25 +2,23 @@ import {
   Account,
   KECCAK256_NULL,
   KECCAK256_NULL_S,
+  LeafType,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToInt32,
+  getKey,
+  getStem,
+  getTreeKeyForCodeChunk,
+  getTreeKeyForStorageSlot,
   hexToBytes,
   padToEven,
   setLengthLeft,
   setLengthRight,
   short,
   toBytes,
-} from '@ethereumjs/util'
-import {
-  LeafType,
-  getKey,
-  getStem,
-  getTreeKeyForCodeChunk,
-  getTreeKeyForStorageSlot,
   verifyProof,
-} from '@ethereumjs/verkle'
+} from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
