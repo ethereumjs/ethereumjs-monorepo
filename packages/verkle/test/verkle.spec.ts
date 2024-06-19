@@ -196,6 +196,7 @@ describe('findPath validation', () => {
     putStack.push([stem2, leafNode2])
 
     // Update the depth of leafNode1
+    // Note: We wouldn't need to do this if we didn't track depth as a property of each node
     leafNode1.depth = 2
     putStack.push([stem1, leafNode1])
 
