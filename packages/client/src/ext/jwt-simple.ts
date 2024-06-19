@@ -33,7 +33,6 @@ const typeMap: Record<string, string> = {
 /**
  * expose object
  */
-export const jwt = module.exports
 
 /**
  * private util functions
@@ -112,7 +111,12 @@ function verify(input: any, key: string, method: string, type: string, signature
  * @return {Object} payload
  * @api public
  */
-jwt.decode = function jwt_decode(token: string, key: string, noVerify: boolean, algorithm: string) {
+const decode = function jwt_decode(
+  token: string,
+  key: string,
+  noVerify: boolean = false,
+  algorithm: string = ''
+) {
   // check token
   if (!token) {
     throw new Error('No token supplied')
@@ -173,7 +177,12 @@ jwt.decode = function jwt_decode(token: string, key: string, noVerify: boolean, 
  * @return {String} token
  * @api public
  */
-jwt.encode = function jwt_encode(payload: any, key: string, algorithm: string, options: any) {
+const encode = function jwt_encode(
+  payload: any,
+  key: string,
+  algorithm: string = '',
+  options: any = undefined
+) {
   // Check key
   if (!key) {
     throw new Error('Require key')
@@ -202,3 +211,5 @@ jwt.encode = function jwt_encode(payload: any, key: string, algorithm: string, o
 
   return segments.join('.')
 }
+
+export const jwt = { encode, decode }
