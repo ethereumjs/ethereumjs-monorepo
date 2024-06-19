@@ -537,7 +537,7 @@ export class VerkleTree {
    * Retrieves a node from db by hash.
    */
   // TODO: Decide whether to keep or remove this.  We look up nodes by path/partial path so not sure if we need this or not
-  async lookupNode(node: Uint8Array | Uint8Array[]): Promise<VerkleNode | null> {
+  async lookupNode(_node: Uint8Array | Uint8Array[]): Promise<VerkleNode | null> {
     throw new Error('not implemented')
     // if (isRawNode(node)) {
     //   return decodeRawNode(node)
@@ -562,10 +562,10 @@ export class VerkleTree {
 
   // TODO: Decide if we need this.  Looks like it's left over from the MPT `trie` class
   protected async _updateNode(
-    k: Uint8Array,
-    value: Uint8Array,
-    keyRemainder: Uint8Array,
-    stack: VerkleNode[]
+    _k: Uint8Array,
+    _value: Uint8Array,
+    _keyRemainder: Uint8Array,
+    _stack: VerkleNode[]
   ): Promise<void> {
     throw new Error('Not implemented')
   }
@@ -603,7 +603,7 @@ export class VerkleTree {
    */
 
   // TODO: Decide if we keep or not.
-  async batch(ops: BatchDBOp[]): Promise<void> {
+  async batch(_ops: BatchDBOp[]): Promise<void> {
     throw new Error('Not implemented')
   }
 
@@ -611,7 +611,7 @@ export class VerkleTree {
    * Saves the nodes from a proof into the tree.
    * @param proof
    */
-  async fromProof(proof: Proof): Promise<void> {
+  async fromProof(_proof: Proof): Promise<void> {
     throw new Error('Not implemented')
   }
 
@@ -619,7 +619,7 @@ export class VerkleTree {
    * Creates a proof from a tree and key that can be verified using {@link VerkleTree.verifyProof}.
    * @param key
    */
-  async createProof(key: Uint8Array): Promise<Proof> {
+  async createProof(_key: Uint8Array): Promise<Proof> {
     throw new Error('Not implemented')
   }
 
@@ -635,9 +635,9 @@ export class VerkleTree {
   // TODO: Decide if we need this.  We already have the `verifyProof` functionality in the `verkle-cryptography-wasm` functionality
   // and it doesn't require the use of the trie state to verify.
   async verifyProof(
-    rootHash: Uint8Array,
-    key: Uint8Array,
-    proof: Proof
+    _rootHash: Uint8Array,
+    _key: Uint8Array,
+    _proof: Proof
   ): Promise<Uint8Array | null> {
     throw new Error('Not implemented')
   }
