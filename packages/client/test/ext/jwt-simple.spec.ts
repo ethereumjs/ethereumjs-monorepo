@@ -5,10 +5,6 @@ import { base64urlDecode, jwt } from '../../src/ext/jwt-simple.js'
 const fs = require('fs')
 
 describe('jwt', function () {
-  it('jwt has `version` property', function () {
-    expect(jwt.version).to.be.a('string')
-  })
-
   it('jwt has `encode` method', function () {
     expect(jwt.encode).to.be.a('function')
   })

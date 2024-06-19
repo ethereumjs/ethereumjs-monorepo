@@ -36,11 +36,6 @@ const typeMap: Record<string, string> = {
 export const jwt = module.exports
 
 /**
- * version
- */
-jwt.version = '0.5.6'
-
-/**
  * private util functions
  */
 
