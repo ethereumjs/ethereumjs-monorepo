@@ -8,7 +8,7 @@ import {
 } from '@ethereumjs/util'
 
 import type { VerkleExecutionWitness } from '@ethereumjs/block'
-import type { VerkleCrypto } from 'verkle-cryptography-wasm'
+import type { VerkleCrypto } from '@ethereumjs/util'
 
 /**
  * @dev Returns the 31-bytes verkle tree stem for a given address and tree index.

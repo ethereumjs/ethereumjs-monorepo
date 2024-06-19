@@ -16,8 +16,7 @@ import {
 import debugDefault from 'debug'
 
 import type { AccessEventFlags, AccessWitnessInterface } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
-import type { VerkleCrypto } from '@ethereumjs/verkle'
+import type { Address, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 const debug = createDebugLogger('statemanager:verkle:aw')

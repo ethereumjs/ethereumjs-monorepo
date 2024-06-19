@@ -40,8 +40,7 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
-import type { VerkleCrypto } from '@ethereumjs/verkle'
+import type { Address, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 

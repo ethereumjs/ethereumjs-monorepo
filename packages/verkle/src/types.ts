@@ -3,7 +3,6 @@ import { intToBytes, utf8ToBytes } from '@ethereumjs/util'
 import type { VerkleNode } from './node/index.js'
 import type { WalkController } from './util/walkController.js'
 import type { DB } from '@ethereumjs/util'
-import type { VerkleCrypto as VerkleFFI } from 'verkle-cryptography-wasm'
 
 // Field representation of a commitment
 export interface Fr {}
@@ -121,8 +120,6 @@ export type FoundNodeFunction = (
 ) => void
 
 export const ROOT_DB_KEY = utf8ToBytes('__root__')
-
-export type VerkleCrypto = VerkleFFI
 
 export enum LeafType {
   Version = 0,

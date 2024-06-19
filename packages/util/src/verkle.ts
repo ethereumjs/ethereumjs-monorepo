@@ -15,6 +15,19 @@ import { concatBytes, intToBytes } from './bytes.js'
 //
 // Holger Drewes, 2024-06-18
 
+export interface VerkleCrypto {
+  getTreeKey: (address: Uint8Array, treeIndex: Uint8Array, subIndex: number) => Uint8Array
+  getTreeKeyHash: (address: Uint8Array, treeIndexLE: Uint8Array) => Uint8Array
+  updateCommitment: (
+    commitment: Uint8Array,
+    commitmentIndex: number,
+    oldScalarValue: Uint8Array,
+    newScalarValue: Uint8Array
+  ) => Uint8Array // Commitment
+  zeroCommitment: Uint8Array
+  verifyExecutionWitnessPreState: (prestateRoot: string, execution_witness_json: string) => boolean
+}
+
 export enum LeafType {
   Version = 0,
   Balance = 1,
