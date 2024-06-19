@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1718742475093,
+  "lastUpdate": 1718811838666,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "willcory10@gmail.com",
-            "name": "Will Cory",
-            "username": "roninjin10"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a03ce4b53c33a8a07e7071fcc03bc367fb3dec4d",
-          "message": "chore: Small cleanup to vm._emit (#3396)\n\n- Move it to an instance method. There shouldn't be any issues with it being an instance method since the underlying event emitter is still per object.\r\n- Make it more typesafe by taking keyof Events rather than string\r\n\r\nSyntax error\r\n\r\nfix broken build\r\n\r\nrun linter\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-05-07T13:30:22-04:00",
-          "tree_id": "295a9b646fb4e1b4f6aa2704ef25520d5399a512",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a03ce4b53c33a8a07e7071fcc03bc367fb3dec4d"
-        },
-        "date": 1715103318640,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42382,
-            "range": "±2.59%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41517,
-            "range": "±1.23%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41709,
-            "range": "±1.32%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37830,
-            "range": "±5.92%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 39792,
-            "range": "±1.64%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.88%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rafa.abadie@gmail.com",
+            "name": "foufrix",
+            "username": "foufrix"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b570ca19ed84cfb9e95be7a46f115bc4ec809915",
+          "message": "internalization of jwt-simple (#3458)\n\n* migration of jwt-simple to /ext\r\n\r\n* add test jwt-simple test currently passing\r\n\r\n* solve linting for in\r\n\r\n* encode ok - decode nok\r\n\r\n* fix building issue\r\n\r\n* update licence ref\r\n\r\n* remove version property\r\n\r\n* update export to fit ES6 and add base case for encode/decode argument resulting to TS errors\r\n\r\n* Simplify API and use base64url from scure\r\n\r\n* update scure/base to latest version\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-06-19T11:41:17-04:00",
+          "tree_id": "1d73f2dd8af98db61b207e2477fba38a011cc246",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b570ca19ed84cfb9e95be7a46f115bc4ec809915"
+        },
+        "date": 1718811837446,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41316,
+            "range": "±3.03%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40326,
+            "range": "±1.40%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40324,
+            "range": "±1.53%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39392,
+            "range": "±1.69%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35199,
+            "range": "±6.61%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
