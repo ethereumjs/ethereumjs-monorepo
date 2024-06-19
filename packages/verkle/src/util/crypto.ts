@@ -7,8 +7,7 @@ import {
   setLengthRight,
 } from '@ethereumjs/util'
 
-import type { VerkleExecutionWitness } from '@ethereumjs/block'
-import type { VerkleCrypto } from '@ethereumjs/util'
+import type { VerkleCrypto, VerkleExecutionWitness } from '@ethereumjs/util'
 
 /**
  * @dev Returns the 31-bytes verkle tree stem for a given address and tree index.
