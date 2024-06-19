@@ -6,7 +6,8 @@
 /**
  * module dependencies
  */
-import { base64 } from '@scure/base'
+import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
+import { base64url } from '@scure/base'
 import crypto from 'crypto'
 
 /**
@@ -59,20 +60,6 @@ function base64urlUnescape(str: string) {
 
 function base64urlEscape(str: string) {
   return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
-}
-
-function base64urlEncode(str: string) {
-  // return base64urlEscape(Buffer.from(str).toString('base64')) -> 03/2024 migrate to @scure/base to avoid dependency of nodejs
-  const data = new TextEncoder().encode(str)
-  return base64urlEscape(base64.encode(data))
-}
-
-export function base64urlDecode(str: string) {
-  // eslint-disable-next-line ethereumjs/noBuffer
-  return Buffer.from(base64urlUnescape(str), 'base64').toString() //-> 03/2024 migrate to @scure/base to avoid dependency of nodejs
-
-  //TODO find how to use base64.decode instead of Buffer.from
-  //return base64.decode(base64urlUnescape(str)).toString()
 }
 
 function sign(input: any, key: string, method: string, type: string) {
@@ -133,8 +120,8 @@ const decode = function jwt_decode(
   const signatureSeg = segments[2]
 
   // base64 decode and parse JSON
-  const header = JSON.parse(base64urlDecode(headerSeg))
-  const payload = JSON.parse(base64urlDecode(payloadSeg))
+  const header = JSON.parse(bytesToUtf8(base64url.decode(headerSeg)))
+  const payload = JSON.parse(bytesToUtf8(base64url.decode(payloadSeg)))
 
   if (!noVerify) {
     if (!algorithm && /BEGIN( RSA)? PUBLIC KEY/.test(key.toString())) {
@@ -205,8 +192,8 @@ const encode = function jwt_encode(
 
   // create segments, all segments should be base64 string
   const segments = []
-  segments.push(base64urlEncode(JSON.stringify(header)))
-  segments.push(base64urlEncode(JSON.stringify(payload)))
+  segments.push(base64url.encode(utf8ToBytes(JSON.stringify(header))))
+  segments.push(base64url.encode(utf8ToBytes(JSON.stringify(payload))))
   segments.push(sign(segments.join('.'), key, signingMethod, signingType))
 
   return segments.join('.')

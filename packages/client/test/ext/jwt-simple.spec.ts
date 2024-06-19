@@ -1,8 +1,9 @@
+import { bytesToUtf8 } from '@ethereumjs/util'
+import { base64url } from '@scure/base'
+import fs from 'fs'
 import { describe, expect, it } from 'vitest'
 
-import { base64urlDecode, jwt } from '../../src/ext/jwt-simple.js'
-
-const fs = require('fs')
+import { jwt } from '../../src/ext/jwt-simple.js'
 
 describe('jwt', function () {
   it('jwt has `encode` method', function () {
@@ -109,7 +110,11 @@ describe('decode', function () {
       expect(obj2).to.eql(obj)
 
       const jwtHeader = token.split('.')[0]
-      expect(JSON.parse(base64urlDecode(jwtHeader))).to.eql({ typ: 'JWT', alg, kid: 'keyidX' })
+      expect(JSON.parse(bytesToUtf8(base64url.decode(jwtHeader)))).to.eql({
+        typ: 'JWT',
+        alg,
+        kid: 'keyidX',
+      })
     })
 
     it('decode token given RS256 algorithm', function () {
