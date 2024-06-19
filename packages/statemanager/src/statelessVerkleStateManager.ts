@@ -2,28 +2,25 @@ import {
   Account,
   KECCAK256_NULL,
   KECCAK256_NULL_S,
+  LeafType,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToInt32,
+  getKey,
+  getStem,
+  getTreeKeyForCodeChunk,
+  getTreeKeyForStorageSlot,
   hexToBytes,
   padToEven,
   setLengthLeft,
   setLengthRight,
   short,
   toBytes,
-} from '@ethereumjs/util'
-import {
-  LeafType,
-  getKey,
-  getStem,
-  getTreeKeyForCodeChunk,
-  getTreeKeyForStorageSlot,
   verifyProof,
-} from '@ethereumjs/verkle'
+} from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import { AccessWitness, AccessedStateType, decodeValue } from './accessWitness.js'
 import { AccountCache, CacheType, CodeCache, StorageCache } from './cache/index.js'
@@ -31,7 +28,6 @@ import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { DefaultStateManager } from './stateManager.js'
-import type { VerkleExecutionWitness, VerkleProof } from '@ethereumjs/block'
 import type {
   AccountFields,
   Common,
@@ -40,8 +36,13 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
-import type { VerkleCrypto } from '@ethereumjs/verkle'
+import type {
+  Address,
+  PrefixedHexString,
+  VerkleCrypto,
+  VerkleExecutionWitness,
+  VerkleProof,
+} from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -110,7 +111,7 @@ export interface StatelessVerkleStateManagerOpts {
   storageCacheOpts?: CacheOptions
   codeCacheOpts?: CacheOptions
   accesses?: AccessWitness
-  verkleCrypto?: VerkleCrypto
+  verkleCrypto: VerkleCrypto
   initialStateRoot?: Uint8Array
 }
 
@@ -176,20 +177,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   private keccakFunction: Function
 
   /**
-   * Async static constructor for StatelessVerkleStateManager
-   * @param opts `StatelessVerkleStateManagerOpts`
-   * @returns a StatelessVerkleStateManager with initialized Verkle Crypto
-   */
-  static create = async (opts: StatelessVerkleStateManagerOpts = {}) => {
-    if (opts.verkleCrypto === undefined) {
-      opts.verkleCrypto = await loadVerkleCrypto()
-    }
-    return new StatelessVerkleStateManager(opts)
-  }
-  /**
    * Instantiate the StateManager interface.
    */
-  constructor(opts: StatelessVerkleStateManagerOpts = {}) {
+  constructor(opts: StatelessVerkleStateManagerOpts) {
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
 
     this._accountCacheSettings = {

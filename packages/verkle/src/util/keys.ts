@@ -15,8 +15,7 @@ import {
 
 import { getStem } from './crypto.js'
 
-import type { VerkleCrypto } from '../types.js'
-import type { Address } from '@ethereumjs/util'
+import type { Address, VerkleCrypto } from '@ethereumjs/util'
 
 /**
  * @dev Returns the tree key for a given verkle tree stem, and sub index.
