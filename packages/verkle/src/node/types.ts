@@ -19,24 +19,18 @@ export interface TypedVerkleNode {
 export type VerkleNode = TypedVerkleNode[VerkleNodeType]
 
 export interface VerkleNodeInterface {
-  hash(): any
+  hash(): Uint8Array
   serialize(): Uint8Array
 }
 
 interface BaseVerkleNodeOptions {
-  // Value of the commitment
   commitment: Uint8Array
-  depth: number
   verkleCrypto: VerkleCrypto
 }
 
 interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {
   // Children nodes of this internal node.
   children?: ChildNode[]
-
-  // Values of the child commitments before the tree is modified by inserts.
-  // This is useful because the delta of the child commitments can be used to efficiently update the node's commitment
-  copyOnWrite?: Record<string, Uint8Array>
 }
 interface VerkleLeafNodeOptions extends BaseVerkleNodeOptions {
   stem: Uint8Array

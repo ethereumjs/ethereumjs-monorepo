@@ -87,7 +87,6 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     return new LeafNode({
       stem,
       values,
-      depth,
       commitment,
       c1,
       c2,
@@ -112,7 +111,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     const c2 = rawNode[4]
     const values = rawNode.slice(5, rawNode.length)
 
-    return new LeafNode({ depth, stem, values, c1, c2, commitment, verkleCrypto })
+    return new LeafNode({ stem, values, c1, c2, commitment, verkleCrypto })
   }
 
   // Retrieve the value at the provided index from the values array
@@ -180,9 +179,5 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       this.c2 ?? new Uint8Array(),
       ...this.values,
     ]
-  }
-
-  setDepth(depth: number): void {
-    this.depth = depth
   }
 }

@@ -1,11 +1,9 @@
-import { equalsBytes, randomBytes } from '@ethereumjs/util'
+import { type VerkleCrypto, equalsBytes, randomBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { VerkleNodeType } from '../src/node/index.js'
 import { LeafNode } from '../src/node/leafNode.js'
-
-import type { VerkleCrypto } from '../src/types.js'
 
 describe('verkle node - leaf', () => {
   let verkleCrypto = undefined as never as VerkleCrypto
@@ -18,13 +16,10 @@ describe('verkle node - leaf', () => {
     const c2 = randomBytes(64)
     const stem = randomBytes(32)
     const values = new Array<Uint8Array>(256).fill(randomBytes(32))
-
-    const depth = 2
     const node = new LeafNode({
       c1,
       c2,
       commitment,
-      depth,
       stem,
       values,
       verkleCrypto,
@@ -42,7 +37,6 @@ describe('verkle node - leaf', () => {
       values.every((value, index) => equalsBytes(value, node.values[index])),
       'values should be set'
     )
-    assert.equal(node.depth, depth, 'depth should be set')
   })
 
   it('create method should create an leaf node', async () => {

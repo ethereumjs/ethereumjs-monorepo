@@ -1,11 +1,9 @@
-import { equalsBytes, randomBytes } from '@ethereumjs/util'
+import { type VerkleCrypto, equalsBytes, randomBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { NODE_WIDTH, VerkleNodeType, decodeNode } from '../src/node/index.js'
 import { InternalNode } from '../src/node/internalNode.js'
-
-import type { VerkleCrypto } from '../src/types.js'
 
 describe('verkle node - internal', () => {
   let verkleCrypto: VerkleCrypto
@@ -14,15 +12,10 @@ describe('verkle node - internal', () => {
   })
   it('constructor should create an internal node', async () => {
     const commitment = randomBytes(32)
-    const depth = 2
-    const node = new InternalNode({ commitment, depth, verkleCrypto })
+    const node = new InternalNode({ commitment, verkleCrypto })
 
     assert.equal(node.type, VerkleNodeType.Internal, 'type should be set')
-    assert.ok(
-      equalsBytes(node.commitment as unknown as Uint8Array, commitment),
-      'commitment should be set'
-    )
-    assert.equal(node.depth, depth, 'depth should be set')
+    assert.ok(equalsBytes(node.commitment, commitment), 'commitment should be set')
 
     // Children nodes should all default to null.
     assert.equal(node.children.length, NODE_WIDTH, 'number of children should equal verkle width')
@@ -33,8 +26,7 @@ describe('verkle node - internal', () => {
   })
 
   it('create method should create an internal node', async () => {
-    const depth = 3
-    const node = InternalNode.create(depth, verkleCrypto)
+    const node = InternalNode.create(verkleCrypto)
 
     assert.equal(node.type, VerkleNodeType.Internal, 'type should be set')
     assert.deepEqual(
@@ -42,7 +34,6 @@ describe('verkle node - internal', () => {
       verkleCrypto.zeroCommitment,
       'commitment should be set to point identity'
     )
-    assert.equal(node.depth, depth, 'depth should be set')
 
     // Children nodes should all default to null.
     assert.equal(node.children.length, NODE_WIDTH, 'number of children should equal verkle width')
@@ -61,7 +52,6 @@ describe('verkle node - internal', () => {
     const node = new InternalNode({
       children,
       verkleCrypto,
-      depth: 0,
       commitment: verkleCrypto.zeroCommitment,
     })
     const serialized = node.serialize()

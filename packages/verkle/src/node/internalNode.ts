@@ -58,13 +58,16 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     const children = childrenCommitments.map((commitment, idx) => {
       return { commitment, path: childrenPaths[idx] }
     })
-    return new InternalNode({ commitment, depth, verkleCrypto, children })
+    return new InternalNode({ commitment, verkleCrypto, children })
   }
 
-  static create(depth: number, verkleCrypto: VerkleCrypto): InternalNode {
+  /**
+   * Generates a new Internal node with default commitment
+   */
+
+  static create(verkleCrypto: VerkleCrypto): InternalNode {
     const node = new InternalNode({
       commitment: verkleCrypto.zeroCommitment,
-      depth,
       verkleCrypto,
     })
 

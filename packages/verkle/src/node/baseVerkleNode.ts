@@ -6,11 +6,9 @@ import type { VerkleCrypto } from 'verkle-cryptography-wasm'
 
 export abstract class BaseVerkleNode<T extends VerkleNodeType> implements VerkleNodeInterface {
   public commitment: Uint8Array
-  public depth: number
   protected verkleCrypto: VerkleCrypto
   constructor(options: VerkleNodeOptions[T]) {
     this.commitment = options.commitment
-    this.depth = options.depth
     this.verkleCrypto = options.verkleCrypto
   }
 

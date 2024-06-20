@@ -195,13 +195,8 @@ describe('findPath validation', () => {
     leafNode2.setValue(hexToBytes(keys[2])[31], hexToBytes(values[2]))
     putStack.push([stem2, leafNode2])
 
-    // Update the depth of leafNode1
-    // Note: We wouldn't need to do this if we didn't track depth as a property of each node
-    leafNode1.depth = 2
-    putStack.push([stem1, leafNode1])
-
     // Create new internal node
-    const internalNode1 = InternalNode.create(1, verkleCrypto)
+    const internalNode1 = InternalNode.create(verkleCrypto)
 
     // Compute the portion of stem1 and stem2 that match
     // Note: We subtract 1 since we are using 0-indexed arrays
