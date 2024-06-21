@@ -1,7 +1,10 @@
+import { createServerAdapter } from '@whatwg-node/server'
 import bodyParser from 'body-parser'
 import Connect from 'connect'
 import cors from 'cors'
+import { create } from 'domain'
 import { createServer } from 'http'
+import { AutoRouter, cors as cors2, createCors } from 'itty-router'
 import jayson from 'jayson/promise/index.js'
 import { inspect } from 'util'
 
@@ -12,6 +15,7 @@ import type { Logger } from '../logging.js'
 import type { RPCManager } from '../rpc/index.js'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
+
 const { json: jsonParser } = bodyParser
 const { decode } = jwt
 
@@ -185,6 +189,42 @@ function checkHeaderAuth(req: any, jwtSecret: Uint8Array): void {
 export function createRPCServerListener(opts: CreateRPCServerListenerOpts): HttpServer {
   const { server, withEngineMiddleware, rpcCors } = opts
 
+  const { preflight, corsify } = cors2({
+    origin: typeof rpcCors === 'string' ? rpcCors : '*',
+  })
+  const router = AutoRouter({
+    before: [preflight],
+    finally: [corsify],
+  })
+
+  router.all('*', jsonParser({ limit: '11mb' }))
+
+  if (withEngineMiddleware) {
+    const { jwtSecret, unlessFn } = withEngineMiddleware
+    router.all('*', (req: any, res: any, next: any) => {
+      try {
+        if (unlessFn && unlessFn(req)) return next()
+        checkHeaderAuth(req, jwtSecret)
+        return next()
+      } catch (error) {
+        if (error instanceof Error) {
+          res.writeHead(401)
+          res.end(`Unauthorized: ${error}`)
+          return
+        }
+        next(error)
+      }
+    })
+  }
+
+  router.all('*', server.middleware())
+  const ittyServer = createServerAdapter(router.fetch)
+  const httpServer = createServer(ittyServer)
+  return httpServer
+
+  //Connect Way
+  /*
+
   const app = Connect() as any
   if (typeof rpcCors === 'string') app.use(cors({ origin: rpcCors }))
   // GOSSIP_MAX_SIZE_BELLATRIX is proposed to be 10MiB
@@ -211,6 +251,7 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
   app.use(server.middleware())
   const httpServer = createServer(app)
   return httpServer
+*/
 }
 
 export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer | undefined {
