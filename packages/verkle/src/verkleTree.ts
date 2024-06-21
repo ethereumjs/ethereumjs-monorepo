@@ -22,7 +22,6 @@ import {
   type VerkleTreeOptsWithDefaults,
 } from './types.js'
 import { matchingBytesLength } from './util/index.js'
-import { verifyKeyLength } from './util/keys.js'
 
 import type { DB, PutBatch, VerkleCrypto } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
@@ -190,7 +189,7 @@ export class VerkleTree {
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `undefined` if no value was found.
    */
   async get(key: Uint8Array): Promise<Uint8Array | undefined> {
-    verifyKeyLength(key)
+    if (key.length !== 32) throw new Error(`expected key with length 32; got ${key.length}`)
     const stem = key.slice(0, 31)
     const suffix = key[key.length - 1]
     this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffix}`, ['GET'])

@@ -26,7 +26,7 @@ import type { PrefixedHexString } from './types.js'
 // (basically everything generic not depending on Verkle cryptography)
 //
 // TODO 2: Basically all these constants and methods need a Verkle or (VERKLE) prefix since
-// atm names are too generic to be grasped in a non-Verkle-limited context (e.g. `getKey()`)
+// atm names are too generic to be grasped in a non-Verkle-limited context (e.g. `getVerkleKey()`)
 //
 // Holger Drewes, 2024-06-18
 
@@ -55,7 +55,7 @@ export interface VerkleCrypto {
  * @param treeIndex The index of the tree to generate the key for. Defaults to 0.
  * @return The 31-bytes verkle tree stem as a Uint8Array.
  */
-export function getStem(
+export function getVerkleStem(
   ffi: VerkleCrypto,
   address: Address,
   treeIndex: number | bigint = 0
@@ -81,7 +81,7 @@ export function getStem(
  * @param executionWitness The verkle execution witness.
  * @returns {boolean} Whether or not the executionWitness belongs to the prestateRoot.
  */
-export function verifyProof(
+export function verifyVerkleProof(
   ffi: VerkleCrypto,
   prestateRoot: Uint8Array,
   executionWitness: VerkleExecutionWitness
@@ -160,7 +160,7 @@ export const VERKLE_MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(31)
  * @return The tree key as a Uint8Array.
  */
 
-export const getKey = (stem: Uint8Array, leaf: VerkleLeafType | Uint8Array) => {
+export const getVerkleKey = (stem: Uint8Array, leaf: VerkleLeafType | Uint8Array) => {
   switch (leaf) {
     case VerkleLeafType.Version:
       return concatBytes(stem, VERKLE_VERSION_LEAF_KEY)
@@ -177,7 +177,7 @@ export const getKey = (stem: Uint8Array, leaf: VerkleLeafType | Uint8Array) => {
   }
 }
 
-export function getTreeIndexesForStorageSlot(storageKey: bigint): {
+export function getVerkleTreeIndexesForStorageSlot(storageKey: bigint): {
   treeIndex: bigint
   subIndex: number
 } {
@@ -194,19 +194,19 @@ export function getTreeIndexesForStorageSlot(storageKey: bigint): {
   return { treeIndex, subIndex }
 }
 
-export function getTreeIndicesForCodeChunk(chunkId: number) {
+export function getVerkleTreeIndicesForCodeChunk(chunkId: number) {
   const treeIndex = Math.floor((VERKLE_CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH)
   const subIndex = (VERKLE_CODE_OFFSET + chunkId) % VERKLE_NODE_WIDTH
   return { treeIndex, subIndex }
 }
 
-export const getTreeKeyForCodeChunk = async (
+export const getVerkleTreeKeyForCodeChunk = async (
   address: Address,
   chunkId: number,
   verkleCrypto: VerkleCrypto
 ) => {
-  const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkId)
-  return concatBytes(getStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
+  const { treeIndex, subIndex } = getVerkleTreeIndicesForCodeChunk(chunkId)
+  return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
 }
 
 export const chunkifyCode = (code: Uint8Array) => {
@@ -219,12 +219,12 @@ export const chunkifyCode = (code: Uint8Array) => {
   throw new Error('Not implemented')
 }
 
-export const getTreeKeyForStorageSlot = async (
+export const getVerkleTreeKeyForStorageSlot = async (
   address: Address,
   storageKey: bigint,
   verkleCrypto: VerkleCrypto
 ) => {
-  const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(storageKey)
+  const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(storageKey)
 
-  return concatBytes(getStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
+  return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
 }

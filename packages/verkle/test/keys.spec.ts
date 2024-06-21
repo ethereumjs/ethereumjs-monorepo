@@ -13,7 +13,7 @@ describe('should generate valid tree keys', () => {
       VerkleLeafType.CodeHash,
       VerkleLeafType.CodeSize,
     ]) {
-      const key = getKey(stem, leaf)
+      const key = getVerkleKey(stem, leaf)
       assert.equal(key.length, 32)
       assert.deepEqual(key, concatBytes(stem, intToBytes(leaf)))
     }

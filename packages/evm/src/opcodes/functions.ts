@@ -26,7 +26,7 @@ import {
   bytesToHex,
   concatBytes,
   ecrecover,
-  getTreeIndexesForStorageSlot,
+  getVerkleTreeIndexesForStorageSlot,
   hexToBytes,
   publicToAddress,
   setLengthLeft,
@@ -628,7 +628,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
         if (common.isActivatedEIP(6800)) {
-          const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
+          const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(number)
           // create witnesses and charge gas
           const statelessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             historyAddress,

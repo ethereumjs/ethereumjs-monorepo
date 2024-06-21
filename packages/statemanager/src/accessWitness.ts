@@ -11,9 +11,9 @@ import {
   VERKLE_VERSION_LEAF_KEY,
   bytesToBigInt,
   bytesToHex,
-  getKey,
-  getStem,
-  getTreeIndicesForCodeChunk,
+  getVerkleKey,
+  getVerkleStem,
+  getVerkleTreeIndicesForCodeChunk,
   hexToBytes,
   intToBytes,
 } from '@ethereumjs/util'
@@ -171,7 +171,7 @@ export class AccessWitness implements AccessWitnessInterface {
   touchCodeChunksRangeOnReadAndChargeGas(contact: Address, startPc: number, endPc: number): bigint {
     let gas = BIGINT_0
     for (let chunkNum = Math.floor(startPc / 31); chunkNum <= Math.floor(endPc / 31); chunkNum++) {
-      const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkNum)
+      const { treeIndex, subIndex } = getVerkleTreeIndicesForCodeChunk(chunkNum)
       gas += this.touchAddressOnReadAndComputeGas(contact, treeIndex, subIndex)
     }
     return gas
@@ -184,7 +184,7 @@ export class AccessWitness implements AccessWitnessInterface {
   ): bigint {
     let gas = BIGINT_0
     for (let chunkNum = Math.floor(startPc / 31); chunkNum <= Math.floor(endPc / 31); chunkNum++) {
-      const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkNum)
+      const { treeIndex, subIndex } = getVerkleTreeIndicesForCodeChunk(chunkNum)
       gas += this.touchAddressOnWriteAndComputeGas(contact, treeIndex, subIndex)
     }
     return gas
@@ -259,7 +259,7 @@ export class AccessWitness implements AccessWitnessInterface {
     // i.e. no fill cost is charged right now
     const chunkFill = false
 
-    const accessedStemKey = getStem(this.verkleCrypto, address, treeIndex)
+    const accessedStemKey = getVerkleStem(this.verkleCrypto, address, treeIndex)
     const accessedStemHex = bytesToHex(accessedStemKey)
     let accessedStem = this.stems.get(accessedStemHex)
     if (accessedStem === undefined) {
@@ -268,7 +268,7 @@ export class AccessWitness implements AccessWitnessInterface {
       this.stems.set(accessedStemHex, accessedStem)
     }
 
-    const accessedChunkKey = getKey(
+    const accessedChunkKey = getVerkleKey(
       accessedStemKey,
       typeof subIndex === 'number' ? intToBytes(subIndex) : subIndex
     )
