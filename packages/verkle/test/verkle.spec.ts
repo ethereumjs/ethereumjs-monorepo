@@ -157,7 +157,6 @@ describe('findPath validation', () => {
     const leafNode1 = await LeafNode.create(
       stem1,
       new Array(256).fill(new Uint8Array(32)),
-      1,
       verkleCrypto
     )
 
@@ -168,7 +167,7 @@ describe('findPath validation', () => {
 
     // Pull root node from DB
     const rawNode = await trie['_db'].get(ROOT_DB_KEY)
-    const rootNode = decodeNode(rawNode!, 0, verkleCrypto) as InternalNode
+    const rootNode = decodeNode(rawNode!, verkleCrypto) as InternalNode
     // Update root node with commitment from leaf node
     rootNode.setChild(stem1[0], { commitment: leafNode1.commitment, path: stem1 })
     putStack.push([ROOT_DB_KEY, rootNode])
@@ -189,7 +188,6 @@ describe('findPath validation', () => {
     const leafNode2 = await LeafNode.create(
       stem2,
       new Array(256).fill(new Uint8Array(32)),
-      2,
       verkleCrypto
     )
     leafNode2.setValue(hexToBytes(keys[2])[31], hexToBytes(values[2]))

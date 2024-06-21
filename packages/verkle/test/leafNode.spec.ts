@@ -45,7 +45,7 @@ describe('verkle node - leaf', () => {
     const values = new Array<Uint8Array>(256).fill(new Uint8Array(32))
     values[2] = value
     const stem = key.slice(0, 31)
-    const node = await LeafNode.create(stem, values, 0, verkleCrypto)
+    const node = await LeafNode.create(stem, values, verkleCrypto)
     assert.ok(node instanceof LeafNode)
   })
 
@@ -53,7 +53,7 @@ describe('verkle node - leaf', () => {
     const key = randomBytes(32)
     const stem = key.slice(0, 31)
     const values = new Array<Uint8Array>(256).fill(new Uint8Array(32))
-    const node = await LeafNode.create(stem, values, 0, verkleCrypto)
+    const node = await LeafNode.create(stem, values, verkleCrypto)
     assert.deepEqual(node.c1, verkleCrypto.zeroCommitment)
     node.setValue(0, randomBytes(32))
     assert.notDeepEqual(node.c1, verkleCrypto.zeroCommitment)
