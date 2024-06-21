@@ -93,3 +93,7 @@ export const getTreeKeyForStorageSlot = async (
 
   return concatBytes(getStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
 }
+
+export const verifyKeyLength = (key: Uint8Array) => {
+  if (key.length !== 32) throw new Error(`expected key with length 32; got ${key.length}`)
+}

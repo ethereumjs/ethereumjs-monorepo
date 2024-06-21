@@ -1,119 +1,89 @@
-import { equalsBytes } from '@ethereumjs/util'
-
-import { POINT_IDENTITY } from '../util/crypto.js'
+import { type VerkleCrypto } from '@ethereumjs/util'
 
 import { BaseVerkleNode } from './baseVerkleNode.js'
-import { LeafNode } from './leafNode.js'
 import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
-import type { VerkleNode, VerkleNodeOptions } from './types.js'
+import type { ChildNode, VerkleNodeOptions } from './types.js'
 
 export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
-  // Array of references to children nodes
-  public children: Array<VerkleNode | null>
-  public copyOnWrite: Record<string, Uint8Array>
+  // Array of tuples of uncompressed commitments (i.e. 64 byte Uint8Arrays) to child nodes along with the path to that child (i.e. the partial stem)
+  public children: Array<ChildNode>
   public type = VerkleNodeType.Internal
 
-  /* TODO: options.children is not actually used here */
   constructor(options: VerkleNodeOptions[VerkleNodeType.Internal]) {
     super(options)
-    this.children = options.children ?? new Array(NODE_WIDTH).fill(null)
-    this.copyOnWrite = options.copyOnWrite ?? {}
+    this.children =
+      options.children ??
+      new Array(256).fill({
+        commitment: options.verkleCrypto.zeroCommitment,
+        path: new Uint8Array(),
+      })
   }
 
-  commit(): Uint8Array {
-    throw new Error('Not implemented')
+  // Updates the commitment value for a child node at the corresponding index
+  setChild(childIndex: number, child: ChildNode) {
+    // Get previous child commitment at `index`
+    const oldChildReference = this.children[childIndex]
+    // Updates the commitment to the child node at `index`
+    this.children[childIndex] = { ...child }
+    // Updates the overall node commitment based on the update to this child
+    this.commitment = this.verkleCrypto.updateCommitment(
+      this.commitment,
+      childIndex,
+      // The hashed child commitments are used when updating the internal node commitment
+      this.verkleCrypto.hashCommitment(oldChildReference.commitment),
+      this.verkleCrypto.hashCommitment(child.commitment)
+    )
   }
 
-  cowChild(_: number): void {
-    // Not implemented yet
-  }
-
-  setChild(index: number, child: VerkleNode) {
-    this.children[index] = child
-  }
-
-  static fromRawNode(rawNode: Uint8Array[], depth: number): InternalNode {
+  static fromRawNode(rawNode: Uint8Array[], verkleCrypto: VerkleCrypto): InternalNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== VerkleNodeType.Internal) {
       throw new Error('Invalid node type')
     }
 
-    // The length of the rawNode should be the # of children, + 2 for the node type and the commitment
-    if (rawNode.length !== NODE_WIDTH + 2) {
+    // The length of the rawNode should be the # of children * 2 (for commitments and paths) + 2 for the node type and the commitment
+    if (rawNode.length !== NODE_WIDTH * 2 + 2) {
       throw new Error('Invalid node length')
     }
 
-    // TODO: Generate Point from rawNode value
     const commitment = rawNode[rawNode.length - 1]
+    const childrenCommitments = rawNode.slice(1, NODE_WIDTH + 1)
+    const childrenPaths = rawNode.slice(NODE_WIDTH + 1, NODE_WIDTH * 2 + 1)
 
-    return new InternalNode({ commitment, depth })
+    const children = childrenCommitments.map((commitment, idx) => {
+      return { commitment, path: childrenPaths[idx] }
+    })
+    return new InternalNode({ commitment, verkleCrypto, children })
   }
 
-  static create(depth: number): InternalNode {
+  /**
+   * Generates a new Internal node with default commitment
+   */
+  static create(verkleCrypto: VerkleCrypto): InternalNode {
     const node = new InternalNode({
-      commitment: POINT_IDENTITY,
-      depth,
+      commitment: verkleCrypto.zeroCommitment,
+      verkleCrypto,
     })
 
     return node
   }
 
-  getChildren(index: number): VerkleNode | null {
-    return this.children?.[index] ?? null
+  /**
+   *
+   * @param index The index in the children array to retrieve the child node commitment from
+   * @returns the uncompressed 64byte commitment for the child node at the `index` position in the children array
+   */
+  getChildren(index: number): ChildNode | null {
+    return this.children[index]
   }
 
-  insert(key: Uint8Array, value: Uint8Array, resolver: () => void): void {
-    const values = new Array<Uint8Array>(NODE_WIDTH)
-    values[key[31]] = value
-    this.insertStem(key.slice(0, 31), values, resolver)
-  }
-
-  insertStem(stem: Uint8Array, values: Uint8Array[], resolver: () => void): void {
-    // Index of the child pointed by the next byte in the key
-    const childIndex = stem[this.depth]
-
-    const child = this.children[childIndex]
-
-    if (child instanceof LeafNode) {
-      this.cowChild(childIndex)
-      if (equalsBytes(child.stem, stem)) {
-        return child.insertMultiple(stem, values)
-      }
-
-      // A new branch node has to be inserted. Depending
-      // on the next byte in both keys, a recursion into
-      // the moved leaf node can occur.
-      const nextByteInExistingKey = child.stem[this.depth + 1]
-      const newBranch = InternalNode.create(this.depth + 1)
-      newBranch.cowChild(nextByteInExistingKey)
-      this.children[childIndex] = newBranch
-      newBranch.children[nextByteInExistingKey] = child
-      child.depth += 1
-
-      const nextByteInInsertedKey = stem[this.depth + 1]
-      if (nextByteInInsertedKey === nextByteInExistingKey) {
-        return newBranch.insertStem(stem, values, resolver)
-      }
-
-      // Next word differs, so this was the last level.
-      // Insert it directly into its final slot.
-      const leafNode = LeafNode.create(stem, values)
-
-      leafNode.setDepth(this.depth + 2)
-      newBranch.cowChild(nextByteInInsertedKey)
-      newBranch.children[nextByteInInsertedKey] = leafNode
-    } else if (child instanceof InternalNode) {
-      this.cowChild(childIndex)
-      return child.insertStem(stem, values, resolver)
-    } else {
-      throw new Error('Invalid node type')
-    }
-  }
-
-  // TODO: go-verkle also adds the bitlist to the raw format.
   raw(): Uint8Array[] {
-    throw new Error('not implemented yet')
-    // return [new Uint8Array([VerkleNodeType.Internal]), ...this.children, this.commitment]
+    return [
+      new Uint8Array([VerkleNodeType.Internal]),
+      ...this.children.map((child) => child.commitment),
+      ...this.children.map((child) => child.path),
+      this.commitment,
+    ]
   }
 }

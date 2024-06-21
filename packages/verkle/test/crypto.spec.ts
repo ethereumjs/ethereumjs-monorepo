@@ -1,12 +1,16 @@
-import { Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
+import {
+  Address,
+  type VerkleCrypto,
+  type VerkleExecutionWitness,
+  bytesToHex,
+  hexToBytes,
+  randomBytes,
+} from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import * as verkleBlockJSON from '../../statemanager/test/testdata/verkleKaustinen6Block72.json'
 import { getStem, verifyProof } from '../src/index.js'
-
-import type { VerkleCrypto } from '../src/index.js'
-import type { VerkleExecutionWitness } from '@ethereumjs/block'
 
 describe('Verkle cryptographic helpers', () => {
   let verkle: VerkleCrypto
