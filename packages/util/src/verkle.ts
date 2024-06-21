@@ -18,20 +18,7 @@ import type { PrefixedHexString } from './types.js'
  * Experimental (do not use in production!)
  */
 
-// TODO 1: this comes with a deprecation of the respective constants and methods within the
-// @ethereumjs/verkle package. Due to ease of parallel work this has not yet been executed upon,
-// so this still needs a small follow-up clean up PR.
-//
-// Along with the PR likely more/additional helper functionality should be moved over
-// (basically everything generic not depending on Verkle cryptography)
-//
-// TODO 2: Basically all these constants and methods need a Verkle or (VERKLE) prefix since
-// atm names are too generic to be grasped in a non-Verkle-limited context (e.g. `getVerkleKey()`)
-//
-// Holger Drewes, 2024-06-18
-
 /* Verkle Crypto */
-
 export interface VerkleCrypto {
   getTreeKey: (address: Uint8Array, treeIndex: Uint8Array, subIndex: number) => Uint8Array
   getTreeKeyHash: (address: Uint8Array, treeIndexLE: Uint8Array) => Uint8Array
