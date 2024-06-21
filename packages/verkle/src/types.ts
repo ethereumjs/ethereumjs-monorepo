@@ -79,6 +79,3 @@ export const HEADER_STORAGE_OFFSET = 64
 export const CODE_OFFSET = 128
 export const VERKLE_NODE_WIDTH = 256
 export const MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(31)
-
-export const zeroValues = new Array(256).fill(new Uint8Array())
-export const zeroCValues = new Array(128).fill(new Uint8Array())

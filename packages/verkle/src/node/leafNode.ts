@@ -24,17 +24,15 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   }
 
   /**
-   * Create a new leaf node from a stem, values, and depth
+   * Create a new leaf node from a stem and values
    * @param stem the 31 byte stem corresponding to the where the leaf node should be placed in the trie
    * @param values the 256 element array of 32 byte values stored in the leaf node
-   * @param depth the depth of the leafnode
    * @param verkleCrypto the verkle cryptography interface
    * @returns an instantiated leaf node with commitments defined
    */
   static async create(
     stem: Uint8Array,
     values: Uint8Array[],
-    depth: number,
     verkleCrypto: VerkleCrypto
   ): Promise<LeafNode> {
     // Generate the value arrays for c1 and c2
@@ -94,7 +92,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     })
   }
 
-  static fromRawNode(rawNode: Uint8Array[], depth: number, verkleCrypto: VerkleCrypto): LeafNode {
+  static fromRawNode(rawNode: Uint8Array[], verkleCrypto: VerkleCrypto): LeafNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== VerkleNodeType.Leaf) {
       throw new Error('Invalid node type')

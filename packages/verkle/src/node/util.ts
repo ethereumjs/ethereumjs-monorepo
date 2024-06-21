@@ -7,29 +7,24 @@ import { type VerkleNode, VerkleNodeType } from './types.js'
 
 import type { VerkleCrypto } from '@ethereumjs/util'
 
-// TODO: Make depth optional since we don't always know what it is
-export function decodeRawNode(
-  raw: Uint8Array[],
-  depth: number,
-  verkleCrypto: VerkleCrypto
-): VerkleNode {
+export function decodeRawNode(raw: Uint8Array[], verkleCrypto: VerkleCrypto): VerkleNode {
   const nodeType = raw[0][0]
   switch (nodeType) {
     case VerkleNodeType.Internal:
-      return InternalNode.fromRawNode(raw, depth, verkleCrypto)
+      return InternalNode.fromRawNode(raw, verkleCrypto)
     case VerkleNodeType.Leaf:
-      return LeafNode.fromRawNode(raw, depth, verkleCrypto)
+      return LeafNode.fromRawNode(raw, verkleCrypto)
     default:
       throw new Error('Invalid node type')
   }
 }
 
-export function decodeNode(raw: Uint8Array, depth: number, verkleCrypto: VerkleCrypto) {
+export function decodeNode(raw: Uint8Array, verkleCrypto: VerkleCrypto) {
   const decoded = RLP.decode(Uint8Array.from(raw)) as Uint8Array[]
   if (!Array.isArray(decoded)) {
     throw new Error('Invalid node')
   }
-  return decodeRawNode(decoded, depth, verkleCrypto)
+  return decodeRawNode(decoded, verkleCrypto)
 }
 
 export function isRawNode(node: Uint8Array | Uint8Array[]): node is Uint8Array[] {

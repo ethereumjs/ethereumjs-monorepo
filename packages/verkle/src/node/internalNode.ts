@@ -36,11 +36,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     )
   }
 
-  static fromRawNode(
-    rawNode: Uint8Array[],
-    depth: number,
-    verkleCrypto: VerkleCrypto
-  ): InternalNode {
+  static fromRawNode(rawNode: Uint8Array[], verkleCrypto: VerkleCrypto): InternalNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== VerkleNodeType.Internal) {
       throw new Error('Invalid node type')

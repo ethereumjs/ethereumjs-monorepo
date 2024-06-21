@@ -217,193 +217,6 @@ export class VerkleTree {
   // TODO: Rewrite following logic in verkle.spec.ts "findPath validation" test
   async put(_key: Uint8Array, _value: Uint8Array): Promise<void> {
     throw new Error('not implemented')
-    // verifyKeyLength(key)
-    // const stem = key.slice(0, 31)
-    // this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['PUT'])
-    // this.DEBUG && this.debug(`Value: ${bytesToHex(value)}`, ['PUT'])
-    // // A stack of nodes to put/update in the DB once the new leaf node is inserted
-    // const putStack: [Uint8Array, VerkleNode][] = []
-    // // Find or create the leaf node
-    // const res = await this.findPath(stem)
-    // let leafNode = res.node
-    // const suffix = key[31]
-    // if (!(leafNode instanceof LeafNode)) {
-    //   this.DEBUG && this.debug(`Create new leaf node at stem: ${bytesToHex(stem)}`, ['PUT'])
-    //   // If leafNode is missing, create it
-    //   const values: Uint8Array[] = new Array(256).fill(new Uint8Array()) // Create new empty array of 256 values
-    //   values[suffix] = value // Set value at key suffix
-    //   this.DEBUG && this.debug(`Insert value at suffix: ${suffix}`, ['PUT'])
-    //   // Create leaf node
-    //   leafNode = await LeafNode.create(stem, values, res.stack.length, this.verkleCrypto)
-    // } else {
-    //   // Found the leaf node so update the value (setValue also updates the commitments)
-    //   this.DEBUG && this.debug(`Found leaf node at: ${bytesToHex(stem)}`, ['PUT'])
-    //   this.DEBUG && this.debug(`Insert value at suffix: ${suffix}`, ['PUT'])
-    //   leafNode.setValue(suffix, value)
-    // }
-
-    // // Add leaf node to put stack
-    // putStack.push([stem, leafNode])
-
-    // // No stack returned from `findPath` indicates no root node so let's create one
-    // if (res.stack.length === 0) {
-    //   // Special case where findPath returned early because no root node exists
-    //   // Create a root node
-    //   const rootNode = new InternalNode({
-    //     commitment: this.verkleCrypto.zeroCommitment,
-    //     verkleCrypto: this.verkleCrypto,
-    //   })
-
-    //   // Update the child node's commitment and path
-    //   this.DEBUG &&
-    //     this.debug(
-    //       `No root node. Creating new root node node and placing leaf commitment at child index: ${key[0]}`,
-    //       ['PUT']
-    //     )
-    //   rootNode.children[key[0]] = { commitment: leafNode.commitment, path: stem }
-
-    //   // Update root node commitment using a zero commitment hash for the old scalar value (since this is a new root node)
-    //   rootNode.commitment = this.verkleCrypto.updateCommitment(
-    //     rootNode.commitment,
-    //     key[0],
-    //     new Uint8Array(32),
-    //     this.verkleCrypto.hashCommitment(leafNode.commitment)
-    //   )
-    //   // Add root node to put stack
-    //   putStack.push([ROOT_DB_KEY, rootNode])
-    //   await this.saveStack(putStack)
-    //   // Set trie root to serialized (aka compressed) commitment for later use in verkle proof
-    //   this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))
-    //   // We're done so return early
-    //   return
-    // }
-
-    // // Walk up the tree from the nearest node to the leaf and update/insert internal nodes along the way
-
-    // // Updating inner nodes
-    // // 1. Update `currentNode` child node commitment to leafnode, commitment of `currentNode`, and depth as needed
-    // // 2. Walk up result.stack doing the same thing (while inserting new internal nodes as needed and updating lower level node depth as needed)
-    // // 3. Use `saveStack` to put all nodes in DB
-    // const currentKey = leafNode.stem
-    // while (res.stack.length > 0) {
-    //   // Pop the last node off the path stack
-    //   const [currentNode, currentNodePath] = res.stack.pop()!
-    //   // TODO: `index` is computed incorrectly and is invalid at lower levels of the tree.  Figure out how to do this correctly (or if needed).
-    //   const index = currentKey[0]
-    //   if (currentNode instanceof InternalNode) {
-    //     if (res.stack.length === 0) {
-    //       if (res.stack.length > 0)
-    //         throw new Error('cannot have node of depth zero and more nodes in path')
-    //       if (res.remaining.length === 0) {
-    //         // We're at the root node and only need to update the child commitment/path
-    //         // using the key and commitment from the last node in the putStack
-    //         const child: ChildNode = {
-    //           commitment: putStack[putStack.length - 1][1].commitment,
-    //           path: putStack[putStack.length - 1][0],
-    //         }
-    //         currentNode.setChild(index, child)
-    //         putStack.push([ROOT_DB_KEY, currentNode])
-    //         this.DEBUG &&
-    //           this.debug(
-    //             `Updating root node child value at index: ${index} for leaf node with stem: ${bytesToHex(
-    //               stem
-    //             )}`,
-    //             ['PUT']
-    //           )
-    //         // Update root
-    //         this.root(this.verkleCrypto.serializeCommitment(currentNode.commitment))
-    //         break
-    //       } else {
-    //         // TODO: Fix this.  We can't use the res.remaining as a decision point here but should use the last node in the putStack's path
-    //         // We need to insert a new internal node
-    //         // New internal node's path is the partial stem up to the the `remaining` stem in the previous findPath result
-    //         const partialStem = stem.slice(0, 31 - res.remaining.length)
-    //         const newInternalNode = InternalNode.create(this.verkleCrypto)
-    //         // Update leaf node commitment value in new internal node at the
-    //         // byte position immediately after the partial stem
-    //         // e.g. If stem is is 010003... and partial stem is 0100, the leaf node child reference
-    //         // is set at position 3 in the new internal node's children array
-    //         newInternalNode.setChild(stem[partialStem.length], {
-    //           commitment: leafNode.commitment,
-    //           // Path to the leaf node is the full stem
-    //           path: stem,
-    //         })
-    //         // Update new internal node value array with previous child reference
-    //         const oldChild = { ...currentNode.children[stem[0]] }
-
-    //         // The position of the "old child" in the new internal node children array
-    //         // should be set at the same index as in the parent node
-    //         // e.g. If stem is is 010003... the old child reference should be set at
-    //         // position 1 in the parent node's children array (since this is the root node)
-    //         newInternalNode.setChild(oldChild.path[0], oldChild)
-    //         putStack.push([partialStem, newInternalNode])
-    //         this.DEBUG &&
-    //           this.debug(
-    //             `Creating new internal node at root node with partial stem: ${bytesToHex(
-    //               partialStem
-    //             )} `,
-    //             ['PUT']
-    //           )
-    //         const child: ChildNode = {
-    //           commitment: newInternalNode.commitment,
-    //           path: partialStem,
-    //         }
-    //         // Current node here is the root node
-    //         // Update the child reference in the root node to point to the new internal node
-    //         currentNode.setChild(stem[0], child)
-    //         putStack.push([ROOT_DB_KEY, currentNode])
-    //       }
-    //     } else {
-    //       const updatedChild: ChildNode = {
-    //         path: putStack[putStack.length - 1][0],
-    //         commitment: putStack[putStack.length - 1][1].commitment,
-    //       }
-
-    //       this.DEBUG &&
-    //         this.debug(`Updating internal node at partial path ${currentNodePath}`, ['PUT'])
-    //       currentNode.setChild(updatedChild.path[updatedChild.path.length - 1], updatedChild)
-    //       putStack.push([currentNodePath, currentNode])
-    //     }
-    //   } else if (currentNode instanceof LeafNode) {
-    //     // We have a leaf node with a partially matching stem.  We need to insert a new internal node
-    //     // with a key that is the partial stem up to the the `remaining` stem in the previous findPath result.
-    //     // This new internal node will contain child references to the existing leaf node as well
-    //     // as the new leaf node being inserted.
-    //     const partialStem = stem.slice(0, 31 - res.remaining.length)
-    //     const newInternalNode = InternalNode.create(this.verkleCrypto)
-    //     // Update leaf node commitment value in new internal node at the
-    //     // byte position immediately after the partial stem
-    //     // e.g. If stem is is 010003... and partial stem is 0100, the leaf node child reference
-    //     // is set at position 3 in the new internal node's children array
-    //     newInternalNode.setChild(stem[partialStem.length], {
-    //       commitment: leafNode.commitment,
-    //       // Path to the leaf node is the full stem
-    //       path: stem,
-    //     })
-    //     // Construct old leaf node child reference
-    //     const oldLeafNodeChild: ChildNode = {
-    //       commitment: currentNode.commitment,
-    //       // Path to the old leaf node
-    //       path: (currentNode as LeafNode).stem,
-    //     }
-    //     // The position of the "old leaf node child" in the new internal node children array
-    //     // should be set at the index where the old leaf node's stem diverges from the new leaf node stem
-    //     // e.g. If the new stem is is 010030... and the old leaf node stem is 010040,
-    //     // the old child reference should be set at 0x40 and the new leaf node index at 0x30
-    //     newInternalNode.setChild(oldLeafNodeChild.path[partialStem.length], oldLeafNodeChild)
-
-    //     // Add old leaf node to putStack
-    //     putStack.push([currentNode.stem, currentNode])
-    //     // Add new internal node to putStack
-    //     putStack.push([partialStem, newInternalNode])
-    //     this.DEBUG &&
-    //       this.debug(
-    //         `Creating new internal node at depth with partial stem: ${bytesToHex(partialStem)} `,
-    //         ['PUT']
-    //       )
-    //   }
-    // }
-    // await this.saveStack(putStack)
   }
 
   /**
@@ -414,7 +227,6 @@ export class VerkleTree {
    */
   async findPath(key: Uint8Array): Promise<Path> {
     this.DEBUG && this.debug(`Path (${key.length}): [${bytesToHex(key)}]`, ['FIND_PATH'])
-    // TODO: Decide if we should allow keys longer than 31 bytes (since a verkle stem can never be longer than that)
     const result: Path = {
       node: null,
       stack: [],
@@ -427,7 +239,7 @@ export class VerkleTree {
     if (rawNode === undefined)
       throw new Error('root node should exist when root not empty tree root')
 
-    const rootNode = decodeNode(rawNode, 0, this.verkleCrypto) as InternalNode
+    const rootNode = decodeNode(rawNode, this.verkleCrypto) as InternalNode
 
     this.DEBUG &&
       this.debug(`Starting with Root Node: [${bytesToHex(rootNode.hash())}]`, ['FIND_PATH'])
@@ -444,7 +256,7 @@ export class VerkleTree {
       rawNode = await this._db.get(child.path)
       // We should always find the node if the path is specified in child.path
       if (rawNode === undefined) throw new Error(`missing node at ${bytesToHex(child.path)}`)
-      const decodedNode = decodeNode(rawNode, result.stack.length, this.verkleCrypto)
+      const decodedNode = decodeNode(rawNode, this.verkleCrypto)
 
       // Calculate the index of the last matching byte in the key
       const matchingKeyLength = matchingBytesLength(key, child.path)
