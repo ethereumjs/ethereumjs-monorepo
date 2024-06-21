@@ -64,7 +64,6 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   /**
    * Generates a new Internal node with default commitment
    */
-
   static create(verkleCrypto: VerkleCrypto): InternalNode {
     const node = new InternalNode({
       commitment: verkleCrypto.zeroCommitment,
