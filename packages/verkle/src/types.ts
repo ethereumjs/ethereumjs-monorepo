@@ -1,4 +1,4 @@
-import { intToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { utf8ToBytes } from '@ethereumjs/util'
 
 import type { DB } from '@ethereumjs/util'
 
@@ -60,22 +60,3 @@ export type Checkpoint = {
 }
 
 export const ROOT_DB_KEY = utf8ToBytes('__root__')
-
-export enum VerkleLeafType {
-  Version = 0,
-  Balance = 1,
-  Nonce = 2,
-  CodeHash = 3,
-  CodeSize = 4,
-}
-
-export const VERSION_LEAF_KEY = intToBytes(VerkleLeafType.Version)
-export const BALANCE_LEAF_KEY = intToBytes(VerkleLeafType.Balance)
-export const NONCE_LEAF_KEY = intToBytes(VerkleLeafType.Nonce)
-export const CODE_HASH_LEAF_KEY = intToBytes(VerkleLeafType.CodeHash)
-export const CODE_SIZE_LEAF_KEY = intToBytes(VerkleLeafType.CodeSize)
-
-export const HEADER_STORAGE_OFFSET = 64
-export const CODE_OFFSET = 128
-export const VERKLE_NODE_WIDTH = 256
-export const MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(31)
