@@ -133,7 +133,7 @@ export interface VerkleExecutionWitness {
   verkleProof: VerkleProof
 }
 
-export enum LeafType {
+export enum VerkleLeafType {
   Version = 0,
   Balance = 1,
   Nonce = 2,
@@ -141,16 +141,16 @@ export enum LeafType {
   CodeSize = 4,
 }
 
-export const VERSION_LEAF_KEY = intToBytes(LeafType.Version)
-export const BALANCE_LEAF_KEY = intToBytes(LeafType.Balance)
-export const NONCE_LEAF_KEY = intToBytes(LeafType.Nonce)
-export const CODE_HASH_LEAF_KEY = intToBytes(LeafType.CodeHash)
-export const CODE_SIZE_LEAF_KEY = intToBytes(LeafType.CodeSize)
+export const VERKLE_VERSION_LEAF_KEY = intToBytes(VerkleLeafType.Version)
+export const VERKLE_BALANCE_LEAF_KEY = intToBytes(VerkleLeafType.Balance)
+export const VERKLE_NONCE_LEAF_KEY = intToBytes(VerkleLeafType.Nonce)
+export const VERKLE_CODE_HASH_LEAF_KEY = intToBytes(VerkleLeafType.CodeHash)
+export const VERKLE_CODE_SIZE_LEAF_KEY = intToBytes(VerkleLeafType.CodeSize)
 
-export const HEADER_STORAGE_OFFSET = 64
-export const CODE_OFFSET = 128
+export const VERKLE_HEADER_STORAGE_OFFSET = 64
+export const VERKLE_CODE_OFFSET = 128
 export const VERKLE_NODE_WIDTH = 256
-export const MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(31)
+export const VERKLE_MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(31)
 
 /**
  * @dev Returns the tree key for a given verkle tree stem, and sub index.
@@ -160,18 +160,18 @@ export const MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(31)
  * @return The tree key as a Uint8Array.
  */
 
-export const getKey = (stem: Uint8Array, leaf: LeafType | Uint8Array) => {
+export const getKey = (stem: Uint8Array, leaf: VerkleLeafType | Uint8Array) => {
   switch (leaf) {
-    case LeafType.Version:
-      return concatBytes(stem, VERSION_LEAF_KEY)
-    case LeafType.Balance:
-      return concatBytes(stem, BALANCE_LEAF_KEY)
-    case LeafType.Nonce:
-      return concatBytes(stem, NONCE_LEAF_KEY)
-    case LeafType.CodeHash:
-      return concatBytes(stem, CODE_HASH_LEAF_KEY)
-    case LeafType.CodeSize:
-      return concatBytes(stem, CODE_SIZE_LEAF_KEY)
+    case VerkleLeafType.Version:
+      return concatBytes(stem, VERKLE_VERSION_LEAF_KEY)
+    case VerkleLeafType.Balance:
+      return concatBytes(stem, VERKLE_BALANCE_LEAF_KEY)
+    case VerkleLeafType.Nonce:
+      return concatBytes(stem, VERKLE_NONCE_LEAF_KEY)
+    case VerkleLeafType.CodeHash:
+      return concatBytes(stem, VERKLE_CODE_HASH_LEAF_KEY)
+    case VerkleLeafType.CodeSize:
+      return concatBytes(stem, VERKLE_CODE_SIZE_LEAF_KEY)
     default:
       return concatBytes(stem, leaf)
   }
@@ -182,10 +182,10 @@ export function getTreeIndexesForStorageSlot(storageKey: bigint): {
   subIndex: number
 } {
   let position: bigint
-  if (storageKey < CODE_OFFSET - HEADER_STORAGE_OFFSET) {
-    position = BigInt(HEADER_STORAGE_OFFSET) + storageKey
+  if (storageKey < VERKLE_CODE_OFFSET - VERKLE_HEADER_STORAGE_OFFSET) {
+    position = BigInt(VERKLE_HEADER_STORAGE_OFFSET) + storageKey
   } else {
-    position = MAIN_STORAGE_OFFSET + storageKey
+    position = VERKLE_MAIN_STORAGE_OFFSET + storageKey
   }
 
   const treeIndex = position / BigInt(VERKLE_NODE_WIDTH)
@@ -195,8 +195,8 @@ export function getTreeIndexesForStorageSlot(storageKey: bigint): {
 }
 
 export function getTreeIndicesForCodeChunk(chunkId: number) {
-  const treeIndex = Math.floor((CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH)
-  const subIndex = (CODE_OFFSET + chunkId) % VERKLE_NODE_WIDTH
+  const treeIndex = Math.floor((VERKLE_CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH)
+  const subIndex = (VERKLE_CODE_OFFSET + chunkId) % VERKLE_NODE_WIDTH
   return { treeIndex, subIndex }
 }
 

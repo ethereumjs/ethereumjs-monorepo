@@ -4,7 +4,7 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import {
   Account,
   Address,
-  LeafType,
+  VerkleLeafType,
   bytesToBigInt,
   bytesToHex,
   getKey,
@@ -117,9 +117,9 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const address = Address.fromString('0x6177843db3138ae69679a54b95cf345ed759450d')
     const stem = getStem(stateManager.verkleCrypto, address, 0n)
 
-    const balanceKey = getKey(stem, LeafType.Balance)
-    const nonceKey = getKey(stem, LeafType.Nonce)
-    const codeHashKey = getKey(stem, LeafType.CodeHash)
+    const balanceKey = getKey(stem, VerkleLeafType.Balance)
+    const nonceKey = getKey(stem, VerkleLeafType.Nonce)
+    const codeHashKey = getKey(stem, VerkleLeafType.CodeHash)
 
     const balanceRaw = stateManager['_state'][bytesToHex(balanceKey)]
     const nonceRaw = stateManager['_state'][bytesToHex(nonceKey)]

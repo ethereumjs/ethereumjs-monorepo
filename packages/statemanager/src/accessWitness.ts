@@ -1,14 +1,14 @@
 import {
-  BALANCE_LEAF_KEY,
   BIGINT_0,
-  CODE_HASH_LEAF_KEY,
-  CODE_OFFSET,
-  CODE_SIZE_LEAF_KEY,
-  HEADER_STORAGE_OFFSET,
-  MAIN_STORAGE_OFFSET,
-  NONCE_LEAF_KEY,
+  VERKLE_BALANCE_LEAF_KEY,
+  VERKLE_CODE_HASH_LEAF_KEY,
+  VERKLE_CODE_OFFSET,
+  VERKLE_CODE_SIZE_LEAF_KEY,
+  VERKLE_HEADER_STORAGE_OFFSET,
+  VERKLE_MAIN_STORAGE_OFFSET,
   VERKLE_NODE_WIDTH,
-  VERSION_LEAF_KEY,
+  VERKLE_NONCE_LEAF_KEY,
+  VERKLE_VERSION_LEAF_KEY,
   bytesToBigInt,
   bytesToHex,
   getKey,
@@ -90,11 +90,11 @@ export class AccessWitness implements AccessWitnessInterface {
   touchAndChargeProofOfAbsence(address: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, BALANCE_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, CODE_HASH_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, NONCE_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERKLE_VERSION_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERKLE_BALANCE_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERKLE_CODE_SIZE_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERKLE_CODE_HASH_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERKLE_NONCE_LEAF_KEY)
 
     return gas
   }
@@ -102,8 +102,8 @@ export class AccessWitness implements AccessWitnessInterface {
   touchAndChargeMessageCall(address: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERKLE_VERSION_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERKLE_CODE_SIZE_LEAF_KEY)
 
     return gas
   }
@@ -111,8 +111,8 @@ export class AccessWitness implements AccessWitnessInterface {
   touchAndChargeValueTransfer(caller: Address, target: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnWriteAndComputeGas(caller, 0, BALANCE_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(target, 0, BALANCE_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(caller, 0, VERKLE_BALANCE_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(target, 0, VERKLE_BALANCE_LEAF_KEY)
 
     return gas
   }
@@ -120,8 +120,8 @@ export class AccessWitness implements AccessWitnessInterface {
   touchAndChargeContractCreateInit(address: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, NONCE_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERKLE_VERSION_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERKLE_NONCE_LEAF_KEY)
 
     return gas
   }
@@ -129,11 +129,11 @@ export class AccessWitness implements AccessWitnessInterface {
   touchAndChargeContractCreateCompleted(address: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, BALANCE_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, CODE_HASH_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, NONCE_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERKLE_VERSION_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERKLE_BALANCE_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERKLE_CODE_SIZE_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERKLE_CODE_HASH_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERKLE_NONCE_LEAF_KEY)
 
     return gas
   }
@@ -141,12 +141,12 @@ export class AccessWitness implements AccessWitnessInterface {
   touchTxOriginAndComputeGas(origin: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnReadAndComputeGas(origin, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(origin, 0, CODE_SIZE_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(origin, 0, CODE_HASH_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(origin, 0, VERKLE_VERSION_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(origin, 0, VERKLE_CODE_SIZE_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(origin, 0, VERKLE_CODE_HASH_LEAF_KEY)
 
-    gas += this.touchAddressOnWriteAndComputeGas(origin, 0, NONCE_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(origin, 0, BALANCE_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(origin, 0, VERKLE_NONCE_LEAF_KEY)
+    gas += this.touchAddressOnWriteAndComputeGas(origin, 0, VERKLE_BALANCE_LEAF_KEY)
 
     return gas
   }
@@ -154,15 +154,15 @@ export class AccessWitness implements AccessWitnessInterface {
   touchTxTargetAndComputeGas(target: Address, { sendsValue }: { sendsValue?: boolean } = {}) {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnReadAndComputeGas(target, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(target, 0, CODE_SIZE_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(target, 0, CODE_HASH_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(target, 0, NONCE_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(target, 0, VERKLE_VERSION_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(target, 0, VERKLE_CODE_SIZE_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(target, 0, VERKLE_CODE_HASH_LEAF_KEY)
+    gas += this.touchAddressOnReadAndComputeGas(target, 0, VERKLE_NONCE_LEAF_KEY)
 
     if (sendsValue === true) {
-      gas += this.touchAddressOnWriteAndComputeGas(target, 0, BALANCE_LEAF_KEY)
+      gas += this.touchAddressOnWriteAndComputeGas(target, 0, VERKLE_BALANCE_LEAF_KEY)
     } else {
-      gas += this.touchAddressOnReadAndComputeGas(target, 0, BALANCE_LEAF_KEY)
+      gas += this.touchAddressOnReadAndComputeGas(target, 0, VERKLE_BALANCE_LEAF_KEY)
     }
 
     return gas
@@ -368,18 +368,18 @@ export function decodeAccessedState(treeIndex: number | bigint, chunkIndex: numb
     case BigInt(4):
       return { type: AccessedStateType.CodeSize }
     default:
-      if (position < HEADER_STORAGE_OFFSET) {
-        throw Error(`No attribute yet stored >=5 and <${HEADER_STORAGE_OFFSET}`)
+      if (position < VERKLE_HEADER_STORAGE_OFFSET) {
+        throw Error(`No attribute yet stored >=5 and <${VERKLE_HEADER_STORAGE_OFFSET}`)
       }
 
-      if (position >= HEADER_STORAGE_OFFSET && position < CODE_OFFSET) {
-        const slot = position - BigInt(HEADER_STORAGE_OFFSET)
+      if (position >= VERKLE_HEADER_STORAGE_OFFSET && position < VERKLE_CODE_OFFSET) {
+        const slot = position - BigInt(VERKLE_HEADER_STORAGE_OFFSET)
         return { type: AccessedStateType.Storage, slot }
-      } else if (position >= CODE_OFFSET && position < MAIN_STORAGE_OFFSET) {
-        const codeChunkIdx = Number(position) - CODE_OFFSET
+      } else if (position >= VERKLE_CODE_OFFSET && position < VERKLE_MAIN_STORAGE_OFFSET) {
+        const codeChunkIdx = Number(position) - VERKLE_CODE_OFFSET
         return { type: AccessedStateType.Code, codeOffset: codeChunkIdx * 31 }
-      } else if (position >= MAIN_STORAGE_OFFSET) {
-        const slot = BigInt(position - MAIN_STORAGE_OFFSET)
+      } else if (position >= VERKLE_MAIN_STORAGE_OFFSET) {
+        const slot = BigInt(position - VERKLE_MAIN_STORAGE_OFFSET)
         return { type: AccessedStateType.Storage, slot }
       } else {
         throw Error(

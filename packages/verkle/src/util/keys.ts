@@ -6,11 +6,11 @@ import {
   CODE_OFFSET,
   CODE_SIZE_LEAF_KEY,
   HEADER_STORAGE_OFFSET,
-  LeafType,
   MAIN_STORAGE_OFFSET,
   NONCE_LEAF_KEY,
   VERKLE_NODE_WIDTH,
   VERSION_LEAF_KEY,
+  VerkleLeafType,
 } from '../types.js'
 
 import { getStem } from './crypto.js'
@@ -25,17 +25,17 @@ import type { Address, VerkleCrypto } from '@ethereumjs/util'
  * @return The tree key as a Uint8Array.
  */
 
-export const getKey = (stem: Uint8Array, leaf: LeafType | Uint8Array) => {
+export const getKey = (stem: Uint8Array, leaf: VerkleLeafType | Uint8Array) => {
   switch (leaf) {
-    case LeafType.Version:
+    case VerkleLeafType.Version:
       return concatBytes(stem, VERSION_LEAF_KEY)
-    case LeafType.Balance:
+    case VerkleLeafType.Balance:
       return concatBytes(stem, BALANCE_LEAF_KEY)
-    case LeafType.Nonce:
+    case VerkleLeafType.Nonce:
       return concatBytes(stem, NONCE_LEAF_KEY)
-    case LeafType.CodeHash:
+    case VerkleLeafType.CodeHash:
       return concatBytes(stem, CODE_HASH_LEAF_KEY)
-    case LeafType.CodeSize:
+    case VerkleLeafType.CodeSize:
       return concatBytes(stem, CODE_SIZE_LEAF_KEY)
     default:
       return concatBytes(stem, leaf)
