@@ -7,7 +7,7 @@ import {
   VerkleLeafType,
   bytesToBigInt,
   bytesToHex,
-  getKey,
+  getVerkleKey,
   getVerkleStem,
   hexToBytes,
   randomBytes,
