@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1718910012500,
+  "lastUpdate": 1719022824856,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "fe28071b8b69672d6318797062c536b23882d62e",
-          "message": "client: fix the getpayloadv4 with a deposit tx and expected deposit requests (#3410)\n\n* client: fix the getpayloadv4 with a deposit tx and expected deposit requests\n\n* expected response\n\n* set the deposit contract to default mainnet address\n\n* debug and fix the request root generation and get the spec working",
-          "timestamp": "2024-05-08T13:47:37-04:00",
-          "tree_id": "5e67a082f16b370bba868af8f064b4fbdc741e6d",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fe28071b8b69672d6318797062c536b23882d62e"
-        },
-        "date": 1715190616548,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41505,
-            "range": "±3.19%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41544,
-            "range": "±1.40%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40833,
-            "range": "±1.80%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37604,
-            "range": "±4.92%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38735,
-            "range": "±1.79%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±5.74%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "22612f292c69182064f554f04ff02e94035724f7",
+          "message": "verkle: rename verkle utils and refactor (#3468)\n\n* verkle: rename verkle utils\n\n* verkle: rename helper functions and remove duplicate helper files\n\n* statemanager: rename import\n\n* util: remove todo\n\n* verkle: port over some tests to util",
+          "timestamp": "2024-06-21T22:17:50-04:00",
+          "tree_id": "83c21cf0a424a97eb1c4eef406a82849c506f488",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/22612f292c69182064f554f04ff02e94035724f7"
+        },
+        "date": 1719022823548,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42697,
+            "range": "±2.29%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41123,
+            "range": "±2.86%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41119,
+            "range": "±1.49%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39973,
+            "range": "±1.97%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36034,
+            "range": "±5.74%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
