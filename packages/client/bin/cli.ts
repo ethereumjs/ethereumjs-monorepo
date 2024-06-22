@@ -35,7 +35,6 @@ import { loadKZG } from 'kzg-wasm'
 import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
-import * as promClient from 'prom-client'
 import * as readline from 'readline'
 import * as url from 'url'
 import * as yargs from 'yargs'
@@ -47,7 +46,7 @@ import { LevelDB } from '../src/execution/level.js'
 import { getLogger } from '../src/logging.js'
 import { Event } from '../src/types.js'
 import { parseMultiaddrs } from '../src/util/index.js'
-import { setupMetrics } from '../src/util/metrics.js'
+import { loadPromClient, setupMetrics } from '../src/util/metrics.js'
 
 import { helprpc, startRPCServers } from './startRpc.js'
 
@@ -1070,7 +1069,8 @@ async function run() {
   let metricsServer: http.Server | undefined
   if (args.prometheus === true) {
     // Create custom metrics
-    prometheusMetrics = setupMetrics()
+    const promClient = await loadPromClient()
+    prometheusMetrics = await setupMetrics()
 
     const register = new promClient.Registry()
     register.setDefaultLabels({
