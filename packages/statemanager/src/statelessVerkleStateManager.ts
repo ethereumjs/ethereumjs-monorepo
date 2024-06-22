@@ -2,22 +2,22 @@ import {
   Account,
   KECCAK256_NULL,
   KECCAK256_NULL_S,
-  LeafType,
+  VerkleLeafType,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToInt32,
-  getKey,
-  getStem,
-  getTreeKeyForCodeChunk,
-  getTreeKeyForStorageSlot,
+  getVerkleKey,
+  getVerkleStem,
+  getVerkleTreeKeyForCodeChunk,
+  getVerkleTreeKeyForStorageSlot,
   hexToBytes,
   padToEven,
   setLengthLeft,
   setLengthRight,
   short,
   toBytes,
-  verifyProof,
+  verifyVerkleProof,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -310,7 +310,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
   async checkChunkWitnessPresent(address: Address, codeOffset: number) {
     const chunkId = codeOffset / 31
-    const chunkKey = bytesToHex(await getTreeKeyForCodeChunk(address, chunkId, this.verkleCrypto))
+    const chunkKey = bytesToHex(
+      await getVerkleTreeKeyForCodeChunk(address, chunkId, this.verkleCrypto)
+    )
     return this._state[chunkKey] !== undefined
   }
 
@@ -381,7 +383,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     const chunks = Math.floor(codeSize / 31) + 1
     for (let chunkId = 0; chunkId < chunks; chunkId++) {
-      const chunkKey = bytesToHex(await getTreeKeyForCodeChunk(address, chunkId, this.verkleCrypto))
+      const chunkKey = bytesToHex(
+        await getVerkleTreeKeyForCodeChunk(address, chunkId, this.verkleCrypto)
+      )
       const codeChunk = this._state[chunkKey]
       if (codeChunk === null) {
         const errorMsg = `Invalid access to a non existent code chunk with chunkKey=${chunkKey}`
@@ -453,7 +457,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const storageKey = await getTreeKeyForStorageSlot(
+    const storageKey = await getVerkleTreeKeyForStorageSlot(
       address,
       BigInt(bytesToHex(key)),
       this.verkleCrypto
@@ -479,7 +483,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       this._storageCache!.put(address, key, value)
     } else {
       // TODO: Consider refactoring this in a writeContractStorage function? Like in stateManager.ts
-      const storageKey = await getTreeKeyForStorageSlot(
+      const storageKey = await getVerkleTreeKeyForStorageSlot(
         address,
         BigInt(bytesToHex(key)),
         this.verkleCrypto
@@ -495,8 +499,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @param address -  Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
-    const stem = getStem(this.verkleCrypto, address, 0)
-    const codeHashKey = getKey(stem, LeafType.CodeHash)
+    const stem = getVerkleStem(this.verkleCrypto, address, 0)
+    const codeHashKey = getVerkleKey(stem, VerkleLeafType.CodeHash)
     this._storageCache?.clearContractStorage(address)
     // Update codeHash to `c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470`
     this._state[bytesToHex(codeHashKey)] = KECCAK256_NULL_S
@@ -512,12 +516,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const stem = getStem(this.verkleCrypto, address, 0)
-    const versionKey = getKey(stem, LeafType.Version)
-    const balanceKey = getKey(stem, LeafType.Balance)
-    const nonceKey = getKey(stem, LeafType.Nonce)
-    const codeHashKey = getKey(stem, LeafType.CodeHash)
-    const codeSizeKey = getKey(stem, LeafType.CodeSize)
+    const stem = getVerkleStem(this.verkleCrypto, address, 0)
+    const versionKey = getVerkleKey(stem, VerkleLeafType.Version)
+    const balanceKey = getVerkleKey(stem, VerkleLeafType.Balance)
+    const nonceKey = getVerkleKey(stem, VerkleLeafType.Nonce)
+    const codeHashKey = getVerkleKey(stem, VerkleLeafType.CodeHash)
+    const codeSizeKey = getVerkleKey(stem, VerkleLeafType.CodeSize)
 
     const versionRaw = this._state[bytesToHex(versionKey)]
     const balanceRaw = this._state[bytesToHex(balanceKey)]
@@ -599,10 +603,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     if (this._accountCacheSettings.deactivate) {
-      const stem = getStem(this.verkleCrypto, address, 0)
-      const balanceKey = getKey(stem, LeafType.Balance)
-      const nonceKey = getKey(stem, LeafType.Nonce)
-      const codeHashKey = getKey(stem, LeafType.CodeHash)
+      const stem = getVerkleStem(this.verkleCrypto, address, 0)
+      const balanceKey = getVerkleKey(stem, VerkleLeafType.Balance)
+      const nonceKey = getVerkleKey(stem, VerkleLeafType.Nonce)
+      const codeHashKey = getVerkleKey(stem, VerkleLeafType.CodeHash)
 
       const balanceBuf = setLengthRight(bigIntToBytes(account.balance, true), 32)
       const nonceBuf = setLengthRight(bigIntToBytes(account.nonce, true), 32)
@@ -663,7 +667,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       return false
     }
 
-    return verifyProof(this.verkleCrypto, stateRoot, this._executionWitness)
+    return verifyVerkleProof(this.verkleCrypto, stateRoot, this._executionWitness)
   }
 
   // Verifies that the witness post-state matches the computed post-state

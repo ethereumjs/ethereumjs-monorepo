@@ -18,20 +18,7 @@ import type { PrefixedHexString } from './types.js'
  * Experimental (do not use in production!)
  */
 
-// TODO 1: this comes with a deprecation of the respective constants and methods within the
-// @ethereumjs/verkle package. Due to ease of parallel work this has not yet been executed upon,
-// so this still needs a small follow-up clean up PR.
-//
-// Along with the PR likely more/additional helper functionality should be moved over
-// (basically everything generic not depending on Verkle cryptography)
-//
-// TODO 2: Basically all these constants and methods need a Verkle or (VERKLE) prefix since
-// atm names are too generic to be grasped in a non-Verkle-limited context (e.g. `getKey()`)
-//
-// Holger Drewes, 2024-06-18
-
 /* Verkle Crypto */
-
 export interface VerkleCrypto {
   getTreeKey: (address: Uint8Array, treeIndex: Uint8Array, subIndex: number) => Uint8Array
   getTreeKeyHash: (address: Uint8Array, treeIndexLE: Uint8Array) => Uint8Array
@@ -55,7 +42,7 @@ export interface VerkleCrypto {
  * @param treeIndex The index of the tree to generate the key for. Defaults to 0.
  * @return The 31-bytes verkle tree stem as a Uint8Array.
  */
-export function getStem(
+export function getVerkleStem(
   ffi: VerkleCrypto,
   address: Address,
   treeIndex: number | bigint = 0
@@ -81,7 +68,7 @@ export function getStem(
  * @param executionWitness The verkle execution witness.
  * @returns {boolean} Whether or not the executionWitness belongs to the prestateRoot.
  */
-export function verifyProof(
+export function verifyVerkleProof(
   ffi: VerkleCrypto,
   prestateRoot: Uint8Array,
   executionWitness: VerkleExecutionWitness
@@ -133,7 +120,7 @@ export interface VerkleExecutionWitness {
   verkleProof: VerkleProof
 }
 
-export enum LeafType {
+export enum VerkleLeafType {
   Version = 0,
   Balance = 1,
   Nonce = 2,
@@ -141,16 +128,16 @@ export enum LeafType {
   CodeSize = 4,
 }
 
-export const VERSION_LEAF_KEY = intToBytes(LeafType.Version)
-export const BALANCE_LEAF_KEY = intToBytes(LeafType.Balance)
-export const NONCE_LEAF_KEY = intToBytes(LeafType.Nonce)
-export const CODE_HASH_LEAF_KEY = intToBytes(LeafType.CodeHash)
-export const CODE_SIZE_LEAF_KEY = intToBytes(LeafType.CodeSize)
+export const VERKLE_VERSION_LEAF_KEY = intToBytes(VerkleLeafType.Version)
+export const VERKLE_BALANCE_LEAF_KEY = intToBytes(VerkleLeafType.Balance)
+export const VERKLE_NONCE_LEAF_KEY = intToBytes(VerkleLeafType.Nonce)
+export const VERKLE_CODE_HASH_LEAF_KEY = intToBytes(VerkleLeafType.CodeHash)
+export const VERKLE_CODE_SIZE_LEAF_KEY = intToBytes(VerkleLeafType.CodeSize)
 
-export const HEADER_STORAGE_OFFSET = 64
-export const CODE_OFFSET = 128
+export const VERKLE_HEADER_STORAGE_OFFSET = 64
+export const VERKLE_CODE_OFFSET = 128
 export const VERKLE_NODE_WIDTH = 256
-export const MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(31)
+export const VERKLE_MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(31)
 
 /**
  * @dev Returns the tree key for a given verkle tree stem, and sub index.
@@ -160,32 +147,32 @@ export const MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(31)
  * @return The tree key as a Uint8Array.
  */
 
-export const getKey = (stem: Uint8Array, leaf: LeafType | Uint8Array) => {
+export const getVerkleKey = (stem: Uint8Array, leaf: VerkleLeafType | Uint8Array) => {
   switch (leaf) {
-    case LeafType.Version:
-      return concatBytes(stem, VERSION_LEAF_KEY)
-    case LeafType.Balance:
-      return concatBytes(stem, BALANCE_LEAF_KEY)
-    case LeafType.Nonce:
-      return concatBytes(stem, NONCE_LEAF_KEY)
-    case LeafType.CodeHash:
-      return concatBytes(stem, CODE_HASH_LEAF_KEY)
-    case LeafType.CodeSize:
-      return concatBytes(stem, CODE_SIZE_LEAF_KEY)
+    case VerkleLeafType.Version:
+      return concatBytes(stem, VERKLE_VERSION_LEAF_KEY)
+    case VerkleLeafType.Balance:
+      return concatBytes(stem, VERKLE_BALANCE_LEAF_KEY)
+    case VerkleLeafType.Nonce:
+      return concatBytes(stem, VERKLE_NONCE_LEAF_KEY)
+    case VerkleLeafType.CodeHash:
+      return concatBytes(stem, VERKLE_CODE_HASH_LEAF_KEY)
+    case VerkleLeafType.CodeSize:
+      return concatBytes(stem, VERKLE_CODE_SIZE_LEAF_KEY)
     default:
       return concatBytes(stem, leaf)
   }
 }
 
-export function getTreeIndexesForStorageSlot(storageKey: bigint): {
+export function getVerkleTreeIndexesForStorageSlot(storageKey: bigint): {
   treeIndex: bigint
   subIndex: number
 } {
   let position: bigint
-  if (storageKey < CODE_OFFSET - HEADER_STORAGE_OFFSET) {
-    position = BigInt(HEADER_STORAGE_OFFSET) + storageKey
+  if (storageKey < VERKLE_CODE_OFFSET - VERKLE_HEADER_STORAGE_OFFSET) {
+    position = BigInt(VERKLE_HEADER_STORAGE_OFFSET) + storageKey
   } else {
-    position = MAIN_STORAGE_OFFSET + storageKey
+    position = VERKLE_MAIN_STORAGE_OFFSET + storageKey
   }
 
   const treeIndex = position / BigInt(VERKLE_NODE_WIDTH)
@@ -194,19 +181,19 @@ export function getTreeIndexesForStorageSlot(storageKey: bigint): {
   return { treeIndex, subIndex }
 }
 
-export function getTreeIndicesForCodeChunk(chunkId: number) {
-  const treeIndex = Math.floor((CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH)
-  const subIndex = (CODE_OFFSET + chunkId) % VERKLE_NODE_WIDTH
+export function getVerkleTreeIndicesForCodeChunk(chunkId: number) {
+  const treeIndex = Math.floor((VERKLE_CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH)
+  const subIndex = (VERKLE_CODE_OFFSET + chunkId) % VERKLE_NODE_WIDTH
   return { treeIndex, subIndex }
 }
 
-export const getTreeKeyForCodeChunk = async (
+export const getVerkleTreeKeyForCodeChunk = async (
   address: Address,
   chunkId: number,
   verkleCrypto: VerkleCrypto
 ) => {
-  const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkId)
-  return concatBytes(getStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
+  const { treeIndex, subIndex } = getVerkleTreeIndicesForCodeChunk(chunkId)
+  return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
 }
 
 export const chunkifyCode = (code: Uint8Array) => {
@@ -219,12 +206,12 @@ export const chunkifyCode = (code: Uint8Array) => {
   throw new Error('Not implemented')
 }
 
-export const getTreeKeyForStorageSlot = async (
+export const getVerkleTreeKeyForStorageSlot = async (
   address: Address,
   storageKey: bigint,
   verkleCrypto: VerkleCrypto
 ) => {
-  const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(storageKey)
+  const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(storageKey)
 
-  return concatBytes(getStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
+  return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
 }
