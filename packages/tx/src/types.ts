@@ -59,6 +59,12 @@ export enum Capability {
    * See: [2930](https://eips.ethereum.org/EIPS/eip-2930) Access Lists EIP
    */
   EIP2930AccessLists = 2930,
+
+  /**
+   * Tx supports setting EOA code
+   * See [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702)
+   */
+  EIP7702EOACode = 7702,
 }
 
 /**

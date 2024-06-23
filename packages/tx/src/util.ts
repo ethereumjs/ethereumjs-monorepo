@@ -1,4 +1,10 @@
-import { type PrefixedHexString, bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
+import {
+  type PrefixedHexString,
+  bytesToHex,
+  hexToBytes,
+  setLengthLeft,
+  validateNoLeadingZeroes,
+} from '@ethereumjs/util'
 
 import { isAccessList, isAuthorizationList } from './types.js'
 
@@ -188,11 +194,17 @@ export class AuthorizationLists {
       const authorizationListItem = authorizationList[key]
       const address = authorizationListItem[1]
       const nonceList = authorizationListItem[2]
+      const yParity = authorizationListItem[3]
+      const r = authorizationListItem[4]
+      const s = authorizationListItem[5]
+      validateNoLeadingZeroes({ address, yParity, r, s })
       if (address.length !== 20) {
         throw new Error('Invalid EIP-7702 transaction: address length should be 20 bytes')
       }
       if (nonceList.length > 1) {
         throw new Error('Invalid EIP-7702 transaction: nonce list should consist of at most 1 item')
+      } else if (nonceList.length === 1) {
+        validateNoLeadingZeroes({ nonce: nonceList[0] })
       }
     }
   }
