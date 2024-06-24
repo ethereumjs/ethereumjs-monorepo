@@ -5,7 +5,6 @@ import { assert, beforeAll, describe, it } from 'vitest'
 import {
   InternalNode,
   LeafNode,
-  ROOT_DB_KEY,
   VerkleNodeType,
   decodeNode,
   matchingBytesLength,
