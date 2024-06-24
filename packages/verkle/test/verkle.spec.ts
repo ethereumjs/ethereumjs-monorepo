@@ -1,4 +1,4 @@
-import { MapDB, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { MapDB, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
@@ -246,5 +246,43 @@ describe('findPath validation', () => {
     assert.equal(res2.stack.length, 2, 'confirm node is at depth 2')
     const val2 = await trie.get(hexToBytes(keys[2]))
     assert.deepEqual(val2, hexToBytes(values[2]), 'confirm values[2] can be retrieved from trie')
+  })
+
+  it.only('should put values and find them', async () => {
+    const keys = [
+      // Two keys with the same stem but different suffixes
+      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
+      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+      // A key with a partially matching stem 0x318d to above 2 keys
+      '0x318dfa512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+      // A key with a partially matching stem 0x318dfa51 to above key
+      '0x318dfa513b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+    ]
+    const values = [
+      '0x320122e8584be00d000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000001',
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0x0300000000000000000000000000000000000000000000000000000000000000',
+    ]
+    const trie = await VerkleTree.create({
+      verkleCrypto,
+      db: new MapDB<Uint8Array, Uint8Array>(),
+    })
+
+    await trie['_createRootNode']()
+
+    await trie.put(hexToBytes(keys[0]), hexToBytes(values[0]))
+    await trie.put(hexToBytes(keys[1]), hexToBytes(values[1]))
+    await trie.put(hexToBytes(keys[2]), hexToBytes(values[2]))
+    await trie.put(hexToBytes(keys[3]), hexToBytes(values[3]))
+    const val1 = await trie.get(hexToBytes(keys[0]))
+    assert.deepEqual(val1, hexToBytes(values[0]))
+    const val3 = await trie.get(hexToBytes(keys[2]))
+    assert.deepEqual(val3, hexToBytes(values[2]))
+    const res = await trie.findPath(hexToBytes(keys[3]).slice(0, 31))
+    console.log(bytesToHex(res.stack[2][0].stem))
+    console.log(res)
+    // const val4 = await trie.get(hexToBytes(keys[3]))
+    // assert.deepEqual(val4, hexToBytes(values[3]))
   })
 })
