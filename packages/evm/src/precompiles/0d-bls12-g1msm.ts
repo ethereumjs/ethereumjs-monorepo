@@ -3,12 +3,8 @@ import { bytesToHex, equalsBytes, short } from '@ethereumjs/util'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import {
-  BLS12_381_FromG1Point,
-  BLS12_381_ToFrPoint,
-  BLS12_381_ToG1Point,
-  gasDiscountPairs,
-} from './bls12_381/mcl.js'
+import { BLS_GAS_DISCOUNT_PAIRS } from './bls12_381/constants.js'
+import { BLS12_381_FromG1Point, BLS12_381_ToFrPoint, BLS12_381_ToG1Point } from './bls12_381/mcl.js'
 
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
@@ -28,14 +24,14 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
   const numPairs = Math.floor(inputData.length / 160)
 
   const gasUsedPerPair = opts.common.paramByEIP('gasPrices', 'Bls12381G1MulGas', 2537) ?? BigInt(0)
-  const gasDiscountMax = gasDiscountPairs[gasDiscountPairs.length - 1][1]
+  const gasDiscountMax = BLS_GAS_DISCOUNT_PAIRS[BLS_GAS_DISCOUNT_PAIRS.length - 1][1]
   let gasDiscountMultiplier
 
-  if (numPairs <= gasDiscountPairs.length) {
+  if (numPairs <= BLS_GAS_DISCOUNT_PAIRS.length) {
     if (numPairs === 0) {
       gasDiscountMultiplier = 0 // this implicitly sets gasUsed to 0 as per the EIP.
     } else {
-      gasDiscountMultiplier = gasDiscountPairs[numPairs - 1][1]
+      gasDiscountMultiplier = BLS_GAS_DISCOUNT_PAIRS[numPairs - 1][1]
     }
   } else {
     gasDiscountMultiplier = gasDiscountMax

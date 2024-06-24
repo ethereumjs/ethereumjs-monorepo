@@ -3,12 +3,8 @@ import { bytesToHex, equalsBytes, short } from '@ethereumjs/util'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import {
-  BLS12_381_FromG2Point,
-  BLS12_381_ToFrPoint,
-  BLS12_381_ToG2Point,
-  gasDiscountPairs,
-} from './bls12_381/mcl.js'
+import { BLS_GAS_DISCOUNT_PAIRS } from './bls12_381/index.js'
+import { BLS12_381_FromG2Point, BLS12_381_ToFrPoint, BLS12_381_ToG2Point } from './bls12_381/mcl.js'
 
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
@@ -28,7 +24,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
   const numPairs = Math.floor(inputData.length / 288)
 
   const gasUsedPerPair = opts.common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 2537) ?? BigInt(0)
-  const gasDiscountArray = gasDiscountPairs
+  const gasDiscountArray = BLS_GAS_DISCOUNT_PAIRS
   const gasDiscountMax = gasDiscountArray[gasDiscountArray.length - 1][1]
   let gasDiscountMultiplier
 
