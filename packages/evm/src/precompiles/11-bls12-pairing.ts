@@ -3,7 +3,7 @@ import { bytesToHex, concatBytes, equalsBytes, hexToBytes, short } from '@ethere
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import { BLS12_381_ToG1Point, BLS12_381_ToG2Point } from './util/bls12_381.js'
+import { BLS12_381_ToG1Point, BLS12_381_ToG2Point } from './bls12_381/mcl.js'
 
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'

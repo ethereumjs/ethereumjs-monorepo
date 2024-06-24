@@ -8,7 +8,7 @@ import {
   BLS12_381_ToFrPoint,
   BLS12_381_ToG2Point,
   gasDiscountPairs,
-} from './util/bls12_381.js'
+} from './bls12_381/mcl.js'
 
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
