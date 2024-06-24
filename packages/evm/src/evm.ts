@@ -28,7 +28,7 @@ import { Journal } from './journal.js'
 import { EVMPerformanceLogger } from './logger.js'
 import { Message } from './message.js'
 import { getOpcodesForHF } from './opcodes/index.js'
-import { getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
+import { MCLBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
 import { TransientStorage } from './transientStorage.js'
 import { DefaultBlockchain } from './types.js'
 
@@ -42,6 +42,7 @@ import type {
   Block,
   Blockchain,
   CustomOpcode,
+  EVMBLSInterface,
   EVMEvents,
   EVMInterface,
   EVMOpts,
@@ -139,6 +140,8 @@ export class EVM implements EVMInterface {
    * @hidden
    */
   protected readonly _mcl: any //
+
+  protected readonly _bls?: EVMBLSInterface
 
   /**
    * EVM is run in DEBUG mode (default: false)
@@ -246,6 +249,7 @@ export class EVM implements EVMInterface {
 
     if (this.common.isActivatedEIP(2537)) {
       this._mcl = mcl
+      this._bls = new MCLBLS(mcl)
     }
 
     this._emit = async (topic: string, data: any): Promise<void> => {

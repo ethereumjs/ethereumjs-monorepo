@@ -329,6 +329,10 @@ export interface ExecResult {
   blobGasUsed?: bigint
 }
 
+export type EVMBLSInterface = {
+  add(input: Uint8Array): Uint8Array
+}
+
 /**
  * Log that the contract emits.
  */

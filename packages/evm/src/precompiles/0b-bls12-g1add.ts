@@ -3,13 +3,11 @@ import { bytesToHex, equalsBytes, short } from '@ethereumjs/util'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import { BLS12_381_FromG1Point, BLS12_381_ToG1Point } from './bls12_381/mcl.js'
-
-import type { ExecResult } from '../types.js'
+import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
-  const mcl = (<any>opts._EVM)._mcl!
+  const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
 
   const inputData = opts.data
 
@@ -55,23 +53,15 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
       return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
     }
   }
-
-  // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
-  let mclPoint1
-  let mclPoint2
+  let returnValue
   try {
-    mclPoint1 = BLS12_381_ToG1Point(opts.data.subarray(0, 128), mcl, false)
-    mclPoint2 = BLS12_381_ToG1Point(opts.data.subarray(128, 256), mcl, false)
+    returnValue = bls.add(inputData)
   } catch (e: any) {
     if (opts._debug !== undefined) {
       opts._debug(`BLS12G1ADD (0x0b) failed: ${e.message}`)
     }
     return EvmErrorResult(e, opts.gasLimit)
   }
-
-  const result = mcl.add(mclPoint1, mclPoint2)
-
-  const returnValue = BLS12_381_FromG1Point(result)
 
   if (opts._debug !== undefined) {
     opts._debug(`BLS12G1ADD (0x0b) return value=${bytesToHex(returnValue)}`)
