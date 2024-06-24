@@ -11,6 +11,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
+  concatBytes,
   ecrecover,
   equalsBytes,
   hexToBytes,
@@ -19,7 +20,6 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { concatBytes } from 'ethereum-cryptography/utils.js'
 
 import { Bloom } from './bloom/index.js'
 
@@ -451,12 +451,12 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const writtenAddresses = new Set<string>()
   if (tx.supports(Capability.EIP7702EOACode)) {
     const authorizationList = (<EIP7702CompatibleTx>tx).authorizationList
-    const MAGIC = new Uint8Array(5)
+    const MAGIC = new Uint8Array([5])
     for (let i = 0; i < authorizationList.length; i++) {
       const data = authorizationList[i]
       const chainId = data[0]
       const chainIdBN = bytesToBigInt(chainId)
-      if (chainIdBN !== BIGINT_0 || chainIdBN !== this.common.chainId()) {
+      if (chainIdBN !== BIGINT_0 && chainIdBN !== this.common.chainId()) {
         // Chain id does not match, continue
         continue
       }
@@ -467,7 +467,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       const r = data[4]
       const s = data[5]
 
-      const rlpdSignedMessage = RLP.encode([MAGIC, chainId, nonceList, address])
+      const rlpdSignedMessage = RLP.encode([chainId, address, nonceList])
       const toSign = keccak256(concatBytes(MAGIC, rlpdSignedMessage))
       const pubKey = ecrecover(toSign, yParity, r, s)
       // Address to set code to
