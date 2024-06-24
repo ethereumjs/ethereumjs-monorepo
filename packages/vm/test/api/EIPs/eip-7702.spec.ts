@@ -4,6 +4,7 @@ import { EOACodeEIP7702Transaction } from '@ethereumjs/tx'
 import {
   Account,
   Address,
+  //BIGINT_1,
   bigIntToBytes,
   concatBytes,
   ecsign,
@@ -67,6 +68,8 @@ describe('EIP 7702: set code to EOA accounts', () => {
         maxFeePerGas: 1000,
         authorizationList: authList,
         to: defaultAuthAddr,
+        // value: BIGINT_1 // Note, by enabling this line, the account will not get deleted
+        // Therefore, this test will pass
       },
       { common }
     ).sign(defaultSenderPkey)
@@ -88,10 +91,10 @@ describe('EIP 7702: set code to EOA accounts', () => {
 
     await vm.runTx({ tx })
 
-    // Note: due to EIP-155, defaultAuthAddr is now deleted
+    // Note: due to EIP-161, defaultAuthAddr is now deleted
 
     const slot = hexToBytes('0x' + '00'.repeat(31) + '01')
     const value = await vm.stateManager.getContractStorage(defaultAuthAddr, slot)
-    assert.ok(equalsBytes(slot, value))
+    assert.ok(equalsBytes(unpadBytes(slot), value))
   })
 })
