@@ -185,6 +185,9 @@ describe('findPath validation', () => {
     // Put a second leaf node in the tree with a partially matching stem
     putStack = []
     const stem2 = hexToBytes(keys[2]).slice(0, 31)
+
+    // Find path to closest node in tree
+    const foundPath = await trie.findPath(stem2)
     const leafNode2 = await LeafNode.create(
       stem2,
       new Array(256).fill(new Uint8Array(32)),
