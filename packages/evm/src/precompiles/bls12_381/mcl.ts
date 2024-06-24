@@ -25,9 +25,11 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): a
   const p_x = bytesToUnprefixedHex(input.subarray(16, 64))
   const p_y = bytesToUnprefixedHex(input.subarray(80, 128))
 
+  const G1 = new mcl.G1()
+
   const ZeroString48Bytes = '0'.repeat(96)
   if (p_x === p_y && p_x === ZeroString48Bytes) {
-    return new mcl.G1()
+    return G1
   }
 
   const Fp_X = new mcl.Fp()
@@ -37,8 +39,6 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): a
   Fp_X.setStr(p_x, 16)
   Fp_Y.setStr(p_y, 16)
   One.setStr('1', 16)
-
-  const G1 = new mcl.G1()
 
   G1.setX(Fp_X)
   G1.setY(Fp_Y)

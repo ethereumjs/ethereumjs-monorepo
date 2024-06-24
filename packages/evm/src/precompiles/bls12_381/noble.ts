@@ -1,4 +1,5 @@
 import {
+  BIGINT_0,
   bytesToBigInt,
   bytesToUnprefixedHex,
   concatBytes,
@@ -6,6 +7,7 @@ import {
   padToEven,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
+import { bls12_381 } from '@noble/curves/bls12-381'
 
 import { ERROR, EvmError } from '../../exceptions.js'
 
@@ -25,9 +27,11 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): a
   const p_x = bytesToUnprefixedHex(input.subarray(16, 64))
   const p_y = bytesToUnprefixedHex(input.subarray(80, 128))
 
+  const G1 = new mcl.G1()
+
   const ZeroString48Bytes = '0'.repeat(96)
   if (p_x === p_y && p_x === ZeroString48Bytes) {
-    return new mcl.G1()
+    return G1
   }
 
   const Fp_X = new mcl.Fp()
@@ -37,8 +41,6 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): a
   Fp_X.setStr(p_x, 16)
   Fp_Y.setStr(p_y, 16)
   One.setStr('1', 16)
-
-  const G1 = new mcl.G1()
 
   G1.setX(Fp_X)
   G1.setY(Fp_Y)
@@ -53,6 +55,39 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): a
   if (G1.isValid() === false) {
     throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
   }
+
+  return G1
+}
+
+/**
+ * Converts an Uint8Array to a MCL G1 point. Raises errors if the point is not on the curve
+ * and (if activated) if the point is in the subgroup / order check.
+ * @param input Input Uint8Array. Should be 128 bytes
+ * @param verifyOrder Perform the subgroup check (defaults to true)
+ * @returns MCL G1 point
+ */
+function BLS12_381_ToG1PointN(input: Uint8Array) {
+  const x = bytesToBigInt(input.subarray(0, 64))
+  const y = bytesToBigInt(input.subarray(64, 128))
+
+  if (x === y && x === BIGINT_0) {
+    return bls12_381.G1.ProjectivePoint.ZERO
+  }
+
+  const G1 = bls12_381.G1.ProjectivePoint.fromAffine({
+    x,
+    y,
+  })
+
+  /*mcl.verifyOrderG1(verifyOrder)
+  if (verifyOrder && G1.isValidOrder() === false) {
+    throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+  }
+
+  // Check if these coordinates are actually on the curve.
+  if (G1.isValid() === false) {
+    throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+  }*/
 
   return G1
 }
@@ -227,9 +262,16 @@ export class NobleBLS implements EVMBLSInterface {
     const mclPoint1 = BLS12_381_ToG1Point(input.subarray(0, 128), this._mcl, false)
     const mclPoint2 = BLS12_381_ToG1Point(input.subarray(128, 256), this._mcl, false)
 
+    const mclPoint1N = BLS12_381_ToG1PointN(input.subarray(0, 128))
+    const mclPoint2N = BLS12_381_ToG1PointN(input.subarray(128, 256))
+
+    const resultN = mclPoint1N.add(mclPoint2N)
     const result = this._mcl.add(mclPoint1, mclPoint2)
 
-    return BLS12_381_FromG1Point(result)
+    const resultBytes = BLS12_381_FromG1Point(result)
+    console.log(resultN.toRawBytes())
+    console.log(resultBytes)
+    return resultBytes
   }
 }
 
