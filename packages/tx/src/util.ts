@@ -138,9 +138,15 @@ export class AuthorizationLists {
     if (isAuthorizationList(authorizationList)) {
       AuthorizationListJSON = authorizationList
       const newAuthorizationList: AuthorizationListBytes = []
-
+      const jsonItems = ['chainId', 'address', 'nonce', 'yParity', 'r', 's']
       for (let i = 0; i < authorizationList.length; i++) {
         const item: AuthorizationListItem = authorizationList[i]
+        for (const key of jsonItems) {
+          // @ts-ignore TODO why does TsScript fail here?
+          if (item[key] === undefined) {
+            throw new Error(`EIP-7702 authorization list invalid: ${key} is not defined`)
+          }
+        }
         const chainId = hexToBytes(item.chainId)
         const addressBytes = hexToBytes(item.address)
         const nonceList = []

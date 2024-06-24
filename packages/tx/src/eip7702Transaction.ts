@@ -70,7 +70,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
   /**
    * Instantiate a transaction from the serialized tx.
    *
-   * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * Format: `0x04 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, signatureYParity, signatureR, signatureS])`
    */
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
