@@ -1,4 +1,3 @@
-import Benchmark from 'benchmark'
 import { BenchmarksType } from './util'
 import { mainnetBlocks } from './mainnetBlocks'
 import { bytecode } from './bytecode'
