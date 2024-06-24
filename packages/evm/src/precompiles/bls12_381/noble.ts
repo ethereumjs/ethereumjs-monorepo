@@ -9,144 +9,10 @@ import {
 
 import { ERROR, EvmError } from '../../exceptions.js'
 
+import { BLS_FIELD_MODULUS } from './constants.js'
+
 import type { EVMBLSInterface } from '../../types.js'
 
-// base field modulus as described in the EIP
-const fieldModulus = BigInt(
-  '0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab'
-)
-
-// gas discount pairs taken from EIP-2537 `Bls12381MultiExpGasDiscount` parameter
-export const gasDiscountPairs = [
-  [1, 1200],
-  [2, 888],
-  [3, 764],
-  [4, 641],
-  [5, 594],
-  [6, 547],
-  [7, 500],
-  [8, 453],
-  [9, 438],
-  [10, 423],
-  [11, 408],
-  [12, 394],
-  [13, 379],
-  [14, 364],
-  [15, 349],
-  [16, 334],
-  [17, 330],
-  [18, 326],
-  [19, 322],
-  [20, 318],
-  [21, 314],
-  [22, 310],
-  [23, 306],
-  [24, 302],
-  [25, 298],
-  [26, 294],
-  [27, 289],
-  [28, 285],
-  [29, 281],
-  [30, 277],
-  [31, 273],
-  [32, 269],
-  [33, 268],
-  [34, 266],
-  [35, 265],
-  [36, 263],
-  [37, 262],
-  [38, 260],
-  [39, 259],
-  [40, 257],
-  [41, 256],
-  [42, 254],
-  [43, 253],
-  [44, 251],
-  [45, 250],
-  [46, 248],
-  [47, 247],
-  [48, 245],
-  [49, 244],
-  [50, 242],
-  [51, 241],
-  [52, 239],
-  [53, 238],
-  [54, 236],
-  [55, 235],
-  [56, 233],
-  [57, 232],
-  [58, 231],
-  [59, 229],
-  [60, 228],
-  [61, 226],
-  [62, 225],
-  [63, 223],
-  [64, 222],
-  [65, 221],
-  [66, 220],
-  [67, 219],
-  [68, 219],
-  [69, 218],
-  [70, 217],
-  [71, 216],
-  [72, 216],
-  [73, 215],
-  [74, 214],
-  [75, 213],
-  [76, 213],
-  [77, 212],
-  [78, 211],
-  [79, 211],
-  [80, 210],
-  [81, 209],
-  [82, 208],
-  [83, 208],
-  [84, 207],
-  [85, 206],
-  [86, 205],
-  [87, 205],
-  [88, 204],
-  [89, 203],
-  [90, 202],
-  [91, 202],
-  [92, 201],
-  [93, 200],
-  [94, 199],
-  [95, 199],
-  [96, 198],
-  [97, 197],
-  [98, 196],
-  [99, 196],
-  [100, 195],
-  [101, 194],
-  [102, 193],
-  [103, 193],
-  [104, 192],
-  [105, 191],
-  [106, 191],
-  [107, 190],
-  [108, 189],
-  [109, 188],
-  [110, 188],
-  [111, 187],
-  [112, 186],
-  [113, 185],
-  [114, 185],
-  [115, 184],
-  [116, 183],
-  [117, 182],
-  [118, 182],
-  [119, 181],
-  [120, 180],
-  [121, 179],
-  [122, 179],
-  [123, 178],
-  [124, 177],
-  [125, 176],
-  [126, 176],
-  [127, 175],
-  [128, 174],
-]
 /**
  * Converts an Uint8Array to a MCL G1 point. Raises errors if the point is not on the curve
  * and (if activated) if the point is in the subgroup / order check.
@@ -312,7 +178,7 @@ function BLS12_381_ToFrPoint(input: Uint8Array, mcl: any): any {
 
 function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array, mcl: any): any {
   // check if point is in field
-  if (bytesToBigInt(fpCoordinate) >= fieldModulus) {
+  if (bytesToBigInt(fpCoordinate) >= BLS_FIELD_MODULUS) {
     throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
   }
 
@@ -328,10 +194,10 @@ function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array, mcl: any): any {
 
 function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array, mcl: any): any {
   // check if the coordinates are in the field
-  if (bytesToBigInt(fpXCoordinate) >= fieldModulus) {
+  if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
     throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
   }
-  if (bytesToBigInt(fpYCoordinate) >= fieldModulus) {
+  if (bytesToBigInt(fpYCoordinate) >= BLS_FIELD_MODULUS) {
     throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
   }
 
