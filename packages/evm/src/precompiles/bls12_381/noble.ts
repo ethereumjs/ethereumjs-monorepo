@@ -9,6 +9,8 @@ import {
 
 import { ERROR, EvmError } from '../../exceptions.js'
 
+import type { EVMBLSInterface } from '../../types.js'
+
 // base field modulus as described in the EIP
 const fieldModulus = BigInt(
   '0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab'
@@ -344,6 +346,25 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
   fp2.set_b(fp_y)
 
   return fp2
+}
+
+export class NobleBLS implements EVMBLSInterface {
+  // TODO: Remove after transition
+  protected readonly _mcl: any
+
+  constructor(mcl: any) {
+    this._mcl = mcl
+  }
+
+  add(input: Uint8Array): Uint8Array {
+    // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
+    const mclPoint1 = BLS12_381_ToG1Point(input.subarray(0, 128), this._mcl, false)
+    const mclPoint2 = BLS12_381_ToG1Point(input.subarray(128, 256), this._mcl, false)
+
+    const result = this._mcl.add(mclPoint1, mclPoint2)
+
+    return BLS12_381_FromG1Point(result)
+  }
 }
 
 export {
