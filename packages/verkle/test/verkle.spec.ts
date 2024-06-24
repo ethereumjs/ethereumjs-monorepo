@@ -5,7 +5,7 @@ import { assert, beforeAll, describe, it } from 'vitest'
 import {
   InternalNode,
   LeafNode,
-  ROOT_DB_KEY,
+  VerkleNodeType,
   decodeNode,
   matchingBytesLength,
 } from '../src/index.js'
@@ -163,16 +163,16 @@ describe('findPath validation', () => {
     leafNode1.setValue(hexToBytes(keys[0])[31], hexToBytes(values[0]))
     leafNode1.setValue(hexToBytes(keys[1])[31], hexToBytes(values[1]))
 
-    putStack.push([stem1, leafNode1])
+    putStack.push([leafNode1.hash(), leafNode1])
 
     // Pull root node from DB
-    const rawNode = await trie['_db'].get(ROOT_DB_KEY)
+    const rawNode = await trie['_db'].get(trie.root())
     const rootNode = decodeNode(rawNode!, verkleCrypto) as InternalNode
     // Update root node with commitment from leaf node
     rootNode.setChild(stem1[0], { commitment: leafNode1.commitment, path: stem1 })
-    putStack.push([ROOT_DB_KEY, rootNode])
-    await trie.saveStack(putStack)
     trie.root(verkleCrypto.serializeCommitment(rootNode.commitment))
+    putStack.push([trie.root(), rootNode])
+    await trie.saveStack(putStack)
 
     // Verify that path to leaf node can be found from stem
     const res = await trie.findPath(stem1)
@@ -185,41 +185,58 @@ describe('findPath validation', () => {
     // Put a second leaf node in the tree with a partially matching stem
     putStack = []
     const stem2 = hexToBytes(keys[2]).slice(0, 31)
+
+    // Find path to closest node in tree
+    const foundPath = await trie.findPath(stem2)
+
+    // Confirm node with stem2 doesn't exist in trie
+    assert.equal(foundPath.node, null)
+
+    // Create new leaf node
     const leafNode2 = await LeafNode.create(
       stem2,
       new Array(256).fill(new Uint8Array(32)),
       verkleCrypto
     )
     leafNode2.setValue(hexToBytes(keys[2])[31], hexToBytes(values[2]))
-    putStack.push([stem2, leafNode2])
+    putStack.push([leafNode2.hash(), leafNode2])
 
-    // Create new internal node
-    const internalNode1 = InternalNode.create(verkleCrypto)
+    const nearestNode = foundPath.stack.pop()![0]
+    // Verify that another leaf node is "nearest" node
+    assert.equal(nearestNode.type, VerkleNodeType.Leaf)
+    assert.deepEqual(nearestNode, leafNode1)
 
-    // Compute the portion of stem1 and stem2 that match
+    // Compute the portion of stem1 and stem2 that match (i.e. the partial path closest to stem2)
     // Note: We subtract 1 since we are using 0-indexed arrays
     const partialMatchingStemIndex = matchingBytesLength(stem1, stem2) - 1
     // Find the path to the new internal node (the matching portion of stem1 and stem2)
     const internalNode1Path = stem1.slice(0, partialMatchingStemIndex)
+    // Create new internal node
+    const internalNode1 = InternalNode.create(verkleCrypto)
+
     // Update the child references for leafNode1 and leafNode 2
     internalNode1.setChild(stem1[partialMatchingStemIndex], {
-      commitment: leafNode1.commitment,
-      path: stem1,
+      commitment: nearestNode.commitment,
+      path: (nearestNode as LeafNode).stem,
     })
     internalNode1.setChild(stem2[partialMatchingStemIndex], {
       commitment: leafNode2.commitment,
       path: stem2,
     })
 
-    putStack.push([internalNode1Path, internalNode1])
+    putStack.push([internalNode1.hash(), internalNode1])
     // Update rootNode child reference for internal node 1
-    rootNode.setChild(internalNode1Path[0], {
+
+    const rootNodeFromPath = foundPath.stack.pop()![0] as InternalNode
+    // Confirm node from findPath matches root
+    assert.deepEqual(rootNodeFromPath, rootNode)
+    rootNodeFromPath.setChild(internalNode1Path[0], {
       commitment: internalNode1.commitment,
       path: internalNode1Path,
     })
-    putStack.push([ROOT_DB_KEY, rootNode])
+    trie.root(verkleCrypto.serializeCommitment(rootNodeFromPath.commitment))
+    putStack.push([trie.root(), rootNodeFromPath])
     await trie.saveStack(putStack)
-    trie.root(verkleCrypto.serializeCommitment(rootNode.commitment))
     let res2 = await trie.findPath(stem1)
 
     assert.equal(res2.remaining.length, 0, 'confirm full path was found')

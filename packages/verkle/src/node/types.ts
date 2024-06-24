@@ -1,6 +1,6 @@
 import type { InternalNode } from './internalNode.js'
 import type { LeafNode } from './leafNode.js'
-import type { VerkleCrypto } from 'verkle-cryptography-wasm'
+import type { VerkleCrypto } from '@ethereumjs/util'
 
 export enum VerkleNodeType {
   Internal,

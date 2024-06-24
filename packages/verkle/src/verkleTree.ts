@@ -234,15 +234,14 @@ export class VerkleTree {
     if (equalsBytes(this.root(), this.EMPTY_TREE_ROOT)) return result
 
     // Get root node
-    let rawNode = await this._db.get(ROOT_DB_KEY)
+    let rawNode = await this._db.get(this.root())
     if (rawNode === undefined)
       throw new Error('root node should exist when root not empty tree root')
 
     const rootNode = decodeNode(rawNode, this.verkleCrypto) as InternalNode
 
-    this.DEBUG &&
-      this.debug(`Starting with Root Node: [${bytesToHex(rootNode.hash())}]`, ['FIND_PATH'])
-    result.stack.push([rootNode, ROOT_DB_KEY])
+    this.DEBUG && this.debug(`Starting with Root Node: [${bytesToHex(this.root())}]`, ['FIND_PATH'])
+    result.stack.push([rootNode, this.root()])
     let child = rootNode.children[key[0]]
 
     // Root node doesn't contain a child node's commitment on the first byte of the path so we're done
@@ -252,7 +251,8 @@ export class VerkleTree {
     }
     let finished = false
     while (!finished) {
-      rawNode = await this._db.get(child.path)
+      // Look up child node by node hash
+      rawNode = await this._db.get(this.verkleCrypto.hashCommitment(child.commitment))
       // We should always find the node if the path is specified in child.path
       if (rawNode === undefined) throw new Error(`missing node at ${bytesToHex(child.path)}`)
       const decodedNode = decodeNode(rawNode, this.verkleCrypto)
@@ -330,10 +330,9 @@ export class VerkleTree {
 
     // Update the child node's commitment and path
     this.DEBUG && this.debug(`No root node. Creating new root node`, ['INITIALIZE'])
-
-    await this.saveStack([[ROOT_DB_KEY, rootNode]])
     // Set trie root to serialized (aka compressed) commitment for later use in verkle proof
     this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))
+    await this.saveStack([[this.root(), rootNode]])
     return
   }
 
