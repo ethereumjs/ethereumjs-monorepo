@@ -3,11 +3,14 @@ import { bytesToHex, equalsBytes, short } from '@ethereumjs/util'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
+import { NobleBLS } from './bls12_381/noble.js'
+
 import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
-  const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
+  // const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
+  const bls: EVMBLSInterface = new NobleBLS((<any>opts._EVM)._mcl!)
 
   const inputData = opts.data
 
