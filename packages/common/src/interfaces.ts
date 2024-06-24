@@ -65,6 +65,64 @@ export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
 export type AccessListBytes = AccessListBytesItem[]
 export type AccessList = AccessListItem[]
 
+/**
+ * Verkle related
+ *
+ * Experimental (do not implement)
+ */
+export type AccessEventFlags = {
+  stemRead: boolean
+  stemWrite: boolean
+  chunkRead: boolean
+  chunkWrite: boolean
+  chunkFill: boolean
+}
+
+/**
+ * Verkle related
+ *
+ * Experimental (do not implement)
+ */
+export interface AccessWitnessInterface {
+  touchAndChargeProofOfAbsence(address: Address): bigint
+  touchAndChargeMessageCall(address: Address): bigint
+  touchAndChargeValueTransfer(caller: Address, target: Address): bigint
+  touchAndChargeContractCreateInit(address: Address): bigint
+  touchAndChargeContractCreateCompleted(address: Address): bigint
+  touchTxOriginAndComputeGas(origin: Address): bigint
+  touchTxTargetAndComputeGas(target: Address, { sendsValue }: { sendsValue?: boolean }): bigint
+  touchCodeChunksRangeOnReadAndChargeGas(contact: Address, startPc: number, endPc: number): bigint
+  touchCodeChunksRangeOnWriteAndChargeGas(contact: Address, startPc: number, endPc: number): bigint
+  touchAddressOnWriteAndComputeGas(
+    address: Address,
+    treeIndex: number | bigint,
+    subIndex: number | Uint8Array
+  ): bigint
+  touchAddressOnReadAndComputeGas(
+    address: Address,
+    treeIndex: number | bigint,
+    subIndex: number | Uint8Array
+  ): bigint
+  touchAddressAndChargeGas(
+    address: Address,
+    treeIndex: number | bigint,
+    subIndex: number | Uint8Array,
+    { isWrite }: { isWrite?: boolean }
+  ): bigint
+  touchAddress(
+    address: Address,
+    treeIndex: number | bigint,
+    subIndex: number | Uint8Array,
+    { isWrite }: { isWrite?: boolean }
+  ): AccessEventFlags
+  shallowCopy(): AccessWitnessInterface
+  merge(accessWitness: AccessWitnessInterface): void
+}
+
+/*
+ * Generic StateManager interface corresponding with the @ethereumjs/statemanager package
+ *
+ */
 export interface StateManagerInterface {
   getAccount(address: Address): Promise<Account | undefined>
   putAccount(address: Address, account?: Account): Promise<void>
@@ -85,6 +143,13 @@ export interface StateManagerInterface {
   hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
   getAppliedKey?(address: Uint8Array): Uint8Array
+
+  /*
+   * The following optional methods are Verkle related
+   *
+   * Experimental (do not implement)
+   */
+  checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
 }
 
 export interface EVMStateManagerInterface extends StateManagerInterface {

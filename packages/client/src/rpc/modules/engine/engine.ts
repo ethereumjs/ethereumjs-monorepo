@@ -42,6 +42,7 @@ import {
   executionPayloadV1FieldValidators,
   executionPayloadV2FieldValidators,
   executionPayloadV3FieldValidators,
+  executionPayloadV4FieldValidators,
   forkchoiceFieldValidators,
   payloadAttributesFieldValidatorsV1,
   payloadAttributesFieldValidatorsV2,
@@ -60,6 +61,7 @@ import type {
   ExecutionPayloadV1,
   ExecutionPayloadV2,
   ExecutionPayloadV3,
+  ExecutionPayloadV4,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadAttributes,
@@ -69,6 +71,7 @@ import type {
   TransitionConfigurationV1,
 } from './types.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
 
 const zeroBlockHash = zeros(32)
@@ -204,6 +207,20 @@ export class Engine {
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
 
+    this.newPayloadV4 = cmMiddleware(
+      middleware(
+        callWithStackTrace(this.newPayloadV4.bind(this), this._rpcDebug),
+        3,
+        [
+          [validators.object(executionPayloadV4FieldValidators)],
+          [validators.array(validators.bytes32)],
+          [validators.bytes32],
+        ],
+        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot']
+      ),
+      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
+    )
+
     /**
      * forkchoiceUpdated
      */
@@ -263,6 +280,13 @@ export class Engine {
 
     this.getPayloadV3 = cmMiddleware(
       middleware(callWithStackTrace(this.getPayloadV3.bind(this), this._rpcDebug), 1, [
+        [validators.bytes8],
+      ]),
+      () => this.connectionManager.updateStatus()
+    )
+
+    this.getPayloadV4 = cmMiddleware(
+      middleware(callWithStackTrace(this.getPayloadV4.bind(this), this._rpcDebug), 1, [
         [validators.bytes8],
       ]),
       () => this.connectionManager.updateStatus()
@@ -369,7 +393,11 @@ export class Engine {
       if (!response) {
         const validationError = `Error assembling block from payload during initialization`
         this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(hexToBytes(parentHash), this.chain, this.chainCache)
+        const latestValidHash = await validHash(
+          hexToBytes(parentHash as PrefixedHexString),
+          this.chain,
+          this.chainCache
+        )
         response = { status: Status.INVALID, latestValidHash, validationError }
       }
       // skip marking the block invalid as this is more of a data issue from CL
@@ -390,14 +418,22 @@ export class Engine {
       // if there was a validation error return invalid
       if (validationError !== null) {
         this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(hexToBytes(parentHash), this.chain, this.chainCache)
+        const latestValidHash = await validHash(
+          hexToBytes(parentHash as PrefixedHexString),
+          this.chain,
+          this.chainCache
+        )
         const response = { status: Status.INVALID, latestValidHash, validationError }
         // skip marking the block invalid as this is more of a data issue from CL
         return response
       }
     } else if (blobVersionedHashes !== undefined && blobVersionedHashes !== null) {
       const validationError = `Invalid blobVersionedHashes before EIP-4844 is activated`
-      const latestValidHash = await validHash(hexToBytes(parentHash), this.chain, this.chainCache)
+      const latestValidHash = await validHash(
+        hexToBytes(parentHash as PrefixedHexString),
+        this.chain,
+        this.chainCache
+      )
       const response = { status: Status.INVALID, latestValidHash, validationError }
       // skip marking the block invalid as this is more of a data issue from CL
       return response
@@ -423,9 +459,9 @@ export class Engine {
        * to run basic validations based on parent
        */
       const parent =
-        (await this.skeleton.getBlockByHash(hexToBytes(parentHash), true)) ??
+        (await this.skeleton.getBlockByHash(hexToBytes(parentHash as PrefixedHexString), true)) ??
         this.remoteBlocks.get(parentHash.slice(2)) ??
-        (await this.chain.getBlock(hexToBytes(parentHash)))
+        (await this.chain.getBlock(hexToBytes(parentHash as PrefixedHexString)))
 
       // Validations with parent
       if (!parent.common.gteHardfork(Hardfork.Paris)) {
@@ -454,7 +490,7 @@ export class Engine {
         } catch (error: any) {
           const validationError = `Invalid 4844 transactions: ${error}`
           const latestValidHash = await validHash(
-            hexToBytes(parentHash),
+            hexToBytes(parentHash as PrefixedHexString),
             this.chain,
             this.chainCache
           )
@@ -469,7 +505,7 @@ export class Engine {
        */
       const executedParentExists =
         this.executedBlocks.get(parentHash.slice(2)) ??
-        (await validExecutedChainBlock(hexToBytes(parentHash), this.chain))
+        (await validExecutedChainBlock(hexToBytes(parentHash as PrefixedHexString), this.chain))
       // If the parent is not executed throw an error, it will be caught and return SYNCING or ACCEPTED.
       if (!executedParentExists) {
         throw new Error(`Parent block not yet executed number=${parent.header.number}`)
@@ -575,11 +611,11 @@ export class Engine {
     // some pre-executed stateroot can be sent
     const executedBlockExists =
       this.executedBlocks.get(blockHash.slice(2)) ??
-      (await validExecutedChainBlock(hexToBytes(blockHash), this.chain))
+      (await validExecutedChainBlock(hexToBytes(blockHash as PrefixedHexString), this.chain))
     if (executedBlockExists) {
       const response = {
         status: Status.VALID,
-        latestValidHash: blockHash,
+        latestValidHash: blockHash as PrefixedHexString,
         validationError: null,
       }
       return response
@@ -826,11 +862,36 @@ export class Engine {
    */
   async newPayloadV3(params: [ExecutionPayloadV3, Bytes32[], Bytes32]): Promise<PayloadStatusV1> {
     const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
+    const pragueTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
+
     const ts = parseInt(params[0].timestamp)
-    if (eip4844Timestamp === null || ts < eip4844Timestamp) {
+    if (pragueTimestamp !== null && ts >= pragueTimestamp) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'NewPayloadV4 MUST be used after Prague is activated',
+      }
+    } else if (eip4844Timestamp === null || ts < eip4844Timestamp) {
       throw {
         code: UNSUPPORTED_FORK,
         message: 'NewPayloadV{1|2} MUST be used before Cancun is activated',
+      }
+    }
+
+    const newPayloadRes = await this.newPayload(params)
+    if (newPayloadRes.status === Status.INVALID_BLOCK_HASH) {
+      newPayloadRes.status = Status.INVALID
+      newPayloadRes.latestValidHash = null
+    }
+    return newPayloadRes
+  }
+
+  async newPayloadV4(params: [ExecutionPayloadV4, Bytes32[], Bytes32]): Promise<PayloadStatusV1> {
+    const pragueTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
+    const ts = parseInt(params[0].timestamp)
+    if (pragueTimestamp === null || ts < pragueTimestamp) {
+      throw {
+        code: UNSUPPORTED_FORK,
+        message: 'NewPayloadV{1|2|3} MUST be used before Prague is activated',
       }
     }
 
@@ -866,8 +927,8 @@ export class Engine {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
-    const safe = toBytes(safeBlockHash)
-    const finalized = toBytes(finalizedBlockHash)
+    const safe = hexToBytes(safeBlockHash)
+    const finalized = hexToBytes(finalizedBlockHash)
 
     if (!equalsBytes(finalized, zeroBlockHash) && equalsBytes(safe, zeroBlockHash)) {
       throw {
@@ -1029,7 +1090,7 @@ export class Engine {
       // if the execution is stalled because it hit an invalid block which we need to hop over
       if (
         this.execution.chainStatus?.status === ExecStatus.IGNORE_INVALID &&
-        this.config.ignoreStatelessInvalidExecs !== false
+        this.config.ignoreStatelessInvalidExecs === true
       ) {
         // jump the vm head to failing block so that next block can be executed
         this.config.logger.debug(
@@ -1341,6 +1402,11 @@ export class Engine {
       let checkNotAfterHf: Hardfork | null
 
       switch (payloadVersion) {
+        case 4:
+          checkNotBeforeHf = Hardfork.Prague
+          checkNotAfterHf = Hardfork.Prague
+          break
+
         case 3:
           checkNotBeforeHf = Hardfork.Cancun
           checkNotAfterHf = Hardfork.Cancun
@@ -1408,6 +1474,10 @@ export class Engine {
    */
   async getPayloadV3(params: [Bytes8]) {
     return this.getPayload(params, 3)
+  }
+
+  async getPayloadV4(params: [Bytes8]) {
+    return this.getPayload(params, 4)
   }
   /**
    * Compare transition configuration parameters.

@@ -3,20 +3,12 @@ import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import { base32, base64url } from '@scure/base'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
-import { protocols } from 'multiaddr'
-import Convert from 'multiaddr/src/convert.js'
 import { sscanf } from 'scanf'
 
-import { toNewUint8Array } from '../util.js'
+import { ipToString } from '../util.js'
 
 import type { PeerInfo } from '../types.js'
 import type { Common } from '@ethereumjs/common'
-
-type ProtocolCodes = {
-  ipCode: number
-  tcpCode: number
-  udpCode: number
-}
 
 type ENRRootValues = {
   eRoot: string
@@ -28,6 +20,12 @@ type ENRRootValues = {
 type ENRTreeValues = {
   publicKey: string
   domain: string
+}
+
+// Copied over from the multiaddr repo: https://github.com/multiformats/js-multiaddr/blob/main/src/convert.ts
+function bytesToPort(bytes: Uint8Array): number {
+  const view = new DataView(bytes.buffer)
+  return view.getUint16(bytes.byteOffset)
 }
 
 export class ENR {
@@ -81,12 +79,10 @@ export class ENR {
 
     if (!isVerified) throw new Error('Unable to verify ENR signature')
 
-    const { ipCode, tcpCode, udpCode } = this._getIpProtocolConversionCodes(obj.id)
-
     const peerInfo: PeerInfo = {
-      address: Convert.toString(ipCode, obj.ip) as string,
-      tcpPort: Number(Convert.toString(tcpCode, toNewUint8Array(obj.tcp))),
-      udpPort: Number(Convert.toString(udpCode, toNewUint8Array(obj.udp))),
+      address: ipToString(obj.ip),
+      tcpPort: bytesToPort(obj.tcp),
+      udpPort: bytesToPort(obj.udp),
     }
 
     return peerInfo
@@ -178,31 +174,5 @@ export class ENR {
       throw new Error(`ENR branch entry must start with '${this.BRANCH_PREFIX}'`)
 
     return branch.split(this.BRANCH_PREFIX)[1].split(',')
-  }
-
-  /**
-   * Gets relevant multiaddr conversion codes for ipv4, ipv6 and tcp, udp formats
-   * @param  {Uint8Array}        protocolId
-   * @return {ProtocolCodes}
-   */
-  static _getIpProtocolConversionCodes(protocolId: Uint8Array): ProtocolCodes {
-    let ipCode
-
-    switch (bytesToUtf8(protocolId)) {
-      case 'v4':
-        ipCode = protocols(4).code
-        break
-      case 'v6':
-        ipCode = protocols(41).code
-        break
-      default:
-        throw new Error("IP protocol must be 'v4' or 'v6'")
-    }
-
-    return {
-      ipCode,
-      tcpCode: protocols('tcp').code,
-      udpCode: protocols('udp').code,
-    }
   }
 }

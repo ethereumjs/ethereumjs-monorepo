@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager, getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
+import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
@@ -12,11 +12,12 @@ import {
   BIGINT_8,
   GWEI_TO_WEI,
   KECCAK256_RLP,
+  bigIntToAddressBytes,
   bigIntToBytes,
-  bigIntToHex,
   bytesToHex,
   concatBytes,
   equalsBytes,
+  getVerkleTreeIndexesForStorageSlot,
   hexToBytes,
   intToBytes,
   setLengthLeft,
@@ -26,6 +27,7 @@ import {
 import debugDefault from 'debug'
 
 import { Bloom } from './bloom/index.js'
+import { accumulateRequests } from './requests.js'
 
 import type {
   AfterBlockEvent,
@@ -40,7 +42,7 @@ import type {
 import type { VM } from './vm.js'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -66,7 +68,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     console.time(entireBlockLabel)
   }
 
-  const state = this.stateManager
+  const stateManager = this.stateManager
 
   const { root } = opts
   const clearCache = opts.clearCache ?? true
@@ -123,33 +125,47 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Set provided state root ${bytesToHex(root)} clearCache=${clearCache}`)
     }
-    await state.setStateRoot(root, clearCache)
+    await stateManager.setStateRoot(root, clearCache)
   }
 
   if (this.common.isActivatedEIP(6800)) {
-    if (!(state instanceof StatelessVerkleStateManager)) {
+    if (!(stateManager instanceof StatelessVerkleStateManager)) {
       throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
     }
+
+    if (opts.parentStateRoot === undefined) {
+      throw Error(`Parent state root is required for StatelessVerkleStateManager execution`)
+    }
+
     if (this.DEBUG) {
       debug(`Initializing StatelessVerkleStateManager executionWitness`)
     }
     if (clearCache) {
-      ;(this._opts.stateManager as StatelessVerkleStateManager).clearCaches()
+      stateManager.clearCaches()
     }
 
-    ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
-      block.header.number,
-      block.executionWitness
-    )
+    // Update the stateRoot cache
+    await stateManager.setStateRoot(block.header.stateRoot)
+
+    // Populate the execution witness
+    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
+
+    if (stateManager.verifyProof(opts.parentStateRoot) === false) {
+      throw Error(`Verkle proof verification failed`)
+    }
+
+    if (this.DEBUG) {
+      debug(`Verkle proof verification succeeded`)
+    }
   } else {
-    if (state instanceof StatelessVerkleStateManager) {
+    if (stateManager instanceof StatelessVerkleStateManager) {
       throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
     }
   }
 
   // check for DAO support and if we should apply the DAO fork
   if (
-    this.common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
+    this.common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) &&
     block.header.number === this.common.hardforkBlock(Hardfork.Dao)!
   ) {
     if (this.DEBUG) {
@@ -192,13 +208,20 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     throw err
   }
 
+  let requestsRoot: Uint8Array | undefined
+  let requests: CLRequest<CLRequestType>[] | undefined
+  if (block.common.isActivatedEIP(7685)) {
+    requests = await accumulateRequests(this, result.results)
+    requestsRoot = await Block.genRequestsTrieRoot(requests)
+  }
+
   // Persist state
   await this.evm.journal.commit()
   if (this.DEBUG) {
     debug(`block checkpoint committed`)
   }
 
-  const stateRoot = await state.getStateRoot()
+  const stateRoot = await stateManager.getStateRoot()
 
   // Given the generate option, either set resulting header
   // values to the current block, or validate the resulting
@@ -208,66 +231,90 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     const gasUsed = result.gasUsed
     const receiptTrie = result.receiptsRoot
     const transactionsTrie = await _genTxTrie(block)
-    const generatedFields = { stateRoot, bloom, gasUsed, receiptTrie, transactionsTrie }
+    const generatedFields = {
+      stateRoot,
+      bloom,
+      gasUsed,
+      receiptTrie,
+      transactionsTrie,
+      requestsRoot,
+    }
     const blockData = {
       ...block,
+      requests,
       header: { ...block.header, ...generatedFields },
     }
     block = Block.fromBlockData(blockData, { common: this.common })
-  } else if (this.common.isActivatedEIP(6800) === false) {
-    // Only validate the following headers if verkle blocks aren't activated
-    if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
-      if (this.DEBUG) {
-        debug(
-          `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
-            block.header.receiptTrie
-          )}`
-        )
+  } else {
+    if (this.common.isActivatedEIP(7685)) {
+      const valid = await block.requestsTrieIsValid(requests)
+      if (!valid) {
+        const validRoot = await Block.genRequestsTrieRoot(requests!)
+        if (this.DEBUG)
+          debug(
+            `Invalid requestsRoot received=${bytesToHex(
+              block.header.requestsRoot!
+            )} expected=${bytesToHex(validRoot)}`
+          )
+        const msg = _errorMsg('invalid requestsRoot', this, block)
+        throw new Error(msg)
       }
-      const msg = _errorMsg('invalid receiptTrie', this, block)
-      throw new Error(msg)
     }
-    if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
-      if (this.DEBUG) {
-        debug(
-          `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
-            block.header.logsBloom
-          )}`
-        )
+    if (!this.common.isActivatedEIP(6800)) {
+      // Only validate the following headers if verkle blocks aren't activated
+      if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
+        if (this.DEBUG) {
+          debug(
+            `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
+              block.header.receiptTrie
+            )}`
+          )
+        }
+        const msg = _errorMsg('invalid receiptTrie', this, block)
+        throw new Error(msg)
       }
-      const msg = _errorMsg('invalid bloom', this, block)
-      throw new Error(msg)
-    }
-    if (result.gasUsed !== block.header.gasUsed) {
-      if (this.DEBUG) {
-        debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
+      if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
+        if (this.DEBUG) {
+          debug(
+            `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
+              block.header.logsBloom
+            )}`
+          )
+        }
+        const msg = _errorMsg('invalid bloom', this, block)
+        throw new Error(msg)
       }
-      const msg = _errorMsg('invalid gasUsed', this, block)
-      throw new Error(msg)
-    }
-    if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
-      if (this.DEBUG) {
-        debug(
-          `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
+      if (result.gasUsed !== block.header.gasUsed) {
+        if (this.DEBUG) {
+          debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
+        }
+        const msg = _errorMsg('invalid gasUsed', this, block)
+        throw new Error(msg)
+      }
+      if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
+        if (this.DEBUG) {
+          debug(
+            `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
+              block.header.stateRoot
+            )}`
+          )
+        }
+        const msg = _errorMsg(
+          `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
             block.header.stateRoot
-          )}`
+          )}`,
+          this,
+          block
         )
+        throw new Error(msg)
       }
-      const msg = _errorMsg(
-        `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
-          block.header.stateRoot
-        )}`,
-        this,
-        block
-      )
-      throw new Error(msg)
+    } else if (this.common.isActivatedEIP(6800)) {
+      // If verkle is activated, only validate the post-state
+      if ((this._opts.stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
+        throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
+      }
+      debug(`Verkle post state verification succeeded`)
     }
-  } else if (this.common.isActivatedEIP(6800) === true) {
-    // If verkle is activated, only validate the post-state
-    if ((this._opts.stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
-      throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
-    }
-    debug(`Verkle post state verification succeeded`)
   }
 
   if (enableProfiler) {
@@ -283,6 +330,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     gasUsed: result.gasUsed,
     receiptsRoot: result.receiptsRoot,
     preimages: result.preimages,
+    requestsRoot,
+    requests,
   }
 
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
@@ -439,16 +488,12 @@ export async function accumulateParentBlockHash(
   if (!this.common.isActivatedEIP(2935)) {
     throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
   }
-  const historyAddress = Address.fromString(
-    bigIntToHex(this.common.param('vm', 'historyStorageAddress'))
+  const historyAddress = new Address(
+    bigIntToAddressBytes(this.common.param('vm', 'historyStorageAddress'))
   )
   const historyServeWindow = this.common.param('vm', 'historyServeWindow')
 
-  // Is this the fork block?
   const forkTime = this.common.eipTimestamp(2935)
-  if (forkTime === null) {
-    throw new Error('EIP 2935 should be activated by timestamp')
-  }
 
   // getAccount with historyAddress will throw error as witnesses are not bundeled
   // but we need to put account so as to query later for slot
@@ -467,8 +512,8 @@ export async function accumulateParentBlockHash(
     const ringKey = number % historyServeWindow
 
     // generate access witness
-    if (vm.common.isActivatedEIP(6800) === true) {
-      const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(ringKey)
+    if (vm.common.isActivatedEIP(6800)) {
+      const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(ringKey)
       // just create access witnesses without charging for the gas
       ;(
         vm.stateManager as StatelessVerkleStateManager
@@ -486,7 +531,8 @@ export async function accumulateParentBlockHash(
     const parentBlock = await this.blockchain.getBlock(parentHash)
 
     // If on the fork block, store the old block hashes as well
-    if (parentBlock.header.timestamp < forkTime) {
+    if (forkTime !== null && parentBlock.header.timestamp < forkTime) {
+      // forkTime could be null in test fixtures
       let ancestor = parentBlock
       for (let i = 0; i < Number(historyServeWindow) - 1; i++) {
         if (ancestor.header.number === BIGINT_0) {
@@ -499,6 +545,9 @@ export async function accumulateParentBlockHash(
     }
     // eslint-disable-next-line no-empty
   } catch (_e) {}
+
+  // do cleanup if the code was not deployed
+  await this.evm.journal.cleanup()
 }
 
 export async function accumulateParentBeaconBlockRoot(
@@ -521,7 +570,16 @@ export async function accumulateParentBeaconBlockRoot(
    * All ethereum accounts have empty storage by default
    */
 
-  if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+  /**
+   * Note: (by Gabriel)
+   * Get account will throw an error in stateless execution b/c witnesses are not bundled
+   * But we do need an account so we are able to put the storage
+   */
+  try {
+    if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+      await this.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
+    }
+  } catch (_) {
     await this.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
   }
 
@@ -535,6 +593,9 @@ export async function accumulateParentBeaconBlockRoot(
     setLengthLeft(bigIntToBytes(timestampExtended), 32),
     root
   )
+
+  // do cleanup if the code was not deployed
+  await this.evm.journal.cleanup()
 }
 
 /**
@@ -569,7 +630,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     const tx = block.transactions[txIdx]
 
     let maxGasLimit
-    if (this.common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559)) {
       maxGasLimit = block.header.gasLimit * this.common.param('gasConfig', 'elasticityMultiplier')
     } else {
       maxGasLimit = block.header.gasLimit

@@ -29,7 +29,7 @@ describe('[Common]: Custom chains', () => {
       /Missing required/,
       undefined,
       'should throw an exception on missing parameter'
-    ) // eslint-disable-line no-new
+    )
   })
 
   it('custom() -> base functionality', () => {
@@ -146,6 +146,18 @@ describe('[Common]: Custom chains', () => {
       'customChains, chain initialized with custom chain'
     )
 
+    const customChainParams: Partial<ChainConfig> = {
+      name: 'custom',
+      chainId: 123,
+      networkId: 678,
+      depositContractAddress: '0x4242424242424242424242424242424242424242',
+    }
+    const customChainCommon = Common.custom(customChainParams, { hardfork: Hardfork.Byzantium })
+
+    assert.equal(
+      customChainCommon['_chainParams'].depositContractAddress,
+      customChainParams.depositContractAddress
+    )
     c.setChain('testnet')
     assert.equal(c.chainName(), 'testnet', 'customChains, should allow to switch custom chain')
     assert.equal(

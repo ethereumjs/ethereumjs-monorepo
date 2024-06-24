@@ -838,9 +838,17 @@ export const hardforks: HardforksDict = {
   prague: {
     name: 'prague',
     comment:
-      'Next feature hardfork after cancun, internally used for verkle testing/implementation (incomplete/experimental)',
+      'Next feature hardfork after cancun, internally used for pectra testing/implementation (incomplete/experimental)',
     url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/prague.md',
     status: Status.Draft,
-    eips: [6800, 2935],
+    eips: [2537, 2935, 3074, 6110, 7002, 7685],
+  },
+  osaka: {
+    name: 'osaka',
+    comment:
+      'Next feature hardfork after prague, internally used for verkle testing/implementation (incomplete/experimental)',
+    url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/osaka.md',
+    status: Status.Draft,
+    eips: [2935, 6800],
   },
 }

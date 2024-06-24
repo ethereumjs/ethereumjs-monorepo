@@ -18,6 +18,7 @@ import {
 } from '@ethereumjs/util'
 
 import { Bloom } from './bloom/index.js'
+import { accumulateRequests } from './requests.js'
 import {
   accumulateParentBeaconBlockRoot,
   accumulateParentBlockHash,
@@ -87,7 +88,7 @@ export class BlockBuilder {
     this.withdrawals = opts.withdrawals?.map(Withdrawal.fromWithdrawalData)
 
     if (
-      this.vm.common.isActivatedEIP(1559) === true &&
+      this.vm.common.isActivatedEIP(1559) &&
       typeof this.headerData.baseFeePerGas === 'undefined'
     ) {
       if (this.headerData.number === vm.common.hardforkBlock(Hardfork.London)) {
@@ -106,7 +107,7 @@ export class BlockBuilder {
     }
 
     if (
-      this.vm.common.isActivatedEIP(4844) === true &&
+      this.vm.common.isActivatedEIP(4844) &&
       typeof this.headerData.excessBlobGas === 'undefined'
     ) {
       this.headerData.excessBlobGas = opts.parentBlock.header.calcNextExcessBlobGas()
@@ -224,7 +225,7 @@ export class BlockBuilder {
     }
     let blobGasUsed = undefined
     if (tx instanceof BlobEIP4844Transaction) {
-      if (this.blockOpts.common?.isActivatedEIP(4844) !== true) {
+      if (this.blockOpts.common?.isActivatedEIP(4844) === false) {
         throw Error('eip4844 not activated yet for adding a blob transaction')
       }
       const blobTx = tx as BlobEIP4844Transaction
@@ -280,7 +281,7 @@ export class BlockBuilder {
   }
 
   /**
-   * This method returns the finalized block.
+   * This method constructs the finalized block, including withdrawals and any CLRequests.
    * It also:
    *  - Assigns the reward for miner (PoW)
    *  - Commits the checkpoint on the StateManager
@@ -289,6 +290,9 @@ export class BlockBuilder {
    * which is validated along with the block number and difficulty by ethash.
    * For PoA, please pass `blockOption.cliqueSigner` into the buildBlock constructor,
    * as the signer will be awarded the txs amount spent on gas as they are added.
+   *
+   * Note: we add CLRequests here because they can be generated at any time during the
+   * lifecycle of a pending block so need to be provided only when the block is finalized.
    */
   async build(sealOpts?: SealBlockOpts) {
     this.checkStatus()
@@ -300,7 +304,6 @@ export class BlockBuilder {
     }
     await this.processWithdrawals()
 
-    const stateRoot = await this.vm.stateManager.getStateRoot()
     const transactionsTrie = await this.transactionsTrie()
     const withdrawalsRoot = this.withdrawals
       ? await Block.genWithdrawalsTrieRoot(this.withdrawals, new Trie({ common: this.vm.common }))
@@ -312,10 +315,20 @@ export class BlockBuilder {
     const timestamp = this.headerData.timestamp ?? BIGINT_0
 
     let blobGasUsed = undefined
-    if (this.vm.common.isActivatedEIP(4844) === true) {
+    if (this.vm.common.isActivatedEIP(4844)) {
       blobGasUsed = this.blobGasUsed
     }
 
+    let requests
+    let requestsRoot
+    if (this.vm.common.isActivatedEIP(7685)) {
+      requests = await accumulateRequests(this.vm, this.transactionResults)
+      requestsRoot = await Block.genRequestsTrieRoot(requests)
+      // Do other validations per request type
+    }
+
+    // get stateRoot after all the accumulateRequests etc have been done
+    const stateRoot = await this.vm.stateManager.getStateRoot()
     const headerData = {
       ...this.headerData,
       stateRoot,
@@ -327,6 +340,7 @@ export class BlockBuilder {
       timestamp,
       // correct excessBlobGas should already be part of headerData used above
       blobGasUsed,
+      requestsRoot,
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {
@@ -338,7 +352,9 @@ export class BlockBuilder {
       header: headerData,
       transactions: this.transactions,
       withdrawals: this.withdrawals,
+      requests,
     }
+
     const block = Block.fromBlockData(blockData, blockOpts)
 
     if (this.blockOpts.putBlockIntoBlockchain === true) {

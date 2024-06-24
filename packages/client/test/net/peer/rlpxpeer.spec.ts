@@ -20,7 +20,7 @@ describe('[RlpxPeer]', async () => {
     }
   })
 
-  const { RlpxPeer } = await import('../../../src/net/peer/rlpxpeer')
+  const { RlpxPeer } = await import('../../../src/net/peer/rlpxpeer.js')
 
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })

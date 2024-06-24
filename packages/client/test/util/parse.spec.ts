@@ -1,4 +1,4 @@
-import { multiaddr } from 'multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { assert, describe, it } from 'vitest'
 
 import { parseMultiaddrs } from '../../src/util/parse.js'

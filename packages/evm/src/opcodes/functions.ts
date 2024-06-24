@@ -1,4 +1,3 @@
-import { getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
 import {
   Account,
   Address,
@@ -21,12 +20,13 @@ import {
   MAX_INTEGER_BIGINT,
   SECP256K1_ORDER_DIV_2,
   TWO_POW256,
+  bigIntToAddressBytes,
   bigIntToBytes,
-  bigIntToHex,
   bytesToBigInt,
   bytesToHex,
   concatBytes,
   ecrecover,
+  getVerkleTreeIndexesForStorageSlot,
   hexToBytes,
   publicToAddress,
   setLengthLeft,
@@ -622,13 +622,13 @@ export const handlers: Map<number, OpHandler> = new Map([
           return
         }
 
-        const historyAddress = Address.fromString(
-          bigIntToHex(common.param('vm', 'historyStorageAddress'))
+        const historyAddress = new Address(
+          bigIntToAddressBytes(common.param('vm', 'historyStorageAddress'))
         )
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
-        if (common.isActivatedEIP(6800) === true) {
-          const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
+        if (common.isActivatedEIP(6800)) {
+          const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(number)
           // create witnesses and charge gas
           const statelessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             historyAddress,
@@ -1156,10 +1156,18 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       }
 
-      const expectedAddress = new Address(setLengthLeft(bigIntToBytes(authority), 20).slice(-20))
-      const accountNonce = (
-        (await runState.stateManager.getAccount(expectedAddress)) ?? new Account()
-      ).nonce
+      // we don't want strick check here on authority being in address range just last 20 bytes
+      const expectedAddress = new Address(bigIntToAddressBytes(authority, false))
+      const account = (await runState.stateManager.getAccount(expectedAddress)) ?? new Account()
+
+      if (account.isContract()) {
+        // EXTCODESIZE > 0
+        runState.stack.push(BIGINT_0)
+        runState.auth = undefined
+        return
+      }
+
+      const accountNonce = account.nonce
 
       const invokedAddress = setLengthLeft(runState.interpreter._env.address.bytes, 32)
       const chainId = setLengthLeft(bigIntToBytes(runState.interpreter.getChainId()), 32)

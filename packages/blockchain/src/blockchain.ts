@@ -375,8 +375,8 @@ export class Blockchain implements BlockchainInterface {
   async getCanonicalHeadHeader(): Promise<BlockHeader> {
     return this.runWithLock<BlockHeader>(async () => {
       if (!this._headHeaderHash) throw new Error('No head header set')
-      const block = await this.getBlock(this._headHeaderHash)
-      return block.header
+      const header = await this._getHeader(this._headHeaderHash)
+      return header
     })
   }
 
@@ -524,7 +524,7 @@ export class Blockchain implements BlockchainInterface {
           )
         }
 
-        if (this._validateBlocks && !isGenesis) {
+        if (this._validateBlocks && !isGenesis && item instanceof Block) {
           // this calls into `getBlock`, which is why we cannot lock yet
           await this.validateBlock(block)
         }
@@ -550,8 +550,8 @@ export class Blockchain implements BlockchainInterface {
         // save total difficulty to the database
         dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
 
-        // save header/block to the database
-        dbOps = dbOps.concat(DBSetBlockOrHeader(block))
+        // save header/block to the database, but save the input not our wrapper block
+        dbOps = dbOps.concat(DBSetBlockOrHeader(item))
 
         let commonAncestor: undefined | BlockHeader
         let ancestorHeaders: undefined | BlockHeader[]
@@ -628,7 +628,7 @@ export class Blockchain implements BlockchainInterface {
     if (header.isGenesis()) {
       return
     }
-    const parentHeader = (await this.getBlock(header.parentHash)).header
+    const parentHeader = await this._getHeader(header.parentHash)
 
     const { number } = header
     if (number !== parentHeader.number + BIGINT_1) {
@@ -662,7 +662,7 @@ export class Blockchain implements BlockchainInterface {
     }
 
     // check blockchain dependent EIP1559 values
-    if (header.common.isActivatedEIP(1559) === true) {
+    if (header.common.isActivatedEIP(1559)) {
       // check if the base fee is correct
       let expectedBaseFee
       const londonHfBlock = this.common.hardforkBlock(Hardfork.London)
@@ -678,10 +678,16 @@ export class Blockchain implements BlockchainInterface {
       }
     }
 
-    if (header.common.isActivatedEIP(4844) === true) {
+    if (header.common.isActivatedEIP(4844)) {
       const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
       if (header.excessBlobGas !== expectedExcessBlobGas) {
         throw new Error(`expected blob gas: ${expectedExcessBlobGas}, got: ${header.excessBlobGas}`)
+      }
+    }
+
+    if (header.common.isActivatedEIP(7685)) {
+      if (header.requestsRoot === undefined) {
+        throw new Error(`requestsRoot must be provided when EIP-7685 is active`)
       }
     }
   }
@@ -699,6 +705,12 @@ export class Blockchain implements BlockchainInterface {
     // (one for each uncle header and then for validateBlobTxs).
     const parentBlock = await this.getBlock(block.header.parentHash)
     block.validateBlobTransactions(parentBlock.header)
+    if (block.common.isActivatedEIP(7685)) {
+      const valid = await block.requestsTrieIsValid()
+      if (!valid) {
+        throw new Error('invalid requestsRoot')
+      }
+    }
   }
   /**
    * The following rules are checked in this method:
@@ -1126,7 +1138,7 @@ export class Blockchain implements BlockchainInterface {
     if (!this._headHeaderHash) throw new Error('No head header set')
     const ancestorHeaders = new Set<BlockHeader>()
 
-    let { header } = await this.getBlock(this._headHeaderHash)
+    let header = await this._getHeader(this._headHeaderHash)
     if (header.number > newHeader.number) {
       header = await this.getCanonicalHeader(newHeader.number)
       ancestorHeaders.add(header)

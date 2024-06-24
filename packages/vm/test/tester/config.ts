@@ -101,6 +101,7 @@ const normalHardforks = [
   'shanghai',
   'arrowGlacier', // This network has no tests, but need to add it due to common generation logic
   'cancun',
+  'prague',
 ]
 
 const transitionNetworks = {
@@ -222,7 +223,7 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
   for (const hf of hardforks) {
     // check if we enable this hf
     // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
-    if (mainnetCommon.gteHardfork(hf.name) === true && hf.name !== Hardfork.Dao) {
+    if (mainnetCommon.gteHardfork(hf.name) && hf.name !== Hardfork.Dao) {
       // this hardfork should be activated at block 0
       testHardforks.push({
         name: hf.name,
@@ -232,13 +233,13 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
       })
     } else {
       // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
-      if (ttd === undefined) {
+      if (ttd === undefined && timestamp === undefined) {
         testHardforks.push({
           name: hf.name,
           //forkHash: hf.forkHash,
           block: null,
         })
-      } else if (hf.name === 'paris') {
+      } else if (hf.name === 'paris' && ttd !== undefined) {
         // merge will currently always be after a hardfork, so add it here
         testHardforks.push({
           name: hf.name,
@@ -301,6 +302,8 @@ export function getCommon(network: string, kzg?: Kzg): Common {
     return setupCommonWithNetworks(startNetwork, TTD, undefined, kzg)
   } else if (networkLowercase === 'shanghaitocancunattime15k') {
     return setupCommonWithNetworks('Shanghai', undefined, 15000, kzg)
+  } else if (networkLowercase === 'cancuntopragueattime15k') {
+    return setupCommonWithNetworks('Cancun', undefined, 15000, kzg)
   } else {
     // Case 3: this is not a "default fork" network, but it is a "transition" network. Test the VM if it transitions the right way
     const transitionForks =
@@ -319,7 +322,7 @@ export function getCommon(network: string, kzg?: Kzg): Common {
     const hardforks = mainnetCommon.hardforks()
     const testHardforks = []
     for (const hf of hardforks) {
-      if (mainnetCommon.gteHardfork(hf.name) === true) {
+      if (mainnetCommon.gteHardfork(hf.name)) {
         // this hardfork should be activated at block 0
         const forkBlockNumber = transitionForks[hf.name as keyof typeof transitionForks] as
           | number

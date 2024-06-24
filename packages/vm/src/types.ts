@@ -4,7 +4,14 @@ import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
-import type { BigIntLike, GenesisState, PrefixedHexString, WithdrawalData } from '@ethereumjs/util'
+import type {
+  BigIntLike,
+  CLRequest,
+  CLRequestType,
+  GenesisState,
+  PrefixedHexString,
+  WithdrawalData,
+} from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
 
 /**
@@ -237,6 +244,12 @@ export interface RunBlockOpts {
    * Defaults to `false`.
    */
   generate?: boolean
+
+  /**
+   * The stateRoot of the parent. Used for verifying the witness proofs in the context of Verkle.
+   */
+  parentStateRoot?: Uint8Array
+
   /**
    * If true, will skip "Block validation":
    * Block validation validates the header (with respect to the blockchain),
@@ -324,6 +337,15 @@ export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
    * The bloom filter of the LOGs (events) after executing the block
    */
   logsBloom: Uint8Array
+
+  /**
+   * The requestsRoot for any CL requests in the block
+   */
+  requestsRoot?: Uint8Array
+  /**
+   * Any CL requests that were processed in the course of this block
+   */
+  requests?: CLRequest<CLRequestType>[]
 }
 
 export interface AfterBlockEvent extends RunBlockResult {

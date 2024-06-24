@@ -10,12 +10,12 @@ import {
   bytesToBigInt,
   bytesToHex,
   hexToBytes,
-  isHexPrefixed,
+  isHexString,
   stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
 
-import { VM } from '../../../dist/cjs'
+import { VM } from '../../../src/vm'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
 import type { EthashConsensus } from '@ethereumjs/blockchain'
@@ -26,7 +26,7 @@ import type * as tape from 'tape'
 function formatBlockHeader(data: any) {
   const formatted: any = {}
   for (const [key, value] of Object.entries(data) as [string, string][]) {
-    formatted[key] = isHexPrefixed(value) ? value : BigInt(value)
+    formatted[key] = isHexString(value) ? value : BigInt(value)
   }
   return formatted
 }
@@ -232,6 +232,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       await handleError(error, expectException)
     }
   }
+
   t.equal(
     bytesToHex((blockchain as any)._headHeaderHash),
     '0x' + testData.lastblockhash,

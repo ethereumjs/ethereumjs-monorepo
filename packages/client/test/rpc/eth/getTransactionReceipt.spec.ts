@@ -69,6 +69,7 @@ describe(method, () => {
     const res = await rpc.request(method, [bytesToHex(tx.hash())])
 
     assert.equal(res.result.transactionHash, bytesToHex(tx.hash()), 'should return the correct tx')
+    assert.equal(res.result.status, '0x1', 'transaction result is 1 since succeeded')
   })
 
   it('call with unknown tx hash', async () => {

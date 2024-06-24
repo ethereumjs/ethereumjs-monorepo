@@ -422,6 +422,7 @@ const args: ClientOpts = yargs
   .option('loadBlocksFromRlp', {
     describe: 'path to a file of RLP encoded blocks',
     string: true,
+    array: true,
   })
   .option('pruneEngineCache', {
     describe: 'Enable/Disable pruning engine block cache (disable for testing against hive etc)',
@@ -445,12 +446,15 @@ const args: ClientOpts = yargs
   })
   .option('ignoreStatelessInvalidExecs', {
     describe:
-      'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution faliures may stall the CL client. Useful for debugging the verkle. If provided a valid filename as arg, the invalid blocks will be stored there which one may use later for debugging',
-    coerce: (arg: string | boolean) =>
-      typeof arg === 'string' && arg !== 'true' && arg !== 'false'
-        ? path.resolve(arg)
-        : arg === true || arg === 'true',
+      'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution faliures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
+    boolean: true,
     hidden: true,
+  })
+  .option('initialVerkleStateRoot', {
+    describe:
+      'Provides an initial stateRoot to start the StatelessVerkleStateManager. This is required to bootstrap verkle witness proof verification, since they depend on the stateRoot of the parent block',
+    string: true,
+    coerce: (initialVerkleStateRoot: PrefixedHexString) => hexToBytes(initialVerkleStateRoot),
   })
   .option('useJsCrypto', {
     describe: 'Use pure Javascript cryptography functions',
@@ -587,7 +591,7 @@ async function startExecutionFrom(client: EthereumClient) {
   })
 
   if (
-    client.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Prague) &&
+    client.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Osaka) &&
     client.config.statelessVerkle
   ) {
     // for stateless verkle sync execution witnesses are available and hence we can blindly set the vmHead
@@ -649,27 +653,29 @@ async function startClient(
 
   if (args.loadBlocksFromRlp !== undefined) {
     // Specifically for Hive simulator, preload blocks provided in RLP format
-    const blockRlp = readFileSync(args.loadBlocksFromRlp)
     const blocks: Block[] = []
-    let buf = RLP.decode(blockRlp, true)
-    while (buf.data?.length > 0 || buf.remainder?.length > 0) {
-      try {
-        const block = Block.fromValuesArray(buf.data as BlockBytes, {
-          common: config.chainCommon,
-          setHardfork: true,
-        })
-        blocks.push(block)
-        buf = RLP.decode(buf.remainder, true)
-        config.logger.info(
-          `Preloading block hash=0x${short(bytesToHex(block.header.hash()))} number=${
-            block.header.number
-          }`
-        )
-      } catch (err: any) {
-        config.logger.info(
-          `Encountered error while while preloading chain data  error=${err.message}`
-        )
-        break
+    for (const rlpBlock of args.loadBlocksFromRlp) {
+      const blockRlp = readFileSync(rlpBlock)
+      let buf = RLP.decode(blockRlp, true)
+      while (buf.data?.length > 0 || buf.remainder?.length > 0) {
+        try {
+          const block = Block.fromValuesArray(buf.data as BlockBytes, {
+            common: config.chainCommon,
+            setHardfork: true,
+          })
+          blocks.push(block)
+          buf = RLP.decode(buf.remainder, true)
+          config.logger.info(
+            `Preloading block hash=0x${short(bytesToHex(block.header.hash()))} number=${
+              block.header.number
+            }`
+          )
+        } catch (err: any) {
+          config.logger.info(
+            `Encountered error while while preloading chain data  error=${err.message}`
+          )
+          break
+        }
       }
     }
 
@@ -678,7 +684,7 @@ async function startClient(
         await client.chain.open()
       }
 
-      await client.chain.putBlocks(blocks)
+      await client.chain.putBlocks(blocks, true)
     }
   }
 
@@ -1018,6 +1024,11 @@ async function run() {
   mkdirSync(configDirectory, {
     recursive: true,
   })
+  const invalidPayloadsDir = `${networkDir}/invalidPayloads`
+  mkdirSync(invalidPayloadsDir, {
+    recursive: true,
+  })
+
   const key = await Config.getClientKey(datadir, common)
 
   // logFile is either filename or boolean true or false to enable (with default) or disable
@@ -1128,10 +1139,10 @@ async function run() {
     useStringValueTrieDB: args.useStringValueTrieDB,
     txLookupLimit: args.txLookupLimit,
     pruneEngineCache: args.pruneEngineCache,
-    statelessVerkle: args.ignoreStatelessInvalidExecs !== false ? true : args.statelessVerkle,
+    statelessVerkle: args.ignoreStatelessInvalidExecs === true ? true : args.statelessVerkle,
     startExecution: args.startExecutionFrom !== undefined ? true : args.startExecution,
     engineNewpayloadMaxExecute:
-      args.ignoreStatelessInvalidExecs !== false || args.skipEngineExec === true
+      args.ignoreStatelessInvalidExecs === true || args.skipEngineExec === true
         ? 0
         : args.engineNewpayloadMaxExecute,
     ignoreStatelessInvalidExecs: args.ignoreStatelessInvalidExecs,
@@ -1166,7 +1177,7 @@ async function run() {
           ? startRPCServers(client, args as RPCArgs)
           : []
       if (
-        client.config.chainCommon.gteHardfork(Hardfork.Paris) === true &&
+        client.config.chainCommon.gteHardfork(Hardfork.Paris) &&
         (args.rpcEngine === false || args.rpcEngine === undefined)
       ) {
         config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)

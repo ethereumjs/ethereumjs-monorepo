@@ -1,7 +1,7 @@
 import { Address, BIGINT_0 } from '@ethereumjs/util'
 
 import type { PrecompileFunc } from './precompiles/index.js'
-import type { AccessWitness } from '@ethereumjs/statemanager'
+import type { AccessWitnessInterface } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const defaults = {
@@ -39,7 +39,7 @@ interface MessageOpts {
   authcallOrigin?: Address
   gasRefund?: bigint
   blobVersionedHashes?: Uint8Array[]
-  accessWitness?: AccessWitness
+  accessWitness?: AccessWitnessInterface
 }
 
 export class Message {
@@ -75,7 +75,7 @@ export class Message {
    * List of versioned hashes if message is a blob transaction in the outer VM
    */
   blobVersionedHashes?: Uint8Array[]
-  accessWitness?: AccessWitness
+  accessWitness?: AccessWitnessInterface
 
   constructor(opts: MessageOpts) {
     this.to = opts.to

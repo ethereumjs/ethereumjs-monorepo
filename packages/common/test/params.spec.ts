@@ -128,7 +128,7 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     assert.equal(f(), undefined, msg)
 
     msg = 'Should return Bls12381G1AddGas gas price for EIP2537'
-    assert.equal(c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537), BigInt(600), msg)
+    assert.equal(c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537), BigInt(500), msg)
   })
 
   it('returns the right block delay for EIP3554', () => {

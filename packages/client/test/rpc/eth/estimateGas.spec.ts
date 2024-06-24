@@ -86,6 +86,7 @@ describe(
         from: address.toString(),
         data: `0x${funcHash}` as PrefixedHexString,
         gasLimit: bigIntToHex(BigInt(53000)),
+        gasPrice: bigIntToHex(BigInt(1000000000)),
       }
       const estimateTx = LegacyTransaction.fromTxData(estimateTxData, { freeze: false })
       estimateTx.getSenderAddress = () => {
@@ -158,7 +159,13 @@ describe(
 
       // Test EIP1559 tx with no maxFeePerGas
       const EIP1559reqNoGas = await rpc.request(method, [
-        { ...estimateTxData, type: 2, maxFeePerGas: undefined, gasLimit: undefined },
+        {
+          ...estimateTxData,
+          type: 2,
+          maxFeePerGas: undefined,
+          gasLimit: undefined,
+          gasPrice: undefined,
+        },
       ])
       assert.equal(
         EIP1559reqNoGas.result,
@@ -168,7 +175,7 @@ describe(
 
       // Test legacy tx with London head block
       const legacyTxNoGas = await rpc.request(method, [
-        { ...estimateTxData, maxFeePerGas: undefined, gasLimit: undefined },
+        { ...estimateTxData, maxFeePerGas: undefined, gasLimit: undefined, gasPrice: undefined },
       ])
       assert.equal(
         legacyTxNoGas.result,

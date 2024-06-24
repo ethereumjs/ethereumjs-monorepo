@@ -12,7 +12,7 @@ import type { Logger } from './logging.js'
 import type { EventBusType, MultiaddrLike, PrometheusMetrics } from './types.js'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
-import type { Multiaddr } from 'multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export enum DataDirectory {
   Chain = 'chain',
@@ -337,7 +337,8 @@ export interface ConfigOptions {
    */
   statelessVerkle?: boolean
   startExecution?: boolean
-  ignoreStatelessInvalidExecs?: boolean | string
+  ignoreStatelessInvalidExecs?: boolean
+  initialVerkleStateRoot?: Uint8Array
 
   /**
    * Enables Prometheus Metrics that can be collected for monitoring client health
@@ -450,7 +451,8 @@ export class Config {
 
   public readonly statelessVerkle: boolean
   public readonly startExecution: boolean
-  public readonly ignoreStatelessInvalidExecs: boolean | string
+  public readonly ignoreStatelessInvalidExecs: boolean
+  public readonly initialVerkleStateRoot: Uint8Array
 
   public synchronized: boolean
   public lastsyncronized?: boolean
@@ -544,6 +546,7 @@ export class Config {
     this.ignoreStatelessInvalidExecs = options.ignoreStatelessInvalidExecs ?? false
 
     this.metrics = options.prometheusMetrics
+    this.initialVerkleStateRoot = options.initialVerkleStateRoot ?? new Uint8Array()
 
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine
@@ -644,6 +647,10 @@ export class Config {
   getNetworkDirectory(): string {
     const networkDirName = this.chainCommon.chainName()
     return `${this.datadir}/${networkDirName}`
+  }
+
+  getInvalidPayloadsDir(): string {
+    return `${this.getNetworkDirectory()}/invalidPayloads`
   }
 
   /**
