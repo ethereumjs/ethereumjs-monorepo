@@ -163,16 +163,16 @@ describe('findPath validation', () => {
     leafNode1.setValue(hexToBytes(keys[0])[31], hexToBytes(values[0]))
     leafNode1.setValue(hexToBytes(keys[1])[31], hexToBytes(values[1]))
 
-    putStack.push([stem1, leafNode1])
+    putStack.push([leafNode1.hash(), leafNode1])
 
     // Pull root node from DB
-    const rawNode = await trie['_db'].get(ROOT_DB_KEY)
+    const rawNode = await trie['_db'].get(trie.root())
     const rootNode = decodeNode(rawNode!, verkleCrypto) as InternalNode
     // Update root node with commitment from leaf node
     rootNode.setChild(stem1[0], { commitment: leafNode1.commitment, path: stem1 })
-    putStack.push([ROOT_DB_KEY, rootNode])
-    await trie.saveStack(putStack)
     trie.root(verkleCrypto.serializeCommitment(rootNode.commitment))
+    putStack.push([trie.root(), rootNode])
+    await trie.saveStack(putStack)
 
     // Verify that path to leaf node can be found from stem
     const res = await trie.findPath(stem1)
@@ -191,7 +191,7 @@ describe('findPath validation', () => {
       verkleCrypto
     )
     leafNode2.setValue(hexToBytes(keys[2])[31], hexToBytes(values[2]))
-    putStack.push([stem2, leafNode2])
+    putStack.push([leafNode2.hash(), leafNode2])
 
     // Create new internal node
     const internalNode1 = InternalNode.create(verkleCrypto)
@@ -211,15 +211,15 @@ describe('findPath validation', () => {
       path: stem2,
     })
 
-    putStack.push([internalNode1Path, internalNode1])
+    putStack.push([internalNode1.hash(), internalNode1])
     // Update rootNode child reference for internal node 1
     rootNode.setChild(internalNode1Path[0], {
       commitment: internalNode1.commitment,
       path: internalNode1Path,
     })
-    putStack.push([ROOT_DB_KEY, rootNode])
-    await trie.saveStack(putStack)
     trie.root(verkleCrypto.serializeCommitment(rootNode.commitment))
+    putStack.push([trie.root(), rootNode])
+    await trie.saveStack(putStack)
     let res2 = await trie.findPath(stem1)
 
     assert.equal(res2.remaining.length, 0, 'confirm full path was found')
