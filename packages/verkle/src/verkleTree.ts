@@ -5,6 +5,7 @@ import {
   ValueEncoding,
   bytesToHex,
   equalsBytes,
+  intToHex,
   zeros,
 } from '@ethereumjs/util'
 import debug from 'debug'
@@ -330,8 +331,6 @@ export class VerkleTree {
           commitment: putStack[putStack.length - 1][1].commitment,
           path,
         })
-        // Hold onto `path` to current node for updating next parent child index
-        path = nextPath
         this.DEBUG &&
           this.debug(
             `Updating child reference for node with path: ${bytesToHex(
@@ -339,6 +338,8 @@ export class VerkleTree {
             )} at index ${childIndex} in internal node at path ${bytesToHex(nextPath)}`,
             ['PUT']
           )
+        // Hold onto `path` to current node for updating next parent child index
+        path = nextPath
         putStack.push([nextNode.hash(), nextNode])
       }
     }
@@ -391,7 +392,7 @@ export class VerkleTree {
 
     // Root node doesn't contain a child node's commitment on the first byte of the path so we're done
     if (equalsBytes(child.commitment, this.verkleCrypto.zeroCommitment)) {
-      this.DEBUG && this.debug(`Partial Path ${key[0]} - found no child.`, ['FIND_PATH'])
+      this.DEBUG && this.debug(`Partial Path ${intToHex(key[0])} - found no child.`, ['FIND_PATH'])
       return result
     }
     let finished = false
