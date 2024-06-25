@@ -3,7 +3,7 @@ import { bytesToHex, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import { gasCheck, zeroByteCheck } from './bls12_381/index.js'
+import { gasCheck, moduloLengthCheck, zeroByteCheck } from './bls12_381/index.js'
 import { BLS12_381_ToG1Point, BLS12_381_ToG2Point } from './bls12_381/mcl.js'
 
 import type { ExecResult } from '../types.js'
@@ -19,6 +19,7 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
 
   const baseGas = opts.common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537) ?? BigInt(0)
 
+  // TODO: confirm that this is not a thing for the other precompiles
   if (inputData.length === 0) {
     if (opts._debug !== undefined) {
       opts._debug(`BLS12PAIRING (0x11) failed: Empty input`)
@@ -32,10 +33,7 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   // TODO: For this precompile it is the only exception that the length check is placed before the
   // gas check. I will keep it there to not side-change the existing implementation, but we should
   // check (respectively Jochem can maybe have a word) if this is something intended or not
-  if (inputData.length % 384 !== 0) {
-    if (opts._debug !== undefined) {
-      opts._debug(`BLS12PAIRING (0x11) failed: Invalid input length length=${inputData.length}`)
-    }
+  if (!moduloLengthCheck(opts, 384, 'BLS12PAIRING (0x11)')) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 

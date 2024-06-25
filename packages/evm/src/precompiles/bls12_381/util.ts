@@ -12,10 +12,33 @@ export const gasCheck = (opts: PrecompileInput, gasUsed: bigint, pName: string) 
       } gasUsed=${gasUsed}`
     )
   }
-
   if (opts.gasLimit < gasUsed) {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: OOG`)
+    }
+    return false
+  }
+  return true
+}
+
+export const equalityLengthCheck = (opts: PrecompileInput, length: number, pName: string) => {
+  if (opts.data.length !== length) {
+    if (opts._debug !== undefined) {
+      opts._debug(
+        `${pName} failed: Invalid input length length=${opts.data.length} (expected: ${length})`
+      )
+    }
+    return false
+  }
+  return true
+}
+
+export const moduloLengthCheck = (opts: PrecompileInput, length: number, pName: string) => {
+  if (opts.data.length % length !== 0) {
+    if (opts._debug !== undefined) {
+      opts._debug(
+        `${pName} failed: Invalid input length length=${opts.data.length} (expected: ${length}*k bytes)`
+      )
     }
     return false
   }
