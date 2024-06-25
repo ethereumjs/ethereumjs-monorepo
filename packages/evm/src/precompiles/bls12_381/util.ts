@@ -1,5 +1,7 @@
 import { equalsBytes, short } from '@ethereumjs/util'
 
+import { BLS_GAS_DISCOUNT_PAIRS } from './constants.js'
+
 import type { PrecompileInput } from '../types'
 
 const ZERO_BYTES_16 = new Uint8Array(16)
@@ -19,6 +21,23 @@ export const gasCheck = (opts: PrecompileInput, gasUsed: bigint, pName: string) 
     return false
   }
   return true
+}
+
+export const msmGasUsed = (numPairs: number, gasUsedPerPair: bigint) => {
+  const gasDiscountMax = BLS_GAS_DISCOUNT_PAIRS[BLS_GAS_DISCOUNT_PAIRS.length - 1][1]
+  let gasDiscountMultiplier
+
+  if (numPairs <= BLS_GAS_DISCOUNT_PAIRS.length) {
+    if (numPairs === 0) {
+      gasDiscountMultiplier = 0 // this implicitly sets gasUsed to 0 as per the EIP.
+    } else {
+      gasDiscountMultiplier = BLS_GAS_DISCOUNT_PAIRS[numPairs - 1][1]
+    }
+  } else {
+    gasDiscountMultiplier = gasDiscountMax
+  }
+  // (numPairs * multiplication_cost * discount) / multiplier
+  return (BigInt(numPairs) * gasUsedPerPair * BigInt(gasDiscountMultiplier)) / BigInt(1000)
 }
 
 export const equalityLengthCheck = (opts: PrecompileInput, length: number, pName: string) => {

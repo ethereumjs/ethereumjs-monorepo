@@ -3,12 +3,7 @@ import { bytesToHex } from '@ethereumjs/util'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import {
-  BLS_GAS_DISCOUNT_PAIRS,
-  gasCheck,
-  moduloLengthCheck,
-  zeroByteCheck,
-} from './bls12_381/index.js'
+import { gasCheck, moduloLengthCheck, msmGasUsed, zeroByteCheck } from './bls12_381/index.js'
 import { BLS12_381_FromG2Point, BLS12_381_ToFrPoint, BLS12_381_ToG2Point } from './bls12_381/mcl.js'
 
 import type { ExecResult } from '../types.js'
@@ -17,33 +12,17 @@ import type { PrecompileInput } from './types.js'
 export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
   const mcl = (<any>opts._EVM)._mcl!
 
-  const inputData = opts.data
-
-  if (inputData.length === 0) {
+  if (opts.data.length === 0) {
     if (opts._debug !== undefined) {
       opts._debug(`BLS12G2MSM (0x10) failed: Empty input`)
     }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geths implementation
   }
 
-  const numPairs = Math.floor(inputData.length / 288)
-
+  const numPairs = Math.floor(opts.data.length / 288)
   const gasUsedPerPair = opts.common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 2537) ?? BigInt(0)
-  const gasDiscountArray = BLS_GAS_DISCOUNT_PAIRS
-  const gasDiscountMax = gasDiscountArray[gasDiscountArray.length - 1][1]
-  let gasDiscountMultiplier
+  const gasUsed = msmGasUsed(numPairs, gasUsedPerPair)
 
-  if (numPairs <= gasDiscountArray.length) {
-    if (numPairs === 0) {
-      gasDiscountMultiplier = 0 // this implicitly sets gasUsed to 0 as per the EIP.
-    } else {
-      gasDiscountMultiplier = gasDiscountArray[numPairs - 1][1]
-    }
-  } else {
-    gasDiscountMultiplier = gasDiscountMax
-  }
-
-  const gasUsed = (gasUsedPerPair * BigInt(numPairs) * BigInt(gasDiscountMultiplier)) / BigInt(1000)
   if (!gasCheck(opts, gasUsed, 'BLS12G2MSM (0x10)')) {
     return OOGResult(opts.gasLimit)
   }
@@ -63,7 +42,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
   const G2Array = []
   const FrArray = []
 
-  for (let k = 0; k < inputData.length / 288; k++) {
+  for (let k = 0; k < numPairs; k++) {
     // zero bytes check
     const pairStart = 288 * k
     if (!zeroByteCheck(opts, zeroByteRanges, 'BLS12G2MSM (0x10)', pairStart)) {
