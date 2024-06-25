@@ -3,7 +3,7 @@ import { bytesToHex } from '@ethereumjs/util'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import { gasCheck, zeroByteCheck } from './bls12_381/index.js'
+import { equalityLengthCheck, gasCheck, zeroByteCheck } from './bls12_381/index.js'
 import { NobleBLS } from './bls12_381/noble.js'
 
 import type { EVMBLSInterface, ExecResult } from '../types.js'
@@ -21,10 +21,7 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
     return OOGResult(opts.gasLimit)
   }
 
-  if (inputData.length !== 256) {
-    if (opts._debug !== undefined) {
-      opts._debug(`BLS12G1ADD (0x0b) failed: Invalid input length length=${inputData.length}`)
-    }
+  if (!equalityLengthCheck(opts, 256, 'BLS12G1ADD (0x0b)')) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 

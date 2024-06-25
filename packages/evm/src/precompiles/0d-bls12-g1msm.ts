@@ -4,7 +4,7 @@ import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
 import { BLS_GAS_DISCOUNT_PAIRS } from './bls12_381/constants.js'
-import { gasCheck, zeroByteCheck } from './bls12_381/index.js'
+import { gasCheck, moduloLengthCheck, zeroByteCheck } from './bls12_381/index.js'
 import { BLS12_381_FromG1Point, BLS12_381_ToFrPoint, BLS12_381_ToG1Point } from './bls12_381/mcl.js'
 
 import type { ExecResult } from '../types.js'
@@ -48,6 +48,9 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`BLS12G1MSM (0x0d) failed: Invalid input length length=${inputData.length}`)
     }
+    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
+  }
+  if (!moduloLengthCheck(opts, 160, 'BLS12G1MSM (0x0d)')) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
