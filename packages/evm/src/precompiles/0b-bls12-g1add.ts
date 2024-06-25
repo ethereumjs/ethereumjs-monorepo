@@ -13,8 +13,6 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
   // const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
   const bls: EVMBLSInterface = new NobleBLS((<any>opts._EVM)._mcl!)
 
-  const inputData = opts.data
-
   // note: the gas used is constant; even if the input is incorrect.
   const gasUsed = opts.common.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537) ?? BigInt(0)
   if (!gasCheck(opts, gasUsed, 'BLS12G1ADD (0x0b)')) {
@@ -38,7 +36,7 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
 
   let returnValue
   try {
-    returnValue = bls.add(inputData)
+    returnValue = bls.add(opts.data)
   } catch (e: any) {
     if (opts._debug !== undefined) {
       opts._debug(`BLS12G1ADD (0x0b) failed: ${e.message}`)
