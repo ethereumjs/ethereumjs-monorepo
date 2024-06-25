@@ -1,9 +1,9 @@
-import { bytesToHex, short } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import { BLS_GAS_DISCOUNT_PAIRS, zeroByteCheck } from './bls12_381/index.js'
+import { BLS_GAS_DISCOUNT_PAIRS, gasCheck, zeroByteCheck } from './bls12_381/index.js'
 import { BLS12_381_FromG2Point, BLS12_381_ToFrPoint, BLS12_381_ToG2Point } from './bls12_381/mcl.js'
 
 import type { ExecResult } from '../types.js'
@@ -39,18 +39,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   const gasUsed = (gasUsedPerPair * BigInt(numPairs) * BigInt(gasDiscountMultiplier)) / BigInt(1000)
-  if (opts._debug !== undefined) {
-    opts._debug(
-      `Run BLS12G2MSM (0x10) precompile data=${short(opts.data)} length=${
-        opts.data.length
-      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
-    )
-  }
-
-  if (opts.gasLimit < gasUsed) {
-    if (opts._debug !== undefined) {
-      opts._debug(`BLS12G2MSM (0x10) failed: OOG`)
-    }
+  if (!gasCheck(opts, gasUsed, 'BLS12G2MSM (0x10)')) {
     return OOGResult(opts.gasLimit)
   }
 

@@ -1,9 +1,9 @@
-import { bytesToHex, short } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import { zeroByteCheck } from './bls12_381/index.js'
+import { gasCheck, zeroByteCheck } from './bls12_381/index.js'
 import { NobleBLS } from './bls12_381/noble.js'
 
 import type { EVMBLSInterface, ExecResult } from '../types.js'
@@ -17,18 +17,7 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
 
   // note: the gas used is constant; even if the input is incorrect.
   const gasUsed = opts.common.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537) ?? BigInt(0)
-  if (opts._debug !== undefined) {
-    opts._debug(
-      `Run BLS12G1ADD (0x0b) precompile data=${short(opts.data)} length=${
-        opts.data.length
-      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
-    )
-  }
-
-  if (opts.gasLimit < gasUsed) {
-    if (opts._debug !== undefined) {
-      opts._debug(`BLS12G1ADD (0x0b) failed: OOG`)
-    }
+  if (!gasCheck(opts, gasUsed, 'BLS12G1ADD (0x0b)')) {
     return OOGResult(opts.gasLimit)
   }
 
