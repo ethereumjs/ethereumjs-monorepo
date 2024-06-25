@@ -1,9 +1,9 @@
-import { bytesToHex, concatBytes, hexToBytes, short } from '@ethereumjs/util'
+import { bytesToHex, concatBytes, hexToBytes } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import { zeroByteCheck } from './bls12_381/index.js'
+import { gasCheck, zeroByteCheck } from './bls12_381/index.js'
 import { BLS12_381_ToG1Point, BLS12_381_ToG2Point } from './bls12_381/mcl.js'
 
 import type { ExecResult } from '../types.js'
@@ -29,15 +29,9 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   const gasUsedPerPair =
     opts.common.paramByEIP('gasPrices', 'Bls12381PairingPerPairGas', 2537) ?? BigInt(0)
 
-  const gasUsed = baseGas + gasUsedPerPair * BigInt(Math.floor(inputData.length / 384))
-  if (opts._debug !== undefined) {
-    opts._debug(
-      `Run BLS12PAIRING (0x11) precompile data=${short(opts.data)} length=${
-        opts.data.length
-      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
-    )
-  }
-
+  // TODO: For this precompile it is the only exception that the length check is placed before the
+  // gas check. I will keep it there to not side-change the existing implementation, but we should
+  // check (respectively Jochem can maybe have a word) if this is something intended or not
   if (inputData.length % 384 !== 0) {
     if (opts._debug !== undefined) {
       opts._debug(`BLS12PAIRING (0x11) failed: Invalid input length length=${inputData.length}`)
@@ -45,10 +39,8 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
-  if (opts.gasLimit < gasUsed) {
-    if (opts._debug !== undefined) {
-      opts._debug(`BLS12PAIRING (0x11) failed: OOG`)
-    }
+  const gasUsed = baseGas + gasUsedPerPair * BigInt(Math.floor(inputData.length / 384))
+  if (!gasCheck(opts, gasUsed, 'BLS12PAIRING (0x11)')) {
     return OOGResult(opts.gasLimit)
   }
 
