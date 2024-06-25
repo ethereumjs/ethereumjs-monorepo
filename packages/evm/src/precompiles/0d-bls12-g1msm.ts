@@ -23,7 +23,7 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
 
   // TODO: Double-check respectively confirm that this order is really correct that the gas check
   // on this eventually to be "floored" pair number should happen before the input length modulo
-  // validation
+  // validation (same for g2msm)
   const numPairs = Math.floor(inputData.length / 160)
   const gasUsedPerPair = opts.common.paramByEIP('gasPrices', 'Bls12381G1MulGas', 2537) ?? BigInt(0)
   const gasUsed = msmGasUsed(numPairs, gasUsedPerPair)
