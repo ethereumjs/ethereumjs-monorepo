@@ -1,8 +1,9 @@
-import { bytesToHex, equalsBytes, short } from '@ethereumjs/util'
+import { bytesToHex, short } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
+import { zeroByteCheck } from './bls12_381/index.js'
 import { BLS12_381_FromG2Point, BLS12_381_ToG2Point } from './bls12_381/mcl.js'
 
 import type { ExecResult } from '../types.js'
@@ -38,8 +39,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   // check if some parts of input are zero bytes.
-  const zeroBytes16 = new Uint8Array(16)
-  const zeroByteCheck = [
+  const zeroByteRanges = [
     [0, 16],
     [64, 80],
     [128, 144],
@@ -49,15 +49,8 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
     [384, 400],
     [448, 464],
   ]
-
-  for (const index in zeroByteCheck) {
-    const slicedBuffer = opts.data.subarray(zeroByteCheck[index][0], zeroByteCheck[index][1])
-    if (!(equalsBytes(slicedBuffer, zeroBytes16) === true)) {
-      if (opts._debug !== undefined) {
-        opts._debug(`BLS12G2ADD (0x0e) failed: Point not on curve`)
-      }
-      return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
-    }
+  if (!zeroByteCheck(opts, zeroByteRanges, 'BLS12G2ADD (0x0e)')) {
+    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
   }
 
   // TODO: verify that point is on G2

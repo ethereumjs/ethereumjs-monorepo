@@ -1,8 +1,9 @@
-import { bytesToHex, concatBytes, equalsBytes, hexToBytes, short } from '@ethereumjs/util'
+import { bytesToHex, concatBytes, hexToBytes, short } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
+import { zeroByteCheck } from './bls12_381/index.js'
 import { BLS12_381_ToG1Point, BLS12_381_ToG2Point } from './bls12_381/mcl.js'
 
 import type { ExecResult } from '../types.js'
@@ -52,11 +53,8 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   // prepare pairing list and check for mandatory zero bytes
-
   const pairs = []
-
-  const zeroBytes16 = new Uint8Array(16)
-  const zeroByteCheck = [
+  const zeroByteRanges = [
     [0, 16],
     [64, 80],
     [128, 144],
@@ -68,18 +66,10 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   for (let k = 0; k < inputData.length / 384; k++) {
     // zero bytes check
     const pairStart = 384 * k
-    for (const index in zeroByteCheck) {
-      const slicedBuffer = opts.data.subarray(
-        zeroByteCheck[index][0] + pairStart,
-        zeroByteCheck[index][1] + pairStart
-      )
-      if (!equalsBytes(slicedBuffer, zeroBytes16)) {
-        if (opts._debug !== undefined) {
-          opts._debug(`BLS12PAIRING (0x11) failed: Point not on curve`)
-        }
-        return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
-      }
+    if (!zeroByteCheck(opts, zeroByteRanges, 'BLS12PAIRING (0x11)', pairStart)) {
+      return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
     }
+
     let G1
     try {
       G1 = BLS12_381_ToG1Point(opts.data.subarray(pairStart, pairStart + 128), mcl)

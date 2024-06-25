@@ -1,8 +1,9 @@
-import { bytesToHex, equalsBytes, short } from '@ethereumjs/util'
+import { bytesToHex, short } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
+import { zeroByteCheck } from './bls12_381/index.js'
 import { NobleBLS } from './bls12_381/noble.js'
 
 import type { EVMBLSInterface, ExecResult } from '../types.js'
@@ -39,23 +40,16 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   // check if some parts of input are zero bytes.
-  const zeroBytes16 = new Uint8Array(16)
-  const zeroByteCheck = [
+  const zeroByteRanges = [
     [0, 16],
     [64, 80],
     [128, 144],
     [192, 208],
   ]
-
-  for (const index in zeroByteCheck) {
-    const slicedBuffer = opts.data.subarray(zeroByteCheck[index][0], zeroByteCheck[index][1])
-    if (!(equalsBytes(slicedBuffer, zeroBytes16) === true)) {
-      if (opts._debug !== undefined) {
-        opts._debug(`BLS12G1ADD (0x0b) failed: Point not on curve`)
-      }
-      return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
-    }
+  if (!zeroByteCheck(opts, zeroByteRanges, 'BLS12G1ADD (0x0b)')) {
+    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
   }
+
   let returnValue
   try {
     returnValue = bls.add(inputData)
