@@ -1,10 +1,12 @@
 import {
   BIGINT_0,
+  bigIntToHex,
   bytesToBigInt,
   bytesToUnprefixedHex,
   concatBytes,
   equalsBytes,
   padToEven,
+  setLengthLeft,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { bls12_381 } from '@noble/curves/bls12-381'
@@ -14,6 +16,7 @@ import { ERROR, EvmError } from '../../exceptions.js'
 import { BLS_FIELD_MODULUS } from './constants.js'
 
 import type { EVMBLSInterface } from '../../types.js'
+import type { ProjPointType } from '@noble/curves/abstract/weierstrass.js'
 
 /**
  * Converts an Uint8Array to a MCL G1 point. Raises errors if the point is not on the curve
@@ -67,8 +70,8 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): a
  * @returns MCL G1 point
  */
 function BLS12_381_ToG1PointN(input: Uint8Array) {
-  const x = bytesToBigInt(input.subarray(0, 64))
-  const y = bytesToBigInt(input.subarray(64, 128))
+  const x = bytesToBigInt(input.subarray(16, 64))
+  const y = bytesToBigInt(input.subarray(80, 128))
 
   if (x === y && x === BIGINT_0) {
     return bls12_381.G1.ProjectivePoint.ZERO
@@ -79,6 +82,8 @@ function BLS12_381_ToG1PointN(input: Uint8Array) {
     y,
   })
 
+  // TODO: validate if these two checks are necessary and
+  // how to transition to Noble
   /*mcl.verifyOrderG1(verifyOrder)
   if (verifyOrder && G1.isValidOrder() === false) {
     throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
@@ -106,6 +111,22 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
   // note: decoded[0] === 1
   const xval = padToEven(decoded[1])
   const yval = padToEven(decoded[2])
+
+  // convert to buffers.
+
+  const xBuffer = concatBytes(new Uint8Array(64 - xval.length / 2), unprefixedHexToBytes(xval))
+  const yBuffer = concatBytes(new Uint8Array(64 - yval.length / 2), unprefixedHexToBytes(yval))
+
+  setLengthLeft(xBuffer, 64)
+
+  return concatBytes(xBuffer, yBuffer)
+}
+
+// input: a mcl G1 point
+// output: a 128-byte Uint8Array
+function BLS12_381_FromG1PointN(input: ProjPointType<bigint>): Uint8Array {
+  const xval = padToEven(bigIntToHex(input.x).slice(2))
+  const yval = padToEven(bigIntToHex(input.y).slice(2))
 
   // convert to buffers.
 
@@ -258,20 +279,25 @@ export class NobleBLS implements EVMBLSInterface {
   }
 
   add(input: Uint8Array): Uint8Array {
-    // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
-    const mclPoint1 = BLS12_381_ToG1Point(input.subarray(0, 128), this._mcl, false)
-    const mclPoint2 = BLS12_381_ToG1Point(input.subarray(128, 256), this._mcl, false)
-
     const mclPoint1N = BLS12_381_ToG1PointN(input.subarray(0, 128))
     const mclPoint2N = BLS12_381_ToG1PointN(input.subarray(128, 256))
 
     const resultN = mclPoint1N.add(mclPoint2N)
-    const result = this._mcl.add(mclPoint1, mclPoint2)
 
-    const resultBytes = BLS12_381_FromG1Point(result)
-    console.log(resultN.toRawBytes())
-    console.log(resultBytes)
-    return resultBytes
+    /*console.log('MCL:')
+    console.log(result.getStr(16))
+    console.log('Noble:')
+    console.log(bigIntToHex(resultN.x))
+    console.log(bigIntToHex(resultN.y))*/
+
+    const resultBytesN = BLS12_381_FromG1PointN(resultN)
+
+    /*console.log('MCL (result):')
+    console.log(bytesToHex(resultBytes))
+    console.log('Noble (result):')
+    console.log(bytesToHex(resultBytesN))*/
+
+    return resultBytesN
   }
 }
 
