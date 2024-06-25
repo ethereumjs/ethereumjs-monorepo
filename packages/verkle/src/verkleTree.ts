@@ -296,7 +296,6 @@ export class VerkleTree {
           path: nearestNode.stem,
         })
         path = leafNode.stem.slice(0, partialMatchingStemIndex)
-
         this.DEBUG && this.debug(`Creating new internal node at path ${bytesToHex(path)}`, ['PUT'])
         // Push new internal node to putStack
         putStack.push([internalNode.hash(), internalNode])
@@ -324,7 +323,7 @@ export class VerkleTree {
       while (foundPath.stack.length > 1) {
         const [nextNode, nextPath] = foundPath.stack.pop()! as [InternalNode, Uint8Array]
         // Compute the child index to be updated on `nextNode`
-        const childIndex = path[matchingBytesLength(path, nextPath) - 1]
+        const childIndex = path[matchingBytesLength(path, nextPath)]
         // Update child reference
         nextNode.setChild(childIndex, {
           commitment: putStack[putStack.length - 1][1].commitment,
