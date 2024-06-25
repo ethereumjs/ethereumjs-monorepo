@@ -60,7 +60,8 @@
     "test:state:selectedForks": "echo 'Homestead TangerineWhistle SpuriousDragon Petersburg Berlin London Cancun' | xargs -n1 | xargs -I v1 npm run test:state -- --fork=v1 --verify-test-amount-alltests",
     "test:state:slow": "npm run test:state -- --runSkipped=slow",
     "tester": "tsx ./test/tester --stack-size=1500",
-    "tsc": "../../config/cli/ts-compile.sh"
+    "tsc": "../../config/cli/ts-compile.sh",
+    "visualize:bundle": "npx vite build"
   },
   "dependencies": {
     "@ethereumjs/block": "^5.2.0",

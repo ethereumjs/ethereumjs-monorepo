@@ -42,7 +42,8 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npx vitest run",
-    "tsc": "../../config/cli/ts-compile.sh"
+    "tsc": "../../config/cli/ts-compile.sh",
+    "visualize:bundle": "npx vite build"
   },
   "dependencies": {
     "@ethereumjs/block": "^5.2.0",

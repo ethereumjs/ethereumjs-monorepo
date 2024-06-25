@@ -70,14 +70,12 @@
     "@types/core-js": "^2.5.0",
     "@types/minimist": "^1.2.2",
     "@types/node-dir": "^0.0.34",
-    "@types/rollup-plugin-visualizer": "^4.2.4",
     "benchmark": "^2.1.4",
     "kzg-wasm": "^0.4.0",
     "level": "^8.0.0",
     "memory-level": "^1.0.0",
     "minimist": "^1.2.5",
     "node-dir": "^0.1.17",
-    "rollup-plugin-visualizer": "^5.12.0",
     "solc": "^0.8.1"
   },
   "engines": {

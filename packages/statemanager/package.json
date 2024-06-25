@@ -46,7 +46,8 @@
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.browser.config.mts",
     "test:node": "npx vitest run",
-    "tsc": "../../config/cli/ts-compile.sh"
+    "tsc": "../../config/cli/ts-compile.sh",
+    "visualize:bundle": "npx vite build"
   },
   "dependencies": {
     "@ethereumjs/common": "^4.3.0",

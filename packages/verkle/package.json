@@ -49,7 +49,8 @@
     "test": "npm run test:node",
     "test:node": "npx vitest run",
     "test:browser": "npx vitest run --config=../../config/vitest.browser.config.mts",
-    "tsc": "../../config/cli/ts-compile.sh"
+    "tsc": "../../config/cli/ts-compile.sh",
+    "visualize:bundle": "npx vite build"
   },
   "dependencies": {
     "debug": "^4.3.4",
