@@ -1,8 +1,9 @@
-import { bytesToHex, equalsBytes, short } from '@ethereumjs/util'
+import { bytesToHex, short } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
+import { zeroByteCheck } from './bls12_381/index.js'
 import { BLS12_381_FromG1Point, BLS12_381_ToFrPoint, BLS12_381_ToG1Point } from './bls12_381/mcl.js'
 
 import type { ExecResult } from '../types.js'
@@ -38,20 +39,12 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   // check if some parts of input are zero bytes.
-  const zeroBytes16 = new Uint8Array(16)
-  const zeroByteCheck = [
+  const zeroByteRanges = [
     [0, 16],
     [64, 80],
   ]
-
-  for (const index in zeroByteCheck) {
-    const slicedBuffer = opts.data.subarray(zeroByteCheck[index][0], zeroByteCheck[index][1])
-    if (!equalsBytes(slicedBuffer, zeroBytes16)) {
-      if (opts._debug !== undefined) {
-        opts._debug(`BLS12G1MUL (0x0c) failed: Point not on curve`)
-      }
-      return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
-    }
+  if (!zeroByteCheck(opts, zeroByteRanges, 'BLS12G1MUL (0x0c)')) {
+    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
   }
 
   // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.

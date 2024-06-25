@@ -1,8 +1,9 @@
-import { bytesToHex, equalsBytes, short } from '@ethereumjs/util'
+import { bytesToHex, short } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
+import { zeroByteCheck } from './bls12_381/index.js'
 import { BLS12_381_FromG1Point, BLS12_381_ToFpPoint } from './bls12_381/mcl.js'
 
 import type { ExecResult } from '../types.js'
@@ -38,11 +39,8 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   // check if some parts of input are zero bytes.
-  const zeroBytes16 = new Uint8Array(16)
-  if (!equalsBytes(opts.data.subarray(0, 16), zeroBytes16)) {
-    if (opts._debug !== undefined) {
-      opts._debug(`BLS12MAPFPTOG1 (0x12) failed: Point not on curve`)
-    }
+  const zeroByteRanges = [[0, 16]]
+  if (!zeroByteCheck(opts, zeroByteRanges, 'BLS12MAPFPTOG1 (0x12)')) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
   }
 
