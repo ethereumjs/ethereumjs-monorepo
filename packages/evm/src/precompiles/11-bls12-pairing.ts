@@ -15,12 +15,10 @@ const oneBuffer = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
 export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   const mcl = (<any>opts._EVM)._mcl!
 
-  const inputData = opts.data
-
   const baseGas = opts.common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537) ?? BigInt(0)
 
   // TODO: confirm that this is not a thing for the other precompiles
-  if (inputData.length === 0) {
+  if (opts.data.length === 0) {
     if (opts._debug !== undefined) {
       opts._debug(`BLS12PAIRING (0x11) failed: Empty input`)
     }
@@ -37,7 +35,7 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
-  const gasUsed = baseGas + gasUsedPerPair * BigInt(Math.floor(inputData.length / 384))
+  const gasUsed = baseGas + gasUsedPerPair * BigInt(Math.floor(opts.data.length / 384))
   if (!gasCheck(opts, gasUsed, 'BLS12PAIRING (0x11)')) {
     return OOGResult(opts.gasLimit)
   }
@@ -53,7 +51,7 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
     [320, 336],
   ]
 
-  for (let k = 0; k < inputData.length / 384; k++) {
+  for (let k = 0; k < opts.data.length / 384; k++) {
     // zero bytes check
     const pairStart = 384 * k
     if (!zeroByteCheck(opts, zeroByteRanges, 'BLS12PAIRING (0x11)', pairStart)) {
