@@ -1,4 +1,4 @@
-import { MapDB, bytesToHex, equalsBytes, hexToBytes, intToHex } from '@ethereumjs/util'
+import { MapDB, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
@@ -14,7 +14,7 @@ import { VerkleTree } from '../src/verkleTree.js'
 import type { VerkleNode } from '../src/index.js'
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
-// Testdata from https://github.com/gballet/go-ethereum/blob/kaustinen-with-shapella/trie/verkle_test.go
+// Testdata based on https://github.com/gballet/go-ethereum/blob/kaustinen-with-shapella/trie/verkle_test.go
 const presentKeys = [
   // Two keys with the same stem but different suffixes
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
@@ -53,6 +53,8 @@ const values = [
   '0x0000000000000000000000000000000000000000000000000000000000000000',
   '0x0000000000000000000000000000000000000000000000000000000000000000',
   '0xe703000000000000000000000000000000000000000000000000000000000000',
+  '0xe703000000000000000000000000000000000000000000000000000000000000',
+  '0xe703000000000000000000000000000000000000000000000000000000000000',
 ].map((key) => hexToBytes(key as PrefixedHexString))
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -62,7 +64,7 @@ const absentKeys = [
 ].map((key) => hexToBytes(key as PrefixedHexString))
 
 describe('Verkle tree', () => {
-  it.skip('should insert and retrieve values', async () => {
+  it.only('should insert and retrieve values', async () => {
     const verkleCrypto = await loadVerkleCrypto()
     const tree = await VerkleTree.create({
       verkleCrypto,
@@ -115,11 +117,15 @@ describe('Verkle tree', () => {
     assert.ok(pathToDeepNode.node !== null)
     assert.equal(pathToDeepNode.remaining.length, 0)
     // Verify that findPath returns a path that demonstrates the nonexistence of a key
-    // by returning only the root node (in this instance where the trie has only a root internal node and 1 leaf node)
+    // by returning a stack where the last node is a leaf node
     // with a different stem than the one passed to `findPath`
     const pathToNonExistentNode = await tree.findPath(absentKeys[0])
     assert.equal(pathToNonExistentNode.node, null)
-    assert.equal(pathToNonExistentNode.stack.length, 2, 'contains the root node in the stack')
+    assert.deepEqual(
+      verkleCrypto.serializeCommitment(pathToNonExistentNode.stack[0][0].commitment),
+      tree.root(),
+      'contains the root node in the stack'
+    )
   })
 })
 
@@ -207,8 +213,7 @@ describe('findPath validation', () => {
     assert.deepEqual(nearestNode, leafNode1)
 
     // Compute the portion of stem1 and stem2 that match (i.e. the partial path closest to stem2)
-    // Note: We subtract 1 since we are using 0-indexed arrays
-    const partialMatchingStemIndex = matchingBytesLength(stem1, stem2) - 1
+    const partialMatchingStemIndex = matchingBytesLength(stem1, stem2)
     // Find the path to the new internal node (the matching portion of stem1 and stem2)
     const internalNode1Path = stem1.slice(0, partialMatchingStemIndex)
     // Create new internal node
@@ -248,7 +253,7 @@ describe('findPath validation', () => {
     assert.deepEqual(val2, hexToBytes(values[2]), 'confirm values[2] can be retrieved from trie')
   })
 
-  it.only('should put values and find them', async () => {
+  it('should put values and find them', async () => {
     const keys = [
       // Two keys with the same stem but different suffixes
       '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',

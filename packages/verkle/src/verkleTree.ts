@@ -278,12 +278,10 @@ export class VerkleTree {
       let nearestNode = nearestNodeTuple[0]
       path = nearestNodeTuple[1]
       // Compute the portion of leafNode.stem and nearestNode.path that match (i.e. the partial path closest to leafNode.stem)
-      // Note: We subtract 1 since we are using 0-indexed arrays
       const partialMatchingStemIndex = matchingBytesLength(leafNode.stem, path)
       if (nearestNode.type === VerkleNodeType.Leaf) {
         // We need to create a new internal node and set nearestNode and leafNode as child nodes of it
         nearestNode = nearestNode as LeafNode
-        // Find the path to the new internal node (the matching portion of the leaf node and next node's stems)
         // Create new internal node
         const internalNode = InternalNode.create(this.verkleCrypto)
         // Set leafNode and nextNode as children of the new internal node
@@ -295,6 +293,7 @@ export class VerkleTree {
           commitment: nearestNode.commitment,
           path: nearestNode.stem,
         })
+        // Find the path to the new internal node (the matching portion of the leaf node and next node's stems)
         path = leafNode.stem.slice(0, partialMatchingStemIndex)
         this.DEBUG && this.debug(`Creating new internal node at path ${bytesToHex(path)}`, ['PUT'])
         // Push new internal node to putStack
