@@ -128,6 +128,23 @@ export class Stack {
   }
 
   /**
+   * Swap number 1 with number 2 on the stack
+   * @param swap1
+   * @param swap2
+   */
+  exchange(swap1: number, swap2: number) {
+    const len = this._len
+    // This check is likely done at validation time
+    // TODO: check if this is necessary
+    if (len > swap1 || len > swap2) {
+      throw new EvmError(ERROR.STACK_UNDERFLOW)
+    }
+    const cache = this._store[swap2]
+    this._store[swap1] = this._store[swap2]
+    this._store[swap2] = cache
+  }
+
+  /**
    * Returns a copy of the current stack. This represents the actual state of the stack
    * (not the internal state of the stack, which might have unreachable elements in it)
    */
