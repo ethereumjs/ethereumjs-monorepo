@@ -1489,10 +1489,32 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xf8: EXTCALL
   [
     0xf8,
-    async function (runState, _common) {
+    async function (runState, common) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
+      } else {
+        const [_currentGasLimit, toAddr, value, inOffset, inLength] = runState.stack.popN(5)
+        const toAddress = new Address(addresstoBytes(toAddr))
+
+        let data = new Uint8Array(0)
+        if (inLength !== BIGINT_0) {
+          data = runState.memory.read(Number(inOffset), Number(inLength), true)
+        }
+
+        let gasLimit = runState.messageGasLimit!
+        if (value !== BIGINT_0) {
+          const callStipend = common.param('gasPrices', 'callStipend')
+          runState.interpreter.addStipend(callStipend)
+          gasLimit += callStipend
+        }
+
+        runState.messageGasLimit = undefined
+
+        const ret = await runState.interpreter.call(gasLimit, toAddress, value, data)
+        // Write return data to memory
+
+        runState.stack.push(ret)
       }
     },
   ],
@@ -1503,6 +1525,21 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
+      } else {
+        const value = runState.interpreter.getCallValue()
+        const [_currentGasLimit, toAddr, inOffset, inLength] = runState.stack.popN(6)
+        const toAddress = new Address(addresstoBytes(toAddr))
+
+        let data = new Uint8Array(0)
+        if (inLength !== BIGINT_0) {
+          data = runState.memory.read(Number(inOffset), Number(inLength), true)
+        }
+
+        const gasLimit = runState.messageGasLimit!
+        runState.messageGasLimit = undefined
+
+        const ret = await runState.interpreter.callDelegate(gasLimit, toAddress, value, data)
+        runState.stack.push(ret)
       }
     },
   ],
@@ -1536,6 +1573,21 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
+      } else {
+        const value = BIGINT_0
+        const [_currentGasLimit, toAddr, inOffset, inLength] = runState.stack.popN(6)
+        const toAddress = new Address(addresstoBytes(toAddr))
+
+        const gasLimit = runState.messageGasLimit!
+        runState.messageGasLimit = undefined
+
+        let data = new Uint8Array(0)
+        if (inLength !== BIGINT_0) {
+          data = runState.memory.read(Number(inOffset), Number(inLength), true)
+        }
+
+        const ret = await runState.interpreter.callStatic(gasLimit, toAddress, value, data)
+        runState.stack.push(ret)
       }
     },
   ],

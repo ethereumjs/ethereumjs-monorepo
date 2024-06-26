@@ -26,7 +26,6 @@ import type { Journal } from './journal.js'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
 import type { Block, Blockchain, EOFEnv, EVMProfilerOpts, EVMResult, Log } from './types.js'
 import type { AccessWitnessInterface, Common, EVMStateManagerInterface } from '@ethereumjs/common'
-import type { AccessWitness, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 const { debug: createDebugLogger } = debugDefault
 
