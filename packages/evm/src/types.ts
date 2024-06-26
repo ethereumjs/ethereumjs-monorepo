@@ -8,8 +8,7 @@ import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/ga
 import type { OpHandler } from './opcodes/index.js'
 import type { CustomPrecompile } from './precompiles/index.js'
 import type { PrecompileFunc } from './precompiles/types.js'
-import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
-import type { AccessWitness } from '@ethereumjs/statemanager'
+import type { AccessWitnessInterface, Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Account, Address, AsyncEventEmitter, PrefixedHexString } from '@ethereumjs/util'
 
 export type DeleteOpcode = {
@@ -125,7 +124,7 @@ export interface EVMRunCallOpts extends EVMRunOpts {
    */
   message?: Message
 
-  accessWitness?: AccessWitness
+  accessWitness?: AccessWitnessInterface
 }
 
 interface NewContractEvent {

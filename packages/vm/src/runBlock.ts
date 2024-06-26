@@ -17,13 +17,13 @@ import {
   bytesToHex,
   concatBytes,
   equalsBytes,
+  getVerkleTreeIndexesForStorageSlot,
   hexToBytes,
   intToBytes,
   setLengthLeft,
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { getTreeIndexesForStorageSlot } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 
 import { Bloom } from './bloom/index.js'
@@ -513,7 +513,7 @@ export async function accumulateParentBlockHash(
 
     // generate access witness
     if (vm.common.isActivatedEIP(6800)) {
-      const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(ringKey)
+      const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(ringKey)
       // just create access witnesses without charging for the gas
       ;(
         vm.stateManager as StatelessVerkleStateManager

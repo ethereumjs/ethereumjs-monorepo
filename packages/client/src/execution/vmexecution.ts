@@ -23,6 +23,7 @@ import {
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { writeFileSync } from 'fs'
+import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import { Event } from '../types.js'
 import { debugCodeReplayBlock } from '../util/debug.js'
@@ -190,8 +191,10 @@ export class VMExecution extends Execution {
       return
     }
     this.config.logger.info(`Setting up verkleVM`)
-    const stateManager = await StatelessVerkleStateManager.create({
+    const verkleCrypto = await loadVerkleCrypto()
+    const stateManager = new StatelessVerkleStateManager({
       initialStateRoot: this.config.initialVerkleStateRoot,
+      verkleCrypto,
     })
     this.verkleVM = await VM.create({
       common: this.config.execCommon,

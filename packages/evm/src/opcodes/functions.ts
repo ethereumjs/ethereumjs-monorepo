@@ -27,12 +27,12 @@ import {
   bytesToInt,
   concatBytes,
   ecrecover,
+  getVerkleTreeIndexesForStorageSlot,
   hexToBytes,
   publicToAddress,
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
-import { getTreeIndexesForStorageSlot } from '@ethereumjs/verkle'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { EOFError, validationError } from '../eof/errors.js'
@@ -630,7 +630,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
         if (common.isActivatedEIP(6800)) {
-          const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
+          const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(number)
           // create witnesses and charge gas
           const statelessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             historyAddress,
