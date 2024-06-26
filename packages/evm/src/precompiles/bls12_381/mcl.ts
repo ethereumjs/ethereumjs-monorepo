@@ -230,6 +230,16 @@ export class MCLBLS implements EVMBLSInterface {
 
     return BLS12_381_FromG1Point(result)
   }
+
+  mul(input: Uint8Array): Uint8Array {
+    // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
+    const mclPoint = BLS12_381_ToG1Point(input.subarray(0, 128), this._mcl)
+    const frPoint = BLS12_381_ToFrPoint(input.subarray(128, 160), this._mcl)
+
+    const result = this._mcl.mul(mclPoint, frPoint)
+
+    return BLS12_381_FromG1Point(result)
+  }
 }
 
 export {

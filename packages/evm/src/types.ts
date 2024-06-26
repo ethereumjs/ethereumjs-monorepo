@@ -331,6 +331,7 @@ export interface ExecResult {
 
 export type EVMBLSInterface = {
   add(input: Uint8Array): Uint8Array
+  mul(input: Uint8Array): Uint8Array
 }
 
 /**

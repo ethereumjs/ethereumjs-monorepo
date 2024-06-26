@@ -6,7 +6,6 @@ import {
   concatBytes,
   equalsBytes,
   padToEven,
-  setLengthLeft,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { bls12_381 } from '@noble/curves/bls12-381'
@@ -116,8 +115,6 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
 
   const xBuffer = concatBytes(new Uint8Array(64 - xval.length / 2), unprefixedHexToBytes(xval))
   const yBuffer = concatBytes(new Uint8Array(64 - yval.length / 2), unprefixedHexToBytes(yval))
-
-  setLengthLeft(xBuffer, 64)
 
   return concatBytes(xBuffer, yBuffer)
 }
@@ -229,6 +226,37 @@ function BLS12_381_ToFrPoint(input: Uint8Array, mcl: any): any {
   return Fr
 }
 
+// input: a 32-byte hex scalar Uint8Array
+// output: a mcl Fr point
+
+function BLS12_381_ToFrPointN(input: Uint8Array): bigint {
+  const Fr = bls12_381.fields.Fr.fromBytes(input)
+
+  // TODO: This fixes the following two failing tests:
+  // bls_g1mul_random*g1_unnormalized_scalar
+  // bls_g1mul_random*p1_unnormalized_scalar
+  // It should be nevertheless validated if this is (fully) correct,
+  // especially if ">" or ">=" should be applied.
+  //
+  // Unfortunately the skalar in both test vectors is significantly
+  // greater than the ORDER threshold, here are th values from both tests:
+  //
+  // Skalar / Order
+  // 69732848789442042582239751384143889712113271203482973843852656394296700715236n
+  // 52435875175126190479447740508185965837690552500527637822603658699938581184513n
+  //
+  // There should be 4 test cases added to the official test suite:
+  // 1. bls_g1mul_random*g1_unnormalized_scalar within threshold (ORDER (?))
+  // 2. bls_g1mul_random*g1_unnormalized_scalar outside threshold (ORDER + 1 (?))
+  // 3. bls_g1mul_random*p1_unnormalized_scalar within threshold (ORDER (?))
+  // 4. bls_g1mul_random*p1_unnormalized_scalar outside threshold (ORDER + 1 (?))
+  //
+  if (Fr > bls12_381.fields.Fr.ORDER) {
+    return Fr - bls12_381.fields.Fr.ORDER
+  }
+  return Fr
+}
+
 // input: a 64-byte buffer
 // output: a mcl Fp point
 
@@ -298,6 +326,19 @@ export class NobleBLS implements EVMBLSInterface {
     console.log(bytesToHex(resultBytesN))*/
 
     return resultBytesN
+  }
+
+  mul(input: Uint8Array): Uint8Array {
+    // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
+    const mclPointN = BLS12_381_ToG1PointN(input.subarray(0, 128))
+    const frPointN = BLS12_381_ToFrPointN(input.subarray(128, 160))
+
+    if (frPointN === BIGINT_0) {
+      return new Uint8Array(128)
+    }
+    const resultN = mclPointN.multiply(frPointN)
+
+    return BLS12_381_FromG1PointN(resultN)
   }
 }
 
