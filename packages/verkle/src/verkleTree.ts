@@ -268,75 +268,38 @@ export class VerkleTree {
     putStack.push([leafNode.hash(), leafNode])
 
     // `path` is the path to the last node pushed to the `putStack`
-    let path = leafNode.stem
+    let lastPath = leafNode.stem
 
     // Step 2) Determine if a new internal node is needed
     if (foundPath.stack.length > 1) {
       // Only insert new internal node if we have more than 1 node in the path
       // since a single node indicates only the root node is in the path
       const nearestNodeTuple = foundPath.stack.pop()!
-      let nearestNode = nearestNodeTuple[0]
-      path = nearestNodeTuple[1]
-      // Compute the portion of leafNode.stem and nearestNode.path that match (i.e. the partial path closest to leafNode.stem)
-      const partialMatchingStemIndex = matchingBytesLength(leafNode.stem, path)
-      if (nearestNode.type === VerkleNodeType.Leaf) {
-        // We need to create a new internal node and set nearestNode and leafNode as child nodes of it
-        nearestNode = nearestNode as LeafNode
-        // Create new internal node
-        const internalNode = InternalNode.create(this.verkleCrypto)
-        // Set leafNode and nextNode as children of the new internal node
-        internalNode.setChild(leafNode.stem[partialMatchingStemIndex], {
-          commitment: leafNode.commitment,
-          path: leafNode.stem,
-        })
-        internalNode.setChild(nearestNode.stem[partialMatchingStemIndex], {
-          commitment: nearestNode.commitment,
-          path: nearestNode.stem,
-        })
-        // Find the path to the new internal node (the matching portion of the leaf node and next node's stems)
-        path = leafNode.stem.slice(0, partialMatchingStemIndex)
-        this.DEBUG && this.debug(`Creating new internal node at path ${bytesToHex(path)}`, ['PUT'])
-        // Push new internal node to putStack
-        putStack.push([internalNode.hash(), internalNode])
-      } else {
-        // Nearest node is an internal node.  We need to update the appropriate child reference
-        // to the new leaf node
-        nearestNode = nearestNode as InternalNode
-        nearestNode.setChild(leafNode.stem[partialMatchingStemIndex], {
-          commitment: leafNode.commitment,
-          path: leafNode.stem,
-        })
-        this.DEBUG &&
-          this.debug(
-            `Updating child reference for leaf node with stem: ${bytesToHex(stem)} at index ${
-              leafNode.stem[partialMatchingStemIndex]
-            } in internal node at path ${bytesToHex(
-              leafNode.stem.slice(0, partialMatchingStemIndex)
-            )}`,
-            ['PUT']
-          )
-        putStack.push([nearestNode.hash(), nearestNode])
-      }
+      const nearestNode = nearestNodeTuple[0]
+      lastPath = nearestNodeTuple[1]
+      const updatedParentTuple = this.updateParent(leafNode, nearestNode, lastPath)
+      putStack.push([updatedParentTuple.node.hash(), updatedParentTuple.node])
+      lastPath = updatedParentTuple.lastPath
 
       // Step 3) Walk up trie and update child references in parent internal nodes
       while (foundPath.stack.length > 1) {
         const [nextNode, nextPath] = foundPath.stack.pop()! as [InternalNode, Uint8Array]
         // Compute the child index to be updated on `nextNode`
-        const childIndex = path[matchingBytesLength(path, nextPath)]
+        const childIndex = lastPath[matchingBytesLength(lastPath, nextPath)]
         // Update child reference
         nextNode.setChild(childIndex, {
           commitment: putStack[putStack.length - 1][1].commitment,
-          path,
+          path: lastPath,
         })
         this.DEBUG &&
           this.debug(
             `Updating child reference for node with path: ${bytesToHex(
-              path
+              lastPath
             )} at index ${childIndex} in internal node at path ${bytesToHex(nextPath)}`,
             ['PUT']
           )
         // Hold onto `path` to current node for updating next parent node child index
-        path = nextPath
+        lastPath = nextPath
         putStack.push([nextNode.hash(), nextNode])
       }
     }
@@ -345,13 +308,13 @@ export class VerkleTree {
     const rootNode = foundPath.stack.pop()![0] as InternalNode
     rootNode.setChild(stem[0], {
       commitment: putStack[putStack.length - 1][1].commitment,
-      path,
+      path: lastPath,
     })
     this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))
     this.DEBUG &&
       this.debug(
-        `Updating child reference for node with path: ${bytesToHex(path)} at index ${
-          path[0]
+        `Updating child reference for node with path: ${bytesToHex(lastPath)} at index ${
+          lastPath[0]
         } in root node`,
         ['PUT']
       )
@@ -360,6 +323,61 @@ export class VerkleTree {
     await this.saveStack(putStack)
   }
 
+  /**
+   * Helper method for updating or creating the parent internal node for a given leaf node
+   * @param leafNode the reference leaf node
+   * @param nearestNode the nearest node to the new leaf node
+   * @param pathToNode the path to `nearestNode`
+   * @returns a tuple of the updated parent node and the path to that parent (i.e. the partial stem of the leaf node that leads to the parent)
+   */
+  updateParent(
+    leafNode: LeafNode,
+    nearestNode: VerkleNode,
+    pathToNode: Uint8Array
+  ): { node: InternalNode; lastPath: Uint8Array } {
+    // Compute the portion of leafNode.stem and nearestNode.path that match (i.e. the partial path closest to leafNode.stem)
+    const partialMatchingStemIndex = matchingBytesLength(leafNode.stem, pathToNode)
+    let internalNode
+    if (nearestNode.type === VerkleNodeType.Leaf) {
+      // We need to create a new internal node and set nearestNode and leafNode as child nodes of it
+      nearestNode = nearestNode as LeafNode
+      // Create new internal node
+      internalNode = InternalNode.create(this.verkleCrypto)
+      // Set leafNode and nextNode as children of the new internal node
+      internalNode.setChild(leafNode.stem[partialMatchingStemIndex], {
+        commitment: leafNode.commitment,
+        path: leafNode.stem,
+      })
+      internalNode.setChild(nearestNode.stem[partialMatchingStemIndex], {
+        commitment: nearestNode.commitment,
+        path: nearestNode.stem,
+      })
+      // Find the path to the new internal node (the matching portion of the leaf node and next node's stems)
+      pathToNode = leafNode.stem.slice(0, partialMatchingStemIndex)
+      this.DEBUG &&
+        this.debug(`Creating new internal node at path ${bytesToHex(pathToNode)}`, ['PUT'])
+    } else {
+      // Nearest node is an internal node.  We need to update the appropriate child reference
+      // to the new leaf node
+      internalNode = { ...nearestNode } as InternalNode
+      internalNode.setChild(leafNode.stem[partialMatchingStemIndex], {
+        commitment: leafNode.commitment,
+        path: leafNode.stem,
+      })
+      this.DEBUG &&
+        this.debug(
+          `Updating child reference for leaf node with stem: ${bytesToHex(
+            leafNode.stem
+          )} at index ${
+            leafNode.stem[partialMatchingStemIndex]
+          } in internal node at path ${bytesToHex(
+            leafNode.stem.slice(0, partialMatchingStemIndex)
+          )}`,
+          ['PUT']
+        )
+    }
+    return { node: internalNode, lastPath: pathToNode }
+  }
   /**
    * Tries to find a path to the node for the given key.
    * It returns a `stack` of nodes to the closest node.

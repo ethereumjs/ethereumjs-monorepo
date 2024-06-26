@@ -57,7 +57,6 @@ const values = [
   '0xe703000000000000000000000000000000000000000000000000000000000000',
 ].map((key) => hexToBytes(key as PrefixedHexString))
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const absentKeys = [
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d03',
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d04',
