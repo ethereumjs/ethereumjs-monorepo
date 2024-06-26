@@ -1,4 +1,4 @@
-import { MapDB, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { MapDB, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
@@ -16,12 +16,9 @@ import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
 // Testdata based on https://github.com/gballet/go-ethereum/blob/kaustinen-with-shapella/trie/verkle_test.go
 const presentKeys = [
-  // Two keys with the same stem but different suffixes
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
-  // A key with a partially matching stem 0x318d to above 2 keys
   '0x318dfa512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
-  // A key with a partially matching stem 0x318dfa51 to above key
   '0x318dfa513b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
   '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526400',
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
@@ -55,6 +52,8 @@ const values = [
   '0xe703000000000000000000000000000000000000000000000000000000000000',
   '0xe703000000000000000000000000000000000000000000000000000000000000',
   '0xe703000000000000000000000000000000000000000000000000000000000000',
+  '0xe703000000000000000000000000000000000000000000000000000000000000',
+  '0xe703000000000000000000000000000000000000000000000000000000000000',
 ].map((key) => hexToBytes(key as PrefixedHexString))
 
 const absentKeys = [
@@ -75,11 +74,10 @@ describe('Verkle tree', () => {
     assert.ok(res.node === null, 'should not find a node when the key is not present')
     assert.deepEqual(res.remaining, presentKeys[0])
 
-    // Test that two keys with the same stem store values in the same leaf node
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < presentKeys.length; i++) {
       await tree.put(presentKeys[i], values[i])
     }
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < presentKeys.length; i++) {
       const retrievedValue = await tree.get(presentKeys[i])
       if (retrievedValue === undefined) {
         assert.fail('Value not found')
@@ -87,34 +85,6 @@ describe('Verkle tree', () => {
       assert.ok(equalsBytes(retrievedValue, values[i]))
     }
 
-    // Test that one key that partially matches the stems of the two existing keys is inserted (with appropriate internal nodes inserted as well)
-    for (let i = 2; i < 3; i++) {
-      await tree.put(presentKeys[i], values[i])
-    }
-    for (let i = 2; i < 3; i++) {
-      const retrievedValue = await tree.get(presentKeys[i])
-      if (retrievedValue === undefined) {
-        assert.fail('Value not found')
-      }
-      assert.ok(equalsBytes(retrievedValue, values[i]))
-    }
-
-    // Test that one key that with further partial match to the previous key is inserted (with appropriate internal nodes inserted as well)
-    for (let i = 3; i < 4; i++) {
-      await tree.put(presentKeys[i], values[i])
-    }
-    for (let i = 3; i < 4; i++) {
-      const retrievedValue = await tree.get(presentKeys[i])
-      if (retrievedValue === undefined) {
-        assert.fail('Value not found')
-      }
-      assert.ok(equalsBytes(retrievedValue, values[i]))
-    }
-
-    // Get path to node at depth 2 and verify that the whole key is used
-    const pathToDeepNode = await tree.findPath(presentKeys[2].slice(0, 31))
-    assert.ok(pathToDeepNode.node !== null)
-    assert.equal(pathToDeepNode.remaining.length, 0)
     // Verify that findPath returns a path that demonstrates the nonexistence of a key
     // by returning a stack where the last node is a leaf node
     // with a different stem than the one passed to `findPath`

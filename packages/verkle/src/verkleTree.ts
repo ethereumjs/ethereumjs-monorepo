@@ -359,7 +359,7 @@ export class VerkleTree {
     } else {
       // Nearest node is an internal node.  We need to update the appropriate child reference
       // to the new leaf node
-      internalNode = { ...nearestNode } as InternalNode
+      internalNode = nearestNode as InternalNode
       internalNode.setChild(leafNode.stem[partialMatchingStemIndex], {
         commitment: leafNode.commitment,
         path: leafNode.stem,
