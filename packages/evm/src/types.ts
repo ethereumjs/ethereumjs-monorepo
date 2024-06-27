@@ -335,6 +335,9 @@ export type EVMBLSInterface = {
   addG2(input: Uint8Array): Uint8Array
   mulG2(input: Uint8Array): Uint8Array
   mapFPtoG1(input: Uint8Array): Uint8Array
+  mapFP2toG2(input: Uint8Array): Uint8Array
+  msmG1(input: Uint8Array): Uint8Array
+  msmG2(input: Uint8Array): Uint8Array
 }
 
 /**

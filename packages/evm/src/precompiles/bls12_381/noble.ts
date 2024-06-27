@@ -345,14 +345,14 @@ function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array, mcl: any): any {
 // input: a 64-byte buffer
 // output: a mcl Fp point
 
-function BLS12_381_ToFpPointN(fpCoordinate: Uint8Array) {
+/*function BLS12_381_ToFpPointN(fpCoordinate: Uint8Array) {
   // check if point is in field
   if (bytesToBigInt(fpCoordinate) >= BLS_FIELD_MODULUS) {
     throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
   }
   const FP = bls12_381.fields.Fp.fromBytes(fpCoordinate.slice(16))
   return FP
-}
+}*/
 
 // input: two 64-byte buffers
 // output: a mcl Fp2 point
@@ -468,19 +468,68 @@ export class NobleBLS implements EVMBLSInterface {
     // convert input to mcl Fp1 point
     //const FP = BLS12_381_ToFpPointN(input.subarray(0, 64))
 
-    // map it to G1
-    //console.log(padToEven(bytesToUnprefixedHex(input.subarray(16, 64))))
-    try {
-      console.log((bls12_381.G1.CURVE as any).mapToCurve([bytesToBigInt(input.subarray(16, 64))]))
-    } catch (e: any) {
-      console.log(e)
-    }
-
     const result = (bls12_381.G1.CURVE as any).mapToCurve([bytesToBigInt(input.subarray(16, 64))])
+    console.log('Direct result Noble (ProjectivePoint)')
     console.log(result)
     const resultBytes = BLS12_381_FromG1PointN(result)
+    console.log('Serialized EVM byte result')
     console.log(bytesToHex(resultBytes))
     return resultBytes
+  }
+
+  mapFP2toG2(input: Uint8Array): Uint8Array {
+    // Not implemented
+    return input
+  }
+
+  msmG1(input: Uint8Array): Uint8Array {
+    // Note: This implementation is using the naive "algorithm" of just doing
+    // p1G1*v1F1 + p2G1*v1F1 + ... while the EIP is suggesting to use an optimized
+    // algorithm (Pippenger's algorithm, see https://eips.ethereum.org/EIPS/eip-2537#g1g2-msm).
+    //
+    // While this functionally works the approach is not "gas-cost-competitive" and an
+    // optimization should be considered in the future.
+    const pointLength = 128
+    const pairLength = 160
+    const numPairs = input.length / pairLength
+
+    let pRes = bls12_381.G1.ProjectivePoint.ZERO
+    for (let k = 0; k < numPairs; k++) {
+      const pairStart = pairLength * k
+      const G1 = BLS12_381_ToG1PointN(input.subarray(pairStart, pairStart + pointLength))
+      const Fr = BLS12_381_ToFrPointN(
+        input.subarray(pairStart + pointLength, pairStart + pairLength)
+      )
+
+      pRes = pRes.add(G1.multiply(Fr))
+    }
+
+    return BLS12_381_FromG1PointN(pRes)
+  }
+
+  msmG2(input: Uint8Array): Uint8Array {
+    // Note: This implementation is using the naive "algorithm" of just doing
+    // p1G1*v1F1 + p2G1*v1F1 + ... while the EIP is suggesting to use an optimized
+    // algorithm (Pippenger's algorithm, see https://eips.ethereum.org/EIPS/eip-2537#g1g2-msm).
+    //
+    // While this functionally works the approach is not "gas-cost-competitive" and an
+    // optimization should be considered in the future.
+    const pointLength = 256
+    const pairLength = 288
+    const numPairs = input.length / pairLength
+
+    let pRes = bls12_381.G2.ProjectivePoint.ZERO
+    for (let k = 0; k < numPairs; k++) {
+      const pairStart = pairLength * k
+      const G2 = BLS12_381_ToG2PointN(input.subarray(pairStart, pairStart + pointLength))
+      const Fr = BLS12_381_ToFrPointN(
+        input.subarray(pairStart + pointLength, pairStart + pairLength)
+      )
+
+      pRes = pRes.add(G2.multiply(Fr))
+    }
+
+    return BLS12_381_FromG2PointN(pRes)
   }
 }
 
