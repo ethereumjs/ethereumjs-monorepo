@@ -16,7 +16,7 @@ import { ERROR, EvmError } from '../../exceptions.js'
 import { BLS_FIELD_MODULUS } from './constants.js'
 
 import type { EVMBLSInterface } from '../../types.js'
-import type { ProjPointType } from '@noble/curves/abstract/weierstrass.js'
+import type { AffinePoint, ProjPointType } from '@noble/curves/abstract/weierstrass.js'
 
 // Copied from @noble/curves/bls12-381 (only local declaration)
 type Fp2 = {
@@ -128,7 +128,7 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
 
 // input: a mcl G1 point
 // output: a 128-byte Uint8Array
-function BLS12_381_FromG1PointN(input: ProjPointType<bigint>): Uint8Array {
+function BLS12_381_FromG1PointN(input: AffinePoint<bigint>): Uint8Array {
   const xval = padToEven(bigIntToHex(input.x).slice(2))
   const yval = padToEven(bigIntToHex(input.y).slice(2))
 
@@ -270,7 +270,7 @@ function BLS12_381_FromG2Point(input: any): Uint8Array {
 
 // input: a mcl G1 point
 // output: a 128-byte Uint8Array
-function BLS12_381_FromG2PointN(input: ProjPointType<Fp2>): Uint8Array {
+function BLS12_381_FromG2PointN(input: AffinePoint<Fp2>): Uint8Array {
   const x_1 = padToEven(bigIntToHex(input.x.c0).slice(2))
   const x_2 = padToEven(bigIntToHex(input.x.c1).slice(2))
   const y_1 = padToEven(bigIntToHex(input.y.c0).slice(2))
@@ -345,14 +345,14 @@ function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array, mcl: any): any {
 // input: a 64-byte buffer
 // output: a mcl Fp point
 
-/*function BLS12_381_ToFpPointN(fpCoordinate: Uint8Array) {
+function BLS12_381_ToFpPointN(fpCoordinate: Uint8Array) {
   // check if point is in field
   if (bytesToBigInt(fpCoordinate) >= BLS_FIELD_MODULUS) {
     throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
   }
   const FP = bls12_381.fields.Fp.fromBytes(fpCoordinate.slice(16))
   return FP
-}*/
+}
 
 // input: two 64-byte buffers
 // output: a mcl Fp2 point
@@ -466,9 +466,9 @@ export class NobleBLS implements EVMBLSInterface {
 
   mapFPtoG1(input: Uint8Array): Uint8Array {
     // convert input to mcl Fp1 point
-    //const FP = BLS12_381_ToFpPointN(input.subarray(0, 64))
+    const FP = BLS12_381_ToFpPointN(input.subarray(0, 64))
 
-    const result = (bls12_381.G1.CURVE as any).mapToCurve([bytesToBigInt(input.subarray(16, 64))])
+    const result = bls12_381.G1.mapToCurve(FP).toAffine()
     console.log('Direct result Noble (ProjectivePoint)')
     console.log(result)
     const resultBytes = BLS12_381_FromG1PointN(result)
@@ -478,8 +478,16 @@ export class NobleBLS implements EVMBLSInterface {
   }
 
   mapFP2toG2(input: Uint8Array): Uint8Array {
-    // Not implemented
-    return input
+    // convert input to mcl Fp2 point
+    const Fp2Point = BLS12_381_ToFp2PointN(input.subarray(0, 64), input.subarray(64, 128))
+
+    const result = bls12_381.G2.mapToCurve(Fp2Point).toAffine()
+    console.log('Direct result Noble (ProjectivePoint)')
+    console.log(result)
+    const resultBytes = BLS12_381_FromG2PointN(result)
+    console.log('Serialized EVM byte result')
+    console.log(bytesToHex(resultBytes))
+    return resultBytes
   }
 
   msmG1(input: Uint8Array): Uint8Array {
