@@ -16,7 +16,7 @@ import { ERROR, EvmError } from '../../exceptions.js'
 import { BLS_FIELD_MODULUS } from './constants.js'
 
 import type { EVMBLSInterface } from '../../types.js'
-import type { AffinePoint, ProjPointType } from '@noble/curves/abstract/weierstrass.js'
+import type { AffinePoint } from '@noble/curves/abstract/weierstrass.js'
 
 // Copied from @noble/curves/bls12-381 (only local declaration)
 type Fp2 = {
