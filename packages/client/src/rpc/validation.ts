@@ -485,7 +485,7 @@ export const validators = {
   },
 
   get withdrawalRequest() {
-    return (requiredFields: string[] = ['sourceAddress', 'validatorPublicKey', 'amount']) => {
+    return (requiredFields: string[] = ['sourceAddress', 'validatorPubkey', 'amount']) => {
       return (params: any[], index: number) => {
         if (typeof params[index] !== 'object') {
           return {
@@ -517,8 +517,8 @@ export const validators = {
           if (v !== undefined) return v
         }
 
-        // validate validatorPublicKey
-        for (const field of [wt.validatorPublicKey]) {
+        // validate validatorPubkey
+        for (const field of [wt.validatorPubkey]) {
           const v = validate(field, this.bytes48)
           if (v !== undefined) return v
         }
