@@ -97,6 +97,9 @@ function BLS12_381_ToG2Point(input: Uint8Array, mcl: any, verifyOrder = true): a
   const ZeroBytes64 = new Uint8Array(64)
   // check if we have to do with a zero point
   if (
+    // TODO: is this really the zero point check along the lines of this multi-dimensionality?
+    // Let's please confirm here with a close look at the respective indices!
+    // (goes for Noble as well)
     equalsBytes(p_x_1, p_x_2) &&
     equalsBytes(p_x_1, p_y_1) &&
     equalsBytes(p_x_1, p_y_2) &&
@@ -221,7 +224,7 @@ export class MCLBLS implements EVMBLSInterface {
     this._mcl = mcl
   }
 
-  add(input: Uint8Array): Uint8Array {
+  addG1(input: Uint8Array): Uint8Array {
     // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
     const mclPoint1 = BLS12_381_ToG1Point(input.subarray(0, 128), this._mcl, false)
     const mclPoint2 = BLS12_381_ToG1Point(input.subarray(128, 256), this._mcl, false)
@@ -231,12 +234,41 @@ export class MCLBLS implements EVMBLSInterface {
     return BLS12_381_FromG1Point(result)
   }
 
-  mul(input: Uint8Array): Uint8Array {
+  mulG1(input: Uint8Array): Uint8Array {
     // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
     const mclPoint = BLS12_381_ToG1Point(input.subarray(0, 128), this._mcl)
     const frPoint = BLS12_381_ToFrPoint(input.subarray(128, 160), this._mcl)
 
     const result = this._mcl.mul(mclPoint, frPoint)
+
+    return BLS12_381_FromG1Point(result)
+  }
+
+  addG2(input: Uint8Array): Uint8Array {
+    // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
+    const mclPoint1 = BLS12_381_ToG2Point(input.subarray(0, 256), this._mcl, false)
+    const mclPoint2 = BLS12_381_ToG2Point(input.subarray(256, 512), this._mcl, false)
+
+    const result = this._mcl.add(mclPoint1, mclPoint2)
+
+    return BLS12_381_FromG2Point(result)
+  }
+
+  mulG2(input: Uint8Array): Uint8Array {
+    // convert input to mcl G2 point/Fr point, add them, and convert the output to a Uint8Array.
+    const mclPoint = BLS12_381_ToG2Point(input.subarray(0, 256), this._mcl)
+    const frPoint = BLS12_381_ToFrPoint(input.subarray(256, 288), this._mcl)
+
+    const result = this._mcl.mul(mclPoint, frPoint)
+
+    return BLS12_381_FromG2Point(result)
+  }
+
+  mapFPtoG1(input: Uint8Array): Uint8Array {
+    // convert input to mcl Fp1 point
+    const Fp1Point = BLS12_381_ToFpPoint(input.subarray(0, 64), this._mcl)
+    // map it to G1
+    const result = Fp1Point.mapToG1()
 
     return BLS12_381_FromG1Point(result)
   }

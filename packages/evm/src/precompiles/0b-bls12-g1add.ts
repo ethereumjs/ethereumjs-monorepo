@@ -36,7 +36,7 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
 
   let returnValue
   try {
-    returnValue = bls.add(opts.data)
+    returnValue = bls.addG1(opts.data)
   } catch (e: any) {
     if (opts._debug !== undefined) {
       opts._debug(`BLS12G1ADD (0x0b) failed: ${e.message}`)
