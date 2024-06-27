@@ -272,6 +272,62 @@ export class MCLBLS implements EVMBLSInterface {
 
     return BLS12_381_FromG1Point(result)
   }
+
+  mapFP2toG2(input: Uint8Array): Uint8Array {
+    // convert input to mcl Fp2 point
+    const Fp2Point = BLS12_381_ToFp2Point(input.subarray(0, 64), input.subarray(64, 128), this._mcl)
+    // map it to G2
+    const result = Fp2Point.mapToG2()
+
+    return BLS12_381_FromG2Point(result)
+  }
+
+  msmG1(input: Uint8Array): Uint8Array {
+    const pointLength = 128
+    const pairLength = 160
+    const numPairs = input.length / pairLength
+    const G1Array = []
+    const FrArray = []
+
+    for (let k = 0; k < numPairs; k++) {
+      const pairStart = pairLength * k
+      const G1 = BLS12_381_ToG1Point(input.subarray(pairStart, pairStart + pointLength), this._mcl)
+      const Fr = BLS12_381_ToFrPoint(
+        input.subarray(pairStart + pointLength, pairStart + pairLength),
+        this._mcl
+      )
+
+      G1Array.push(G1)
+      FrArray.push(Fr)
+    }
+
+    const result = this._mcl.mulVec(G1Array, FrArray)
+
+    return BLS12_381_FromG1Point(result)
+  }
+
+  msmG2(input: Uint8Array): Uint8Array {
+    const pointLength = 256
+    const pairLength = 288
+    const numPairs = input.length / pairLength
+    const G2Array = []
+    const FrArray = []
+
+    for (let k = 0; k < numPairs; k++) {
+      const pairStart = pairLength * k
+      const G2 = BLS12_381_ToG2Point(input.subarray(pairStart, pairStart + pointLength), this._mcl)
+      const Fr = BLS12_381_ToFrPoint(
+        input.subarray(pairStart + pointLength, pairStart + pairLength),
+        this._mcl
+      )
+
+      G2Array.push(G2)
+      FrArray.push(Fr)
+    }
+
+    const result = this._mcl.mulVec(G2Array, FrArray)
+    return BLS12_381_FromG2Point(result)
+  }
 }
 
 export {

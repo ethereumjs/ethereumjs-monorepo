@@ -4,13 +4,14 @@ import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
 import { gasCheck, moduloLengthCheck, msmGasUsed, zeroByteCheck } from './bls12_381/index.js'
-import { BLS12_381_FromG2Point, BLS12_381_ToFrPoint, BLS12_381_ToG2Point } from './bls12_381/mcl.js'
+import { NobleBLS } from './bls12_381/noble.js'
 
-import type { ExecResult } from '../types.js'
+import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
-  const mcl = (<any>opts._EVM)._mcl!
+  // const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
+  const bls: EVMBLSInterface = new NobleBLS((<any>opts._EVM)._mcl!)
 
   if (opts.data.length === 0) {
     if (opts._debug !== undefined) {
@@ -39,34 +40,23 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     [192, 208],
   ]
 
-  const G2Array = []
-  const FrArray = []
-
   for (let k = 0; k < numPairs; k++) {
     // zero bytes check
     const pairStart = 288 * k
     if (!zeroByteCheck(opts, zeroByteRanges, 'BLS12G2MSM (0x10)', pairStart)) {
       return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
     }
-
-    let G2
-    try {
-      G2 = BLS12_381_ToG2Point(opts.data.subarray(pairStart, pairStart + 256), mcl)
-    } catch (e: any) {
-      if (opts._debug !== undefined) {
-        opts._debug(`BLS12G2MSM (0x10) failed: ${e.message}`)
-      }
-      return EvmErrorResult(e, opts.gasLimit)
-    }
-    const Fr = BLS12_381_ToFrPoint(opts.data.subarray(pairStart + 256, pairStart + 288), mcl)
-
-    G2Array.push(G2)
-    FrArray.push(Fr)
   }
 
-  const result = mcl.mulVec(G2Array, FrArray)
-
-  const returnValue = BLS12_381_FromG2Point(result)
+  let returnValue
+  try {
+    returnValue = bls.msmG2(opts.data)
+  } catch (e: any) {
+    if (opts._debug !== undefined) {
+      opts._debug(`BLS12G2MSM (0x10) failed: ${e.message}`)
+    }
+    return EvmErrorResult(e, opts.gasLimit)
+  }
 
   if (opts._debug !== undefined) {
     opts._debug(`BLS12G2MSM (0x10) return value=${bytesToHex(returnValue)}`)

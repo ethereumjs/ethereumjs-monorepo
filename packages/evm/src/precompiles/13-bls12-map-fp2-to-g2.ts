@@ -4,13 +4,13 @@ import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
 import { equalityLengthCheck, gasCheck, zeroByteCheck } from './bls12_381/index.js'
-import { BLS12_381_FromG2Point, BLS12_381_ToFp2Point } from './bls12_381/mcl.js'
 
-import type { ExecResult } from '../types.js'
+import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export async function precompile13(opts: PrecompileInput): Promise<ExecResult> {
-  const mcl = (<any>opts._EVM)._mcl!
+  const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
+  // const bls: EVMBLSInterface = new NobleBLS((<any>opts._EVM)._mcl!)
 
   // note: the gas used is constant; even if the input is incorrect.
   const gasUsed = opts.common.paramByEIP('gasPrices', 'Bls12381MapG2Gas', 2537) ?? BigInt(0)
@@ -31,21 +31,15 @@ export async function precompile13(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
   }
 
-  // convert input to mcl Fp2 point
-
-  let Fp2Point
+  let returnValue
   try {
-    Fp2Point = BLS12_381_ToFp2Point(opts.data.subarray(0, 64), opts.data.subarray(64, 128), mcl)
+    returnValue = bls.mapFP2toG2(opts.data)
   } catch (e: any) {
     if (opts._debug !== undefined) {
       opts._debug(`BLS12MAPFP2TOG2 (0x13) failed: ${e.message}`)
     }
     return EvmErrorResult(e, opts.gasLimit)
   }
-  // map it to G2
-  const result = Fp2Point.mapToG2()
-
-  const returnValue = BLS12_381_FromG2Point(result)
 
   if (opts._debug !== undefined) {
     opts._debug(`BLS12MAPFP2TOG2 (0x13) return value=${bytesToHex(returnValue)}`)
