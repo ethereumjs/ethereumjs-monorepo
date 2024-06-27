@@ -61,7 +61,7 @@ function eip2935ActiveAtCommon(timestamp: number) {
         comment: 'Start of the Ethereum main chain',
         url: '',
         status: 'final',
-        eips: [2935],
+        eips: [2935, 7709],
       },
     },
     hardforks,
@@ -248,8 +248,17 @@ describe('EIP 2935: historical block hashes', () => {
         })
       }
 
-      for (let i = 0; i <= blocksToBuild; i++) {
-        const block = await vm.blockchain.getBlock(i)
+      // swap out the blockchain to test from storage
+      const blockchainEmpty = await Blockchain.create({
+        common,
+        validateBlocks: false,
+        validateConsensus: false,
+      })
+      ;(vm as any).blockchain = blockchainEmpty
+      ;(vm.evm as any).blockchain = blockchainEmpty
+
+      for (let i = 1; i <= blocksToBuild; i++) {
+        const block = await blockchain.getBlock(i)
         const storage = await vm.stateManager.getContractStorage(
           historyAddress,
           setLengthLeft(bigIntToBytes(BigInt(i) % historyServeWindow), 32)
@@ -263,7 +272,11 @@ describe('EIP 2935: historical block hashes', () => {
         })
         if (i <= blocksToBuild - 1 && i >= blocksToBuild - Number(historyServeWindow)) {
           assert.ok(equalsBytes(setLengthLeft(storage, 32), block.hash()))
-          assert.ok(equalsBytes(ret.execResult.returnValue, setLengthLeft(block.hash(), 64)))
+          if (i >= blocksToBuild - 256) {
+            assert.ok(equalsBytes(ret.execResult.returnValue, setLengthLeft(block.hash(), 64)))
+          } else {
+            assert.ok(equalsBytes(ret.execResult.returnValue, zeros(64)))
+          }
         } else {
           assert.ok(equalsBytes(ret.execResult.returnValue, zeros(64)))
         }
@@ -284,7 +297,7 @@ describe('EIP 2935: historical block hashes', () => {
       // should be able to resolve blockhash via contract code
       for (const i of [0, 1, blocksActivation, blocksToBuild - 1]) {
         const blockHashi = await testBlockhashContract(vm, block, BigInt(i))
-        const blocki = await vm.blockchain.getBlock(i)
+        const blocki = await blockchain.getBlock(i)
         assert.ok(equalsBytes(blockHashi, blocki.hash()))
       }
 
