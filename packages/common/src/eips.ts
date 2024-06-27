@@ -624,7 +624,7 @@ export const EIPs: EIPsDict = {
     gasPrices: {},
   },
   7709: {
-    comment: 'Use historical block hashes saved in stte for BLOCKHASH',
+    comment: 'Use historical block hashes saved in state for BLOCKHASH',
     url: 'https://eips.ethereum.org/EIPS/eip-7709',
     status: Status.Draft,
     minimumHardfork: Hardfork.Chainstart,
