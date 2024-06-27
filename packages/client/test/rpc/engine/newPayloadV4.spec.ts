@@ -50,8 +50,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
     const { pragueJson, pragueTime } = readyPragueGenesis(genesisJSON)
     const { service, server } = await setupChain(pragueJson, 'post-merge', { engine: true })
     const rpc = getRpcClient(server)
-    const res1 = await rpc.request(`eth_getBlockByNumber`, ["0x0",false])
-    console.log({res1})
+    // const res1 = await rpc.request(`eth_getBlockByNumber`, ["0x0",false])
 
     const validBlock = {
       ...blockData,
