@@ -2,6 +2,7 @@ import {
   BIGINT_0,
   bigIntToHex,
   bytesToBigInt,
+  bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
   equalsBytes,
@@ -16,6 +17,12 @@ import { BLS_FIELD_MODULUS } from './constants.js'
 
 import type { EVMBLSInterface } from '../../types.js'
 import type { ProjPointType } from '@noble/curves/abstract/weierstrass.js'
+
+// Copied from @noble/curves/bls12-381 (only local declaration)
+type Fp2 = {
+  c0: bigint
+  c1: bigint
+}
 
 /**
  * Converts an Uint8Array to a MCL G1 point. Raises errors if the point is not on the curve
@@ -190,6 +197,51 @@ function BLS12_381_ToG2Point(input: Uint8Array, mcl: any, verifyOrder = true): a
   return mclPoint
 }
 
+/**
+ * Converts an Uint8Array to a MCL G2 point. Raises errors if the point is not on the curve
+ * and (if activated) if the point is in the subgroup / order check.
+ * @param input Input Uint8Array. Should be 256 bytes
+ * @param mcl MCL instance
+ * @param verifyOrder Perform the subgroup check (defaults to true)
+ * @returns MCL G2 point
+ */
+function BLS12_381_ToG2PointN(input: Uint8Array) {
+  const p_x_1 = input.subarray(0, 64)
+  const p_x_2 = input.subarray(64, 128)
+  const p_y_1 = input.subarray(128, 192)
+  const p_y_2 = input.subarray(192, 256)
+
+  const ZeroBytes64 = new Uint8Array(64)
+  // check if we have to do with a zero point
+  if (
+    equalsBytes(p_x_1, p_x_2) &&
+    equalsBytes(p_x_1, p_y_1) &&
+    equalsBytes(p_x_1, p_y_2) &&
+    equalsBytes(p_x_1, ZeroBytes64)
+  ) {
+    return bls12_381.G2.ProjectivePoint.ZERO
+  }
+
+  const Fp2X = BLS12_381_ToFp2PointN(p_x_1, p_x_2)
+  const Fp2Y = BLS12_381_ToFp2PointN(p_y_1, p_y_2)
+
+  const pG2 = bls12_381.G2.ProjectivePoint.fromAffine({
+    x: Fp2X,
+    y: Fp2Y,
+  })
+
+  /*mcl.verifyOrderG2(verifyOrder)
+  if (verifyOrder && mclPoint.isValidOrder() === false) {
+    throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+  }
+
+  if (mclPoint.isValid() === false) {
+    throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+  }*/
+
+  return pG2
+}
+
 // input: a mcl G2 point
 // output: a 256-byte Uint8Array
 function BLS12_381_FromG2Point(input: any): Uint8Array {
@@ -208,6 +260,23 @@ function BLS12_381_FromG2Point(input: any): Uint8Array {
 
   // convert to buffers.
 
+  const xBuffer1 = concatBytes(new Uint8Array(64 - x_1.length / 2), unprefixedHexToBytes(x_1))
+  const xBuffer2 = concatBytes(new Uint8Array(64 - x_2.length / 2), unprefixedHexToBytes(x_2))
+  const yBuffer1 = concatBytes(new Uint8Array(64 - y_1.length / 2), unprefixedHexToBytes(y_1))
+  const yBuffer2 = concatBytes(new Uint8Array(64 - y_2.length / 2), unprefixedHexToBytes(y_2))
+
+  return concatBytes(xBuffer1, xBuffer2, yBuffer1, yBuffer2)
+}
+
+// input: a mcl G1 point
+// output: a 128-byte Uint8Array
+function BLS12_381_FromG2PointN(input: ProjPointType<Fp2>): Uint8Array {
+  const x_1 = padToEven(bigIntToHex(input.x.c0).slice(2))
+  const x_2 = padToEven(bigIntToHex(input.x.c1).slice(2))
+  const y_1 = padToEven(bigIntToHex(input.y.c0).slice(2))
+  const y_2 = padToEven(bigIntToHex(input.y.c1).slice(2))
+
+  // convert to buffers.
   const xBuffer1 = concatBytes(new Uint8Array(64 - x_1.length / 2), unprefixedHexToBytes(x_1))
   const xBuffer2 = concatBytes(new Uint8Array(64 - x_2.length / 2), unprefixedHexToBytes(x_2))
   const yBuffer1 = concatBytes(new Uint8Array(64 - y_1.length / 2), unprefixedHexToBytes(y_1))
@@ -273,6 +342,18 @@ function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array, mcl: any): any {
   return fp
 }
 
+// input: a 64-byte buffer
+// output: a mcl Fp point
+
+function BLS12_381_ToFpPointN(fpCoordinate: Uint8Array) {
+  // check if point is in field
+  if (bytesToBigInt(fpCoordinate) >= BLS_FIELD_MODULUS) {
+    throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
+  }
+  const FP = bls12_381.fields.Fp.fromBytes(fpCoordinate.slice(16))
+  return FP
+}
+
 // input: two 64-byte buffers
 // output: a mcl Fp2 point
 
@@ -298,6 +379,21 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
   return fp2
 }
 
+function BLS12_381_ToFp2PointN(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
+  // check if the coordinates are in the field
+  if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
+    throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
+  }
+  if (bytesToBigInt(fpYCoordinate) >= BLS_FIELD_MODULUS) {
+    throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
+  }
+
+  const fpBytes = concatBytes(fpXCoordinate.subarray(16), fpYCoordinate.subarray(16))
+
+  const FP = bls12_381.fields.Fp2.fromBytes(fpBytes)
+  return FP
+}
+
 export class NobleBLS implements EVMBLSInterface {
   // TODO: Remove after transition
   protected readonly _mcl: any
@@ -306,11 +402,36 @@ export class NobleBLS implements EVMBLSInterface {
     this._mcl = mcl
   }
 
-  add(input: Uint8Array): Uint8Array {
-    const mclPoint1N = BLS12_381_ToG1PointN(input.subarray(0, 128))
-    const mclPoint2N = BLS12_381_ToG1PointN(input.subarray(128, 256))
+  addG1(input: Uint8Array): Uint8Array {
+    const p1 = BLS12_381_ToG1PointN(input.subarray(0, 128))
+    const p2 = BLS12_381_ToG1PointN(input.subarray(128, 256))
 
-    const resultN = mclPoint1N.add(mclPoint2N)
+    const p = p1.add(p2)
+    const result = BLS12_381_FromG1PointN(p)
+
+    /*console.log('MCL (result):')
+    console.log(bytesToHex(resultBytes))
+    console.log('Noble (result):')
+    console.log(bytesToHex(resultBytesN))*/
+
+    return result
+  }
+
+  mulG1(input: Uint8Array): Uint8Array {
+    // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
+    const p = BLS12_381_ToG1PointN(input.subarray(0, 128))
+    const skalar = BLS12_381_ToFrPointN(input.subarray(128, 160))
+
+    if (skalar === BIGINT_0) {
+      return new Uint8Array(128)
+    }
+    const result = p.multiply(skalar)
+    return BLS12_381_FromG1PointN(result)
+  }
+
+  addG2(input: Uint8Array): Uint8Array {
+    const p1 = BLS12_381_ToG2PointN(input.subarray(0, 256))
+    const p2 = BLS12_381_ToG2PointN(input.subarray(256, 512))
 
     /*console.log('MCL:')
     console.log(result.getStr(16))
@@ -318,27 +439,48 @@ export class NobleBLS implements EVMBLSInterface {
     console.log(bigIntToHex(resultN.x))
     console.log(bigIntToHex(resultN.y))*/
 
-    const resultBytesN = BLS12_381_FromG1PointN(resultN)
+    const p = p1.add(p2)
+
+    const result = BLS12_381_FromG2PointN(p)
+    //const mclResult = this._mcl.add(mclPoint1, mclPoint2)
 
     /*console.log('MCL (result):')
     console.log(bytesToHex(resultBytes))
     console.log('Noble (result):')
     console.log(bytesToHex(resultBytesN))*/
 
-    return resultBytesN
+    return result
   }
 
-  mul(input: Uint8Array): Uint8Array {
-    // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
-    const mclPointN = BLS12_381_ToG1PointN(input.subarray(0, 128))
-    const frPointN = BLS12_381_ToFrPointN(input.subarray(128, 160))
+  mulG2(input: Uint8Array): Uint8Array {
+    // convert input to mcl G2 point/Fr point, add them, and convert the output to a Uint8Array.
+    const p = BLS12_381_ToG2PointN(input.subarray(0, 256))
+    const skalar = BLS12_381_ToFrPointN(input.subarray(256, 288))
 
-    if (frPointN === BIGINT_0) {
-      return new Uint8Array(128)
+    if (skalar === BIGINT_0) {
+      return new Uint8Array(256)
     }
-    const resultN = mclPointN.multiply(frPointN)
+    const result = p.multiply(skalar)
+    return BLS12_381_FromG2PointN(result)
+  }
 
-    return BLS12_381_FromG1PointN(resultN)
+  mapFPtoG1(input: Uint8Array): Uint8Array {
+    // convert input to mcl Fp1 point
+    //const FP = BLS12_381_ToFpPointN(input.subarray(0, 64))
+
+    // map it to G1
+    //console.log(padToEven(bytesToUnprefixedHex(input.subarray(16, 64))))
+    try {
+      console.log((bls12_381.G1.CURVE as any).mapToCurve([bytesToBigInt(input.subarray(16, 64))]))
+    } catch (e: any) {
+      console.log(e)
+    }
+
+    const result = (bls12_381.G1.CURVE as any).mapToCurve([bytesToBigInt(input.subarray(16, 64))])
+    console.log(result)
+    const resultBytes = BLS12_381_FromG1PointN(result)
+    console.log(bytesToHex(resultBytes))
+    return resultBytes
   }
 }
 

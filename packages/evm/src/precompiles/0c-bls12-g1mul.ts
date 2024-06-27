@@ -34,7 +34,7 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
 
   let returnValue
   try {
-    returnValue = bls.mul(opts.data)
+    returnValue = bls.mulG1(opts.data)
   } catch (e: any) {
     if (opts._debug !== undefined) {
       opts._debug(`BLS12G1MUL (0x0c) failed: ${e.message}`)
