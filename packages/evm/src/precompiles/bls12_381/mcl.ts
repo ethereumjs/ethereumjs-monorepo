@@ -333,9 +333,10 @@ export class MCLBLS implements EVMBLSInterface {
   pairingCheck(input: Uint8Array): Uint8Array {
     const ZERO_BUFFER = new Uint8Array(32)
     const ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
+    const pairLength = 384
     const pairs = []
-    for (let k = 0; k < input.length / 384; k++) {
-      const pairStart = 384 * k
+    for (let k = 0; k < input.length / pairLength; k++) {
+      const pairStart = pairLength * k
       const G1 = BLS12_381_ToG1Point(input.subarray(pairStart, pairStart + 128), this._mcl)
 
       const g2start = pairStart + 128

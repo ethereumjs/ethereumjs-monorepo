@@ -6,6 +6,7 @@ import {
   bytesToUnprefixedHex,
   concatBytes,
   equalsBytes,
+  hexToBytes,
   padToEven,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
@@ -16,7 +17,7 @@ import { ERROR, EvmError } from '../../exceptions.js'
 import { BLS_FIELD_MODULUS } from './constants.js'
 
 import type { EVMBLSInterface } from '../../types.js'
-import type { AffinePoint } from '@noble/curves/abstract/weierstrass.js'
+import type { AffinePoint, ProjPointType } from '@noble/curves/abstract/weierstrass.js'
 
 // Copied from @noble/curves/bls12-381 (only local declaration)
 type Fp2 = {
@@ -538,6 +539,44 @@ export class NobleBLS implements EVMBLSInterface {
     }
 
     return BLS12_381_FromG2PointN(pRes)
+  }
+
+  pairingCheck(input: Uint8Array): Uint8Array {
+    const ZERO_BUFFER = new Uint8Array(32)
+    const ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
+    const pairLength = 384
+    const pairs = []
+    for (let k = 0; k < input.length / pairLength; k++) {
+      const pairStart = pairLength * k
+      const G1 = BLS12_381_ToG1PointN(input.subarray(pairStart, pairStart + 128))
+
+      const g2start = pairStart + 128
+      const G2 = BLS12_381_ToG2PointN(input.subarray(g2start, g2start + 256))
+
+      pairs.push([G1, G2])
+    }
+
+    // run the pairing check
+    // reference (Nethermind): https://github.com/NethermindEth/nethermind/blob/374b036414722b9c8ad27e93d64840b8f63931b9/src/Nethermind/Nethermind.Evm/Precompiles/Bls/Mcl/PairingPrecompile.cs#L93
+    let GT: any // Fp12 type not exported, eventually too complex
+    for (let index = 0; index < pairs.length; index++) {
+      const pair = pairs[index]
+      const G1 = pair[0] as ProjPointType<bigint>
+      const G2 = pair[1] as ProjPointType<Fp2>
+
+      if (index === 0) {
+        GT = bls12_381.pairing(G1, G2)
+      } else {
+        GT = bls12_381.fields.Fp12.mul(GT!, bls12_381.pairing(G1, G2))
+      }
+    }
+
+    const FP12 = bls12_381.fields.Fp12.finalExponentiate(GT!)
+    if (bls12_381.fields.Fp12.eql(FP12, bls12_381.fields.Fp12.ONE)) {
+      return ONE_BUFFER
+    } else {
+      return ZERO_BUFFER
+    }
   }
 }
 
