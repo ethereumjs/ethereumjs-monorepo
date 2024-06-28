@@ -12,18 +12,18 @@ import {
   BIGINT_8,
   GWEI_TO_WEI,
   KECCAK256_RLP,
+  bigIntToAddressBytes,
   bigIntToBytes,
-  bigIntToHex,
   bytesToHex,
   concatBytes,
   equalsBytes,
+  getVerkleTreeIndexesForStorageSlot,
   hexToBytes,
   intToBytes,
   setLengthLeft,
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { getTreeIndexesForStorageSlot } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 
 import { Bloom } from './bloom/index.js'
@@ -488,8 +488,8 @@ export async function accumulateParentBlockHash(
   if (!this.common.isActivatedEIP(2935)) {
     throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
   }
-  const historyAddress = Address.fromString(
-    bigIntToHex(this.common.param('vm', 'historyStorageAddress'))
+  const historyAddress = new Address(
+    bigIntToAddressBytes(this.common.param('vm', 'historyStorageAddress'))
   )
   const historyServeWindow = this.common.param('vm', 'historyServeWindow')
 
@@ -513,7 +513,7 @@ export async function accumulateParentBlockHash(
 
     // generate access witness
     if (vm.common.isActivatedEIP(6800)) {
-      const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(ringKey)
+      const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(ringKey)
       // just create access witnesses without charging for the gas
       ;(
         vm.stateManager as StatelessVerkleStateManager

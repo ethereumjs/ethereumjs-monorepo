@@ -38,7 +38,7 @@ describe('Requests', () => {
   it('withdrawal request', () => {
     const withdrawalRequestData = {
       sourceAddress: randomBytes(20),
-      validatorPublicKey: randomBytes(48),
+      validatorPubkey: randomBytes(48),
       amount: bytesToBigInt(randomBytes(8)),
     }
 

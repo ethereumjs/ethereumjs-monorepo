@@ -1,7 +1,7 @@
 import { bigIntToHex } from '@ethereumjs/util'
 
-import type { ExecutionPayload, VerkleExecutionWitness } from './types.js'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { ExecutionPayload } from './types.js'
+import type { PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
 
 type BeaconWithdrawal = {
   index: PrefixedHexString
@@ -20,7 +20,7 @@ type BeaconDepositRequest = {
 
 type BeaconWithdrawalRequest = {
   source_address: PrefixedHexString
-  validator_public_key: PrefixedHexString
+  validator_pub_key: PrefixedHexString
   amount: PrefixedHexString
 }
 
@@ -160,7 +160,7 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
   if (payload.withdrawal_requests !== undefined && payload.withdrawal_requests !== null) {
     executionPayload.withdrawalRequests = payload.withdrawal_requests.map((breq) => ({
       sourceAddress: breq.source_address,
-      validatorPublicKey: breq.validator_public_key,
+      validatorPubkey: breq.validator_pub_key,
       amount: breq.amount,
     }))
   }

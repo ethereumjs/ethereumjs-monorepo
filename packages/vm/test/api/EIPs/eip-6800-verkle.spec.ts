@@ -4,6 +4,7 @@ import { EVM } from '@ethereumjs/evm'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
+import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { describe, it } from 'vitest'
 
 import * as verkleBlockJSON from '../../../../statemanager/test/testdata/verkleKaustinen6Block72.json'
@@ -31,7 +32,8 @@ const block = Block.fromBlockData({ ...verkleBlockJSON, transactions: decodedTxs
 
 describe('EIP 6800 tests', () => {
   it('successfully run transactions statelessly using the block witness', async () => {
-    const verkleStateManager = await StatelessVerkleStateManager.create({ common })
+    const verkleCrypto = await loadVerkleCrypto()
+    const verkleStateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
     const evm = await EVM.create({ common, stateManager: verkleStateManager })
     const vm = await VM.create({
       common,

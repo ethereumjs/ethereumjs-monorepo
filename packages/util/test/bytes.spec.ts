@@ -3,6 +3,7 @@ import { assert, describe, it } from 'vitest'
 import {
   Address,
   addHexPrefix,
+  bigIntToAddressBytes,
   bigIntToBytes,
   bigIntToHex,
   bigIntToUnpaddedBytes,
@@ -399,6 +400,36 @@ describe('bigIntToUnpaddedBytes', () => {
     assert.deepEqual(bigIntToUnpaddedBytes(BigInt(0)), Uint8Array.from([]))
     assert.deepEqual(bigIntToUnpaddedBytes(BigInt(100)), hexToBytes('0x64'))
   })
+})
+
+describe('bigIntToAddressBytes', () => {
+  const testCases = [
+    [
+      '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e',
+      BigInt('0x0aae40965e6800cd9b1f4b05ff21581047e3f91e'),
+      true,
+    ],
+    [
+      '0xe473f7e92ba2490e9fcbbe8bb9c3be3adbb74efc',
+      BigInt('0xe473f7e92ba2490e9fcbbe8bb9c3be3adbb74efc'),
+      true,
+    ],
+    [
+      '0xae40965e6800cd9b1f4b05ff21581047e3f91e00',
+      BigInt('0x0aae40965e6800cd9b1f4b05ff21581047e3f91e00'),
+      false,
+    ],
+  ]
+
+  for (const [addressHex, addressBigInt, isSafe] of testCases) {
+    it('should correctly convert', () => {
+      const addressHexFromBigInt = bytesToHex(bigIntToAddressBytes(addressBigInt, false))
+      assert.equal(addressHex, addressHexFromBigInt, `should correctly convert ${addressBigInt}`)
+      if (isSafe === false) {
+        assert.throw(() => bigIntToAddressBytes(addressBigInt))
+      }
+    })
+  }
 })
 
 describe('intToUnpaddedBytes', () => {

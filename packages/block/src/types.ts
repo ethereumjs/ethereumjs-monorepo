@@ -11,6 +11,7 @@ import type {
   JsonRpcWithdrawal,
   PrefixedHexString,
   RequestBytes,
+  VerkleExecutionWitness,
   WithdrawalBytes,
   WithdrawalData,
   WithdrawalRequestV1,
@@ -76,45 +77,6 @@ export interface BlockOptions {
   skipConsensusFormatValidation?: boolean
 
   executionWitness?: VerkleExecutionWitness
-}
-
-export interface VerkleProof {
-  commitmentsByPath: PrefixedHexString[]
-  d: PrefixedHexString
-  depthExtensionPresent: PrefixedHexString
-  ipaProof: {
-    cl: PrefixedHexString[]
-    cr: PrefixedHexString[]
-    finalEvaluation: PrefixedHexString
-  }
-  otherStems: PrefixedHexString[]
-}
-
-export interface VerkleStateDiff {
-  stem: PrefixedHexString
-  suffixDiffs: {
-    currentValue: PrefixedHexString | null
-    newValue: PrefixedHexString | null
-    suffix: number | string
-  }[]
-}
-
-/**
- * Experimental, object format could eventual change.
- * An object that provides the state and proof necessary for verkle stateless execution
- * */
-export interface VerkleExecutionWitness {
-  /**
-   * An array of state diffs.
-   * Each item corresponding to state accesses or state modifications of the block.
-   * In the current design, it also contains the resulting state of the block execution (post-state).
-   */
-  stateDiff: VerkleStateDiff[]
-  /**
-   * The verkle proof for the block.
-   * Proves that the provided stateDiff belongs to the canonical verkle tree.
-   */
-  verkleProof: VerkleProof
 }
 
 /**

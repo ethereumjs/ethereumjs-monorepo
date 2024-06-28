@@ -38,7 +38,6 @@ import type {
   JsonBlock,
   JsonRpcBlock,
   RequestsBytes,
-  VerkleExecutionWitness,
   WithdrawalsBytes,
 } from './types.js'
 import type { Common } from '@ethereumjs/common'
@@ -53,6 +52,7 @@ import type {
   EthersProvider,
   PrefixedHexString,
   RequestBytes,
+  VerkleExecutionWitness,
   WithdrawalBytes,
 } from '@ethereumjs/util'
 
