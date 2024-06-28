@@ -50,7 +50,10 @@ describe(`${method}: call with executionPayloadV4`, () => {
     const { pragueJson, pragueTime } = readyPragueGenesis(genesisJSON)
     const { service, server } = await setupChain(pragueJson, 'post-merge', { engine: true })
     const rpc = getRpcClient(server)
-    // const res1 = await rpc.request(`eth_getBlockByNumber`, ["0x0",false])
+    let res
+
+    res = await rpc.request(`eth_getBlockByNumber`, ['0x0', false])
+    assert.equal(res.result.hash, validForkChoiceState.headBlockHash)
 
     const validBlock = {
       ...blockData,
@@ -64,7 +67,6 @@ describe(`${method}: call with executionPayloadV4`, () => {
       stateRoot: '0xd207043769091b6cdc91621f12bf2800b0b4643aeff09118fca52543c7a8ff03',
       blockHash: '0xf9b4285204630ca183fec0a9a282cb68021af1aa9f3ab5f10d6b9ea8a7a3d4b6',
     }
-    let res
 
     const oldMethods = ['engine_newPayloadV1', 'engine_newPayloadV2', 'engine_newPayloadV3']
     const expectedErrors = [
