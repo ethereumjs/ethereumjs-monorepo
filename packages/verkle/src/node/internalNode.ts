@@ -1,7 +1,7 @@
 import { type VerkleCrypto } from '@ethereumjs/util'
 
 import { BaseVerkleNode } from './baseVerkleNode.js'
-import { NODE_WIDTH, VerkleNodeType } from './types.js'
+import { EMPTY_CHILD, NODE_WIDTH, VerkleNodeType } from './types.js'
 
 import type { ChildNode, VerkleNodeOptions } from './types.js'
 
@@ -12,18 +12,13 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
 
   constructor(options: VerkleNodeOptions[VerkleNodeType.Internal]) {
     super(options)
-    this.children =
-      options.children ??
-      new Array(256).fill({
-        commitment: options.verkleCrypto.zeroCommitment,
-        path: new Uint8Array(),
-      })
+    this.children = options.children ?? new Array(256).fill(null)
   }
 
   // Updates the commitment value for a child node at the corresponding index
   setChild(childIndex: number, child: ChildNode) {
     // Get previous child commitment at `index`
-    const oldChildReference = this.children[childIndex]
+    const oldChildReference = this.children[childIndex] ?? EMPTY_CHILD
     // Updates the commitment to the child node at `index`
     this.children[childIndex] = { ...child }
     // Updates the overall node commitment based on the update to this child
@@ -52,7 +47,8 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     const childrenPaths = rawNode.slice(NODE_WIDTH + 1, NODE_WIDTH * 2 + 1)
 
     const children = childrenCommitments.map((commitment, idx) => {
-      return { commitment, path: childrenPaths[idx] }
+      if (commitment.length > 0) return { commitment, path: childrenPaths[idx] }
+      return null
     })
     return new InternalNode({ commitment, verkleCrypto, children })
   }
@@ -81,8 +77,8 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   raw(): Uint8Array[] {
     return [
       new Uint8Array([VerkleNodeType.Internal]),
-      ...this.children.map((child) => child.commitment),
-      ...this.children.map((child) => child.path),
+      ...this.children.map((child) => (child !== null ? child.commitment : new Uint8Array())),
+      ...this.children.map((child) => (child !== null ? child.path : new Uint8Array())),
       this.commitment,
     ]
   }

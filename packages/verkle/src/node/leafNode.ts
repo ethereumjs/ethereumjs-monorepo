@@ -1,7 +1,7 @@
 import { equalsBytes, intToBytes, setLengthLeft, setLengthRight } from '@ethereumjs/util'
 
 import { BaseVerkleNode } from './baseVerkleNode.js'
-import { NODE_WIDTH, VerkleNodeType } from './types.js'
+import { DEFAULT_LEAF_VALUES, DELETED_LEAF_VALUE, NODE_WIDTH, VerkleNodeType } from './types.js'
 import { createCValues } from './util.js'
 
 import type { VerkleNodeOptions } from './types.js'
@@ -9,7 +9,7 @@ import type { VerkleCrypto } from '@ethereumjs/util'
 
 export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   public stem: Uint8Array
-  public values: Uint8Array[] // Array of 256 possible values represented as 32 byte Uint8Arrays
+  public values: (Uint8Array | 0 | 1)[] // Array of 256 possible values represented as 32 byte Uint8Arrays or 0 if untouched or 1 if deleted
   public c1?: Uint8Array
   public c2?: Uint8Array
   public type = VerkleNodeType.Leaf
@@ -18,7 +18,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     super(options)
 
     this.stem = options.stem
-    this.values = options.values
+    this.values = options.values ?? DEFAULT_LEAF_VALUES
     this.c1 = options.c1
     this.c2 = options.c2
   }
@@ -32,10 +32,11 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
    */
   static async create(
     stem: Uint8Array,
-    values: Uint8Array[],
-    verkleCrypto: VerkleCrypto
+    verkleCrypto: VerkleCrypto,
+    values?: (Uint8Array | 0 | 1)[]
   ): Promise<LeafNode> {
     // Generate the value arrays for c1 and c2
+    values = values !== undefined ? values : DEFAULT_LEAF_VALUES
     const c1Values = createCValues(values.slice(0, 128))
     const c2Values = createCValues(values.slice(128))
     let c1 = verkleCrypto.zeroCommitment
@@ -107,14 +108,23 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     const commitment = rawNode[2]
     const c1 = rawNode[3]
     const c2 = rawNode[4]
-    const values = rawNode.slice(5, rawNode.length)
 
+    const values = rawNode
+      .slice(5, rawNode.length)
+      .map((el) => (el.length === 0 ? 0 : equalsBytes(el, DELETED_LEAF_VALUE) ? 1 : el))
     return new LeafNode({ stem, values, c1, c2, commitment, verkleCrypto })
   }
 
   // Retrieve the value at the provided index from the values array
   getValue(index: number): Uint8Array | undefined {
-    return this.values?.[index] ?? null
+    const value = this.values[index]
+    switch (value) {
+      case 0:
+      case 1:
+        return undefined
+      default:
+        return value as Uint8Array
+    }
   }
 
   // Set the value at the provided index from the values array and update the node commitments
@@ -175,7 +185,16 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       this.commitment,
       this.c1 ?? new Uint8Array(),
       this.c2 ?? new Uint8Array(),
-      ...this.values,
+      ...this.values.map((val) => {
+        switch (val) {
+          case 0:
+            return new Uint8Array()
+          case 1:
+            return DELETED_LEAF_VALUE
+          default:
+            return val
+        }
+      }),
     ]
   }
 }

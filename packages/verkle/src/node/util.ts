@@ -39,21 +39,36 @@ export function isRawNode(node: Uint8Array | Uint8Array[]): node is Uint8Array[]
  * that is being deleted - should always be false if generating C2 values
  * Returns an array of 256 16byte UintArrays with the leaf marker set for each value that is deleted
  */
-export const createCValues = (values: Uint8Array[], deletedValues = new Array(128).fill(false)) => {
+export const createCValues = (
+  values: (Uint8Array | 0 | 1)[],
+  deletedValues = new Array(128).fill(false)
+) => {
   if (values.length !== 128 || deletedValues.length !== 128)
     throw new Error(`got wrong number of values, expected 128, got ${values.length}`)
   const expandedValues: Uint8Array[] = new Array(256)
   for (let x = 0; x < 128; x++) {
+    let val: Uint8Array
+    switch (values[x]) {
+      case 0: // Leaf value that has never been written before
+        val = new Uint8Array(32)
+        break
+      case 1: // Leaf value that has been overwritten with zeros (i.e. a deleted value)
+        // TODO: Improve performance by only flipping the 129th bit of `expandedValues[x]` (instead of bigint addition)
+        val = bigIntToBytes(bytesToBigInt(new Uint8Array(16)) + BigInt(2 ** 128))
+        break
+      default:
+        val = values[x] as Uint8Array
+        break
+    }
     // We add 16 trailing zeros to each value since all commitments are padded to an array of 32 byte values
     expandedValues[x * 2] = setLengthRight(
       deletedValues[x] === true
-        ? // TODO: Improve performance by only flipping the 129th bit of `expandedValues[x]` (instead of bigint addition)
-          bigIntToBytes(bytesToBigInt(values[x].subarray(0, 16)) + BigInt(2 ** 128))
-        : values[x].slice(0, 16),
+        ? bigIntToBytes(bytesToBigInt(val.subarray(0, 16)) + BigInt(2 ** 128))
+        : val.slice(0, 16),
       32
     )
     // TODO: Decide if we should use slice or subarray here (i.e. do we need to copy these slices or not)
-    expandedValues[x * 2 + 1] = setLengthRight(values[x].slice(16), 32)
+    expandedValues[x * 2 + 1] = setLengthRight(val.slice(16), 32)
   }
   return expandedValues
 }
