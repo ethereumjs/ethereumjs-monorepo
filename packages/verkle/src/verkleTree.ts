@@ -325,7 +325,8 @@ export class VerkleTree {
 
   /**
    * Helper method for updating or creating the parent internal node for a given leaf node
-   * @param leafNode the reference leaf node
+   * @param leafNode the child leaf node that will be referenced by the new/updated internal node
+   * returned by this method
    * @param nearestNode the nearest node to the new leaf node
    * @param pathToNode the path to `nearestNode`
    * @returns a tuple of the updated parent node and the path to that parent (i.e. the partial stem of the leaf node that leads to the parent)
