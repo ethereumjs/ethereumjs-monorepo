@@ -62,7 +62,7 @@
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.3",
     "mcl-wasm": "^1.5.0",
-    "@noble/curves": "https://github.com/holgerd77/noble-curves.git#build-1b1fe7f",
+    "@noble/curves": "https://github.com/holgerd77/noble-curves.git#build-5fcd71a",
     "rustbn-wasm": "^0.4.0"
   },
   "devDependencies": {
