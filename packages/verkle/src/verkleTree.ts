@@ -251,11 +251,7 @@ export class VerkleTree {
       }
     } else {
       // Leaf node doesn't exist, create a new one
-      leafNode = await LeafNode.create(
-        stem,
-        new Array(256).fill(new Uint8Array(32)),
-        this.verkleCrypto
-      )
+      leafNode = await LeafNode.create(stem, this.verkleCrypto)
       this.DEBUG && this.debug(`Creating new leaf node at stem: ${bytesToHex(stem)}`, ['PUT'])
     }
     // Update value in leaf node and push to putStack
