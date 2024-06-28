@@ -89,11 +89,9 @@ const accumulateEIP7002Requests = async (
     for (let startByte = 0; startByte < resultsBytes.length; startByte += 76) {
       const slicedBytes = resultsBytes.slice(startByte, startByte + 76)
       const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
-      const validatorPublicKey = slicedBytes.slice(20, 68) // 48 Bytes
+      const validatorPubkey = slicedBytes.slice(20, 68) // 48 Bytes
       const amount = bytesToBigInt(unpadBytes(slicedBytes.slice(68, 76))) // 8 Bytes / Uint64
-      requests.push(
-        WithdrawalRequest.fromRequestData({ sourceAddress, validatorPublicKey, amount })
-      )
+      requests.push(WithdrawalRequest.fromRequestData({ sourceAddress, validatorPubkey, amount }))
     }
   }
 
