@@ -47,6 +47,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "profiling": "0x ./benchmarks/run.js profiling",
+    "profiler:report": "tsx ./test/opcodes/profiler.ts",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=../../config/vitest.browser.config.mts",
     "test:node": "npx vitest run",
