@@ -14,8 +14,8 @@ import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { CheckpointDB } from './db/checkpoint.js'
 import { InternalNode } from './node/internalNode.js'
 import { LeafNode } from './node/leafNode.js'
-import { type VerkleNode, VerkleNodeType } from './node/types.js'
-import { decodeNode } from './node/util.js'
+import { type VerkleNode } from './node/types.js'
+import { decodeNode, isLeafNode } from './node/util.js'
 import {
   type Proof,
   ROOT_DB_KEY,
@@ -235,17 +235,17 @@ export class VerkleTree {
     // First see if leaf node already exists
     if (foundPath.node !== null) {
       // Sanity check to verify we have the right node type
-      if (foundPath.node.type !== VerkleNodeType.Leaf) {
+      if (!isLeafNode(foundPath.node)) {
         throw new Error(
           `expected leaf node found at ${bytesToHex(stem)}. Got internal node instead`
         )
       }
-      leafNode = foundPath.node as LeafNode
+      leafNode = foundPath.node
       // Sanity check to verify we have the right leaf node
       if (!equalsBytes(leafNode.stem, stem)) {
         throw new Error(
           `invalid leaf node found. Expected stem: ${bytesToHex(stem)}; got ${bytesToHex(
-            (foundPath.node as LeafNode).stem
+            foundPath.node.stem
           )}`
         )
       }
@@ -337,10 +337,9 @@ export class VerkleTree {
   ): { node: InternalNode; lastPath: Uint8Array } {
     // Compute the portion of leafNode.stem and nearestNode.path that match (i.e. the partial path closest to leafNode.stem)
     const partialMatchingStemIndex = matchingBytesLength(leafNode.stem, pathToNode)
-    let internalNode
-    if (nearestNode.type === VerkleNodeType.Leaf) {
+    let internalNode: InternalNode
+    if (isLeafNode(nearestNode)) {
       // We need to create a new internal node and set nearestNode and leafNode as child nodes of it
-      nearestNode = nearestNode as LeafNode
       // Create new internal node
       internalNode = InternalNode.create(this.verkleCrypto)
       // Set leafNode and nextNode as children of the new internal node
@@ -359,7 +358,7 @@ export class VerkleTree {
     } else {
       // Nearest node is an internal node.  We need to update the appropriate child reference
       // to the new leaf node
-      internalNode = nearestNode as InternalNode
+      internalNode = nearestNode
       internalNode.setChild(leafNode.stem[partialMatchingStemIndex], {
         commitment: leafNode.commitment,
         path: leafNode.stem,
@@ -421,7 +420,7 @@ export class VerkleTree {
       // Calculate the index of the last matching byte in the key
       const matchingKeyLength = matchingBytesLength(key, child.path)
       const foundNode = equalsBytes(key, child.path)
-      if (foundNode || child.path.length >= key.length || decodedNode instanceof LeafNode) {
+      if (foundNode || child.path.length >= key.length || isLeafNode(decodedNode)) {
         // If the key and child.path are equal, then we found the node
         // If the child.path is the same length or longer than the key but doesn't match it
         // or the found node is a leaf node, we've found another node where this node should
@@ -443,8 +442,7 @@ export class VerkleTree {
         // We found a different node than the one specified by `key`
         // so the sought node doesn't exist
         result.remaining = key.slice(matchingKeyLength)
-        const pathToNearestNode =
-          decodedNode.type === VerkleNodeType.Leaf ? (decodedNode as LeafNode).stem : child.path
+        const pathToNearestNode = isLeafNode(decodedNode) ? decodedNode.stem : child.path
         this.DEBUG &&
           this.debug(
             `Path ${bytesToHex(pathToNearestNode)} - found path to nearest node ${bytesToHex(
