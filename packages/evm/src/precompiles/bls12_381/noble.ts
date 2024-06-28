@@ -468,7 +468,7 @@ export class NobleBLS implements EVMBLSInterface {
     // convert input to mcl Fp1 point
     const FP = BLS12_381_ToFpPointN(input.subarray(0, 64))
 
-    const result = bls12_381.G1.mapToCurve(FP).toAffine()
+    const result = bls12_381.G1.mapToCurve([FP]).toAffine()
     console.log('Direct result Noble (ProjectivePoint)')
     console.log(result)
     const resultBytes = BLS12_381_FromG1PointN(result)
@@ -481,11 +481,10 @@ export class NobleBLS implements EVMBLSInterface {
     // convert input to mcl Fp2 point
     const Fp2Point = BLS12_381_ToFp2PointN(input.subarray(0, 64), input.subarray(64, 128))
     console.log(Fp2Point)
-    // "Downgraded" implementation for now to have typing pass!!!
-    const result = bls12_381.G1.mapToCurve(BIGINT_0).toAffine()
+    const result = bls12_381.G2.mapToCurve([Fp2Point.c0, Fp2Point.c1]).toAffine()
     console.log('Direct result Noble (ProjectivePoint)')
     console.log(result)
-    const resultBytes = BLS12_381_FromG1PointN(result)
+    const resultBytes = BLS12_381_FromG2PointN(result)
     console.log('Serialized EVM byte result')
     console.log(bytesToHex(resultBytes))
     return resultBytes
