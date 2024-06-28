@@ -36,6 +36,8 @@ const precompileMap: { [key: string]: string } = {
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2537] })
 
 for (const fname of files) {
+  // Uncomment for running single test cases (example)
+  // if (fname !== 'pairing_check_bls.json') continue
   const fullName = `${dir}/${fname}`
   const parsedJSON = JSON.parse(readFileSync(fullName, 'utf-8'))
   describe(`Precompiles: ${fname}`, () => {
