@@ -338,6 +338,7 @@ export type EVMBLSInterface = {
   mapFP2toG2(input: Uint8Array): Uint8Array
   msmG1(input: Uint8Array): Uint8Array
   msmG2(input: Uint8Array): Uint8Array
+  pairingCheck(input: Uint8Array): Uint8Array
 }
 
 /**

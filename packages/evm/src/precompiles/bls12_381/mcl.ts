@@ -3,6 +3,7 @@ import {
   bytesToUnprefixedHex,
   concatBytes,
   equalsBytes,
+  hexToBytes,
   padToEven,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
@@ -327,6 +328,44 @@ export class MCLBLS implements EVMBLSInterface {
 
     const result = this._mcl.mulVec(G2Array, FrArray)
     return BLS12_381_FromG2Point(result)
+  }
+
+  pairingCheck(input: Uint8Array): Uint8Array {
+    const ZERO_BUFFER = new Uint8Array(32)
+    const ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
+    const pairs = []
+    for (let k = 0; k < input.length / 384; k++) {
+      const pairStart = 384 * k
+      const G1 = BLS12_381_ToG1Point(input.subarray(pairStart, pairStart + 128), this._mcl)
+
+      const g2start = pairStart + 128
+      const G2 = BLS12_381_ToG2Point(input.subarray(g2start, g2start + 256), this._mcl)
+
+      pairs.push([G1, G2])
+    }
+
+    // run the pairing check
+    // reference (Nethermind): https://github.com/NethermindEth/nethermind/blob/374b036414722b9c8ad27e93d64840b8f63931b9/src/Nethermind/Nethermind.Evm/Precompiles/Bls/Mcl/PairingPrecompile.cs#L93
+    let GT
+    for (let index = 0; index < pairs.length; index++) {
+      const pair = pairs[index]
+      const G1 = pair[0]
+      const G2 = pair[1]
+
+      if (index === 0) {
+        GT = this._mcl.millerLoop(G1, G2)
+      } else {
+        GT = this._mcl.mul(GT, this._mcl.millerLoop(G1, G2))
+      }
+    }
+
+    GT = this._mcl.finalExp(GT)
+
+    if (GT.isOne() === true) {
+      return ONE_BUFFER
+    } else {
+      return ZERO_BUFFER
+    }
   }
 }
 
