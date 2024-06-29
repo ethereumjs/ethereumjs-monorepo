@@ -222,7 +222,7 @@ export const EIPs: EIPsDict = {
     requiredEIPs: [],
     vm: {
       historyStorageAddress: {
-        v: BigInt('0x25a219378dad9b3503c8268c9ca836a52427a4fb'),
+        v: BigInt('0x0aae40965e6800cd9b1f4b05ff21581047e3f91e'),
         d: 'The address where the historical blockhashes are stored',
       },
       historyServeWindow: {
@@ -622,5 +622,12 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Cancun,
     requiredEIPs: [3675],
     gasPrices: {},
+  },
+  7709: {
+    comment: 'Use historical block hashes saved in state for BLOCKHASH',
+    url: 'https://eips.ethereum.org/EIPS/eip-7709',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [2935],
   },
 }

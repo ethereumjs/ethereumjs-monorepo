@@ -20,7 +20,7 @@ type BeaconDepositRequest = {
 
 type BeaconWithdrawalRequest = {
   source_address: PrefixedHexString
-  validator_pub_key: PrefixedHexString
+  validator_pubkey: PrefixedHexString
   amount: PrefixedHexString
 }
 
@@ -160,7 +160,7 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
   if (payload.withdrawal_requests !== undefined && payload.withdrawal_requests !== null) {
     executionPayload.withdrawalRequests = payload.withdrawal_requests.map((breq) => ({
       sourceAddress: breq.source_address,
-      validatorPubkey: breq.validator_pub_key,
+      validatorPubkey: breq.validator_pubkey,
       amount: breq.amount,
     }))
   }

@@ -12,9 +12,9 @@ const [blockData] = blocks
 
 const parentBeaconBlockRoot = '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2bea7961a639ef29d64'
 const validForkChoiceState = {
-  headBlockHash: '0x586b459d3fa589fa0e30477ef0e9d11794629b8b914e00b2703c0615a33ab9ed',
-  safeBlockHash: '0x586b459d3fa589fa0e30477ef0e9d11794629b8b914e00b2703c0615a33ab9ed',
-  finalizedBlockHash: '0x586b459d3fa589fa0e30477ef0e9d11794629b8b914e00b2703c0615a33ab9ed',
+  headBlockHash: '0x3ff9144b3f0818580798b0a9ff5cedc1350ff62f46ec99b098344e2864be1e47',
+  safeBlockHash: '0x3ff9144b3f0818580798b0a9ff5cedc1350ff62f46ec99b098344e2864be1e47',
+  finalizedBlockHash: '0x3ff9144b3f0818580798b0a9ff5cedc1350ff62f46ec99b098344e2864be1e47',
 }
 const validPayloadAttributes = {
   timestamp: '0x64ba84fd',
@@ -50,6 +50,11 @@ describe(`${method}: call with executionPayloadV4`, () => {
     const { pragueJson, pragueTime } = readyPragueGenesis(genesisJSON)
     const { service, server } = await setupChain(pragueJson, 'post-merge', { engine: true })
     const rpc = getRpcClient(server)
+    let res
+
+    res = await rpc.request(`eth_getBlockByNumber`, ['0x0', false])
+    assert.equal(res.result.hash, validForkChoiceState.headBlockHash)
+
     const validBlock = {
       ...blockData,
       timestamp: bigIntToHex(BigInt(pragueTime)),
@@ -58,11 +63,10 @@ describe(`${method}: call with executionPayloadV4`, () => {
       excessBlobGas: '0x0',
       depositRequests: [],
       withdrawalRequests: [],
-      parentHash: '0x586b459d3fa589fa0e30477ef0e9d11794629b8b914e00b2703c0615a33ab9ed',
-      stateRoot: '0x76869ec89f1bc786e10a03ecf4a3f9815ec9dddecb372bd0eff51fe75d0d921e',
-      blockHash: '0x34ec8335d47f4ba04a4c1f75f414b85b5e5200d60a6a639b6fc71ce90bcaaee2',
+      parentHash: '0x3ff9144b3f0818580798b0a9ff5cedc1350ff62f46ec99b098344e2864be1e47',
+      stateRoot: '0xd207043769091b6cdc91621f12bf2800b0b4643aeff09118fca52543c7a8ff03',
+      blockHash: '0xf9b4285204630ca183fec0a9a282cb68021af1aa9f3ab5f10d6b9ea8a7a3d4b6',
     }
-    let res
 
     const oldMethods = ['engine_newPayloadV1', 'engine_newPayloadV2', 'engine_newPayloadV3']
     const expectedErrors = [
@@ -129,10 +133,10 @@ describe(`${method}: call with executionPayloadV4`, () => {
 const electraGenesisContracts = {
   // sender corresponding to the priv key 0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355
   '0x610adc49ecd66cbf176a8247ebd59096c031bd9f': { balance: '0x6d6172697573766477000000' },
-  '0x25a219378dad9b3503c8268c9ca836a52427a4fb': {
+  '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e': {
     balance: '0',
     nonce: '1',
-    code: '0x60203611603157600143035f35116029575f356120000143116029576120005f3506545f5260205ff35b5f5f5260205ff35b5f5ffd00',
+    code: '0x3373fffffffffffffffffffffffffffffffffffffffe1460575767ffffffffffffffff5f3511605357600143035f3511604b575f35612000014311604b57611fff5f3516545f5260205ff35b5f5f5260205ff35b5f5ffd5b5f35611fff60014303165500',
   },
   '0x00A3ca265EBcb825B45F985A16CEFB49958cE017': {
     balance: '0',
