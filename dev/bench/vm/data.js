@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1719648708519,
+  "lastUpdate": 1719663593273,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ded3c6bc1cb589c04246c787cde7cf130f913441",
-          "message": "Verkle checkpoint db tests (#3407)\n\n* Update db write stats on commits\r\n\r\n* Add unit tests for verkle checkpoint db implemenation\r\n\r\n* Fix linting issues\r\n\r\n* Update write stats in batch function of CheckpointDB implementations\r\n\r\n* Update trie and verkle CheckpointDB tests\r\n\r\n* Remove redundant stats update\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
-          "timestamp": "2024-05-09T15:47:53-04:00",
-          "tree_id": "f5d0dc5a2492b36cbc265d97d51c8671bc20d39e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ded3c6bc1cb589c04246c787cde7cf130f913441"
-        },
-        "date": 1715284237515,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41902,
-            "range": "±3.45%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41260,
-            "range": "±1.32%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41107,
-            "range": "±1.42%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38094,
-            "range": "±4.85%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38275,
-            "range": "±3.22%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±6.56%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e31a65bf458e21e06d6672debbe20d872ba91e04",
+          "message": "util,block,client,evm,vm: add EIP 7251 el triggered consolidations request type (#3477)\n\n* util,block,client,vm: add EIP 7251 el triggered consolidations request type\r\n\r\n* add eip 7251 el triggered consolidations plumbing\r\n\r\n* accumulate the consolidations into requests from the 7251 system contract\r\n\r\n* add and debug the  newpayloadv4 spec with consolidation related fixes\r\n\r\n* apply feedback",
+          "timestamp": "2024-06-29T17:47:06+05:30",
+          "tree_id": "10a14d1fa86f4158179a0bce55509ed6f1c8faac",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e31a65bf458e21e06d6672debbe20d872ba91e04"
+        },
+        "date": 1719663592110,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42160,
+            "range": "±1.57%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40088,
+            "range": "±2.67%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40765,
+            "range": "±1.45%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39697,
+            "range": "±1.81%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35752,
+            "range": "±5.07%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
