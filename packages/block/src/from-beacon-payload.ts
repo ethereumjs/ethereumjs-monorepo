@@ -24,6 +24,12 @@ type BeaconWithdrawalRequest = {
   amount: PrefixedHexString
 }
 
+type BeaconConsolidationRequest = {
+  source_address: PrefixedHexString
+  source_pubkey: PrefixedHexString
+  target_pubkey: PrefixedHexString
+}
+
 // Payload json that one gets using the beacon apis
 // curl localhost:5052/eth/v2/beacon/blocks/56610 | jq .data.message.body.execution_payload
 export type BeaconPayloadJson = {
@@ -48,6 +54,7 @@ export type BeaconPayloadJson = {
   // requests data
   deposit_requests?: BeaconDepositRequest[]
   withdrawal_requests?: BeaconWithdrawalRequest[]
+  consolidation_requests?: BeaconConsolidationRequest[]
 
   // the casing of VerkleExecutionWitness remains same camel case for now
   execution_witness?: VerkleExecutionWitness
@@ -162,6 +169,13 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
       sourceAddress: breq.source_address,
       validatorPubkey: breq.validator_pubkey,
       amount: breq.amount,
+    }))
+  }
+  if (payload.consolidation_requests !== undefined && payload.consolidation_requests !== null) {
+    executionPayload.consolidationRequests = payload.consolidation_requests.map((breq) => ({
+      sourceAddress: breq.source_address,
+      sourcePubkey: breq.source_pubkey,
+      targetPubkey: breq.target_pubkey,
     }))
   }
 
