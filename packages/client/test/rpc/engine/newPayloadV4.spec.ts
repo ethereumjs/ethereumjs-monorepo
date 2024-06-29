@@ -63,6 +63,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
       excessBlobGas: '0x0',
       depositRequests: [],
       withdrawalRequests: [],
+      consolidationRequests: [],
       parentHash: '0x3ff9144b3f0818580798b0a9ff5cedc1350ff62f46ec99b098344e2864be1e47',
       stateRoot: '0xd207043769091b6cdc91621f12bf2800b0b4643aeff09118fca52543c7a8ff03',
       blockHash: '0xf9b4285204630ca183fec0a9a282cb68021af1aa9f3ab5f10d6b9ea8a7a3d4b6',
@@ -111,6 +112,10 @@ describe(`${method}: call with executionPayloadV4`, () => {
     assert.ok(
       executionPayload.withdrawalRequests !== undefined,
       'depositRequests field should be received'
+    )
+    assert.ok(
+      executionPayload.consolidationRequests !== undefined,
+      'consolidationRequests field should be received'
     )
 
     res = await rpc.request(method, [executionPayload, [], parentBeaconBlockRoot])

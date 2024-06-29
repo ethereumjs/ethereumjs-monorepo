@@ -6,6 +6,7 @@ import {
   BIGINT_0,
   CLRequestFactory,
   CLRequestType,
+  ConsolidationRequest,
   DepositRequest,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
@@ -424,6 +425,7 @@ export class Block {
       withdrawals: withdrawalsData,
       depositRequests,
       withdrawalRequests,
+      consolidationRequests,
       executionWitness,
     } = payload
 
@@ -454,8 +456,13 @@ export class Block {
 
     const hasDepositRequests = depositRequests !== undefined && depositRequests !== null
     const hasWithdrawalRequests = withdrawalRequests !== undefined && withdrawalRequests !== null
+    const hasConsolidationRequests =
+      consolidationRequests !== undefined && consolidationRequests !== null
+
     const requests =
-      hasDepositRequests || hasWithdrawalRequests ? ([] as CLRequest<CLRequestType>[]) : undefined
+      hasDepositRequests || hasWithdrawalRequests || hasConsolidationRequests
+        ? ([] as CLRequest<CLRequestType>[])
+        : undefined
 
     if (depositRequests !== undefined && depositRequests !== null) {
       for (const dJson of depositRequests) {
@@ -465,6 +472,11 @@ export class Block {
     if (withdrawalRequests !== undefined && withdrawalRequests !== null) {
       for (const wJson of withdrawalRequests) {
         requests!.push(WithdrawalRequest.fromJSON(wJson))
+      }
+    }
+    if (consolidationRequests !== undefined && consolidationRequests !== null) {
+      for (const cJson of consolidationRequests) {
+        requests!.push(ConsolidationRequest.fromJSON(cJson))
       }
     }
 
@@ -1006,6 +1018,7 @@ export class Block {
       // lets add the  request fields first and then iterate over requests to fill them up
       depositRequests: this.common.isActivatedEIP(6110) ? [] : undefined,
       withdrawalRequests: this.common.isActivatedEIP(7002) ? [] : undefined,
+      consolidationRequests: this.common.isActivatedEIP(7251) ? [] : undefined,
     }
 
     if (this.requests !== undefined) {
@@ -1018,11 +1031,16 @@ export class Block {
           case CLRequestType.Withdrawal:
             executionPayload.withdrawalRequests!.push((request as WithdrawalRequest).toJSON())
             continue
+
+          case CLRequestType.Consolidation:
+            executionPayload.consolidationRequests!.push((request as ConsolidationRequest).toJSON())
+            continue
         }
       }
     } else if (
       executionPayload.depositRequests !== undefined ||
-      executionPayload.withdrawalRequests !== undefined
+      executionPayload.withdrawalRequests !== undefined ||
+      executionPayload.consolidationRequests !== undefined
     ) {
       throw Error(`Undefined requests for activated deposit or withdrawal requests`)
     }

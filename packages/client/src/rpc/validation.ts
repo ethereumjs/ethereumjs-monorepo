@@ -532,6 +532,54 @@ export const validators = {
     }
   },
 
+  get consolidationRequest() {
+    return (requiredFields: string[] = ['sourceAddress', 'sourcePubkey', 'targetPubkey']) => {
+      return (params: any[], index: number) => {
+        if (typeof params[index] !== 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument must be an object`,
+          }
+        }
+
+        const wt = params[index]
+
+        for (const field of requiredFields) {
+          if (wt[field] === undefined) {
+            return {
+              code: INVALID_PARAMS,
+              message: `invalid argument ${index}: required field ${field}`,
+            }
+          }
+        }
+
+        const validate = (field: any, validator: Function) => {
+          if (field === undefined) return
+          const v = validator([field], 0)
+          if (v !== undefined) return v
+        }
+
+        // validate sourceAddress
+        for (const field of [wt.sourceAddress]) {
+          const v = validate(field, this.address)
+          if (v !== undefined) return v
+        }
+
+        // validate validatorPubkey
+        for (const field of [wt.sourcePubkey]) {
+          const v = validate(field, this.bytes48)
+          if (v !== undefined) return v
+        }
+
+        // validate amount
+        for (const field of [wt.targetPubkey]) {
+          const v = validate(field, this.bytes48)
+          if (v !== undefined) return v
+        }
+      }
+    }
+  },
+
   /**
    * object validator to check if type is object with
    * required keys and expected validation of values
