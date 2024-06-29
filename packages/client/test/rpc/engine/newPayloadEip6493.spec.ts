@@ -101,7 +101,10 @@ describe(`${method}: call with executionPayloadV4`, () => {
     ).sign(pk)
     await service.txPool.add(normalLegacyTx, true)
 
-    console.log({normalLegacyTx: normalLegacyTx.toJSON(), payloadjson: normalLegacyTx.toExecutionPayloadTx()})
+    console.log({
+      normalLegacyTx: normalLegacyTx.toJSON(),
+      payloadjson: normalLegacyTx.toExecutionPayloadTx(),
+    })
 
     res = await rpc.request('engine_getPayloadV4', [payloadId])
     const { executionPayload } = res.result
