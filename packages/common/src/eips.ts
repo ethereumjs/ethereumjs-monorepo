@@ -601,6 +601,27 @@ export const EIPs: EIPsDict = {
       },
     },
   },
+  7251: {
+    comment: 'Execution layer triggered consolidations (experimental)',
+    url: 'https://eips.ethereum.org/EIPS/eip-7251',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Paris,
+    requiredEIPs: [7685],
+    vm: {
+      consolidationRequestType: {
+        v: BigInt(0x02),
+        d: 'The withdrawal request type for EIP-7685',
+      },
+      systemAddress: {
+        v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
+        d: 'The system address to perform operations on the consolidation requests predeploy address',
+      },
+      consolidationRequestPredeployAddress: {
+        v: BigInt('0x00b42dbF2194e931E80326D950320f7d9Dbeac02'),
+        d: 'Address of the consolidations contract',
+      },
+    },
+  },
   7516: {
     comment: 'BLOBBASEFEE opcode',
     url: 'https://eips.ethereum.org/EIPS/eip-7516',
