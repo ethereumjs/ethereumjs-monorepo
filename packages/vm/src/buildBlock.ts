@@ -134,7 +134,9 @@ export class BlockBuilder {
    * Calculates and returns the transactionsTrie for the block.
    */
   public async transactionsTrie() {
-    return Block.genTransactionsTrieRoot(this.transactions, new Trie({ common: this.vm.common }))
+    return this.vm.common.isActivatedEIP(6493)
+      ? Block.genTransactionsSszRoot(this.transactions)
+      : Block.genTransactionsTrieRoot(this.transactions, new Trie({ common: this.vm.common }))
   }
 
   /**
@@ -306,7 +308,9 @@ export class BlockBuilder {
 
     const transactionsTrie = await this.transactionsTrie()
     const withdrawalsRoot = this.withdrawals
-      ? await Block.genWithdrawalsTrieRoot(this.withdrawals, new Trie({ common: this.vm.common }))
+      ? this.vm.common.isActivatedEIP(6493)
+        ? await Block.genWithdrawalsSszRoot(this.withdrawals)
+        : await Block.genWithdrawalsTrieRoot(this.withdrawals, new Trie({ common: this.vm.common }))
       : undefined
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()

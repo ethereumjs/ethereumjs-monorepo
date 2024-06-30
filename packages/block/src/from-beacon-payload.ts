@@ -1,7 +1,7 @@
 import { bigIntToHex } from '@ethereumjs/util'
 
 import type { ExecutionPayload } from './types.js'
-import type { PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
+import type { PrefixedHexString, VerkleExecutionWitness, ssz } from '@ethereumjs/util'
 
 type BeaconWithdrawal = {
   index: PrefixedHexString
@@ -30,6 +30,40 @@ type BeaconConsolidationRequest = {
   target_pubkey: PrefixedHexString
 }
 
+export type BeaconFeesPerGasV1 = {
+  regular: PrefixedHexString | null // Quantity 64 bytes
+  blob: PrefixedHexString | null // Quantity 64 bytes
+}
+
+export type BeaconAccessTupleV1 = {
+  address: PrefixedHexString // DATA 20 bytes
+  storage_keys: PrefixedHexString[] // Data 32 bytes MAX_ACCESS_LIST_STORAGE_KEYS array
+}
+
+export type BeaconTransactionPayloadV1 = {
+  type: PrefixedHexString | null // Quantity, 1 byte
+  chain_id: PrefixedHexString | null // Quantity 8 bytes
+  nonce: PrefixedHexString | null // Quantity 8 bytes
+  max_fees_per_gas: BeaconFeesPerGasV1 | null
+  gas: PrefixedHexString | null // Quantity 8 bytes
+  to: PrefixedHexString | null // DATA 20 bytes
+  value: PrefixedHexString | null // Quantity 64 bytes
+  input: PrefixedHexString | null // max MAX_CALLDATA_SIZE bytes,
+  access_list: BeaconAccessTupleV1[] | null
+  max_priority_fees_per_gas: BeaconFeesPerGasV1 | null
+  blob_versioned_hashes: PrefixedHexString[] | null // DATA 32 bytes array
+}
+
+export type BeaconTransactionSignatureV1 = {
+  from: PrefixedHexString | null // DATA 20 bytes
+  ecdsa_signature: PrefixedHexString | null // DATA 65 bytes or null
+}
+
+type BeaconTransactionV1 = {
+  payload: BeaconTransactionPayloadV1
+  signature: BeaconTransactionSignatureV1
+}
+
 // Payload json that one gets using the beacon apis
 // curl localhost:5052/eth/v2/beacon/blocks/56610 | jq .data.message.body.execution_payload
 export type BeaconPayloadJson = {
@@ -46,7 +80,7 @@ export type BeaconPayloadJson = {
   extra_data: PrefixedHexString
   base_fee_per_gas: PrefixedHexString
   block_hash: PrefixedHexString
-  transactions: PrefixedHexString[]
+  transactions: PrefixedHexString[] | BeaconTransactionV1[]
   withdrawals?: BeaconWithdrawal[]
   blob_gas_used?: PrefixedHexString
   excess_blob_gas?: PrefixedHexString
@@ -118,6 +152,36 @@ function parseExecutionWitnessFromSnakeJson({
  * The JSON data can be retrieved from a consensus layer (CL) client on this Beacon API `/eth/v2/beacon/blocks/[block number]`
  */
 export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): ExecutionPayload {
+  const transactions =
+    typeof payload.transactions[0] === 'object'
+      ? (payload.transactions as BeaconTransactionV1[]).map((btxv1) => {
+          return {
+            payload: {
+              type: btxv1.payload.type,
+              chainId: btxv1.payload.chain_id,
+              nonce: btxv1.payload.nonce,
+              maxFeesPerGas: btxv1.payload.max_fees_per_gas,
+              to: btxv1.payload.to,
+              value: btxv1.payload.value,
+              input: btxv1.payload.input,
+              accessList:
+                btxv1.payload.access_list?.map((bal: BeaconAccessTupleV1) => {
+                  return {
+                    address: bal.address,
+                    storageKeys: bal.storage_keys,
+                  }
+                }) ?? null,
+              maxPriorityFeesPerGas: btxv1.payload.max_priority_fees_per_gas,
+              blobVersionedHashes: btxv1.payload.blob_versioned_hashes,
+            },
+            signature: {
+              from: btxv1.signature.from,
+              ecdsaSignature: btxv1.signature.ecdsa_signature,
+            },
+          } as ssz.TransactionV1
+        })
+      : (payload.transactions as PrefixedHexString[])
+
   const executionPayload: ExecutionPayload = {
     parentHash: payload.parent_hash,
     feeRecipient: payload.fee_recipient,
@@ -132,7 +196,7 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
     extraData: payload.extra_data,
     baseFeePerGas: bigIntToHex(BigInt(payload.base_fee_per_gas)),
     blockHash: payload.block_hash,
-    transactions: payload.transactions,
+    transactions,
   }
 
   if (payload.withdrawals !== undefined && payload.withdrawals !== null) {

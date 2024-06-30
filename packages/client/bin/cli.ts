@@ -126,6 +126,12 @@ const args: ClientOpts = yargs
     boolean: true,
     default: true,
   })
+  // just a hack to insert 6493 on pragueTime for input genesis
+  .option('eip6493AtPrague', {
+    describe: 'Just for stablecontainer devnets testing',
+    boolean: true,
+    default: true,
+  })
   .option('bootnodes', {
     describe:
       'Comma-separated list of network bootnodes (format: "enode://<id>@<host:port>,enode://..." ("[?discport=<port>]" not supported) or path to a bootnode.txt file',
@@ -1003,6 +1009,12 @@ async function run() {
     // Use geth genesis parameters file if specified
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
+    // just a hack for stable container devnets to schedule 6493 at prague
+    if (args.eip6493AtPrague === true) {
+      genesisFile.config.eip6493Time = genesisFile.config.pragueTime
+      console.log('Scheduling eip6493AtPrague', genesisFile.config)
+    }
+
     common = Common.fromGethGenesis(genesisFile, {
       chain: chainName,
       mergeForkIdPostMerge: args.mergeForkIdPostMerge,

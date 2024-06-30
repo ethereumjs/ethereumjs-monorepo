@@ -197,11 +197,11 @@ describe('[VMExecution]', () => {
   })
 
   it('Block execution / Hardforks PoA (goerli)', async () => {
-    const { server, execution, blockchain } = await setupChain(shanghaiJSON, 'post-merge', {
+    const { server, execution, blockchain, common } = await setupChain(shanghaiJSON, 'post-merge', {
       engine: true,
     })
 
-    const block = await Block.fromExecutionPayload(shanghaiPayload as ExecutionPayload)
+    const block = await Block.fromExecutionPayload(shanghaiPayload as ExecutionPayload, { common })
     const oldHead = await blockchain.getIteratorHead()
 
     const parentStateRoot = oldHead.header.stateRoot

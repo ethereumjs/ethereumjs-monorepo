@@ -87,6 +87,7 @@ export class EVM implements EVMInterface {
     Hardfork.Shanghai,
     Hardfork.Cancun,
     Hardfork.Prague,
+    Hardfork.Eip6493,
     Hardfork.Osaka,
   ]
   protected _tx?: {
@@ -210,7 +211,7 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6110, 6780, 6800, 7002, 7251, 7516,
+      3670, 3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6110, 6493, 6780, 6800, 7002, 7251, 7516,
       7685, 7709,
     ]
 
