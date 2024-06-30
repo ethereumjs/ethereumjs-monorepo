@@ -211,9 +211,9 @@ describe('EIP 2935: historical block hashes', () => {
     })
     it('should ensure blocks older than 256 blocks can be retrieved from the history contract', async () => {
       // Test: build a chain with 256+ blocks and then retrieve BLOCKHASH of the genesis block and block 1
-      const blocksActivation = 256 // This ensures that block 0 - 255 all get stored into the hash contract
+      const blocksActivation = 256 // This ensures that only block 255 gets stored into the hash contract
       // More than blocks activation to build, so we can ensure that we can also retrieve block 0 or block 1 hash at block 300
-      const blocksToBuild = 300
+      const blocksToBuild = 500
       const commonGetHistoryServeWindow = eip2935ActiveAtCommon(0)
       commonGetHistoryServeWindow.setEIPs([2935])
       const common = eip2935ActiveAtCommon(blocksActivation)
@@ -225,23 +225,23 @@ describe('EIP 2935: historical block hashes', () => {
         validateConsensus: false,
       })
       const vm = await VM.create({ common, blockchain })
-      let parentBlock = await vm.blockchain.getBlock(0)
+      let lastBlock = await vm.blockchain.getBlock(0)
       for (let i = 1; i <= blocksToBuild; i++) {
-        parentBlock = await (
+        lastBlock = await (
           await vm.buildBlock({
-            parentBlock,
+            parentBlock: lastBlock,
             blockOpts: {
               putBlockIntoBlockchain: false,
               setHardfork: true,
             },
             headerData: {
-              timestamp: parentBlock.header.number + BIGINT_1,
+              timestamp: lastBlock.header.number + BIGINT_1,
             },
           })
         ).build()
-        await vm.blockchain.putBlock(parentBlock)
+        await vm.blockchain.putBlock(lastBlock)
         await vm.runBlock({
-          block: parentBlock,
+          block: lastBlock,
           generate: true,
           skipHeaderValidation: true,
           setHardfork: true,
@@ -263,14 +263,24 @@ describe('EIP 2935: historical block hashes', () => {
           historyAddress,
           setLengthLeft(bigIntToBytes(BigInt(i) % historyServeWindow), 32)
         )
+
+        // we will evaluate on lastBlock where 7709 is active and BLOCKHASH
+        // will look from the state if within 256 window
         const ret = await vm.evm.runCall({
           // Code: RETURN the BLOCKHASH of block i
           // PUSH(i) BLOCKHASH PUSH(32) MSTORE PUSH(64) PUSH(0) RETURN
           // Note: need to return a contract with starting zero bytes to avoid non-deployable contracts by EIP 3540
           data: hexToBytes('0x61' + i.toString(16).padStart(4, '0') + '4060205260406000F3'),
-          block: parentBlock,
+          block: lastBlock,
         })
-        if (i <= blocksToBuild - 1 && i >= blocksToBuild - Number(historyServeWindow)) {
+
+        // contract will only have hashes between blocksActivation -1 and blocksToBuild -1 thresholded by
+        // historyServeWindow window
+        if (
+          i >= blocksActivation - 1 &&
+          i <= blocksToBuild - 1 &&
+          i >= blocksToBuild - Number(historyServeWindow)
+        ) {
           assert.ok(equalsBytes(setLengthLeft(storage, 32), block.hash()))
           if (i >= blocksToBuild - 256) {
             assert.ok(equalsBytes(ret.execResult.returnValue, setLengthLeft(block.hash(), 64)))
@@ -294,8 +304,8 @@ describe('EIP 2935: historical block hashes', () => {
         { common }
       )
 
-      // should be able to resolve blockhash via contract code
-      for (const i of [0, 1, blocksActivation, blocksToBuild - 1]) {
+      // should be able to resolve blockhash via contract code but from the blocksActivation -1 onwards
+      for (const i of [blocksActivation - 1, blocksActivation, blocksToBuild - 1]) {
         const blockHashi = await testBlockhashContract(vm, block, BigInt(i))
         const blocki = await blockchain.getBlock(i)
         assert.ok(equalsBytes(blockHashi, blocki.hash()))
