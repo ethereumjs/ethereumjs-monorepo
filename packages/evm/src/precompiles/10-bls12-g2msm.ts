@@ -4,14 +4,12 @@ import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
 import { gasCheck, moduloLengthCheck, msmGasUsed, zeroByteCheck } from './bls12_381/index.js'
-import { NobleBLS } from './bls12_381/noble.js'
 
 import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
-  // const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
-  const bls: EVMBLSInterface = new NobleBLS((<any>opts._EVM)._mcl!)
+  const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
 
   if (opts.data.length === 0) {
     if (opts._debug !== undefined) {

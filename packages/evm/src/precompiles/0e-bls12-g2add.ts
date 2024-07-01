@@ -4,14 +4,12 @@ import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
 import { equalityLengthCheck, gasCheck, zeroByteCheck } from './bls12_381/index.js'
-import { NobleBLS } from './bls12_381/noble.js'
 
 import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
-  // const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
-  const bls: EVMBLSInterface = new NobleBLS((<any>opts._EVM)._mcl!)
+  const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
 
   // note: the gas used is constant; even if the input is incorrect.
   const gasUsed = opts.common.paramByEIP('gasPrices', 'Bls12381G2AddGas', 2537) ?? BigInt(0)
