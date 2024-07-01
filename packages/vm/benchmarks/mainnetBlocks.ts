@@ -1,9 +1,9 @@
 import { readFileSync } from 'fs'
-import Benchmark from 'benchmark'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { VM } from '../dist/cjs'
 import { getPreState, getBlockchain, verifyResult } from './util'
+import { Bench } from 'tinybench'
 
 const BLOCK_FIXTURE = 'benchmarks/fixture/blocks-prestate.json'
 
@@ -18,7 +18,7 @@ const runBlock = async (vm: VM, block: Block, receipts: any) => {
   verifyResult(block, receipts)
 }
 
-export async function mainnetBlocks(suite?: Benchmark.Suite, numSamples?: number) {
+export async function mainnetBlocks(numSamples?: number) {
   let data = JSON.parse(readFileSync(BLOCK_FIXTURE, 'utf8'))
   if (!Array.isArray(data)) data = [data]
   console.log(`Total number of blocks in data set: ${data.length}`)
@@ -28,6 +28,10 @@ export async function mainnetBlocks(suite?: Benchmark.Suite, numSamples?: number
   data = data.slice(0, numSamples)
 
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
+
+  const bench = new Bench({
+    time: 10000,
+  })
 
   for (const blockData of data) {
     const block = Block.fromRPC(blockData.block, [], { common })
@@ -46,12 +50,13 @@ export async function mainnetBlocks(suite?: Benchmark.Suite, numSamples?: number
     const blockchain = getBlockchain(blockhashes) as any
     const vm = await VM.create({ stateManager, common, blockchain })
 
-    if (suite) {
-      suite.add(`Block ${blockNumber}`, async () => {
-        await runBlock(vm, block, receipts)
-      })
-    } else {
+    bench.add('block ' + blockNumber.toString(), async () => {
       await runBlock(vm, block, receipts)
-    }
+    })
   }
+
+  await bench.warmup()
+  await bench.run()
+
+  return bench.table()
 }
