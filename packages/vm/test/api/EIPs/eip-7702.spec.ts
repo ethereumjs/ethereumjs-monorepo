@@ -5,6 +5,7 @@ import {
   Account,
   Address,
   BIGINT_1,
+  KECCAK256_NULL,
   bigIntToBytes,
   concatBytes,
   ecsign,
@@ -86,6 +87,10 @@ async function runTest(authorizationListOpts: GetAuthListOpts[], expect: Uint8Ar
   const slot = hexToBytes('0x' + '00'.repeat(31) + '01')
   const value = await vm.stateManager.getContractStorage(defaultAuthAddr, slot)
   assert.ok(equalsBytes(unpadBytes(expect), value))
+
+  // Check that the code is cleaned after the `runTx`
+  const account = (await vm.stateManager.getAccount(defaultAuthAddr)) ?? new Account()
+  assert.ok(equalsBytes(account.codeHash, KECCAK256_NULL))
 }
 
 describe('EIP 7702: set code to EOA accounts', () => {
