@@ -13,7 +13,9 @@ import { ERROR, EvmError } from '../../exceptions.js'
 
 import {
   BLS_FIELD_MODULUS,
+  BLS_G1_INFINITY_POINT_BYTES,
   BLS_G1_POINT_BYTE_LENGTH,
+  BLS_G2_INFINITY_POINT_BYTES,
   BLS_G2_POINT_BYTE_LENGTH,
   BLS_ONE_BUFFER,
   BLS_ZERO_BUFFER,
@@ -228,7 +230,7 @@ export class NobleBLS implements EVMBLSInterface {
     const skalar = BLS12_381_ToFrPoint(input.subarray(BLS_G1_POINT_BYTE_LENGTH, 160))
 
     if (skalar === BIGINT_0) {
-      return new Uint8Array(BLS_G1_POINT_BYTE_LENGTH)
+      return BLS_G1_INFINITY_POINT_BYTES
     }
     const result = p.multiply(skalar)
     return BLS12_381_FromG1Point(result)
@@ -251,7 +253,7 @@ export class NobleBLS implements EVMBLSInterface {
     const skalar = BLS12_381_ToFrPoint(input.subarray(BLS_G2_POINT_BYTE_LENGTH, 288))
 
     if (skalar === BIGINT_0) {
-      return new Uint8Array(BLS_G2_POINT_BYTE_LENGTH)
+      return BLS_G2_INFINITY_POINT_BYTES
     }
     const result = p.multiply(skalar)
     return BLS12_381_FromG2Point(result)
@@ -292,8 +294,14 @@ export class NobleBLS implements EVMBLSInterface {
       const Fr = BLS12_381_ToFrPoint(
         input.subarray(pairStart + BLS_G1_POINT_BYTE_LENGTH, pairStart + pairLength)
       )
+      let pMul
+      if (Fr === BIGINT_0) {
+        pMul = bls12_381.G1.ProjectivePoint.ZERO
+      } else {
+        pMul = G1.multiply(Fr)
+      }
 
-      pRes = pRes.add(G1.multiply(Fr))
+      pRes = pRes.add(pMul)
     }
 
     return BLS12_381_FromG1Point(pRes)
@@ -318,8 +326,14 @@ export class NobleBLS implements EVMBLSInterface {
       const Fr = BLS12_381_ToFrPoint(
         input.subarray(pairStart + BLS_G2_POINT_BYTE_LENGTH, pairStart + pairLength)
       )
+      let pMul
+      if (Fr === BIGINT_0) {
+        pMul = bls12_381.G2.ProjectivePoint.ZERO
+      } else {
+        pMul = G2.multiply(Fr)
+      }
 
-      pRes = pRes.add(G2.multiply(Fr))
+      pRes = pRes.add(pMul)
     }
 
     return BLS12_381_FromG2Point(pRes)

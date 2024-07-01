@@ -8,6 +8,9 @@ export const BLS_FIELD_MODULUS = BigInt(
 export const BLS_G1_POINT_BYTE_LENGTH = 128
 export const BLS_G2_POINT_BYTE_LENGTH = 256
 
+export const BLS_G1_INFINITY_POINT_BYTES = new Uint8Array(BLS_G1_POINT_BYTE_LENGTH)
+export const BLS_G2_INFINITY_POINT_BYTES = new Uint8Array(BLS_G2_POINT_BYTE_LENGTH)
+
 export const BLS_ZERO_BUFFER = new Uint8Array(32)
 export const BLS_ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
 
