@@ -82,8 +82,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
               nonce: ['0x1'],
               yParity: '0x1',
               r: ones32,
-              //@ts-ignore
-              s: undefined,
+              s: undefined as never,
             },
           ],
         },
@@ -100,8 +99,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
               address: `0x${'20'.repeat(20)}`,
               nonce: ['0x1'],
               yParity: '0x1',
-              // @ts-ignore
-              r: undefined,
+              r: undefined as never,
               s: ones32,
             },
           ],
@@ -118,8 +116,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
               chainId: '0x',
               address: `0x${'20'.repeat(20)}`,
               nonce: ['0x1'],
-              // @ts-ignore
-              yParity: undefined,
+              yParity: undefined as never,
               r: ones32,
               s: ones32,
             },
@@ -136,8 +133,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
             {
               chainId: '0x',
               address: `0x${'20'.repeat(20)}`,
-              // @ts-ignore
-              nonce: undefined,
+              nonce: undefined as never,
               yParity: '0x1',
               r: ones32,
               s: ones32,
@@ -154,8 +150,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
           authorizationList: [
             {
               chainId: '0x',
-              // @ts-ignore
-              address: undefined,
+              address: undefined as never,
               nonce: ['0x1'],
               yParity: '0x1',
               r: ones32,
@@ -172,8 +167,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
         {
           authorizationList: [
             {
-              // @ts-ignore
-              chainId: undefined,
+              chainId: undefined as never,
               address: `0x${'20'.repeat(20)}`,
               nonce: ['0x1'],
               yParity: '0x1',

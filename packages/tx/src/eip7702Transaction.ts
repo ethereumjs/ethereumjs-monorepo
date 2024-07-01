@@ -42,7 +42,6 @@ type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702]
  * - EIP: [EIP-7702](https://github.com/ethereum/EIPs/blob/62419ca3f45375db00b04a368ea37c0bfb05386a/EIPS/eip-7702.md)
  */
 export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.EOACodeEIP7702> {
-  // implements EIP7702CompatibleTx<TransactionType.EOCodeEIP7702>
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
