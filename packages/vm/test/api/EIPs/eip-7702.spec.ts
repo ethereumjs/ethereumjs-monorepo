@@ -4,6 +4,7 @@ import { EOACodeEIP7702Transaction } from '@ethereumjs/tx'
 import {
   Account,
   Address,
+  BIGINT_1,
   //BIGINT_1,
   bigIntToBytes,
   concatBytes,
@@ -68,6 +69,40 @@ describe('EIP 7702: set code to EOA accounts', () => {
         maxFeePerGas: 1000,
         authorizationList: authList,
         to: defaultAuthAddr,
+        value: BIGINT_1,
+      },
+      { common }
+    ).sign(defaultSenderPkey)
+
+    // Store value 1 in storage slot 1
+    // PUSH1 PUSH1 SSTORE STOP
+    const code = hexToBytes('0x600160015500')
+    await vm.stateManager.putContractCode(codeAddr, code)
+
+    const acc = (await vm.stateManager.getAccount(defaultSenderAddr)) ?? new Account()
+    acc.balance = BigInt(1_000_000_000)
+    await vm.stateManager.putAccount(defaultSenderAddr, acc)
+
+    await vm.runTx({ tx })
+
+    const slot = hexToBytes('0x' + '00'.repeat(31) + '01')
+    const value = await vm.stateManager.getContractStorage(defaultAuthAddr, slot)
+    assert.ok(equalsBytes(unpadBytes(slot), value))
+  })
+
+  it('EIP-161 test case', async () => {
+    const vm = await VM.create({ common })
+    const authList = [
+      getAuthorizationListItem({
+        address: codeAddr,
+      }),
+    ]
+    const tx = EOACodeEIP7702Transaction.fromTxData(
+      {
+        gasLimit: 100000,
+        maxFeePerGas: 1000,
+        authorizationList: authList,
+        to: defaultAuthAddr,
         // value: BIGINT_1 // Note, by enabling this line, the account will not get deleted
         // Therefore, this test will pass
       },
@@ -83,17 +118,12 @@ describe('EIP 7702: set code to EOA accounts', () => {
     acc.balance = BigInt(1_000_000_000)
     await vm.stateManager.putAccount(defaultSenderAddr, acc)
 
-    console.log(defaultAuthAddr.toString())
-
-    vm.evm.events?.on('step', (e) => {
-      console.log(e.address.toString(), e.opcode.name, e.stack)
-    })
-
     await vm.runTx({ tx })
 
     // Note: due to EIP-161, defaultAuthAddr is now deleted
 
     const slot = hexToBytes('0x' + '00'.repeat(31) + '01')
+    // This will therefore throw (account does not exist)
     const value = await vm.stateManager.getContractStorage(defaultAuthAddr, slot)
     assert.ok(equalsBytes(unpadBytes(slot), value))
   })
