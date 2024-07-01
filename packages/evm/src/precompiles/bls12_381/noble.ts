@@ -553,6 +553,11 @@ export class NobleBLS implements EVMBLSInterface {
       const g2start = pairStart + 128
       const G2 = BLS12_381_ToG2PointN(input.subarray(g2start, g2start + 256))
 
+      // EIP: "If any input is the infinity point, pairing result will be 1"
+      if (G1 === bls12_381.G1.ProjectivePoint.ZERO || G2 === bls12_381.G2.ProjectivePoint.ZERO) {
+        return ONE_BUFFER
+      }
+
       pairs.push([G1, G2])
     }
 
