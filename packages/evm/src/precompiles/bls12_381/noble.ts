@@ -200,13 +200,6 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
 }
 
 export class NobleBLS implements EVMBLSInterface {
-  // TODO: Remove after transition
-  protected readonly _mcl: any
-
-  constructor(mcl: any) {
-    this._mcl = mcl
-  }
-
   addG1(input: Uint8Array): Uint8Array {
     const p1 = BLS12_381_ToG1Point(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH))
     const p2 = BLS12_381_ToG1Point(
