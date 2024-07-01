@@ -47,11 +47,6 @@ export interface VerkleNodeOptions {
 
 export const NODE_WIDTH = 256
 
-export const EMPTY_CHILD: ChildNode = {
-  commitment: new Uint8Array(64),
-  path: new Uint8Array(),
-}
-
 export const ZERO_LEAF_VALUE = new Uint8Array(32)
 
 export const DELETED_LEAF_VALUE = setLengthLeft(

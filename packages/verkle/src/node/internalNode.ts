@@ -1,7 +1,7 @@
 import { type VerkleCrypto } from '@ethereumjs/util'
 
 import { BaseVerkleNode } from './baseVerkleNode.js'
-import { EMPTY_CHILD, NODE_WIDTH, VerkleNodeType } from './types.js'
+import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
 import type { ChildNode, VerkleNodeOptions } from './types.js'
 
@@ -19,7 +19,12 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   setChild(childIndex: number, child: ChildNode) {
     // Get previous child commitment at `index`
     const oldChildReference =
-      this.children[childIndex] !== null ? this.children[childIndex] : EMPTY_CHILD
+      this.children[childIndex] !== null
+        ? this.children[childIndex]
+        : {
+            commitment: this.verkleCrypto.zeroCommitment,
+            path: new Uint8Array(),
+          }
     // Updates the commitment to the child node at `index`
     this.children[childIndex] = { ...child }
     // Updates the overall node commitment based on the update to this child
