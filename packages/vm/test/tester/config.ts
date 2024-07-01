@@ -165,17 +165,18 @@ const testLegacy = {
   byzantium: true,
   constantinople: true,
   petersburg: true,
-  istanbul: false,
-  muirGlacier: false,
-  berlin: false,
-  london: false,
-  paris: false,
-  ByzantiumToConstantinopleFixAt5: false,
-  EIP158ToByzantiumAt5: false,
-  FrontierToHomesteadAt5: false,
-  HomesteadToDaoAt5: false,
-  HomesteadToEIP150At5: false,
-  BerlinToLondonAt5: false,
+  istanbul: true,
+  muirGlacier: true,
+  berlin: true,
+  london: true,
+  paris: true,
+  shanghai: true,
+  ByzantiumToConstantinopleFixAt5: true,
+  EIP158ToByzantiumAt5: true,
+  FrontierToHomesteadAt5: true,
+  HomesteadToDaoAt5: true,
+  HomesteadToEIP150At5: true,
+  BerlinToLondonAt5: true,
 }
 
 /**
@@ -190,9 +191,12 @@ export function getTestDirs(network: string, testType: string) {
       key.toLowerCase() === network.toLowerCase() &&
       testLegacy[key as keyof typeof testLegacy] === true
     ) {
-      // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
+      // Tests snapshots have moved in `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
+      // Also tests have moved in `LegacyTests/Cancun`:
+      // https://github.com/ethereum/tests/releases/tag/v14.0
       testDirs.push('LegacyTests/Constantinople/' + testType)
+      testDirs.push('LegacyTests/Cancun/' + testType)
       break
     }
   }
