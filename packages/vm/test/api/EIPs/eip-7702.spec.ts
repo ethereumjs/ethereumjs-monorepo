@@ -57,8 +57,8 @@ function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytes
   return [chainIdBytes, addressBytes, nonceBytes, bigIntToBytes(signed.v), signed.r, signed.s]
 }
 
-async function runTest(authorizationListOpts: GetAuthListOpts[], expect: Uint8Array) {
-  const vm = await VM.create({ common })
+async function runTest(authorizationListOpts: GetAuthListOpts[], expect: Uint8Array, vm?: VM) {
+  vm = vm ?? (await VM.create({ common }))
   const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
   const tx = EOACodeEIP7702Transaction.fromTxData(
     {
@@ -158,9 +158,63 @@ describe('EIP 7702: set code to EOA accounts', () => {
     )
   })
 
-  // TODO add tests:
-  // Code is present in account
-  // The authority account is added to warm addresses
+  it('Code is already present in account', async () => {
+    const vm = await VM.create({ common })
+    await vm.stateManager.putContractCode(defaultAuthAddr, new Uint8Array([1]))
+    await runTest(
+      [
+        {
+          address: code1Addr,
+        },
+      ],
+      new Uint8Array(),
+      vm
+    )
+  })
+
+  it('Auth address is added to warm addresses', async () => {
+    const vm = await VM.create({ common })
+    const authList = [
+      getAuthorizationListItem({
+        address: code1Addr,
+      }),
+    ]
+
+    // Call into the defaultAuthAddr
+    // Gas cost:
+    // 5 * PUSH0: 10
+    // 1 * PUSH20: 3
+    // 1 * GAS: 2
+    // 1x warm call: 100
+    // Total: 115
+    const checkAddressWarmCode = hexToBytes(
+      `0x5F5F5F5F5F73${defaultAuthAddr.toString().slice(2)}5AF1`
+    )
+    const checkAddressWarm = Address.fromString(`0x${'FA'.repeat(20)}`)
+
+    await vm.stateManager.putContractCode(checkAddressWarm, checkAddressWarmCode)
+
+    const tx = EOACodeEIP7702Transaction.fromTxData(
+      {
+        gasLimit: 100000,
+        maxFeePerGas: 1000,
+        authorizationList: authList,
+        to: checkAddressWarm,
+        value: BIGINT_1,
+      },
+      { common }
+    ).sign(defaultSenderPkey)
+
+    const code1 = hexToBytes('0x')
+    await vm.stateManager.putContractCode(code1Addr, code1)
+
+    const acc = (await vm.stateManager.getAccount(defaultSenderAddr)) ?? new Account()
+    acc.balance = BigInt(1_000_000_000)
+    await vm.stateManager.putAccount(defaultSenderAddr, acc)
+
+    const res = await vm.runTx({ tx })
+    assert.ok(res.execResult.executionGasUsed === BigInt(115))
+  })
 
   it('EIP-161 test case', async () => {
     const vm = await VM.create({ common })
