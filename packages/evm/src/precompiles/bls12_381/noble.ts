@@ -14,7 +14,11 @@ import { bls12_381 } from '@noble/curves/bls12-381'
 
 import { ERROR, EvmError } from '../../exceptions.js'
 
-import { BLS_FIELD_MODULUS } from './constants.js'
+import {
+  BLS_FIELD_MODULUS,
+  BLS_G1_POINT_BYTE_LENGTH,
+  BLS_G2_POINT_BYTE_LENGTH,
+} from './constants.js'
 
 import type { EVMBLSInterface } from '../../types.js'
 import type { AffinePoint, ProjPointType } from '@noble/curves/abstract/weierstrass.js'
@@ -35,7 +39,7 @@ type Fp2 = {
  */
 function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): any {
   const p_x = bytesToUnprefixedHex(input.subarray(16, 64))
-  const p_y = bytesToUnprefixedHex(input.subarray(80, 128))
+  const p_y = bytesToUnprefixedHex(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
 
   const G1 = new mcl.G1()
 
@@ -78,7 +82,7 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): a
  */
 function BLS12_381_ToG1PointN(input: Uint8Array) {
   const x = bytesToBigInt(input.subarray(16, 64))
-  const y = bytesToBigInt(input.subarray(80, 128))
+  const y = bytesToBigInt(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
 
   if (x === y && x === BIGINT_0) {
     return bls12_381.G1.ProjectivePoint.ZERO
@@ -112,7 +116,7 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
   const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
 
   if (decodeStr === '0') {
-    return new Uint8Array(128)
+    return new Uint8Array(BLS_G1_POINT_BYTE_LENGTH)
   }
 
   // note: decoded[0] === 1
@@ -153,7 +157,7 @@ function BLS12_381_ToG2Point(input: Uint8Array, mcl: any, verifyOrder = true): a
   const p_x_1 = input.subarray(0, 64)
   const p_x_2 = input.subarray(64, 128)
   const p_y_1 = input.subarray(128, 192)
-  const p_y_2 = input.subarray(192, 256)
+  const p_y_2 = input.subarray(192, BLS_G2_POINT_BYTE_LENGTH)
 
   const ZeroBytes64 = new Uint8Array(64)
   // check if we have to do with a zero point
@@ -210,7 +214,7 @@ function BLS12_381_ToG2PointN(input: Uint8Array) {
   const p_x_1 = input.subarray(0, 64)
   const p_x_2 = input.subarray(64, 128)
   const p_y_1 = input.subarray(128, 192)
-  const p_y_2 = input.subarray(192, 256)
+  const p_y_2 = input.subarray(192, BLS_G2_POINT_BYTE_LENGTH)
 
   const ZeroBytes64 = new Uint8Array(64)
   // check if we have to do with a zero point
@@ -249,7 +253,7 @@ function BLS12_381_FromG2Point(input: any): Uint8Array {
   // TODO: figure out if there is a better way to decode these values.
   const decodeStr = input.getStr(16) //return a string of pattern "1 <x_coord_1> <x_coord_2> <y_coord_1> <y_coord_2>"
   if (decodeStr === '0') {
-    return new Uint8Array(256)
+    return new Uint8Array(BLS_G2_POINT_BYTE_LENGTH)
   }
   const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
 
@@ -404,8 +408,8 @@ export class NobleBLS implements EVMBLSInterface {
   }
 
   addG1(input: Uint8Array): Uint8Array {
-    const p1 = BLS12_381_ToG1PointN(input.subarray(0, 128))
-    const p2 = BLS12_381_ToG1PointN(input.subarray(128, 256))
+    const p1 = BLS12_381_ToG1PointN(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH))
+    const p2 = BLS12_381_ToG1PointN(input.subarray(BLS_G1_POINT_BYTE_LENGTH, 256))
 
     const p = p1.add(p2)
     const result = BLS12_381_FromG1PointN(p)
@@ -420,19 +424,19 @@ export class NobleBLS implements EVMBLSInterface {
 
   mulG1(input: Uint8Array): Uint8Array {
     // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
-    const p = BLS12_381_ToG1PointN(input.subarray(0, 128))
-    const skalar = BLS12_381_ToFrPointN(input.subarray(128, 160))
+    const p = BLS12_381_ToG1PointN(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH))
+    const skalar = BLS12_381_ToFrPointN(input.subarray(BLS_G1_POINT_BYTE_LENGTH, 160))
 
     if (skalar === BIGINT_0) {
-      return new Uint8Array(128)
+      return new Uint8Array(BLS_G1_POINT_BYTE_LENGTH)
     }
     const result = p.multiply(skalar)
     return BLS12_381_FromG1PointN(result)
   }
 
   addG2(input: Uint8Array): Uint8Array {
-    const p1 = BLS12_381_ToG2PointN(input.subarray(0, 256))
-    const p2 = BLS12_381_ToG2PointN(input.subarray(256, 512))
+    const p1 = BLS12_381_ToG2PointN(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH))
+    const p2 = BLS12_381_ToG2PointN(input.subarray(BLS_G2_POINT_BYTE_LENGTH, 512))
 
     /*console.log('MCL:')
     console.log(result.getStr(16))
@@ -455,11 +459,11 @@ export class NobleBLS implements EVMBLSInterface {
 
   mulG2(input: Uint8Array): Uint8Array {
     // convert input to mcl G2 point/Fr point, add them, and convert the output to a Uint8Array.
-    const p = BLS12_381_ToG2PointN(input.subarray(0, 256))
-    const skalar = BLS12_381_ToFrPointN(input.subarray(256, 288))
+    const p = BLS12_381_ToG2PointN(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH))
+    const skalar = BLS12_381_ToFrPointN(input.subarray(BLS_G2_POINT_BYTE_LENGTH, 288))
 
     if (skalar === BIGINT_0) {
-      return new Uint8Array(256)
+      return new Uint8Array(BLS_G2_POINT_BYTE_LENGTH)
     }
     const result = p.multiply(skalar)
     return BLS12_381_FromG2PointN(result)
@@ -498,7 +502,7 @@ export class NobleBLS implements EVMBLSInterface {
     //
     // While this functionally works the approach is not "gas-cost-competitive" and an
     // optimization should be considered in the future.
-    const pointLength = 128
+    const pointLength = BLS_G1_POINT_BYTE_LENGTH
     const pairLength = 160
     const numPairs = input.length / pairLength
 
@@ -523,7 +527,7 @@ export class NobleBLS implements EVMBLSInterface {
     //
     // While this functionally works the approach is not "gas-cost-competitive" and an
     // optimization should be considered in the future.
-    const pointLength = 256
+    const pointLength = BLS_G2_POINT_BYTE_LENGTH
     const pairLength = 288
     const numPairs = input.length / pairLength
 
@@ -548,10 +552,12 @@ export class NobleBLS implements EVMBLSInterface {
     const pairs = []
     for (let k = 0; k < input.length / pairLength; k++) {
       const pairStart = pairLength * k
-      const G1 = BLS12_381_ToG1PointN(input.subarray(pairStart, pairStart + 128))
+      const G1 = BLS12_381_ToG1PointN(
+        input.subarray(pairStart, pairStart + BLS_G1_POINT_BYTE_LENGTH)
+      )
 
-      const g2start = pairStart + 128
-      const G2 = BLS12_381_ToG2PointN(input.subarray(g2start, g2start + 256))
+      const g2start = pairStart + BLS_G1_POINT_BYTE_LENGTH
+      const G2 = BLS12_381_ToG2PointN(input.subarray(g2start, g2start + BLS_G2_POINT_BYTE_LENGTH))
 
       // EIP: "If any input is the infinity point, pairing result will be 1"
       if (G1 === bls12_381.G1.ProjectivePoint.ZERO || G2 === bls12_381.G2.ProjectivePoint.ZERO) {
