@@ -841,7 +841,8 @@ export const hardforks: HardforksDict = {
       'Next feature hardfork after cancun, internally used for pectra testing/implementation (incomplete/experimental)',
     url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/prague.md',
     status: Status.Draft,
-    eips: [2537, 2935, 3074, 6110, 7002, 7685],
+    // TODO update this accordingly to the right devnet setup
+    eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
   },
   osaka: {
     name: 'osaka',
