@@ -450,9 +450,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   const writtenAddresses = new Set<string>()
   if (tx.supports(Capability.EIP7702EOACode)) {
+    // Add contract code for authroity tuples provided by EIP 7702 tx
     const authorizationList = (<EIP7702CompatibleTx>tx).authorizationList
     const MAGIC = new Uint8Array([5])
     for (let i = 0; i < authorizationList.length; i++) {
+      // Authority tuple validation
       const data = authorizationList[i]
       const chainId = data[0]
       const chainIdBN = bytesToBigInt(chainId)
@@ -475,7 +477,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       const account = (await this.stateManager.getAccount(authority)) ?? new Account()
 
       if (account.isContract()) {
-        // Note: this also checks if the code has already been set once
+        // Note: this also checks if the code has already been set once by a previous tuple
         // So, if there are multiply entires for the same address, then this is fine
         continue
       }
@@ -677,12 +679,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   for (const str of writtenAddresses) {
     const address = Address.fromString(str)
-    // Special case: in StateManager if we try to set code to the empty code, we ignore this
-    // Do not do this and explicitly override
-    // TODO maybe use modifyAccount?
-    const account = (await this.stateManager.getAccount(address)) ?? new Account()
-    account.codeHash = KECCAK256_NULL
-    await this.stateManager.putAccount(address, account)
+    await this.stateManager.modifyAccountFields(address, { codeHash: KECCAK256_NULL })
   }
 
   if (enableProfiler) {
