@@ -18,7 +18,8 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   // Updates the commitment value for a child node at the corresponding index
   setChild(childIndex: number, child: ChildNode) {
     // Get previous child commitment at `index`
-    const oldChildReference = this.children[childIndex] ?? EMPTY_CHILD
+    const oldChildReference =
+      this.children[childIndex] !== null ? this.children[childIndex] : EMPTY_CHILD
     // Updates the commitment to the child node at `index`
     this.children[childIndex] = { ...child }
     // Updates the overall node commitment based on the update to this child
