@@ -1,3 +1,5 @@
+import { concatBytes, hexToBytes } from '@ethereumjs/util'
+
 // base field modulus as described in the EIP
 export const BLS_FIELD_MODULUS = BigInt(
   '0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab'
@@ -5,6 +7,9 @@ export const BLS_FIELD_MODULUS = BigInt(
 
 export const BLS_G1_POINT_BYTE_LENGTH = 128
 export const BLS_G2_POINT_BYTE_LENGTH = 256
+
+export const BLS_ZERO_BUFFER = new Uint8Array(32)
+export const BLS_ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
 
 // gas discount pairs taken from EIP-2537 `Bls12381MultiExpGasDiscount` parameter
 export const BLS_GAS_DISCOUNT_PAIRS = [
