@@ -10,7 +10,11 @@ import {
 
 import { ERROR, EvmError } from '../../exceptions.js'
 
-import { BLS_FIELD_MODULUS } from './constants.js'
+import {
+  BLS_FIELD_MODULUS,
+  BLS_G1_POINT_BYTE_LENGTH,
+  BLS_G2_POINT_BYTE_LENGTH,
+} from './constants.js'
 
 import type { EVMBLSInterface } from '../../types.js'
 
@@ -24,7 +28,7 @@ import type { EVMBLSInterface } from '../../types.js'
  */
 function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): any {
   const p_x = bytesToUnprefixedHex(input.subarray(16, 64))
-  const p_y = bytesToUnprefixedHex(input.subarray(80, 128))
+  const p_y = bytesToUnprefixedHex(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
 
   const G1 = new mcl.G1()
 
@@ -66,7 +70,7 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
   const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
 
   if (decodeStr === '0') {
-    return new Uint8Array(128)
+    return new Uint8Array(BLS_G1_POINT_BYTE_LENGTH)
   }
 
   // note: decoded[0] === 1
@@ -93,7 +97,7 @@ function BLS12_381_ToG2Point(input: Uint8Array, mcl: any, verifyOrder = true): a
   const p_x_1 = input.subarray(0, 64)
   const p_x_2 = input.subarray(64, 128)
   const p_y_1 = input.subarray(128, 192)
-  const p_y_2 = input.subarray(192, 256)
+  const p_y_2 = input.subarray(192, BLS_G2_POINT_BYTE_LENGTH)
 
   const ZeroBytes64 = new Uint8Array(64)
   // check if we have to do with a zero point
@@ -147,7 +151,7 @@ function BLS12_381_FromG2Point(input: any): Uint8Array {
   // TODO: figure out if there is a better way to decode these values.
   const decodeStr = input.getStr(16) //return a string of pattern "1 <x_coord_1> <x_coord_2> <y_coord_1> <y_coord_2>"
   if (decodeStr === '0') {
-    return new Uint8Array(256)
+    return new Uint8Array(BLS_G2_POINT_BYTE_LENGTH)
   }
   const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
 
@@ -227,8 +231,16 @@ export class MCLBLS implements EVMBLSInterface {
 
   addG1(input: Uint8Array): Uint8Array {
     // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
-    const mclPoint1 = BLS12_381_ToG1Point(input.subarray(0, 128), this._mcl, false)
-    const mclPoint2 = BLS12_381_ToG1Point(input.subarray(128, 256), this._mcl, false)
+    const mclPoint1 = BLS12_381_ToG1Point(
+      input.subarray(0, BLS_G1_POINT_BYTE_LENGTH),
+      this._mcl,
+      false
+    )
+    const mclPoint2 = BLS12_381_ToG1Point(
+      input.subarray(BLS_G1_POINT_BYTE_LENGTH, 256),
+      this._mcl,
+      false
+    )
 
     const result = this._mcl.add(mclPoint1, mclPoint2)
 
@@ -237,8 +249,8 @@ export class MCLBLS implements EVMBLSInterface {
 
   mulG1(input: Uint8Array): Uint8Array {
     // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
-    const mclPoint = BLS12_381_ToG1Point(input.subarray(0, 128), this._mcl)
-    const frPoint = BLS12_381_ToFrPoint(input.subarray(128, 160), this._mcl)
+    const mclPoint = BLS12_381_ToG1Point(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH), this._mcl)
+    const frPoint = BLS12_381_ToFrPoint(input.subarray(BLS_G1_POINT_BYTE_LENGTH, 160), this._mcl)
 
     const result = this._mcl.mul(mclPoint, frPoint)
 
@@ -247,8 +259,16 @@ export class MCLBLS implements EVMBLSInterface {
 
   addG2(input: Uint8Array): Uint8Array {
     // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
-    const mclPoint1 = BLS12_381_ToG2Point(input.subarray(0, 256), this._mcl, false)
-    const mclPoint2 = BLS12_381_ToG2Point(input.subarray(256, 512), this._mcl, false)
+    const mclPoint1 = BLS12_381_ToG2Point(
+      input.subarray(0, BLS_G2_POINT_BYTE_LENGTH),
+      this._mcl,
+      false
+    )
+    const mclPoint2 = BLS12_381_ToG2Point(
+      input.subarray(BLS_G2_POINT_BYTE_LENGTH, 512),
+      this._mcl,
+      false
+    )
 
     const result = this._mcl.add(mclPoint1, mclPoint2)
 
@@ -257,8 +277,8 @@ export class MCLBLS implements EVMBLSInterface {
 
   mulG2(input: Uint8Array): Uint8Array {
     // convert input to mcl G2 point/Fr point, add them, and convert the output to a Uint8Array.
-    const mclPoint = BLS12_381_ToG2Point(input.subarray(0, 256), this._mcl)
-    const frPoint = BLS12_381_ToFrPoint(input.subarray(256, 288), this._mcl)
+    const mclPoint = BLS12_381_ToG2Point(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH), this._mcl)
+    const frPoint = BLS12_381_ToFrPoint(input.subarray(BLS_G2_POINT_BYTE_LENGTH, 288), this._mcl)
 
     const result = this._mcl.mul(mclPoint, frPoint)
 
@@ -284,7 +304,7 @@ export class MCLBLS implements EVMBLSInterface {
   }
 
   msmG1(input: Uint8Array): Uint8Array {
-    const pointLength = 128
+    const pointLength = BLS_G1_POINT_BYTE_LENGTH
     const pairLength = 160
     const numPairs = input.length / pairLength
     const G1Array = []
@@ -308,7 +328,7 @@ export class MCLBLS implements EVMBLSInterface {
   }
 
   msmG2(input: Uint8Array): Uint8Array {
-    const pointLength = 256
+    const pointLength = BLS_G2_POINT_BYTE_LENGTH
     const pairLength = 288
     const numPairs = input.length / pairLength
     const G2Array = []
@@ -337,10 +357,16 @@ export class MCLBLS implements EVMBLSInterface {
     const pairs = []
     for (let k = 0; k < input.length / pairLength; k++) {
       const pairStart = pairLength * k
-      const G1 = BLS12_381_ToG1Point(input.subarray(pairStart, pairStart + 128), this._mcl)
+      const G1 = BLS12_381_ToG1Point(
+        input.subarray(pairStart, pairStart + BLS_G1_POINT_BYTE_LENGTH),
+        this._mcl
+      )
 
-      const g2start = pairStart + 128
-      const G2 = BLS12_381_ToG2Point(input.subarray(g2start, g2start + 256), this._mcl)
+      const g2start = pairStart + BLS_G1_POINT_BYTE_LENGTH
+      const G2 = BLS12_381_ToG2Point(
+        input.subarray(g2start, g2start + BLS_G2_POINT_BYTE_LENGTH),
+        this._mcl
+      )
 
       pairs.push([G1, G2])
     }

@@ -3,6 +3,9 @@ export const BLS_FIELD_MODULUS = BigInt(
   '0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab'
 )
 
+export const BLS_G1_POINT_BYTE_LENGTH = 128
+export const BLS_G2_POINT_BYTE_LENGTH = 256
+
 // gas discount pairs taken from EIP-2537 `Bls12381MultiExpGasDiscount` parameter
 export const BLS_GAS_DISCOUNT_PAIRS = [
   [1, 1200],
