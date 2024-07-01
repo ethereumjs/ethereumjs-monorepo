@@ -6,7 +6,6 @@ import {
   bytesToUnprefixedHex,
   concatBytes,
   equalsBytes,
-  hexToBytes,
   padToEven,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
@@ -18,6 +17,8 @@ import {
   BLS_FIELD_MODULUS,
   BLS_G1_POINT_BYTE_LENGTH,
   BLS_G2_POINT_BYTE_LENGTH,
+  BLS_ONE_BUFFER,
+  BLS_ZERO_BUFFER,
 } from './constants.js'
 
 import type { EVMBLSInterface } from '../../types.js'
@@ -38,7 +39,7 @@ type Fp2 = {
  * @returns MCL G1 point
  */
 function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): any {
-  const p_x = bytesToUnprefixedHex(input.subarray(16, 64))
+  const p_x = bytesToUnprefixedHex(input.subarray(16, BLS_G1_POINT_BYTE_LENGTH / 2))
   const p_y = bytesToUnprefixedHex(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
 
   const G1 = new mcl.G1()
@@ -81,7 +82,7 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): a
  * @returns MCL G1 point
  */
 function BLS12_381_ToG1PointN(input: Uint8Array) {
-  const x = bytesToBigInt(input.subarray(16, 64))
+  const x = bytesToBigInt(input.subarray(16, BLS_G1_POINT_BYTE_LENGTH / 2))
   const y = bytesToBigInt(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
 
   if (x === y && x === BIGINT_0) {
@@ -155,7 +156,7 @@ function BLS12_381_FromG1PointN(input: AffinePoint<bigint>): Uint8Array {
  */
 function BLS12_381_ToG2Point(input: Uint8Array, mcl: any, verifyOrder = true): any {
   const p_x_1 = input.subarray(0, 64)
-  const p_x_2 = input.subarray(64, 128)
+  const p_x_2 = input.subarray(64, BLS_G2_POINT_BYTE_LENGTH / 2)
   const p_y_1 = input.subarray(128, 192)
   const p_y_2 = input.subarray(192, BLS_G2_POINT_BYTE_LENGTH)
 
@@ -212,7 +213,7 @@ function BLS12_381_ToG2Point(input: Uint8Array, mcl: any, verifyOrder = true): a
  */
 function BLS12_381_ToG2PointN(input: Uint8Array) {
   const p_x_1 = input.subarray(0, 64)
-  const p_x_2 = input.subarray(64, 128)
+  const p_x_2 = input.subarray(64, BLS_G2_POINT_BYTE_LENGTH / 2)
   const p_y_1 = input.subarray(128, 192)
   const p_y_2 = input.subarray(192, BLS_G2_POINT_BYTE_LENGTH)
 
@@ -409,7 +410,9 @@ export class NobleBLS implements EVMBLSInterface {
 
   addG1(input: Uint8Array): Uint8Array {
     const p1 = BLS12_381_ToG1PointN(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH))
-    const p2 = BLS12_381_ToG1PointN(input.subarray(BLS_G1_POINT_BYTE_LENGTH, 256))
+    const p2 = BLS12_381_ToG1PointN(
+      input.subarray(BLS_G1_POINT_BYTE_LENGTH, BLS_G1_POINT_BYTE_LENGTH * 2)
+    )
 
     const p = p1.add(p2)
     const result = BLS12_381_FromG1PointN(p)
@@ -436,7 +439,9 @@ export class NobleBLS implements EVMBLSInterface {
 
   addG2(input: Uint8Array): Uint8Array {
     const p1 = BLS12_381_ToG2PointN(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH))
-    const p2 = BLS12_381_ToG2PointN(input.subarray(BLS_G2_POINT_BYTE_LENGTH, 512))
+    const p2 = BLS12_381_ToG2PointN(
+      input.subarray(BLS_G2_POINT_BYTE_LENGTH, BLS_G2_POINT_BYTE_LENGTH * 2)
+    )
 
     /*console.log('MCL:')
     console.log(result.getStr(16))
@@ -502,16 +507,17 @@ export class NobleBLS implements EVMBLSInterface {
     //
     // While this functionally works the approach is not "gas-cost-competitive" and an
     // optimization should be considered in the future.
-    const pointLength = BLS_G1_POINT_BYTE_LENGTH
     const pairLength = 160
     const numPairs = input.length / pairLength
 
     let pRes = bls12_381.G1.ProjectivePoint.ZERO
     for (let k = 0; k < numPairs; k++) {
       const pairStart = pairLength * k
-      const G1 = BLS12_381_ToG1PointN(input.subarray(pairStart, pairStart + pointLength))
+      const G1 = BLS12_381_ToG1PointN(
+        input.subarray(pairStart, pairStart + BLS_G1_POINT_BYTE_LENGTH)
+      )
       const Fr = BLS12_381_ToFrPointN(
-        input.subarray(pairStart + pointLength, pairStart + pairLength)
+        input.subarray(pairStart + BLS_G1_POINT_BYTE_LENGTH, pairStart + pairLength)
       )
 
       pRes = pRes.add(G1.multiply(Fr))
@@ -527,16 +533,17 @@ export class NobleBLS implements EVMBLSInterface {
     //
     // While this functionally works the approach is not "gas-cost-competitive" and an
     // optimization should be considered in the future.
-    const pointLength = BLS_G2_POINT_BYTE_LENGTH
     const pairLength = 288
     const numPairs = input.length / pairLength
 
     let pRes = bls12_381.G2.ProjectivePoint.ZERO
     for (let k = 0; k < numPairs; k++) {
       const pairStart = pairLength * k
-      const G2 = BLS12_381_ToG2PointN(input.subarray(pairStart, pairStart + pointLength))
+      const G2 = BLS12_381_ToG2PointN(
+        input.subarray(pairStart, pairStart + BLS_G2_POINT_BYTE_LENGTH)
+      )
       const Fr = BLS12_381_ToFrPointN(
-        input.subarray(pairStart + pointLength, pairStart + pairLength)
+        input.subarray(pairStart + BLS_G2_POINT_BYTE_LENGTH, pairStart + pairLength)
       )
 
       pRes = pRes.add(G2.multiply(Fr))
@@ -546,8 +553,6 @@ export class NobleBLS implements EVMBLSInterface {
   }
 
   pairingCheck(input: Uint8Array): Uint8Array {
-    const ZERO_BUFFER = new Uint8Array(32)
-    const ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
     const pairLength = 384
     const pairs = []
     for (let k = 0; k < input.length / pairLength; k++) {
@@ -561,7 +566,7 @@ export class NobleBLS implements EVMBLSInterface {
 
       // EIP: "If any input is the infinity point, pairing result will be 1"
       if (G1 === bls12_381.G1.ProjectivePoint.ZERO || G2 === bls12_381.G2.ProjectivePoint.ZERO) {
-        return ONE_BUFFER
+        return BLS_ONE_BUFFER
       }
 
       pairs.push([G1, G2])
@@ -584,9 +589,9 @@ export class NobleBLS implements EVMBLSInterface {
 
     const FP12 = bls12_381.fields.Fp12.finalExponentiate(GT!)
     if (bls12_381.fields.Fp12.eql(FP12, bls12_381.fields.Fp12.ONE)) {
-      return ONE_BUFFER
+      return BLS_ONE_BUFFER
     } else {
-      return ZERO_BUFFER
+      return BLS_ZERO_BUFFER
     }
   }
 }

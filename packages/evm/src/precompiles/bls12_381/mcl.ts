@@ -3,7 +3,6 @@ import {
   bytesToUnprefixedHex,
   concatBytes,
   equalsBytes,
-  hexToBytes,
   padToEven,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
@@ -14,6 +13,8 @@ import {
   BLS_FIELD_MODULUS,
   BLS_G1_POINT_BYTE_LENGTH,
   BLS_G2_POINT_BYTE_LENGTH,
+  BLS_ONE_BUFFER,
+  BLS_ZERO_BUFFER,
 } from './constants.js'
 
 import type { EVMBLSInterface } from '../../types.js'
@@ -27,7 +28,7 @@ import type { EVMBLSInterface } from '../../types.js'
  * @returns MCL G1 point
  */
 function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): any {
-  const p_x = bytesToUnprefixedHex(input.subarray(16, 64))
+  const p_x = bytesToUnprefixedHex(input.subarray(16, BLS_G1_POINT_BYTE_LENGTH / 2))
   const p_y = bytesToUnprefixedHex(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
 
   const G1 = new mcl.G1()
@@ -95,7 +96,7 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
  */
 function BLS12_381_ToG2Point(input: Uint8Array, mcl: any, verifyOrder = true): any {
   const p_x_1 = input.subarray(0, 64)
-  const p_x_2 = input.subarray(64, 128)
+  const p_x_2 = input.subarray(64, BLS_G2_POINT_BYTE_LENGTH / 2)
   const p_y_1 = input.subarray(128, 192)
   const p_y_2 = input.subarray(192, BLS_G2_POINT_BYTE_LENGTH)
 
@@ -237,7 +238,7 @@ export class MCLBLS implements EVMBLSInterface {
       false
     )
     const mclPoint2 = BLS12_381_ToG1Point(
-      input.subarray(BLS_G1_POINT_BYTE_LENGTH, 256),
+      input.subarray(BLS_G1_POINT_BYTE_LENGTH, BLS_G1_POINT_BYTE_LENGTH * 2),
       this._mcl,
       false
     )
@@ -265,7 +266,7 @@ export class MCLBLS implements EVMBLSInterface {
       false
     )
     const mclPoint2 = BLS12_381_ToG2Point(
-      input.subarray(BLS_G2_POINT_BYTE_LENGTH, 512),
+      input.subarray(BLS_G2_POINT_BYTE_LENGTH, BLS_G2_POINT_BYTE_LENGTH * 2),
       this._mcl,
       false
     )
@@ -304,7 +305,6 @@ export class MCLBLS implements EVMBLSInterface {
   }
 
   msmG1(input: Uint8Array): Uint8Array {
-    const pointLength = BLS_G1_POINT_BYTE_LENGTH
     const pairLength = 160
     const numPairs = input.length / pairLength
     const G1Array = []
@@ -312,9 +312,12 @@ export class MCLBLS implements EVMBLSInterface {
 
     for (let k = 0; k < numPairs; k++) {
       const pairStart = pairLength * k
-      const G1 = BLS12_381_ToG1Point(input.subarray(pairStart, pairStart + pointLength), this._mcl)
+      const G1 = BLS12_381_ToG1Point(
+        input.subarray(pairStart, pairStart + BLS_G1_POINT_BYTE_LENGTH),
+        this._mcl
+      )
       const Fr = BLS12_381_ToFrPoint(
-        input.subarray(pairStart + pointLength, pairStart + pairLength),
+        input.subarray(pairStart + BLS_G1_POINT_BYTE_LENGTH, pairStart + pairLength),
         this._mcl
       )
 
@@ -328,7 +331,6 @@ export class MCLBLS implements EVMBLSInterface {
   }
 
   msmG2(input: Uint8Array): Uint8Array {
-    const pointLength = BLS_G2_POINT_BYTE_LENGTH
     const pairLength = 288
     const numPairs = input.length / pairLength
     const G2Array = []
@@ -336,9 +338,12 @@ export class MCLBLS implements EVMBLSInterface {
 
     for (let k = 0; k < numPairs; k++) {
       const pairStart = pairLength * k
-      const G2 = BLS12_381_ToG2Point(input.subarray(pairStart, pairStart + pointLength), this._mcl)
+      const G2 = BLS12_381_ToG2Point(
+        input.subarray(pairStart, pairStart + BLS_G2_POINT_BYTE_LENGTH),
+        this._mcl
+      )
       const Fr = BLS12_381_ToFrPoint(
-        input.subarray(pairStart + pointLength, pairStart + pairLength),
+        input.subarray(pairStart + BLS_G2_POINT_BYTE_LENGTH, pairStart + pairLength),
         this._mcl
       )
 
@@ -351,8 +356,6 @@ export class MCLBLS implements EVMBLSInterface {
   }
 
   pairingCheck(input: Uint8Array): Uint8Array {
-    const ZERO_BUFFER = new Uint8Array(32)
-    const ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
     const pairLength = 384
     const pairs = []
     for (let k = 0; k < input.length / pairLength; k++) {
@@ -389,9 +392,9 @@ export class MCLBLS implements EVMBLSInterface {
     GT = this._mcl.finalExp(GT)
 
     if (GT.isOne() === true) {
-      return ONE_BUFFER
+      return BLS_ONE_BUFFER
     } else {
-      return ZERO_BUFFER
+      return BLS_ZERO_BUFFER
     }
   }
 }
