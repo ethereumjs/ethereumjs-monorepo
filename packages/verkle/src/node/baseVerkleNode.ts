@@ -2,7 +2,7 @@ import { RLP } from '@ethereumjs/rlp'
 
 import { type VerkleNodeInterface, type VerkleNodeOptions, type VerkleNodeType } from './types.js'
 
-import type { VerkleCrypto } from 'verkle-cryptography-wasm'
+import type { VerkleCrypto } from '@ethereumjs/util'
 
 export abstract class BaseVerkleNode<T extends VerkleNodeType> implements VerkleNodeInterface {
   public commitment: Uint8Array

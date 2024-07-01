@@ -222,7 +222,7 @@ export const EIPs: EIPsDict = {
     requiredEIPs: [],
     vm: {
       historyStorageAddress: {
-        v: BigInt('0x25a219378dad9b3503c8268c9ca836a52427a4fb'),
+        v: BigInt('0x0aae40965e6800cd9b1f4b05ff21581047e3f91e'),
         d: 'The address where the historical blockhashes are stored',
       },
       historyServeWindow: {
@@ -601,6 +601,27 @@ export const EIPs: EIPsDict = {
       },
     },
   },
+  7251: {
+    comment: 'Execution layer triggered consolidations (experimental)',
+    url: 'https://eips.ethereum.org/EIPS/eip-7251',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Paris,
+    requiredEIPs: [7685],
+    vm: {
+      consolidationRequestType: {
+        v: BigInt(0x02),
+        d: 'The withdrawal request type for EIP-7685',
+      },
+      systemAddress: {
+        v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
+        d: 'The system address to perform operations on the consolidation requests predeploy address',
+      },
+      consolidationRequestPredeployAddress: {
+        v: BigInt('0x00b42dbF2194e931E80326D950320f7d9Dbeac02'),
+        d: 'Address of the consolidations contract',
+      },
+    },
+  },
   7516: {
     comment: 'BLOBBASEFEE opcode',
     url: 'https://eips.ethereum.org/EIPS/eip-7516',
@@ -636,5 +657,12 @@ export const EIPs: EIPsDict = {
         d: 'Gas cost of each authority item',
       },
     },
+  },
+  7709: {
+    comment: 'Use historical block hashes saved in state for BLOCKHASH',
+    url: 'https://eips.ethereum.org/EIPS/eip-7709',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [2935],
   },
 }
