@@ -256,6 +256,22 @@ export interface EVMOpts {
    */
   customPrecompiles?: CustomPrecompile[]
 
+  /**
+   * For the EIP-2935 BLS precompiles, the native JS `@noble/curves`
+   * https://github.com/paulmillr/noble-curves BLS12-381 curve implementation
+   * is used (see `noble.ts` file in the `precompiles` folder).
+   *
+   * To use an alternative implementation this option can be used by passing
+   * in a wrapper implementation integrating the desired library and adhering
+   * to the `EVMBLSInterface` specification.
+   *
+   * An interface for the MCL WASM implementation https://github.com/herumi/mcl-wasm
+   * is shipped with this library, see the following test file for an example on
+   * how to use:
+   * https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/test/precompiles/eip-2537-bls.spec.ts
+   */
+  bls?: EVMBLSInterface
+
   /*
    * The StateManager which is used to update the trie
    */

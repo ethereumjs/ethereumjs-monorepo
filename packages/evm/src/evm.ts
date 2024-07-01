@@ -18,7 +18,6 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
 
 import { EOF, getEOFCode } from './eof.js'
@@ -28,7 +27,7 @@ import { Journal } from './journal.js'
 import { EVMPerformanceLogger } from './logger.js'
 import { Message } from './message.js'
 import { getOpcodesForHF } from './opcodes/index.js'
-import { MCLBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
+import { NobleBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
 import { TransientStorage } from './transientStorage.js'
 import { DefaultBlockchain } from './types.js'
 
@@ -60,7 +59,6 @@ const debugGas = createDebugLogger('evm:gas')
 const debugPrecompiles = createDebugLogger('evm:precompiles')
 
 let initializedRustBN: bn128 | undefined = undefined
-const mclInitPromise = mcl.init(mcl.BLS12_381)
 
 /**
  * EVM is responsible for executing an EVM message fully
@@ -169,13 +167,6 @@ export class EVM implements EVMInterface {
     const bn128 = initializedRustBN ?? ((await initRustBN()) as bn128)
     initializedRustBN = bn128
 
-    if (createOpts?.common && createOpts.common.isActivatedEIP(2537)) {
-      await mclInitPromise // ensure that mcl is initialized.
-      mcl.setMapToMode(mcl.IRTF) // set the right map mode; otherwise mapToG2 will return wrong values.
-      mcl.verifyOrderG1(true) // subgroup checks for G1
-      mcl.verifyOrderG2(true) // subgroup checks for G2
-    }
-
     if (opts.common === undefined) {
       opts.common = new Common({ chain: Chain.Mainnet })
     }
@@ -248,8 +239,7 @@ export class EVM implements EVMInterface {
     this._precompiles = getActivePrecompiles(this.common, this._customPrecompiles)
 
     if (this.common.isActivatedEIP(2537)) {
-      this._mcl = mcl
-      this._bls = new MCLBLS(mcl)
+      this._bls = opts.bls ?? new NobleBLS()
     }
 
     this._emit = async (topic: string, data: any): Promise<void> => {
