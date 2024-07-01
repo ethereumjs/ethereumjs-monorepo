@@ -402,7 +402,7 @@ export class VerkleTree {
     let child = rootNode.children[key[0]]
 
     // Root node doesn't contain a child node's commitment on the first byte of the path so we're done
-    if (equalsBytes(child.commitment, this.verkleCrypto.zeroCommitment)) {
+    if (child === null) {
       this.DEBUG && this.debug(`Partial Path ${intToHex(key[0])} - found no child.`, ['FIND_PATH'])
       return result
     }

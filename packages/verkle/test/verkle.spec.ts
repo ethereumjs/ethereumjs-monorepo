@@ -129,11 +129,7 @@ describe('findPath validation', () => {
     let putStack: [Uint8Array, VerkleNode][] = []
     const stem1 = hexToBytes(keys[0]).slice(0, 31)
     // Create first leaf node
-    const leafNode1 = await LeafNode.create(
-      stem1,
-      new Array(256).fill(new Uint8Array(32)),
-      verkleCrypto
-    )
+    const leafNode1 = await LeafNode.create(stem1, verkleCrypto)
 
     leafNode1.setValue(hexToBytes(keys[0])[31], hexToBytes(values[0]))
     leafNode1.setValue(hexToBytes(keys[1])[31], hexToBytes(values[1]))
@@ -168,11 +164,7 @@ describe('findPath validation', () => {
     assert.equal(foundPath.node, null)
 
     // Create new leaf node
-    const leafNode2 = await LeafNode.create(
-      stem2,
-      new Array(256).fill(new Uint8Array(32)),
-      verkleCrypto
-    )
+    const leafNode2 = await LeafNode.create(stem2, verkleCrypto)
     leafNode2.setValue(hexToBytes(keys[2])[31], hexToBytes(values[2]))
     putStack.push([leafNode2.hash(), leafNode2])
 
