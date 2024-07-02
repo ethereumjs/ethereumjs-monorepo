@@ -9,7 +9,8 @@ const config = defineConfig({
       headless: true,
       isolate: true,
       name: 'chrome',
-      fileParallelism: false
+      fileParallelism: false,
+      provider: 'webdriverio'
     },
     maxConcurrency: 1
   },
