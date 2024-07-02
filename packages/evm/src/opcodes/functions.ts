@@ -1134,7 +1134,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (1024 < stackItems + typeSection?.inputs - typeSection?.maxStackHeight) {
         validationError(EOFError.StackOverflow)
       }
-      runState.env.eof?.eofRunState.returnStack.push(runState.programCounter + 3)
+      runState.env.eof?.eofRunState.returnStack.push(runState.programCounter + 2)
 
       // Find out the opcode we should jump into
       runState.programCounter = runState.env.eof!.container.header.getCodePosition(sectionTarget)
