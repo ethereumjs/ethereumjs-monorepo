@@ -1267,6 +1267,30 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
+      } else {
+        // Read container index
+        const containerIndex = runState.env.code[runState.programCounter]
+        const containerCode = runState.env.eof!.container.body.containerSections[containerIndex]
+
+        // Pop stack values
+        const [value, salt, inputOffset, inputSize] = runState.stack.popN(4)
+
+        const gasLimit = runState.messageGasLimit!
+        runState.messageGasLimit = undefined
+
+        let data = new Uint8Array(0)
+        if (inputSize !== BIGINT_0) {
+          data = runState.memory.read(Number(inputOffset), Number(inputSize), true)
+        }
+
+        const ret = await runState.interpreter.eofcreate(
+          gasLimit,
+          value,
+          containerCode,
+          setLengthLeft(bigIntToBytes(salt), 32),
+          data
+        )
+        runState.stack.push(ret)
       }
     },
   ],

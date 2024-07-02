@@ -452,8 +452,17 @@ export class EVM implements EVMInterface {
       }
     }
 
+    // TODO this is a hack for previous code to implement EOF code!
+    // TODO also figure out why for CREATE/CREATE2/CreateTx we had to write it
+    // to message.data instead of directly to message.code?
     message.code = message.data
-    message.data = new Uint8Array(0)
+    if (message.code === undefined) {
+      // Either CREATE or CREATE2
+      message.data = new Uint8Array(0)
+    } else {
+      // EOFCREATE
+      message.data = message.code
+    }
     message.to = await this._generateAddress(message)
 
     if (this.common.isActivatedEIP(6780)) {

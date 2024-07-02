@@ -471,9 +471,32 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
     /* EOFCREATE */
     [
       0xec,
-      async function (_runState, _gas, _common): Promise<bigint> {
-        // TODO: placeholder, change me
-        return BIGINT_0
+      async function (runState, gas, common): Promise<bigint> {
+        // Note: TX_CREATE_COST is in the base fee (this is 32000 and same as CREATE / CREATE2)
+
+        // Note: in `gas.ts` programCounter is not yet incremented (which it is in `functions.ts`)
+        // So have to manually add to programCounter here to get the right container index
+
+        // Read container index
+        const containerIndex = runState.env.code[runState.programCounter + 1]
+
+        // Pop stack values
+        const [_value, _salt, inputOffset, inputSize] = runState.stack.peek(4)
+
+        // Expand memory
+        gas += subMemUsage(runState, inputOffset, inputSize, common)
+
+        // Read container
+        const container = runState.env.eof!.container.body.containerSections[containerIndex]
+
+        // Charge for hashing cost
+        gas +=
+          common.param('gasPrices', 'keccak256Word') * divCeil(BigInt(container.length), BIGINT_32)
+
+        const gasLeft = runState.interpreter.getGasLeft()
+        runState.messageGasLimit = maxCallGas(gasLeft, gasLeft, runState, common)
+
+        return gas
       },
     ],
     /* RETURNCONTRACT */

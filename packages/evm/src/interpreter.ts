@@ -1010,8 +1010,9 @@ export class Interpreter {
   async create(
     gasLimit: bigint,
     value: bigint,
-    data: Uint8Array,
-    salt?: Uint8Array
+    codeToRun: Uint8Array,
+    salt?: Uint8Array,
+    callData?: Uint8Array
   ): Promise<bigint> {
     const selfdestruct = new Set(this._result.selfdestruct)
     const caller = this._env.address
@@ -1038,7 +1039,7 @@ export class Interpreter {
 
     if (this.common.isActivatedEIP(3860)) {
       if (
-        data.length > Number(this.common.param('vm', 'maxInitCodeSize')) &&
+        codeToRun.length > Number(this.common.param('vm', 'maxInitCodeSize')) &&
         this._evm.allowUnlimitedInitCodeSize === false
       ) {
         return BIGINT_0
@@ -1049,7 +1050,8 @@ export class Interpreter {
       caller,
       gasLimit,
       value,
-      data,
+      data: codeToRun,
+      code: callData,
       salt,
       depth,
       selfdestruct,
@@ -1121,6 +1123,20 @@ export class Interpreter {
     salt: Uint8Array
   ): Promise<bigint> {
     return this.create(gasLimit, value, data, salt)
+  }
+
+  /**
+   * Creates a new contract with a given value. Generates
+   * a deterministic address via EOFCREATE rules.
+   */
+  async eofcreate(
+    gasLimit: bigint,
+    value: bigint,
+    containerData: Uint8Array,
+    salt: Uint8Array,
+    callData: Uint8Array
+  ): Promise<bigint> {
+    return this.create(gasLimit, value, containerData, salt, callData)
   }
 
   /**

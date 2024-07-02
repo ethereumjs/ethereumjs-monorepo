@@ -788,7 +788,7 @@ export const EIPs: EIPsDict = {
     requiredEIPs: [3540, 3541, 3670],
     gasPrices: {
       eofcreate: {
-        v: 0, // TODO, this likely has to be TX_CREATE_COST
+        v: 32000, // Same as CREATE/CREATE2
         d: 'Base fee of the EOFCREATE opcode',
       },
       returncontract: {
