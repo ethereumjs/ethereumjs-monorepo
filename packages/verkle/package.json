@@ -52,8 +52,9 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "debug": "^4.3.4",
     "lru-cache": "10.1.0",
-    "verkle-cryptography-wasm": "^0.4.2",
+    "verkle-cryptography-wasm": "^0.4.5",
     "@ethereumjs/block": "^5.2.0",
     "@ethereumjs/rlp": "^5.0.2",
     "@ethereumjs/util": "^9.0.3"

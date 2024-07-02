@@ -16,9 +16,11 @@ import {
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
-import Heap from 'qheap'
+
+import { Heap } from '../ext/qheap.js'
 
 import type { Config } from '../config.js'
+import type { QHeap } from '../ext/qheap.js'
 import type { Peer } from '../net/peer/peer.js'
 import type { PeerPool } from '../net/peerpool.js'
 import type { FullEthereumService } from './fullethereumservice.js'
@@ -29,7 +31,6 @@ import type {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
-import type QHeap from 'qheap'
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10

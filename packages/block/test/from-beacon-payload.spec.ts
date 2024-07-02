@@ -10,7 +10,8 @@ import * as payload87335 from './testdata/payload-slot-87335.json'
 import * as payload87475 from './testdata/payload-slot-87475.json'
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 
-import type { BeaconPayloadJson, VerkleExecutionWitness } from '../src/index.js'
+import type { BeaconPayloadJson } from '../src/index.js'
+import type { VerkleExecutionWitness } from '@ethereumjs/util'
 
 describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   let common: Common

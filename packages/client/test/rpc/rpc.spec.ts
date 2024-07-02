@@ -1,13 +1,15 @@
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
-import { encode } from 'jwt-simple'
 import { assert, describe, it } from 'vitest'
+
+import { jwt } from '../../src/ext/jwt-simple.js'
 
 import { createClient, createManager, getRpcClient, startRPC } from './helpers.js'
 
-import type { TAlgorithm } from 'jwt-simple'
+import type { TAlgorithm } from '../../src/ext/jwt-simple.js'
 import type { AddressInfo } from 'net'
 
+const { encode } = jwt
 const jwtSecret = randomBytes(32)
 
 describe('JSON-RPC call', () => {

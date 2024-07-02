@@ -23,8 +23,7 @@ import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
 import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
-import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
-import type { AccessWitness, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
+import type { AccessWitnessInterface, Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 const { debug: createDebugLogger } = debugDefault
 
@@ -68,7 +67,7 @@ export interface Env {
   containerCode?: Uint8Array /** Full container code for EOF1 contracts */
   blobVersionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
-  accessWitness?: AccessWitness
+  accessWitness?: AccessWitnessInterface
   chargeCodeAccesses?: boolean
 }
 
@@ -272,9 +271,7 @@ export class Interpreter {
         const contract = this._runState.interpreter.getAddress()
 
         if (
-          !(await (
-            this._runState.stateManager as StatelessVerkleStateManager
-          ).checkChunkWitnessPresent(contract, programCounter))
+          !(await this._runState.stateManager.checkChunkWitnessPresent!(contract, programCounter))
         ) {
           throw Error(`Invalid witness with missing codeChunk for pc=${programCounter}`)
         }

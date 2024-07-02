@@ -50,18 +50,18 @@
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
     "test:node": "npx vitest run",
-    "tsc": "../../config/cli/ts-compile.sh"
+    "tsc": "../../config/cli/ts-compile.sh",
+    "visualize:bundle": "npx vite build"
   },
   "dependencies": {
     "@ethereumjs/common": "^4.3.0",
     "@ethereumjs/statemanager": "^2.3.0",
     "@ethereumjs/tx": "^5.3.0",
     "@ethereumjs/util": "^9.0.3",
-    "@ethereumjs/verkle": "^0.0.2",
     "@types/debug": "^4.1.9",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.3",
-    "mcl-wasm": "^1.4.0",
+    "mcl-wasm": "^1.5.0",
     "rustbn-wasm": "^0.4.0"
   },
   "devDependencies": {
@@ -70,12 +70,14 @@
     "@types/core-js": "^2.5.0",
     "@types/minimist": "^1.2.2",
     "@types/node-dir": "^0.0.34",
+    "@types/rollup-plugin-visualizer": "^4.2.4",
     "benchmark": "^2.1.4",
     "kzg-wasm": "^0.4.0",
     "level": "^8.0.0",
     "memory-level": "^1.0.0",
     "minimist": "^1.2.5",
     "node-dir": "^0.1.17",
+    "rollup-plugin-visualizer": "^5.12.0",
     "solc": "^0.8.1"
   },
   "engines": {

@@ -1,12 +1,16 @@
-import type { Point } from '../types.js'
 import type { InternalNode } from './internalNode.js'
 import type { LeafNode } from './leafNode.js'
+import type { VerkleCrypto } from '@ethereumjs/util'
 
 export enum VerkleNodeType {
   Internal,
   Leaf,
 }
 
+export interface ChildNode {
+  commitment: Uint8Array // 64 byte commitment to child node
+  path: Uint8Array // path/partial stem to child node (used as DB key)
+}
 export interface TypedVerkleNode {
   [VerkleNodeType.Internal]: InternalNode
   [VerkleNodeType.Leaf]: LeafNode
@@ -15,30 +19,24 @@ export interface TypedVerkleNode {
 export type VerkleNode = TypedVerkleNode[VerkleNodeType]
 
 export interface VerkleNodeInterface {
-  commit(): Uint8Array
-  hash(): any
+  hash(): Uint8Array
   serialize(): Uint8Array
 }
 
 interface BaseVerkleNodeOptions {
-  // Value of the commitment
   commitment: Uint8Array
-  depth: number
+  verkleCrypto: VerkleCrypto
 }
 
 interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {
   // Children nodes of this internal node.
-  children?: VerkleNode[]
-
-  // Values of the child commitments before the tree is modified by inserts.
-  // This is useful because the delta of the child commitments can be used to efficiently update the node's commitment
-  copyOnWrite?: Record<string, Uint8Array>
+  children?: ChildNode[]
 }
 interface VerkleLeafNodeOptions extends BaseVerkleNodeOptions {
   stem: Uint8Array
   values: Uint8Array[]
-  c1: Point
-  c2: Point
+  c1?: Uint8Array
+  c2?: Uint8Array
 }
 
 export interface VerkleNodeOptions {
