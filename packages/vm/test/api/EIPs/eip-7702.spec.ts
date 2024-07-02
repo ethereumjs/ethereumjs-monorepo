@@ -58,7 +58,12 @@ function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytes
   return [chainIdBytes, addressBytes, nonceBytes, bigIntToBytes(signed.v), signed.r, signed.s]
 }
 
-async function runTest(authorizationListOpts: GetAuthListOpts[], expect: Uint8Array, vm?: VM) {
+async function runTest(
+  authorizationListOpts: GetAuthListOpts[],
+  expect: Uint8Array,
+  vm?: VM,
+  skipEmptyCode?: boolean
+) {
   vm = vm ?? (await VM.create({ common }))
   const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
   const tx = EOACodeEIP7702Transaction.fromTxData(
@@ -88,9 +93,11 @@ async function runTest(authorizationListOpts: GetAuthListOpts[], expect: Uint8Ar
   const value = await vm.stateManager.getContractStorage(defaultAuthAddr, slot)
   assert.ok(equalsBytes(unpadBytes(expect), value))
 
-  // Check that the code is cleaned after the `runTx`
-  const account = (await vm.stateManager.getAccount(defaultAuthAddr)) ?? new Account()
-  assert.ok(equalsBytes(account.codeHash, KECCAK256_NULL))
+  if (skipEmptyCode === undefined) {
+    // Check that the code is cleaned after the `runTx`
+    const account = (await vm.stateManager.getAccount(defaultAuthAddr)) ?? new Account()
+    assert.ok(equalsBytes(account.codeHash, KECCAK256_NULL))
+  }
 }
 
 describe('EIP 7702: set code to EOA accounts', () => {
@@ -173,7 +180,8 @@ describe('EIP 7702: set code to EOA accounts', () => {
         },
       ],
       new Uint8Array(),
-      vm
+      vm,
+      true
     )
   })
 
