@@ -451,6 +451,19 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         return gas
       },
     ],
+    /* DATACOPY */
+    [
+      0xd3,
+      async function (runState, gas, common) {
+        const [memOffset, _dataOffset, dataLength] = runState.stack.peek(3)
+
+        gas += subMemUsage(runState, memOffset, dataLength, common)
+        if (dataLength !== BIGINT_0) {
+          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BIGINT_32)
+        }
+        return gas
+      },
+    ],
     /* EOFCREATE */
     [
       0xec,

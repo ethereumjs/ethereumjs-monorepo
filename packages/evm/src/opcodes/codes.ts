@@ -349,7 +349,7 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
       0xd0: { name: 'DATALOAD', isAsync: false, dynamicGas: false },
       0xd1: { name: 'DATALOADN', isAsync: false, dynamicGas: false },
       0xd2: { name: 'DATASIZE', isAsync: false, dynamicGas: false },
-      0xd3: { name: 'DATACOPY', isAsync: false, dynamicGas: false },
+      0xd3: { name: 'DATACOPY', isAsync: false, dynamicGas: true },
     },
   },
   {
