@@ -1558,15 +1558,22 @@ export const handlers: Map<number, OpHandler> = new Map([
       } else {
         const value = runState.interpreter.getCallValue()
         const [toAddr, inOffset, inLength] = runState.stack.popN(3)
+
+        const gasLimit = runState.messageGasLimit!
+        runState.messageGasLimit = undefined
+
+        if (gasLimit === -BIGINT_1) {
+          // Special case, abort doing any logic (this logic is defined in `gas.ts`), and put `1` on stack per spec
+          runState.stack.push(BIGINT_1)
+          return
+        }
+
         const toAddress = new Address(addresstoBytes(toAddr))
 
         let data = new Uint8Array(0)
         if (inLength !== BIGINT_0) {
           data = runState.memory.read(Number(inOffset), Number(inLength), true)
         }
-
-        const gasLimit = runState.messageGasLimit!
-        runState.messageGasLimit = undefined
 
         const ret = await runState.interpreter.callDelegate(gasLimit, toAddress, value, data)
         runState.stack.push(ret)
@@ -1606,10 +1613,17 @@ export const handlers: Map<number, OpHandler> = new Map([
       } else {
         const value = BIGINT_0
         const [toAddr, inOffset, inLength] = runState.stack.popN(3)
-        const toAddress = new Address(addresstoBytes(toAddr))
 
         const gasLimit = runState.messageGasLimit!
         runState.messageGasLimit = undefined
+
+        if (gasLimit === -BIGINT_1) {
+          // Special case, abort doing any logic (this logic is defined in `gas.ts`), and put `1` on stack per spec
+          runState.stack.push(BIGINT_1)
+          return
+        }
+
+        const toAddress = new Address(addresstoBytes(toAddr))
 
         let data = new Uint8Array(0)
         if (inLength !== BIGINT_0) {

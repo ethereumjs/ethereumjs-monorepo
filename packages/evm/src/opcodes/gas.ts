@@ -856,9 +856,53 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
     /* EXTDELEGATECALL */
     [
       0xf9,
-      async function (_runState, _gas, _common): Promise<bigint> {
-        // TODO: placeholder, change me
-        return BIGINT_0
+      async function (runState, gas, common): Promise<bigint> {
+        // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
+
+        // Peek stack values
+        const [toAddr, inOffset, inLength] = runState.stack.peek(3)
+
+        // Check if the target address > 20 bytes
+        if (toAddr > EXTCALL_TARGET_MAX) {
+          trap(ERROR.INVALID_EXTCALL_TARGET)
+        }
+
+        // Charge for memory expansion
+        gas += subMemUsage(runState, inOffset, inLength, common)
+
+        const toAddress = new Address(addresstoBytes(toAddr))
+        // Charge to make address warm (2600 gas)
+        // (in case if address is already warm, this charges the 100 gas)
+        gas += accessAddressEIP2929(runState, toAddress.bytes, common, true, true)
+
+        const minRetainedGas = common.param('gasPrices', 'minRetainedGas')
+        const minCalleeGas = common.param('gasPrices', 'minCalleeGas')
+
+        const currentGasAvailable = runState.interpreter.getGasLeft() - gas
+        const reducedGas = currentGasAvailable / BIGINT_64
+        // Calculate the gas limit for the callee
+        // (this is the gas available for the next call frame)
+        let gasLimit: bigint
+        if (reducedGas < minRetainedGas) {
+          gasLimit = currentGasAvailable - minRetainedGas
+        } else {
+          gasLimit = currentGasAvailable - reducedGas
+        }
+
+        if (
+          runState.env.depth >= Number(common.param('vm', 'stackLimit')) ||
+          gasLimit < minCalleeGas
+        ) {
+          // Note: this is a hack, TODO: get around this hack and clean this up
+          // This special case will ensure that the actual EXT*CALL is being ran,
+          // But, the code in `function.ts` will note that `runState.messageGasLimit` is set to a negative number
+          // This special number signals that `1` should be put on the stack (per spec)
+          gasLimit = -BIGINT_1
+        }
+
+        runState.messageGasLimit = gasLimit
+
+        return gas
       },
     ],
     [
@@ -899,9 +943,53 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
     /* EXTSTATICCALL */
     [
       0xfb,
-      async function (_runState, _gas, _common): Promise<bigint> {
-        // TODO: placeholder, change me
-        return BIGINT_0
+      async function (runState, gas, common): Promise<bigint> {
+        // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
+
+        // Peek stack values
+        const [toAddr, inOffset, inLength] = runState.stack.peek(3)
+
+        // Check if the target address > 20 bytes
+        if (toAddr > EXTCALL_TARGET_MAX) {
+          trap(ERROR.INVALID_EXTCALL_TARGET)
+        }
+
+        // Charge for memory expansion
+        gas += subMemUsage(runState, inOffset, inLength, common)
+
+        const toAddress = new Address(addresstoBytes(toAddr))
+        // Charge to make address warm (2600 gas)
+        // (in case if address is already warm, this charges the 100 gas)
+        gas += accessAddressEIP2929(runState, toAddress.bytes, common, true, true)
+
+        const minRetainedGas = common.param('gasPrices', 'minRetainedGas')
+        const minCalleeGas = common.param('gasPrices', 'minCalleeGas')
+
+        const currentGasAvailable = runState.interpreter.getGasLeft() - gas
+        const reducedGas = currentGasAvailable / BIGINT_64
+        // Calculate the gas limit for the callee
+        // (this is the gas available for the next call frame)
+        let gasLimit: bigint
+        if (reducedGas < minRetainedGas) {
+          gasLimit = currentGasAvailable - minRetainedGas
+        } else {
+          gasLimit = currentGasAvailable - reducedGas
+        }
+
+        if (
+          runState.env.depth >= Number(common.param('vm', 'stackLimit')) ||
+          gasLimit < minCalleeGas
+        ) {
+          // Note: this is a hack, TODO: get around this hack and clean this up
+          // This special case will ensure that the actual EXT*CALL is being ran,
+          // But, the code in `function.ts` will note that `runState.messageGasLimit` is set to a negative number
+          // This special number signals that `1` should be put on the stack (per spec)
+          gasLimit = -BIGINT_1
+        }
+
+        runState.messageGasLimit = gasLimit
+
+        return gas
       },
     ],
     [
