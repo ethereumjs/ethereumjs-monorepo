@@ -1,6 +1,7 @@
+import { type VerkleCrypto, bigIntToBytes, bytesToBigInt, setLengthLeft } from '@ethereumjs/util'
+
 import type { InternalNode } from './internalNode.js'
 import type { LeafNode } from './leafNode.js'
-import type { VerkleCrypto } from '@ethereumjs/util'
 
 export enum VerkleNodeType {
   Internal,
@@ -30,11 +31,11 @@ interface BaseVerkleNodeOptions {
 
 interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {
   // Children nodes of this internal node.
-  children?: ChildNode[]
+  children?: (ChildNode | null)[]
 }
 interface VerkleLeafNodeOptions extends BaseVerkleNodeOptions {
   stem: Uint8Array
-  values: Uint8Array[]
+  values?: (Uint8Array | 0 | 1)[]
   c1?: Uint8Array
   c2?: Uint8Array
 }
@@ -45,3 +46,15 @@ export interface VerkleNodeOptions {
 }
 
 export const NODE_WIDTH = 256
+
+export const createZeroLeaf = () => new Uint8Array(32)
+
+export const createDeletedLeafValue = () =>
+  setLengthLeft(bigIntToBytes(bytesToBigInt(new Uint8Array(32)) + BigInt(2 ** 128)), 32)
+
+export const DELETED_LEAF_VALUE = setLengthLeft(
+  bigIntToBytes(bytesToBigInt(new Uint8Array(32)) + BigInt(2 ** 128)),
+  32
+)
+
+export const DEFAULT_LEAF_VALUES = new Array(256).fill(0)

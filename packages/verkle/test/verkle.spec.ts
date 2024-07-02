@@ -14,56 +14,59 @@ import { VerkleTree } from '../src/verkleTree.js'
 import type { VerkleNode } from '../src/index.js'
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
-// Testdata based on https://github.com/gballet/go-ethereum/blob/kaustinen-with-shapella/trie/verkle_test.go
-const presentKeys = [
-  '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
-  '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
-  '0x318dfa512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
-  '0x318dfa513b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
-  '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526400',
-  '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
-  '0x18fb432d3b859ec3a1803854e8cceea75d092e52d0d4a4398d13022496745a02',
-  '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
-  '0x18fb432d3b859ec3a1803854e8cceea75d092e52d0d4a4398d13022496745a04',
-  '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526402',
-  '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526403',
-  '0x18fb432d3b859ec3a1803854e8cceea75d092e52d0d4a4398d13022496745a00',
-  '0x18fb432d3b859ec3a1803854e8cceea75d092e52d0d4a4398d13022496745a03',
-  '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526401',
-  '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526404',
-  '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d00',
-  '0x18fb432d3b859ec3a1803854e8cceea75d092e52d0d4a4398d13022496745a01',
-].map((key) => hexToBytes(key as PrefixedHexString))
-
-// Corresponding values for the present keys
-const values = [
-  '0x320122e8584be00d000000000000000000000000000000000000000000000000',
-  '0x0000000000000000000000000000000000000000000000000000000000000000',
-  '0x0000000000000000000000000000000000000000000000000000000000000000',
-  '0x0300000000000000000000000000000000000000000000000000000000000000',
-  '0x0000000000000000000000000000000000000000000000000000000000000000',
-  '0x0000000000000000000000000000000000000000000000000000000000000000',
-  '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-  '0x0000000000000000000000000000000000000000000000000000000000000000',
-  '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-  '0x1bc176f2790c91e6000000000000000000000000000000000000000000000000',
-  '0x0000000000000000000000000000000000000000000000000000000000000000',
-  '0x0000000000000000000000000000000000000000000000000000000000000000',
-  '0xe703000000000000000000000000000000000000000000000000000000000000',
-  '0xe703000000000000000000000000000000000000000000000000000000000000',
-  '0xe703000000000000000000000000000000000000000000000000000000000000',
-  '0xe703000000000000000000000000000000000000000000000000000000000000',
-  '0xe703000000000000000000000000000000000000000000000000000000000000',
-].map((key) => hexToBytes(key as PrefixedHexString))
-
-const absentKeys = [
-  '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d03',
-  '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d04',
-].map((key) => hexToBytes(key as PrefixedHexString))
-
 describe('Verkle tree', () => {
+  let verkleCrypto: VerkleCrypto
+  beforeAll(async () => {
+    verkleCrypto = await loadVerkleCrypto()
+  })
   it('should insert and retrieve values', async () => {
-    const verkleCrypto = await loadVerkleCrypto()
+    // Testdata based on https://github.com/gballet/go-ethereum/blob/kaustinen-with-shapella/trie/verkle_test.go
+    const presentKeys = [
+      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
+      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+      '0x318dfa512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+      '0x318dfa513b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+      '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526400',
+      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+      '0x18fb432d3b859ec3a1803854e8cceea75d092e52d0d4a4398d13022496745a02',
+      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+      '0x18fb432d3b859ec3a1803854e8cceea75d092e52d0d4a4398d13022496745a04',
+      '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526402',
+      '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526403',
+      '0x18fb432d3b859ec3a1803854e8cceea75d092e52d0d4a4398d13022496745a00',
+      '0x18fb432d3b859ec3a1803854e8cceea75d092e52d0d4a4398d13022496745a03',
+      '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526401',
+      '0xe6ed6c222e3985050b4fc574b136b0a42c63538e9ab970995cd418ba8e526404',
+      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d00',
+      '0x18fb432d3b859ec3a1803854e8cceea75d092e52d0d4a4398d13022496745a01',
+    ].map((key) => hexToBytes(key as PrefixedHexString))
+
+    // Corresponding values for the present keys
+    const values = [
+      '0x320122e8584be00d000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0x0300000000000000000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      '0x1bc176f2790c91e6000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0xe703000000000000000000000000000000000000000000000000000000000000',
+      '0xe703000000000000000000000000000000000000000000000000000000000000',
+      '0xe703000000000000000000000000000000000000000000000000000000000000',
+      '0xe703000000000000000000000000000000000000000000000000000000000000',
+      '0xe703000000000000000000000000000000000000000000000000000000000000',
+    ].map((key) => hexToBytes(key as PrefixedHexString))
+
+    const absentKeys = [
+      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d03',
+      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d04',
+    ].map((key) => hexToBytes(key as PrefixedHexString))
+
     const tree = await VerkleTree.create({
       verkleCrypto,
       db: new MapDB<Uint8Array, Uint8Array>(),
@@ -96,13 +99,7 @@ describe('Verkle tree', () => {
       'contains the root node in the stack'
     )
   })
-})
 
-describe('findPath validation', () => {
-  let verkleCrypto: VerkleCrypto
-  beforeAll(async () => {
-    verkleCrypto = await loadVerkleCrypto()
-  })
   it('should find the path to various leaf nodes', async () => {
     const keys = [
       // Two keys with the same stem but different suffixes
@@ -129,11 +126,7 @@ describe('findPath validation', () => {
     let putStack: [Uint8Array, VerkleNode][] = []
     const stem1 = hexToBytes(keys[0]).slice(0, 31)
     // Create first leaf node
-    const leafNode1 = await LeafNode.create(
-      stem1,
-      new Array(256).fill(new Uint8Array(32)),
-      verkleCrypto
-    )
+    const leafNode1 = await LeafNode.create(stem1, verkleCrypto)
 
     leafNode1.setValue(hexToBytes(keys[0])[31], hexToBytes(values[0]))
     leafNode1.setValue(hexToBytes(keys[1])[31], hexToBytes(values[1]))
@@ -168,18 +161,14 @@ describe('findPath validation', () => {
     assert.equal(foundPath.node, null)
 
     // Create new leaf node
-    const leafNode2 = await LeafNode.create(
-      stem2,
-      new Array(256).fill(new Uint8Array(32)),
-      verkleCrypto
-    )
+    const leafNode2 = await LeafNode.create(stem2, verkleCrypto)
     leafNode2.setValue(hexToBytes(keys[2])[31], hexToBytes(values[2]))
     putStack.push([leafNode2.hash(), leafNode2])
 
     const nearestNode = foundPath.stack.pop()![0]
     // Verify that another leaf node is "nearest" node
     assert.equal(nearestNode.type, VerkleNodeType.Leaf)
-    assert.deepEqual(nearestNode, leafNode1)
+    assert.deepEqual((nearestNode as LeafNode).getValue(2), hexToBytes(values[1]))
 
     // Compute the portion of stem1 and stem2 that match (i.e. the partial path closest to stem2)
     const partialMatchingStemIndex = matchingBytesLength(stem1, stem2)
