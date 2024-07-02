@@ -3,6 +3,7 @@ import {
   Account,
   BIGINT_0,
   BIGINT_1,
+  BIGINT_2,
   MAX_UINT64,
   bigIntToHex,
   bytesToBigInt,
@@ -11,7 +12,9 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import { EOF } from './eof.js'
+//import { EOF } from './eof/eof.js'
+import { FORMAT, MAGIC, VERSION } from './eof/constants.js'
+import { setupEOF } from './eof/setup.js'
 import { ERROR, EvmError } from './exceptions.js'
 import { type EVMPerformanceLogger, type Timer } from './logger.js'
 import { Memory } from './memory.js'
@@ -22,7 +25,7 @@ import { Stack } from './stack.js'
 import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
-import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
+import type { Block, Blockchain, EOFEnv, EVMProfilerOpts, EVMResult, Log } from './types.js'
 import type { AccessWitnessInterface, Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 const { debug: createDebugLogger } = debugDefault
@@ -64,7 +67,7 @@ export interface Env {
   contract: Account
   codeAddress: Address /* Different than address for DELEGATECALL and CALLCODE */
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
-  containerCode?: Uint8Array /** Full container code for EOF1 contracts */
+  eof?: EOFEnv /* Optional EOF environment in case of EOF execution */
   blobVersionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
   accessWitness?: AccessWitnessInterface
@@ -185,41 +188,26 @@ export class Interpreter {
   }
 
   async run(code: Uint8Array, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    if (!this.common.isActivatedEIP(3540) || code[0] !== EOF.FORMAT) {
+    if (!this.common.isActivatedEIP(3540) || code[0] !== FORMAT) {
       // EIP-3540 isn't active and first byte is not 0xEF - treat as legacy bytecode
       this._runState.code = code
     } else if (this.common.isActivatedEIP(3540)) {
-      if (code[1] !== EOF.MAGIC) {
+      if (code[1] !== MAGIC) {
         // Bytecode contains invalid EOF magic byte
         return {
           runState: this._runState,
           exceptionError: new EvmError(ERROR.INVALID_BYTECODE_RESULT),
         }
       }
-      if (code[2] !== EOF.VERSION) {
+      if (code[2] !== VERSION) {
         // Bytecode contains invalid EOF version number
         return {
           runState: this._runState,
           exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
         }
       }
-      // Code is EOF1 format
-      const codeSections = EOF.codeAnalysis(code)
-      if (!codeSections) {
-        // Code is invalid EOF1 format if `codeSections` is falsy
-        return {
-          runState: this._runState,
-          exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
-        }
-      }
-
-      if (codeSections.data) {
-        // Set code to EOF container code section which starts at byte position 10 if data section is present
-        this._runState.code = code.subarray(10, 10 + codeSections!.code)
-      } else {
-        // Set code to EOF container code section which starts at byte position 7 if no data section is present
-        this._runState.code = code.subarray(7, 7 + codeSections!.code)
-      }
+      this._runState.code = code
+      setupEOF(this._runState)
     }
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
     // Check that the programCounter is in range
@@ -692,14 +680,14 @@ export class Interpreter {
    * Returns the size of code running in current environment.
    */
   getCodeSize(): bigint {
-    return BigInt(this._env.containerCode ? this._env.containerCode.length : this._env.code.length)
+    return BigInt(this._env.code.length)
   }
 
   /**
    * Returns the code running in current environment.
    */
   getCode(): Uint8Array {
-    return this._env.containerCode ?? this._env.code
+    return this._env.code
   }
 
   /**
@@ -1207,10 +1195,24 @@ export class Interpreter {
   }
 
   private _getReturnCode(results: EVMResult) {
-    if (results.execResult.exceptionError) {
-      return BIGINT_0
+    if (this._runState.env.eof === undefined) {
+      if (results.execResult.exceptionError) {
+        return BIGINT_0
+      } else {
+        return BIGINT_1
+      }
     } else {
-      return BIGINT_1
+      // EOF mode, call was either EXTCALL / EXTDELEGATECALL / EXTSTATICCALL
+      if (results.execResult.exceptionError !== undefined) {
+        if (results.execResult.exceptionError.errorType === ERROR.REVERT) {
+          // Revert
+          return BIGINT_1
+        } else {
+          // Failure
+          return BIGINT_2
+        }
+      }
+      return BIGINT_0
     }
   }
 }

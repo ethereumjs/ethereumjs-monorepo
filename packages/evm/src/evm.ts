@@ -21,7 +21,7 @@ import debugDefault from 'debug'
 import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
 
-import { EOF, getEOFCode } from './eof.js'
+import { FORMAT } from './eof/constants.js'
 import { ERROR, EvmError } from './exceptions.js'
 import { Interpreter } from './interpreter.js'
 import { Journal } from './journal.js'
@@ -210,11 +210,10 @@ export class EVM implements EVMInterface {
 
     // Supported EIPs
     const supportedEIPs = [
-      1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6110, 6780, 6800, 7002, 7251, 7516,
-      7685, 7709,
+      663, 1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
+      3670, 3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780,
+      6800, 7002, 7069, 7251, 7480, 7516, 7620, 7685, 7692, 7698, 7709,
     ]
-
     for (const eip of this.common.eips()) {
       if (!supportedEIPs.includes(eip)) {
         throw new Error(`EIP-${eip} is not supported by the EVM`)
@@ -615,36 +614,15 @@ export class EVM implements EVMInterface {
     // If enough gas and allowed code size
     let CodestoreOOG = false
     if (totalGas <= message.gasLimit && (this.allowUnlimitedContractSize || allowedCodeSize)) {
-      if (this.common.isActivatedEIP(3541) && result.returnValue[0] === EOF.FORMAT) {
+      if (this.common.isActivatedEIP(3541) && result.returnValue[0] === FORMAT) {
         if (!this.common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-        }
-        // Begin EOF1 contract code checks
-        // EIP-3540 EOF1 header check
-        const eof1CodeAnalysisResults = EOF.codeAnalysis(result.returnValue)
-        if (typeof eof1CodeAnalysisResults?.code === 'undefined') {
-          result = {
-            ...result,
-            ...INVALID_EOF_RESULT(message.gasLimit),
-          }
-        } else if (this.common.isActivatedEIP(3670)) {
-          // EIP-3670 EOF1 opcode check
-          const codeStart = eof1CodeAnalysisResults.data > 0 ? 10 : 7
-          // The start of the code section of an EOF1 compliant contract will either be
-          // index 7 (if no data section is present) or index 10 (if a data section is present)
-          // in the bytecode of the contract
-          if (
-            !EOF.validOpcodes(
-              result.returnValue.subarray(codeStart, codeStart + eof1CodeAnalysisResults.code)
-            )
-          ) {
-            result = {
-              ...result,
-              ...INVALID_EOF_RESULT(message.gasLimit),
-            }
-          } else {
-            result.executionGasUsed = totalGas
-          }
+        } else if (message.eof === undefined) {
+          // Running into Legacy mode: unable to deploy EOF contract
+          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+        } else {
+          // 3541 is active and current runtime mode is EOF
+          result.executionGasUsed = totalGas
         }
       } else {
         result.executionGasUsed = totalGas
@@ -778,7 +756,6 @@ export class EVM implements EVMInterface {
       contract,
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
-      containerCode: message.containerCode,
       chargeCodeAccesses: message.chargeCodeAccesses,
       blobVersionedHashes: message.blobVersionedHashes ?? [],
       accessWitness: message.accessWitness,
@@ -1053,14 +1030,9 @@ export class EVM implements EVMInterface {
         message.code = precompile
         message.isCompiled = true
       } else {
-        message.containerCode = await this.stateManager.getContractCode(message.codeAddress)
+        message.code = await this.stateManager.getContractCode(message.codeAddress)
         message.isCompiled = false
         message.chargeCodeAccesses = true
-        if (this.common.isActivatedEIP(3540)) {
-          message.code = getEOFCode(message.containerCode)
-        } else {
-          message.code = message.containerCode
-        }
       }
     }
   }
