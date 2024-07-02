@@ -1562,6 +1562,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (gasLimit === -BIGINT_1) {
           // Special case, abort doing any logic (this logic is defined in `gas.ts`), and put `1` on stack per spec
           runState.stack.push(BIGINT_1)
+          runState.returnBytes = new Uint8Array(0)
           return
         }
 
@@ -1596,6 +1597,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (gasLimit === -BIGINT_1) {
           // Special case, abort doing any logic (this logic is defined in `gas.ts`), and put `1` on stack per spec
           runState.stack.push(BIGINT_1)
+          runState.returnBytes = new Uint8Array(0)
           return
         }
 
@@ -1659,6 +1661,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (gasLimit === -BIGINT_1) {
           // Special case, abort doing any logic (this logic is defined in `gas.ts`), and put `1` on stack per spec
           runState.stack.push(BIGINT_1)
+          runState.returnBytes = new Uint8Array(0)
           return
         }
 
