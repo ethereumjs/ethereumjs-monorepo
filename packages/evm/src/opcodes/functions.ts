@@ -36,7 +36,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { EOFError } from '../eof/errors.js'
-import { isEOF } from '../eof/util.js'
+import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.js'
 import { ERROR } from '../exceptions.js'
 
 import {
@@ -521,6 +521,13 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x3b,
     async function (runState) {
       const addressBigInt = runState.stack.pop()
+      const address = new Address(addresstoBytes(addressBigInt))
+      // EOF check
+      const code = await runState.stateManager.getContractCode(address)
+      if (isEOF(code)) {
+        runState.stack.push(BigInt(EOFBYTES.length))
+        return
+      }
 
       let size
       if (typeof runState.stateManager.getContractCodeSize === 'function') {
@@ -546,9 +553,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [addressBigInt, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
 
       if (dataLength !== BIGINT_0) {
-        const code = await runState.stateManager.getContractCode(
+        let code = await runState.stateManager.getContractCode(
           new Address(addresstoBytes(addressBigInt))
         )
+
+        if (isEOF(code)) {
+          code = EOFBYTES
+        }
 
         const data = getDataSlice(code, codeOffset, dataLength)
         const memOffsetNum = Number(memOffset)
@@ -563,6 +574,14 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const addressBigInt = runState.stack.pop()
       const address = new Address(addresstoBytes(addressBigInt))
+
+      // EOF check
+      const code = await runState.stateManager.getContractCode(address)
+      if (isEOF(code)) {
+        runState.stack.push(bytesToBigInt(EOFHASH))
+        return
+      }
+
       const account = await runState.stateManager.getAccount(address)
       if (!account || account.isEmpty()) {
         runState.stack.push(BIGINT_0)
@@ -1284,6 +1303,12 @@ export const handlers: Map<number, OpHandler> = new Map([
         data = runState.memory.read(Number(offset), Number(length), true)
       }
 
+      if (isEOF(data)) {
+        // Legacy cannot deploy EOF code
+        runState.stack.push(BIGINT_0)
+        return
+      }
+
       const ret = await runState.interpreter.create(gasLimit, value, data)
       runState.stack.push(ret)
     },
@@ -1312,6 +1337,12 @@ export const handlers: Map<number, OpHandler> = new Map([
       let data = new Uint8Array(0)
       if (length !== BIGINT_0) {
         data = runState.memory.read(Number(offset), Number(length), true)
+      }
+
+      if (isEOF(data)) {
+        // Legacy cannot deploy EOF code
+        runState.stack.push(BIGINT_0)
+        return
       }
 
       const ret = await runState.interpreter.create2(
