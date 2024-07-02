@@ -1208,9 +1208,9 @@ export const handlers: Map<number, OpHandler> = new Map([
       const toExchange = Number(
         bytesToBigInt(runState.code.subarray(runState.programCounter, runState.programCounter + 1))
       )
-      const n = toExchange >> (4 + 1)
-      const m = toExchange & (0x0f + 1)
-      runState.stack.exchange(n, m)
+      const n = (toExchange >> 4) + 1
+      const m = (toExchange & 0x0f) + 1
+      runState.stack.exchange(n, n + m)
       runState.programCounter++
     },
   ],

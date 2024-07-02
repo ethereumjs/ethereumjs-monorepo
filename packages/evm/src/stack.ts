@@ -136,10 +136,10 @@ export class Stack {
     const len = this._len
     // This check is likely done at validation time
     // TODO: check if this is necessary
-    if (len > swap1 || len > swap2) {
+    if (swap1 > len || swap2 > len) {
       throw new EvmError(ERROR.STACK_UNDERFLOW)
     }
-    const cache = this._store[swap2]
+    const cache = this._store[swap1]
     this._store[swap1] = this._store[swap2]
     this._store[swap2] = cache
   }
