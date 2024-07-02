@@ -241,18 +241,15 @@ export class VM {
    * @param downlevelCaches Downlevel (so: adopted for short-term usage) associated state caches (default: true)
    */
   async shallowCopy(downlevelCaches = true): Promise<VM> {
-    const common = this._opts.evmOpts?.common?.copy() ?? this.common.copy()
+    const common = this.common.copy()
     common.setHardfork(this.common.hardfork())
-    const blockchain =
-      this._opts.evmOpts?.blockchain?.shallowCopy() ?? this.blockchain.shallowCopy()
-    const stateManager =
-      this._opts.evmOpts?.stateManager?.shallowCopy(downlevelCaches) ??
-      this.stateManager.shallowCopy(downlevelCaches)
+    const blockchain = this.blockchain.shallowCopy()
+    const stateManager = this.stateManager.shallowCopy(downlevelCaches)
     const evmOpts = {
       ...(this.evm as any)._optsCached,
-      common,
-      blockchain,
-      stateManager,
+      common: this._opts.evmOpts?.common?.copy() ?? common,
+      blockchain: this._opts.evmOpts?.blockchain?.shallowCopy() ?? blockchain,
+      stateManager: this._opts.evmOpts?.stateManager?.shallowCopy(downlevelCaches) ?? stateManager,
     }
     const evmCopy = await EVM.create(evmOpts) // TODO fixme (should copy the EVMInterface, not default EVM)
     return VM.create({
