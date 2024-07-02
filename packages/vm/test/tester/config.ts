@@ -24,6 +24,11 @@ export const SKIP_BROKEN = [
   'blockChainFrontierWithLargerTDvsHomesteadBlockchain2_FrontierToHomesteadAt5',
   'blockChainFrontierWithLargerTDvsHomesteadBlockchain_FrontierToHomesteadAt5',
   'HomesteadOverrideFrontier_FrontierToHomesteadAt5',
+
+  // Test skipped in ethereum-tests v14, this is an internal test for retesteth to throw an error if the test self is wrong
+  // This test is thus not supposed to pass
+  // TODO: remove me once this test is removed from the releases
+  'filling_unexpectedException',
 ]
 
 /**
