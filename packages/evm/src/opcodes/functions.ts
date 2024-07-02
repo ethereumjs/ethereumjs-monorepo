@@ -1505,10 +1505,9 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.push(ret)
       } else if (common.isActivatedEIP(7069)) {
         // RETURNDATALOAD logic
-        if (runState.env.eof === undefined) {
-          // Opcode not available in legacy contracts
-          trap(ERROR.INVALID_OPCODE)
-        }
+        const returnDataOffset = runState.stack.pop()
+        const data = getDataSlice(runState.interpreter.getReturnData(), returnDataOffset, BIGINT_32)
+        runState.stack.push(bytesToBigInt(data))
       } else {
         // This should be unreachable
         trap(ERROR.INVALID_OPCODE)
