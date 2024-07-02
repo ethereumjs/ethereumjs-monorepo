@@ -1042,7 +1042,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   ],
   // 0xd3: DATACOPY
   [
-    0xe8,
+    0xd3,
     function (runState, _common) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
