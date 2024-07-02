@@ -48,7 +48,7 @@
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "profiling": "0x ./benchmarks/run.js profiling",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --config=../../config/vitest.browser.config.mts",
+    "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh",
     "visualize:bundle": "npx vite build"
