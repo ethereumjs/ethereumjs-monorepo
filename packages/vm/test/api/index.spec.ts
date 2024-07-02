@@ -52,6 +52,27 @@ describe('VM -> basic instantiation / boolean switches', () => {
   })
 })
 
+describe('VM -> Custom EVM Opts', () => {
+  it('Default EVM should have correct default EVM opts', async () => {
+    const vm = await VM.create()
+    assert.isFalse((vm.evm as EVM).allowUnlimitedContractSize, 'allowUnlimitedContractSize=false')
+  })
+
+  it('should throw if evm and evmOpts are both used', async () => {
+    try {
+      await VM.create({ evmOpts: {}, evm: await EVM.create() })
+      assert.fail('should throw')
+    } catch (e: any) {
+      assert.ok('correctly thrown')
+    }
+  })
+
+  it('Default EVM should use custom EVM opts', async () => {
+    const vm = await VM.create({ evmOpts: { allowUnlimitedContractSize: true } })
+    assert.isTrue((vm.evm as EVM).allowUnlimitedContractSize, 'allowUnlimitedContractSize=true')
+  })
+})
+
 describe('VM -> supportedHardforks', () => {
   it('should throw when common is set to an unsupported hardfork', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })

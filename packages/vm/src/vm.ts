@@ -109,6 +109,10 @@ export class VM {
       }
     }
 
+    if (opts.evm !== undefined && opts.evmOpts !== undefined) {
+      throw new Error('the evm and evmOpts options cannot be used in conjunction')
+    }
+
     if (opts.evm === undefined) {
       let enableProfiler = false
       if (
@@ -117,11 +121,13 @@ export class VM {
       ) {
         enableProfiler = true
       }
+      const evmOpts = opts.evmOpts ?? {}
       opts.evm = await EVM.create({
-        common: opts.common,
-        stateManager: opts.stateManager,
-        blockchain: opts.blockchain,
-        profiler: {
+        ...evmOpts,
+        common: opts.evmOpts?.common ?? opts.common,
+        stateManager: opts.evmOpts?.stateManager ?? opts.stateManager,
+        blockchain: opts.evmOpts?.blockchain ?? opts.blockchain,
+        profiler: opts.evmOpts?.profiler ?? {
           enabled: enableProfiler,
         },
       })
@@ -235,10 +241,13 @@ export class VM {
    * @param downlevelCaches Downlevel (so: adopted for short-term usage) associated state caches (default: true)
    */
   async shallowCopy(downlevelCaches = true): Promise<VM> {
-    const common = this.common.copy()
+    const common = this._opts.evmOpts?.common?.copy() ?? this.common.copy()
     common.setHardfork(this.common.hardfork())
-    const blockchain = this.blockchain.shallowCopy()
-    const stateManager = this.stateManager.shallowCopy(downlevelCaches)
+    const blockchain =
+      this._opts.evmOpts?.blockchain?.shallowCopy() ?? this.blockchain.shallowCopy()
+    const stateManager =
+      this._opts.evmOpts?.stateManager?.shallowCopy(downlevelCaches) ??
+      this.stateManager.shallowCopy(downlevelCaches)
     const evmOpts = {
       ...(this.evm as any)._optsCached,
       common,
