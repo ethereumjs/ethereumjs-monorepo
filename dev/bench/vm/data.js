@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1719905560243,
+  "lastUpdate": 1719921402957,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "79a33166ef55a4e174a434ad3e91944278d80aaf",
-          "message": "fix estimateGas (#3416)\n\n* fix estimateGas\r\n\r\n* client: cleanup estimateGas\r\n\r\n* client: fix eth_estimateGas test and improve reliability of eth_estimateGas\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2024-05-10T18:06:51-04:00",
-          "tree_id": "08dfa6c3fe1b042e7763e07fe622c0b098a67567",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/79a33166ef55a4e174a434ad3e91944278d80aaf"
-        },
-        "date": 1715378965431,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40920,
-            "range": "±2.50%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40172,
-            "range": "±1.47%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40118,
-            "range": "±1.49%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38675,
-            "range": "±2.76%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35589,
-            "range": "±5.98%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.83%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "436bcc956d58c147da1b1afadb0d1efc11e824a5",
+          "message": "VM: EVM Opts Chaining for better DevEx (#3481)\n\n* Basic integration in create() and shallowCopy()\r\n\r\n* Adopt VM shallowCopy(), add additional shallowCopy() related tests\r\n\r\n* option assignment optimization",
+          "timestamp": "2024-07-02T13:51:53+02:00",
+          "tree_id": "a959f7e6e9632477f3dbc8c9f626e310f4197c9b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/436bcc956d58c147da1b1afadb0d1efc11e824a5"
+        },
+        "date": 1719921401762,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38187,
+            "range": "±2.46%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 37414,
+            "range": "±1.52%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37432,
+            "range": "±1.52%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 34443,
+            "range": "±4.66%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36010,
+            "range": "±1.73%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
           }
         ]
       }
