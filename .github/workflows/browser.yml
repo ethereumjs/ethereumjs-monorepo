@@ -34,7 +34,7 @@ jobs:
       - run: npm ci
       - run: npm run install-browser-deps
 
-      - run: npm run test:browser -ws --if-present
+      - run: npm run test:browser --workspaces --if-present
 
 
 
