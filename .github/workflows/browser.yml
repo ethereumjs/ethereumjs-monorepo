@@ -34,13 +34,7 @@ jobs:
       - run: npm ci
       - run: npm run install-browser-deps
 
-      #     No browser tests for devp2p
-      - run: npm run test:browser -w=@ethereumjs/blockchain
-      #     No browser tests for ethash
-      - run: npm run test:browser -w=@ethereumjs/wallet
-      - run: npm run test:browser -w=@ethereumjs/statemanager
-      - run: npm run test:browser -w=@ethereumjs/evm
-      - run: npm run test:browser -w=@ethereumjs/vm
-      - run: npm run test:browser -w=@ethereumjs/verkle
+      - run: npm run test:browser -ws --if-present
+
 
 
