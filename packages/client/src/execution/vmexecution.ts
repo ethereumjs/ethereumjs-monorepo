@@ -5,6 +5,7 @@ import {
   DBSetTD,
 } from '@ethereumjs/blockchain'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { MCLBLS } from '@ethereumjs/evm'
 import { getGenesis } from '@ethereumjs/genesis'
 import {
   CacheType,
@@ -23,6 +24,7 @@ import {
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { writeFileSync } from 'fs'
+import * as mcl from 'mcl-wasm'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import { Event } from '../types.js'
@@ -177,10 +179,15 @@ export class VMExecution extends Execution {
       },
       common: this.config.chainCommon,
     })
+
+    await mcl.init(mcl.BLS12_381)
     this.merkleVM = await VM.create({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
       stateManager,
+      evmOpts: {
+        bls: new MCLBLS(mcl),
+      },
       profilerOpts: this.config.vmProfilerOpts,
     })
     this.vm = this.merkleVM
@@ -196,10 +203,14 @@ export class VMExecution extends Execution {
       initialStateRoot: this.config.initialVerkleStateRoot,
       verkleCrypto,
     })
+    await mcl.init(mcl.BLS12_381)
     this.verkleVM = await VM.create({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
       stateManager,
+      evmOpts: {
+        bls: new MCLBLS(mcl),
+      },
       profilerOpts: this.config.vmProfilerOpts,
     })
   }

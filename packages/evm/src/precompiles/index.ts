@@ -20,6 +20,7 @@ import { precompile10 } from './10-bls12-g2msm.js'
 import { precompile11 } from './11-bls12-pairing.js'
 import { precompile12 } from './12-bls12-map-fp-to-g1.js'
 import { precompile13 } from './13-bls12-map-fp2-to-g2.js'
+import { MCLBLS, NobleBLS } from './bls12_381/index.js'
 
 import type { PrecompileFunc, PrecompileInput } from './types.js'
 import type { Common } from '@ethereumjs/common'
@@ -304,6 +305,8 @@ function getPrecompileName(addressUnprefixedStr: string) {
 export {
   getActivePrecompiles,
   getPrecompileName,
+  MCLBLS,
+  NobleBLS,
   precompileEntries,
   precompiles,
   ripemdPrecompileAddress,
