@@ -266,9 +266,15 @@ export interface EVMOpts {
    * to the `EVMBLSInterface` specification.
    *
    * An interface for the MCL WASM implementation https://github.com/herumi/mcl-wasm
-   * is shipped with this library, see the following test file for an example on
-   * how to use:
-   * https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/test/precompiles/eip-2537-bls.spec.ts
+   * is shipped with this library which can be used as follows (with `mcl-wasm` being
+   * explicitly added to the set of dependencies):
+   *
+   * ```ts
+   * import * as mcl from 'mcl-wasm'
+   *
+   * await mcl.init(mcl.BLS12_381)
+   * const evm = await EVM.create({ mcl: new MCLBLS(mcl) })
+   * ```
    */
   bls?: EVMBLSInterface
 
