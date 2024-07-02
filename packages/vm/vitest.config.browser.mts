@@ -9,7 +9,7 @@ export default mergeConfig(
       exclude: [
         ...configDefaults.exclude,
         // path.resolve is not a function
-        'test/tester/config.spec.ts',
+        'test/tester/config.ts',
         // Cannot read properties of undefined (reading 'pedersen_hash')
         'test/api/EIPs/eip-6800-verkle.spec.ts'
       ],
