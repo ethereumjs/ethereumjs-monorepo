@@ -708,6 +708,14 @@ export const EIPs: EIPsDict = {
         v: 3,
         d: 'Base fee of the RETURNDATALOAD opcode',
       },
+      minRetainedGas: {
+        v: 5000,
+        d: 'Minimum gas retained prior to executing an EXT*CALL opcode (this is the minimum gas available after performing the EXT*CALL)',
+      },
+      minCalleeGas: {
+        v: 2300,
+        d: 'Minimum gas available to the the address called by an EXT*CALL opcode',
+      },
     },
   },
   7251: {

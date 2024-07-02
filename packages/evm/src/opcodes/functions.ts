@@ -1518,27 +1518,28 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xf8: EXTCALL
   [
     0xf8,
-    async function (runState, common) {
+    async function (runState, _common) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       } else {
-        const [_currentGasLimit, toAddr, value, inOffset, inLength] = runState.stack.popN(5)
+        const [toAddr, value, inOffset, inLength] = runState.stack.popN(4)
+
+        const gasLimit = runState.messageGasLimit!
+        runState.messageGasLimit = undefined
+
+        if (gasLimit === -BIGINT_1) {
+          // Special case, abort doing any logic (this logic is defined in `gas.ts`), and put `1` on stack per spec
+          runState.stack.push(BIGINT_1)
+          return
+        }
+
         const toAddress = new Address(addresstoBytes(toAddr))
 
         let data = new Uint8Array(0)
         if (inLength !== BIGINT_0) {
           data = runState.memory.read(Number(inOffset), Number(inLength), true)
         }
-
-        let gasLimit = runState.messageGasLimit!
-        if (value !== BIGINT_0) {
-          const callStipend = common.param('gasPrices', 'callStipend')
-          runState.interpreter.addStipend(callStipend)
-          gasLimit += callStipend
-        }
-
-        runState.messageGasLimit = undefined
 
         const ret = await runState.interpreter.call(gasLimit, toAddress, value, data)
         // Write return data to memory
@@ -1556,7 +1557,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.INVALID_OPCODE)
       } else {
         const value = runState.interpreter.getCallValue()
-        const [_currentGasLimit, toAddr, inOffset, inLength] = runState.stack.popN(6)
+        const [toAddr, inOffset, inLength] = runState.stack.popN(3)
         const toAddress = new Address(addresstoBytes(toAddr))
 
         let data = new Uint8Array(0)
@@ -1604,7 +1605,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.INVALID_OPCODE)
       } else {
         const value = BIGINT_0
-        const [_currentGasLimit, toAddr, inOffset, inLength] = runState.stack.popN(6)
+        const [toAddr, inOffset, inLength] = runState.stack.popN(3)
         const toAddress = new Address(addresstoBytes(toAddr))
 
         const gasLimit = runState.messageGasLimit!

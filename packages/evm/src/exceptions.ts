@@ -22,6 +22,7 @@ export enum ERROR {
   INVALID_EOF_FORMAT = 'invalid EOF format',
   INITCODE_SIZE_VIOLATION = 'initcode exceeds max initcode size',
   INVALID_INPUT_LENGTH = 'invalid input length',
+  INVALID_EXTCALL_TARGET = 'invalid extcall target: address > 20 bytes',
 
   AUTHCALL_UNSET = 'attempting to AUTHCALL without AUTH set',
 

@@ -3,6 +3,7 @@ import {
   Account,
   BIGINT_0,
   BIGINT_1,
+  BIGINT_2,
   MAX_UINT64,
   bigIntToHex,
   bytesToBigInt,
@@ -1194,10 +1195,24 @@ export class Interpreter {
   }
 
   private _getReturnCode(results: EVMResult) {
-    if (results.execResult.exceptionError) {
-      return BIGINT_0
+    if (this._runState.env.eof === undefined) {
+      if (results.execResult.exceptionError) {
+        return BIGINT_0
+      } else {
+        return BIGINT_1
+      }
     } else {
-      return BIGINT_1
+      // EOF mode, call was either EXTCALL / EXTDELEGATECALL / EXTSTATICCALL
+      if (results.execResult.exceptionError !== undefined) {
+        if (results.execResult.exceptionError.errorType === ERROR.REVERT) {
+          // Revert
+          return BIGINT_1
+        } else {
+          // Failure
+          return BIGINT_2
+        }
+      }
+      return BIGINT_0
     }
   }
 }

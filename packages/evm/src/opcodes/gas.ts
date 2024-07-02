@@ -7,6 +7,7 @@ import {
   BIGINT_3,
   BIGINT_31,
   BIGINT_32,
+  BIGINT_64,
   VERKLE_BALANCE_LEAF_KEY,
   VERKLE_CODE_HASH_LEAF_KEY,
   VERKLE_CODE_SIZE_LEAF_KEY,
@@ -33,6 +34,8 @@ import {
 
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
+
+const EXTCALL_TARGET_MAX = BigInt(2) ** BigInt(8 * 20) - BigInt(1)
 
 /**
  * This file returns the dynamic parts of opcodes which have dynamic gas
@@ -780,9 +783,74 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
     /* EXTCALL */
     [
       0xf8,
-      async function (_runState, _gas, _common): Promise<bigint> {
-        // TODO: placeholder, change me
-        return BIGINT_0
+      async function (runState, gas, common): Promise<bigint> {
+        // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
+
+        // Peek stack values
+        const [toAddr, value, inOffset, inLength] = runState.stack.peek(4)
+
+        // If value is nonzero and in static mode, throw:
+        if (runState.interpreter.isStatic() && value !== BIGINT_0) {
+          trap(ERROR.STATIC_STATE_CHANGE)
+        }
+
+        // If value > 0, charge CALL_VALUE_COST
+        if (value > BIGINT_0) {
+          gas += common.param('gasPrices', 'callValueTransfer')
+        }
+
+        // Check if the target address > 20 bytes
+        if (toAddr > EXTCALL_TARGET_MAX) {
+          trap(ERROR.INVALID_EXTCALL_TARGET)
+        }
+
+        // Charge for memory expansion
+        gas += subMemUsage(runState, inOffset, inLength, common)
+
+        const toAddress = new Address(addresstoBytes(toAddr))
+        // Charge to make address warm (2600 gas)
+        // (in case if address is already warm, this charges the 100 gas)
+        gas += accessAddressEIP2929(runState, toAddress.bytes, common, true, true)
+
+        // Charge account creation cost if value is nonzero
+        if (value > BIGINT_0) {
+          const account = await runState.stateManager.getAccount(toAddress)
+          const deadAccount = account === undefined || account.isEmpty()
+
+          if (deadAccount) {
+            gas += common.param('gasPrices', 'callNewAccount')
+          }
+        }
+
+        const minRetainedGas = common.param('gasPrices', 'minRetainedGas')
+        const minCalleeGas = common.param('gasPrices', 'minCalleeGas')
+
+        const currentGasAvailable = runState.interpreter.getGasLeft() - gas
+        const reducedGas = currentGasAvailable / BIGINT_64
+        // Calculate the gas limit for the callee
+        // (this is the gas available for the next call frame)
+        let gasLimit: bigint
+        if (reducedGas < minRetainedGas) {
+          gasLimit = currentGasAvailable - minRetainedGas
+        } else {
+          gasLimit = currentGasAvailable - reducedGas
+        }
+
+        if (
+          runState.env.depth >= Number(common.param('vm', 'stackLimit')) ||
+          runState.env.contract.balance < value ||
+          gasLimit < minCalleeGas
+        ) {
+          // Note: this is a hack, TODO: get around this hack and clean this up
+          // This special case will ensure that the actual EXT*CALL is being ran,
+          // But, the code in `function.ts` will note that `runState.messageGasLimit` is set to a negative number
+          // This special number signals that `1` should be put on the stack (per spec)
+          gasLimit = -BIGINT_1
+        }
+
+        runState.messageGasLimit = gasLimit
+
+        return gas
       },
     ],
     /* EXTDELEGATECALL */
