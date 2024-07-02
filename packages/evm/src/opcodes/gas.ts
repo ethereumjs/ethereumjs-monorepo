@@ -251,7 +251,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const [memOffset, returnDataOffset, dataLength] = runState.stack.peek(3)
 
         if (returnDataOffset + dataLength > runState.interpreter.getReturnDataSize()) {
-          trap(ERROR.OUT_OF_GAS)
+          // For an EOF contract, the behavior is changed (see EIP 7069)
+          // RETURNDATACOPY in that case does not throw OOG when reading out-of-bounds
+          if (runState.env.eof === undefined) {
+            trap(ERROR.OUT_OF_GAS)
+          }
         }
 
         gas += subMemUsage(runState, memOffset, dataLength, common)
