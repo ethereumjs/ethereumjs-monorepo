@@ -1167,6 +1167,24 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       }
+      // NOTE: (and also TODO) this code is exactly the same as CALLF, except pushing to the return stack is now skipped
+      // (and also the return stack overflow check)
+      // It is commented out here
+      const sectionTarget = bytesToInt(
+        runState.code.slice(runState.programCounter, runState.programCounter + 2)
+      )
+      const stackItems = runState.stack.length
+      const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
+      if (1024 < stackItems + typeSection?.inputs - typeSection?.maxStackHeight) {
+        trap(EOFError.StackOverflow)
+      }
+      /*if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
+        trap(EOFError.ReturnStackOverflow)
+      }
+      runState.env.eof?.eofRunState.returnStack.push(runState.programCounter + 2)*/
+
+      // Find out the opcode we should jump into
+      runState.programCounter = runState.env.eof!.container.header.getCodePosition(sectionTarget)
     },
   ],
   // 0xe6: DUPN
