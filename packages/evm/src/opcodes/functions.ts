@@ -36,6 +36,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { EOFError } from '../eof/errors.js'
+import { isEOF } from '../eof/util.js'
 import { ERROR } from '../exceptions.js'
 
 import {
@@ -1568,6 +1569,14 @@ export const handlers: Map<number, OpHandler> = new Map([
         }
 
         const toAddress = new Address(addresstoBytes(toAddr))
+
+        const code = await runState.stateManager.getContractCode(toAddress)
+
+        if (!isEOF(code)) {
+          // EXTDELEGATECALL cannot call legacy contracts
+          runState.stack.push(BIGINT_1)
+          return
+        }
 
         let data = new Uint8Array(0)
         if (inLength !== BIGINT_0) {
