@@ -7,6 +7,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   KECCAK256_NULL,
+  KECCAK256_RLP,
   MAX_INTEGER,
   bigIntToBytes,
   bytesToUnprefixedHex,
@@ -211,7 +212,7 @@ export class EVM implements EVMInterface {
     const supportedEIPs = [
       663, 1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
       3670, 3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780,
-      6800, 7002, 7069, 7480, 7516, 7620, 7685, 7692, 7698,
+      6800, 7002, 7069, 7251, 7480, 7516, 7620, 7685, 7692, 7698, 7709,
     ]
     for (const eip of this.common.eips()) {
       if (!supportedEIPs.includes(eip)) {
@@ -489,7 +490,9 @@ export class EVM implements EVMInterface {
     // Check for collision
     if (
       (toAccount.nonce && toAccount.nonce > BIGINT_0) ||
-      !(equalsBytes(toAccount.codeHash, KECCAK256_NULL) === true)
+      !(equalsBytes(toAccount.codeHash, KECCAK256_NULL) === true) ||
+      // See EIP 7610 and the discussion `https://ethereum-magicians.org/t/eip-7610-revert-creation-in-case-of-non-empty-storage`
+      !(equalsBytes(toAccount.storageRoot, KECCAK256_RLP) === true)
     ) {
       if (this.DEBUG) {
         debug(`Returning on address collision`)

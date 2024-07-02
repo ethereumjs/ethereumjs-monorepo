@@ -57,3 +57,10 @@ export const createCValues = (values: Uint8Array[], deletedValues = new Array(12
   }
   return expandedValues
 }
+export function isLeafNode(node: VerkleNode): node is LeafNode {
+  return node.type === VerkleNodeType.Leaf
+}
+
+export function isInternalNode(node: VerkleNode): node is InternalNode {
+  return node.type === VerkleNodeType.Internal
+}

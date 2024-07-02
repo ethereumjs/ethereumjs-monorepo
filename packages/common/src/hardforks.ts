@@ -842,7 +842,8 @@ export const hardforks: HardforksDict = {
     url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/prague.md',
     status: Status.Draft,
     // TODO update this accordingly to the right devnet setup
-    eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
+    eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698], // This is EOF-only
+    //eips: [2537, 2935, 3074, 6110, 7002, 7251, 7685], // This is current prague without EOF
   },
   osaka: {
     name: 'osaka',

@@ -2,7 +2,7 @@ import { type VerkleCrypto, equalsBytes, randomBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { VerkleNodeType } from '../src/node/index.js'
+import { VerkleNodeType, isLeafNode } from '../src/node/index.js'
 import { LeafNode } from '../src/node/leafNode.js'
 
 describe('verkle node - leaf', () => {
@@ -25,6 +25,7 @@ describe('verkle node - leaf', () => {
       verkleCrypto,
     })
 
+    assert.ok(isLeafNode(node), 'typeguard should return true')
     assert.equal(node.type, VerkleNodeType.Leaf, 'type should be set')
     assert.ok(
       equalsBytes(node.commitment as unknown as Uint8Array, commitment),

@@ -2,7 +2,7 @@ import { type VerkleCrypto, equalsBytes, randomBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { NODE_WIDTH, VerkleNodeType, decodeNode } from '../src/node/index.js'
+import { NODE_WIDTH, VerkleNodeType, decodeNode, isInternalNode } from '../src/node/index.js'
 import { InternalNode } from '../src/node/internalNode.js'
 
 describe('verkle node - internal', () => {
@@ -14,6 +14,7 @@ describe('verkle node - internal', () => {
     const commitment = randomBytes(32)
     const node = new InternalNode({ commitment, verkleCrypto })
 
+    assert.ok(isInternalNode(node), 'typeguard should return true')
     assert.equal(node.type, VerkleNodeType.Internal, 'type should be set')
     assert.ok(equalsBytes(node.commitment, commitment), 'commitment should be set')
 

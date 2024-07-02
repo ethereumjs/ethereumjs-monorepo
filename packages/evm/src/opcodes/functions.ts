@@ -610,16 +610,16 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState, common) {
       const number = runState.stack.pop()
 
-      if (common.isActivatedEIP(2935)) {
+      if (common.isActivatedEIP(7709)) {
         if (number >= runState.interpreter.getBlockNumber()) {
           runState.stack.push(BIGINT_0)
           return
         }
 
         const diff = runState.interpreter.getBlockNumber() - number
-        const historyServeWindow = common.param('vm', 'historyServeWindow')
-        // block lookups must be within the `historyServeWindow`
-        if (diff > historyServeWindow || diff <= BIGINT_0) {
+        // block lookups must be within the original window even if historyStorageAddress's
+        // historyServeWindow is much greater than 256
+        if (diff > BIGINT_256 || diff <= BIGINT_0) {
           runState.stack.push(BIGINT_0)
           return
         }
@@ -627,6 +627,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const historyAddress = new Address(
           bigIntToAddressBytes(common.param('vm', 'historyStorageAddress'))
         )
+        const historyServeWindow = common.param('vm', 'historyServeWindow')
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
         if (common.isActivatedEIP(6800)) {
