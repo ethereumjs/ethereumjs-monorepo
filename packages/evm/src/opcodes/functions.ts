@@ -1190,9 +1190,12 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       }
-      const toSwap = Number(
-        bytesToBigInt(runState.code.subarray(runState.programCounter, runState.programCounter + 1))
-      )
+      const toSwap =
+        Number(
+          bytesToBigInt(
+            runState.code.subarray(runState.programCounter, runState.programCounter + 1)
+          )
+        ) + 1
       runState.stack.swap(toSwap)
       runState.programCounter++
     },
