@@ -35,7 +35,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { EOFError, validationError } from '../eof/errors.js'
+import { EOFError } from '../eof/errors.js'
 import { ERROR } from '../exceptions.js'
 
 import {
@@ -1132,7 +1132,10 @@ export const handlers: Map<number, OpHandler> = new Map([
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
       if (1024 < stackItems + typeSection?.inputs - typeSection?.maxStackHeight) {
-        validationError(EOFError.StackOverflow)
+        trap(EOFError.StackOverflow)
+      }
+      if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
+        trap(EOFError.ReturnStackOverflow)
       }
       runState.env.eof?.eofRunState.returnStack.push(runState.programCounter + 2)
 
@@ -1151,9 +1154,9 @@ export const handlers: Map<number, OpHandler> = new Map([
       const newPc = runState.env.eof!.eofRunState.returnStack.pop()
       if (newPc === undefined) {
         // This should NEVER happen since it is validated that functions either terminate (the call frame) or return
-        validationError(EOFError.RetfNoReturn)
+        trap(EOFError.RetfNoReturn)
       }
-      runState.programCounter = newPc
+      runState.programCounter = newPc!
     },
   ],
   // 0xe5: JUMPF

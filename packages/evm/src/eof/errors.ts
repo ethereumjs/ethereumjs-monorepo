@@ -64,7 +64,8 @@ export enum EOFError {
   MaxStackHeightViolation = 'Max stack height does not match the reported max stack height',
   StackUnderflow = 'Stack underflow',
   StackOverflow = 'Stack overflow',
-  RetfNoReturn = 'Trying to return to undefined function', // This should never happen
+  RetfNoReturn = 'Trying to return to undefined function', // This should never happen (this is a return stack underflow)
+  ReturnStackOverflow = 'Return stack overflow',
 }
 
 export enum SimpleErrors {
