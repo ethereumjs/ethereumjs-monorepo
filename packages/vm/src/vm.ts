@@ -123,13 +123,13 @@ export class VM {
       }
       const evmOpts = opts.evmOpts ?? {}
       opts.evm = await EVM.create({
-        ...evmOpts,
-        common: opts.evmOpts?.common ?? opts.common,
-        stateManager: opts.evmOpts?.stateManager ?? opts.stateManager,
-        blockchain: opts.evmOpts?.blockchain ?? opts.blockchain,
-        profiler: opts.evmOpts?.profiler ?? {
+        common: opts.common,
+        stateManager: opts.stateManager,
+        blockchain: opts.blockchain,
+        profiler: {
           enabled: enableProfiler,
         },
+        ...evmOpts,
       })
     }
 
