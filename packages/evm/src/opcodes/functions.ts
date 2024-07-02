@@ -1101,11 +1101,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       } else {
         const code = runState.env.code
         const jumptableEntries = code[runState.programCounter]
-        const jumptableSize = jumptableEntries * 2
+        // Note: if the size of the immediate is `0`, this thus means that the actual size is `2`
+        // This allows for 256 entries in the table instead of 255
+        const jumptableSize = (jumptableEntries + 1) * 2
         // Move PC to start of the jump table
         runState.programCounter += 1
         const jumptableCase = runState.stack.pop()
-        if (jumptableCase < jumptableEntries) {
+        if (jumptableCase <= jumptableEntries) {
           const rjumpDest = new DataView(code.buffer).getInt16(
             runState.programCounter + Number(jumptableCase) * 2
           )
