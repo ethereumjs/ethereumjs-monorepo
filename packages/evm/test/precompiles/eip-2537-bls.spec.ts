@@ -38,9 +38,6 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eip
 
 // MCL Instantiation
 await mcl.init(mcl.BLS12_381)
-mcl.setMapToMode(mcl.IRTF) // set the right map mode; otherwise mapToG2 will return wrong values.
-mcl.verifyOrderG1(true) // subgroup checks for G1
-mcl.verifyOrderG2(true) // subgroup checks for G2
 const mclbls = new MCLBLS(mcl)
 
 // Running tests with default BLS implementation (undefined, Noble) as well

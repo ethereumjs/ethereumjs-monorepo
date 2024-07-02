@@ -346,6 +346,7 @@ export interface ExecResult {
 }
 
 export type EVMBLSInterface = {
+  init?(): void
   addG1(input: Uint8Array): Uint8Array
   mulG1(input: Uint8Array): Uint8Array
   addG2(input: Uint8Array): Uint8Array

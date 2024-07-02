@@ -230,6 +230,12 @@ export class MCLBLS implements EVMBLSInterface {
     this._mcl = mcl
   }
 
+  init() {
+    this._mcl.setMapToMode(this._mcl.IRTF) // set the right map mode; otherwise mapToG2 will return wrong values.
+    this._mcl.verifyOrderG1(true) // subgroup checks for G1
+    this._mcl.verifyOrderG2(true) // subgroup checks for G2
+  }
+
   addG1(input: Uint8Array): Uint8Array {
     // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
     const mclPoint1 = BLS12_381_ToG1Point(

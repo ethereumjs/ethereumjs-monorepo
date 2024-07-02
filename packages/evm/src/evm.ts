@@ -132,13 +132,6 @@ export class EVM implements EVMInterface {
     return this._opcodes
   }
 
-  /**
-   * Pointer to the mcl package, not for public usage
-   * set to public due to implementation internals
-   * @hidden
-   */
-  protected readonly _mcl: any //
-
   protected readonly _bls?: EVMBLSInterface
 
   /**
@@ -240,6 +233,7 @@ export class EVM implements EVMInterface {
 
     if (this.common.isActivatedEIP(2537)) {
       this._bls = opts.bls ?? new NobleBLS()
+      this._bls.init?.()
     }
 
     this._emit = async (topic: string, data: any): Promise<void> => {
