@@ -502,9 +502,14 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
     /* RETURNCONTRACT */
     [
       0xee,
-      async function (_runState, _gas, _common): Promise<bigint> {
-        // TODO: placeholder, change me
-        return BIGINT_0
+      async function (runState, gas, common): Promise<bigint> {
+        // Pop stack values
+        const [auxDataOffset, auxDataSize] = runState.stack.peek(2)
+
+        // Expand memory
+        gas += subMemUsage(runState, auxDataOffset, auxDataSize, common)
+
+        return gas
       },
     ],
     [

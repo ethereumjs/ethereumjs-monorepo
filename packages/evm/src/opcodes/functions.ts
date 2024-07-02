@@ -1301,6 +1301,22 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
+      } else {
+        // Read container index
+        const containerIndex = runState.env.code[runState.programCounter]
+        const containerCode = runState.env.eof!.container.body.containerSections[containerIndex]
+
+        // Pop stack values
+        const [auxDataOffset, auxDataSize] = runState.stack.popN(2)
+
+        let auxData = new Uint8Array(0)
+        if (auxDataSize !== BIGINT_0) {
+          auxData = runState.memory.read(Number(auxDataOffset), Number(auxDataSize))
+        }
+
+        const returnContainer = concatBytes(containerCode, auxData)
+
+        runState.interpreter.finish(returnContainer)
       }
     },
   ],

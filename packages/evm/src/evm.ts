@@ -455,6 +455,7 @@ export class EVM implements EVMInterface {
     // TODO this is a hack for previous code to implement EOF code!
     // TODO also figure out why for CREATE/CREATE2/CreateTx we had to write it
     // to message.data instead of directly to message.code?
+    let inEOFMode = false
     message.code = message.data
     if (message.code === undefined) {
       // Either CREATE or CREATE2
@@ -462,6 +463,7 @@ export class EVM implements EVMInterface {
     } else {
       // EOFCREATE
       message.data = message.code
+      inEOFMode = true
     }
     message.to = await this._generateAddress(message)
 
@@ -626,7 +628,8 @@ export class EVM implements EVMInterface {
       if (this.common.isActivatedEIP(3541) && result.returnValue[0] === FORMAT) {
         if (!this.common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-        } else if (message.eof === undefined) {
+        } else if (inEOFMode === false /*message.eof === undefined*/) {
+          // TODO the message.eof was flagged for this to work for this first
           // Running into Legacy mode: unable to deploy EOF contract
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         } else {
