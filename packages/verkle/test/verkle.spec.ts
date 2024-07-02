@@ -168,7 +168,7 @@ describe('Verkle tree', () => {
     const nearestNode = foundPath.stack.pop()![0]
     // Verify that another leaf node is "nearest" node
     assert.equal(nearestNode.type, VerkleNodeType.Leaf)
-    assert.deepEqual(nearestNode, leafNode1)
+    assert.deepEqual((nearestNode as LeafNode).getValue(2), hexToBytes(values[1]))
 
     // Compute the portion of stem1 and stem2 that match (i.e. the partial path closest to stem2)
     const partialMatchingStemIndex = matchingBytesLength(stem1, stem2)

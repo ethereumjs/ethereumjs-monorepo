@@ -47,7 +47,10 @@ export interface VerkleNodeOptions {
 
 export const NODE_WIDTH = 256
 
-export const ZERO_LEAF_VALUE = new Uint8Array(32)
+export const createZeroLeaf = () => new Uint8Array(32)
+
+export const createDeletedLeafValue = () =>
+  setLengthLeft(bigIntToBytes(bytesToBigInt(new Uint8Array(32)) + BigInt(2 ** 128)), 32)
 
 export const DELETED_LEAF_VALUE = setLengthLeft(
   bigIntToBytes(bytesToBigInt(new Uint8Array(32)) + BigInt(2 ** 128)),
