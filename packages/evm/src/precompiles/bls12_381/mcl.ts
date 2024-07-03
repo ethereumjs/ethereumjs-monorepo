@@ -78,12 +78,10 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
   const xval = padToEven(decoded[1])
   const yval = padToEven(decoded[2])
 
-  // convert to buffers.
+  const xBytes = concatBytes(new Uint8Array(64 - xval.length / 2), unprefixedHexToBytes(xval))
+  const yBytes = concatBytes(new Uint8Array(64 - yval.length / 2), unprefixedHexToBytes(yval))
 
-  const xBuffer = concatBytes(new Uint8Array(64 - xval.length / 2), unprefixedHexToBytes(xval))
-  const yBuffer = concatBytes(new Uint8Array(64 - yval.length / 2), unprefixedHexToBytes(yval))
-
-  return concatBytes(xBuffer, yBuffer)
+  return concatBytes(xBytes, yBytes)
 }
 
 /**
@@ -128,22 +126,22 @@ function BLS12_381_ToG2Point(input: Uint8Array, mcl: any, verifyOrder = true): a
   Fp2One.set_a(FpOne)
   Fp2One.set_b(FpZero)
 
-  const mclPoint = new mcl.G2()
+  const p = new mcl.G2()
 
-  mclPoint.setX(Fp2X)
-  mclPoint.setY(Fp2Y)
-  mclPoint.setZ(Fp2One)
+  p.setX(Fp2X)
+  p.setY(Fp2Y)
+  p.setZ(Fp2One)
 
   mcl.verifyOrderG2(verifyOrder)
-  if (verifyOrder && mclPoint.isValidOrder() === false) {
+  if (verifyOrder && p.isValidOrder() === false) {
     throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
-  if (mclPoint.isValid() === false) {
+  if (p.isValid() === false) {
     throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
-  return mclPoint
+  return p
 }
 
 // input: a mcl G2 point
@@ -162,14 +160,12 @@ function BLS12_381_FromG2Point(input: any): Uint8Array {
   const y_1 = padToEven(decoded[3])
   const y_2 = padToEven(decoded[4])
 
-  // convert to buffers.
+  const xBytes1 = concatBytes(new Uint8Array(64 - x_1.length / 2), unprefixedHexToBytes(x_1))
+  const xBytes2 = concatBytes(new Uint8Array(64 - x_2.length / 2), unprefixedHexToBytes(x_2))
+  const yBytes1 = concatBytes(new Uint8Array(64 - y_1.length / 2), unprefixedHexToBytes(y_1))
+  const yBytes2 = concatBytes(new Uint8Array(64 - y_2.length / 2), unprefixedHexToBytes(y_2))
 
-  const xBuffer1 = concatBytes(new Uint8Array(64 - x_1.length / 2), unprefixedHexToBytes(x_1))
-  const xBuffer2 = concatBytes(new Uint8Array(64 - x_2.length / 2), unprefixedHexToBytes(x_2))
-  const yBuffer1 = concatBytes(new Uint8Array(64 - y_1.length / 2), unprefixedHexToBytes(y_1))
-  const yBuffer2 = concatBytes(new Uint8Array(64 - y_2.length / 2), unprefixedHexToBytes(y_2))
-
-  return concatBytes(xBuffer1, xBuffer2, yBuffer1, yBuffer2)
+  return concatBytes(xBytes1, xBytes2, yBytes1, yBytes2)
 }
 
 // input: a 32-byte hex scalar Uint8Array
@@ -237,63 +233,55 @@ export class MCLBLS implements EVMBLSInterface {
   }
 
   addG1(input: Uint8Array): Uint8Array {
-    // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
-    const mclPoint1 = BLS12_381_ToG1Point(
-      input.subarray(0, BLS_G1_POINT_BYTE_LENGTH),
-      this._mcl,
-      false
-    )
-    const mclPoint2 = BLS12_381_ToG1Point(
+    // convert input to G1 points, add them, and convert the output to a Uint8Array.
+    const p1 = BLS12_381_ToG1Point(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH), this._mcl, false)
+    const p2 = BLS12_381_ToG1Point(
       input.subarray(BLS_G1_POINT_BYTE_LENGTH, BLS_G1_POINT_BYTE_LENGTH * 2),
       this._mcl,
       false
     )
 
-    const result = this._mcl.add(mclPoint1, mclPoint2)
+    const result = this._mcl.add(p1, p2)
 
     return BLS12_381_FromG1Point(result)
   }
 
   mulG1(input: Uint8Array): Uint8Array {
-    // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
-    const mclPoint = BLS12_381_ToG1Point(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH), this._mcl)
+    // convert input to G1 points, add them, and convert the output to a Uint8Array.
+    const p = BLS12_381_ToG1Point(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH), this._mcl)
     const frPoint = BLS12_381_ToFrPoint(input.subarray(BLS_G1_POINT_BYTE_LENGTH, 160), this._mcl)
 
-    const result = this._mcl.mul(mclPoint, frPoint)
+    const result = this._mcl.mul(p, frPoint)
 
     return BLS12_381_FromG1Point(result)
   }
 
   addG2(input: Uint8Array): Uint8Array {
-    // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
-    const mclPoint1 = BLS12_381_ToG2Point(
-      input.subarray(0, BLS_G2_POINT_BYTE_LENGTH),
-      this._mcl,
-      false
-    )
-    const mclPoint2 = BLS12_381_ToG2Point(
+    // convert input to G1 points, add them, and convert the output to a Uint8Array.
+    const p1 = BLS12_381_ToG2Point(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH), this._mcl, false)
+    const p2 = BLS12_381_ToG2Point(
       input.subarray(BLS_G2_POINT_BYTE_LENGTH, BLS_G2_POINT_BYTE_LENGTH * 2),
       this._mcl,
       false
     )
 
-    const result = this._mcl.add(mclPoint1, mclPoint2)
+    const result = this._mcl.add(p1, p2)
 
     return BLS12_381_FromG2Point(result)
   }
 
   mulG2(input: Uint8Array): Uint8Array {
-    // convert input to mcl G2 point/Fr point, add them, and convert the output to a Uint8Array.
-    const mclPoint = BLS12_381_ToG2Point(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH), this._mcl)
+    // convert input to G2 point/Fr point, add them, and convert the output to a Uint8Array.
+    const p = BLS12_381_ToG2Point(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH), this._mcl)
     const frPoint = BLS12_381_ToFrPoint(input.subarray(BLS_G2_POINT_BYTE_LENGTH, 288), this._mcl)
 
-    const result = this._mcl.mul(mclPoint, frPoint)
+    const result = this._mcl.mul(p, frPoint)
 
     return BLS12_381_FromG2Point(result)
   }
 
   mapFPtoG1(input: Uint8Array): Uint8Array {
-    // convert input to mcl Fp1 point
+    // convert input to Fp1 point
     const Fp1Point = BLS12_381_ToFpPoint(input.subarray(0, 64), this._mcl)
     // map it to G1
     const result = Fp1Point.mapToG1()
@@ -302,7 +290,7 @@ export class MCLBLS implements EVMBLSInterface {
   }
 
   mapFP2toG2(input: Uint8Array): Uint8Array {
-    // convert input to mcl Fp2 point
+    // convert input to Fp2 point
     const Fp2Point = BLS12_381_ToFp2Point(input.subarray(0, 64), input.subarray(64, 128), this._mcl)
     // map it to G2
     const result = Fp2Point.mapToG2()

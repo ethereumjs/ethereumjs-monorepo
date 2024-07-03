@@ -71,12 +71,10 @@ function BLS12_381_FromG1Point(input: AffinePoint<bigint>): Uint8Array {
   const xval = padToEven(bigIntToHex(input.x).slice(2))
   const yval = padToEven(bigIntToHex(input.y).slice(2))
 
-  // convert to buffers.
+  const xBytes = concatBytes(new Uint8Array(64 - xval.length / 2), unprefixedHexToBytes(xval))
+  const yBytes = concatBytes(new Uint8Array(64 - yval.length / 2), unprefixedHexToBytes(yval))
 
-  const xBuffer = concatBytes(new Uint8Array(64 - xval.length / 2), unprefixedHexToBytes(xval))
-  const yBuffer = concatBytes(new Uint8Array(64 - yval.length / 2), unprefixedHexToBytes(yval))
-
-  return concatBytes(xBuffer, yBuffer)
+  return concatBytes(xBytes, yBytes)
 }
 
 /**
@@ -132,13 +130,12 @@ function BLS12_381_FromG2Point(input: AffinePoint<Fp2>): Uint8Array {
   const y_1 = padToEven(bigIntToHex(input.y.c0).slice(2))
   const y_2 = padToEven(bigIntToHex(input.y.c1).slice(2))
 
-  // convert to buffers.
-  const xBuffer1 = concatBytes(new Uint8Array(64 - x_1.length / 2), unprefixedHexToBytes(x_1))
-  const xBuffer2 = concatBytes(new Uint8Array(64 - x_2.length / 2), unprefixedHexToBytes(x_2))
-  const yBuffer1 = concatBytes(new Uint8Array(64 - y_1.length / 2), unprefixedHexToBytes(y_1))
-  const yBuffer2 = concatBytes(new Uint8Array(64 - y_2.length / 2), unprefixedHexToBytes(y_2))
+  const xBytes1 = concatBytes(new Uint8Array(64 - x_1.length / 2), unprefixedHexToBytes(x_1))
+  const xBytes2 = concatBytes(new Uint8Array(64 - x_2.length / 2), unprefixedHexToBytes(x_2))
+  const yBytes1 = concatBytes(new Uint8Array(64 - y_1.length / 2), unprefixedHexToBytes(y_1))
+  const yBytes2 = concatBytes(new Uint8Array(64 - y_2.length / 2), unprefixedHexToBytes(y_2))
 
-  return concatBytes(xBuffer1, xBuffer2, yBuffer1, yBuffer2)
+  return concatBytes(xBytes1, xBytes2, yBytes1, yBytes2)
 }
 
 // input: a 32-byte hex scalar Uint8Array
@@ -209,16 +206,11 @@ export class NobleBLS implements EVMBLSInterface {
     const p = p1.add(p2)
     const result = BLS12_381_FromG1Point(p)
 
-    /*console.log('MCL (result):')
-    console.log(bytesToHex(resultBytes))
-    console.log('Noble (result):')
-    console.log(bytesToHex(resultBytesN))*/
-
     return result
   }
 
   mulG1(input: Uint8Array): Uint8Array {
-    // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
+    // convert input to G1 points, add them, and convert the output to a Uint8Array.
     const p = BLS12_381_ToG1Point(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH))
     const skalar = BLS12_381_ToFrPoint(input.subarray(BLS_G1_POINT_BYTE_LENGTH, 160))
 
@@ -241,7 +233,7 @@ export class NobleBLS implements EVMBLSInterface {
   }
 
   mulG2(input: Uint8Array): Uint8Array {
-    // convert input to mcl G2 point/Fr point, add them, and convert the output to a Uint8Array.
+    // convert input to G2 point/Fr point, add them, and convert the output to a Uint8Array.
     const p = BLS12_381_ToG2Point(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH))
     const skalar = BLS12_381_ToFrPoint(input.subarray(BLS_G2_POINT_BYTE_LENGTH, 288))
 
@@ -253,7 +245,7 @@ export class NobleBLS implements EVMBLSInterface {
   }
 
   mapFPtoG1(input: Uint8Array): Uint8Array {
-    // convert input to mcl Fp1 point
+    // convert input to Fp1 point
     const FP = BLS12_381_ToFpPoint(input.subarray(0, 64))
     const result = bls12_381.G1.mapToCurve([FP]).toAffine()
     const resultBytes = BLS12_381_FromG1Point(result)
@@ -261,7 +253,7 @@ export class NobleBLS implements EVMBLSInterface {
   }
 
   mapFP2toG2(input: Uint8Array): Uint8Array {
-    // convert input to mcl Fp2 point
+    // convert input to Fp2 point
     const Fp2Point = BLS12_381_ToFp2Point(input.subarray(0, 64), input.subarray(64, 128))
     const result = bls12_381.G2.mapToCurve([Fp2Point.c0, Fp2Point.c1]).toAffine()
     const resultBytes = BLS12_381_FromG2Point(result)
