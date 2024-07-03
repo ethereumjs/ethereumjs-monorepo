@@ -24,6 +24,12 @@ import { verifyCode } from './verify.js'
 
 import type { EVM } from '../evm.js'
 
+export enum EOFContainerMode {
+  Default, // Default container validation
+  Initmode, // Initmode container validation (for subcontainers pointed to by EOFCreate)
+  TxInitmode, // Tx initmode container validation (for txs deploying EOF contracts)
+}
+
 class StreamReader {
   private data: Uint8Array
   private ptr: number
@@ -209,7 +215,13 @@ class EOFBody {
   dataSection: Uint8Array
   buffer: Uint8Array
 
-  constructor(buf: Uint8Array, header: EOFHeader, isEOFCreate: boolean = false) {
+  txCallData?: Uint8Array // Only available in TxInitmode
+
+  constructor(
+    buf: Uint8Array,
+    header: EOFHeader,
+    eofMode: EOFContainerMode = EOFContainerMode.Default
+  ) {
     const stream = new StreamReader(buf)
     const typeSections: TypeSection[] = []
     for (let i = 0; i < header.typeSize / 4; i++) {
@@ -263,11 +275,16 @@ class EOFBody {
 
     let dataSection: Uint8Array
 
-    if (!isEOFCreate) {
+    if (eofMode !== EOFContainerMode.Initmode) {
       dataSection = stream.readBytes(header.dataSize, EOFError.DataSection)
 
-      if (!stream.isAtEnd() && !isEOFCreate) {
-        validationError(EOFError.DanglingBytes)
+      if (eofMode === EOFContainerMode.Default) {
+        if (!stream.isAtEnd()) {
+          validationError(EOFError.DanglingBytes)
+        }
+      } else {
+        // Tx init mode
+        this.txCallData = stream.readRemainder()
       }
     } else {
       dataSection = stream.readRemainder()
@@ -303,10 +320,12 @@ export class EOFContainer {
   header: EOFHeader
   body: EOFBody
   buffer: Uint8Array
+  eofMode: EOFContainerMode
 
-  constructor(buf: Uint8Array, isEOFCreate: boolean = false) {
+  constructor(buf: Uint8Array, eofMode: EOFContainerMode = EOFContainerMode.Default) {
+    this.eofMode = eofMode
     this.header = new EOFHeader(buf)
-    this.body = new EOFBody(buf.slice(this.header.buffer.length), this.header, isEOFCreate)
+    this.body = new EOFBody(buf.slice(this.header.buffer.length), this.header, eofMode)
     this.buffer = buf
   }
 }

@@ -35,7 +35,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { EOFContainer } from '../eof/container.js'
+import { EOFContainer, EOFContainerMode } from '../eof/container.js'
 import { EOFError } from '../eof/errors.js'
 import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.js'
 import { ERROR } from '../exceptions.js'
@@ -1310,7 +1310,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const containerCode = runState.env.eof!.container.body.containerSections[containerIndex]
 
         // Read deployContainer as EOFCreate (initcode) container
-        const deployContainer = new EOFContainer(containerCode, true)
+        const deployContainer = new EOFContainer(containerCode, EOFContainerMode.Initmode)
 
         // Pop stack values
         const [auxDataOffset, auxDataSize] = runState.stack.popN(2)
