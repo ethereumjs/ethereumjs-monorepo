@@ -1,4 +1,4 @@
-import { type VerkleCrypto, bigIntToBytes, bytesToBigInt, setLengthLeft } from '@ethereumjs/util'
+import { type VerkleCrypto } from '@ethereumjs/util'
 
 import type { InternalNode } from './internalNode.js'
 import type { LeafNode } from './leafNode.js'
@@ -52,14 +52,16 @@ export interface VerkleNodeOptions {
 
 export const NODE_WIDTH = 256
 
-export const createZeroLeaf = () => new Uint8Array(32)
+const emptyBytes32Array = new Uint8Array(32)
 
-export const createDeletedLeafValue = () =>
-  setLengthLeft(bigIntToBytes(bytesToBigInt(new Uint8Array(32)) + BigInt(2 ** 128)), 32)
+export const createZeroLeafValue = () => emptyBytes32Array
 
-export const DELETED_LEAF_VALUE = setLengthLeft(
-  bigIntToBytes(bytesToBigInt(new Uint8Array(32)) + BigInt(2 ** 128)),
-  32
-)
+const deletedLeafValue = emptyBytes32Array
+// Set the 129th bit to 1 directly by setting the 17th byte (index 16) to 0x80
+deletedLeafValue[16] = 0x80
+
+export const DELETED_LEAF_VALUE = deletedLeafValue
+
+export const createDeletedLeafValue = () => DELETED_LEAF_VALUE
 
 export const DEFAULT_LEAF_VALUES = new Array(256).fill(0)

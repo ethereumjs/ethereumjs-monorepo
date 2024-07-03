@@ -3,7 +3,13 @@ import { bigIntToBytes, bytesToBigInt, setLengthRight } from '@ethereumjs/util'
 
 import { InternalNode } from './internalNode.js'
 import { LeafNode } from './leafNode.js'
-import { VerkleLeafNodeValue, type VerkleNode, VerkleNodeType } from './types.js'
+import {
+  VerkleLeafNodeValue,
+  type VerkleNode,
+  VerkleNodeType,
+  createDeletedLeafValue,
+  createZeroLeafValue,
+} from './types.js'
 
 import type { VerkleCrypto } from '@ethereumjs/util'
 
@@ -51,15 +57,11 @@ export const createCValues = (
     let val: Uint8Array
     switch (retrievedValue) {
       case VerkleLeafNodeValue.Untouched: // Leaf value that has never been written before
-        val = new Uint8Array(32)
+        val = createZeroLeafValue()
         break
       case VerkleLeafNodeValue.Deleted: // Leaf value that has been overwritten with zeros (i.e. a deleted value)
-        val = new Uint8Array(32)
+        val = createDeletedLeafValue()
 
-        // Set the 129th bit to 1
-        // The 129th bit is the first bit of the 17th byte, which is at index 16 in a zero-indexed array
-        // 0x80 in hexadecimal represents 128 in decimal, which is `10000000` in binary
-        val[16] = 0x80
         break
       default:
         val = retrievedValue
