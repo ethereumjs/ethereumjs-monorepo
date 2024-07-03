@@ -11,6 +11,7 @@ import {
   KIND_DATA,
   KIND_TYPE,
   MAGIC,
+  MAX_HEADER_SIZE,
   MAX_STACK_HEIGHT,
   OUTPUTS_MAX,
   TERMINATOR,
@@ -99,6 +100,9 @@ class EOFHeader {
   private codeStartPos: number[]
 
   constructor(input: Uint8Array) {
+    if (input.length > MAX_HEADER_SIZE) {
+      throw new Error('err: container size more than maximum valid size')
+    }
     const stream = new StreamReader(input)
     stream.verifyUint(FORMAT, EOFError.FORMAT)
     stream.verifyUint(MAGIC, EOFError.MAGIC)
@@ -342,7 +346,6 @@ export function validateEOF(
   for (let i = 0; i < container.body.containerSections.length; i++) {
     const subContainer = container.body.containerSections[i]
     const mode = containerMap.get(i)!
-    console.log('validate ctr', i)
     validateEOF(subContainer, evm, mode)
   }
   return container
