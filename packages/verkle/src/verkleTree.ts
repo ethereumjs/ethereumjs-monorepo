@@ -484,7 +484,6 @@ export class VerkleTree {
       verkleCrypto: this.verkleCrypto,
     })
 
-    // Update the child node's commitment and path
     this.DEBUG && this.debug(`No root node. Creating new root node`, ['INITIALIZE'])
     // Set trie root to serialized (aka compressed) commitment for later use in verkle proof
     this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))
@@ -578,7 +577,6 @@ export class VerkleTree {
   /**
    * Persists the root hash in the underlying database
    */
-  // TODO: Fix how we reference the root node in `findPath` so this method will work correctly
   async persistRoot() {
     if (this._opts.useRootPersistence) {
       await this._db.put(ROOT_DB_KEY, this.root())
