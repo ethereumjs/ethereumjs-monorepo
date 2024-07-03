@@ -1,13 +1,10 @@
 import {
   BIGINT_0,
   bigIntToBytes,
-  bigIntToHex,
   bytesToBigInt,
   concatBytes,
   equalsBytes,
-  padToEven,
   setLengthLeft,
-  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { bls12_381 } from '@noble/curves/bls12-381'
 

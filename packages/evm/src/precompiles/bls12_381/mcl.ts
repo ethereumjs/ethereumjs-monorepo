@@ -4,6 +4,7 @@ import {
   concatBytes,
   equalsBytes,
   padToEven,
+  setLengthLeft,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
@@ -75,12 +76,8 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
     return new Uint8Array(BLS_G1_POINT_BYTE_LENGTH)
   }
 
-  // note: decoded[0] === 1
-  const xval = padToEven(decoded[1])
-  const yval = padToEven(decoded[2])
-
-  const xBytes = concatBytes(new Uint8Array(64 - xval.length / 2), unprefixedHexToBytes(xval))
-  const yBytes = concatBytes(new Uint8Array(64 - yval.length / 2), unprefixedHexToBytes(yval))
+  const xBytes = setLengthLeft(unprefixedHexToBytes(decoded[1]), 64)
+  const yBytes = setLengthLeft(unprefixedHexToBytes(decoded[2]), 64)
 
   return concatBytes(xBytes, yBytes)
 }
@@ -145,16 +142,10 @@ function BLS12_381_FromG2Point(input: any): Uint8Array {
   }
   const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
 
-  // note: decoded[0] === 1
-  const x_1 = padToEven(decoded[1])
-  const x_2 = padToEven(decoded[2])
-  const y_1 = padToEven(decoded[3])
-  const y_2 = padToEven(decoded[4])
-
-  const xBytes1 = concatBytes(new Uint8Array(64 - x_1.length / 2), unprefixedHexToBytes(x_1))
-  const xBytes2 = concatBytes(new Uint8Array(64 - x_2.length / 2), unprefixedHexToBytes(x_2))
-  const yBytes1 = concatBytes(new Uint8Array(64 - y_1.length / 2), unprefixedHexToBytes(y_1))
-  const yBytes2 = concatBytes(new Uint8Array(64 - y_2.length / 2), unprefixedHexToBytes(y_2))
+  const xBytes1 = setLengthLeft(unprefixedHexToBytes(decoded[1]), 64)
+  const xBytes2 = setLengthLeft(unprefixedHexToBytes(decoded[2]), 64)
+  const yBytes1 = setLengthLeft(unprefixedHexToBytes(decoded[3]), 64)
+  const yBytes2 = setLengthLeft(unprefixedHexToBytes(decoded[4]), 64)
 
   return concatBytes(xBytes1, xBytes2, yBytes1, yBytes2)
 }
