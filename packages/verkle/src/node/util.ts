@@ -3,9 +3,8 @@ import { bigIntToBytes, bytesToBigInt, setLengthRight } from '@ethereumjs/util'
 
 import { InternalNode } from './internalNode.js'
 import { LeafNode } from './leafNode.js'
-import { type VerkleNode, VerkleNodeType } from './types.js'
+import { VerkleLeafNodeValue, type VerkleNode, VerkleNodeType } from './types.js'
 
-import type { VerkleLeafNodeValue } from './types.js'
 import type { VerkleCrypto } from '@ethereumjs/util'
 
 export function decodeRawNode(raw: Uint8Array[], verkleCrypto: VerkleCrypto): VerkleNode {
@@ -48,17 +47,22 @@ export const createCValues = (
     throw new Error(`got wrong number of values, expected 128, got ${values.length}`)
   const expandedValues: Uint8Array[] = new Array(256)
   for (let x = 0; x < 128; x++) {
+    const retrievedValue = values[x]
     let val: Uint8Array
-    switch (values[x]) {
-      case 0: // Leaf value that has never been written before
+    switch (retrievedValue) {
+      case VerkleLeafNodeValue.Untouched: // Leaf value that has never been written before
         val = new Uint8Array(32)
         break
-      case 1: // Leaf value that has been overwritten with zeros (i.e. a deleted value)
-        // TODO: Improve performance by only flipping the 129th bit of `expandedValues[x]` (instead of bigint addition)
-        val = bigIntToBytes(bytesToBigInt(new Uint8Array(16)) + BigInt(2 ** 128))
+      case VerkleLeafNodeValue.Deleted: // Leaf value that has been overwritten with zeros (i.e. a deleted value)
+        val = new Uint8Array(32)
+
+        // Set the 129th bit to 1
+        // The 129th bit is the first bit of the 17th byte, which is at index 16 in a zero-indexed array
+        // 0x80 in hexadecimal represents 128 in decimal, which is `10000000` in binary
+        val[16] = 0x80
         break
       default:
-        val = values[x] as Uint8Array
+        val = retrievedValue
         break
     }
     // We add 16 trailing zeros to each value since all commitments are padded to an array of 32 byte values
