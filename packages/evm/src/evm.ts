@@ -22,6 +22,7 @@ import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
 
 import { FORMAT } from './eof/constants.js'
+import { isEOF } from './eof/util.js'
 import { ERROR, EvmError } from './exceptions.js'
 import { Interpreter } from './interpreter.js'
 import { Journal } from './journal.js'
@@ -587,7 +588,7 @@ export class EVM implements EVMInterface {
     }
 
     // run the message with the updated gas limit and add accessed gas used to the result
-    let result = await this.runInterpreter({ ...message, gasLimit } as Message)
+    let result = await this.runInterpreter({ ...message, gasLimit, isCreate: true } as Message)
     result.executionGasUsed += message.gasLimit - gasLimit
 
     // fee for size of the return value
@@ -618,7 +619,11 @@ export class EVM implements EVMInterface {
       if (this.common.isActivatedEIP(3541) && result.returnValue[0] === FORMAT) {
         if (!this.common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-        } else if (message.eofCallData === undefined /*message.eof === undefined*/) {
+        } else if (
+          message.eofCallData === undefined &&
+          message.depth === 0 &&
+          !isEOF(message.code)
+        ) {
           // TODO the message.eof was flagged for this to work for this first
           // Running into Legacy mode: unable to deploy EOF contract
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
@@ -751,6 +756,7 @@ export class EVM implements EVMInterface {
       callValue: message.value ?? BIGINT_0,
       code: message.code as Uint8Array,
       isStatic: message.isStatic ?? false,
+      isCreate: message.isCreate ?? false,
       depth: message.depth ?? 0,
       gasPrice: this._tx!.gasPrice,
       origin: this._tx!.origin ?? message.caller ?? Address.zero(),

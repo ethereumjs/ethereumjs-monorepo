@@ -60,6 +60,7 @@ export interface Env {
   callValue: bigint
   code: Uint8Array
   isStatic: boolean
+  isCreate: boolean
   depth: number
   gasPrice: bigint
   origin: Address

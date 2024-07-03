@@ -50,7 +50,8 @@ export class Message {
   caller: Address
   gasLimit: bigint
   data: Uint8Array
-  eofCallData?: Uint8Array // Only used in EOFCreate to signal an EOF contract to be created with this calldata
+  eofCallData?: Uint8Array // Only used in EOFCreate to signal an EOF contract to be created with this calldata (via EOFCreate)
+  isCreate?: boolean
   depth: number
   code?: Uint8Array | PrecompileFunc
   _codeAddress?: Address
