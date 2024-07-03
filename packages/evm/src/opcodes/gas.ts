@@ -855,7 +855,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const toAddress = new Address(addresstoBytes(toAddr))
         // Charge to make address warm (2600 gas)
         // (in case if address is already warm, this charges the 100 gas)
-        gas += accessAddressEIP2929(runState, toAddress.bytes, common, true, true)
+        gas += accessAddressEIP2929(runState, toAddress.bytes, common)
 
         // Charge account creation cost if value is nonzero
         if (value > BIGINT_0) {
@@ -918,7 +918,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const toAddress = new Address(addresstoBytes(toAddr))
         // Charge to make address warm (2600 gas)
         // (in case if address is already warm, this charges the 100 gas)
-        gas += accessAddressEIP2929(runState, toAddress.bytes, common, true, true)
+        gas += accessAddressEIP2929(runState, toAddress.bytes, common)
 
         const minRetainedGas = common.param('gasPrices', 'minRetainedGas')
         const minCalleeGas = common.param('gasPrices', 'minCalleeGas')
@@ -1005,7 +1005,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const toAddress = new Address(addresstoBytes(toAddr))
         // Charge to make address warm (2600 gas)
         // (in case if address is already warm, this charges the 100 gas)
-        gas += accessAddressEIP2929(runState, toAddress.bytes, common, true, true)
+        gas += accessAddressEIP2929(runState, toAddress.bytes, common)
 
         const minRetainedGas = common.param('gasPrices', 'minRetainedGas')
         const minCalleeGas = common.param('gasPrices', 'minCalleeGas')
