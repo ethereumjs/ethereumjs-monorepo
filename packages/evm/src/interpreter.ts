@@ -1109,7 +1109,7 @@ export class Interpreter {
       }
     }
 
-    return this._getReturnCode(results)
+    return this._getReturnCode(results, true)
   }
 
   /**
@@ -1210,8 +1210,8 @@ export class Interpreter {
     this._result.logs.push(log)
   }
 
-  private _getReturnCode(results: EVMResult) {
-    if (this._runState.env.eof === undefined) {
+  private _getReturnCode(results: EVMResult, isEOFCreate = false) {
+    if (this._runState.env.eof === undefined || isEOFCreate) {
       if (results.execResult.exceptionError) {
         return BIGINT_0
       } else {

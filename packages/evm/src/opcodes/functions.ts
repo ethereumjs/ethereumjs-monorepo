@@ -35,6 +35,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
+import { EOFContainer } from '../eof/container.js'
 import { EOFError } from '../eof/errors.js'
 import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.js'
 import { ERROR } from '../exceptions.js'
@@ -1308,6 +1309,8 @@ export const handlers: Map<number, OpHandler> = new Map([
         const containerIndex = runState.env.code[runState.programCounter]
         const containerCode = runState.env.eof!.container.body.containerSections[containerIndex]
 
+        const deployContainer = new EOFContainer(containerCode)
+
         // Pop stack values
         const [auxDataOffset, auxDataSize] = runState.stack.popN(2)
 
@@ -1316,8 +1319,8 @@ export const handlers: Map<number, OpHandler> = new Map([
           auxData = runState.memory.read(Number(auxDataOffset), Number(auxDataSize))
         }
 
-        const originalDataSize = runState.env.eof.container.header.dataSize
-        const preDeployDataSectionSize = runState.env.eof.container.body.dataSection.length
+        const originalDataSize = deployContainer.header.dataSize
+        const preDeployDataSectionSize = deployContainer.body.dataSection.length
         const actualSectionSize = preDeployDataSectionSize + Number(auxDataSize)
 
         if (actualSectionSize < originalDataSize) {
@@ -1333,7 +1336,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const newSize = setLengthLeft(bigIntToBytes(BigInt(actualSectionSize)), 2)
 
         // Write the bytes to the containerCode
-        const dataSizePtr = runState.env.eof.container.header.dataSizePtr
+        const dataSizePtr = deployContainer.header.dataSizePtr
         containerCode[dataSizePtr] = newSize[0]
         containerCode[dataSizePtr + 1] = newSize[1]
 
