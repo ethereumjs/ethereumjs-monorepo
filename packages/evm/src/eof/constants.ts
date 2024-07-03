@@ -21,7 +21,7 @@ export const CODE_MIN = 0x0001
 export const CODE_SIZE_MIN = 1
 
 export const CONTAINER_MIN = 0x0001
-export const CONTAINER_MAX = 0x00ff
+export const CONTAINER_MAX = 0x0100
 
 export const CONTAINER_SIZE_MIN = 1
 
