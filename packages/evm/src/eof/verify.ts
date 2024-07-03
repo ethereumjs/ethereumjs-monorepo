@@ -159,7 +159,9 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
           // For RJUMP check that the instruction after RJUMP is reachable
           // If this is not the case, then it is not yet targeted by a forward jump
           // And hence violates the spec
-          if (!reachableOpcodes.has(ptr + 3)) {
+          if (!reachableOpcodes.has(ptr + 3) && ptr + 3 < code.length) {
+            // Note: the final condition above ensures that the bytes after ptr are there
+            // This is an edge case, if the container ends with RJUMP (which is valid)
             validationError(EOFError.UnreachableCode)
           }
         }
