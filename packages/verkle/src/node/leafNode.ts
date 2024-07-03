@@ -5,6 +5,7 @@ import {
   DEFAULT_LEAF_VALUES,
   DELETED_LEAF_VALUE,
   NODE_WIDTH,
+  VerkleLeafNodeValue,
   VerkleNodeType,
   createDeletedLeafValue,
 } from './types.js'
@@ -15,7 +16,7 @@ import type { VerkleCrypto } from '@ethereumjs/util'
 
 export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   public stem: Uint8Array
-  public values: (Uint8Array | 0 | 1)[] // Array of 256 possible values represented as 32 byte Uint8Arrays or 0 if untouched or 1 if deleted
+  public values: (Uint8Array | VerkleLeafNodeValue)[] // Array of 256 possible values represented as 32 byte Uint8Arrays or 0 if untouched or 1 if deleted
   public c1?: Uint8Array
   public c2?: Uint8Array
   public type = VerkleNodeType.Leaf
@@ -193,9 +194,9 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       this.c2 ?? new Uint8Array(),
       ...this.values.map((val) => {
         switch (val) {
-          case 0:
+          case VerkleLeafNodeValue.Untouched:
             return new Uint8Array()
-          case 1:
+          case VerkleLeafNodeValue.Deleted:
             return createDeletedLeafValue()
           default:
             return val

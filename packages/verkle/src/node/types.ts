@@ -33,6 +33,11 @@ interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {
   // Children nodes of this internal node.
   children?: (ChildNode | null)[]
 }
+
+export enum VerkleLeafNodeValue {
+  Untouched = 0,
+  Deleted = 1,
+}
 interface VerkleLeafNodeOptions extends BaseVerkleNodeOptions {
   stem: Uint8Array
   values?: (Uint8Array | 0 | 1)[]
