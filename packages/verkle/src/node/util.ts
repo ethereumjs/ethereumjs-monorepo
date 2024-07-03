@@ -8,7 +8,7 @@ import {
   type VerkleNode,
   VerkleNodeType,
   createDeletedLeafValue,
-  createZeroLeafValue,
+  createUntouchedLeafValue,
 } from './types.js'
 
 import type { VerkleCrypto } from '@ethereumjs/util'
@@ -57,7 +57,7 @@ export const createCValues = (
     let val: Uint8Array
     switch (retrievedValue) {
       case VerkleLeafNodeValue.Untouched: // Leaf value that has never been written before
-        val = createZeroLeafValue()
+        val = createUntouchedLeafValue()
         break
       case VerkleLeafNodeValue.Deleted: // Leaf value that has been overwritten with zeros (i.e. a deleted value)
         val = createDeletedLeafValue()

@@ -52,16 +52,14 @@ export interface VerkleNodeOptions {
 
 export const NODE_WIDTH = 256
 
-const emptyBytes32Array = new Uint8Array(32)
+export const createUntouchedLeafValue = () => new Uint8Array(32)
 
-export const createZeroLeafValue = () => emptyBytes32Array
+export const createDeletedLeafValue = () => {
+  const bytes = new Uint8Array(32)
+  // Set the 129th bit to 1 directly by setting the 17th byte (index 16) to 0x80
+  bytes[16] = 0x80
 
-const deletedLeafValue = emptyBytes32Array
-// Set the 129th bit to 1 directly by setting the 17th byte (index 16) to 0x80
-deletedLeafValue[16] = 0x80
+  return bytes
+}
 
-export const DELETED_LEAF_VALUE = deletedLeafValue
-
-export const createDeletedLeafValue = () => DELETED_LEAF_VALUE
-
-export const DEFAULT_LEAF_VALUES = new Array(256).fill(0)
+export const createDefaultLeafValues = () => new Array(256).fill(0)
