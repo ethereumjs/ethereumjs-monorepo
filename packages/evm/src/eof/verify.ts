@@ -6,12 +6,16 @@ import type { EOFContainer } from './container.js'
 
 export enum ContainerSectionType {
   InitCode, // Targeted by EOFCreate
-  DeploymentCode, // Targeted by DeploymentCode
+  DeploymentCode, // Targeted by RETURNCONTRACT
+  RuntimeCode, // "Default" runtime code
 }
 
-export function verifyCode(container: EOFContainer, evm: EVM) {
-  validateOpcodes(container, evm)
-  validateStack(container, evm)
+export function verifyCode(
+  container: EOFContainer,
+  evm: EVM,
+  mode: ContainerSectionType = ContainerSectionType.RuntimeCode
+) {
+  return validateOpcodes(container, evm, mode)
 }
 
 function readInt16(code: Uint8Array, start: number) {
@@ -22,7 +26,11 @@ function readUint16(code: Uint8Array, start: number) {
   return new DataView(code.buffer).getUint16(start)
 }
 
-function validateOpcodes(container: EOFContainer, evm: EVM) {
+function validateOpcodes(
+  container: EOFContainer,
+  evm: EVM,
+  mode: ContainerSectionType = ContainerSectionType.RuntimeCode
+) {
   // Track the intermediate bytes
   const intermediateBytes = new Set<number>()
   // Track the jump locations (for forward jumps it is unknown at the first pass if the byte is intermediate)
@@ -247,6 +255,11 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
         containerTypeMap.set(target, ContainerSectionType.InitCode)
       } else if (opcode === 0xee) {
         // RETURNCONTRACT
+
+        if (mode !== ContainerSectionType.InitCode) {
+          validationError(EOFError.ContainerTypeError)
+        }
+
         const target = code[ptr + 1]
         if (target >= container.header.containerSizes.length) {
           validationError(EOFError.InvalidRETURNContractTarget)
@@ -263,6 +276,12 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
         const endOfSlice = dataTarget + 32
         if (container.header.dataSize < endOfSlice) {
           validationError(EOFError.DataLoadNOutOfBounds)
+        }
+      } else if (opcode === 0x00 || opcode === 0xf3) {
+        // STOP / RETURN
+
+        if (mode === ContainerSectionType.InitCode) {
+          validationError(EOFError.ContainerTypeError)
         }
       }
 
@@ -323,8 +342,6 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
   if (containerTypeMap.size !== container.header.containerSizes.length) {
     validationError(EOFError.UnreachableContainerSections)
   }
-}
 
-function validateStack(_container: EOFContainer, _evm: EVM) {
-  // TODO
+  return containerTypeMap
 }

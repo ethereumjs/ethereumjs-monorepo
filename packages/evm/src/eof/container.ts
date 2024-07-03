@@ -20,7 +20,7 @@ import {
   VERSION,
 } from './constants.js'
 import { EOFError, validationError } from './errors.js'
-import { verifyCode } from './verify.js'
+import { ContainerSectionType, verifyCode } from './verify.js'
 
 import type { EVM } from '../evm.js'
 
@@ -330,12 +330,20 @@ export class EOFContainer {
   }
 }
 
-export function validateEOF(input: Uint8Array, evm: EVM) {
-  const container = new EOFContainer(input)
-  verifyCode(container, evm)
+export function validateEOF(
+  input: Uint8Array,
+  evm: EVM,
+  containerMode: ContainerSectionType = ContainerSectionType.RuntimeCode,
+  eofMode: EOFContainerMode = EOFContainerMode.Default
+) {
+  const container = new EOFContainer(input, eofMode)
+  const containerMap = verifyCode(container, evm, containerMode)
   // Recursively validate the containerSections
-  for (const subContainer of container.body.containerSections) {
-    validateEOF(subContainer, evm)
+  for (let i = 0; i < container.body.containerSections.length; i++) {
+    const subContainer = container.body.containerSections[i]
+    const mode = containerMap.get(i)!
+    console.log('validate ctr', i)
+    validateEOF(subContainer, evm, mode)
   }
   return container
 }

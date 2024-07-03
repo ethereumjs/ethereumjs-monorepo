@@ -47,6 +47,7 @@ export enum EOFError {
   InvalidRETURNContractTarget = 'RETURNCONTRACT targets an undefined container',
   ContainerDoubleType = 'Container is targeted by both EOFCREATE and RETURNCONTRACT',
   UnreachableContainerSections = 'Unreachable containers (by both EOFCREATE and RETURNCONTRACT)',
+  ContainerTypeError = 'Container contains opcodes which this mode (deployment mode / init code / runtime mode) cannot have',
 
   // Dangling Bytes
   DanglingBytes = 'got dangling bytes in body',
