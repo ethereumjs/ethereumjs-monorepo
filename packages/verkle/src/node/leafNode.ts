@@ -133,16 +133,23 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     }
   }
 
-  // Set the value at the provided index from the values array and update the node commitments
-  // TODO: Decide whether we need a separate "deleteValue" function since it has special handling
-  // since we never actually delete a node in a verkle trie but overwrite instead
-  setValue(index: number, value: Uint8Array): void {
+  /**
+   * Set the value at the provided index from the values array and update the node commitments
+   * @param index the index of the specific leaf value to be updated
+   * @param value the value to insert into the leaf value at `index`
+   */
+  setValue(index: number, value: Uint8Array | VerkleLeafNodeValue): void {
+    let val
+    // `val` is a bytes representation of `value` used to update the cCommitment
+    if (value instanceof Uint8Array) val = value
+    else
+      val = value === VerkleLeafNodeValue.Untouched ? new Uint8Array(32) : createDeletedLeafValue()
     // First we update c1 or c2 (depending on whether the index is < 128 or not)
     // Generate the 16 byte values representing the 32 byte values in the half of the values array that
     // contain the old value for the leaf node
     const cValues =
       index < 128 ? createCValues(this.values.slice(0, 128)) : createCValues(this.values.slice(128))
-    // The commitment index is the 2 * the suffix (i.e. the position of the value in the values array)
+    // The commitment index is 2 * the suffix (i.e. the position of the value in the values array)
     // here because each 32 byte value in the leaf node is represented as two 16 byte values in the
     // cValues array.
     const commitmentIndex = index < 128 ? index * 2 : (index - 128) * 2
@@ -153,7 +160,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       commitmentIndex,
       cValues[commitmentIndex],
       // Right pad the value with zeroes since commitments require 32 byte scalars
-      setLengthRight(value.slice(0, 16), 32)
+      setLengthRight(val.slice(0, 16), 32)
     )
     // Update the commitment for the second 16 bytes of the value
     cCommitment = this.verkleCrypto.updateCommitment(
@@ -161,7 +168,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       commitmentIndex + 1,
       cValues[commitmentIndex + 1],
       // Right pad the value with zeroes since commitments require 32 byte scalars
-      setLengthRight(value.slice(16), 32)
+      setLengthRight(val.slice(16), 32)
     )
     // Update the cCommitment corresponding to the index
     let oldCCommitment: Uint8Array | undefined
@@ -174,7 +181,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     }
     // Set the new values in the values array
     this.values[index] = value
-    // Update leaf node commitment
+    // Update leaf node commitment -- c1 if index is < 128 or c2 otherwise
     const cIndex = index < 128 ? 2 : 3
     this.commitment = this.verkleCrypto.updateCommitment(
       this.commitment,
