@@ -483,6 +483,19 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // Pop stack values
         const [_value, _salt, inputOffset, inputSize] = runState.stack.peek(4)
 
+        //if (common.isActivatedEIP(2929)) {
+        // TODO: adding or not adding this makes test
+        // --test=tests/prague/eip7692_eof_v1/eip7620_eof_create/test_eofcreate.py::test_eofcreate_then_call[fork_CancunEIP7692-blockchain_test]
+        // still succeed. This only warms the current address?? This is also in CREATE/CREATE2
+        // Can this be removed in both?
+        /*gas += accessAddressEIP2929(
+            runState,
+            runState.interpreter.getAddress().bytes,
+            common,
+            false
+          )
+        }*/
+
         // Expand memory
         gas += subMemUsage(runState, inputOffset, inputSize, common)
 
