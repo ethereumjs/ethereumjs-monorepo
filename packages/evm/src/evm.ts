@@ -620,8 +620,10 @@ export class EVM implements EVMInterface {
         if (!this.common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         } else if (
-          message.eofCallData === undefined &&
-          message.depth === 0 &&
+          // TODO check if this is correct
+          // Also likely cleanup this eofCallData stuff
+          /*(message.depth > 0 && message.eofCallData === undefined) ||
+          (message.depth === 0 && !isEOF(message.code))*/
           !isEOF(message.code)
         ) {
           // TODO the message.eof was flagged for this to work for this first
