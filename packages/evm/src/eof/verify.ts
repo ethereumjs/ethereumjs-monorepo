@@ -235,7 +235,7 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
         }
       } else if (opcode === 0xec) {
         // EOFCREATE
-        const target = readUint16(code, ptr + 1)
+        const target = code[ptr + 1]
         if (target >= container.header.containerSizes.length) {
           validationError(EOFError.InvalidEOFCreateTarget)
         }
@@ -247,7 +247,7 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
         containerTypeMap.set(target, ContainerSectionType.InitCode)
       } else if (opcode === 0xee) {
         // RETURNCONTRACT
-        const target = readUint16(code, ptr + 1)
+        const target = code[ptr + 1]
         if (target >= container.header.containerSizes.length) {
           validationError(EOFError.InvalidRETURNContractTarget)
         }
