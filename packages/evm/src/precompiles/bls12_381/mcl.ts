@@ -200,6 +200,13 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
   return fp2
 }
 
+/**
+ * Implementation of the `EVMBLSInterface` using the `mcl-wasm` WASM `mcl` wrapper library,
+ * see https://github.com/herumi/mcl-wasm.
+ *
+ * This can be optionally used to replace the build-in Noble implementation (`NobleBLS`) with
+ * a more performant WASM variant. See EVM `bls` constructor option on how to use.
+ */
 export class MCLBLS implements EVMBLSInterface {
   protected readonly _mcl: any
 

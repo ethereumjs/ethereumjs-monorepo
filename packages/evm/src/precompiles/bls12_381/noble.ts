@@ -49,18 +49,6 @@ function BLS12_381_ToG1Point(input: Uint8Array) {
     y,
   })
 
-  // TODO: validate if these two checks are necessary and
-  // how to transition to Noble
-  /*mcl.verifyOrderG1(verifyOrder)
-  if (verifyOrder && G1.isValidOrder() === false) {
-    throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
-  }
-
-  // Check if these coordinates are actually on the curve.
-  if (G1.isValid() === false) {
-    throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
-  }*/
-
   return G1
 }
 
@@ -98,15 +86,6 @@ function BLS12_381_ToG2Point(input: Uint8Array) {
     x: Fp2X,
     y: Fp2Y,
   })
-
-  /*mcl.verifyOrderG2(verifyOrder)
-  if (verifyOrder && mclPoint.isValidOrder() === false) {
-    throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
-  }
-
-  if (mclPoint.isValid() === false) {
-    throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
-  }*/
 
   return pG2
 }
@@ -180,6 +159,12 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
   return FP
 }
 
+/**
+ * Implementation of the `EVMBLSInterface` using the `@noble/curves` JS library,
+ * see https://github.com/paulmillr/noble-curves.
+ *
+ * This is the EVM default implementation.
+ */
 export class NobleBLS implements EVMBLSInterface {
   addG1(input: Uint8Array): Uint8Array {
     const p1 = BLS12_381_ToG1Point(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH))
