@@ -126,11 +126,11 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   getValue(index: number): Uint8Array | undefined {
     const value = this.values[index]
     switch (value) {
-      case 0:
-      case 1:
+      case VerkleLeafNodeValue.Untouched:
+      case VerkleLeafNodeValue.Deleted:
         return undefined
       default:
-        return value as Uint8Array
+        return value
     }
   }
 
