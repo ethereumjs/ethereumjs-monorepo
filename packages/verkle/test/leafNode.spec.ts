@@ -1,8 +1,8 @@
-import { type VerkleCrypto, equalsBytes, randomBytes } from '@ethereumjs/util'
+import { type VerkleCrypto, equalsBytes, randomBytes, setLengthLeft } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { VerkleNodeType, decodeNode, isLeafNode } from '../src/node/index.js'
+import { VerkleLeafNodeValue, VerkleNodeType, decodeNode, isLeafNode } from '../src/node/index.js'
 import { LeafNode } from '../src/node/leafNode.js'
 
 describe('verkle node - leaf', () => {
@@ -54,6 +54,10 @@ describe('verkle node - leaf', () => {
     const key = randomBytes(32)
     const node = await LeafNode.create(key.slice(0, 31), verkleCrypto)
     assert.ok(node instanceof LeafNode)
+    assert.equal(node.getValue(0), undefined)
+    node.setValue(0, setLengthLeft(Uint8Array.from([5]), 32))
+    assert.deepEqual(node.getValue(0), setLengthLeft(Uint8Array.from([5]), 32))
+    node.setValue(0, VerkleLeafNodeValue.Deleted)
     assert.equal(node.getValue(0), undefined)
   })
 
