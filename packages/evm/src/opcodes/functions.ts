@@ -1309,7 +1309,8 @@ export const handlers: Map<number, OpHandler> = new Map([
         const containerIndex = runState.env.code[runState.programCounter]
         const containerCode = runState.env.eof!.container.body.containerSections[containerIndex]
 
-        const deployContainer = new EOFContainer(containerCode)
+        // Read deployContainer as EOFCreate (initcode) container
+        const deployContainer = new EOFContainer(containerCode, true)
 
         // Pop stack values
         const [auxDataOffset, auxDataSize] = runState.stack.popN(2)

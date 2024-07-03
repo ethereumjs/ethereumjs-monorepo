@@ -69,10 +69,18 @@ class StreamReader {
     return this.ptr
   }
 
+  // Get the remainder bytes of the current stream
+  readRemainder() {
+    return this.data.slice(this.ptr)
+  }
+
   isAtEnd() {
     return this.ptr === this.data.length
   }
 }
+
+// TODO add initcode flags (isEOFContract)
+// TODO validation: mark sections as either initcode or runtime code to validate
 
 class EOFHeader {
   typeSize: number
@@ -201,7 +209,7 @@ class EOFBody {
   dataSection: Uint8Array
   buffer: Uint8Array
 
-  constructor(buf: Uint8Array, header: EOFHeader) {
+  constructor(buf: Uint8Array, header: EOFHeader, isEOFCreate: boolean = false) {
     const stream = new StreamReader(buf)
     const typeSections: TypeSection[] = []
     for (let i = 0; i < header.typeSize / 4; i++) {
@@ -253,11 +261,16 @@ class EOFBody {
       }
     }
 
-    const dataSection = stream.readBytes(header.dataSize, EOFError.DataSection)
+    let dataSection: Uint8Array
 
-    // Note: this check should be updated to reflect changes to data section
-    if (!stream.isAtEnd()) {
-      validationError(EOFError.DanglingBytes)
+    if (!isEOFCreate) {
+      dataSection = stream.readBytes(header.dataSize, EOFError.DataSection)
+
+      if (!stream.isAtEnd() && !isEOFCreate) {
+        validationError(EOFError.DanglingBytes)
+      }
+    } else {
+      dataSection = stream.readRemainder()
     }
 
     this.typeSections = typeSections
@@ -291,9 +304,9 @@ export class EOFContainer {
   body: EOFBody
   buffer: Uint8Array
 
-  constructor(buf: Uint8Array) {
+  constructor(buf: Uint8Array, isEOFCreate: boolean = false) {
     this.header = new EOFHeader(buf)
-    this.body = new EOFBody(buf.slice(this.header.buffer.length), this.header)
+    this.body = new EOFBody(buf.slice(this.header.buffer.length), this.header, isEOFCreate)
     this.buffer = buf
   }
 }
