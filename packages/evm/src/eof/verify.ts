@@ -241,6 +241,25 @@ function validateOpcodes(
             validationError(EOFError.InvalidReturningSection)
           }
         }
+      } else if (opcode === 0xe6) {
+        // DUPN
+        const toDup = code[ptr + 1]
+        // Note: stack height was updated previously
+        const stackBefore = currentStackHeight - 1
+        if (toDup + 1 > stackBefore) {
+          validationError(EOFError.StackUnderflow)
+        }
+      } else if (opcode === 0xe7) {
+        // SWAPN
+        //const toSwap = code[ptr + 1]
+      } else if (opcode === 0xe8) {
+        // EXCHANGE
+        const exchangeRaw = code[ptr + 1]
+        const n = (exchangeRaw >> 4) + 1
+        const m = (exchangeRaw & 0x0f) + 1
+        if (n + m + 1 > currentStackHeight) {
+          validationError(EOFError.StackUnderflow)
+        }
       } else if (opcode === 0xec) {
         // EOFCREATE
         const target = code[ptr + 1]
