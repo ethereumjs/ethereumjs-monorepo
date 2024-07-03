@@ -148,7 +148,7 @@ function BLS12_381_ToFrPoint(input: Uint8Array): bigint {
   // 4. bls_g1mul_random*p1_unnormalized_scalar outside threshold (ORDER + 1 (?))
   //
   if (Fr > bls12_381.fields.Fr.ORDER) {
-    return Fr - bls12_381.fields.Fr.ORDER
+    return Fr % bls12_381.fields.Fr.ORDER
   }
   return Fr
 }
