@@ -143,7 +143,9 @@ export const stackDelta: {
   0xd3: { inputs: 3, outputs: 0, name: 'DATACOPY', intermediates: 0 },
   0xe0: { inputs: 0, outputs: 0, name: 'RJUMP', intermediates: 2 },
   0xe1: { inputs: 1, outputs: 0, name: 'RJUMPI', intermediates: 2 },
-  0xe2: { inputs: 1, outputs: 0, name: 'RJUMPV', intermediates: 1 },
+  // NOTE: for RJUMPV the intermediate byte is set to 0, this has to do with the validation algorithm specifics
+  // This has to do with the dynamic intermediate size of RJUMPV, which depends upon the table size byte right after RJUMPV
+  0xe2: { inputs: 1, outputs: 0, name: 'RJUMPV', intermediates: 0 },
   0xe3: { inputs: 0, outputs: 0, name: 'CALLF', intermediates: 2 },
   0xe4: { inputs: 0, outputs: 0, name: 'RETF', intermediates: 0, terminating: true },
   0xe5: { inputs: 0, outputs: 0, name: 'JUMPF', intermediates: 2, terminating: true },

@@ -213,7 +213,9 @@ function validateOpcodes(
         }
 
         // Special case for RJUMPV: move ptr over the table (the immediate starting byte will be added later)
-        ptr += 2 * tableSize
+        // In this special case, add the immediate starting byte
+        addIntermediate(ptr + 1)
+        ptr += 2 * tableSize + 1
       } else if (opcode === 0xe3 || opcode === 0xe5) {
         // CALLF / JUMPF
         const target = readUint16(code, ptr + 1)
