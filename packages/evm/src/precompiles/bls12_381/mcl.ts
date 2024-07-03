@@ -11,7 +11,9 @@ import { ERROR, EvmError } from '../../exceptions.js'
 
 import {
   BLS_FIELD_MODULUS,
+  BLS_G1_INFINITY_POINT_BYTES,
   BLS_G1_POINT_BYTE_LENGTH,
+  BLS_G2_INFINITY_POINT_BYTES,
   BLS_G2_POINT_BYTE_LENGTH,
   BLS_ONE_BUFFER,
   BLS_ZERO_BUFFER,
@@ -28,15 +30,14 @@ import type { EVMBLSInterface } from '../../types.js'
  * @returns MCL G1 point
  */
 function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): any {
+  if (equalsBytes(input, BLS_G1_INFINITY_POINT_BYTES)) {
+    return new mcl.G1()
+  }
+
   const p_x = bytesToUnprefixedHex(input.subarray(16, BLS_G1_POINT_BYTE_LENGTH / 2))
   const p_y = bytesToUnprefixedHex(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
 
   const G1 = new mcl.G1()
-
-  const ZeroString48Bytes = '0'.repeat(96)
-  if (p_x === p_y && p_x === ZeroString48Bytes) {
-    return G1
-  }
 
   const Fp_X = new mcl.Fp()
   const Fp_Y = new mcl.Fp()
@@ -93,24 +94,14 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
  * @returns MCL G2 point
  */
 function BLS12_381_ToG2Point(input: Uint8Array, mcl: any, verifyOrder = true): any {
+  if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES)) {
+    return new mcl.G2()
+  }
+
   const p_x_1 = input.subarray(0, 64)
   const p_x_2 = input.subarray(64, BLS_G2_POINT_BYTE_LENGTH / 2)
   const p_y_1 = input.subarray(128, 192)
   const p_y_2 = input.subarray(192, BLS_G2_POINT_BYTE_LENGTH)
-
-  const ZeroBytes64 = new Uint8Array(64)
-  // check if we have to do with a zero point
-  if (
-    // TODO: is this really the zero point check along the lines of this multi-dimensionality?
-    // Let's please confirm here with a close look at the respective indices!
-    // (goes for Noble as well)
-    equalsBytes(p_x_1, p_x_2) &&
-    equalsBytes(p_x_1, p_y_1) &&
-    equalsBytes(p_x_1, p_y_2) &&
-    equalsBytes(p_x_1, ZeroBytes64)
-  ) {
-    return new mcl.G2()
-  }
 
   const Fp2X = BLS12_381_ToFp2Point(p_x_1, p_x_2, mcl)
   const Fp2Y = BLS12_381_ToFp2Point(p_y_1, p_y_2, mcl)

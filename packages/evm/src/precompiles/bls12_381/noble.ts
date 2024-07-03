@@ -38,12 +38,12 @@ type Fp2 = {
  * @returns MCL G1 point
  */
 function BLS12_381_ToG1Point(input: Uint8Array) {
-  const x = bytesToBigInt(input.subarray(16, BLS_G1_POINT_BYTE_LENGTH / 2))
-  const y = bytesToBigInt(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
-
-  if (x === y && x === BIGINT_0) {
+  if (equalsBytes(input, BLS_G1_INFINITY_POINT_BYTES)) {
     return bls12_381.G1.ProjectivePoint.ZERO
   }
+
+  const x = bytesToBigInt(input.subarray(16, BLS_G1_POINT_BYTE_LENGTH / 2))
+  const y = bytesToBigInt(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
 
   const G1 = bls12_381.G1.ProjectivePoint.fromAffine({
     x,
@@ -86,21 +86,14 @@ function BLS12_381_FromG1Point(input: AffinePoint<bigint>): Uint8Array {
  * @returns MCL G2 point
  */
 function BLS12_381_ToG2Point(input: Uint8Array) {
+  if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES)) {
+    return bls12_381.G2.ProjectivePoint.ZERO
+  }
+
   const p_x_1 = input.subarray(0, 64)
   const p_x_2 = input.subarray(64, BLS_G2_POINT_BYTE_LENGTH / 2)
   const p_y_1 = input.subarray(128, 192)
   const p_y_2 = input.subarray(192, BLS_G2_POINT_BYTE_LENGTH)
-
-  const ZeroBytes64 = new Uint8Array(64)
-  // check if we have to do with a zero point
-  if (
-    equalsBytes(p_x_1, p_x_2) &&
-    equalsBytes(p_x_1, p_y_1) &&
-    equalsBytes(p_x_1, p_y_2) &&
-    equalsBytes(p_x_1, ZeroBytes64)
-  ) {
-    return bls12_381.G2.ProjectivePoint.ZERO
-  }
 
   const Fp2X = BLS12_381_ToFp2Point(p_x_1, p_x_2)
   const Fp2Y = BLS12_381_ToFp2Point(p_y_1, p_y_2)
