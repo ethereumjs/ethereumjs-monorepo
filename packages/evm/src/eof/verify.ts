@@ -4,6 +4,11 @@ import { stackDelta } from './stackDelta.js'
 import type { EVM } from '../evm.js'
 import type { EOFContainer } from './container.js'
 
+export enum ContainerSectionType {
+  InitCode, // Targeted by EOFCreate
+  DeploymentCode, // Targeted by DeploymentCode
+}
+
 export function verifyCode(container: EOFContainer, evm: EVM) {
   validateOpcodes(container, evm)
   validateStack(container, evm)
@@ -22,6 +27,10 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
   const intermediateBytes = new Set<number>()
   // Track the jump locations (for forward jumps it is unknown at the first pass if the byte is intermediate)
   const jumpLocations = new Set<number>()
+
+  // Track the type of the container targets
+  // Should at the end of the analysis have all the containers
+  const containerTypeMap = new Map<number, ContainerSectionType>()
 
   function addJump(location: number) {
     if (intermediateBytes.has(location)) {
@@ -226,8 +235,28 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
         }
       } else if (opcode === 0xec) {
         // EOFCREATE
+        const target = readUint16(code, ptr + 1)
+        if (target >= container.header.containerSizes.length) {
+          validationError(EOFError.InvalidEOFCreateTarget)
+        }
+        if (containerTypeMap.has(target)) {
+          if (containerTypeMap.get(target) !== ContainerSectionType.InitCode) {
+            validationError(EOFError.ContainerDoubleType)
+          }
+        }
+        containerTypeMap.set(target, ContainerSectionType.InitCode)
       } else if (opcode === 0xee) {
         // RETURNCONTRACT
+        const target = readUint16(code, ptr + 1)
+        if (target >= container.header.containerSizes.length) {
+          validationError(EOFError.InvalidRETURNContractTarget)
+        }
+        if (containerTypeMap.has(target)) {
+          if (containerTypeMap.get(target) !== ContainerSectionType.DeploymentCode) {
+            validationError(EOFError.ContainerDoubleType)
+          }
+        }
+        containerTypeMap.set(target, ContainerSectionType.DeploymentCode)
       } else if (opcode === 0xd1) {
         // DATALOADN
         const dataTarget = readUint16(code, ptr + 1)
@@ -289,6 +318,10 @@ function validateOpcodes(container: EOFContainer, evm: EVM) {
 
   if (sectionAccumulator.size !== container.header.codeSizes.length) {
     validationError(EOFError.UnreachableCodeSections)
+  }
+
+  if (containerTypeMap.size !== container.header.containerSizes.length) {
+    validationError(EOFError.UnreachableContainerSections)
   }
 }
 

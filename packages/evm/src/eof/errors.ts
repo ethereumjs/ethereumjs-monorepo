@@ -43,6 +43,10 @@ export enum EOFError {
   // Container section
   ContainerSection = 'expected a container section',
   ContainerSectionMin = 'container section should be at least 1 byte',
+  InvalidEOFCreateTarget = 'EOFCREATE targets an undefined container',
+  InvalidRETURNContractTarget = 'RETURNCONTRACT targets an undefined container',
+  ContainerDoubleType = 'Container is targeted by both EOFCREATE and RETURNCONTRACT',
+  UnreachableContainerSections = 'Unreachable containers (by both EOFCREATE and RETURNCONTRACT)',
 
   // Dangling Bytes
   DanglingBytes = 'got dangling bytes in body',
