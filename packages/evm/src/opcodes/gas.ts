@@ -493,7 +493,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas +=
           common.param('gasPrices', 'keccak256Word') * divCeil(BigInt(container.length), BIGINT_32)
 
-        const gasLeft = runState.interpreter.getGasLeft()
+        const gasLeft = runState.interpreter.getGasLeft() - gas
         runState.messageGasLimit = maxCallGas(gasLeft, gasLeft, runState, common)
 
         return gas
