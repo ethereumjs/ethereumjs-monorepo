@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18]
+        node-version: [20]
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -34,19 +34,7 @@ jobs:
       - run: npm ci
       - run: npm run install-browser-deps
 
-      - run: npm run test:browser -w=@ethereumjs/rlp
-      - run: npm run test:browser -w=@ethereumjs/util
-      - run: npm run test:browser -w=@ethereumjs/common
-      - run: npm run test:browser -w=@ethereumjs/trie
-      - run: npm run test:browser -w=@ethereumjs/tx
-      - run: npm run test:browser -w=@ethereumjs/block
-      #     No browser tests for devp2p
-      - run: npm run test:browser -w=@ethereumjs/blockchain
-      #     No browser tests for ethash
-      - run: npm run test:browser -w=@ethereumjs/wallet
-      - run: npm run test:browser -w=@ethereumjs/statemanager
-      - run: npm run test:browser -w=@ethereumjs/evm
-      - run: npm run test:browser -w=@ethereumjs/vm
-      - run: npm run test:browser -w=@ethereumjs/verkle
+      - run: npm run test:browser --workspaces --if-present
+
 
 
