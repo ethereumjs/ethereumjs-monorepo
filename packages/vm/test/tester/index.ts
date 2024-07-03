@@ -45,6 +45,7 @@ import type { bn128 } from '@ethereumjs/evm'
  * --expected-test-amount: number.        If passed, check after tests are ran if at least this amount of tests have passed (inclusive)
  * --verify-test-amount-alltests: number. If passed, get the expected amount from tests and verify afterwards if this is the count of tests (expects tests are ran with default settings)
  * --reps: number.                        If passed, each test case will be run the number of times indicated
+ * --bls: string.                         Use MCL as a bls library if passed (default: Noble) (state tests only)
  * --profile                              If this flag is passed, the state/blockchain tests will profile
  */
 
@@ -116,6 +117,7 @@ async function runTests() {
     debug?: boolean
     reps?: number
     profile: boolean
+    bls?: string
     bn128: bn128
   } = {
     forkConfigVM: FORK_CONFIG_VM,
@@ -128,6 +130,7 @@ async function runTests() {
     value: argv.value, // GeneralStateTests
     debug: argv.debug, // BlockchainTests
     reps: argv.reps, // test repetitions
+    bls: argv.bls,
     profile: RUN_PROFILER,
     bn128,
   }

@@ -3,7 +3,6 @@ import {
   bytesToUnprefixedHex,
   concatBytes,
   equalsBytes,
-  padToEven,
   setLengthLeft,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
