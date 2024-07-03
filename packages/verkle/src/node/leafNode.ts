@@ -40,7 +40,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   static async create(
     stem: Uint8Array,
     verkleCrypto: VerkleCrypto,
-    values?: (Uint8Array | 0 | 1)[]
+    values?: (Uint8Array | VerkleLeafNodeValue)[]
   ): Promise<LeafNode> {
     // Generate the value arrays for c1 and c2
     values = values !== undefined ? values : DEFAULT_LEAF_VALUES

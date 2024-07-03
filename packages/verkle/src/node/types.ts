@@ -40,7 +40,7 @@ export enum VerkleLeafNodeValue {
 }
 interface VerkleLeafNodeOptions extends BaseVerkleNodeOptions {
   stem: Uint8Array
-  values?: (Uint8Array | 0 | 1)[]
+  values?: (Uint8Array | VerkleLeafNodeValue)[]
   c1?: Uint8Array
   c2?: Uint8Array
 }

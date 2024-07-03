@@ -5,6 +5,7 @@ import { InternalNode } from './internalNode.js'
 import { LeafNode } from './leafNode.js'
 import { type VerkleNode, VerkleNodeType } from './types.js'
 
+import type { VerkleLeafNodeValue } from './types.js'
 import type { VerkleCrypto } from '@ethereumjs/util'
 
 export function decodeRawNode(raw: Uint8Array[], verkleCrypto: VerkleCrypto): VerkleNode {
@@ -40,7 +41,7 @@ export function isRawNode(node: Uint8Array | Uint8Array[]): node is Uint8Array[]
  * Returns an array of 256 16byte UintArrays with the leaf marker set for each value that is deleted
  */
 export const createCValues = (
-  values: (Uint8Array | 0 | 1)[],
+  values: (Uint8Array | VerkleLeafNodeValue)[],
   deletedValues = new Array(128).fill(false)
 ) => {
   if (values.length !== 128 || deletedValues.length !== 128)
