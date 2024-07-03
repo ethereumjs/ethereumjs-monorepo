@@ -1012,7 +1012,7 @@ export class Interpreter {
     value: bigint,
     codeToRun: Uint8Array,
     salt?: Uint8Array,
-    callData?: Uint8Array
+    eofCallData?: Uint8Array
   ): Promise<bigint> {
     const selfdestruct = new Set(this._result.selfdestruct)
     const caller = this._env.address
@@ -1051,7 +1051,7 @@ export class Interpreter {
       gasLimit,
       value,
       data: codeToRun,
-      code: callData,
+      eofCallData,
       salt,
       depth,
       selfdestruct,

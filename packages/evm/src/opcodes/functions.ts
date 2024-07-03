@@ -1283,6 +1283,8 @@ export const handlers: Map<number, OpHandler> = new Map([
           data = runState.memory.read(Number(inputOffset), Number(inputSize), true)
         }
 
+        runState.programCounter++ // Jump over the immediate byte
+
         const ret = await runState.interpreter.eofcreate(
           gasLimit,
           value,

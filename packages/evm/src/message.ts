@@ -22,6 +22,7 @@ interface MessageOpts {
   caller?: Address
   gasLimit: bigint
   data?: Uint8Array
+  eofCallData?: Uint8Array
   depth?: number
   code?: Uint8Array | PrecompileFunc
   codeAddress?: Address
@@ -49,6 +50,7 @@ export class Message {
   caller: Address
   gasLimit: bigint
   data: Uint8Array
+  eofCallData?: Uint8Array // Only used in EOFCreate to signal an EOF contract to be created with this calldata
   depth: number
   code?: Uint8Array | PrecompileFunc
   _codeAddress?: Address
@@ -84,6 +86,7 @@ export class Message {
     this.caller = opts.caller ?? defaults.caller
     this.gasLimit = opts.gasLimit
     this.data = opts.data ?? defaults.data
+    this.eofCallData = opts.eofCallData
     this.depth = opts.depth ?? defaults.depth
     this.code = opts.code
     this._codeAddress = opts.codeAddress
