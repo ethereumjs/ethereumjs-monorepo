@@ -79,6 +79,7 @@ class EOFHeader {
   codeSizes: number[]
   containerSizes: number[]
   dataSize: number
+  dataSizePtr: number // Used to edit the dataSize in RETURNCONTRACT
   buffer: Uint8Array
 
   private codeStartPos: number[]
@@ -148,6 +149,8 @@ class EOFHeader {
     if (nextSection !== KIND_DATA) {
       validationError(EOFError.KIND_DATA)
     }
+
+    this.dataSizePtr = stream.getPtr()
 
     const dataSize = stream.readUint16(EOFError.DataSize)
 

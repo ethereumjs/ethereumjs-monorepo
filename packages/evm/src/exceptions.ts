@@ -23,6 +23,7 @@ export enum ERROR {
   INITCODE_SIZE_VIOLATION = 'initcode exceeds max initcode size',
   INVALID_INPUT_LENGTH = 'invalid input length',
   INVALID_EXTCALL_TARGET = 'invalid extcall target: address > 20 bytes',
+  INVALID_RETURNCONTRACT_DATA_SIZE = 'invalid RETURNCONTRACT: data size lower than expected',
 
   AUTHCALL_UNSET = 'attempting to AUTHCALL without AUTH set',
 

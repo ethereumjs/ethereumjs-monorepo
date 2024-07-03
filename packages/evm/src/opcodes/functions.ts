@@ -1316,6 +1316,27 @@ export const handlers: Map<number, OpHandler> = new Map([
           auxData = runState.memory.read(Number(auxDataOffset), Number(auxDataSize))
         }
 
+        const originalDataSize = runState.env.eof.container.header.dataSize
+        const preDeployDataSectionSize = runState.env.eof.container.body.dataSection.length
+        const actualSectionSize = preDeployDataSectionSize + Number(auxDataSize)
+
+        if (actualSectionSize < originalDataSize) {
+          trap(ERROR.INVALID_RETURNCONTRACT_DATA_SIZE)
+        }
+
+        if (actualSectionSize > 0xffff) {
+          // Data section size is now larger than the max data section size
+          // Temp: trap OOG?
+          trap(ERROR.OUT_OF_GAS)
+        }
+
+        const newSize = setLengthLeft(bigIntToBytes(BigInt(actualSectionSize)), 2)
+
+        // Write the bytes to the containerCode
+        const dataSizePtr = runState.env.eof.container.header.dataSizePtr
+        containerCode[dataSizePtr] = newSize[0]
+        containerCode[dataSizePtr + 1] = newSize[1]
+
         const returnContainer = concatBytes(containerCode, auxData)
 
         runState.interpreter.finish(returnContainer)
