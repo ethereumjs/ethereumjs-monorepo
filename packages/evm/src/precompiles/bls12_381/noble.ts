@@ -1,10 +1,12 @@
 import {
   BIGINT_0,
+  bigIntToBytes,
   bigIntToHex,
   bytesToBigInt,
   concatBytes,
   equalsBytes,
   padToEven,
+  setLengthLeft,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { bls12_381 } from '@noble/curves/bls12-381'
@@ -68,11 +70,8 @@ function BLS12_381_ToG1Point(input: Uint8Array) {
 // input: a mcl G1 point
 // output: a 128-byte Uint8Array
 function BLS12_381_FromG1Point(input: AffinePoint<bigint>): Uint8Array {
-  const xval = padToEven(bigIntToHex(input.x).slice(2))
-  const yval = padToEven(bigIntToHex(input.y).slice(2))
-
-  const xBytes = concatBytes(new Uint8Array(64 - xval.length / 2), unprefixedHexToBytes(xval))
-  const yBytes = concatBytes(new Uint8Array(64 - yval.length / 2), unprefixedHexToBytes(yval))
+  const xBytes = setLengthLeft(bigIntToBytes(input.x), 64)
+  const yBytes = setLengthLeft(bigIntToBytes(input.y), 64)
 
   return concatBytes(xBytes, yBytes)
 }
@@ -118,15 +117,10 @@ function BLS12_381_ToG2Point(input: Uint8Array) {
 // input: a mcl G1 point
 // output: a 128-byte Uint8Array
 function BLS12_381_FromG2Point(input: AffinePoint<Fp2>): Uint8Array {
-  const x_1 = padToEven(bigIntToHex(input.x.c0).slice(2))
-  const x_2 = padToEven(bigIntToHex(input.x.c1).slice(2))
-  const y_1 = padToEven(bigIntToHex(input.y.c0).slice(2))
-  const y_2 = padToEven(bigIntToHex(input.y.c1).slice(2))
-
-  const xBytes1 = concatBytes(new Uint8Array(64 - x_1.length / 2), unprefixedHexToBytes(x_1))
-  const xBytes2 = concatBytes(new Uint8Array(64 - x_2.length / 2), unprefixedHexToBytes(x_2))
-  const yBytes1 = concatBytes(new Uint8Array(64 - y_1.length / 2), unprefixedHexToBytes(y_1))
-  const yBytes2 = concatBytes(new Uint8Array(64 - y_2.length / 2), unprefixedHexToBytes(y_2))
+  const xBytes1 = setLengthLeft(bigIntToBytes(input.x.c0), 64)
+  const xBytes2 = setLengthLeft(bigIntToBytes(input.x.c1), 64)
+  const yBytes1 = setLengthLeft(bigIntToBytes(input.y.c0), 64)
+  const yBytes2 = setLengthLeft(bigIntToBytes(input.y.c1), 64)
 
   return concatBytes(xBytes1, xBytes2, yBytes1, yBytes2)
 }
