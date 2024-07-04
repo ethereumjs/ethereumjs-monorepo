@@ -133,15 +133,18 @@ export class Stack {
    * @param swap2
    */
   exchange(swap1: number, swap2: number) {
-    const len = this._len
-    // This check is likely done at validation time
-    // TODO: check if this is necessary
-    if (swap1 > len || swap2 > len) {
+    const headIndex = this._len - 1
+    const exchangeIndex1 = headIndex - swap1
+    const exchangeIndex2 = headIndex - swap2
+
+    // Stack underflow is not possible in EOF
+    if (exchangeIndex1 < 0 || exchangeIndex2 < 0) {
       throw new EvmError(ERROR.STACK_UNDERFLOW)
     }
-    const cache = this._store[swap1]
-    this._store[swap1] = this._store[swap2]
-    this._store[swap2] = cache
+
+    const cache = this._store[exchangeIndex2]
+    this._store[exchangeIndex2] = this._store[exchangeIndex1]
+    this._store[exchangeIndex1] = cache
   }
 
   /**
