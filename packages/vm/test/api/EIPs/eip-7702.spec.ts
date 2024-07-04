@@ -229,6 +229,9 @@ describe('EIP 7702: set code to EOA accounts', () => {
     assert.ok(res.execResult.executionGasUsed === BigInt(115))
   })
 
+  // This test shows, that due to EIP-161, if an EOA has 0 nonce and 0 balance,
+  // if EIP-7702 code is being ran which sets storage on this EOA,
+  // the account is still deleted after the tx (and thus also the storage is wiped)
   it('EIP-161 test case', async () => {
     const vm = await VM.create({ common })
     const authList = [
@@ -260,10 +263,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
     await vm.runTx({ tx })
 
     // Note: due to EIP-161, defaultAuthAddr is now deleted
-
-    const slot = hexToBytes('0x' + '00'.repeat(31) + '01')
-    // This will therefore throw (account does not exist)
-    const value = await vm.stateManager.getContractStorage(defaultAuthAddr, slot)
-    assert.ok(equalsBytes(unpadBytes(slot), value))
+    const account = await vm.stateManager.getAccount(defaultAuthAddr)
+    assert.ok(account === undefined)
   })
 })
