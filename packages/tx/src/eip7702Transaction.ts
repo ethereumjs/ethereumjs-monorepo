@@ -237,7 +237,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
    * Returns a Uint8Array Array of the raw Bytes of the EIP-7702 transaction, in order.
    *
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-   * accessList, signatureYParity, signatureR, signatureS]`
+   * accessList, authorizationList, signatureYParity, signatureR, signatureS]`
    *
    * Use {@link EOACodeEIP7702Transaction.serialize} to add a transaction to a block
    * with {@link Block.fromValuesArray}.
@@ -268,7 +268,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
    * Returns the serialized encoding of the EIP-7702 transaction.
    *
    * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-   * accessList, signatureYParity, signatureR, signatureS])`
+   * accessList, authorizationList, signatureYParity, signatureR, signatureS])`
    *
    * Note that in contrast to the legacy tx serialization format this is not
    * valid RLP any more due to the raw tx type preceding and concatenated to
@@ -290,7 +290,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
    * ```
    */
   getMessageToSign(): Uint8Array {
-    return EIP2718.serialize(this, this.raw().slice(0, 9))
+    return EIP2718.serialize(this, this.raw().slice(0, 10))
   }
 
   /**
