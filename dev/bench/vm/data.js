@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1719921402957,
+  "lastUpdate": 1720121477722,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0786896bc16a5e0f805fc653887d85ce7c2c9152",
-          "message": "vm: missing beaconroot account verkle fix (#3421)",
-          "timestamp": "2024-05-14T10:44:17-04:00",
-          "tree_id": "5fd5e6db62c7ebd98736f88bddac73bfb0575300",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0786896bc16a5e0f805fc653887d85ce7c2c9152"
-        },
-        "date": 1715698017528,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41957,
-            "range": "±2.18%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40190,
-            "range": "±2.86%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40674,
-            "range": "±1.59%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 40063,
-            "range": "±1.77%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38739,
-            "range": "±1.80%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.73%",
             "unit": "ops/sec",
             "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8d5bca0e2c4ab89124fac324aedbf48297d6d8d5",
+          "message": "Implement EIP 7702 (#3470)\n\n* common/tx: implement EIP7702\n\n* tx: add 7702 cap and update authority checks\n\n* vm: add 7702 support\n\n* tx: add 7702 tests\n\n* client: fix build\n\n* evm: support 7702\n\n* vm: add basic 7702 test and fix decoding auth list\n\n* vm: add specific eip-161 test\n\n* Merge branch 'master' into eip7702\n\n* vm: bump 7702 test coverage with one passing test\n\n* vm: add more 7702 tests\n\n* vm: add extra 7702 tests\n\n* tx: address feedback\n\n* vm: address review\n\n* vm: add 7702 test to check for empty code (fails)\n\n* vm: fix 7702 empty code clearing\n\n* Merge branch 'master' into eip7702\n\n* Merge remote-tracking branch 'origin/master' into eip7702\n\n* Merge branch 'master' into eip7702\n\n* add 7702 type to tx factory constructors\n\n* add 7702 test to runBlock test\n\n* vm: comment 7702 test\n\n* vm: remove runBlock .only\n\n* tx: address reviews\n\n* tx: 7702 do not unpad address in authority list\n\n* vm: update eip7702 test",
+          "timestamp": "2024-07-04T15:25:18-04:00",
+          "tree_id": "e6e82f23b7d464bc3ff6c883252cb03f3f5f1e3b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8d5bca0e2c4ab89124fac324aedbf48297d6d8d5"
+        },
+        "date": 1720121477210,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37257,
+            "range": "±2.64%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36940,
+            "range": "±1.40%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 36578,
+            "range": "±1.51%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 33826,
+            "range": "±5.53%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35144,
+            "range": "±1.75%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
