@@ -4,7 +4,7 @@ export const MAGIC = 0x00
 export const VERSION = 0x01
 
 export const MIN_HEADER_SIZE = 15
-export const MAX_HEADER_SIZE = 41952 // Max initcode size, EIP 3860
+export const MAX_HEADER_SIZE = 49152 // Max initcode size, EIP 3860
 
 export const KIND_TYPE = 0x01
 export const KIND_CODE = 0x02
