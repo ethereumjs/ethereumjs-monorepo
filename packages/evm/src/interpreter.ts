@@ -1221,7 +1221,7 @@ export class Interpreter {
     } else {
       // EOF mode, call was either EXTCALL / EXTDELEGATECALL / EXTSTATICCALL
       if (results.execResult.exceptionError !== undefined) {
-        if (results.execResult.exceptionError.errorType === ERROR.REVERT) {
+        if (results.execResult.exceptionError.error === ERROR.REVERT) {
           // Revert
           return BIGINT_1
         } else {
