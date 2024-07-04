@@ -14,7 +14,9 @@ import debugDefault from 'debug'
 
 //import { EOF } from './eof/eof.js'
 import { FORMAT, MAGIC, VERSION } from './eof/constants.js'
+import { EOFContainerMode, validateEOF } from './eof/container.js'
 import { setupEOF } from './eof/setup.js'
+import { ContainerSectionType } from './eof/verify.js'
 import { ERROR, EvmError } from './exceptions.js'
 import { type EVMPerformanceLogger, type Timer } from './logger.js'
 import { Memory } from './memory.js'
@@ -209,6 +211,24 @@ export class Interpreter {
       }
       this._runState.code = code
       setupEOF(this._runState)
+
+      if (this._env.isCreate && this._env.depth === 0) {
+        // Tx tries to deploy container
+        try {
+          validateEOF(
+            this._runState.code,
+            this._evm,
+            ContainerSectionType.InitCode,
+            EOFContainerMode.TxInitmode
+          )
+        } catch (e) {
+          // Trying to deploy an invalid EOF container
+          return {
+            runState: this._runState,
+            // exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT) // TODO: verify if all gas should be consumed
+          }
+        }
+      }
     }
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
     // Check that the programCounter is in range
