@@ -155,7 +155,7 @@ export const stackDelta: {
   0xe7: { inputs: 0, outputs: 0, name: 'SWAPN', intermediates: 1 },
   0xe8: { inputs: 0, outputs: 0, name: 'EXCHANGE', intermediates: 1 },
   0xec: { inputs: 4, outputs: 1, name: 'EOFCREATE', intermediates: 1 },
-  0xee: { inputs: 3, outputs: 1, name: 'RETURNCONTRACT', intermediates: 1, terminating: true },
+  0xee: { inputs: 2, outputs: 0, name: 'RETURNCONTRACT', intermediates: 1, terminating: true },
   0xf3: { inputs: 2, outputs: 0, name: 'RETURN', intermediates: 0, terminating: true },
   0xf7: { inputs: 1, outputs: 1, name: 'RETURNDATALOAD', intermediates: 0 },
   0xf8: { inputs: 4, outputs: 1, name: 'EXTCALL', intermediates: 0 },
