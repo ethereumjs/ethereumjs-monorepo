@@ -3,8 +3,16 @@ import { bytesToBigInt, toBytes } from '@ethereumjs/util'
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction.js'
 import type { BlobEIP4844Transaction } from './eip4844Transaction.js'
+import type { EOACodeEIP7702Transaction } from './eip7702Transaction.js'
 import type { LegacyTransaction } from './legacyTransaction.js'
-import type { AccessList, AccessListBytes, Common, Hardfork } from '@ethereumjs/common'
+import type {
+  AccessList,
+  AccessListBytes,
+  AuthorizationList,
+  AuthorizationListBytes,
+  Common,
+  Hardfork,
+} from '@ethereumjs/common'
 import type {
   Address,
   AddressLike,
@@ -17,6 +25,10 @@ export type {
   AccessListBytes,
   AccessListBytesItem,
   AccessListItem,
+  AuthorizationList,
+  AuthorizationListBytes,
+  AuthorizationListBytesItem,
+  AuthorizationListItem,
 } from '@ethereumjs/common'
 
 /**
@@ -47,6 +59,12 @@ export enum Capability {
    * See: [2930](https://eips.ethereum.org/EIPS/eip-2930) Access Lists EIP
    */
   EIP2930AccessLists = 2930,
+
+  /**
+   * Tx supports setting EOA code
+   * See [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702)
+   */
+  EIP7702EOACode = 7702,
 }
 
 /**
@@ -99,6 +117,25 @@ export function isAccessList(input: AccessListBytes | AccessList): input is Acce
   return !isAccessListBytes(input) // This is exactly the same method, except the output is negated.
 }
 
+export function isAuthorizationListBytes(
+  input: AuthorizationListBytes | AuthorizationList
+): input is AuthorizationListBytes {
+  if (input.length === 0) {
+    return true
+  }
+  const firstItem = input[0]
+  if (Array.isArray(firstItem)) {
+    return true
+  }
+  return false
+}
+
+export function isAuthorizationList(
+  input: AuthorizationListBytes | AuthorizationList
+): input is AuthorizationList {
+  return !isAuthorizationListBytes(input) // This is exactly the same method, except the output is negated.
+}
+
 export interface TransactionCache {
   hash?: Uint8Array
   dataFee?: {
@@ -116,6 +153,7 @@ export enum TransactionType {
   AccessListEIP2930 = 1,
   FeeMarketEIP1559 = 2,
   BlobEIP4844 = 3,
+  EOACodeEIP7702 = 4,
 }
 
 export interface Transaction {
@@ -123,6 +161,7 @@ export interface Transaction {
   [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559Transaction
   [TransactionType.AccessListEIP2930]: AccessListEIP2930Transaction
   [TransactionType.BlobEIP4844]: BlobEIP4844Transaction
+  [TransactionType.EOACodeEIP7702]: EOACodeEIP7702Transaction
 }
 
 export type TypedTransaction = Transaction[TransactionType]
@@ -141,6 +180,10 @@ export function isFeeMarketEIP1559Tx(tx: TypedTransaction): tx is FeeMarketEIP15
 
 export function isBlobEIP4844Tx(tx: TypedTransaction): tx is BlobEIP4844Transaction {
   return tx.type === TransactionType.BlobEIP4844
+}
+
+export function isEOACodeEIP7702Tx(tx: TypedTransaction): tx is EOACodeEIP7702Transaction {
+  return tx.type === TransactionType.EOACodeEIP7702
 }
 
 export interface TransactionInterface<T extends TransactionType = TransactionType> {
@@ -209,11 +252,18 @@ export interface EIP4844CompatibleTx<T extends TransactionType = TransactionType
   numBlobs(): number
 }
 
+export interface EIP7702CompatibleTx<T extends TransactionType = TransactionType>
+  extends EIP1559CompatibleTx<T> {
+  // ChainID, Address, [nonce], y_parity, r, s
+  readonly authorizationList: AuthorizationListBytes
+}
+
 export interface TxData {
   [TransactionType.Legacy]: LegacyTxData
   [TransactionType.AccessListEIP2930]: AccessListEIP2930TxData
   [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559TxData
   [TransactionType.BlobEIP4844]: BlobEIP4844TxData
+  [TransactionType.EOACodeEIP7702]: EOACodeEIP7702TxData
 }
 
 export type TypedTxData = TxData[TransactionType]
@@ -236,6 +286,11 @@ export function isFeeMarketEIP1559TxData(txData: TypedTxData): txData is FeeMark
 export function isBlobEIP4844TxData(txData: TypedTxData): txData is BlobEIP4844TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === TransactionType.BlobEIP4844
+}
+
+export function isEOACodeEIP7702TxData(txData: TypedTxData): txData is EOACodeEIP7702TxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)))
+  return txType === TransactionType.EOACodeEIP7702
 }
 
 /**
@@ -358,11 +413,19 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   blobsData?: string[]
 }
 
+/**
+ * {@link EOACodeEIP7702Tx} data.
+ */
+export interface EOACodeEIP7702TxData extends FeeMarketEIP1559TxData {
+  authorizationList?: AuthorizationListBytes | AuthorizationList | never
+}
+
 export interface TxValuesArray {
   [TransactionType.Legacy]: LegacyTxValuesArray
   [TransactionType.AccessListEIP2930]: AccessListEIP2930TxValuesArray
   [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559TxValuesArray
   [TransactionType.BlobEIP4844]: BlobEIP4844TxValuesArray
+  [TransactionType.EOACodeEIP7702]: EOACodeEIP7702TxValuesArray
 }
 
 /**
@@ -400,6 +463,25 @@ type FeeMarketEIP1559TxValuesArray = [
   Uint8Array,
   Uint8Array,
   AccessListBytes,
+  Uint8Array?,
+  Uint8Array?,
+  Uint8Array?
+]
+
+/**
+ * Bytes values array for a {@link EOACodeEIP7702Transaction}
+ */
+type EOACodeEIP7702TxValuesArray = [
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  AccessListBytes,
+  AuthorizationListBytes,
   Uint8Array?,
   Uint8Array?,
   Uint8Array?
@@ -453,7 +535,8 @@ export interface JsonTx {
   s?: PrefixedHexString
   value?: PrefixedHexString
   chainId?: PrefixedHexString
-  accessList?: JsonAccessListItem[]
+  accessList?: JsonAccessListItem[] // TODO should this not be AccessList?
+  authorizationList?: AuthorizationList
   type?: PrefixedHexString
   maxPriorityFeePerGas?: PrefixedHexString
   maxFeePerGas?: PrefixedHexString
