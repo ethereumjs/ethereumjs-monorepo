@@ -560,7 +560,7 @@ describe('runBlock() -> tx types', async () => {
     await simpleRun(vm, [tx])
   })
 
-  it.only('eip7702 txs', async () => {
+  it('eip7702 txs', async () => {
     /**
      * This test setups a block with 2 7702-txs. There are two codes:
      * Code1: stores "1" in slot 0
