@@ -203,7 +203,7 @@ export class AuthorizationLists {
       const yParity = authorizationListItem[3]
       const r = authorizationListItem[4]
       const s = authorizationListItem[5]
-      validateNoLeadingZeroes({ address, yParity, r, s })
+      validateNoLeadingZeroes({ yParity, r, s })
       if (address.length !== 20) {
         throw new Error('Invalid EIP-7702 transaction: address length should be 20 bytes')
       }
