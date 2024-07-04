@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1720121477722,
+  "lastUpdate": 1720123293642,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f79a6f2e73cdcaf3ace1325514ab307ab22588f5",
-          "message": "common: parse depositContractAddress from genesis (#3422)",
-          "timestamp": "2024-05-14T12:20:00-04:00",
-          "tree_id": "fdd3e569ac624ba5145280676b943ec135a147ff",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f79a6f2e73cdcaf3ace1325514ab307ab22588f5"
-        },
-        "date": 1715703953455,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42930,
-            "range": "±1.79%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40624,
-            "range": "±2.73%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40873,
-            "range": "±1.49%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 40501,
-            "range": "±1.55%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35974,
-            "range": "±5.96%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.75%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3171920e59f89263b5ad57906103d1e6a103ce9a",
+          "message": "Fix statemanager empty code bug (#3483)\n\n* common/tx: implement EIP7702\r\n\r\n* tx: add 7702 cap and update authority checks\r\n\r\n* vm: add 7702 support\r\n\r\n* tx: add 7702 tests\r\n\r\n* client: fix build\r\n\r\n* evm: support 7702\r\n\r\n* vm: add basic 7702 test and fix decoding auth list\r\n\r\n* vm: add specific eip-161 test\r\n\r\n* vm: bump 7702 test coverage with one passing test\r\n\r\n* vm: add more 7702 tests\r\n\r\n* vm: add extra 7702 tests\r\n\r\n* tx: address feedback\r\n\r\n* vm: address review\r\n\r\n* vm: add 7702 test to check for empty code (fails)\r\n\r\n* vm: fix 7702 empty code clearing\r\n\r\n* add 7702 type to tx factory constructors\r\n\r\n* add 7702 test to runBlock test\r\n\r\n* vm: comment 7702 test\r\n\r\n* stateManager: fix bug by putting empty code on an existing account\r\n\r\n* vm: 7702: remove modifyAccountFields\r\n\r\n* vm: remove .only from runBlock test\r\n\r\n* vm: remove runBlock .only\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>",
+          "timestamp": "2024-07-04T21:57:01+02:00",
+          "tree_id": "584ae462b5c4524f702850c5a17c78a6d1e2b14c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3171920e59f89263b5ad57906103d1e6a103ce9a"
+        },
+        "date": 1720123292476,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37930,
+            "range": "±2.95%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 37402,
+            "range": "±1.25%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37390,
+            "range": "±1.40%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 34869,
+            "range": "±4.23%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35835,
+            "range": "±1.65%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
           }
         ]
       }
