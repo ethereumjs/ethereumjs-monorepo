@@ -4,10 +4,25 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
   Capability,
+  EOACodeEIP7702Transaction,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
 } from '@ethereumjs/tx'
-import { Account, Address, KECCAK256_RLP, hexToBytes, toBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  BIGINT_1,
+  KECCAK256_RLP,
+  bigIntToBytes,
+  concatBytes,
+  ecsign,
+  hexToBytes,
+  privateToAddress,
+  toBytes,
+  unpadBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
@@ -24,7 +39,7 @@ import type {
   RunBlockOpts,
 } from '../../src/types'
 import type { BlockBytes } from '@ethereumjs/block'
-import type { ChainConfig } from '@ethereumjs/common'
+import type { AuthorizationListBytesItem, ChainConfig } from '@ethereumjs/common'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
@@ -541,5 +556,99 @@ describe('runBlock() -> tx types', async () => {
     }
 
     await simpleRun(vm, [tx])
+  })
+
+  it('eip7702 txs', async () => {
+    const defaultAuthPkey = hexToBytes(`0x${'20'.repeat(32)}`)
+    const defaultAuthAddr = new Address(privateToAddress(defaultAuthPkey))
+
+    const defaultSenderPkey = hexToBytes(`0x${'40'.repeat(32)}`)
+    const defaultSenderAddr = new Address(privateToAddress(defaultSenderPkey))
+
+    const code1Addr = Address.fromString(`0x${'01'.repeat(20)}`)
+    const code2Addr = Address.fromString(`0x${'02'.repeat(20)}`)
+
+    type GetAuthListOpts = {
+      chainId?: number
+      nonce?: number
+      address: Address
+      pkey?: Uint8Array
+    }
+
+    function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytesItem {
+      const actualOpts = {
+        ...{ chainId: 0, pkey: defaultAuthPkey },
+        ...opts,
+      }
+
+      const { chainId, nonce, address, pkey } = actualOpts
+
+      const chainIdBytes = unpadBytes(hexToBytes(`0x${chainId.toString(16)}`))
+      const nonceBytes =
+        nonce !== undefined ? [unpadBytes(hexToBytes(`0x${nonce.toString(16)}`))] : []
+      const addressBytes = address.toBytes()
+
+      const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
+      const msgToSign = keccak256(concatBytes(new Uint8Array([5]), rlpdMsg))
+      const signed = ecsign(msgToSign, pkey)
+
+      return [chainIdBytes, addressBytes, nonceBytes, bigIntToBytes(signed.v), signed.r, signed.s]
+    }
+
+    const common = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.Cancun,
+      eips: [7702],
+    })
+    const vm = await setupVM({ common })
+
+    await setBalance(vm, defaultSenderAddr, 0xfffffffffffffn)
+
+    const code1 = hexToBytes('0x600160015500')
+    await vm.stateManager.putContractCode(code1Addr, code1)
+
+    const code2 = hexToBytes('0x600260015500')
+    await vm.stateManager.putContractCode(code2Addr, code2)
+    const authorizationListOpts = [
+      {
+        address: code1Addr,
+      },
+      {
+        address: code2Addr,
+      },
+    ]
+    const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
+    const tx1 = EOACodeEIP7702Transaction.fromTxData(
+      {
+        gasLimit: 1000000000,
+        maxFeePerGas: 100000,
+        maxPriorityFeePerGas: 100,
+        authorizationList: authList,
+        to: defaultAuthAddr,
+        value: BIGINT_1,
+      },
+      { common }
+    ).sign(defaultSenderPkey)
+    const tx2 = EOACodeEIP7702Transaction.fromTxData(
+      {
+        gasLimit: 1000000000,
+        maxFeePerGas: 100000,
+        maxPriorityFeePerGas: 100,
+        authorizationList: authList,
+        to: defaultAuthAddr,
+        value: BIGINT_1,
+        nonce: 1,
+      },
+      { common }
+    ).sign(defaultSenderPkey)
+    const block = Block.fromBlockData(
+      {
+        transactions: [tx1, tx2],
+      },
+      { common, setHardfork: false, skipConsensusFormatValidation: true }
+    )
+
+    const res = await vm.runBlock({ block, skipBlockValidation: true, generate: true })
+    assert.ok(res !== undefined)
   })
 })
