@@ -7,6 +7,7 @@ import {
   VerkleNodeType,
   createDefaultLeafValues,
   createDeletedLeafValue,
+  createUntouchedLeafValue,
 } from './types.js'
 import { createCValues } from './util.js'
 
@@ -143,7 +144,10 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     // `val` is a bytes representation of `value` used to update the cCommitment
     if (value instanceof Uint8Array) val = value
     else
-      val = value === VerkleLeafNodeValue.Untouched ? new Uint8Array(32) : createDeletedLeafValue()
+      val =
+        value === VerkleLeafNodeValue.Untouched
+          ? createUntouchedLeafValue()
+          : createDeletedLeafValue()
     // First we update c1 or c2 (depending on whether the index is < 128 or not)
     // Generate the 16 byte values representing the 32 byte values in the half of the values array that
     // contain the old value for the leaf node
