@@ -1,4 +1,5 @@
 import { Account, bytesToHex } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import type {
   AccountFields,
@@ -42,7 +43,15 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   }
 
   add() {
-    this.accountStack.push(new Map(this.topA()))
+    const newTopA = new Map(this.topA())
+    for (const [address, account] of newTopA) {
+      const accountCopy =
+        account !== undefined
+          ? Object.assign(Object.create(Object.getPrototypeOf(account)), account)
+          : undefined
+      newTopA.set(address, accountCopy)
+    }
+    this.accountStack.push(newTopA)
     this.codeStack.push(new Map(this.topC()))
     this.storageStack.push(new Map(this.topS()))
   }
@@ -77,6 +86,10 @@ export class SimpleStateManager implements EVMStateManagerInterface {
 
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
     this.topC().set(address.toString(), value)
+    if ((await this.getAccount(address)) === undefined) {
+      await this.putAccount(address, new Account())
+    }
+    await this.modifyAccountFields(address, { codeHash: keccak256(value) })
   }
 
   async getContractCodeSize(address: Address): Promise<number> {
@@ -112,6 +125,9 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     this.codeStack.pop()
     this.storageStack.pop()
   }
+
+  async flush(): Promise<void> {}
+  clearCaches(): void {}
 
   shallowCopy(): EVMStateManagerInterface {
     const copy = new SimpleStateManager()
