@@ -680,10 +680,6 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   for (const str of writtenAddresses) {
     const address = Address.fromString(str)
     await this.stateManager.putContractCode(address, new Uint8Array())
-    // TODO verify if this is necessary
-    // `putContractCode` will not `modifyAccountFields` if one tries to put empty code
-    // So explicitly add this here - does this have side effects?
-    await this.stateManager.modifyAccountFields(address, { codeHash: KECCAK256_NULL })
   }
 
   if (enableProfiler) {
