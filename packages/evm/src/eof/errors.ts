@@ -60,6 +60,7 @@ export enum EOFError {
   InvalidRJUMP = 'invalid rjump* target',
   InvalidCallTarget = 'invalid callf/jumpf target',
   InvalidCALLFReturning = 'invalid callf: calls to non-returning function',
+  InvalidStackHeight = 'invalid stack height',
   InvalidJUMPF = 'invalid jumpf target (output count)',
   InvalidReturningSection = 'invalid returning code section: section is not returning',
   RJUMPVTableSize0 = 'invalid RJUMPV: table size 0',
@@ -69,6 +70,7 @@ export enum EOFError {
   MaxStackHeightViolation = 'Max stack height does not match the reported max stack height',
   StackUnderflow = 'Stack underflow',
   StackOverflow = 'Stack overflow',
+  UnstableStack = 'Unstable stack (can reach stack under/overflow by jumps)',
   RetfNoReturn = 'Trying to return to undefined function', // This should never happen (this is a return stack underflow)
   ReturnStackOverflow = 'Return stack overflow',
 }

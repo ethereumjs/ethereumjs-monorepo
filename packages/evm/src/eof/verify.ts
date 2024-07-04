@@ -138,20 +138,48 @@ function validateOpcodes(
     let ptr = 0
     let lastOpcode: number = 0 // Note: code sections cannot be empty, so this number will always be set
 
-    let currentStackHeight = container.body.typeSections[codeSection].inputs
-    let maxStackHeight = currentStackHeight
+    // Implement the EIP 5450 stack validation algorithm
+    const inputs = container.body.typeSections[codeSection].inputs
+    let maxStackHeight = inputs
+    // These arrays track the min/max stack height **before** executing the instruction
+    const stackHeightMin: number[] = [inputs]
+    const stackHeightMax: number[] = [inputs]
 
     while (ptr < code.length) {
+      // This set tracks the successor opcodes of this opcode (for stack purposes)
+      const successorSet = new Set<number>()
+
+      // ReachableOpcodes: this can likely be deleted after implementing the 5450 algorithm
       if (!reachableOpcodes.has(ptr)) {
         validationError(EOFError.UnreachableCode)
       }
+
+      if (stackHeightMin[ptr] === undefined || stackHeightMax[ptr] === undefined) {
+        // This error either means that the code is unreachable,
+        // or it is possible that it is only reachable via a backwards jump
+        validationError(EOFError.UnreachableCode)
+      }
+
       validJumps.add(ptr)
       const opcode = code[ptr]
 
-      currentStackHeight += stackDelta[opcode].outputs - stackDelta[opcode].inputs
+      const minStackCurrent = stackHeightMin[ptr]
+      const maxStackCurrent = stackHeightMax[ptr]
 
-      if (currentStackHeight < 0) {
+      const opcodeInputs = stackDelta[opcode].inputs
+      const opcodeOutputs = stackDelta[opcode].outputs
+
+      if (minStackCurrent - opcodeInputs < 0) {
         validationError(EOFError.StackUnderflow)
+      }
+
+      const delta = opcodeOutputs - opcodeInputs
+
+      let minStackNext = minStackCurrent + delta
+      let maxStackNext = maxStackCurrent + delta
+
+      if (maxStackNext > 1023) {
+        validationError(EOFError.StackOverflow)
       }
 
       if (returningFunction && opcode === 0xe4) {
@@ -169,6 +197,9 @@ function validateOpcodes(
         if (target < 0 || target >= code.length) {
           validationError(EOFError.InvalidRJUMP)
         }
+
+        successorSet.add(target)
+
         addJump(target)
         reachableOpcodes.add(target)
 
@@ -208,6 +239,9 @@ function validateOpcodes(
           if (target < 0 || target >= code.length) {
             validationError(EOFError.OpcodeIntermediatesOOB)
           }
+
+          successorSet.add(target)
+
           addJump(target)
           reachableOpcodes.add(target)
         }
@@ -224,31 +258,71 @@ function validateOpcodes(
           validationError(EOFError.InvalidCallTarget)
         }
         if (opcode === 0xe3) {
-          if (container.body.typeSections[target].outputs === 0x80) {
+          // CALLF
+          const targetOutputs = container.body.typeSections[target].outputs
+          const targetInputs = container.body.typeSections[target].inputs
+          if (targetOutputs === 0x80) {
             // CALLF points to non-returning function which is not allowed
             validationError(EOFError.InvalidCALLFReturning)
           }
-          currentStackHeight +=
-            container.body.typeSections[target].outputs - container.body.typeSections[target].inputs
+
+          if (minStackCurrent < targetInputs) {
+            validationError(EOFError.StackUnderflow)
+          }
+
+          if (maxStackCurrent + targetOutputs - targetInputs > 1024) {
+            validationError(EOFError.StackOverflow)
+          }
+
+          minStackNext += targetOutputs - targetInputs
+          maxStackNext += targetOutputs - targetInputs
         } else {
           // JUMPF
           const currentOutputs = container.body.typeSections[codeSection].outputs
           const targetOutputs = container.body.typeSections[target].outputs
+          const targetInputs = container.body.typeSections[target].inputs
+          const targetNonReturning = targetOutputs === 0x80
 
-          if (targetOutputs > currentOutputs && !(targetOutputs === 0x80)) {
+          if (targetOutputs > currentOutputs && !targetNonReturning) {
+            // Spec rule:
+            // JUMPF operand must point to a code section with equal or fewer number of outputs as
+            // the section in which it resides, or to a section with 0x80 as outputs (non-returning)
             validationError(EOFError.InvalidJUMPF)
           }
 
           if (returningFunction && targetOutputs <= 0x7f) {
+            // Current function is returning, but target is not, cannot jump into this
             validationError(EOFError.InvalidReturningSection)
           }
+
+          if (targetNonReturning) {
+            // Target is returning
+            if (minStackCurrent < targetInputs) {
+              validationError(EOFError.StackUnderflow)
+            }
+          } else {
+            // Target is returning
+            const expectedStack = currentOutputs + targetInputs - targetOutputs
+            if (!(minStackCurrent === maxStackCurrent && maxStackCurrent === expectedStack)) {
+              validationError(EOFError.InvalidStackHeight)
+            }
+          }
+
+          if (maxStackCurrent + targetOutputs - targetInputs > 1024) {
+            validationError(EOFError.StackOverflow)
+          }
+        }
+      } else if (opcode === 0xe4) {
+        // RETF
+        // Stack height must match the outputs of current code section
+        const outputs = container.body.typeSections[codeSection].outputs
+        if (!(minStackCurrent === maxStackCurrent && maxStackCurrent === outputs)) {
+          validationError(EOFError.InvalidStackHeight)
         }
       } else if (opcode === 0xe6) {
         // DUPN
         const toDup = code[ptr + 1]
-        // Note: stack height was updated previously
-        const stackBefore = currentStackHeight - 1
-        if (toDup + 1 > stackBefore) {
+        if (toDup + 1 > minStackCurrent) {
           validationError(EOFError.StackUnderflow)
         }
       } else if (opcode === 0xe7) {
@@ -259,7 +333,7 @@ function validateOpcodes(
         const exchangeRaw = code[ptr + 1]
         const n = (exchangeRaw >> 4) + 1
         const m = (exchangeRaw & 0x0f) + 1
-        if (n + m + 1 > currentStackHeight) {
+        if (n + m + 1 > minStackCurrent) {
           validationError(EOFError.StackUnderflow)
         }
       } else if (opcode === 0xec) {
@@ -323,8 +397,38 @@ function validateOpcodes(
         // If the opcode is not terminating we can add the next opcode to the reachable opcodes
         // It can be reached by sequential instruction flow
         reachableOpcodes.add(ptr)
+
+        // Add next opcode to successorSet
+        // NOTE: these are all opcodes except RJUMP
+        if (opcode !== 0xe0) {
+          successorSet.add(ptr)
+        }
       }
-      maxStackHeight = Math.max(currentStackHeight, maxStackHeight)
+
+      // TODO here validate stack / reachability and stack overflow check
+
+      for (const successor of successorSet) {
+        if (successor < ptr) {
+          // Reached via backwards jump
+          if (
+            stackHeightMin[successor] !== minStackNext ||
+            stackHeightMax[successor] !== maxStackNext
+          ) {
+            validationError(EOFError.UnstableStack)
+          }
+        }
+
+        if (stackHeightMax[successor] === undefined) {
+          // Target is seen for first time
+          stackHeightMin[successor] = minStackNext
+          stackHeightMax[successor] = maxStackNext
+        } else {
+          stackHeightMin[successor] = Math.min(stackHeightMin[successor], minStackNext)
+          stackHeightMax[successor] = Math.max(stackHeightMax[successor], maxStackNext)
+        }
+      }
+
+      maxStackHeight = Math.max(maxStackNext, maxStackHeight)
     }
 
     // Validate that the final opcode terminates
