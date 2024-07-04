@@ -9,7 +9,7 @@ import { EVM } from '../../src/index.js'
 
 import { getCommon } from './eof-utils.js'
 
-const testDir = path.resolve('../ethereum-tests/eof/fixtures/eof_tests')
+const testDir = path.resolve('./test/eips/eoftests')
 
 async function getEVM() {
   const common = getCommon()
@@ -47,6 +47,7 @@ await new Promise<void>((resolve, reject) => {
           const input = testData[key]
           for (const testKey in input.vectors) {
             const test = input.vectors[testKey]
+
             const code = hexToBytes(test.code)
 
             const expected = test.results.Prague.result
