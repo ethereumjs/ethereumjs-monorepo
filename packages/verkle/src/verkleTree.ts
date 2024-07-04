@@ -251,11 +251,7 @@ export class VerkleTree {
       }
     } else {
       // Leaf node doesn't exist, create a new one
-      leafNode = await LeafNode.create(
-        stem,
-        new Array(256).fill(new Uint8Array(32)),
-        this.verkleCrypto
-      )
+      leafNode = await LeafNode.create(stem, this.verkleCrypto)
       this.DEBUG && this.debug(`Creating new leaf node at stem: ${bytesToHex(stem)}`, ['PUT'])
     }
     // Update value in leaf node and push to putStack
@@ -406,7 +402,7 @@ export class VerkleTree {
     let child = rootNode.children[key[0]]
 
     // Root node doesn't contain a child node's commitment on the first byte of the path so we're done
-    if (equalsBytes(child.commitment, this.verkleCrypto.zeroCommitment)) {
+    if (child === null) {
       this.DEBUG && this.debug(`Partial Path ${intToHex(key[0])} - found no child.`, ['FIND_PATH'])
       return result
     }
@@ -488,7 +484,6 @@ export class VerkleTree {
       verkleCrypto: this.verkleCrypto,
     })
 
-    // Update the child node's commitment and path
     this.DEBUG && this.debug(`No root node. Creating new root node`, ['INITIALIZE'])
     // Set trie root to serialized (aka compressed) commitment for later use in verkle proof
     this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))
@@ -582,7 +577,6 @@ export class VerkleTree {
   /**
    * Persists the root hash in the underlying database
    */
-  // TODO: Fix how we reference the root node in `findPath` so this method will work correctly
   async persistRoot() {
     if (this._opts.useRootPersistence) {
       await this._db.put(ROOT_DB_KEY, this.root())
