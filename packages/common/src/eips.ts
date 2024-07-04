@@ -644,6 +644,20 @@ export const EIPs: EIPsDict = {
     requiredEIPs: [3675],
     gasPrices: {},
   },
+  7702: {
+    comment: 'Set EOA account code for one transaction',
+    url: 'https://github.com/ethereum/EIPs/blob/62419ca3f45375db00b04a368ea37c0bfb05386a/EIPS/eip-7702.md',
+    status: Status.Review,
+    // TODO: Set correct minimum hardfork
+    minimumHardfork: Hardfork.Cancun,
+    requiredEIPs: [2718, 2929, 2930],
+    gasPrices: {
+      perAuthBaseCost: {
+        v: 2500,
+        d: 'Gas cost of each authority item',
+      },
+    },
+  },
   7709: {
     comment: 'Use historical block hashes saved in state for BLOCKHASH',
     url: 'https://eips.ethereum.org/EIPS/eip-7709',
