@@ -845,7 +845,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
 
         // Peek stack values
-        const [toAddr, value, inOffset, inLength] = runState.stack.peek(4)
+        const [toAddr, inOffset, inLength, value] = runState.stack.peek(4)
 
         // If value is nonzero and in static mode, throw:
         if (runState.interpreter.isStatic() && value !== BIGINT_0) {

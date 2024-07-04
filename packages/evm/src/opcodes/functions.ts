@@ -1621,7 +1621,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       } else {
-        const [toAddr, value, inOffset, inLength] = runState.stack.popN(4)
+        const [toAddr, inOffset, inLength, value] = runState.stack.popN(4)
 
         const gasLimit = runState.messageGasLimit!
         runState.messageGasLimit = undefined
