@@ -109,6 +109,10 @@ export class VM {
       }
     }
 
+    if (opts.evm !== undefined && opts.evmOpts !== undefined) {
+      throw new Error('the evm and evmOpts options cannot be used in conjunction')
+    }
+
     if (opts.evm === undefined) {
       let enableProfiler = false
       if (
@@ -117,6 +121,7 @@ export class VM {
       ) {
         enableProfiler = true
       }
+      const evmOpts = opts.evmOpts ?? {}
       opts.evm = await EVM.create({
         common: opts.common,
         stateManager: opts.stateManager,
@@ -124,6 +129,7 @@ export class VM {
         profiler: {
           enabled: enableProfiler,
         },
+        ...evmOpts,
       })
     }
 
@@ -241,9 +247,9 @@ export class VM {
     const stateManager = this.stateManager.shallowCopy(downlevelCaches)
     const evmOpts = {
       ...(this.evm as any)._optsCached,
-      common,
-      blockchain,
-      stateManager,
+      common: this._opts.evmOpts?.common?.copy() ?? common,
+      blockchain: this._opts.evmOpts?.blockchain?.shallowCopy() ?? blockchain,
+      stateManager: this._opts.evmOpts?.stateManager?.shallowCopy(downlevelCaches) ?? stateManager,
     }
     const evmCopy = await EVM.create(evmOpts) // TODO fixme (should copy the EVMInterface, not default EVM)
     return VM.create({
