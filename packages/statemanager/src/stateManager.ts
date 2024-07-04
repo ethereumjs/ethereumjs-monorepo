@@ -356,9 +356,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
     this._codeCache?.put(address, value)
     const codeHash = this.keccakFunction(value)
-    if (equalsBytes(codeHash, KECCAK256_NULL)) {
-      return
-    }
 
     if (this.DEBUG) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
