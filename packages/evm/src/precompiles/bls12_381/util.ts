@@ -119,7 +119,7 @@ export const moduloLengthCheck = (opts: PrecompileInput, length: number, pName: 
  * @param pairStart
  * @returns
  */
-export const zeroByteCheck = (
+export const leading16ZeroBytesCheck = (
   opts: PrecompileInput,
   zeroByteRanges: number[][],
   pName: string,

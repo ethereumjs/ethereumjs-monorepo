@@ -3,7 +3,12 @@ import { bytesToHex } from '@ethereumjs/util'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import { gasCheck, moduloLengthCheck, msmGasUsed, zeroByteCheck } from './bls12_381/index.js'
+import {
+  gasCheck,
+  moduloLengthCheck,
+  msmGasUsed,
+  leading16ZeroBytesCheck,
+} from './bls12_381/index.js'
 
 import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
@@ -41,7 +46,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
   for (let k = 0; k < numPairs; k++) {
     // zero bytes check
     const pairStart = 288 * k
-    if (!zeroByteCheck(opts, zeroByteRanges, 'BLS12G2MSM (0x10)', pairStart)) {
+    if (!leading16ZeroBytesCheck(opts, zeroByteRanges, 'BLS12G2MSM (0x10)', pairStart)) {
       return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
     }
   }

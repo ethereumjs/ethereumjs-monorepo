@@ -3,7 +3,7 @@ import { bytesToHex } from '@ethereumjs/util'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import { equalityLengthCheck, gasCheck, zeroByteCheck } from './bls12_381/index.js'
+import { equalityLengthCheck, gasCheck, leading16ZeroBytesCheck } from './bls12_381/index.js'
 
 import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
@@ -23,7 +23,7 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
 
   // check if some parts of input are zero bytes.
   const zeroByteRanges = [[0, 16]]
-  if (!zeroByteCheck(opts, zeroByteRanges, 'BLS12MAPFPTOG1 (0x12)')) {
+  if (!leading16ZeroBytesCheck(opts, zeroByteRanges, 'BLS12MAPFPTOG1 (0x12)')) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
   }
 
