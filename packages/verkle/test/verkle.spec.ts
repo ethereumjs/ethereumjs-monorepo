@@ -6,7 +6,6 @@ import {
   InternalNode,
   LeafNode,
   VerkleNodeType,
-  createDeletedLeafValue,
   decodeNode,
   matchingBytesLength,
 } from '../src/index.js'
