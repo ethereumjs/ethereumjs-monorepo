@@ -2,14 +2,9 @@ import { EOFContainer, EOFContainerMode } from './container.js'
 
 import type { RunState } from '../interpreter.js'
 
-export function setupEOF(runState: RunState) {
-  const mode =
-    runState.env.depth === 0 && runState.env.isCreate
-      ? EOFContainerMode.TxInitmode
-      : EOFContainerMode.Default
-
+export function setupEOF(runState: RunState, eofMode: EOFContainerMode = EOFContainerMode.Default) {
   runState.env.eof = {
-    container: new EOFContainer(runState.code, mode),
+    container: new EOFContainer(runState.code, eofMode),
     eofRunState: {
       returnStack: [],
     },

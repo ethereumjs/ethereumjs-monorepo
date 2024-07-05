@@ -210,9 +210,20 @@ export class Interpreter {
         }
       }
       this._runState.code = code
-      setupEOF(this._runState)
 
-      if (this._env.isCreate && this._env.depth === 0) {
+      const isTxCreate = this._env.isCreate && this._env.depth === 0
+      const eofMode = isTxCreate ? EOFContainerMode.TxInitmode : EOFContainerMode.Default
+
+      try {
+        setupEOF(this._runState, eofMode)
+      } catch (e) {
+        return {
+          runState: this._runState,
+          exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
+        }
+      }
+
+      if (isTxCreate) {
         // Tx tries to deploy container
         try {
           validateEOF(
@@ -225,7 +236,7 @@ export class Interpreter {
           // Trying to deploy an invalid EOF container
           return {
             runState: this._runState,
-            // exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT) // TODO: verify if all gas should be consumed
+            exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
           }
         }
       }
