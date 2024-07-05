@@ -151,6 +151,11 @@ export interface DefaultStateManagerOpts {
  *
  * The default state manager implementation uses a
  * `@ethereumjs/trie` trie as a data backend.
+ *
+ * Note that there is a `SimpleStateManager` dependency-free state
+ * manager implementation available shipped with the `@ethereumjs/common`
+ * package which might be an alternative to this implementation
+ * for many basic use cases.
  */
 export class DefaultStateManager implements EVMStateManagerInterface {
   protected _debug: Debugger

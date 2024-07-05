@@ -12,6 +12,21 @@ import type {
 } from '../interfaces.js'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
+/**
+ * Simple and dependency-free state manager for basic state access use cases
+ * where a trie or verkle backed state manager is too heavy-weight.
+ *
+ * This state manager comes with the basic state access logic for
+ * accounts, storage and code (put* and get* methods) as well as a simple
+ * implementation of checkpointing but lacks methods implementations of
+ * state root related logic as well as some other non-core functions.
+ *
+ * Functionality provided is sufficient to be used for simple EVM use
+ * cases and the state manager is used as default there.
+ *
+ * For a more full fledged and MPT-backed state manager implementation
+ * have a look at the `@ethereumjs/statemanager` package.
+ */
 export class SimpleStateManager implements EVMStateManagerInterface {
   public accountStack: Map<PrefixedHexString, Account | undefined>[] = []
   public codeStack: Map<PrefixedHexString, Uint8Array>[] = []
