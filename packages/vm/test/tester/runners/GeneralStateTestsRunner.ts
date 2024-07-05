@@ -1,10 +1,9 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { type InterpreterStep, MCLBLS } from '@ethereumjs/evm'
+import { type InterpreterStep } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
-import * as mcl from 'mcl-wasm'
 
 import { VM } from '../../../src/vm'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
@@ -80,11 +79,8 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     common,
   })
 
-  let evmOpts = undefined
-  if (options.bls !== undefined) {
-    evmOpts = {
-      bls: options.bls,
-    }
+  const evmOpts = {
+    bls: options.bls,
   }
   const vm = await VM.create({
     stateManager,
@@ -192,10 +188,6 @@ export async function runStateTest(options: any, testData: any, t: tape.Test) {
     if (testCases.length === 0) {
       t.comment(`No ${options.forkConfigTestSuite} post state defined, skip test`)
       return
-    }
-    if (options.bls !== undefined && options.bls.toLowerCase() === 'mcl') {
-      await mcl.init(mcl.BLS12_381)
-      options.bls = new MCLBLS(mcl)
     }
     for (const testCase of testCases) {
       if (options.reps !== undefined && options.reps > 0) {
