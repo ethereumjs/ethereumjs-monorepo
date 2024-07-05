@@ -334,7 +334,12 @@ function validateOpcodes(
         }
       } else if (opcode === 0xe7) {
         // SWAPN
-        //const toSwap = code[ptr + 1]
+        const toSwap = code[ptr + 1]
+        // TODO: EVMONEs test wants this to be `toSwap + 2`, but that seems to be incorrect
+        // Will keep `toSwap + 1` for now
+        if (toSwap + 1 > minStackCurrent) {
+          validationError(EOFError.StackUnderflow)
+        }
       } else if (opcode === 0xe8) {
         // EXCHANGE
         const exchangeRaw = code[ptr + 1]
