@@ -7,7 +7,7 @@ import type {
   Proof,
   StorageDump,
   StorageRange,
-} from './interfaces.js'
+} from '../interfaces.js'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 class OriginalStorageCache {

@@ -1,3 +1,4 @@
+import { OriginalStorageCache } from '@ethereumjs/common'
 import {
   Account,
   KECCAK256_NULL,
@@ -24,7 +25,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { AccessWitness, AccessedStateType, decodeValue } from './accessWitness.js'
 import { AccountCache, CacheType, CodeCache, StorageCache } from './cache/index.js'
-import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { DefaultStateManager } from './stateManager.js'
