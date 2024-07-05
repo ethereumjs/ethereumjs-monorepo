@@ -179,6 +179,7 @@ function validateOpcodes(
       let maxStackNext = maxStackCurrent + delta
 
       if (maxStackNext > 1023) {
+        // TODO verify if 1023 or 1024 is the right constant
         validationError(EOFError.StackOverflow)
       }
 
@@ -270,7 +271,10 @@ function validateOpcodes(
             validationError(EOFError.StackUnderflow)
           }
 
-          if (maxStackCurrent + targetOutputs - targetInputs > 1024) {
+          if (
+            maxStackCurrent + container.body.typeSections[target].maxStackHeight - targetInputs >
+            1024
+          ) {
             validationError(EOFError.StackOverflow)
           }
 
@@ -307,8 +311,11 @@ function validateOpcodes(
               validationError(EOFError.InvalidStackHeight)
             }
           }
-
-          if (maxStackCurrent + targetOutputs - targetInputs > 1024) {
+          if (
+            maxStackCurrent + container.body.typeSections[target].maxStackHeight - targetInputs >
+            1024
+          ) {
+            //console.log(maxStackCurrent, targetOutputs, targetInputs, targetNonReturning)
             validationError(EOFError.StackOverflow)
           }
         }
@@ -440,6 +447,7 @@ function validateOpcodes(
       validationError(EOFError.MaxStackHeightViolation)
     }
     if (maxStackHeight > 1023) {
+      // TODO verify if 1023 or 1024 is the right constant
       validationError(EOFError.MaxStackHeightLimit)
     }
   }
