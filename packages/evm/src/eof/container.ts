@@ -224,7 +224,8 @@ class EOFBody {
   constructor(
     buf: Uint8Array,
     header: EOFHeader,
-    eofMode: EOFContainerMode = EOFContainerMode.Default
+    eofMode: EOFContainerMode = EOFContainerMode.Default,
+    dataSectionAllowedSmaller = false // Only for validation: Deployment containers are allowed to have smaller data section size
   ) {
     const stream = new StreamReader(buf)
     const typeSections: TypeSection[] = []
@@ -279,7 +280,8 @@ class EOFBody {
 
     let dataSection: Uint8Array
 
-    if (eofMode !== EOFContainerMode.Initmode) {
+    // Edge case: deployment code validation
+    if (eofMode !== EOFContainerMode.Initmode && !dataSectionAllowedSmaller) {
       dataSection = stream.readBytes(header.dataSize, EOFError.DataSection)
 
       if (eofMode === EOFContainerMode.Default) {
@@ -326,10 +328,19 @@ export class EOFContainer {
   buffer: Uint8Array
   eofMode: EOFContainerMode
 
-  constructor(buf: Uint8Array, eofMode: EOFContainerMode = EOFContainerMode.Default) {
+  constructor(
+    buf: Uint8Array,
+    eofMode: EOFContainerMode = EOFContainerMode.Default,
+    dataSectionAllowedSmaller = false
+  ) {
     this.eofMode = eofMode
     this.header = new EOFHeader(buf)
-    this.body = new EOFBody(buf.slice(this.header.buffer.length), this.header, eofMode)
+    this.body = new EOFBody(
+      buf.slice(this.header.buffer.length),
+      this.header,
+      eofMode,
+      dataSectionAllowedSmaller
+    )
     this.buffer = buf
   }
 }
@@ -340,7 +351,11 @@ export function validateEOF(
   containerMode: ContainerSectionType = ContainerSectionType.RuntimeCode,
   eofMode: EOFContainerMode = EOFContainerMode.Default
 ) {
-  const container = new EOFContainer(input, eofMode)
+  const container = new EOFContainer(
+    input,
+    eofMode,
+    containerMode === ContainerSectionType.DeploymentCode
+  )
   const containerMap = verifyCode(container, evm, containerMode)
   // Recursively validate the containerSections
   for (let i = 0; i < container.body.containerSections.length; i++) {
