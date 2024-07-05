@@ -21,7 +21,7 @@ describe('verkle node - internal', () => {
     // Children nodes should all default to null.
     assert.equal(node.children.length, NODE_WIDTH, 'number of children should equal verkle width')
     assert.ok(
-      node.children.every((child) => equalsBytes(child.commitment, verkleCrypto.zeroCommitment)),
+      node.children.every((child) => child === null),
       'every children should be null'
     )
   })
@@ -39,7 +39,7 @@ describe('verkle node - internal', () => {
     // Children nodes should all default to null.
     assert.equal(node.children.length, NODE_WIDTH, 'number of children should equal verkle width')
     assert.ok(
-      node.children.every((child) => equalsBytes(child.commitment, verkleCrypto.zeroCommitment)),
+      node.children.every((child) => child === null),
       'every children should be null'
     )
   })
@@ -58,5 +58,15 @@ describe('verkle node - internal', () => {
     const serialized = node.serialize()
     const decoded = decodeNode(serialized, verkleCrypto)
     assert.deepEqual((decoded as InternalNode).children[0].commitment, child.commitment)
+  })
+
+  it('should serialize and deserialize a node with no children', async () => {
+    const node = new InternalNode({
+      verkleCrypto,
+      commitment: verkleCrypto.zeroCommitment,
+    })
+    const serialized = node.serialize()
+    const decoded = decodeNode(serialized, verkleCrypto)
+    assert.equal((decoded as InternalNode).children[0], null)
   })
 })
