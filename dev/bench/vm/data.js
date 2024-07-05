@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1720123293642,
+  "lastUpdate": 1720187485724,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f82af3b92f01e5093b34b4d861dd6186093db47b",
-          "message": "Move tree key computation to verkle and simplify (#3420)\n\n* move tree keys to verkle and simplify\r\n\r\n* fix references\r\n\r\n* more fixes\r\n\r\n* verkle: minor updates\r\n\r\n* verkle: fix test\r\n\r\n* verkle: one more update\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
-          "timestamp": "2024-05-14T12:54:58-04:00",
-          "tree_id": "07c450307aadfbbb904bcccdc597852a11913412",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f82af3b92f01e5093b34b4d861dd6186093db47b"
-        },
-        "date": 1715705983839,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41834,
-            "range": "±3.08%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41106,
-            "range": "±1.35%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40693,
-            "range": "±1.58%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39476,
-            "range": "±2.27%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35471,
-            "range": "±5.78%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.65%",
             "unit": "ops/sec",
             "extra": "90 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e08c2298a1a33aa64ba6581ba3df6e5391febf00",
+          "message": "EVM: Generic BLS Interface / Use JS Implementation (@noble/curves) as Default (#3471)\n\n* Add @noble/curves dependency to EVM\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Rename mcl specific util code file, prepare for more generic BLS util folder structure\r\n\r\n* Add mcl util file copy as noble to new bls12_381 util folder to serve as a work basis\r\n\r\n* Simplify folder structure\r\n\r\n* Adopt file imports\r\n\r\n* Start moving to a generically applicable bls interface with some shifted set of abstractions\r\n\r\n* Some modest Noble library switch\r\n\r\n* Move generic constants to own file\r\n\r\n* First @noble/curves integration test (not yet working)\r\n\r\n* Add generalized zero byte check util method\r\n\r\n* Add generalized gas check utility method\r\n\r\n* Add utility methods for equality and modulo length checks\r\n\r\n* Add msmGasUsed() utility functions for msm precompiles\r\n\r\n* Minor\r\n\r\n* Activate Noble usage for g1add precompile\r\n\r\n* Integrate G1 multiplication\r\n\r\n* Add addG2, first attempt on mapFPtoG1 (still failing)\r\n\r\n* Add more wrappings to the interface implementations, basic msmG1 and msmG2 implementations (0 values handling still failing)\r\n\r\n* Temporarily use fork from @noble/curves\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Add mapping precompile implementations for Noble (G1 working)\r\n\r\n* Temporary typing fix for G2 mapping (not working yet)\r\n\r\n* Minor\r\n\r\n* Update @noble/curves to 5fcd71a\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Add Noble mapFP2toG2() implementation\r\n\r\n* Move over MCL pairing code to interface implementation\r\n\r\n* Integrate Noble pairing implementation (some 0/infinity edge cases not yet working)\r\n\r\n* Add testing single-test-run instructions comment\r\n\r\n* Fix pairing 0/infinity cases\r\n\r\n* Some generalization refactor\r\n\r\n* More refactorings\r\n\r\n* Remove temporarily added mcl code form Noble implementation\r\n\r\n* Fix last local tests\r\n\r\n* Remove MCL instantiation from EVM, add bls EVM option, add MCL/Noble to EIP-2537 test runs\r\n\r\n* Move mcl-wasm depedency from production to dev dependencies in EVM package.json\r\n\r\n* Bump ethereum-cryptography from 2.1.3 -> 2.2.1, @noble/curves to 1.4.2\r\n\r\n* Remove explicit Noble instantiation in precompile files\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Add optional init() method to the BLS interface, add init() for MCL setting some parameters\r\n\r\n* Add some util function code docs\r\n\r\n* Add mcl-wasm to client dependencies\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Integrate explicit MCL usage for BLS precompiles in the client via new VM evmOpts option\r\n\r\n* Some clean-up\r\n\r\n* Simplify, align and optimize infinity point checks in toG1/toG2 helper methods\r\n\r\n* Simplify Noble fromG1/fromG2 point methods\r\n\r\n* Simplify MCL fromG1/fromG2 methods\r\n\r\n* Move mcl-wasm depedency in VM from production to dev dependencies\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Add simple --bls CLI option to VM state test runner\r\n\r\n* Modulo your way down on Fr field order check (instead of a simple substraction) -> Fixes VM state tests\r\n\r\n* Some clean-ups and docs\r\n\r\n* Rename BLS util zeroByteCheck -> leading16ZeroBytesCheck\r\n\r\n* Expand VM test runner --bls option to blockchain tests, use MCL as default\r\n\r\n* Some naming clean-up\r\n\r\n* evm: lint\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2024-07-05T15:46:31+02:00",
+          "tree_id": "47b287460ea51f46b77bfadbafe3e3073ec792fb",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e08c2298a1a33aa64ba6581ba3df6e5391febf00"
+        },
+        "date": 1720187484563,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38666,
+            "range": "±1.93%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36631,
+            "range": "±2.83%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37191,
+            "range": "±1.52%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36247,
+            "range": "±1.59%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 32481,
+            "range": "±5.73%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
