@@ -3,7 +3,7 @@ import { bytesToHex } from '@ethereumjs/util'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import { gasCheck, moduloLengthCheck, leading16ZeroBytesCheck } from './bls12_381/index.js'
+import { gasCheck, leading16ZeroBytesCheck, moduloLengthCheck } from './bls12_381/index.js'
 
 import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'

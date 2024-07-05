@@ -5,9 +5,9 @@ import { ERROR, EvmError } from '../exceptions.js'
 
 import {
   gasCheck,
+  leading16ZeroBytesCheck,
   moduloLengthCheck,
   msmGasUsed,
-  leading16ZeroBytesCheck,
 } from './bls12_381/index.js'
 
 import type { EVMBLSInterface, ExecResult } from '../types.js'
