@@ -1,4 +1,6 @@
+import { MCLBLS, NobleBLS, type bn128 } from '@ethereumjs/evm'
 import { loadKZG } from 'kzg-wasm'
+import * as mcl from 'mcl-wasm'
 import * as minimist from 'minimist'
 import * as path from 'path'
 import * as process from 'process'
@@ -19,7 +21,7 @@ import { runStateTest } from './runners/GeneralStateTestsRunner'
 import { getTestFromSource, getTestsFromArgs } from './testLoader'
 
 import type { Common } from '@ethereumjs/common'
-import type { bn128 } from '@ethereumjs/evm'
+import type { EVMBLSInterface } from '@ethereumjs/evm/dist/cjs/types'
 
 /**
  * Test runner
@@ -45,6 +47,7 @@ import type { bn128 } from '@ethereumjs/evm'
  * --expected-test-amount: number.        If passed, check after tests are ran if at least this amount of tests have passed (inclusive)
  * --verify-test-amount-alltests: number. If passed, get the expected amount from tests and verify afterwards if this is the count of tests (expects tests are ran with default settings)
  * --reps: number.                        If passed, each test case will be run the number of times indicated
+ * --bls: string.                         BLS library being used, choices: Noble, MCL (default: MCL)
  * --profile                              If this flag is passed, the state/blockchain tests will profile
  */
 
@@ -99,6 +102,16 @@ async function runTests() {
     customStateTest: argv.customStateTest,
   }
 
+  let bls: EVMBLSInterface
+  if (argv.bls !== undefined && argv.bls.toLowerCase() === 'noble') {
+    console.log('BLS library used: Noble (JavaScript)')
+    bls = new NobleBLS()
+  } else {
+    await mcl.init(mcl.BLS12_381)
+    bls = new MCLBLS(mcl)
+    console.log('BLS library used: MCL (WASM)')
+  }
+
   /**
    * Run-time configuration
    */
@@ -116,6 +129,7 @@ async function runTests() {
     debug?: boolean
     reps?: number
     profile: boolean
+    bls: EVMBLSInterface
     bn128: bn128
   } = {
     forkConfigVM: FORK_CONFIG_VM,
@@ -128,6 +142,7 @@ async function runTests() {
     value: argv.value, // GeneralStateTests
     debug: argv.debug, // BlockchainTests
     reps: argv.reps, // test repetitions
+    bls,
     profile: RUN_PROFILER,
     bn128,
   }
