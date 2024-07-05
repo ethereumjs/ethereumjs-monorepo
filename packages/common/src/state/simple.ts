@@ -1,6 +1,8 @@
 import { Account, bytesToHex } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
+import { OriginalStorageCache } from './originalStorageCache.js'
+
 import type {
   AccountFields,
   EVMStateManagerInterface,
@@ -9,13 +11,6 @@ import type {
   StorageRange,
 } from '../interfaces.js'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
-
-class OriginalStorageCache {
-  async get(): Promise<Uint8Array> {
-    return new Uint8Array([128])
-  }
-  clear() {}
-}
 
 export class SimpleStateManager implements EVMStateManagerInterface {
   public accountStack: Map<PrefixedHexString, Account | undefined>[] = []
@@ -29,7 +24,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
 
   constructor() {
     this.add()
-    this.originalStorageCache = new OriginalStorageCache()
+    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
   }
 
   topA() {
