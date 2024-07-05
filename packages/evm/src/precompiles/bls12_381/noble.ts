@@ -30,11 +30,10 @@ type Fp2 = {
 }
 
 /**
- * Converts an Uint8Array to a MCL G1 point. Raises errors if the point is not on the curve
+ * Converts an Uint8Array to a Noble G1 point. Raises errors if the point is not on the curve
  * and (if activated) if the point is in the subgroup / order check.
  * @param input Input Uint8Array. Should be 128 bytes
- * @param verifyOrder Perform the subgroup check (defaults to true)
- * @returns MCL G1 point
+ * @returns Noble G1 point
  */
 function BLS12_381_ToG1Point(input: Uint8Array) {
   if (equalsBytes(input, BLS_G1_INFINITY_POINT_BYTES)) {
@@ -52,7 +51,7 @@ function BLS12_381_ToG1Point(input: Uint8Array) {
   return G1
 }
 
-// input: a mcl G1 point
+// input: a Noble G1 point
 // output: a 128-byte Uint8Array
 function BLS12_381_FromG1Point(input: AffinePoint<bigint>): Uint8Array {
   const xBytes = setLengthLeft(bigIntToBytes(input.x), 64)
@@ -62,12 +61,10 @@ function BLS12_381_FromG1Point(input: AffinePoint<bigint>): Uint8Array {
 }
 
 /**
- * Converts an Uint8Array to a MCL G2 point. Raises errors if the point is not on the curve
+ * Converts an Uint8Array to a Noble G2 point. Raises errors if the point is not on the curve
  * and (if activated) if the point is in the subgroup / order check.
  * @param input Input Uint8Array. Should be 256 bytes
- * @param mcl MCL instance
- * @param verifyOrder Perform the subgroup check (defaults to true)
- * @returns MCL G2 point
+ * @returns Noble G2 point
  */
 function BLS12_381_ToG2Point(input: Uint8Array) {
   if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES)) {
@@ -90,7 +87,7 @@ function BLS12_381_ToG2Point(input: Uint8Array) {
   return pG2
 }
 
-// input: a mcl G1 point
+// input: a Noble G1 point
 // output: a 128-byte Uint8Array
 function BLS12_381_FromG2Point(input: AffinePoint<Fp2>): Uint8Array {
   const xBytes1 = setLengthLeft(bigIntToBytes(input.x.c0), 64)
@@ -102,7 +99,7 @@ function BLS12_381_FromG2Point(input: AffinePoint<Fp2>): Uint8Array {
 }
 
 // input: a 32-byte hex scalar Uint8Array
-// output: a mcl Fr point
+// output: a Noble Fr point
 
 function BLS12_381_ToFrPoint(input: Uint8Array): bigint {
   const Fr = bls12_381.fields.Fr.fromBytes(input)
@@ -133,7 +130,7 @@ function BLS12_381_ToFrPoint(input: Uint8Array): bigint {
 }
 
 // input: a 64-byte buffer
-// output: a mcl Fp point
+// output: a Noble Fp point
 
 function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array) {
   // check if point is in field
