@@ -211,7 +211,7 @@ describe('Verkle tree', () => {
     assert.deepEqual(val2, hexToBytes(values[2]), 'confirm values[2] can be retrieved from trie')
   })
 
-  it('should put, find, delete, and the put values (again)', async () => {
+  it('should sequentially put->find->delete->put values', async () => {
     const keys = [
       // Two keys with the same stem but different suffixes
       '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
