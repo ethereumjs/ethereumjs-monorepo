@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { BlobEIP4844Transaction, Capability, isBlobEIP4844Tx } from '@ethereumjs/tx'
 import {
@@ -7,13 +8,18 @@ import {
   Address,
   BIGINT_0,
   KECCAK256_NULL,
+  bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
+  concatBytes,
+  ecrecover,
   equalsBytes,
   hexToBytes,
+  publicToAddress,
   short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Bloom } from './bloom/index.js'
 
@@ -32,6 +38,7 @@ import type { AccessList, AccessListItem, Common } from '@ethereumjs/common'
 import type { EVM } from '@ethereumjs/evm'
 import type {
   AccessListEIP2930Transaction,
+  EIP7702CompatibleTx,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
   TypedTransaction,
@@ -440,6 +447,53 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     fromAccount.balance = BIGINT_0
   }
   await this.evm.journal.putAccount(caller, fromAccount)
+
+  const writtenAddresses = new Set<string>()
+  if (tx.supports(Capability.EIP7702EOACode)) {
+    // Add contract code for authroity tuples provided by EIP 7702 tx
+    const authorizationList = (<EIP7702CompatibleTx>tx).authorizationList
+    const MAGIC = new Uint8Array([5])
+    for (let i = 0; i < authorizationList.length; i++) {
+      // Authority tuple validation
+      const data = authorizationList[i]
+      const chainId = data[0]
+      const chainIdBN = bytesToBigInt(chainId)
+      if (chainIdBN !== BIGINT_0 && chainIdBN !== this.common.chainId()) {
+        // Chain id does not match, continue
+        continue
+      }
+      // Address to take code from
+      const address = data[1]
+      const nonceList = data[2]
+      const yParity = bytesToBigInt(data[3])
+      const r = data[4]
+      const s = data[5]
+
+      const rlpdSignedMessage = RLP.encode([chainId, address, nonceList])
+      const toSign = keccak256(concatBytes(MAGIC, rlpdSignedMessage))
+      const pubKey = ecrecover(toSign, yParity, r, s)
+      // Address to set code to
+      const authority = new Address(publicToAddress(pubKey))
+      const account = (await this.stateManager.getAccount(authority)) ?? new Account()
+
+      if (account.isContract()) {
+        // Note: this also checks if the code has already been set once by a previous tuple
+        // So, if there are multiply entires for the same address, then this is fine
+        continue
+      }
+      if (nonceList.length !== 0 && account.nonce !== bytesToBigInt(nonceList[0])) {
+        continue
+      }
+
+      const addressConverted = new Address(address)
+      const addressCode = await this.stateManager.getContractCode(addressConverted)
+      await this.stateManager.putContractCode(authority, addressCode)
+
+      writtenAddresses.add(authority.toString())
+      this.evm.journal.addAlwaysWarmAddress(authority.toString())
+    }
+  }
+
   if (this.DEBUG) {
     debug(`Update fromAccount (caller) balance (-> ${fromAccount.balance}))`)
   }
@@ -617,6 +671,15 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
         debug(`tx selfdestruct on address=${address}`)
       }
     }
+  }
+
+  /**
+   * Cleanup code of accounts written to in a 7702 transaction
+   */
+
+  for (const str of writtenAddresses) {
+    const address = Address.fromString(str)
+    await this.stateManager.putContractCode(address, new Uint8Array())
   }
 
   if (enableProfiler) {

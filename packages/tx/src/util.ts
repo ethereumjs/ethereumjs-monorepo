@@ -1,9 +1,22 @@
-import { type PrefixedHexString, bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
+import {
+  type PrefixedHexString,
+  bytesToHex,
+  hexToBytes,
+  setLengthLeft,
+  validateNoLeadingZeroes,
+} from '@ethereumjs/util'
 
-import { isAccessList } from './types.js'
+import { isAccessList, isAuthorizationList } from './types.js'
 
-import type { AccessList, AccessListBytes, AccessListItem, TransactionType } from './types.js'
-import type { Common } from '@ethereumjs/common'
+import type {
+  AccessList,
+  AccessListBytes,
+  AccessListItem,
+  AuthorizationList,
+  AuthorizationListBytes,
+  TransactionType,
+} from './types.js'
+import type { AuthorizationListItem, Common } from '@ethereumjs/common'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {
   const maxInitCodeSize = common.param('vm', 'maxInitCodeSize')
@@ -113,6 +126,98 @@ export class AccessLists {
 
     const addresses = accessList.length
     return addresses * Number(accessListAddressCost) + slots * Number(accessListStorageKeyCost)
+  }
+}
+
+export class AuthorizationLists {
+  public static getAuthorizationListData(
+    authorizationList: AuthorizationListBytes | AuthorizationList
+  ) {
+    let AuthorizationListJSON
+    let bufferAuthorizationList
+    if (isAuthorizationList(authorizationList)) {
+      AuthorizationListJSON = authorizationList
+      const newAuthorizationList: AuthorizationListBytes = []
+      const jsonItems = ['chainId', 'address', 'nonce', 'yParity', 'r', 's']
+      for (let i = 0; i < authorizationList.length; i++) {
+        const item: AuthorizationListItem = authorizationList[i]
+        for (const key of jsonItems) {
+          // @ts-ignore TODO why does TsScript fail here?
+          if (item[key] === undefined) {
+            throw new Error(`EIP-7702 authorization list invalid: ${key} is not defined`)
+          }
+        }
+        const chainId = hexToBytes(item.chainId)
+        const addressBytes = hexToBytes(item.address)
+        const nonceList = []
+        for (let j = 0; j < item.nonce.length; j++) {
+          nonceList.push(hexToBytes(item.nonce[j]))
+        }
+        const yParity = hexToBytes(item.yParity)
+        const r = hexToBytes(item.r)
+        const s = hexToBytes(item.s)
+
+        newAuthorizationList.push([chainId, addressBytes, nonceList, yParity, r, s])
+      }
+      bufferAuthorizationList = newAuthorizationList
+    } else {
+      bufferAuthorizationList = authorizationList ?? []
+      // build the JSON
+      const json: AuthorizationList = []
+      for (let i = 0; i < bufferAuthorizationList.length; i++) {
+        const data = bufferAuthorizationList[i]
+        const chainId = bytesToHex(data[0])
+        const address = bytesToHex(data[1])
+        const nonces = data[2]
+        const nonceList: PrefixedHexString[] = []
+        for (let j = 0; j < nonces.length; j++) {
+          nonceList.push(bytesToHex(nonces[j]))
+        }
+        const yParity = bytesToHex(data[3])
+        const r = bytesToHex(data[4])
+        const s = bytesToHex(data[5])
+        const jsonItem: AuthorizationListItem = {
+          chainId,
+          address,
+          nonce: nonceList,
+          yParity,
+          r,
+          s,
+        }
+        json.push(jsonItem)
+      }
+      AuthorizationListJSON = json
+    }
+
+    return {
+      AuthorizationListJSON,
+      authorizationList: bufferAuthorizationList,
+    }
+  }
+
+  public static verifyAuthorizationList(authorizationList: AuthorizationListBytes) {
+    for (let key = 0; key < authorizationList.length; key++) {
+      const authorizationListItem = authorizationList[key]
+      const address = authorizationListItem[1]
+      const nonceList = authorizationListItem[2]
+      const yParity = authorizationListItem[3]
+      const r = authorizationListItem[4]
+      const s = authorizationListItem[5]
+      validateNoLeadingZeroes({ yParity, r, s })
+      if (address.length !== 20) {
+        throw new Error('Invalid EIP-7702 transaction: address length should be 20 bytes')
+      }
+      if (nonceList.length > 1) {
+        throw new Error('Invalid EIP-7702 transaction: nonce list should consist of at most 1 item')
+      } else if (nonceList.length === 1) {
+        validateNoLeadingZeroes({ nonce: nonceList[0] })
+      }
+    }
+  }
+
+  public static getDataFeeEIP7702(authorityList: AuthorizationListBytes, common: Common): number {
+    const perAuthBaseCost = common.param('gasPrices', 'perAuthBaseCost')
+    return authorityList.length * Number(perAuthBaseCost)
   }
 }
 

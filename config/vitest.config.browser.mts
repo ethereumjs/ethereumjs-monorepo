@@ -6,11 +6,13 @@ const config = defineConfig({
   test: {
     browser: {
       enabled: true,
-      name: 'chrome',
       headless: true,
+      isolate: true,
+      name: 'chrome',
       fileParallelism: false,
-      isolate: false
+      provider: 'webdriverio'
     },
+    maxConcurrency: 1
   },
   plugins: [
     wasm(),

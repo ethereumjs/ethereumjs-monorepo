@@ -2,7 +2,7 @@ import { type VerkleCrypto, equalsBytes, randomBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { NODE_WIDTH, VerkleNodeType, decodeNode } from '../src/node/index.js'
+import { NODE_WIDTH, VerkleNodeType, decodeNode, isInternalNode } from '../src/node/index.js'
 import { InternalNode } from '../src/node/internalNode.js'
 
 describe('verkle node - internal', () => {
@@ -14,13 +14,14 @@ describe('verkle node - internal', () => {
     const commitment = randomBytes(32)
     const node = new InternalNode({ commitment, verkleCrypto })
 
+    assert.ok(isInternalNode(node), 'typeguard should return true')
     assert.equal(node.type, VerkleNodeType.Internal, 'type should be set')
     assert.ok(equalsBytes(node.commitment, commitment), 'commitment should be set')
 
     // Children nodes should all default to null.
     assert.equal(node.children.length, NODE_WIDTH, 'number of children should equal verkle width')
     assert.ok(
-      node.children.every((child) => equalsBytes(child.commitment, verkleCrypto.zeroCommitment)),
+      node.children.every((child) => child === null),
       'every children should be null'
     )
   })
@@ -38,7 +39,7 @@ describe('verkle node - internal', () => {
     // Children nodes should all default to null.
     assert.equal(node.children.length, NODE_WIDTH, 'number of children should equal verkle width')
     assert.ok(
-      node.children.every((child) => equalsBytes(child.commitment, verkleCrypto.zeroCommitment)),
+      node.children.every((child) => child === null),
       'every children should be null'
     )
   })
@@ -57,5 +58,15 @@ describe('verkle node - internal', () => {
     const serialized = node.serialize()
     const decoded = decodeNode(serialized, verkleCrypto)
     assert.deepEqual((decoded as InternalNode).children[0].commitment, child.commitment)
+  })
+
+  it('should serialize and deserialize a node with no children', async () => {
+    const node = new InternalNode({
+      verkleCrypto,
+      commitment: verkleCrypto.zeroCommitment,
+    })
+    const serialized = node.serialize()
+    const decoded = decodeNode(serialized, verkleCrypto)
+    assert.equal((decoded as InternalNode).children[0], null)
   })
 })
