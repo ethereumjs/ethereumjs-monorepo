@@ -73,7 +73,7 @@ Have a loot at the extended `CacheOptions` on how to use and leverage the new ca
 
 There is a dependency-free simple state manager implementation available shipped with the [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) package. While this state manager implementation lacks the implementations of some non-core functionality as well as proof related logic (e.g. `setStateRoot()`) it is suitable for a lot use cases where things like sophisticated caching or state root handling is not needed.
 
-This state manager can be used as follows and otherwise being used as shown in the basic example from above:
+This state manager can be instantiated as follows and otherwise being used as shown in the basic example from above:
 
 ```ts
 import { SimpleStateManager } from '@ethereumjs/common'
