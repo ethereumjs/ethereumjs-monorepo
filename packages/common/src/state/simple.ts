@@ -122,15 +122,9 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     this.checkpointSync()
   }
   async commit(): Promise<void> {
-    const topA = this.accountStack.pop()
-    const topC = this.codeStack.pop()
-    const topS = this.storageStack.pop()
-    this.accountStack.pop()
-    this.codeStack.pop()
-    this.storageStack.pop()
-    this.accountStack.push(topA!)
-    this.codeStack.push(topC!)
-    this.storageStack.push(topS!)
+    this.accountStack.splice(-2, 1)
+    this.codeStack.splice(-2, 1)
+    this.storageStack.splice(-2, 1)
   }
 
   async revert(): Promise<void> {
