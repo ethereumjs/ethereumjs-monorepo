@@ -38,7 +38,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   }
 
   constructor() {
-    this.add()
+    this.checkpointSync()
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
   }
 
@@ -52,7 +52,8 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     return this.storageStack[this.storageStack.length - 1]
   }
 
-  add() {
+  // Synchronous version of checkpoint() to allow to call from constructor
+  protected checkpointSync() {
     const newTopA = new Map(this.topAccountStack())
     for (const [address, account] of newTopA) {
       const accountCopy =
@@ -118,7 +119,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   }
 
   async checkpoint(): Promise<void> {
-    this.add()
+    this.checkpointSync()
   }
   async commit(): Promise<void> {
     const topA = this.accountStack.pop()
