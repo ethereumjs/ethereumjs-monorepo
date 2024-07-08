@@ -3,6 +3,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './originalStorageCache.js'
 
+import type { Common } from '../index.js'
 import type {
   AccountFields,
   EVMStateManagerInterface,
@@ -11,6 +12,16 @@ import type {
   StorageRange,
 } from '../interfaces.js'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+
+/**
+ * Options for constructing a {@link SimpleStateManager}.
+ */
+export interface SimpleStateManagerOpts {
+  /**
+   * The common to use
+   */
+  common?: Common
+}
 
 /**
  * Simple and dependency-free state manager for basic state access use cases
@@ -37,9 +48,12 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     clear(): void
   }
 
-  constructor() {
+  public readonly common?: Common
+
+  constructor(opts: SimpleStateManagerOpts = {}) {
     this.checkpointSync()
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+    this.common = opts.common
   }
 
   protected topAccountStack() {
@@ -100,7 +114,9 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     if ((await this.getAccount(address)) === undefined) {
       await this.putAccount(address, new Account())
     }
-    await this.modifyAccountFields(address, { codeHash: keccak256(value) })
+    await this.modifyAccountFields(address, {
+      codeHash: (this.common?.customCrypto.keccak256 ?? keccak256)(value),
+    })
   }
 
   async getContractCodeSize(address: Address): Promise<number> {
@@ -137,7 +153,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   clearCaches(): void {}
 
   shallowCopy(): EVMStateManagerInterface {
-    const copy = new SimpleStateManager()
+    const copy = new SimpleStateManager({ common: this.common })
     for (let i = 0; i < this.accountStack.length; i++) {
       copy.accountStack.push(new Map(this.accountStack[i]))
       copy.codeStack.push(new Map(this.codeStack[i]))
