@@ -42,18 +42,18 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
   }
 
-  topA() {
+  protected topAccountStack() {
     return this.accountStack[this.accountStack.length - 1]
   }
-  topC() {
+  protected topCodeStack() {
     return this.codeStack[this.codeStack.length - 1]
   }
-  topS() {
+  protected topStorageStack() {
     return this.storageStack[this.storageStack.length - 1]
   }
 
   add() {
-    const newTopA = new Map(this.topA())
+    const newTopA = new Map(this.topAccountStack())
     for (const [address, account] of newTopA) {
       const accountCopy =
         account !== undefined
@@ -62,20 +62,20 @@ export class SimpleStateManager implements EVMStateManagerInterface {
       newTopA.set(address, accountCopy)
     }
     this.accountStack.push(newTopA)
-    this.codeStack.push(new Map(this.topC()))
-    this.storageStack.push(new Map(this.topS()))
+    this.codeStack.push(new Map(this.topCodeStack()))
+    this.storageStack.push(new Map(this.topStorageStack()))
   }
 
   async getAccount(address: Address): Promise<Account | undefined> {
-    return this.topA().get(address.toString())
+    return this.topAccountStack().get(address.toString())
   }
 
   async putAccount(address: Address, account?: Account | undefined): Promise<void> {
-    this.topA().set(address.toString(), account)
+    this.topAccountStack().set(address.toString(), account)
   }
 
   async deleteAccount(address: Address): Promise<void> {
-    this.topA().set(address.toString(), undefined)
+    this.topAccountStack().set(address.toString(), undefined)
   }
 
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
@@ -91,11 +91,11 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   }
 
   async getContractCode(address: Address): Promise<Uint8Array> {
-    return this.topC().get(address.toString()) ?? new Uint8Array(0)
+    return this.topCodeStack().get(address.toString()) ?? new Uint8Array(0)
   }
 
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
-    this.topC().set(address.toString(), value)
+    this.topCodeStack().set(address.toString(), value)
     if ((await this.getAccount(address)) === undefined) {
       await this.putAccount(address, new Account())
     }
@@ -108,11 +108,13 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   }
 
   async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
-    return this.topS().get(`${address.toString()}_${bytesToHex(key)}`) ?? new Uint8Array(0)
+    return (
+      this.topStorageStack().get(`${address.toString()}_${bytesToHex(key)}`) ?? new Uint8Array(0)
+    )
   }
 
   async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
-    this.topS().set(`${address.toString()}_${bytesToHex(key)}`, value)
+    this.topStorageStack().set(`${address.toString()}_${bytesToHex(key)}`, value)
   }
 
   async checkpoint(): Promise<void> {
