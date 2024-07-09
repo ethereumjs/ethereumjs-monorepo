@@ -1,6 +1,7 @@
+import { type VerkleCrypto } from '@ethereumjs/util'
+
 import type { InternalNode } from './internalNode.js'
 import type { LeafNode } from './leafNode.js'
-import type { VerkleCrypto } from '@ethereumjs/util'
 
 export enum VerkleNodeType {
   Internal,
@@ -30,11 +31,16 @@ interface BaseVerkleNodeOptions {
 
 interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {
   // Children nodes of this internal node.
-  children?: ChildNode[]
+  children?: (ChildNode | null)[]
+}
+
+export enum VerkleLeafNodeValue {
+  Untouched = 0,
+  Deleted = 1,
 }
 interface VerkleLeafNodeOptions extends BaseVerkleNodeOptions {
   stem: Uint8Array
-  values: Uint8Array[]
+  values?: (Uint8Array | VerkleLeafNodeValue)[]
   c1?: Uint8Array
   c2?: Uint8Array
 }

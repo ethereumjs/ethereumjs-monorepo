@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
+import { type InterpreterStep } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
@@ -7,7 +8,6 @@ import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/
 import { VM } from '../../../src/vm'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
-import type { InterpreterStep } from '@ethereumjs/evm'
 import type * as tape from 'tape'
 
 function parseTestCases(
@@ -79,10 +79,14 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     common,
   })
 
+  const evmOpts = {
+    bls: options.bls,
+  }
   const vm = await VM.create({
     stateManager,
     common,
     blockchain,
+    evmOpts,
     profilerOpts: { reportAfterTx: options.profile },
   })
 

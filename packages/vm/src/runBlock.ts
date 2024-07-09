@@ -493,8 +493,6 @@ export async function accumulateParentBlockHash(
   )
   const historyServeWindow = this.common.param('vm', 'historyServeWindow')
 
-  const forkTime = this.common.eipTimestamp(2935)
-
   // getAccount with historyAddress will throw error as witnesses are not bundeled
   // but we need to put account so as to query later for slot
   try {
@@ -523,28 +521,6 @@ export async function accumulateParentBlockHash(
     await vm.stateManager.putContractStorage(historyAddress, key, hash)
   }
   await putBlockHash(this, parentHash, currentBlockNumber - BIGINT_1)
-
-  // in stateless execution parentBlock is not in blockchain but in chain's blockCache
-  // need to move the blockCache to the blockchain, in any case we can ignore forkblock
-  // which is where we need this code segment
-  try {
-    const parentBlock = await this.blockchain.getBlock(parentHash)
-
-    // If on the fork block, store the old block hashes as well
-    if (forkTime !== null && parentBlock.header.timestamp < forkTime) {
-      // forkTime could be null in test fixtures
-      let ancestor = parentBlock
-      for (let i = 0; i < Number(historyServeWindow) - 1; i++) {
-        if (ancestor.header.number === BIGINT_0) {
-          break
-        }
-
-        ancestor = await this.blockchain.getBlock(ancestor.header.parentHash)
-        await putBlockHash(this, ancestor.hash(), ancestor.header.number)
-      }
-    }
-    // eslint-disable-next-line no-empty
-  } catch (_e) {}
 
   // do cleanup if the code was not deployed
   await this.evm.journal.cleanup()

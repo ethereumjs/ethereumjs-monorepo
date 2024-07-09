@@ -1,6 +1,6 @@
 
 import { configDefaults, defineConfig, mergeConfig } from 'vitest/config'
-import baseConfig from '../../config/vitest.browser.config.mts'
+import baseConfig from '../../config/vitest.config.browser.mts'
 
 export default mergeConfig(
   baseConfig,
@@ -9,10 +9,10 @@ export default mergeConfig(
       exclude: [
         ...configDefaults.exclude,
         // path.resolve is not a function
-        'test/tester/config.spec.ts',
+        'test/api/tester/tester.config.spec.ts',
         // Cannot read properties of undefined (reading 'pedersen_hash')
         'test/api/EIPs/eip-6800-verkle.spec.ts'
       ],
     },
-  })
-)
+  }
+  ))

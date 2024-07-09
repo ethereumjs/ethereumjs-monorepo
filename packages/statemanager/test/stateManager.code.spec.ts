@@ -148,5 +148,15 @@ describe('StateManager -> Code', () => {
         assert.ok(true, 'successfully threw')
       }
     })
+
+    it('putContractCode with empty code on existing address should correctly propagate', async () => {
+      const stateManager = new DefaultStateManager()
+      const address = Address.zero()
+      await stateManager.putContractCode(address, new Uint8Array([1]))
+      await stateManager.putContractCode(address, new Uint8Array())
+      const account = await stateManager.getAccount(address)
+      assert.ok(account !== undefined)
+      assert.ok(account?.isEmpty())
+    })
   }
 })

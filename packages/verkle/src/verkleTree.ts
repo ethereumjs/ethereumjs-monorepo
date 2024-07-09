@@ -5,6 +5,7 @@ import {
   ValueEncoding,
   bytesToHex,
   equalsBytes,
+  intToHex,
   zeros,
 } from '@ethereumjs/util'
 import debug from 'debug'
@@ -13,8 +14,8 @@ import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { CheckpointDB } from './db/checkpoint.js'
 import { InternalNode } from './node/internalNode.js'
 import { LeafNode } from './node/leafNode.js'
-import { type VerkleNode } from './node/types.js'
-import { decodeNode } from './node/util.js'
+import { VerkleLeafNodeValue, type VerkleNode } from './node/types.js'
+import { createDeletedLeafValue, decodeNode, isLeafNode } from './node/util.js'
 import {
   type Proof,
   ROOT_DB_KEY,
@@ -133,7 +134,9 @@ export class VerkleTree {
       }
     }
 
-    return new VerkleTree(opts)
+    const trie = new VerkleTree(opts)
+    await trie._createRootNode()
+    return trie
   }
 
   database(db?: DB<Uint8Array, Uint8Array>) {
@@ -194,7 +197,6 @@ export class VerkleTree {
     const suffix = key[key.length - 1]
     this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffix}`, ['GET'])
     const res = await this.findPath(stem)
-
     if (res.node instanceof LeafNode) {
       // The retrieved leaf node contains an array of 256 possible values.
       // The index of the value we want is at the key's last byte
@@ -213,11 +215,177 @@ export class VerkleTree {
    * @param value - the value to store
    * @returns A Promise that resolves once value is stored.
    */
-  // TODO: Rewrite following logic in verkle.spec.ts "findPath validation" test
-  async put(_key: Uint8Array, _value: Uint8Array): Promise<void> {
-    throw new Error('not implemented')
+  async put(key: Uint8Array, value: Uint8Array): Promise<void> {
+    if (key.length !== 32) throw new Error(`expected key with length 32; got ${key.length}`)
+    const stem = key.slice(0, 31)
+    const suffix = key[key.length - 1]
+    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffix}`, ['PUT'])
+
+    const putStack: [Uint8Array, VerkleNode][] = []
+    // Find path to nearest node
+    const foundPath = await this.findPath(stem)
+
+    // Sanity check - we should at least get the root node back
+    if (foundPath.stack.length === 0) {
+      throw new Error(`Root node not found in trie`)
+    }
+
+    // Step 1) Create or update the leaf node
+    let leafNode: LeafNode
+    // First see if leaf node already exists
+    if (foundPath.node !== null) {
+      // Sanity check to verify we have the right node type
+      if (!isLeafNode(foundPath.node)) {
+        throw new Error(
+          `expected leaf node found at ${bytesToHex(stem)}. Got internal node instead`
+        )
+      }
+      leafNode = foundPath.node
+      // Sanity check to verify we have the right leaf node
+      if (!equalsBytes(leafNode.stem, stem)) {
+        throw new Error(
+          `invalid leaf node found. Expected stem: ${bytesToHex(stem)}; got ${bytesToHex(
+            foundPath.node.stem
+          )}`
+        )
+      }
+    } else {
+      // Leaf node doesn't exist, create a new one
+      leafNode = await LeafNode.create(stem, this.verkleCrypto)
+      this.DEBUG && this.debug(`Creating new leaf node at stem: ${bytesToHex(stem)}`, ['PUT'])
+    }
+    // Update value in leaf node and push to putStack
+    if (equalsBytes(value, createDeletedLeafValue())) {
+      // Special case for when the deleted leaf value or zeroes is passed to `put`
+      // Writing the deleted leaf value to the suffix indicated in the key
+      leafNode.setValue(suffix, VerkleLeafNodeValue.Deleted)
+    } else {
+      leafNode.setValue(suffix, value)
+    }
+    this.DEBUG &&
+      this.debug(
+        `Updating value for suffix: ${suffix} at leaf node with stem: ${bytesToHex(stem)}`,
+        ['PUT']
+      )
+    putStack.push([leafNode.hash(), leafNode])
+
+    // `path` is the path to the last node pushed to the `putStack`
+    let lastPath = leafNode.stem
+
+    // Step 2) Determine if a new internal node is needed
+    if (foundPath.stack.length > 1) {
+      // Only insert new internal node if we have more than 1 node in the path
+      // since a single node indicates only the root node is in the path
+      const nearestNodeTuple = foundPath.stack.pop()!
+      const nearestNode = nearestNodeTuple[0]
+      lastPath = nearestNodeTuple[1]
+      const updatedParentTuple = this.updateParent(leafNode, nearestNode, lastPath)
+      putStack.push([updatedParentTuple.node.hash(), updatedParentTuple.node])
+      lastPath = updatedParentTuple.lastPath
+
+      // Step 3) Walk up trie and update child references in parent internal nodes
+      while (foundPath.stack.length > 1) {
+        const [nextNode, nextPath] = foundPath.stack.pop()! as [InternalNode, Uint8Array]
+        // Compute the child index to be updated on `nextNode`
+        const childIndex = lastPath[matchingBytesLength(lastPath, nextPath)]
+        // Update child reference
+        nextNode.setChild(childIndex, {
+          commitment: putStack[putStack.length - 1][1].commitment,
+          path: lastPath,
+        })
+        this.DEBUG &&
+          this.debug(
+            `Updating child reference for node with path: ${bytesToHex(
+              lastPath
+            )} at index ${childIndex} in internal node at path ${bytesToHex(nextPath)}`,
+            ['PUT']
+          )
+        // Hold onto `path` to current node for updating next parent node child index
+        lastPath = nextPath
+        putStack.push([nextNode.hash(), nextNode])
+      }
+    }
+
+    // Step 4) Update root node
+    const rootNode = foundPath.stack.pop()![0] as InternalNode
+    rootNode.setChild(stem[0], {
+      commitment: putStack[putStack.length - 1][1].commitment,
+      path: lastPath,
+    })
+    this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))
+    this.DEBUG &&
+      this.debug(
+        `Updating child reference for node with path: ${bytesToHex(lastPath)} at index ${
+          lastPath[0]
+        } in root node`,
+        ['PUT']
+      )
+    this.DEBUG && this.debug(`Updating root node hash to ${bytesToHex(this._root)}`, ['PUT'])
+    putStack.push([this._root, rootNode])
+    await this.saveStack(putStack)
   }
 
+  async del(key: Uint8Array): Promise<void> {
+    const stem = key.slice(0, 31)
+    const suffix = key[key.length - 1]
+    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffix}`, ['DEL'])
+    await this.put(key, createDeletedLeafValue())
+  }
+  /**
+   * Helper method for updating or creating the parent internal node for a given leaf node
+   * @param leafNode the child leaf node that will be referenced by the new/updated internal node
+   * returned by this method
+   * @param nearestNode the nearest node to the new leaf node
+   * @param pathToNode the path to `nearestNode`
+   * @returns a tuple of the updated parent node and the path to that parent (i.e. the partial stem of the leaf node that leads to the parent)
+   */
+  updateParent(
+    leafNode: LeafNode,
+    nearestNode: VerkleNode,
+    pathToNode: Uint8Array
+  ): { node: InternalNode; lastPath: Uint8Array } {
+    // Compute the portion of leafNode.stem and nearestNode.path that match (i.e. the partial path closest to leafNode.stem)
+    const partialMatchingStemIndex = matchingBytesLength(leafNode.stem, pathToNode)
+    let internalNode: InternalNode
+    if (isLeafNode(nearestNode)) {
+      // We need to create a new internal node and set nearestNode and leafNode as child nodes of it
+      // Create new internal node
+      internalNode = InternalNode.create(this.verkleCrypto)
+      // Set leafNode and nextNode as children of the new internal node
+      internalNode.setChild(leafNode.stem[partialMatchingStemIndex], {
+        commitment: leafNode.commitment,
+        path: leafNode.stem,
+      })
+      internalNode.setChild(nearestNode.stem[partialMatchingStemIndex], {
+        commitment: nearestNode.commitment,
+        path: nearestNode.stem,
+      })
+      // Find the path to the new internal node (the matching portion of the leaf node and next node's stems)
+      pathToNode = leafNode.stem.slice(0, partialMatchingStemIndex)
+      this.DEBUG &&
+        this.debug(`Creating new internal node at path ${bytesToHex(pathToNode)}`, ['PUT'])
+    } else {
+      // Nearest node is an internal node.  We need to update the appropriate child reference
+      // to the new leaf node
+      internalNode = nearestNode
+      internalNode.setChild(leafNode.stem[partialMatchingStemIndex], {
+        commitment: leafNode.commitment,
+        path: leafNode.stem,
+      })
+      this.DEBUG &&
+        this.debug(
+          `Updating child reference for leaf node with stem: ${bytesToHex(
+            leafNode.stem
+          )} at index ${
+            leafNode.stem[partialMatchingStemIndex]
+          } in internal node at path ${bytesToHex(
+            leafNode.stem.slice(0, partialMatchingStemIndex)
+          )}`,
+          ['PUT']
+        )
+    }
+    return { node: internalNode, lastPath: pathToNode }
+  }
   /**
    * Tries to find a path to the node for the given key.
    * It returns a `stack` of nodes to the closest node.
@@ -231,12 +399,13 @@ export class VerkleTree {
       stack: [],
       remaining: key,
     }
-    if (equalsBytes(this.root(), this.EMPTY_TREE_ROOT)) return result
+
+    // TODO: Decide if findPath should return an empty stack if we have an empty trie or a path with just the empty root node
+    // if (equalsBytes(this.root(), this.EMPTY_TREE_ROOT)) return result
 
     // Get root node
     let rawNode = await this._db.get(this.root())
-    if (rawNode === undefined)
-      throw new Error('root node should exist when root not empty tree root')
+    if (rawNode === undefined) throw new Error('root node should exist')
 
     const rootNode = decodeNode(rawNode, this.verkleCrypto) as InternalNode
 
@@ -245,8 +414,8 @@ export class VerkleTree {
     let child = rootNode.children[key[0]]
 
     // Root node doesn't contain a child node's commitment on the first byte of the path so we're done
-    if (equalsBytes(child.commitment, this.verkleCrypto.zeroCommitment)) {
-      this.DEBUG && this.debug(`Partial Path ${key[0]} - found no child.`, ['FIND_PATH'])
+    if (child === null) {
+      this.DEBUG && this.debug(`Partial Path ${intToHex(key[0])} - found no child.`, ['FIND_PATH'])
       return result
     }
     let finished = false
@@ -260,7 +429,7 @@ export class VerkleTree {
       // Calculate the index of the last matching byte in the key
       const matchingKeyLength = matchingBytesLength(key, child.path)
       const foundNode = equalsBytes(key, child.path)
-      if (foundNode || child.path.length >= key.length || decodedNode instanceof LeafNode) {
+      if (foundNode || child.path.length >= key.length || isLeafNode(decodedNode)) {
         // If the key and child.path are equal, then we found the node
         // If the child.path is the same length or longer than the key but doesn't match it
         // or the found node is a leaf node, we've found another node where this node should
@@ -282,16 +451,15 @@ export class VerkleTree {
         // We found a different node than the one specified by `key`
         // so the sought node doesn't exist
         result.remaining = key.slice(matchingKeyLength)
+        const pathToNearestNode = isLeafNode(decodedNode) ? decodedNode.stem : child.path
         this.DEBUG &&
           this.debug(
-            `Path ${bytesToHex(
-              key.slice(0, matchingKeyLength)
-            )} - found path to nearest node ${bytesToHex(
+            `Path ${bytesToHex(pathToNearestNode)} - found path to nearest node ${bytesToHex(
               decodedNode.hash()
             )} but target node not found.`,
             ['FIND_PATH']
           )
-        result.stack.push([decodedNode, key.slice(0, matchingKeyLength)])
+        result.stack.push([decodedNode, pathToNearestNode])
         return result
       }
       // Push internal node to path stack
@@ -328,7 +496,6 @@ export class VerkleTree {
       verkleCrypto: this.verkleCrypto,
     })
 
-    // Update the child node's commitment and path
     this.DEBUG && this.debug(`No root node. Creating new root node`, ['INITIALIZE'])
     // Set trie root to serialized (aka compressed) commitment for later use in verkle proof
     this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))
@@ -422,7 +589,6 @@ export class VerkleTree {
   /**
    * Persists the root hash in the underlying database
    */
-  // TODO: Fix how we reference the root node in `findPath` so this method will work correctly
   async persistRoot() {
     if (this._opts.useRootPersistence) {
       await this._db.put(ROOT_DB_KEY, this.root())
