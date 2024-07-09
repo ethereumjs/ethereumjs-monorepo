@@ -278,6 +278,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         }
         break
       case TrieNodeFetcher:
+        // TODO update to check if heal phase completed successfully and then continue with next
+        // healing phase
         fetcherDoneFlags.trieNodeFetcher.done = true
         break
     }
