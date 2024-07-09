@@ -1,8 +1,10 @@
 import { Common } from '@ethereumjs/common'
 import {
   Address,
+  ConsolidationRequest,
   DepositRequest,
   WithdrawalRequest,
+  bigIntToAddressBytes,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
@@ -41,6 +43,10 @@ export const accumulateRequests = async (
     await accumulateEIP7002Requests(vm, requests)
   }
 
+  if (common.isActivatedEIP(7251)) {
+    await accumulateEIP7251Requests(vm, requests)
+  }
+
   if (requests.length > 1) {
     for (let x = 1; x < requests.length; x++) {
       if (requests[x].type < requests[x - 1].type)
@@ -69,10 +75,7 @@ const accumulateEIP7002Requests = async (
     )
   }
 
-  const systemAddressBytes = setLengthLeft(
-    bigIntToBytes(vm.common.param('vm', 'systemAddress')),
-    20
-  )
+  const systemAddressBytes = bigIntToAddressBytes(vm.common.param('vm', 'systemAddress'))
   const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
 
   const addrIsEmpty = (await vm.stateManager.getAccount(systemAddress)) === undefined
@@ -89,10 +92,57 @@ const accumulateEIP7002Requests = async (
     for (let startByte = 0; startByte < resultsBytes.length; startByte += 76) {
       const slicedBytes = resultsBytes.slice(startByte, startByte + 76)
       const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
-      const validatorPublicKey = slicedBytes.slice(20, 68) // 48 Bytes
+      const validatorPubkey = slicedBytes.slice(20, 68) // 48 Bytes
       const amount = bytesToBigInt(unpadBytes(slicedBytes.slice(68, 76))) // 8 Bytes / Uint64
+      requests.push(WithdrawalRequest.fromRequestData({ sourceAddress, validatorPubkey, amount }))
+    }
+  }
+
+  if (addrIsEmpty) {
+    await vm.stateManager.deleteAccount(systemAddress)
+  }
+}
+
+const accumulateEIP7251Requests = async (
+  vm: VM,
+  requests: CLRequest<CLRequestType>[]
+): Promise<void> => {
+  // Partial withdrawals logic
+  const addressBytes = setLengthLeft(
+    bigIntToBytes(vm.common.param('vm', 'consolidationRequestPredeployAddress')),
+    20
+  )
+  const consolidationsAddress = Address.fromString(bytesToHex(addressBytes))
+
+  const code = await vm.stateManager.getContractCode(consolidationsAddress)
+
+  if (code.length === 0) {
+    throw new Error(
+      'Attempt to accumulate EIP-7251 requests failed: the contract does not exist. Ensure the deployment tx has been run, or that the required contract code is stored'
+    )
+  }
+
+  const systemAddressBytes = bigIntToAddressBytes(vm.common.param('vm', 'systemAddress'))
+  const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
+
+  const addrIsEmpty = (await vm.stateManager.getAccount(systemAddress)) === undefined
+
+  const results = await vm.evm.runCall({
+    caller: systemAddress,
+    gasLimit: BigInt(1_000_000),
+    to: consolidationsAddress,
+  })
+
+  const resultsBytes = results.execResult.returnValue
+  if (resultsBytes.length > 0) {
+    // Each request is 116 bytes
+    for (let startByte = 0; startByte < resultsBytes.length; startByte += 116) {
+      const slicedBytes = resultsBytes.slice(startByte, startByte + 116)
+      const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
+      const sourcePubkey = slicedBytes.slice(20, 68) // 48 Bytes
+      const targetPubkey = slicedBytes.slice(68, 116) // 48 bytes
       requests.push(
-        WithdrawalRequest.fromRequestData({ sourceAddress, validatorPublicKey, amount })
+        ConsolidationRequest.fromRequestData({ sourceAddress, sourcePubkey, targetPubkey })
       )
     }
   }

@@ -256,6 +256,28 @@ export interface EVMOpts {
    */
   customPrecompiles?: CustomPrecompile[]
 
+  /**
+   * For the EIP-2935 BLS precompiles, the native JS `@noble/curves`
+   * https://github.com/paulmillr/noble-curves BLS12-381 curve implementation
+   * is used (see `noble.ts` file in the `precompiles` folder).
+   *
+   * To use an alternative implementation this option can be used by passing
+   * in a wrapper implementation integrating the desired library and adhering
+   * to the `EVMBLSInterface` specification.
+   *
+   * An interface for the MCL WASM implementation https://github.com/herumi/mcl-wasm
+   * is shipped with this library which can be used as follows (with `mcl-wasm` being
+   * explicitly added to the set of dependencies):
+   *
+   * ```ts
+   * import * as mcl from 'mcl-wasm'
+   *
+   * await mcl.init(mcl.BLS12_381)
+   * const evm = await EVM.create({ bls: new MCLBLS(mcl) })
+   * ```
+   */
+  bls?: EVMBLSInterface
+
   /*
    * The StateManager which is used to update the trie
    */
@@ -327,6 +349,19 @@ export interface ExecResult {
    * Amount of blob gas consumed by the transaction
    */
   blobGasUsed?: bigint
+}
+
+export type EVMBLSInterface = {
+  init?(): void
+  addG1(input: Uint8Array): Uint8Array
+  mulG1(input: Uint8Array): Uint8Array
+  addG2(input: Uint8Array): Uint8Array
+  mulG2(input: Uint8Array): Uint8Array
+  mapFPtoG1(input: Uint8Array): Uint8Array
+  mapFP2toG2(input: Uint8Array): Uint8Array
+  msmG1(input: Uint8Array): Uint8Array
+  msmG2(input: Uint8Array): Uint8Array
+  pairingCheck(input: Uint8Array): Uint8Array
 }
 
 /**

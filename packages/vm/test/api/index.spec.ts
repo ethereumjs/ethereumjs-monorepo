@@ -52,6 +52,58 @@ describe('VM -> basic instantiation / boolean switches', () => {
   })
 })
 
+describe('VM -> Default EVM / Custom EVM Opts', () => {
+  it('Default EVM should have correct default EVM opts', async () => {
+    const vm = await VM.create()
+    assert.isFalse((vm.evm as EVM).allowUnlimitedContractSize, 'allowUnlimitedContractSize=false')
+  })
+
+  it('should throw if evm and evmOpts are both used', async () => {
+    try {
+      await VM.create({ evmOpts: {}, evm: await EVM.create() })
+      assert.fail('should throw')
+    } catch (e: any) {
+      assert.ok('correctly thrown')
+    }
+  })
+
+  it('Default EVM should use custom EVM opts', async () => {
+    const vm = await VM.create({ evmOpts: { allowUnlimitedContractSize: true } })
+    assert.isTrue((vm.evm as EVM).allowUnlimitedContractSize, 'allowUnlimitedContractSize=true')
+    const copiedVM = await vm.shallowCopy()
+    assert.isTrue(
+      (copiedVM.evm as EVM).allowUnlimitedContractSize,
+      'allowUnlimitedContractSize=true (for shallowCopied VM)'
+    )
+  })
+
+  it('Default EVM should use VM common', async () => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    const vm = await VM.create({ common })
+    assert.equal((vm.evm as EVM).common.hardfork(), 'byzantium', 'use modfied HF from VM common')
+
+    const copiedVM = await vm.shallowCopy()
+    assert.equal(
+      (copiedVM.evm as EVM).common.hardfork(),
+      'byzantium',
+      'use modfied HF from VM common (for shallowCopied VM)'
+    )
+  })
+
+  it('Default EVM should prefer common from evmOpts if provided (same logic for blockchain, statemanager)', async () => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    const vm = await VM.create({ evmOpts: { common } })
+    assert.equal((vm.evm as EVM).common.hardfork(), 'byzantium', 'use modfied HF from evmOpts')
+
+    const copiedVM = await vm.shallowCopy()
+    assert.equal(
+      (copiedVM.evm as EVM).common.hardfork(),
+      'byzantium',
+      'use modfied HF from evmOpts (for shallowCopied VM)'
+    )
+  })
+})
+
 describe('VM -> supportedHardforks', () => {
   it('should throw when common is set to an unsupported hardfork', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
