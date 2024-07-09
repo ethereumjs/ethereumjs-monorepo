@@ -250,13 +250,6 @@ export class VerkleTree {
         )
       }
     } else {
-      if (equalsBytes(value, createDeletedLeafValue())) {
-        // Special case for when the deleted leaf value is passed to `put`
-        // You can't delete a value on a leaf node that doesn't exist
-        this.DEBUG &&
-          this.debug(`Leaf node with stem: ${bytesToHex(stem)} not found in trie`, ['DEL'])
-        return
-      }
       // Leaf node doesn't exist, create a new one
       leafNode = await LeafNode.create(stem, this.verkleCrypto)
       this.DEBUG && this.debug(`Creating new leaf node at stem: ${bytesToHex(stem)}`, ['PUT'])
