@@ -244,7 +244,7 @@ describe('Verkle tree', () => {
     assert.deepEqual(await trie.get(hexToBytes(keys[3])), hexToBytes(values[3]))
 
     await trie.del(hexToBytes(keys[0]))
-    assert.deepEqual(await trie.get(hexToBytes(keys[0])), undefined)
+    assert.deepEqual(await trie.get(hexToBytes(keys[0])), new Uint8Array(32))
 
     await trie.put(hexToBytes(keys[0]), hexToBytes(values[0]))
     assert.deepEqual(await trie.get(hexToBytes(keys[0])), hexToBytes(values[0]))

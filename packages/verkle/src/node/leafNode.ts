@@ -125,8 +125,10 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     const value = this.values[index]
     switch (value) {
       case VerkleLeafNodeValue.Untouched:
-      case VerkleLeafNodeValue.Deleted:
         return undefined
+      case VerkleLeafNodeValue.Deleted:
+        // Return zeroes if a value is "deleted" (i.e. overwitten with zeroes)
+        return new Uint8Array(32)
       default:
         return value
     }
