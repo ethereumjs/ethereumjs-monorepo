@@ -1,15 +1,13 @@
 import { equalsBytes, intToBytes, setLengthLeft, setLengthRight } from '@ethereumjs/util'
 
 import { BaseVerkleNode } from './baseVerkleNode.js'
+import { NODE_WIDTH, VerkleLeafNodeValue, VerkleNodeType } from './types.js'
 import {
-  NODE_WIDTH,
-  VerkleLeafNodeValue,
-  VerkleNodeType,
+  createCValues,
   createDefaultLeafValues,
   createDeletedLeafValue,
   createUntouchedLeafValue,
-} from './types.js'
-import { createCValues } from './util.js'
+} from './util.js'
 
 import type { VerkleNodeOptions } from './types.js'
 import type { VerkleCrypto } from '@ethereumjs/util'
