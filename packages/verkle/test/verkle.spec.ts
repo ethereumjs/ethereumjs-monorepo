@@ -249,7 +249,7 @@ describe('Verkle tree', () => {
     await trie.put(hexToBytes(keys[0]), hexToBytes(values[0]))
     assert.deepEqual(await trie.get(hexToBytes(keys[0])), hexToBytes(values[0]))
   })
-  it('should put zeros in leaf node when del called with stem  that was not in the trie before', async () => {
+  it('should put zeros in leaf node when del called with stem that was not in the trie before', async () => {
     const keys = ['0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01']
 
     const trie = await VerkleTree.create({
