@@ -1,4 +1,3 @@
-import type { BlockHeader } from '@ethereumjs/block'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import {
