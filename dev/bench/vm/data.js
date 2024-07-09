@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1720187485724,
+  "lastUpdate": 1720553049759,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "36ca22023bbbf46d6947b4c0c2e633a0cd21d46c",
-          "message": "Update verkle crypto dep (#3424)",
-          "timestamp": "2024-05-14T13:12:00-04:00",
-          "tree_id": "b0bbe15b8fe4b1eccc5c2b91cdc6734b881be8b3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/36ca22023bbbf46d6947b4c0c2e633a0cd21d46c"
-        },
-        "date": 1715706875494,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42506,
-            "range": "±2.94%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41418,
-            "range": "±1.31%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41354,
-            "range": "±1.48%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39705,
-            "range": "±2.58%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35861,
-            "range": "±6.44%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±5.73%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c6ff99a31a872a0855d28c36f88fa6737dc60a82",
+          "message": "Add `trie.del` (#3486)\n\n* add trie.del function and tests\r\n\r\n* lint\r\n\r\n* Add last put to test\r\n\r\n* test: adjust test case description\r\n\r\n* Allow zeroes to be written for non-existent leafnode\r\n\r\n* clean up utility methods\r\n\r\n* address feedback, lint\r\n\r\n* fixes\r\n\r\n* Update packages/verkle/test/verkle.spec.ts\r\n\r\n* return zeroes when leaf value is \"deleted\"\r\n\r\n* fix test\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
+          "timestamp": "2024-07-09T15:19:35-04:00",
+          "tree_id": "bb9b7233a13c5739b9496b45a8af7525a14e1527",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c6ff99a31a872a0855d28c36f88fa6737dc60a82"
+        },
+        "date": 1720553049242,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38355,
+            "range": "±1.79%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36621,
+            "range": "±3.02%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37288,
+            "range": "±1.40%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36155,
+            "range": "±1.56%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35322,
+            "range": "±1.76%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
