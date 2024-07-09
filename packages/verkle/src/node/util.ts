@@ -82,13 +82,14 @@ export const createCValues = (values: (Uint8Array | VerkleLeafNodeValue)[]) => {
         break
       case VerkleLeafNodeValue.Deleted: // Leaf value that has been written with zeros (either zeroes or a deleted value)
         val = createDeletedLeafValue()
-
         break
       default:
         val = retrievedValue
         break
     }
     // We add 16 trailing zeros to each value since all commitments are padded to an array of 32 byte values
+    // TODO: Determine whether we need to apply the leaf marker (i.e. set 129th bit) for all written values
+    // regardless of whether the value stored is zero or not
     expandedValues[x * 2] = setLengthRight(val.slice(0, 16), 32)
     expandedValues[x * 2 + 1] = setLengthRight(val.slice(16), 32)
   }
