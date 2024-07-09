@@ -58,7 +58,7 @@ describe('verkle node - leaf', () => {
     node.setValue(0, setLengthLeft(Uint8Array.from([5]), 32))
     assert.deepEqual(node.getValue(0), setLengthLeft(Uint8Array.from([5]), 32))
     node.setValue(0, VerkleLeafNodeValue.Deleted)
-    assert.equal(node.getValue(0), undefined)
+    assert.deepEqual(node.getValue(0), new Uint8Array(32))
   })
 
   it('should update a commitment when setting a value', async () => {
