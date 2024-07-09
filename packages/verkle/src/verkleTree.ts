@@ -14,8 +14,8 @@ import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { CheckpointDB } from './db/checkpoint.js'
 import { InternalNode } from './node/internalNode.js'
 import { LeafNode } from './node/leafNode.js'
-import { VerkleLeafNodeValue, type VerkleNode, createDeletedLeafValue } from './node/types.js'
-import { decodeNode, isLeafNode } from './node/util.js'
+import { VerkleLeafNodeValue, type VerkleNode } from './node/types.js'
+import { createDeletedLeafValue, decodeNode, isLeafNode } from './node/util.js'
 import {
   type Proof,
   ROOT_DB_KEY,
@@ -256,16 +256,12 @@ export class VerkleTree {
     }
     // Update value in leaf node and push to putStack
     if (equalsBytes(value, createDeletedLeafValue())) {
-      // Special case for when the deleted leaf value is passed to `put`
+      // Special case for when the deleted leaf value or zeroes is passed to `put`
       // Writing the deleted leaf value to the suffix indicated in the key
-      this.DEBUG &&
-        this.debug(
-          `Deleting value at suffix: ${suffix} in leaf node with stem: ${bytesToHex(stem)}`,
-          ['DEL']
-        )
       leafNode.setValue(suffix, VerkleLeafNodeValue.Deleted)
+    } else {
+      leafNode.setValue(suffix, value)
     }
-    leafNode.setValue(suffix, value)
     this.DEBUG &&
       this.debug(
         `Updating value for suffix: ${suffix} at leaf node with stem: ${bytesToHex(stem)}`,

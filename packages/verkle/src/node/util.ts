@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bigIntToBytes, bytesToBigInt, setLengthRight } from '@ethereumjs/util'
+import { setLengthRight } from '@ethereumjs/util'
 
 import { InternalNode } from './internalNode.js'
 import { LeafNode } from './leafNode.js'
