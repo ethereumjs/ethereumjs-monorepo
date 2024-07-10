@@ -1,5 +1,5 @@
 import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import {
   Address,
@@ -445,7 +445,7 @@ export async function createInlineClient(
     `${datadir}/${common.chainName()}/metaDB`
   )
 
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     db: new LevelDB(chainDB),
     genesisState: customGenesisState,
     common: config.chainCommon,

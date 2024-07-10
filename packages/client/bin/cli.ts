@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { createBlockFromValuesArray } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -630,7 +630,7 @@ async function startClient(
   let blockchain
   if (genesisMeta.genesisState !== undefined || genesisMeta.genesisStateRoot !== undefined) {
     const validateConsensus = config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique
-    blockchain = await Blockchain.create({
+    blockchain = await createBlockchain({
       db: new LevelDB(dbs.chainDB),
       ...genesisMeta,
       common: config.chainCommon,

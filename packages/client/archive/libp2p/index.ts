@@ -75,7 +75,7 @@ export async function createClient(args: any) {
     `${datadir}/${common.chainName()}`
   )
 
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     db: new LevelDB(chainDB),
     common: config.chainCommon,
     hardforkByHeadBlockNumber: true,

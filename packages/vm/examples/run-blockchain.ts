@@ -12,7 +12,7 @@ import {
   createBlockFromBlockData,
   createBlockFromRLPSerializedBlock,
 } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { Blockchain, createBlockchain } from '@ethereumjs/blockchain'
 import { Common, ConsensusType } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
@@ -25,7 +25,7 @@ async function main() {
 
   const genesisBlock = createBlockFromBlockData({ header: testData.genesisBlockHeader }, { common })
 
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     common,
     validateConsensus: validatePow,
     validateBlocks,

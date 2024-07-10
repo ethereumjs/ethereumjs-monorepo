@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { type InterpreterStep } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
@@ -72,7 +72,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Have to create a blockchain with empty block as genesisBlock for Merge
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, undefined, { common })
-  const blockchain = await Blockchain.create({ genesisBlock, common })
+  const blockchain = await createBlockchain({ genesisBlock, common })
   const state = new Trie({ useKeyHashing: true, common })
   const stateManager = new DefaultStateManager({
     trie: state,

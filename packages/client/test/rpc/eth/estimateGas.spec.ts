@@ -1,5 +1,5 @@
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { LegacyTransaction } from '@ethereumjs/tx'
@@ -22,7 +22,7 @@ describe(
       // Use custom genesis so we can test EIP1559 txs more easily
       const genesisJson = await import('../../testdata/geth-genesis/rpctestnet.json')
       const common = Common.fromGethGenesis(genesisJson, { chain: 'testnet', hardfork: 'berlin' })
-      const blockchain = await Blockchain.create({
+      const blockchain = await createBlockchain({
         common,
         validateBlocks: false,
         validateConsensus: false,
@@ -186,7 +186,7 @@ describe(
     })
 
     it('call with unsupported block argument', async () => {
-      const blockchain = await Blockchain.create()
+      const blockchain = await createBlockchain()
 
       const client = await createClient({ blockchain, includeVM: true })
       const manager = createManager(client)

@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { KeyEncoding, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -49,7 +49,7 @@ describe('[Chain]', () => {
   })
 
   it('should detect unopened chain', async () => {
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       validateBlocks: false,
       validateConsensus: false,
     })
@@ -122,7 +122,7 @@ describe('[Chain]', () => {
 
   it('should add block to chain', async () => {
     // TODO: add test cases with activated block validation
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       validateBlocks: false,
       validateConsensus: false,
     })
