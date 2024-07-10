@@ -8,12 +8,15 @@ import {
   Withdrawal,
   WithdrawalRequest,
   bigIntToHex,
+  bytesToHex,
+  bytesToUtf8,
+  equalsBytes,
   fetchFromProvider,
   getProvider,
+  hexToBytes,
   intToHex,
   isHexString,
 } from '@ethereumjs/util'
-import { bytesToHex, bytesToUtf8, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { blockFromRpc } from './from-rpc.js'
 import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } from './helpers.js'
