@@ -1,9 +1,9 @@
-import { blockFromBlockData } from '@ethereumjs/block'
 import {
+  blockFromBlockData,
   genRequestsTrieRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
-} from '@ethereumjs/block/dist/cjs/helpers.js'
+} from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'

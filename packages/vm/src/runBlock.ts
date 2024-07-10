@@ -1,5 +1,4 @@
-import { blockFromBlockData } from '@ethereumjs/block'
-import { genRequestsTrieRoot } from '@ethereumjs/block/dist/cjs/helpers.js'
+import { blockFromBlockData, genRequestsTrieRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
