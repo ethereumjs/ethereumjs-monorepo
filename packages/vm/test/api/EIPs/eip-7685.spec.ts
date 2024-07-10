@@ -1,5 +1,4 @@
-import { blockFromBlockData } from '@ethereumjs/block'
-import { genRequestsTrieRoot } from '@ethereumjs/block/dist/cjs/helpers.js'
+import { blockFromBlockData, genRequestsTrieRoot } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
