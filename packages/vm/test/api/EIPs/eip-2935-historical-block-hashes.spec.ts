@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { blockFromBlockData } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
@@ -20,6 +20,8 @@ import { assert, describe, it } from 'vitest'
 import { bytesToBigInt } from '../../../../util/src/bytes'
 import { BIGINT_0 } from '../../../../util/src/constants'
 import { VM } from '../../../src/vm'
+
+import type { Block } from '@ethereumjs/block'
 
 function eip2935ActiveAtCommon(timestamp: number) {
   const hfs = [
@@ -294,7 +296,7 @@ describe('EIP 2935: historical block hashes', () => {
 
       // validate the contract code cases
       // const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
-      const block = Block.fromBlockData(
+      const block = blockFromBlockData(
         {
           header: {
             baseFeePerGas: BigInt(7),

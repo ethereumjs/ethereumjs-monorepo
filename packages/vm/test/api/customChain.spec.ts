@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { blockFromBlockData } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
@@ -49,7 +49,7 @@ const common = new Common({
   hardfork: Hardfork.Chainstart,
   customChains: [testChain] as ChainConfig[],
 })
-const block = Block.fromBlockData(
+const block = blockFromBlockData(
   {
     header: {
       gasLimit: 21_000,

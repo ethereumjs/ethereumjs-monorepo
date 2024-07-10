@@ -1,4 +1,5 @@
-import { Block } from '@ethereumjs/block'
+import { blockFromBlockData } from '@ethereumjs/block'
+import { genWithdrawalsTrieRoot } from '@ethereumjs/block/dist/cjs/helpers'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
@@ -19,6 +20,7 @@ import { assert, describe, it } from 'vitest'
 import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/withdrawals.json'
 import { VM } from '../../../src/vm'
 
+import type { Block } from '@ethereumjs/block'
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
 
 const common = new Common({
@@ -89,7 +91,7 @@ describe('EIP4895 tests', () => {
       })
       index++
     }
-    const block = Block.fromBlockData(
+    const block = blockFromBlockData(
       {
         header: {
           baseFeePerGas: BigInt(7),
@@ -146,11 +148,11 @@ describe('EIP4895 tests', () => {
     let postState: string
 
     // construct a block with just the 0th withdrawal should have no effect on state
-    block = Block.fromBlockData(
+    block = blockFromBlockData(
       {
         header: {
           baseFeePerGas: BigInt(7),
-          withdrawalsRoot: await Block.genWithdrawalsTrieRoot(withdrawals.slice(0, 1)),
+          withdrawalsRoot: await genWithdrawalsTrieRoot(withdrawals.slice(0, 1)),
           transactionsTrie: KECCAK256_RLP,
         },
         transactions: [],
@@ -168,11 +170,11 @@ describe('EIP4895 tests', () => {
     )
 
     // construct a block with all the withdrawals
-    block = Block.fromBlockData(
+    block = blockFromBlockData(
       {
         header: {
           baseFeePerGas: BigInt(7),
-          withdrawalsRoot: await Block.genWithdrawalsTrieRoot(withdrawals),
+          withdrawalsRoot: await genWithdrawalsTrieRoot(withdrawals),
           transactionsTrie: KECCAK256_RLP,
         },
         transactions: [],

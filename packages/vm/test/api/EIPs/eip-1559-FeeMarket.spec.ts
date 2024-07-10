@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { blockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   AccessListEIP2930Transaction,
@@ -53,7 +53,7 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: Trans
   const signed = transaction.sign(pkey)
   const json = <any>signed.toJSON()
   json.type = txType
-  const block = Block.fromBlockData(
+  const block = blockFromBlockData(
     {
       header: {
         number: BigInt(1),
