@@ -1,4 +1,9 @@
-import { Block, BlockHeader, getDifficulty, valuesArrayToHeaderData } from '@ethereumjs/block'
+import {
+  BlockHeader,
+  blockFromValuesArray,
+  getDifficulty,
+  valuesArrayToHeaderData,
+} from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -27,7 +32,7 @@ import { Protocol } from './protocol.js'
 import type { Chain } from '../../blockchain/index.js'
 import type { TxReceiptWithType } from '../../execution/receipt.js'
 import type { Message, ProtocolOptions } from './protocol.js'
-import type { BlockBodyBytes, BlockBytes, BlockHeaderBytes } from '@ethereumjs/block'
+import type { Block, BlockBodyBytes, BlockBytes, BlockHeaderBytes } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
@@ -201,7 +206,7 @@ export class EthProtocol extends Protocol {
       code: 0x07,
       encode: ([block, td]: [Block, bigint]) => [block.raw(), bigIntToUnpaddedBytes(td)],
       decode: ([block, td]: [BlockBytes, Uint8Array]) => [
-        Block.fromValuesArray(block, {
+        blockFromValuesArray(block, {
           common: this.config.chainCommon,
           setHardfork: true,
         }),

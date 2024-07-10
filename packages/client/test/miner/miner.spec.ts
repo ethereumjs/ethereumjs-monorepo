@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { BlockHeader, blockFromBlockData } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
@@ -15,6 +15,7 @@ import { FullEthereumService } from '../../src/service/index.js'
 import { wait } from '../integration/util.js'
 
 import type { FullSynchronizer } from '../../src/sync/index.js'
+import type { Block } from '@ethereumjs/block'
 import type { CliqueConsensus } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
 
@@ -52,7 +53,7 @@ class FakeChain {
   }
   get blocks() {
     return {
-      latest: Block.fromBlockData(),
+      latest: blockFromBlockData(),
       height: BigInt(0),
     }
   }
@@ -72,7 +73,7 @@ class FakeChain {
     },
     validateHeader: () => {},
     getIteratorHead: () => {
-      return Block.fromBlockData({ header: { number: 1 } })
+      return blockFromBlockData({ header: { number: 1 } })
     },
     getTotalDifficulty: () => {
       return 1n
@@ -418,7 +419,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
     common,
   })
   const chain = new FakeChain() as any
-  const block = Block.fromBlockData({}, { common })
+  const block = blockFromBlockData({}, { common })
   Object.defineProperty(chain, 'headers', {
     get() {
       return { latest: block.header, height: block.header.number }
@@ -467,7 +468,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
 describe("assembleBlocks() -> should stop assembling a block after it's full", async () => {
   const chain = new FakeChain() as any
   const gasLimit = 100000
-  const block = Block.fromBlockData(
+  const block = blockFromBlockData(
     { header: { gasLimit } },
     { common: customCommon, setHardfork: true }
   )

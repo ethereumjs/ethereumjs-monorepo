@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { blockFromBlockData } from '@ethereumjs/block'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -6,6 +6,8 @@ import { assert, describe, it } from 'vitest'
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import pow from '../../testdata/geth-genesis/pow.json'
 import { getRpcClient, setupChain } from '../helpers.js'
+
+import type { Block } from '@ethereumjs/block'
 
 const method = 'eth_getStorageAt'
 
@@ -30,7 +32,7 @@ describe(method, async () => {
     const signedTx = tx.sign(tx.getHashedMessageToSign())
 
     const parent = await chain.blockchain.getCanonicalHeadHeader()
-    const block = Block.fromBlockData(
+    const block = blockFromBlockData(
       {
         header: {
           parentHash: parent.hash(),

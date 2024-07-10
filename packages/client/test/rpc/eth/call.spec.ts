@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { blockFromBlockData } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
@@ -9,6 +9,7 @@ import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
+import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_call'
@@ -54,7 +55,7 @@ describe(method, () => {
       return address
     }
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = Block.fromBlockData(
+    const block = blockFromBlockData(
       {
         header: {
           parentHash: parent.hash(),

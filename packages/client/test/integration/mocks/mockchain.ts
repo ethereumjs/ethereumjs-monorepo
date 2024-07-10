@@ -1,9 +1,10 @@
-import { Block } from '@ethereumjs/block'
+import { blockFromBlockData } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 
 import { Chain } from '../../../src/blockchain/index.js'
 
 import type { ChainOptions } from '../../../src/blockchain/index.js'
+import type { Block } from '@ethereumjs/block'
 
 interface MockChainOptions extends ChainOptions {
   height?: number
@@ -29,7 +30,7 @@ export class MockChain extends Chain {
     const common = this.config.chainCommon
     const blocks: Block[] = []
     for (let number = 0; number < this.height; number++) {
-      const block = Block.fromBlockData(
+      const block = blockFromBlockData(
         {
           header: {
             number: number + 1,

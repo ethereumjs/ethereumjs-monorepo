@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { blockFromBlockData } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
@@ -29,7 +29,7 @@ import type { EthereumClient } from '../../index.js'
 import type { EthProtocol } from '../../net/protocol/index.js'
 import type { FullEthereumService, Service } from '../../service/index.js'
 import type { RpcTx } from '../types.js'
-import type { JsonRpcBlock } from '@ethereumjs/block'
+import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
 import type {
@@ -562,7 +562,7 @@ export class Eth {
       gasLimit: transaction.gas,
     }
 
-    const blockToRunOn = Block.fromBlockData(
+    const blockToRunOn = blockFromBlockData(
       {
         header: {
           parentHash: block.hash(),

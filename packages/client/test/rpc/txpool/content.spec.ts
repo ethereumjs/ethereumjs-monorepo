@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { BlockHeader, blockFromBlockData } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
@@ -9,6 +9,7 @@ import { assert, describe, it } from 'vitest'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
+import type { Block } from '@ethereumjs/block'
 
 const method = 'txpool_content'
 
@@ -30,7 +31,7 @@ describe(method, () => {
     await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
     const gasLimit = 2000000
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = Block.fromBlockData(
+    const block = blockFromBlockData(
       {
         header: {
           parentHash: parent.hash(),
@@ -49,7 +50,7 @@ describe(method, () => {
     service.execution.vm.common.setHardfork('london')
     service.chain.config.chainCommon.setHardfork('london')
     const headBlock = await service.chain.getCanonicalHeadBlock()
-    const londonBlock = Block.fromBlockData(
+    const londonBlock = blockFromBlockData(
       {
         header: BlockHeader.fromHeaderData(
           {

@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { blockFromBlockData } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
@@ -51,7 +51,7 @@ describe(
       tx.getSenderAddress = () => {
         return address
       }
-      const block = Block.fromBlockData({}, { common })
+      const block = blockFromBlockData({}, { common })
       block.transactions[0] = tx
 
       const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })

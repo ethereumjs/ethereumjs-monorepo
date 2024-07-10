@@ -1,4 +1,9 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import {
+  BlockHeader,
+  blockFromBlockData,
+  genTransactionsTrieRoot,
+  genWithdrawalsTrieRoot,
+} from '@ethereumjs/block'
 import { TransactionFactory } from '@ethereumjs/tx'
 import {
   Withdrawal,
@@ -45,7 +50,7 @@ async function genBlockWithdrawals(blockNumber: number) {
           }
         })
   const withdrawalsRoot = bytesToHex(
-    await Block.genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData))
+    await genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData))
   )
 
   return { withdrawals, withdrawalsRoot }
@@ -77,7 +82,7 @@ async function runBlock(
       throw validationError
     }
   }
-  const transactionsTrie = bytesToHex(await Block.genTransactionsTrieRoot(txs))
+  const transactionsTrie = bytesToHex(await genTransactionsTrieRoot(txs))
 
   const { withdrawals, withdrawalsRoot } = await genBlockWithdrawals(Number(blockNumber))
 
@@ -92,7 +97,7 @@ async function runBlock(
     coinbase,
   }
   const blockData = { header: headerData, transactions: txs, withdrawals }
-  const executeBlock = Block.fromBlockData(blockData, { common })
+  const executeBlock = blockFromBlockData(blockData, { common })
   const executePayload = blockToExecutionPayload(executeBlock, BigInt(0)).executionPayload
   const res = await rpc.request('engine_newPayloadV2', [executePayload])
   assert.equal(res.result.status, 'VALID', 'valid status should be received')

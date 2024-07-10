@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { blockFromBlockData } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Address, hexToBytes } from '@ethereumjs/util'
@@ -30,7 +30,7 @@ const block = {
     hash: () => blockHash,
   },
   toJSON: () => ({
-    ...Block.fromBlockData({ header: { number: 1 } }).toJSON(),
+    ...blockFromBlockData({ header: { number: 1 } }).toJSON(),
     transactions: transactions2,
   }),
   transactions: transactions2,
@@ -46,7 +46,7 @@ function createChain(headBlock = block) {
     header: {
       number: BigInt(0),
     },
-    toJSON: () => ({ ...Block.fromBlockData({ header: { number: 0 } }).toJSON(), transactions }),
+    toJSON: () => ({ ...blockFromBlockData({ header: { number: 0 } }).toJSON(), transactions }),
     transactions,
     uncleHeaders: [],
   }
@@ -160,8 +160,8 @@ describe(method, async () => {
 
   describe('call with block with blob txs', () => {
     it('retrieves a block with a blob tx in it', async () => {
-      const genesisBlock = Block.fromBlockData({ header: { number: 0 } })
-      const block1 = Block.fromBlockData(
+      const genesisBlock = blockFromBlockData({ header: { number: 0 } })
+      const block1 = blockFromBlockData(
         {
           header: { number: 1, parentHash: genesisBlock.header.hash() },
           transactions: [mockedBlobTx3],

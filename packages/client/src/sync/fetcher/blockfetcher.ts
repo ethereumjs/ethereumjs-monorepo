@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { blockFromValuesArray } from '@ethereumjs/block'
 import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, equalsBytes } from '@ethereumjs/util'
 
 import { Event } from '../../types.js'
@@ -8,7 +8,7 @@ import { BlockFetcherBase } from './blockfetcherbase.js'
 import type { Peer } from '../../net/peer/index.js'
 import type { BlockFetcherOptions, JobTask } from './blockfetcherbase.js'
 import type { Job } from './types.js'
-import type { BlockBytes } from '@ethereumjs/block'
+import type { Block, BlockBytes } from '@ethereumjs/block'
 
 /**
  * Implements an eth/66 based block fetcher
@@ -91,7 +91,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
         values.push(withdrawalsData)
       }
       // Supply the common from the corresponding block header already set on correct fork
-      const block = Block.fromValuesArray(values, { common: headers[i].common })
+      const block = blockFromValuesArray(values, { common: headers[i].common })
       // Only validate the data integrity
       // Upon putting blocks into blockchain (for BlockFetcher), `validateData` is called again
       // In ReverseBlockFetcher we do not need to validate the entire block, since CL

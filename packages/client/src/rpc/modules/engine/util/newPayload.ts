@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { blockFromExecutionPayload } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
@@ -10,7 +10,7 @@ import { validHash } from './generic.js'
 
 import type { Chain } from '../../../../blockchain/index.js'
 import type { ChainCache, PayloadStatusV1 } from '../types.js'
-import type { ExecutionPayload } from '@ethereumjs/block'
+import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 /**
@@ -33,7 +33,7 @@ export const assembleBlock = async (
   common.setHardforkBy({ blockNumber, td: ttd !== null ? ttd : undefined, timestamp })
 
   try {
-    const block = await Block.fromExecutionPayload(payload, { common })
+    const block = await blockFromExecutionPayload(payload, { common })
     // TODO: validateData is also called in applyBlock while runBlock, may be it can be optimized
     // by removing/skipping block data validation from there
     await block.validateData()
