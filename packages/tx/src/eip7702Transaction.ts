@@ -240,7 +240,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
    * accessList, authorizationList, signatureYParity, signatureR, signatureS]`
    *
    * Use {@link EOACodeEIP7702Transaction.serialize} to add a transaction to a block
-   * with {@link Block.fromValuesArray}.
+   * with {@link blockFromValuesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant

@@ -157,7 +157,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
    *
    * For legacy txs this is also the correct format to add transactions
-   * to a block with {@link Block.fromValuesArray} (use the `serialize()` method
+   * to a block with {@link blockFromValuesArray} (use the `serialize()` method
    * for typed txs).
    *
    * For an unsigned tx this method returns the empty Bytes values
