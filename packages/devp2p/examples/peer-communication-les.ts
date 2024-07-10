@@ -1,5 +1,5 @@
 import { bytesToInt, intToBytes, randomBytes, bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader, blockFromValuesArray } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import chalk from 'chalk'
 import ms from 'ms'
@@ -131,7 +131,7 @@ rlpx.events.on('peer:added', (peer) => {
         const header2 = requests.bodies.shift()
         const txs = payload[2][0][0]
         const uncleHeaders = payload[2][0][1]
-        const block = Block.fromValuesArray([header2.raw(), txs, uncleHeaders], { common })
+        const block = blockFromValuesArray([header2.raw(), txs, uncleHeaders], { common })
         const isValid = await isValidBlock(block)
         let isValidPayload = false
         if (isValid) {
