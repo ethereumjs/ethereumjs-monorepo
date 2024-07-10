@@ -116,6 +116,11 @@ export class Debug {
       1,
       [[validators.blockOption]]
     )
+    this.getRawHeader = middleware(
+      callWithStackTrace(this.getRawHeader.bind(this), this._rpcDebug),
+      1,
+      [[validators.blockOption]]
+    )
   }
 
   /**
@@ -353,5 +358,15 @@ export class Debug {
     const [blockOpt] = params
     const block = await getBlockByOption(blockOpt, this.chain)
     return bytesToHex(block.serialize())
+  }
+  /**
+   * Returns an RLP-encoded block header
+   * @param blockOpt Block number or tag
+   * @returns
+   */
+  async getRawHeader(params: [string]) {
+    const [blockOpt] = params
+    const block = await getBlockByOption(blockOpt, this.chain)
+    return bytesToHex(block.header.serialize())
   }
 }
