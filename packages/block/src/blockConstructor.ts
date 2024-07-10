@@ -430,7 +430,7 @@ export async function blockFromExecutionPayload(
  * @param opts {@link BlockOptions}
  * @returns the block constructed block
  */
-export async function fromBeaconPayloadJson(
+export async function blockFromBeaconPayloadJson(
   payload: BeaconPayloadJson,
   opts?: BlockOptions
 ): Promise<Block> {
