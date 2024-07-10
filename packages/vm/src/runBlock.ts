@@ -12,18 +12,18 @@ import {
   BIGINT_8,
   GWEI_TO_WEI,
   KECCAK256_RLP,
+  bigIntToAddressBytes,
   bigIntToBytes,
-  bigIntToHex,
   bytesToHex,
   concatBytes,
   equalsBytes,
+  getVerkleTreeIndexesForStorageSlot,
   hexToBytes,
   intToBytes,
   setLengthLeft,
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { getTreeIndexesForStorageSlot } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 
 import { Bloom } from './bloom/index.js'
@@ -484,12 +484,10 @@ export async function accumulateParentBlockHash(
   if (!this.common.isActivatedEIP(2935)) {
     throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
   }
-  const historyAddress = Address.fromString(
-    bigIntToHex(this.common.param('vm', 'historyStorageAddress'))
+  const historyAddress = new Address(
+    bigIntToAddressBytes(this.common.param('vm', 'historyStorageAddress'))
   )
   const historyServeWindow = this.common.param('vm', 'historyServeWindow')
-
-  const forkTime = this.common.eipTimestamp(2935)
 
   // getAccount with historyAddress will throw error as witnesses are not bundeled
   // but we need to put account so as to query later for slot
@@ -509,7 +507,7 @@ export async function accumulateParentBlockHash(
 
     // generate access witness
     if (vm.common.isActivatedEIP(6800)) {
-      const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(ringKey)
+      const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(ringKey)
       // just create access witnesses without charging for the gas
       ;(
         vm.stateManager as StatelessVerkleStateManager
@@ -520,27 +518,8 @@ export async function accumulateParentBlockHash(
   }
   await putBlockHash(this, parentHash, currentBlockNumber - BIGINT_1)
 
-  // in stateless execution parentBlock is not in blockchain but in chain's blockCache
-  // need to move the blockCache to the blockchain, in any case we can ignore forkblock
-  // which is where we need this code segment
-  try {
-    const parentBlock = await this.blockchain.getBlock(parentHash)
-
-    // If on the fork block, store the old block hashes as well
-    if (forkTime !== null && parentBlock.header.timestamp < forkTime) {
-      // forkTime could be null in test fixtures
-      let ancestor = parentBlock
-      for (let i = 0; i < Number(historyServeWindow) - 1; i++) {
-        if (ancestor.header.number === BIGINT_0) {
-          break
-        }
-
-        ancestor = await this.blockchain.getBlock(ancestor.header.parentHash)
-        await putBlockHash(this, ancestor.hash(), ancestor.header.number)
-      }
-    }
-    // eslint-disable-next-line no-empty
-  } catch (_e) {}
+  // do cleanup if the code was not deployed
+  await this.evm.journal.cleanup()
 }
 
 export async function accumulateParentBeaconBlockRoot(
@@ -586,6 +565,9 @@ export async function accumulateParentBeaconBlockRoot(
     setLengthLeft(bigIntToBytes(timestampExtended), 32),
     root
   )
+
+  // do cleanup if the code was not deployed
+  await this.evm.journal.cleanup()
 }
 
 /**

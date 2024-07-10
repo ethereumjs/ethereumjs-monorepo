@@ -20,18 +20,18 @@ import {
   MAX_INTEGER_BIGINT,
   SECP256K1_ORDER_DIV_2,
   TWO_POW256,
+  bigIntToAddressBytes,
   bigIntToBytes,
-  bigIntToHex,
   bytesToBigInt,
   bytesToHex,
   concatBytes,
   ecrecover,
+  getVerkleTreeIndexesForStorageSlot,
   hexToBytes,
   publicToAddress,
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
-import { getTreeIndexesForStorageSlot } from '@ethereumjs/verkle'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { ERROR } from '../exceptions.js'
@@ -608,27 +608,28 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState, common) {
       const number = runState.stack.pop()
 
-      if (common.isActivatedEIP(2935)) {
+      if (common.isActivatedEIP(7709)) {
         if (number >= runState.interpreter.getBlockNumber()) {
           runState.stack.push(BIGINT_0)
           return
         }
 
         const diff = runState.interpreter.getBlockNumber() - number
-        const historyServeWindow = common.param('vm', 'historyServeWindow')
-        // block lookups must be within the `historyServeWindow`
-        if (diff > historyServeWindow || diff <= BIGINT_0) {
+        // block lookups must be within the original window even if historyStorageAddress's
+        // historyServeWindow is much greater than 256
+        if (diff > BIGINT_256 || diff <= BIGINT_0) {
           runState.stack.push(BIGINT_0)
           return
         }
 
-        const historyAddress = Address.fromString(
-          bigIntToHex(common.param('vm', 'historyStorageAddress'))
+        const historyAddress = new Address(
+          bigIntToAddressBytes(common.param('vm', 'historyStorageAddress'))
         )
+        const historyServeWindow = common.param('vm', 'historyServeWindow')
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
         if (common.isActivatedEIP(6800)) {
-          const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
+          const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(number)
           // create witnesses and charge gas
           const statelessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             historyAddress,
@@ -1156,7 +1157,8 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       }
 
-      const expectedAddress = new Address(setLengthLeft(bigIntToBytes(authority), 20).slice(-20))
+      // we don't want strick check here on authority being in address range just last 20 bytes
+      const expectedAddress = new Address(bigIntToAddressBytes(authority, false))
       const account = (await runState.stateManager.getAccount(expectedAddress)) ?? new Account()
 
       if (account.isContract()) {

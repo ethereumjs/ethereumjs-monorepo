@@ -8,18 +8,15 @@
  */
 export function matchingBytesLength(bytes1: Uint8Array, bytes2: Uint8Array): number {
   let count = 0
-
-  // The minimum length of both arrays
   const minLength = Math.min(bytes1.length, bytes2.length)
 
   for (let i = 0; i < minLength; i++) {
     if (bytes1[i] === bytes2[i]) {
       count++
     } else {
-      // Stop counting as soon as a mismatch is found
+      // Break early if a mismatch is found
       break
     }
   }
-
   return count
 }

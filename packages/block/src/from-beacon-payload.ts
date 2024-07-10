@@ -1,7 +1,7 @@
 import { bigIntToHex } from '@ethereumjs/util'
 
-import type { ExecutionPayload, VerkleExecutionWitness } from './types.js'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { ExecutionPayload } from './types.js'
+import type { PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
 
 type BeaconWithdrawal = {
   index: PrefixedHexString
@@ -20,8 +20,14 @@ type BeaconDepositRequest = {
 
 type BeaconWithdrawalRequest = {
   source_address: PrefixedHexString
-  validator_public_key: PrefixedHexString
+  validator_pubkey: PrefixedHexString
   amount: PrefixedHexString
+}
+
+type BeaconConsolidationRequest = {
+  source_address: PrefixedHexString
+  source_pubkey: PrefixedHexString
+  target_pubkey: PrefixedHexString
 }
 
 // Payload json that one gets using the beacon apis
@@ -48,6 +54,7 @@ export type BeaconPayloadJson = {
   // requests data
   deposit_requests?: BeaconDepositRequest[]
   withdrawal_requests?: BeaconWithdrawalRequest[]
+  consolidation_requests?: BeaconConsolidationRequest[]
 
   // the casing of VerkleExecutionWitness remains same camel case for now
   execution_witness?: VerkleExecutionWitness
@@ -163,8 +170,15 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
   if (payload.withdrawal_requests !== undefined && payload.withdrawal_requests !== null) {
     executionPayload.withdrawalRequests = payload.withdrawal_requests.map((breq) => ({
       sourceAddress: breq.source_address,
-      validatorPublicKey: breq.validator_public_key,
+      validatorPubkey: breq.validator_pubkey,
       amount: breq.amount,
+    }))
+  }
+  if (payload.consolidation_requests !== undefined && payload.consolidation_requests !== null) {
+    executionPayload.consolidationRequests = payload.consolidation_requests.map((breq) => ({
+      sourceAddress: breq.source_address,
+      sourcePubkey: breq.source_pubkey,
+      targetPubkey: breq.target_pubkey,
     }))
   }
 

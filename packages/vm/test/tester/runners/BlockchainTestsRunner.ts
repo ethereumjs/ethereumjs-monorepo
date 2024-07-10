@@ -85,11 +85,15 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   const begin = Date.now()
 
+  const evmOpts = {
+    bls: options.bls,
+  }
   let vm = await VM.create({
     stateManager,
     blockchain,
     common,
     setHardfork: true,
+    evmOpts,
     profilerOpts: {
       reportAfterBlock: options.profile,
     },

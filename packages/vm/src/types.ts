@@ -2,7 +2,7 @@ import type { Bloom } from './bloom/index.js'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
-import type { EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
+import type { EVMInterface, EVMOpts, EVMResult, Log } from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type {
   BigIntLike,
@@ -158,6 +158,14 @@ export interface VMOpts {
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
    */
   evm?: EVMInterface
+
+  /**
+   * Often there is no need to provide a full custom EVM but only a few options need to be
+   * adopted. This option allows to provide a custom set of EVM options to be passed.
+   *
+   * Note: This option will throw if used in conjunction with a full custom EVM passed.
+   */
+  evmOpts?: EVMOpts
 
   profilerOpts?: VMProfilerOpts
 }

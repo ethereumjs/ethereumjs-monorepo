@@ -17,7 +17,7 @@
     "prepare": "git config --local core.hooksPath .githooks",
     "prettier": "prettier --write \"./**/*.{js,json,md,ts,yml}\"",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",
-    "install-browser-deps": "npm install webdriverio @vitest/browser web-streams-polyfill"
+    "install-browser-deps": "npm install webdriverio @vitest/browser"
   },
   "devDependencies": {
     "@types/estree": "^1.0.1",
@@ -25,8 +25,8 @@
     "@types/tape": "4.13.2",
     "@typescript-eslint/eslint-plugin": "5.33.1",
     "@typescript-eslint/parser": "5.33.1",
-    "@vitest/coverage-v8": "^1.2.2",
-    "@vitest/ui": "^1.2.2",
+    "@vitest/coverage-v8": "^v2.0.0-beta.1",
+    "@vitest/ui": "^v2.0.0-beta.12",
     "c8": "7.12.0",
     "embedme": "1.22.1",
     "eslint": "8.45.0",
@@ -52,11 +52,11 @@
     "vite-plugin-node-polyfills": "^0.21.0",
     "vite-plugin-top-level-await": "^1.4.1",
     "vite-plugin-wasm": "^3.3.0",
-    "vitest": "^1.2.2"
+    "vitest": "^v2.0.0-beta.12"
   },
   "peerDependencies": {
-    "@vitest/browser": "^1.5.0",
-    "webdriverio": "^8.36.0"
+    "@vitest/browser": "^v2.0.0-beta.12",
+    "webdriverio": "^8.39.0"
   },
   "peerDependenciesMeta": {
     "playwright": {
