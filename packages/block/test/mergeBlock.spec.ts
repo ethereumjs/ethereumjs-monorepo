@@ -10,6 +10,7 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import { Block } from '../src/block.js'
+import { blockFromBlockData } from '../src/blockConstructor.js'
 import { BlockHeader } from '../src/header.js'
 
 const common = new Common({
@@ -119,7 +120,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
 
   it('EIP-4399: prevRando should return mixHash value', () => {
     const mixHash = new Uint8Array(32).fill(3)
-    let block = Block.fromBlockData({ header: { mixHash } }, { common })
+    let block = blockFromBlockData({ header: { mixHash } }, { common })
     assert.ok(
       equalsBytes(block.header.prevRandao, mixHash),
       'prevRandao should return mixHash value'
@@ -127,7 +128,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
 
     const commonLondon = common.copy()
     commonLondon.setHardfork(Hardfork.London)
-    block = Block.fromBlockData({ header: { mixHash } }, { common: commonLondon })
+    block = blockFromBlockData({ header: { mixHash } }, { common: commonLondon })
     try {
       block.header.prevRandao
       assert.fail('should have thrown')

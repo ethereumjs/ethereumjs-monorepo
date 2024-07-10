@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { Block, blockFromBlockData } from '@ethereumjs/block'
 import { Common, Chain } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
 import type { WithdrawalData } from '@ethereumjs/util'
@@ -12,7 +12,7 @@ const withdrawal = <WithdrawalData>{
   amount: BigInt(1000),
 }
 
-const block = Block.fromBlockData(
+const block = blockFromBlockData(
   {
     header: {
       withdrawalsRoot: hexToBytes(

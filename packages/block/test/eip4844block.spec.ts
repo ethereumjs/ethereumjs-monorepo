@@ -9,9 +9,9 @@ import {
 import { loadKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
+import { blockFromBlockData } from '../src/blockConstructor.js'
 import { BlockHeader } from '../src/header.js'
 import { fakeExponential, getNumBlobs } from '../src/helpers.js'
-import { Block } from '../src/index.js'
 
 import gethGenesis from './testdata/4844-hardfork.json'
 
@@ -87,7 +87,7 @@ describe('EIP4844 header tests', () => {
       )
     }, 'correctly instantiates an EIP4844 block header')
 
-    const block = Block.fromBlockData(
+    const block = blockFromBlockData(
       {
         header: BlockHeader.fromHeaderData({}, { common, skipConsensusFormatValidation: true }),
       },
@@ -213,7 +213,7 @@ describe('transaction validation tests', () => {
         },
         { common, skipConsensusFormatValidation: true }
       )
-      const block = Block.fromBlockData(
+      const block = blockFromBlockData(
         { header: blockHeader, transactions },
         { common, skipConsensusFormatValidation: true }
       )
@@ -232,7 +232,7 @@ describe('transaction validation tests', () => {
     )
     const blockJson = blockWithValidTx.toJSON()
     blockJson.header!.blobGasUsed = '0x0'
-    const blockWithInvalidHeader = Block.fromBlockData(blockJson, { common })
+    const blockWithInvalidHeader = blockFromBlockData(blockJson, { common })
     assert.throws(
       () => blockWithInvalidHeader.validateBlobTransactions(parentHeader),
       'block blobGasUsed mismatch',

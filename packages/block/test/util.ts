@@ -3,9 +3,9 @@ import { RLP } from '@ethereumjs/rlp'
 import { BIGINT_0, BIGINT_1, utf8ToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { Block } from '../src/index.js'
+import { blockFromBlockData } from '../src/blockConstructor.js'
 
-import type { BlockHeader } from '../src/index.js'
+import type { Block, BlockHeader } from '../src/index.js'
 
 /**
  * This helper function creates a valid block (except the PoW) with the ability to add uncles. Returns a Block.
@@ -37,7 +37,7 @@ function createBlock(
       ? parentBlock.header.calcNextBaseFee()
       : undefined
 
-  return Block.fromBlockData(
+  return blockFromBlockData(
     {
       header: {
         number,

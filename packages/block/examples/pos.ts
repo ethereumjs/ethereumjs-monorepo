@@ -1,9 +1,9 @@
-import { Block } from '@ethereumjs/block'
+import { Block, blockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet })
 
-const block = Block.fromBlockData(
+const block = blockFromBlockData(
   {
     // Provide your block data here or use default values
   },

@@ -1,4 +1,5 @@
 export { Block } from './block.js'
+export * from './blockConstructor.js'
 export { type BeaconPayloadJson, executionPayloadFromBeaconPayload } from './from-beacon-payload.js'
 export { BlockHeader } from './header.js'
 export { getDifficulty, valuesArrayToHeaderData } from './helpers.js'

@@ -8,9 +8,8 @@ import {
   toType,
 } from '@ethereumjs/util'
 
+import { blockFromBlockData } from './blockConstructor.js'
 import { blockHeaderFromRpc } from './header-from-rpc.js'
-
-import { Block } from './index.js'
 
 import type { BlockOptions, JsonRpcBlock } from './index.js'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -66,7 +65,7 @@ export function blockFromRpc(
     const bytes = hexToBytes(req as PrefixedHexString)
     return CLRequestFactory.fromSerializedRequest(bytes)
   })
-  return Block.fromBlockData(
+  return blockFromBlockData(
     { header, transactions, uncleHeaders, withdrawals: blockParams.withdrawals, requests },
     options
   )

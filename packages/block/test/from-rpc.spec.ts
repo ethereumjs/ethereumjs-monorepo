@@ -2,9 +2,9 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { blockFromJsonRpcProvider } from '../src/blockConstructor.js'
 import { blockFromRpc } from '../src/from-rpc.js'
 import { blockHeaderFromRpc } from '../src/header-from-rpc.js'
-import { Block } from '../src/index.js'
 
 import * as alchemy14151203 from './testdata/alchemy14151203.json'
 import * as infuraGoerliBlock10536893 from './testdata/infura-goerli-block-10536893.json'
@@ -203,14 +203,14 @@ describe('[fromJsonRpcProvider]', () => {
     }
 
     const blockHash = '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24'
-    const block = await Block.fromJsonRpcProvider(provider, blockHash, { common })
+    const block = await blockFromJsonRpcProvider(provider, blockHash, { common })
     assert.equal(
       bytesToHex(block.hash()),
       blockHash,
       'assembled a block from blockdata from a provider'
     )
     try {
-      await Block.fromJsonRpcProvider(provider, bytesToHex(randomBytes(32)), {})
+      await blockFromJsonRpcProvider(provider, bytesToHex(randomBytes(32)), {})
       assert.fail('should throw')
     } catch (err: any) {
       assert.ok(
