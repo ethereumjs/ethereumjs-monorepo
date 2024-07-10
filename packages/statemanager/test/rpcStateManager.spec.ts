@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { blockFromJsonRpcProvider, blockFromRPC } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM, type EVMRunCallOpts } from '@ethereumjs/evm'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
@@ -206,7 +206,7 @@ describe('RPC State Manager API tests', () => {
     assert.deepEqual({}, clearedStorage, 'storage cache should be empty after clear')
 
     try {
-      await Block.fromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)
+      await blockFromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)
       assert.fail('should have thrown')
     } catch (err: any) {
       assert.ok(
@@ -295,7 +295,7 @@ describe('runBlock test', () => {
     common.setHardforkBy({ blockNumber: blockTag - 1n })
 
     const vm = await VM.create({ common, stateManager: state })
-    const block = Block.fromRPC(blockData as JsonRpcBlock, [], { common })
+    const block = blockFromRPC(blockData as JsonRpcBlock, [], { common })
     try {
       const res = await vm.runBlock({
         block,
@@ -327,7 +327,7 @@ describe('blockchain', () =>
     await evm.stateManager.setStateRoot(
       hexToBytes('0xf8506f559699a58a4724df4fcf2ad4fd242d20324db541823f128f5974feb6c7')
     )
-    const block = await Block.fromJsonRpcProvider(provider, 500000n, { setHardfork: true })
+    const block = await blockFromJsonRpcProvider(provider, 500000n, { setHardfork: true })
     await evm.stateManager.putContractCode(contractAddress, hexToBytes(code))
     const runCallArgs: Partial<EVMRunCallOpts> = {
       caller,
