@@ -111,6 +111,11 @@ export class Debug {
         [validators.unsignedInteger],
       ]
     )
+    this.getRawBlock = middleware(
+      callWithStackTrace(this.getRawBlock.bind(this), this._rpcDebug),
+      1,
+      [[validators.blockOption]]
+    )
   }
 
   /**
@@ -339,5 +344,14 @@ export class Debug {
       BigInt(startKey),
       limit
     )
+  }
+  /**
+   * Returns an RLP-encoded block
+   * @param blockOpt Block number or tag
+   */
+  async getRawBlock(params: [string]) {
+    const [blockOpt] = params
+    const block = await getBlockByOption(blockOpt, this.chain)
+    return bytesToHex(block.serialize())
   }
 }
