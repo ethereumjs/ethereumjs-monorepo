@@ -126,6 +126,11 @@ export class Debug {
       1,
       [[validators.blockOption]]
     )
+    this.getRawTransaction = middleware(
+      callWithStackTrace(this.getRawTransaction.bind(this), this._rpcDebug),
+      1,
+      [[validators.hex]]
+    )
   }
 
   /**
@@ -388,5 +393,21 @@ export class Debug {
       true
     )
     return receipts.map((r) => bytesToHex(encodeReceipt(r, r.txType)))
+  }
+  /**
+   * Returns the bytes of the transaction.
+   * @param blockOpt Block number or tag
+   */
+  async getRawTransaction(params: [string]) {
+    const [txHash] = params
+    if (!this.service.execution.receiptsManager) throw new Error('missing receiptsManager')
+    const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
+      hexToBytes(txHash)
+    )
+    if (!result) return null
+    const [_receipt, blockHash, txIndex] = result
+    const block = await this.chain.getBlock(blockHash)
+    const tx = block.transactions[txIndex]
+    return bytesToHex(tx.serialize())
   }
 }
