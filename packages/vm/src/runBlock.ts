@@ -44,9 +44,7 @@ import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 
-const { debug: createDebugLogger } = debugDefault
-
-const debug = createDebugLogger('vm:block')
+const debug = debugDefault('vm:block')
 
 const parentBeaconBlockRootAddress = Address.fromString(
   '0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02'

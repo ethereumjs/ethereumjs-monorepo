@@ -1,5 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
-import { equalsBytes, toHex } from 'ethereum-cryptography/utils'
+import { equalsBytes } from '@ethereumjs/util'
+// TODO: replace with bytesToHex from @ethereumjs/util
+import { toHex } from 'ethereum-cryptography/utils.js' // eslint-disable-line
 
 import { BranchNode } from '../node/branch.js'
 import { ExtensionNode } from '../node/extension.js'

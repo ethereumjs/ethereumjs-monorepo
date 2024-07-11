@@ -24,7 +24,6 @@ import type { StorageData } from '../../net/protocol/snapprotocol.js'
 import type { FetcherOptions } from './fetcher.js'
 import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 const TOTAL_RANGE_END = BIGINT_2 ** BIGINT_256 - BIGINT_1
 
@@ -95,7 +94,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this.fetcherDoneFlags.storageFetcher.count = BigInt(this.storageRequests.length)
 
     this.accountToHighestKnownHash = new Map<String, Uint8Array>()
-    this.debug = createDebugLogger('client:StorageFetcher')
+    this.debug = debugDefault('client:StorageFetcher')
     if (this.storageRequests.length > 0) {
       const fullJob = {
         task: { storageRequests: this.storageRequests },

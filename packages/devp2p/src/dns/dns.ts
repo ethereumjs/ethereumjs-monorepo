@@ -5,9 +5,8 @@ import { ENR } from './enr.js'
 
 import type { DNSOptions, PeerInfo } from '../types.js'
 import type { Common } from '@ethereumjs/common'
-const { debug: createDebugLogger } = debugDefault
 
-const debug = createDebugLogger('devp2p:dns:dns')
+const debug = debugDefault('devp2p:dns:dns')
 
 type SearchContext = {
   domain: string
