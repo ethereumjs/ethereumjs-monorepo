@@ -261,7 +261,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             codeAddress,
             0,
-            VERKLE_BASIC_DATA_LEAF_KEY
+            VERKLE_CODE_HASH_LEAF_KEY
           )
 
           gas += coldAccessGas

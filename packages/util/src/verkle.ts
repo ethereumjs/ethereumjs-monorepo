@@ -1,5 +1,7 @@
 import {
   bigIntToBytes,
+  bytesToBigInt,
+  bytesToInt32,
   concatBytes,
   int32ToBytes,
   intToBytes,
@@ -124,6 +126,23 @@ export enum VerkleLeafType {
   CodeHash = 1,
 }
 
+export type VerkleLeafBasicData = {
+  version: number
+  nonce: bigint
+  balance: bigint
+  codeSize: number
+}
+
+export const VERKLE_VERSION_OFFSET = 0
+export const VERKLE_NONCE_OFFSET = 4
+export const VERKLE_CODE_SIZE_OFFSET = 12
+export const VERKLE_BALANCE_OFFSET = 16
+
+export const VERKLE_VERSION_BYTES_LENGTH = 1
+export const VERKLE_NONCE_BYTES_LENGTH = 8
+export const VERKLE_CODE_SIZE_BYTES_LENGTH = 4
+export const VERKLE_BALANCE_BYTES_LENGTH = 16
+
 export const VERKLE_BASIC_DATA_LEAF_KEY = intToBytes(VerkleLeafType.BasicData)
 export const VERKLE_CODE_HASH_LEAF_KEY = intToBytes(VerkleLeafType.CodeHash)
 
@@ -201,4 +220,47 @@ export const getVerkleTreeKeyForStorageSlot = async (
   const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(storageKey)
 
   return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
+}
+
+export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleLeafBasicData {
+  const versionBytes = encodedBasicData.slice(0, VERKLE_VERSION_BYTES_LENGTH)
+  const nonceBytes = encodedBasicData.slice(
+    VERKLE_NONCE_OFFSET,
+    VERKLE_NONCE_OFFSET + VERKLE_NONCE_BYTES_LENGTH
+  )
+  const codeSizeBytes = encodedBasicData.slice(
+    VERKLE_CODE_SIZE_OFFSET,
+    VERKLE_CODE_SIZE_OFFSET + VERKLE_CODE_SIZE_BYTES_LENGTH
+  )
+  const balanceBytes = encodedBasicData.slice(
+    VERKLE_BALANCE_OFFSET,
+    VERKLE_BALANCE_OFFSET + VERKLE_BALANCE_BYTES_LENGTH
+  )
+
+  const version = bytesToInt32(versionBytes, true)
+  const nonce = bytesToBigInt(nonceBytes, true)
+  const codeSize = bytesToInt32(codeSizeBytes, true)
+  const balance = bytesToBigInt(balanceBytes, true)
+
+  return { version, nonce, codeSize, balance }
+}
+
+export function encodeVerkleLeafBasicData(basicData: VerkleLeafBasicData): Uint8Array {
+  const encodedVersion = setLengthRight(
+    int32ToBytes(basicData.version, true),
+    VERKLE_VERSION_BYTES_LENGTH
+  )
+  const encodedNonce = setLengthRight(
+    bigIntToBytes(basicData.nonce, true),
+    VERKLE_NONCE_BYTES_LENGTH
+  )
+  const encodedCodeSize = setLengthRight(
+    int32ToBytes(basicData.codeSize, true),
+    VERKLE_CODE_SIZE_BYTES_LENGTH
+  )
+  const encodedBalance = setLengthRight(
+    bigIntToBytes(basicData.balance, true),
+    VERKLE_BALANCE_BYTES_LENGTH
+  )
+  return concatBytes(encodedVersion, encodedNonce, encodedCodeSize, encodedBalance)
 }

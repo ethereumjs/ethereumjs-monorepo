@@ -4,9 +4,9 @@ import {
   KECCAK256_NULL_S,
   VerkleLeafType,
   bigIntToBytes,
-  bytesToBigInt,
   bytesToHex,
-  bytesToInt32,
+  decodeVerkleLeafBasicData,
+  encodeVerkleLeafBasicData,
   getVerkleKey,
   getVerkleStem,
   getVerkleTreeKeyForCodeChunk,
@@ -549,7 +549,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       throw Error(errorMsg)
     }
 
-    const { version, balance, nonce, codeSize } = decodeLeafBasicData(hexToBytes(basicDataRaw))
+    const { version, balance, nonce, codeSize } = decodeVerkleLeafBasicData(
+      hexToBytes(basicDataRaw)
+    )
 
     const account = Account.fromPartialAccountData({
       version,
@@ -582,7 +584,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     if (this._accountCacheSettings.deactivate) {
       const stem = getVerkleStem(this.verkleCrypto, address, 0)
       const basicDataKey = getVerkleKey(stem, VerkleLeafType.BasicData)
-      const basicDataBytes = encodeLeafBasicData({
+      const basicDataBytes = encodeVerkleLeafBasicData({
         version: account.version,
         balance: account.balance,
         nonce: account.nonce,

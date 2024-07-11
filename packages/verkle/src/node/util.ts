@@ -1,28 +1,10 @@
 import { RLP } from '@ethereumjs/rlp'
-import {
-  bigIntToBytes,
-  bytesToBigInt,
-  bytesToInt32,
-  concatBytes,
-  int32ToBytes,
-  setLengthRight,
-} from '@ethereumjs/util'
-
-import {
-  BALANCE_BYTES_LENGTH,
-  BALANCE_OFFSET,
-  CODE_SIZE_BYTES_LENGTH,
-  CODE_SIZE_OFFSET,
-  NONCE_BYTES_LENGTH,
-  NONCE_OFFSET,
-  VERSION_BYTES_LENGTH,
-} from '../constants.js'
+import { setLengthRight } from '@ethereumjs/util'
 
 import { InternalNode } from './internalNode.js'
 import { LeafNode } from './leafNode.js'
 import { VerkleLeafNodeValue, type VerkleNode, VerkleNodeType } from './types.js'
 
-import type { VerkleLeafBasicData } from '../types.js'
 import type { VerkleCrypto } from '@ethereumjs/util'
 
 export function decodeRawNode(raw: Uint8Array[], verkleCrypto: VerkleCrypto): VerkleNode {
@@ -112,35 +94,4 @@ export const createCValues = (values: (Uint8Array | VerkleLeafNodeValue)[]) => {
     expandedValues[x * 2 + 1] = setLengthRight(val.slice(16), 32)
   }
   return expandedValues
-}
-
-export function decodeLeafBasicData(encodedBasicData: Uint8Array): VerkleLeafBasicData {
-  const versionBytes = encodedBasicData.slice(0, VERSION_BYTES_LENGTH)
-  const nonceBytes = encodedBasicData.slice(NONCE_OFFSET, NONCE_OFFSET + NONCE_BYTES_LENGTH)
-  const codeSizeBytes = encodedBasicData.slice(
-    CODE_SIZE_OFFSET,
-    CODE_SIZE_OFFSET + CODE_SIZE_BYTES_LENGTH
-  )
-  const balanceBytes = encodedBasicData.slice(BALANCE_OFFSET, BALANCE_OFFSET + BALANCE_BYTES_LENGTH)
-
-  const version = bytesToInt32(versionBytes, true)
-  const nonce = bytesToBigInt(nonceBytes, true)
-  const codeSize = bytesToInt32(codeSizeBytes, true)
-  const balance = bytesToBigInt(balanceBytes, true)
-
-  return { version, nonce, codeSize, balance }
-}
-
-export function encodeLeafBasicData(basicData: VerkleLeafBasicData): Uint8Array {
-  const encodedVersion = setLengthRight(int32ToBytes(basicData.version, true), VERSION_BYTES_LENGTH)
-  const encodedNonce = setLengthRight(bigIntToBytes(basicData.nonce, true), NONCE_BYTES_LENGTH)
-  const encodedCodeSize = setLengthRight(
-    int32ToBytes(basicData.codeSize, true),
-    CODE_SIZE_BYTES_LENGTH
-  )
-  const encodedBalance = setLengthRight(
-    bigIntToBytes(basicData.balance, true),
-    BALANCE_BYTES_LENGTH
-  )
-  return concatBytes(encodedVersion, encodedNonce, encodedCodeSize, encodedBalance)
 }
