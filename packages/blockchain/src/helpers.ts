@@ -3,9 +3,9 @@ import { ChainGenesis } from '@ethereumjs/common'
 import { genesisStateRoot as genMerkleGenesisStateRoot } from '@ethereumjs/trie'
 import { BIGINT_0, equalsBytes } from '@ethereumjs/util'
 
-import { Blockchain, DBSaveLookups, DBSetBlockOrHeader, DBSetTD } from '.'
+import { Blockchain, DBSaveLookups, DBSetBlockOrHeader, DBSetTD } from './index.js'
 
-import type { BlockchainOptions, DBOp } from '.'
+import type { BlockchainOptions, DBOp } from './index.js'
 import type { BlockData } from '@ethereumjs/block'
 import type { Chain, Common } from '@ethereumjs/common'
 import type { GenesisState } from '@ethereumjs/util'
