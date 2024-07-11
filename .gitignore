@@ -109,5 +109,9 @@ Temporary Items
 # ethereumjs 
 datadir*
 
+## Vite
+stats.html
+bundle.js
+
 ## Vitest
 __snapshots__
