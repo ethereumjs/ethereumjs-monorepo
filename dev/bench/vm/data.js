@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1720725449266,
+  "lastUpdate": 1720726727955,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "bc648e746b670be56e23c8bd247a9b74860fc256",
-          "message": "util: revert some PrefixedHexString breaking changes (#3427)\n\n* util: remove redundant isHexPrefixed since we have isHexString\r\n\r\n* util: re-add string type support\r\n\r\n* util: misc fixes\r\n\r\n* docs: undo readme docs change\r\n\r\n* Update packages/util/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/util/src/internal.ts\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n---------\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>",
-          "timestamp": "2024-05-14T12:51:23-07:00",
-          "tree_id": "1ce41ee7d6b8e643b6420839d905ba15eea3f4c7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bc648e746b670be56e23c8bd247a9b74860fc256"
-        },
-        "date": 1715716558558,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42789,
-            "range": "±1.75%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40736,
-            "range": "±2.62%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41410,
-            "range": "±1.48%",
-            "unit": "ops/sec",
-            "extra": "92 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 40185,
-            "range": "±1.53%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35625,
-            "range": "±6.22%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.86%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a075860c3c741ac7a3301e2e6bbad8d8fed8f041",
+          "message": "Update main README Release Table after Breaking Release Work Start (#3492)\n\n* Update main README branch table and associated text\n\n* Add stats.html, bundle.js (from Vite) to .gitignore\n\n* Adopt EVM npm bundle:visualize command to not kill of the main dist directory, rename vite.config.ts -> vite.config.bundler.ts to not have this confused as our main toolchain setup configuration\n\n* Remove FUNDING.json\n\n* Fix linting\n\n* Merge branch 'master' into update-main-readme-branch-table",
+          "timestamp": "2024-07-11T15:34:04-04:00",
+          "tree_id": "3567fe3649f83099cf33a1f823a141870f145ddf",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a075860c3c741ac7a3301e2e6bbad8d8fed8f041"
+        },
+        "date": 1720726727307,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38926,
+            "range": "±1.78%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36503,
+            "range": "±4.49%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37504,
+            "range": "±1.60%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36811,
+            "range": "±1.55%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36138,
+            "range": "±1.78%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
           }
         ]
       }
