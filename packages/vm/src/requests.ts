@@ -13,7 +13,7 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 
-import type { RunTxResult } from './types.ts'
+import type { RunTxResult } from './types.js'
 import type { VM } from './vm.js'
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 
