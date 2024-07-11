@@ -1125,6 +1125,9 @@ export class Eth {
     const address = Address.fromString(addressHex)
     const slots = slotsHex.map((slotHex) => setLengthLeft(hexToBytes(slotHex), 32))
     const proof = await vm.stateManager.getProof!(address, slots)
+    for (const p of proof.storageProof) {
+      p.key = bigIntToHex(BigInt(p.key))
+    }
     return proof
   }
 
