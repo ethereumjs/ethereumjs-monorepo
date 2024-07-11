@@ -20,9 +20,9 @@
   },
   "license": "MPL-2.0",
   "author": "Vinay Pulim (v@pulim.com)",
+  "type": "module",
   "main": "dist/esm/bin/cli.js",
   "types": "dist/esm/src/index.d.ts",
-  "type": "module",
   "bin": {
     "ethereumjs": "dist/esm/bin/cli.js"
   },
