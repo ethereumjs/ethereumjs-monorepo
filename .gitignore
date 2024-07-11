@@ -111,7 +111,7 @@ datadir*
 
 ## Vite
 stats.html
-bundle.js
+*bundle*.js
 
 ## Vitest
 __snapshots__
