@@ -19,7 +19,7 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 
-import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code.js'
+import { INTERNAL_ERROR, INVALID_HEX_STRING, INVALID_PARAMS, PARSE_ERROR } from '../error-code.js'
 import { callWithStackTrace, getBlockByOption, jsonRpcTx } from '../helpers.js'
 import { middleware, validators } from '../validation.js'
 
@@ -722,7 +722,18 @@ export class Eth {
    */
   async getStorageAt(params: [string, PrefixedHexString, string]) {
     const [addressHex, keyHex, blockOpt] = params
-
+    if (!/^[0-9a-fA-F]+$/.test(keyHex.slice(2))) {
+      throw {
+        code: INVALID_HEX_STRING,
+        message: `unable to decode storage key: hex string invalid`,
+      }
+    }
+    if (keyHex.length > 66) {
+      throw {
+        code: INVALID_HEX_STRING,
+        message: `unable to decode storage key: hex string too long, want at most 32 bytes`,
+      }
+    }
     if (blockOpt === 'pending') {
       throw {
         code: INVALID_PARAMS,
