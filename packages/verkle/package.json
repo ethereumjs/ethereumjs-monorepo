@@ -24,8 +24,8 @@
       "url": "https://github.com/gabrocheleau"
     }
   ],
+  "type": "module",
   "main": "dist/cjs/index.js",
-  "type": "commonjs",
   "module": "dist/esm/index.js",
   "exports": {
     ".": {

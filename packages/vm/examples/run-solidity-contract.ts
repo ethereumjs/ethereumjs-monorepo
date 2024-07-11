@@ -1,20 +1,24 @@
-import { join } from 'path'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { readFileSync } from 'fs'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { VM } from '@ethereumjs/vm'
-import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.cjs'
-import { getAccountNonce, insertAccount } from './helpers/account-utils.cjs'
+import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.js'
+import { getAccountNonce, insertAccount } from './helpers/account-utils.js'
 import { Block } from '@ethereumjs/block'
-const solc = require('solc')
+import solc from 'solc'
 
 const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 const block = Block.fromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
+
+const __filename = fileURLToPath(import.meta.url) // get the resolved path to the file
+const __dirname = path.dirname(__filename) // get the name of the directory
 
 /**
  * This function creates the input for the Solidity compiler.
@@ -30,7 +34,7 @@ function getSolcInput() {
     language: 'Solidity',
     sources: {
       'helpers/Greeter.sol': {
-        content: readFileSync(join(__dirname, 'helpers', 'Greeter.sol'), 'utf8'),
+        content: readFileSync(path.join(__dirname, 'helpers', 'Greeter.sol'), 'utf8'),
       },
       // If more contracts were to be compiled, they should have their own entries here
     },
@@ -101,7 +105,7 @@ async function deployContract(
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
-  const tx = LegacyTransaction.fromTxData(buildTransaction(txData), { common }).sign(
+  const tx = LegacyTransaction.fromTxData(buildTransaction(txData as any), { common }).sign(
     senderPrivateKey
   )
 
@@ -128,10 +132,10 @@ async function setGreeting(
   const txData = {
     to: contractAddress,
     data,
-    nonce: await getAccountNonce(vm, senderPrivateKey),
+    nonce: await getAccountNonce(vm as any, senderPrivateKey),
   }
 
-  const tx = LegacyTransaction.fromTxData(buildTransaction(txData), { common }).sign(
+  const tx = LegacyTransaction.fromTxData(buildTransaction(txData as any), { common }).sign(
     senderPrivateKey
   )
 

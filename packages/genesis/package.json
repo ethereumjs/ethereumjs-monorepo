@@ -16,9 +16,9 @@
   },
   "license": "MIT",
   "author": "g11tech <gajinder@g11.in>",
+  "type": "module",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
-  "type": "commonjs",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",

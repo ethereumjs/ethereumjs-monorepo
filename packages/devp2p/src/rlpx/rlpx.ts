@@ -22,12 +22,11 @@ import type { DPT } from '../dpt/index.js'
 import type { Capabilities, PeerInfo, RLPxOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 // note: relative path only valid in .js file in dist
 
 const DEBUG_BASE_NAME = 'rlpx'
-const verbose = createDebugLogger('verbose').enabled
+const verbose = debugDefault('verbose').enabled
 
 export class RLPx {
   public events: EventEmitter

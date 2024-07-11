@@ -34,7 +34,6 @@ import type { FetcherOptions } from './fetcher.js'
 import type { StorageRequest } from './storagefetcher.js'
 import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
 
@@ -99,7 +98,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.stateManager = options.stateManager ?? new DefaultStateManager()
     this.accountTrie = this.stateManager['_getAccountTrie']()
 
-    this.debug = createDebugLogger('client:AccountFetcher')
+    this.debug = debugDefault('client:AccountFetcher')
 
     this.storageFetcher = new StorageFetcher({
       config: this.config,
