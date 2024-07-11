@@ -98,6 +98,7 @@
     "@types/connect": "^3.4.35",
     "@types/cors": "^2.8.17",
     "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.14.10",
     "@types/ws": "^8.5.10",
     "@types/yargs": "^17.0.24",
     "eventsource": "^2.0.2",

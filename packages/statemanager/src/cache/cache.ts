@@ -1,7 +1,6 @@
 import debugDefault from 'debug'
 
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 export class Cache {
   _debug: Debugger
@@ -32,6 +31,6 @@ export class Cache {
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
 
-    this._debug = createDebugLogger('statemanager:cache')
+    this._debug = debugDefault('statemanager:cache')
   }
 }

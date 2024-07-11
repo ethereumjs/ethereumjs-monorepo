@@ -36,7 +36,6 @@ import type {
 } from '@ethereumjs/common'
 import type { DB, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 export type StorageProof = {
   key: PrefixedHexString
@@ -199,7 +198,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
 
-    this._debug = createDebugLogger('statemanager:statemanager')
+    this._debug = debugDefault('statemanager:statemanager')
 
     this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
 
