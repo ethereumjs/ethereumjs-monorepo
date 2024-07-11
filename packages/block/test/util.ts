@@ -3,7 +3,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { BIGINT_0, BIGINT_1, utf8ToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { createBlockFromBlockData } from '../src/blockConstructor.js'
+import { createBlockFromBlockData } from '../src/constructors.js'
 
 import type { Block, BlockHeader } from '../src/index.js'
 

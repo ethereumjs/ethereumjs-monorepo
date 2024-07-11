@@ -12,10 +12,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import {
-  createBlockFromBlockData,
-  createBlockFromRLPSerializedBlock,
-} from '../src/blockConstructor.js'
+import { createBlockFromBlockData, createBlockFromRLPSerializedBlock } from '../src/constructors.js'
 import { BlockHeader } from '../src/header.js'
 import { Block } from '../src/index.js'
 

@@ -3,7 +3,7 @@ import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlockFromBlockData } from '../src/blockConstructor.js'
+import { createBlockFromBlockData } from '../src/constructors.js'
 import { BlockHeader } from '../src/header.js'
 
 // Test data from Besu (retrieved via Discord)

@@ -2,7 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlockFromJsonRpcProvider } from '../src/blockConstructor.js'
+import { createBlockFromJsonRpcProvider } from '../src/constructors.js'
 import { createBlockFromRpc } from '../src/from-rpc.js'
 import { blockHeaderFromRpc } from '../src/header-from-rpc.js'
 

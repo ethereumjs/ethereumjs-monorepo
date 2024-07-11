@@ -15,7 +15,7 @@ import {
   createBlockFromBlockData,
   createBlockFromRLPSerializedBlock,
   createBlockFromValuesArray,
-} from '../src/blockConstructor.js'
+} from '../src/constructors.js'
 import { createBlockFromRpc } from '../src/from-rpc.js'
 import { genTransactionsTrieRoot } from '../src/helpers.js'
 

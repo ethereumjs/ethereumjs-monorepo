@@ -11,7 +11,7 @@ import * as difficultyEIP2384_random_to20M from '../../ethereum-tests/Difficulty
 import * as difficultyFrontier from '../../ethereum-tests/DifficultyTests/dfFrontier/difficultyFrontier.json'
 import * as difficultyGrayGlacier from '../../ethereum-tests/DifficultyTests/dfGrayGlacier/difficultyGrayGlacier.json'
 import * as difficultyHomestead from '../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json'
-import { createBlockFromBlockData } from '../src/blockConstructor.js'
+import { createBlockFromBlockData } from '../src/constructors.js'
 
 import type { Block } from '../src/index.js'
 

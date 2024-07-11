@@ -10,7 +10,7 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import { Block } from '../src/block.js'
-import { createBlockFromBlockData } from '../src/blockConstructor.js'
+import { createBlockFromBlockData } from '../src/constructors.js'
 import { BlockHeader } from '../src/header.js'
 
 const common = new Common({

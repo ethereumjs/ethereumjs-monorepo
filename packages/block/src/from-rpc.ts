@@ -8,7 +8,7 @@ import {
   toType,
 } from '@ethereumjs/util'
 
-import { createBlockFromBlockData } from './blockConstructor.js'
+import { createBlockFromBlockData } from './constructors.js'
 import { blockHeaderFromRpc } from './header-from-rpc.js'
 
 import type { BlockOptions, JsonRpcBlock } from './index.js'
