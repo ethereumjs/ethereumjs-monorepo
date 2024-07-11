@@ -130,7 +130,7 @@ const jsonRpcBlock = async (
     difficulty: header.difficulty!,
     totalDifficulty: bigIntToHex(td),
     extraData: header.extraData!,
-    size: intToHex(utf8ToBytes(JSON.stringify(json)).byteLength),
+    size: intToHex(block.serialize().length),
     gasLimit: header.gasLimit!,
     gasUsed: header.gasUsed!,
     timestamp: header.timestamp!,
