@@ -1,6 +1,6 @@
 import {
   BlockHeader,
-  blockFromValuesArray,
+  createBlockFromValuesArray,
   getDifficulty,
   valuesArrayToHeaderData,
 } from '@ethereumjs/block'
@@ -206,7 +206,7 @@ export class EthProtocol extends Protocol {
       code: 0x07,
       encode: ([block, td]: [Block, bigint]) => [block.raw(), bigIntToUnpaddedBytes(td)],
       decode: ([block, td]: [BlockBytes, Uint8Array]) => [
-        blockFromValuesArray(block, {
+        createBlockFromValuesArray(block, {
           common: this.config.chainCommon,
           setHardfork: true,
         }),

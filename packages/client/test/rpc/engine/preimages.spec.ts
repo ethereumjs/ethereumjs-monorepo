@@ -1,6 +1,6 @@
 import {
   BlockHeader,
-  blockFromBlockData,
+  createBlockFromBlockData,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
@@ -97,7 +97,7 @@ async function runBlock(
     coinbase,
   }
   const blockData = { header: headerData, transactions: txs, withdrawals }
-  const executeBlock = blockFromBlockData(blockData, { common })
+  const executeBlock = createBlockFromBlockData(blockData, { common })
   const executePayload = blockToExecutionPayload(executeBlock, BigInt(0)).executionPayload
   const res = await rpc.request('engine_newPayloadV2', [executePayload])
   assert.equal(res.result.status, 'VALID', 'valid status should be received')

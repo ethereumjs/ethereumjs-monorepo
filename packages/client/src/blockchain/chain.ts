@@ -1,4 +1,4 @@
-import { BlockHeader, blockFromValuesArray } from '@ethereumjs/block'
+import { BlockHeader, createBlockFromValuesArray } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { BIGINT_0, BIGINT_1, equalsBytes } from '@ethereumjs/util'
@@ -450,7 +450,7 @@ export class Chain {
         await this.blockchain.consensus.setup({ blockchain: this.blockchain })
       }
 
-      const block = blockFromValuesArray(b.raw(), {
+      const block = createBlockFromValuesArray(b.raw(), {
         common: this.config.chainCommon,
         setHardfork: td,
       })

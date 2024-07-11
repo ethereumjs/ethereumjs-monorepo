@@ -1,4 +1,4 @@
-import { blockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
@@ -81,7 +81,7 @@ describe(
     })
     peer.eth!.send('NewBlockHashes', [[hash, BigInt(2)]])
 
-    const block = blockFromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           number: 1,

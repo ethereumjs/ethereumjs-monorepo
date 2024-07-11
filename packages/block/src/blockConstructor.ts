@@ -18,7 +18,7 @@ import {
   isHexString,
 } from '@ethereumjs/util'
 
-import { blockFromRpc } from './from-rpc.js'
+import { createBlockFromRpc } from './from-rpc.js'
 import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } from './helpers.js'
 
 import { Block, BlockHeader, executionPayloadFromBeaconPayload } from './index.js'
@@ -51,7 +51,7 @@ import type {
  * @param blockData
  * @param opts
  */
-export function blockFromBlockData(blockData: BlockData = {}, opts?: BlockOptions) {
+export function createBlockFromBlockData(blockData: BlockData = {}, opts?: BlockOptions) {
   const {
     header: headerData,
     transactions: txsData,
@@ -114,7 +114,7 @@ export function blockFromBlockData(blockData: BlockData = {}, opts?: BlockOption
  * @param values
  * @param opts
  */
-export function blockFromValuesArray(values: BlockBytes, opts?: BlockOptions) {
+export function createBlockFromValuesArray(values: BlockBytes, opts?: BlockOptions) {
   if (values.length > 5) {
     throw new Error(`invalid  More values=${values.length} than expected were received (at most 5)`)
   }
@@ -237,14 +237,14 @@ export function blockFromValuesArray(values: BlockBytes, opts?: BlockOptions) {
  * @param serialized
  * @param opts
  */
-export function blockFromRLPSerializedBlock(serialized: Uint8Array, opts?: BlockOptions) {
+export function createBlockFromRLPSerializedBlock(serialized: Uint8Array, opts?: BlockOptions) {
   const values = RLP.decode(Uint8Array.from(serialized)) as BlockBytes
 
   if (!Array.isArray(values)) {
     throw new Error('Invalid serialized block input. Must be array')
   }
 
-  return blockFromValuesArray(values, opts)
+  return createBlockFromValuesArray(values, opts)
 }
 
 /**
@@ -254,8 +254,8 @@ export function blockFromRLPSerializedBlock(serialized: Uint8Array, opts?: Block
  * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
  * @param opts - An object describing the blockchain
  */
-export function blockFromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions) {
-  return blockFromRpc(blockData, uncles, opts)
+export function createBlockFromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions) {
+  return createBlockFromRpc(blockData, uncles, opts)
 }
 
 /**
@@ -265,7 +265,7 @@ export function blockFromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: Blo
  * @param opts {@link BlockOptions}
  * @returns the block specified by `blockTag`
  */
-export const blockFromJsonRpcProvider = async (
+export const createBlockFromJsonRpcProvider = async (
   provider: string | EthersProvider,
   blockTag: string | bigint,
   opts: BlockOptions
@@ -316,7 +316,7 @@ export const blockFromJsonRpcProvider = async (
     }
   }
 
-  return blockFromRpc(blockData, uncleHeaders, opts)
+  return createBlockFromRpc(blockData, uncleHeaders, opts)
 }
 
 /**
@@ -325,7 +325,7 @@ export const blockFromJsonRpcProvider = async (
  * @param opts {@link BlockOptions}
  * @returns the block constructed block
  */
-export async function blockFromExecutionPayload(
+export async function createBlockFromExecutionPayload(
   payload: ExecutionPayload,
   opts?: BlockOptions
 ): Promise<Block> {
@@ -406,7 +406,7 @@ export async function blockFromExecutionPayload(
   }
 
   // we are not setting setHardfork as common is already set to the correct hf
-  const block = blockFromBlockData(
+  const block = createBlockFromBlockData(
     { header, transactions: txs, withdrawals, executionWitness, requests },
     opts
   )
@@ -433,10 +433,10 @@ export async function blockFromExecutionPayload(
  * @param opts {@link BlockOptions}
  * @returns the block constructed block
  */
-export async function blockFromBeaconPayloadJson(
+export async function createBlockFromBeaconPayloadJson(
   payload: BeaconPayloadJson,
   opts?: BlockOptions
 ): Promise<Block> {
   const executionPayload = executionPayloadFromBeaconPayload(payload)
-  return blockFromExecutionPayload(executionPayload, opts)
+  return createBlockFromExecutionPayload(executionPayload, opts)
 }

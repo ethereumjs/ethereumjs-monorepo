@@ -1,4 +1,4 @@
-import { BlockHeader, blockFromBlockData } from '@ethereumjs/block'
+import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { KECCAK256_RLP, bytesToHex, randomBytes } from '@ethereumjs/util'
@@ -43,7 +43,7 @@ describe('[Blockchain]: Block validation tests', () => {
 
     const genesis = blockchain.genesisBlock
 
-    const emptyBlock = blockFromBlockData({ header: { number: BigInt(1) } }, { common })
+    const emptyBlock = createBlockFromBlockData({ header: { number: BigInt(1) } }, { common })
 
     const uncleBlock = createBlock(emptyBlock, 'uncle', [], common)
     const block1 = createBlock(genesis, 'block1', [], common)
@@ -125,7 +125,7 @@ describe('[Blockchain]: Block validation tests', () => {
 
     const genesis = blockchain.genesisBlock
 
-    const uncleBlock = blockFromBlockData(
+    const uncleBlock = createBlockFromBlockData(
       {
         header: {
           number: genesis.header.number + BigInt(1),
@@ -234,7 +234,7 @@ describe('[Blockchain]: Block validation tests', () => {
       }
     )
 
-    const block = blockFromBlockData({ header }, { common })
+    const block = createBlockFromBlockData({ header }, { common })
     await blockchain.putBlock(block)
     try {
       const header = BlockHeader.fromHeaderData(
@@ -250,7 +250,7 @@ describe('[Blockchain]: Block validation tests', () => {
           common,
         }
       )
-      const block2 = blockFromBlockData({ header }, { common })
+      const block2 = createBlockFromBlockData({ header }, { common })
       await blockchain.putBlock(block2)
     } catch (e: any) {
       const expectedError = 'Invalid block: base fee not correct'
@@ -307,7 +307,7 @@ describe('[Blockchain]: Block validation tests', () => {
     common.setHardfork(Hardfork.Berlin)
 
     const mainnetForkBlock = common.hardforkBlock(Hardfork.London)
-    const rootBlock = blockFromBlockData(
+    const rootBlock = createBlockFromBlockData(
       {
         header: {
           parentHash: blockchain.genesisBlock.hash(),
@@ -345,7 +345,7 @@ describe('[Blockchain]: Block validation tests', () => {
 
     forkBlockHeaderData.uncleHash = bytesToHex(keccak256(RLP.encode([uncleHeader.raw()])))
 
-    const forkBlock_ValidCommon = blockFromBlockData(
+    const forkBlock_ValidCommon = createBlockFromBlockData(
       {
         header: forkBlockHeaderData,
         uncleHeaders: [uncleHeaderData],
@@ -365,7 +365,7 @@ describe('[Blockchain]: Block validation tests', () => {
 
     assert.doesNotThrow(
       () =>
-        blockFromBlockData(
+        createBlockFromBlockData(
           {
             header: forkBlockHeaderData,
             uncleHeaders: [uncleHeaderData],
@@ -391,7 +391,7 @@ describe('EIP 7685: requests field validation tests', () => {
       common,
       validateConsensus: false,
     })
-    const block = blockFromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           number: 1n,
@@ -407,7 +407,7 @@ describe('EIP 7685: requests field validation tests', () => {
 
     await expect(async () => blockchain.putBlock(block)).rejects.toThrow('invalid requestsRoot')
 
-    const blockWithRequest = blockFromBlockData(
+    const blockWithRequest = createBlockFromBlockData(
       {
         header: {
           number: 1n,

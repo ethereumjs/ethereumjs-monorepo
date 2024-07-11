@@ -1,4 +1,4 @@
-import { blockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
@@ -95,7 +95,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // create a reasonable default if no block is given
-  opts.block = opts.block ?? blockFromBlockData({}, { common: this.common })
+  opts.block = opts.block ?? createBlockFromBlockData({}, { common: this.common })
 
   if (opts.skipHardForkValidation !== true) {
     // Find and set preMerge hf for easy access later

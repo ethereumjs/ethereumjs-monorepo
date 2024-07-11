@@ -37,7 +37,7 @@ const main = async () => {
   const common = new Common({ chain: '${execution.config.execCommon.chainName()}', hardfork: '${
     execution.hardfork
   }' })
-  const block = blockFromRLPSerializedBlock(hexToBytes('${bytesToHex(
+  const block = createBlockFromRLPSerializedBlock(hexToBytes('${bytesToHex(
     block.serialize()
   )}'), { common })
 

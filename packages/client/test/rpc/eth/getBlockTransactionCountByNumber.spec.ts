@@ -1,4 +1,4 @@
-import { blockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
@@ -42,7 +42,7 @@ describe(method, () => {
       return address
     }
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = blockFromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           parentHash: parent.hash(),
@@ -104,7 +104,7 @@ describe(method, () => {
     }
 
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = blockFromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           parentHash: parent.hash(),

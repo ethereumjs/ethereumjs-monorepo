@@ -1,5 +1,5 @@
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
-import { Block, blockFromBlockData } from '@ethereumjs/block'
+import { Block, createBlockFromBlockData } from '@ethereumjs/block'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
@@ -20,7 +20,7 @@ const main = async () => {
     { common }
   )
 
-  const block = blockFromBlockData(
+  const block = createBlockFromBlockData(
     {
       header: {
         excessBlobGas: 0n,

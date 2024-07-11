@@ -1,4 +1,4 @@
-import { blockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVMErrorMessage } from '@ethereumjs/evm'
 import { LegacyTransaction } from '@ethereumjs/tx'
@@ -35,7 +35,7 @@ const common = new Common({
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 const authAddress = new Address(privateToAddress(privateKey))
 
-const block = blockFromBlockData(
+const block = createBlockFromBlockData(
   {
     header: {
       baseFeePerGas: BigInt(7),

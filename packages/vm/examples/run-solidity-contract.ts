@@ -8,14 +8,14 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { VM } from '@ethereumjs/vm'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.js'
 import { getAccountNonce, insertAccount } from './helpers/account-utils.js'
-import { blockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import solc from 'solc'
 
 const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-const block = blockFromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
+const block = createBlockFromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
 
 const __filename = fileURLToPath(import.meta.url) // get the resolved path to the file
 const __dirname = path.dirname(__filename) // get the name of the directory

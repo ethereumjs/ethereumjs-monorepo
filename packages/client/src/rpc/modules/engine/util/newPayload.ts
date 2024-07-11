@@ -1,4 +1,4 @@
-import { blockFromExecutionPayload } from '@ethereumjs/block'
+import { createBlockFromExecutionPayload } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
@@ -33,7 +33,7 @@ export const assembleBlock = async (
   common.setHardforkBy({ blockNumber, td: ttd !== null ? ttd : undefined, timestamp })
 
   try {
-    const block = await blockFromExecutionPayload(payload, { common })
+    const block = await createBlockFromExecutionPayload(payload, { common })
     // TODO: validateData is also called in applyBlock while runBlock, may be it can be optimized
     // by removing/skipping block data validation from there
     await block.validateData()

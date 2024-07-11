@@ -1,4 +1,4 @@
-import { blockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import {
@@ -35,9 +35,12 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   const decodedTxs = verkleBlockJSON.transactions.map((tx) =>
     TransactionFactory.fromSerializedData(hexToBytes(tx as PrefixedHexString))
   )
-  const block = blockFromBlockData({ ...verkleBlockJSON, transactions: decodedTxs } as BlockData, {
-    common,
-  })
+  const block = createBlockFromBlockData(
+    { ...verkleBlockJSON, transactions: decodedTxs } as BlockData,
+    {
+      common,
+    }
+  )
 
   it('initPreState()', async () => {
     const stateManager = new StatelessVerkleStateManager({ verkleCrypto })

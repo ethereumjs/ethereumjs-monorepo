@@ -1,4 +1,4 @@
-import { BlockHeader, blockFromBlockData } from '@ethereumjs/block'
+import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
@@ -53,7 +53,7 @@ class FakeChain {
   }
   get blocks() {
     return {
-      latest: blockFromBlockData(),
+      latest: createBlockFromBlockData(),
       height: BigInt(0),
     }
   }
@@ -73,7 +73,7 @@ class FakeChain {
     },
     validateHeader: () => {},
     getIteratorHead: () => {
-      return blockFromBlockData({ header: { number: 1 } })
+      return createBlockFromBlockData({ header: { number: 1 } })
     },
     getTotalDifficulty: () => {
       return 1n
@@ -419,7 +419,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
     common,
   })
   const chain = new FakeChain() as any
-  const block = blockFromBlockData({}, { common })
+  const block = createBlockFromBlockData({}, { common })
   Object.defineProperty(chain, 'headers', {
     get() {
       return { latest: block.header, height: block.header.number }
@@ -468,7 +468,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
 describe("assembleBlocks() -> should stop assembling a block after it's full", async () => {
   const chain = new FakeChain() as any
   const gasLimit = 100000
-  const block = blockFromBlockData(
+  const block = createBlockFromBlockData(
     { header: { gasLimit } },
     { common: customCommon, setHardfork: true }
   )

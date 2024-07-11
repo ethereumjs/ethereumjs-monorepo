@@ -1,4 +1,4 @@
-import { blockFromBlockData, genWithdrawalsTrieRoot } from '@ethereumjs/block'
+import { createBlockFromBlockData, genWithdrawalsTrieRoot } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
@@ -90,7 +90,7 @@ describe('EIP4895 tests', () => {
       })
       index++
     }
-    const block = blockFromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           baseFeePerGas: BigInt(7),
@@ -147,7 +147,7 @@ describe('EIP4895 tests', () => {
     let postState: string
 
     // construct a block with just the 0th withdrawal should have no effect on state
-    block = blockFromBlockData(
+    block = createBlockFromBlockData(
       {
         header: {
           baseFeePerGas: BigInt(7),
@@ -169,7 +169,7 @@ describe('EIP4895 tests', () => {
     )
 
     // construct a block with all the withdrawals
-    block = blockFromBlockData(
+    block = createBlockFromBlockData(
       {
         header: {
           baseFeePerGas: BigInt(7),

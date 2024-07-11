@@ -1,4 +1,4 @@
-import { BlockHeader, blockFromBlockData } from '@ethereumjs/block'
+import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
@@ -31,7 +31,7 @@ describe(method, () => {
     await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
     const gasLimit = 2000000
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = blockFromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           parentHash: parent.hash(),
@@ -50,7 +50,7 @@ describe(method, () => {
     service.execution.vm.common.setHardfork('london')
     service.chain.config.chainCommon.setHardfork('london')
     const headBlock = await service.chain.getCanonicalHeadBlock()
-    const londonBlock = blockFromBlockData(
+    const londonBlock = createBlockFromBlockData(
       {
         header: BlockHeader.fromHeaderData(
           {

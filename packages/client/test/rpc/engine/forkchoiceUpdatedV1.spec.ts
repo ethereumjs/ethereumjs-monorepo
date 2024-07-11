@@ -1,4 +1,4 @@
-import { BlockHeader, blockFromBlockData } from '@ethereumjs/block'
+import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, randomBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
@@ -31,7 +31,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 
 function createBlock(parentBlock: Block) {
   const prevRandao = randomBytes(32)
-  const block = blockFromBlockData(
+  const block = createBlockFromBlockData(
     {
       header: {
         parentHash: parentBlock.hash(),
@@ -166,7 +166,7 @@ describe(method, () => {
       engine: true,
     })
     const rpc = getRpcClient(server)
-    const newBlock = blockFromBlockData(
+    const newBlock = createBlockFromBlockData(
       {
         header: {
           number: blocks[0].blockNumber,

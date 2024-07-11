@@ -3,7 +3,7 @@ import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { blockFromBlockData } from '../src/blockConstructor.js'
+import { createBlockFromBlockData } from '../src/blockConstructor.js'
 import { BlockHeader } from '../src/header.js'
 
 // Test data from Besu (retrieved via Discord)
@@ -16,7 +16,7 @@ const common = new Common({
   hardfork: Hardfork.London,
 })
 
-const genesis = blockFromBlockData({})
+const genesis = createBlockFromBlockData({})
 
 // Small hack to hack in the activation block number
 // (Otherwise there would be need for a custom chain only for testing purposes)
@@ -105,7 +105,7 @@ describe('EIP1559 tests', () => {
   })
 
   it('Header -> _genericFormValidation -> success case', async () => {
-    blockFromBlockData(
+    createBlockFromBlockData(
       {
         header: {
           number: BigInt(1),
@@ -146,7 +146,7 @@ describe('EIP1559 tests', () => {
   })
 
   it('Header -> validate() -> success cases', async () => {
-    const block1 = blockFromBlockData(
+    const block1 = createBlockFromBlockData(
       {
         header: {
           number: BigInt(1),
@@ -161,7 +161,7 @@ describe('EIP1559 tests', () => {
         common,
       }
     )
-    blockFromBlockData(
+    createBlockFromBlockData(
       {
         header: {
           number: BigInt(2),
@@ -223,7 +223,7 @@ describe('EIP1559 tests', () => {
     assert.ok(true, 'should not throw when elasticity is exactly matched')
   })
 
-  const block1 = blockFromBlockData(
+  const block1 = createBlockFromBlockData(
     {
       header: {
         number: BigInt(1),
@@ -415,7 +415,7 @@ describe('EIP1559 tests', () => {
       },
       { common }
     ).sign(hexToBytes(`0x${'46'.repeat(32)}`))
-    const block = blockFromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           number: BigInt(1),

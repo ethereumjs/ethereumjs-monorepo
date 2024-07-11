@@ -1,4 +1,4 @@
-import { blockFromBlockData, blockFromRLPSerializedBlock } from '@ethereumjs/block'
+import { createBlockFromBlockData, createBlockFromRLPSerializedBlock } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
@@ -66,7 +66,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const header = formatBlockHeader(testData.genesisBlockHeader)
   const withdrawals = common.isActivatedEIP(4895) ? [] : undefined
   const blockData = { header, withdrawals }
-  const genesisBlock = blockFromBlockData(blockData, { common })
+  const genesisBlock = createBlockFromBlockData(blockData, { common })
 
   if (typeof testData.genesisRLP === 'string') {
     const rlp = toBytes(testData.genesisRLP)
@@ -187,7 +187,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      const block = blockFromRLPSerializedBlock(blockRlp, { common, setHardfork: TD })
+      const block = createBlockFromRLPSerializedBlock(blockRlp, { common, setHardfork: TD })
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis

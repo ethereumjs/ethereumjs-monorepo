@@ -1,4 +1,4 @@
-import { blockFromRLPSerializedBlock } from '@ethereumjs/block'
+import { createBlockFromRLPSerializedBlock } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
@@ -1385,7 +1385,7 @@ export class Skeleton extends MetaDBManager {
     const common = this.config.chainCommon.copy()
     common.setHardfork(hardfork)
 
-    const block = blockFromRLPSerializedBlock(blockRLP, {
+    const block = createBlockFromRLPSerializedBlock(blockRLP, {
       common,
     })
     return block

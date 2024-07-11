@@ -1,4 +1,4 @@
-import { blockFromBlockData, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlockFromBlockData, genRequestsTrieRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
@@ -243,7 +243,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       requests,
       header: { ...block.header, ...generatedFields },
     }
-    block = blockFromBlockData(blockData, { common: this.common })
+    block = createBlockFromBlockData(blockData, { common: this.common })
   } else {
     if (this.common.isActivatedEIP(7685)) {
       const valid = await block.requestsTrieIsValid(requests)

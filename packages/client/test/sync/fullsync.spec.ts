@@ -1,4 +1,4 @@
-import { blockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
@@ -235,10 +235,10 @@ describe('[FullSynchronizer]', async () => {
     ]
     ;(sync as any).pool = { peers }
 
-    const chainTip = blockFromBlockData({
+    const chainTip = createBlockFromBlockData({
       header: {},
     })
-    const newBlock = blockFromBlockData({
+    const newBlock = createBlockFromBlockData({
       header: {
         parentHash: chainTip.hash(),
       },
@@ -277,10 +277,10 @@ describe('[FullSynchronizer]', async () => {
       execution,
     })
 
-    const chainTip = blockFromBlockData({
+    const chainTip = createBlockFromBlockData({
       header: {},
     })
-    const newBlock = blockFromBlockData({
+    const newBlock = createBlockFromBlockData({
       header: {
         parentHash: chainTip.hash(),
       },

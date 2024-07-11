@@ -1,4 +1,4 @@
-import { blockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -14,7 +14,7 @@ import type { Block } from '@ethereumjs/block'
 describe('reorg tests', () => {
   it('should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
-    const genesis = blockFromBlockData(
+    const genesis = createBlockFromBlockData(
       {
         header: {
           number: BigInt(0),
@@ -67,7 +67,7 @@ describe('reorg tests', () => {
 
   it('should correctly reorg a poa chain and remove blocks from clique snapshots', async () => {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
-    const genesisBlock = blockFromBlockData(
+    const genesisBlock = createBlockFromBlockData(
       { header: { extraData: new Uint8Array(97) } },
       { common }
     )
@@ -88,7 +88,7 @@ describe('reorg tests', () => {
     const beneficiary1 = new Address(new Uint8Array(20).fill(1))
     const beneficiary2 = new Address(new Uint8Array(20).fill(2))
 
-    const block1_low = blockFromBlockData(
+    const block1_low = createBlockFromBlockData(
       {
         header: {
           ...base,
@@ -99,7 +99,7 @@ describe('reorg tests', () => {
       },
       { common }
     )
-    const block2_low = blockFromBlockData(
+    const block2_low = createBlockFromBlockData(
       {
         header: {
           ...base,
@@ -113,7 +113,7 @@ describe('reorg tests', () => {
       { common }
     )
 
-    const block1_high = blockFromBlockData(
+    const block1_high = createBlockFromBlockData(
       {
         header: {
           ...base,
@@ -124,7 +124,7 @@ describe('reorg tests', () => {
       },
       { common }
     )
-    const block2_high = blockFromBlockData(
+    const block2_high = createBlockFromBlockData(
       {
         header: {
           ...base,
@@ -135,7 +135,7 @@ describe('reorg tests', () => {
       },
       { common }
     )
-    const block3_high = blockFromBlockData(
+    const block3_high = createBlockFromBlockData(
       {
         header: {
           ...base,

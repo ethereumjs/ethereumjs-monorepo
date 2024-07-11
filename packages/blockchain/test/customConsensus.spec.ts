@@ -1,4 +1,4 @@
-import { blockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -63,7 +63,7 @@ describe('Custom consensus validation rules', () => {
     const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Chainstart })
     const consensus = new fibonacciConsensus()
     const blockchain = await Blockchain.create({ common, consensus })
-    const block = blockFromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           number: 1n,
@@ -88,7 +88,7 @@ describe('Custom consensus validation rules', () => {
       assert.fail('should have put block with valid difficulty and extraData')
     }
 
-    const blockWithBadDifficulty = blockFromBlockData(
+    const blockWithBadDifficulty = createBlockFromBlockData(
       {
         header: {
           number: 2n,
@@ -110,7 +110,7 @@ describe('Custom consensus validation rules', () => {
       )
     }
 
-    const blockWithBadExtraData = blockFromBlockData(
+    const blockWithBadExtraData = createBlockFromBlockData(
       {
         header: {
           number: 2n,

@@ -1,4 +1,4 @@
-import { blockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Address, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -77,7 +77,7 @@ const initWithSigners = async (signers: Signer[], common?: Common) => {
     ...signers.map((s) => s.address.toBytes()),
     new Uint8Array(65)
   )
-  const genesisBlock = blockFromBlockData(
+  const genesisBlock = createBlockFromBlockData(
     { header: { gasLimit: GAS_LIMIT, extraData } },
     { common }
   )
@@ -141,7 +141,7 @@ function getBlock(
   // set signer
   const cliqueSigner = signer.privateKey
 
-  return blockFromBlockData(blockData, { common, freeze: false, cliqueSigner })
+  return createBlockFromBlockData(blockData, { common, freeze: false, cliqueSigner })
 }
 
 const addNextBlockReorg = async (
@@ -208,7 +208,7 @@ describe('Clique: Initialization', () => {
       unauthorizedSigner.toBytes(),
       new Uint8Array(65)
     )
-    const block = blockFromBlockData(
+    const block = createBlockFromBlockData(
       { header: { number, extraData } },
       { common: COMMON, cliqueSigner: A.privateKey }
     )
@@ -230,7 +230,7 @@ describe('Clique: Initialization', () => {
     const number = BigInt(2)
     const extraData = new Uint8Array(97)
     let difficulty = BigInt(5)
-    let block = blockFromBlockData(
+    let block = createBlockFromBlockData(
       {
         header: {
           number,
@@ -255,7 +255,7 @@ describe('Clique: Initialization', () => {
 
     difficulty = BigInt(1)
     const cliqueSigner = A.privateKey
-    block = blockFromBlockData(
+    block = createBlockFromBlockData(
       {
         header: {
           number,

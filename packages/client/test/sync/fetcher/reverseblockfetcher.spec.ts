@@ -1,4 +1,4 @@
-import { blockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it, vi } from 'vitest'
 
@@ -195,29 +195,29 @@ describe('[ReverseBlockFetcher]', async () => {
       count: BigInt(5),
       timeout: 5,
     })
-    const block47 = blockFromBlockData(
+    const block47 = createBlockFromBlockData(
       { header: { number: BigInt(47), difficulty: BigInt(1) } },
       { setHardfork: true }
     )
-    const block48 = blockFromBlockData(
+    const block48 = createBlockFromBlockData(
       {
         header: { number: BigInt(48), parentHash: block47.hash(), difficulty: BigInt(1) },
       },
       { setHardfork: true }
     )
-    const block49 = blockFromBlockData(
+    const block49 = createBlockFromBlockData(
       {
         header: { number: BigInt(49), parentHash: block48.hash(), difficulty: BigInt(1) },
       },
       { setHardfork: true }
     )
-    const block4 = blockFromBlockData(
+    const block4 = createBlockFromBlockData(
       {
         header: { number: BigInt(4), difficulty: BigInt(1) },
       },
       { setHardfork: true }
     )
-    const block5 = blockFromBlockData(
+    const block5 = createBlockFromBlockData(
       {
         header: { number: BigInt(5), difficulty: BigInt(1), parentHash: block4.hash() },
       },

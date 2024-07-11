@@ -1,4 +1,4 @@
-import { blockFromValuesArray } from '@ethereumjs/block'
+import { createBlockFromValuesArray } from '@ethereumjs/block'
 import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, equalsBytes } from '@ethereumjs/util'
 
 import { Event } from '../../types.js'
@@ -91,7 +91,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
         values.push(withdrawalsData)
       }
       // Supply the common from the corresponding block header already set on correct fork
-      const block = blockFromValuesArray(values, { common: headers[i].common })
+      const block = createBlockFromValuesArray(values, { common: headers[i].common })
       // Only validate the data integrity
       // Upon putting blocks into blockchain (for BlockFetcher), `validateData` is called again
       // In ReverseBlockFetcher we do not need to validate the entire block, since CL

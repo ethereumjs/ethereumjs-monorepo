@@ -2,7 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { blockFromBlockData } from '../src/blockConstructor.js'
+import { createBlockFromBlockData } from '../src/blockConstructor.js'
 import { BlockHeader } from '../src/header.js'
 
 describe('EIP4788 header tests', () => {
@@ -55,7 +55,7 @@ describe('EIP4788 header tests', () => {
       )
     }, 'correctly instantiates an EIP4788 block header')
 
-    const block = blockFromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: BlockHeader.fromHeaderData({}, { common }),
       },
