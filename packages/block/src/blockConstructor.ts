@@ -23,7 +23,7 @@ import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } 
 
 import { Block, BlockHeader, executionPayloadFromBeaconPayload } from './index.js'
 
-import type { BeaconPayloadJson } from './from-beacon-payload'
+import type { BeaconPayloadJson } from './from-beacon-payload.js'
 import type {
   BlockBytes,
   BlockData,
@@ -34,7 +34,7 @@ import type {
   JsonRpcBlock,
   RequestsBytes,
   WithdrawalsBytes,
-} from './types'
+} from './types.js'
 import type { TxOptions } from '@ethereumjs/tx'
 import type {
   CLRequest,
