@@ -44,9 +44,7 @@ import type {
   VerkleProof,
 } from '@ethereumjs/util'
 
-const { debug: createDebugLogger } = debugDefault
-
-const debug = createDebugLogger('statemanager:verkle')
+const debug = debugDefault('statemanager:verkle')
 
 export interface VerkleState {
   [key: PrefixedHexString]: PrefixedHexString | null

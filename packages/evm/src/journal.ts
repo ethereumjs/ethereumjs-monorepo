@@ -13,7 +13,6 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Account, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 type AddressString = string
 type SlotString = string
@@ -54,7 +53,7 @@ export class Journal {
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
 
-    this._debug = createDebugLogger('statemanager:statemanager')
+    this._debug = debugDefault('statemanager:statemanager')
 
     // TODO maybe call into this.clearJournal
     this.cleanJournal()
