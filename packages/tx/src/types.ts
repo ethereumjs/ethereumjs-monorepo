@@ -542,6 +542,7 @@ export interface JsonTx {
   maxFeePerGas?: PrefixedHexString
   maxFeePerBlobGas?: PrefixedHexString
   blobVersionedHashes?: PrefixedHexString[]
+  yParity?: PrefixedHexString
 }
 
 export type JsonBlobTxNetworkWrapper = JsonTx & {
@@ -575,4 +576,5 @@ export interface JsonRpcTx {
   s: string // DATA, 32 Bytes - ECDSA signature s
   maxFeePerBlobGas?: string // QUANTITY - max data fee for blob transactions
   blobVersionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
+  yParity?: string // DATA - parity of the y-coordinate of the public key
 }
