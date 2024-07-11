@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { equalsBytes, toHex } from 'ethereum-cryptography/utils'
+import { equalsBytes, toHex } from '@ethereumjs/util'
 
 import { BranchNode } from '../node/branch.js'
 import { ExtensionNode } from '../node/extension.js'

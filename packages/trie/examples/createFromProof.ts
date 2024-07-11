@@ -1,6 +1,6 @@
 import { Trie } from '@ethereumjs/trie'
 import { bytesToUtf8 } from '@ethereumjs/util'
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
+import { utf8ToBytes } from '@ethereumjs/util'
 
 async function main() {
   const k1 = utf8ToBytes('keyOne')

@@ -1,7 +1,7 @@
 /**
  * Run with DEBUG=ethjs,trie:* to see debug log ouput
  */
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
+import { utf8ToBytes } from '@ethereumjs/util'
 import { Trie } from '@ethereumjs/trie'
 
 const trie_entries: [string, string | null][] = [
