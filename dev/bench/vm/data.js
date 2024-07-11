@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1720553049759,
+  "lastUpdate": 1720725449266,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "8cae3bb3f8749f025f4d1f8a3353676295c8550e",
-          "message": "verkle: rename code keccak (#3426)\n\n* verkle: rename code keccak\r\n\r\n* verkle: rename code keccak\r\n\r\n* verkle: rename code keccak",
-          "timestamp": "2024-05-14T14:39:38-04:00",
-          "tree_id": "6f5e0c2efc013ea788672e9f3ef5c52725f3cfd2",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8cae3bb3f8749f025f4d1f8a3353676295c8550e"
-        },
-        "date": 1715712260035,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41222,
-            "range": "±2.71%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40764,
-            "range": "±1.36%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40325,
-            "range": "±1.46%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36948,
-            "range": "±4.83%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38644,
-            "range": "±1.79%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.76%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7ec47a30312252aea85b412b348740e8a9d2d824",
+          "message": "Monorepo: Set \"type\": \"module\" in package.json files (default ESM internally) (#3494)\n\n* Do a simple test and see what happens (Util) (npm i works, test:node works, lint works, docs do not work (maybe unrelated), examples work)\r\n\r\n* Switch all other libraries over\r\n\r\n* Move view specialized debug functionality out of trie src since debug module causes too much problem in this intense usage setup (not ESM ready)\r\n\r\n* Trie import fixes\r\n\r\n* VM example file extension renaming\r\n\r\n* Fix VM examples\r\n\r\n* Import fix\r\n\r\n* Make the switch-over in tsconfig files\r\n\r\n* Fix some new lint failures\r\n\r\n* Bugfix (wrong import extension)\r\n\r\n* Import file extension fixes\r\n\r\n* Fix benchmarks\r\n\r\n* Fix various import issues\r\n\r\n* Remove duplicative node types and clean up references\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-07-11T21:12:36+02:00",
+          "tree_id": "7d12ba04c5ffb86cc2fd590e3b80ef05cef451a8",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7ec47a30312252aea85b412b348740e8a9d2d824"
+        },
+        "date": 1720725448145,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37577,
+            "range": "±1.85%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 35617,
+            "range": "±1.98%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 35125,
+            "range": "±3.24%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35872,
+            "range": "±1.75%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 34887,
+            "range": "±1.86%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
