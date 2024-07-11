@@ -79,6 +79,7 @@ type JsonRpcReceipt = {
   status?: string // QUANTITY, either 1 (success) or 0 (failure)
   blobGasUsed?: string // QUANTITY, blob gas consumed by transaction (if blob transaction)
   blobGasPrice?: string // QUAntity, blob gas price for block including this transaction (if blob transaction)
+  type: string // QUANTITY, transaction type
 }
 type JsonRpcLog = {
   removed: boolean // TAG - true when the log was removed, due to a chain reorganization. false if it's a valid log.
@@ -206,6 +207,7 @@ const jsonRpcReceipt = async (
       : undefined,
   blobGasUsed: blobGasUsed !== undefined ? bigIntToHex(blobGasUsed) : undefined,
   blobGasPrice: blobGasPrice !== undefined ? bigIntToHex(blobGasPrice) : undefined,
+  type: intToHex(tx.type),
 })
 
 const calculateRewards = async (
