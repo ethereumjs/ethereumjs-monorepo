@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
+import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 const main = async () => {

@@ -11,9 +11,9 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common, ConsensusType } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
-//import testData from './helpers/blockchain-mock-data.json'
 
-const testData = require('./helpers/blockchain-mock-data.json')
+import testData from './helpers/blockchain-mock-data.json'
+
 async function main() {
   const common = new Common({ chain: 1, hardfork: testData.network.toLowerCase() })
   const validatePow = common.consensusType() === ConsensusType.ProofOfWork
