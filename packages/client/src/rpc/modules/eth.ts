@@ -655,10 +655,7 @@ export class Eth {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return await jsonRpcBlock(block, this._chain, includeTransactions)
     } catch (error) {
-      throw {
-        code: INVALID_PARAMS,
-        message: 'Unknown block',
-      }
+      return null
     }
   }
 
@@ -670,8 +667,13 @@ export class Eth {
    */
   async getBlockByNumber(params: [string, boolean]) {
     const [blockOpt, includeTransactions] = params
-    const block = await getBlockByOption(blockOpt, this._chain)
-    return jsonRpcBlock(block, this._chain, includeTransactions)
+    try {
+      const block = await getBlockByOption(blockOpt, this._chain)
+      const response = await jsonRpcBlock(block, this._chain, includeTransactions)
+      return response
+    } catch {
+      return null
+    }
   }
 
   /**
