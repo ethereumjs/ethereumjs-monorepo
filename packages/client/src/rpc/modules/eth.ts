@@ -16,7 +16,6 @@ import {
   intToHex,
   setLengthLeft,
   toType,
-  utf8ToBytes,
 } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_HEX_STRING, INVALID_PARAMS, PARSE_ERROR } from '../error-code.js'
@@ -1004,7 +1003,7 @@ export class Eth {
       }
     })
     let addressBytes: Uint8Array[] | undefined
-    if (address !== undefined) {
+    if (address !== undefined && address !== null) {
       if (Array.isArray(address)) {
         addressBytes = address.map((a) => hexToBytes(a))
       } else {
