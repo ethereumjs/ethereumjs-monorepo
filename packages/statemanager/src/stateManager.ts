@@ -28,8 +28,12 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { AccountCache, CacheType, CodeCache, StorageCache } from './cache/index.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
-import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
-import type { StorageRange } from '@ethereumjs/common/src'
+import type {
+  AccountFields,
+  EVMStateManagerInterface,
+  StorageDump,
+  StorageRange,
+} from '@ethereumjs/common'
 import type { DB, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
