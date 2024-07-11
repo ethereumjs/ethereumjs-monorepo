@@ -344,6 +344,7 @@ export abstract class BaseTransaction<T extends TransactionType>
       v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
       r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
       s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
+      chainId: bigIntToHex(this.common.chainId()),
     }
   }
 
