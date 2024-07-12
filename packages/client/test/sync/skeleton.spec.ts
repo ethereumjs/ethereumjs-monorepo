@@ -1,5 +1,5 @@
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
-import { Common } from '@ethereumjs/common'
+import { Common, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it, vi } from 'vitest'
@@ -416,7 +416,7 @@ describe('[Skeleton] / setHead', async () => {
       extraData: '0x00000000000000000',
       difficulty: '0x1',
     }
-    const common = Common.fromGethGenesis(genesis, { chain: 'merge-not-set' })
+    const common = createCommonFromGethGenesis(genesis, { chain: 'merge-not-set' })
     const config = new Config({ common })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
@@ -824,7 +824,7 @@ describe('[Skeleton] / setHead', async () => {
       extraData: '0x00000000000000000',
       difficulty: '0x1',
     }
-    const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
+    const common = createCommonFromGethGenesis(genesis, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({
       common,
@@ -928,7 +928,7 @@ describe('[Skeleton] / setHead', async () => {
       extraData: '0x00000000000000000',
       difficulty: '0x1',
     }
-    const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
+    const common = createCommonFromGethGenesis(genesis, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({
       common,
@@ -988,7 +988,7 @@ describe('[Skeleton] / setHead', async () => {
       },
       difficulty: '0x1',
     }
-    const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
+    const common = createCommonFromGethGenesis(genesis, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({
       common,

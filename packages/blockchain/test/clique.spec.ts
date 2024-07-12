@@ -1,5 +1,12 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import {
+  Chain,
+  Common,
+  ConsensusAlgorithm,
+  ConsensusType,
+  Hardfork,
+  createCustomCommon,
+} from '@ethereumjs/common'
 import { Address, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -608,7 +615,7 @@ describe('Clique: Initialization', () => {
   })
 
   it('Clique Voting: Epoch transitions reset all votes to allow chain checkpointing', async () => {
-    const common = Common.custom(
+    const common = createCustomCommon(
       {
         consensus: {
           type: ConsensusType.ProofOfAuthority,
@@ -664,7 +671,7 @@ describe('Clique: Initialization', () => {
   })
 
   it('Clique Voting: Recent signatures should not reset on checkpoint blocks imported in a batch', async () => {
-    const common = Common.custom(
+    const common = createCustomCommon(
       {
         consensus: {
           type: ConsensusType.ProofOfAuthority,
@@ -811,7 +818,7 @@ describe('clique: reorgs', () => {
   it(
     'Two signers, voting to add one other signer, epoch transition, then reorg and revoke this addition',
     async (st) => {
-      const common = Common.custom(
+      const common = createCustomCommon(
         {
           consensus: {
             type: ConsensusType.ProofOfAuthority,

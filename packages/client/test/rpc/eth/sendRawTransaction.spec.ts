@@ -1,5 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   BlobEIP4844Transaction,
@@ -221,7 +221,7 @@ describe(method, () => {
 
     const kzg = await loadKZG()
 
-    const common = Common.fromGethGenesis(gethGenesis, {
+    const common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },

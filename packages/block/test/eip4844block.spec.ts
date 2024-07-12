@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
@@ -24,7 +24,7 @@ describe('EIP4844 header tests', () => {
   beforeAll(async () => {
     const kzg = await loadKZG()
 
-    common = Common.fromGethGenesis(gethGenesis, {
+    common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -102,7 +102,7 @@ describe('blob gas tests', () => {
   let blobGasPerBlob: bigint
   beforeAll(async () => {
     const kzg = await loadKZG()
-    common = Common.fromGethGenesis(gethGenesis, {
+    common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -159,7 +159,7 @@ describe('transaction validation tests', () => {
   let blobGasPerBlob: bigint
   beforeAll(async () => {
     kzg = await loadKZG()
-    common = Common.fromGethGenesis(gethGenesis, {
+    common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
