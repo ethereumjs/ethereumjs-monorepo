@@ -1,6 +1,6 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -166,7 +166,7 @@ describe('BlockBuilder', () => {
       extraData: extraData2,
       alloc: { [addr]: { balance: '0x10000000000000000000' } },
     }
-    const common = Common.fromGethGenesis(chainData, {
+    const common = createCommonFromGethGenesis(chainData, {
       chain: 'devnet',
       hardfork: Hardfork.Istanbul,
     })

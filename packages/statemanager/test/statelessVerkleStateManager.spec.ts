@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Common } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import {
   Account,
@@ -28,7 +28,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   beforeAll(async () => {
     verkleCrypto = await loadVerkleCrypto()
   })
-  const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
+  const common = createCommonFromGethGenesis(testnetVerkleKaustinen, {
     chain: 'customChain',
     eips: [2935, 4895, 6800],
   })

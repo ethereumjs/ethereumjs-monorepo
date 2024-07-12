@@ -3,7 +3,7 @@ import {
   createBlockFromRLPSerializedBlock,
   createBlockFromValuesArray,
 } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
@@ -138,9 +138,12 @@ describe('runBlock() -> successful API parameter usage', async () => {
     await uncleRun(vm)
   })
 
-  it('PoW block, Common custom chain (Common.custom() static constructor)', async () => {
+  it('PoW block, Common custom chain (createCustomCommon() static constructor)', async () => {
     const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-    const common = Common.custom(customChainParams, { baseChain: 'mainnet', hardfork: 'berlin' })
+    const common = createCustomCommon(customChainParams, {
+      baseChain: 'mainnet',
+      hardfork: 'berlin',
+    })
     const vm = await setupVM({ common })
     await simpleRun(vm)
   })

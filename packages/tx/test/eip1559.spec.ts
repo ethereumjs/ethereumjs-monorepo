@@ -1,4 +1,4 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { TWO_POW256, ecsign, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -10,7 +10,7 @@ import testdata from './json/eip1559.json' // Source: Besu
 import type { FeeMarketEIP1559TxData, JsonTx } from '../src/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
-const common = Common.custom({ chainId: 4 })
+const common = createCustomCommon({ chainId: 4 })
 common.setHardfork(Hardfork.London)
 
 const validAddress = hexToBytes(`0x${'01'.repeat(20)}`)
@@ -197,7 +197,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
       freeze: false,
     })
 
-    const newCommon = Common.custom({ chainId: 4 })
+    const newCommon = createCustomCommon({ chainId: 4 })
     newCommon.setHardfork(Hardfork.Paris)
 
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')

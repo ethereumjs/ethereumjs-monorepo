@@ -1,4 +1,4 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { Address, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
 import { rmSync } from 'fs'
 import { assert, describe, it } from 'vitest'
@@ -49,7 +49,10 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
     extraData,
     alloc: { [addr]: { balance: '0x10000000000000000000' } },
   }
-  const common = Common.fromGethGenesis(chainData, { chain: 'devnet', hardfork: Hardfork.London })
+  const common = createCommonFromGethGenesis(chainData, {
+    chain: 'devnet',
+    hardfork: Hardfork.London,
+  })
   const customGenesisState = parseGethGenesisState(chainData)
 
   const config = new Config({

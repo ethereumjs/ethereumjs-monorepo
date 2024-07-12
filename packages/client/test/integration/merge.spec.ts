@@ -2,10 +2,10 @@ import { BlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import {
   Chain as ChainCommon,
-  Common,
   ConsensusAlgorithm,
   ConsensusType,
   Hardfork,
+  createCustomCommon,
 } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -19,8 +19,9 @@ import { MockServer } from './mocks/mockserver.js'
 import { destroy, setup } from './util.js'
 
 import type { CliqueConsensus } from '@ethereumjs/blockchain'
+import type { Common } from '@ethereumjs/common'
 
-const commonPoA = Common.custom(
+const commonPoA = createCustomCommon(
   {
     consensus: {
       type: ConsensusType.ProofOfAuthority,
@@ -43,7 +44,7 @@ const commonPoA = Common.custom(
   },
   { baseChain: ChainCommon.Goerli, hardfork: Hardfork.London }
 )
-const commonPoW = Common.custom(
+const commonPoW = createCustomCommon(
   {
     genesis: {
       gasLimit: 16777216,

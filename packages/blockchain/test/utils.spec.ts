@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { genesisStateRoot } from '@ethereumjs/trie'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -11,7 +11,7 @@ import gethGenesisKilnJSON from './testdata/geth-genesis-kiln.json'
 import type { Blockchain } from '../src/blockchain.js'
 
 async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
-  const common = Common.fromGethGenesis(gethGenesis, { chain: 'kiln' })
+  const common = createCommonFromGethGenesis(gethGenesis, { chain: 'kiln' })
   const genesisState = parseGethGenesisState(gethGenesis)
   const blockchain = await createBlockchain({
     genesisState,

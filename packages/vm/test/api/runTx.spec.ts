@@ -1,6 +1,6 @@
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Blockchain, createBlockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   BlobEIP4844Transaction,
   FeeMarketEIP1559Transaction,
@@ -881,7 +881,7 @@ describe('EIP 4844 transaction tests', () => {
     const kzg = await loadKZG()
 
     const genesisJson = await import('../../../block/test/testdata/4844-hardfork.json')
-    const common = Common.fromGethGenesis(genesisJson, {
+    const common = createCommonFromGethGenesis(genesisJson, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },

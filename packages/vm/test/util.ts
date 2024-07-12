@@ -1,5 +1,5 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
@@ -413,7 +413,7 @@ export function getDAOCommon(activationBlock: number) {
       editedForks.push(fork)
     }
   }
-  const DAOCommon = Common.custom(
+  const DAOCommon = createCustomCommon(
     {
       hardforks: editedForks,
     },

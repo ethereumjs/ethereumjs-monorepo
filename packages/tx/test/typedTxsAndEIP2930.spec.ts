@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
 import {
   Address,
   MAX_INTEGER,
@@ -605,7 +605,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
       chainId: txData.chainId,
       eips: [2718, 2929, 2930],
     }
-    const usedCommon = Common.custom(customChainParams, {
+    const usedCommon = createCustomCommon(customChainParams, {
       baseChain: Chain.Mainnet,
       hardfork: Hardfork.Berlin,
     })

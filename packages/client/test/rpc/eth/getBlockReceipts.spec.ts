@@ -1,4 +1,4 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   BlobEIP4844Transaction,
   FeeMarketEIP1559Transaction,
@@ -111,7 +111,7 @@ describe(method, () => {
 
       const kzg = await loadKZG()
 
-      const common = Common.fromGethGenesis(gethGenesis, {
+      const common = createCommonFromGethGenesis(gethGenesis, {
         chain: 'customChain',
         hardfork: Hardfork.Cancun,
         customCrypto: {

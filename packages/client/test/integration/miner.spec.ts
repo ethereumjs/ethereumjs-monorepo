@@ -5,6 +5,7 @@ import {
   ConsensusAlgorithm,
   ConsensusType,
   Hardfork,
+  createCustomCommon,
 } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -27,7 +28,7 @@ const hardforks = new Common({ chain: ChainCommon.Goerli })
       ? { ...h, block: 0, timestamp: undefined }
       : { ...h, timestamp: undefined }
   )
-const common = Common.custom(
+const common = createCustomCommon(
   {
     hardforks,
     consensus: {
