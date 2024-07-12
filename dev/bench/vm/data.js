@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1720789307083,
+  "lastUpdate": 1720808718108,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ee8e02f7be14f4311c2a967d9b8d9dd3ffc72166",
-          "message": "Add `eth_blobBaseFee` RPC endpoint (#3436)\n\n* Add blob base fee\r\n\r\n* client: remove unused variables in blobBaseFee test\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
-          "timestamp": "2024-05-22T11:30:54+02:00",
-          "tree_id": "80b7823d87e8b1c0684a7c3e1c95941efc4f2ed5",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ee8e02f7be14f4311c2a967d9b8d9dd3ffc72166"
-        },
-        "date": 1716370412273,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42640,
-            "range": "±1.64%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40427,
-            "range": "±3.27%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40567,
-            "range": "±2.01%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 40072,
-            "range": "±1.87%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37888,
-            "range": "±3.73%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.73%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "94d02e6490a68a86e6576c5ba501e1fe78be2f08",
+          "message": "Fix Prague test runner (#3498)\n\n* prague: swap 3074 for 7702 eip\r\n\r\n* vm: requests: ensure system address nonce does not get updated\r\n\r\n* vm: state runner: fix some 7702 tests\r\n\r\n* vm: state: fix all 7702 state tests",
+          "timestamp": "2024-07-12T14:22:40-04:00",
+          "tree_id": "599017879d80f46882d30a5045d680c7cdf01269",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/94d02e6490a68a86e6576c5ba501e1fe78be2f08"
+        },
+        "date": 1720808717529,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 39021,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36788,
+            "range": "±3.56%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37744,
+            "range": "±1.58%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36973,
+            "range": "±1.65%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36002,
+            "range": "±1.74%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
