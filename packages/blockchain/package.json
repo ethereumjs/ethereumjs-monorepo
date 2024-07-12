@@ -17,6 +17,7 @@
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
   "type": "module",
+  "sideEffects": false,
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {

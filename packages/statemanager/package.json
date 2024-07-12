@@ -20,6 +20,7 @@
     "g11tech <gajinder@g11.in>"
   ],
   "type": "module",
+  "sideEffects": false,
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
