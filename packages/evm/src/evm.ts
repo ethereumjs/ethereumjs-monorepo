@@ -1,4 +1,5 @@
-import { Chain, Common, Hardfork, SimpleStateManager } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { SimpleStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
   Address,

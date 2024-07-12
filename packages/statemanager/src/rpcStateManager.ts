@@ -1,4 +1,4 @@
-import { Chain, Common, OriginalStorageCache } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
@@ -14,7 +14,7 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { AccountCache, CacheType, StorageCache } from './cache/index.js'
+import { AccountCache, CacheType, OriginalStorageCache, StorageCache } from './cache/index.js'
 
 import type { Proof } from './index.js'
 import type {

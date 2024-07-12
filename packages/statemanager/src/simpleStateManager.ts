@@ -1,16 +1,16 @@
 import { Account, bytesToHex } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { OriginalStorageCache } from './originalStorageCache.js'
+import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
-import type { Common } from '../index.js'
 import type {
   AccountFields,
+  Common,
   EVMStateManagerInterface,
   Proof,
   StorageDump,
   StorageRange,
-} from '../interfaces.js'
+} from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 /**

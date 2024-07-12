@@ -12,8 +12,6 @@ type getContractStorage = (address: Address, key: Uint8Array) => Promise<Uint8Ar
  * method bound to the calling state manager. It should be examined if there are alternative
  * designs being more transparent and direct along the next breaking release round.
  *
- * @deprecated This helper class has been moved to the @ethereumjs/common package
- * and will be removed from this package along the next breaking release round.
  */
 export class OriginalStorageCache {
   private map: Map<string, Map<string, Uint8Array>>
