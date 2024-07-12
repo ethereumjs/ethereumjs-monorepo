@@ -712,7 +712,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x48,
     function (runState) {
-      runState.stack.push(runState.interpreter.getBlockBaseFee())
+      runState.stack.push(runState.interpreter.getBlockBaseFee()!)
     },
   ],
   // 0x49: BLOBHASH
