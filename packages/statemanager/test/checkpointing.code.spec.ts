@@ -1,8 +1,8 @@
-import { SimpleStateManager, type StateManagerInterface } from '@ethereumjs/common'
+import { type StateManagerInterface } from '@ethereumjs/common'
 import { Account, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { DefaultStateManager } from '../src/index.js'
+import { DefaultStateManager, SimpleStateManager } from '../src/index.js'
 
 const codeEval = async (
   sm: StateManagerInterface,

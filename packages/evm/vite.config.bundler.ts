@@ -11,9 +11,9 @@ export default defineConfig({
       treeshake: 'safest',
     },
     lib: {
-      entry: 'src/index.ts',
-      name: '@ethereumjs/evm',
-      fileName: (format) => `ethereumjs-evm-bundle.${format}.js`,
+      entry: '../statemanager/examples/simple.ts',
+      name: '@ethereumjs/statemanager',
+      fileName: (format) => `ethereumjs-statemanager-bundle.${format}.js`,
       // only build for es
       formats: ['es'],
     },
