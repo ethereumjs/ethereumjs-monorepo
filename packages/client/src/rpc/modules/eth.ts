@@ -1010,19 +1010,28 @@ export class Eth {
    */
   async createAccessList(params: [RpcTx, string | undefined]) {
     const [transaction, blockOpt] = params
+    if (this._vm === undefined) {
+      throw new Error('missing vm')
+    }
+    const vm = await this._vm.shallowCopy()
+    let block
     let common
     if (blockOpt !== undefined) {
-      const block = await getBlockByOption(blockOpt, this._chain)
+      block = await getBlockByOption(blockOpt, this._chain)
       common = block.common
+      await vm.stateManager.setStateRoot(block.header.stateRoot)
     }
+
     const tx = await TransactionFactory.fromRPC(transaction, {
       common,
     })
-    if ('accessList' in tx) {
-      return tx.AccessListJSON
-    } else {
-      return null
-    }
+    const result = await vm.runTx({
+      tx,
+      block,
+      reportAccessList: true,
+    })
+
+    return result.accessList
   }
 
   /**
