@@ -315,7 +315,7 @@ export class Eth {
       [validators.blockOption],
     ])
     this.createAccessList = middleware(
-      callWithStackTrace(this.call.bind(this), this._rpcDebug),
+      callWithStackTrace(this.createAccessList.bind(this), this._rpcDebug),
       2,
       [[validators.transaction()], [validators.optional(validators.blockOption)]]
     )
