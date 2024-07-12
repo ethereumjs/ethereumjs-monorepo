@@ -8,7 +8,6 @@ import { createBlockchain } from '../src/index.js'
 import * as testnet from './testdata/testnet.json'
 
 import type { Blockchain } from '../src/index.js'
-
 import type { Block } from '@ethereumjs/block'
 
 const buildChain = async (blockchain: Blockchain, common: Common, height: number) => {

@@ -7,8 +7,8 @@ import { LevelDB } from '../execution/level.js'
 import { Event } from '../types.js'
 
 import type { Config } from '../config.js'
-import type { Blockchain } from '@ethereumjs/blockchain'
 import type { Block } from '@ethereumjs/block'
+import type { Blockchain } from '@ethereumjs/blockchain'
 import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
