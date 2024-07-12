@@ -279,12 +279,12 @@ export interface EVMOpts {
   bls?: EVMBLSInterface
 
   /*
-   * The EVM comes with a basic dependency-free `SimpleStateManager` implementation
+   * The EVM comes with a basic dependency-minimized `SimpleStateManager` implementation
    * which serves most code execution use cases and which is included in the
-   * `@ethereumjs/common` package.
+   * `@ethereumjs/statemanager` package.
    *
-   * The `@ethereumjs/statemanager` package provides a variety of state manager
-   * implementations for different needs (tree backed, RPC, experimental verkle)
+   * The `@ethereumjs/statemanager` package also provides a variety of state manager
+   * implementations for different needs (MPT-tree backed, RPC, experimental verkle)
    * which can be used by this option as a replacement.
    */
   stateManager?: EVMStateManagerInterface

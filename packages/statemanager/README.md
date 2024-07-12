@@ -17,17 +17,20 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/statemanager
 ```
 
-Note: this library was part of the [@ethereumjs/vm](../vm/) package up till VM `v5`.
-
 ## Usage
 
 ### Introduction
 
 The `StateManager` provides high-level access and manipulation methods to and for the Ethereum state, thinking in terms of accounts or contract code rather then the storage operations of the underlying data structure (e.g. a [Trie](../trie/)).
 
-The library includes a TypeScript interface `StateManager` to ensure a unified interface (e.g. when passed to the VM), a concrete Trie-based `DefaultStateManager` implementation, as well as an `RPCStateManager` implementation that sources state and history data from an external JSON-RPC provider.
+This library includes several different implementations that all implement the `StateManager` interface which is accepted by the `vm` library. These include:
 
-It also includes a checkpoint/revert/commit mechanism to either persist or revert state changes and provides a sophisticated caching mechanism under the hood to reduce the need for direct state accesses.
+- [`SimpleStateManager`](./src/simpleStateManager.ts) -a minimally functional (and dependency minimized) version of the state manager suitable for most basic EVM bytecode operations
+- [`DefaultStateManager`](./src//stateManager.ts) - a Merkle-Patricia Trie-based `DefaultStateManager` implementation that is used by the `@ethereumjs/client`
+- [`RPCStateManager`](./src/rpcStateManager.ts) - a light-weight implementation that sources state and history data from an external JSON-RPC provider
+- [`StatelessVerkleStateManager`](./src/statelessVerkleStateManager.ts) - an experimental implementation of a "stateless" state manager that uses Verkle proofs to provide necessary state access for processing verkle-trie based blocks
+
+It also includes a checkpoint/revert/commit mechanism to either persist or revert state changes and provides a sophisticated caching mechanism under the hood to reduce the need reading state accesses from disk.
 
 ### `DefaultStateManager`
 
@@ -71,14 +74,25 @@ Have a loot at the extended `CacheOptions` on how to use and leverage the new ca
 
 ### `SimpleStateManager`
 
-There is a dependency-free simple state manager implementation available shipped with the [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) package. While this state manager implementation lacks the implementations of some non-core functionality as well as proof related logic (e.g. `setStateRoot()`) it is suitable for a lot use cases where things like sophisticated caching or state root handling is not needed.
+The `SimpleStateManager` is a dependency-minimized simple state manager implementation. While this state manager implementation lacks the implementations of some non-core functionality as well as proof related logic (e.g. `setStateRoot()`) it is suitable for a lot use cases where things like sophisticated caching or state root handling is not needed.
 
-This state manager can be instantiated as follows and otherwise being used as shown in the basic example from above:
+This state manager can be instantiated and used as follows:
 
 ```ts
-import { SimpleStateManager } from '@ethereumjs/common'
+// ./examples/simple.ts
 
-const sm = new SimpleStateManager()
+import { SimpleStateManager } from '../src/index.js'
+import { Account, Address, randomBytes } from '@ethereumjs/util'
+
+const main = async () => {
+  const sm = new SimpleStateManager()
+  const address = Address.fromPrivateKey(randomBytes(32))
+  const account = new Account(0n, 0xfffffn)
+  await sm.putAccount(address, account)
+  console.log(await sm.getAccount(address))
+}
+
+main()
 ```
 
 ### `DefaultStateManager` -> Proofs
@@ -188,7 +202,7 @@ const main = async () => {
     const blockchain = new RPCBlockChain(provider)
     const blockTag = 1n
     const state = new RPCStateManager({ provider, blockTag })
-    const evm = new EVM({ blockchain, stateManager: state }) // note that evm is ready to run BLOCKHASH opcodes (over RPC)
+    const evm = await EVM.create({ blockchain, stateManager: state }) // note that evm is ready to run BLOCKHASH opcodes (over RPC)
   } catch (e) {
     console.log(e.message) // fetch would fail because provider url is not real. please replace provider with a valid rpc url string.
   }
