@@ -51,7 +51,7 @@ const main = async () => {
 
 
   const chainDB = new Level('${execution.config.getDataDirectory(DataDirectory.Chain)}')
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     db: chainDB,
     common,
     validateBlocks: true,

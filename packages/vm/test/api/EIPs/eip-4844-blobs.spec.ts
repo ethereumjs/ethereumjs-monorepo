@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
@@ -36,7 +36,7 @@ describe('EIP4844 tests', () => {
       { header: { gasLimit: 50000, parentBeaconBlockRoot: zeros(32) } },
       { common }
     )
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       genesisBlock,
       common,
       validateBlocks: false,

@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
@@ -91,7 +91,7 @@ const common = new Common({ chain: 'testnet2', customChains: [testnetData] })
 
 describe(method, async () => {
   it('call with valid arguments', async () => {
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
       validateConsensus: false,

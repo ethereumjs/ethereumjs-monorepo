@@ -4,9 +4,10 @@ import { Address, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique.js'
-import { Blockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.js'
 
 import type { CliqueConsensus } from '../src/consensus/clique.js'
+import type { Blockchain } from '../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 
@@ -83,7 +84,7 @@ const initWithSigners = async (signers: Signer[], common?: Common) => {
   )
   blocks.push(genesisBlock)
 
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     validateBlocks: true,
     validateConsensus: true,
     genesisBlock,
@@ -183,7 +184,7 @@ const addNextBlock = async (
 describe('Clique: Initialization', () => {
   it('should initialize a clique blockchain', async () => {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
-    const blockchain = await Blockchain.create({ common })
+    const blockchain = await createBlockchain({ common })
 
     const head = await blockchain.getIteratorHead()
     assert.deepEqual(head.hash(), blockchain.genesisBlock.hash(), 'correct genesis hash')

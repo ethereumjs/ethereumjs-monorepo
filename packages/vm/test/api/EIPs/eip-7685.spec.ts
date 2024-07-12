@@ -1,5 +1,5 @@
 import { createBlockFromBlockData, genRequestsTrieRoot } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   DepositRequest,
@@ -92,7 +92,7 @@ describe('EIP 7685 buildBlock tests', () => {
       { header: { gasLimit: 50000, baseFeePerGas: 100 } },
       { common }
     )
-    const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
+    const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,

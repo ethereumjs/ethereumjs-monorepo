@@ -3,10 +3,11 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.js'
 
 import * as testnet from './testdata/testnet.json'
 
+import type { Blockchain } from '../src/index.js'
 import type { Block } from '@ethereumjs/block'
 
 const buildChain = async (blockchain: Blockchain, common: Common, height: number) => {
@@ -60,7 +61,7 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
 
   for (const s of scenarios) {
     it('should pass', async () => {
-      const blockchain = await Blockchain.create({
+      const blockchain = await createBlockchain({
         validateBlocks: true,
         validateConsensus: false,
         common: s.common,

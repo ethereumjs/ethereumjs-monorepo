@@ -3,7 +3,7 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain, EthashConsensus } from '../src/index.js'
+import { EthashConsensus, createBlockchain } from '../src/index.js'
 
 import type { Consensus } from '../src/index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
@@ -46,7 +46,7 @@ describe('Optional consensus parameter in blockchain constructor', () => {
     const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Chainstart })
     const consensus = new fibonacciConsensus()
     try {
-      const blockchain = await Blockchain.create({ common, consensus })
+      const blockchain = await createBlockchain({ common, consensus })
       assert.equal(
         (blockchain.consensus as fibonacciConsensus).algorithm,
         'fibonacciConsensus',
@@ -62,7 +62,7 @@ describe('Custom consensus validation rules', () => {
   it('should validat custom consensus rules', async () => {
     const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Chainstart })
     const consensus = new fibonacciConsensus()
-    const blockchain = await Blockchain.create({ common, consensus })
+    const blockchain = await createBlockchain({ common, consensus })
     const block = createBlockFromBlockData(
       {
         header: {
@@ -140,7 +140,7 @@ describe('consensus transition checks', () => {
   it('should transition correctly', async () => {
     const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Chainstart })
     const consensus = new fibonacciConsensus()
-    const blockchain = await Blockchain.create({ common, consensus })
+    const blockchain = await createBlockchain({ common, consensus })
 
     try {
       await blockchain.checkAndTransitionHardForkByNumber(5n)

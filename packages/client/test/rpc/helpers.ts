@@ -1,5 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, Hardfork, parseGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import {
@@ -28,6 +28,7 @@ import { mockBlockchain } from './mockBlockchain.js'
 
 import type { EthereumClient } from '../../src/client.js'
 import type { FullEthereumService } from '../../src/service/index.js'
+import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
@@ -235,7 +236,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   // use genesisStateRoot for blockchain init as well as to start of the stateless
   // client. else the stateroot could have been generated out of box
   const genesisMeta = common.gteHardfork(Hardfork.Osaka) ? { genesisStateRoot } : { genesisState }
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     common,
     validateBlocks: false,
     validateConsensus: false,
