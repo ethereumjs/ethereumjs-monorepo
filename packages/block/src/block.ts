@@ -15,6 +15,22 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { BlockHeader } from './header.js'
 import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } from './helpers.js'
 
+/* eslint-disable */
+// This is to allow for a proper and linked collection of constructors for the class header.
+// For tree shaking/code size this should be no problem since types go away on transpilation.
+// TODO: See if there is an easier way to achieve the same result.
+// See: https://github.com/microsoft/TypeScript/issues/47558
+// (situation will eventually improve on Typescript and/or Eslint update)
+import type {
+  createBlockFromBeaconPayloadJson,
+  createBlockFromBlockData,
+  createBlockFromExecutionPayload,
+  createBlockFromJsonRpcProvider,
+  createBlockFromRLPSerializedBlock,
+  createBlockFromRPC,
+  createBlockFromValuesArray,
+} from './index.js'
+/* eslint-enable */
 import type { BlockBytes, BlockOptions, ExecutionPayload, JsonBlock } from './types.js'
 import type { Common } from '@ethereumjs/common'
 import type {
@@ -32,7 +48,20 @@ import type {
 } from '@ethereumjs/util'
 
 /**
- * An object that represents the block.
+ * Class representing a block in the Ethereum network. The {@link BlockHeader} has its own
+ * class and can be used independently, for a block it is included in the form of the
+ * {@link Block.header} property.
+ *
+ * A block object can be created with one of the following constructor methods
+ * (separate from the Block class to allow for tree shaking):
+ *
+ * - {@link createBlockFromBlockData }
+ * - {@link createBlockFromValuesArray }
+ * - {@link createBlockFromRLPSerializedBlock }
+ * - {@link createBlockFromRPC }
+ * - {@link createBlockFromJsonRpcProvider }
+ * - {@link createBlockFromExecutionPayload }
+ * - {@link createBlockFromBeaconPayloadJson }
  */
 export class Block {
   public readonly header: BlockHeader
@@ -58,7 +87,9 @@ export class Block {
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
-   * Use the static factory methods to assist in creating a Block object from varying data types and options.
+   *
+   * @deprecated Use the static factory methods (see {@link Block} for an overview) to assist in creating
+   * a Block object from varying data types and options.
    */
   constructor(
     header?: BlockHeader,
