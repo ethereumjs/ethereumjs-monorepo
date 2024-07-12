@@ -162,7 +162,7 @@ export interface DefaultStateManagerOpts {
  * `@ethereumjs/trie` trie as a data backend.
  *
  * Note that there is a `SimpleStateManager` dependency-free state
- * manager implementation available shipped with the `@ethereumjs/common`
+ * manager implementation available shipped with the `@ethereumjs/statemanager`
  * package which might be an alternative to this implementation
  * for many basic use cases.
  */
