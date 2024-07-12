@@ -154,7 +154,6 @@ describe('fromTxData using from a json', () => {
       accessList: null,
       maxFeePerBlobGas: '0xb2d05e00',
       blobVersionedHashes: ['0x01b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded28'],
-      yParity: '0x0',
     }
     const txMeta = {
       hash: '0xe5e02be0667b6d31895d1b5a8b916a6761cbc9865225c6144a3e2c50936d173e',
@@ -632,7 +631,6 @@ describe('Network wrapper deserialization test', () => {
       accessList: [],
       maxFeePerBlobGas: '0x5f5e100',
       blobVersionedHashes: ['0x0172ff1d4f354eebdb3cd0cb64e41ac584359094373fd5f979bcccbd6072d936'],
-      yParity: '0x0',
     }
     const txMeta = {
       sender: '0x652a2b04934d96c26c4710853021779fb9f525d2',

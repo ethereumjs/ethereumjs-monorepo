@@ -72,7 +72,7 @@ export type AuthorizationListItem = {
   chainId: PrefixedHexString
   address: PrefixedHexString
   nonce: PrefixedHexString[]
-  yParity: PrefixedHexString
+  v: PrefixedHexString
   r: PrefixedHexString
   s: PrefixedHexString
 }

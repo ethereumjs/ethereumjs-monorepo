@@ -128,7 +128,8 @@ export function makeTx(
     // Convert `v` keys to `yParity`
     for (const signature of txData.authorizationList) {
       if (signature.v !== undefined) {
-        signature.yParity = bytesToHex(unpadBytes(hexToBytes(signature.v)))
+        // Ensure that the authorization signature is of type "unpadded hex", e.g.: '0x', '0x1', but not '0x0', '0x00', or '0x01'
+        signature.v = bytesToHex(unpadBytes(hexToBytes(signature.v)))
       }
       if (signature.nonce !== undefined && signature.nonce[0] === '0x00') {
         signature.nonce[0] = '0x'

@@ -138,7 +138,7 @@ export class AuthorizationLists {
     if (isAuthorizationList(authorizationList)) {
       AuthorizationListJSON = authorizationList
       const newAuthorizationList: AuthorizationListBytes = []
-      const jsonItems = ['chainId', 'address', 'nonce', 'yParity', 'r', 's']
+      const jsonItems = ['chainId', 'address', 'nonce', 'v', 'r', 's']
       for (let i = 0; i < authorizationList.length; i++) {
         const item: AuthorizationListItem = authorizationList[i]
         for (const key of jsonItems) {
@@ -153,11 +153,11 @@ export class AuthorizationLists {
         for (let j = 0; j < item.nonce.length; j++) {
           nonceList.push(hexToBytes(item.nonce[j]))
         }
-        const yParity = hexToBytes(item.yParity)
+        const v = hexToBytes(item.v)
         const r = hexToBytes(item.r)
         const s = hexToBytes(item.s)
 
-        newAuthorizationList.push([chainId, addressBytes, nonceList, yParity, r, s])
+        newAuthorizationList.push([chainId, addressBytes, nonceList, v, r, s])
       }
       bufferAuthorizationList = newAuthorizationList
     } else {
@@ -173,14 +173,14 @@ export class AuthorizationLists {
         for (let j = 0; j < nonces.length; j++) {
           nonceList.push(bytesToHex(nonces[j]))
         }
-        const yParity = bytesToHex(data[3])
+        const v = bytesToHex(data[3])
         const r = bytesToHex(data[4])
         const s = bytesToHex(data[5])
         const jsonItem: AuthorizationListItem = {
           chainId,
           address,
           nonce: nonceList,
-          yParity,
+          v,
           r,
           s,
         }
@@ -200,10 +200,10 @@ export class AuthorizationLists {
       const authorizationListItem = authorizationList[key]
       const address = authorizationListItem[1]
       const nonceList = authorizationListItem[2]
-      const yParity = authorizationListItem[3]
+      const v = authorizationListItem[3]
       const r = authorizationListItem[4]
       const s = authorizationListItem[5]
-      validateNoLeadingZeroes({ yParity, r, s })
+      validateNoLeadingZeroes({ v, r, s })
       if (address.length !== 20) {
         throw new Error('Invalid EIP-7702 transaction: address length should be 20 bytes')
       }
