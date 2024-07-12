@@ -1,4 +1,4 @@
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { MemoryLevel } from 'memory-level'
 
 import { Config } from '../../src/config.js'
@@ -39,7 +39,7 @@ export async function setup(
   })
 
   const server = new MockServer({ config, location }) as any
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     validateBlocks: false,
     validateConsensus: false,
     common,

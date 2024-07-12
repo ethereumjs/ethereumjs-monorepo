@@ -3,15 +3,17 @@ import { genesisStateRoot } from '@ethereumjs/trie'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src/blockchain.js'
-
 // kiln genesis with deposit contract storage set
+import { createBlockchain } from '../src/index.js'
+
 import gethGenesisKilnJSON from './testdata/geth-genesis-kiln.json'
+
+import type { Blockchain } from '../src/blockchain.js'
 
 async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
   const common = Common.fromGethGenesis(gethGenesis, { chain: 'kiln' })
   const genesisState = parseGethGenesisState(gethGenesis)
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     genesisState,
     common,
   })
