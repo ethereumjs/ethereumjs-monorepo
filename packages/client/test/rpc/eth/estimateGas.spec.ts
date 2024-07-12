@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
@@ -6,10 +6,11 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
+import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_estimateGas'
@@ -60,7 +61,7 @@ describe(
         return address
       }
       const parent = await blockchain.getCanonicalHeadHeader()
-      const block = Block.fromBlockData(
+      const block = createBlockFromBlockData(
         {
           header: {
             parentHash: parent.hash(),
@@ -125,7 +126,7 @@ describe(
       service.execution.vm.common.setHardfork('london')
       service.chain.config.chainCommon.setHardfork('london')
       const headBlock = await service.chain.getCanonicalHeadBlock()
-      const londonBlock = Block.fromBlockData(
+      const londonBlock = createBlockFromBlockData(
         {
           header: BlockHeader.fromHeaderData(
             {

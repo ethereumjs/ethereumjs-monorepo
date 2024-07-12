@@ -51,11 +51,10 @@ import type {
   bn128,
 } from './types.js'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
-const { debug: createDebugLogger } = debugDefault
 
-const debug = createDebugLogger('evm:evm')
-const debugGas = createDebugLogger('evm:gas')
-const debugPrecompiles = createDebugLogger('evm:precompiles')
+const debug = debugDefault('evm:evm')
+const debugGas = debugDefault('evm:gas')
+const debugPrecompiles = debugDefault('evm:precompiles')
 
 let initializedRustBN: bn128 | undefined = undefined
 

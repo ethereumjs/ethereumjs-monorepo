@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromExecutionPayload } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
@@ -201,7 +201,7 @@ describe('[VMExecution]', () => {
       engine: true,
     })
 
-    const block = await Block.fromExecutionPayload(shanghaiPayload as ExecutionPayload)
+    const block = await createBlockFromExecutionPayload(shanghaiPayload as ExecutionPayload)
     const oldHead = await blockchain.getIteratorHead()
 
     const parentStateRoot = oldHead.header.stateRoot

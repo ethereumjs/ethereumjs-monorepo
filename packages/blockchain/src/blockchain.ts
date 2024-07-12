@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import {
   Chain,
   ChainGenesis,
@@ -203,7 +203,7 @@ export class Blockchain implements BlockchainInterface {
 
   /**
    * Creates a blockchain from a list of block objects,
-   * objects must be readable by {@link Block.fromBlockData}
+   * objects must be readable by {@link createBlockFromBlockData}
    *
    * @param blockData List of block objects
    * @param opts Constructor options, see {@link BlockchainOptions}
@@ -211,7 +211,7 @@ export class Blockchain implements BlockchainInterface {
   public static async fromBlocksData(blocksData: BlockData[], opts: BlockchainOptions = {}) {
     const blockchain = await Blockchain.create(opts)
     for (const blockData of blocksData) {
-      const block = Block.fromBlockData(blockData, {
+      const block = createBlockFromBlockData(blockData, {
         common: blockchain.common,
         setHardfork: true,
       })
@@ -1445,7 +1445,7 @@ export class Blockchain implements BlockchainInterface {
         header.extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
       }
     }
-    return Block.fromBlockData(
+    return createBlockFromBlockData(
       { header, withdrawals: common.isActivatedEIP(4895) ? [] : undefined },
       { common }
     )

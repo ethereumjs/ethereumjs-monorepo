@@ -1,15 +1,13 @@
 import { equalsBytes, intToBytes, setLengthLeft, setLengthRight } from '@ethereumjs/util'
 
 import { BaseVerkleNode } from './baseVerkleNode.js'
+import { NODE_WIDTH, VerkleLeafNodeValue, VerkleNodeType } from './types.js'
 import {
-  NODE_WIDTH,
-  VerkleLeafNodeValue,
-  VerkleNodeType,
+  createCValues,
   createDefaultLeafValues,
   createDeletedLeafValue,
   createUntouchedLeafValue,
-} from './types.js'
-import { createCValues } from './util.js'
+} from './util.js'
 
 import type { VerkleNodeOptions } from './types.js'
 import type { VerkleCrypto } from '@ethereumjs/util'
@@ -127,8 +125,10 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     const value = this.values[index]
     switch (value) {
       case VerkleLeafNodeValue.Untouched:
-      case VerkleLeafNodeValue.Deleted:
         return undefined
+      case VerkleLeafNodeValue.Deleted:
+        // Return zeroes if a value is "deleted" (i.e. overwitten with zeroes)
+        return new Uint8Array(32)
       default:
         return value
     }

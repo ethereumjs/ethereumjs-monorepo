@@ -1,7 +1,5 @@
 import { Interface, defaultAbiCoder as AbiCoder } from '@ethersproject/abi'
-import { AccessListEIP2930TxData, FeeMarketEIP1559TxData, TxData } from '@ethereumjs/tx'
-
-type TransactionsData = TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData
+import { LegacyTxData } from '@ethereumjs/tx'
 
 export const encodeFunction = (
   method: string,
@@ -33,8 +31,8 @@ export const encodeDeployment = (
   return deploymentData
 }
 
-export const buildTransaction = (data: Partial<TransactionsData>): TransactionsData => {
-  const defaultData: Partial<TransactionsData> = {
+export const buildTransaction = (data: Partial<LegacyTxData>): LegacyTxData => {
+  const defaultData: Partial<LegacyTxData> = {
     nonce: BigInt(0),
     gasLimit: 2_000_000, // We assume that 2M is enough,
     gasPrice: 1,

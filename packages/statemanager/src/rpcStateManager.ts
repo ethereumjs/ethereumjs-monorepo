@@ -25,7 +25,6 @@ import type {
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 export interface RPCStateManagerOpts {
   provider: string
@@ -57,7 +56,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
 
-    this._debug = createDebugLogger('statemanager:rpcStateManager')
+    this._debug = debugDefault('statemanager:rpcStateManager')
     if (typeof opts.provider === 'string' && opts.provider.startsWith('http')) {
       this._provider = opts.provider
     } else {

@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
@@ -55,7 +55,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       let block
       if (vm.common.consensusType() === 'poa') {
         // Setup block with correct extraData for POA
-        block = Block.fromBlockData(
+        block = createBlockFromBlockData(
           { header: { extraData: new Uint8Array(97) } },
           { common: vm.common }
         )
@@ -89,7 +89,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     const caller = tx.getSenderAddress()
     const acc = createAccount()
     await vm.stateManager.putAccount(caller, acc)
-    const block = Block.fromBlockData({}, { common: vm.common.copy() })
+    const block = createBlockFromBlockData({}, { common: vm.common.copy() })
     await vm.runTx({ tx, block })
     assert.ok(true, 'matched hardfork should run without throwing')
   })
@@ -104,7 +104,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     const caller = tx.getSenderAddress()
     const acc = createAccount()
     await vm.stateManager.putAccount(caller, acc)
-    const block = Block.fromBlockData({}, { common: vm.common.copy() })
+    const block = createBlockFromBlockData({}, { common: vm.common.copy() })
 
     block.common.setHardfork(Hardfork.Paris)
     try {
@@ -147,7 +147,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     const caller = tx.getSenderAddress()
     const acc = createAccount()
     await vm.stateManager.putAccount(caller, acc)
-    const block = Block.fromBlockData({}, { common: vm.common.copy() })
+    const block = createBlockFromBlockData({}, { common: vm.common.copy() })
 
     tx.common.setHardfork(Hardfork.GrayGlacier)
     block.common.setHardfork(Hardfork.GrayGlacier)
@@ -227,7 +227,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       const tx = unsignedTx.sign(privateKey)
 
       const coinbase = hexToBytes('0x00000000000000000000000000000000000000ff')
-      const block = Block.fromBlockData(
+      const block = createBlockFromBlockData(
         {
           header: {
             gasLimit: transferCost - 1,
@@ -432,7 +432,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     for (const txType of TRANSACTION_TYPES) {
       const vm = await VM.create({ common })
       const tx = getTransaction(vm.common, txType.type, true)
-      const block = Block.fromBlockData({ header: { baseFeePerGas: 100000 } }, { common })
+      const block = createBlockFromBlockData({ header: { baseFeePerGas: 100000 } }, { common })
       try {
         await vm.runTx({ tx, block })
         assert.fail('should fail')
@@ -714,7 +714,7 @@ describe('runTx() -> consensus bugs', () => {
 
     const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common }).sign(pkey)
 
-    const block = Block.fromBlockData({ header: { baseFeePerGas: 0x0c } }, { common })
+    const block = createBlockFromBlockData({ header: { baseFeePerGas: 0x0c } }, { common })
     const result = await vm.runTx({ tx, block })
 
     assert.equal(
@@ -892,7 +892,7 @@ describe('EIP 4844 transaction tests', () => {
 
     // Stub getBlock to produce a valid parent header under EIP 4844
     Blockchain.prototype.getBlock = async () => {
-      return Block.fromBlockData(
+      return createBlockFromBlockData(
         {
           header: BlockHeader.fromHeaderData(
             {
@@ -920,7 +920,7 @@ describe('EIP 4844 transaction tests', () => {
 
     const tx = getTransaction(common, 3, true) as BlobEIP4844Transaction
 
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: BlockHeader.fromHeaderData(
           {

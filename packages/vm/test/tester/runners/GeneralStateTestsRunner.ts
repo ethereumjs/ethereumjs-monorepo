@@ -5,8 +5,8 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
 
-import { VM } from '../../../src/vm'
-import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
+import { VM } from '../../../src/index.js'
+import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.js'
 
 import type * as tape from 'tape'
 
