@@ -168,7 +168,6 @@ export interface HardforkByOpts {
 
 type ParamDict = {
   v: number | bigint | null
-  d: string
 }
 
 export type EIPOrHFConfig = {
