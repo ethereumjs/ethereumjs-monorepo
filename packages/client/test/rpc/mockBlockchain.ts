@@ -13,6 +13,7 @@ export function mockBlockchain(options: any = {}) {
   ]
   const block = {
     hash: () => toBytes(blockHash),
+    serialize: () => Block.fromBlockData({ header: { number }, transactions }).serialize(),
     header: {
       number: BigInt(number),
       hash: () => toBytes(blockHash),
