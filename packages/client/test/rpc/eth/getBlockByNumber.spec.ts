@@ -26,7 +26,7 @@ const transactions2 = [mockedTx2]
 const block = {
   hash: () => blockHash,
   serialize: () =>
-    Block.fromBlockData({ header: { number: 1 }, transactions: transactions2 }).serialize(),
+    createBlockFromBlockData({ header: { number: 1 }, transactions: transactions2 }).serialize(),
   header: {
     number: BigInt(1),
     hash: () => blockHash,
@@ -45,7 +45,7 @@ function createChain(headBlock = block) {
   )
   const genesisBlock = {
     hash: () => genesisBlockHash,
-    serialize: () => Block.fromBlockData({ header: { number: 0 }, transactions }).serialize(),
+    serialize: () => createBlockFromBlockData({ header: { number: 0 }, transactions }).serialize(),
     header: {
       number: BigInt(0),
     },
