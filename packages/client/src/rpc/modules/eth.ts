@@ -314,6 +314,11 @@ export class Eth {
       [validators.transaction()],
       [validators.blockOption],
     ])
+    this.createAccessList = middleware(
+      callWithStackTrace(this.call.bind(this), this._rpcDebug),
+      2,
+      [[validators.transaction()], [validators.optional(validators.blockOption)]]
+    )
 
     this.chainId = middleware(callWithStackTrace(this.chainId.bind(this), this._rpcDebug), 0, [])
 
@@ -995,6 +1000,29 @@ export class Eth {
       blobGasUsed,
       blobGasPrice
     )
+  }
+
+  /**
+   *  Creates an EIP2930 type accessList based on a given Transaction.
+   *  @param params An array of two parameters:
+   *   1. TransactionCall object
+   *   2. integer block number, or the string "latest", "earliest" or "pending"
+   */
+  async createAccessList(params: [RpcTx, string | undefined]) {
+    const [transaction, blockOpt] = params
+    let common
+    if (blockOpt !== undefined) {
+      const block = await getBlockByOption(blockOpt, this._chain)
+      common = block.common
+    }
+    const tx = await TransactionFactory.fromRPC(transaction, {
+      common,
+    })
+    if ('accessList' in tx) {
+      return tx.AccessListJSON
+    } else {
+      return null
+    }
   }
 
   /**
