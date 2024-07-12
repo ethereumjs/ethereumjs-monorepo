@@ -800,13 +800,13 @@ export class Interpreter {
   /**
    * Returns the Base Fee of the block as proposed in [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198)
    */
-  getBlockBaseFee(): bigint | undefined {
+  getBlockBaseFee(): bigint {
     const baseFee = this._env.block.header.baseFeePerGas
     // if (baseFee === undefined) {
     //   // Sanity check
     //   throw new Error('Block has no Base Fee')
     // }
-    return baseFee
+    return baseFee ?? 0n
   }
 
   /**
