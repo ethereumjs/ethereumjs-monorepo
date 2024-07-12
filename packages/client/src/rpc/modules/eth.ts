@@ -666,6 +666,12 @@ export class Eth {
    */
   async getBlockByNumber(params: [string, boolean]) {
     const [blockOpt, includeTransactions] = params
+    if (blockOpt === 'pending') {
+      throw {
+        code: INVALID_PARAMS,
+        message: `"pending" is not yet supported`,
+      }
+    }
     try {
       const block = await getBlockByOption(blockOpt, this._chain)
       const response = await jsonRpcBlock(block, this._chain, includeTransactions)
