@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1720769922629,
+  "lastUpdate": 1720773632599,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "38c4a733e687cf1355b1081614f0dda1c6e4f8df",
-          "message": "evm,vm: remove the hacks to prevent account cleanups of system contracts (#3418)\n\n* evm,vm: remove the hacks to prevent account cleanups of system contracts\r\n\r\n* lint\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2024-05-19T17:08:06+02:00",
-          "tree_id": "0970ef93fc82a8908d1b16cda14f94fdc0d712c1",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/38c4a733e687cf1355b1081614f0dda1c6e4f8df"
-        },
-        "date": 1716131577468,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 43108,
-            "range": "±1.81%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40258,
-            "range": "±3.16%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40907,
-            "range": "±1.59%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39912,
-            "range": "±1.70%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38856,
-            "range": "±1.77%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.75%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ea4bc06eb54b371b600c940ca1471c0249c1e94b",
+          "message": "Block: replace static constructors (#3489)\n\n* Block: rewrite static constructors as external functions\r\n\r\n* Block: rewrite  \"TrieRoot\" static methods to external functions\r\n\r\n* Block: remove static methods from Block class\r\n\r\n* Block: correct function name\r\n\r\n* Block: switch static methods for new functions\r\n\r\n* Blockchain: switch use of Block static methods to new functions\r\n\r\n* TX:  switch use of Block static methods to new functions\r\n\r\n* Common:  switch use of Block static methods to new functions\r\n\r\n* devp2p:  switch use of Block static methods to new functions\r\n\r\n* ethash:  switch use of Block static methods to new functions\r\n\r\n* statemanager:  switch use of Block static methods to new functions\r\n\r\n* VM:  switch use of Block static methods to new functions\r\n\r\n* client: replace Block static methods with new functions\r\n\r\n* block: export helper functions\r\n\r\n* VM: fix imports\r\n\r\n* fix imports\r\n\r\n* import helpers from util\r\n\r\n* rename blockFrom... to createBlockFrom...\r\n\r\n* fix import\r\n\r\n* Block: rename blockConstructor.ts to constructors.ts\r\n\r\n* Fix remaining client tests\r\n\r\n* Add central Block class TSDoc overview with a list with the linked constructor methods available\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2024-07-12T10:37:54+02:00",
+          "tree_id": "7e8f692e4a766955b0c4aaff8b2543b86154c2d7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ea4bc06eb54b371b600c940ca1471c0249c1e94b"
+        },
+        "date": 1720773631399,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38604,
+            "range": "±2.21%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36314,
+            "range": "±4.28%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37645,
+            "range": "±1.54%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36761,
+            "range": "±1.73%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36031,
+            "range": "±1.75%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
           }
         ]
       }
