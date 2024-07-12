@@ -1008,19 +1008,15 @@ export class Eth {
    *   1. TransactionCall object
    *   2. integer block number, or the string "latest", "earliest" or "pending"
    */
-  async createAccessList(params: [RpcTx, string | undefined]) {
+  async createAccessList(params: [RpcTx, string]) {
     const [transaction, blockOpt] = params
     if (this._vm === undefined) {
       throw new Error('missing vm')
     }
     const vm = await this._vm.shallowCopy()
-    let block
-    let common
-    if (blockOpt !== undefined) {
-      block = await getBlockByOption(blockOpt, this._chain)
-      common = block.common
-      await vm.stateManager.setStateRoot(block.header.stateRoot)
-    }
+    const block = await getBlockByOption(blockOpt, this._chain)
+    const common = block.common
+    await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const tx = await TransactionFactory.fromRPC(transaction, {
       common,
@@ -1029,6 +1025,10 @@ export class Eth {
       tx,
       block,
       reportAccessList: true,
+      skipBalance: true,
+      skipBlockGasLimitValidation: true,
+      skipHardForkValidation: true,
+      skipNonce: true,
     })
 
     return result.accessList
