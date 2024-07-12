@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -23,7 +23,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
   const opts = { common }
 
   if (blocks.length === 0) {
-    const genesis = Block.fromBlockData({ header: { gasLimit } }, opts)
+    const genesis = createBlockFromBlockData({ header: { gasLimit } }, opts)
     blocks.push(genesis)
   }
 
@@ -37,7 +37,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
         timestamp: lastBlock.header.timestamp + BigInt(1),
       },
     }
-    const block = Block.fromBlockData(blockData, {
+    const block = createBlockFromBlockData(blockData, {
       common,
       calcDifficultyFromHeader: lastBlock.header,
     })
@@ -124,7 +124,7 @@ export const createTestDB = async (): Promise<
   [DB<string | Uint8Array, string | Uint8Array>, Block]
 > => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-  const genesis = Block.fromBlockData({ header: { number: 0 } }, { common })
+  const genesis = createBlockFromBlockData({ header: { number: 0 } }, { common })
   const db = new MapDB<any, any>()
 
   await db.batch([
@@ -208,7 +208,7 @@ function createBlock(
       ? parentBlock.header.calcNextBaseFee()
       : undefined
 
-  return Block.fromBlockData(
+  return createBlockFromBlockData(
     {
       header: {
         number,

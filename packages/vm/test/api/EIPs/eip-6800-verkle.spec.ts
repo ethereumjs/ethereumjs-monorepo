@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
@@ -26,9 +26,12 @@ const parentStateRoot = hexToBytes(
   '0x64e1a647f42e5c2e3c434531ccf529e1b3e93363a40db9fc8eec81f492123510'
 )
 
-const block = Block.fromBlockData({ ...verkleBlockJSON, transactions: decodedTxs } as BlockData, {
-  common,
-})
+const block = createBlockFromBlockData(
+  { ...verkleBlockJSON, transactions: decodedTxs } as BlockData,
+  {
+    common,
+  }
+)
 
 describe('EIP 6800 tests', () => {
   it('successfully run transactions statelessly using the block witness', async () => {

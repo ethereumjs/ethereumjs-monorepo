@@ -450,7 +450,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * access_list, max_fee_per_data_gas, blob_versioned_hashes, y_parity, r, s]`.
    *
    * Use {@link BlobEIP4844Transaction.serialize} to add a transaction to a block
-   * with {@link Block.fromValuesArray}.
+   * with {@link createBlockFromValuesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant

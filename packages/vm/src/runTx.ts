@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
@@ -34,6 +34,7 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
+import type { Block } from '@ethereumjs/block'
 import type { AccessList, AccessListItem, Common } from '@ethereumjs/common'
 import type { EVM } from '@ethereumjs/evm'
 import type {
@@ -94,7 +95,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // create a reasonable default if no block is given
-  opts.block = opts.block ?? Block.fromBlockData({}, { common: this.common })
+  opts.block = opts.block ?? createBlockFromBlockData({}, { common: this.common })
 
   if (opts.skipHardForkValidation !== true) {
     // Find and set preMerge hf for easy access later

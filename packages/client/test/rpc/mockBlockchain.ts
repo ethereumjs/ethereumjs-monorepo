@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { equalsBytes, toBytes } from '@ethereumjs/util'
 
@@ -13,13 +13,13 @@ export function mockBlockchain(options: any = {}) {
   ]
   const block = {
     hash: () => toBytes(blockHash),
-    serialize: () => Block.fromBlockData({ header: { number }, transactions }).serialize(),
+    serialize: () => createBlockFromBlockData({ header: { number }, transactions }).serialize(),
     header: {
       number: BigInt(number),
       hash: () => toBytes(blockHash),
     },
     toJSON: () => ({
-      ...Block.fromBlockData({ header: { number } }).toJSON(),
+      ...createBlockFromBlockData({ header: { number } }).toJSON(),
       hash: options.hash ?? blockHash,
       transactions: transactions.map((t: LegacyTransaction) => t.toJSON()),
     }),
@@ -35,7 +35,7 @@ export function mockBlockchain(options: any = {}) {
       return block
     },
     getCanonicalHeadHeader: () => {
-      return Block.fromBlockData().header
+      return createBlockFromBlockData().header
     },
     getIteratorHead: () => {
       return block

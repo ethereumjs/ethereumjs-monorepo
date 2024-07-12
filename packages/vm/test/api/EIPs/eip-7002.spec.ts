@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { LegacyTransaction } from '@ethereumjs/tx'
@@ -17,6 +17,8 @@ import { assert, describe, it } from 'vitest'
 
 import { bytesToBigInt } from '../../../../util/src/bytes.js'
 import { setupVM } from '../utils.js'
+
+import type { Block } from '@ethereumjs/block'
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const addr = Address.fromPrivateKey(pkey)
@@ -67,7 +69,7 @@ function generateTx(nonce: bigint) {
 describe('EIP-7002 tests', () => {
   it('should correctly create requests', async () => {
     const vm = await setupVM({ common })
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           number: 1,
@@ -92,7 +94,7 @@ describe('EIP-7002 tests', () => {
     const tx = generateTx(BigInt(0))
 
     // Call withdrawals contract with a withdrawals request
-    const block2 = Block.fromBlockData(
+    const block2 = createBlockFromBlockData(
       {
         header: {
           number: 2,
@@ -138,7 +140,7 @@ describe('EIP-7002 tests', () => {
     const tx2 = generateTx(BigInt(1))
     const tx3 = generateTx(BigInt(2))
 
-    const block3 = Block.fromBlockData(
+    const block3 = createBlockFromBlockData(
       {
         header: {
           number: 3,
@@ -163,7 +165,7 @@ describe('EIP-7002 tests', () => {
 
   it('should throw when contract is not deployed', async () => {
     const vm = await setupVM({ common })
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           number: 1,

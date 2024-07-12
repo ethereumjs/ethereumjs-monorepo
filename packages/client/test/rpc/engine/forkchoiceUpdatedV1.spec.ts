@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, randomBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
@@ -9,7 +9,7 @@ import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseSetup, batchBlocks, getRpcClient, setupChain } from '../helpers.js'
 
-import type { BlockData } from '@ethereumjs/block'
+import type { Block, BlockData } from '@ethereumjs/block'
 
 const method = 'engine_forkchoiceUpdatedV1'
 
@@ -31,7 +31,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 
 function createBlock(parentBlock: Block) {
   const prevRandao = randomBytes(32)
-  const block = Block.fromBlockData(
+  const block = createBlockFromBlockData(
     {
       header: {
         parentHash: parentBlock.hash(),
@@ -166,7 +166,7 @@ describe(method, () => {
       engine: true,
     })
     const rpc = getRpcClient(server)
-    const newBlock = Block.fromBlockData(
+    const newBlock = createBlockFromBlockData(
       {
         header: {
           number: blocks[0].blockNumber,
