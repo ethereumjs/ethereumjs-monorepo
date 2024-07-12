@@ -78,7 +78,7 @@ const accumulateEIP7002Requests = async (
   const systemAddressBytes = bigIntToAddressBytes(vm.common.param('vm', 'systemAddress'))
   const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
 
-  const addrIsEmpty = (await vm.stateManager.getAccount(systemAddress)) === undefined
+  const originalAccount = await vm.stateManager.getAccount(systemAddress)
 
   const results = await vm.evm.runCall({
     caller: systemAddress,
@@ -98,8 +98,11 @@ const accumulateEIP7002Requests = async (
     }
   }
 
-  if (addrIsEmpty) {
+  if (originalAccount === undefined) {
     await vm.stateManager.deleteAccount(systemAddress)
+  } else {
+    // Restore the original account (the `runCall` updates the nonce)
+    await vm.stateManager.putAccount(systemAddress, originalAccount)
   }
 }
 
@@ -125,7 +128,7 @@ const accumulateEIP7251Requests = async (
   const systemAddressBytes = bigIntToAddressBytes(vm.common.param('vm', 'systemAddress'))
   const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
 
-  const addrIsEmpty = (await vm.stateManager.getAccount(systemAddress)) === undefined
+  const originalAccount = await vm.stateManager.getAccount(systemAddress)
 
   const results = await vm.evm.runCall({
     caller: systemAddress,
@@ -147,8 +150,11 @@ const accumulateEIP7251Requests = async (
     }
   }
 
-  if (addrIsEmpty) {
+  if (originalAccount === undefined) {
     await vm.stateManager.deleteAccount(systemAddress)
+  } else {
+    // Restore the original account (the `runCall` updates the nonce)
+    await vm.stateManager.putAccount(systemAddress, originalAccount)
   }
 }
 
