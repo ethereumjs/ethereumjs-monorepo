@@ -6,7 +6,6 @@ import { assert, describe, it } from 'vitest'
 import { EOFContainerMode, validateEOF } from '../src/eof/container.js'
 import { ContainerSectionType } from '../src/eof/verify.js'
 import { EVM } from '../src/index.js'
-
 import { getCommon } from '../test/eips/eof-utils.js'
 
 // Rename this test dir to the location of EOF header tests
