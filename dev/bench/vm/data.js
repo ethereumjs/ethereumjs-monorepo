@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1720731803349,
+  "lastUpdate": 1720769922629,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c95499c5b9bbdb4b36cc05f6785dd62e8a4d91a3",
-          "message": "verkle: implement verkle proof verification  (#3423)\n\n* statemanager: proper type for verkleproof\n\n* verkle: add verifyProof wrapper in verkle crypto\n\n* verkle: remove unused import\n\n* chore: update package lock\n\n* statemanageR: add verifyProof implementation to stateless verkle statemanager\n\n* verkle: add jsdoc for verkle verifyProof method\n\n* verkle: verkle proof test\n\n* verkle: add failing test case\n\n* client: add the ability to provide and use the parentStateRoot\n\n* Update verkle crypto dep\n\n* Activate invalid proof test\n\n* src: cleanup\n\n* Update packages/client/src/config.ts\n\n* vm: move up error check\n\n---------\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-05-17T06:13:09-04:00",
-          "tree_id": "2622159a0e91aa4a6494af43d4841b2906227d73",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c95499c5b9bbdb4b36cc05f6785dd62e8a4d91a3"
-        },
-        "date": 1715940955501,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42541,
-            "range": "±1.60%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40127,
-            "range": "±4.71%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40933,
-            "range": "±1.85%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39923,
-            "range": "±1.60%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38660,
-            "range": "±2.09%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.67%",
             "unit": "ops/sec",
             "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "473b39fd89d15df817eccd53859a9696fbb11493",
+          "message": "RPC: small fixes for \"rpc-compat\" tests (#3495)\n\n* RPC: use correct \"size\" measurement in jsonRpcBlock\r\n\r\n* RPC: include \"type\" in jsonRpcReceipt\r\n\r\n* TX: include \"chainId\" in tx.toJSON()\r\n\r\n* TX: include \"yParity\" in tx.toJSON()\r\n\r\n* RPC: use truncated hex string for storage keys in proof\r\n\r\n* RPC: add error code -32000\r\n\r\n* RPC: throw correct errors in eth_getStorageAt\r\n\r\n* RPC: return null if block not found\r\n\r\n* RPC: check for null address in getLogs\r\n\r\n* RPC: remove stack trace string\r\n\r\n* TX: add \"yParity\" value to tests for tx.toJSON\r\n\r\n* fix tests\r\n\r\n* tests: add serialize() method to fake test blocks\r\n\r\n* RPC: return expected error",
+          "timestamp": "2024-07-12T09:36:04+02:00",
+          "tree_id": "63d990d6ac3c0e5a3503dc0be16f77b9efc0e74d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/473b39fd89d15df817eccd53859a9696fbb11493"
+        },
+        "date": 1720769921790,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38405,
+            "range": "±1.72%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36686,
+            "range": "±3.20%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37250,
+            "range": "±1.45%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36534,
+            "range": "±1.59%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35790,
+            "range": "±1.75%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
