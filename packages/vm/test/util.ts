@@ -4,6 +4,7 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
   BlobEIP4844Transaction,
+  EOACodeEIP7702Transaction,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
 } from '@ethereumjs/tx'
@@ -18,12 +19,13 @@ import {
   isHexString,
   setLengthLeft,
   toBytes,
+  unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { BlockOptions } from '@ethereumjs/block'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
-import { EOACodeEIP7702Transaction, TxOptions } from '@ethereumjs/tx'
+import type { TxOptions } from '@ethereumjs/tx'
 import type * as tape from 'tape'
 
 export function dumpState(state: any, cb: Function) {
@@ -126,7 +128,7 @@ export function makeTx(
     // Convert `v` keys to `yParity`
     for (const signature of txData.authorizationList) {
       if (signature.v !== undefined) {
-        signature.yParity = signature.v
+        signature.yParity = bytesToHex(unpadBytes(hexToBytes(signature.v)))
       }
       if (signature.nonce !== undefined && signature.nonce[0] === '0x00') {
         signature.nonce[0] = '0x'
