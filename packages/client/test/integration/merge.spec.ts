@@ -1,5 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import {
   Chain as ChainCommon,
   Common,
@@ -73,7 +73,7 @@ const accounts: [Address, Uint8Array][] = [
 async function minerSetup(common: Common): Promise<[MockServer, FullEthereumService]> {
   const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
   const server = new MockServer({ config }) as any
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     common,
     validateBlocks: false,
     validateConsensus: false,

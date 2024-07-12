@@ -1,4 +1,4 @@
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
@@ -91,7 +91,7 @@ export class VM {
     }
 
     if (opts.blockchain === undefined) {
-      opts.blockchain = await Blockchain.create({ common: opts.common })
+      opts.blockchain = await createBlockchain({ common: opts.common })
     }
 
     const genesisState = opts.genesisState ?? {}

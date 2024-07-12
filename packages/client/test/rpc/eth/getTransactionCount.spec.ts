@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { LegacyTransaction, TransactionFactory } from '@ethereumjs/tx'
@@ -17,7 +17,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart 
 
 describe(method, () => {
   it('call with valid arguments', async () => {
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
       validateConsensus: false,
@@ -75,7 +75,7 @@ describe(method, () => {
   }, 40000)
 
   it('call with pending block argument', async () => {
-    const blockchain = await Blockchain.create()
+    const blockchain = await createBlockchain()
 
     const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)

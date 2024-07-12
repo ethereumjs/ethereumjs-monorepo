@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import {
@@ -180,7 +180,7 @@ describe('EIP 2935: historical block hashes', () => {
 
     it('should save genesis block hash to the history block hash contract', async () => {
       const commonGenesis = eip2935ActiveAtCommon(1)
-      const blockchain = await Blockchain.create({
+      const blockchain = await createBlockchain({
         common: commonGenesis,
         validateBlocks: false,
         validateConsensus: false,
@@ -221,7 +221,7 @@ describe('EIP 2935: historical block hashes', () => {
       const common = eip2935ActiveAtCommon(blocksActivation)
       const historyServeWindow = commonGetHistoryServeWindow.param('vm', 'historyServeWindow')
 
-      const blockchain = await Blockchain.create({
+      const blockchain = await createBlockchain({
         common,
         validateBlocks: false,
         validateConsensus: false,
@@ -251,7 +251,7 @@ describe('EIP 2935: historical block hashes', () => {
       }
 
       // swap out the blockchain to test from storage
-      const blockchainEmpty = await Blockchain.create({
+      const blockchainEmpty = await createBlockchain({
         common,
         validateBlocks: false,
         validateConsensus: false,

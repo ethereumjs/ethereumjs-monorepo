@@ -1,4 +1,4 @@
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import {
   Chain as ChainCommon,
   Common,
@@ -51,7 +51,7 @@ async function minerSetup(): Promise<[MockServer, FullEthereumService]> {
   const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
   const server = new MockServer({ config }) as any
 
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     common,
     validateBlocks: false,
     validateConsensus: false,

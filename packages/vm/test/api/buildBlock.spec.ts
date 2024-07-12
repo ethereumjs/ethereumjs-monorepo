@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address, concatBytes, hexToBytes } from '@ethereumjs/util'
@@ -16,7 +16,7 @@ describe('BlockBuilder', () => {
   it('should build a valid block', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = createBlockFromBlockData({ header: { gasLimit: 50000 } }, { common })
-    const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
+    const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
 
     await setBalance(vm, pKeyAddress)
@@ -81,7 +81,7 @@ describe('BlockBuilder', () => {
   it('should correctly seal a PoW block', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = createBlockFromBlockData({ header: { gasLimit: 50000 } }, { common })
-    const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
+    const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
 
     await setBalance(vm, pKeyAddress)
@@ -178,7 +178,7 @@ describe('BlockBuilder', () => {
       { header: { gasLimit: 50000, extraData } },
       { common, cliqueSigner }
     )
-    const blockchain = await Blockchain.create({ genesisBlock, common })
+    const blockchain = await createBlockchain({ genesisBlock, common })
     const vm = await VM.create({ common, blockchain })
 
     // add balance for tx
@@ -211,7 +211,7 @@ describe('BlockBuilder', () => {
   it('should throw if block already built or reverted', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = createBlockFromBlockData({ header: { gasLimit: 50000 } }, { common })
-    const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
+    const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
 
     await setBalance(vm, pKeyAddress)
@@ -265,7 +265,7 @@ describe('BlockBuilder', () => {
   it('should build a block without any txs', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = createBlockFromBlockData({ header: { gasLimit: 50000 } }, { common })
-    const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
+    const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
     const vmCopy = await vm.shallowCopy()
 
@@ -290,7 +290,7 @@ describe('BlockBuilder', () => {
       { header: { gasLimit: 50000, baseFeePerGas: 100 } },
       { common }
     )
-    const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
+    const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
 
     await setBalance(vm, pKeyAddress)

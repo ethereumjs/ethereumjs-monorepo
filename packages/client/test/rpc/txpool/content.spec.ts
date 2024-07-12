@@ -1,5 +1,5 @@
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { TransactionFactory } from '@ethereumjs/tx'
@@ -16,7 +16,7 @@ const method = 'txpool_content'
 describe(method, () => {
   it('call with valid arguments', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
       validateConsensus: false,
