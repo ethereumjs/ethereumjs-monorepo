@@ -259,6 +259,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
       v: '0x0',
       r: '0xf924cb68412c8f1cfd74d9b581c71eeaf94fff6abdde3e5b02ca6b2931dcf47',
       s: '0x7dd1c50027c3e31f8b565e25ce68a5072110f61fce5eee81b195dd51273c2f83',
+      yParity: '0x0',
     }
     assert.deepEqual(json, expectedJSON, 'Should return expected JSON dict')
   })
