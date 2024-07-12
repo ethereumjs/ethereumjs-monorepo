@@ -3,6 +3,6 @@
   "include": ["bin", "src", "test", "package.json"],
   "compilerOptions": {
     "typeRoots": ["node_modules/@types", "src/@types"],
-    "allowSyntheticDefaultImports": true
+    "moduleResolution": "Node16"
   }
 }
