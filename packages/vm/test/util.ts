@@ -23,7 +23,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { BlockOptions } from '@ethereumjs/block'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
-import type { TxOptions } from '@ethereumjs/tx'
+import { EOACodeEIP7702Transaction, TxOptions } from '@ethereumjs/tx'
 import type * as tape from 'tape'
 
 export function dumpState(state: any, cb: Function) {
@@ -116,12 +116,24 @@ export function makeTx(
   txData: any,
   opts?: TxOptions
 ):
+  | EOACodeEIP7702Transaction
   | BlobEIP4844Transaction
   | FeeMarketEIP1559Transaction
   | AccessListEIP2930Transaction
   | LegacyTransaction {
   let tx
-  if (txData.blobVersionedHashes !== undefined) {
+  if (txData.authorizationList !== undefined) {
+    // Convert `v` keys to `yParity`
+    for (const signature of txData.authorizationList) {
+      if (signature.v !== undefined) {
+        signature.yParity = signature.v
+      }
+      if (signature.nonce !== undefined && signature.nonce[0] === '0x00') {
+        signature.nonce[0] = '0x'
+      }
+    }
+    tx = EOACodeEIP7702Transaction.fromTxData(txData, opts)
+  } else if (txData.blobVersionedHashes !== undefined) {
     tx = BlobEIP4844Transaction.fromTxData(txData, opts)
   } else if (txData.maxFeePerGas !== undefined) {
     tx = FeeMarketEIP1559Transaction.fromTxData(txData, opts)
