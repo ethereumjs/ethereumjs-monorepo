@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { ChainGenesis } from '@ethereumjs/common'
 import { genesisStateRoot as genMerkleGenesisStateRoot } from '@ethereumjs/trie'
 import { BIGINT_0, equalsBytes } from '@ethereumjs/util'
@@ -136,7 +136,7 @@ export async function createBlockchainFromBlocksData(
 ) {
   const blockchain = await createBlockchain(opts)
   for (const blockData of blocksData) {
-    const block = Block.fromBlockData(blockData, {
+    const block = createBlockFromBlockData(blockData, {
       common: blockchain.common,
       setHardfork: true,
     })
