@@ -18,7 +18,6 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
 
 import { FORMAT } from './eof/constants.js'
@@ -29,7 +28,7 @@ import { Journal } from './journal.js'
 import { EVMPerformanceLogger } from './logger.js'
 import { Message } from './message.js'
 import { getOpcodesForHF } from './opcodes/index.js'
-import { getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
+import { NobleBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
 import { TransientStorage } from './transientStorage.js'
 import { DefaultBlockchain } from './types.js'
 
@@ -43,6 +42,7 @@ import type {
   Block,
   Blockchain,
   CustomOpcode,
+  EVMBLSInterface,
   EVMEvents,
   EVMInterface,
   EVMOpts,
@@ -53,14 +53,12 @@ import type {
   bn128,
 } from './types.js'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
-const { debug: createDebugLogger } = debugDefault
 
-const debug = createDebugLogger('evm:evm')
-const debugGas = createDebugLogger('evm:gas')
-const debugPrecompiles = createDebugLogger('evm:precompiles')
+const debug = debugDefault('evm:evm')
+const debugGas = debugDefault('evm:gas')
+const debugPrecompiles = debugDefault('evm:precompiles')
 
 let initializedRustBN: bn128 | undefined = undefined
-const mclInitPromise = mcl.init(mcl.BLS12_381)
 
 /**
  * EVM is responsible for executing an EVM message fully
@@ -134,12 +132,7 @@ export class EVM implements EVMInterface {
     return this._opcodes
   }
 
-  /**
-   * Pointer to the mcl package, not for public usage
-   * set to public due to implementation internals
-   * @hidden
-   */
-  protected readonly _mcl: any //
+  protected readonly _bls?: EVMBLSInterface
 
   /**
    * EVM is run in DEBUG mode (default: false)
@@ -166,13 +159,6 @@ export class EVM implements EVMInterface {
     const opts = createOpts ?? ({} as EVMOpts)
     const bn128 = initializedRustBN ?? ((await initRustBN()) as bn128)
     initializedRustBN = bn128
-
-    if (createOpts?.common && createOpts.common.isActivatedEIP(2537)) {
-      await mclInitPromise // ensure that mcl is initialized.
-      mcl.setMapToMode(mcl.IRTF) // set the right map mode; otherwise mapToG2 will return wrong values.
-      mcl.verifyOrderG1(true) // subgroup checks for G1
-      mcl.verifyOrderG2(true) // subgroup checks for G2
-    }
 
     if (opts.common === undefined) {
       opts.common = new Common({ chain: Chain.Mainnet })
@@ -211,9 +197,11 @@ export class EVM implements EVMInterface {
 
     // Supported EIPs
     const supportedEIPs = [
-      663, 1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780,
-      6800, 7002, 7069, 7251, 7480, 7516, 7620, 7685, 7692, 7698, 7709,
+      663, 1153, 1153, 1559, 1559, 2537, 2537, 2565, 2565, 2718, 2718, 2929, 2929, 2930, 2930, 2935,
+      2935, 3074, 3074, 3198, 3198, 3529, 3529, 3540, 3540, 3541, 3541, 3607, 3607, 3651, 3651,
+      3670, 3670, 3855, 3855, 3860, 3860, 4200, 4399, 4399, 4750, 4788, 4788, 4844, 4844, 4895,
+      4895, 5133, 5133, 5450, 5656, 5656, 6110, 6110, 6206, 6780, 6780, 6800, 6800, 7002, 7002,
+      7069, 7251, 7251, 7480, 7516, 7516, 7620, 7685, 7685, 7692, 7698, 7702, 7702, 7709, 7709,
     ]
     for (const eip of this.common.eips()) {
       if (!supportedEIPs.includes(eip)) {
@@ -245,7 +233,8 @@ export class EVM implements EVMInterface {
     this._precompiles = getActivePrecompiles(this.common, this._customPrecompiles)
 
     if (this.common.isActivatedEIP(2537)) {
-      this._mcl = mcl
+      this._bls = opts.bls ?? new NobleBLS()
+      this._bls.init?.()
     }
 
     this._emit = async (topic: string, data: any): Promise<void> => {

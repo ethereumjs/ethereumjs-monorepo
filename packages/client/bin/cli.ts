@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { Block } from '@ethereumjs/block'
+import { createBlockFromValuesArray } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
@@ -55,7 +55,7 @@ import type { Logger } from '../src/logging.js'
 import type { FullEthereumService } from '../src/service/index.js'
 import type { ClientOpts } from '../src/types.js'
 import type { RPCArgs } from './startRpc.js'
-import type { BlockBytes } from '@ethereumjs/block'
+import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
@@ -659,7 +659,7 @@ async function startClient(
       let buf = RLP.decode(blockRlp, true)
       while (buf.data?.length > 0 || buf.remainder?.length > 0) {
         try {
-          const block = Block.fromValuesArray(buf.data as BlockBytes, {
+          const block = createBlockFromValuesArray(buf.data as BlockBytes, {
             common: config.chainCommon,
             setHardfork: true,
           })

@@ -6,7 +6,7 @@ import {
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader, createBlockFromValuesArray } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
@@ -237,7 +237,7 @@ rlpx.events.on('peer:added', (peer) => {
           const header = requests.bodies.shift()
           const txs = payload[1][0][0]
           const uncleHeaders = payload[1][0][1]
-          const block = Block.fromValuesArray([header.raw(), txs, uncleHeaders], { common })
+          const block = createBlockFromValuesArray([header.raw(), txs, uncleHeaders], { common })
           const isValid = await isValidBlock(block)
           if (isValid) {
             isValidPayload = true
@@ -256,7 +256,7 @@ rlpx.events.on('peer:added', (peer) => {
       case devp2p.ETH.MESSAGE_CODES.NEW_BLOCK: {
         if (!forkVerified) break
 
-        const newBlock = Block.fromValuesArray(payload[0], { common })
+        const newBlock = createBlockFromValuesArray(payload[0], { common })
         const isValidNewBlock = await isValidBlock(newBlock)
         if (isValidNewBlock) onNewBlock(newBlock, peer)
 

@@ -1,4 +1,4 @@
-import { Block, BlockHeader, valuesArrayToHeaderData } from '@ethereumjs/block'
+import { BlockHeader, createBlockFromValuesArray, valuesArrayToHeaderData } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
@@ -15,7 +15,7 @@ import { Cache } from './cache.js'
 import { DBOp, DBTarget } from './operation.js'
 
 import type { DatabaseKey } from './operation.js'
-import type { BlockBodyBytes, BlockBytes, BlockOptions } from '@ethereumjs/block'
+import type { Block, BlockBodyBytes, BlockBytes, BlockOptions } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { BatchDBOp, DB, DBObject, DelBatch, PutBatch } from '@ethereumjs/util'
 
@@ -148,7 +148,7 @@ export class DBManager {
     } else {
       opts.setHardfork = await this.getTotalDifficulty(header.parentHash, number - BIGINT_1)
     }
-    return Block.fromValuesArray(blockData, opts)
+    return createBlockFromValuesArray(blockData, opts)
   }
 
   /**

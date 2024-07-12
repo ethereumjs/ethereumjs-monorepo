@@ -12,6 +12,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { createBlockFromBlockData, createBlockFromRLPSerializedBlock } from '../src/constructors.js'
 import { BlockHeader } from '../src/header.js'
 import { Block } from '../src/index.js'
 
@@ -197,7 +198,7 @@ describe('[Block]: Header functions', () => {
   it('should validate extraData', async () => {
     // PoW
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    let genesis = Block.fromBlockData({}, { common })
+    let genesis = createBlockFromBlockData({}, { common })
 
     const number = 1
     let parentHash = genesis.hash()
@@ -241,7 +242,7 @@ describe('[Block]: Header functions', () => {
 
     // PoA
     common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
-    genesis = Block.fromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
+    genesis = createBlockFromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
 
     parentHash = genesis.hash()
     gasLimit = genesis.header.gasLimit
@@ -349,7 +350,7 @@ describe('[Block]: Header functions', () => {
     const blockchain = new Mockchain()
 
     const genesisRlp = toBytes(testDataPreLondon.genesisRLP)
-    const block = Block.fromRLPSerializedBlock(genesisRlp, { common })
+    const block = createBlockFromRLPSerializedBlock(genesisRlp, { common })
     await blockchain.putBlock(block)
 
     headerData.number = 1
@@ -429,7 +430,7 @@ describe('[Block]: Header functions', () => {
     const cliqueSigner = hexToBytes(
       '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
     )
-    const poaBlock = Block.fromRLPSerializedBlock(genesisRlp, { common, cliqueSigner })
+    const poaBlock = createBlockFromRLPSerializedBlock(genesisRlp, { common, cliqueSigner })
     await poaBlockchain.putBlock(poaBlock)
 
     header = BlockHeader.fromHeaderData(headerData, { common, cliqueSigner })
@@ -461,12 +462,12 @@ describe('[Block]: Header functions', () => {
         bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData]
           .genesisRLP as PrefixedHexString
       )
-      const parentBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
+      const parentBlock = createBlockFromRLPSerializedBlock(genesisRlp, { common })
       const blockRlp = hexToBytes(
         bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData].blocks[0]
           .rlp as PrefixedHexString
       )
-      const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+      const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
       assert.doesNotThrow(() => block.validateGasLimit(parentBlock))
     }
   })

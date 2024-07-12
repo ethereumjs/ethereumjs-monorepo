@@ -1,9 +1,9 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bigIntToBytes, bytesToBigInt, setLengthRight } from '@ethereumjs/util'
+import { setLengthRight } from '@ethereumjs/util'
 
 import { InternalNode } from './internalNode.js'
 import { LeafNode } from './leafNode.js'
-import { type VerkleNode, VerkleNodeType } from './types.js'
+import { VerkleLeafNodeValue, type VerkleNode, VerkleNodeType } from './types.js'
 
 import type { VerkleCrypto } from '@ethereumjs/util'
 
@@ -31,36 +31,67 @@ export function isRawNode(node: Uint8Array | Uint8Array[]): node is Uint8Array[]
   return Array.isArray(node) && !(node instanceof Uint8Array)
 }
 
-/***
- * Converts 128 32byte values of a leaf node into 16 byte values for generating a commitment for half of a
- * leaf node's values
- * @param values - an array of Uint8Arrays representing the first or second set of 128 values stored by the verkle trie leaf node
- * @param deletedValues - an array of booleans where a value of true at a given position indicates a value
- * that is being deleted - should always be false if generating C2 values
- * Returns an array of 256 16byte UintArrays with the leaf marker set for each value that is deleted
- */
-export const createCValues = (values: Uint8Array[], deletedValues = new Array(128).fill(false)) => {
-  if (values.length !== 128 || deletedValues.length !== 128)
-    throw new Error(`got wrong number of values, expected 128, got ${values.length}`)
-  const expandedValues: Uint8Array[] = new Array(256)
-  for (let x = 0; x < 128; x++) {
-    // We add 16 trailing zeros to each value since all commitments are padded to an array of 32 byte values
-    expandedValues[x * 2] = setLengthRight(
-      deletedValues[x] === true
-        ? // TODO: Improve performance by only flipping the 129th bit of `expandedValues[x]` (instead of bigint addition)
-          bigIntToBytes(bytesToBigInt(values[x].subarray(0, 16)) + BigInt(2 ** 128))
-        : values[x].slice(0, 16),
-      32
-    )
-    // TODO: Decide if we should use slice or subarray here (i.e. do we need to copy these slices or not)
-    expandedValues[x * 2 + 1] = setLengthRight(values[x].slice(16), 32)
-  }
-  return expandedValues
-}
 export function isLeafNode(node: VerkleNode): node is LeafNode {
   return node.type === VerkleNodeType.Leaf
 }
 
 export function isInternalNode(node: VerkleNode): node is InternalNode {
   return node.type === VerkleNodeType.Internal
+}
+
+export const createUntouchedLeafValue = () => new Uint8Array(32)
+
+/**
+ * Generates a 32 byte array of zeroes and sets the 129th bit to 1, which the EIP
+ * refers to as the leaf marker to indicate a leaf value that has been touched previously
+ * and contains only zeroes
+ *
+ * Note: this value should only used in the commitment update process
+ *
+ * @returns a 32 byte array of zeroes with the 129th bit set to 1
+ */
+export const createDeletedLeafValue = () => {
+  const bytes = new Uint8Array(32)
+  // Set the 129th bit to 1 directly by setting the 17th byte (index 16) to 0x80
+  bytes[16] = 0x80
+
+  return bytes
+}
+
+export const createDefaultLeafValues = () => new Array(256).fill(0)
+
+/***
+ * Converts 128 32byte values of a leaf node into an array of 256 32 byte values representing
+ * the first and second 16 bytes of each value right padded with zeroes for generating a
+ * commitment for half of a leaf node's values
+ * @param values - an array of Uint8Arrays representing the first or second set of 128 values
+ * stored by the verkle trie leaf node
+ * Returns an array of 256 32 byte UintArrays with the leaf marker set for each value that is
+ * deleted
+ */
+export const createCValues = (values: (Uint8Array | VerkleLeafNodeValue)[]) => {
+  if (values.length !== 128)
+    throw new Error(`got wrong number of values, expected 128, got ${values.length}`)
+  const expandedValues: Uint8Array[] = new Array(256)
+  for (let x = 0; x < 128; x++) {
+    const retrievedValue = values[x]
+    let val: Uint8Array
+    switch (retrievedValue) {
+      case VerkleLeafNodeValue.Untouched: // Leaf value that has never been written before
+        val = createUntouchedLeafValue()
+        break
+      case VerkleLeafNodeValue.Deleted: // Leaf value that has been written with zeros (either zeroes or a deleted value)
+        val = createDeletedLeafValue()
+        break
+      default:
+        val = retrievedValue
+        break
+    }
+    // We add 16 trailing zeros to each value since all commitments are padded to an array of 32 byte values
+    // TODO: Determine whether we need to apply the leaf marker (i.e. set 129th bit) for all written values
+    // regardless of whether the value stored is zero or not
+    expandedValues[x * 2] = setLengthRight(val.slice(0, 16), 32)
+    expandedValues[x * 2 + 1] = setLengthRight(val.slice(16), 32)
+  }
+  return expandedValues
 }

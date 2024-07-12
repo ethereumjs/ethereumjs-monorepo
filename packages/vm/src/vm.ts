@@ -20,8 +20,7 @@ import type {
 } from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
-import type { EVMInterface } from '@ethereumjs/evm'
-import type { EVMPerformanceLogOutput } from '@ethereumjs/evm/dist/cjs/logger.js'
+import type { EVMInterface, EVMPerformanceLogOutput } from '@ethereumjs/evm'
 import type { BigIntLike } from '@ethereumjs/util'
 
 /**

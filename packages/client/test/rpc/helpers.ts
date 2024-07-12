@@ -302,6 +302,7 @@ export async function runBlockWithTxs(
   // put block into chain and run execution
   await chain.putBlocks([block], fromEngine)
   await execution.run()
+  return block
 }
 
 /**

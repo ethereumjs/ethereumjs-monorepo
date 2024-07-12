@@ -6,7 +6,7 @@ import {
   concatBytes,
   equalsBytes,
 } from '@ethereumjs/util'
-import debugDefault from 'debug'
+import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Fetcher } from './fetcher.js'
@@ -17,7 +17,6 @@ import type { FetcherOptions } from './fetcher.js'
 import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 type ByteCodeDataResponse = Uint8Array[] & { completed?: boolean }
 
@@ -62,7 +61,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
-    this.debug = createDebugLogger('client:ByteCodeFetcher')
+    this.debug = debug('client:ByteCodeFetcher')
     if (this.hashes.length > 0) {
       const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Uint8Array[], Uint8Array>
       this.debug(

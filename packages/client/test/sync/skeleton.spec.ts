@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
@@ -11,26 +11,28 @@ import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.js
 import { short } from '../../src/util/index.js'
 import { wait } from '../integration/util.js'
 import genesisJSON from '../testdata/geth-genesis/post-merge.json'
+
+import type { Block } from '@ethereumjs/block'
 type Subchain = {
   head: bigint
   tail: bigint
 }
 
 const common = new Common({ chain: 1 })
-const block49 = Block.fromBlockData({ header: { number: 49 } }, { common })
-const block49B = Block.fromBlockData(
+const block49 = createBlockFromBlockData({ header: { number: 49 } }, { common })
+const block49B = createBlockFromBlockData(
   { header: { number: 49, extraData: utf8ToBytes('B') } },
   { common }
 )
-const block50 = Block.fromBlockData(
+const block50 = createBlockFromBlockData(
   { header: { number: 50, parentHash: block49.hash() } },
   { common }
 )
-const block50B = Block.fromBlockData(
+const block50B = createBlockFromBlockData(
   { header: { number: 50, parentHash: block49.hash(), gasLimit: 999 } },
   { common }
 )
-const block51 = Block.fromBlockData(
+const block51 = createBlockFromBlockData(
   { header: { number: 51, parentHash: block50.hash() } },
   { common }
 )
@@ -433,15 +435,15 @@ describe('[Skeleton] / setHead', async () => {
     await chain.open()
 
     const genesis = await chain.getBlock(BigInt(0))
-    const block1 = Block.fromBlockData(
+    const block1 = createBlockFromBlockData(
       { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
-    const block2 = Block.fromBlockData(
+    const block2 = createBlockFromBlockData(
       { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
-    const block3 = Block.fromBlockData(
+    const block3 = createBlockFromBlockData(
       { header: { number: 3, difficulty: 100 } },
       { common, setHardfork: true }
     )
@@ -545,23 +547,23 @@ describe('[Skeleton] / setHead', async () => {
     await chain.open()
 
     const genesis = await chain.getBlock(BigInt(0))
-    const block1 = Block.fromBlockData(
+    const block1 = createBlockFromBlockData(
       { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
-    const block2 = Block.fromBlockData(
+    const block2 = createBlockFromBlockData(
       { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
-    const block3 = Block.fromBlockData(
+    const block3 = createBlockFromBlockData(
       { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
-    const block4 = Block.fromBlockData(
+    const block4 = createBlockFromBlockData(
       { header: { number: 4, parentHash: block3.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
-    const block5 = Block.fromBlockData(
+    const block5 = createBlockFromBlockData(
       { header: { number: 5, parentHash: block4.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
@@ -624,23 +626,23 @@ describe('[Skeleton] / setHead', async () => {
 
     const genesis = await chain.getBlock(BigInt(0))
 
-    const block1 = Block.fromBlockData(
+    const block1 = createBlockFromBlockData(
       { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
-    const block2 = Block.fromBlockData(
+    const block2 = createBlockFromBlockData(
       { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
-    const block3 = Block.fromBlockData(
+    const block3 = createBlockFromBlockData(
       { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
-    const block4 = Block.fromBlockData(
+    const block4 = createBlockFromBlockData(
       { header: { number: 4, parentHash: block3.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
-    const block5 = Block.fromBlockData(
+    const block5 = createBlockFromBlockData(
       { header: { number: 5, parentHash: block4.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
@@ -693,15 +695,15 @@ describe('[Skeleton] / setHead', async () => {
     // restore linkedStatus
     skeleton['status'].linked = prevLinked
 
-    const block41 = Block.fromBlockData(
+    const block41 = createBlockFromBlockData(
       { header: { number: 4, parentHash: block3.hash(), difficulty: 101 } },
       { common, setHardfork: true }
     )
-    const block51 = Block.fromBlockData(
+    const block51 = createBlockFromBlockData(
       { header: { number: 5, parentHash: block41.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
-    const block61 = Block.fromBlockData(
+    const block61 = createBlockFromBlockData(
       { header: { number: 6, parentHash: block51.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
@@ -724,15 +726,15 @@ describe('[Skeleton] / setHead', async () => {
     assert.equal(skeleton['status'].linked, true, 'should be linked')
     assert.equal(chain.blocks.height, BigInt(6), 'all blocks should be in chain')
 
-    const block71 = Block.fromBlockData(
+    const block71 = createBlockFromBlockData(
       { header: { number: 7, parentHash: block61.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
-    const block81 = Block.fromBlockData(
+    const block81 = createBlockFromBlockData(
       { header: { number: 8, parentHash: block71.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
-    const block91 = Block.fromBlockData(
+    const block91 = createBlockFromBlockData(
       { header: { number: 9, parentHash: block81.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
@@ -775,11 +777,11 @@ describe('[Skeleton] / setHead', async () => {
     )
 
     // do a very common reorg that happens in a network: reorged head block
-    const block92 = Block.fromBlockData(
+    const block92 = createBlockFromBlockData(
       { header: { number: 9, parentHash: block81.hash(), difficulty: 101 } },
       { common, setHardfork: true }
     )
-    const block102 = Block.fromBlockData(
+    const block102 = createBlockFromBlockData(
       { header: { number: 10, parentHash: block92.hash(), difficulty: 100 } },
       { common, setHardfork: true }
     )
@@ -834,31 +836,31 @@ describe('[Skeleton] / setHead', async () => {
     await chain.open()
     const genesisBlock = await chain.getBlock(BigInt(0))
 
-    const block1 = Block.fromBlockData(
+    const block1 = createBlockFromBlockData(
       { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
       { common }
     )
-    const block2 = Block.fromBlockData(
+    const block2 = createBlockFromBlockData(
       { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
       { common }
     )
-    const block3PoW = Block.fromBlockData(
+    const block3PoW = createBlockFromBlockData(
       { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
       { common }
     )
-    const block3PoS = Block.fromBlockData(
+    const block3PoS = createBlockFromBlockData(
       { header: { number: 3, parentHash: block2.hash(), difficulty: 0 } },
       { common, setHardfork: BigInt(200) }
     )
-    const block4InvalidPoS = Block.fromBlockData(
+    const block4InvalidPoS = createBlockFromBlockData(
       { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
       { common, setHardfork: BigInt(200) }
     )
-    const block4PoS = Block.fromBlockData(
+    const block4PoS = createBlockFromBlockData(
       { header: { number: 4, parentHash: block3PoS.hash(), difficulty: 0 } },
       { common, setHardfork: BigInt(200) }
     )
-    const block5 = Block.fromBlockData(
+    const block5 = createBlockFromBlockData(
       { header: { number: 5, parentHash: block4PoS.hash(), difficulty: 0 } },
       { common, setHardfork: BigInt(200) }
     )
@@ -939,19 +941,19 @@ describe('[Skeleton] / setHead', async () => {
     await chain.open()
     const genesisBlock = await chain.getBlock(BigInt(0))
 
-    const block1 = Block.fromBlockData(
+    const block1 = createBlockFromBlockData(
       { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
       { common }
     )
-    const block2 = Block.fromBlockData(
+    const block2 = createBlockFromBlockData(
       { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
       { common }
     )
-    const block3PoW = Block.fromBlockData(
+    const block3PoW = createBlockFromBlockData(
       { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
       { common }
     )
-    const block4InvalidPoS = Block.fromBlockData(
+    const block4InvalidPoS = createBlockFromBlockData(
       { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
       { common, setHardfork: 200 }
     )
@@ -1014,19 +1016,19 @@ describe('[Skeleton] / setHead', async () => {
     await chain.open()
     const genesisBlock = await chain.getBlock(BigInt(0))
 
-    const block1 = Block.fromBlockData(
+    const block1 = createBlockFromBlockData(
       { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
       { common }
     )
-    const block2 = Block.fromBlockData(
+    const block2 = createBlockFromBlockData(
       { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
       { common }
     )
-    const block2PoS = Block.fromBlockData(
+    const block2PoS = createBlockFromBlockData(
       { header: { number: 2, parentHash: block1.hash(), difficulty: 0 } },
       { common }
     )
-    const block3 = Block.fromBlockData(
+    const block3 = createBlockFromBlockData(
       { header: { number: 3, parentHash: block2.hash(), difficulty: 0 } },
       { common }
     )

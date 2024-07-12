@@ -1,13 +1,34 @@
-import { Block } from '@ethereumjs/block'
+import {
+  createBlockFromBlockData,
+  createBlockFromRLPSerializedBlock,
+  createBlockFromValuesArray,
+} from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
   Capability,
+  EOACodeEIP7702Transaction,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
 } from '@ethereumjs/tx'
-import { Account, Address, KECCAK256_RLP, hexToBytes, toBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  BIGINT_1,
+  KECCAK256_RLP,
+  bigIntToBytes,
+  concatBytes,
+  ecsign,
+  equalsBytes,
+  hexToBytes,
+  privateToAddress,
+  toBytes,
+  unpadBytes,
+  utf8ToBytes,
+  zeros,
+} from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
@@ -23,8 +44,8 @@ import type {
   PreByzantiumTxReceipt,
   RunBlockOpts,
 } from '../../src/types'
-import type { BlockBytes } from '@ethereumjs/block'
-import type { ChainConfig } from '@ethereumjs/common'
+import type { Block, BlockBytes } from '@ethereumjs/block'
+import type { AuthorizationListBytesItem, ChainConfig } from '@ethereumjs/common'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
@@ -34,10 +55,10 @@ describe('runBlock() -> successful API parameter usage', async () => {
   async function simpleRun(vm: VM) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const genesisRlp = hexToBytes(testData.genesisRLP as PrefixedHexString)
-    const genesis = Block.fromRLPSerializedBlock(genesisRlp, { common })
+    const genesis = createBlockFromRLPSerializedBlock(genesisRlp, { common })
 
     const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+    const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
 
     await setupPreConditions(vm.stateManager, testData)
 
@@ -68,7 +89,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const block1Rlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-    const block1 = Block.fromRLPSerializedBlock(block1Rlp, { common })
+    const block1 = createBlockFromRLPSerializedBlock(block1Rlp, { common })
     await vm.runBlock({
       block: block1,
       root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
@@ -77,7 +98,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     })
 
     const block2Rlp = hexToBytes(testData.blocks[1].rlp as PrefixedHexString)
-    const block2 = Block.fromRLPSerializedBlock(block2Rlp, { common })
+    const block2 = createBlockFromRLPSerializedBlock(block2Rlp, { common })
     await vm.runBlock({
       block: block2,
 
@@ -87,7 +108,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     })
 
     const block3Rlp = toBytes(testData.blocks[2].rlp as PrefixedHexString)
-    const block3 = Block.fromRLPSerializedBlock(block3Rlp, { common })
+    const block3 = createBlockFromRLPSerializedBlock(block3Rlp, { common })
     await vm.runBlock({
       block: block3,
 
@@ -148,7 +169,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     )
 
     function getBlock(common: Common): Block {
-      return Block.fromBlockData(
+      return createBlockFromBlockData(
         {
           header: {
             number: BigInt(10000000),
@@ -199,7 +220,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   it('should fail when runTx fails', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+    const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
 
     // The mocked VM uses a mocked runTx
     // which always returns an error.
@@ -212,7 +233,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   it('should fail when block gas limit higher than 2^63-1', async () => {
     const vm = await VM.create({ common })
 
-    const block = Block.fromBlockData({
+    const block = createBlockFromBlockData({
       header: {
         gasLimit: hexToBytes('0x8000000000000000'),
       },
@@ -227,7 +248,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     const vm = await VM.create({ common })
 
     const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-    const block = Object.create(Block.fromRLPSerializedBlock(blockRlp, { common }))
+    const block = Object.create(createBlockFromRLPSerializedBlock(blockRlp, { common }))
 
     await vm
       .runBlock({ block })
@@ -243,7 +264,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   it('should fail when no `validateHeader` method exists on blockchain class', async () => {
     const vm = await VM.create({ common })
     const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-    const block = Object.create(Block.fromRLPSerializedBlock(blockRlp, { common }))
+    const block = Object.create(createBlockFromRLPSerializedBlock(blockRlp, { common }))
     ;(vm.blockchain as any).validateHeader = undefined
     try {
       await vm.runBlock({ block })
@@ -260,7 +281,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     const vm = await VM.create({ common })
 
     const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-    const block = Object.create(Block.fromRLPSerializedBlock(blockRlp, { common }))
+    const block = Object.create(createBlockFromRLPSerializedBlock(blockRlp, { common }))
     // modify first tx's gasLimit
     const { nonce, gasPrice, to, value, data, v, r, s } = block.transactions[0]
 
@@ -288,7 +309,7 @@ describe('runBlock() -> runtime behavior', async () => {
     const block1 = RLP.decode(testData.blocks[0].rlp as PrefixedHexString) as NestedUint8Array
     // edit extra data of this block to "dao-hard-fork"
     block1[0][12] = utf8ToBytes('dao-hard-fork')
-    const block = Block.fromValuesArray(block1 as BlockBytes, { common })
+    const block = createBlockFromValuesArray(block1 as BlockBytes, { common })
     await setupPreConditions(vm.stateManager, testData)
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
@@ -359,7 +380,7 @@ describe('runBlock() -> runtime behavior', async () => {
     ).sign(otherUser.privateKey)
 
     // create block with the signer and txs
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       { header: { extraData: new Uint8Array(97) }, transactions: [tx, tx] },
       { common, cliqueSigner: signer.privateKey }
     )
@@ -403,7 +424,7 @@ it('should correctly reflect generated fields', async () => {
   // get a receipt trie root of for the empty receipts set,
   // which is a well known constant.
   const bytes32Zeros = new Uint8Array(32)
-  const block = Block.fromBlockData({
+  const block = createBlockFromBlockData({
     header: { receiptTrie: bytes32Zeros, transactionsTrie: bytes32Zeros, gasUsed: BigInt(1) },
   })
 
@@ -423,7 +444,7 @@ async function runWithHf(hardfork: string) {
   const vm = await setupVM({ common })
 
   const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-  const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+  const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
 
   await setupPreConditions(vm.stateManager, testData)
 
@@ -459,7 +480,7 @@ describe('runBlock() -> tx types', async () => {
     const common = vm.common
 
     const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
+    const block = createBlockFromRLPSerializedBlock(blockRlp, { common, freeze: false })
 
     //@ts-ignore read-only property
     block.transactions = transactions
@@ -541,5 +562,114 @@ describe('runBlock() -> tx types', async () => {
     }
 
     await simpleRun(vm, [tx])
+  })
+
+  it('eip7702 txs', async () => {
+    /**
+     * This test setups a block with 2 7702-txs. There are two codes:
+     * Code1: stores "1" in slot 0
+     * Code2: stores "2" in slot 0
+     * The first tx will send from address A into address B. Address B will authorize Code1
+     * -> So, after this tx, "1" is stored in address B key 0
+     * The second tx will send from address A into address B. Address B will authorize Code2
+     * -> So, after this tx, "2" is stored in address B key 0
+     * After the block is ran, it is verified that "2" is stored in key 0 of address B
+     */
+    const defaultAuthPkey = hexToBytes(`0x${'20'.repeat(32)}`)
+    const defaultAuthAddr = new Address(privateToAddress(defaultAuthPkey))
+
+    const defaultSenderPkey = hexToBytes(`0x${'40'.repeat(32)}`)
+    const defaultSenderAddr = new Address(privateToAddress(defaultSenderPkey))
+
+    const code1Addr = Address.fromString(`0x${'01'.repeat(20)}`)
+    const code2Addr = Address.fromString(`0x${'02'.repeat(20)}`)
+
+    type GetAuthListOpts = {
+      chainId?: number
+      nonce?: number
+      address: Address
+      pkey?: Uint8Array
+    }
+
+    function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytesItem {
+      const actualOpts = {
+        ...{ chainId: 0, pkey: defaultAuthPkey },
+        ...opts,
+      }
+
+      const { chainId, nonce, address, pkey } = actualOpts
+
+      const chainIdBytes = unpadBytes(hexToBytes(`0x${chainId.toString(16)}`))
+      const nonceBytes =
+        nonce !== undefined ? [unpadBytes(hexToBytes(`0x${nonce.toString(16)}`))] : []
+      const addressBytes = address.toBytes()
+
+      const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
+      const msgToSign = keccak256(concatBytes(new Uint8Array([5]), rlpdMsg))
+      const signed = ecsign(msgToSign, pkey)
+
+      return [chainIdBytes, addressBytes, nonceBytes, bigIntToBytes(signed.v), signed.r, signed.s]
+    }
+
+    const common = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.Cancun,
+      eips: [7702],
+    })
+    const vm = await setupVM({ common })
+
+    await setBalance(vm, defaultSenderAddr, 0xfffffffffffffn)
+
+    const code1 = hexToBytes('0x600160005500')
+    await vm.stateManager.putContractCode(code1Addr, code1)
+
+    const code2 = hexToBytes('0x600260005500')
+    await vm.stateManager.putContractCode(code2Addr, code2)
+    const authorizationListOpts = [
+      {
+        address: code1Addr,
+      },
+    ]
+    const authorizationListOpts2 = [
+      {
+        address: code2Addr,
+      },
+    ]
+
+    const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
+    const authList2 = authorizationListOpts2.map((opt) => getAuthorizationListItem(opt))
+    const tx1 = EOACodeEIP7702Transaction.fromTxData(
+      {
+        gasLimit: 1000000000,
+        maxFeePerGas: 100000,
+        maxPriorityFeePerGas: 100,
+        authorizationList: authList,
+        to: defaultAuthAddr,
+        value: BIGINT_1,
+      },
+      { common }
+    ).sign(defaultSenderPkey)
+    const tx2 = EOACodeEIP7702Transaction.fromTxData(
+      {
+        gasLimit: 1000000000,
+        maxFeePerGas: 100000,
+        maxPriorityFeePerGas: 100,
+        authorizationList: authList2,
+        to: defaultAuthAddr,
+        value: BIGINT_1,
+        nonce: 1,
+      },
+      { common }
+    ).sign(defaultSenderPkey)
+    const block = createBlockFromBlockData(
+      {
+        transactions: [tx1, tx2],
+      },
+      { common, setHardfork: false, skipConsensusFormatValidation: true }
+    )
+
+    await vm.runBlock({ block, skipBlockValidation: true, generate: true })
+    const storage = await vm.stateManager.getContractStorage(defaultAuthAddr, zeros(32))
+    assert.ok(equalsBytes(storage, new Uint8Array([2])))
   })
 })

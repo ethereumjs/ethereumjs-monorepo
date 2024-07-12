@@ -30,9 +30,8 @@ import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
 import type { Block, Blockchain, EOFEnv, EVMProfilerOpts, EVMResult, Log } from './types.js'
 import type { AccessWitnessInterface, Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
-const { debug: createDebugLogger } = debugDefault
 
-const debugGas = createDebugLogger('evm:gas')
+const debugGas = debugDefault('evm:gas')
 
 export interface InterpreterOpts {
   pc?: number
@@ -455,7 +454,7 @@ export class Interpreter {
       }
 
       if (!(name in this.opDebuggers)) {
-        this.opDebuggers[name] = createDebugLogger(`evm:ops:${name}`)
+        this.opDebuggers[name] = debugDefault(`evm:ops:${name}`)
       }
       this.opDebuggers[name](JSON.stringify(opTrace))
     }

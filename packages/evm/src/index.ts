@@ -3,7 +3,12 @@ import { EVM } from './evm.js'
 import { ERROR as EVMErrorMessage, EvmError } from './exceptions.js'
 import { Message } from './message.js'
 import { getOpcodesForHF } from './opcodes/index.js'
-import { type PrecompileInput, getActivePrecompiles } from './precompiles/index.js'
+import {
+  MCLBLS,
+  NobleBLS,
+  type PrecompileInput,
+  getActivePrecompiles,
+} from './precompiles/index.js'
 
 import type { InterpreterStep } from './interpreter.js'
 import type {
@@ -16,6 +21,7 @@ import type {
   Log,
   bn128,
 } from './types.js'
+export * from './logger.js'
 
 export type {
   bn128,
@@ -30,4 +36,13 @@ export type {
   PrecompileInput,
 }
 
-export { /*EOF,*/ EVM, EvmError, EVMErrorMessage, getActivePrecompiles, getOpcodesForHF, Message }
+export {
+  EVM,
+  EvmError,
+  EVMErrorMessage,
+  getActivePrecompiles,
+  getOpcodesForHF,
+  MCLBLS,
+  Message,
+  NobleBLS,
+}

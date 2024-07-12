@@ -7,7 +7,6 @@ import { devp2pDebug } from '../util.js'
 import type { Peer } from '../rlpx/peer.js'
 import type { SendMethod } from '../types.js'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 type MessageCodes = { [key: number | string]: number | string }
 
@@ -50,7 +49,7 @@ export abstract class Protocol {
         : undefined
 
     this._debug = devp2pDebug.extend(protocol)
-    this._verbose = createDebugLogger('verbose').enabled
+    this._verbose = debugDefault('verbose').enabled
     this.initMsgDebuggers(protocol)
   }
 

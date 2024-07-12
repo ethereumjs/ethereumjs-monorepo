@@ -7,19 +7,23 @@
 // 5. Runs the Blockchain on the VM.
 
 import { Account, Address, toBytes, setLengthLeft, bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { Block } from '@ethereumjs/block'
+import {
+  Block,
+  createBlockFromBlockData,
+  createBlockFromRLPSerializedBlock,
+} from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common, ConsensusType } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
-//import testData from './helpers/blockchain-mock-data.json'
 
-const testData = require('./helpers/blockchain-mock-data.json')
+import testData from './helpers/blockchain-mock-data.json'
+
 async function main() {
   const common = new Common({ chain: 1, hardfork: testData.network.toLowerCase() })
   const validatePow = common.consensusType() === ConsensusType.ProofOfWork
   const validateBlocks = true
 
-  const genesisBlock = Block.fromBlockData({ header: testData.genesisBlockHeader }, { common })
+  const genesisBlock = createBlockFromBlockData({ header: testData.genesisBlockHeader }, { common })
 
   const blockchain = await Blockchain.create({
     common,
@@ -74,7 +78,7 @@ async function setupPreConditions(vm: VM, data: any) {
 async function putBlocks(blockchain: Blockchain, common: Common, data: typeof testData) {
   for (const blockData of data.blocks) {
     const blockRlp = toBytes(blockData.rlp)
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+    const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
     await blockchain.putBlock(block)
   }
 }

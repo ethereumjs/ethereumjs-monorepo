@@ -1,5 +1,5 @@
-import type { DPT } from './dpt'
-import type { Protocol } from './protocol/protocol'
+import type { DPT } from './dpt/index.js'
+import type { Protocol } from './protocol/protocol.js'
 import type { Common } from '@ethereumjs/common'
 import type { Socket } from 'net'
 

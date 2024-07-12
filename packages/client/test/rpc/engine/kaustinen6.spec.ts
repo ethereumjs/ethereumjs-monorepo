@@ -1,4 +1,9 @@
-import { Block, BlockHeader, executionPayloadFromBeaconPayload } from '@ethereumjs/block'
+import {
+  BlockHeader,
+  createBlockFromExecutionPayload,
+  createBlockFromRLPSerializedBlock,
+  executionPayloadFromBeaconPayload,
+} from '@ethereumjs/block'
 import { hexToBytes } from '@ethereumjs/util'
 import { readFileSync } from 'fs'
 import * as td from 'testdouble'
@@ -56,7 +61,7 @@ async function runBlock(
 
   const parentPayload =
     isBeaconData === true ? executionPayloadFromBeaconPayload(parent as any) : parent
-  const parentBlock = await Block.fromExecutionPayload(parentPayload, { common })
+  const parentBlock = await createBlockFromExecutionPayload(parentPayload, { common })
   blockCache.remoteBlocks.set(parentPayload.blockHash.slice(2), parentBlock)
   blockCache.executedBlocks.set(parentPayload.blockHash.slice(2), parentBlock)
 
@@ -208,21 +213,21 @@ async function loadGethVectors(vectorsDirPath: string, opts: { common: Common })
     },
   }
   const block0RlpHex = readFileSync(`${vectorsDirPath}/block0.rlp.hex`, 'utf8').trim()
-  const block0 = Block.fromRLPSerializedBlock(hexToBytes(`0x${block0RlpHex}`), {
+  const block0 = createBlockFromRLPSerializedBlock(hexToBytes(`0x${block0RlpHex}`), {
     ...opts,
     executionWitness: executionWitness0,
   })
   const _block0Payload = block0.toExecutionPayload()
 
   const block1RlpHex = readFileSync(`${vectorsDirPath}/block1.rlp.hex`, 'utf8').trim()
-  const block1 = Block.fromRLPSerializedBlock(hexToBytes(`0x${block1RlpHex}`), {
+  const block1 = createBlockFromRLPSerializedBlock(hexToBytes(`0x${block1RlpHex}`), {
     ...opts,
     executionWitness: executionWitness1,
   })
   const block1Payload = block1.toExecutionPayload()
 
   const block2RlpHex = readFileSync(`${vectorsDirPath}/block2.rlp.hex`, 'utf8').trim()
-  const block2 = Block.fromRLPSerializedBlock(hexToBytes(`0x${block2RlpHex}`), {
+  const block2 = createBlockFromRLPSerializedBlock(hexToBytes(`0x${block2RlpHex}`), {
     ...opts,
     executionWitness: executionWitness2,
   })

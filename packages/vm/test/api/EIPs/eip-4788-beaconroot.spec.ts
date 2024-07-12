@@ -9,7 +9,7 @@
  *      - Input length < 32 bytes (reverts)
  */
 
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import {
@@ -25,6 +25,7 @@ import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src'
 
+import type { Block } from '@ethereumjs/block'
 import type { TransactionType, TxData } from '@ethereumjs/tx'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
@@ -63,7 +64,7 @@ function beaconrootBlock(
     },
     { common, freeze: false }
   )
-  const block = Block.fromBlockData(
+  const block = createBlockFromBlockData(
     {
       header,
       transactions: newTxData,

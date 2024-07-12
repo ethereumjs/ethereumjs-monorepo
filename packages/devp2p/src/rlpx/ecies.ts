@@ -12,10 +12,9 @@ import { assertEq, genPrivateKey, id2pk, pk2id, unstrictDecode, xor, zfill } fro
 import { MAC } from './mac.js'
 
 import type { Common } from '@ethereumjs/common'
-const { debug: createDebugLogger } = debugDefault
 type Decipher = crypto.Decipher
 
-const debug = createDebugLogger('devp2p:rlpx:peer')
+const debug = debugDefault('devp2p:rlpx:peer')
 
 function ecdhX(publicKey: Uint8Array, privateKey: Uint8Array) {
   // return (publicKey * privateKey).x

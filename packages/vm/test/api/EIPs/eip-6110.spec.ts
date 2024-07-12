@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
@@ -51,7 +51,7 @@ describe('EIP-6110 runBlock tests', () => {
       sender,
       Account.fromAccountData({ balance: 540000000030064771065n })
     )
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         transactions: [depositTx],
       },
@@ -87,7 +87,7 @@ describe('EIP-7685 buildBlock tests', () => {
       sender,
       Account.fromAccountData({ balance: 540000000030064771065n })
     )
-    const block = Block.fromBlockData({}, { common })
+    const block = createBlockFromBlockData({}, { common })
     ;(vm.blockchain as any)['dbManager']['getHeader'] = () => block.header
     const blockBuilder = await vm.buildBlock({ parentBlock: block })
     await blockBuilder.addTransaction(depositTx)

@@ -14,8 +14,8 @@ import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { CheckpointDB } from './db/checkpoint.js'
 import { InternalNode } from './node/internalNode.js'
 import { LeafNode } from './node/leafNode.js'
-import { type VerkleNode } from './node/types.js'
-import { decodeNode, isLeafNode } from './node/util.js'
+import { VerkleLeafNodeValue, type VerkleNode } from './node/types.js'
+import { createDeletedLeafValue, decodeNode, isLeafNode } from './node/util.js'
 import {
   type Proof,
   ROOT_DB_KEY,
@@ -251,15 +251,17 @@ export class VerkleTree {
       }
     } else {
       // Leaf node doesn't exist, create a new one
-      leafNode = await LeafNode.create(
-        stem,
-        new Array(256).fill(new Uint8Array(32)),
-        this.verkleCrypto
-      )
+      leafNode = await LeafNode.create(stem, this.verkleCrypto)
       this.DEBUG && this.debug(`Creating new leaf node at stem: ${bytesToHex(stem)}`, ['PUT'])
     }
     // Update value in leaf node and push to putStack
-    leafNode.setValue(suffix, value)
+    if (equalsBytes(value, createDeletedLeafValue())) {
+      // Special case for when the deleted leaf value or zeroes is passed to `put`
+      // Writing the deleted leaf value to the suffix indicated in the key
+      leafNode.setValue(suffix, VerkleLeafNodeValue.Deleted)
+    } else {
+      leafNode.setValue(suffix, value)
+    }
     this.DEBUG &&
       this.debug(
         `Updating value for suffix: ${suffix} at leaf node with stem: ${bytesToHex(stem)}`,
@@ -323,6 +325,12 @@ export class VerkleTree {
     await this.saveStack(putStack)
   }
 
+  async del(key: Uint8Array): Promise<void> {
+    const stem = key.slice(0, 31)
+    const suffix = key[key.length - 1]
+    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffix}`, ['DEL'])
+    await this.put(key, createDeletedLeafValue())
+  }
   /**
    * Helper method for updating or creating the parent internal node for a given leaf node
    * @param leafNode the child leaf node that will be referenced by the new/updated internal node
@@ -406,7 +414,7 @@ export class VerkleTree {
     let child = rootNode.children[key[0]]
 
     // Root node doesn't contain a child node's commitment on the first byte of the path so we're done
-    if (equalsBytes(child.commitment, this.verkleCrypto.zeroCommitment)) {
+    if (child === null) {
       this.DEBUG && this.debug(`Partial Path ${intToHex(key[0])} - found no child.`, ['FIND_PATH'])
       return result
     }
@@ -488,7 +496,6 @@ export class VerkleTree {
       verkleCrypto: this.verkleCrypto,
     })
 
-    // Update the child node's commitment and path
     this.DEBUG && this.debug(`No root node. Creating new root node`, ['INITIALIZE'])
     // Set trie root to serialized (aka compressed) commitment for later use in verkle proof
     this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))
@@ -582,7 +589,6 @@ export class VerkleTree {
   /**
    * Persists the root hash in the underlying database
    */
-  // TODO: Fix how we reference the root node in `findPath` so this method will work correctly
   async persistRoot() {
     if (this._opts.useRootPersistence) {
       await this._db.put(ROOT_DB_KEY, this.root())

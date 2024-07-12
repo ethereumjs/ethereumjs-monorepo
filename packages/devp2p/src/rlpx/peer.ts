@@ -23,10 +23,9 @@ import type { Capabilities, PeerOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Socket } from 'net'
-const { debug: createDebugLogger } = debugDefault
 
 const DEBUG_BASE_NAME = 'rlpx:peer'
-const verbose = createDebugLogger('verbose').enabled
+const verbose = debugDefault('verbose').enabled
 
 const BASE_PROTOCOL_VERSION = 5
 const BASE_PROTOCOL_LENGTH = 16

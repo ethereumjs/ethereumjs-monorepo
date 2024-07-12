@@ -1,11 +1,11 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { MapDB } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Ethash } from '../src/index.js'
 
-import type { BlockHeader } from '@ethereumjs/block'
+import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { DBObject } from '@ethereumjs/util'
 
 const cacheDb = new MapDB<number, DBObject>()
@@ -15,7 +15,7 @@ describe('Miner', () => {
   it('Check if miner works as expected', async () => {
     const e = new Ethash(cacheDb)
 
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           difficulty: BigInt(100),
@@ -37,7 +37,7 @@ describe('Miner', () => {
 
     const solution = await miner.iterate(-1)
 
-    const validBlock = Block.fromBlockData(
+    const validBlock = createBlockFromBlockData(
       {
         header: {
           difficulty: block.header.difficulty,
@@ -57,7 +57,7 @@ describe('Miner', () => {
   it('Check if it is possible to mine Blocks and BlockHeaders', async () => {
     const e = new Ethash(cacheDb as any)
 
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           difficulty: BigInt(100),
@@ -70,7 +70,7 @@ describe('Miner', () => {
     const solution = <BlockHeader>await miner.mine(-1)
 
     assert.ok(
-      e.verifyPOW(Block.fromBlockData({ header: solution.toJSON() }, { common })),
+      e.verifyPOW(createBlockFromBlockData({ header: solution.toJSON() }, { common })),
       'successfully mined block'
     )
 
@@ -83,7 +83,7 @@ describe('Miner', () => {
   it('Check if it is possible to stop the miner', async () => {
     const e = new Ethash(cacheDb as any)
 
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           difficulty: BigInt(10000000000000),
@@ -118,7 +118,7 @@ describe('Miner', () => {
   it('Should keep common when mining blocks or headers', async () => {
     const e = new Ethash(cacheDb as any)
 
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           difficulty: BigInt(100),

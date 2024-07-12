@@ -10,8 +10,9 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Block } from '../src/block.js'
+import { createBlockFromBlockData, createBlockFromRLPSerializedBlock } from '../src/constructors.js'
 import { BlockHeader } from '../src/header.js'
+import { genWithdrawalsTrieRoot } from '../src/helpers.js'
 
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
 
@@ -45,7 +46,7 @@ describe('EIP4895 tests', () => {
     assert.equal(withdrawals.length, 8, '8 withdrawals should have been found')
     const gethWitdrawalsRoot = (gethBlockBytesArray[0] as Uint8Array[])[16] as Uint8Array
     assert.deepEqual(
-      await Block.genWithdrawalsTrieRoot(withdrawals),
+      await genWithdrawalsTrieRoot(withdrawals),
       gethWitdrawalsRoot,
       'withdrawalsRoot should be valid'
     )
@@ -91,7 +92,7 @@ describe('EIP4895 tests', () => {
     const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     assert.throws(
       () => {
-        Block.fromBlockData(
+        createBlockFromBlockData(
           {
             withdrawals: [],
           },
@@ -105,7 +106,7 @@ describe('EIP4895 tests', () => {
       'should throw when setting withdrawals with EIP4895 not being activated'
     )
     assert.doesNotThrow(() => {
-      Block.fromBlockData(
+      createBlockFromBlockData(
         {},
         {
           common,
@@ -113,7 +114,7 @@ describe('EIP4895 tests', () => {
       )
     }, 'should not throw when withdrawals is undefined with EIP4895 being activated')
     assert.doesNotThrow(() => {
-      Block.fromBlockData(
+      createBlockFromBlockData(
         {
           header: {
             withdrawalsRoot: zeros(32),
@@ -125,7 +126,7 @@ describe('EIP4895 tests', () => {
         }
       )
     })
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           withdrawalsRoot: zeros(32),
@@ -146,7 +147,7 @@ describe('EIP4895 tests', () => {
       },
       { common }
     )
-    const validBlock = Block.fromBlockData(
+    const validBlock = createBlockFromBlockData(
       {
         header: validHeader,
         withdrawals: [],
@@ -164,7 +165,7 @@ describe('EIP4895 tests', () => {
       amount: BigInt(1000),
     }
 
-    const validBlockWithWithdrawal = Block.fromBlockData(
+    const validBlockWithWithdrawal = createBlockFromBlockData(
       {
         header: {
           withdrawalsRoot: hexToBytes(
@@ -189,7 +190,7 @@ describe('EIP4895 tests', () => {
       amount: BigInt(2000),
     }
 
-    const validBlockWithWithdrawal2 = Block.fromBlockData(
+    const validBlockWithWithdrawal2 = createBlockFromBlockData(
       {
         header: {
           withdrawalsRoot: hexToBytes(
@@ -214,7 +215,7 @@ describe('EIP4895 tests', () => {
     }, 'hashed block with withdrawals')
   })
   it('should throw if no withdrawal array is provided', () => {
-    const blockWithWithdrawals = Block.fromBlockData({}, { common })
+    const blockWithWithdrawals = createBlockFromBlockData({}, { common })
     const rlp = blockWithWithdrawals.serialize()
     const rlpDecoded = RLP.decode(rlp) as Uint8Array[]
     // remove withdrawals root
@@ -224,7 +225,7 @@ describe('EIP4895 tests', () => {
     // throw check if withdrawals array is not provided in the rlp
     assert.throws(
       () => {
-        Block.fromRLPSerializedBlock(rlpWithoutWithdrawals, { common })
+        createBlockFromRLPSerializedBlock(rlpWithoutWithdrawals, { common })
       },
       undefined,
       undefined,
@@ -233,7 +234,7 @@ describe('EIP4895 tests', () => {
   })
 
   it('should return early when withdrawals root equals KECCAK256_RLP', async () => {
-    const block = Block.fromBlockData({}, { common })
+    const block = createBlockFromBlockData({}, { common })
     // Set invalid withdrawalsRoot in cache
     block['cache'].withdrawalsTrieRoot = randomBytes(32)
     assert.ok(

@@ -1,4 +1,9 @@
-import { Block, BlockHeader, getDifficulty, valuesArrayToHeaderData } from '@ethereumjs/block'
+import {
+  BlockHeader,
+  createBlockFromValuesArray,
+  getDifficulty,
+  valuesArrayToHeaderData,
+} from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -6,6 +11,7 @@ import {
   TransactionFactory,
   isAccessListEIP2930Tx,
   isBlobEIP4844Tx,
+  isEOACodeEIP7702Tx,
   isFeeMarketEIP1559Tx,
   isLegacyTx,
 } from '@ethereumjs/tx'
@@ -26,7 +32,7 @@ import { Protocol } from './protocol.js'
 import type { Chain } from '../../blockchain/index.js'
 import type { TxReceiptWithType } from '../../execution/receipt.js'
 import type { Message, ProtocolOptions } from './protocol.js'
-import type { BlockBodyBytes, BlockBytes, BlockHeaderBytes } from '@ethereumjs/block'
+import type { Block, BlockBodyBytes, BlockBytes, BlockHeaderBytes } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
@@ -200,7 +206,7 @@ export class EthProtocol extends Protocol {
       code: 0x07,
       encode: ([block, td]: [Block, bigint]) => [block.raw(), bigIntToUnpaddedBytes(td)],
       decode: ([block, td]: [BlockBytes, Uint8Array]) => [
-        Block.fromValuesArray(block, {
+        createBlockFromValuesArray(block, {
           common: this.config.chainCommon,
           setHardfork: true,
         }),
@@ -255,7 +261,11 @@ export class EthProtocol extends Protocol {
           // serialize txs as per type
           if (isBlobEIP4844Tx(tx)) {
             serializedTxs.push(tx.serializeNetworkWrapper())
-          } else if (isFeeMarketEIP1559Tx(tx) || isAccessListEIP2930Tx(tx)) {
+          } else if (
+            isFeeMarketEIP1559Tx(tx) ||
+            isAccessListEIP2930Tx(tx) ||
+            isEOACodeEIP7702Tx(tx)
+          ) {
             serializedTxs.push(tx.serialize())
           } else if (isLegacyTx(tx)) {
             serializedTxs.push(tx.raw())

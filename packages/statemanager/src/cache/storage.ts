@@ -8,7 +8,6 @@ import { CacheType } from './types.js'
 
 import type { CacheOpts } from './types.js'
 import type { Address } from '@ethereumjs/util'
-const { debug: createDebugLogger } = debugDefault
 
 /**
  * key -> storage mapping
@@ -47,7 +46,7 @@ export class StorageCache extends Cache {
     this._diffCache.push(new Map())
 
     if (this.DEBUG) {
-      this._debug = createDebugLogger('statemanager:cache:storage')
+      this._debug = debugDefault('statemanager:cache:storage')
     }
   }
 

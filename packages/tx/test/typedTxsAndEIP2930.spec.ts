@@ -664,6 +664,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
       v: '0x0',
       r: '0x294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938d',
       s: '0xbe950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d',
+      yParity: '0x0',
     }
 
     assert.deepEqual(signed.toJSON(), expectedJSON)
