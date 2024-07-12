@@ -806,7 +806,7 @@ export class Interpreter {
     //   // Sanity check
     //   throw new Error('Block has no Base Fee')
     // }
-    return baseFee ?? 0n
+    return baseFee ?? 1000000000n
   }
 
   /**
