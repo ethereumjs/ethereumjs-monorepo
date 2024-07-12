@@ -21,6 +21,7 @@ import type {
   Log,
   bn128,
 } from './types.js'
+export * from './logger.js'
 
 export type {
   bn128,

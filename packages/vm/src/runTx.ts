@@ -43,10 +43,9 @@ import type {
   LegacyTransaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
-const { debug: createDebugLogger } = debugDefault
 
-const debug = createDebugLogger('vm:tx')
-const debugGas = createDebugLogger('vm:tx:gas')
+const debug = debugDefault('vm:tx')
+const debugGas = debugDefault('vm:tx:gas')
 
 let enableProfiler = false
 const initLabel = 'EVM journal init, address/slot warming, fee validation'
