@@ -384,6 +384,11 @@ export class Eth {
       [[validators.address], [validators.blockOption]]
     )
 
+    this.getBlockReceipts = middleware(
+      callWithStackTrace(this.getBlockReceipts.bind(this), this._rpcDebug),
+      1,
+      [[validators.blockOption]]
+    )
     this.getTransactionReceipt = middleware(
       callWithStackTrace(this.getTransactionReceipt.bind(this), this._rpcDebug),
       1,
@@ -873,6 +878,64 @@ export class Eth {
 
     const block = await this._chain.getBlock(blockNumber)
     return block.uncleHeaders.length
+  }
+
+  async getBlockReceipts(params: [string]) {
+    const [blockOpt] = params
+    let block: Block
+    try {
+      if (blockOpt.length === 66) {
+        block = await this._chain.getBlock(hexToBytes(blockOpt))
+      } else {
+        block = await getBlockByOption(blockOpt, this._chain)
+      }
+    } catch {
+      return null
+    }
+    const blockHash = block.hash()
+    if (!this.receiptsManager) throw new Error('missing receiptsManager')
+    const result = await this.receiptsManager.getReceipts(blockHash, true, true)
+    if (result.length === 0) return []
+    const parentBlock = await this._chain.getBlock(block.header.parentHash)
+    const vmCopy = await this._vm!.shallowCopy()
+    vmCopy.common.setHardfork(block.common.hardfork())
+    // Run tx through copied vm to get tx gasUsed and createdAddress
+    const runBlockResult = await vmCopy.runBlock({
+      block,
+      root: parentBlock.header.stateRoot,
+      skipBlockValidation: true,
+    })
+
+    const receipts = await Promise.all(
+      result.map(async (r, i) => {
+        const tx = block.transactions[i]
+        const { totalGasSpent, createdAddress } = runBlockResult.results[i]
+        const { blobGasPrice, blobGasUsed } = runBlockResult.receipts[i] as EIP4844BlobTxReceipt
+        const effectiveGasPrice =
+          tx.supports(Capability.EIP1559FeeMarket) === true
+            ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
+              (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block.header.baseFeePerGas!
+              ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+              : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
+                block.header.baseFeePerGas! +
+                block.header.baseFeePerGas!
+            : (tx as LegacyTransaction).gasPrice
+
+        return jsonRpcReceipt(
+          r,
+          totalGasSpent,
+          effectiveGasPrice,
+          block,
+          tx,
+          i,
+          i,
+          createdAddress,
+          blobGasUsed,
+          blobGasPrice
+        )
+      })
+    )
+    return receipts
   }
 
   /**
