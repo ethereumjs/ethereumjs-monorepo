@@ -1066,7 +1066,7 @@ export class Eth {
       return from
     }
 
-    const { accessList } = await vm.runTx({
+    const { accessList, totalGasSpent } = await vm.runTx({
       tx,
       reportAccessList: true,
       skipNonce: true,
@@ -1074,7 +1074,7 @@ export class Eth {
       skipBlockGasLimitValidation: true,
       block: blockToRunOn,
     })
-    return accessList
+    return { accessList, gasUsed: bigIntToHex(totalGasSpent) }
   }
 
   /**
