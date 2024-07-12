@@ -26,7 +26,7 @@ The `StateManager` provides high-level access and manipulation methods to and fo
 This library includes several different implementations that all implement the `StateManager` interface which is accepted by the `vm` library. These include:
 
 - [`SimpleStateManager`](./src/simpleStateManager.ts) -a minimally functional (and dependency minimized) version of the state manager suitable for most basic EVM bytecode operations
-- [`DefaultStateManager`](./src//stateManager.ts) - a Merkle-Patricia Trie-based `DefaultStateManager` implementation that is used by the `@ethereumjs/client`
+- [`DefaultStateManager`](./src//stateManager.ts) - a Merkle-Patricia Trie-based `DefaultStateManager` implementation that is used by the `@ethereumjs/client` and `@ethereumjs/vm`
 - [`RPCStateManager`](./src/rpcStateManager.ts) - a light-weight implementation that sources state and history data from an external JSON-RPC provider
 - [`StatelessVerkleStateManager`](./src/statelessVerkleStateManager.ts) - an experimental implementation of a "stateless" state manager that uses Verkle proofs to provide necessary state access for processing verkle-trie based blocks
 
