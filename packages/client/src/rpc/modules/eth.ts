@@ -1008,30 +1008,73 @@ export class Eth {
    *   1. TransactionCall object
    *   2. integer block number, or the string "latest", "earliest" or "pending"
    */
-  async createAccessList(params: [RpcTx, string]) {
+  async createAccessList(params: [RpcTx, string?]) {
     const [transaction, blockOpt] = params
+    const block = await getBlockByOption(blockOpt ?? 'latest', this._chain)
+
     if (this._vm === undefined) {
       throw new Error('missing vm')
     }
     const vm = await this._vm.shallowCopy()
-    const block = await getBlockByOption(blockOpt, this._chain)
-    const common = block.common
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const tx = await TransactionFactory.fromRPC(transaction, {
-      common,
-    })
-    const result = await vm.runTx({
-      tx,
-      block,
-      reportAccessList: true,
-      skipBalance: true,
-      skipBlockGasLimitValidation: true,
-      skipHardForkValidation: true,
-      skipNonce: true,
+    if (transaction.gas === undefined) {
+      // If no gas limit is specified use the last block gas limit as an upper bound.
+      const latest = await this._chain.getCanonicalHeadHeader()
+      transaction.gas = latest.gasLimit as any
+    }
+
+    if (transaction.gasPrice === undefined && transaction.maxFeePerGas === undefined) {
+      // If no gas price or maxFeePerGas provided, set maxFeePerGas to the next base fee
+      if (transaction.type !== undefined && parseInt(transaction.type) === 2) {
+        transaction.maxFeePerGas = `0x${block.header.calcNextBaseFee()?.toString(16)}`
+      } else if (block.header.baseFeePerGas !== undefined) {
+        transaction.gasPrice = `0x${block.header.calcNextBaseFee()?.toString(16)}`
+      }
+    }
+
+    const txData = {
+      ...transaction,
+      gasLimit: transaction.gas,
+    }
+
+    const blockToRunOn = createBlockFromBlockData(
+      {
+        header: {
+          parentHash: block.hash(),
+          number: block.header.number + BIGINT_1,
+          timestamp: block.header.timestamp + BIGINT_1,
+          baseFeePerGas: block.common.isActivatedEIP(1559)
+            ? block.header.calcNextBaseFee()
+            : undefined,
+        },
+      },
+      { common: vm.common, setHardfork: true }
+    )
+
+    vm.common.setHardforkBy({
+      timestamp: blockToRunOn.header.timestamp,
+      blockNumber: blockToRunOn.header.number,
     })
 
-    return result.accessList
+    const tx = TransactionFactory.fromTxData(txData, { common: vm.common, freeze: false })
+
+    // set from address
+    const from =
+      transaction.from !== undefined ? Address.fromString(transaction.from) : Address.zero()
+    tx.getSenderAddress = () => {
+      return from
+    }
+
+    const { accessList } = await vm.runTx({
+      tx,
+      reportAccessList: true,
+      skipNonce: true,
+      skipBalance: true,
+      skipBlockGasLimitValidation: true,
+      block: blockToRunOn,
+    })
+    return accessList
   }
 
   /**
