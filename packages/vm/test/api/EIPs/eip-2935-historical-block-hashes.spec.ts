@@ -189,7 +189,7 @@ describe('EIP 2935: historical block hashes', () => {
       commonGenesis.setHardforkBy({
         timestamp: 1,
       })
-      commonGenesis['_paramsCache']['vm']['historyStorageAddress'].v = bytesToBigInt(
+      commonGenesis['_paramsCache']['vm']['historyStorageAddress'] = bytesToBigInt(
         historyAddress.bytes
       )
 
