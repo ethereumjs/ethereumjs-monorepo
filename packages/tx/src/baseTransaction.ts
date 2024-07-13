@@ -1,4 +1,4 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Chain, Common, createCustomCommon, isSupportedChainId } from '@ethereumjs/common'
 import {
   Address,
   BIGINT_0,
@@ -388,14 +388,14 @@ export abstract class BaseTransaction<T extends TransactionType>
         // -> Return provided Common
         return common.copy()
       } else {
-        if (Common.isSupportedChainId(chainIdBigInt)) {
+        if (isSupportedChainId(chainIdBigInt)) {
           // No Common, chain ID supported by Common
           // -> Instantiate Common with chain ID
           return new Common({ chain: chainIdBigInt })
         } else {
           // No Common, chain ID not supported by Common
           // -> Instantiate custom Common derived from DEFAULT_CHAIN
-          return Common.custom(
+          return createCustomCommon(
             {
               name: 'custom-chain',
               networkId: chainIdBigInt,

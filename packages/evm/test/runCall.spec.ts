@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   Account,
   Address,
@@ -541,7 +541,7 @@ describe('RunCall tests', () => {
   })
   it('runCall() => use BLOBHASH opcode from EIP 4844', async () => {
     // setup the evm
-    const common = Common.fromGethGenesis(genesisJSON, {
+    const common = createCommonFromGethGenesis(genesisJSON, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
@@ -578,7 +578,7 @@ describe('RunCall tests', () => {
 
   it('runCall() => use BLOBBASEFEE opcode from EIP 7516', async () => {
     // setup the evm
-    const common = Common.fromGethGenesis(genesisJSON, {
+    const common = createCommonFromGethGenesis(genesisJSON, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })

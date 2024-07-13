@@ -1,5 +1,5 @@
 import { createBlockFromBlockData, createBlockFromRLPSerializedBlock } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
@@ -73,7 +73,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     t.deepEquals(genesisBlock.serialize(), rlp, 'correct genesis RLP')
   }
 
-  let blockchain = await Blockchain.create({
+  let blockchain = await createBlockchain({
     common,
     validateBlocks: true,
     validateConsensus: validatePow,

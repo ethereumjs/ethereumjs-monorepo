@@ -1,4 +1,4 @@
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config.js'
@@ -65,7 +65,7 @@ describe('should ban peer', async () => {
 
 describe('should handle peer messages', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     validateBlocks: false,
     validateConsensus: false,
   })

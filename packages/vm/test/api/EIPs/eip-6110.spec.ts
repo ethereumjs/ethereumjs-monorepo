@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, getInitializedChains } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -22,7 +22,7 @@ common['_activatedEIPsCache'] = [
   2565, 2929, 2718, 2930, 1559, 3198, 3529, 3541, 4345, 5133, 3675, 4399, 3651, 3855, 3860, 4895,
   1153, 4844, 4788, 5656, 6780, 7516, 2537, 3074, 6110, 7685,
 ]
-const DEPOSIT_CONTRACT_ADDRESS = Common.getInitializedChains().mainnet
+const DEPOSIT_CONTRACT_ADDRESS = getInitializedChains().mainnet
   .depositContractAddress! as PrefixedHexString
 
 const pubkey =

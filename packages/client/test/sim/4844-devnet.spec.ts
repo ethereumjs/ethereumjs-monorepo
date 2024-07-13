@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
@@ -24,7 +24,7 @@ const client = Client.http({ port: 8545 })
 
 const network = '4844-devnet'
 const shardingJson = require(`./configs/${network}.json`)
-const common = Common.fromGethGenesis(shardingJson, { chain: network })
+const common = createCommonFromGethGenesis(shardingJson, { chain: network })
 
 export async function runTx(data: PrefixedHexString, to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)

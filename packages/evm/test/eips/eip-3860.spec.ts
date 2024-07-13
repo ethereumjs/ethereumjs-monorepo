@@ -1,5 +1,4 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, concatBytes, equalsBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -17,7 +16,6 @@ describe('EIP 3860 tests', () => {
     })
     const evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
     })
 
     const buffer = new Uint8Array(1000000).fill(0x60)
@@ -58,11 +56,9 @@ describe('EIP 3860 tests', () => {
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const evm = await EVM.create({
       common: commonWith3860,
-      stateManager: new DefaultStateManager(),
     })
     const evmWithout3860 = await EVM.create({
       common: commonWithout3860,
-      stateManager: new DefaultStateManager(),
     })
     const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const contractAccount = await evm.stateManager.getAccount(contractFactory)
@@ -104,11 +100,9 @@ describe('EIP 3860 tests', () => {
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const evm = await EVM.create({
       common: commonWith3860,
-      stateManager: new DefaultStateManager(),
     })
     const evmWithout3860 = await EVM.create({
       common: commonWithout3860,
-      stateManager: new DefaultStateManager(),
     })
     const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const contractAccount = await evm.stateManager.getAccount(contractFactory)
@@ -143,8 +137,6 @@ describe('EIP 3860 tests', () => {
     })
     const evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
-
       allowUnlimitedInitCodeSize: true,
     })
 
@@ -179,14 +171,11 @@ describe('EIP 3860 tests', () => {
     for (const code of ['F0', 'F5']) {
       const evm = await EVM.create({
         common: commonWith3860,
-        stateManager: new DefaultStateManager(),
 
         allowUnlimitedInitCodeSize: true,
       })
       const evmDisabled = await EVM.create({
         common: commonWith3860,
-        stateManager: new DefaultStateManager(),
-
         allowUnlimitedInitCodeSize: false,
       })
       const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')

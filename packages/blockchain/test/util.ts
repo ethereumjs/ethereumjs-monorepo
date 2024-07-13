@@ -11,7 +11,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Blockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
 
@@ -51,7 +51,7 @@ export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block
   const existingBlocks: Block[] = genesis ? [genesis] : []
   const blocks = generateBlocks(numberOfBlocks, existingBlocks)
 
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     validateBlocks: true,
     validateConsensus: false,
     genesisBlock: genesis ?? blocks[0],

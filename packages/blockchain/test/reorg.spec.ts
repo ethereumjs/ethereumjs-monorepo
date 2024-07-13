@@ -4,7 +4,7 @@ import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { CLIQUE_NONCE_AUTH } from '../src/consensus/clique.js'
-import { Blockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.js'
 
 import { generateConsecutiveBlock } from './util.js'
 
@@ -71,7 +71,7 @@ describe('reorg tests', () => {
       { header: { extraData: new Uint8Array(97) } },
       { common }
     )
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       validateBlocks: false,
       validateConsensus: false,
       common,

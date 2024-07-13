@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Common } from '@ethereumjs/common'
+import { createCustomCommon } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Address, hexToBytes } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
@@ -10,7 +10,7 @@ import { createClient, createManager, dummy, getRpcClient, startRPC } from '../h
 
 const kzg = await loadKZG()
 
-const common = Common.custom({ chainId: 1 }, { customCrypto: { kzg } })
+const common = createCustomCommon({ chainId: 1 }, { customCrypto: { kzg } })
 
 common.setHardfork('cancun')
 const mockedTx1 = LegacyTransaction.fromTxData({}).sign(dummy.privKey)

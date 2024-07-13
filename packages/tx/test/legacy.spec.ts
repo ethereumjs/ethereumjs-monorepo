@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   bytesToBigInt,
@@ -399,7 +399,7 @@ describe('[Transaction]', () => {
     const privateKey = hexToBytes(
       '0xDE3128752F183E8930D7F00A2AAA302DCB5E700B2CBA2D8CA5795660F07DEFD5'
     )
-    const common = Common.custom({ chainId: 3 })
+    const common = createCustomCommon({ chainId: 3 })
     const tx = LegacyTransaction.fromValuesArray(
       txRaw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
       { common }

@@ -1,6 +1,6 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Common, Hardfork } from '@ethereumjs/common'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import {
   Account,
@@ -17,9 +17,9 @@ import {
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { bytesToBigInt } from '../../../../util/src/bytes'
-import { BIGINT_0 } from '../../../../util/src/constants'
-import { VM } from '../../../src/vm'
+import { bytesToBigInt } from '../../../../util/src/bytes.js'
+import { BIGINT_0 } from '../../../../util/src/constants.js'
+import { VM } from '../../../src/vm.js'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -56,7 +56,7 @@ function eip2935ActiveAtCommon(timestamp: number) {
     block: null,
     timestamp,
   })
-  const c = Common.custom({
+  const c = createCustomCommon({
     customHardforks: {
       testEIP2935Hardfork: {
         name: 'testEIP2935Hardfork',
@@ -180,7 +180,7 @@ describe('EIP 2935: historical block hashes', () => {
 
     it('should save genesis block hash to the history block hash contract', async () => {
       const commonGenesis = eip2935ActiveAtCommon(1)
-      const blockchain = await Blockchain.create({
+      const blockchain = await createBlockchain({
         common: commonGenesis,
         validateBlocks: false,
         validateConsensus: false,
@@ -221,7 +221,7 @@ describe('EIP 2935: historical block hashes', () => {
       const common = eip2935ActiveAtCommon(blocksActivation)
       const historyServeWindow = commonGetHistoryServeWindow.param('vm', 'historyServeWindow')
 
-      const blockchain = await Blockchain.create({
+      const blockchain = await createBlockchain({
         common,
         validateBlocks: false,
         validateConsensus: false,
@@ -251,7 +251,7 @@ describe('EIP 2935: historical block hashes', () => {
       }
 
       // swap out the blockchain to test from storage
-      const blockchainEmpty = await Blockchain.create({
+      const blockchainEmpty = await createBlockchain({
         common,
         validateBlocks: false,
         validateConsensus: false,

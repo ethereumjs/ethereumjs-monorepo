@@ -1,6 +1,6 @@
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Blockchain, createBlockchain } from '@ethereumjs/blockchain'
+import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   BlobEIP4844Transaction,
   FeeMarketEIP1559Transaction,
@@ -74,7 +74,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
     vm = await VM.create({
       common,
-      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+      blockchain: await createBlockchain({ validateConsensus: false, validateBlocks: false }),
     })
     await simpleRun(vm, 'goerli (PoA), london HF, default SM - should run without errors')
   })
@@ -83,7 +83,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const vm = await VM.create({
       common,
-      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+      blockchain: await createBlockchain({ validateConsensus: false, validateBlocks: false }),
     })
     const tx = getTransaction(vm.common, 0, true)
     const caller = tx.getSenderAddress()
@@ -98,7 +98,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const vm = await VM.create({
       common,
-      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+      blockchain: await createBlockchain({ validateConsensus: false, validateBlocks: false }),
     })
     const tx = getTransaction(vm.common, 0, true)
     const caller = tx.getSenderAddress()
@@ -141,7 +141,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
     const vm = await VM.create({
       common,
-      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+      blockchain: await createBlockchain({ validateConsensus: false, validateBlocks: false }),
     })
     const tx = getTransaction(vm.common, 0, true)
     const caller = tx.getSenderAddress()
@@ -881,7 +881,7 @@ describe('EIP 4844 transaction tests', () => {
     const kzg = await loadKZG()
 
     const genesisJson = await import('../../../block/test/testdata/4844-hardfork.json')
-    const common = Common.fromGethGenesis(genesisJson, {
+    const common = createCommonFromGethGenesis(genesisJson, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -912,7 +912,7 @@ describe('EIP 4844 transaction tests', () => {
         }
       )
     }
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       validateBlocks: false,
       validateConsensus: false,
     })

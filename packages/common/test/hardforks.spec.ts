@@ -1,7 +1,15 @@
 import { hexToBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src/index.js'
+import {
+  Chain,
+  Common,
+  ConsensusAlgorithm,
+  ConsensusType,
+  Hardfork,
+  createCommonFromGethGenesis,
+  createCustomCommon,
+} from '../src/index.js'
 
 import * as gethGenesisKilnJSON from './data/geth-genesis/geth-genesis-kiln.json'
 
@@ -77,7 +85,7 @@ describe('[Common]: Hardfork logic', () => {
       },
     ]
 
-    const c = Common.custom({ hardforks }, { baseChain: Chain.Sepolia })
+    const c = createCustomCommon({ hardforks }, { baseChain: Chain.Sepolia })
     const f = () => {
       c.getHardforkBy({ blockNumber: 0n })
     }
@@ -314,7 +322,7 @@ describe('[Common]: Hardfork logic', () => {
       mergeForkIdPostMerge: true,
     }
     const genesisHash = zeros(32)
-    const zeroCommon = Common.fromGethGenesis(defaultConfig, gethConfig)
+    const zeroCommon = createCommonFromGethGenesis(defaultConfig, gethConfig)
 
     const zeroCommonShanghaiFork = zeroCommon.forkHash(Hardfork.Shanghai, genesisHash)
     const zeroCommonCancunFork = zeroCommon.forkHash(Hardfork.Shanghai, genesisHash)
@@ -414,7 +422,7 @@ describe('[Common]: Hardfork logic', () => {
     )
 
     // For kiln MergeForkIdTransition happens BEFORE Merge
-    c = Common.fromGethGenesis(gethGenesisKilnJSON, {
+    c = createCommonFromGethGenesis(gethGenesisKilnJSON, {
       chain: 'kiln',
       mergeForkIdPostMerge: false,
     })
