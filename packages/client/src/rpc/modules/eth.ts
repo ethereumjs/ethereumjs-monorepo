@@ -1036,6 +1036,7 @@ export class Eth {
     const txData = {
       ...transaction,
       gasLimit: transaction.gas,
+      gasPrice: bigIntToHex(block.header.baseFeePerGas!),
     }
 
     const blockToRunOn = createBlockFromBlockData(
