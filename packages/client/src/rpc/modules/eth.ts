@@ -507,6 +507,7 @@ export class Eth {
       gasPrice: toType(gasPrice, TypeOutput.BigInt),
       value: toType(value, TypeOutput.BigInt),
       data: data !== undefined ? hexToBytes(data) : undefined,
+      block,
     }
     const { execResult } = await vm.evm.runCall(runCallOpts)
     return bytesToHex(execResult.returnValue)
