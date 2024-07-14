@@ -498,7 +498,9 @@ export class Eth {
     const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const { from, to, gas: gasLimit, gasPrice, value, data } = transaction
+    const { from, to, gas: gasLimit, gasPrice, value } = transaction
+
+    const data = transaction.data ?? transaction.input
 
     const runCallOpts = {
       caller: from !== undefined ? Address.fromString(from) : undefined,
