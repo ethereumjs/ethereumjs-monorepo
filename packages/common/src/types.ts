@@ -39,6 +39,11 @@ export interface ChainConfig {
   dnsNetworks?: string[]
   consensus: ConsensusConfig
   depositContractAddress?: PrefixedHexString
+  params?: {
+    [topic: string]: {
+      [param: string]: number | bigint
+    }
+  }
 }
 
 // TODO: Remove the string type and only keep PrefixedHexString
@@ -201,6 +206,22 @@ export type HardforkConfig = {
   name: string
   eips?: number[]
   consensus?: ConsensusConfig
+  // Type to optionally override params
+  vm?: {
+    [param: string]: ParamDict
+  }
+  gasPrices?: {
+    [param: string]: ParamDict
+  }
+  gasConfig?: {
+    [param: string]: ParamDict
+  }
+  pow?: {
+    [param: string]: ParamDict
+  }
+  sharding?: {
+    [param: string]: ParamDict
+  }
 } & EIPOrHFConfig
 
 export type HardforksDict = {

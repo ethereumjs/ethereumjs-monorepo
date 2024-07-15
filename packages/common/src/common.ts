@@ -371,6 +371,9 @@ export class Common {
       } else {
         this._mergeWithParamsCache(hfChanges[1])
       }
+      if (hfChanges[1].vm) {
+        this._mergeWithParamsCache(hfChanges[1])
+      }
       if (hfChanges[0] === hardfork) break
     }
     // Iterate through all additionally activated EIPs
