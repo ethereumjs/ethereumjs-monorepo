@@ -414,7 +414,7 @@ export class Common {
       (this._paramsCache as any)[topic] !== undefined &&
       (this._paramsCache as any)[topic][name] !== undefined
     ) {
-      value = (this._paramsCache as any)[topic][name].v
+      value = (this._paramsCache as any)[topic][name]
     }
     return BigInt(value ?? 0)
   }
@@ -442,7 +442,7 @@ export class Common {
           (hfChanges[1] as any)[topic] !== undefined &&
           (hfChanges[1] as any)[topic][name] !== undefined
         ) {
-          value = (hfChanges[1] as any)[topic][name].v
+          value = (hfChanges[1] as any)[topic][name]
         }
       }
       if (hfChanges[0] === hardfork) break
@@ -469,7 +469,7 @@ export class Common {
     if (eipParams[topic][name] === undefined) {
       return undefined
     }
-    const value = eipParams[topic][name].v
+    const value = eipParams[topic][name]
     return BigInt(value)
   }
 
