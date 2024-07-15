@@ -7,6 +7,7 @@ export interface RpcTx {
   gasPrice?: PrefixedHexString
   value?: PrefixedHexString
   data?: PrefixedHexString
+  input?: PrefixedHexString // This is the "official" name of the property the client uses for "data" in the RPC spec
   maxPriorityFeePerGas?: PrefixedHexString
   maxFeePerGas?: PrefixedHexString
   type?: PrefixedHexString

@@ -372,6 +372,12 @@ export class Eth {
       [[validators.hex, validators.blockHash], [validators.hex]]
     )
 
+    this.getTransactionByBlockNumberAndIndex = middleware(
+      callWithStackTrace(this.getTransactionByBlockNumberAndIndex.bind(this), this._rpcDebug),
+      2,
+      [[validators.hex, validators.blockOption], [validators.hex]]
+    )
+
     this.getTransactionByHash = middleware(
       callWithStackTrace(this.getTransactionByHash.bind(this), this._rpcDebug),
       1,
@@ -498,7 +504,9 @@ export class Eth {
     const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const { from, to, gas: gasLimit, gasPrice, value, data } = transaction
+    const { from, to, gas: gasLimit, gasPrice, value } = transaction
+
+    const data = transaction.data ?? transaction.input
 
     const runCallOpts = {
       caller: from !== undefined ? Address.fromString(from) : undefined,
@@ -507,6 +515,7 @@ export class Eth {
       gasPrice: toType(gasPrice, TypeOutput.BigInt),
       value: toType(value, TypeOutput.BigInt),
       data: data !== undefined ? hexToBytes(data) : undefined,
+      block,
     }
     const { execResult } = await vm.evm.runCall(runCallOpts)
     return bytesToHex(execResult.returnValue)
@@ -784,6 +793,31 @@ export class Eth {
       const [blockHash, txIndexHex] = params
       const txIndex = parseInt(txIndexHex, 16)
       const block = await this._chain.getBlock(hexToBytes(blockHash))
+      if (block.transactions.length <= txIndex) {
+        return null
+      }
+
+      const tx = block.transactions[txIndex]
+      return jsonRpcTx(tx, block, txIndex)
+    } catch (error: any) {
+      throw {
+        code: INVALID_PARAMS,
+        message: error.message.toString(),
+      }
+    }
+  }
+
+  /**
+   * Returns information about a transaction given a block hash and a transaction's index position.
+   * @param params An array of two parameter:
+   *   1. a block number
+   *   2. an integer of the transaction index position encoded as a hexadecimal.
+   */
+  async getTransactionByBlockNumberAndIndex(params: [PrefixedHexString, string]) {
+    try {
+      const [blockNumber, txIndexHex] = params
+      const txIndex = parseInt(txIndexHex, 16)
+      const block = await getBlockByOption(blockNumber, this._chain)
       if (block.transactions.length <= txIndex) {
         return null
       }
