@@ -39,11 +39,6 @@ export interface ChainConfig {
   dnsNetworks?: string[]
   consensus: ConsensusConfig
   depositContractAddress?: PrefixedHexString
-  params?: {
-    [topic: string]: {
-      [param: string]: number | bigint
-    }
-  }
 }
 
 // TODO: Remove the string type and only keep PrefixedHexString
