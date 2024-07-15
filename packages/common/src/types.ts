@@ -171,29 +171,24 @@ export interface HardforkByOpts {
   td?: BigIntLike | string
 }
 
-type ParamDict = {
-  v: number | bigint | null
-  d: string
-}
-
 export type EIPOrHFConfig = {
   comment: string
   url: string
   status: string
   gasConfig?: {
-    [key: string]: ParamDict
+    [key: string]: number | bigint | null
   }
   gasPrices?: {
-    [key: string]: ParamDict
+    [key: string]: number | bigint | null
   }
   pow?: {
-    [key: string]: ParamDict
+    [key: string]: number | bigint | null
   }
   sharding?: {
-    [key: string]: ParamDict
+    [key: string]: number | bigint | null
   }
   vm?: {
-    [key: string]: ParamDict
+    [key: string]: number | bigint | null
   }
 }
 

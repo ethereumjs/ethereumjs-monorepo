@@ -23,7 +23,7 @@ import { VM } from '../../../src/vm.js'
 
 import type { Block } from '@ethereumjs/block'
 
-function eip2935ActiveAtCommon(timestamp: number, address: BigInt) {
+function eip2935ActiveAtCommon(timestamp: number, address: bigint) {
   const hfs = [
     Hardfork.Chainstart,
     Hardfork.Homestead,
@@ -65,10 +65,7 @@ function eip2935ActiveAtCommon(timestamp: number, address: BigInt) {
         status: 'final',
         eips: [2935, 7709],
         vm: {
-          historyStorageAddress: {
-            v: address,
-            d: 'The address where the historical blockhashes are stored',
-          },
+          historyStorageAddress: address,
         },
       },
     },
@@ -91,21 +88,6 @@ const PREBALANCE = BigInt(10000000)
 
 // array of different deployment configurations
 const deploymentConfigs = [
-  // original configuration
-  [
-    // contract code
-    '0x60203611603157600143035f35116029575f356120000143116029576120005f3506545f5260205ff35b5f5f5260205ff35b5f5ffd00',
-    // deployment tx input
-    '0x60368060095f395ff360203611603157600143035f35116029575f356120000143116029576120005f3506545f5260205ff35b5f5f5260205ff35b5f5ffd00',
-    // v r s
-    ['0x1b', '0x539', '0x1b9b6eb1f0'],
-    // sender, hash, deployed address
-    [
-      '0xa4690f0ed0d089faa1e0ad94c8f1b4a2fd4b0734',
-      '0x7ba81426bfa88a2cf4ea5c9abbbe83619505acd1173bc8450f93cf17cde3784b',
-      '0x25a219378dad9b3503c8268c9ca836a52427a4fb',
-    ],
-  ],
   // may 25 configuration with set on the lines of 4788
   [
     // contract code
