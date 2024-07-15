@@ -132,6 +132,10 @@ export interface GenesisOptions {
   genesisStateRoot?: Uint8Array
 }
 
+export type ConsensusDict = {
+  [consensusAlgorithm: ConsensusAlgorithm | string]: Consensus
+}
+
 /**
  * This are the options that the Blockchain constructor can receive.
  */
@@ -181,9 +185,20 @@ export interface BlockchainOptions extends GenesisOptions {
   validateBlocks?: boolean
 
   /**
-   * Optional custom consensus that implements the {@link Consensus} class
+   * Optional dictionary with custom consensus implementations adhering to the
+   * {@link Consensus} interface.
+   *
+   * By default a blockchain object is initialized with a `CasperConsensus` implementation
+   * for PoS, so this consensus implementation does not need to be provided anymore.
+   * `EthashConsensus` and `CliqueConsensus` implementations are provided with the package
+   * and need to be passed via this option if an `ConsensusAlgorithm.Ethash` or
+   * `ConsensusAlgorithm.Clique` consensus blockchain should be used.
+   *
+   * Additionally it is possible to provide a fully custom consensus implementation.
+   * Note that this needs a custom `Common` object passed to the blockchain where
+   * the `ConsensusAlgorithm` string matches the string used here.
    */
-  consensus?: Consensus
+  consensusDict?: ConsensusDict
 }
 
 /**
