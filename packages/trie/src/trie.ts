@@ -31,7 +31,8 @@ import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
 import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
-import { TrieReadStream as ReadStream } from './util/readStream.js'
+// import { TrieReadStream as ReadStream } from './util/readStream.js'
+import { asyncTrieReadStream } from './util/readStream.js'
 import { WalkController } from './util/walkController.js'
 
 import type {
@@ -1222,8 +1223,8 @@ export class Trie {
    * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Uint8Arrays.
    * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
    */
-  createReadStream(): ReadStream {
-    return new ReadStream(this)
+  createReadStream() {
+    return asyncTrieReadStream(this)
   }
 
   /**

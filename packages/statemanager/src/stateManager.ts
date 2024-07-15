@@ -993,7 +993,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     return new Promise((resolve, reject) => {
       const storage: StorageDump = {}
-      const stream = trie.createReadStream()
+      const stream: any = trie.createReadStream()
+
+      console.log(stream)
 
       stream.on('data', (val: any) => {
         storage[bytesToHex(val.key)] = bytesToHex(val.value)
@@ -1001,7 +1003,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       stream.on('end', () => {
         resolve(storage)
       })
-      stream.on('error', (e) => {
+      stream.on('error', (e: Error) => {
         reject(e)
       })
     })
@@ -1034,7 +1036,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
       /** Object conforming to {@link StorageRange.storage}. */
       const storageMap: StorageRange['storage'] = {}
-      const stream = trie.createReadStream()
+      const stream: any = trie.createReadStream()
 
       stream.on('data', (val: any) => {
         if (!inRange) {
@@ -1063,7 +1065,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
           nextKey: null,
         })
       })
-      stream.on('error', (e) => reject(e))
+      stream.on('error', (e: Error) => reject(e))
     })
   }
 

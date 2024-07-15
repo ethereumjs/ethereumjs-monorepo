@@ -107,8 +107,10 @@ describe('kv stream test', () => {
     await trie.batch(ops)
   })
 
-  it('should fetch all of the nodes', () => {
-    const stream = trie.createReadStream()
+  it('should fetch all of the nodes', async () => {
+    const stream = await trie.createReadStream()
+    console.log('dbg100')
+    console.log(stream)
     stream.on('data', (d: any) => {
       const key = d.key.toString()
       const value = d.value.toString()
