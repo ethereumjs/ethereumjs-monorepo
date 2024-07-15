@@ -1,3 +1,4 @@
+import { BIGINT_0 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Status } from '../src/hardforks.js'
@@ -228,6 +229,42 @@ describe('[Common]: Custom chains', () => {
     })
     assert.equal(c.hardfork(), 'testEIP2935Hardfork')
     assert.ok(c.isActivatedEIP(2935))
+  })
+
+  it('customHardforks: override params', () => {
+    const c = createCustomCommon({
+      customHardforks: {
+        stop10Gas: {
+          name: 'stop10Gas',
+          comment: 'Hardfork which changes the gas of STOP from 0 to 10',
+          url: '',
+          status: Status.Final,
+          eips: [2935],
+          vm: {
+            stop: BigInt(10),
+          },
+        },
+      },
+      hardforks: [
+        {
+          name: 'chainstart',
+          block: 0,
+        },
+        {
+          name: 'stop10Gas',
+          block: null,
+          timestamp: 1000,
+        },
+      ],
+    })
+    c.setHardfork(Hardfork.Chainstart)
+    assert.equal(c.param('vm', 'stop'), BIGINT_0)
+    c.setHardforkBy({
+      blockNumber: 1,
+      timestamp: 1000,
+    })
+    assert.equal(c.hardfork(), 'stop10Gas')
+    assert.equal(c.param('vm', 'stop'), BigInt(10))
   })
 })
 
