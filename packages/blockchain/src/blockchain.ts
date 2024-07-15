@@ -14,7 +14,6 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 
-import { CasperConsensus } from './consensus/index.js'
 import {
   DBOp,
   DBSaveLookups,
@@ -120,7 +119,6 @@ export class Blockchain implements BlockchainInterface {
     this.events = new AsyncEventEmitter()
 
     this._consensusDict = {}
-    this._consensusDict[ConsensusAlgorithm.Casper] = new CasperConsensus()
 
     if (opts.consensusDict !== undefined) {
       this._consensusDict = { ...this._consensusDict, ...opts.consensusDict }
@@ -140,12 +138,6 @@ export class Blockchain implements BlockchainInterface {
    * or undefined if non available
    */
   get consensus(): Consensus | undefined {
-    if (!(this.common.consensusAlgorithm() in this._consensusDict)) {
-      throw new Error(
-        `No consensus implementation provided for the Common consensus algorithm set (${this.common.consensusAlgorithm()})`
-      )
-    }
-
     return this._consensusDict[this.common.consensusAlgorithm()]
   }
 

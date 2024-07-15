@@ -166,17 +166,6 @@ export interface BlockchainOptions extends GenesisOptions {
   db?: DB<Uint8Array | string | number, Uint8Array | string | DBObject>
 
   /**
-   * This flags indicates if a block should be validated along the consensus algorithm
-   * or protocol used by the chain, e.g. by verifying the PoW on the block.
-   *
-   * Supported consensus types and algorithms (taken from the `Common` instance):
-   * - 'pow' with 'ethash' algorithm (validates the proof-of-work)
-   * - 'poa' with 'clique' algorithm (verifies the block signatures)
-   * Default: `true`.
-   */
-  validateConsensus?: boolean
-
-  /**
    * This flag indicates if protocol-given consistency checks on
    * block headers and included uncles and transactions should be performed,
    * see Block#validate for details.
@@ -192,6 +181,15 @@ export interface BlockchainOptions extends GenesisOptions {
    * consensus is not validated by default. For `ConsensusAlgorithm.Ethash` and
    * `ConsensusAlgorith.Clique` consensus validation can be activated by passing in the
    * respective consensus validation objects `EthashConsensus` or `CliqueConsensus`.
+   *
+   * ```ts
+   * import { EthashConsensus, createBlockchain } from '../src/index.js'
+   * import type { ConsensusDict } from '../src/index.js'
+   *
+   * const consensusDict: ConsensusDict = {}
+   * consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus()
+   * const blockchain = await createBlockchain({ common, consensusDict })
+   * ```
    *
    * Additionally it is possible to provide a fully custom consensus implementation.
    * Note that this needs a custom `Common` object passed to the blockchain where
