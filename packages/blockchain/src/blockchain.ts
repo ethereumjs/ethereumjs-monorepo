@@ -29,6 +29,7 @@ import type {
   BlockchainEvents,
   BlockchainInterface,
   BlockchainOptions,
+  Consensus,
   ConsensusDict,
   OnBlock,
 } from './types.js'
@@ -37,7 +38,14 @@ import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
 
 /**
- * This class stores and interacts with blocks.
+ * Blockchain implementation to create and maintain a valid canonical chain
+ * of block headers or blocks with support for reorgs and the ability to provide
+ * custom DB backends.
+ *
+ * By default consensus validation is not provided since with the swith to
+ * Proof-of-Stake consensus is validated by the Ethereum consensus layer.
+ * If consensus validation is desired for Etash or Clique blockchains the
+ * optional `consensusDict` option can be used to pass in validation objects.
  */
 export class Blockchain implements BlockchainInterface {
   db: DB<Uint8Array | string, Uint8Array | string | DBObject>
@@ -69,7 +77,6 @@ export class Blockchain implements BlockchainInterface {
 
   public readonly common: Common
   private _hardforkByHeadBlockNumber: boolean
-  private readonly _validateConsensus: boolean
   private readonly _validateBlocks: boolean
   private _consensusDict: ConsensusDict
 
@@ -103,7 +110,6 @@ export class Blockchain implements BlockchainInterface {
     }
 
     this._hardforkByHeadBlockNumber = opts.hardforkByHeadBlockNumber ?? false
-    this._validateConsensus = opts.validateConsensus ?? true
     this._validateBlocks = opts.validateBlocks ?? true
     this._customGenesisState = opts.genesisState
 
@@ -129,7 +135,11 @@ export class Blockchain implements BlockchainInterface {
     }
   }
 
-  get consensus() {
+  /**
+   * Returns an eventual consensus object matching the current consensus algorithm from Common
+   * or undefined if non available
+   */
+  get consensus(): Consensus | undefined {
     if (!(this.common.consensusAlgorithm() in this._consensusDict)) {
       throw new Error(
         `No consensus implementation provided for the Common consensus algorithm set (${this.common.consensusAlgorithm()})`
@@ -373,9 +383,7 @@ export class Blockchain implements BlockchainInterface {
           await this.validateBlock(block)
         }
 
-        if (this._validateConsensus) {
-          await this.consensus.validateConsensus(block)
-        }
+        await this.consensus?.validateConsensus(block)
 
         // set total difficulty in the current context scope
         if (this._headHeaderHash) {
@@ -437,7 +445,7 @@ export class Blockchain implements BlockchainInterface {
         const ops = dbOps.concat(this._saveHeadOps())
         await this.dbManager.batch(ops)
 
-        await this.consensus.newBlock(block, commonAncestor, ancestorHeaders)
+        await this.consensus?.newBlock(block, commonAncestor, ancestorHeaders)
       } catch (e) {
         // restore head to the previouly sane state
         this._heads = oldHeads
@@ -483,7 +491,7 @@ export class Blockchain implements BlockchainInterface {
       throw new Error(`invalid timestamp ${header.errorStr()}`)
     }
 
-    if (!(header.common.consensusType() === 'pos')) await this.consensus.validateDifficulty(header)
+    if (!(header.common.consensusType() === 'pos')) await this.consensus?.validateDifficulty(header)
 
     if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       const period = (this.common.consensusConfig() as CliqueConfig).period
@@ -1205,8 +1213,8 @@ export class Blockchain implements BlockchainInterface {
       timestamp,
     })
 
-    await this.consensus.setup({ blockchain: this })
-    await this.consensus.genesisInit(this.genesisBlock)
+    await this.consensus?.setup({ blockchain: this })
+    await this.consensus?.genesisInit(this.genesisBlock)
   }
 
   /**

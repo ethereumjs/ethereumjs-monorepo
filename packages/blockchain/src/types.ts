@@ -10,7 +10,7 @@ export type BlockchainEvents = {
 }
 
 export interface BlockchainInterface {
-  consensus: Consensus
+  consensus: Consensus | undefined
   /**
    * Adds a block to the blockchain.
    *
@@ -185,14 +185,13 @@ export interface BlockchainOptions extends GenesisOptions {
   validateBlocks?: boolean
 
   /**
-   * Optional dictionary with custom consensus implementations adhering to the
-   * {@link Consensus} interface.
+   * Optional dictionary with consensus objects (adhering to the {@link Consensus} interface)
+   * if consensus validation is wished for certain consensus algorithms.
    *
-   * By default a blockchain object is initialized with a `CasperConsensus` implementation
-   * for PoS, so this consensus implementation does not need to be provided anymore.
-   * `EthashConsensus` and `CliqueConsensus` implementations are provided with the package
-   * and need to be passed via this option if an `ConsensusAlgorithm.Ethash` or
-   * `ConsensusAlgorithm.Clique` consensus blockchain should be used.
+   * Since consensus validation moved to the Ethereum consensus layer with Proof-of-Stake
+   * consensus is not validated by default. For `ConsensusAlgorithm.Ethash` and
+   * `ConsensusAlgorith.Clique` consensus validation can be activated by passing in the
+   * respective consensus validation objects `EthashConsensus` or `CliqueConsensus`.
    *
    * Additionally it is possible to provide a fully custom consensus implementation.
    * Note that this needs a custom `Common` object passed to the blockchain where
