@@ -202,20 +202,20 @@ export type HardforkConfig = {
   eips?: number[]
   consensus?: ConsensusConfig
   // Type to optionally override params
-  vm?: {
-    [param: string]: ParamDict
+  gasConfig?: {
+    [key: string]: number | bigint | null
   }
   gasPrices?: {
-    [param: string]: ParamDict
-  }
-  gasConfig?: {
-    [param: string]: ParamDict
+    [key: string]: number | bigint | null
   }
   pow?: {
-    [param: string]: ParamDict
+    [key: string]: number | bigint | null
   }
   sharding?: {
-    [param: string]: ParamDict
+    [key: string]: number | bigint | null
+  }
+  vm?: {
+    [key: string]: number | bigint | null
   }
 } & EIPOrHFConfig
 
