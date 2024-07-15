@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721073106224,
+  "lastUpdate": 1721077057357,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "rafa.abadie@gmail.com",
-            "name": "foufrix",
-            "username": "foufrix"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "562867755be8dc02eff4adaaf95d36f8f772dfb8",
-          "message": "Update MONOREPO.md with instruction fpr single file test watch (#3464)\n\n* Update MONOREPO.md with single file test watch\r\n\r\nAdd information on how to launch test & watch a single file during dev.\r\n\r\n* Add additional explanatory text\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-06-18T14:50:45-04:00",
-          "tree_id": "23053874389f7fd43a4788849f0cecdcee87afeb",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/562867755be8dc02eff4adaaf95d36f8f772dfb8"
-        },
-        "date": 1718736855797,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42153,
-            "range": "±1.93%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39993,
-            "range": "±2.79%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40340,
-            "range": "±1.55%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39443,
-            "range": "±1.61%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35141,
-            "range": "±5.81%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.72%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "80fcde6449b491772bb915a5341fce5f816c6345",
+          "message": "Common: allow overriding params (#3506)\n\n* common: expand custom chain type to support param overrides\r\n\r\n* vm: update 2935 test to override history address param\r\n\r\n* common: update types\r\n\r\n* common: correctly build params cache with all available topics\r\n\r\n* common: do not duplicate types\r\n\r\n* common: remove unused params\r\n\r\n* common: add override param test",
+          "timestamp": "2024-07-15T22:55:01+02:00",
+          "tree_id": "dbc3c33311b73f55a35b59c9191b9754a91ee4dd",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/80fcde6449b491772bb915a5341fce5f816c6345"
+        },
+        "date": 1721077056736,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37836,
+            "range": "±1.58%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 35728,
+            "range": "±3.57%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 36525,
+            "range": "±1.50%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35576,
+            "range": "±1.68%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 34779,
+            "range": "±2.18%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
