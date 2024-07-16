@@ -146,10 +146,11 @@ export const VERKLE_BALANCE_BYTES_LENGTH = 16
 export const VERKLE_BASIC_DATA_LEAF_KEY = intToBytes(VerkleLeafType.BasicData)
 export const VERKLE_CODE_HASH_LEAF_KEY = intToBytes(VerkleLeafType.CodeHash)
 
+export const VERKLE_CODE_CHUNK_SIZE = 31
 export const VERKLE_HEADER_STORAGE_OFFSET = 64
 export const VERKLE_CODE_OFFSET = 128
 export const VERKLE_NODE_WIDTH = 256
-export const VERKLE_MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(31)
+export const VERKLE_MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(VERKLE_CODE_CHUNK_SIZE)
 
 /**
  * @dev Returns the tree key for a given verkle tree stem, and sub index.
@@ -203,9 +204,9 @@ export const getVerkleTreeKeyForCodeChunk = async (
 }
 
 export const chunkifyCode = (code: Uint8Array) => {
-  // Pad code to multiple of 31 bytes
-  if (code.length % 31 !== 0) {
-    const paddingLength = 31 - (code.length % 31)
+  // Pad code to multiple of VERKLE_CODE_CHUNK_SIZE bytes
+  if (code.length % VERKLE_CODE_CHUNK_SIZE !== 0) {
+    const paddingLength = VERKLE_CODE_CHUNK_SIZE - (code.length % VERKLE_CODE_CHUNK_SIZE)
     code = setLengthRight(code, code.length + paddingLength)
   }
 

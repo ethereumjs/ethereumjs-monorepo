@@ -2,6 +2,7 @@ import {
   Account,
   KECCAK256_NULL,
   KECCAK256_NULL_S,
+  VERKLE_CODE_CHUNK_SIZE,
   VerkleLeafType,
   bigIntToBytes,
   bytesToHex,
@@ -309,7 +310,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   }
 
   async checkChunkWitnessPresent(address: Address, codeOffset: number) {
-    const chunkId = codeOffset / 31
+    const chunkId = codeOffset / VERKLE_CODE_CHUNK_SIZE
     const chunkKey = bytesToHex(
       await getVerkleTreeKeyForCodeChunk(address, chunkId, this.verkleCrypto)
     )
@@ -379,9 +380,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // allocate the code and copy onto it from the available witness chunks
     const codeSize = account.codeSize
     // allocate enough to fit the last chunk
-    const accessedCode = new Uint8Array(codeSize + 31)
+    const accessedCode = new Uint8Array(codeSize + VERKLE_CODE_CHUNK_SIZE)
 
-    const chunks = Math.floor(codeSize / 31) + 1
+    const chunks = Math.floor(codeSize / VERKLE_CODE_CHUNK_SIZE) + 1
     for (let chunkId = 0; chunkId < chunks; chunkId++) {
       const chunkKey = bytesToHex(
         await getVerkleTreeKeyForCodeChunk(address, chunkId, this.verkleCrypto)
@@ -393,7 +394,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         throw Error(errorMsg)
       }
 
-      const codeOffset = chunkId * 31
+      const codeOffset = chunkId * VERKLE_CODE_CHUNK_SIZE
       // if code chunk was accessed as per the provided witnesses copy it over
       if (codeChunk !== undefined) {
         // actual code starts from index 1 in chunk, 0th index is if there are any push data bytes
@@ -402,7 +403,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       } else {
         // else fill this unaccessed segment with invalid opcode since the evm execution shouldn't
         // end up here
-        accessedCode.fill(0xfe, codeOffset, 31)
+        accessedCode.fill(0xfe, codeOffset, VERKLE_CODE_CHUNK_SIZE)
       }
     }
 
@@ -808,8 +809,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         // we can only compare the actual code because to compare the first byte would
         // be very tricky and impossible in certain scenarios like when the previous code chunk
         // was not accessed and hence not even provided in the witness
-        const chunkSize = 31
-        return bytesToHex(setLengthRight(code.slice(codeOffset, codeOffset + chunkSize), chunkSize))
+        return bytesToHex(
+          setLengthRight(
+            code.slice(codeOffset, codeOffset + VERKLE_CODE_CHUNK_SIZE),
+            VERKLE_CODE_CHUNK_SIZE
+          )
+        )
       }
 
       case AccessedStateType.Storage: {
