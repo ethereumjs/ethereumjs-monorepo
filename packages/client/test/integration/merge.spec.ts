@@ -7,6 +7,7 @@ import {
   Hardfork,
   createCustomCommon,
 } from '@ethereumjs/common'
+import { Ethash } from '@ethereumjs/ethash'
 import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -76,7 +77,7 @@ async function minerSetup(common: Common): Promise<[MockServer, FullEthereumServ
   const server = new MockServer({ config }) as any
   const consensusDict: ConsensusDict = {}
   consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
-  consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus()
+  consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())
   const blockchain = await createBlockchain({
     common,
     validateBlocks: false,

@@ -1,5 +1,6 @@
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
 import { KECCAK256_RLP, bytesToHex, randomBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -123,7 +124,7 @@ describe('[Blockchain]: Block validation tests', () => {
 
   it('should throw if the uncle header is invalid', async () => {
     const consensusDict: ConsensusDict = {}
-    consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus()
+    consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common, validateConsensus: false, consensusDict })
 

@@ -7,6 +7,7 @@ import {
   Hardfork,
   createCommonFromGethGenesis,
 } from '@ethereumjs/common'
+import { Ethash } from '@ethereumjs/ethash'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -91,7 +92,7 @@ describe('BlockBuilder', () => {
     const genesisBlock = createBlockFromBlockData({ header: { gasLimit: 50000 } }, { common })
 
     const consensusDict: ConsensusDict = {}
-    consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus()
+    consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())
     const blockchain = await createBlockchain({
       genesisBlock,
       common,

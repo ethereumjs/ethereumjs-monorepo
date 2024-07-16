@@ -195,11 +195,11 @@ export interface BlockchainOptions extends GenesisOptions {
    * respective consensus validation objects `EthashConsensus` or `CliqueConsensus`.
    *
    * ```ts
-   * import { EthashConsensus, createBlockchain } from '../src/index.js'
-   * import type { ConsensusDict } from '../src/index.js'
+   * import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
+   * import type { ConsensusDict } from '@ethereumjs/blockchain'
    *
    * const consensusDict: ConsensusDict = {}
-   * consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus()
+   * consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
    * const blockchain = await createBlockchain({ common, consensusDict })
    * ```
    *
