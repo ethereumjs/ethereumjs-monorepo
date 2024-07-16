@@ -526,6 +526,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       // EOF check
       const code = await runState.stateManager.getContractCode(address)
       if (isEOF(code)) {
+        // In legacy code, the target code is treated as to be "EOFBYTES" code
         runState.stack.push(BigInt(EOFBYTES.length))
         return
       }
@@ -559,6 +560,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         )
 
         if (isEOF(code)) {
+          // In legacy code, the target code is treated as to be "EOFBYTES" code
           code = EOFBYTES
         }
 
@@ -579,6 +581,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       // EOF check
       const code = await runState.stateManager.getContractCode(address)
       if (isEOF(code)) {
+        // In legacy code, the target code is treated as to be "EOFBYTES" code
+        // Therefore, push the hash of EOFBYTES to the stack
         runState.stack.push(bytesToBigInt(EOFHASH))
         return
       }

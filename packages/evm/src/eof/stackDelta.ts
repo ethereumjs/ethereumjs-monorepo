@@ -2,11 +2,11 @@
 
 export const stackDelta: {
   [key: number]: {
-    inputs: number
-    outputs: number
-    name: string
-    intermediates: number
-    terminating?: boolean
+    inputs: number // Number of inputs to this operation
+    outputs: number // Number of outputs after this operation
+    name: string // Name of the opcode
+    intermediates: number // Intermediate bytes (such as 2 intermediates after a PUSH2)
+    terminating?: boolean // Marks the opcode as terminating. This opcode will exit the current CALL frame. (Such as STOP/RETURN)
   }
 } = {
   0x00: { inputs: 0, outputs: 0, name: 'STOP', intermediates: 0, terminating: true },

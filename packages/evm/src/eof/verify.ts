@@ -10,6 +10,18 @@ export enum ContainerSectionType {
   RuntimeCode, // "Default" runtime code
 }
 
+/**
+ * This method validates an EOF container deeply. It will validate the opcodes, validate the stack, and performs
+ * various checks such as checking for forbidden opcodes in certain modes, jumps to invalid places, etc.
+ * For more information, see "Code validation" of https://github.com/ipsilon/eof/blob/main/spec/eof.md
+ * This is a compilation of all the extra validation rules introduced by the various EIPs
+ * In particular, the stack validation EIP https://eips.ethereum.org/EIPS/eip-5450 is a big part here
+ * @param container EOFContainer to verify
+ * @param evm The EVM to run in (pulls opcodes from here)
+ * @param mode The validation mode to run in
+ * @returns Returns a Map which marks what ContainerSectionType each container is
+ * NOTE: this should likely not be a map, since a container section can only be of a single type, not multiple
+ */
 export function verifyCode(
   container: EOFContainer,
   evm: EVM,
@@ -18,6 +30,7 @@ export function verifyCode(
   return validateOpcodes(container, evm, mode)
 }
 
+// Helper methods to read Int16s / Uint16s
 function readInt16(code: Uint8Array, start: number) {
   return new DataView(code.buffer).getInt16(start)
 }
@@ -42,6 +55,7 @@ function validateOpcodes(
 
   function addJump(location: number) {
     if (intermediateBytes.has(location)) {
+      // When trying to JUMP into an intermediate byte: this is invalid
       validationError(EOFError.InvalidRJUMP)
     }
     jumpLocations.add(location)
@@ -49,6 +63,7 @@ function validateOpcodes(
 
   function addIntermediate(location: number) {
     if (jumpLocations.has(location)) {
+      // When trying to add an intermediate to a location already JUMPed to: this is invalid
       validationError(EOFError.InvalidRJUMP)
     }
     intermediateBytes.add(location)
@@ -119,7 +134,7 @@ function validateOpcodes(
 
   const validJumps = new Set<number>()
 
-  // Add all reachable code sections to
+  // Add all reachable code sections
   const reachableSections: { [key: number]: Set<number> } = {}
 
   let codeSection = -1
@@ -145,6 +160,9 @@ function validateOpcodes(
     const stackHeightMin: number[] = [inputs]
     const stackHeightMax: number[] = [inputs]
 
+    // This loop will loop over the entire code section and will validate various rules
+    // For (most) validation rules, see https://github.com/ipsilon/eof/blob/main/spec/eof.md
+    // For all validation rules per opcode, find the corresponding EIP, the rules are there
     while (ptr < code.length) {
       // This set tracks the successor opcodes of this opcode (for stack purposes)
       const successorSet = new Set<number>()
