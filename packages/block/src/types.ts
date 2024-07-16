@@ -203,15 +203,14 @@ export interface JsonHeader {
 /*
  * Based on https://ethereum.org/en/developers/docs/apis/json-rpc/
  */
-// TODO: Either we should we add null to the types, or remove it from the comments
 export interface JsonRpcBlock {
-  number: PrefixedHexString // the block number. null when pending block.
-  hash: PrefixedHexString // hash of the block. null when pending block.
+  number: PrefixedHexString // the block number.
+  hash: PrefixedHexString // hash of the block.
   parentHash: PrefixedHexString // hash of the parent block.
   mixHash?: PrefixedHexString // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block.
-  nonce: PrefixedHexString // hash of the generated proof-of-work. null when pending block.
+  nonce: PrefixedHexString // hash of the generated proof-of-work.
   sha3Uncles: PrefixedHexString // SHA3 of the uncles data in the block.
-  logsBloom: PrefixedHexString // the bloom filter for the logs of the block. null when pending block.
+  logsBloom: PrefixedHexString // the bloom filter for the logs of the block.
   transactionsRoot: PrefixedHexString // the root of the transaction trie of the block.
   stateRoot: PrefixedHexString // the root of the final state trie of the block.
   receiptsRoot: PrefixedHexString // the root of the receipts trie of the block.
@@ -224,7 +223,7 @@ export interface JsonRpcBlock {
   gasUsed: PrefixedHexString // the total used gas by all transactions in this block.
   timestamp: PrefixedHexString // the unix timestamp for when the block was collated.
   transactions: Array<JsonRpcTx | PrefixedHexString> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
-  uncles: PrefixedHexString[][] // Array of uncle hashes
+  uncles: PrefixedHexString[] // Array of uncle hashes
   baseFeePerGas?: PrefixedHexString // If EIP-1559 is enabled for this block, returns the base fee per gas
   withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
   withdrawalsRoot?: PrefixedHexString // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
