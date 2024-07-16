@@ -1,4 +1,4 @@
-const { pipeline, Readable, Writable } = require('stream')
+import { pipeline, Readable, Writable } from 'stream'
 
 import { BranchNode, LeafNode } from '../node/index.js'
 
@@ -7,7 +7,7 @@ import { nibblestoBytes } from './nibbles.js'
 import type { Trie } from '../trie.js'
 import type { FoundNodeFunction } from '../types.js'
 
-async function* asyncGenerator(trie, f) {
+async function* asyncGenerator(trie: Trie, f: FoundNodeFunction) {
   try {
     for await (const chunk of _findValueNodes(trie, f)) {
       yield chunk
@@ -43,9 +43,10 @@ const _findValueNodes = async function* (trie: Trie, onFound: FoundNodeFunction)
 
 export class TrieReadStream extends Readable {
   private trie: Trie
+  private asyncIterator
   private _started: boolean
 
-  constructor(trie: Trie, asyncIterable) {
+  constructor(trie: Trie, asyncIterable: AsyncIterable<BranchNode | LeafNode>) {
     super({ objectMode: true })
 
     this.trie = trie
@@ -74,12 +75,16 @@ export class TrieReadStream extends Readable {
 
 // Transform stream to convert writable stream to async iterable
 class WritableToAsyncIterable extends Writable {
+  public data: []
+
   constructor() {
     super({ objectMode: true })
     this.data = []
   }
 
+  // @ts-ignore
   _write(chunk, encoding, callback) {
+    // @ts-ignore
     this.data.push(chunk)
     callback()
   }
@@ -91,7 +96,9 @@ class WritableToAsyncIterable extends Writable {
   }
 }
 
-export async function asyncTrieReadStream(trie: Trie) {
+export async function asyncTrieReadStream(
+  trie: Trie
+): Promise<AsyncIterable<BranchNode | LeafNode>> {
   const sourceStream = new TrieReadStream(
     trie,
     asyncGenerator(trie, async function* (_, node, key, walkController) {
@@ -106,7 +113,7 @@ export async function asyncTrieReadStream(trie: Trie) {
   )
   const destinationStream = new WritableToAsyncIterable()
 
-  await pipeline(sourceStream, destinationStream, (err: Error) => {
+  await pipeline(sourceStream, destinationStream, (err: any) => {
     if (err) {
       console.error('Pipeline failed.', err)
     } else {
