@@ -1,5 +1,5 @@
 import { BlockHeader, createBlockFromValuesArray } from '@ethereumjs/block'
-import { createBlockchain } from '@ethereumjs/blockchain'
+import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { BIGINT_0, BIGINT_1, equalsBytes } from '@ethereumjs/util'
 
@@ -8,7 +8,7 @@ import { Event } from '../types.js'
 
 import type { Config } from '../config.js'
 import type { Block } from '@ethereumjs/block'
-import type { Blockchain } from '@ethereumjs/blockchain'
+import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
@@ -158,7 +158,9 @@ export class Chain {
    */
   public static async create(options: ChainOptions) {
     let validateConsensus = false
+    const consensusDict: ConsensusDict = {}
     if (options.config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+      consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
       validateConsensus = true
     }
 
@@ -170,6 +172,7 @@ export class Chain {
         hardforkByHeadBlockNumber: true,
         validateBlocks: true,
         validateConsensus,
+        consensusDict,
         genesisState: options.genesisState,
         genesisStateRoot: options.genesisStateRoot,
       }))
@@ -448,7 +451,7 @@ export class Chain {
           td,
           b.header.timestamp
         )
-        await this.blockchain.consensus.setup({ blockchain: this.blockchain })
+        await this.blockchain.consensus?.setup({ blockchain: this.blockchain })
       }
 
       const block = createBlockFromValuesArray(b.raw(), {
