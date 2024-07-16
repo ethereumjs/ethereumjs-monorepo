@@ -8,9 +8,8 @@ import {
   toType,
 } from '@ethereumjs/util'
 
+import { createBlockFromBlockData } from './constructors.js'
 import { blockHeaderFromRpc } from './header-from-rpc.js'
-
-import { Block } from './index.js'
 
 import type { BlockOptions, JsonRpcBlock } from './index.js'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -45,7 +44,7 @@ function normalizeTxParams(_txParams: any) {
  * @param options - An object describing the blockchain
  * @deprecated
  */
-export function blockFromRpc(
+export function createBlockFromRpc(
   blockParams: JsonRpcBlock,
   uncles: any[] = [],
   options?: BlockOptions
@@ -66,7 +65,7 @@ export function blockFromRpc(
     const bytes = hexToBytes(req as PrefixedHexString)
     return CLRequestFactory.fromSerializedRequest(bytes)
   })
-  return Block.fromBlockData(
+  return createBlockFromBlockData(
     { header, transactions, uncleHeaders, withdrawals: blockParams.withdrawals, requests },
     options
   )

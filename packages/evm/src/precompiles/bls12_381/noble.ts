@@ -21,7 +21,7 @@ import {
 } from './constants.js'
 
 import type { EVMBLSInterface } from '../../types.js'
-import type { AffinePoint, ProjPointType } from '@noble/curves/abstract/weierstrass.js'
+import type { AffinePoint, ProjPointType } from '@noble/curves/abstract/weierstrass'
 
 // Copied from @noble/curves/bls12-381 (only local declaration)
 type Fp2 = {

@@ -1,4 +1,4 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Chain, Common, createCustomCommon, isSupportedChainId } from '@ethereumjs/common'
 import {
   Address,
   BIGINT_0,
@@ -228,7 +228,7 @@ export abstract class BaseTransaction<T extends TransactionType>
    * Returns a Uint8Array Array of the raw Bytes of this transaction, in order.
    *
    * Use {@link BaseTransaction.serialize} to add a transaction to a block
-   * with {@link Block.fromValuesArray}.
+   * with {@link createBlockFromValuesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
@@ -344,6 +344,8 @@ export abstract class BaseTransaction<T extends TransactionType>
       v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
       r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
       s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
+      chainId: bigIntToHex(this.common.chainId()),
+      yParity: this.v === 0n || this.v === 1n ? bigIntToHex(this.v) : undefined,
     }
   }
 
@@ -386,14 +388,14 @@ export abstract class BaseTransaction<T extends TransactionType>
         // -> Return provided Common
         return common.copy()
       } else {
-        if (Common.isSupportedChainId(chainIdBigInt)) {
+        if (isSupportedChainId(chainIdBigInt)) {
           // No Common, chain ID supported by Common
           // -> Instantiate Common with chain ID
           return new Common({ chain: chainIdBigInt })
         } else {
           // No Common, chain ID not supported by Common
           // -> Instantiate custom Common derived from DEFAULT_CHAIN
-          return Common.custom(
+          return createCustomCommon(
             {
               name: 'custom-chain',
               networkId: chainIdBigInt,

@@ -1,5 +1,5 @@
 import { Trie } from '@ethereumjs/trie'
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
+import { utf8ToBytes } from '@ethereumjs/util'
 
 async function main() {
   const trie = await Trie.create()

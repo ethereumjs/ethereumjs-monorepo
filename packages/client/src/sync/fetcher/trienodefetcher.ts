@@ -15,7 +15,7 @@ import {
   KECCAK256_RLP,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import debugPkg from 'debug'
+import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import { OrderedMap } from 'js-sdsl'
@@ -28,7 +28,6 @@ import type { FetcherOptions } from './fetcher.js'
 import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugPkg
 
 type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
 
@@ -111,7 +110,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.codeDB = this.stateManager['_getCodeDB']()
 
     this.nodeCount = 0
-    this.debug = createDebugLogger('client:TrieNodeFetcher')
+    this.debug = debug('client:TrieNodeFetcher')
 
     this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 

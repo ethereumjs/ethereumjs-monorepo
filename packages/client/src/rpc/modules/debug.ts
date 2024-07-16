@@ -1,4 +1,5 @@
 import { Address, TypeOutput, bigIntToHex, bytesToHex, hexToBytes, toType } from '@ethereumjs/util'
+import { type VM, encodeReceipt } from '@ethereumjs/vm'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code.js'
 import { callWithStackTrace, getBlockByOption } from '../helpers.js'
@@ -10,7 +11,6 @@ import type { FullEthereumService } from '../../service/index.js'
 import type { RpcTx } from '../types.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type { VM } from '@ethereumjs/vm'
 
 export interface tracerOpts {
   disableStack?: boolean
@@ -110,6 +110,26 @@ export class Debug {
         [validators.uint256],
         [validators.unsignedInteger],
       ]
+    )
+    this.getRawBlock = middleware(
+      callWithStackTrace(this.getRawBlock.bind(this), this._rpcDebug),
+      1,
+      [[validators.blockOption]]
+    )
+    this.getRawHeader = middleware(
+      callWithStackTrace(this.getRawHeader.bind(this), this._rpcDebug),
+      1,
+      [[validators.blockOption]]
+    )
+    this.getRawReceipts = middleware(
+      callWithStackTrace(this.getRawReceipts.bind(this), this._rpcDebug),
+      1,
+      [[validators.blockOption]]
+    )
+    this.getRawTransaction = middleware(
+      callWithStackTrace(this.getRawTransaction.bind(this), this._rpcDebug),
+      1,
+      [[validators.hex]]
     )
   }
 
@@ -339,5 +359,55 @@ export class Debug {
       BigInt(startKey),
       limit
     )
+  }
+  /**
+   * Returns an RLP-encoded block
+   * @param blockOpt Block number or tag
+   */
+  async getRawBlock(params: [string]) {
+    const [blockOpt] = params
+    const block = await getBlockByOption(blockOpt, this.chain)
+    return bytesToHex(block.serialize())
+  }
+  /**
+   * Returns an RLP-encoded block header
+   * @param blockOpt Block number or tag
+   * @returns
+   */
+  async getRawHeader(params: [string]) {
+    const [blockOpt] = params
+    const block = await getBlockByOption(blockOpt, this.chain)
+    return bytesToHex(block.header.serialize())
+  }
+  /**
+   * Returns an array of EIP-2718 binary-encoded receipts
+   * @param blockOpt Block number or tag
+   */
+  async getRawReceipts(params: [string]) {
+    const [blockOpt] = params
+    if (!this.service.execution.receiptsManager) throw new Error('missing receiptsManager')
+    const block = await getBlockByOption(blockOpt, this.chain)
+    const receipts = await this.service.execution.receiptsManager.getReceipts(
+      block.hash(),
+      true,
+      true
+    )
+    return receipts.map((r) => bytesToHex(encodeReceipt(r, r.txType)))
+  }
+  /**
+   * Returns the bytes of the transaction.
+   * @param blockOpt Block number or tag
+   */
+  async getRawTransaction(params: [string]) {
+    const [txHash] = params
+    if (!this.service.execution.receiptsManager) throw new Error('missing receiptsManager')
+    const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
+      hexToBytes(txHash)
+    )
+    if (!result) return null
+    const [_receipt, blockHash, txIndex] = result
+    const block = await this.chain.getBlock(blockHash)
+    const tx = block.transactions[txIndex]
+    return bytesToHex(tx.serialize())
   }
 }

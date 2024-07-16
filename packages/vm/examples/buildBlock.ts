@@ -1,14 +1,14 @@
-import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlockFromBlockData } from '@ethereumjs/block'
+import { Chain, Common } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
+import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet })
   const vm = await VM.create({ common })
 
-  const parentBlock = Block.fromBlockData(
+  const parentBlock = createBlockFromBlockData(
     { header: { number: 1n } },
     { skipConsensusFormatValidation: true }
   )

@@ -43,12 +43,13 @@ Below you can find a list of the packages included in this repository.
 
 The following are our currently active branches:
 
-| Branch                                                                                  | Release Series | Status        |  Description                       |
-| --------------------------------------------------------------------------------------- | -------------- | ------------- | ---------------------------------- |
-| [master](https://github.com/ethereumjs/ethereumjs-monorepo)                             | v7             | `Active`      | Current release and working branch |
-| [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6) | v6             | `Maintenance` | Maintenance for v6 releases        |
+| Branch                                                                                  | Release Series         | Status        |  Description                                   |
+| --------------------------------------------------------------------------------------- | ---------------------- | ------------- | ---------------------------------------------- |
+| [master](https://github.com/ethereumjs/ethereumjs-monorepo)                             | Upcoming (Autumn 2024) | `Develop`     | Breaking release work                          |
+| [maintenance-v8](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v8) | v7/v8                  | `Maintenance` | Maintenance for v8 releases (v7 also included) |
+| [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6) | v6                     | `Maintenance` | Maintenance for v6 releases                    |
 
-Breaking releases are done in sync for all libraries, and release cycles are named after the `@ethereumjs/vm` version. In most cases PRs should be opened towards the current working branch.
+Breaking releases are mostly done in sync for all libraries (latest exceptions: VM v8, EVM v3), and release cycles are currently named after the `@ethereumjs/vm` version. In most cases PRs should be opened towards the current working branch. If there is no current working branch, please ask! 🙂
 
 To inspect code related to a specific package version, refer to the [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
 

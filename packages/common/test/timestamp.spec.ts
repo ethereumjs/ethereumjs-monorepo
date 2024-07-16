@@ -1,13 +1,19 @@
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, Hardfork } from '../src/index.js'
+import {
+  Chain,
+  Common,
+  Hardfork,
+  createCommonFromGethGenesis,
+  createCustomCommon,
+} from '../src/index.js'
 
 import * as timestampJson from './data/shanghai-time.json'
 
 describe('[Common]: Timestamp Hardfork logic', () => {
   it('shanghai-time', () => {
-    const c = Common.fromGethGenesis(timestampJson, {
+    const c = createCommonFromGethGenesis(timestampJson, {
       chain: 'withdrawals',
     })
     assert.equal(
@@ -32,7 +38,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       cancunTime: timestampJson.config.shanghaiTime,
     })
     const modifiedJson = Object.assign({}, timestampJson, { config })
-    const c = Common.fromGethGenesis(modifiedJson, {
+    const c = createCommonFromGethGenesis(modifiedJson, {
       chain: 'modified',
     })
     assert.equal(
@@ -52,7 +58,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       cancunTime: timestampJson.config.shanghaiTime + 1000,
     })
     const modifiedJson = Object.assign({}, timestampJson, { config })
-    const c = Common.fromGethGenesis(modifiedJson, {
+    const c = createCommonFromGethGenesis(modifiedJson, {
       chain: 'modified',
     })
     assert.equal(
@@ -93,7 +99,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       },
     ])
 
-    const c = Common.custom({ hardforks }, { baseChain: Chain.Mainnet })
+    const c = createCustomCommon({ hardforks }, { baseChain: Chain.Mainnet })
     const mainnetGenesisHash = hexToBytes(
       '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
     )
@@ -134,7 +140,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       },
     ])
 
-    const c = Common.custom({ hardforks }, { baseChain: Chain.Mainnet })
+    const c = createCustomCommon({ hardforks }, { baseChain: Chain.Mainnet })
     const mainnetGenesisHash = hexToBytes(
       '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
     )

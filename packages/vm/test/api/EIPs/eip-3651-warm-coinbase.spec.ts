@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
@@ -17,7 +17,7 @@ const common = new Common({
   eips: [3651],
 })
 
-const block = Block.fromBlockData(
+const block = createBlockFromBlockData(
   {
     header: {
       baseFeePerGas: 7,

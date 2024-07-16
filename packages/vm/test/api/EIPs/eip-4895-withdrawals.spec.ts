@@ -1,6 +1,6 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlockFromBlockData, genWithdrawalsTrieRoot } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import {
@@ -19,6 +19,7 @@ import { assert, describe, it } from 'vitest'
 import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/withdrawals.json'
 import { VM } from '../../../src/vm'
 
+import type { Block } from '@ethereumjs/block'
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
 
 const common = new Common({
@@ -89,7 +90,7 @@ describe('EIP4895 tests', () => {
       })
       index++
     }
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           baseFeePerGas: BigInt(7),
@@ -146,11 +147,11 @@ describe('EIP4895 tests', () => {
     let postState: string
 
     // construct a block with just the 0th withdrawal should have no effect on state
-    block = Block.fromBlockData(
+    block = createBlockFromBlockData(
       {
         header: {
           baseFeePerGas: BigInt(7),
-          withdrawalsRoot: await Block.genWithdrawalsTrieRoot(withdrawals.slice(0, 1)),
+          withdrawalsRoot: await genWithdrawalsTrieRoot(withdrawals.slice(0, 1)),
           transactionsTrie: KECCAK256_RLP,
         },
         transactions: [],
@@ -168,11 +169,11 @@ describe('EIP4895 tests', () => {
     )
 
     // construct a block with all the withdrawals
-    block = Block.fromBlockData(
+    block = createBlockFromBlockData(
       {
         header: {
           baseFeePerGas: BigInt(7),
-          withdrawalsRoot: await Block.genWithdrawalsTrieRoot(withdrawals),
+          withdrawalsRoot: await genWithdrawalsTrieRoot(withdrawals),
           transactionsTrie: KECCAK256_RLP,
         },
         transactions: [],
@@ -190,10 +191,10 @@ describe('EIP4895 tests', () => {
   })
 
   it('should build a block correctly with withdrawals', async () => {
-    const common = Common.fromGethGenesis(genesisJSON, { chain: 'custom' })
+    const common = createCommonFromGethGenesis(genesisJSON, { chain: 'custom' })
     common.setHardfork(Hardfork.Shanghai)
     const genesisState = parseGethGenesisState(genesisJSON)
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
       validateConsensus: false,

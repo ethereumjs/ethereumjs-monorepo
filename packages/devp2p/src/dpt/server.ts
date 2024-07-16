@@ -13,10 +13,9 @@ import type { DPT } from './dpt.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
-const { debug: createDebugLogger } = debugDefault
 
 const DEBUG_BASE_NAME = 'dpt:server'
-const verbose = createDebugLogger('verbose').enabled
+const verbose = debugDefault('verbose').enabled
 
 const VERSION = 0x04
 

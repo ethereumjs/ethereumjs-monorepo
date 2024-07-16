@@ -17,7 +17,8 @@
   },
   "license": "MIT",
   "author": "Alex Beregszaszi <alex@rtfs.hu>",
-  "type": "commonjs",
+  "type": "module",
+  "sideEffects": false,
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {

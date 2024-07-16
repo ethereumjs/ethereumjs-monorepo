@@ -1,5 +1,5 @@
 import { debug as _debug } from 'debug'
-import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 
 import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
 import { Trie } from '../trie.js'

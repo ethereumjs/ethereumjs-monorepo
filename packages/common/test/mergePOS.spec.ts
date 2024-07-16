@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, Hardfork } from '../src/index.js'
+import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '../src/index.js'
 
 import * as postMergeJSON from './data/geth-genesis/post-merge.json'
 import * as testnetMerge from './data/merge/testnetMerge.json'
@@ -175,7 +175,7 @@ describe('[Common]: Merge/POS specific logic', () => {
   })
 
   it('should get the correct merge hardfork at genesis', async () => {
-    const c = Common.fromGethGenesis(postMergeJSON, { chain: 'post-merge' })
+    const c = createCommonFromGethGenesis(postMergeJSON, { chain: 'post-merge' })
     const msg = 'should get HF correctly'
     assert.equal(c.getHardforkBy({ blockNumber: 0n }), Hardfork.London, msg)
     assert.equal(c.getHardforkBy({ blockNumber: 0n, td: 0n }), Hardfork.Paris, msg)

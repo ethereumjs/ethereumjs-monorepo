@@ -1,6 +1,13 @@
 import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src/index.js'
+import {
+  Chain,
+  Common,
+  ConsensusAlgorithm,
+  ConsensusType,
+  Hardfork,
+  isSupportedChainId,
+} from '../src/index.js'
 
 describe('[Common/Chains]: Initialization / Chain params', () => {
   it('Should initialize with chain provided', () => {
@@ -126,11 +133,11 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
 
 describe('[Common]: isSupportedChainId static method', () => {
   it('Should return true for supported chainId', () => {
-    assert.equal(Common.isSupportedChainId(BigInt(1)), true, 'returns true')
+    assert.equal(isSupportedChainId(BigInt(1)), true, 'returns true')
   })
 
   it('Should return false for unsupported chainId', () => {
-    assert.equal(Common.isSupportedChainId(BigInt(0)), false, 'returns false')
+    assert.equal(isSupportedChainId(BigInt(0)), false, 'returns false')
   })
 })
 

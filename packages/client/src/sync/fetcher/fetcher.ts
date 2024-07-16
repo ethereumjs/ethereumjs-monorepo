@@ -1,4 +1,4 @@
-import debugDefault from 'debug'
+import debug from 'debug'
 import { Readable, Writable } from 'stream'
 
 import { Heap } from '../../ext/qheap.js'
@@ -11,8 +11,6 @@ import type { PeerPool } from '../../net/peerpool.js'
 import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase.js'
 import type { Job } from './types.js'
 import type { Debugger } from 'debug'
-
-const { debug: createDebugLogger } = debugDefault
 
 export interface FetcherOptions {
   /* Common chain config*/
@@ -80,7 +78,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     super({ ...options, objectMode: true })
 
     this.config = options.config
-    this.debug = createDebugLogger('client:fetcher')
+    this.debug = debug('client:fetcher')
 
     this.pool = options.pool
     this.timeout = options.timeout ?? 8000

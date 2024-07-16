@@ -1,12 +1,21 @@
-import { Block } from '@ethereumjs/block'
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { createBlockFromBlockData } from '@ethereumjs/block'
+import {
+  Chain,
+  Common,
+  ConsensusAlgorithm,
+  ConsensusType,
+  Hardfork,
+  createCustomCommon,
+} from '@ethereumjs/common'
 import { Address, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique.js'
-import { Blockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.js'
 
 import type { CliqueConsensus } from '../src/consensus/clique.js'
+import type { Blockchain } from '../src/index.js'
+import type { Block } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 
 const COMMON = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
@@ -76,13 +85,13 @@ const initWithSigners = async (signers: Signer[], common?: Common) => {
     ...signers.map((s) => s.address.toBytes()),
     new Uint8Array(65)
   )
-  const genesisBlock = Block.fromBlockData(
+  const genesisBlock = createBlockFromBlockData(
     { header: { gasLimit: GAS_LIMIT, extraData } },
     { common }
   )
   blocks.push(genesisBlock)
 
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     validateBlocks: true,
     validateConsensus: true,
     genesisBlock,
@@ -140,7 +149,7 @@ function getBlock(
   // set signer
   const cliqueSigner = signer.privateKey
 
-  return Block.fromBlockData(blockData, { common, freeze: false, cliqueSigner })
+  return createBlockFromBlockData(blockData, { common, freeze: false, cliqueSigner })
 }
 
 const addNextBlockReorg = async (
@@ -182,7 +191,7 @@ const addNextBlock = async (
 describe('Clique: Initialization', () => {
   it('should initialize a clique blockchain', async () => {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
-    const blockchain = await Blockchain.create({ common })
+    const blockchain = await createBlockchain({ common })
 
     const head = await blockchain.getIteratorHead()
     assert.deepEqual(head.hash(), blockchain.genesisBlock.hash(), 'correct genesis hash')
@@ -207,7 +216,7 @@ describe('Clique: Initialization', () => {
       unauthorizedSigner.toBytes(),
       new Uint8Array(65)
     )
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       { header: { number, extraData } },
       { common: COMMON, cliqueSigner: A.privateKey }
     )
@@ -229,7 +238,7 @@ describe('Clique: Initialization', () => {
     const number = BigInt(2)
     const extraData = new Uint8Array(97)
     let difficulty = BigInt(5)
-    let block = Block.fromBlockData(
+    let block = createBlockFromBlockData(
       {
         header: {
           number,
@@ -254,7 +263,7 @@ describe('Clique: Initialization', () => {
 
     difficulty = BigInt(1)
     const cliqueSigner = A.privateKey
-    block = Block.fromBlockData(
+    block = createBlockFromBlockData(
       {
         header: {
           number,
@@ -606,7 +615,7 @@ describe('Clique: Initialization', () => {
   })
 
   it('Clique Voting: Epoch transitions reset all votes to allow chain checkpointing', async () => {
-    const common = Common.custom(
+    const common = createCustomCommon(
       {
         consensus: {
           type: ConsensusType.ProofOfAuthority,
@@ -662,7 +671,7 @@ describe('Clique: Initialization', () => {
   })
 
   it('Clique Voting: Recent signatures should not reset on checkpoint blocks imported in a batch', async () => {
-    const common = Common.custom(
+    const common = createCustomCommon(
       {
         consensus: {
           type: ConsensusType.ProofOfAuthority,
@@ -809,7 +818,7 @@ describe('clique: reorgs', () => {
   it(
     'Two signers, voting to add one other signer, epoch transition, then reorg and revoke this addition',
     async (st) => {
-      const common = Common.custom(
+      const common = createCustomCommon(
         {
           consensus: {
             type: ConsensusType.ProofOfAuthority,

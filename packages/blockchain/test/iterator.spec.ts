@@ -1,7 +1,7 @@
 import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.js'
 
 import { createTestDB, generateBlockchain, generateConsecutiveBlock } from './util.js'
 
@@ -165,7 +165,7 @@ describe('blockchain test', () => {
   })
 
   it('should not call iterator function in an empty blockchain', async () => {
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -178,7 +178,7 @@ describe('blockchain test', () => {
 
   it('should get heads', async () => {
     const [db, genesis] = await createTestDB()
-    const blockchain = await Blockchain.create({ db, genesisBlock: genesis })
+    const blockchain = await createBlockchain({ db, genesisBlock: genesis })
     const head = await blockchain.getIteratorHead()
 
     if (typeof genesis !== 'undefined') {

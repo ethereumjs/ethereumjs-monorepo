@@ -1,8 +1,15 @@
 #!/usr/bin/env node
 
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { createBlockFromValuesArray } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import {
+  Chain,
+  Common,
+  ConsensusAlgorithm,
+  Hardfork,
+  createCommonFromGethGenesis,
+  getInitializedChains,
+} from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
@@ -55,7 +62,7 @@ import type { Logger } from '../src/logging.js'
 import type { FullEthereumService } from '../src/service/index.js'
 import type { ClientOpts } from '../src/types.js'
 import type { RPCArgs } from './startRpc.js'
-import type { BlockBytes } from '@ethereumjs/block'
+import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
@@ -63,7 +70,7 @@ import type { Server as RPCServer } from 'jayson/promise/index.js'
 
 type Account = [address: Address, privateKey: Uint8Array]
 
-const networks = Object.entries(Common.getInitializedChains().names)
+const networks = Object.entries(getInitializedChains().names)
 
 let logger: Logger
 
@@ -624,7 +631,7 @@ async function startClient(
   let blockchain
   if (genesisMeta.genesisState !== undefined || genesisMeta.genesisStateRoot !== undefined) {
     const validateConsensus = config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique
-    blockchain = await Blockchain.create({
+    blockchain = await createBlockchain({
       db: new LevelDB(dbs.chainDB),
       ...genesisMeta,
       common: config.chainCommon,
@@ -653,7 +660,7 @@ async function startClient(
       let buf = RLP.decode(blockRlp, true)
       while (buf.data?.length > 0 || buf.remainder?.length > 0) {
         try {
-          const block = Block.fromValuesArray(buf.data as BlockBytes, {
+          const block = createBlockFromValuesArray(buf.data as BlockBytes, {
             common: config.chainCommon,
             setHardfork: true,
           })
@@ -762,7 +769,10 @@ async function setupDevnet(prefundAddress: Address) {
     extraData,
     alloc: { [addr]: { balance: '0x10000000000000000000' } },
   }
-  const common = Common.fromGethGenesis(chainData, { chain: 'devnet', hardfork: Hardfork.London })
+  const common = createCommonFromGethGenesis(chainData, {
+    chain: 'devnet',
+    hardfork: Hardfork.London,
+  })
   const customGenesisState = parseGethGenesisState(chainData)
   return { common, customGenesisState }
 }
@@ -997,7 +1007,7 @@ async function run() {
     // Use geth genesis parameters file if specified
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
-    common = Common.fromGethGenesis(genesisFile, {
+    common = createCommonFromGethGenesis(genesisFile, {
       chain: chainName,
       mergeForkIdPostMerge: args.mergeForkIdPostMerge,
     })

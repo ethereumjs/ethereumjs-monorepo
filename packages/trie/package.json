@@ -21,8 +21,9 @@
   "contributors": [
     "Aaron Kumavis <http://aaron.kumavis.me/> (https://github.com/kumavis)"
   ],
+  "type": "module",
+  "sideEffects": false,
   "main": "dist/cjs/index.js",
-  "type": "commonjs",
   "module": "dist/esm/index.js",
   "exports": {
     ".": {

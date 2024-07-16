@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
@@ -16,10 +16,9 @@ import {
   intToHex,
   setLengthLeft,
   toType,
-  utf8ToBytes,
 } from '@ethereumjs/util'
 
-import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code.js'
+import { INTERNAL_ERROR, INVALID_HEX_STRING, INVALID_PARAMS, PARSE_ERROR } from '../error-code.js'
 import { callWithStackTrace, getBlockByOption, jsonRpcTx } from '../helpers.js'
 import { middleware, validators } from '../validation.js'
 
@@ -29,7 +28,7 @@ import type { EthereumClient } from '../../index.js'
 import type { EthProtocol } from '../../net/protocol/index.js'
 import type { FullEthereumService, Service } from '../../service/index.js'
 import type { RpcTx } from '../types.js'
-import type { JsonRpcBlock } from '@ethereumjs/block'
+import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
 import type {
@@ -79,6 +78,7 @@ type JsonRpcReceipt = {
   status?: string // QUANTITY, either 1 (success) or 0 (failure)
   blobGasUsed?: string // QUANTITY, blob gas consumed by transaction (if blob transaction)
   blobGasPrice?: string // QUAntity, blob gas price for block including this transaction (if blob transaction)
+  type: string // QUANTITY, transaction type
 }
 type JsonRpcLog = {
   removed: boolean // TAG - true when the log was removed, due to a chain reorganization. false if it's a valid log.
@@ -130,7 +130,7 @@ const jsonRpcBlock = async (
     difficulty: header.difficulty!,
     totalDifficulty: bigIntToHex(td),
     extraData: header.extraData!,
-    size: intToHex(utf8ToBytes(JSON.stringify(json)).byteLength),
+    size: intToHex(block.serialize().length),
     gasLimit: header.gasLimit!,
     gasUsed: header.gasUsed!,
     timestamp: header.timestamp!,
@@ -206,6 +206,7 @@ const jsonRpcReceipt = async (
       : undefined,
   blobGasUsed: blobGasUsed !== undefined ? bigIntToHex(blobGasUsed) : undefined,
   blobGasPrice: blobGasPrice !== undefined ? bigIntToHex(blobGasPrice) : undefined,
+  type: intToHex(tx.type),
 })
 
 const calculateRewards = async (
@@ -371,6 +372,12 @@ export class Eth {
       [[validators.hex, validators.blockHash], [validators.hex]]
     )
 
+    this.getTransactionByBlockNumberAndIndex = middleware(
+      callWithStackTrace(this.getTransactionByBlockNumberAndIndex.bind(this), this._rpcDebug),
+      2,
+      [[validators.hex, validators.blockOption], [validators.hex]]
+    )
+
     this.getTransactionByHash = middleware(
       callWithStackTrace(this.getTransactionByHash.bind(this), this._rpcDebug),
       1,
@@ -383,6 +390,11 @@ export class Eth {
       [[validators.address], [validators.blockOption]]
     )
 
+    this.getBlockReceipts = middleware(
+      callWithStackTrace(this.getBlockReceipts.bind(this), this._rpcDebug),
+      1,
+      [[validators.blockOption]]
+    )
     this.getTransactionReceipt = middleware(
       callWithStackTrace(this.getTransactionReceipt.bind(this), this._rpcDebug),
       1,
@@ -492,7 +504,9 @@ export class Eth {
     const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const { from, to, gas: gasLimit, gasPrice, value, data } = transaction
+    const { from, to, gas: gasLimit, gasPrice, value } = transaction
+
+    const data = transaction.data ?? transaction.input
 
     const runCallOpts = {
       caller: from !== undefined ? Address.fromString(from) : undefined,
@@ -501,6 +515,7 @@ export class Eth {
       gasPrice: toType(gasPrice, TypeOutput.BigInt),
       value: toType(value, TypeOutput.BigInt),
       data: data !== undefined ? hexToBytes(data) : undefined,
+      block,
     }
     const { execResult } = await vm.evm.runCall(runCallOpts)
     return bytesToHex(execResult.returnValue)
@@ -562,7 +577,7 @@ export class Eth {
       gasLimit: transaction.gas,
     }
 
-    const blockToRunOn = Block.fromBlockData(
+    const blockToRunOn = createBlockFromBlockData(
       {
         header: {
           parentHash: block.hash(),
@@ -653,10 +668,7 @@ export class Eth {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return await jsonRpcBlock(block, this._chain, includeTransactions)
     } catch (error) {
-      throw {
-        code: INVALID_PARAMS,
-        message: 'Unknown block',
-      }
+      return null
     }
   }
 
@@ -668,8 +680,19 @@ export class Eth {
    */
   async getBlockByNumber(params: [string, boolean]) {
     const [blockOpt, includeTransactions] = params
-    const block = await getBlockByOption(blockOpt, this._chain)
-    return jsonRpcBlock(block, this._chain, includeTransactions)
+    if (blockOpt === 'pending') {
+      throw {
+        code: INVALID_PARAMS,
+        message: `"pending" is not yet supported`,
+      }
+    }
+    try {
+      const block = await getBlockByOption(blockOpt, this._chain)
+      const response = await jsonRpcBlock(block, this._chain, includeTransactions)
+      return response
+    } catch {
+      return null
+    }
   }
 
   /**
@@ -720,7 +743,18 @@ export class Eth {
    */
   async getStorageAt(params: [string, PrefixedHexString, string]) {
     const [addressHex, keyHex, blockOpt] = params
-
+    if (!/^[0-9a-fA-F]+$/.test(keyHex.slice(2))) {
+      throw {
+        code: INVALID_HEX_STRING,
+        message: `unable to decode storage key: hex string invalid`,
+      }
+    }
+    if (keyHex.length > 66) {
+      throw {
+        code: INVALID_HEX_STRING,
+        message: `unable to decode storage key: hex string too long, want at most 32 bytes`,
+      }
+    }
     if (blockOpt === 'pending') {
       throw {
         code: INVALID_PARAMS,
@@ -759,6 +793,31 @@ export class Eth {
       const [blockHash, txIndexHex] = params
       const txIndex = parseInt(txIndexHex, 16)
       const block = await this._chain.getBlock(hexToBytes(blockHash))
+      if (block.transactions.length <= txIndex) {
+        return null
+      }
+
+      const tx = block.transactions[txIndex]
+      return jsonRpcTx(tx, block, txIndex)
+    } catch (error: any) {
+      throw {
+        code: INVALID_PARAMS,
+        message: error.message.toString(),
+      }
+    }
+  }
+
+  /**
+   * Returns information about a transaction given a block hash and a transaction's index position.
+   * @param params An array of two parameter:
+   *   1. a block number
+   *   2. an integer of the transaction index position encoded as a hexadecimal.
+   */
+  async getTransactionByBlockNumberAndIndex(params: [PrefixedHexString, string]) {
+    try {
+      const [blockNumber, txIndexHex] = params
+      const txIndex = parseInt(txIndexHex, 16)
+      const block = await getBlockByOption(blockNumber, this._chain)
       if (block.transactions.length <= txIndex) {
         return null
       }
@@ -853,6 +912,64 @@ export class Eth {
 
     const block = await this._chain.getBlock(blockNumber)
     return block.uncleHeaders.length
+  }
+
+  async getBlockReceipts(params: [string]) {
+    const [blockOpt] = params
+    let block: Block
+    try {
+      if (blockOpt.length === 66) {
+        block = await this._chain.getBlock(hexToBytes(blockOpt))
+      } else {
+        block = await getBlockByOption(blockOpt, this._chain)
+      }
+    } catch {
+      return null
+    }
+    const blockHash = block.hash()
+    if (!this.receiptsManager) throw new Error('missing receiptsManager')
+    const result = await this.receiptsManager.getReceipts(blockHash, true, true)
+    if (result.length === 0) return []
+    const parentBlock = await this._chain.getBlock(block.header.parentHash)
+    const vmCopy = await this._vm!.shallowCopy()
+    vmCopy.common.setHardfork(block.common.hardfork())
+    // Run tx through copied vm to get tx gasUsed and createdAddress
+    const runBlockResult = await vmCopy.runBlock({
+      block,
+      root: parentBlock.header.stateRoot,
+      skipBlockValidation: true,
+    })
+
+    const receipts = await Promise.all(
+      result.map(async (r, i) => {
+        const tx = block.transactions[i]
+        const { totalGasSpent, createdAddress } = runBlockResult.results[i]
+        const { blobGasPrice, blobGasUsed } = runBlockResult.receipts[i] as EIP4844BlobTxReceipt
+        const effectiveGasPrice =
+          tx.supports(Capability.EIP1559FeeMarket) === true
+            ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
+              (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block.header.baseFeePerGas!
+              ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+              : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
+                block.header.baseFeePerGas! +
+                block.header.baseFeePerGas!
+            : (tx as LegacyTransaction).gasPrice
+
+        return jsonRpcReceipt(
+          r,
+          totalGasSpent,
+          effectiveGasPrice,
+          block,
+          tx,
+          i,
+          i,
+          createdAddress,
+          blobGasUsed,
+          blobGasPrice
+        )
+      })
+    )
+    return receipts
   }
 
   /**
@@ -989,7 +1106,7 @@ export class Eth {
       }
     })
     let addressBytes: Uint8Array[] | undefined
-    if (address !== undefined) {
+    if (address !== undefined && address !== null) {
       if (Array.isArray(address)) {
         addressBytes = address.map((a) => hexToBytes(a))
       } else {
@@ -1123,6 +1240,9 @@ export class Eth {
     const address = Address.fromString(addressHex)
     const slots = slotsHex.map((slotHex) => setLengthLeft(hexToBytes(slotHex), 32))
     const proof = await vm.stateManager.getProof!(address, slots)
+    for (const p of proof.storageProof) {
+      p.key = bigIntToHex(BigInt(p.key))
+    }
     return proof
   }
 

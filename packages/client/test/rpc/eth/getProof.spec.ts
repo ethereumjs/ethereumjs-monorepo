@@ -1,5 +1,5 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
@@ -8,6 +8,7 @@ import { assert, describe, it } from 'vitest'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
+import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_getProof'
@@ -24,7 +25,7 @@ const expectedProof = {
   ],
   storageProof: [
     {
-      key: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      key: '0x0',
       value: '0x04d2',
       proof: [
         '0xf8518080a036bb5f2fd6f99b186600638644e2f0396989955e201672f7e81e8c8f466ed5b9a010859880cfb38603690e8c4dfcc5595c203de6b901a503f944ef21a6120926a680808080808080808080808080',
@@ -90,7 +91,7 @@ const common = new Common({ chain: 'testnet2', customChains: [testnetData] })
 
 describe(method, async () => {
   it('call with valid arguments', async () => {
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
       validateConsensus: false,
@@ -131,7 +132,7 @@ describe(method, async () => {
       return address
     }
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           parentHash: parent.hash(),
@@ -163,7 +164,7 @@ describe(method, async () => {
     storeTx.getSenderAddress = () => {
       return address
     }
-    const block2 = Block.fromBlockData(
+    const block2 = createBlockFromBlockData(
       {
         header: {
           parentHash: ranBlock!.hash(),

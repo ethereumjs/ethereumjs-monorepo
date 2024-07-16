@@ -1,5 +1,5 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { LegacyTransaction } from '@ethereumjs/tx'
@@ -18,7 +18,7 @@ describe(
   () => {
     it('ensure balance deducts after a tx', async () => {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-      const blockchain = await Blockchain.create({ common })
+      const blockchain = await createBlockchain({ common })
 
       const client = await createClient({ blockchain, commonChain: common, includeVM: true })
       const manager = createManager(client)
@@ -51,7 +51,7 @@ describe(
       tx.getSenderAddress = () => {
         return address
       }
-      const block = Block.fromBlockData({}, { common })
+      const block = createBlockFromBlockData({}, { common })
       block.transactions[0] = tx
 
       const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
@@ -93,7 +93,7 @@ describe(
     })
 
     it('call with unsupported block argument', async () => {
-      const blockchain = await Blockchain.create()
+      const blockchain = await createBlockchain()
 
       const client = await createClient({ blockchain, includeVM: true })
       const manager = createManager(client)

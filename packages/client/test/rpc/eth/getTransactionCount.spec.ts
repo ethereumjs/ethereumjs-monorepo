@@ -1,5 +1,5 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { LegacyTransaction, TransactionFactory } from '@ethereumjs/tx'
@@ -9,6 +9,7 @@ import { assert, describe, it } from 'vitest'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
+import type { Block } from '@ethereumjs/block'
 
 const method = 'eth_getTransactionCount'
 
@@ -16,7 +17,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart 
 
 describe(method, () => {
   it('call with valid arguments', async () => {
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
       validateConsensus: false,
@@ -47,7 +48,7 @@ describe(method, () => {
       return address
     }
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           parentHash: parent.hash(),
@@ -74,7 +75,7 @@ describe(method, () => {
   }, 40000)
 
   it('call with pending block argument', async () => {
-    const blockchain = await Blockchain.create()
+    const blockchain = await createBlockchain()
 
     const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)

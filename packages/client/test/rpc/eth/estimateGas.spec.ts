@@ -1,15 +1,16 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Common } from '@ethereumjs/common'
+import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
+import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_estimateGas'
@@ -20,8 +21,11 @@ describe(
     it('call with valid arguments', async () => {
       // Use custom genesis so we can test EIP1559 txs more easily
       const genesisJson = await import('../../testdata/geth-genesis/rpctestnet.json')
-      const common = Common.fromGethGenesis(genesisJson, { chain: 'testnet', hardfork: 'berlin' })
-      const blockchain = await Blockchain.create({
+      const common = createCommonFromGethGenesis(genesisJson, {
+        chain: 'testnet',
+        hardfork: 'berlin',
+      })
+      const blockchain = await createBlockchain({
         common,
         validateBlocks: false,
         validateConsensus: false,
@@ -60,7 +64,7 @@ describe(
         return address
       }
       const parent = await blockchain.getCanonicalHeadHeader()
-      const block = Block.fromBlockData(
+      const block = createBlockFromBlockData(
         {
           header: {
             parentHash: parent.hash(),
@@ -125,7 +129,7 @@ describe(
       service.execution.vm.common.setHardfork('london')
       service.chain.config.chainCommon.setHardfork('london')
       const headBlock = await service.chain.getCanonicalHeadBlock()
-      const londonBlock = Block.fromBlockData(
+      const londonBlock = createBlockFromBlockData(
         {
           header: BlockHeader.fromHeaderData(
             {
@@ -185,7 +189,7 @@ describe(
     })
 
     it('call with unsupported block argument', async () => {
-      const blockchain = await Blockchain.create()
+      const blockchain = await createBlockchain()
 
       const client = await createClient({ blockchain, includeVM: true })
       const manager = createManager(client)

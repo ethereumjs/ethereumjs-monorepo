@@ -1,5 +1,5 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { BlockHeader, createBlockFromValuesArray } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { BIGINT_0, BIGINT_1, equalsBytes } from '@ethereumjs/util'
 
@@ -7,6 +7,8 @@ import { LevelDB } from '../execution/level.js'
 import { Event } from '../types.js'
 
 import type { Config } from '../config.js'
+import type { Block } from '@ethereumjs/block'
+import type { Blockchain } from '@ethereumjs/blockchain'
 import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
@@ -162,7 +164,7 @@ export class Chain {
 
     options.blockchain =
       options.blockchain ??
-      (await Blockchain.create({
+      (await createBlockchain({
         db: new LevelDB(options.chainDB),
         common: options.config.chainCommon,
         hardforkByHeadBlockNumber: true,
@@ -449,7 +451,7 @@ export class Chain {
         await this.blockchain.consensus.setup({ blockchain: this.blockchain })
       }
 
-      const block = Block.fromValuesArray(b.raw(), {
+      const block = createBlockFromValuesArray(b.raw(), {
         common: this.config.chainCommon,
         setHardfork: td,
       })
