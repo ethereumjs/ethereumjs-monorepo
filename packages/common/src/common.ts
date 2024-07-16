@@ -371,6 +371,15 @@ export class Common {
       } else {
         this._mergeWithParamsCache(hfChanges[1])
       }
+      if (
+        hfChanges[1].vm ||
+        hfChanges[1].gasConfig ||
+        hfChanges[1].gasPrices ||
+        hfChanges[1].pow ||
+        hfChanges[1].sharding
+      ) {
+        this._mergeWithParamsCache(hfChanges[1])
+      }
       if (hfChanges[0] === hardfork) break
     }
     // Iterate through all additionally activated EIPs
