@@ -294,7 +294,7 @@ class EOFBody {
   ) {
     const stream = new StreamReader(buf)
     const typeSections: TypeSection[] = []
-    // Read an parse each type section, and validate that the type section values are within valid bounds
+    // Read and parse each type section, and validate that the type section values are within valid bounds
     for (let i = 0; i < header.typeSize / 4; i++) {
       const inputs = stream.readUint(EOFError.Inputs)
       const outputs = stream.readUint(EOFError.Outputs)
