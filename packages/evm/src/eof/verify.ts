@@ -4,6 +4,22 @@ import { stackDelta } from './stackDelta.js'
 import type { EVM } from '../evm.js'
 import type { EOFContainer } from './container.js'
 
+/**
+ * Note for reviewers regarding these flags: these only reside inside `verify.ts` (this file)
+ * and `container.ts`. For `container.ts`, the only behavior which ever changes is in the `DeploymentCode` mode
+ * This `DeploymentCode` mode means that the subcontainer is flagged in such way that this container is launched
+ * in a "deployment" mode. This means, that the data section of the body is actually allowed to contain
+ * less data than is written in the header. However, once the target container (by the container in deployment)
+ * mode is returned by RETURNCONTRACT it should have at least the header amount of data.
+ * See also "data section lifecycle"
+ * Note: the subcontainers of a container can be marked "InitCode" or "DeploymentCode".
+ * InitCode cannot contain the instructions RETURN / STOP
+ * InitCode is the only container type which can contain RETURNCONTRACT
+ * A container can also be marked DeploymentCode, this is a subcontainer targeted by RETURNCONTRACT
+ * A container cannot be marked both InitCode and DeploymentCode
+ * This flag is thus to distinguish between subcontainers, and also thus also allows for data section sizes
+ * lower than the size in the header in case of `InitCode`
+ */
 export enum ContainerSectionType {
   InitCode, // Targeted by EOFCreate
   DeploymentCode, // Targeted by RETURNCONTRACT
