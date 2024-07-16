@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { CliqueConsensus, EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
+import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
   Chain,
   Common,
