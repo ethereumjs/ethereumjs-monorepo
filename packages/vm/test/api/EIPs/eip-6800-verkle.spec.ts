@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { TransactionFactory } from '@ethereumjs/tx'
@@ -14,7 +14,7 @@ import type { BlockData } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const customChainParams = { name: 'custom', chainId: 69420, networkId: 678 }
-const common = Common.custom(customChainParams, {
+const common = createCustomCommon(customChainParams, {
   hardfork: Hardfork.Cancun,
   eips: [2935, 4895, 6800],
 })

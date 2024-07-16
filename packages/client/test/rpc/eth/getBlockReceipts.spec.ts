@@ -10,10 +10,8 @@ import {
   bytesToHex,
   commitmentsToVersionedHashes,
   getBlobs,
-  hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { encodeReceipt } from '@ethereumjs/vm'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
@@ -26,10 +24,8 @@ import {
   setupChain,
 } from '../helpers.js'
 
-import type { TxReceipt } from '@ethereumjs/vm'
-
 const method = 'eth_getTransactionReceipt'
-const method2 = 'debug_getRawReceipts'
+const method2 = 'eth_getBlockReceipts'
 
 describe(method, () => {
   it('call with legacy tx', async () => {
@@ -44,17 +40,20 @@ describe(method, () => {
       },
       { common }
     ).sign(dummy.privKey)
-    const block = await runBlockWithTxs(chain, execution, [tx])
+    const tx2 = LegacyTransaction.fromTxData(
+      {
+        gasLimit: 2000000,
+        gasPrice: 100,
+        to: '0x0000000000000000000000000000000000000000',
+        nonce: 1,
+      },
+      { common }
+    ).sign(dummy.privKey)
+    const block = await runBlockWithTxs(chain, execution, [tx, tx2])
     const res0 = await rpc.request(method, [bytesToHex(tx.hash())])
-    const rec: TxReceipt = {
-      cumulativeBlockGasUsed: BigInt(res0.result.cumulativeGasUsed),
-      logs: [],
-      stateRoot: hexToBytes(res0.result.root),
-      bitvector: hexToBytes(res0.result.logsBloom),
-    }
-    const receipt = bytesToHex(encodeReceipt(rec, 0))
+    const res1 = await rpc.request(method, [bytesToHex(tx2.hash())])
     const res2 = await rpc.request(method2, [bigIntToHex(block.header.number)])
-    assert.deepEqual(res2.result, [receipt])
+    assert.deepEqual(res2.result, [res0.result, res1.result])
   })
 
   it('call with 1559 tx', async () => {
@@ -73,20 +72,24 @@ describe(method, () => {
       },
       { common }
     ).sign(dummy.privKey)
+    const tx1 = FeeMarketEIP1559Transaction.fromTxData(
+      {
+        gasLimit: 2000000,
+        maxFeePerGas: 975000000,
+        maxPriorityFeePerGas: 10,
+        to: '0x1230000000000000000000000000000000000321',
+        nonce: 1,
+      },
+      { common }
+    ).sign(dummy.privKey)
 
-    const block = await runBlockWithTxs(chain, execution, [tx])
+    const block = await runBlockWithTxs(chain, execution, [tx, tx1])
 
     // get the tx
     const res0 = await rpc.request(method, [bytesToHex(tx.hash())])
-    const rec: TxReceipt = {
-      cumulativeBlockGasUsed: BigInt(res0.result.cumulativeGasUsed),
-      logs: [],
-      bitvector: hexToBytes(res0.result.logsBloom),
-      status: 1,
-    }
-    const receipt = bytesToHex(encodeReceipt(rec, 2))
-    const res1 = await rpc.request(method2, [bigIntToHex(block.header.number)])
-    assert.equal(res1.result, receipt, 'transaction result is 1 since succeeded')
+    const res1 = await rpc.request(method, [bytesToHex(tx1.hash())])
+    const res2 = await rpc.request(method2, [bigIntToHex(block.header.number)])
+    assert.deepEqual(res2.result, [res0.result, res1.result], 'returns array of tx receipts')
   })
 
   it('call with unknown block hash', async () => {
@@ -148,20 +151,9 @@ describe(method, () => {
       assert.equal(res.result.blobGasUsed, '0x20000', 'receipt has correct blob gas usage')
       assert.equal(res.result.blobGasPrice, '0x1', 'receipt has correct blob gas price')
 
-      const rec: TxReceipt = {
-        cumulativeBlockGasUsed: BigInt(res.result.cumulativeGasUsed),
-        logs: [],
-        bitvector: hexToBytes(res.result.logsBloom),
-        blobGasPrice: BigInt(res.result.blobGasPrice),
-        blobGasUsed: BigInt(res.result.blobGasUsed),
-        status: 1,
-      }
-
-      const receipt = bytesToHex(encodeReceipt(rec, tx.type))
-
       const res2 = await rpc.request(method2, [bigIntToHex(block.header.number)])
 
-      assert.equal(res2.result, receipt)
+      assert.deepEqual(res2.result, [res.result], 'transaction result is 1 since succeeded')
     }
   })
 })

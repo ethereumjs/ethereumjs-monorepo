@@ -1,4 +1,4 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   bytesToBigInt,
   computeVersionedHash,
@@ -23,7 +23,7 @@ describe('Precompiles: point evaluation', () => {
 
     const kzg = await loadKZG()
 
-    const common = Common.fromGethGenesis(genesisJSON, {
+    const common = createCommonFromGethGenesis(genesisJSON, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },

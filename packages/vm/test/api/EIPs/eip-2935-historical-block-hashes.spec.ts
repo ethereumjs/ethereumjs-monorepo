@@ -1,6 +1,6 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Common, Hardfork } from '@ethereumjs/common'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import {
   Account,
@@ -17,13 +17,13 @@ import {
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { bytesToBigInt } from '../../../../util/src/bytes'
-import { BIGINT_0 } from '../../../../util/src/constants'
-import { VM } from '../../../src/vm'
+import { bytesToBigInt } from '../../../../util/src/bytes.js'
+import { BIGINT_0 } from '../../../../util/src/constants.js'
+import { VM } from '../../../src/vm.js'
 
 import type { Block } from '@ethereumjs/block'
 
-function eip2935ActiveAtCommon(timestamp: number) {
+function eip2935ActiveAtCommon(timestamp: number, address: bigint) {
   const hfs = [
     Hardfork.Chainstart,
     Hardfork.Homestead,
@@ -56,7 +56,7 @@ function eip2935ActiveAtCommon(timestamp: number) {
     block: null,
     timestamp,
   })
-  const c = Common.custom({
+  const c = createCustomCommon({
     customHardforks: {
       testEIP2935Hardfork: {
         name: 'testEIP2935Hardfork',
@@ -64,6 +64,9 @@ function eip2935ActiveAtCommon(timestamp: number) {
         url: '',
         status: 'final',
         eips: [2935, 7709],
+        vm: {
+          historyStorageAddress: address,
+        },
       },
     },
     hardforks,
@@ -85,21 +88,6 @@ const PREBALANCE = BigInt(10000000)
 
 // array of different deployment configurations
 const deploymentConfigs = [
-  // original configuration
-  [
-    // contract code
-    '0x60203611603157600143035f35116029575f356120000143116029576120005f3506545f5260205ff35b5f5f5260205ff35b5f5ffd00',
-    // deployment tx input
-    '0x60368060095f395ff360203611603157600143035f35116029575f356120000143116029576120005f3506545f5260205ff35b5f5f5260205ff35b5f5ffd00',
-    // v r s
-    ['0x1b', '0x539', '0x1b9b6eb1f0'],
-    // sender, hash, deployed address
-    [
-      '0xa4690f0ed0d089faa1e0ad94c8f1b4a2fd4b0734',
-      '0x7ba81426bfa88a2cf4ea5c9abbbe83619505acd1173bc8450f93cf17cde3784b',
-      '0x25a219378dad9b3503c8268c9ca836a52427a4fb',
-    ],
-  ],
   // may 25 configuration with set on the lines of 4788
   [
     // contract code
@@ -127,6 +115,7 @@ describe('EIP 2935: historical block hashes', () => {
     ] = deploymentConfig
 
     const historyAddress = Address.fromString(deployedToAddress)
+    const historyAddressBigInt = bytesToBigInt(historyAddress.bytes)
     const contract2935Code = hexToBytes(contract2935CodeHex)
 
     // eslint-disable-next-line no-inner-declarations
@@ -179,8 +168,8 @@ describe('EIP 2935: historical block hashes', () => {
     })
 
     it('should save genesis block hash to the history block hash contract', async () => {
-      const commonGenesis = eip2935ActiveAtCommon(1)
-      const blockchain = await Blockchain.create({
+      const commonGenesis = eip2935ActiveAtCommon(1, historyAddressBigInt)
+      const blockchain = await createBlockchain({
         common: commonGenesis,
         validateBlocks: false,
         validateConsensus: false,
@@ -189,10 +178,6 @@ describe('EIP 2935: historical block hashes', () => {
       commonGenesis.setHardforkBy({
         timestamp: 1,
       })
-      commonGenesis['_paramsCache']['vm']['historyStorageAddress'].v = bytesToBigInt(
-        historyAddress.bytes
-      )
-
       const genesis = await vm.blockchain.getBlock(0)
       const block = await (
         await vm.buildBlock({
@@ -216,12 +201,12 @@ describe('EIP 2935: historical block hashes', () => {
       const blocksActivation = 256 // This ensures that only block 255 gets stored into the hash contract
       // More than blocks activation to build, so we can ensure that we can also retrieve block 0 or block 1 hash at block 300
       const blocksToBuild = 500
-      const commonGetHistoryServeWindow = eip2935ActiveAtCommon(0)
+      const commonGetHistoryServeWindow = eip2935ActiveAtCommon(0, historyAddressBigInt)
       commonGetHistoryServeWindow.setEIPs([2935])
-      const common = eip2935ActiveAtCommon(blocksActivation)
+      const common = eip2935ActiveAtCommon(blocksActivation, historyAddressBigInt)
       const historyServeWindow = commonGetHistoryServeWindow.param('vm', 'historyServeWindow')
 
-      const blockchain = await Blockchain.create({
+      const blockchain = await createBlockchain({
         common,
         validateBlocks: false,
         validateConsensus: false,
@@ -251,7 +236,7 @@ describe('EIP 2935: historical block hashes', () => {
       }
 
       // swap out the blockchain to test from storage
-      const blockchainEmpty = await Blockchain.create({
+      const blockchainEmpty = await createBlockchain({
         common,
         validateBlocks: false,
         validateConsensus: false,

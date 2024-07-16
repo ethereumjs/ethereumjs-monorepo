@@ -1,5 +1,5 @@
 import { createBlockFromExecutionPayload } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain, createBlockchainFromBlocksData } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
@@ -15,6 +15,7 @@ import testnet from '../testdata/common/testnet.json'
 import shanghaiJSON from '../testdata/geth-genesis/withdrawals.json'
 
 import type { BlockData, ExecutionPayload } from '@ethereumjs/block'
+import type { Blockchain } from '@ethereumjs/blockchain'
 import type { ChainConfig } from '@ethereumjs/common'
 
 const shanghaiPayload = {
@@ -104,7 +105,7 @@ describe('[VMExecution]', () => {
   }
 
   it('Block execution / Hardforks PoW (mainnet)', async () => {
-    let blockchain = await Blockchain.create({
+    let blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -114,7 +115,7 @@ describe('[VMExecution]', () => {
     let newHead = await exec.vm.blockchain.getIteratorHead!()
     assert.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
-    blockchain = await Blockchain.fromBlocksData(blocksDataMainnet as BlockData[], {
+    blockchain = await createBlockchainFromBlocksData(blocksDataMainnet as BlockData[], {
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -130,13 +131,13 @@ describe('[VMExecution]', () => {
   })
 
   it('Test block execution using executeBlocks function', async () => {
-    let blockchain = await Blockchain.create({
+    let blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
     })
     let exec = await testSetup(blockchain)
 
-    blockchain = await Blockchain.fromBlocksData(blocksDataMainnet as BlockData[], {
+    blockchain = await createBlockchainFromBlocksData(blocksDataMainnet as BlockData[], {
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -152,7 +153,7 @@ describe('[VMExecution]', () => {
   })
 
   it('Should fail opening if vmPromise already assigned', async () => {
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -174,7 +175,7 @@ describe('[VMExecution]', () => {
 
   it('Block execution / Hardforks PoA (goerli)', async () => {
     const common = new Common({ chain: ChainEnum.Goerli, hardfork: Hardfork.Chainstart })
-    let blockchain = await Blockchain.create({
+    let blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
       common,
@@ -185,7 +186,7 @@ describe('[VMExecution]', () => {
     let newHead = await exec.vm.blockchain.getIteratorHead!()
     assert.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
-    blockchain = await Blockchain.fromBlocksData(blocksDataGoerli as BlockData[], {
+    blockchain = await createBlockchainFromBlocksData(blocksDataGoerli as BlockData[], {
       validateBlocks: true,
       validateConsensus: false,
       common,

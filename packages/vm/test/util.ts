@@ -1,9 +1,10 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
   BlobEIP4844Transaction,
+  EOACodeEIP7702Transaction,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
 } from '@ethereumjs/tx'
@@ -18,6 +19,7 @@ import {
   isHexString,
   setLengthLeft,
   toBytes,
+  unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
@@ -116,12 +118,24 @@ export function makeTx(
   txData: any,
   opts?: TxOptions
 ):
+  | EOACodeEIP7702Transaction
   | BlobEIP4844Transaction
   | FeeMarketEIP1559Transaction
   | AccessListEIP2930Transaction
   | LegacyTransaction {
   let tx
-  if (txData.blobVersionedHashes !== undefined) {
+  if (txData.authorizationList !== undefined) {
+    // Convert `v` keys to `yParity`
+    for (const signature of txData.authorizationList) {
+      if (signature.v !== undefined) {
+        signature.yParity = bytesToHex(unpadBytes(hexToBytes(signature.v)))
+      }
+      if (signature.nonce !== undefined && signature.nonce[0] === '0x00') {
+        signature.nonce[0] = '0x'
+      }
+    }
+    tx = EOACodeEIP7702Transaction.fromTxData(txData, opts)
+  } else if (txData.blobVersionedHashes !== undefined) {
     tx = BlobEIP4844Transaction.fromTxData(txData, opts)
   } else if (txData.maxFeePerGas !== undefined) {
     tx = FeeMarketEIP1559Transaction.fromTxData(txData, opts)
@@ -399,7 +413,7 @@ export function getDAOCommon(activationBlock: number) {
       editedForks.push(fork)
     }
   }
-  const DAOCommon = Common.custom(
+  const DAOCommon = createCustomCommon(
     {
       hardforks: editedForks,
     },

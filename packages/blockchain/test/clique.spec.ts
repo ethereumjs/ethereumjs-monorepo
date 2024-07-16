@@ -1,12 +1,20 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import {
+  Chain,
+  Common,
+  ConsensusAlgorithm,
+  ConsensusType,
+  Hardfork,
+  createCustomCommon,
+} from '@ethereumjs/common'
 import { Address, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique.js'
-import { Blockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.js'
 
 import type { CliqueConsensus } from '../src/consensus/clique.js'
+import type { Blockchain } from '../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 
@@ -83,7 +91,7 @@ const initWithSigners = async (signers: Signer[], common?: Common) => {
   )
   blocks.push(genesisBlock)
 
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     validateBlocks: true,
     validateConsensus: true,
     genesisBlock,
@@ -183,7 +191,7 @@ const addNextBlock = async (
 describe('Clique: Initialization', () => {
   it('should initialize a clique blockchain', async () => {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
-    const blockchain = await Blockchain.create({ common })
+    const blockchain = await createBlockchain({ common })
 
     const head = await blockchain.getIteratorHead()
     assert.deepEqual(head.hash(), blockchain.genesisBlock.hash(), 'correct genesis hash')
@@ -607,7 +615,7 @@ describe('Clique: Initialization', () => {
   })
 
   it('Clique Voting: Epoch transitions reset all votes to allow chain checkpointing', async () => {
-    const common = Common.custom(
+    const common = createCustomCommon(
       {
         consensus: {
           type: ConsensusType.ProofOfAuthority,
@@ -663,7 +671,7 @@ describe('Clique: Initialization', () => {
   })
 
   it('Clique Voting: Recent signatures should not reset on checkpoint blocks imported in a batch', async () => {
-    const common = Common.custom(
+    const common = createCustomCommon(
       {
         consensus: {
           type: ConsensusType.ProofOfAuthority,
@@ -810,7 +818,7 @@ describe('clique: reorgs', () => {
   it(
     'Two signers, voting to add one other signer, epoch transition, then reorg and revoke this addition',
     async (st) => {
-      const common = Common.custom(
+      const common = createCustomCommon(
         {
           consensus: {
             type: ConsensusType.ProofOfAuthority,

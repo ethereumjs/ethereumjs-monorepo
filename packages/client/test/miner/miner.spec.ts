@@ -1,5 +1,11 @@
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
-import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
+import {
+  Common,
+  Chain as CommonChain,
+  Hardfork,
+  createCommonFromGethGenesis,
+  createCustomCommon,
+} from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
@@ -130,7 +136,7 @@ const chainData = {
   extraData,
   alloc: { [addr]: { balance: '0x10000000000000000000' } },
 }
-const customCommon = Common.fromGethGenesis(chainData, {
+const customCommon = createCommonFromGethGenesis(chainData, {
   chain: 'devnet',
   hardfork: Hardfork.Berlin,
 })
@@ -407,7 +413,7 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
 
 describe('assembleBlocks() -> should not include tx under the baseFee', async () => {
   const customChainParams = { hardforks: [{ name: 'london', block: 0 }] }
-  const common = Common.custom(customChainParams, {
+  const common = createCustomCommon(customChainParams, {
     baseChain: CommonChain.Goerli,
     hardfork: Hardfork.London,
   })
@@ -588,7 +594,7 @@ describe.skip('should handle mining over the london hardfork block', async () =>
       { name: 'london', block: 3 },
     ],
   }
-  const common = Common.custom(customChainParams, { baseChain: CommonChain.Goerli })
+  const common = createCustomCommon(customChainParams, { baseChain: CommonChain.Goerli })
   common.setHardforkBy({ blockNumber: 0 })
   const config = new Config({
     accountCache: 10000,
@@ -696,7 +702,7 @@ describe.skip('should handle mining ethash PoW', async () => {
     extraData,
     alloc: { [addr]: { balance: '0x10000000000000000000' } },
   }
-  const common = Common.fromGethGenesis(chainData, {
+  const common = createCommonFromGethGenesis(chainData, {
     chain: 'devnet',
     hardfork: Hardfork.London,
   })

@@ -9,29 +9,25 @@ import {
 } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 
-import { chains as CHAIN_SPECS } from './chains.js'
 import { crc32 } from './crc.js'
 import { EIPs } from './eips.js'
-import { Chain, CustomChain, Hardfork } from './enums.js'
+import { Hardfork } from './enums.js'
 import { hardforks as HARDFORK_SPECS } from './hardforks.js'
-import { parseGethGenesis } from './utils.js'
 
-import type { ConsensusAlgorithm, ConsensusType } from './enums.js'
+import { _getChainParams } from './index.js'
+
+import type { Chain, ConsensusAlgorithm, ConsensusType } from './enums.js'
 import type {
   BootstrapNodeConfig,
   CasperConfig,
   ChainConfig,
-  ChainName,
-  ChainsConfig,
   CliqueConfig,
   CommonOpts,
-  CustomCommonOpts,
   CustomCrypto,
   EIPConfig,
   EIPOrHFConfig,
   EthashConfig,
   GenesisBlockConfig,
-  GethConfigOpts,
   HardforkByOpts,
   HardforkConfig,
   HardforkTransitionConfig,
@@ -68,171 +64,6 @@ export class Common {
 
   public events: EventEmitter
 
-  /**
-   * Creates a {@link Common} object for a custom chain, based on a standard one.
-   *
-   * It uses all the {@link Chain} parameters from the {@link baseChain} option except the ones overridden
-   * in a provided {@link chainParamsOrName} dictionary. Some usage example:
-   *
-   * ```javascript
-   * Common.custom({chainId: 123})
-   * ```
-   *
-   * There are also selected supported custom chains which can be initialized by using one of the
-   * {@link CustomChains} for {@link chainParamsOrName}, e.g.:
-   *
-   * ```javascript
-   * Common.custom(CustomChains.MaticMumbai)
-   * ```
-   *
-   * Note that these supported custom chains only provide some base parameters (usually the chain and
-   * network ID and a name) and can only be used for selected use cases (e.g. sending a tx with
-   * the `@ethereumjs/tx` library to a Layer-2 chain).
-   *
-   * @param chainParamsOrName Custom parameter dict (`name` will default to `custom-chain`) or string with name of a supported custom chain
-   * @param opts Custom chain options to set the {@link CustomCommonOpts.baseChain}, selected {@link CustomCommonOpts.hardfork} and others
-   */
-  static custom(
-    chainParamsOrName: Partial<ChainConfig> | CustomChain,
-    opts: CustomCommonOpts = {}
-  ): Common {
-    const baseChain = opts.baseChain ?? 'mainnet'
-    const standardChainParams = { ...Common._getChainParams(baseChain) }
-    standardChainParams['name'] = 'custom-chain'
-
-    if (typeof chainParamsOrName !== 'string') {
-      return new Common({
-        chain: {
-          ...standardChainParams,
-          ...chainParamsOrName,
-        },
-        ...opts,
-      })
-    } else {
-      if (chainParamsOrName === CustomChain.PolygonMainnet) {
-        return Common.custom(
-          {
-            name: CustomChain.PolygonMainnet,
-            chainId: 137,
-            networkId: 137,
-          },
-          opts
-        )
-      }
-      if (chainParamsOrName === CustomChain.PolygonMumbai) {
-        return Common.custom(
-          {
-            name: CustomChain.PolygonMumbai,
-            chainId: 80001,
-            networkId: 80001,
-          },
-          opts
-        )
-      }
-      if (chainParamsOrName === CustomChain.ArbitrumOne) {
-        return Common.custom(
-          {
-            name: CustomChain.ArbitrumOne,
-            chainId: 42161,
-            networkId: 42161,
-          },
-          opts
-        )
-      }
-      if (chainParamsOrName === CustomChain.xDaiChain) {
-        return Common.custom(
-          {
-            name: CustomChain.xDaiChain,
-            chainId: 100,
-            networkId: 100,
-          },
-          opts
-        )
-      }
-
-      if (chainParamsOrName === CustomChain.OptimisticKovan) {
-        return Common.custom(
-          {
-            name: CustomChain.OptimisticKovan,
-            chainId: 69,
-            networkId: 69,
-          },
-          opts
-        )
-      }
-
-      if (chainParamsOrName === CustomChain.OptimisticEthereum) {
-        return Common.custom(
-          {
-            name: CustomChain.OptimisticEthereum,
-            chainId: 10,
-            networkId: 10,
-          },
-          // Optimism has not implemented the London hardfork yet (targeting Q1.22)
-          { hardfork: Hardfork.Berlin, ...opts }
-        )
-      }
-      throw new Error(`Custom chain ${chainParamsOrName} not supported`)
-    }
-  }
-
-  /**
-   * Static method to load and set common from a geth genesis json
-   * @param genesisJson json of geth configuration
-   * @param { chain, eips, genesisHash, hardfork, mergeForkIdPostMerge } to further configure the common instance
-   * @returns Common
-   */
-  static fromGethGenesis(
-    genesisJson: any,
-    { chain, eips, genesisHash, hardfork, mergeForkIdPostMerge, customCrypto }: GethConfigOpts
-  ): Common {
-    const genesisParams = parseGethGenesis(genesisJson, chain, mergeForkIdPostMerge)
-    const common = new Common({
-      chain: genesisParams.name ?? 'custom',
-      customChains: [genesisParams],
-      eips,
-      hardfork: hardfork ?? genesisParams.hardfork,
-      customCrypto,
-    })
-    if (genesisHash !== undefined) {
-      common.setForkHashes(genesisHash)
-    }
-    return common
-  }
-
-  /**
-   * Static method to determine if a {@link chainId} is supported as a standard chain
-   * @param chainId bigint id (`1`) of a standard chain
-   * @returns boolean
-   */
-  static isSupportedChainId(chainId: bigint): boolean {
-    const initializedChains = this.getInitializedChains()
-    return Boolean((initializedChains['names'] as ChainName)[chainId.toString()])
-  }
-
-  protected static _getChainParams(
-    chain: string | number | Chain | bigint,
-    customChains?: ChainConfig[]
-  ): ChainConfig {
-    const initializedChains = this.getInitializedChains(customChains)
-    if (typeof chain === 'number' || typeof chain === 'bigint') {
-      chain = chain.toString()
-
-      if ((initializedChains['names'] as ChainName)[chain]) {
-        const name: string = (initializedChains['names'] as ChainName)[chain]
-        return initializedChains[name] as ChainConfig
-      }
-
-      throw new Error(`Chain with ID ${chain} not supported`)
-    }
-
-    if (initializedChains[chain] !== undefined) {
-      return initializedChains[chain] as ChainConfig
-    }
-
-    throw new Error(`Chain with name ${chain} not supported`)
-  }
-
   constructor(opts: CommonOpts) {
     this.events = new EventEmitter()
 
@@ -268,7 +99,7 @@ export class Common {
    */
   setChain(chain: string | number | Chain | bigint | object): ChainConfig {
     if (typeof chain === 'number' || typeof chain === 'bigint' || typeof chain === 'string') {
-      this._chainParams = Common._getChainParams(chain, this._customChains)
+      this._chainParams = _getChainParams(chain, this._customChains)
     } else if (typeof chain === 'object') {
       if (this._customChains.length > 0) {
         throw new Error(
@@ -540,6 +371,15 @@ export class Common {
       } else {
         this._mergeWithParamsCache(hfChanges[1])
       }
+      if (
+        hfChanges[1].vm ||
+        hfChanges[1].gasConfig ||
+        hfChanges[1].gasPrices ||
+        hfChanges[1].pow ||
+        hfChanges[1].sharding
+      ) {
+        this._mergeWithParamsCache(hfChanges[1])
+      }
       if (hfChanges[0] === hardfork) break
     }
     // Iterate through all additionally activated EIPs
@@ -583,7 +423,7 @@ export class Common {
       (this._paramsCache as any)[topic] !== undefined &&
       (this._paramsCache as any)[topic][name] !== undefined
     ) {
-      value = (this._paramsCache as any)[topic][name].v
+      value = (this._paramsCache as any)[topic][name]
     }
     return BigInt(value ?? 0)
   }
@@ -611,7 +451,7 @@ export class Common {
           (hfChanges[1] as any)[topic] !== undefined &&
           (hfChanges[1] as any)[topic][name] !== undefined
         ) {
-          value = (hfChanges[1] as any)[topic][name].v
+          value = (hfChanges[1] as any)[topic][name]
         }
       }
       if (hfChanges[0] === hardfork) break
@@ -638,7 +478,7 @@ export class Common {
     if (eipParams[topic][name] === undefined) {
       return undefined
     }
-    const value = eipParams[topic][name].v
+    const value = eipParams[topic][name]
     return BigInt(value)
   }
 
@@ -1103,22 +943,5 @@ export class Common {
     const copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
     copy.events = new EventEmitter()
     return copy
-  }
-
-  static getInitializedChains(customChains?: ChainConfig[]): ChainsConfig {
-    const names: ChainName = {}
-    for (const [name, id] of Object.entries(Chain)) {
-      names[id] = name.toLowerCase()
-    }
-    const chains = { ...CHAIN_SPECS } as ChainsConfig
-    if (customChains) {
-      for (const chain of customChains) {
-        const { name } = chain
-        names[chain.chainId.toString()] = name
-        chains[name] = chain
-      }
-    }
-    chains.names = names
-    return chains
   }
 }

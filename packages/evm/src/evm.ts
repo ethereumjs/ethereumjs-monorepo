@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { SimpleStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
   Address,
@@ -169,7 +169,7 @@ export class EVM implements EVMInterface {
     }
 
     if (opts.stateManager === undefined) {
-      opts.stateManager = new DefaultStateManager()
+      opts.stateManager = new SimpleStateManager()
     }
 
     return new EVM(opts, bn128)

@@ -1,6 +1,6 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Common, Hardfork } from '@ethereumjs/common'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
   Address,
@@ -17,8 +17,8 @@ import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
-import { VM } from '../../../src/vm'
-import { setBalance } from '../utils'
+import { VM } from '../../../src/vm.js'
+import { setBalance } from '../utils.js'
 
 const pk = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = bytesToHex(privateToAddress(pk))
@@ -27,7 +27,7 @@ describe('EIP4844 tests', () => {
   it('should build a block correctly with blobs', async () => {
     const kzg = await loadKZG()
 
-    const common = Common.fromGethGenesis(genesisJSON, {
+    const common = createCommonFromGethGenesis(genesisJSON, {
       chain: 'eip4844',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -36,7 +36,7 @@ describe('EIP4844 tests', () => {
       { header: { gasLimit: 50000, parentBeaconBlockRoot: zeros(32) } },
       { common }
     )
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       genesisBlock,
       common,
       validateBlocks: false,

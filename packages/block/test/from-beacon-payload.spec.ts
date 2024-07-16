@@ -1,4 +1,4 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { loadKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
@@ -12,6 +12,7 @@ import * as payload87475 from './testdata/payload-slot-87475.json'
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 
 import type { BeaconPayloadJson } from '../src/index.js'
+import type { Common } from '@ethereumjs/common'
 import type { VerkleExecutionWitness } from '@ethereumjs/util'
 
 describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
@@ -22,7 +23,7 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
     const commonJson = { ...shardingJson }
     commonJson.config = { ...commonJson.config, chainId: 4844001005 }
     const network = 'sharding'
-    common = Common.fromGethGenesis(commonJson, { chain: network, customCrypto: { kzg } })
+    common = createCommonFromGethGenesis(commonJson, { chain: network, customCrypto: { kzg } })
     // safely change chainId without modifying undelying json
 
     common.setHardfork(Hardfork.Cancun)
@@ -87,7 +88,7 @@ describe('[fromExecutionPayloadJson]: kaustinen', () => {
   const network = 'kaustinen'
 
   // safely change chainId without modifying undelying json
-  const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
+  const common = createCommonFromGethGenesis(testnetVerkleKaustinen, {
     chain: network,
     eips: [6800],
   })

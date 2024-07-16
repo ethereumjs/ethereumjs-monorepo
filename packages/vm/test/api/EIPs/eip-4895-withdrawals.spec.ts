@@ -1,6 +1,6 @@
 import { createBlockFromBlockData, genWithdrawalsTrieRoot } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import {
@@ -191,10 +191,10 @@ describe('EIP4895 tests', () => {
   })
 
   it('should build a block correctly with withdrawals', async () => {
-    const common = Common.fromGethGenesis(genesisJSON, { chain: 'custom' })
+    const common = createCommonFromGethGenesis(genesisJSON, { chain: 'custom' })
     common.setHardfork(Hardfork.Shanghai)
     const genesisState = parseGethGenesisState(genesisJSON)
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
       validateConsensus: false,

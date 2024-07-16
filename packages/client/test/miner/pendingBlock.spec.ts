@@ -1,5 +1,10 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
+import {
+  Common,
+  Chain as CommonChain,
+  Hardfork,
+  createCommonFromGethGenesis,
+} from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   BlobEIP4844Transaction,
@@ -356,7 +361,7 @@ describe('[PendingBlock]', async () => {
 
   it('construct blob bundles', async () => {
     const kzg = await loadKZG()
-    const common = Common.fromGethGenesis(gethGenesis, {
+    const common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: {
@@ -437,7 +442,7 @@ describe('[PendingBlock]', async () => {
     const gethGenesis = await import('../../../block/test/testdata/4844-hardfork.json')
     const kzg = await loadKZG()
 
-    const common = Common.fromGethGenesis(gethGenesis, {
+    const common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },

@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 import { Account, Address, KECCAK256_RLP, hexToBytes } from '@ethereumjs/util'
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -153,7 +153,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
 
   it('should only accept valid chain and fork', async () => {
     // let common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
-    let common = Common.custom({ chainId: 3 })
+    let common = createCustomCommon({ chainId: 3 })
     common.setHardfork(Hardfork.Byzantium)
     let vm = await VM.create({ common })
     assert.equal(vm.common.param('gasPrices', 'ecAdd'), BigInt(500))
@@ -181,9 +181,9 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     }
   })
 
-  it('should accept a custom chain config (Common.custom() static constructor)', async () => {
+  it('should accept a custom chain config (createCustomCommon() static constructor)', async () => {
     const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-    const common = Common.custom(customChainParams, {
+    const common = createCustomCommon(customChainParams, {
       baseChain: 'mainnet',
       hardfork: 'byzantium',
     })

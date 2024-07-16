@@ -42,14 +42,8 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [],
     gasPrices: {
-      tstore: {
-        v: 100,
-        d: 'Base fee of the TSTORE opcode',
-      },
-      tload: {
-        v: 100,
-        d: 'Base fee of the TLOAD opcode',
-      },
+      tstore: 100, // Base fee of the TSTORE opcode
+      tload: 100, // Base fee of the TLOAD opcode
     },
   },
   1559: {
@@ -59,18 +53,9 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Berlin,
     requiredEIPs: [2930],
     gasConfig: {
-      baseFeeMaxChangeDenominator: {
-        v: 8,
-        d: 'Maximum base fee change denominator',
-      },
-      elasticityMultiplier: {
-        v: 2,
-        d: 'Maximum block gas target elasticity',
-      },
-      initialBaseFee: {
-        v: 1000000000,
-        d: 'Initial base fee on first EIP1559 block',
-      },
+      baseFeeMaxChangeDenominator: 8, // Maximum base fee change denominator
+      elasticityMultiplier: 2, // Maximum block gas target elasticity
+      initialBaseFee: 1000000000, // Initial base fee on first EIP1559 block
     },
   },
   2565: {
@@ -80,10 +65,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Byzantium,
     requiredEIPs: [],
     gasPrices: {
-      modexpGquaddivisor: {
-        v: 3,
-        d: 'Gquaddivisor from modexp precompile for gas calculation',
-      },
+      modexpGquaddivisor: 3, // Gquaddivisor from modexp precompile for gas calculation
     },
   },
   2537: {
@@ -94,38 +76,14 @@ export const EIPs: EIPsDict = {
     requiredEIPs: [],
     gasConfig: {},
     gasPrices: {
-      Bls12381G1AddGas: {
-        v: 500,
-        d: 'Gas cost of a single BLS12-381 G1 addition precompile-call',
-      },
-      Bls12381G1MulGas: {
-        v: 12000,
-        d: 'Gas cost of a single BLS12-381 G1 multiplication precompile-call',
-      },
-      Bls12381G2AddGas: {
-        v: 800,
-        d: 'Gas cost of a single BLS12-381 G2 addition precompile-call',
-      },
-      Bls12381G2MulGas: {
-        v: 45000,
-        d: 'Gas cost of a single BLS12-381 G2 multiplication precompile-call',
-      },
-      Bls12381PairingBaseGas: {
-        v: 65000,
-        d: 'Base gas cost of BLS12-381 pairing check',
-      },
-      Bls12381PairingPerPairGas: {
-        v: 43000,
-        d: 'Per-pair gas cost of BLS12-381 pairing check',
-      },
-      Bls12381MapG1Gas: {
-        v: 5500,
-        d: 'Gas cost of BLS12-381 map field element to G1',
-      },
-      Bls12381MapG2Gas: {
-        v: 75000,
-        d: 'Gas cost of BLS12-381 map field element to G2',
-      },
+      Bls12381G1AddGas: 500, // Gas cost of a single BLS12-381 G1 addition precompile-call
+      Bls12381G1MulGas: 12000, // Gas cost of a single BLS12-381 G1 multiplication precompile-call
+      Bls12381G2AddGas: 800, // Gas cost of a single BLS12-381 G2 addition precompile-call
+      Bls12381G2MulGas: 45000, // Gas cost of a single BLS12-381 G2 multiplication precompile-call
+      Bls12381PairingBaseGas: 65000, // Base gas cost of BLS12-381 pairing check
+      Bls12381PairingPerPairGas: 43000, // Per-pair gas cost of BLS12-381 pairing check
+      Bls12381MapG1Gas: 5500, // Gas cost of BLS12-381 map field element to G1
+      Bls12381MapG2Gas: 75000, // Gas cost of BLS12-381 map field element to G2
     },
     vm: {},
     pow: {},
@@ -144,78 +102,24 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [],
     gasPrices: {
-      coldsload: {
-        v: 2100,
-        d: 'Gas cost of the first read of storage from a given location (per transaction)',
-      },
-      coldaccountaccess: {
-        v: 2600,
-        d: 'Gas cost of the first read of a given address (per transaction)',
-      },
-      warmstorageread: {
-        v: 100,
-        d: "Gas cost of reading storage locations which have already loaded 'cold'",
-      },
-      sstoreCleanGasEIP2200: {
-        v: 2900,
-        d: 'Once per SSTORE operation from clean non-zero to something else',
-      },
-      sstoreNoopGasEIP2200: {
-        v: 100,
-        d: "Once per SSTORE operation if the value doesn't change",
-      },
-      sstoreDirtyGasEIP2200: {
-        v: 100,
-        d: 'Once per SSTORE operation if a dirty value is changed',
-      },
-      sstoreInitRefundEIP2200: {
-        v: 19900,
-        d: 'Once per SSTORE operation for resetting to the original zero value',
-      },
-      sstoreCleanRefundEIP2200: {
-        v: 4900,
-        d: 'Once per SSTORE operation for resetting to the original non-zero value',
-      },
-      call: {
-        v: 0,
-        d: 'Base fee of the CALL opcode',
-      },
-      callcode: {
-        v: 0,
-        d: 'Base fee of the CALLCODE opcode',
-      },
-      delegatecall: {
-        v: 0,
-        d: 'Base fee of the DELEGATECALL opcode',
-      },
-      staticcall: {
-        v: 0,
-        d: 'Base fee of the STATICCALL opcode',
-      },
-      balance: {
-        v: 0,
-        d: 'Base fee of the BALANCE opcode',
-      },
-      extcodesize: {
-        v: 0,
-        d: 'Base fee of the EXTCODESIZE opcode',
-      },
-      extcodecopy: {
-        v: 0,
-        d: 'Base fee of the EXTCODECOPY opcode',
-      },
-      extcodehash: {
-        v: 0,
-        d: 'Base fee of the EXTCODEHASH opcode',
-      },
-      sload: {
-        v: 0,
-        d: 'Base fee of the SLOAD opcode',
-      },
-      sstore: {
-        v: 0,
-        d: 'Base fee of the SSTORE opcode',
-      },
+      coldsload: 2100, // Gas cost of the first read of storage from a given location (per transaction)
+      coldaccountaccess: 2600, // Gas cost of the first read of a given address (per transaction)
+      warmstorageread: 100, // Gas cost of reading storage locations which have already loaded 'cold'
+      sstoreCleanGasEIP2200: 2900, // Once per SSTORE operation from clean non-zero to something else
+      sstoreNoopGasEIP2200: 100, // Once per SSTORE operation if the value doesn't change
+      sstoreDirtyGasEIP2200: 100, // Once per SSTORE operation if a dirty value is changed
+      sstoreInitRefundEIP2200: 19900, // Once per SSTORE operation for resetting to the original zero value
+      sstoreCleanRefundEIP2200: 4900, // Once per SSTORE operation for resetting to the original non-zero value
+      call: 0, // Base fee of the CALL opcode
+      callcode: 0, // Base fee of the CALLCODE opcode
+      delegatecall: 0, // Base fee of the DELEGATECALL opcode
+      staticcall: 0, // Base fee of the STATICCALL opcode
+      balance: 0, // Base fee of the BALANCE opcode
+      extcodesize: 0, // Base fee of the EXTCODESIZE opcode
+      extcodecopy: 0, // Base fee of the EXTCODECOPY opcode
+      extcodehash: 0, // Base fee of the EXTCODEHASH opcode
+      sload: 0, // Base fee of the SLOAD opcode
+      sstore: 0, // Base fee of the SSTORE opcode
     },
   },
   2930: {
@@ -225,14 +129,8 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Istanbul,
     requiredEIPs: [2718, 2929],
     gasPrices: {
-      accessListStorageKeyCost: {
-        v: 1900,
-        d: 'Gas cost per storage key in an Access List transaction',
-      },
-      accessListAddressCost: {
-        v: 2400,
-        d: 'Gas cost per storage key in an Access List transaction',
-      },
+      accessListStorageKeyCost: 1900, // Gas cost per storage key in an Access List transaction
+      accessListAddressCost: 2400, // Gas cost per storage key in an Access List transaction
     },
   },
   2935: {
@@ -242,14 +140,8 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [],
     vm: {
-      historyStorageAddress: {
-        v: BigInt('0x0aae40965e6800cd9b1f4b05ff21581047e3f91e'),
-        d: 'The address where the historical blockhashes are stored',
-      },
-      historyServeWindow: {
-        v: BigInt(8192),
-        d: 'The amount of blocks to be served by the historical blockhash contract',
-      },
+      historyStorageAddress: BigInt('0x0aae40965e6800cd9b1f4b05ff21581047e3f91e'), // The address where the historical blockhashes are stored
+      historyServeWindow: BigInt(8192), // The amount of blocks to be served by the historical blockhash contract
     },
   },
   3074: {
@@ -259,18 +151,9 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
     gasPrices: {
-      auth: {
-        v: 3100,
-        d: 'Gas cost of the AUTH opcode',
-      },
-      authcall: {
-        v: 0,
-        d: 'Gas cost of the AUTHCALL opcode',
-      },
-      authcallValueTransfer: {
-        v: 6700,
-        d: 'Paid for CALL when the value transfer is non-zero',
-      },
+      auth: 3100, // Gas cost of the AUTH opcode
+      authcall: 0, // Gas cost of the AUTHCALL opcode
+      authcallValueTransfer: 6700, // Paid for CALL when the value transfer is non-zero
     },
   },
   3198: {
@@ -280,10 +163,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
     gasPrices: {
-      basefee: {
-        v: 2,
-        d: 'Gas cost of the BASEFEE opcode',
-      },
+      basefee: 2, // Gas cost of the BASEFEE opcode
     },
   },
   3529: {
@@ -293,20 +173,11 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Berlin,
     requiredEIPs: [2929],
     gasConfig: {
-      maxRefundQuotient: {
-        v: 5,
-        d: 'Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)',
-      },
+      maxRefundQuotient: 5, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
     },
     gasPrices: {
-      selfdestructRefund: {
-        v: 0,
-        d: 'Refunded following a selfdestruct operation',
-      },
-      sstoreClearRefundEIP2200: {
-        v: 4800,
-        d: 'Once per SSTORE operation for clearing an originally existing storage slot',
-      },
+      selfdestructRefund: 0, // Refunded following a selfdestruct operation
+      sstoreClearRefundEIP2200: 4800, // Once per SSTORE operation for clearing an originally existing storage slot
     },
   },
   3540: {
@@ -330,10 +201,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.MuirGlacier,
     requiredEIPs: [],
     pow: {
-      difficultyBombDelay: {
-        v: 9500000,
-        d: 'the amount of blocks to delay the difficulty bomb with',
-      },
+      difficultyBombDelay: 9500000, // the amount of blocks to delay the difficulty bomb with
     },
   },
   3607: {
@@ -375,10 +243,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [],
     gasPrices: {
-      push0: {
-        v: 2,
-        d: 'Base fee of the PUSH0 opcode',
-      },
+      push0: 2, // Base fee of the PUSH0 opcode
     },
   },
   3860: {
@@ -388,16 +253,10 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.SpuriousDragon,
     requiredEIPs: [],
     gasPrices: {
-      initCodeWordCost: {
-        v: 2,
-        d: 'Gas to pay for each word (32 bytes) of initcode when creating a contract',
-      },
+      initCodeWordCost: 2, // Gas to pay for each word (32 bytes) of initcode when creating a contract
     },
     vm: {
-      maxInitCodeSize: {
-        v: 49152,
-        d: 'Maximum length of initialization code when creating a contract',
-      },
+      maxInitCodeSize: 49152, // Maximum length of initialization code when creating a contract
     },
   },
   4200: {
@@ -428,10 +287,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
     pow: {
-      difficultyBombDelay: {
-        v: 10700000,
-        d: 'the amount of blocks to delay the difficulty bomb with',
-      },
+      difficultyBombDelay: 10700000, // the amount of blocks to delay the difficulty bomb with
     },
   },
   4399: {
@@ -441,10 +297,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
     gasPrices: {
-      prevrandao: {
-        v: 2,
-        d: 'Base fee of the PREVRANDAO opcode (previously DIFFICULTY)',
-      },
+      prevrandao: 2, // Base fee of the PREVRANDAO opcode (previously DIFFICULTY)
     },
   },
   4750: {
@@ -472,10 +325,7 @@ export const EIPs: EIPsDict = {
     requiredEIPs: [],
     gasPrices: {},
     vm: {
-      historicalRootsLength: {
-        v: 8191,
-        d: 'The modulo parameter of the beaconroot ring buffer in the beaconroot statefull precompile',
-      },
+      historicalRootsLength: 8191, // The modulo parameter of the beaconroot ring buffer in the beaconroot statefull precompile
     },
   },
   4844: {
@@ -485,50 +335,20 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Paris,
     requiredEIPs: [1559, 2718, 2930, 4895],
     gasConfig: {
-      blobGasPerBlob: {
-        v: 131072,
-        d: 'The base fee for blob gas per blob',
-      },
-      targetBlobGasPerBlock: {
-        v: 393216,
-        d: 'The target blob gas consumed per block',
-      },
-      maxblobGasPerBlock: {
-        v: 786432,
-        d: 'The max blob gas allowable per block',
-      },
-      blobGasPriceUpdateFraction: {
-        v: 3338477,
-        d: 'The denominator used in the exponential when calculating a blob gas price',
-      },
+      blobGasPerBlob: 131072, // The base fee for blob gas per blob
+      targetBlobGasPerBlock: 393216, // The target blob gas consumed per block
+      maxblobGasPerBlock: 786432, // The max blob gas allowable per block
+      blobGasPriceUpdateFraction: 3338477, // The denominator used in the exponential when calculating a blob gas price
     },
     gasPrices: {
-      simpleGasPerBlob: {
-        v: 12000,
-        d: 'The basic gas fee for each blob',
-      },
-      minBlobGasPrice: {
-        v: 1,
-        d: 'The minimum fee per blob gas',
-      },
-      kzgPointEvaluationGasPrecompilePrice: {
-        v: 50000,
-        d: 'The fee associated with the point evaluation precompile',
-      },
-      blobhash: {
-        v: 3,
-        d: 'Base fee of the BLOBHASH opcode',
-      },
+      simpleGasPerBlob: 12000, // The basic gas fee for each blob
+      minBlobGasPrice: 1, // The minimum fee per blob gas
+      kzgPointEvaluationGasPrecompilePrice: 50000, // The fee associated with the point evaluation precompile
+      blobhash: 3, // Base fee of the BLOBHASH opcode
     },
     sharding: {
-      blobCommitmentVersionKzg: {
-        v: 1,
-        d: 'The number indicated a versioned hash is a KZG commitment',
-      },
-      fieldElementsPerBlob: {
-        v: 4096,
-        d: 'The number of field elements allowed per blob',
-      },
+      blobCommitmentVersionKzg: 1, // The number indicated a versioned hash is a KZG commitment
+      fieldElementsPerBlob: 4096, // The number of field elements allowed per blob
     },
   },
   4895: {
@@ -545,10 +365,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.GrayGlacier,
     requiredEIPs: [],
     pow: {
-      difficultyBombDelay: {
-        v: 11400000,
-        d: 'the amount of blocks to delay the difficulty bomb with',
-      },
+      difficultyBombDelay: 11400000, // the amount of blocks to delay the difficulty bomb with
     },
   },
   5450: {
@@ -565,10 +382,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Shanghai,
     requiredEIPs: [],
     gasPrices: {
-      mcopy: {
-        v: 3,
-        d: 'Base fee of the MCOPY opcode',
-      },
+      mcopy: 3, // Base fee of the MCOPY opcode
     },
   },
   6110: {
@@ -605,22 +419,13 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
     gasPrices: {
-      create: {
-        v: 1000,
-        d: 'Base fee of the CREATE opcode',
-      },
-      coldsload: {
-        v: 0,
-        d: 'Gas cost of the first read of storage from a given location (per transaction)',
-      },
+      create: 1000, // Base fee of the CREATE opcode
+      coldsload: 0, // Gas cost of the first read of storage from a given location (per transaction)
     },
     vm: {
       // kaustinen 6 current uses this address, however this will be updated to correct address
       // in next iteration
-      historyStorageAddress: {
-        v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
-        d: 'The address where the historical blockhashes are stored',
-      },
+      historyStorageAddress: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'), // The address where the historical blockhashes are stored
     },
   },
   7002: {
@@ -630,54 +435,18 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Paris,
     requiredEIPs: [7685],
     vm: {
-      withdrawalRequestType: {
-        v: BigInt(0x01),
-        d: 'The withdrawal request type for EIP-7685',
-      },
-      excessWithdrawalsRequestStorageSlot: {
-        v: BigInt(0),
-        d: 'The storage slot of the excess withdrawals',
-      },
-      withdrawalsRequestCountStorage: {
-        v: BigInt(1),
-        d: 'The storage slot of the withdrawal request count',
-      },
-      withdrawalsRequestQueueHeadStorageSlot: {
-        v: BigInt(2),
-        d: 'The storage slot of the withdrawal request head of the queue',
-      },
-      withdrawalsRequestTailHeadStorageSlot: {
-        v: BigInt(3),
-        d: 'The storage slot of the withdrawal request tail of the queue',
-      },
-      withdrawalsRequestQueueStorageOffset: {
-        v: BigInt(4),
-        d: 'The storage slot of the withdrawal request queue offset',
-      },
-      maxWithdrawalRequestsPerBlock: {
-        v: BigInt(16),
-        d: 'The max withdrawal requests per block',
-      },
-      targetWithdrawalRequestsPerBlock: {
-        v: BigInt(2),
-        d: 'The target withdrawal requests per block',
-      },
-      minWithdrawalRequestFee: {
-        v: BigInt(1),
-        d: 'The minimum withdrawal request fee (in wei)',
-      },
-      withdrawalRequestFeeUpdateFraction: {
-        v: BigInt(17),
-        d: 'The withdrawal request fee update fraction (used in the fake exponential)',
-      },
-      systemAddress: {
-        v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
-        d: 'The system address to perform operations on the withdrawal requests predeploy address',
-      },
-      withdrawalRequestPredeployAddress: {
-        v: BigInt('0x00A3ca265EBcb825B45F985A16CEFB49958cE017'),
-        d: 'Address of the validator excess address',
-      },
+      withdrawalRequestType: BigInt(0x01), // The withdrawal request type for EIP-7685
+      excessWithdrawalsRequestStorageSlot: BigInt(0), // The storage slot of the excess withdrawals
+      withdrawalsRequestCountStorage: BigInt(1), // The storage slot of the withdrawal request count
+      withdrawalsRequestQueueHeadStorageSlot: BigInt(2), // The storage slot of the withdrawal request head of the queue
+      withdrawalsRequestTailHeadStorageSlot: BigInt(3), // The storage slot of the withdrawal request tail of the queue
+      withdrawalsRequestQueueStorageOffset: BigInt(4), // The storage slot of the withdrawal request queue offset
+      maxWithdrawalRequestsPerBlock: BigInt(16), // The max withdrawal requests per block
+      targetWithdrawalRequestsPerBlock: BigInt(2), // The target withdrawal requests per block
+      minWithdrawalRequestFee: BigInt(1), // The minimum withdrawal request fee (in wei)
+      withdrawalRequestFeeUpdateFraction: BigInt(17), // The withdrawal request fee update fraction (used in the fake exponential)
+      systemAddress: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'), // The system address to perform operations on the withdrawal requests predeploy address
+      withdrawalRequestPredeployAddress: BigInt('0x00A3ca265EBcb825B45F985A16CEFB49958cE017'), // Address of the validator excess address
     },
   },
   7069: {
@@ -725,18 +494,9 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Paris,
     requiredEIPs: [7685],
     vm: {
-      consolidationRequestType: {
-        v: BigInt(0x02),
-        d: 'The withdrawal request type for EIP-7685',
-      },
-      systemAddress: {
-        v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
-        d: 'The system address to perform operations on the consolidation requests predeploy address',
-      },
-      consolidationRequestPredeployAddress: {
-        v: BigInt('0x00b42dbF2194e931E80326D950320f7d9Dbeac02'),
-        d: 'Address of the consolidations contract',
-      },
+      consolidationRequestType: BigInt(0x02), // The withdrawal request type for EIP-7685
+      systemAddress: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'), // The system address to perform operations on the consolidation requests predeploy address
+      consolidationRequestPredeployAddress: BigInt('0x00b42dbF2194e931E80326D950320f7d9Dbeac02'), // Address of the consolidations contract
     },
   },
   7480: {
@@ -771,10 +531,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Paris,
     requiredEIPs: [4844],
     gasPrices: {
-      blobbasefee: {
-        v: 2,
-        d: 'Gas cost of the BLOBBASEFEE opcode',
-      },
+      blobbasefee: 2, // Gas cost of the BLOBBASEFEE opcode
     },
   },
   7620: {
@@ -829,10 +586,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Cancun,
     requiredEIPs: [2718, 2929, 2930],
     gasPrices: {
-      perAuthBaseCost: {
-        v: 2500,
-        d: 'Gas cost of each authority item',
-      },
+      perAuthBaseCost: 2500, // Gas cost of each authority item
     },
   },
   7709: {
