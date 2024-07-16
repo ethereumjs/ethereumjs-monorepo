@@ -5,7 +5,7 @@ import type { Consensus, ConsensusOptions } from '../types.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 
 type MinimalEthashInterface = {
-  dbOpts: Object
+  cacheDB: Object
   verifyPOW(block: Block): Promise<boolean>
 }
 
@@ -46,7 +46,7 @@ export class EthashConsensus implements Consensus {
   public async genesisInit(): Promise<void> {}
   public async setup({ blockchain }: ConsensusOptions): Promise<void> {
     this.blockchain = blockchain
-    this._ethash.dbOpts = this.blockchain!.db as any
+    this._ethash.cacheDB = this.blockchain!.db as any
   }
   public async newBlock(): Promise<void> {}
 }
