@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData, genRequestsTrieRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
@@ -40,13 +40,12 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
+import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 
-const { debug: createDebugLogger } = debugDefault
-
-const debug = createDebugLogger('vm:block')
+const debug = debugDefault('vm:block')
 
 const parentBeaconBlockRootAddress = Address.fromString(
   '0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02'
@@ -212,7 +211,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
     requests = await accumulateRequests(this, result.results)
-    requestsRoot = await Block.genRequestsTrieRoot(requests)
+    requestsRoot = await genRequestsTrieRoot(requests)
   }
 
   // Persist state
@@ -244,12 +243,12 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       requests,
       header: { ...block.header, ...generatedFields },
     }
-    block = Block.fromBlockData(blockData, { common: this.common })
+    block = createBlockFromBlockData(blockData, { common: this.common })
   } else {
     if (this.common.isActivatedEIP(7685)) {
       const valid = await block.requestsTrieIsValid(requests)
       if (!valid) {
-        const validRoot = await Block.genRequestsTrieRoot(requests!)
+        const validRoot = await genRequestsTrieRoot(requests!)
         if (this.DEBUG)
           debug(
             `Invalid requestsRoot received=${bytesToHex(

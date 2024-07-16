@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
 import * as path from 'path'
 
 import type { Kzg } from '@ethereumjs/util'
@@ -265,7 +265,7 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
       }
     }
   }
-  const common = Common.custom(
+  const common = createCustomCommon(
     {
       hardforks: testHardforks,
       defaultHardfork: hfName,
@@ -349,7 +349,7 @@ export function getCommon(network: string, kzg?: Kzg): Common {
         })
       }
     }
-    const common = Common.custom(
+    const common = createCustomCommon(
       {
         hardforks: testHardforks,
       },

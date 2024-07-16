@@ -23,7 +23,7 @@ export function callWithStackTrace(handler: Function, debug: boolean) {
         message: error.message,
       }
       if (debug === true) {
-        e['trace'] = error.stack ?? 'Stack trace is not available'
+        e['trace'] = error.stack
       }
 
       throw e
@@ -58,6 +58,7 @@ export const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number)
     s: txJSON.s!,
     maxFeePerBlobGas: txJSON.maxFeePerBlobGas,
     blobVersionedHashes: txJSON.blobVersionedHashes,
+    yParity: txJSON.yParity,
   }
 }
 

@@ -23,8 +23,13 @@ import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { AccessWitness, AccessedStateType, decodeValue } from './accessWitness.js'
-import { AccountCache, CacheType, CodeCache, StorageCache } from './cache/index.js'
-import { OriginalStorageCache } from './cache/originalStorageCache.js'
+import {
+  AccountCache,
+  CacheType,
+  CodeCache,
+  OriginalStorageCache,
+  StorageCache,
+} from './cache/index.js'
 
 import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { DefaultStateManager } from './stateManager.js'
@@ -44,9 +49,7 @@ import type {
   VerkleProof,
 } from '@ethereumjs/util'
 
-const { debug: createDebugLogger } = debugDefault
-
-const debug = createDebugLogger('statemanager:verkle')
+const debug = debugDefault('statemanager:verkle')
 
 export interface VerkleState {
   [key: PrefixedHexString]: PrefixedHexString | null

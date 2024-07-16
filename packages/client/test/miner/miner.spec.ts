@@ -1,5 +1,11 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
+import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import {
+  Common,
+  Chain as CommonChain,
+  Hardfork,
+  createCommonFromGethGenesis,
+  createCustomCommon,
+} from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
@@ -15,6 +21,7 @@ import { FullEthereumService } from '../../src/service/index.js'
 import { wait } from '../integration/util.js'
 
 import type { FullSynchronizer } from '../../src/sync/index.js'
+import type { Block } from '@ethereumjs/block'
 import type { CliqueConsensus } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
 
@@ -52,7 +59,7 @@ class FakeChain {
   }
   get blocks() {
     return {
-      latest: Block.fromBlockData(),
+      latest: createBlockFromBlockData(),
       height: BigInt(0),
     }
   }
@@ -72,7 +79,7 @@ class FakeChain {
     },
     validateHeader: () => {},
     getIteratorHead: () => {
-      return Block.fromBlockData({ header: { number: 1 } })
+      return createBlockFromBlockData({ header: { number: 1 } })
     },
     getTotalDifficulty: () => {
       return 1n
@@ -129,7 +136,7 @@ const chainData = {
   extraData,
   alloc: { [addr]: { balance: '0x10000000000000000000' } },
 }
-const customCommon = Common.fromGethGenesis(chainData, {
+const customCommon = createCommonFromGethGenesis(chainData, {
   chain: 'devnet',
   hardfork: Hardfork.Berlin,
 })
@@ -406,7 +413,7 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
 
 describe('assembleBlocks() -> should not include tx under the baseFee', async () => {
   const customChainParams = { hardforks: [{ name: 'london', block: 0 }] }
-  const common = Common.custom(customChainParams, {
+  const common = createCustomCommon(customChainParams, {
     baseChain: CommonChain.Goerli,
     hardfork: Hardfork.London,
   })
@@ -418,7 +425,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
     common,
   })
   const chain = new FakeChain() as any
-  const block = Block.fromBlockData({}, { common })
+  const block = createBlockFromBlockData({}, { common })
   Object.defineProperty(chain, 'headers', {
     get() {
       return { latest: block.header, height: block.header.number }
@@ -467,7 +474,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
 describe("assembleBlocks() -> should stop assembling a block after it's full", async () => {
   const chain = new FakeChain() as any
   const gasLimit = 100000
-  const block = Block.fromBlockData(
+  const block = createBlockFromBlockData(
     { header: { gasLimit } },
     { common: customCommon, setHardfork: true }
   )
@@ -587,7 +594,7 @@ describe.skip('should handle mining over the london hardfork block', async () =>
       { name: 'london', block: 3 },
     ],
   }
-  const common = Common.custom(customChainParams, { baseChain: CommonChain.Goerli })
+  const common = createCustomCommon(customChainParams, { baseChain: CommonChain.Goerli })
   common.setHardforkBy({ blockNumber: 0 })
   const config = new Config({
     accountCache: 10000,
@@ -695,7 +702,7 @@ describe.skip('should handle mining ethash PoW', async () => {
     extraData,
     alloc: { [addr]: { balance: '0x10000000000000000000' } },
   }
-  const common = Common.fromGethGenesis(chainData, {
+  const common = createCommonFromGethGenesis(chainData, {
     chain: 'devnet',
     hardfork: Hardfork.London,
   })

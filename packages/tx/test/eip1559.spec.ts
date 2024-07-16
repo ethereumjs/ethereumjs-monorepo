@@ -1,4 +1,4 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { TWO_POW256, ecsign, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -10,7 +10,7 @@ import testdata from './json/eip1559.json' // Source: Besu
 import type { FeeMarketEIP1559TxData, JsonTx } from '../src/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
-const common = Common.custom({ chainId: 4 })
+const common = createCustomCommon({ chainId: 4 })
 common.setHardfork(Hardfork.London)
 
 const validAddress = hexToBytes(`0x${'01'.repeat(20)}`)
@@ -197,7 +197,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
       freeze: false,
     })
 
-    const newCommon = Common.custom({ chainId: 4 })
+    const newCommon = createCustomCommon({ chainId: 4 })
     newCommon.setHardfork(Hardfork.Paris)
 
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
@@ -259,6 +259,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
       v: '0x0',
       r: '0xf924cb68412c8f1cfd74d9b581c71eeaf94fff6abdde3e5b02ca6b2931dcf47',
       s: '0x7dd1c50027c3e31f8b565e25ce68a5072110f61fce5eee81b195dd51273c2f83',
+      yParity: '0x0',
     }
     assert.deepEqual(json, expectedJSON, 'Should return expected JSON dict')
   })

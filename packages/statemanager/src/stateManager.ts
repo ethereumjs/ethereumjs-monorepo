@@ -25,14 +25,22 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { AccountCache, CacheType, CodeCache, StorageCache } from './cache/index.js'
-import { OriginalStorageCache } from './cache/originalStorageCache.js'
+import {
+  AccountCache,
+  CacheType,
+  CodeCache,
+  OriginalStorageCache,
+  StorageCache,
+} from './cache/index.js'
 
-import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
-import type { StorageRange } from '@ethereumjs/common/src'
+import type {
+  AccountFields,
+  EVMStateManagerInterface,
+  StorageDump,
+  StorageRange,
+} from '@ethereumjs/common'
 import type { DB, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 export type StorageProof = {
   key: PrefixedHexString
@@ -152,6 +160,11 @@ export interface DefaultStateManagerOpts {
  *
  * The default state manager implementation uses a
  * `@ethereumjs/trie` trie as a data backend.
+ *
+ * Note that there is a `SimpleStateManager` dependency-free state
+ * manager implementation available shipped with the `@ethereumjs/statemanager`
+ * package which might be an alternative to this implementation
+ * for many basic use cases.
  */
 export class DefaultStateManager implements EVMStateManagerInterface {
   protected _debug: Debugger
@@ -195,7 +208,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
 
-    this._debug = createDebugLogger('statemanager:statemanager')
+    this._debug = debugDefault('statemanager:statemanager')
 
     this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
 

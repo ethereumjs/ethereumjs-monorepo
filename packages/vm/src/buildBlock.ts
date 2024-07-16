@@ -1,4 +1,9 @@
-import { Block } from '@ethereumjs/block'
+import {
+  createBlockFromBlockData,
+  genRequestsTrieRoot,
+  genTransactionsTrieRoot,
+  genWithdrawalsTrieRoot,
+} from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
@@ -29,7 +34,7 @@ import {
 
 import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.js'
 import type { VM } from './vm.js'
-import type { HeaderData } from '@ethereumjs/block'
+import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 export enum BuildStatus {
@@ -134,7 +139,7 @@ export class BlockBuilder {
    * Calculates and returns the transactionsTrie for the block.
    */
   public async transactionsTrie() {
-    return Block.genTransactionsTrieRoot(this.transactions, new Trie({ common: this.vm.common }))
+    return genTransactionsTrieRoot(this.transactions, new Trie({ common: this.vm.common }))
   }
 
   /**
@@ -249,7 +254,7 @@ export class BlockBuilder {
     }
 
     const blockData = { header, transactions: this.transactions }
-    const block = Block.fromBlockData(blockData, this.blockOpts)
+    const block = createBlockFromBlockData(blockData, this.blockOpts)
 
     const result = await this.vm.runTx({ tx, block, skipHardForkValidation })
 
@@ -306,7 +311,7 @@ export class BlockBuilder {
 
     const transactionsTrie = await this.transactionsTrie()
     const withdrawalsRoot = this.withdrawals
-      ? await Block.genWithdrawalsTrieRoot(this.withdrawals, new Trie({ common: this.vm.common }))
+      ? await genWithdrawalsTrieRoot(this.withdrawals, new Trie({ common: this.vm.common }))
       : undefined
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
@@ -323,7 +328,7 @@ export class BlockBuilder {
     let requestsRoot
     if (this.vm.common.isActivatedEIP(7685)) {
       requests = await accumulateRequests(this.vm, this.transactionResults)
-      requestsRoot = await Block.genRequestsTrieRoot(requests)
+      requestsRoot = await genRequestsTrieRoot(requests)
       // Do other validations per request type
     }
 
@@ -355,7 +360,7 @@ export class BlockBuilder {
       requests,
     }
 
-    const block = Block.fromBlockData(blockData, blockOpts)
+    const block = createBlockFromBlockData(blockData, blockOpts)
 
     if (this.blockOpts.putBlockIntoBlockchain === true) {
       await this.vm.blockchain.putBlock(block)

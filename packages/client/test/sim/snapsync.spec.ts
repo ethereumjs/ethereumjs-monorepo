@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   Address,
   bytesToHex,
@@ -32,7 +32,7 @@ const client = Client.http({ port: 8545 })
 
 const network = 'mainnet'
 const networkJson = require(`./configs/${network}.json`)
-const common = Common.fromGethGenesis(networkJson, { chain: network })
+const common = createCommonFromGethGenesis(networkJson, { chain: network })
 const customGenesisState = parseGethGenesisState(networkJson)
 
 const pkey = hexToBytes('0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e')

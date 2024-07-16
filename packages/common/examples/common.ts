@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, createCustomCommon, Hardfork } from '@ethereumjs/common'
 
 // With enums:
 const commonWithEnums = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -23,5 +23,5 @@ c = new Common({ chain: Chain.Mainnet, eips: [4844] })
 console.log(`EIP 4844 is active -- ${c.isActivatedEIP(4844)}`)
 
 // Instantiate common with custom chainID
-const commonWithCustomChainId = Common.custom({ chainId: 1234 })
+const commonWithCustomChainId = createCustomCommon({ chainId: 1234 })
 console.log(`The current chain ID is ${commonWithCustomChainId.chainId}`)

@@ -1,5 +1,5 @@
 import { Address } from '@ethereumjs/util'
-import { Common } from '@ethereumjs/common'
+import { Common, createCustomCommon } from '@ethereumjs/common'
 import { LegacyTransaction } from '../dist/cjs/index'
 import { hexToBytes } from '@ethereumjs/util'
 
@@ -8,7 +8,7 @@ import { hexToBytes } from '@ethereumjs/util'
 // This custom network has the same params as mainnet,
 // except for name, chainId, and networkId,
 // so we use the `Common.custom` method.
-const customCommon = Common.custom(
+const customCommon = createCustomCommon(
   {
     name: 'my-network',
     networkId: 123,

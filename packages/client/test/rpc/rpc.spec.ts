@@ -172,7 +172,7 @@ describe('JSON-RPC call', () => {
 })
 describe('callWithStackTrace', () => {
   it('call with stack trace and gets a stack trace in the error', async () => {
-    const method = 'eth_getBlockByNumber'
+    const method = 'eth_getBlockTransactionCountByNumber'
     const mockBlockNumber = BigInt(123)
     const mockChain = {
       headers: { latest: { number: mockBlockNumber } },
@@ -192,7 +192,7 @@ describe('callWithStackTrace', () => {
   })
 
   it('call with stack trace and gets an error without a stack trace', async () => {
-    const method = 'eth_getBlockByNumber'
+    const method = 'eth_getStorageAt'
     const mockBlockNumber = BigInt(123)
     const mockChain = {
       headers: { latest: { number: mockBlockNumber } },
@@ -207,7 +207,7 @@ describe('callWithStackTrace', () => {
       port: (server.address()! as AddressInfo).port,
     })
 
-    const res = await rpc.request(method, ['0x678', false])
+    const res = await rpc.request(method, ['0xavc', false])
 
     assert.ok(res.error.trace === undefined)
   })

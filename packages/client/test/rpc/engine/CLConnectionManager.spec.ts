@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Common, parseGethGenesis } from '@ethereumjs/common'
 import { assert, describe, expect, it, vi } from 'vitest'
 
@@ -122,7 +122,7 @@ describe('updates stats when a new block is processed', () => {
     const manager = new CLConnectionManager({ config })
     manager.lastForkchoiceUpdate(update)
     manager.lastNewPayload(payload)
-    const block = Block.fromBlockData({
+    const block = createBlockFromBlockData({
       header: {
         parentHash: payload.payload.blockHash,
         number: payload.payload.blockNumber,

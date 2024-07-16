@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { randomBytes } from 'node:crypto'
@@ -39,7 +39,7 @@ const shardingJson = require(`./configs/${network}.json`)
 // safely change chainId without modifying undelying json
 const commonJson = { ...shardingJson }
 commonJson.config = { ...commonJson.config, chainId }
-const common = Common.fromGethGenesis(commonJson, { chain: network })
+const common = createCommonFromGethGenesis(commonJson, { chain: network })
 
 export async function runTx(data: PrefixedHexString, to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)

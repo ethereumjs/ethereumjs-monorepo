@@ -1,4 +1,4 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { Account, Address, bytesToHex, hexToBytes, unpadBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -11,7 +11,7 @@ describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
   it('should work', async () => {
     // setup the evm
     const genesisJSON = await import('../../client/test/testdata/geth-genesis/eip4844.json')
-    const common = Common.fromGethGenesis(genesisJSON, {
+    const common = createCommonFromGethGenesis(genesisJSON, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
@@ -41,7 +41,7 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
   it('should work', async () => {
     // setup the evm
     const genesisJSON = await import('../../client/test/testdata/geth-genesis/eip4844.json')
-    const common = Common.fromGethGenesis(genesisJSON, {
+    const common = createCommonFromGethGenesis(genesisJSON, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
@@ -91,7 +91,7 @@ describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () =>
   it('should work', async () => {
     // setup the evm
     const genesisJSON = await import('../../client/test/testdata/geth-genesis/eip4844.json')
-    const common = Common.fromGethGenesis(genesisJSON, {
+    const common = createCommonFromGethGenesis(genesisJSON, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })

@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromRLPSerializedBlock } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
@@ -21,7 +21,7 @@ import { DBKey, MetaDBManager } from '../util/metaDBManager.js'
 
 import type { SnapFetcherDoneFlags } from '../sync/fetcher/types.js'
 import type { MetaDBManagerOptions } from '../util/metaDBManager.js'
-import type { BlockHeader } from '@ethereumjs/block'
+import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Hardfork } from '@ethereumjs/common'
 
 const INVALID_PARAMS = -32602
@@ -1385,7 +1385,7 @@ export class Skeleton extends MetaDBManager {
     const common = this.config.chainCommon.copy()
     common.setHardfork(hardfork)
 
-    const block = Block.fromRLPSerializedBlock(blockRLP, {
+    const block = createBlockFromRLPSerializedBlock(blockRLP, {
       common,
     })
     return block

@@ -11,8 +11,8 @@ import {
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { RunBlockResult } from '../dist/cjs/types'
-import { Mockchain } from './mockchain'
+import { RunBlockResult } from '@ethereumjs/vm'
+import { Mockchain } from './mockchain.js'
 
 export interface BenchmarkType {
   [key: string]: Function

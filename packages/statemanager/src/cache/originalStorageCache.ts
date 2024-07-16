@@ -4,6 +4,15 @@ import type { Address } from '@ethereumjs/util'
 
 type getContractStorage = (address: Address, key: Uint8Array) => Promise<Uint8Array>
 
+/**
+ * Helper class to cache original storage values (so values already being present in
+ * the pre-state of a call), mainly for correct gas cost calculation in EVM/VM.
+ *
+ * TODO: Usage of this class is very implicit through the injected `getContractStorage()`
+ * method bound to the calling state manager. It should be examined if there are alternative
+ * designs being more transparent and direct along the next breaking release round.
+ *
+ */
 export class OriginalStorageCache {
   private map: Map<string, Map<string, Uint8Array>>
   private getContractStorage: getContractStorage

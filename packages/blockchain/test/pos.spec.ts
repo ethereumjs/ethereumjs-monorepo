@@ -1,11 +1,14 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.js'
 
 import * as testnet from './testdata/testnet.json'
+
+import type { Blockchain } from '../src/index.js'
+import type { Block } from '@ethereumjs/block'
 
 const buildChain = async (blockchain: Blockchain, common: Common, height: number) => {
   const blocks: Block[] = []
@@ -19,7 +22,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
     } else if (number > londonBlockNumber) {
       baseFeePerGas = blocks[number - 1].header.calcNextBaseFee()
     }
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           number,
@@ -58,7 +61,7 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
 
   for (const s of scenarios) {
     it('should pass', async () => {
-      const blockchain = await Blockchain.create({
+      const blockchain = await createBlockchain({
         validateBlocks: true,
         validateConsensus: false,
         common: s.common,
@@ -88,7 +91,7 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
       )
 
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-      const powBlock = Block.fromBlockData(
+      const powBlock = createBlockFromBlockData(
         {
           header: {
             number: 16,

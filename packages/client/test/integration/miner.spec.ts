@@ -1,10 +1,11 @@
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import {
   Chain as ChainCommon,
   Common,
   ConsensusAlgorithm,
   ConsensusType,
   Hardfork,
+  createCustomCommon,
 } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -27,7 +28,7 @@ const hardforks = new Common({ chain: ChainCommon.Goerli })
       ? { ...h, block: 0, timestamp: undefined }
       : { ...h, timestamp: undefined }
   )
-const common = Common.custom(
+const common = createCustomCommon(
   {
     hardforks,
     consensus: {
@@ -51,7 +52,7 @@ async function minerSetup(): Promise<[MockServer, FullEthereumService]> {
   const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
   const server = new MockServer({ config }) as any
 
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     common,
     validateBlocks: false,
     validateConsensus: false,

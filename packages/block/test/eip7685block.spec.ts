@@ -8,6 +8,12 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
+import {
+  createBlockFromBlockData,
+  createBlockFromRPC,
+  createBlockFromValuesArray,
+} from '../src/constructors.js'
+import { genRequestsTrieRoot } from '../src/helpers.js'
 import { Block, BlockHeader } from '../src/index.js'
 
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
@@ -26,7 +32,7 @@ function getRandomDepositRequest(): CLRequest<CLRequestType> {
 function getRandomWithdrawalRequest(): CLRequest<CLRequestType> {
   const withdrawalRequestData = {
     sourceAddress: randomBytes(20),
-    validatorPublicKey: randomBytes(48),
+    validatorPubkey: randomBytes(48),
     amount: bytesToBigInt(randomBytes(8)),
   }
   return WithdrawalRequest.fromRequestData(withdrawalRequestData) as CLRequest<CLRequestType>
@@ -39,7 +45,7 @@ const common = new Common({
 })
 describe('7685 tests', () => {
   it('should instantiate block with defaults', () => {
-    const block = Block.fromBlockData({}, { common })
+    const block = createBlockFromBlockData({}, { common })
     assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
     const block2 = new Block(undefined, undefined, undefined, undefined, { common })
     assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
@@ -47,8 +53,8 @@ describe('7685 tests', () => {
   })
   it('should instantiate a block with requests', async () => {
     const request = getRandomDepositRequest()
-    const requestsRoot = await Block.genRequestsTrieRoot([request])
-    const block = Block.fromBlockData(
+    const requestsRoot = await genRequestsTrieRoot([request])
+    const block = createBlockFromBlockData(
       {
         requests: [request],
         header: { requestsRoot },
@@ -60,7 +66,7 @@ describe('7685 tests', () => {
   })
   it('RequestsRootIsValid should return false when requestsRoot is invalid', async () => {
     const request = getRandomDepositRequest()
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         requests: [request],
         header: { requestsRoot: randomBytes(32) },
@@ -75,11 +81,11 @@ describe('7685 tests', () => {
     const request2 = getRandomDepositRequest()
     const request3 = getRandomWithdrawalRequest()
     const requests = [request1, request2, request3]
-    const requestsRoot = await Block.genRequestsTrieRoot(requests)
+    const requestsRoot = await genRequestsTrieRoot(requests)
 
     // Construct block with requests in correct order
 
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         requests,
         header: { requestsRoot },
@@ -91,7 +97,7 @@ describe('7685 tests', () => {
 
     // Throws when requests are not ordered correctly
     await expect(async () =>
-      Block.fromBlockData(
+      createBlockFromBlockData(
         {
           requests: [request1, request3, request2],
           header: { requestsRoot },
@@ -104,7 +110,7 @@ describe('7685 tests', () => {
 
 describe('fromValuesArray tests', () => {
   it('should construct a block with empty requests root', () => {
-    const block = Block.fromValuesArray(
+    const block = createBlockFromValuesArray(
       [BlockHeader.fromHeaderData({}, { common }).raw(), [], [], [], []],
       {
         common,
@@ -117,10 +123,10 @@ describe('fromValuesArray tests', () => {
     const request2 = getRandomWithdrawalRequest()
     const request3 = getRandomWithdrawalRequest()
     const requests = [request1, request2, request3]
-    const requestsRoot = await Block.genRequestsTrieRoot(requests)
+    const requestsRoot = await genRequestsTrieRoot(requests)
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
 
-    const block = Block.fromValuesArray(
+    const block = createBlockFromValuesArray(
       [
         BlockHeader.fromHeaderData({ requestsRoot }, { common }).raw(),
         [],
@@ -143,10 +149,10 @@ describe('fromRPC tests', () => {
     const request2 = getRandomDepositRequest()
     const request3 = getRandomWithdrawalRequest()
     const requests = [request1, request2, request3]
-    const requestsRoot = await Block.genRequestsTrieRoot(requests)
+    const requestsRoot = await genRequestsTrieRoot(requests)
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
 
-    const block = Block.fromValuesArray(
+    const block = createBlockFromValuesArray(
       [
         BlockHeader.fromHeaderData({ requestsRoot }, { common }).raw(),
         [],
@@ -160,7 +166,7 @@ describe('fromRPC tests', () => {
     )
     const jsonBlock = block.toJSON()
     const rpcBlock: any = { ...jsonBlock.header, requests: jsonBlock.requests }
-    const blockFromJson = Block.fromRPC(rpcBlock, undefined, { common })
-    assert.deepEqual(block.hash(), blockFromJson.hash())
+    const createBlockFromJson = createBlockFromRPC(rpcBlock, undefined, { common })
+    assert.deepEqual(block.hash(), createBlockFromJson.hash())
   })
 })

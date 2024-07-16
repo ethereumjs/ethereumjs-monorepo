@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import { getInitializedChains } from '@ethereumjs/common'
 import {
   Address,
   ConsolidationRequest,
@@ -13,7 +13,7 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 
-import type { RunTxResult } from './types'
+import type { RunTxResult } from './types.js'
 import type { VM } from './vm.js'
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 
@@ -33,7 +33,7 @@ export const accumulateRequests = async (
   if (common.isActivatedEIP(6110)) {
     const depositContractAddress =
       vm.common['_chainParams'].depositContractAddress ??
-      Common.getInitializedChains().mainnet.depositContractAddress
+      getInitializedChains().mainnet.depositContractAddress
     if (depositContractAddress === undefined)
       throw new Error('deposit contract address required with EIP 6110')
     await accumulateDeposits(depositContractAddress, txResults, requests)
@@ -78,7 +78,7 @@ const accumulateEIP7002Requests = async (
   const systemAddressBytes = bigIntToAddressBytes(vm.common.param('vm', 'systemAddress'))
   const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
 
-  const addrIsEmpty = (await vm.stateManager.getAccount(systemAddress)) === undefined
+  const originalAccount = await vm.stateManager.getAccount(systemAddress)
 
   const results = await vm.evm.runCall({
     caller: systemAddress,
@@ -98,8 +98,11 @@ const accumulateEIP7002Requests = async (
     }
   }
 
-  if (addrIsEmpty) {
+  if (originalAccount === undefined) {
     await vm.stateManager.deleteAccount(systemAddress)
+  } else {
+    // Restore the original account (the `runCall` updates the nonce)
+    await vm.stateManager.putAccount(systemAddress, originalAccount)
   }
 }
 
@@ -125,7 +128,7 @@ const accumulateEIP7251Requests = async (
   const systemAddressBytes = bigIntToAddressBytes(vm.common.param('vm', 'systemAddress'))
   const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
 
-  const addrIsEmpty = (await vm.stateManager.getAccount(systemAddress)) === undefined
+  const originalAccount = await vm.stateManager.getAccount(systemAddress)
 
   const results = await vm.evm.runCall({
     caller: systemAddress,
@@ -147,8 +150,11 @@ const accumulateEIP7251Requests = async (
     }
   }
 
-  if (addrIsEmpty) {
+  if (originalAccount === undefined) {
     await vm.stateManager.deleteAccount(systemAddress)
+  } else {
+    // Restore the original account (the `runCall` updates the nonce)
+    await vm.stateManager.putAccount(systemAddress, originalAccount)
   }
 }
 

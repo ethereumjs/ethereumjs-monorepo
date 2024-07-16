@@ -1,4 +1,4 @@
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
 import {
   Account,
@@ -33,7 +33,7 @@ export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
   const db: any = new LevelDB(new MemoryLevel())
   const { common, genesisBlock } = opts
   if (opts.blockchain === undefined) {
-    opts.blockchain = await Blockchain.create({
+    opts.blockchain = await createBlockchain({
       db,
       validateBlocks: false,
       validateConsensus: false,

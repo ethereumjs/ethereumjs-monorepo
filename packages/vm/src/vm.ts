@@ -1,4 +1,4 @@
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
@@ -20,8 +20,7 @@ import type {
 } from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
-import type { EVMInterface } from '@ethereumjs/evm'
-import type { EVMPerformanceLogOutput } from '@ethereumjs/evm/dist/cjs/logger.js'
+import type { EVMInterface, EVMPerformanceLogOutput } from '@ethereumjs/evm'
 import type { BigIntLike } from '@ethereumjs/util'
 
 /**
@@ -92,7 +91,7 @@ export class VM {
     }
 
     if (opts.blockchain === undefined) {
-      opts.blockchain = await Blockchain.create({ common: opts.common })
+      opts.blockchain = await createBlockchain({ common: opts.common })
     }
 
     const genesisState = opts.genesisState ?? {}

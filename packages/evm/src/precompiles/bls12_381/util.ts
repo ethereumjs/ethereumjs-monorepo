@@ -2,7 +2,7 @@ import { equalsBytes, short } from '@ethereumjs/util'
 
 import { BLS_GAS_DISCOUNT_PAIRS } from './constants.js'
 
-import type { PrecompileInput } from '../types'
+import type { PrecompileInput } from '../types.js'
 
 const ZERO_BYTES_16 = new Uint8Array(16)
 

@@ -1,4 +1,4 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
@@ -390,7 +390,7 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
 })
 
 describe('should start on beacon sync when past merge', async () => {
-  const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
+  const common = createCommonFromGethGenesis(genesisJSON, { chain: 'post-merge' })
   common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
   const config = new Config({ accountCache: 10000, storageCache: 1000, common })
   const chain = await Chain.create({ config })

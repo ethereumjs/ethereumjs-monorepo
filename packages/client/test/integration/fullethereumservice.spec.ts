@@ -1,5 +1,5 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
@@ -26,7 +26,7 @@ DefaultStateManager.prototype.shallowCopy = function () {
 }
 async function setup(): Promise<[MockServer, FullEthereumService]> {
   const server = new MockServer({ config }) as any
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     common: config.chainCommon,
     validateBlocks: false,
     validateConsensus: false,
@@ -81,7 +81,7 @@ describe(
     })
     peer.eth!.send('NewBlockHashes', [[hash, BigInt(2)]])
 
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           number: 1,

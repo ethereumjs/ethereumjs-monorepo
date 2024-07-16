@@ -51,15 +51,3 @@ export interface VerkleNodeOptions {
 }
 
 export const NODE_WIDTH = 256
-
-export const createUntouchedLeafValue = () => new Uint8Array(32)
-
-export const createDeletedLeafValue = () => {
-  const bytes = new Uint8Array(32)
-  // Set the 129th bit to 1 directly by setting the 17th byte (index 16) to 0x80
-  bytes[16] = 0x80
-
-  return bytes
-}
-
-export const createDefaultLeafValues = () => new Array(256).fill(0)

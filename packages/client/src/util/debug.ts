@@ -37,7 +37,7 @@ const main = async () => {
   const common = new Common({ chain: '${execution.config.execCommon.chainName()}', hardfork: '${
     execution.hardfork
   }' })
-  const block = Block.fromRLPSerializedBlock(hexToBytes('${bytesToHex(
+  const block = createBlockFromRLPSerializedBlock(hexToBytes('${bytesToHex(
     block.serialize()
   )}'), { common })
 
@@ -51,7 +51,7 @@ const main = async () => {
 
 
   const chainDB = new Level('${execution.config.getDataDirectory(DataDirectory.Chain)}')
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     db: chainDB,
     common,
     validateBlocks: true,

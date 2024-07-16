@@ -8,7 +8,6 @@ import { CacheType } from './types.js'
 
 import type { CacheOpts } from './types.js'
 import type { Account, Address } from '@ethereumjs/util'
-const { debug: createDebugLogger } = debugDefault
 
 /**
  * account: undefined
@@ -45,7 +44,7 @@ export class AccountCache extends Cache {
     }
 
     this._diffCache.push(new Map<string, AccountCacheElement | undefined>())
-    this._debug = createDebugLogger('statemanager:cache:account')
+    this._debug = debugDefault('statemanager:cache:account')
   }
 
   _saveCachePreState(cacheKeyHex: string) {
