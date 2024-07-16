@@ -77,6 +77,7 @@ export class Blockchain implements BlockchainInterface {
   public readonly common: Common
   private _hardforkByHeadBlockNumber: boolean
   private readonly _validateBlocks: boolean
+  private readonly _validateConsensus: boolean
   private _consensusDict: ConsensusDict
 
   /**
@@ -110,6 +111,7 @@ export class Blockchain implements BlockchainInterface {
 
     this._hardforkByHeadBlockNumber = opts.hardforkByHeadBlockNumber ?? false
     this._validateBlocks = opts.validateBlocks ?? true
+    this._validateConsensus = opts.validateConsensus ?? true
     this._customGenesisState = opts.genesisState
 
     this.db = opts.db !== undefined ? opts.db : new MapDB()
@@ -375,7 +377,9 @@ export class Blockchain implements BlockchainInterface {
           await this.validateBlock(block)
         }
 
-        await this.consensus?.validateConsensus(block)
+        if (this._validateConsensus) {
+          await this.consensus?.validateConsensus(block)
+        }
 
         // set total difficulty in the current context scope
         if (this._headHeaderHash) {

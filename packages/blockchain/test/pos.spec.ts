@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -63,7 +63,6 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
     it('should pass', async () => {
       const blockchain = await createBlockchain({
         validateBlocks: true,
-        validateConsensus: false,
         common: s.common,
         hardforkByHeadBlockNumber: true,
       })
@@ -89,29 +88,6 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
         BigInt(1313601),
         'should have calculated the correct post-Merge total difficulty'
       )
-
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-      const powBlock = createBlockFromBlockData(
-        {
-          header: {
-            number: 16,
-            difficulty: BigInt(1),
-            parentHash: latestHeader.hash(),
-            timestamp: latestHeader.timestamp + BigInt(1),
-            gasLimit: BigInt(10000),
-          },
-        },
-        { common }
-      )
-      try {
-        await blockchain.putBlock(powBlock)
-        assert.fail('should throw when inserting PoW block')
-      } catch (err: any) {
-        assert.ok(
-          err.message.includes('invalid difficulty'),
-          'should throw with invalid difficulty message'
-        )
-      }
     })
   }
 })

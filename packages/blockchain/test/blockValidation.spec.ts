@@ -1,13 +1,15 @@
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { KECCAK256_RLP, bytesToHex, randomBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, expect, it } from 'vitest'
 
-import { createBlockchain } from '../src/index.js'
+import { EthashConsensus, createBlockchain } from '../src/index.js'
 
 import { createBlock } from './util.js'
+
+import type { ConsensusDict } from '../src/index.js'
 
 describe('[Blockchain]: Block validation tests', () => {
   it('should throw if an uncle is included before', async () => {
@@ -119,13 +121,11 @@ describe('[Blockchain]: Block validation tests', () => {
     }
   })
 
-  // TODO: See if we can skip this test setup since it is hard to recreate
-  // (combination of Ethash difficulty validation: yes, PoW validation: no not possible any more)
-  /*it('should throw if the uncle header is invalid', async () => {
+  it('should throw if the uncle header is invalid', async () => {
     const consensusDict: ConsensusDict = {}
     consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus()
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchain({ common, consensusDict })
+    const blockchain = await createBlockchain({ common, validateConsensus: false, consensusDict })
 
     const genesis = blockchain.genesisBlock
 
@@ -155,7 +155,7 @@ describe('[Blockchain]: Block validation tests', () => {
         'block throws when uncle header is invalid'
       )
     }
-  })*/
+  })
 
   it('throws if uncle is a canonical block', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
