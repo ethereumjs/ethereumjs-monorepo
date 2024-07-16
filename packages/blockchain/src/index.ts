@@ -1,5 +1,5 @@
 export { Blockchain } from './blockchain.js'
-export { CliqueConsensus, EthashConsensus } from './consensus/index.js'
+export { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus/index.js'
 export * from './constructors.js'
 export {
   DBOp,
