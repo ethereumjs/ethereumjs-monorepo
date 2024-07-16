@@ -21,18 +21,9 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [3540, 5450],
     gasPrices: {
-      dupn: {
-        v: 3,
-        d: 'Base fee of the DUPN opcode',
-      },
-      swapn: {
-        v: 3,
-        d: 'Base fee of the SWAPN opcode',
-      },
-      exchange: {
-        v: 3,
-        d: 'Base fee of the EXCHANGE opcode',
-      },
+      dupn: 3, // Base fee of the DUPN opcode
+      swapn: 3, // Base fee of the SWAPN opcode
+      exchange: 3, // Base fee of the EXCHANGE opcode
     },
   },
   1153: {
@@ -266,18 +257,9 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [3540, 3670],
     gasPrices: {
-      rjump: {
-        v: 2,
-        d: 'Base fee of the RJUMP opcode',
-      },
-      rjumpi: {
-        v: 4,
-        d: 'Base fee of the RJUMPI opcode',
-      },
-      rjumpv: {
-        v: 4,
-        d: 'Base fee of the RJUMPV opcode',
-      },
+      rjump: 2, // Base fee of the RJUMP opcode
+      rjumpi: 4, // Base fee of the RJUMPI opcode
+      rjumpv: 4, // Base fee of the RJUMPV opcode
     },
   },
   4345: {
@@ -307,14 +289,8 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [3540, 3670, 5450],
     gasPrices: {
-      callf: {
-        v: 5,
-        d: 'Base fee of the CALLF opcode',
-      },
-      retf: {
-        v: 3,
-        d: 'Base fee of the RETF opcode',
-      },
+      callf: 5, // Base fee of the CALLF opcode
+      retf: 3, // Base fee of the RETF opcode
     },
   },
   4788: {
@@ -399,10 +375,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [4750, 5450],
     gasPrices: {
-      jumpf: {
-        v: 5,
-        d: 'Base fee of the JUMPF opcode',
-      },
+      jumpf: 5, // Base fee of the JUMPF opcode
     },
   },
   6780: {
@@ -461,30 +434,12 @@ export const EIPs: EIPsDict = {
     */
     requiredEIPs: [2929],
     gasPrices: {
-      extcall: {
-        v: 0,
-        d: 'Base fee of the EXTCALL opcode',
-      },
-      extdelegatecall: {
-        v: 0,
-        d: 'Base fee of the EXTDELEGATECALL opcode',
-      },
-      extstaticcall: {
-        v: 0,
-        d: 'Base fee of the EXTSTATICCALL opcode',
-      },
-      returndataload: {
-        v: 3,
-        d: 'Base fee of the RETURNDATALOAD opcode',
-      },
-      minRetainedGas: {
-        v: 5000,
-        d: 'Minimum gas retained prior to executing an EXT*CALL opcode (this is the minimum gas available after performing the EXT*CALL)',
-      },
-      minCalleeGas: {
-        v: 2300,
-        d: 'Minimum gas available to the the address called by an EXT*CALL opcode',
-      },
+      extcall: 0, // Base fee of the EXTCALL opcode
+      extdelegatecall: 0, // Base fee of the EXTDELEGATECALL opcode
+      extstaticcall: 0, // Base fee of the EXTSTATICCALL opcode
+      returndataload: 3, // Base fee of the RETURNDATALOAD opcode
+      minRetainedGas: 5000, // Minimum gas retained prior to executing an EXT*CALL opcode (this is the minimum gas available after performing the EXT*CALL)
+      minCalleeGas: 2300, //Minimum gas available to the the address called by an EXT*CALL opcode
     },
   },
   7251: {
@@ -506,22 +461,10 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [3540, 3670],
     gasPrices: {
-      dataload: {
-        v: 4,
-        d: 'Base fee of the DATALOAD opcode',
-      },
-      dataloadn: {
-        v: 3,
-        d: 'Base fee of the DATALOADN opcode',
-      },
-      datasize: {
-        v: 2,
-        d: 'Base fee of the DATASIZE opcode',
-      },
-      datacopy: {
-        v: 3,
-        d: 'Base fee of the DATACOPY opcode',
-      },
+      dataload: 4, // Base fee of the DATALOAD opcode
+      dataloadn: 3, // Base fee of the DATALOADN opcode
+      datasize: 2, // Base fee of the DATASIZE opcode
+      datacopy: 3, // Base fee of the DATACOPY opcode
     },
   },
   7516: {
@@ -544,14 +487,8 @@ export const EIPs: EIPsDict = {
     */
     requiredEIPs: [3540, 3541, 3670],
     gasPrices: {
-      eofcreate: {
-        v: 32000, // Same as CREATE/CREATE2
-        d: 'Base fee of the EOFCREATE opcode',
-      },
-      returncontract: {
-        v: 0,
-        d: 'Base fee of the RETURNCONTRACT opcode',
-      },
+      eofcreate: 32000, // Base fee of the EOFCREATE opcode (Same as CREATE/CREATE2)
+      returncontract: 0, // Base fee of the RETURNCONTRACT opcode
     },
   },
   7685: {
