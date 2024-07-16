@@ -5,7 +5,7 @@ import type { Consensus, ConsensusOptions } from '../types.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 
 type MinimalEthashInterface = {
-  cacheDB: Object
+  cacheDB?: any
   verifyPOW(block: Block): Promise<boolean>
 }
 
