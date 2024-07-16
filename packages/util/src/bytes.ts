@@ -107,14 +107,13 @@ export const bytesToInt = (bytes: Uint8Array): number => {
   return res
 }
 
-// TODO: Restrict the input type to only PrefixedHexString
 /**
  * Converts a {@link PrefixedHexString} to a {@link Uint8Array}
- * @param {PrefixedHexString | string} hex The 0x-prefixed hex string to convert
+ * @param {PrefixedHexString} hex The 0x-prefixed hex string to convert
  * @returns {Uint8Array} The converted bytes
  * @throws If the input is not a valid 0x-prefixed hex string
  */
-export const hexToBytes = (hex: PrefixedHexString | string): Uint8Array => {
+export const hexToBytes = (hex: PrefixedHexString): Uint8Array => {
   if (typeof hex !== 'string') {
     throw new Error(`hex argument type ${typeof hex} must be of type string`)
   }
@@ -257,21 +256,18 @@ export const unpadArray = (a: number[]): number[] => {
   return stripZeros(a)
 }
 
-// TODO: Restrict the input type to only PrefixedHexString
 /**
  * Trims leading zeros from a `PrefixedHexString`.
- * @param {PrefixedHexString | string} a
+ * @param {PrefixedHexString} a
  * @return {PrefixedHexString}
  */
-export const unpadHex = (a: PrefixedHexString | string): PrefixedHexString => {
+export const unpadHex = (a: PrefixedHexString): PrefixedHexString => {
   assertIsHexString(a)
   return `0x${stripZeros(stripHexPrefix(a))}`
 }
 
-// TODO: remove the string type from this function (only keep PrefixedHexString)
 export type ToBytesInputTypes =
   | PrefixedHexString
-  | string
   | number
   | bigint
   | Uint8Array
@@ -552,7 +548,6 @@ export function bigInt64ToBytes(value: bigint, littleEndian: boolean = false): U
 // eslint-disable-next-line no-restricted-imports
 export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 
-// TODO: Restrict the input type to only PrefixedHexString
-export function hexToBigInt(input: PrefixedHexString | string): bigint {
+export function hexToBigInt(input: PrefixedHexString): bigint {
   return bytesToBigInt(hexToBytes(isHexString(input) ? input : `0x${input}`))
 }
