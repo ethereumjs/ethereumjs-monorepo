@@ -174,13 +174,14 @@ export interface BlockchainOptions extends GenesisOptions {
   validateBlocks?: boolean
 
   /**
-   * Validate the consensus if a respective consensus implementation is passed
-   * to `consensusDict` (see respective option).
+   * Validate the consensus with the respective consensus implementation passed
+   * to `consensusDict` (see respective option) `CapserConsensus` (which effectively
+   * does nothing) is available by default.
    *
    * For the build-in validation classes the following validations take place.
    * - 'pow' with 'ethash' algorithm (validates the proof-of-work)
    * - 'poa' with 'clique' algorithm (verifies the block signatures)
-   * Default: `true`.
+   * Default: `false`.
    */
   validateConsensus?: boolean
 

@@ -51,7 +51,7 @@ describe('Optional consensus parameter in blockchain constructor', () => {
   it('blockchain constructor should work with custom consensus', async () => {
     const common = new Common({ chain: testnet, hardfork: Hardfork.Chainstart })
     try {
-      const blockchain = await createBlockchain({ common, consensusDict })
+      const blockchain = await createBlockchain({ common, validateConsensus: true, consensusDict })
       assert.equal(
         (blockchain.consensus as fibonacciConsensus).algorithm,
         'fibonacciConsensus',
@@ -66,7 +66,7 @@ describe('Optional consensus parameter in blockchain constructor', () => {
 describe('Custom consensus validation rules', () => {
   it('should validat custom consensus rules', async () => {
     const common = new Common({ chain: testnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchain({ common, consensusDict })
+    const blockchain = await createBlockchain({ common, validateConsensus: true, consensusDict })
     const block = createBlockFromBlockData(
       {
         header: {
@@ -143,7 +143,7 @@ describe('Custom consensus validation rules', () => {
 describe('consensus transition checks', () => {
   it('should transition correctly', async () => {
     const common = new Common({ chain: testnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchain({ common, consensusDict })
+    const blockchain = await createBlockchain({ common, validateConsensus: true, consensusDict })
 
     try {
       await blockchain.checkAndTransitionHardForkByNumber(5n)

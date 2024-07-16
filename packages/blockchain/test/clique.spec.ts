@@ -95,6 +95,7 @@ const initWithSigners = async (signers: Signer[], common?: Common) => {
 
   const blockchain = await createBlockchain({
     validateBlocks: true,
+    validateConsensus: true,
     consensusDict,
     genesisBlock,
     common,

@@ -14,6 +14,7 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 
+import { CasperConsensus } from './consensus/casper.js'
 import {
   DBOp,
   DBSaveLookups,
@@ -111,7 +112,7 @@ export class Blockchain implements BlockchainInterface {
 
     this._hardforkByHeadBlockNumber = opts.hardforkByHeadBlockNumber ?? false
     this._validateBlocks = opts.validateBlocks ?? true
-    this._validateConsensus = opts.validateConsensus ?? true
+    this._validateConsensus = opts.validateConsensus ?? false
     this._customGenesisState = opts.genesisState
 
     this.db = opts.db !== undefined ? opts.db : new MapDB()
@@ -121,6 +122,7 @@ export class Blockchain implements BlockchainInterface {
     this.events = new AsyncEventEmitter()
 
     this._consensusDict = {}
+    this._consensusDict[ConsensusAlgorithm.Casper] = new CasperConsensus()
 
     if (opts.consensusDict !== undefined) {
       this._consensusDict = { ...this._consensusDict, ...opts.consensusDict }
@@ -378,7 +380,13 @@ export class Blockchain implements BlockchainInterface {
         }
 
         if (this._validateConsensus) {
-          await this.consensus?.validateConsensus(block)
+          if (!(this.common.consensusAlgorithm() in this._consensusDict)) {
+            throw new Error(
+              `Consensus object for ${this.common.consensusAlgorithm()} consensus not available in (see consensusDict option)`
+            )
+          }
+
+          await this.consensus!.validateConsensus(block)
         }
 
         // set total difficulty in the current context scope
