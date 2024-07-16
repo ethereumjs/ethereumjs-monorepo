@@ -73,6 +73,10 @@ export enum EOFError {
   UnstableStack = 'Unstable stack (can reach stack under/overflow by jumps)',
   RetfNoReturn = 'Trying to return to undefined function', // This should never happen (this is a return stack underflow)
   ReturnStackOverflow = 'Return stack overflow',
+  InvalidExtcallTarget = 'invalid extcall target: address > 20 bytes',
+  InvalidReturnContractDataSize = 'invalid RETURNCONTRACT: data size lower than expected',
+
+  InvalidEofFormat = 'invalid EOF format',
 }
 
 export enum SimpleErrors {

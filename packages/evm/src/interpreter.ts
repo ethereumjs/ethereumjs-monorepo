@@ -12,7 +12,6 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-//import { EOF } from './eof/eof.js'
 import { FORMAT, MAGIC, VERSION } from './eof/constants.js'
 import { EOFContainerMode, validateEOF } from './eof/container.js'
 import { setupEOF } from './eof/setup.js'

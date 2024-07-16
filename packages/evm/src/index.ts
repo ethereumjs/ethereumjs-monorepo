@@ -1,4 +1,3 @@
-//import { EOF } from './eof.js'
 import { EVM } from './evm.js'
 import { ERROR as EVMErrorMessage, EvmError } from './exceptions.js'
 import { Message } from './message.js'

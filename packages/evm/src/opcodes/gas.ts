@@ -17,6 +17,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
+import { EOFError } from '../eof/errors.js'
 import { ERROR } from '../exceptions.js'
 
 import { updateSstoreGasEIP1283 } from './EIP1283.js'
@@ -859,7 +860,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         // Check if the target address > 20 bytes
         if (toAddr > EXTCALL_TARGET_MAX) {
-          trap(ERROR.INVALID_EXTCALL_TARGET)
+          trap(EOFError.InvalidExtcallTarget)
         }
 
         // Charge for memory expansion
@@ -922,7 +923,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         // Check if the target address > 20 bytes
         if (toAddr > EXTCALL_TARGET_MAX) {
-          trap(ERROR.INVALID_EXTCALL_TARGET)
+          trap(EOFError.InvalidExtcallTarget)
         }
 
         // Charge for memory expansion
@@ -1009,7 +1010,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         // Check if the target address > 20 bytes
         if (toAddr > EXTCALL_TARGET_MAX) {
-          trap(ERROR.INVALID_EXTCALL_TARGET)
+          trap(EOFError.InvalidExtcallTarget)
         }
 
         // Charge for memory expansion

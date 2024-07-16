@@ -1329,7 +1329,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const actualSectionSize = preDeployDataSectionSize + Number(auxDataSize)
 
         if (actualSectionSize < originalDataSize) {
-          trap(ERROR.INVALID_RETURNCONTRACT_DATA_SIZE)
+          trap(EOFError.InvalidReturnContractDataSize)
         }
 
         if (actualSectionSize > 0xffff) {
