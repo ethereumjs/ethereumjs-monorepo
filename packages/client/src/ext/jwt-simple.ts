@@ -193,7 +193,7 @@ const encode = function jwt_encode(
   // create segments, all segments should be base64 string
   const segments = []
   segments.push(base64url.encode(utf8ToBytes(JSON.stringify(header))))
-  segments.push(base64url.encode(utf8ToBytes(JSON.stringify(payload))))
+  segments.push(base64urlnopad.encode(utf8ToBytes(JSON.stringify(payload))))
   segments.push(sign(segments.join('.'), key, signingMethod, signingType))
 
   return segments.join('.')
