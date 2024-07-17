@@ -380,7 +380,7 @@ export class Blockchain implements BlockchainInterface {
         }
 
         if (this._validateConsensus) {
-          if (!(this.common.consensusAlgorithm() in this._consensusDict)) {
+          if (this.consensus === undefined) {
             throw new Error(
               `Consensus object for ${this.common.consensusAlgorithm()} consensus not available in (see consensusDict option)`
             )
