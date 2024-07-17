@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721202492099,
+  "lastUpdate": 1721207854719,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "willcory10@gmail.com",
-            "name": "Will Cory",
-            "username": "roninjin10"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c225537a488e6df308982260505ca5169a5b8a02",
-          "message": "feat: Add bundle visualizer (#3463)\n\n* feat: Add bundle visualizer\r\n\r\n* Apply suggestion\r\n\r\n---------\r\n\r\nCo-authored-by: William Cory <williamcory@Williams-MacBook-Pro.local>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-06-18T22:25:11+02:00",
-          "tree_id": "3f6a045608560aba6c819a8de445e69e37a67edd",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c225537a488e6df308982260505ca5169a5b8a02"
-        },
-        "date": 1718742473875,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42018,
-            "range": "±1.68%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39844,
-            "range": "±2.86%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40613,
-            "range": "±1.56%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39879,
-            "range": "±1.68%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38476,
-            "range": "±1.88%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 35727,
             "range": "±1.76%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "03fa9124d59eed777ee7c57448d0593e088a9e46",
+          "message": "Blockchain: More Modern and Flexible Consensus Layout / Tree Shaking Optimization (#3504)\n\n* Switch to a more flexible Blockchain consensusDict options structure allowing to pass in different consensus objects\r\n\r\n* Remove misplaced (non consensus checkand useless (already checked in block header) difficulty equals 0 check from CasperConsensus\r\n\r\n* Shift to a new consensus semantics adhering to the fact that *consensus* and *consensus validation* is basically the same, allowing for more flexible instantiation and optional consensus object usage\r\n\r\n* Remove redundant validateConsensus flag, fix block validation, clique and custom consensus tests\r\n\r\n* Readd validateConsensus flag (default: true) to allow for more fine-grained settings to use the mechanism (e.g. Clique) but skip the respective validation\r\n\r\n* Find a middle ground between convenience (allow mainnet default blockchain without need for ethash passing in) and consensus availability validation (now in the validate() call)\r\n\r\n* Add clique example\r\n\r\n* Client fixes\r\n\r\n* Fix VM test\r\n\r\n* Minor\r\n\r\n* Remove Ethash dependency from Blockchain, adjust EthashConsensus ethash object integration\r\n\r\n* Re-add CasperConsensus exports\r\n\r\n* Rebuild package-lock.json\r\n\r\n* EtashConsensus fix\r\n\r\n* Fixes\r\n\r\n* Fix client CLI tests\r\n\r\n* Cleaner consensus check on validate call\r\n\r\n* More consistent check for consensus object, re-add test for custom consensus transition\r\n\r\n* Re-add difficulty check for PoS, re-activate removed test",
+          "timestamp": "2024-07-17T11:15:00+02:00",
+          "tree_id": "e3552fa971ce5f51cf15720f0718d4d18a3a5c84",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/03fa9124d59eed777ee7c57448d0593e088a9e46"
+        },
+        "date": 1721207854153,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37669,
+            "range": "±2.90%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 37387,
+            "range": "±1.24%",
+            "unit": "ops/sec",
+            "extra": "92 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37213,
+            "range": "±1.38%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 34446,
+            "range": "±4.23%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35618,
+            "range": "±1.75%",
             "unit": "ops/sec",
             "extra": "89 samples"
           }
