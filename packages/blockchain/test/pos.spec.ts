@@ -63,7 +63,6 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
     it('should pass', async () => {
       const blockchain = await createBlockchain({
         validateBlocks: true,
-        validateConsensus: false,
         common: s.common,
         hardforkByHeadBlockNumber: true,
       })

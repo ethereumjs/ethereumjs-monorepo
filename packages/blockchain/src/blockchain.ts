@@ -14,7 +14,7 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 
-import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus/index.js'
+import { CasperConsensus } from './consensus/casper.js'
 import {
   DBOp,
   DBSaveLookups,
@@ -30,6 +30,7 @@ import type {
   BlockchainInterface,
   BlockchainOptions,
   Consensus,
+  ConsensusDict,
   OnBlock,
 } from './types.js'
 import type { HeaderData } from '@ethereumjs/block'
@@ -37,10 +38,16 @@ import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
 
 /**
- * This class stores and interacts with blocks.
+ * Blockchain implementation to create and maintain a valid canonical chain
+ * of block headers or blocks with support for reorgs and the ability to provide
+ * custom DB backends.
+ *
+ * By default consensus validation is not provided since with the swith to
+ * Proof-of-Stake consensus is validated by the Ethereum consensus layer.
+ * If consensus validation is desired for Etash or Clique blockchains the
+ * optional `consensusDict` option can be used to pass in validation objects.
  */
 export class Blockchain implements BlockchainInterface {
-  consensus: Consensus
   db: DB<Uint8Array | string, Uint8Array | string | DBObject>
   dbManager: DBManager
   events: AsyncEventEmitter<BlockchainEvents>
@@ -70,8 +77,9 @@ export class Blockchain implements BlockchainInterface {
 
   public readonly common: Common
   private _hardforkByHeadBlockNumber: boolean
-  private readonly _validateConsensus: boolean
   private readonly _validateBlocks: boolean
+  private readonly _validateConsensus: boolean
+  private _consensusDict: ConsensusDict
 
   /**
    * This is used to track which canonical blocks are deleted. After a method calls
@@ -103,8 +111,8 @@ export class Blockchain implements BlockchainInterface {
     }
 
     this._hardforkByHeadBlockNumber = opts.hardforkByHeadBlockNumber ?? false
-    this._validateConsensus = opts.validateConsensus ?? true
     this._validateBlocks = opts.validateBlocks ?? true
+    this._validateConsensus = opts.validateConsensus ?? false
     this._customGenesisState = opts.genesisState
 
     this.db = opts.db !== undefined ? opts.db : new MapDB()
@@ -113,38 +121,13 @@ export class Blockchain implements BlockchainInterface {
 
     this.events = new AsyncEventEmitter()
 
-    if (opts.consensus) {
-      this.consensus = opts.consensus
-    } else {
-      switch (this.common.consensusAlgorithm()) {
-        case ConsensusAlgorithm.Casper:
-          this.consensus = new CasperConsensus()
-          break
-        case ConsensusAlgorithm.Clique:
-          this.consensus = new CliqueConsensus()
-          break
-        case ConsensusAlgorithm.Ethash:
-          this.consensus = new EthashConsensus()
-          break
-        default:
-          throw new Error(`consensus algorithm ${this.common.consensusAlgorithm()} not supported`)
-      }
-    }
+    this._consensusDict = {}
+    this._consensusDict[ConsensusAlgorithm.Casper] = new CasperConsensus()
 
-    if (this._validateConsensus) {
-      if (this.common.consensusType() === ConsensusType.ProofOfWork) {
-        if (this.common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
-          throw new Error('consensus validation only supported for pow ethash algorithm')
-        }
-      }
-      if (this.common.consensusType() === ConsensusType.ProofOfAuthority) {
-        if (this.common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
-          throw new Error(
-            'consensus (signature) validation only supported for poa clique algorithm'
-          )
-        }
-      }
+    if (opts.consensusDict !== undefined) {
+      this._consensusDict = { ...this._consensusDict, ...opts.consensusDict }
     }
+    this._consensusCheck()
 
     this._heads = {}
 
@@ -153,6 +136,22 @@ export class Blockchain implements BlockchainInterface {
     if (opts.genesisBlock && !opts.genesisBlock.isGenesis()) {
       throw 'supplied block is not a genesis block'
     }
+  }
+
+  private _consensusCheck() {
+    if (this._validateConsensus && this.consensus === undefined) {
+      throw new Error(
+        `Consensus object for ${this.common.consensusAlgorithm()} must be passed (see consensusDict option) if consensus validation is activated`
+      )
+    }
+  }
+
+  /**
+   * Returns an eventual consensus object matching the current consensus algorithm from Common
+   * or undefined if non available
+   */
+  get consensus(): Consensus | undefined {
+    return this._consensusDict[this.common.consensusAlgorithm()]
   }
 
   /**
@@ -390,7 +389,7 @@ export class Blockchain implements BlockchainInterface {
         }
 
         if (this._validateConsensus) {
-          await this.consensus.validateConsensus(block)
+          await this.consensus!.validateConsensus(block)
         }
 
         // set total difficulty in the current context scope
@@ -453,7 +452,7 @@ export class Blockchain implements BlockchainInterface {
         const ops = dbOps.concat(this._saveHeadOps())
         await this.dbManager.batch(ops)
 
-        await this.consensus.newBlock(block, commonAncestor, ancestorHeaders)
+        await this.consensus?.newBlock(block, commonAncestor, ancestorHeaders)
       } catch (e) {
         // restore head to the previouly sane state
         this._heads = oldHeads
@@ -499,7 +498,7 @@ export class Blockchain implements BlockchainInterface {
       throw new Error(`invalid timestamp ${header.errorStr()}`)
     }
 
-    if (!(header.common.consensusType() === 'pos')) await this.consensus.validateDifficulty(header)
+    if (!(header.common.consensusType() === 'pos')) await this.consensus?.validateDifficulty(header)
 
     if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       const period = (this.common.consensusConfig() as CliqueConfig).period
@@ -1221,31 +1220,9 @@ export class Blockchain implements BlockchainInterface {
       timestamp,
     })
 
-    // If custom consensus algorithm is used, skip merge hardfork consensus checks
-    if (!Object.values(ConsensusAlgorithm).includes(this.consensus.algorithm as ConsensusAlgorithm))
-      return
-
-    switch (this.common.consensusAlgorithm()) {
-      case ConsensusAlgorithm.Casper:
-        if (!(this.consensus instanceof CasperConsensus)) {
-          this.consensus = new CasperConsensus()
-        }
-        break
-      case ConsensusAlgorithm.Clique:
-        if (!(this.consensus instanceof CliqueConsensus)) {
-          this.consensus = new CliqueConsensus()
-        }
-        break
-      case ConsensusAlgorithm.Ethash:
-        if (!(this.consensus instanceof EthashConsensus)) {
-          this.consensus = new EthashConsensus()
-        }
-        break
-      default:
-        throw new Error(`consensus algorithm ${this.common.consensusAlgorithm()} not supported`)
-    }
-    await this.consensus.setup({ blockchain: this })
-    await this.consensus.genesisInit(this.genesisBlock)
+    this._consensusCheck()
+    await this.consensus?.setup({ blockchain: this })
+    await this.consensus?.genesisInit(this.genesisBlock)
   }
 
   /**

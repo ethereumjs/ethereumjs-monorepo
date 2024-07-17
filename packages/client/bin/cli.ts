@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { createBlockFromValuesArray } from '@ethereumjs/block'
-import { createBlockchain } from '@ethereumjs/blockchain'
+import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
   Chain,
   Common,
@@ -62,6 +62,7 @@ import type { FullEthereumService } from '../src/service/index.js'
 import type { ClientOpts } from '../src/types.js'
 import type { RPCArgs } from './startRpc.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
+import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
@@ -635,14 +636,21 @@ async function startClient(
 
   let blockchain
   if (genesisMeta.genesisState !== undefined || genesisMeta.genesisStateRoot !== undefined) {
-    const validateConsensus = config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique
+    let validateConsensus = false
+    const consensusDict: ConsensusDict = {}
+    if (config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+      consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
+      validateConsensus = true
+    }
+
     blockchain = await createBlockchain({
       db: new LevelDB(dbs.chainDB),
       ...genesisMeta,
       common: config.chainCommon,
       hardforkByHeadBlockNumber: true,
-      validateConsensus,
       validateBlocks: true,
+      validateConsensus,
+      consensusDict,
       genesisState: genesisMeta.genesisState,
       genesisStateRoot: genesisMeta.genesisStateRoot,
     })

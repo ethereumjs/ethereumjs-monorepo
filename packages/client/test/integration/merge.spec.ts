@@ -1,5 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { createBlockchain } from '@ethereumjs/blockchain'
+import { CliqueConsensus, EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
   Chain as ChainCommon,
   ConsensusAlgorithm,
@@ -7,6 +7,7 @@ import {
   Hardfork,
   createCustomCommon,
 } from '@ethereumjs/common'
+import { Ethash } from '@ethereumjs/ethash'
 import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -18,7 +19,7 @@ import { Event } from '../../src/types.js'
 import { MockServer } from './mocks/mockserver.js'
 import { destroy, setup } from './util.js'
 
-import type { CliqueConsensus } from '@ethereumjs/blockchain'
+import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 
 const commonPoA = createCustomCommon(
@@ -74,10 +75,14 @@ const accounts: [Address, Uint8Array][] = [
 async function minerSetup(common: Common): Promise<[MockServer, FullEthereumService]> {
   const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
   const server = new MockServer({ config }) as any
+  const consensusDict: ConsensusDict = {}
+  consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
+  consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())
   const blockchain = await createBlockchain({
     common,
     validateBlocks: false,
     validateConsensus: false,
+    consensusDict,
   })
   ;(blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [accounts[0][0]] // stub
   const serviceConfig = new Config({
