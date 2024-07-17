@@ -1,7 +1,6 @@
 import { BIGINT_0 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Status } from '../src/hardforks.js'
 import {
   Chain,
   Common,
@@ -182,11 +181,9 @@ describe('[Common]: Custom chains', () => {
   it('customHardforks parameter: initialization and transition tests', () => {
     const c = createCustomCommon({
       customHardforks: {
+        // Hardfork to test EIP 2935
         testEIP2935Hardfork: {
           name: 'testEIP2935Hardfork',
-          comment: 'Hardfork to test EIP 2935',
-          url: '',
-          status: Status.Final,
           eips: [2935],
         },
       },
@@ -234,11 +231,9 @@ describe('[Common]: Custom chains', () => {
   it('customHardforks: override params', () => {
     const c = createCustomCommon({
       customHardforks: {
+        // Hardfork which changes the gas of STOP from 0 to 10
         stop10Gas: {
           name: 'stop10Gas',
-          comment: 'Hardfork which changes the gas of STOP from 0 to 10',
-          url: '',
-          status: Status.Final,
           eips: [2935],
           vm: {
             stop: BigInt(10),
