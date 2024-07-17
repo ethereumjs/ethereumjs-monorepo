@@ -1,6 +1,6 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction, TransactionFactory, TransactionType } from '@ethereumjs/tx'
+import { FeeMarketEIP1559Transaction, TransactionType, createTxFromTxData } from '@ethereumjs/tx'
 import { Address, bigIntToBytes, bytesToBigInt, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
@@ -220,10 +220,10 @@ describe('[EthProtocol]', () => {
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
 
-    const legacyTx = TransactionFactory.fromTxData({ type: 0 }, { common: config.chainCommon })
-    const eip2929Tx = TransactionFactory.fromTxData({ type: 1 }, { common: config.chainCommon })
-    const eip1559Tx = TransactionFactory.fromTxData({ type: 2 }, { common: config.chainCommon })
-    const blobTx = TransactionFactory.fromTxData(
+    const legacyTx = createTxFromTxData({ type: 0 }, { common: config.chainCommon })
+    const eip2929Tx = createTxFromTxData({ type: 1 }, { common: config.chainCommon })
+    const eip1559Tx = createTxFromTxData({ type: 2 }, { common: config.chainCommon })
+    const blobTx = createTxFromTxData(
       { type: 3, to: Address.zero(), blobVersionedHashes: [hexToBytes(`0x01${'00'.repeat(31)}`)] },
       { common: config.chainCommon }
     )
@@ -255,7 +255,7 @@ describe('[EthProtocol]', () => {
     })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
-    const fakeTx = TransactionFactory.fromTxData({}).sign(randomBytes(32))
+    const fakeTx = createTxFromTxData({}).sign(randomBytes(32))
     const fakeHash = fakeTx.hash()
     const encoded = p.encode(
       p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],
