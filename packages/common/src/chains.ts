@@ -8,7 +8,6 @@ export const chains: ChainsDict = {
   mainnet: {
     name: 'mainnet',
     chainId: 1,
-    networkId: 1,
     defaultHardfork: 'shanghai',
     consensus: {
       type: 'pow',
@@ -162,7 +161,6 @@ export const chains: ChainsDict = {
   goerli: {
     name: 'goerli',
     chainId: 5,
-    networkId: 5,
     defaultHardfork: 'shanghai',
     consensus: {
       type: 'poa',
@@ -324,7 +322,6 @@ export const chains: ChainsDict = {
   sepolia: {
     name: 'sepolia',
     chainId: 11155111,
-    networkId: 11155111,
     defaultHardfork: 'shanghai',
     consensus: {
       type: 'pow',
@@ -459,7 +456,6 @@ export const chains: ChainsDict = {
   holesky: {
     name: 'holesky',
     chainId: 17000,
-    networkId: 17000,
     defaultHardfork: 'paris',
     consensus: {
       type: 'pos',
@@ -578,7 +574,6 @@ export const chains: ChainsDict = {
   kaustinen6: {
     name: 'kaustinen6',
     chainId: 69420,
-    networkId: 69420,
     defaultHardfork: 'osaka',
     consensus: {
       type: 'pos',

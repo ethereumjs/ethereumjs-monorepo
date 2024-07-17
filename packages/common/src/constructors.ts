@@ -48,7 +48,6 @@ export function createCustomCommon(
         {
           name: CustomChain.PolygonMainnet,
           chainId: 137,
-          networkId: 137,
         },
         opts
       )
@@ -58,7 +57,6 @@ export function createCustomCommon(
         {
           name: CustomChain.PolygonMumbai,
           chainId: 80001,
-          networkId: 80001,
         },
         opts
       )
@@ -68,7 +66,6 @@ export function createCustomCommon(
         {
           name: CustomChain.ArbitrumOne,
           chainId: 42161,
-          networkId: 42161,
         },
         opts
       )
@@ -78,7 +75,6 @@ export function createCustomCommon(
         {
           name: CustomChain.xDaiChain,
           chainId: 100,
-          networkId: 100,
         },
         opts
       )
@@ -89,7 +85,6 @@ export function createCustomCommon(
         {
           name: CustomChain.OptimisticKovan,
           chainId: 69,
-          networkId: 69,
         },
         opts
       )
@@ -100,7 +95,6 @@ export function createCustomCommon(
         {
           name: CustomChain.OptimisticEthereum,
           chainId: 10,
-          networkId: 10,
         },
         // Optimism has not implemented the London hardfork yet (targeting Q1.22)
         { hardfork: Hardfork.Berlin, ...opts }
