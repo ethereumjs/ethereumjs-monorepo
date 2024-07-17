@@ -182,7 +182,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
   })
 
   it('should accept a custom chain config (createCustomCommon() static constructor)', async () => {
-    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
+    const customChainParams = { name: 'custom', chainId: 123 }
     const common = createCustomCommon(customChainParams, {
       baseChain: 'mainnet',
       hardfork: 'byzantium',

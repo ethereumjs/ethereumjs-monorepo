@@ -13,7 +13,7 @@ import { VM } from '../../../src'
 import type { BlockData } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
-const customChainParams = { name: 'custom', chainId: 69420, networkId: 678 }
+const customChainParams = { name: 'custom', chainId: 69420 }
 const common = createCustomCommon(customChainParams, {
   hardfork: Hardfork.Cancun,
   eips: [2935, 4895, 6800],
