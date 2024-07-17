@@ -3,14 +3,15 @@ import * as dir from 'node-dir'
 import path from 'path'
 import { assert, describe, it } from 'vitest'
 
-import { EOFContainerMode, validateEOF } from '../src/eof/container.js'
-import { ContainerSectionType } from '../src/eof/verify.js'
-import { EVM } from '../src/index.js'
-import { getCommon } from '../test/eips/eof-utils.js'
+import { EOFContainerMode, validateEOF } from '../../src/eof/container.js'
+import { ContainerSectionType } from '../../src/eof/verify.js'
+import { EVM } from '../../src/evm.js'
+
+import { getCommon } from './eof-utils.js'
 
 // Rename this test dir to the location of EOF header tests
 // To test, use `npx vitest run ./scripts/eof-header-validation.spec.ts
-const testDir = path.resolve('../ethereum-tests/eofv2/fixtures/eof_tests')
+const testDir = path.resolve('../ethereum-tests/EOFStuff/fixtures/eof_tests')
 
 async function getEVM() {
   const common = getCommon()
