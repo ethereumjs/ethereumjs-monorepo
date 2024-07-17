@@ -53,7 +53,6 @@ export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block
 
   const blockchain = await createBlockchain({
     validateBlocks: true,
-    validateConsensus: false,
     genesisBlock: genesis ?? blocks[0],
   })
   try {

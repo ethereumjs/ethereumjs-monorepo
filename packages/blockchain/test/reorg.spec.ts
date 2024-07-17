@@ -1,14 +1,14 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CLIQUE_NONCE_AUTH } from '../src/consensus/clique.js'
+import { CLIQUE_NONCE_AUTH, CliqueConsensus } from '../src/consensus/clique.js'
 import { createBlockchain } from '../src/index.js'
 
 import { generateConsecutiveBlock } from './util.js'
 
-import type { CliqueConsensus } from '../src/consensus/clique.js'
+import type { ConsensusDict } from '../src/index.js'
 import type { Block } from '@ethereumjs/block'
 
 describe('reorg tests', () => {
@@ -71,9 +71,13 @@ describe('reorg tests', () => {
       { header: { extraData: new Uint8Array(97) } },
       { common }
     )
+
+    const consensusDict: ConsensusDict = {}
+    consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
     const blockchain = await createBlockchain({
       validateBlocks: false,
       validateConsensus: false,
+      consensusDict,
       common,
       genesisBlock,
     })

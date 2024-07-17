@@ -12,8 +12,14 @@ import {
   createBlockFromBlockData,
   createBlockFromRLPSerializedBlock,
 } from '@ethereumjs/block'
-import { Blockchain, createBlockchain } from '@ethereumjs/blockchain'
-import { Common, ConsensusType } from '@ethereumjs/common'
+import {
+  Blockchain,
+  ConsensusDict,
+  createBlockchain,
+  EthashConsensus,
+} from '@ethereumjs/blockchain'
+import { Common, ConsensusAlgorithm, ConsensusType } from '@ethereumjs/common'
+import { Ethash } from '@ethereumjs/ethash'
 import { VM } from '@ethereumjs/vm'
 
 import testData from './helpers/blockchain-mock-data.json'
@@ -25,10 +31,13 @@ async function main() {
 
   const genesisBlock = createBlockFromBlockData({ header: testData.genesisBlockHeader }, { common })
 
+  const consensusDict: ConsensusDict = {}
+  consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())
   const blockchain = await createBlockchain({
     common,
-    validateConsensus: validatePow,
     validateBlocks,
+    validateConsensus: validatePow,
+    consensusDict,
     genesisBlock,
   })
 
