@@ -14,6 +14,7 @@ import {
   equalsBytes,
   hexToBytes,
   intToHex,
+  isHexString,
   setLengthLeft,
   toType,
 } from '@ethereumjs/util'
@@ -918,7 +919,7 @@ export class Eth {
     const [blockOpt] = params
     let block: Block
     try {
-      if (blockOpt.length === 66) {
+      if (isHexString(blockOpt, 64)) {
         block = await this._chain.getBlock(hexToBytes(blockOpt))
       } else {
         block = await getBlockByOption(blockOpt, this._chain)
