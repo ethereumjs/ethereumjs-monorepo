@@ -165,9 +165,6 @@ export interface HardforkByOpts {
 }
 
 export type EIPOrHFConfig = {
-  comment: string
-  url: string
-  status: string
   gasConfig?: {
     [key: string]: number | bigint | null
   }
