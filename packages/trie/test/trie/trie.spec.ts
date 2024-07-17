@@ -11,7 +11,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY as BASE_DB_KEY, Trie } from '../../src/index.js'
+import { ROOT_DB_KEY as BASE_DB_KEY, Trie, createTrie } from '../../src/index.js'
 
 for (const { constructor, defaults, title } of [
   {
@@ -252,8 +252,8 @@ describe('keyHashingFunction', async () => {
       },
     }
 
-    const trieWithHashFunction = await Trie.create({ useKeyHashingFunction: keyHashingFunction })
-    const trieWithCommon = await Trie.create({ common: c })
+    const trieWithHashFunction = await createTrie({ useKeyHashingFunction: keyHashingFunction })
+    const trieWithCommon = await createTrie({ common: c })
 
     assert.equal(
       bytesToHex(trieWithHashFunction.root()),
@@ -273,9 +273,9 @@ describe('keyHashingFunction', async () => {
       },
     }
 
-    const trieWithHashFunction = await Trie.create({ useKeyHashingFunction: keyHashingFunction })
+    const trieWithHashFunction = await createTrie({ useKeyHashingFunction: keyHashingFunction })
     const trieWithHashFunctionCopy = trieWithHashFunction.shallowCopy()
-    const trieWithCommon = await Trie.create({ common: c })
+    const trieWithCommon = await createTrie({ common: c })
     const trieWithCommonCopy = trieWithCommon.shallowCopy()
 
     assert.equal(

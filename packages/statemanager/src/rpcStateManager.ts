@@ -1,6 +1,6 @@
 import { Chain, Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
+import { verifyTrieProof } from '@ethereumjs/trie'
 import {
   Account,
   bigIntToHex,
@@ -243,7 +243,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
 
     const proofBuf = proof.accountProof.map((proofNode: PrefixedHexString) => toBytes(proofNode))
 
-    const verified = await Trie.verifyProof(address.bytes, proofBuf, {
+    const verified = await verifyTrieProof(address.bytes, proofBuf, {
       useKeyHashing: true,
     })
     // if not verified (i.e. verifyProof returns null), account does not exist

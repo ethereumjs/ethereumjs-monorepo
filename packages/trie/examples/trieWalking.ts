@@ -1,8 +1,8 @@
-import { Trie } from '@ethereumjs/trie'
+import { createTrie, Trie } from '@ethereumjs/trie'
 import { utf8ToBytes } from '@ethereumjs/util'
 
 async function main() {
-  const trie = await Trie.create()
+  const trie = await createTrie()
   await trie.put(utf8ToBytes('key'), utf8ToBytes('val'))
   const walk = trie.walkTrieIterable(trie.root())
 

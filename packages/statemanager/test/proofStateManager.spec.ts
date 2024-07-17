@@ -1,4 +1,4 @@
-import { Trie } from '@ethereumjs/trie'
+import { Trie, createTrie } from '@ethereumjs/trie'
 import {
   Account,
   Address,
@@ -111,7 +111,7 @@ describe('ProofStateManager', () => {
     // Account: 0xc626553e7c821d0f8308c28d56c60e3c15f8d55a
     // Storage slots: empty list
     const address = Address.fromString('0xc626553e7c821d0f8308c28d56c60e3c15f8d55a')
-    const trie = await Trie.create({ useKeyHashing: true })
+    const trie = await createTrie({ useKeyHashing: true })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
