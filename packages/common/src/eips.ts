@@ -422,7 +422,7 @@ export const EIPs: EIPsDict = {
     },
   },
   /**
-   * Description : Execution layer triggered consolidations (experimental)
+   * Description : Increase the MAX_EFFECTIVE_BALANCE -> Execution layer triggered consolidations (experimental)
    * URL         : https://eips.ethereum.org/EIPS/eip-7251
    * Status      : Draft
    */
