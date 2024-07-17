@@ -928,7 +928,8 @@ async function run() {
 
   // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
   // loaded and initialized on the sharding hardfork activation
-  // Give network id precedence over network name
+  // Give chainId priority over networkId
+  // Give networkId precedence over network name
   const chain = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
   const cryptoFunctions: CustomCrypto = {}
   const kzg = await loadKZG()
