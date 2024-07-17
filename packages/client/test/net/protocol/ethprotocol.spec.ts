@@ -32,7 +32,7 @@ describe('[EthProtocol]', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
-    Object.defineProperty(chain, 'networkId', {
+    Object.defineProperty(chain, 'chainId', {
       get: () => {
         return BigInt(1)
       },
@@ -53,7 +53,7 @@ describe('[EthProtocol]', () => {
     assert.deepEqual(
       p.encodeStatus(),
       {
-        networkId: hexToBytes('0x01'),
+        chainId: hexToBytes('0x01'),
         td: hexToBytes('0x64'),
         bestHash: '0xaa',
         genesisHash: '0xbb',
@@ -62,13 +62,13 @@ describe('[EthProtocol]', () => {
       'encode status'
     )
     const status = p.decodeStatus({
-      networkId: [0x01],
+      chainId: [0x01],
       td: hexToBytes('0x64'),
       bestHash: '0xaa',
       genesisHash: '0xbb',
     })
     assert.ok(
-      status.networkId === BigInt(1) &&
+      status.chainId === BigInt(1) &&
         status.td === BigInt(100) &&
         status.bestHash === '0xaa' &&
         status.genesisHash === '0xbb',

@@ -98,6 +98,8 @@ export type DnsNetwork = string
 
 export interface ClientOpts {
   network?: string
+  chainId?: number
+  // Deprecated, use chainId instead
   networkId?: number
   sync?: SyncMode
   lightServe?: boolean

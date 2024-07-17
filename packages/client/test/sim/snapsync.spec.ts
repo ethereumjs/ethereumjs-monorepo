@@ -58,7 +58,7 @@ describe('simple mainnet test run', async () => {
     process.env.EXTRA_CL_PARAMS = '--params.CAPELLA_FORK_EPOCH 0'
   }
   // Better add it as a option in startnetwork
-  process.env.NETWORKID = `${common.networkId()}`
+  process.env.NETWORKID = `${common.chainId()}`
   const { teardownCallBack, result } = await startNetwork(network, client, {
     filterKeywords,
     filterOutWords,

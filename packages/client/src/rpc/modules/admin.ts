@@ -45,7 +45,7 @@ export class Admin {
     const difficulty = latestHeader.difficulty.toString()
     const genesis = bytesToHex(this._chain.genesis.hash())
     const head = bytesToHex(latestHeader.mixHash)
-    const network = this._chain.networkId.toString()
+    const network = this._chain.chainId.toString()
 
     const nodeInfo = {
       name: clientName,

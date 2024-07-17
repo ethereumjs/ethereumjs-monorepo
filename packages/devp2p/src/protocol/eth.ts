@@ -203,13 +203,13 @@ export class ETH extends Protocol {
     )
 
     const status: {
-      networkId: Uint8Array | Uint8Array[]
+      chainId: Uint8Array | Uint8Array[]
       td: Uint8Array
       bestHash: Uint8Array
       genesisHash: Uint8Array
       forkId?: Uint8Array | Uint8Array[]
     } = {
-      networkId: this._peerStatus[1],
+      chainId: this._peerStatus[1],
       td: this._peerStatus[2] as Uint8Array,
       bestHash: this._peerStatus[3] as Uint8Array,
       genesisHash: this._peerStatus[4] as Uint8Array,

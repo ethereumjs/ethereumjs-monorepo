@@ -85,8 +85,14 @@ const args: ClientOpts = yargs
     choices: networks.map((n) => n[1]).filter((el) => isNaN(parseInt(el))),
     default: 'mainnet',
   })
+  .option('chainId', {
+    describe: 'Chain ID',
+    choices: networks.map((n) => parseInt(n[0])).filter((el) => !isNaN(el)),
+    default: undefined,
+    conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and chainId
+  })
   .option('networkId', {
-    describe: 'Network ID',
+    describe: 'Network ID (deprecated, use chainId instead)',
     choices: networks.map((n) => parseInt(n[0])).filter((el) => !isNaN(el)),
     default: undefined,
     conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and networkId
@@ -923,7 +929,7 @@ async function run() {
   // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
   // loaded and initialized on the sharding hardfork activation
   // Give network id precedence over network name
-  const chain = args.networkId ?? args.network ?? Chain.Mainnet
+  const chain = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
   const cryptoFunctions: CustomCrypto = {}
   const kzg = await loadKZG()
 
