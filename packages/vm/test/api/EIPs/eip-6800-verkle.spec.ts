@@ -2,7 +2,7 @@ import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromSerializedData } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { describe, it } from 'vitest'
@@ -19,7 +19,7 @@ const common = createCustomCommon(customChainParams, {
   eips: [2935, 4895, 6800],
 })
 const decodedTxs = verkleBlockJSON.transactions.map((tx) =>
-  TransactionFactory.fromSerializedData(hexToBytes(tx as PrefixedHexString))
+  createTxFromSerializedData(hexToBytes(tx as PrefixedHexString))
 )
 
 const parentStateRoot = hexToBytes(

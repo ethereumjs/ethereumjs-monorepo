@@ -11,7 +11,7 @@
 
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { type TransactionType, type TxData, createTxFromTxData } from '@ethereumjs/tx'
 import {
   Address,
   bigIntToBytes,
@@ -26,7 +26,6 @@ import { assert, describe, it } from 'vitest'
 import { VM } from '../../../src'
 
 import type { Block } from '@ethereumjs/block'
-import type { TransactionType, TxData } from '@ethereumjs/tx'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
 const common = new Common({
@@ -46,7 +45,7 @@ function beaconrootBlock(
   const newTxData = []
 
   for (const txData of transactions) {
-    const tx = TransactionFactory.fromTxData({
+    const tx = createTxFromTxData({
       gasPrice: 7,
       gasLimit: 100000,
       ...txData,
