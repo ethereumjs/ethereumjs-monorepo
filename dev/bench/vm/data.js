@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721215141727,
+  "lastUpdate": 1721220383679,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "1acacb8183ceccd1601786e8c27b00e4b7dfb0a9",
-          "message": "EVM/Monorepo: Verkle Decoupling (#3462)\n\n* EVM: Replace direct StatelessVerkleStateManager (SVSM) cast with verkle-extended interface usage\n\n* Add experimental AccessWitnessInterface to Common, use interface for AccessWitness implementation in StateManager\n\n* Use AccessWitnessInterface in EVM\n\n* Add verkle module to Util, replace EVM function calls, remove @ethereumjs/verkle dependency\n\n* Rebuild package-lock.json\n\n* Move VerkleCrypto type from verkle-cryptography-wasm to Util\n\n* Make verkleCrypto passing in mandatory in StatelessVerkleStateManager, remove async create constructor, move verkle-cryptography-wasm to dev dependenciew\n\n* Replace additional StatelessVerkleStateManager create() constructor instantiations, add verkle-cryptography-wasm to Client package.json\n\n* Rebuild package-lock.json\n\n* Move verkle helper functionality to Util verkle module, fully remove @ethereumjs/verkle usages\n\n* Update VerkleExecutionWitness, VerkleProof type imports moved to Util\n\n* Remove @ethereumjs/verkle dependency from VM\n\n* Rebuild package-lock.json\n\n* Additional import fix\n\n* Yet another fix\n\n* Merge remote-tracking branch 'origin/master' into verkle-statemanager-interface-and-evm-dependency-removal",
-          "timestamp": "2024-06-19T13:19:24-04:00",
-          "tree_id": "b3b486f34b2052b8b8cfa45bc686dca94af08d73",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1acacb8183ceccd1601786e8c27b00e4b7dfb0a9"
-        },
-        "date": 1718817726436,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41682,
-            "range": "±3.06%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40980,
-            "range": "±1.37%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40700,
-            "range": "±1.50%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37259,
-            "range": "±5.76%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38839,
-            "range": "±1.79%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.06%",
             "unit": "ops/sec",
             "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "df31a69f96c6ec93dcf417f046de0da936046dba",
+          "message": "Common: Simplify EIP and Hardfork Config Structure (#3512)\n\n* Remove comment, url, status from hardfork and EIP configs (moved to code docs)\r\n\r\n* Minor",
+          "timestamp": "2024-07-17T14:43:23+02:00",
+          "tree_id": "5f1550e2789a4bf6e93e785c1d98ea4ce86194c4",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/df31a69f96c6ec93dcf417f046de0da936046dba"
+        },
+        "date": 1721220383054,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37837,
+            "range": "±2.00%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36184,
+            "range": "±2.42%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 36676,
+            "range": "±1.53%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36144,
+            "range": "±1.60%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 33516,
+            "range": "±4.84%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
