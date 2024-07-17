@@ -7,7 +7,7 @@
  * module dependencies
  */
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
-import { base64url } from '@scure/base'
+import { base64url, base64urlnopad } from '@scure/base'
 import crypto from 'crypto'
 
 /**
@@ -121,7 +121,7 @@ const decode = function jwt_decode(
 
   // base64 decode and parse JSON
   const header = JSON.parse(bytesToUtf8(base64url.decode(headerSeg)))
-  const payload = JSON.parse(bytesToUtf8(base64url.decode(payloadSeg)))
+  const payload = JSON.parse(bytesToUtf8(base64urlnopad.decode(payloadSeg)))
 
   if (!noVerify) {
     if (!algorithm && /BEGIN( RSA)? PUBLIC KEY/.test(key.toString())) {
