@@ -127,6 +127,7 @@ export class Blockchain implements BlockchainInterface {
     if (opts.consensusDict !== undefined) {
       this._consensusDict = { ...this._consensusDict, ...opts.consensusDict }
     }
+    this._consensusCheck()
 
     this._heads = {}
 
@@ -134,6 +135,14 @@ export class Blockchain implements BlockchainInterface {
 
     if (opts.genesisBlock && !opts.genesisBlock.isGenesis()) {
       throw 'supplied block is not a genesis block'
+    }
+  }
+
+  private _consensusCheck() {
+    if (this._validateConsensus && this.consensus === undefined) {
+      throw new Error(
+        `Consensus object for ${this.common.consensusAlgorithm()} must be passed (see consensusDict option) if consensus validation is activated`
+      )
     }
   }
 
@@ -380,12 +389,6 @@ export class Blockchain implements BlockchainInterface {
         }
 
         if (this._validateConsensus) {
-          if (this.consensus === undefined) {
-            throw new Error(
-              `Consensus object for ${this.common.consensusAlgorithm()} consensus not available in (see consensusDict option)`
-            )
-          }
-
           await this.consensus!.validateConsensus(block)
         }
 
@@ -1217,6 +1220,7 @@ export class Blockchain implements BlockchainInterface {
       timestamp,
     })
 
+    this._consensusCheck()
     await this.consensus?.setup({ blockchain: this })
     await this.consensus?.genesisInit(this.genesisBlock)
   }

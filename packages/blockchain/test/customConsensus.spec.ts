@@ -153,5 +153,16 @@ describe('consensus transition checks', () => {
         `checkAndTransitionHardForkByNumber should not throw with custom consensus, error=${err.message}`
       )
     }
+
+    blockchain.common.consensusAlgorithm = () => 'ethash'
+
+    try {
+      await blockchain.checkAndTransitionHardForkByNumber(5n)
+      assert.fail(
+        'checkAndTransitionHardForkByNumber should throw when using standard consensus (ethash, clique, casper) but consensus algorithm defined in common is different'
+      )
+    } catch (err: any) {
+      assert.ok(err.message.includes('Consensus object for ethash must be passed'))
+    }
   })
 })
