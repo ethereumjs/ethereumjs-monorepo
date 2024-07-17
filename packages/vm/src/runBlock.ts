@@ -132,10 +132,6 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
     }
 
-    if (opts.parentStateRoot === undefined) {
-      throw Error(`Parent state root is required for StatelessVerkleStateManager execution`)
-    }
-
     if (this.DEBUG) {
       debug(`Initializing StatelessVerkleStateManager executionWitness`)
     }
@@ -149,7 +145,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     // Populate the execution witness
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
-    if (stateManager.verifyProof(opts.parentStateRoot) === false) {
+    if (stateManager.verifyProof() === false) {
       throw Error(`Verkle proof verification failed`)
     }
 
