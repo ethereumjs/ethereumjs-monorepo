@@ -398,7 +398,7 @@ export class Debug {
    * Returns the bytes of the transaction.
    * @param blockOpt Block number or tag
    */
-  async getRawTransaction(params: [string]) {
+  async getRawTransaction(params: [PrefixedHexString]) {
     const [txHash] = params
     if (!this.service.execution.receiptsManager) throw new Error('missing receiptsManager')
     const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
