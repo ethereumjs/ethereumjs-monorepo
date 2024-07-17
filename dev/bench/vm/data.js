@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721077057357,
+  "lastUpdate": 1721202492099,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0b19fc3ed9e3b1dc9fd7725974456980320c0dbe",
-          "message": "EVM/VM: Update mcl-wasm Dependency (Esbuild Issue) (#3461)\n\n* EVM/VM: Bump mcl-wasm dependency from 1.4.0 to 1.5.0\r\n\r\n* Update package-lock.json\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-06-18T15:24:08-04:00",
-          "tree_id": "997cd41b673021aa589526022466e4b59dd9c1ba",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0b19fc3ed9e3b1dc9fd7725974456980320c0dbe"
-        },
-        "date": 1718738803052,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42462,
-            "range": "±1.65%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40126,
-            "range": "±3.11%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40851,
-            "range": "±1.54%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39775,
-            "range": "±1.56%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37948,
-            "range": "±3.42%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.18%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6d83e3bc4608ba62d9f1a118a6191c7dd340bb06",
+          "message": "refactor: restrict PrefixedHexString types (#3510)\n\n* refactor: restrict PrefixedHexString types\r\n\r\n* block: remove null from comments\r\n\r\n* client: minor type fixes",
+          "timestamp": "2024-07-17T09:43:29+02:00",
+          "tree_id": "49ff99f2ef66c2886c8b6173ba047d534d2551f3",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6d83e3bc4608ba62d9f1a118a6191c7dd340bb06"
+        },
+        "date": 1721202491476,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38460,
+            "range": "±1.62%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36653,
+            "range": "±3.14%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37218,
+            "range": "±1.44%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36601,
+            "range": "±1.59%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35727,
+            "range": "±1.76%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
           }
         ]
       }
