@@ -1,6 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { TransactionFactory } from '@ethereumjs/tx'
 import {
   CLRequestFactory,
   ConsolidationRequest,
@@ -35,7 +34,12 @@ import type {
   RequestsBytes,
   WithdrawalsBytes,
 } from './types.js'
-import type { TxOptions } from '@ethereumjs/tx'
+import {
+  createTxFromBlockBodyData,
+  createTxFromSerializedData,
+  createTxFromTxData,
+  type TxOptions,
+} from '@ethereumjs/tx'
 import type {
   CLRequest,
   CLRequestType,
@@ -66,7 +70,7 @@ export function createBlockFromBlockData(blockData: BlockData = {}, opts?: Block
   // parse transactions
   const transactions = []
   for (const txData of txsData ?? []) {
-    const tx = TransactionFactory.fromTxData(txData, {
+    const tx = createTxFromTxData(txData, {
       ...opts,
       // Use header common in case of setHardfork being activated
       common: header.common,
@@ -165,7 +169,7 @@ export function createBlockFromValuesArray(values: BlockBytes, opts?: BlockOptio
   const transactions = []
   for (const txData of txsData ?? []) {
     transactions.push(
-      TransactionFactory.fromBlockBodyData(txData, {
+      createTxFromBlockBodyData(txData, {
         ...opts,
         // Use header common in case of setHardfork being activated
         common: header.common,
@@ -345,12 +349,9 @@ export async function createBlockFromExecutionPayload(
   const txs = []
   for (const [index, serializedTx] of transactions.entries()) {
     try {
-      const tx = TransactionFactory.fromSerializedData(
-        hexToBytes(serializedTx as PrefixedHexString),
-        {
-          common: opts?.common,
-        }
-      )
+      const tx = createTxFromSerializedData(hexToBytes(serializedTx as PrefixedHexString), {
+        common: opts?.common,
+      })
       txs.push(tx)
     } catch (error) {
       const validationError = `Invalid tx at index ${index}: ${error}`
