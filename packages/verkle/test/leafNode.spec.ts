@@ -2,7 +2,13 @@ import { type VerkleCrypto, equalsBytes, randomBytes, setLengthLeft } from '@eth
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { VerkleLeafNodeValue, VerkleNodeType, decodeNode, isLeafNode } from '../src/node/index.js'
+import {
+  VerkleLeafNodeValue,
+  VerkleNodeType,
+  createCValues,
+  decodeNode,
+  isLeafNode,
+} from '../src/node/index.js'
 import { LeafNode } from '../src/node/leafNode.js'
 
 describe('verkle node - leaf', () => {
@@ -61,11 +67,18 @@ describe('verkle node - leaf', () => {
     assert.deepEqual(node.getValue(0), new Uint8Array(32))
   })
 
+  it('should set the leaf marker on a touched value', async () => {
+    const key = randomBytes(32)
+    const node = await LeafNode.create(key.slice(0, 31), verkleCrypto)
+    node.setValue(0, VerkleLeafNodeValue.Deleted)
+    const c1Values = createCValues(node.values.slice(0, 128))
+    assert.equal(c1Values[0][16], 0x80)
+  })
+
   it('should update a commitment when setting a value', async () => {
     const key = randomBytes(32)
     const stem = key.slice(0, 31)
-    const values = new Array<Uint8Array>(256).fill(new Uint8Array(32))
-    const node = await LeafNode.create(stem, verkleCrypto, values)
+    const node = await LeafNode.create(stem, verkleCrypto)
     assert.deepEqual(node.c1, verkleCrypto.zeroCommitment)
     node.setValue(0, randomBytes(32))
     assert.notDeepEqual(node.c1, verkleCrypto.zeroCommitment)
