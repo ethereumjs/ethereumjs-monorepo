@@ -92,7 +92,9 @@ const args: ClientOpts = yargs
     conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and chainId
   })
   .option('networkId', {
-    describe: 'Network ID (deprecated, use chainId instead)',
+    describe: 'Network ID',
+    deprecated: true,
+    deprecate: 'use --chainId instead',
     choices: networks.map((n) => parseInt(n[0])).filter((el) => !isNaN(el)),
     default: undefined,
     conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and networkId
