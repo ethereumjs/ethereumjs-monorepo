@@ -1027,6 +1027,15 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
    */
   async dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
+    function nibblestoBytes(arr: Nibbles): Uint8Array {
+      const buf = new Uint8Array(arr.length / 2)
+      for (let i = 0; i < buf.length; i++) {
+        let q = i * 2
+        buf[i] = (arr[q] << 4) + arr[++q]
+      }
+      return buf
+    }
+
     if (!Number.isSafeInteger(limit) || limit < 0) {
       throw new Error(`Limit is not a proper uint.`)
     }
@@ -1036,6 +1045,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!account) {
       throw new Error(`Account does not exist.`)
     }
+
     const trie = this._getStorageTrie(address, account)
 
     return new Promise((resolve, reject) => {
@@ -1044,36 +1054,40 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
       /** Object conforming to {@link StorageRange.storage}. */
       const storageMap: StorageRange['storage'] = {}
-      const stream = trie.createReadStream()
 
-      stream.on('data', (val: any) => {
-        if (!inRange) {
-          // Check if the key is already in the correct range.
-          if (bytesToBigInt(val.key) >= startKey) {
-            inRange = true
-          } else {
-            return
+      return trie
+        .walkAllValueNodes(async (node: TrieNode, key: number[]) => {
+          if (node instanceof LeafNode) {
+            // storage[bytesToHex(nibblestoBytes(node._nibbles))] = bytesToHex(node._value)
+
+            const keyBytes = nibblestoBytes(node._nibbles)
+
+            if (!inRange) {
+              // Check if the key is already in the correct range.
+              if (bytesToBigInt(keyBytes) >= startKey) {
+                inRange = true
+              } else {
+                return
+              }
+            }
+
+            if (i < limit) {
+              storageMap[bytesToHex(keyBytes)] = { key: null, value: bytesToHex(node._value) }
+              i++
+            } else if (i === limit) {
+              resolve({
+                storage: storageMap,
+                nextKey: bytesToHex(keyBytes),
+              })
+            }
           }
-        }
-
-        if (i < limit) {
-          storageMap[bytesToHex(val.key)] = { key: null, value: bytesToHex(val.value) }
-          i++
-        } else if (i === limit) {
+        })
+        .then((_) =>
           resolve({
             storage: storageMap,
-            nextKey: bytesToHex(val.key),
+            nextKey: null,
           })
-        }
-      })
-
-      stream.on('end', () => {
-        resolve({
-          storage: storageMap,
-          nextKey: null,
-        })
-      })
-      stream.on('error', (e) => reject(e))
+        )
     })
   }
 
