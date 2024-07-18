@@ -1,6 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -93,7 +93,7 @@ describe(method, () => {
     const txVersionedHashes = commitmentsToVersionedHashes(txCommitments)
     const txProofs = blobsToProofs(kzg, txBlobs, txCommitments)
 
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0x03,
         blobVersionedHashes: txVersionedHashes,

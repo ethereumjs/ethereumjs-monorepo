@@ -6,8 +6,10 @@ import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
-  TransactionFactory,
   TransactionType,
+  createTxFromBlockBodyData,
+  createTxFromSerializedData,
+  createTxFromTxData,
 } from '../src/index.js'
 
 const common = new Common({
@@ -59,7 +61,7 @@ describe('[TransactionFactory]: Basic functions', () => {
   it('fromSerializedData() -> success cases', () => {
     for (const txType of txTypes) {
       const serialized = txType.unsigned.serialize()
-      const factoryTx = TransactionFactory.fromSerializedData(serialized, { common })
+      const factoryTx = createTxFromSerializedData(serialized, { common })
       assert.equal(
         factoryTx.constructor.name,
         txType.class.name,
@@ -74,7 +76,7 @@ describe('[TransactionFactory]: Basic functions', () => {
         const unsupportedCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
         assert.throws(
           () => {
-            TransactionFactory.fromSerializedData(txType.unsigned.serialize(), {
+            createTxFromSerializedData(txType.unsigned.serialize(), {
               common: unsupportedCommon,
             })
           },
@@ -87,7 +89,7 @@ describe('[TransactionFactory]: Basic functions', () => {
           () => {
             const serialized = txType.unsigned.serialize()
             serialized[0] = 99 // edit the transaction type
-            TransactionFactory.fromSerializedData(serialized, { common })
+            createTxFromSerializedData(serialized, { common })
           },
           undefined,
           undefined,
@@ -105,7 +107,7 @@ describe('[TransactionFactory]: Basic functions', () => {
       } else {
         rawTx = txType.signed.raw() as Uint8Array[]
       }
-      const tx = TransactionFactory.fromBlockBodyData(rawTx, { common })
+      const tx = createTxFromBlockBodyData(rawTx, { common })
       assert.equal(
         tx.constructor.name,
         txType.name,
@@ -129,14 +131,14 @@ describe('[TransactionFactory]: Basic functions', () => {
 
   it('fromTxData() -> success cases', () => {
     for (const txType of txTypes) {
-      const tx = TransactionFactory.fromTxData({ type: txType.type }, { common })
+      const tx = createTxFromTxData({ type: txType.type }, { common })
       assert.equal(
         tx.constructor.name,
         txType.class.name,
         `should return the right type (${txType.name})`
       )
       if (!txType.eip2718) {
-        const tx = TransactionFactory.fromTxData({})
+        const tx = createTxFromTxData({})
         assert.equal(
           tx.constructor.name,
           txType.class.name,
@@ -149,15 +151,15 @@ describe('[TransactionFactory]: Basic functions', () => {
   it('fromTxData() -> error cases', () => {
     const unsupportedCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     assert.throws(() => {
-      TransactionFactory.fromTxData({ type: 1 }, { common: unsupportedCommon })
+      createTxFromTxData({ type: 1 }, { common: unsupportedCommon })
     })
 
     assert.throws(() => {
-      TransactionFactory.fromTxData({ type: 999 })
+      createTxFromTxData({ type: 999 })
     })
 
     assert.throws(() => {
-      TransactionFactory.fromTxData({ value: BigInt('-100') })
+      createTxFromTxData({ value: BigInt('-100') })
     })
   })
 })

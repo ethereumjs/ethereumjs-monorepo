@@ -13,7 +13,6 @@ import {
   bytesToUtf8,
   concatBytes,
   equalsBytes,
-  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -81,7 +80,7 @@ export class Trie {
    * Creates a new trie.
    * @param opts Options for instantiating the trie
    *
-   * Note: in most cases, the static {@link Trie.create} constructor should be used.  It uses the same API but provides sensible defaults
+   * Note: in most cases, {@link createTrie} constructor should be used.  It uses the same API but provides sensible defaults
    */
   constructor(opts?: TrieOpts) {
     let valueEncoding: ValueEncoding
@@ -135,101 +134,6 @@ export class Trie {
   }
 
   /**
-   * Create a trie from a given (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof. A proof contains the encoded trie nodes
-   * from the root node to the leaf node storing state data.
-   * @param proof an EIP-1186 proof to create trie from
-   * @param shouldVerifyRoot If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
-   * @param trieOpts trie opts to be applied to returned trie
-   * @returns new trie created from given proof
-   */
-  static async createFromProof(
-    proof: Proof,
-    trieOpts?: TrieOpts,
-    shouldVerifyRoot: boolean = false
-  ) {
-    const trie = new Trie(trieOpts)
-    const root = await trie.updateFromProof(proof, shouldVerifyRoot)
-    trie.root(root)
-    await trie.persistRoot()
-    return trie
-  }
-
-  /**
-   * Static version of verifyProof function with the same behavior. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes
-   * from the root node to the leaf node storing state data.
-   * @param rootHash Root hash of the trie that this proof was created from and is being verified for
-   * @param key Key that is being verified and that the proof is created for
-   * @param proof An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
-   * @param opts optional, the opts may include a custom hashing function to use with the trie for proof verification
-   * @throws If proof is found to be invalid.
-   * @returns The value from the key, or null if valid proof of non-existence.
-   */
-  static async verifyProof(
-    key: Uint8Array,
-    proof: Proof,
-    opts?: TrieOpts
-  ): Promise<Uint8Array | null> {
-    try {
-      const proofTrie = await Trie.createFromProof(proof, opts)
-      const value = await proofTrie.get(key, true)
-      return value
-    } catch (err: any) {
-      throw new Error('Invalid proof provided')
-    }
-  }
-
-  /**
-   * A range proof is a proof that includes the encoded trie nodes from the root node to leaf node for one or more branches of a trie,
-   * allowing an entire range of leaf nodes to be validated. This is useful in applications such as snap sync where contiguous ranges
-   * of state trie data is received and validated for constructing world state, locally. Also see {@link verifyRangeProof}. A static
-   * version of this function also exists.
-   * @param rootHash - root hash of state trie this proof is being verified against.
-   * @param firstKey - first key of range being proven.
-   * @param lastKey - last key of range being proven.
-   * @param keys - key list of leaf data being proven.
-   * @param values - value list of leaf data being proven, one-to-one correspondence with keys.
-   * @param proof - proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well
-   * @param opts - optional, the opts may include a custom hashing function to use with the trie for proof verification
-   * @returns a flag to indicate whether there exists more trie node in the trie
-   */
-  static verifyRangeProof(
-    rootHash: Uint8Array,
-    firstKey: Uint8Array | null,
-    lastKey: Uint8Array | null,
-    keys: Uint8Array[],
-    values: Uint8Array[],
-    proof: Uint8Array[] | null,
-    opts?: TrieOpts
-  ): Promise<boolean> {
-    return verifyRangeProof(
-      rootHash,
-      firstKey && bytesToNibbles(firstKey),
-      lastKey && bytesToNibbles(lastKey),
-      keys.map((k) => k).map(bytesToNibbles),
-      values,
-      proof,
-      opts?.useKeyHashingFunction ?? keccak256
-    )
-  }
-
-  /**
-   * Static version of fromProof function. If a root is provided in the opts param, the proof will be checked to have the same expected root. An
-   * (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
-   * @param proof An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
-   * @deprecated Use `createFromProof`
-   */
-  static async fromProof(proof: Proof, opts?: TrieOpts): Promise<Trie> {
-    const trie = await Trie.create(opts)
-    if (opts?.root && !equalsBytes(opts.root, trie.hash(proof[0]))) {
-      throw new Error('Invalid proof provided')
-    }
-    const root = await trie.updateFromProof(proof)
-    trie.root(root)
-    await trie.persistRoot()
-    return trie
-  }
-
-  /**
    * A range proof is a proof that includes the encoded trie nodes from the root node to leaf node for one or more branches of a trie,
    * allowing an entire range of leaf nodes to be validated. This is useful in applications such as snap sync where contiguous ranges
    * of state trie data is received and validated for constructing world state, locally. Also see {@link verifyRangeProof}. A static
@@ -262,7 +166,7 @@ export class Trie {
   }
 
   /**
-   * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains
+   * Creates a proof from a trie and key that can be verified using {@link verifyTrieProof}. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains
    * the encoded trie nodes from the root node to the leaf node storing state data. The returned proof will be in the format of an array that contains Uint8Arrays of
    * serialized branch, extension, and/or leaf nodes.
    * @param key key to create a proof for
@@ -378,47 +282,6 @@ export class Trie {
       await this.persistRoot()
     }
     return
-  }
-
-  static async create(opts?: TrieOpts) {
-    const keccakFunction =
-      opts?.common?.customCrypto.keccak256 ?? opts?.useKeyHashingFunction ?? keccak256
-    let key = ROOT_DB_KEY
-
-    const encoding =
-      opts?.valueEncoding === ValueEncoding.Bytes ? ValueEncoding.Bytes : ValueEncoding.String
-
-    if (opts?.useKeyHashing === true) {
-      key = keccakFunction.call(undefined, ROOT_DB_KEY) as Uint8Array
-    }
-    if (opts?.keyPrefix !== undefined) {
-      key = concatBytes(opts.keyPrefix, key)
-    }
-
-    if (opts?.db !== undefined && opts?.useRootPersistence === true) {
-      if (opts?.root === undefined) {
-        const root = await opts?.db.get(bytesToUnprefixedHex(key), {
-          keyEncoding: KeyEncoding.String,
-          valueEncoding: encoding,
-        })
-        if (typeof root === 'string') {
-          opts.root = unprefixedHexToBytes(root)
-        } else {
-          opts.root = root
-        }
-      } else {
-        await opts?.db.put(
-          bytesToUnprefixedHex(key),
-          <any>(encoding === ValueEncoding.Bytes ? opts.root : bytesToUnprefixedHex(opts.root)),
-          {
-            keyEncoding: KeyEncoding.String,
-            valueEncoding: encoding,
-          }
-        )
-      }
-    }
-
-    return new Trie(opts)
   }
 
   database(db?: DB<string, string | Uint8Array>, valueEncoding?: ValueEncoding) {

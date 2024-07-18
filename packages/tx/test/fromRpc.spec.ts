@@ -3,7 +3,12 @@ import { bytesToHex, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { normalizeTxParams } from '../src/fromRpc.js'
-import { TransactionFactory, TransactionType } from '../src/index.js'
+import {
+  TransactionType,
+  createTxFromJsonRpcProvider,
+  createTxFromRPC,
+  createTxFromTxData,
+} from '../src/index.js'
 
 import optimismTx from './json/optimismTx.json'
 import rpcTx from './json/rpcTx.json'
@@ -51,10 +56,10 @@ describe('[fromJsonRpcProvider]', () => {
     }
 
     const txHash = '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
-    const tx = await TransactionFactory.fromJsonRpcProvider(provider, txHash, { common })
+    const tx = await createTxFromJsonRpcProvider(provider, txHash, { common })
     assert.equal(bytesToHex(tx.hash()), txHash, 'generated correct tx from transaction RPC data')
     try {
-      await TransactionFactory.fromJsonRpcProvider(provider, bytesToHex(randomBytes(32)), {})
+      await createTxFromJsonRpcProvider(provider, bytesToHex(randomBytes(32)), {})
       assert.fail('should throw')
     } catch (err: any) {
       assert.ok(
@@ -69,7 +74,7 @@ describe('[fromJsonRpcProvider]', () => {
 describe('[normalizeTxParams]', () => {
   it('should work', () => {
     const normedTx = normalizeTxParams(rpcTx)
-    const tx = TransactionFactory.fromTxData(normedTx)
+    const tx = createTxFromTxData(normedTx)
     assert.equal(normedTx.gasLimit, 21000n, 'correctly converted "gas" to "gasLimit"')
     assert.equal(bytesToHex(tx.hash()), rpcTx.hash, 'converted normed tx data to transaction objec')
   })
@@ -79,7 +84,7 @@ describe('fromRPC: interpret v/r/s vals of 0x0 as undefined for Optimism system 
   it('should work', async () => {
     for (const txType of txTypes) {
       ;(optimismTx as any).type = txType
-      const tx = await TransactionFactory.fromRPC(optimismTx as TypedTxData)
+      const tx = await createTxFromRPC(optimismTx as TypedTxData)
       assert.ok(tx.v === undefined)
       assert.ok(tx.s === undefined)
       assert.ok(tx.r === undefined)
@@ -98,7 +103,7 @@ describe('fromRPC: ensure `v="0x0"` is correctly decoded for signed txs', () => 
         continue
       }
       ;(v0Tx as any).type = txType
-      const tx = await TransactionFactory.fromRPC(v0Tx as TypedTxData)
+      const tx = await createTxFromRPC(v0Tx as TypedTxData)
       assert.ok(tx.isSigned())
     }
   })

@@ -16,7 +16,7 @@ import { loadKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import gethGenesis from '../../block/test/testdata/4844-hardfork.json'
-import { BlobEIP4844Transaction, TransactionFactory } from '../src/index.js'
+import { BlobEIP4844Transaction, createTxFromTxData } from '../src/index.js'
 
 import blobTx from './json/serialized4844tx.json'
 
@@ -108,7 +108,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
     }
     const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
     assert.equal(tx.type, 3, 'successfully instantiated a blob transaction from txData')
-    const factoryTx = TransactionFactory.fromTxData(txData, { common })
+    const factoryTx = createTxFromTxData(txData, { common })
     assert.equal(factoryTx.type, 3, 'instantiated a blob transaction from the tx factory')
 
     const serializedTx = tx.serialize()

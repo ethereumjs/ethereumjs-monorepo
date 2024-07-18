@@ -1,6 +1,11 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
+import {
+  BlobEIP4844Transaction,
+  Capability,
+  createTxFromSerializedData,
+  createTxFromTxData,
+} from '@ethereumjs/tx'
 import {
   Address,
   BIGINT_0,
@@ -597,7 +602,7 @@ export class Eth {
       blockNumber: blockToRunOn.header.number,
     })
 
-    const tx = TransactionFactory.fromTxData(txData, { common: vm.common, freeze: false })
+    const tx = createTxFromTxData(txData, { common: vm.common, freeze: false })
 
     // set from address
     const from =
@@ -1168,7 +1173,7 @@ export class Eth {
           )
         }
       } else {
-        tx = TransactionFactory.fromSerializedData(txBuf, { common })
+        tx = createTxFromSerializedData(txBuf, { common })
       }
     } catch (e: any) {
       throw {

@@ -1,4 +1,4 @@
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import { bigIntToHex, bytesToBigInt, bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, beforeEach, describe, it } from 'vitest'
@@ -88,7 +88,7 @@ describe(method, () => {
       txLookupLimit: 0,
     })
     const rpc = getRpcClient(server)
-    const firstTx = TransactionFactory.fromTxData(
+    const firstTx = createTxFromTxData(
       {
         type: 0x2,
         gasLimit: 10000000,
@@ -115,7 +115,7 @@ describe(method, () => {
 
     const result = await blockBuilder.addTransaction(firstTx, { skipHardForkValidation: true })
 
-    const secondTx = TransactionFactory.fromTxData(
+    const secondTx = createTxFromTxData(
       {
         to: result.createdAddress,
         type: 0x2,
@@ -131,7 +131,7 @@ describe(method, () => {
 
     await blockBuilder.addTransaction(secondTx, { skipHardForkValidation: true })
 
-    const thirdTx = TransactionFactory.fromTxData(
+    const thirdTx = createTxFromTxData(
       {
         type: 0x2,
         gasLimit: 10000000,

@@ -1,8 +1,8 @@
-import { Trie } from '@ethereumjs/trie'
+import { createTrie, Trie } from '@ethereumjs/trie'
 import { bytesToHex } from '@ethereumjs/util'
 
 async function main() {
-  const trie = await Trie.create({
+  const trie = await createTrie({
     useRootPersistence: true,
   })
 
