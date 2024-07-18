@@ -6,8 +6,8 @@ import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
-  TransactionFactory,
   TransactionType,
+  createTxFromTxData,
 } from '../src/index.js'
 
 import type { TxValuesArray } from '../src/index.js'
@@ -151,7 +151,7 @@ describe('[Invalid Array Input values]', () => {
     ]
     for (const signed of [false, true]) {
       for (const txType of txTypes) {
-        let tx = TransactionFactory.fromTxData({ type: txType })
+        let tx = createTxFromTxData({ type: txType })
         if (signed) {
           tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
         }
@@ -217,7 +217,7 @@ describe('[Invalid Access Lists]', () => {
         for (const invalidAccessListItem of invalidAccessLists) {
           let tx: any
           try {
-            tx = TransactionFactory.fromTxData({
+            tx = createTxFromTxData({
               type: txType,
               accessList: <any>invalidAccessListItem,
             })
@@ -227,7 +227,7 @@ describe('[Invalid Access Lists]', () => {
             assert.fail('did not fail on `fromTxData`')
           } catch (e: any) {
             assert.ok(true, 'failed ok on decoding in `fromTxData`')
-            tx = TransactionFactory.fromTxData({ type: txType })
+            tx = createTxFromTxData({ type: txType })
             if (signed) {
               tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
             }

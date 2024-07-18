@@ -4,7 +4,7 @@ import {
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
   Withdrawal,
   bytesToHex,
@@ -73,7 +73,7 @@ async function runBlock(
   const txs = []
   for (const [index, serializedTx] of transactions.entries()) {
     try {
-      const tx = TransactionFactory.fromSerializedData(hexToBytes(serializedTx), {
+      const tx = createTxFromSerializedData(hexToBytes(serializedTx), {
         common,
       })
       txs.push(tx)

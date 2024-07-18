@@ -1,7 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
-import { LegacyTransaction, TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromSerializedData, LegacyTransaction } from '@ethereumjs/tx'
 import { Account, bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
@@ -107,7 +107,7 @@ async function runTransition(argsIn: any) {
     try {
       let tx: TypedTransaction
       if (txData instanceof Uint8Array) {
-        tx = TransactionFactory.fromSerializedData(txData as Uint8Array, { common })
+        tx = createTxFromSerializedData(txData as Uint8Array, { common })
       } else {
         tx = LegacyTransaction.fromValuesArray(txData as Uint8Array[], { common })
       }

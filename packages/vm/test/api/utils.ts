@@ -1,5 +1,5 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
+import { TransactionType, createTxFromTxData } from '@ethereumjs/tx'
 import {
   Account,
   blobsToCommitments,
@@ -113,7 +113,7 @@ export function getTransaction(
     )
   }
 
-  const tx = TransactionFactory.fromTxData(txParams, { common, freeze: false })
+  const tx = createTxFromTxData(txParams, { common, freeze: false })
 
   if (sign) {
     const privateKey = hexToBytes(
