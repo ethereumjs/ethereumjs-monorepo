@@ -2,7 +2,7 @@ import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { LegacyTransaction, TransactionFactory } from '@ethereumjs/tx'
+import { LegacyTransaction, createTxFromTxData } from '@ethereumjs/tx'
 import { Account, Address, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -88,7 +88,7 @@ describe(method, () => {
     const account = await service.execution.vm.stateManager.getAccount(address)
     account!.balance = 0xffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
-    const tx = TransactionFactory.fromTxData({
+    const tx = createTxFromTxData({
       to: randomBytes(20),
       value: 1,
       maxFeePerGas: 0xffffff,

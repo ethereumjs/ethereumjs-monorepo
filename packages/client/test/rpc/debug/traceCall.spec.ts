@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, expect, expectTypeOf, it } from 'vitest'
 
@@ -51,7 +51,7 @@ describe('trace a call', async () => {
   })
   const rpc = getRpcClient(server)
   // construct block with tx
-  const tx = TransactionFactory.fromTxData(
+  const tx = createTxFromTxData(
     {
       type: 0x2,
       gasLimit: 0xfffff,

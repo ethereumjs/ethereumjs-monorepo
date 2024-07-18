@@ -1,5 +1,5 @@
 import { Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
+import { TransactionType, createTxFromTxData } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
 
@@ -272,18 +272,14 @@ describe('should handle Transactions', async () => {
   const service = new FullEthereumService({ config, chain })
   service.txPool.handleAnnouncedTxs = async (msg, _peer, _pool) => {
     it('should handle transaction message', () => {
-      assert.deepEqual(
-        msg[0],
-        TransactionFactory.fromTxData({ type: 2 }),
-        'handled Transactions message'
-      )
+      assert.deepEqual(msg[0], createTxFromTxData({ type: 2 }), 'handled Transactions message')
     })
   }
 
   await service.handle(
     {
       name: 'Transactions',
-      data: [TransactionFactory.fromTxData({ type: 2 })],
+      data: [createTxFromTxData({ type: 2 })],
     },
     'eth',
     undefined as any
@@ -320,7 +316,7 @@ describe('should handle GetPooledTransactions', async () => {
   const service = new FullEthereumService({ config, chain })
   ;(service.txPool as any).validate = () => {}
 
-  const tx = TransactionFactory.fromTxData({ type: 2 }).sign(randomBytes(32))
+  const tx = createTxFromTxData({ type: 2 }).sign(randomBytes(32))
   await service.txPool.add(tx)
 
   await service.handle(

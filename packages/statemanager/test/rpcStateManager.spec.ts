@@ -1,7 +1,7 @@
 import { createBlockFromJsonRpcProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM, type EVMRunCallOpts } from '@ethereumjs/evm'
-import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
+import { FeeMarketEIP1559Transaction, createTxFromRPC } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -263,7 +263,7 @@ describe('runTx test: replay mainnet transactions', () => {
 
     const blockTag = 15496077n
     common.setHardforkBy({ blockNumber: blockTag })
-    const tx = await TransactionFactory.fromRPC(txData as any, { common })
+    const tx = await createTxFromRPC(txData as any, { common })
     const state = new RPCStateManager({
       provider,
       // Set the state manager to look at the state of the chain before the block has been executed
