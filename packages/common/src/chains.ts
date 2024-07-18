@@ -93,7 +93,6 @@ export const Mainnet: ChainConfig = {
       // The forkHash will remain same as mergeForkIdTransition is post merge
       // terminal block: https://etherscan.io/block/15537393
       name: 'paris',
-      ttd: '58750000000000000000000',
       block: 15537394,
       forkHash: '0xf0afd0e3',
     },
@@ -231,7 +230,6 @@ export const Goerli: ChainConfig = {
       // The forkHash will remain same as mergeForkIdTransition is post merge,
       // terminal block: https://goerli.etherscan.io/block/7382818
       name: 'paris',
-      ttd: '10790000',
       block: 7382819,
       forkHash: '0xb8c6299d',
     },
@@ -394,7 +392,6 @@ export const Sepolia: ChainConfig = {
       // The forkHash will remain same as mergeForkIdTransition is post merge,
       // terminal block: https://sepolia.etherscan.io/block/1450408
       name: 'paris',
-      ttd: '17000000000000000',
       block: 1450409,
       forkHash: '0xfe3366e7',
     },
@@ -527,7 +524,6 @@ export const Holesky: ChainConfig = {
     },
     {
       name: 'paris',
-      ttd: '0',
       block: 0,
       forkHash: '0xc61a6098',
     },
@@ -630,7 +626,6 @@ export const Kaustinen6: ChainConfig = {
     },
     {
       name: 'paris',
-      ttd: '0',
       block: 0,
     },
     {

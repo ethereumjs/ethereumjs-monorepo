@@ -53,7 +53,6 @@ export interface GenesisBlockConfig {
 export interface HardforkTransitionConfig {
   name: Hardfork | string
   block: number | null // null is used for hardforks that should not be applied -- since `undefined` isn't a valid value in JSON
-  ttd?: bigint | string
   timestamp?: number | string
   forkHash?: PrefixedHexString | null
 }
@@ -154,7 +153,6 @@ export interface GethConfigOpts extends BaseOpts {
 export interface HardforkByOpts {
   blockNumber?: BigIntLike
   timestamp?: BigIntLike
-  td?: BigIntLike
 }
 
 export type EIPConfig = {
