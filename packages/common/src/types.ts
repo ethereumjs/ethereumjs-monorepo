@@ -28,7 +28,6 @@ type ConsensusConfig = {
 export interface ChainConfig {
   name: string
   chainId: number | bigint
-  networkId: number | bigint
   defaultHardfork?: string
   comment?: string
   url?: string

@@ -226,10 +226,10 @@ export class Chain {
   }
 
   /**
-   * Network ID
+   * Chain ID
    */
-  get networkId(): bigint {
-    return this.config.chainCommon.networkId()
+  get chainId(): bigint {
+    return this.config.chainCommon.chainId()
   }
 
   /**

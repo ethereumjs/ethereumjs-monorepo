@@ -6,12 +6,10 @@ import { hexToBytes } from '@ethereumjs/util'
 // In this example we create a transaction for a custom network.
 
 // This custom network has the same params as mainnet,
-// except for name, chainId, and networkId,
-// so we use the `Common.custom` method.
+// except for name, chainId, so we use the `Common.custom` method.
 const customCommon = createCustomCommon(
   {
     name: 'my-network',
-    networkId: 123,
     chainId: 2134,
   },
   {

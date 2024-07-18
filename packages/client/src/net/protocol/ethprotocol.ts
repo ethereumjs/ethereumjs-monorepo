@@ -404,7 +404,7 @@ export class EthProtocol extends Protocol {
    */
   encodeStatus(): any {
     return {
-      networkId: bigIntToUnpaddedBytes(this.chain.networkId),
+      chainId: bigIntToUnpaddedBytes(this.chain.chainId),
       td: bigIntToUnpaddedBytes(this.chain.blocks.td),
       bestHash: this.chain.blocks.latest!.hash(),
       genesisHash: this.chain.genesis.hash(),
@@ -418,7 +418,7 @@ export class EthProtocol extends Protocol {
    */
   decodeStatus(status: any): any {
     return {
-      networkId: bytesToBigInt(status.networkId),
+      chainId: bytesToBigInt(status.chainId),
       td: bytesToBigInt(status.td),
       bestHash: status.bestHash,
       genesisHash: status.genesisHash,

@@ -1,7 +1,6 @@
 {
   "name": "testnetMerge",
   "chainId": 55555,
-  "networkId": 55555,
   "defaultHardfork": "istanbul",
   "consensus": {
     "type": "poa",

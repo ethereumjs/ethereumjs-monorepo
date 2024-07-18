@@ -88,7 +88,6 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   const params = {
     name,
     chainId,
-    networkId: chainId,
     depositContractAddress,
     genesis: {
       timestamp,

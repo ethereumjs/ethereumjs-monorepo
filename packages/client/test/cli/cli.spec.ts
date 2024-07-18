@@ -31,7 +31,7 @@ export function clientRunHelper(
 describe('[CLI]', () => {
   // chain network tests
   it('should successfully start client with a custom network and network id', async () => {
-    const cliArgs = ['--network=sepolia', '--networkId=11155111']
+    const cliArgs = ['--network=sepolia', '--chainId=11155111']
     const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
       if (message.includes('Initializing Ethereumjs client')) {
         assert.ok(
@@ -648,7 +648,6 @@ describe('[CLI]', () => {
     const customChainJson = `{
       "name": "customChain",
       "chainId": 11155111,
-      "networkId": 11155111,
       "defaultHardfork": "shanghai",
       "consensus": {
         "type": "pow",
@@ -782,13 +781,13 @@ describe('[CLI]', () => {
     await clientRunHelper(cliArgs, onData, true)
   }, 5000)
   it('should not start client with conflicting parameters', async () => {
-    const cliArgs = ['--networkId', '--gethGenesis']
+    const cliArgs = ['--chainId', '--gethGenesis']
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
       resolve: Function
     ) => {
-      if (message.includes('Arguments networkId and gethGenesis are mutually exclusive')) {
+      if (message.includes('Arguments chainId and gethGenesis are mutually exclusive')) {
         assert.ok(true, 'correctly errors on conflicting arguments')
       }
       child.kill(15)

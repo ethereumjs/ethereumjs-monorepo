@@ -42,7 +42,6 @@ const expectedProof = {
 const testnetData = {
   name: 'testnet2',
   chainId: 12345,
-  networkId: 12345,
   defaultHardfork: 'istanbul',
   consensus: {
     type: 'pow',
