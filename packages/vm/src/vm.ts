@@ -1,6 +1,6 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
-import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
+import { createEVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, AsyncEventEmitter, unprefixedHexToBytes } from '@ethereumjs/util'
 
@@ -121,7 +121,7 @@ export class VM {
         enableProfiler = true
       }
       const evmOpts = opts.evmOpts ?? {}
-      opts.evm = await EVM.create({
+      opts.evm = await createEVM({
         common: opts.common,
         stateManager: opts.stateManager,
         blockchain: opts.blockchain,
@@ -250,7 +250,7 @@ export class VM {
       blockchain: this._opts.evmOpts?.blockchain?.shallowCopy() ?? blockchain,
       stateManager: this._opts.evmOpts?.stateManager?.shallowCopy(downlevelCaches) ?? stateManager,
     }
-    const evmCopy = await EVM.create(evmOpts) // TODO fixme (should copy the EVMInterface, not default EVM)
+    const evmCopy = await createEVM(evmOpts) // TODO fixme (should copy the EVMInterface, not default EVM)
     return VM.create({
       stateManager,
       blockchain: this.blockchain,

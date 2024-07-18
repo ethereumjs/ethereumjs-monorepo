@@ -85,7 +85,7 @@ describe('should test mcopy', () => {
         eips: [5656],
       })
 
-      const evm = await EVM.create({
+      const evm = await createEVM({
         common,
       })
 

@@ -29,7 +29,7 @@ describe('Precompiles: point evaluation', () => {
       customCrypto: { kzg },
     })
 
-    const evm = await EVM.create({
+    const evm = await createEVM({
       common,
     })
     const addressStr = '000000000000000000000000000000000000000a'

@@ -273,7 +273,7 @@ export interface EVMOpts {
    * import * as mcl from 'mcl-wasm'
    *
    * await mcl.init(mcl.BLS12_381)
-   * const evm = await EVM.create({ bls: new MCLBLS(mcl) })
+   * const evm = await createEVM({ bls: new MCLBLS(mcl) })
    * ```
    */
   bls?: EVMBLSInterface

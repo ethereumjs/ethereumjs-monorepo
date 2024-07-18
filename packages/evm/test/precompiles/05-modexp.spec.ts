@@ -17,7 +17,7 @@ describe('Precompiles: MODEXP', () => {
   let MODEXP: PrecompileFunc
   beforeAll(async () => {
     common = new Common({ chain: Chain.Mainnet })
-    evm = await EVM.create({
+    evm = await createEVM({
       common,
     })
     addressStr = '0000000000000000000000000000000000000005'

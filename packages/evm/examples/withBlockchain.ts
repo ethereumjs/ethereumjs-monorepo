@@ -1,6 +1,6 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
+import { createEVM, EVM } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { bytesToHex } from '@ethereumjs/util'
 
@@ -9,7 +9,7 @@ const main = async () => {
   const stateManager = new DefaultStateManager()
   const blockchain = await createBlockchain()
 
-  const evm = await EVM.create({
+  const evm = await createEVM({
     common,
     stateManager,
     blockchain,
