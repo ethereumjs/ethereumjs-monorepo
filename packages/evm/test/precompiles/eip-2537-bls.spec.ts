@@ -4,7 +4,7 @@ import { readFileSync, readdirSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { EVM, MCLBLS, getActivePrecompiles } from '../../src/index.js'
+import { MCLBLS, createEVM, getActivePrecompiles } from '../../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -52,7 +52,7 @@ for (const bls of [undefined, mclbls]) {
     describe(`Precompiles: ${fname}`, () => {
       for (const data of parsedJSON) {
         it(`${data.Name}`, async () => {
-          const evm = await EVM.create({
+          const evm = await createEVM({
             common,
             bls,
           })
@@ -104,7 +104,7 @@ for (let address = precompileAddressStart; address <= precompileAddressEnd; addr
 describe('EIP-2537 BLS precompile availability tests', () => {
   it('BLS precompiles should not be available if EIP not activated', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
-    const evm = await EVM.create({
+    const evm = await createEVM({
       common,
     })
 

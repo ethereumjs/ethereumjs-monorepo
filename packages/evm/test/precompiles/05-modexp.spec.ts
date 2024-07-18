@@ -2,10 +2,11 @@ import { Chain, Common } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.js'
 
 import fuzzer from './modexp-testdata.json'
 
+import type { EVM } from '../../src/index.js'
 import type { PrecompileFunc } from '../../src/precompiles/types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -17,7 +18,7 @@ describe('Precompiles: MODEXP', () => {
   let MODEXP: PrecompileFunc
   beforeAll(async () => {
     common = new Common({ chain: Chain.Mainnet })
-    evm = await EVM.create({
+    evm = await createEVM({
       common,
     })
     addressStr = '0000000000000000000000000000000000000005'

@@ -1,13 +1,13 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
+import { createEVM, EVM } from '@ethereumjs/evm'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   const blockchain = await createBlockchain()
 
-  const evm = await EVM.create({
+  const evm = await createEVM({
     common,
     blockchain,
   })

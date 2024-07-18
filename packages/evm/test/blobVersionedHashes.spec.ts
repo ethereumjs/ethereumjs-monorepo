@@ -2,7 +2,7 @@ import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { Account, Address, bytesToHex, hexToBytes, unpadBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/index.js'
+import { createEVM } from '../src/index.js'
 
 import type { EVMRunCallOpts } from '../src/types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -15,7 +15,7 @@ describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
-    const evm = await EVM.create({
+    const evm = await createEVM({
       common,
     })
 
@@ -45,7 +45,7 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
-    const evm = await EVM.create({
+    const evm = await createEVM({
       common,
     })
 
@@ -95,7 +95,7 @@ describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () =>
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
-    const evm = await EVM.create({
+    const evm = await createEVM({
       common,
     })
 

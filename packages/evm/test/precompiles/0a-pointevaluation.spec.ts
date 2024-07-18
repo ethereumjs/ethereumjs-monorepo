@@ -9,7 +9,7 @@ import {
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.js'
 
 import type { PrecompileInput } from '../../src/index.js'
 
@@ -29,7 +29,7 @@ describe('Precompiles: point evaluation', () => {
       customCrypto: { kzg },
     })
 
-    const evm = await EVM.create({
+    const evm = await createEVM({
       common,
     })
     const addressStr = '000000000000000000000000000000000000000a'
