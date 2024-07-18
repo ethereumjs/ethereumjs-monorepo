@@ -395,9 +395,8 @@ export class Common {
   protected _buildActivatedEIPsCache() {
     this._activatedEIPsCache = []
 
-    for (const hfChanges of this.HARDFORK_CHANGES) {
-      const hf = hfChanges[1]
-      if (this.gteHardfork(hf['name']) && 'eips' in hf) {
+    for (const [name, hf] of this.HARDFORK_CHANGES) {
+      if (this.gteHardfork(name) && 'eips' in hf) {
         this._activatedEIPsCache = this._activatedEIPsCache.concat(hf['eips'] as number[])
       }
     }
