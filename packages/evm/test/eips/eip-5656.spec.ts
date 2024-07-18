@@ -2,7 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../../src/index.js'
+import { createEVM } from '../../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

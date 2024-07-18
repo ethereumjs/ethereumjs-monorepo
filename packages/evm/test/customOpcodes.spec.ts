@@ -1,7 +1,7 @@
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/evm.js'
+import { createEVM } from '../src/index.js'
 
 import type { InterpreterStep, RunState } from '../src/interpreter.js'
 import type { AddOpcode } from '../src/types.js'

@@ -9,7 +9,7 @@ import {
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.js'
 
 import type { PrecompileInput } from '../../src/index.js'
 

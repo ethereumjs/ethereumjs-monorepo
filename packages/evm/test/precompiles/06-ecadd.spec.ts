@@ -1,7 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.js'
 
 describe('Precompiles: ECADD', () => {
   it('ECADD', async () => {

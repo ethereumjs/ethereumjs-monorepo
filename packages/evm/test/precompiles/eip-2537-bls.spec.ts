@@ -4,7 +4,7 @@ import { readFileSync, readdirSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { EVM, MCLBLS, getActivePrecompiles } from '../../src/index.js'
+import { MCLBLS, createEVM, getActivePrecompiles } from '../../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

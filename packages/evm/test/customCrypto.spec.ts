@@ -9,8 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/evm.js'
-import { getActivePrecompiles } from '../src/index.js'
+import { createEVM, getActivePrecompiles } from '../src/index.js'
 
 describe('custom crypto', () => {
   it('should use custom sha256 function', async () => {

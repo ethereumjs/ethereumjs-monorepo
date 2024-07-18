@@ -1,7 +1,7 @@
 import { Account, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/index.js'
+import { createEVM } from '../src/index.js'
 
 const PUSH1 = '60'
 const STOP = '00'

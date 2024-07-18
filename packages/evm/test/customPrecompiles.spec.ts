@@ -1,9 +1,8 @@
 import { Address, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/evm.js'
+import { type PrecompileInput, createEVM } from '../src/index.js'
 
-import type { PrecompileInput } from '../src/index.js'
 import type { ExecResult } from '../src/types.js'
 
 const sender = new Address(hexToBytes(`0x${'44'.repeat(20)}`))

@@ -3,7 +3,7 @@ import { bytesToHex, bytesToUnprefixedHex, hexToBytes, utf8ToBytes } from '@ethe
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.js'
 
 const prefix = bytesToUnprefixedHex(utf8ToBytes('\x19Ethereum Signed Message:\n32'))
 const _hash = '852daa74cc3c31fe64542bb9b8764cfb91cc30f9acf9389071ffb44a9eefde46'

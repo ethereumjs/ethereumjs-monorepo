@@ -2,8 +2,9 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.js'
 
+import type { EVM } from '../../src/index.js'
 import type { PrecompileFunc } from '../../src/precompiles/types.js'
 
 const validCases = [
