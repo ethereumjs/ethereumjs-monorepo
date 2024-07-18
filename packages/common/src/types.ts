@@ -187,7 +187,6 @@ export type EIPConfig = {
 } & EIPOrHFConfig
 
 export type HardforkConfig = {
-  name: string
   eips?: number[]
   consensus?: ConsensusConfig
 } & EIPOrHFConfig

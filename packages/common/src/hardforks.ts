@@ -7,7 +7,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   chainstart: {
-    name: 'chainstart',
     gasConfig: {
       minGasLimit: 5000, // Minimum the gas limit may ever be
       gasLimitBoundDivisor: 1024, // The bound divisor of the gas limit, used in update calculations
@@ -128,7 +127,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   homestead: {
-    name: 'homestead',
     gasPrices: {
       delegatecall: 40, // Base fee of the DELEGATECALL opcode
     },
@@ -138,16 +136,13 @@ export const hardforks: HardforksDict = {
    * URL        : https://eips.ethereum.org/EIPS/eip-779
    * Status     : Final
    */
-  dao: {
-    name: 'dao',
-  },
+  dao: {},
   /**
    * Description: Hardfork with gas cost changes for IO-heavy operations
    * URL        : https://eips.ethereum.org/EIPS/eip-608
    * Status     : Final
    */
   tangerineWhistle: {
-    name: 'tangerineWhistle',
     gasPrices: {
       sload: 200, // Once per SLOAD operation
       call: 700, // Once per CALL operation & message call transaction
@@ -165,7 +160,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   spuriousDragon: {
-    name: 'spuriousDragon',
     gasPrices: {
       expByte: 50, // Times ceil(log256(exponent)) for the EXP instruction
     },
@@ -179,7 +173,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   byzantium: {
-    name: 'byzantium',
     gasPrices: {
       modexpGquaddivisor: 20, // Gquaddivisor from modexp precompile for gas calculation
       ecAdd: 500, // Gas costs for curve addition precompile
@@ -202,7 +195,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   constantinople: {
-    name: 'constantinople',
     gasPrices: {
       netSstoreNoopGas: 200, // Once per SSTORE operation if the value doesn't change
       netSstoreInitGas: 20000, // Once per SSTORE operation from clean zero
@@ -228,7 +220,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   petersburg: {
-    name: 'petersburg',
     gasPrices: {
       netSstoreNoopGas: null, // Removed along EIP-1283
       netSstoreInitGas: null, // Removed along EIP-1283
@@ -245,7 +236,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   istanbul: {
-    name: 'istanbul',
     gasConfig: {},
     gasPrices: {
       blake2Round: 1, // Gas cost per round for the Blake2 F precompile
@@ -275,7 +265,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   muirGlacier: {
-    name: 'muirGlacier',
     pow: {
       difficultyBombDelay: 9000000, // the amount of blocks to delay the difficulty bomb with
     },
@@ -286,7 +275,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   berlin: {
-    name: 'berlin',
     eips: [2565, 2929, 2718, 2930],
   },
   /**
@@ -295,7 +283,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   london: {
-    name: 'london',
     eips: [1559, 3198, 3529, 3541],
   },
   /**
@@ -304,7 +291,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   arrowGlacier: {
-    name: 'arrowGlacier',
     eips: [4345],
   },
   /**
@@ -313,7 +299,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   grayGlacier: {
-    name: 'grayGlacier',
     eips: [5133],
   },
   /**
@@ -322,7 +307,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   paris: {
-    name: 'paris',
     consensus: {
       type: 'pos',
       algorithm: 'casper',
@@ -336,7 +320,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   mergeForkIdTransition: {
-    name: 'mergeForkIdTransition',
     eips: [],
   },
   /**
@@ -345,7 +328,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   shanghai: {
-    name: 'shanghai',
     eips: [3651, 3855, 3860, 4895],
   },
   /**
@@ -356,7 +338,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   cancun: {
-    name: 'cancun',
     eips: [1153, 4844, 4788, 5656, 6780, 7516],
   },
   /**
@@ -365,7 +346,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   prague: {
-    name: 'prague',
     // TODO update this accordingly to the right devnet setup
     //eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698], // This is EOF-only
     eips: [2537, 2935, 6110, 7002, 7251, 7685, 7702], // This is current prague without EOF
@@ -376,7 +356,6 @@ export const hardforks: HardforksDict = {
    * Status     : Final
    */
   osaka: {
-    name: 'osaka',
     eips: [2935, 6800],
   },
 }
