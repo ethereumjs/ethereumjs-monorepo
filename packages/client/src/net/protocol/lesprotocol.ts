@@ -194,7 +194,7 @@ export class LesProtocol extends Protocol {
     const forkID = [hexToBytes(forkHash), bigIntToUnpaddedBytes(nextFork ?? 0n)]
 
     return {
-      networkId: bigIntToUnpaddedBytes(this.chain.networkId),
+      chainId: bigIntToUnpaddedBytes(this.chain.chainId),
       headTd: bigIntToUnpaddedBytes(this.chain.headers.td),
       headHash: this.chain.headers.latest?.hash(),
       headNum: bigIntToUnpaddedBytes(this.chain.headers.height),
@@ -223,7 +223,7 @@ export class LesProtocol extends Protocol {
       }
     }
     return {
-      networkId: bytesToBigInt(status.networkId),
+      chainId: bytesToBigInt(status.chainId),
       headTd: bytesToBigInt(status.headTd),
       headHash: status.headHash,
       headNum: bytesToBigInt(status.headNum),

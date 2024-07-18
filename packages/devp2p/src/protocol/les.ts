@@ -127,8 +127,8 @@ export class LES extends Protocol {
       'STATUS'
     )
     assertEq(
-      this._status['networkId'],
-      this._peerStatus['networkId'],
+      this._status['chainId'],
+      this._peerStatus['chainId'],
       'NetworkId mismatch',
       this.debug.bind(this),
       'STATUS'
@@ -153,7 +153,7 @@ export class LES extends Protocol {
 
   _getStatusString(status: LES.Status) {
     let sStr = `[V:${bytesToInt(status['protocolVersion'])}, `
-    sStr += `NID:${bytesToInt(status['networkId'] as Uint8Array)}, HTD:${bytesToInt(
+    sStr += `NID:${bytesToInt(status['chainId'] as Uint8Array)}, HTD:${bytesToInt(
       status['headTd']
     )}, `
     sStr += `HeadH:${bytesToHex(status['headHash'])}, HeadN:${bytesToInt(status['headNum'])}, `
@@ -184,7 +184,7 @@ export class LES extends Protocol {
       status['announceType'] = intToBytes(DEFAULT_ANNOUNCE_TYPE)
     }
     status['protocolVersion'] = intToBytes(this._version)
-    status['networkId'] = bigIntToBytes(this._peer.common.chainId())
+    status['chainId'] = bigIntToBytes(this._peer.common.chainId())
 
     this._status = status
 
@@ -284,7 +284,7 @@ export namespace LES {
   export interface Status {
     [key: string]: any
     protocolVersion: Uint8Array
-    networkId: Uint8Array
+    chainId: Uint8Array
     headTd: Uint8Array
     headHash: Uint8Array
     headNum: Uint8Array

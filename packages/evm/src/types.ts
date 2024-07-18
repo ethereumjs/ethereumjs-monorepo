@@ -1,5 +1,6 @@
 import { zeros } from '@ethereumjs/util'
 
+import type { EOFContainer } from './eof/container.js'
 import type { EvmError } from './exceptions.js'
 import type { InterpreterStep, RunState } from './interpreter.js'
 import type { Message } from './message.js'
@@ -428,4 +429,12 @@ export interface bn128 {
   ec_pairing: (input_str: string) => PrefixedHexString
   ec_add: (input_str: string) => PrefixedHexString
   ec_mul: (input_hex: string) => PrefixedHexString
+}
+
+// EOF type which holds the execution-related data for EOF
+export type EOFEnv = {
+  container: EOFContainer
+  eofRunState: {
+    returnStack: number[]
+  }
 }

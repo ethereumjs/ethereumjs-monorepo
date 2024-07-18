@@ -1,5 +1,5 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { Block, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromSerializedData, LegacyTransaction } from '@ethereumjs/tx'
 import { Account, bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
@@ -55,8 +55,8 @@ async function runTransition(argsIn: any) {
       nonce: '0x0000000000000000',
       extraData: '0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa',
     }
-    const genesis = Block.fromBlockData({ header: BlockHeader.fromHeaderData(genesisBlockData) })
-    blockchain = await Blockchain.create({ common, genesisBlock: genesis })
+    const genesis = createBlockFromBlockData({ header: BlockHeader.fromHeaderData(genesisBlockData) })
+    blockchain = await createBlockchain({ common, genesisBlock: genesis })
   }
   const vm = blockchain ? await VM.create({ common, blockchain }) : await VM.create({ common })
   await setupPreConditions(vm.stateManager, { pre: alloc })

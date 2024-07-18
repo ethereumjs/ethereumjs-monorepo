@@ -8,6 +8,20 @@ type EIPsDict = {
 
 export const EIPs: EIPsDict = {
   /**
+   * Description : SWAPN, DUPN and EXCHANGE instructions
+   * URL         : https://github.com/ethereum/EIPs/blob/bd421962b4e241aa2b00a85d9cf4e57770bdb954/EIPS/eip-663.md
+   * Status      : Review
+   */
+  663: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [3540, 5450],
+    gasPrices: {
+      dupn: 3, // Base fee of the DUPN opcode
+      swapn: 3, // Base fee of the SWAPN opcode
+      exchange: 3, // Base fee of the EXCHANGE opcode
+    },
+  },
+  /**
    * Description : Transient storage opcodes
    * URL         : https://eips.ethereum.org/EIPS/eip-1153
    * Status      : Final
@@ -176,12 +190,12 @@ export const EIPs: EIPsDict = {
   },
   /**
    * Description : EVM Object Format (EOF) v1
-   * URL         : https://eips.ethereum.org/EIPS/eip-3540
+   * URL         : https://github.com/ethereum/EIPs/blob/bd421962b4e241aa2b00a85d9cf4e57770bdb954/EIPS/eip-3540.md
    * Status      : Review
    */
   3540: {
     minimumHardfork: Hardfork.London,
-    requiredEIPs: [3541],
+    requiredEIPs: [3541, 3860],
   },
   /**
    * Description : Reject new contracts starting with the 0xEF byte
@@ -224,7 +238,7 @@ export const EIPs: EIPsDict = {
   },
   /**
    * Description : EOF - Code Validation
-   * URL         : https://eips.ethereum.org/EIPS/eip-3670
+   * URL         : https://github.com/ethereum/EIPs/blob/bd421962b4e241aa2b00a85d9cf4e57770bdb954/EIPS/eip-3670.md
    * Status      : Review
    */
   3670: {
@@ -268,6 +282,20 @@ export const EIPs: EIPsDict = {
     },
   },
   /**
+   * Description : EOF - Static relative jumps
+   * URL         : https://github.com/ethereum/EIPs/blob/bd421962b4e241aa2b00a85d9cf4e57770bdb954/EIPS/eip-4200.md
+   * Status      : Review
+   */
+  4200: {
+    minimumHardfork: Hardfork.London,
+    requiredEIPs: [3540, 3670],
+    gasPrices: {
+      rjump: 2, // Base fee of the RJUMP opcode
+      rjumpi: 4, // Base fee of the RJUMPI opcode
+      rjumpv: 4, // Base fee of the RJUMPV opcode
+    },
+  },
+  /**
    * Description : Difficulty Bomb Delay to June 2022
    * URL         : https://eips.ethereum.org/EIPS/eip-4345
    * Status      : Final
@@ -289,6 +317,19 @@ export const EIPs: EIPsDict = {
     requiredEIPs: [],
     gasPrices: {
       prevrandao: 2, // Base fee of the PREVRANDAO opcode (previously DIFFICULTY)
+    },
+  },
+  /**
+   * Description : EOF - Functions
+   * URL         : https://github.com/ethereum/EIPs/blob/bd421962b4e241aa2b00a85d9cf4e57770bdb954/EIPS/eip-4750.md
+   * Status      : Review
+   */
+  4750: {
+    minimumHardfork: Hardfork.London,
+    requiredEIPs: [3540, 3670, 5450],
+    gasPrices: {
+      callf: 5, // Base fee of the CALLF opcode
+      retf: 3, // Base fee of the RETF opcode
     },
   },
   /**
@@ -351,6 +392,15 @@ export const EIPs: EIPsDict = {
     },
   },
   /**
+   * Description : EOF - Stack Validation
+   * URL         : https://github.com/ethereum/EIPs/blob/bd421962b4e241aa2b00a85d9cf4e57770bdb954/EIPS/eip-5450.md
+   * Status      : Review
+   */
+  5450: {
+    minimumHardfork: Hardfork.London,
+    requiredEIPs: [3540, 3670, 4200, 4750],
+  },
+  /**
    * Description : MCOPY - Memory copying instruction
    * URL         : https://eips.ethereum.org/EIPS/eip-5656
    * Status      : Final
@@ -370,6 +420,18 @@ export const EIPs: EIPsDict = {
   6110: {
     minimumHardfork: Hardfork.Cancun,
     requiredEIPs: [7685],
+  },
+  /**
+   * Description : EOF - JUMPF and non-returning functions
+   * URL         : https://github.com/ethereum/EIPs/blob/bd421962b4e241aa2b00a85d9cf4e57770bdb954/EIPS/eip-6206.md
+   * Status      : Review
+   */
+  6206: {
+    minimumHardfork: Hardfork.London,
+    requiredEIPs: [4750, 5450],
+    gasPrices: {
+      jumpf: 5, // Base fee of the JUMPF opcode
+    },
   },
   /**
    * Description : SELFDESTRUCT only in same transaction
@@ -422,6 +484,28 @@ export const EIPs: EIPsDict = {
     },
   },
   /**
+   * Description : Revamped CALL instructions
+   * URL         : https://github.com/ethereum/EIPs/blob/bd421962b4e241aa2b00a85d9cf4e57770bdb954/EIPS/eip-7069.md
+   * Status      : Review
+   */
+  7069: {
+    minimumHardfork: Hardfork.Berlin,
+    /* Note: per EIP these are the additionally required EIPs:
+      EIP 150 - This is the entire Tangerine Whistle hardfork
+      EIP 211 - (RETURNDATASIZE / RETURNDATACOPY) - Included in Byzantium
+      EIP 214 - (STATICCALL) - Included in Byzantium
+    */
+    requiredEIPs: [2929],
+    gasPrices: {
+      extcall: 0, // Base fee of the EXTCALL opcode
+      extdelegatecall: 0, // Base fee of the EXTDELEGATECALL opcode
+      extstaticcall: 0, // Base fee of the EXTSTATICCALL opcode
+      returndataload: 3, // Base fee of the RETURNDATALOAD opcode
+      minRetainedGas: 5000, // Minimum gas retained prior to executing an EXT*CALL opcode (this is the minimum gas available after performing the EXT*CALL)
+      minCalleeGas: 2300, //Minimum gas available to the the address called by an EXT*CALL opcode
+    },
+  },
+  /**
    * Description : Increase the MAX_EFFECTIVE_BALANCE -> Execution layer triggered consolidations (experimental)
    * URL         : https://eips.ethereum.org/EIPS/eip-7251
    * Status      : Draft
@@ -433,6 +517,21 @@ export const EIPs: EIPsDict = {
       consolidationRequestType: BigInt(0x02), // The withdrawal request type for EIP-7685
       systemAddress: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'), // The system address to perform operations on the consolidation requests predeploy address
       consolidationRequestPredeployAddress: BigInt('0x00b42dbF2194e931E80326D950320f7d9Dbeac02'), // Address of the consolidations contract
+    },
+  },
+  /**
+   * Description : EOF - Data section access instructions
+   * URL         : https://github.com/ethereum/EIPs/blob/bd421962b4e241aa2b00a85d9cf4e57770bdb954/EIPS/eip-7480.md
+   * Status      : Review
+   */
+  7480: {
+    minimumHardfork: Hardfork.London,
+    requiredEIPs: [3540, 3670],
+    gasPrices: {
+      dataload: 4, // Base fee of the DATALOAD opcode
+      dataloadn: 3, // Base fee of the DATALOADN opcode
+      datasize: 2, // Base fee of the DATASIZE opcode
+      datacopy: 3, // Base fee of the DATACOPY opcode
     },
   },
   /**
@@ -448,6 +547,22 @@ export const EIPs: EIPsDict = {
     },
   },
   /**
+   * Description : EOF Contract Creation
+   * URL         : https://github.com/ethereum/EIPs/blob/dd32a34cfe4473bce143641bfffe4fd67e1987ab/EIPS/eip-7620.md
+   * Status      : Review
+   */
+  7620: {
+    minimumHardfork: Hardfork.London,
+    /* Note: per EIP these are the additionally required EIPs:
+      EIP 170 - (Max contract size) - Included in Spurious Dragon
+    */
+    requiredEIPs: [3540, 3541, 3670],
+    gasPrices: {
+      eofcreate: 32000, // Base fee of the EOFCREATE opcode (Same as CREATE/CREATE2)
+      returncontract: 0, // Base fee of the RETURNCONTRACT opcode
+    },
+  },
+  /**
    * Description : General purpose execution layer requests
    * URL         : https://eips.ethereum.org/EIPS/eip-7685
    * Status      : Review
@@ -457,6 +572,25 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Cancun,
     requiredEIPs: [3675],
     gasPrices: {},
+  },
+  /**
+   * Description : EVM Object Format (EOFv1) Meta
+   * URL         : https://github.com/ethereum/EIPs/blob/4153e95befd0264082de3c4c2fe3a85cc74d3152/EIPS/eip-7692.md
+   * Status      : Draft
+   */
+  7692: {
+    minimumHardfork: Hardfork.Cancun,
+    requiredEIPs: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7698],
+    gasPrices: {},
+  },
+  /**
+   * Description : EOF - Creation transaction
+   * URL         : https://github.com/ethereum/EIPs/blob/bd421962b4e241aa2b00a85d9cf4e57770bdb954/EIPS/eip-7698.md
+   * Status      : Draft
+   */
+  7698: {
+    minimumHardfork: Hardfork.London,
+    requiredEIPs: [3540, 7620],
   },
   /**
    * Description : Set EOA account code for one transaction

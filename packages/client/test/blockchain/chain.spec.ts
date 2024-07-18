@@ -33,7 +33,7 @@ describe('[Chain]', () => {
   it('should retrieve chain properties', async () => {
     const chain = await Chain.create({ config })
     await chain.open()
-    assert.equal(chain.networkId, BigInt(1), 'get chain.networkId')
+    assert.equal(chain.chainId, BigInt(1), 'get chain.chainId')
     assert.equal(chain.blocks.td.toString(10), '17179869184', 'get chain.blocks.td')
     assert.equal(chain.blocks.height.toString(10), '0', 'get chain.blocks.height')
     assert.equal(

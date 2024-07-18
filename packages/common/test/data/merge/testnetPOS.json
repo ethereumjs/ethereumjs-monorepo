@@ -1,7 +1,6 @@
 {
   "name": "testnetPOS",
   "chainId": 66666,
-  "networkId": 66666,
   "defaultHardfork": "chainstart",
   "consensus": {
     "type": "pos",

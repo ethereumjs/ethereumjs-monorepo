@@ -139,7 +139,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
   })
 
   it('PoW block, Common custom chain (createCustomCommon() static constructor)', async () => {
-    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
+    const customChainParams = { name: 'custom', chainId: 123 }
     const common = createCustomCommon(customChainParams, {
       baseChain: 'mainnet',
       hardfork: 'berlin',
