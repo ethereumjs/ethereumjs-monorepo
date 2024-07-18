@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { Trie, decodeNode } from '@ethereumjs/trie'
+import { decodeNode, verifyTrieRangeProof } from '@ethereumjs/trie'
 import {
   KECCAK256_NULL,
   KECCAK256_RLP,
@@ -191,7 +191,7 @@ describe('[SnapProtocol]', () => {
     try {
       const keys = accounts.map((acc: any) => acc.hash)
       const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
-      await Trie.verifyRangeProof(stateRoot, keys[0], keys[keys.length - 1], keys, values, proof, {
+      await verifyTrieRangeProof(stateRoot, keys[0], keys[keys.length - 1], keys, values, proof, {
         useKeyHashingFunction: keccak256,
       })
     } catch (e) {
@@ -324,7 +324,7 @@ describe('[SnapProtocol]', () => {
     try {
       const keys = lastAccountSlots.map((acc: any) => acc.hash)
       const values = lastAccountSlots.map((acc: any) => acc.body)
-      await Trie.verifyRangeProof(
+      await verifyTrieRangeProof(
         lastAccountStorageRoot,
         keys[0],
         keys[keys.length - 1],

@@ -8,7 +8,8 @@ import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BlobEIP4844Transaction,
-  TransactionFactory,
+  createTxFromBlockBodyData,
+  createTxFromSerializedData,
   isAccessListEIP2930Tx,
   isBlobEIP4844Tx,
   isEOACodeEIP7702Tx,
@@ -132,7 +133,7 @@ export class EthProtocol extends Protocol {
             BIGINT_0, // Use chainstart,
           timestamp: this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000),
         })
-        return txs.map((txData) => TransactionFactory.fromSerializedData(txData, { common }))
+        return txs.map((txData) => createTxFromSerializedData(txData, { common }))
       },
     },
     {
@@ -296,7 +297,7 @@ export class EthProtocol extends Protocol {
             if (txData[0] === 3) {
               return BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txData, { common })
             } else {
-              return TransactionFactory.fromBlockBodyData(txData, { common })
+              return createTxFromBlockBodyData(txData, { common })
             }
           }),
         ]
@@ -403,7 +404,7 @@ export class EthProtocol extends Protocol {
    */
   encodeStatus(): any {
     return {
-      networkId: bigIntToUnpaddedBytes(this.chain.networkId),
+      chainId: bigIntToUnpaddedBytes(this.chain.chainId),
       td: bigIntToUnpaddedBytes(this.chain.blocks.td),
       bestHash: this.chain.blocks.latest!.hash(),
       genesisHash: this.chain.genesis.hash(),
@@ -417,7 +418,7 @@ export class EthProtocol extends Protocol {
    */
   decodeStatus(status: any): any {
     return {
-      networkId: bytesToBigInt(status.networkId),
+      chainId: bytesToBigInt(status.chainId),
       td: bytesToBigInt(status.td),
       bestHash: status.bestHash,
       genesisHash: status.genesisHash,

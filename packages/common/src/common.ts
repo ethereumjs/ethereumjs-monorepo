@@ -106,7 +106,7 @@ export class Common {
           'Chain must be a string, number, or bigint when initialized with customChains passed in'
         )
       }
-      const required = ['networkId', 'genesis', 'hardforks', 'bootstrapNodes']
+      const required = ['chainId', 'genesis', 'hardforks', 'bootstrapNodes']
       for (const param of required) {
         if (!(param in chain)) {
           throw new Error(`Missing required chain parameter: ${param}`)
@@ -845,14 +845,6 @@ export class Common {
    */
   chainName(): string {
     return this._chainParams.name
-  }
-
-  /**
-   * Returns the Id of current network
-   * @returns network Id
-   */
-  networkId(): bigint {
-    return BigInt(this._chainParams.networkId)
   }
 
   /**

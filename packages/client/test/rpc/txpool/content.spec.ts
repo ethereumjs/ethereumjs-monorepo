@@ -2,7 +2,7 @@ import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import { randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -72,7 +72,7 @@ describe(method, () => {
     await vm.runBlock({ block: londonBlock, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
     ;(service.txPool as any).validate = () => {}
-    await service.txPool.add(TransactionFactory.fromTxData({ type: 2 }, {}).sign(randomBytes(32)))
+    await service.txPool.add(createTxFromTxData({ type: 2 }, {}).sign(randomBytes(32)))
 
     const res = await rpc.request(method, [])
     assert.equal(

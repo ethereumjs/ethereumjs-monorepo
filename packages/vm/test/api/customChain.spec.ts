@@ -1,7 +1,7 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork } from '@ethereumjs/common'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { Interface } from '@ethersproject/abi'
 import { assert, describe, it } from 'vitest'
@@ -67,7 +67,7 @@ describe('VM initialized with custom state', () => {
     const vm = await VM.create({ blockchain, common, genesisState })
 
     const to = '0x00000000000000000000000000000000000000ff'
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0,
         to,

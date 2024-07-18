@@ -1,4 +1,4 @@
-import { Trie } from '@ethereumjs/trie'
+import { Trie, createTrie, createTrieFromProof } from '@ethereumjs/trie'
 import {
   Account,
   Address,
@@ -289,7 +289,7 @@ describe('StateManager -> General', () => {
   it.skipIf(isBrowser() === true)(
     'should create a statemanager fromProof with opts preserved',
     async () => {
-      const trie = await Trie.create({ useKeyHashing: false })
+      const trie = await createTrie({ useKeyHashing: false })
       const sm = new DefaultStateManager({ trie })
       const pk = hexToBytes('0x9f12aab647a25a81f821a5a0beec3330cd057b2346af4fb09d7a807e896701ea')
       const pk2 = hexToBytes('0x8724f27e2ce3714af01af3220478849db68a03c0f84edf1721d73d9a6139ad1c')
@@ -307,7 +307,7 @@ describe('StateManager -> General', () => {
         keys.map((key) => hexToBytes(key))
       )
       const proof2 = await sm.getProof(address2)
-      const newTrie = await Trie.createFromProof(
+      const newTrie = await createTrieFromProof(
         proof.accountProof.map((e) => hexToBytes(e)),
         { useKeyHashing: false }
       )

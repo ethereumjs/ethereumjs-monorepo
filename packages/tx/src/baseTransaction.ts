@@ -398,7 +398,6 @@ export abstract class BaseTransaction<T extends TransactionType>
           return createCustomCommon(
             {
               name: 'custom-chain',
-              networkId: chainIdBigInt,
               chainId: chainIdBigInt,
             },
             { baseChain: this.DEFAULT_CHAIN }

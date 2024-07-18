@@ -1,17 +1,13 @@
 import type { HardforksDict } from './types.js'
 
-export enum Status {
-  Draft = 'draft',
-  Review = 'review',
-  Final = 'final',
-}
-
 export const hardforks: HardforksDict = {
+  /**
+   * Description: Start of the Ethereum main chain
+   * URL        : -
+   * Status     : Final
+   */
   chainstart: {
     name: 'chainstart',
-    comment: 'Start of the Ethereum main chain',
-    url: '',
-    status: Status.Final,
     gasConfig: {
       minGasLimit: 5000, // Minimum the gas limit may ever be
       gasLimitBoundDivisor: 1024, // The bound divisor of the gas limit, used in update calculations
@@ -126,26 +122,32 @@ export const hardforks: HardforksDict = {
       difficultyBombDelay: 0, // the amount of blocks to delay the difficulty bomb with
     },
   },
+  /**
+   * Description: Homestead hardfork with protocol and network changes
+   * URL        : https://eips.ethereum.org/EIPS/eip-606
+   * Status     : Final
+   */
   homestead: {
     name: 'homestead',
-    comment: 'Homestead hardfork with protocol and network changes',
-    url: 'https://eips.ethereum.org/EIPS/eip-606',
-    status: Status.Final,
     gasPrices: {
       delegatecall: 40, // Base fee of the DELEGATECALL opcode
     },
   },
+  /**
+   * Description: DAO rescue hardfork
+   * URL        : https://eips.ethereum.org/EIPS/eip-779
+   * Status     : Final
+   */
   dao: {
     name: 'dao',
-    comment: 'DAO rescue hardfork',
-    url: 'https://eips.ethereum.org/EIPS/eip-779',
-    status: Status.Final,
   },
+  /**
+   * Description: Hardfork with gas cost changes for IO-heavy operations
+   * URL        : https://eips.ethereum.org/EIPS/eip-608
+   * Status     : Final
+   */
   tangerineWhistle: {
     name: 'tangerineWhistle',
-    comment: 'Hardfork with gas cost changes for IO-heavy operations',
-    url: 'https://eips.ethereum.org/EIPS/eip-608',
-    status: Status.Final,
     gasPrices: {
       sload: 200, // Once per SLOAD operation
       call: 700, // Once per CALL operation & message call transaction
@@ -157,12 +159,13 @@ export const hardforks: HardforksDict = {
       selfdestruct: 5000, // Base fee of the SELFDESTRUCT opcode
     },
   },
+  /**
+   * Description: HF with EIPs for simple replay attack protection, EXP cost increase, state trie clearing, contract code size limit
+   * URL        : https://eips.ethereum.org/EIPS/eip-607
+   * Status     : Final
+   */
   spuriousDragon: {
     name: 'spuriousDragon',
-    comment:
-      'HF with EIPs for simple replay attack protection, EXP cost increase, state trie clearing, contract code size limit',
-    url: 'https://eips.ethereum.org/EIPS/eip-607',
-    status: Status.Final,
     gasPrices: {
       expByte: 50, // Times ceil(log256(exponent)) for the EXP instruction
     },
@@ -170,11 +173,13 @@ export const hardforks: HardforksDict = {
       maxCodeSize: 24576, // Maximum length of contract code
     },
   },
+  /**
+   * Description: Hardfork with new precompiles, instructions and other protocol changes
+   * URL        : https://eips.ethereum.org/EIPS/eip-609
+   * Status     : Final
+   */
   byzantium: {
     name: 'byzantium',
-    comment: 'Hardfork with new precompiles, instructions and other protocol changes',
-    url: 'https://eips.ethereum.org/EIPS/eip-609',
-    status: Status.Final,
     gasPrices: {
       modexpGquaddivisor: 20, // Gquaddivisor from modexp precompile for gas calculation
       ecAdd: 500, // Gas costs for curve addition precompile
@@ -191,11 +196,13 @@ export const hardforks: HardforksDict = {
       difficultyBombDelay: 3000000, // the amount of blocks to delay the difficulty bomb with
     },
   },
+  /**
+   * Description: Postponed hardfork including EIP-1283 (SSTORE gas metering changes)
+   * URL        : https://eips.ethereum.org/EIPS/eip-1013
+   * Status     : Final
+   */
   constantinople: {
     name: 'constantinople',
-    comment: 'Postponed hardfork including EIP-1283 (SSTORE gas metering changes)',
-    url: 'https://eips.ethereum.org/EIPS/eip-1013',
-    status: Status.Final,
     gasPrices: {
       netSstoreNoopGas: 200, // Once per SSTORE operation if the value doesn't change
       netSstoreInitGas: 20000, // Once per SSTORE operation from clean zero
@@ -215,12 +222,13 @@ export const hardforks: HardforksDict = {
       difficultyBombDelay: 5000000, // the amount of blocks to delay the difficulty bomb with
     },
   },
+  /**
+   * Description: Aka constantinopleFix, removes EIP-1283, activate together with or after constantinople
+   * URL        : https://eips.ethereum.org/EIPS/eip-1716
+   * Status     : Final
+   */
   petersburg: {
     name: 'petersburg',
-    comment:
-      'Aka constantinopleFix, removes EIP-1283, activate together with or after constantinople',
-    url: 'https://eips.ethereum.org/EIPS/eip-1716',
-    status: Status.Final,
     gasPrices: {
       netSstoreNoopGas: null, // Removed along EIP-1283
       netSstoreInitGas: null, // Removed along EIP-1283
@@ -231,11 +239,13 @@ export const hardforks: HardforksDict = {
       netSstoreResetClearRefund: null, // Removed along EIP-1283
     },
   },
+  /**
+   * Description: HF targeted for December 2019 following the Constantinople/Petersburg HF
+   * URL        : https://eips.ethereum.org/EIPS/eip-1679
+   * Status     : Final
+   */
   istanbul: {
     name: 'istanbul',
-    comment: 'HF targeted for December 2019 following the Constantinople/Petersburg HF',
-    url: 'https://eips.ethereum.org/EIPS/eip-1679',
-    status: Status.Final,
     gasConfig: {},
     gasPrices: {
       blake2Round: 1, // Gas cost per round for the Blake2 F precompile
@@ -259,48 +269,60 @@ export const hardforks: HardforksDict = {
       sload: 800, // Base fee of the SLOAD opcode
     },
   },
+  /**
+   * Description: HF to delay the difficulty bomb
+   * URL        : https://eips.ethereum.org/EIPS/eip-2384
+   * Status     : Final
+   */
   muirGlacier: {
     name: 'muirGlacier',
-    comment: 'HF to delay the difficulty bomb',
-    url: 'https://eips.ethereum.org/EIPS/eip-2384',
-    status: Status.Final,
     pow: {
       difficultyBombDelay: 9000000, // the amount of blocks to delay the difficulty bomb with
     },
   },
+  /**
+   * Description: HF targeted for July 2020 following the Muir Glacier HF
+   * URL        : https://eips.ethereum.org/EIPS/eip-2070
+   * Status     : Final
+   */
   berlin: {
     name: 'berlin',
-    comment: 'HF targeted for July 2020 following the Muir Glacier HF',
-    url: 'https://eips.ethereum.org/EIPS/eip-2070',
-    status: Status.Final,
     eips: [2565, 2929, 2718, 2930],
   },
+  /**
+   * Description: HF targeted for July 2021 following the Berlin fork
+   * URL        : https://github.com/ethereum/eth1.0-specs/blob/master/network-upgrades/mainnet-upgrades/london.md
+   * Status     : Final
+   */
   london: {
     name: 'london',
-    comment: 'HF targeted for July 2021 following the Berlin fork',
-    url: 'https://github.com/ethereum/eth1.0-specs/blob/master/network-upgrades/mainnet-upgrades/london.md',
-    status: Status.Final,
     eips: [1559, 3198, 3529, 3541],
   },
+  /**
+   * Description: HF to delay the difficulty bomb
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/arrow-glacier.md
+   * Status     : Final
+   */
   arrowGlacier: {
     name: 'arrowGlacier',
-    comment: 'HF to delay the difficulty bomb',
-    url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/arrow-glacier.md',
-    status: Status.Final,
     eips: [4345],
   },
+  /**
+   * Description: Delaying the difficulty bomb to Mid September 2022
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/gray-glacier.md
+   * Status     : Final
+   */
   grayGlacier: {
     name: 'grayGlacier',
-    comment: 'Delaying the difficulty bomb to Mid September 2022',
-    url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/gray-glacier.md',
-    status: Status.Final,
     eips: [5133],
   },
+  /**
+   * Description: Hardfork to upgrade the consensus mechanism to Proof-of-Stake
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/merge.md
+   * Status     : Final
+   */
   paris: {
     name: 'paris',
-    comment: 'Hardfork to upgrade the consensus mechanism to Proof-of-Stake',
-    url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/merge.md',
-    status: Status.Final,
     consensus: {
       type: 'pos',
       algorithm: 'casper',
@@ -308,45 +330,53 @@ export const hardforks: HardforksDict = {
     },
     eips: [3675, 4399],
   },
+  /**
+   * Description: Pre-merge hardfork to fork off non-upgraded clients
+   * URL        : https://eips.ethereum.org/EIPS/eip-3675
+   * Status     : Final
+   */
   mergeForkIdTransition: {
     name: 'mergeForkIdTransition',
-    comment: 'Pre-merge hardfork to fork off non-upgraded clients',
-    url: 'https://eips.ethereum.org/EIPS/eip-3675',
-    status: Status.Final,
     eips: [],
   },
+  /**
+   * Description: Next feature hardfork after the merge hardfork having withdrawals, warm coinbase, push0, limit/meter initcode
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md
+   * Status     : Final
+   */
   shanghai: {
     name: 'shanghai',
-    comment:
-      'Next feature hardfork after the merge hardfork having withdrawals, warm coinbase, push0, limit/meter initcode',
-    url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md',
-    status: Status.Final,
     eips: [3651, 3855, 3860, 4895],
   },
+  /**
+   * Description: Next feature hardfork after shanghai, includes proto-danksharding EIP 4844 blobs
+   * (still WIP hence not for production use), transient storage opcodes, parent beacon block root
+   * availability in EVM, selfdestruct only in same transaction, and blob base fee opcode
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/cancun.md
+   * Status     : Final
+   */
   cancun: {
     name: 'cancun',
-    comment:
-      'Next feature hardfork after shanghai, includes proto-danksharding EIP 4844 blobs (still WIP hence not for production use), transient storage opcodes, parent beacon block root availability in EVM, selfdestruct only in same transaction, and blob base fee opcode',
-    url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/cancun.md',
-    status: Status.Final,
     eips: [1153, 4844, 4788, 5656, 6780, 7516],
   },
+  /**
+   * Description: Next feature hardfork after cancun, internally used for pectra testing/implementation (incomplete/experimental)
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/prague.md
+   * Status     : Final
+   */
   prague: {
     name: 'prague',
-    comment:
-      'Next feature hardfork after cancun, internally used for pectra testing/implementation (incomplete/experimental)',
-    url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/prague.md',
-    status: Status.Draft,
     // TODO update this accordingly to the right devnet setup
     //eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698], // This is EOF-only
     eips: [2537, 2935, 6110, 7002, 7251, 7685, 7702], // This is current prague without EOF
   },
+  /**
+   * Description: Next feature hardfork after prague, internally used for verkle testing/implementation (incomplete/experimental)
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/osaka.md
+   * Status     : Final
+   */
   osaka: {
     name: 'osaka',
-    comment:
-      'Next feature hardfork after prague, internally used for verkle testing/implementation (incomplete/experimental)',
-    url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/osaka.md',
-    status: Status.Draft,
     eips: [2935, 6800],
   },
 }

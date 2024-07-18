@@ -28,7 +28,6 @@ type ConsensusConfig = {
 export interface ChainConfig {
   name: string
   chainId: number | bigint
-  networkId: number | bigint
   defaultHardfork?: string
   comment?: string
   url?: string
@@ -41,15 +40,14 @@ export interface ChainConfig {
   depositContractAddress?: PrefixedHexString
 }
 
-// TODO: Remove the string type and only keep PrefixedHexString
 export interface GenesisBlockConfig {
-  timestamp?: PrefixedHexString | string
-  gasLimit: number | PrefixedHexString | string
-  difficulty: number | PrefixedHexString | string
-  nonce: PrefixedHexString | string
-  extraData: PrefixedHexString | string
-  baseFeePerGas?: PrefixedHexString | string
-  excessBlobGas?: PrefixedHexString | string
+  timestamp?: PrefixedHexString
+  gasLimit: number | PrefixedHexString
+  difficulty: number | PrefixedHexString
+  nonce: PrefixedHexString
+  extraData: PrefixedHexString
+  baseFeePerGas?: PrefixedHexString
+  excessBlobGas?: PrefixedHexString
 }
 
 export interface HardforkTransitionConfig {
@@ -159,17 +157,13 @@ export interface GethConfigOpts extends BaseOpts {
   mergeForkIdPostMerge?: boolean
 }
 
-// TODO: Deprecate the string type and only keep BigIntLike
 export interface HardforkByOpts {
-  blockNumber?: BigIntLike | string
-  timestamp?: BigIntLike | string
-  td?: BigIntLike | string
+  blockNumber?: BigIntLike
+  timestamp?: BigIntLike
+  td?: BigIntLike
 }
 
 export type EIPOrHFConfig = {
-  comment: string
-  url: string
-  status: string
   gasConfig?: {
     [key: string]: number | bigint | null
   }

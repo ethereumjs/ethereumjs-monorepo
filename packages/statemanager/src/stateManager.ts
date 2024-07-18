@@ -1,6 +1,6 @@
 import { Chain, Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
+import { Trie, createTrieFromProof, verifyTrieProof } from '@ethereumjs/trie'
 import {
   Account,
   Address,
@@ -792,7 +792,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       } else {
         const trie =
           opts.trie ??
-          (await Trie.createFromProof(
+          (await createTrieFromProof(
             proof[0].accountProof.map((e) => hexToBytes(e)),
             { useKeyHashing: true }
           ))
@@ -871,7 +871,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await Trie.verifyProof(key, accountProof, {
+    const value = await verifyTrieProof(key, accountProof, {
       useKeyHashing: true,
     })
 
@@ -917,7 +917,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       const storageProof = stProof.proof.map((value: PrefixedHexString) => hexToBytes(value))
       const storageValue = setLengthLeft(hexToBytes(stProof.value), 32)
       const storageKey = hexToBytes(stProof.key)
-      const proofValue = await Trie.verifyProof(storageKey, storageProof, {
+      const proofValue = await verifyTrieProof(storageKey, storageProof, {
         useKeyHashing: true,
       })
       const reportedValue = setLengthLeft(

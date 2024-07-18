@@ -1,5 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { SimpleStateManager } from '@ethereumjs/statemanager'
+import { Hardfork } from '@ethereumjs/common'
 import {
   Account,
   Address,
@@ -18,7 +17,6 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { initRustBN } from 'rustbn-wasm'
 
 import { FORMAT } from './eof/constants.js'
 import { isEOF } from './eof/util.js'
@@ -30,7 +28,6 @@ import { Message } from './message.js'
 import { getOpcodesForHF } from './opcodes/index.js'
 import { NobleBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
 import { TransientStorage } from './transientStorage.js'
-import { DefaultBlockchain } from './types.js'
 
 import type { InterpreterOpts } from './interpreter.js'
 import type { Timer } from './logger.js'
@@ -52,13 +49,11 @@ import type {
   ExecResult,
   bn128,
 } from './types.js'
-import type { EVMStateManagerInterface } from '@ethereumjs/common'
+import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 
 const debug = debugDefault('evm:evm')
 const debugGas = debugDefault('evm:gas')
 const debugPrecompiles = debugDefault('evm:precompiles')
-
-let initializedRustBN: bn128 | undefined = undefined
 
 /**
  * EVM is responsible for executing an EVM message fully
@@ -149,44 +144,17 @@ export class EVM implements EVMInterface {
   private _bn128: bn128
 
   /**
-   * Use this async static constructor for the initialization
-   * of an EVM object
-   *
-   * @param createOpts The EVM options
-   * @returns A new EVM
-   */
-  static async create(createOpts?: EVMOpts) {
-    const opts = createOpts ?? ({} as EVMOpts)
-    const bn128 = initializedRustBN ?? ((await initRustBN()) as bn128)
-    initializedRustBN = bn128
-
-    if (opts.common === undefined) {
-      opts.common = new Common({ chain: Chain.Mainnet })
-    }
-
-    if (opts.blockchain === undefined) {
-      opts.blockchain = new DefaultBlockchain()
-    }
-
-    if (opts.stateManager === undefined) {
-      opts.stateManager = new SimpleStateManager()
-    }
-
-    return new EVM(opts, bn128)
-  }
-
-  /**
    *
    * Creates new EVM object
    *
    * @deprecated The direct usage of this constructor is replaced since
    * non-finalized async initialization lead to side effects. Please
-   * use the async {@link EVM.create} constructor instead (same API).
+   * use the async {@link createEVM} constructor instead (same API).
    *
    * @param opts The EVM options
    * @param bn128 Initialized bn128 WASM object for precompile usage (internal)
    */
-  protected constructor(opts: EVMOpts, bn128: bn128) {
+  constructor(opts: EVMOpts, bn128: bn128) {
     this.common = opts.common!
     this.blockchain = opts.blockchain!
     this.stateManager = opts.stateManager!

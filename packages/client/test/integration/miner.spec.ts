@@ -1,4 +1,4 @@
-import { createBlockchain } from '@ethereumjs/blockchain'
+import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
   Chain as ChainCommon,
   Common,
@@ -18,7 +18,7 @@ import { Event } from '../../src/types.js'
 import { MockServer } from './mocks/mockserver.js'
 import { destroy, setup } from './util.js'
 
-import type { CliqueConsensus } from '@ethereumjs/blockchain'
+import type { ConsensusDict } from '@ethereumjs/blockchain'
 
 // Schedule london at 0 and also unset any past scheduled timestamp hardforks that might collide with test
 const hardforks = new Common({ chain: ChainCommon.Goerli })
@@ -52,10 +52,13 @@ async function minerSetup(): Promise<[MockServer, FullEthereumService]> {
   const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
   const server = new MockServer({ config }) as any
 
+  const consensusDict: ConsensusDict = {}
+  consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
   const blockchain = await createBlockchain({
     common,
     validateBlocks: false,
     validateConsensus: false,
+    consensusDict,
   })
   ;(blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [accounts[0][0]] // stub
   const chain = await Chain.create({ config, blockchain })

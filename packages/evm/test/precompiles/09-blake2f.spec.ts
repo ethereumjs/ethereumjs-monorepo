@@ -2,8 +2,9 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.js'
 
+import type { EVM } from '../../src/index.js'
 import type { PrecompileFunc } from '../../src/precompiles/types.js'
 
 const validCases = [
@@ -85,7 +86,7 @@ describe('Precompiles: BLAKE2F', () => {
     // Test references: https://github.com/ethereum/go-ethereum/blob/e206d3f8975bd98cc86d14055dca40f996bacc60/core/vm/testdata/precompiles/blake2F.json
     //                  https://github.com/ethereum/go-ethereum/blob/e206d3f8975bd98cc86d14055dca40f996bacc60/core/vm/contracts_test.go#L73
 
-    evm = await EVM.create({
+    evm = await createEVM({
       common,
     })
     addressStr = '0000000000000000000000000000000000000009'

@@ -1,18 +1,21 @@
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
 import { KECCAK256_RLP, bytesToHex, randomBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, expect, it } from 'vitest'
 
-import { createBlockchain } from '../src/index.js'
+import { EthashConsensus, createBlockchain } from '../src/index.js'
 
 import { createBlock } from './util.js'
+
+import type { ConsensusDict } from '../src/index.js'
 
 describe('[Blockchain]: Block validation tests', () => {
   it('should throw if an uncle is included before', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchain({ common, validateConsensus: false })
+    const blockchain = await createBlockchain({ common })
 
     const genesis = blockchain.genesisBlock
 
@@ -39,7 +42,7 @@ describe('[Blockchain]: Block validation tests', () => {
 
   it('should throw if the uncle parent block is not part of the canonical chain', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchain({ common, validateConsensus: false })
+    const blockchain = await createBlockchain({ common })
 
     const genesis = blockchain.genesisBlock
 
@@ -66,7 +69,7 @@ describe('[Blockchain]: Block validation tests', () => {
 
   it('should throw if the uncle is too old', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchain({ common, validateConsensus: false })
+    const blockchain = await createBlockchain({ common })
 
     const genesis = blockchain.genesisBlock
 
@@ -99,7 +102,7 @@ describe('[Blockchain]: Block validation tests', () => {
 
   it('should throw if uncle is too young', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchain({ common, validateConsensus: false })
+    const blockchain = await createBlockchain({ common })
 
     const genesis = blockchain.genesisBlock
 
@@ -120,8 +123,10 @@ describe('[Blockchain]: Block validation tests', () => {
   })
 
   it('should throw if the uncle header is invalid', async () => {
+    const consensusDict: ConsensusDict = {}
+    consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchain({ common, validateConsensus: false })
+    const blockchain = await createBlockchain({ common, validateConsensus: false, consensusDict })
 
     const genesis = blockchain.genesisBlock
 
@@ -155,7 +160,7 @@ describe('[Blockchain]: Block validation tests', () => {
 
   it('throws if uncle is a canonical block', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchain({ common, validateConsensus: false })
+    const blockchain = await createBlockchain({ common })
 
     const genesis = blockchain.genesisBlock
 
@@ -178,7 +183,7 @@ describe('[Blockchain]: Block validation tests', () => {
 
   it('successfully validates uncles', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchain({ common, validateConsensus: false })
+    const blockchain = await createBlockchain({ common })
 
     const genesis = blockchain.genesisBlock
 
@@ -204,7 +209,7 @@ describe('[Blockchain]: Block validation tests', () => {
       hardfork: Hardfork.London,
     })
 
-    const blockchain = await createBlockchain({ common, validateConsensus: false })
+    const blockchain = await createBlockchain({ common })
     const genesis = blockchain.genesisBlock
 
     // Small hack to hack in the activation block number
@@ -300,7 +305,6 @@ describe('[Blockchain]: Block validation tests', () => {
 
     const blockchain = await createBlockchain({
       common,
-      validateConsensus: false,
       validateBlocks: false,
     })
 
@@ -389,7 +393,6 @@ describe('EIP 7685: requests field validation tests', () => {
     })
     const blockchain = await createBlockchain({
       common,
-      validateConsensus: false,
     })
     const block = createBlockFromBlockData(
       {

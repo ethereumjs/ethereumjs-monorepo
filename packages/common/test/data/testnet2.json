@@ -1,7 +1,6 @@
 {
   "name": "testnet2",
   "chainId": 22222,
-  "networkId": 22222,
   "defaultHardfork": "istanbul",
   "consensus": {
     "type": "poa",

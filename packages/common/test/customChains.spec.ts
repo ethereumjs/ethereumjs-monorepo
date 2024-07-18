@@ -1,7 +1,6 @@
 import { BIGINT_0 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Status } from '../src/hardforks.js'
 import {
   Chain,
   Common,
@@ -22,7 +21,6 @@ describe('[Common]: Custom chains', () => {
     const c = new Common({ chain: testnet, hardfork: Hardfork.Byzantium })
     assert.equal(c.chainName(), 'testnet', 'should initialize with chain name')
     assert.equal(c.chainId(), BigInt(12345), 'should return correct chain Id')
-    assert.equal(c.networkId(), BigInt(12345), 'should return correct network Id')
     assert.equal(c.hardforks()[3]['block'], 3, 'should return correct hardfork data')
     assert.equal(c.bootstrapNodes()[1].ip, '10.0.0.2', 'should return a bootstrap node array')
   })
@@ -43,7 +41,7 @@ describe('[Common]: Custom chains', () => {
   it('custom() -> base functionality', () => {
     const mainnetCommon = new Common({ chain: Chain.Mainnet })
 
-    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
+    const customChainParams = { name: 'custom', chainId: 123 }
     const customChainCommon = createCustomCommon(customChainParams, {
       hardfork: Hardfork.Byzantium,
     })
@@ -51,7 +49,6 @@ describe('[Common]: Custom chains', () => {
     // From custom chain params
     assert.equal(customChainCommon.chainName(), customChainParams.name)
     assert.equal(customChainCommon.chainId(), BigInt(customChainParams.chainId))
-    assert.equal(customChainCommon.networkId(), BigInt(customChainParams.networkId))
 
     // Fallback params from mainnet
     assert.equal(customChainCommon.genesis(), mainnetCommon.genesis())
@@ -64,12 +61,12 @@ describe('[Common]: Custom chains', () => {
 
   it('custom() -> behavior', () => {
     let common = createCustomCommon({ chainId: 123 })
-    assert.deepEqual(common.networkId(), BigInt(1), 'should default to mainnet base chain')
+    assert.equal(common.consensusAlgorithm(), 'casper', 'should default to mainnet base chain')
     assert.equal(common.chainName(), 'custom-chain', 'should set default custom chain name')
 
     common = createCustomCommon(CustomChain.PolygonMumbai)
     assert.deepEqual(
-      common.networkId(),
+      common.chainId(),
       BigInt(80001),
       'supported chain -> should initialize with correct chain ID'
     )
@@ -159,7 +156,6 @@ describe('[Common]: Custom chains', () => {
     const customChainParams: Partial<ChainConfig> = {
       name: 'custom',
       chainId: 123,
-      networkId: 678,
       depositContractAddress: '0x4242424242424242424242424242424242424242',
     }
     const customChainCommon = createCustomCommon(customChainParams, {
@@ -182,11 +178,9 @@ describe('[Common]: Custom chains', () => {
   it('customHardforks parameter: initialization and transition tests', () => {
     const c = createCustomCommon({
       customHardforks: {
+        // Hardfork to test EIP 2935
         testEIP2935Hardfork: {
           name: 'testEIP2935Hardfork',
-          comment: 'Hardfork to test EIP 2935',
-          url: '',
-          status: Status.Final,
           eips: [2935],
         },
       },
@@ -234,11 +228,9 @@ describe('[Common]: Custom chains', () => {
   it('customHardforks: override params', () => {
     const c = createCustomCommon({
       customHardforks: {
+        // Hardfork which changes the gas of STOP from 0 to 10
         stop10Gas: {
           name: 'stop10Gas',
-          comment: 'Hardfork which changes the gas of STOP from 0 to 10',
-          url: '',
-          status: Status.Final,
           eips: [2935],
           vm: {
             stop: BigInt(10),

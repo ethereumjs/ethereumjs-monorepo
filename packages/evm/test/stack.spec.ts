@@ -1,7 +1,7 @@
 import { Account, Address, bigIntToBytes, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/index.js'
+import { createEVM } from '../src/index.js'
 import { Stack } from '../src/stack.js'
 
 import { createAccount } from './utils.js'
@@ -99,7 +99,7 @@ describe('Stack', () => {
   it('stack items should not change if they are DUPed', async () => {
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee'))
     const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
-    const evm = await EVM.create()
+    const evm = await createEVM()
     const account = createAccount(BigInt(0), BigInt(0))
     const code = '0x60008080808060013382F15060005260206000F3'
     const expectedReturnValue = setLengthLeft(bigIntToBytes(BigInt(0)), 32)

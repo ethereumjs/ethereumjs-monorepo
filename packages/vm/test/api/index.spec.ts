@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
+import { EVM, createEVM } from '@ethereumjs/evm'
 import { Account, Address, KECCAK256_RLP, hexToBytes } from '@ethereumjs/util'
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { assert, describe, it } from 'vitest'
@@ -60,7 +60,7 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
 
   it('should throw if evm and evmOpts are both used', async () => {
     try {
-      await VM.create({ evmOpts: {}, evm: await EVM.create() })
+      await VM.create({ evmOpts: {}, evm: await createEVM() })
       assert.fail('should throw')
     } catch (e: any) {
       assert.ok('correctly thrown')
@@ -182,7 +182,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
   })
 
   it('should accept a custom chain config (createCustomCommon() static constructor)', async () => {
-    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
+    const customChainParams = { name: 'custom', chainId: 123 }
     const common = createCustomCommon(customChainParams, {
       baseChain: 'mainnet',
       hardfork: 'byzantium',

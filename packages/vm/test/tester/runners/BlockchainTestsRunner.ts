@@ -1,10 +1,11 @@
 import { createBlockFromBlockData, createBlockFromRLPSerializedBlock } from '@ethereumjs/block'
-import { createBlockchain } from '@ethereumjs/blockchain'
+import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
+import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
   MapDB,
   bytesToBigInt,
@@ -15,11 +16,11 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import { VM } from '../../../src/vm'
-import { setupPreConditions, verifyPostConditions } from '../../util'
+import { VM } from '../../../src/vm.js'
+import { setupPreConditions, verifyPostConditions } from '../../util.js'
 
 import type { Block } from '@ethereumjs/block'
-import type { EthashConsensus } from '@ethereumjs/blockchain'
+import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type * as tape from 'tape'
@@ -73,10 +74,13 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     t.deepEquals(genesisBlock.serialize(), rlp, 'correct genesis RLP')
   }
 
+  const consensusDict: ConsensusDict = {}
+  consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())
   let blockchain = await createBlockchain({
     common,
     validateBlocks: true,
     validateConsensus: validatePow,
+    consensusDict,
     genesisBlock,
   })
 
@@ -171,7 +175,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const shouldFail = txData.valid === 'false'
           try {
             const txRLP = hexToBytes(txData.rawBytes as PrefixedHexString)
-            const tx = TransactionFactory.fromSerializedData(txRLP, { common })
+            const tx = createTxFromSerializedData(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
               t.fail('tx should fail, but did not fail')

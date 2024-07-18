@@ -10,7 +10,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY, Trie } from '../../src/index.js'
+import { ROOT_DB_KEY, Trie, createTrie } from '../../src/index.js'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 
@@ -209,7 +209,7 @@ describe('testing checkpoints', () => {
     const KEY_ROOT = keccak256(ROOT_DB_KEY)
 
     // Initialise State
-    const CommittedState = await Trie.create({
+    const CommittedState = await createTrie({
       useKeyHashing: true,
       useNodePruning: true,
       useRootPersistence: true,

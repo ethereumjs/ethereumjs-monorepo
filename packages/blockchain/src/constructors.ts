@@ -17,7 +17,7 @@ import type { Chain } from '@ethereumjs/common'
 export async function createBlockchain(opts: BlockchainOptions = {}) {
   const blockchain = new Blockchain(opts)
 
-  await blockchain.consensus.setup({ blockchain })
+  await blockchain.consensus?.setup({ blockchain })
 
   let stateRoot = opts.genesisBlock?.header.stateRoot ?? opts.genesisStateRoot
   if (stateRoot === undefined) {
@@ -56,7 +56,7 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
     DBSetBlockOrHeader(genesisBlock).map((op) => dbOps.push(op))
     DBSaveLookups(genesisHash, BIGINT_0).map((op) => dbOps.push(op))
     await blockchain.dbManager.batch(dbOps)
-    await blockchain.consensus.genesisInit(genesisBlock)
+    await blockchain.consensus?.genesisInit(genesisBlock)
   }
 
   // At this point, we can safely set the genesis:
