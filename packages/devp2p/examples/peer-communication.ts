@@ -9,7 +9,7 @@ import {
 import { Block, BlockHeader, createBlockFromValuesArray } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
+import { createTxFromBlockBodyData, TypedTransaction } from '@ethereumjs/tx'
 import chalk from 'chalk'
 import { LRUCache } from 'lru-cache'
 
@@ -141,7 +141,7 @@ rlpx.events.on('peer:added', (peer) => {
         if (!forkVerified) break
 
         for (const item of payload) {
-          const tx = TransactionFactory.fromBlockBodyData(item)
+          const tx = createTxFromBlockBodyData(item)
           if (tx.isValid()) onNewTx(tx, peer)
         }
 

@@ -1,7 +1,7 @@
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -45,7 +45,7 @@ describe(method, () => {
 
     account!.balance = 0xfffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
@@ -55,7 +55,7 @@ describe(method, () => {
       },
       { common }
     ).sign(pkey)
-    const tx2 = TransactionFactory.fromTxData(
+    const tx2 = createTxFromTxData(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
@@ -131,7 +131,7 @@ describe(method, () => {
 
     account!.balance = 0xfffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
@@ -141,7 +141,7 @@ describe(method, () => {
       },
       { common }
     ).sign(pkey)
-    const tx2 = TransactionFactory.fromTxData(
+    const tx2 = createTxFromTxData(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,

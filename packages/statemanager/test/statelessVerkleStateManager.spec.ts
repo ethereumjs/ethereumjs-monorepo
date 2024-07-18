@@ -1,6 +1,6 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -33,7 +33,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     eips: [2935, 4895, 6800],
   })
   const decodedTxs = verkleBlockJSON.transactions.map((tx) =>
-    TransactionFactory.fromSerializedData(hexToBytes(tx as PrefixedHexString))
+    createTxFromSerializedData(hexToBytes(tx as PrefixedHexString))
   )
   const block = createBlockFromBlockData(
     { ...verkleBlockJSON, transactions: decodedTxs } as BlockData,
