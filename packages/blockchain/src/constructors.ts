@@ -91,7 +91,7 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
 
 /**
  * Creates a blockchain from a list of block objects,
- * objects must be readable by {@link Block.fromBlockData}
+ * objects must be readable by {@link createBlockFromBlockData}
  *
  * @param blockData List of block objects
  * @param opts Constructor options, see {@link BlockchainOptions}

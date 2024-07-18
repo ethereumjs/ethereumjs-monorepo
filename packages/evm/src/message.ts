@@ -1,6 +1,7 @@
 import { Address, BIGINT_0 } from '@ethereumjs/util'
 
 import type { PrecompileFunc } from './precompiles/index.js'
+import type { EOFEnv } from './types.js'
 import type { AccessWitnessInterface } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -21,6 +22,7 @@ interface MessageOpts {
   caller?: Address
   gasLimit: bigint
   data?: Uint8Array
+  eofCallData?: Uint8Array
   depth?: number
   code?: Uint8Array | PrecompileFunc
   codeAddress?: Address
@@ -48,13 +50,15 @@ export class Message {
   caller: Address
   gasLimit: bigint
   data: Uint8Array
+  eofCallData?: Uint8Array // Only used in EOFCreate to signal an EOF contract to be created with this calldata (via EOFCreate)
+  isCreate?: boolean
   depth: number
   code?: Uint8Array | PrecompileFunc
   _codeAddress?: Address
   isStatic: boolean
   isCompiled: boolean
   salt?: Uint8Array
-  containerCode?: Uint8Array /** container code for EOF1 contracts - used by CODECOPY/CODESIZE */
+  eof?: EOFEnv
   chargeCodeAccesses?: boolean
   /**
    * Set of addresses to selfdestruct. Key is the unprefixed address.
@@ -83,6 +87,7 @@ export class Message {
     this.caller = opts.caller ?? defaults.caller
     this.gasLimit = opts.gasLimit
     this.data = opts.data ?? defaults.data
+    this.eofCallData = opts.eofCallData
     this.depth = opts.depth ?? defaults.depth
     this.code = opts.code
     this._codeAddress = opts.codeAddress
