@@ -41,6 +41,10 @@ import type {
 } from '@ethereumjs/common'
 import type { DB, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import { TrieNode } from '@ethereumjs/trie'
+import { LeafNode } from '@ethereumjs/trie'
+import { Nibbles } from '@ethereumjs/trie'
+import { nibblesToBytes } from '@ethereumjs/trie'
 
 export type StorageProof = {
   key: PrefixedHexString
@@ -984,6 +988,15 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Both are represented as hex strings without the `0x` prefix.
    */
   async dumpStorage(address: Address): Promise<StorageDump> {
+    function nibblestoBytes(arr: Nibbles): Uint8Array {
+      const buf = new Uint8Array(arr.length / 2)
+      for (let i = 0; i < buf.length; i++) {
+        let q = i * 2
+        buf[i] = (arr[q] << 4) + arr[++q]
+      }
+      return buf
+    }
+
     await this.flush()
     const account = await this.getAccount(address)
     if (!account) {
@@ -993,17 +1006,14 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     return new Promise((resolve, reject) => {
       const storage: StorageDump = {}
-      const stream = trie.createReadStream()
 
-      stream.on('data', (val: any) => {
-        storage[bytesToHex(val.key)] = bytesToHex(val.value)
-      })
-      stream.on('end', () => {
-        resolve(storage)
-      })
-      stream.on('error', (e) => {
-        reject(e)
-      })
+      return trie
+        .walkAllValueNodes(async (node: TrieNode, key: number[]) => {
+          if (node instanceof LeafNode) {
+            storage[bytesToHex(nibblestoBytes(node._nibbles))] = bytesToHex(node._value)
+          }
+        })
+        .then((_) => resolve(storage))
     })
   }
 
