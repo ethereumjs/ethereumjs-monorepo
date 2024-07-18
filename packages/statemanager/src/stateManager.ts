@@ -1,6 +1,6 @@
 import { Chain, Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie, createTrieFromProof, verifyTrieProof } from '@ethereumjs/trie'
+import { LeafNode, Trie, createTrieFromProof, verifyTrieProof } from '@ethereumjs/trie'
 import {
   Account,
   Address,
@@ -39,12 +39,9 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
+import type { Nibbles, TrieNode } from '@ethereumjs/trie'
 import type { DB, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-import { TrieNode } from '@ethereumjs/trie'
-import { LeafNode } from '@ethereumjs/trie'
-import { Nibbles } from '@ethereumjs/trie'
-import { nibblesToBytes } from '@ethereumjs/trie'
 
 export type StorageProof = {
   key: PrefixedHexString
@@ -1004,11 +1001,11 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
     const trie = this._getStorageTrie(address, account)
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _) => {
       const storage: StorageDump = {}
 
       return trie
-        .walkAllValueNodes(async (node: TrieNode, key: number[]) => {
+        .walkAllValueNodes(async (node: TrieNode, _) => {
           if (node instanceof LeafNode) {
             storage[bytesToHex(nibblestoBytes(node._nibbles))] = bytesToHex(node._value)
           }
@@ -1048,7 +1045,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     const trie = this._getStorageTrie(address, account)
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _) => {
       let inRange = false
       let i = 0
 
@@ -1056,7 +1053,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       const storageMap: StorageRange['storage'] = {}
 
       return trie
-        .walkAllValueNodes(async (node: TrieNode, key: number[]) => {
+        .walkAllValueNodes(async (node: TrieNode, _) => {
           if (node instanceof LeafNode) {
             // storage[bytesToHex(nibblestoBytes(node._nibbles))] = bytesToHex(node._value)
 
