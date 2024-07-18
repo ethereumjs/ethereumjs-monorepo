@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721298484583,
+  "lastUpdate": 1721331615085,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "2a774e5d8475f8617a466be4675bd36d78386de7",
-          "message": "vm: remove backfill of block hashes on 2935 activation (#3478)",
-          "timestamp": "2024-06-30T17:05:56+05:30",
-          "tree_id": "a05e992021f397d4b290fae71d4bdf8d288859b6",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2a774e5d8475f8617a466be4675bd36d78386de7"
-        },
-        "date": 1719747505366,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41429,
-            "range": "±2.77%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40541,
-            "range": "±1.39%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40440,
-            "range": "±1.51%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37016,
-            "range": "±5.26%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38850,
-            "range": "±1.83%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.69%",
             "unit": "ops/sec",
             "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d7c26198e7967c6303b5b65988979a5461a6223b",
+          "message": "Apply leaf marker on all touched values (#3520)\n\n* Apply leaf marker to touched values\r\n\r\n* Add test for leaf marker",
+          "timestamp": "2024-07-18T21:37:36+02:00",
+          "tree_id": "49155afc44264f9ccdbf73577ae531a15a023475",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d7c26198e7967c6303b5b65988979a5461a6223b"
+        },
+        "date": 1721331614335,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38440,
+            "range": "±2.22%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36338,
+            "range": "±3.42%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37102,
+            "range": "±1.52%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36298,
+            "range": "±1.62%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35774,
+            "range": "±1.65%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
           }
         ]
       }
