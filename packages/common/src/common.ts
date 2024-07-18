@@ -160,11 +160,7 @@ export class Common {
    * Returns the hardfork either based on block numer (older HFs) or
    * timestamp (Shanghai upwards).
    *
-   * An optional TD takes precedence in case the corresponding HF block
-   * is set to `null` or otherwise needs to match (if not an error
-   * will be thrown).
-   *
-   * @param Opts Block number, timestamp or TD (all optional)
+   * @param Opts Block number or timestamp
    * @returns The name of the HF
    */
   getHardforkBy(opts: HardforkByOpts): string {
@@ -248,11 +244,7 @@ export class Common {
    * Sets a new hardfork either based on block numer (older HFs) or
    * timestamp (Shanghai upwards).
    *
-   * An optional TD takes precedence in case the corresponding HF block
-   * is set to `null` or otherwise needs to match (if not an error
-   * will be thrown).
-   *
-   * @param Opts Block number, timestamp or TD (all optional)
+   * @param Opts Block number or timestamp
    * @returns The name of the HF set
    */
   setHardforkBy(opts: HardforkByOpts): string {
