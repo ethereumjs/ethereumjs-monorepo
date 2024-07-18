@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721290775924,
+  "lastUpdate": 1721292007188,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "669925f3cd4a21f92cca5551996fe938b9e71f89",
-          "message": "common: update eip 2935 as per latest devnet1 spec and add related eip 7709 (#3475)\n\n* common: update eip 2935 as per latest devnet1 spec and add related eip 7709\r\n\r\n* typo\r\n\r\n* fix 2935 test\r\n\r\n* fix casing typo\r\n\r\n* lint\r\n\r\n* apply feedback\r\n\r\n* empty\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-06-29T13:39:19+05:30",
-          "tree_id": "af1327736a0efcfd26925bfa491d2445ebb3f253",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/669925f3cd4a21f92cca5551996fe938b9e71f89"
-        },
-        "date": 1719648708014,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41839,
-            "range": "±2.53%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41111,
-            "range": "±1.30%",
-            "unit": "ops/sec",
-            "extra": "92 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40952,
-            "range": "±1.37%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38851,
-            "range": "±4.13%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36255,
-            "range": "±6.56%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.78%",
             "unit": "ops/sec",
             "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3bd1847c0900d765419a4ab3dd9a7774a52783d2",
+          "message": "Common/Monorepo: Remove NetworkId (#3513)\n\n* Remove networkId in Common\r\n\r\n* Killing off networkId in everything except client and devp2p\r\n\r\n* Fully remove from devp2p and client\r\n\r\n* docs: adjust readme\r\n\r\n* Update packages/client/bin/cli.ts\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Update packages/client/bin/cli.ts\r\n\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>",
+          "timestamp": "2024-07-18T10:37:30+02:00",
+          "tree_id": "a799350e869ccc1e186ad846b6f2968c1cc52244",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3bd1847c0900d765419a4ab3dd9a7774a52783d2"
+        },
+        "date": 1721292006597,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37556,
+            "range": "±2.23%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36128,
+            "range": "±3.21%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 36565,
+            "range": "±1.53%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35848,
+            "range": "±1.65%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35162,
+            "range": "±1.82%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
