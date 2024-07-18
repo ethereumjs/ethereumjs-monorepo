@@ -13,7 +13,6 @@ import {
   bytesToUtf8,
   concatBytes,
   equalsBytes,
-  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -283,47 +282,6 @@ export class Trie {
       await this.persistRoot()
     }
     return
-  }
-
-  static async create(opts?: TrieOpts) {
-    const keccakFunction =
-      opts?.common?.customCrypto.keccak256 ?? opts?.useKeyHashingFunction ?? keccak256
-    let key = ROOT_DB_KEY
-
-    const encoding =
-      opts?.valueEncoding === ValueEncoding.Bytes ? ValueEncoding.Bytes : ValueEncoding.String
-
-    if (opts?.useKeyHashing === true) {
-      key = keccakFunction.call(undefined, ROOT_DB_KEY) as Uint8Array
-    }
-    if (opts?.keyPrefix !== undefined) {
-      key = concatBytes(opts.keyPrefix, key)
-    }
-
-    if (opts?.db !== undefined && opts?.useRootPersistence === true) {
-      if (opts?.root === undefined) {
-        const root = await opts?.db.get(bytesToUnprefixedHex(key), {
-          keyEncoding: KeyEncoding.String,
-          valueEncoding: encoding,
-        })
-        if (typeof root === 'string') {
-          opts.root = unprefixedHexToBytes(root)
-        } else {
-          opts.root = root
-        }
-      } else {
-        await opts?.db.put(
-          bytesToUnprefixedHex(key),
-          <any>(encoding === ValueEncoding.Bytes ? opts.root : bytesToUnprefixedHex(opts.root)),
-          {
-            keyEncoding: KeyEncoding.String,
-            valueEncoding: encoding,
-          }
-        )
-      }
-    }
-
-    return new Trie(opts)
   }
 
   database(db?: DB<string, string | Uint8Array>, valueEncoding?: ValueEncoding) {
