@@ -17,7 +17,7 @@ import { assert, describe, it } from 'vitest'
 import * as genesisJSON from '../../client/test/testdata/geth-genesis/eip4844.json'
 import { defaultBlock } from '../src/evm.js'
 import { ERROR } from '../src/exceptions.js'
-import { EVM } from '../src/index.js'
+import { createEVM } from '../src/index.js'
 
 import type { EVMRunCallOpts } from '../src/types.js'
 
@@ -31,7 +31,7 @@ function create2address(sourceAddress: Address, codeHash: Uint8Array, salt: Uint
 describe('RunCall tests', () => {
   it('Create where FROM account nonce is 0', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
     const res = await evm.runCall({ to: undefined })
     assert.equal(
       res.createdAddress?.toString(),
@@ -54,7 +54,7 @@ describe('RunCall tests', () => {
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff')) // contract address
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
     const code = '0x3460008080F560005260206000F3'
     /*
       code:             remarks: (top of the stack is at the zero index)
@@ -107,10 +107,10 @@ describe('RunCall tests', () => {
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee')) // caller address
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff')) // contract address
     // setup the evm
-    const evmByzantium = await EVM.create({
+    const evmByzantium = await createEVM({
       common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium }),
     })
-    const evmConstantinople = await EVM.create({
+    const evmConstantinople = await createEVM({
       common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople }),
     })
     const code = '0x600160011B00'
@@ -151,7 +151,7 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
     const code = '0x61000260005561000160005500'
     /*
       idea: store the original value in the storage slot, except it is now a 1-length Uint8Array instead of a 32-length Uint8Array
@@ -200,7 +200,7 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
     // push 1 push 0 sstore stop
     const code = '0x600160015500'
 
@@ -225,7 +225,7 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
     // code to call 0x00..00dd, which does not exist
     const code = '0x6000600060006000600060DD61FFFF5A03F100'
 
@@ -252,7 +252,7 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
     // code to call back into the calling account (0x00..00EE),
     // but using too much memory
     const code = '0x61FFFF60FF60006000600060EE6000F200'
@@ -279,7 +279,7 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.TangerineWhistle })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
     // code to call 0x00..00fe, with the GAS opcode used as gas
     // this cannot be paid, since we also have to pay for CALL (40 gas)
     // this should thus go OOG
@@ -307,7 +307,7 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
     // code to call 0x00..00fe, with the GAS opcode used as gas
     // this cannot be paid, since we also have to pay for CALL (40 gas)
     // this should thus go OOG
@@ -374,7 +374,7 @@ describe('RunCall tests', () => {
     const emptyBytes = hexToBytes('0x')
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
     const code = '0x60008080F060005500'
     /*
       This simple code tries to create an empty contract and then stores the address of the contract in the zero slot.
@@ -426,7 +426,7 @@ describe('RunCall tests', () => {
     const caller = new Address(hexToBytes('0x1a02a619e51cc5f8a2a61d2a60f6c80476ee8ead')) // caller address
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
     const code = '0x3034526020600760203460045afa602034343e604034f3'
 
     const account = new Account()
@@ -455,7 +455,7 @@ describe('RunCall tests', () => {
   it('Throws on negative call value', async () => {
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
 
     // setup the call arguments
     const runCallArgs = {
@@ -476,7 +476,7 @@ describe('RunCall tests', () => {
 
   it('runCall() -> skipBalance behavior', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
 
     // runCall against a contract to reach `_reduceSenderBalance`
     const contractCode = hexToBytes('0x00') // 00: STOP
@@ -520,7 +520,7 @@ describe('RunCall tests', () => {
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee')) // caller address
     // setup the evm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
 
     // setup the call arguments
     const runCallArgs = {
@@ -545,7 +545,7 @@ describe('RunCall tests', () => {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
 
     // setup the call arguments
     const runCallArgs: EVMRunCallOpts = {
@@ -582,7 +582,7 @@ describe('RunCall tests', () => {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
 
     const BLOBBASEFEE_OPCODE = 0x4a
     assert.equal(
@@ -612,7 +612,7 @@ describe('RunCall tests', () => {
 
   it('step event: ensure EVM memory and not internal memory gets reported', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
 
     const contractCode = hexToBytes('0x600060405200') // PUSH 0 PUSH 40 MSTORE STOP
     const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
@@ -637,7 +637,7 @@ describe('RunCall tests', () => {
 
   it('ensure code deposit errors are logged correctly (>= Homestead)', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
 
     // Create a contract which is too large
     const runCallArgs = {
@@ -660,7 +660,7 @@ describe('RunCall tests', () => {
 
   it('ensure code deposit errors are logged correctly (Frontier)', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
 
     // Create a contract which cannot pay the code deposit fee
     const runCallArgs = {
@@ -684,7 +684,7 @@ describe('RunCall tests', () => {
   it('ensure call and callcode handle gas stipend correctly', async () => {
     // See: https://github.com/ethereumjs/ethereumjs-monorepo/issues/3194
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
 
     for (const [opcode, gas, expectedOutput] of [
       ['f1', 36600, '0x'], // 36600 is CALL fee

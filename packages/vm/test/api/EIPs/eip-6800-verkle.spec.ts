@@ -1,6 +1,6 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Hardfork, createCustomCommon } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
+import { createEVM } from '@ethereumjs/evm'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { createTxFromSerializedData } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
@@ -37,7 +37,7 @@ describe('EIP 6800 tests', () => {
   it('successfully run transactions statelessly using the block witness', async () => {
     const verkleCrypto = await loadVerkleCrypto()
     const verkleStateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
-    const evm = await EVM.create({ common, stateManager: verkleStateManager })
+    const evm = await createEVM({ common, stateManager: verkleStateManager })
     const vm = await VM.create({
       common,
       evm,

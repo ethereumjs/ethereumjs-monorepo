@@ -1,6 +1,6 @@
 import { createBlockFromJsonRpcProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EVM, type EVMRunCallOpts } from '@ethereumjs/evm'
+import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
 import { FeeMarketEIP1559Transaction, createTxFromRPC } from '@ethereumjs/tx'
 import {
   Account,
@@ -318,7 +318,7 @@ describe('blockchain', () =>
     const blockchain = new RPCBlockChain(provider)
     const blockTag = 1n
     const state = new RPCStateManager({ provider, blockTag })
-    const evm = await EVM.create({ blockchain, stateManager: state })
+    const evm = await createEVM({ blockchain, stateManager: state })
     // Bytecode for returning the blockhash of the block previous to `blockTag`
     const code = '0x600143034060005260206000F3'
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))

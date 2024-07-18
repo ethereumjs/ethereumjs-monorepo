@@ -1,5 +1,5 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
+import { verifyTrieRangeProof } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -126,7 +126,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       )
       const keys = slots.map((slot: any) => slot.hash)
       const values = slots.map((slot: any) => slot.body)
-      return await Trie.verifyRangeProof(
+      return await verifyTrieRangeProof(
         stateRoot,
         origin,
         keys[keys.length - 1],
@@ -276,7 +276,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       // zero-element proof
       if (rangeResult.proof.length > 0) {
         try {
-          const isMissingRightRange = await Trie.verifyRangeProof(
+          const isMissingRightRange = await verifyTrieRangeProof(
             task.storageRequests[0].storageRoot,
             origin,
             null,
@@ -333,7 +333,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         const proof = i === rangeResult.slots.length - 1 ? rangeResult.proof : undefined
         if (proof === undefined || proof.length === 0) {
           // all-elements proof verification
-          await Trie.verifyRangeProof(
+          await verifyTrieRangeProof(
             root,
             null,
             null,

@@ -12,7 +12,7 @@ import {
   DefaultStateManager,
   StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
+import { createTrie } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -38,6 +38,7 @@ import { ReceiptsManager } from './receipt.js'
 
 import type { ExecutionOptions } from './execution.js'
 import type { Block } from '@ethereumjs/block'
+import type { Trie } from '@ethereumjs/trie'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
@@ -145,7 +146,7 @@ export class VMExecution extends Execution {
     if (this.merkleVM !== undefined) {
       return
     }
-    const trie = await Trie.create({
+    const trie = await createTrie({
       db: new LevelDB(this.stateDB),
       useKeyHashing: true,
       common: this.config.chainCommon,

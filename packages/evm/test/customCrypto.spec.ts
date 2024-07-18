@@ -9,8 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/evm.js'
-import { getActivePrecompiles } from '../src/index.js'
+import { createEVM, getActivePrecompiles } from '../src/index.js'
 
 describe('custom crypto', () => {
   it('should use custom sha256 function', async () => {
@@ -23,7 +22,7 @@ describe('custom crypto', () => {
     }
     const msg = Uint8Array.from([0, 1, 2, 3])
     const common = new Common({ chain: Chain.Mainnet, customCrypto })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
     const addressStr = '0000000000000000000000000000000000000002'
     const SHA256 = getActivePrecompiles(common).get(addressStr)!
     const result = await SHA256({
@@ -46,7 +45,7 @@ describe('custom crypto', () => {
     }
     const msg = concatBytes(randomBytes(32), setLengthLeft(intToBytes(27), 32), randomBytes(32))
     const common = new Common({ chain: Chain.Mainnet, customCrypto })
-    const evm = await EVM.create({ common })
+    const evm = await createEVM({ common })
     const addressStr = '0000000000000000000000000000000000000001'
     const ECRECOVER = getActivePrecompiles(common).get(addressStr)!
     const result = await ECRECOVER({
