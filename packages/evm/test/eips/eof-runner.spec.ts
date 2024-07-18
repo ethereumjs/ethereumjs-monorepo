@@ -1,13 +1,13 @@
 import { Account, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../../src/index.js'
+import { createEVM } from '../../src/index.js'
 
 import { getCommon } from './eof-utils.js'
 
 async function getEVM() {
   const common = getCommon()
-  const evm = EVM.create({
+  const evm = createEVM({
     common,
   })
   return evm

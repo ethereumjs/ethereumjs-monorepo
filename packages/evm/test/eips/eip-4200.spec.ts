@@ -3,13 +3,13 @@ import { assert, describe, it } from 'vitest'
 
 import { default as testData } from '../../../ethereum-tests/EOFTests/EIP4200/validInvalid.json'
 import { validateEOF } from '../../src/eof/container.js'
-import { EVM } from '../../src/index.js'
+import { createEVM } from '../../src/index.js'
 
 import { getCommon } from './eof-utils.js'
 
 async function getEVM() {
   const common = getCommon()
-  const evm = EVM.create({
+  const evm = createEVM({
     common,
   })
   return evm
