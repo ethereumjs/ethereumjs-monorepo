@@ -1,4 +1,4 @@
-import { Trie } from '@ethereumjs/trie'
+import { Trie, createTrieFromProof } from '@ethereumjs/trie'
 import { bytesToUtf8 } from '@ethereumjs/util'
 import { utf8ToBytes } from '@ethereumjs/util'
 
@@ -11,7 +11,7 @@ async function main() {
   await someOtherTrie.put(k2, utf8ToBytes('valueTwo'))
 
   const proof = await someOtherTrie.createProof(k1)
-  const trie = await Trie.createFromProof(proof, { useKeyHashing: true })
+  const trie = await createTrieFromProof(proof, { useKeyHashing: true })
   const otherProof = await someOtherTrie.createProof(k2)
 
   // To add more proofs to the trie, use `updateFromProof`

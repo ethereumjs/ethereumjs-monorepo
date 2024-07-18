@@ -11,7 +11,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY as BASE_DB_KEY, Trie } from '../../src/index.js'
+import { ROOT_DB_KEY as BASE_DB_KEY, Trie, createTrie } from '../../src/index.js'
 
 for (const { constructor, defaults, title } of [
   {
@@ -43,18 +43,18 @@ for (const { constructor, defaults, title } of [
   }
 
   describe(`${title} (Persistence)`, () => {
-    it('creates an instance via the static constructor `create` function and defaults to `false` with a database', async () => {
+    it('creates an instance via createTrie and defaults to `false` with a database', async () => {
       // TODO: check this test
       assert.isUndefined(
-        ((await constructor.create({ ...defaults, db: new MapDB() })) as any)._useRootPersistence
+        ((await createTrie({ ...defaults, db: new MapDB() })) as any)._useRootPersistence
       )
     })
 
-    it('creates an instance via the static constructor `create` function and respects the `useRootPersistence` option with a database', async () => {
+    it('creates an instance via createTrie and respects the `useRootPersistence` option with a database', async () => {
       // TODO: check this test
       assert.isUndefined(
         (
-          (await constructor.create({
+          (await createTrie({
             ...defaults,
             db: new MapDB(),
             useRootPersistence: false,
@@ -63,11 +63,11 @@ for (const { constructor, defaults, title } of [
       )
     })
 
-    it('creates an instance via the static constructor `create` function and respects the `useRootPersistence` option with a database', async () => {
+    it('creates an instance via createTrie and respects the `useRootPersistence` option with a database', async () => {
       // TODO: check this test
       assert.isUndefined(
         (
-          (await constructor.create({
+          (await createTrie({
             ...defaults,
             db: new MapDB(),
             useRootPersistence: false,
@@ -76,15 +76,15 @@ for (const { constructor, defaults, title } of [
       )
     })
 
-    it('creates an instance via the static constructor `create` function and defaults to `false` without a database', async () => {
+    it('creates an instance via createTrie and defaults to `false` without a database', async () => {
       // TODO: check this test
       assert.isUndefined(
-        ((await constructor.create({ ...defaults, db: new MapDB() })) as any)._useRootPersistence
+        ((await createTrie({ ...defaults, db: new MapDB() })) as any)._useRootPersistence
       )
     })
 
     it('persist the root if the `useRootPersistence` option is `true`', async () => {
-      const trie = await constructor.create({
+      const trie = await createTrie({
         ...defaults,
         db: new MapDB(),
         useRootPersistence: true,
@@ -98,7 +98,7 @@ for (const { constructor, defaults, title } of [
     })
 
     it('persist the root if the `root` option is given', async () => {
-      const trie = await constructor.create({
+      const trie = await createTrie({
         ...defaults,
         db: new MapDB(),
         root: KECCAK256_RLP,
@@ -113,7 +113,7 @@ for (const { constructor, defaults, title } of [
     })
 
     it('does not persist the root if the `useRootPersistence` option is `false`', async () => {
-      const trie = await constructor.create({
+      const trie = await createTrie({
         ...defaults,
         db: new MapDB(),
         useRootPersistence: false,
@@ -127,7 +127,7 @@ for (const { constructor, defaults, title } of [
     })
 
     it('persists the root if the `db` option is not provided', async () => {
-      const trie = await constructor.create({ ...defaults, useRootPersistence: true })
+      const trie = await createTrie({ ...defaults, useRootPersistence: true })
 
       assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
 
@@ -139,17 +139,17 @@ for (const { constructor, defaults, title } of [
     it('persist and restore the root', async () => {
       const db = new MapDB<string, string>()
 
-      const trie = await constructor.create({ ...defaults, db, useRootPersistence: true })
+      const trie = await createTrie({ ...defaults, db, useRootPersistence: true })
       assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
       assert.equal(bytesToHex((await trie['_db'].get(ROOT_DB_KEY))!), EXPECTED_ROOTS)
 
       // Using the same database as `trie` so we should have restored the root
-      const copy = await constructor.create({ ...defaults, db, useRootPersistence: true })
+      const copy = await createTrie({ ...defaults, db, useRootPersistence: true })
       assert.equal(bytesToHex((await copy['_db'].get(ROOT_DB_KEY))!), EXPECTED_ROOTS)
 
       // New trie with a new database so we shouldn't find a root to restore
-      const empty = await constructor.create({
+      const empty = await createTrie({
         ...defaults,
         db: new MapDB(),
         useRootPersistence: true,
@@ -175,7 +175,7 @@ for (const { constructor, defaults, title } of [
       const value = randomBytes(10)
       return { key, value }
     })
-    const trie = await constructor.create({
+    const trie = await createTrie({
       ...defaults,
       db: new MapDB(),
     })
@@ -199,7 +199,7 @@ for (const { constructor, defaults, title } of [
       }
     })
     it('should return false for all keys if trie is empty', async () => {
-      const emptyTrie = await constructor.create({
+      const emptyTrie = await createTrie({
         ...defaults,
         db: new MapDB(),
       })
@@ -220,7 +220,7 @@ for (const { constructor, defaults, title } of [
       }
     })
     it('Should throw on unrelated errors', async () => {
-      const emptyTrie = await constructor.create({
+      const emptyTrie = await createTrie({
         ...defaults,
         db: new MapDB(),
         useRootPersistence: true,
@@ -252,8 +252,8 @@ describe('keyHashingFunction', async () => {
       },
     }
 
-    const trieWithHashFunction = await Trie.create({ useKeyHashingFunction: keyHashingFunction })
-    const trieWithCommon = await Trie.create({ common: c })
+    const trieWithHashFunction = await createTrie({ useKeyHashingFunction: keyHashingFunction })
+    const trieWithCommon = await createTrie({ common: c })
 
     assert.equal(
       bytesToHex(trieWithHashFunction.root()),
@@ -273,9 +273,9 @@ describe('keyHashingFunction', async () => {
       },
     }
 
-    const trieWithHashFunction = await Trie.create({ useKeyHashingFunction: keyHashingFunction })
+    const trieWithHashFunction = await createTrie({ useKeyHashingFunction: keyHashingFunction })
     const trieWithHashFunctionCopy = trieWithHashFunction.shallowCopy()
-    const trieWithCommon = await Trie.create({ common: c })
+    const trieWithCommon = await createTrie({ common: c })
     const trieWithCommonCopy = trieWithCommon.shallowCopy()
 
     assert.equal(

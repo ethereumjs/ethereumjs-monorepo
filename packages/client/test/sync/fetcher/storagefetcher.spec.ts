@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
+import { createTrieFromProof } from '@ethereumjs/trie'
 import { hexToBytes } from '@ethereumjs/util'
 import { utf8ToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it, vi } from 'vitest'
@@ -362,7 +362,7 @@ describe('[StorageFetcher]', async () => {
     const pool = new PeerPool() as any
 
     // calculate new root with a key all the way to the right of the trie
-    const trie = await Trie.createFromProof(_zeroElementProof)
+    const trie = await createTrieFromProof(_zeroElementProof)
     await trie.put(hexToBytes(`0x${'F'.repeat(32)}`), hexToBytes('0x123'), true)
     const newRoot = trie.root()
 

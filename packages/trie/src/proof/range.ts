@@ -1,5 +1,6 @@
 import { equalsBytes } from '@ethereumjs/util'
 
+import { createTrieFromProof } from '../index.js'
 import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
 import { Trie } from '../trie.js'
 import { nibblesCompare, nibblestoBytes } from '../util/nibbles.js'
@@ -322,7 +323,7 @@ async function verifyProof(
   proof: Uint8Array[],
   useKeyHashingFunction: HashKeysFunction
 ): Promise<{ value: Uint8Array | null; trie: Trie }> {
-  const proofTrie = await Trie.fromProof(proof, {
+  const proofTrie = await createTrieFromProof(proof, {
     root: rootHash,
     useKeyHashingFunction,
   })
@@ -499,7 +500,7 @@ export async function verifyRangeProof(
     )
   }
 
-  const trie = await Trie.fromProof(proof, {
+  const trie = await createTrieFromProof(proof, {
     useKeyHashingFunction,
     root: rootHash,
   })
