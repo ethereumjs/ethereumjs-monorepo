@@ -1,6 +1,12 @@
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
+  type TxOptions,
+  createTxFromBlockBodyData,
+  createTxFromSerializedData,
+  createTxFromTxData,
+} from '@ethereumjs/tx'
+import {
   CLRequestFactory,
   ConsolidationRequest,
   DepositRequest,
@@ -34,12 +40,6 @@ import type {
   RequestsBytes,
   WithdrawalsBytes,
 } from './types.js'
-import {
-  createTxFromBlockBodyData,
-  createTxFromSerializedData,
-  createTxFromTxData,
-  type TxOptions,
-} from '@ethereumjs/tx'
 import type {
   CLRequest,
   CLRequestType,

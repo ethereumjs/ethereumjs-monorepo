@@ -1,3 +1,4 @@
+import { type TypedTransaction, createTxFromTxData } from '@ethereumjs/tx'
 import {
   CLRequestFactory,
   TypeOutput,
@@ -11,7 +12,6 @@ import { createBlockFromBlockData } from './constructors.js'
 import { blockHeaderFromRpc } from './header-from-rpc.js'
 
 import type { BlockOptions, JsonRpcBlock } from './index.js'
-import { createTxFromTxData, type TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 function normalizeTxParams(_txParams: any) {
