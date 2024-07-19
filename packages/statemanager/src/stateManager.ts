@@ -1053,7 +1053,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       const storageMap: StorageRange['storage'] = {}
 
       return trie
-        .walkAllValueNodes(async (node: TrieNode, currentKey) => {
+        .walkAllValueNodes(async (node: TrieNode, currentKey: Number[]) => {
           if (node instanceof LeafNode) {
             // storage[bytesToHex(nibblestoBytes(node._nibbles))] = bytesToHex(node._value)
 
