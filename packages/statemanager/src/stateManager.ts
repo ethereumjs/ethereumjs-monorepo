@@ -236,7 +236,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       type: opts.accountCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.accountCacheOpts?.size ?? 100000,
     }
-
     if (!this._accountCacheSettings.deactivate) {
       this._accountCache = new AccountCache({
         size: this._accountCacheSettings.size,
@@ -250,7 +249,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       type: opts.storageCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.storageCacheOpts?.size ?? 20000,
     }
-
     if (!this._storageCacheSettings.deactivate) {
       this._storageCache = new StorageCache({
         size: this._storageCacheSettings.size,
@@ -264,7 +262,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       type: opts.codeCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.codeCacheOpts?.size ?? 20000,
     }
-
     if (!this._codeCacheSettings.deactivate) {
       this._codeCache = new CodeCache({
         size: this._codeCacheSettings.size,
