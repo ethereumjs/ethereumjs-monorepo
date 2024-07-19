@@ -6,7 +6,14 @@
 // 4. Puts the blocks from ../utils/blockchain-mock-data "blocks" attribute into the Blockchain
 // 5. Runs the Blockchain on the VM.
 
-import { Account, Address, toBytes, setLengthLeft, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import {
+  Address,
+  toBytes,
+  setLengthLeft,
+  bytesToHex,
+  hexToBytes,
+  accountFromAccountData,
+} from '@ethereumjs/util'
 import {
   Block,
   createBlockFromBlockData,
