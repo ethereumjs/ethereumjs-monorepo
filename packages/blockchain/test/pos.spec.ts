@@ -35,7 +35,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
       {
         calcDifficultyFromHeader: blocks[number - 1].header,
         common,
-        setHardfork: await blockchain.getTotalDifficulty(blocks[number - 1].hash()),
+        setHardfork: true,
       },
     )
     blocks.push(block)
@@ -54,9 +54,6 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
     {
       // @ts-ignore prefixed string type is too strict here
       common: createCustomCommon(testnet.default, Mainnet, { hardfork: Hardfork.Chainstart }),
-    },
-    {
-      common: createCustomCommon(testnetOnlyTD.default, Mainnet, { hardfork: Hardfork.Chainstart }),
     },
   ]
 

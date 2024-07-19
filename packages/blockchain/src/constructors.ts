@@ -78,12 +78,7 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
 
   if (blockchain['_hardforkByHeadBlockNumber']) {
     const latestHeader = await blockchain['_getHeader'](blockchain['_headHeaderHash'])
-    const td = await blockchain.getParentTD(latestHeader)
-    await blockchain.checkAndTransitionHardForkByNumber(
-      latestHeader.number,
-      td,
-      latestHeader.timestamp,
-    )
+    await blockchain.checkAndTransitionHardForkByNumber(latestHeader.number, latestHeader.timestamp)
   }
 
   return blockchain
