@@ -2,7 +2,13 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { createEVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address, AsyncEventEmitter, unprefixedHexToBytes } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  AsyncEventEmitter,
+  accountFromAccountData,
+  unprefixedHexToBytes,
+} from '@ethereumjs/util'
 
 import { buildBlock } from './buildBlock.js'
 import { runBlock } from './runBlock.js'
@@ -142,7 +148,7 @@ export class VM {
         // Note: in the case that custom genesis has storage fields, this is preserved
         if (account === undefined) {
           account = new Account()
-          const newAccount = Account.fromAccountData({
+          const newAccount = accountFromAccountData({
             balance: 1,
             storageRoot: account.storageRoot,
           })

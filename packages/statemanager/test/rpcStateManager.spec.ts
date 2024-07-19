@@ -3,8 +3,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
 import { FeeMarketEIP1559Transaction, createTxFromRPC } from '@ethereumjs/tx'
 import {
-  Account,
   Address,
+  accountFromRlp,
   bigIntToBytes,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -85,7 +85,7 @@ describe('RPC State Manager API tests', () => {
 
     await state.putAccount(vitalikDotEth, account!)
 
-    const retrievedVitalikAccount = Account.fromRlpSerializedAccount(
+    const retrievedVitalikAccount = accountFromRlp(
       (state as any)._accountCache.get(vitalikDotEth)!.accountRLP
     )
 

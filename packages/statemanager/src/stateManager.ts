@@ -8,6 +8,8 @@ import {
   KECCAK256_NULL_S,
   KECCAK256_RLP,
   KECCAK256_RLP_S,
+  accountFromAccountData,
+  accountFromRlp,
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
@@ -274,14 +276,12 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!this._accountCacheSettings.deactivate) {
       const elem = this._accountCache!.get(address)
       if (elem !== undefined) {
-        return elem.accountRLP !== undefined
-          ? Account.fromRlpSerializedAccount(elem.accountRLP)
-          : undefined
+        return elem.accountRLP !== undefined ? accountFromRlp(elem.accountRLP) : undefined
       }
     }
 
     const rlp = await this._trie.get(address.bytes)
-    const account = rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
+    const account = rlp !== null ? accountFromRlp(rlp) : undefined
     if (this.DEBUG) {
       this._debug(`Get account ${address} from DB (${account ? 'exists' : 'non-existent'})`)
     }
@@ -896,7 +896,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         throw new Error(`${notEmptyErrorMsg} (codeHash does not equal KECCAK256_NULL)`)
       }
     } else {
-      const account = Account.fromRlpSerializedAccount(value)
+      const account = accountFromRlp(value)
       const { nonce, balance, storageRoot, codeHash } = account
       const invalidErrorMsg = 'Invalid proof provided:'
       if (nonce !== BigInt(proof.nonce)) {
@@ -1085,12 +1085,12 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       const state = initState[address]
       if (!Array.isArray(state)) {
         // Prior format: address -> balance
-        const account = Account.fromAccountData({ balance: state })
+        const account = accountFromAccountData({ balance: state })
         await this.putAccount(addr, account)
       } else {
         // New format: address -> [balance, code, storage]
         const [balance, code, storage, nonce] = state
-        const account = Account.fromAccountData({ balance, nonce })
+        const account = accountFromAccountData({ balance, nonce })
         await this.putAccount(addr, account)
         if (code !== undefined) {
           await this.putContractCode(addr, toBytes(code))

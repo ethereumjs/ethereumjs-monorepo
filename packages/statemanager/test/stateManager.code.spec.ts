@@ -1,4 +1,4 @@
-import { Account, Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { Address, accountFromAccountData, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { DefaultStateManager } from '../src/index.js'
@@ -91,7 +91,7 @@ describe('StateManager -> Code', () => {
         balance: '0x03e7',
         codeHash: '0xb30fb32201fe0486606ad451e1a61e2ae1748343cd3d411ed992ffcc0774edd4',
       }
-      const account = Account.fromAccountData(raw)
+      const account = accountFromAccountData(raw)
       await stateManager.putAccount(address, account)
       await stateManager.putContractCode(address, code)
       const codeRetrieved = await stateManager.getContractCode(address)
@@ -105,7 +105,7 @@ describe('StateManager -> Code', () => {
         nonce: '0x0',
         balance: '0x03e7',
       }
-      const account = Account.fromAccountData(raw)
+      const account = accountFromAccountData(raw)
       await stateManager.putAccount(address, account)
       const code = await stateManager.getContractCode(address)
       assert.ok(equalsBytes(code, new Uint8Array(0)))
@@ -118,7 +118,7 @@ describe('StateManager -> Code', () => {
         nonce: '0x0',
         balance: '0x03e7',
       }
-      const account = Account.fromAccountData(raw)
+      const account = accountFromAccountData(raw)
       const code = new Uint8Array(0)
       await stateManager.putAccount(address, account)
       await stateManager.putContractCode(address, code)

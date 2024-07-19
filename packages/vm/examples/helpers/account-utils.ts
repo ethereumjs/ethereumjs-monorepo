@@ -12,7 +12,7 @@ export const insertAccount = async (vm: VM, address: Address) => {
     nonce: 0,
     balance: BigInt(10) ** BigInt(18), // 1 eth
   }
-  const account = Account.fromAccountData(acctData)
+  const account = accountFromAccountData(acctData)
 
   await vm.stateManager.putAccount(address, account)
 }

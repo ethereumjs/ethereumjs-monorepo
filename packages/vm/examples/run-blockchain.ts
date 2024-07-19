@@ -68,7 +68,7 @@ async function setupPreConditions(vm: VM, data: any) {
     const { nonce, balance, storage, code } = acct as any
 
     const address = new Address(hexToBytes(addr))
-    const account = Account.fromAccountData({ nonce, balance })
+    const account = accountFromAccountData({ nonce, balance })
     await vm.stateManager.putAccount(address, account)
 
     for (const [key, val] of Object.entries(storage)) {

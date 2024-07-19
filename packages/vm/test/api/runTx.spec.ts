@@ -13,6 +13,7 @@ import {
   Address,
   KECCAK256_NULL,
   MAX_INTEGER,
+  accountFromAccountData,
   bytesToHex,
   equalsBytes,
   hexToBytes,
@@ -208,7 +209,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       const account = await vm.stateManager.getAccount(address)
       await vm.stateManager.putAccount(
         address,
-        Account.fromAccountData({ ...account, balance: initialBalance })
+        accountFromAccountData({ ...account, balance: initialBalance })
       )
 
       const transferCost = 21000

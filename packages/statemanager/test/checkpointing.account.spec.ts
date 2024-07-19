@@ -1,9 +1,10 @@
-import { Account, Address, hexToBytes } from '@ethereumjs/util'
+import { Address, accountFromAccountData, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { DefaultStateManager, SimpleStateManager } from '../src/index.js'
 
 import type { StateManagerInterface } from '@ethereumjs/common'
+import type { Account } from '@ethereumjs/util'
 
 /**
  * Compares account read to none or undefined
@@ -33,31 +34,31 @@ describe('StateManager -> Account Checkpointing', () => {
   const stateManagers = [DefaultStateManager, SimpleStateManager]
 
   const accountN1: CompareList = [
-    Account.fromAccountData({
+    accountFromAccountData({
       nonce: 1,
     }),
     1n,
   ]
   const accountN2: CompareList = [
-    Account.fromAccountData({
+    accountFromAccountData({
       nonce: 2,
     }),
     2n,
   ]
   const accountN3: CompareList = [
-    Account.fromAccountData({
+    accountFromAccountData({
       nonce: 3,
     }),
     3n,
   ]
   const accountN4: CompareList = [
-    Account.fromAccountData({
+    accountFromAccountData({
       nonce: 4,
     }),
     4n,
   ]
   const accountN5: CompareList = [
-    Account.fromAccountData({
+    accountFromAccountData({
       nonce: 5,
     }),
     5n,

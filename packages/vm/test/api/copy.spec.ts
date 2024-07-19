@@ -1,4 +1,4 @@
-import { Account, Address } from '@ethereumjs/util'
+import { Address, accountFromAccountData } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { setupVM } from './utils'
@@ -6,7 +6,7 @@ import { setupVM } from './utils'
 describe('VM Copy Test', () => {
   it('should pass copy of state manager', async () => {
     const vm = await setupVM()
-    const account = Account.fromAccountData({
+    const account = accountFromAccountData({
       balance: 100n,
       nonce: 5n,
     })

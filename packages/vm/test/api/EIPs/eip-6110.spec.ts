@@ -1,7 +1,13 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork, getInitializedChains } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
+import {
+  Address,
+  accountFromAccountData,
+  bytesToHex,
+  hexToBytes,
+  randomBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
@@ -41,7 +47,7 @@ describe('EIP-6110 runBlock tests', () => {
       type: 2,
       to: DEPOSIT_CONTRACT_ADDRESS,
     }).sign(pk)
-    const beaconContractAccount = Account.fromAccountData({
+    const beaconContractAccount = accountFromAccountData({
       codeHash: keccak256(depositContractByteCode),
     })
     const beaconContractAddress = Address.fromString(DEPOSIT_CONTRACT_ADDRESS)
@@ -49,7 +55,7 @@ describe('EIP-6110 runBlock tests', () => {
     await vm.stateManager.putContractCode(beaconContractAddress, depositContractByteCode)
     await vm.stateManager.putAccount(
       sender,
-      Account.fromAccountData({ balance: 540000000030064771065n })
+      accountFromAccountData({ balance: 540000000030064771065n })
     )
     const block = createBlockFromBlockData(
       {
@@ -77,7 +83,7 @@ describe('EIP-7685 buildBlock tests', () => {
       type: 2,
       to: DEPOSIT_CONTRACT_ADDRESS,
     }).sign(pk)
-    const beaconContractAccount = Account.fromAccountData({
+    const beaconContractAccount = accountFromAccountData({
       codeHash: keccak256(depositContractByteCode),
     })
     const beaconContractAddress = Address.fromString(DEPOSIT_CONTRACT_ADDRESS)
@@ -85,7 +91,7 @@ describe('EIP-7685 buildBlock tests', () => {
     await vm.stateManager.putContractCode(beaconContractAddress, depositContractByteCode)
     await vm.stateManager.putAccount(
       sender,
-      Account.fromAccountData({ balance: 540000000030064771065n })
+      accountFromAccountData({ balance: 540000000030064771065n })
     )
     const block = createBlockFromBlockData({}, { common })
     ;(vm.blockchain as any)['dbManager']['getHeader'] = () => block.header
