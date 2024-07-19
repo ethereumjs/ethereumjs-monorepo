@@ -2,6 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { txFromTxData } from '../src/constructors.js'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
@@ -19,15 +20,18 @@ const common = new Common({
 
 const pKey = hexToBytes('0x4646464646464646464646464646464646464646464646464646464646464646')
 
-const unsignedLegacyTx = LegacyTransaction.fromTxData({})
+const unsignedLegacyTx = txFromTxData.LegacyTransaction({})
 const signedLegacyTx = unsignedLegacyTx.sign(pKey)
 
-const unsignedEIP2930Tx = AccessListEIP2930Transaction.fromTxData(
+const unsignedEIP2930Tx = txFromTxData.AccessListEIP2930Transaction(
   { chainId: BigInt(1) },
   { common }
 )
 const signedEIP2930Tx = unsignedEIP2930Tx.sign(pKey)
-const unsignedEIP1559Tx = FeeMarketEIP1559Transaction.fromTxData({ chainId: BigInt(1) }, { common })
+const unsignedEIP1559Tx = txFromTxData.FeeMarketEIP1559Transaction(
+  { chainId: BigInt(1) },
+  { common }
+)
 const signedEIP1559Tx = unsignedEIP1559Tx.sign(pKey)
 
 const txTypes = [

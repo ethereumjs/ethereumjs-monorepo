@@ -1,11 +1,7 @@
 import { fetchFromProvider, getProvider } from '@ethereumjs/util'
 
-import { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
-import { AccessListEIP2930Transaction } from './eip2930Transaction.js'
-import { BlobEIP4844Transaction } from './eip4844Transaction.js'
-import { EOACodeEIP7702Transaction } from './eip7702Transaction.js'
+import { txFromSerializedTx, txFromTxData, txFromValuesArray } from './constructors.js'
 import { normalizeTxParams } from './fromRpc.js'
-import { LegacyTransaction } from './legacyTransaction.js'
 import {
   TransactionType,
   isAccessListEIP2930TxData,
@@ -29,18 +25,18 @@ export function createTxFromTxData<T extends TransactionType>(
 ): Transaction[T] {
   if (!('type' in txData) || txData.type === undefined) {
     // Assume legacy transaction
-    return LegacyTransaction.fromTxData(txData, txOptions) as Transaction[T]
+    return txFromTxData.LegacyTransaction(txData, txOptions) as Transaction[T]
   } else {
     if (isLegacyTxData(txData)) {
-      return LegacyTransaction.fromTxData(txData, txOptions) as Transaction[T]
+      return txFromTxData.LegacyTransaction(txData, txOptions) as Transaction[T]
     } else if (isAccessListEIP2930TxData(txData)) {
-      return AccessListEIP2930Transaction.fromTxData(txData, txOptions) as Transaction[T]
+      return txFromTxData.AccessListEIP2930Transaction(txData, txOptions) as Transaction[T]
     } else if (isFeeMarketEIP1559TxData(txData)) {
-      return FeeMarketEIP1559Transaction.fromTxData(txData, txOptions) as Transaction[T]
+      return txFromTxData.FeeMarketEIP1559Transaction(txData, txOptions) as Transaction[T]
     } else if (isBlobEIP4844TxData(txData)) {
-      return BlobEIP4844Transaction.fromTxData(txData, txOptions) as Transaction[T]
+      return txFromTxData.BlobEIP4844Transaction(txData, txOptions) as Transaction[T]
     } else if (isEOACodeEIP7702TxData(txData)) {
-      return EOACodeEIP7702Transaction.fromTxData(txData, txOptions) as Transaction[T]
+      return txFromTxData.EOACodeEIP7702Transaction(txData, txOptions) as Transaction[T]
     } else {
       throw new Error(`Tx instantiation with type ${(txData as TypedTxData)?.type} not supported`)
     }
@@ -61,18 +57,18 @@ export function createTxFromSerializedData<T extends TransactionType>(
     // Determine the type.
     switch (data[0]) {
       case TransactionType.AccessListEIP2930:
-        return AccessListEIP2930Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
+        return txFromSerializedTx.AccessListEIP2930Transaction(data, txOptions) as Transaction[T]
       case TransactionType.FeeMarketEIP1559:
-        return FeeMarketEIP1559Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
+        return txFromSerializedTx.FeeMarketEIP1559Transaction(data, txOptions) as Transaction[T]
       case TransactionType.BlobEIP4844:
-        return BlobEIP4844Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
+        return txFromSerializedTx.BlobEIP4844Transaction(data, txOptions) as Transaction[T]
       case TransactionType.EOACodeEIP7702:
-        return EOACodeEIP7702Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
+        return txFromSerializedTx.EOACodeEIP7702Transaction(data, txOptions) as Transaction[T]
       default:
         throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
     }
   } else {
-    return LegacyTransaction.fromSerializedTx(data, txOptions) as Transaction[T]
+    return txFromSerializedTx.LegacyTransaction(data, txOptions) as Transaction[T]
   }
 }
 
@@ -93,7 +89,7 @@ export function createTxFromBlockBodyData(
     return createTxFromSerializedData(data, txOptions)
   } else if (Array.isArray(data)) {
     // It is a legacy transaction
-    return LegacyTransaction.fromValuesArray(data, txOptions)
+    return txFromValuesArray.LegacyTransaction(data, txOptions)
   } else {
     throw new Error('Cannot decode transaction: unknown type input')
   }

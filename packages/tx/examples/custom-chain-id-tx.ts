@@ -1,4 +1,4 @@
-import { LegacyTransaction } from '../dist/cjs'
+import { txFromSerializedTx } from '@ethereumjs/tx'
 import { toBytes } from '@ethereumjs/util'
 import { Common, createCustomCommon, Hardfork } from '@ethereumjs/common'
 
@@ -8,7 +8,7 @@ const txData = toBytes(
 
 const common = createCustomCommon({ chainId: 3 })
 common.setHardfork(Hardfork.Petersburg)
-const tx = LegacyTransaction.fromSerializedTx(txData, { common })
+const tx = txFromSerializedTx.LegacyTransaction(txData, { common })
 
 if (
   tx.isValid() &&

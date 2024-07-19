@@ -2,13 +2,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, hexToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import {
-  AccessListEIP2930Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-  TransactionType,
-  createTxFromTxData,
-} from '../src/index.js'
+import { txFromTxData, txFromValuesArray } from '../src/constructors.js'
+import { TransactionType, createTxFromTxData } from '../src/index.js'
 
 import type { TxValuesArray } from '../src/index.js'
 import type { AddressLike, BigIntLike, BytesLike, PrefixedHexString } from '@ethereumjs/util'
@@ -117,7 +112,7 @@ describe('[Transaction Input Values]', () => {
     })
     const randomSample = getRandomSubarray(legacyTxData, 100)
     for (const txData of randomSample) {
-      const tx = LegacyTransaction.fromTxData(txData, { common })
+      const tx = txFromTxData.LegacyTransaction(txData, { common })
       assert.throws(() => tx.hash(), undefined, undefined, 'tx.hash() throws if tx is unsigned')
     }
   })
@@ -136,7 +131,7 @@ describe('[Transaction Input Values]', () => {
     const randomSample = getRandomSubarray(eip1559TxData, 100)
 
     for (const txData of randomSample) {
-      const tx = LegacyTransaction.fromTxData(txData, { common })
+      const tx = txFromTxData.LegacyTransaction(txData, { common })
       assert.throws(() => tx.hash(), undefined, undefined, 'tx.hash() should throw if unsigned')
     }
   })
@@ -161,21 +156,21 @@ describe('[Invalid Array Input values]', () => {
           switch (txType) {
             case TransactionType.Legacy:
               assert.throws(() =>
-                LegacyTransaction.fromValuesArray(
+                txFromValuesArray.LegacyTransaction(
                   rawValues as TxValuesArray[TransactionType.Legacy]
                 )
               )
               break
             case TransactionType.AccessListEIP2930:
               assert.throws(() =>
-                AccessListEIP2930Transaction.fromValuesArray(
+                txFromValuesArray.AccessListEIP2930Transaction(
                   rawValues as TxValuesArray[TransactionType.AccessListEIP2930]
                 )
               )
               break
             case TransactionType.FeeMarketEIP1559:
               assert.throws(() =>
-                FeeMarketEIP1559Transaction.fromValuesArray(
+                txFromValuesArray.FeeMarketEIP1559Transaction(
                   rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559]
                 )
               )
@@ -243,14 +238,14 @@ describe('[Invalid Access Lists]', () => {
           switch (txType) {
             case TransactionType.AccessListEIP2930:
               assert.throws(() =>
-                AccessListEIP2930Transaction.fromValuesArray(
+                txFromValuesArray.AccessListEIP2930Transaction(
                   rawValues as TxValuesArray[TransactionType.AccessListEIP2930]
                 )
               )
               break
             case TransactionType.FeeMarketEIP1559:
               assert.throws(() =>
-                FeeMarketEIP1559Transaction.fromValuesArray(
+                txFromValuesArray.FeeMarketEIP1559Transaction(
                   rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559]
                 )
               )

@@ -12,6 +12,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { txFromSerializedTx, txFromTxData, txFromValuesArray } from '../src/constructors.js'
 import {
   AccessListEIP2930Transaction,
   Capability,
@@ -33,20 +34,20 @@ describe('[BaseTransaction]', () => {
 
   const legacyTxs: BaseTransaction<TransactionType.Legacy>[] = []
   for (const tx of legacyFixtures.slice(0, 4)) {
-    legacyTxs.push(LegacyTransaction.fromTxData(tx.data as LegacyTxData, { common }))
+    legacyTxs.push(txFromTxData.LegacyTransaction(tx.data as LegacyTxData, { common }))
   }
 
   const eip2930Txs: BaseTransaction<TransactionType.AccessListEIP2930>[] = []
   for (const tx of eip2930Fixtures) {
     eip2930Txs.push(
-      AccessListEIP2930Transaction.fromTxData(tx.data as AccessListEIP2930TxData, { common })
+      txFromTxData.AccessListEIP2930Transaction(tx.data as AccessListEIP2930TxData, { common })
     )
   }
 
   const eip1559Txs: BaseTransaction<TransactionType.FeeMarketEIP1559>[] = []
   for (const tx of eip1559Fixtures) {
     eip1559Txs.push(
-      FeeMarketEIP1559Transaction.fromTxData(tx.data as FeeMarketEIP1559TxData, { common })
+      txFromTxData.FeeMarketEIP1559Transaction(tx.data as FeeMarketEIP1559TxData, { common })
     )
   }
 
@@ -91,11 +92,11 @@ describe('[BaseTransaction]', () => {
       ],
       notActiveCapabilities: [9999],
     },
-  ]
+  ] as const
 
   it('Initialization', () => {
     for (const txType of txTypes) {
-      let tx = txType.class.fromTxData({}, { common })
+      let tx = txFromTxData[txType.name]({}, { common })
       assert.equal(
         tx.common.hardfork(),
         'london',
@@ -107,7 +108,7 @@ describe('[BaseTransaction]', () => {
         chain: Chain.Mainnet,
         hardfork: Hardfork.London,
       })
-      tx = txType.class.fromTxData({}, { common: initCommon })
+      tx = txFromTxData[txType.name]({}, { common: initCommon })
       assert.equal(
         tx.common.hardfork(),
         'london',
@@ -121,7 +122,7 @@ describe('[BaseTransaction]', () => {
         `${txType.name}: should stay on correct HF if outer common HF changes`
       )
 
-      tx = txType.class.fromTxData({}, { common, freeze: false })
+      tx = txFromTxData[txType.name]({}, { common, freeze: false })
       assert.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
@@ -129,10 +130,10 @@ describe('[BaseTransaction]', () => {
 
       // Perform the same test as above, but now using a different construction method. This also implies that passing on the
       // options object works as expected.
-      tx = txType.class.fromTxData({}, { common, freeze: false })
+      tx = txFromTxData[txType.name]({}, { common, freeze: false })
       const rlpData = tx.serialize()
 
-      tx = txType.class.fromSerializedTx(rlpData, { common })
+      tx = txFromSerializedTx[txType.name](rlpData, { common })
       assert.equal(
         tx.type,
         txType.type,
@@ -141,16 +142,16 @@ describe('[BaseTransaction]', () => {
 
       assert.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
-      tx = txType.class.fromSerializedTx(rlpData, { common, freeze: false })
+      tx = txFromSerializedTx[txType.name](rlpData, { common, freeze: false })
       assert.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
       )
 
-      tx = txType.class.fromValuesArray(txType.values as any, { common })
+      tx = txFromValuesArray[txType.name](txType.values as any, { common })
       assert.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
-      tx = txType.class.fromValuesArray(txType.values as any, { common, freeze: false })
+      tx = txFromValuesArray[txType.name](txType.values as any, { common, freeze: false })
       assert.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
@@ -162,7 +163,7 @@ describe('[BaseTransaction]', () => {
     let rlpData: any = legacyTxs[0].raw()
     rlpData[0] = toBytes('0x0')
     try {
-      LegacyTransaction.fromValuesArray(rlpData)
+      txFromValuesArray.LegacyTransaction(rlpData)
       assert.fail('should have thrown when nonce has leading zeroes')
     } catch (err: any) {
       assert.ok(
@@ -173,7 +174,7 @@ describe('[BaseTransaction]', () => {
     rlpData[0] = toBytes('0x')
     rlpData[6] = toBytes('0x0')
     try {
-      LegacyTransaction.fromValuesArray(rlpData)
+      txFromValuesArray.LegacyTransaction(rlpData)
       assert.fail('should have thrown when v has leading zeroes')
     } catch (err: any) {
       assert.ok(
@@ -184,7 +185,7 @@ describe('[BaseTransaction]', () => {
     rlpData = eip2930Txs[0].raw()
     rlpData[3] = toBytes('0x0')
     try {
-      AccessListEIP2930Transaction.fromValuesArray(rlpData)
+      txFromValuesArray.AccessListEIP2930Transaction(rlpData)
       assert.fail('should have thrown when gasLimit has leading zeroes')
     } catch (err: any) {
       assert.ok(
@@ -195,7 +196,7 @@ describe('[BaseTransaction]', () => {
     rlpData = eip1559Txs[0].raw()
     rlpData[2] = toBytes('0x0')
     try {
-      FeeMarketEIP1559Transaction.fromValuesArray(rlpData)
+      txFromValuesArray.FeeMarketEIP1559Transaction(rlpData)
       assert.fail('should have thrown when maxPriorityFeePerGas has leading zeroes')
     } catch (err: any) {
       assert.ok(
@@ -209,11 +210,11 @@ describe('[BaseTransaction]', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
         assert.ok(
-          txType.class.fromSerializedTx(tx.serialize(), { common }),
+          txFromSerializedTx[txType.name](tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`
         )
         assert.ok(
-          txType.class.fromSerializedTx(tx.serialize(), { common }),
+          txFromSerializedTx[txType.name](tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`
         )
       }
@@ -231,7 +232,7 @@ describe('[BaseTransaction]', () => {
         }
         for (const notActiveCapability of txType.notActiveCapabilities) {
           assert.notOk(
-            tx.supports(notActiveCapability),
+            tx.supports(notActiveCapability as any),
             `${txType.name}: should reject non-active existing and not existing capabilities`
           )
         }
@@ -243,7 +244,7 @@ describe('[BaseTransaction]', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
         assert.ok(
-          txType.class.fromValuesArray(tx.raw() as any, { common }),
+          txFromValuesArray[txType.name](tx.raw() as any, { common }),
           `${txType.name}: should do roundtrip raw() -> fromValuesArray()`
         )
       }
@@ -263,7 +264,7 @@ describe('[BaseTransaction]', () => {
       for (const txFixture of txType.fixtures.slice(0, 4)) {
         // set `s` to a single zero
         txFixture.data.s = '0x' + '0'
-        const tx = txType.class.fromTxData((txFixture as any).data, { common })
+        const tx = txFromTxData[txType.name]((txFixture as any).data, { common })
         assert.equal(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
         assert.ok(
           tx.getValidationErrors().includes('Invalid Signature'),
@@ -298,7 +299,7 @@ describe('[BaseTransaction]', () => {
         ...txType.txs,
         // add unsigned variants
         ...txType.txs.map((tx) =>
-          txType.class.fromTxData({
+          txFromTxData[txType.name]({
             ...tx,
             v: undefined,
             r: undefined,
@@ -386,7 +387,7 @@ describe('[BaseTransaction]', () => {
 
   it('initialization with defaults', () => {
     const bufferZero = toBytes('0x')
-    const tx = LegacyTransaction.fromTxData({
+    const tx = txFromTxData.LegacyTransaction({
       nonce: undefined,
       gasLimit: undefined,
       gasPrice: undefined,
@@ -409,7 +410,7 @@ describe('[BaseTransaction]', () => {
   })
 
   it('_validateCannotExceedMaxInteger()', () => {
-    const tx = FeeMarketEIP1559Transaction.fromTxData(eip1559Txs[0])
+    const tx = txFromTxData.FeeMarketEIP1559Transaction(eip1559Txs[0])
     try {
       ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER }, 256, true)
     } catch (err: any) {

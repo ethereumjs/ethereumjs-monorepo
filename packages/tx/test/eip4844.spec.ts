@@ -16,6 +16,7 @@ import { loadKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import gethGenesis from '../../block/test/testdata/4844-hardfork.json'
+import { txFromSerializedTx, txFromTxData } from '../src/constructors.js'
 import { BlobEIP4844Transaction, createTxFromTxData } from '../src/index.js'
 
 import blobTx from './json/serialized4844tx.json'
@@ -37,7 +38,7 @@ describe('EIP4844 addSignature tests', () => {
   })
   it('addSignature() -> correctly adds correct signature values', () => {
     const privateKey = pk
-    const tx = BlobEIP4844Transaction.fromTxData(
+    const tx = txFromTxData.BlobEIP4844Transaction(
       {
         to: Address.zero(),
         blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
@@ -52,7 +53,7 @@ describe('EIP4844 addSignature tests', () => {
 
   it('addSignature() -> correctly converts raw ecrecover values', () => {
     const privKey = pk
-    const tx = BlobEIP4844Transaction.fromTxData(
+    const tx = txFromTxData.BlobEIP4844Transaction(
       {
         to: Address.zero(),
         blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
@@ -71,7 +72,7 @@ describe('EIP4844 addSignature tests', () => {
 
   it('addSignature() -> throws when adding the wrong v value', () => {
     const privKey = pk
-    const tx = BlobEIP4844Transaction.fromTxData(
+    const tx = txFromTxData.BlobEIP4844Transaction(
       {
         to: Address.zero(),
         blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
@@ -106,19 +107,19 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
       maxFeePerBlobGas: 1n,
       to: Address.zero(),
     }
-    const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
+    const tx = txFromTxData.BlobEIP4844Transaction(txData, { common })
     assert.equal(tx.type, 3, 'successfully instantiated a blob transaction from txData')
     const factoryTx = createTxFromTxData(txData, { common })
     assert.equal(factoryTx.type, 3, 'instantiated a blob transaction from the tx factory')
 
     const serializedTx = tx.serialize()
     assert.equal(serializedTx[0], 3, 'successfully serialized a blob tx')
-    const deserializedTx = BlobEIP4844Transaction.fromSerializedTx(serializedTx, { common })
+    const deserializedTx = txFromSerializedTx.BlobEIP4844Transaction(serializedTx, { common })
     assert.equal(deserializedTx.type, 3, 'deserialized a blob tx')
 
     const signedTx = tx.sign(pk)
     const sender = signedTx.getSenderAddress().toString()
-    const decodedTx = BlobEIP4844Transaction.fromSerializedTx(signedTx.serialize(), { common })
+    const decodedTx = txFromSerializedTx.BlobEIP4844Transaction(signedTx.serialize(), { common })
     assert.equal(
       decodedTx.getSenderAddress().toString(),
       sender,
@@ -168,7 +169,7 @@ describe('fromTxData using from a json', () => {
       chainId: Number(txData.chainId),
     })
     try {
-      const tx = BlobEIP4844Transaction.fromTxData(txData as BlobEIP4844TxData, { common: c })
+      const tx = txFromTxData.BlobEIP4844Transaction(txData as BlobEIP4844TxData, { common: c })
       assert.ok(true, 'Should be able to parse a json data and hash it')
 
       assert.equal(typeof tx.maxFeePerBlobGas, 'bigint', 'should be able to parse correctly')
@@ -184,7 +185,7 @@ describe('fromTxData using from a json', () => {
         'toJSON should give correct json'
       )
 
-      const fromSerializedTx = BlobEIP4844Transaction.fromSerializedTx(
+      const fromSerializedTx = txFromSerializedTx.BlobEIP4844Transaction(
         hexToBytes(txMeta.serialized as PrefixedHexString),
         { common: c }
       )
@@ -229,7 +230,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
       ],
     }
     try {
-      BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...shortVersionHash }, { common })
+      txFromTxData.BlobEIP4844Transaction({ ...baseTxData, ...shortVersionHash }, { common })
     } catch (err: any) {
       assert.ok(
         err.message.includes('versioned hash is invalid length'),
@@ -237,7 +238,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
       )
     }
     try {
-      BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...invalidVersionHash }, { common })
+      txFromTxData.BlobEIP4844Transaction({ ...baseTxData, ...invalidVersionHash }, { common })
     } catch (err: any) {
       assert.ok(
         err.message.includes('does not start with KZG commitment'),
@@ -245,7 +246,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
       )
     }
     try {
-      BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...tooManyBlobs }, { common })
+      txFromTxData.BlobEIP4844Transaction({ ...baseTxData, ...tooManyBlobs }, { common })
     } catch (err: any) {
       assert.ok(
         err.message.includes('tx can contain at most'),
@@ -271,7 +272,7 @@ describe('Network wrapper tests', () => {
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
     const proofs = blobsToProofs(kzg, blobs, commitments)
-    const unsignedTx = BlobEIP4844Transaction.fromTxData(
+    const unsignedTx = txFromTxData.BlobEIP4844Transaction(
       {
         blobVersionedHashes,
         blobs,
@@ -338,7 +339,7 @@ describe('Network wrapper tests', () => {
       'has the same hash as the network wrapper version'
     )
 
-    const simpleBlobTx = BlobEIP4844Transaction.fromTxData(
+    const simpleBlobTx = txFromTxData.BlobEIP4844Transaction(
       {
         blobsData: ['hello world'],
         maxFeePerBlobGas: 100000000n,
@@ -356,7 +357,7 @@ describe('Network wrapper tests', () => {
 
     assert.throws(
       () =>
-        BlobEIP4844Transaction.fromTxData(
+        txFromTxData.BlobEIP4844Transaction(
           {
             blobsData: ['hello world'],
             blobs: ['hello world' as any],
@@ -373,7 +374,7 @@ describe('Network wrapper tests', () => {
 
     assert.throws(
       () =>
-        BlobEIP4844Transaction.fromTxData(
+        txFromTxData.BlobEIP4844Transaction(
           {
             blobsData: ['hello world'],
             kzgCommitments: ['0xabcd'],
@@ -390,7 +391,7 @@ describe('Network wrapper tests', () => {
 
     assert.throws(
       () =>
-        BlobEIP4844Transaction.fromTxData(
+        txFromTxData.BlobEIP4844Transaction(
           {
             blobsData: ['hello world'],
             blobVersionedHashes: ['0x01cd'],
@@ -407,7 +408,7 @@ describe('Network wrapper tests', () => {
 
     assert.throws(
       () =>
-        BlobEIP4844Transaction.fromTxData(
+        txFromTxData.BlobEIP4844Transaction(
           {
             blobsData: ['hello world'],
             kzgProofs: ['0x01cd'],
@@ -424,7 +425,7 @@ describe('Network wrapper tests', () => {
 
     assert.throws(
       () => {
-        BlobEIP4844Transaction.fromTxData(
+        txFromTxData.BlobEIP4844Transaction(
           {
             blobVersionedHashes: [],
             blobs: [],
@@ -442,7 +443,7 @@ describe('Network wrapper tests', () => {
       'throws a transaction with no blobs'
     )
 
-    const txWithMissingBlob = BlobEIP4844Transaction.fromTxData(
+    const txWithMissingBlob = txFromTxData.BlobEIP4844Transaction(
       {
         blobVersionedHashes,
         blobs: blobs.slice(1),
@@ -470,7 +471,7 @@ describe('Network wrapper tests', () => {
     const mangledValue = commitments[0][0]
 
     commitments[0][0] = 154
-    const txWithInvalidCommitment = BlobEIP4844Transaction.fromTxData(
+    const txWithInvalidCommitment = txFromTxData.BlobEIP4844Transaction(
       {
         blobVersionedHashes,
         blobs,
@@ -498,7 +499,7 @@ describe('Network wrapper tests', () => {
     blobVersionedHashes[0][1] = 2
     commitments[0][0] = mangledValue
 
-    const txWithInvalidVersionedHashes = BlobEIP4844Transaction.fromTxData(
+    const txWithInvalidVersionedHashes = txFromTxData.BlobEIP4844Transaction(
       {
         blobVersionedHashes,
         blobs,
@@ -539,7 +540,7 @@ describe('hash() and signature verification', () => {
     })
   })
   it('should work', async () => {
-    const unsignedTx = BlobEIP4844Transaction.fromTxData(
+    const unsignedTx = txFromTxData.BlobEIP4844Transaction(
       {
         chainId: 1,
         nonce: 1,
@@ -585,7 +586,7 @@ it('getEffectivePriorityFee()', async () => {
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
   })
-  const tx = BlobEIP4844Transaction.fromTxData(
+  const tx = txFromTxData.BlobEIP4844Transaction(
     {
       maxFeePerGas: 10,
       maxPriorityFeePerGas: 8,

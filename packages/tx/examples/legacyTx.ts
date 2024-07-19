@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { LegacyTransaction, txFromTxData } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 
 const txParams = {
@@ -12,7 +12,7 @@ const txParams = {
 }
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-const tx = LegacyTransaction.fromTxData(txParams, { common })
+const tx = txFromTxData.LegacyTransaction(txParams as any, { common })
 
 const privateKey = Buffer.from(
   'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',

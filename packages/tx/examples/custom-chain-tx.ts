@@ -1,3 +1,5 @@
+import { txFromTxData } from '@ethereumjs/tx'
+
 import { Address } from '@ethereumjs/util'
 import { Common, createCustomCommon } from '@ethereumjs/common'
 import { LegacyTransaction } from '../dist/cjs/index'
@@ -20,7 +22,7 @@ const customCommon = createCustomCommon(
 
 // We pass our custom Common object whenever we create a transaction
 const opts = { common: customCommon }
-const tx = LegacyTransaction.fromTxData(
+const tx = txFromTxData.LegacyTransaction(
   {
     nonce: 0,
     gasPrice: 100,

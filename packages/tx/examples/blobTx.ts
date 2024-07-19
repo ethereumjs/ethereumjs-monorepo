@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, txFromTxData } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
 
@@ -31,7 +31,7 @@ const main = async () => {
     blobsData: ['abcd'],
   }
 
-  const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
+  const tx = txFromTxData.BlobEIP4844Transaction(txData as any, { common })
 
   console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
 }
