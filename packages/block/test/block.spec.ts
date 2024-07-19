@@ -114,27 +114,12 @@ describe('[Block]: block functions', () => {
           number: 20, // Future block
         },
       },
-      { common, setHardfork: 5001 },
+      { common, setHardfork: true },
     )
     assert.equal(
       block.common.hardfork(),
       Hardfork.Paris,
-      'should use setHardfork option (td > threshold)',
-    )
-
-    block = createBlock(
-      {
-        header: {
-          number: 12, // Berlin block,
-          extraData: new Uint8Array(97),
-        },
-      },
-      { common, setHardfork: 3000 },
-    )
-    assert.equal(
-      block.common.hardfork(),
-      Hardfork.Berlin,
-      'should work with setHardfork option (td < threshold)',
+      'should use setHardfork option post merge',
     )
   })
 
