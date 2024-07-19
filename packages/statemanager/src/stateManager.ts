@@ -45,7 +45,7 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { Nibbles, TrieNode } from '@ethereumjs/trie'
+import type { TrieNode } from '@ethereumjs/trie'
 import type { DB, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
