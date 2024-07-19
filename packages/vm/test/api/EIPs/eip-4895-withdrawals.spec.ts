@@ -2,7 +2,7 @@ import { createBlockFromBlockData, genWithdrawalsTrieRoot } from '@ethereumjs/bl
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -17,7 +17,7 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/withdrawals.json'
-import { VM } from '../../../src/vm'
+import { VM } from '../../../src/vm.js'
 
 import type { Block } from '@ethereumjs/block'
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
@@ -67,12 +67,14 @@ describe('EIP4895 tests', () => {
       hexToBytes(`0x73${addresses[0]}3160005260206000F3`)
     )
 
-    const transaction = FeeMarketEIP1559Transaction.fromTxData({
-      to: contractAddress,
-      maxFeePerGas: BigInt(7),
-      maxPriorityFeePerGas: BigInt(0),
-      gasLimit: BigInt(50000),
-    }).sign(pkey)
+    const transaction = txFromTxData
+      .FeeMarketEIP1559Transaction({
+        to: contractAddress,
+        maxFeePerGas: BigInt(7),
+        maxPriorityFeePerGas: BigInt(0),
+        gasLimit: BigInt(50000),
+      })
+      .sign(pkey)
 
     await vm.stateManager.putAccount(transaction.getSenderAddress(), new Account())
     const account = await vm.stateManager.getAccount(transaction.getSenderAddress())

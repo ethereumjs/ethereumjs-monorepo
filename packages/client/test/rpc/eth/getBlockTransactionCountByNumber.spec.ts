@@ -2,7 +2,7 @@ import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -37,7 +37,7 @@ describe(method, () => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // construct block with tx
-    const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
+    const tx = txFromTxData.LegacyTransaction({ gasLimit: 53000 }, { common, freeze: false })
     tx.getSenderAddress = () => {
       return address
     }
@@ -84,18 +84,18 @@ describe(method, () => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // construct block with tx
-    const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
+    const tx = txFromTxData.LegacyTransaction({ gasLimit: 53000 }, { common, freeze: false })
     tx.getSenderAddress = () => {
       return address
     }
-    const tx2 = LegacyTransaction.fromTxData(
+    const tx2 = txFromTxData.LegacyTransaction(
       { gasLimit: 53000, nonce: 1 },
       { common, freeze: false }
     )
     tx2.getSenderAddress = () => {
       return address
     }
-    const tx3 = LegacyTransaction.fromTxData(
+    const tx3 = txFromTxData.LegacyTransaction(
       { gasLimit: 53000, nonce: 2 },
       { common, freeze: false }
     )

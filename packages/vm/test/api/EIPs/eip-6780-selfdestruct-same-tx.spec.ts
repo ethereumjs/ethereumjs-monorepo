@@ -1,9 +1,9 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { Account, Address, equalsBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM } from '../../../src/vm.js'
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 
@@ -41,12 +41,14 @@ describe('EIP 6780 tests', () => {
     const vm = await getVM(common)
 
     const value = 1
-    const tx = LegacyTransaction.fromTxData({
-      value,
-      gasLimit: 1000000,
-      gasPrice: 10,
-      data: payload,
-    }).sign(pkey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        value,
+        gasLimit: 1000000,
+        gasPrice: 10,
+        data: payload,
+      })
+      .sign(pkey)
 
     const result = await vm.runTx({ tx })
     const createdAddress = result.createdAddress!
@@ -78,12 +80,14 @@ describe('EIP 6780 tests', () => {
     await vm.stateManager.putAccount(target, targetContract)
 
     const value = 1
-    const tx = LegacyTransaction.fromTxData({
-      value,
-      gasLimit: 1000000,
-      gasPrice: 10,
-      to: target,
-    }).sign(pkey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        value,
+        gasLimit: 1000000,
+        gasPrice: 10,
+        to: target,
+      })
+      .sign(pkey)
 
     await vm.runTx({ tx })
 

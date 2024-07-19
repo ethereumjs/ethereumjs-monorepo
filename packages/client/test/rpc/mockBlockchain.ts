@@ -1,15 +1,17 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { equalsBytes, toBytes } from '@ethereumjs/util'
 
 import { dummy } from './helpers.js'
+
+import type { LegacyTransaction } from '@ethereumjs/tx'
 
 export function mockBlockchain(options: any = {}) {
   const number = options.number ?? '0x444444'
   const blockHash =
     options.hash ?? '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf'
   const transactions = options.transactions ?? [
-    LegacyTransaction.fromTxData({}).sign(dummy.privKey),
+    txFromTxData.LegacyTransaction({}).sign(dummy.privKey),
   ]
   const block = {
     hash: () => toBytes(blockHash),

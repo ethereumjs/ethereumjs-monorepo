@@ -1,4 +1,4 @@
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -32,22 +32,26 @@ describe(method, async () => {
     const rpc = getRpcClient(server)
     // deploy contracts at two different addresses
     const txData = { gasLimit: 2000000, gasPrice: 100 }
-    const tx1 = LegacyTransaction.fromTxData(
-      {
-        ...txData,
-        data: logExampleBytecode,
-        nonce: 0,
-      },
-      { common }
-    ).sign(dummy.privKey)
-    const tx2 = LegacyTransaction.fromTxData(
-      {
-        ...txData,
-        data: logExampleBytecode,
-        nonce: 1,
-      },
-      { common }
-    ).sign(dummy.privKey)
+    const tx1 = txFromTxData
+      .LegacyTransaction(
+        {
+          ...txData,
+          data: logExampleBytecode,
+          nonce: 0,
+        },
+        { common }
+      )
+      .sign(dummy.privKey)
+    const tx2 = txFromTxData
+      .LegacyTransaction(
+        {
+          ...txData,
+          data: logExampleBytecode,
+          nonce: 1,
+        },
+        { common }
+      )
+      .sign(dummy.privKey)
 
     const contractAddr1 = Address.generate(dummy.addr, BigInt(0))
     const contractAddr2 = Address.generate(dummy.addr, BigInt(1))
@@ -56,24 +60,28 @@ describe(method, async () => {
     const data = hexToBytes(
       '0xaefb4f0a000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000004'
     )
-    const tx3 = LegacyTransaction.fromTxData(
-      {
-        ...txData,
-        data,
-        to: contractAddr1,
-        nonce: 2,
-      },
-      { common }
-    ).sign(dummy.privKey)
-    const tx4 = LegacyTransaction.fromTxData(
-      {
-        ...txData,
-        data,
-        to: contractAddr2,
-        nonce: 3,
-      },
-      { common }
-    ).sign(dummy.privKey)
+    const tx3 = txFromTxData
+      .LegacyTransaction(
+        {
+          ...txData,
+          data,
+          to: contractAddr1,
+          nonce: 2,
+        },
+        { common }
+      )
+      .sign(dummy.privKey)
+    const tx4 = txFromTxData
+      .LegacyTransaction(
+        {
+          ...txData,
+          data,
+          to: contractAddr2,
+          nonce: 3,
+        },
+        { common }
+      )
+      .sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx1, tx2, tx3, tx4])
 

@@ -5,13 +5,7 @@ import {
 } from '@ethereumjs/block'
 import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import {
-  AccessListEIP2930Transaction,
-  Capability,
-  EOACodeEIP7702Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-} from '@ethereumjs/tx'
+import { Capability, LegacyTransaction, txFromTxData } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -178,13 +172,15 @@ describe('runBlock() -> successful API parameter usage', async () => {
             number: BigInt(10000000),
           },
           transactions: [
-            LegacyTransaction.fromTxData(
-              {
-                data: '0x600154', // PUSH 01 SLOAD
-                gasLimit: BigInt(100000),
-              },
-              { common }
-            ).sign(privateKey),
+            txFromTxData
+              .LegacyTransaction(
+                {
+                  data: '0x600154', // PUSH 01 SLOAD
+                  gasLimit: BigInt(100000),
+                },
+                { common }
+              )
+              .sign(privateKey),
           ],
         },
         { common }
@@ -377,10 +373,9 @@ describe('runBlock() -> runtime behavior', async () => {
 
     // add balance to otherUser to send two txs to zero address
     await vm.stateManager.putAccount(otherUser.address, new Account(BigInt(0), BigInt(42000)))
-    const tx = LegacyTransaction.fromTxData(
-      { to: Address.zero(), gasLimit: 21000, gasPrice: 1 },
-      { common }
-    ).sign(otherUser.privateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({ to: Address.zero(), gasLimit: 21000, gasPrice: 1 }, { common })
+      .sign(otherUser.privateKey)
 
     // create block with the signer and txs
     const block = createBlockFromBlockData(
@@ -517,7 +512,7 @@ describe('runBlock() -> tx types', async () => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const tx = LegacyTransaction.fromTxData(
+    const tx = txFromTxData.LegacyTransaction(
       { gasLimit: 53000, value: 1 },
       { common, freeze: false }
     )
@@ -536,7 +531,7 @@ describe('runBlock() -> tx types', async () => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const tx = AccessListEIP2930Transaction.fromTxData(
+    const tx = txFromTxData.AccessListEIP2930Transaction(
       { gasLimit: 53000, value: 1, v: 1, r: 1, s: 1 },
       { common, freeze: false }
     )
@@ -555,7 +550,7 @@ describe('runBlock() -> tx types', async () => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = txFromTxData.FeeMarketEIP1559Transaction(
       { maxFeePerGas: 10, maxPriorityFeePerGas: 4, gasLimit: 100000, value: 6 },
       { common, freeze: false }
     )
@@ -641,29 +636,33 @@ describe('runBlock() -> tx types', async () => {
 
     const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
     const authList2 = authorizationListOpts2.map((opt) => getAuthorizationListItem(opt))
-    const tx1 = EOACodeEIP7702Transaction.fromTxData(
-      {
-        gasLimit: 1000000000,
-        maxFeePerGas: 100000,
-        maxPriorityFeePerGas: 100,
-        authorizationList: authList,
-        to: defaultAuthAddr,
-        value: BIGINT_1,
-      },
-      { common }
-    ).sign(defaultSenderPkey)
-    const tx2 = EOACodeEIP7702Transaction.fromTxData(
-      {
-        gasLimit: 1000000000,
-        maxFeePerGas: 100000,
-        maxPriorityFeePerGas: 100,
-        authorizationList: authList2,
-        to: defaultAuthAddr,
-        value: BIGINT_1,
-        nonce: 1,
-      },
-      { common }
-    ).sign(defaultSenderPkey)
+    const tx1 = txFromTxData
+      .EOACodeEIP7702Transaction(
+        {
+          gasLimit: 1000000000,
+          maxFeePerGas: 100000,
+          maxPriorityFeePerGas: 100,
+          authorizationList: authList,
+          to: defaultAuthAddr,
+          value: BIGINT_1,
+        },
+        { common }
+      )
+      .sign(defaultSenderPkey)
+    const tx2 = txFromTxData
+      .EOACodeEIP7702Transaction(
+        {
+          gasLimit: 1000000000,
+          maxFeePerGas: 100000,
+          maxPriorityFeePerGas: 100,
+          authorizationList: authList2,
+          to: defaultAuthAddr,
+          value: BIGINT_1,
+          nonce: 1,
+        },
+        { common }
+      )
+      .sign(defaultSenderPkey)
     const block = createBlockFromBlockData(
       {
         transactions: [tx1, tx2],

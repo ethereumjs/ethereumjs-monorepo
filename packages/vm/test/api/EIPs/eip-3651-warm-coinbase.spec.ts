@@ -1,10 +1,10 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { Account, Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM } from '../../../src/vm.js'
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const GWEI = BigInt(1000000000)
 const sender = new Address(privateToAddress(pkey))
@@ -46,12 +46,14 @@ describe('EIP 3651 tests', () => {
   it('invalid contract code transactions', async () => {
     const vm = await getVM(common)
 
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      value: 1,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(pkey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        value: 1,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(pkey)
 
     const result = await vm.runTx({
       block,

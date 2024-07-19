@@ -2,7 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { KECCAK256_RLP } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM } from '../../../src/vm.js'
 
 describe('General MuirGlacier VM tests', () => {
   it('should accept muirGlacier harfork option for supported chains', async () => {

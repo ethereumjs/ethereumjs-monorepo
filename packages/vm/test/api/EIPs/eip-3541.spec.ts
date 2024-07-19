@@ -1,9 +1,9 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM } from '../../../src/vm.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { Address } from '@ethereumjs/util'
@@ -16,10 +16,12 @@ describe('EIP 3541 tests', () => {
 
   it('deposit 0xEF code if 3541 is active', async () => {
     // put 0xEF contract
-    const tx = LegacyTransaction.fromTxData({
-      data: '0x7FEF0000000000000000000000000000000000000000000000000000000000000060005260206000F3',
-      gasLimit: 1000000,
-    }).sign(pkey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        data: '0x7FEF0000000000000000000000000000000000000000000000000000000000000060005260206000F3',
+        gasLimit: 1000000,
+      })
+      .sign(pkey)
 
     let vm = await VM.create({ common })
 
@@ -33,11 +35,13 @@ describe('EIP 3541 tests', () => {
     // Test if we can put a valid contract
 
     // put a valid contract starting with SELFDESTRUCT
-    const tx1 = LegacyTransaction.fromTxData({
-      data: '0x7FFF0000000000000000000000000000000000000000000000000000000000000060005260206000F3',
-      gasLimit: 1000000,
-      nonce: 1,
-    }).sign(pkey)
+    const tx1 = txFromTxData
+      .LegacyTransaction({
+        data: '0x7FFF0000000000000000000000000000000000000000000000000000000000000060005260206000F3',
+        gasLimit: 1000000,
+        nonce: 1,
+      })
+      .sign(pkey)
 
     result = await vm.runTx({ tx: tx1, skipHardForkValidation: true })
     created = result.createdAddress
@@ -49,10 +53,12 @@ describe('EIP 3541 tests', () => {
     // check if we can deposit a contract on non-EIP3541 chains
 
     vm = await VM.create({ common: commonNoEIP3541 })
-    const tx2 = LegacyTransaction.fromTxData({
-      data: '0x7FEF0000000000000000000000000000000000000000000000000000000000000060005260206000F3',
-      gasLimit: 1000000,
-    }).sign(pkey)
+    const tx2 = txFromTxData
+      .LegacyTransaction({
+        data: '0x7FEF0000000000000000000000000000000000000000000000000000000000000060005260206000F3',
+        gasLimit: 1000000,
+      })
+      .sign(pkey)
 
     result = await vm.runTx({ tx: tx2, skipHardForkValidation: true })
     created = result.createdAddress
@@ -64,10 +70,12 @@ describe('EIP 3541 tests', () => {
 
   it('deploy contracts starting with 0xEF using CREATE', async () => {
     // put 0xEF contract
-    const tx = LegacyTransaction.fromTxData({
-      data: '0x7F60EF60005360016000F300000000000000000000000000000000000000000000600052602060006000F000',
-      gasLimit: 1000000,
-    }).sign(pkey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        data: '0x7F60EF60005360016000F300000000000000000000000000000000000000000000600052602060006000F000',
+        gasLimit: 1000000,
+      })
+      .sign(pkey)
 
     const vm = await VM.create({ common })
     let address: Address
@@ -84,11 +92,13 @@ describe('EIP 3541 tests', () => {
     assert.equal(code.length, 0, 'did not deposit code')
 
     // put 0xFF contract
-    const tx1 = LegacyTransaction.fromTxData({
-      data: '0x7F60FF60005360016000F300000000000000000000000000000000000000000000600052602060006000F000',
-      gasLimit: 1000000,
-      nonce: 1,
-    }).sign(pkey)
+    const tx1 = txFromTxData
+      .LegacyTransaction({
+        data: '0x7F60FF60005360016000F300000000000000000000000000000000000000000000600052602060006000F000',
+        gasLimit: 1000000,
+        nonce: 1,
+      })
+      .sign(pkey)
 
     await vm.runTx({ tx: tx1, skipHardForkValidation: true })
 
@@ -99,10 +109,12 @@ describe('EIP 3541 tests', () => {
 
   it('deploy contracts starting with 0xEF using CREATE2', async () => {
     // put 0xEF contract
-    const tx = LegacyTransaction.fromTxData({
-      data: '0x7F60EF60005360016000F3000000000000000000000000000000000000000000006000526000602060006000F500',
-      gasLimit: 1000000,
-    }).sign(pkey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        data: '0x7F60EF60005360016000F3000000000000000000000000000000000000000000006000526000602060006000F500',
+        gasLimit: 1000000,
+      })
+      .sign(pkey)
 
     const vm = await VM.create({ common })
     let address: Address
@@ -119,11 +131,13 @@ describe('EIP 3541 tests', () => {
     assert.equal(code.length, 0, 'did not deposit code')
 
     // put 0xFF contract
-    const tx1 = LegacyTransaction.fromTxData({
-      data: '0x7F60FF60005360016000F3000000000000000000000000000000000000000000006000526000602060006000F500',
-      gasLimit: 1000000,
-      nonce: 1,
-    }).sign(pkey)
+    const tx1 = txFromTxData
+      .LegacyTransaction({
+        data: '0x7F60FF60005360016000F3000000000000000000000000000000000000000000006000526000602060006000F500',
+        gasLimit: 1000000,
+        nonce: 1,
+      })
+      .sign(pkey)
 
     await vm.runTx({ tx: tx1, skipHardForkValidation: true })
 

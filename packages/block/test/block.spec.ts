@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import {
   KECCAK256_RLP_ARRAY,
   bytesToHex,
@@ -19,11 +19,11 @@ import {
 import { createBlockFromRpc } from '../src/from-rpc.js'
 import { genTransactionsTrieRoot } from '../src/helpers.js'
 
-import * as testDataGenesis from './testdata/genesishashestest.json'
-import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
-import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
-import * as testDataPreLondon from './testdata/testdata_pre-london.json'
-import * as testnetMerge from './testdata/testnetMerge.json'
+import testDataGenesis from './testdata/genesishashestest.json'
+import testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
+import testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
+import testDataPreLondon from './testdata/testdata_pre-london.json'
+import testnetMerge from './testdata/testnetMerge.json'
 
 import type { Block, BlockBytes, JsonRpcBlock } from '../src/index.js'
 import type { ChainConfig } from '@ethereumjs/common'
@@ -199,7 +199,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('should test transaction validation - transaction not signed', async () => {
-    const tx = LegacyTransaction.fromTxData({
+    const tx = txFromTxData.LegacyTransaction({
       gasLimit: 53000,
       gasPrice: 7,
     })
@@ -252,7 +252,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('should test data integrity', async () => {
-    const unsignedTx = LegacyTransaction.fromTxData({})
+    const unsignedTx = txFromTxData.LegacyTransaction({})
     const txRoot = await genTransactionsTrieRoot([unsignedTx])
 
     let block = createBlockFromBlockData({

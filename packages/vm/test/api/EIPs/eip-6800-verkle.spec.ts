@@ -7,8 +7,8 @@ import { hexToBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { describe, it } from 'vitest'
 
-import * as verkleBlockJSON from '../../../../statemanager/test/testdata/verkleKaustinen6Block72.json'
-import { VM } from '../../../src'
+import verkleBlockJSON from '../../../../statemanager/test/testdata/verkleKaustinen6Block72.json'
+import { VM } from '../../../src/index.js'
 
 import type { BlockData } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'

@@ -1,6 +1,6 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { LegacyTransaction, txFromTxData } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
@@ -30,7 +30,7 @@ const main = async () => {
   const address = Address.fromPrivateKey(pk)
   const account = new Account(0n, 0xfffffffffn)
   await vm.stateManager.putAccount(address, account) // create a sending account and give it a big balance
-  const tx = LegacyTransaction.fromTxData({ gasLimit: 0xffffff, gasPrice: 75n }).sign(pk)
+  const tx = txFromTxData.LegacyTransaction({ gasLimit: 0xffffff, gasPrice: 75n }).sign(pk)
   await blockBuilder.addTransaction(tx)
 
   // Add more transactions

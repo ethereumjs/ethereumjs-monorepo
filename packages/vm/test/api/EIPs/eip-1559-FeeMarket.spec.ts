@@ -15,7 +15,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM } from '../../../src/vm.js'
 
 import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
 

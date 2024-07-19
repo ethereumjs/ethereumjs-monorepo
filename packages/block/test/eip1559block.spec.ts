@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -8,7 +8,7 @@ import { BlockHeader } from '../src/header.js'
 
 // Test data from Besu (retrieved via Discord)
 // Older version at https://github.com/abdelhamidbakhta/besu/blob/bf54b6c0b40d3015fc85ff9b078fbc26592d80c0/ethereum/core/src/test/resources/org/hyperledger/besu/ethereum/core/fees/basefee-test.json
-import * as eip1559BaseFee from './testdata/eip1559baseFee.json'
+import eip1559BaseFee from './testdata/eip1559baseFee.json'
 
 const common = new Common({
   eips: [1559],
@@ -408,13 +408,15 @@ describe('EIP1559 tests', () => {
   })
 
   it('Header -> validateTransactions() -> tx', async () => {
-    const transaction = FeeMarketEIP1559Transaction.fromTxData(
-      {
-        maxFeePerGas: BigInt(0),
-        maxPriorityFeePerGas: BigInt(0),
-      },
-      { common }
-    ).sign(hexToBytes(`0x${'46'.repeat(32)}`))
+    const transaction = txFromTxData
+      .FeeMarketEIP1559Transaction(
+        {
+          maxFeePerGas: BigInt(0),
+          maxPriorityFeePerGas: BigInt(0),
+        },
+        { common }
+      )
+      .sign(hexToBytes(`0x${'46'.repeat(32)}`))
     const block = createBlockFromBlockData(
       {
         header: {

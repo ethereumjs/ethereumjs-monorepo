@@ -1,9 +1,9 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM } from '../../../src/vm.js'
 
 const common = new Common({
   eips: [2718, 2929, 2930],
@@ -26,24 +26,28 @@ describe('EIP-2930 Optional Access Lists tests', () => {
         storageKeys: [bytesToHex(validSlot)],
       },
     ]
-    const txnWithAccessList = AccessListEIP2930Transaction.fromTxData(
-      {
-        accessList: access,
-        chainId: BigInt(1),
-        gasLimit: BigInt(100000),
-        to: contractAddress,
-      },
-      { common }
-    ).sign(privateKey)
-    const txnWithoutAccessList = AccessListEIP2930Transaction.fromTxData(
-      {
-        accessList: [],
-        chainId: BigInt(1),
-        gasLimit: BigInt(100000),
-        to: contractAddress,
-      },
-      { common }
-    ).sign(privateKey)
+    const txnWithAccessList = txFromTxData
+      .AccessListEIP2930Transaction(
+        {
+          accessList: access,
+          chainId: BigInt(1),
+          gasLimit: BigInt(100000),
+          to: contractAddress,
+        },
+        { common }
+      )
+      .sign(privateKey)
+    const txnWithoutAccessList = txFromTxData
+      .AccessListEIP2930Transaction(
+        {
+          accessList: [],
+          chainId: BigInt(1),
+          gasLimit: BigInt(100000),
+          to: contractAddress,
+        },
+        { common }
+      )
+      .sign(privateKey)
 
     const vm = await VM.create({ common })
 

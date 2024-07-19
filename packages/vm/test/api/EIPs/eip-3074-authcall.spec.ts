@@ -1,7 +1,7 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVMErrorMessage } from '@ethereumjs/evm'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -20,7 +20,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM } from '../../../src/vm.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { ECDSASignature } from '@ethereumjs/util'
@@ -240,11 +240,13 @@ describe('EIP-3074 AUTH', () => {
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
@@ -264,11 +266,13 @@ describe('EIP-3074 AUTH', () => {
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
@@ -289,11 +293,13 @@ describe('EIP-3074 AUTH', () => {
     const code = concatBytes(getAuthCode(message, signature, contractAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
@@ -312,11 +318,13 @@ describe('EIP-3074 AUTH', () => {
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
@@ -336,11 +344,13 @@ describe('EIP-3074 AUTH', () => {
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
@@ -365,11 +375,13 @@ describe('EIP-3074 AUTH', () => {
     )
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
@@ -391,11 +403,13 @@ describe('EIP-3074 AUTH', () => {
     )
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
@@ -414,11 +428,13 @@ describe('EIP-3074 AUTH', () => {
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNMEMSIZE)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
@@ -440,12 +456,14 @@ describe('EIP-3074 AUTH', () => {
     )
 
     await vm.stateManager.putContractCode(contractAddress, code2)
-    const tx2 = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-      nonce: 1,
-    }).sign(callerPrivateKey)
+    const tx2 = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+        nonce: 1,
+      })
+      .sign(callerPrivateKey)
 
     const result2 = await vm.runTx({ tx: tx2, block, skipHardForkValidation: true })
 
@@ -485,11 +503,13 @@ describe('EIP-3074 AUTHCALL', () => {
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
 
@@ -519,11 +539,13 @@ describe('EIP-3074 AUTHCALL', () => {
       }
     })
 
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     await vm.runTx({ tx, block, skipHardForkValidation: true })
 
@@ -562,11 +584,13 @@ describe('EIP-3074 AUTHCALL', () => {
       }
     })
 
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     await vm.runTx({ tx, block, skipHardForkValidation: true })
 
@@ -606,12 +630,14 @@ describe('EIP-3074 AUTHCALL', () => {
       }
     })
 
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 900000,
-      gasPrice: 10,
-      value: 1,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 900000,
+        gasPrice: 10,
+        value: 1,
+      })
+      .sign(callerPrivateKey)
 
     await vm.runTx({ tx, block, skipHardForkValidation: true })
 
@@ -650,12 +676,14 @@ describe('EIP-3074 AUTHCALL', () => {
     const value = 3n
     const gasPrice = 10n
 
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: PREBALANCE / gasPrice - value * gasPrice,
-      gasPrice,
-      value,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: PREBALANCE / gasPrice - value * gasPrice,
+        gasPrice,
+        value,
+      })
+      .sign(callerPrivateKey)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
 
@@ -700,12 +728,14 @@ describe('EIP-3074 AUTHCALL', () => {
     const value = 3n
     const gasPrice = 10n
 
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: PREBALANCE / gasPrice - value * gasPrice,
-      gasPrice,
-      value,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: PREBALANCE / gasPrice - value * gasPrice,
+        gasPrice,
+        value,
+      })
+      .sign(callerPrivateKey)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
 
@@ -721,11 +751,13 @@ describe('EIP-3074 AUTHCALL', () => {
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     assert.equal(
@@ -757,11 +789,13 @@ describe('EIP-3074 AUTHCALL', () => {
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     assert.equal(
@@ -785,11 +819,13 @@ describe('EIP-3074 AUTHCALL', () => {
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     assert.equal(result.amountSpent, tx.gasLimit * tx.gasPrice, 'spent all gas')
@@ -813,11 +849,13 @@ describe('EIP-3074 AUTHCALL', () => {
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     await vm.runTx({ tx, block, skipHardForkValidation: true })
     const gas = await vm.stateManager.getContractStorage(
@@ -846,11 +884,13 @@ describe('EIP-3074 AUTHCALL', () => {
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: contractAddress,
+        gasLimit: 1000000,
+        gasPrice: 10,
+      })
+      .sign(callerPrivateKey)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const callInput = await vm.stateManager.getContractStorage(

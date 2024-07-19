@@ -4,9 +4,9 @@ import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumj
 import {
   BlobEIP4844Transaction,
   FeeMarketEIP1559Transaction,
-  LegacyTransaction,
   TransactionType,
   createTxFromTxData,
+  txFromTxData,
 } from '@ethereumjs/tx'
 import {
   Account,
@@ -25,7 +25,7 @@ import { VM } from '../../src/vm'
 
 import { createAccount, getTransaction, setBalance } from './utils'
 
-import type { FeeMarketEIP1559TxData, TypedTxData } from '@ethereumjs/tx'
+import type { FeeMarketEIP1559TxData, LegacyTransaction, TypedTxData } from '@ethereumjs/tx'
 
 const TRANSACTION_TYPES = [
   {
@@ -675,7 +675,7 @@ describe('runTx() -> consensus bugs', () => {
     acc!.nonce = BigInt(2)
     await vm.stateManager.putAccount(addr, acc!)
 
-    const tx = LegacyTransaction.fromTxData(txData, { common })
+    const tx = txFromTxData.LegacyTransaction(txData, { common })
     await vm.runTx({ tx })
 
     const newBalance = (await vm.stateManager.getAccount(addr))!.balance
@@ -712,7 +712,7 @@ describe('runTx() -> consensus bugs', () => {
     acc!.balance = BigInt(10000000000000)
     await vm.stateManager.putAccount(addr, acc!)
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common }).sign(pkey)
+    const tx = txFromTxData.FeeMarketEIP1559Transaction(txData, { common }).sign(pkey)
 
     const block = createBlockFromBlockData({ header: { baseFeePerGas: 0x0c } }, { common })
     const result = await vm.runTx({ tx, block })
@@ -763,11 +763,13 @@ it('runTx() -> skipBalance behavior', async () => {
     if (balance !== undefined) {
       await vm.stateManager.modifyAccountFields(sender, { nonce: BigInt(0), balance })
     }
-    const tx = LegacyTransaction.fromTxData({
-      gasLimit: BigInt(21000),
-      value: BigInt(1),
-      to: Address.zero(),
-    }).sign(senderKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        gasLimit: BigInt(21000),
+        value: BigInt(1),
+        to: Address.zero(),
+      })
+      .sign(senderKey)
 
     const res = await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
     assert.ok(true, 'runTx should not throw with no balance and skipBalance')
@@ -793,11 +795,13 @@ it('Validate EXTCODEHASH puts KECCAK256_NULL on stack if calling account has no 
   const codeAddr = Address.fromString('0x' + '20'.repeat(20))
   await vm.stateManager.putContractCode(codeAddr, code)
 
-  const tx = LegacyTransaction.fromTxData({
-    gasLimit: 100000,
-    gasPrice: 1,
-    to: codeAddr,
-  }).sign(pkey)
+  const tx = txFromTxData
+    .LegacyTransaction({
+      gasLimit: 100000,
+      gasPrice: 1,
+      to: codeAddr,
+    })
+    .sign(pkey)
 
   const addr = Address.fromPrivateKey(pkey)
   await vm.stateManager.putAccount(addr, new Account())
@@ -826,12 +830,14 @@ it('Validate CALL does not charge new account gas when calling CALLER and caller
   const codeAddr = Address.fromString('0x' + '20'.repeat(20))
   await vm.stateManager.putContractCode(codeAddr, code)
 
-  const tx = LegacyTransaction.fromTxData({
-    gasLimit: 100000,
-    gasPrice: 1,
-    value: 1,
-    to: codeAddr,
-  }).sign(pkey)
+  const tx = txFromTxData
+    .LegacyTransaction({
+      gasLimit: 100000,
+      gasPrice: 1,
+      value: 1,
+      to: codeAddr,
+    })
+    .sign(pkey)
 
   const addr = Address.fromPrivateKey(pkey)
   await vm.stateManager.putAccount(addr, new Account())
@@ -857,12 +863,14 @@ it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER an
   const codeAddr = Address.fromString('0x' + '20'.repeat(20))
   await vm.stateManager.putContractCode(codeAddr, code)
 
-  const tx = LegacyTransaction.fromTxData({
-    gasLimit: 100000,
-    gasPrice: 1,
-    value: 1,
-    to: codeAddr,
-  }).sign(pkey)
+  const tx = txFromTxData
+    .LegacyTransaction({
+      gasLimit: 100000,
+      gasPrice: 1,
+      value: 1,
+      to: codeAddr,
+    })
+    .sign(pkey)
 
   const addr = Address.fromPrivateKey(pkey)
   await vm.stateManager.putAccount(addr, new Account())

@@ -1,4 +1,4 @@
-import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -18,10 +18,12 @@ describe(method, () => {
     const { chain, common, execution, server } = await setupChain(pow, 'pow', { txLookupLimit: 1 })
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = LegacyTransaction.fromTxData(
-      { gasLimit: 2000000, gasPrice: 100, to: '0x0000000000000000000000000000000000000000' },
-      { common }
-    ).sign(dummy.privKey)
+    const tx = txFromTxData
+      .LegacyTransaction(
+        { gasLimit: 2000000, gasPrice: 100, to: '0x0000000000000000000000000000000000000000' },
+        { common }
+      )
+      .sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
 
@@ -42,15 +44,17 @@ describe(method, () => {
     )
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
-      {
-        gasLimit: 2000000,
-        maxFeePerGas: 975000000,
-        maxPriorityFeePerGas: 10,
-        to: '0x0000000000000000000000000000000000000000',
-      },
-      { common }
-    ).sign(dummy.privKey)
+    const tx = txFromTxData
+      .FeeMarketEIP1559Transaction(
+        {
+          gasLimit: 2000000,
+          maxFeePerGas: 975000000,
+          maxPriorityFeePerGas: 10,
+          to: '0x0000000000000000000000000000000000000000',
+        },
+        { common }
+      )
+      .sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
 

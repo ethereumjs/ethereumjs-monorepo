@@ -1,9 +1,9 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM } from '../../../src/vm.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -160,10 +160,12 @@ describe('EIP-3529 tests', () => {
   it('should not refund selfdestructs', async () => {
     const vm = await VM.create({ common })
 
-    const tx = LegacyTransaction.fromTxData({
-      data: '0x6000ff',
-      gasLimit: 100000,
-    }).sign(pkey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        data: '0x6000ff',
+        gasLimit: 100000,
+      })
+      .sign(pkey)
 
     const result = await vm.runTx({
       tx,
@@ -212,10 +214,12 @@ describe('EIP-3529 tests', () => {
 
     await vm.stateManager.putContractCode(address, hexToBytes(code))
 
-    const tx = LegacyTransaction.fromTxData({
-      to: address,
-      gasLimit: 10000000,
-    }).sign(pkey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        to: address,
+        gasLimit: 10000000,
+      })
+      .sign(pkey)
 
     const result = await vm.runTx({ tx, skipHardForkValidation: true })
 

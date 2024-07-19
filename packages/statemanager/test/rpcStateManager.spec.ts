@@ -1,7 +1,7 @@
 import { createBlockFromJsonRpcProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
-import { FeeMarketEIP1559Transaction, createTxFromRPC } from '@ethereumjs/tx'
+import { createTxFromRPC, txFromTxData } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -242,10 +242,12 @@ describe('runTx custom transaction test', () => {
     const privateKey = hexToBytes(
       '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
     )
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
-      { to: vitalikDotEth, value: '0x100', gasLimit: 500000n, maxFeePerGas: 7 },
-      { common }
-    ).sign(privateKey)
+    const tx = txFromTxData
+      .FeeMarketEIP1559Transaction(
+        { to: vitalikDotEth, value: '0x100', gasLimit: 500000n, maxFeePerGas: 7 },
+        { common }
+      )
+      .sign(privateKey)
 
     const result = await vm.runTx({
       skipBalance: true,
@@ -295,7 +297,7 @@ describe('runBlock test', () => {
     common.setHardforkBy({ blockNumber: blockTag - 1n })
 
     const vm = await VM.create({ common, stateManager: state })
-    const block = createBlockFromRPC(blockData as JsonRpcBlock, [], { common })
+    const block = createBlockFromRPC(blockData as unknown as JsonRpcBlock, [], { common })
     try {
       const res = await vm.runBlock({
         block,

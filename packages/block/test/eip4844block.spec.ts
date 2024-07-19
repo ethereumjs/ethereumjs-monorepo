@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
@@ -171,28 +171,32 @@ describe('transaction validation tests', () => {
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
 
-    const tx1 = BlobEIP4844Transaction.fromTxData(
-      {
-        blobVersionedHashes,
-        blobs,
-        kzgCommitments: commitments,
-        maxFeePerBlobGas: 100000000n,
-        gasLimit: 0xffffffn,
-        to: randomBytes(20),
-      },
-      { common }
-    ).sign(randomBytes(32))
-    const tx2 = BlobEIP4844Transaction.fromTxData(
-      {
-        blobVersionedHashes,
-        blobs,
-        kzgCommitments: commitments,
-        maxFeePerBlobGas: 1n,
-        gasLimit: 0xffffffn,
-        to: randomBytes(20),
-      },
-      { common }
-    ).sign(randomBytes(32))
+    const tx1 = txFromTxData
+      .BlobEIP4844Transaction(
+        {
+          blobVersionedHashes,
+          blobs,
+          kzgCommitments: commitments,
+          maxFeePerBlobGas: 100000000n,
+          gasLimit: 0xffffffn,
+          to: randomBytes(20),
+        },
+        { common }
+      )
+      .sign(randomBytes(32))
+    const tx2 = txFromTxData
+      .BlobEIP4844Transaction(
+        {
+          blobVersionedHashes,
+          blobs,
+          kzgCommitments: commitments,
+          maxFeePerBlobGas: 1n,
+          gasLimit: 0xffffffn,
+          to: randomBytes(20),
+        },
+        { common }
+      )
+      .sign(randomBytes(32))
 
     const parentHeader = BlockHeader.fromHeaderData(
       { number: 1n, excessBlobGas: 4194304, blobGasUsed: 0 },
@@ -230,7 +234,7 @@ describe('transaction validation tests', () => {
       () => blockWithValidTx.validateBlobTransactions(parentHeader),
       'does not throw when all tx maxFeePerBlobGas are >= to block blob gas fee'
     )
-    const blockJson = blockWithValidTx.toJSON()
+    const blockJson: any = blockWithValidTx.toJSON()
     blockJson.header!.blobGasUsed = '0x0'
     const blockWithInvalidHeader = createBlockFromBlockData(blockJson, { common })
     assert.throws(

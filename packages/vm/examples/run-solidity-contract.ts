@@ -4,7 +4,7 @@ import { readFileSync } from 'fs'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { LegacyTransaction, txFromTxData } from '@ethereumjs/tx'
 import { VM } from '@ethereumjs/vm'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.js'
 import { getAccountNonce, insertAccount } from './helpers/account-utils.js'
@@ -105,9 +105,9 @@ async function deployContract(
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
-  const tx = LegacyTransaction.fromTxData(buildTransaction(txData as any), { common }).sign(
-    senderPrivateKey
-  )
+  const tx = txFromTxData
+    .LegacyTransaction(buildTransaction(txData as any), { common })
+    .sign(senderPrivateKey)
 
   const deploymentResult = await vm.runTx({ tx, block })
 
@@ -135,9 +135,9 @@ async function setGreeting(
     nonce: await getAccountNonce(vm as any, senderPrivateKey),
   }
 
-  const tx = LegacyTransaction.fromTxData(buildTransaction(txData as any), { common }).sign(
-    senderPrivateKey
-  )
+  const tx = txFromTxData
+    .LegacyTransaction(buildTransaction(txData as any), { common })
+    .sign(senderPrivateKey)
 
   const setGreetingResult = await vm.runTx({ tx, block })
 

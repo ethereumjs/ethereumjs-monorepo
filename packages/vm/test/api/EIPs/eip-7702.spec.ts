@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { EOACodeEIP7702Transaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -17,7 +17,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { equalsBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM } from '../../../src/vm.js'
 
 import type { AuthorizationListBytesItem } from '@ethereumjs/common'
 
@@ -66,16 +66,18 @@ async function runTest(
 ) {
   vm = vm ?? (await VM.create({ common }))
   const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
-  const tx = EOACodeEIP7702Transaction.fromTxData(
-    {
-      gasLimit: 100000,
-      maxFeePerGas: 1000,
-      authorizationList: authList,
-      to: defaultAuthAddr,
-      value: BIGINT_1,
-    },
-    { common }
-  ).sign(defaultSenderPkey)
+  const tx = txFromTxData
+    .EOACodeEIP7702Transaction(
+      {
+        gasLimit: 100000,
+        maxFeePerGas: 1000,
+        authorizationList: authList,
+        to: defaultAuthAddr,
+        value: BIGINT_1,
+      },
+      { common }
+    )
+    .sign(defaultSenderPkey)
 
   const code1 = hexToBytes('0x600160015500')
   await vm.stateManager.putContractCode(code1Addr, code1)
@@ -207,16 +209,18 @@ describe('EIP 7702: set code to EOA accounts', () => {
 
     await vm.stateManager.putContractCode(checkAddressWarm, checkAddressWarmCode)
 
-    const tx = EOACodeEIP7702Transaction.fromTxData(
-      {
-        gasLimit: 100000,
-        maxFeePerGas: 1000,
-        authorizationList: authList,
-        to: checkAddressWarm,
-        value: BIGINT_1,
-      },
-      { common }
-    ).sign(defaultSenderPkey)
+    const tx = txFromTxData
+      .EOACodeEIP7702Transaction(
+        {
+          gasLimit: 100000,
+          maxFeePerGas: 1000,
+          authorizationList: authList,
+          to: checkAddressWarm,
+          value: BIGINT_1,
+        },
+        { common }
+      )
+      .sign(defaultSenderPkey)
 
     const code1 = hexToBytes('0x')
     await vm.stateManager.putContractCode(code1Addr, code1)
@@ -239,17 +243,19 @@ describe('EIP 7702: set code to EOA accounts', () => {
         address: code1Addr,
       }),
     ]
-    const tx = EOACodeEIP7702Transaction.fromTxData(
-      {
-        gasLimit: 100000,
-        maxFeePerGas: 1000,
-        authorizationList: authList,
-        to: defaultAuthAddr,
-        // value: BIGINT_1 // Note, by enabling this line, the account will not get deleted
-        // Therefore, this test will pass
-      },
-      { common }
-    ).sign(defaultSenderPkey)
+    const tx = txFromTxData
+      .EOACodeEIP7702Transaction(
+        {
+          gasLimit: 100000,
+          maxFeePerGas: 1000,
+          authorizationList: authList,
+          to: defaultAuthAddr,
+          // value: BIGINT_1 // Note, by enabling this line, the account will not get deleted
+          // Therefore, this test will pass
+        },
+        { common }
+      )
+      .sign(defaultSenderPkey)
 
     // Store value 1 in storage slot 1
     // PUSH1 PUSH1 SSTORE STOP

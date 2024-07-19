@@ -1,9 +1,9 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { Account, Address, bytesToInt, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM } from '../../../src/vm.js'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -74,11 +74,13 @@ describe('EIP 1153: transient storage', () => {
     returndata[31] = 0x02
 
     const address = new Address(hexToBytes('0x00000000000000000000000636F6E7472616374'))
-    const tx = LegacyTransaction.fromTxData({
-      gasLimit: BigInt(21000 + 9000),
-      to: address,
-      value: BigInt(1),
-    }).sign(senderKey)
+    const tx = txFromTxData
+      .LegacyTransaction({
+        gasLimit: BigInt(21000 + 9000),
+        to: address,
+        value: BigInt(1),
+      })
+      .sign(senderKey)
 
     const test = {
       contracts: [{ address, code }],
@@ -117,16 +119,20 @@ describe('EIP 1153: transient storage', () => {
     const test = {
       contracts: [{ address, code }],
       transactions: [
-        LegacyTransaction.fromTxData({
-          gasLimit: BigInt(15000000),
-          to: address,
-          data: new Uint8Array(32),
-        }).sign(senderKey),
-        LegacyTransaction.fromTxData({
-          nonce: 1,
-          gasLimit: BigInt(15000000),
-          to: address,
-        }).sign(senderKey),
+        txFromTxData
+          .LegacyTransaction({
+            gasLimit: BigInt(15000000),
+            to: address,
+            data: new Uint8Array(32),
+          })
+          .sign(senderKey),
+        txFromTxData
+          .LegacyTransaction({
+            nonce: 1,
+            gasLimit: BigInt(15000000),
+            to: address,
+          })
+          .sign(senderKey),
       ],
       steps: [
         // first tx
@@ -186,7 +192,7 @@ describe('EIP 1153: transient storage', () => {
     const callingCode =
       '0x6362fdb9be600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff163afc874d2600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff16343ac1c39600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff1366000803760206000f3'
 
-    const unsignedTx = LegacyTransaction.fromTxData({
+    const unsignedTx = txFromTxData.LegacyTransaction({
       gasLimit: BigInt(15000000),
       to: callingAddress,
     })

@@ -1,13 +1,13 @@
 import { Address } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { LegacyTransaction, txFromTxData } from '@ethereumjs/tx'
 import { VM } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
   const vm = await VM.create({ common })
 
-  const tx = LegacyTransaction.fromTxData({
+  const tx = txFromTxData.LegacyTransaction({
     gasLimit: BigInt(21000),
     gasPrice: BigInt(1000000000),
     value: BigInt(1),

@@ -1,4 +1,4 @@
-import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { bigIntToHex, intToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -11,6 +11,8 @@ import {
   setupChain,
 } from '../helpers.js'
 
+import type { LegacyTransaction } from '@ethereumjs/tx'
+
 const method = 'eth_gasPrice'
 
 describe(method, () => {
@@ -19,10 +21,12 @@ describe(method, () => {
     const rpc = getRpcClient(server)
     const GAS_PRICE = 100
     // construct tx
-    const tx = LegacyTransaction.fromTxData(
-      { gasLimit: 21000, gasPrice: GAS_PRICE, to: '0x0000000000000000000000000000000000000000' },
-      { common }
-    ).sign(dummy.privKey)
+    const tx = txFromTxData
+      .LegacyTransaction(
+        { gasLimit: 21000, gasPrice: GAS_PRICE, to: '0x0000000000000000000000000000000000000000' },
+        { common }
+      )
+      .sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
 
@@ -42,10 +46,12 @@ describe(method, () => {
     for (let i = 0; i < iterations; i++) {
       const gasPrice = i * 100
       averageGasPrice += BigInt(gasPrice)
-      const tx = LegacyTransaction.fromTxData(
-        { nonce: i, gasLimit: 21000, gasPrice, to: '0x0000000000000000000000000000000000000000' },
-        { common }
-      ).sign(dummy.privKey)
+      const tx = txFromTxData
+        .LegacyTransaction(
+          { nonce: i, gasLimit: 21000, gasPrice, to: '0x0000000000000000000000000000000000000000' },
+          { common }
+        )
+        .sign(dummy.privKey)
       await runBlockWithTxs(chain, execution, [tx])
     }
 
@@ -64,14 +70,23 @@ describe(method, () => {
     const G1 = 100
     const G2 = 1231231
 
-    const tx1 = LegacyTransaction.fromTxData(
-      { gasLimit: 21000, gasPrice: G1, to: '0x0000000000000000000000000000000000000000' },
-      { common }
-    ).sign(dummy.privKey)
-    const tx2 = LegacyTransaction.fromTxData(
-      { nonce: 1, gasLimit: 21000, gasPrice: G2, to: '0x0000000000000000000000000000000000000000' },
-      { common }
-    ).sign(dummy.privKey)
+    const tx1 = txFromTxData
+      .LegacyTransaction(
+        { gasLimit: 21000, gasPrice: G1, to: '0x0000000000000000000000000000000000000000' },
+        { common }
+      )
+      .sign(dummy.privKey)
+    const tx2 = txFromTxData
+      .LegacyTransaction(
+        {
+          nonce: 1,
+          gasLimit: 21000,
+          gasPrice: G2,
+          to: '0x0000000000000000000000000000000000000000',
+        },
+        { common }
+      )
+      .sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx1, tx2])
 
@@ -90,15 +105,17 @@ describe(method, () => {
       'powLondon'
     )
     const rpc = getRpcClient(server)
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
-      {
-        gasLimit: 21000,
-        maxPriorityFeePerGas: 10,
-        maxFeePerGas: 975000000,
-        to: '0x0000000000000000000000000000000000000000',
-      },
-      { common }
-    ).sign(dummy.privKey)
+    const tx = txFromTxData
+      .FeeMarketEIP1559Transaction(
+        {
+          gasLimit: 21000,
+          maxPriorityFeePerGas: 10,
+          maxFeePerGas: 975000000,
+          to: '0x0000000000000000000000000000000000000000',
+        },
+        { common }
+      )
+      .sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
     const res = await rpc.request(method, [])
@@ -120,25 +137,29 @@ describe(method, () => {
     const rpc = getRpcClient(server)
     const maxPriority1 = 10
     const maxPriority2 = 1231231
-    const tx1 = FeeMarketEIP1559Transaction.fromTxData(
-      {
-        gasLimit: 21000,
-        maxPriorityFeePerGas: maxPriority1,
-        maxFeePerGas: 975000000,
-        to: '0x0000000000000000000000000000000000000000',
-      },
-      { common }
-    ).sign(dummy.privKey)
-    const tx2 = FeeMarketEIP1559Transaction.fromTxData(
-      {
-        nonce: 1,
-        gasLimit: 21000,
-        maxPriorityFeePerGas: maxPriority2,
-        maxFeePerGas: 975000000,
-        to: '0x0000000000000000000000000000000000000000',
-      },
-      { common }
-    ).sign(dummy.privKey)
+    const tx1 = txFromTxData
+      .FeeMarketEIP1559Transaction(
+        {
+          gasLimit: 21000,
+          maxPriorityFeePerGas: maxPriority1,
+          maxFeePerGas: 975000000,
+          to: '0x0000000000000000000000000000000000000000',
+        },
+        { common }
+      )
+      .sign(dummy.privKey)
+    const tx2 = txFromTxData
+      .FeeMarketEIP1559Transaction(
+        {
+          nonce: 1,
+          gasLimit: 21000,
+          maxPriorityFeePerGas: maxPriority2,
+          maxFeePerGas: 975000000,
+          to: '0x0000000000000000000000000000000000000000',
+        },
+        { common }
+      )
+      .sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx1, tx2])
     const res = await rpc.request(method, [])
@@ -162,25 +183,29 @@ describe(method, () => {
     let tx: LegacyTransaction
     for (let i = 0; i < iterations; i++) {
       if (i === 0) {
-        tx = LegacyTransaction.fromTxData(
-          {
-            nonce: i,
-            gasLimit: 21000,
-            gasPrice: firstBlockGasPrice,
-            to: '0x0000000000000000000000000000000000000000',
-          },
-          { common }
-        ).sign(dummy.privKey)
+        tx = txFromTxData
+          .LegacyTransaction(
+            {
+              nonce: i,
+              gasLimit: 21000,
+              gasPrice: firstBlockGasPrice,
+              to: '0x0000000000000000000000000000000000000000',
+            },
+            { common }
+          )
+          .sign(dummy.privKey)
       } else {
-        tx = LegacyTransaction.fromTxData(
-          {
-            nonce: i,
-            gasLimit: 21000,
-            gasPrice,
-            to: '0x0000000000000000000000000000000000000000',
-          },
-          { common }
-        ).sign(dummy.privKey)
+        tx = txFromTxData
+          .LegacyTransaction(
+            {
+              nonce: i,
+              gasLimit: 21000,
+              gasPrice,
+              to: '0x0000000000000000000000000000000000000000',
+            },
+            { common }
+          )
+          .sign(dummy.privKey)
       }
       await runBlockWithTxs(chain, execution, [tx!])
     }

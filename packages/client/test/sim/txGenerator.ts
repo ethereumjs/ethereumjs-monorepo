@@ -1,5 +1,5 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { type TransactionType, type TxData, txFromTxData } from '@ethereumjs/tx'
 import {
   Address,
   blobsToCommitments,
@@ -10,8 +10,6 @@ import {
 } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { loadKZG } from 'kzg-wasm'
-
-import type { TransactionType, TxData } from '@ethereumjs/tx'
 
 const clientPort = process.argv[2]
 const input = process.argv[3]
@@ -121,7 +119,7 @@ async function run(data: any) {
   txData.gasLimit = BigInt(28000000)
   const nonce = await getNonce(client, sender.toString())
   txData.nonce = BigInt(nonce)
-  const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(pkey)
+  const blobTx = txFromTxData.BlobEIP4844Transaction(txData).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 

@@ -15,7 +15,7 @@ const main = async () => {
       kzg,
     },
   })
-  const blobTx = BlobEIP4844Transaction.fromTxData(
+  const blobTx = txFromTxData.BlobEIP4844Transaction(
     { blobsData: ['myFirstBlob'], to: Address.fromPrivateKey(randomBytes(32)) },
     { common }
   )

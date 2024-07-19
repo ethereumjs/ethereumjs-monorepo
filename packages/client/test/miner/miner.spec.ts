@@ -7,7 +7,7 @@ import {
   createCustomCommon,
 } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
 // import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -177,7 +177,7 @@ const createTx = (
     to: to.address,
     value,
   }
-  const tx = LegacyTransaction.fromTxData(txData, { common })
+  const tx = txFromTxData.LegacyTransaction(txData, { common })
   const signedTx = tx.sign(from.privateKey)
   return signedTx
 }
@@ -449,10 +449,9 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
 
   // the default block baseFee will be 7
   // add tx with maxFeePerGas of 6
-  const tx = FeeMarketEIP1559Transaction.fromTxData(
-    { to: B.address, maxFeePerGas: 6 },
-    { common }
-  ).sign(A.privateKey)
+  const tx = txFromTxData
+    .FeeMarketEIP1559Transaction({ to: B.address, maxFeePerGas: 6 }, { common })
+    .sign(A.privateKey)
   try {
     await txPool.add(tx, true)
   } catch {
@@ -503,14 +502,18 @@ describe("assembleBlocks() -> should stop assembling a block after it's full", a
 
   // add txs
   const data = '0xfe' // INVALID opcode, consumes all gas
-  const tx1FillsBlockGasLimit = LegacyTransaction.fromTxData(
-    { gasLimit: gasLimit - 1, data, gasPrice: BigInt('1000000000') },
-    { common: customCommon }
-  ).sign(A.privateKey)
-  const tx2ExceedsBlockGasLimit = LegacyTransaction.fromTxData(
-    { gasLimit: 21000, to: B.address, nonce: 1, gasPrice: BigInt('1000000000') },
-    { common: customCommon }
-  ).sign(A.privateKey)
+  const tx1FillsBlockGasLimit = txFromTxData
+    .LegacyTransaction(
+      { gasLimit: gasLimit - 1, data, gasPrice: BigInt('1000000000') },
+      { common: customCommon }
+    )
+    .sign(A.privateKey)
+  const tx2ExceedsBlockGasLimit = txFromTxData
+    .LegacyTransaction(
+      { gasLimit: 21000, to: B.address, nonce: 1, gasPrice: BigInt('1000000000') },
+      { common: customCommon }
+    )
+    .sign(A.privateKey)
   await txPool.add(tx1FillsBlockGasLimit)
   await txPool.add(tx2ExceedsBlockGasLimit)
 

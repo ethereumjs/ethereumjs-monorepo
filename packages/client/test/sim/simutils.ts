@@ -1,6 +1,6 @@
 import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { type TransactionType, type TxData, type TxOptions, txFromTxData } from '@ethereumjs/tx'
 import {
   Address,
   BIGINT_1,
@@ -19,14 +19,13 @@ import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
 import qs from 'qs'
 
-import { EthereumClient } from '../../src/client'
+import { EthereumClient } from '../../src/client.js'
 import { Config } from '../../src/config.js'
-import { LevelDB } from '../../src/execution/level'
-import { RPCManager } from '../../src/rpc'
-import { Event } from '../../src/types'
+import { LevelDB } from '../../src/execution/level.js'
+import { RPCManager } from '../../src/rpc/index.js'
+import { Event } from '../../src/types.js'
 
 import type { Common } from '@ethereumjs/common'
-import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
@@ -279,18 +278,20 @@ export async function runTxHelper(
   const block = await client.request('eth_getBlockByNumber', ['latest', false])
   const baseFeePerGas = BigInt(block.result.baseFeePerGas) * 100n
   const maxPriorityFeePerGas = 100000000n
-  const tx = FeeMarketEIP1559Transaction.fromTxData(
-    {
-      data,
-      gasLimit: 1000000,
-      maxFeePerGas: baseFeePerGas + maxPriorityFeePerGas,
-      maxPriorityFeePerGas,
-      nonce,
-      to,
-      value,
-    },
-    { common }
-  ).sign(pkey)
+  const tx = txFromTxData
+    .FeeMarketEIP1559Transaction(
+      {
+        data,
+        gasLimit: 1000000,
+        maxFeePerGas: baseFeePerGas + maxPriorityFeePerGas,
+        maxPriorityFeePerGas,
+        nonce,
+        to,
+        value,
+      },
+      { common }
+    )
+    .sign(pkey)
 
   const res = await client.request('eth_sendRawTransaction', [bytesToHex(tx.serialize())], 2.0)
   let mined = false
@@ -346,7 +347,7 @@ export const runBlobTx = async (
   txData.gasLimit = BigInt(1000000)
   const nonce = await client.request('eth_getTransactionCount', [sender.toString(), 'latest'], 2.0)
   txData.nonce = BigInt(nonce.result)
-  const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
+  const blobTx = txFromTxData.BlobEIP4844Transaction(txData, opts).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
@@ -407,7 +408,7 @@ export const createBlobTxs = async (
       gas: undefined,
     }
 
-    const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
+    const blobTx = txFromTxData.BlobEIP4844Transaction(txData, opts).sign(pkey)
 
     const serializedWrapper = blobTx.serializeNetworkWrapper()
     await fs.appendFile('./blobs.txt', bytesToHex(serializedWrapper) + '\n')

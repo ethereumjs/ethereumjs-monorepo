@@ -1,7 +1,7 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { Address, bigIntToHex, bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -50,7 +50,7 @@ describe(method, () => {
 
     // construct block with tx
     const gasLimit = 2000000
-    const tx = LegacyTransaction.fromTxData({ gasLimit, data }, { common, freeze: false })
+    const tx = txFromTxData.LegacyTransaction({ gasLimit, data }, { common, freeze: false })
     tx.getSenderAddress = () => {
       return address
     }
@@ -82,7 +82,7 @@ describe(method, () => {
       data: `0x${funcHash}` as PrefixedHexString,
       gasLimit: bigIntToHex(BigInt(53000)),
     }
-    const estimateTx = LegacyTransaction.fromTxData(estimateTxData, { freeze: false })
+    const estimateTx = txFromTxData.LegacyTransaction(estimateTxData, { freeze: false })
     estimateTx.getSenderAddress = () => {
       return address
     }

@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -55,11 +55,13 @@ describe('VM events', () => {
       emitted = val
     })
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
-      gasLimit: 90000,
-      maxFeePerGas: 40000,
-      to: '0x1111111111111111111111111111111111111111',
-    }).sign(privKey)
+    const tx = txFromTxData
+      .FeeMarketEIP1559Transaction({
+        gasLimit: 90000,
+        maxFeePerGas: 40000,
+        to: '0x1111111111111111111111111111111111111111',
+      })
+      .sign(privKey)
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
@@ -75,12 +77,14 @@ describe('VM events', () => {
       emitted = val
     })
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
-      gasLimit: 90000,
-      maxFeePerGas: 40000,
-      to: '0x1111111111111111111111111111111111111111',
-      value: 1,
-    }).sign(privKey)
+    const tx = txFromTxData
+      .FeeMarketEIP1559Transaction({
+        gasLimit: 90000,
+        maxFeePerGas: 40000,
+        to: '0x1111111111111111111111111111111111111111',
+        value: 1,
+      })
+      .sign(privKey)
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
@@ -96,12 +100,14 @@ describe('VM events', () => {
       emitted = val
     })
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
-      gasLimit: 90000,
-      maxFeePerGas: 40000,
-      to: '0x1111111111111111111111111111111111111111',
-      value: 1,
-    }).sign(privKey)
+    const tx = txFromTxData
+      .FeeMarketEIP1559Transaction({
+        gasLimit: 90000,
+        maxFeePerGas: 40000,
+        to: '0x1111111111111111111111111111111111111111',
+        value: 1,
+      })
+      .sign(privKey)
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
@@ -118,12 +124,14 @@ describe('VM events', () => {
       emitted = val
     })
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
-      gasLimit: 90000,
-      maxFeePerGas: 40000,
-      to: '0x1111111111111111111111111111111111111111',
-      value: 1,
-    }).sign(privKey)
+    const tx = txFromTxData
+      .FeeMarketEIP1559Transaction({
+        gasLimit: 90000,
+        maxFeePerGas: 40000,
+        to: '0x1111111111111111111111111111111111111111',
+        value: 1,
+      })
+      .sign(privKey)
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
@@ -141,11 +149,13 @@ describe('VM events', () => {
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
     // This deploys a contract which has a single byte of code, 0x41.
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
-      gasLimit: 90000,
-      maxFeePerGas: 40000,
-      data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
-    }).sign(privKey)
+    const tx = txFromTxData
+      .FeeMarketEIP1559Transaction({
+        gasLimit: 90000,
+        maxFeePerGas: 40000,
+        data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
+      })
+      .sign(privKey)
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
@@ -163,11 +173,13 @@ describe('VM events', () => {
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
     // This deploys a contract which has a single byte of code, 0x41.
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
-      gasLimit: 90000,
-      maxFeePerGas: 40000,
-      data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
-    }).sign(privKey)
+    const tx = txFromTxData
+      .FeeMarketEIP1559Transaction({
+        gasLimit: 90000,
+        maxFeePerGas: 40000,
+        data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
+      })
+      .sign(privKey)
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 

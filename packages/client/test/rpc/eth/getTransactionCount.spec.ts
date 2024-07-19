@@ -2,7 +2,7 @@ import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { LegacyTransaction, createTxFromTxData } from '@ethereumjs/tx'
+import { createTxFromTxData, txFromTxData } from '@ethereumjs/tx'
 import { Account, Address, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -43,7 +43,7 @@ describe(method, () => {
     assert.equal(res.result, '0x0', 'should return the correct nonce (0)')
 
     // construct block with tx
-    const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
+    const tx = txFromTxData.LegacyTransaction({ gasLimit: 53000 }, { common, freeze: false })
     tx.getSenderAddress = () => {
       return address
     }

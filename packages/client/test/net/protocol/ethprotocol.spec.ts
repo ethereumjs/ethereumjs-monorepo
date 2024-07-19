@@ -1,6 +1,6 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction, TransactionType, createTxFromTxData } from '@ethereumjs/tx'
+import { TransactionType, createTxFromTxData, txFromTxData } from '@ethereumjs/tx'
 import { Address, bigIntToBytes, bytesToBigInt, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
@@ -122,7 +122,7 @@ describe('[EthProtocol]', () => {
     const p = new EthProtocol({ config, chain })
 
     chain.config.chainCommon.setHardfork(Hardfork.London)
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = txFromTxData.FeeMarketEIP1559Transaction(
       {
         maxFeePerGas: 10,
         maxPriorityFeePerGas: 8,

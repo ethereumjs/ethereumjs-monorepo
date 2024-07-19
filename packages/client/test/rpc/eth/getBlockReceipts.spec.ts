@@ -1,9 +1,5 @@
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import {
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-} from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import {
   bigIntToHex,
   blobsToCommitments,
@@ -32,23 +28,27 @@ describe(method, () => {
     const { chain, common, execution, server } = await setupChain(pow, 'pow')
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = LegacyTransaction.fromTxData(
-      {
-        gasLimit: 2000000,
-        gasPrice: 100,
-        to: '0x0000000000000000000000000000000000000000',
-      },
-      { common }
-    ).sign(dummy.privKey)
-    const tx2 = LegacyTransaction.fromTxData(
-      {
-        gasLimit: 2000000,
-        gasPrice: 100,
-        to: '0x0000000000000000000000000000000000000000',
-        nonce: 1,
-      },
-      { common }
-    ).sign(dummy.privKey)
+    const tx = txFromTxData
+      .LegacyTransaction(
+        {
+          gasLimit: 2000000,
+          gasPrice: 100,
+          to: '0x0000000000000000000000000000000000000000',
+        },
+        { common }
+      )
+      .sign(dummy.privKey)
+    const tx2 = txFromTxData
+      .LegacyTransaction(
+        {
+          gasLimit: 2000000,
+          gasPrice: 100,
+          to: '0x0000000000000000000000000000000000000000',
+          nonce: 1,
+        },
+        { common }
+      )
+      .sign(dummy.privKey)
     const block = await runBlockWithTxs(chain, execution, [tx, tx2])
     const res0 = await rpc.request(method, [bytesToHex(tx.hash())])
     const res1 = await rpc.request(method, [bytesToHex(tx2.hash())])
@@ -63,25 +63,29 @@ describe(method, () => {
     )
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
-      {
-        gasLimit: 2000000,
-        maxFeePerGas: 975000000,
-        maxPriorityFeePerGas: 10,
-        to: '0x1230000000000000000000000000000000000321',
-      },
-      { common }
-    ).sign(dummy.privKey)
-    const tx1 = FeeMarketEIP1559Transaction.fromTxData(
-      {
-        gasLimit: 2000000,
-        maxFeePerGas: 975000000,
-        maxPriorityFeePerGas: 10,
-        to: '0x1230000000000000000000000000000000000321',
-        nonce: 1,
-      },
-      { common }
-    ).sign(dummy.privKey)
+    const tx = txFromTxData
+      .FeeMarketEIP1559Transaction(
+        {
+          gasLimit: 2000000,
+          maxFeePerGas: 975000000,
+          maxPriorityFeePerGas: 10,
+          to: '0x1230000000000000000000000000000000000321',
+        },
+        { common }
+      )
+      .sign(dummy.privKey)
+    const tx1 = txFromTxData
+      .FeeMarketEIP1559Transaction(
+        {
+          gasLimit: 2000000,
+          maxFeePerGas: 975000000,
+          maxPriorityFeePerGas: 10,
+          to: '0x1230000000000000000000000000000000000321',
+          nonce: 1,
+        },
+        { common }
+      )
+      .sign(dummy.privKey)
 
     const block = await runBlockWithTxs(chain, execution, [tx, tx1])
 
@@ -128,21 +132,23 @@ describe(method, () => {
       const commitments = blobsToCommitments(kzg, blobs)
       const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
       const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
-      const tx = BlobEIP4844Transaction.fromTxData(
-        {
-          blobVersionedHashes,
-          blobs,
-          kzgCommitments: commitments,
-          kzgProofs: proofs,
-          maxFeePerBlobGas: 1000000n,
-          gasLimit: 0xffffn,
-          maxFeePerGas: 10000000n,
-          maxPriorityFeePerGas: 1000000n,
-          to: randomBytes(20),
-          nonce: 0n,
-        },
-        { common }
-      ).sign(dummy.privKey)
+      const tx = txFromTxData
+        .BlobEIP4844Transaction(
+          {
+            blobVersionedHashes,
+            blobs,
+            kzgCommitments: commitments,
+            kzgProofs: proofs,
+            maxFeePerBlobGas: 1000000n,
+            gasLimit: 0xffffn,
+            maxFeePerGas: 10000000n,
+            maxPriorityFeePerGas: 1000000n,
+            to: randomBytes(20),
+            nonce: 0n,
+          },
+          { common }
+        )
+        .sign(dummy.privKey)
 
       const block = await runBlockWithTxs(chain, execution, [tx], true)
 

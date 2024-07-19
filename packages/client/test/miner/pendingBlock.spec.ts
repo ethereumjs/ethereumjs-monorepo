@@ -6,11 +6,7 @@ import {
   createCommonFromGethGenesis,
 } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import {
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-} from '@ethereumjs/tx'
+import { txFromTxData } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -120,7 +116,7 @@ describe('[PendingBlock]', async () => {
       to: to.address,
       value,
     }
-    const tx = LegacyTransaction.fromTxData(txData, { common })
+    const tx = txFromTxData.LegacyTransaction(txData, { common })
     const signedTx = tx.sign(from.privateKey)
     return signedTx
   }
@@ -239,15 +235,17 @@ describe('[PendingBlock]', async () => {
     await txPool.add(txA022)
 
     // This tx will not be added since its too big to fit
-    const txA03 = LegacyTransaction.fromTxData(
-      {
-        data: '0xFE', // INVALID opcode, uses all gas
-        gasLimit: 10000000,
-        gasPrice: 1000000000,
-        nonce: 2,
-      },
-      { common }
-    ).sign(A.privateKey)
+    const txA03 = txFromTxData
+      .LegacyTransaction(
+        {
+          data: '0xFE', // INVALID opcode, uses all gas
+          gasLimit: 10000000,
+          gasPrice: 1000000000,
+          nonce: 2,
+        },
+        { common }
+      )
+      .sign(A.privateKey)
     await txPool.add(txA03)
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     await setBalance(vm, A.address, BigInt(5000000000000000))
@@ -283,15 +281,17 @@ describe('[PendingBlock]', async () => {
     await setBalance(vm, A.address, BigInt(5000000000000000))
     await txPool.add(txA01)
     await txPool.add(txA02)
-    const txA03 = LegacyTransaction.fromTxData(
-      {
-        data: '0xFE', // INVALID opcode, uses all gas
-        gasLimit: 10000000,
-        gasPrice: 1000000000,
-        nonce: 2,
-      },
-      { common }
-    ).sign(A.privateKey)
+    const txA03 = txFromTxData
+      .LegacyTransaction(
+        {
+          data: '0xFE', // INVALID opcode, uses all gas
+          gasLimit: 10000000,
+          gasPrice: 1000000000,
+          nonce: 2,
+        },
+        { common }
+      )
+      .sign(A.privateKey)
     await txPool.add(txA03)
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     await setBalance(vm, A.address, BigInt(5000000000000000))
@@ -378,39 +378,43 @@ describe('[PendingBlock]', async () => {
 
     // Create 3 txs with 2 blobs each so that only 2 of them can be included in a build
     for (let x = 0; x <= 2; x++) {
-      const txA01 = BlobEIP4844Transaction.fromTxData(
-        {
-          blobVersionedHashes: [
-            ...blobVersionedHashes,
-            ...blobVersionedHashes,
-            ...blobVersionedHashes,
-          ],
-          blobs: [...blobs, ...blobs, ...blobs],
-          kzgCommitments: [...commitments, ...commitments, ...commitments],
-          kzgProofs: [...proofs, ...proofs, ...proofs],
-          maxFeePerBlobGas: 100000000n,
-          gasLimit: 0xffffffn,
-          maxFeePerGas: 1000000000n,
-          maxPriorityFeePerGas: 100000000n,
-          to: randomBytes(20),
-          nonce: BigInt(x),
-        },
-        { common }
-      ).sign(A.privateKey)
+      const txA01 = txFromTxData
+        .BlobEIP4844Transaction(
+          {
+            blobVersionedHashes: [
+              ...blobVersionedHashes,
+              ...blobVersionedHashes,
+              ...blobVersionedHashes,
+            ],
+            blobs: [...blobs, ...blobs, ...blobs],
+            kzgCommitments: [...commitments, ...commitments, ...commitments],
+            kzgProofs: [...proofs, ...proofs, ...proofs],
+            maxFeePerBlobGas: 100000000n,
+            gasLimit: 0xffffffn,
+            maxFeePerGas: 1000000000n,
+            maxPriorityFeePerGas: 100000000n,
+            to: randomBytes(20),
+            nonce: BigInt(x),
+          },
+          { common }
+        )
+        .sign(A.privateKey)
       await txPool.add(txA01)
     }
 
     // Add one other normal tx for nonce 3 which should also be not included in the build
-    const txNorm = FeeMarketEIP1559Transaction.fromTxData(
-      {
-        gasLimit: 0xffffffn,
-        maxFeePerGas: 1000000000n,
-        maxPriorityFeePerGas: 100000000n,
-        to: randomBytes(20),
-        nonce: BigInt(3),
-      },
-      { common }
-    ).sign(A.privateKey)
+    const txNorm = txFromTxData
+      .FeeMarketEIP1559Transaction(
+        {
+          gasLimit: 0xffffffn,
+          maxFeePerGas: 1000000000n,
+          maxPriorityFeePerGas: 100000000n,
+          to: randomBytes(20),
+          nonce: BigInt(3),
+        },
+        { common }
+      )
+      .sign(A.privateKey)
     await txPool.add(txNorm)
 
     assert.equal(txPool.txsInPool, 4, '4 txs should still be in the pool')
@@ -456,20 +460,22 @@ describe('[PendingBlock]', async () => {
     const proofs = blobsToProofs(kzg, blobs, commitments)
 
     // create a tx with missing blob data which should be excluded from the build
-    const missingBlobTx = BlobEIP4844Transaction.fromTxData(
-      {
-        blobVersionedHashes,
-        kzgCommitments: commitments,
-        kzgProofs: proofs,
-        maxFeePerBlobGas: 100000000n,
-        gasLimit: 0xffffffn,
-        maxFeePerGas: 1000000000n,
-        maxPriorityFeePerGas: 100000000n,
-        to: randomBytes(20),
-        nonce: BigInt(0),
-      },
-      { common }
-    ).sign(A.privateKey)
+    const missingBlobTx = txFromTxData
+      .BlobEIP4844Transaction(
+        {
+          blobVersionedHashes,
+          kzgCommitments: commitments,
+          kzgProofs: proofs,
+          maxFeePerBlobGas: 100000000n,
+          gasLimit: 0xffffffn,
+          maxFeePerGas: 1000000000n,
+          maxPriorityFeePerGas: 100000000n,
+          to: randomBytes(20),
+          nonce: BigInt(0),
+        },
+        { common }
+      )
+      .sign(A.privateKey)
     await txPool.add(missingBlobTx)
 
     assert.equal(txPool.txsInPool, 1, '1 txs should still be in the pool')
