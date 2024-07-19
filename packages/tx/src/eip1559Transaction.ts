@@ -1,4 +1,3 @@
-import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
   BIGINT_27,
@@ -6,10 +5,7 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  bytesToHex,
-  equalsBytes,
   toBytes,
-  validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
 import { BaseTransaction } from './baseTransaction.js'
@@ -17,8 +13,9 @@ import * as EIP1559 from './capabilities/eip1559.js'
 import * as EIP2718 from './capabilities/eip2718.js'
 import * as EIP2930 from './capabilities/eip2930.js'
 import * as Legacy from './capabilities/legacy.js'
+import { txFromTxData } from './constructors.js'
 import { TransactionType } from './types.js'
-import { AccessLists, txTypeBytes } from './util.js'
+import { AccessLists } from './util.js'
 
 import type {
   AccessList,
@@ -48,98 +45,6 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
   public readonly maxFeePerGas: bigint
 
   public readonly common: Common
-
-  /**
-   * Instantiate a transaction from a data dictionary.
-   *
-   * Format: { chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-   * accessList, v, r, s }
-   *
-   * Notes:
-   * - `chainId` will be set automatically if not provided
-   * - All parameters are optional and have some basic default values
-   */
-  public static fromTxData(txData: TxData, opts: TxOptions = {}) {
-    return new FeeMarketEIP1559Transaction(txData, opts)
-  }
-
-  /**
-   * Instantiate a transaction from the serialized tx.
-   *
-   * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-   * accessList, signatureYParity, signatureR, signatureS])`
-   */
-  public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
-    if (
-      equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.FeeMarketEIP1559)) ===
-      false
-    ) {
-      throw new Error(
-        `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${
-          TransactionType.FeeMarketEIP1559
-        }, received: ${bytesToHex(serialized.subarray(0, 1))}`
-      )
-    }
-
-    const values = RLP.decode(serialized.subarray(1))
-
-    if (!Array.isArray(values)) {
-      throw new Error('Invalid serialized tx input: must be array')
-    }
-
-    return FeeMarketEIP1559Transaction.fromValuesArray(values as TxValuesArray, opts)
-  }
-
-  /**
-   * Create a transaction from a values array.
-   *
-   * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-   * accessList, signatureYParity, signatureR, signatureS]`
-   */
-  public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
-    if (values.length !== 9 && values.length !== 12) {
-      throw new Error(
-        'Invalid EIP-1559 transaction. Only expecting 9 values (for unsigned tx) or 12 values (for signed tx).'
-      )
-    }
-
-    const [
-      chainId,
-      nonce,
-      maxPriorityFeePerGas,
-      maxFeePerGas,
-      gasLimit,
-      to,
-      value,
-      data,
-      accessList,
-      v,
-      r,
-      s,
-    ] = values
-
-    this._validateNotArray({ chainId, v })
-    validateNoLeadingZeroes({ nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, value, v, r, s })
-
-    return new FeeMarketEIP1559Transaction(
-      {
-        chainId: bytesToBigInt(chainId),
-        nonce,
-        maxPriorityFeePerGas,
-        maxFeePerGas,
-        gasLimit,
-        to,
-        value,
-        data,
-        accessList: accessList ?? [],
-        v: v !== undefined ? bytesToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Uint8Array)
-        r,
-        s,
-      },
-      opts
-    )
-  }
-
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
@@ -324,7 +229,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
 
-    return FeeMarketEIP1559Transaction.fromTxData(
+    return txFromTxData.FeeMarketEIP1559Transaction(
       {
         chainId: this.chainId,
         nonce: this.nonce,

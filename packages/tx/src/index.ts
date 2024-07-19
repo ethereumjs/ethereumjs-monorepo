@@ -1,3 +1,4 @@
+export * from './constructors.js'
 export { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
 export { AccessListEIP2930Transaction } from './eip2930Transaction.js'
 export { BlobEIP4844Transaction } from './eip4844Transaction.js'
