@@ -1,10 +1,4 @@
-import {
-  createBlockFromValuesArray,
-  createHeaderFromValuesArray,
-  getDifficulty,
-  valuesArrayToHeaderData,
-} from '@ethereumjs/block'
-import { Hardfork } from '@ethereumjs/common'
+import { createBlockFromValuesArray, createHeaderFromValuesArray } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BlobEIP4844Transaction,
@@ -43,7 +37,7 @@ import type {
 } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
 
 interface EthProtocolOptions extends ProtocolOptions {
@@ -107,7 +101,6 @@ function exhaustiveTypeGuard(_value: never, errorMsg: string): never {
 export class EthProtocol extends Protocol {
   private chain: Chain
   private nextReqId = BIGINT_0
-  private chainTTD?: BigIntLike
 
   /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [
@@ -174,15 +167,10 @@ export class EthProtocol extends Protocol {
       decode: ([reqId, headers]: [Uint8Array, BlockHeaderBytes[]]) => [
         bytesToBigInt(reqId),
         headers.map((h) => {
-          const headerData = valuesArrayToHeaderData(h)
-          const difficulty = getDifficulty(headerData)!
           const common = this.config.chainCommon
           // If this is a post merge block, we can still send chainTTD since it would still lead
           // to correct hardfork choice
-          const header = createHeaderFromValuesArray(
-            h,
-            difficulty > 0 ? { common, setHardfork: true } : { common, setHardfork: this.chainTTD },
-          )
+          const header = createHeaderFromValuesArray(h, { common, setHardfork: true })
           return header
         }),
       ],
@@ -368,10 +356,6 @@ export class EthProtocol extends Protocol {
     super(options)
 
     this.chain = options.chain
-    const chainTTD = this.config.chainCommon.hardforkTTD(Hardfork.Paris)
-    if (chainTTD !== null && chainTTD !== undefined) {
-      this.chainTTD = chainTTD
-    }
   }
 
   /**
