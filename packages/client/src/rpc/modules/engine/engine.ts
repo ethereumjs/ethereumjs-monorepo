@@ -1,6 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
 import {
-  BIGINT_0,
   BIGINT_1,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -36,7 +35,6 @@ import {
   validHash,
   validate4844BlobVersionedHashes,
   validateHardforkRange,
-  validateTerminalBlock,
 } from './util/index.js'
 import {
   executionPayloadV1FieldValidators,
@@ -441,23 +439,6 @@ export class Engine {
         (await this.skeleton.getBlockByHash(hexToBytes(parentHash as PrefixedHexString), true)) ??
         this.remoteBlocks.get(parentHash.slice(2)) ??
         (await this.chain.getBlock(hexToBytes(parentHash as PrefixedHexString)))
-
-      // Validations with parent
-      if (!parent.common.gteHardfork(Hardfork.Paris)) {
-        const validTerminalBlock = await validateTerminalBlock(parent, this.chain)
-        if (!validTerminalBlock) {
-          const response = {
-            status: Status.INVALID,
-            validationError: null,
-            latestValidHash: bytesToHex(zeros(32)),
-          }
-          this.invalidBlocks.set(
-            blockHash.slice(2),
-            new Error(response.validationError ?? 'Terminal block validation failed'),
-          )
-          return response
-        }
-      }
 
       /**
        * validate 4844 transactions and fields as these validations generally happen on putBlocks
@@ -1010,27 +991,6 @@ export class Engine {
     }
 
     if (reorged) await this.service.beaconSync?.reorged(headBlock)
-
-    /**
-     * Terminal block validation
-     */
-    // Only validate this as terminal block if this block's difficulty is non-zero,
-    // else this is a PoS block but its hardfork could be indeterminable if the skeleton
-    // is not yet connected.
-    if (!headBlock.common.gteHardfork(Hardfork.Paris) && headBlock.header.difficulty > BIGINT_0) {
-      const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
-      if (!validTerminalBlock) {
-        const response = {
-          payloadStatus: {
-            status: Status.INVALID,
-            validationError: 'Invalid terminal block',
-            latestValidHash: bytesToHex(zeros(32)),
-          },
-          payloadId: null,
-        }
-        return response
-      }
-    }
 
     /**
      * Check execution status
