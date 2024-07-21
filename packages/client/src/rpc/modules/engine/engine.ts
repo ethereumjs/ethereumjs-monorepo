@@ -68,7 +68,6 @@ import type {
   PayloadAttributesV1,
   PayloadAttributesV2,
   PayloadAttributesV3,
-  TransitionConfigurationV1,
 } from './types.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -289,26 +288,6 @@ export class Engine {
       middleware(callWithStackTrace(this.getPayloadV4.bind(this), this._rpcDebug), 1, [
         [validators.bytes8],
       ]),
-      () => this.connectionManager.updateStatus(),
-    )
-
-    /**
-     * exchangeTransitionConfiguration
-     */
-    this.exchangeTransitionConfigurationV1 = cmMiddleware(
-      middleware(
-        callWithStackTrace(this.exchangeTransitionConfigurationV1.bind(this), this._rpcDebug),
-        1,
-        [
-          [
-            validators.object({
-              terminalTotalDifficulty: validators.uint256,
-              terminalBlockHash: validators.bytes32,
-              terminalBlockNumber: validators.uint64,
-            }),
-          ],
-        ],
-      ),
       () => this.connectionManager.updateStatus(),
     )
 
@@ -1484,41 +1463,6 @@ export class Engine {
 
   async getPayloadV4(params: [Bytes8]) {
     return this.getPayload(params, 4)
-  }
-  /**
-   * Compare transition configuration parameters.
-   *
-   * V1 (Paris HF), see:
-   * https://github.com/ethereum/execution-apis/blob/main/src/engine/paris.md#engine_exchangetransitionconfigurationv1
-   *
-   * Note: This method is deprecated starting with the Cancun HF
-   *
-   * @param params An array of one parameter:
-   *   1. transitionConfiguration: Object - instance of {@link TransitionConfigurationV1}
-   * @returns Instance of {@link TransitionConfigurationV1} or an error
-   */
-  async exchangeTransitionConfigurationV1(
-    params: [TransitionConfigurationV1],
-  ): Promise<TransitionConfigurationV1> {
-    const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
-    const ttd = this.chain.config.chainCommon.hardforkTTD(Hardfork.Paris)
-    if (ttd === undefined || ttd === null) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: 'terminalTotalDifficulty not set internally',
-      }
-    }
-    if (ttd !== BigInt(terminalTotalDifficulty)) {
-      throw {
-        code: INVALID_PARAMS,
-        message: `terminalTotalDifficulty set to ${ttd}, received ${parseInt(
-          terminalTotalDifficulty,
-        )}`,
-      }
-    }
-    // Note: our client does not yet support block whitelisting (terminalBlockHash/terminalBlockNumber)
-    // since we are not yet fast enough to run along tip-of-chain mainnet execution
-    return { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber }
   }
 
   /**
