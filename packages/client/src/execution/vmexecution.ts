@@ -1049,7 +1049,7 @@ export class VMExecution extends Execution {
         // we are skipping header validation because the block has been picked from the
         // blockchain and header should have already been validated while putBlock
         const beforeTS = Date.now()
-        const res = await runBlock(this.vm, {
+        const res = await runBlock(vm, {
           block,
           root,
           clearCache: false,
