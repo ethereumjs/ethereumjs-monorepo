@@ -318,6 +318,10 @@ For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethe
 
 This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
 
+### EIP-6110/EIP-7002 Requests Support
+
+This libary supports executing and building blocks including `EIP-6110` deposit requests as well as `EIP-7002` withdrawal requests starting with `v8.1.0`.
+
 #### Initialization
 
 To run VM/EVM related EIP-4844 functionality you have to activate the EIP in the associated `@ethereumjs/common` library:
