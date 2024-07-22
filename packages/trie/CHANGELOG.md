@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## - 2024-07-23
 
+### Other Features
+
+- Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
 ## 6.2.0 - 2024-03-18
 
 In the hope that you do not have yet integrated: we needed to remove the new more modern async trie iteration with web streams functionality (new `createAsyncReadStream()` method) introduced with the `v6.1.0` release - see PR [#3231](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3231) for context - since the related Node.js web streams API import caused relatively severe problems for all upstream libraries when being used in the browser.

@@ -22,6 +22,10 @@ const account = Account.fromPartialAccountData({
 console.log(`Partial account with nonce=${account.nonce} and balance=${account.balance} created`)
 ```
 
+### Other Features
+
+- Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
 ## 9.0.3 - 2024-03-18
 
 - Allow optional `trustedSetupPath` for the `initKZG()` method, PR [#3296](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3296)
