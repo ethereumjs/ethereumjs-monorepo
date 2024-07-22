@@ -390,7 +390,7 @@ export class BlockBuilder {
       const parentBeaconBlockRootBuf =
         toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
 
-      await accumulateParentBeaconBlockRoot.bind(this.vm)(parentBeaconBlockRootBuf, timestampBigInt)
+      await accumulateParentBeaconBlockRoot(this.vm, parentBeaconBlockRootBuf, timestampBigInt)
     }
     if (this.vm.common.isActivatedEIP(2935)) {
       if (!this.checkpointed) {
@@ -403,7 +403,7 @@ export class BlockBuilder {
       const numberBigInt = toType(number ?? 0, TypeOutput.BigInt)
       const parentHashSanitized = toType(parentHash, TypeOutput.Uint8Array) ?? zeros(32)
 
-      await accumulateParentBlockHash.bind(this.vm)(numberBigInt, parentHashSanitized)
+      await accumulateParentBlockHash(this.vm, numberBigInt, parentHashSanitized)
     }
   }
 }

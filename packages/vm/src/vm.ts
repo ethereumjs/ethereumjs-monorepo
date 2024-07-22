@@ -5,10 +5,9 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, AsyncEventEmitter, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import { buildBlock } from './buildBlock.js'
-import { runBlock } from './runBlock.js'
 
 import type { BlockBuilder } from './buildBlock.js'
-import type { BuildBlockOpts, RunBlockOpts, RunBlockResult, VMEvents, VMOpts } from './types.js'
+import type { BuildBlockOpts, VMEvents, VMOpts } from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface, EVMPerformanceLogOutput } from '@ethereumjs/evm'
@@ -170,20 +169,6 @@ export class VM {
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
-  }
-
-  /**
-   * Processes the `block` running all of the transactions it contains and updating the miner's account
-   *
-   * This method modifies the state. If `generate` is `true`, the state modifications will be
-   * reverted if an exception is raised. If it's `false`, it won't revert if the block's header is
-   * invalid. If an error is thrown from an event handler, the state may or may not be reverted.
-   *
-   * @param {RunBlockOpts} opts - Default values for options:
-   *  - `generate`: false
-   */
-  async runBlock(opts: RunBlockOpts): Promise<RunBlockResult> {
-    return runBlock.bind(this)(opts)
   }
 
   /**
