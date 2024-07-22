@@ -107,9 +107,9 @@ export class EVM implements EVMInterface {
   protected readonly _customOpcodes?: CustomOpcode[]
   protected readonly _customPrecompiles?: CustomPrecompile[]
 
-  protected _handlers!: Map<number, OpHandler>
+  protected _handlers!: OpHandler[]
 
-  protected _dynamicGasHandlers!: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler>
+  protected _dynamicGasHandlers!: (AsyncDynamicGasHandler | SyncDynamicGasHandler)[]
 
   protected _opcodeMap!: OpcodeMap
 
