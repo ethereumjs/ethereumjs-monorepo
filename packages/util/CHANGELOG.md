@@ -6,7 +6,40 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 9.0.3 - 2024-03-05
+## 9.1.0 - 2024-07-23
+
+### Support for Partial Accounts
+
+For Verkle or other contexts it can be useful to create partial accounts not containing all the account parameters. This is now supported starting with this release, see PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269):
+
+```ts
+import { Account } from '@ethereumjs/util'
+
+const account = Account.fromPartialAccountData({
+  nonce: '0x02',
+  balance: '0x0384',
+})
+console.log(`Partial account with nonce=${account.nonce} and balance=${account.balance} created`)
+```
+
+### New `requests` Module
+
+This release introduces a new `requests` module (see PR [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372)) with various type and an abstract base class for [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) general purpose execution layer requests to the CL (Prague hardfork) as well as concrete implementations for the currently supported request types:
+
+- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110): `DepositRequest` (Prague Harfork)
+- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002): `WithdrawawlRequest` (Prague Hardfork)
+
+These request types are mainly used within the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library where applied usage instructions are provided in the README.
+
+### Verkle Updates
+
+- Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
+
+### Other Features
+
+- Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+## 9.0.3 - 2024-03-18
 
 - Allow optional `trustedSetupPath` for the `initKZG()` method, PR [#3296](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3296)
 
