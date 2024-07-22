@@ -4,6 +4,7 @@ import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
+import { runTx } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
