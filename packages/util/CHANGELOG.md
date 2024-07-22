@@ -6,7 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## - 2024-07-23
+## 9.1.0 - 2024-07-23
+
+### Support for Partial Accounts
+
+For Verkle or other contexts it can be useful to create partial accounts not containing all the account parameters. This is now supported starting with this release, see PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269):
+
+```ts
+import { Account } from '@ethereumjs/util'
+
+const account = Account.fromPartialAccountData({
+  nonce: '0x02',
+  balance: '0x0384',
+})
+console.log(`Partial account with nonce=${account.nonce} and balance=${account.balance} created`)
+```
 
 ## 9.0.3 - 2024-03-18
 

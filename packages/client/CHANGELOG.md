@@ -8,6 +8,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## - 2024-07-23
 
+### Verkle Updates
+
+- Fixes for Kaustinen4 support, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- CLI option `--ignoreStatelessInvalidExecs` for Verkle debugging, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+
+### Features
+
+- New `--startExectionFrom` and `--startExecution` CLI options, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+
 ## 0.10.1 - 2024-03-18
 
 This is mainly a maintenance release coming with a few internal changes and minor bug fixes, single user-focused addition is the support for the `eth_feeHistory` RPC call.

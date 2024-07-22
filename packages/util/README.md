@@ -45,6 +45,20 @@ const account = Account.fromAccountData({
 console.log(`Account with nonce=${account.nonce} and balance=${account.balance} created`)
 ```
 
+For Verkle or other contexts it can be useful to create partial accounts not containing all the account parameters. This is supported starting with v9.1.0:
+
+```ts
+// ./examples/accountPartial.ts
+
+import { Account } from '@ethereumjs/util'
+
+const account = Account.fromPartialAccountData({
+  nonce: '0x02',
+  balance: '0x0384',
+})
+console.log(`Partial account with nonce=${account.nonce} and balance=${account.balance} created`)
+```
+
 ### Module: [address](src/address.ts)
 
 Class representing an Ethereum `Address` with instantiation helpers and validation methods.

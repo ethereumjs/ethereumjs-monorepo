@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## - 2024-07-23
+## 5.3.0 - 2024-07-23
+
+### Verkle Updates
+
+- Fixes for Kaustinen4 support, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+
+### Features
+
+- New `Block.toExecutionPayload()` method to map to the execution payload structore from the beacon chain, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
 
 ## 5.2.0 - 2024-03-18
 
