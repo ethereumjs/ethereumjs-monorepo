@@ -13,7 +13,7 @@ import {
   toType,
   zeros,
 } from '@ethereumjs/util'
-import { BuildStatus } from '@ethereumjs/vm'
+import { BuildStatus, buildBlock } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { Config } from '../config.js'
@@ -176,7 +176,7 @@ export class PendingBlock {
     // is based on the parent block's state
     await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
 
-    const builder = await vm.buildBlock({
+    const builder = await buildBlock(vm, {
       parentBlock,
       // excessBlobGas will be correctly calculated and set in buildBlock constructor,
       // unless already explicity provided in headerData

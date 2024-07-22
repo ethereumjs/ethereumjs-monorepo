@@ -5,7 +5,7 @@ import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereum
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { runBlock } from '../../../src/index.js'
+import { buildBlock, runBlock } from '../../../src/index.js'
 import { setupVM } from '../utils.js'
 
 import type { DepositRequest } from '../../../../util/src/requests.js'
@@ -90,7 +90,7 @@ describe('EIP-7685 buildBlock tests', () => {
     )
     const block = createBlockFromBlockData({}, { common })
     ;(vm.blockchain as any)['dbManager']['getHeader'] = () => block.header
-    const blockBuilder = await vm.buildBlock({ parentBlock: block })
+    const blockBuilder = await buildBlock(vm, { parentBlock: block })
     await blockBuilder.addTransaction(depositTx)
     const res = await blockBuilder.build()
     assert.equal(res.requests?.length, 1)

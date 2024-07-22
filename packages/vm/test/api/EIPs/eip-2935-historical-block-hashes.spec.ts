@@ -19,7 +19,7 @@ import { assert, describe, it } from 'vitest'
 
 import { bytesToBigInt } from '../../../../util/src/bytes.js'
 import { BIGINT_0 } from '../../../../util/src/constants.js'
-import { VM, runBlock, runTx } from '../../../src/index.js'
+import { VM, buildBlock, runBlock, runTx } from '../../../src/index.js'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -180,7 +180,7 @@ describe('EIP 2935: historical block hashes', () => {
       })
       const genesis = await vm.blockchain.getBlock(0)
       const block = await (
-        await vm.buildBlock({
+        await buildBlock(vm, {
           parentBlock: genesis,
           blockOpts: {
             putBlockIntoBlockchain: false,
@@ -215,7 +215,7 @@ describe('EIP 2935: historical block hashes', () => {
       let lastBlock = await vm.blockchain.getBlock(0)
       for (let i = 1; i <= blocksToBuild; i++) {
         lastBlock = await (
-          await vm.buildBlock({
+          await buildBlock(vm, {
             parentBlock: lastBlock,
             blockOpts: {
               putBlockIntoBlockchain: false,

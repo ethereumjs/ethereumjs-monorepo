@@ -17,7 +17,7 @@ import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
-import { VM, runBlock } from '../../../src/index.js'
+import { VM, buildBlock, runBlock } from '../../../src/index.js'
 import { setBalance } from '../utils.js'
 
 const pk = hexToBytes(`0x${'20'.repeat(32)}`)
@@ -48,7 +48,7 @@ describe('EIP4844 tests', () => {
     await setBalance(vm, address, 14680063125000000000n)
     const vmCopy = await vm.shallowCopy()
 
-    const blockBuilder = await vm.buildBlock({
+    const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       withdrawals: [],
       blockOpts: {

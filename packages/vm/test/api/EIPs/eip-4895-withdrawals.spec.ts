@@ -17,7 +17,7 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/withdrawals.json'
-import { VM, runBlock } from '../../../src/index.js'
+import { VM, buildBlock, runBlock } from '../../../src/index.js'
 
 import type { Block } from '@ethereumjs/block'
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
@@ -217,7 +217,7 @@ describe('EIP4895 tests', () => {
     )
     const td = await blockchain.getTotalDifficulty(genesisBlock.hash())
 
-    const blockBuilder = await vm.buildBlock({
+    const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       withdrawals,
       blockOpts: {

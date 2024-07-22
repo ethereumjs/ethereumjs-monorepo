@@ -10,7 +10,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
-import { VM, runBlock } from '../../../src/index.js'
+import { VM, buildBlock, runBlock } from '../../../src/index.js'
 import { setupVM } from '../utils.js'
 
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
@@ -94,7 +94,7 @@ describe('EIP 7685 buildBlock tests', () => {
     )
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
-    const blockBuilder = await vm.buildBlock({
+    const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
     })

@@ -4,10 +4,7 @@ import { createEVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, AsyncEventEmitter, unprefixedHexToBytes } from '@ethereumjs/util'
 
-import { buildBlock } from './buildBlock.js'
-
-import type { BlockBuilder } from './buildBlock.js'
-import type { BuildBlockOpts, VMEvents, VMOpts } from './types.js'
+import type { VMEvents, VMOpts } from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface, EVMPerformanceLogOutput } from '@ethereumjs/evm'
@@ -169,24 +166,6 @@ export class VM {
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
-  }
-
-  /**
-   * Build a block on top of the current state
-   * by adding one transaction at a time.
-   *
-   * Creates a checkpoint on the StateManager and modifies the state
-   * as transactions are run. The checkpoint is committed on {@link BlockBuilder.build}
-   * or discarded with {@link BlockBuilder.revert}.
-   *
-   * @param {BuildBlockOpts} opts
-   * @returns An instance of {@link BlockBuilder} with methods:
-   * - {@link BlockBuilder.addTransaction}
-   * - {@link BlockBuilder.build}
-   * - {@link BlockBuilder.revert}
-   */
-  async buildBlock(opts: BuildBlockOpts): Promise<BlockBuilder> {
-    return buildBlock.bind(this)(opts)
   }
 
   /**

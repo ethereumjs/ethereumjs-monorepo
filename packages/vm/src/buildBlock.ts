@@ -408,8 +408,23 @@ export class BlockBuilder {
   }
 }
 
-export async function buildBlock(this: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
-  const blockBuilder = new BlockBuilder(this, opts)
+/**
+ * Build a block on top of the current state
+ * by adding one transaction at a time.
+ *
+ * Creates a checkpoint on the StateManager and modifies the state
+ * as transactions are run. The checkpoint is committed on {@link BlockBuilder.build}
+ * or discarded with {@link BlockBuilder.revert}.
+ *
+ * @param {VM} vm
+ * @param {BuildBlockOpts} opts
+ * @returns An instance of {@link BlockBuilder} with methods:
+ * - {@link BlockBuilder.addTransaction}
+ * - {@link BlockBuilder.build}
+ * - {@link BlockBuilder.revert}
+ */
+export async function buildBlock(vm: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
+  const blockBuilder = new BlockBuilder(vm, opts)
   await blockBuilder.initState()
   return blockBuilder
 }

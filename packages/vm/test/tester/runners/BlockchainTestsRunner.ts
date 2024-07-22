@@ -16,7 +16,7 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import { VM, runBlock } from '../../../src/index.js'
+import { VM, buildBlock, runBlock } from '../../../src/index.js'
 import { setupPreConditions, verifyPostConditions } from '../../util.js'
 
 import type { Block } from '@ethereumjs/block'
@@ -163,7 +163,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       // To run this field we try to import them on the current state.
       if (raw.transactionSequence !== undefined) {
         const parentBlock = await vm.blockchain.getIteratorHead()
-        const blockBuilder = await vm.buildBlock({
+        const blockBuilder = await buildBlock(vm, {
           parentBlock,
           blockOpts: { calcDifficultyFromHeader: parentBlock.header },
         })
