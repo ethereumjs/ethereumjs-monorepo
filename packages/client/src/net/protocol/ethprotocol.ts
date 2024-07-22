@@ -168,8 +168,6 @@ export class EthProtocol extends Protocol {
         bytesToBigInt(reqId),
         headers.map((h) => {
           const common = this.config.chainCommon
-          // If this is a post merge block, we can still send chainTTD since it would still lead
-          // to correct hardfork choice
           const header = createHeaderFromValuesArray(h, { common, setHardfork: true })
           return header
         }),
