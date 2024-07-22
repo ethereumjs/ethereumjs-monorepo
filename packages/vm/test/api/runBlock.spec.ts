@@ -200,7 +200,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
       skipBlockValidation: true,
       generate: true,
     })
-    const txResultChainstart = await vm_noSelect.runBlock({
+    const txResultChainstart = await runBlock(vm_noSelect, {
       block: getBlock(common2),
       skipBlockValidation: true,
       generate: true,
@@ -228,8 +228,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
 
     // The mocked VM uses a mocked runTx
     // which always returns an error.
-    await vm
-      .runBlock({ block, skipBlockValidation: true, skipHardForkValidation: true })
+    await runBlock(vm, { block, skipBlockValidation: true, skipHardForkValidation: true })
       .then(() => assert.fail('should have returned error'))
       .catch((e) => assert.ok(e.message.includes("sender doesn't have enough funds to send tx")))
   })
@@ -242,8 +241,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
         gasLimit: hexToBytes('0x8000000000000000'),
       },
     })
-    await vm
-      .runBlock({ block })
+    await runBlock(vm, { block })
       .then(() => assert.fail('should have returned error'))
       .catch((e) => assert.ok(e.message.includes('Invalid block')))
   })
@@ -254,8 +252,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
     const block = Object.create(createBlockFromRLPSerializedBlock(blockRlp, { common }))
 
-    await vm
-      .runBlock({ block })
+    await runBlock(vm, { block })
       .then(() => assert.fail('should have returned error'))
       .catch((e) => {
         assert.ok(
@@ -296,8 +293,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
       opts
     )
 
-    await vm
-      .runBlock({ block, skipBlockValidation: true })
+    await runBlock(vm, { block, skipBlockValidation: true })
       .then(() => assert.fail('should have returned error'))
       .catch((e) => assert.ok(e.message.includes('higher gas limit')))
   })
