@@ -96,9 +96,8 @@ describe(
       estimateTx.getSenderAddress = () => {
         return address
       }
-      const { totalGasSpent } = await (
-        await vm.shallowCopy()
-      ).runTx({
+      const vmCopy = await vm.shallowCopy()
+      const { totalGasSpent } = await runTx(vmCopy, {
         tx: estimateTx,
         skipNonce: true,
         skipBalance: true,

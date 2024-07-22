@@ -4,7 +4,7 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const GWEI = BigInt(1000000000)
 const sender = new Address(privateToAddress(pkey))
@@ -53,7 +53,7 @@ describe('EIP 3651 tests', () => {
       gasPrice: 10,
     }).sign(pkey)
 
-    const result = await vm.runTx({
+    const result = await runTx(vm, {
       block,
       tx,
       skipHardForkValidation: true,
@@ -66,7 +66,7 @@ describe('EIP 3651 tests', () => {
       })
     )
 
-    const result2 = await vm2.runTx({ block, tx, skipHardForkValidation: true })
+    const result2 = await runTx(vm2, { block, tx, skipHardForkValidation: true })
     const expectedDiff =
       common.param('gasPrices', 'coldaccountaccess')! -
       common.param('gasPrices', 'warmstorageread')!

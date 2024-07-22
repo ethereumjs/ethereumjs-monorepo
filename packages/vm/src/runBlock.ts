@@ -29,6 +29,8 @@ import debugDefault from 'debug'
 import { Bloom } from './bloom/index.js'
 import { accumulateRequests } from './requests.js'
 
+import { runTx } from './index.js'
+
 import type {
   AfterBlockEvent,
   ApplyBlockResult,
@@ -619,7 +621,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     // Run the tx through the VM
     const { skipBalance, skipNonce, skipHardForkValidation, reportPreimages } = opts
 
-    const txRes = await this.runTx({
+    const txRes = await runTx(this, {
       tx,
       block,
       skipBalance,

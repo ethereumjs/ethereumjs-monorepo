@@ -23,6 +23,14 @@ import {
   setLengthLeft,
   toType,
 } from '@ethereumjs/util'
+import {
+  type EIP4844BlobTxReceipt,
+  type PostByzantiumTxReceipt,
+  type PreByzantiumTxReceipt,
+  type TxReceipt,
+  type VM,
+  runTx,
+} from '@ethereumjs/vm'
 
 import { INTERNAL_ERROR, INVALID_HEX_STRING, INVALID_PARAMS, PARSE_ERROR } from '../error-code.js'
 import { callWithStackTrace, getBlockByOption, jsonRpcTx } from '../helpers.js'
@@ -43,13 +51,6 @@ import type {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type {
-  EIP4844BlobTxReceipt,
-  PostByzantiumTxReceipt,
-  PreByzantiumTxReceipt,
-  TxReceipt,
-  VM,
-} from '@ethereumjs/vm'
 
 const EMPTY_SLOT = `0x${'00'.repeat(32)}`
 
@@ -611,7 +612,7 @@ export class Eth {
       return from
     }
 
-    const { totalGasSpent } = await vm.runTx({
+    const { totalGasSpent } = await runTx(vm, {
       tx,
       skipNonce: true,
       skipBalance: true,

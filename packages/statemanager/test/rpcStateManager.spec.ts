@@ -13,7 +13,7 @@ import {
   setLengthLeft,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { VM } from '@ethereumjs/vm'
+import { VM, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
@@ -247,7 +247,7 @@ describe('runTx custom transaction test', () => {
       { common }
     ).sign(privateKey)
 
-    const result = await vm.runTx({
+    const result = await runTx(vm, {
       skipBalance: true,
       skipNonce: true,
       tx,
@@ -270,7 +270,7 @@ describe('runTx test: replay mainnet transactions', () => {
       blockTag: blockTag - 1n,
     })
     const vm = await VM.create({ common, stateManager: state })
-    const res = await vm.runTx({ tx })
+    const res = await runTx(vm, { tx })
     assert.equal(
       res.totalGasSpent,
       21000n,

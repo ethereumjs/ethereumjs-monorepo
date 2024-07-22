@@ -10,7 +10,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
-import { VM } from '../../../src/vm.js'
+import { VM } from '../../../src/index.js'
 import { setupVM } from '../utils.js'
 
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'

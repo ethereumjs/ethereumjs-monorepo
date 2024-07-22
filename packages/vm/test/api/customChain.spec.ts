@@ -6,7 +6,8 @@ import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { Interface } from '@ethersproject/abi'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../src/vm'
+import { runTx } from '../../src/index.js'
+import { VM } from '../../src/vm.js'
 
 import * as testChain from './testdata/testnet.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
@@ -78,7 +79,7 @@ describe('VM initialized with custom state', () => {
         common,
       }
     ).sign(privateKey)
-    const result = await vm.runTx({
+    const result = await runTx(vm, {
       tx,
       block,
     })

@@ -22,7 +22,7 @@ import {
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
-import { VM } from '@ethereumjs/vm'
+import { VM, runTx } from '@ethereumjs/vm'
 import { writeFileSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
@@ -1073,7 +1073,7 @@ export class VMExecution extends Execution {
         for (const tx of block.transactions) {
           const txHash = bytesToHex(tx.hash())
           if (allTxs || txHashes.includes(txHash)) {
-            const res = await vm.runTx({ block, tx })
+            const res = await runTx(vm, { block, tx })
             this.config.logger.info(
               `Executed tx hash=${txHash} gasUsed=${res.totalGasSpent} from block num=${blockNumber}`
             )

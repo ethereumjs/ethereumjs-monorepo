@@ -3,6 +3,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex, bytesToHex } from '@ethereumjs/util'
+import { runTx } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -86,9 +87,8 @@ describe(method, () => {
     estimateTx.getSenderAddress = () => {
       return address
     }
-    const { execResult } = await (
-      await vm.shallowCopy()
-    ).runTx({
+    const vmCopy = await vm.shallowCopy()
+    const { execResult } = await runTx(vmCopy, {
       tx: estimateTx,
       skipNonce: true,
       skipBalance: true,

@@ -3,7 +3,7 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 describe('EIP-3607 tests', () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3607] })
@@ -16,7 +16,7 @@ describe('EIP-3607 tests', () => {
     const tx = LegacyTransaction.fromTxData({ gasLimit: 100000 }, { freeze: false })
     tx.getSenderAddress = () => precompileAddr
     try {
-      await vm.runTx({ tx, skipHardForkValidation: true })
+      await runTx(vm, { tx, skipHardForkValidation: true })
       assert.fail('runTx should have thrown')
     } catch (error: any) {
       if ((error.message as string).includes('EIP-3607')) {
@@ -33,7 +33,7 @@ describe('EIP-3607 tests', () => {
     const tx = LegacyTransaction.fromTxData({ gasLimit: 100000 }, { freeze: false })
     tx.getSenderAddress = () => precompileAddr
     try {
-      await vm.runTx({ tx, skipHardForkValidation: true })
+      await runTx(vm, { tx, skipHardForkValidation: true })
       assert.ok('runTx successfully ran')
     } catch (error: any) {
       assert.fail('threw an unexpected error')

@@ -19,7 +19,7 @@ import { assert, describe, it } from 'vitest'
 
 import { bytesToBigInt } from '../../../../util/src/bytes.js'
 import { BIGINT_0 } from '../../../../util/src/constants.js'
-import { VM } from '../../../src/vm.js'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -133,7 +133,7 @@ describe('EIP 2935: historical block hashes', () => {
       await vm.stateManager.putAccount(callerAddress, account!)
       await vm.stateManager.putContractCode(historyAddress, contract2935Code)
 
-      const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+      const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
       const blockHashi = result.execResult.returnValue
       return blockHashi
     }
@@ -280,7 +280,7 @@ describe('EIP 2935: historical block hashes', () => {
       }
 
       // validate the contract code cases
-      // const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+      // const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
       const block = createBlockFromBlockData(
         {
           header: {

@@ -3,7 +3,7 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { Address } from '@ethereumjs/util'
@@ -23,7 +23,7 @@ describe('EIP 3541 tests', () => {
 
     let vm = await VM.create({ common })
 
-    let result = await vm.runTx({ tx, skipHardForkValidation: true })
+    let result = await runTx(vm, { tx, skipHardForkValidation: true })
     let created = result.createdAddress
 
     let code = await vm.stateManager.getContractCode(created!)
@@ -39,7 +39,7 @@ describe('EIP 3541 tests', () => {
       nonce: 1,
     }).sign(pkey)
 
-    result = await vm.runTx({ tx: tx1, skipHardForkValidation: true })
+    result = await runTx(vm, { tx: tx1, skipHardForkValidation: true })
     created = result.createdAddress
 
     code = await vm.stateManager.getContractCode(created!)
@@ -54,7 +54,7 @@ describe('EIP 3541 tests', () => {
       gasLimit: 1000000,
     }).sign(pkey)
 
-    result = await vm.runTx({ tx: tx2, skipHardForkValidation: true })
+    result = await runTx(vm, { tx: tx2, skipHardForkValidation: true })
     created = result.createdAddress
 
     code = await vm.stateManager.getContractCode(created!)
@@ -77,7 +77,7 @@ describe('EIP 3541 tests', () => {
       }
     })
 
-    await vm.runTx({ tx, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipHardForkValidation: true })
 
     let code = await vm.stateManager.getContractCode(address!)
 
@@ -90,7 +90,7 @@ describe('EIP 3541 tests', () => {
       nonce: 1,
     }).sign(pkey)
 
-    await vm.runTx({ tx: tx1, skipHardForkValidation: true })
+    await runTx(vm, { tx: tx1, skipHardForkValidation: true })
 
     code = await vm.stateManager.getContractCode(address!)
 
@@ -112,7 +112,7 @@ describe('EIP 3541 tests', () => {
       }
     })
 
-    await vm.runTx({ tx, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipHardForkValidation: true })
 
     let code = await vm.stateManager.getContractCode(address!)
 
@@ -125,7 +125,7 @@ describe('EIP 3541 tests', () => {
       nonce: 1,
     }).sign(pkey)
 
-    await vm.runTx({ tx: tx1, skipHardForkValidation: true })
+    await runTx(vm, { tx: tx1, skipHardForkValidation: true })
 
     code = await vm.stateManager.getContractCode(address!)
 

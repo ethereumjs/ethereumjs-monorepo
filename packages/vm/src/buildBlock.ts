@@ -32,6 +32,8 @@ import {
   rewardAccount,
 } from './runBlock.js'
 
+import { runTx } from './index.js'
+
 import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.js'
 import type { VM } from './vm.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
@@ -256,7 +258,7 @@ export class BlockBuilder {
     const blockData = { header, transactions: this.transactions }
     const block = createBlockFromBlockData(blockData, this.blockOpts)
 
-    const result = await this.vm.runTx({ tx, block, skipHardForkValidation })
+    const result = await runTx(this.vm, { tx, block, skipHardForkValidation })
 
     // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
     if (tx instanceof BlobEIP4844Transaction) {

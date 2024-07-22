@@ -2,8 +2,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, bigIntToBytes, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
-import { createAccount } from '../utils'
+import { VM } from '../../../src/index.js'
+import { createAccount } from '../utils.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

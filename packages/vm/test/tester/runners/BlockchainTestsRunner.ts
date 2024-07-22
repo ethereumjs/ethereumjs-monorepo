@@ -16,7 +16,7 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import { VM } from '../../../src/vm.js'
+import { VM } from '../../../src/index.js'
 import { setupPreConditions, verifyPostConditions } from '../../util.js'
 
 import type { Block } from '@ethereumjs/block'

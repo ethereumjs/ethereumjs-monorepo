@@ -5,7 +5,7 @@ import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
-import { VM } from '@ethereumjs/vm'
+import { VM, runTx } from '@ethereumjs/vm'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.js'
 import { getAccountNonce, insertAccount } from './helpers/account-utils.js'
 import { createBlockFromBlockData } from '@ethereumjs/block'
@@ -109,7 +109,7 @@ async function deployContract(
     senderPrivateKey
   )
 
-  const deploymentResult = await vm.runTx({ tx, block })
+  const deploymentResult = await runTx(vm, { tx, block })
 
   if (deploymentResult.execResult.exceptionError) {
     throw deploymentResult.execResult.exceptionError
@@ -139,7 +139,7 @@ async function setGreeting(
     senderPrivateKey
   )
 
-  const setGreetingResult = await vm.runTx({ tx, block })
+  const setGreetingResult = await runTx(vm, { tx, block })
 
   if (setGreetingResult.execResult.exceptionError) {
     throw setGreetingResult.execResult.exceptionError
