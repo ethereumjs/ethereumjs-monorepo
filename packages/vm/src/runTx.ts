@@ -22,6 +22,7 @@ import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Bloom } from './bloom/index.js'
+import { emitEVMProfile } from './emitEVMProfile.js'
 
 import type {
   AfterTxEvent,
@@ -210,8 +211,8 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         // eslint-disable-next-line no-console
         console.log('No precompile or opcode execution.')
       }
-      vm.emitEVMProfile(logs.precompiles, 'Precompile performance')
-      vm.emitEVMProfile(logs.opcodes, 'Opcodes performance')
+      emitEVMProfile(logs.precompiles, 'Precompile performance')
+      emitEVMProfile(logs.opcodes, 'Opcodes performance')
       ;(<EVM>vm.evm).clearPerformanceLogs()
     }
   }

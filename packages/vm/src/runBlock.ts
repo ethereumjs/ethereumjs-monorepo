@@ -27,6 +27,7 @@ import {
 import debugDefault from 'debug'
 
 import { Bloom } from './bloom/index.js'
+import { emitEVMProfile } from './emitEVMProfile.js'
 import { accumulateRequests } from './requests.js'
 
 import { runTx } from './index.js'
@@ -370,8 +371,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       console.log('No block txs with precompile or opcode execution.')
     }
 
-    vm.emitEVMProfile(logs.precompiles, 'Precompile performance')
-    vm.emitEVMProfile(logs.opcodes, 'Opcodes performance')
+    emitEVMProfile(logs.precompiles, 'Precompile performance')
+    emitEVMProfile(logs.opcodes, 'Opcodes performance')
     ;(<EVM>vm.evm).clearPerformanceLogs()
   }
 
