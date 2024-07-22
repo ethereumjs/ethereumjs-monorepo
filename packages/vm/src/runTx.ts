@@ -77,10 +77,14 @@ function execHardfork(
 }
 
 /**
+ * Process a transaction. Run the vm. Transfers eth. Checks balances.
+ *
+ * This method modifies the state. If an error is thrown, the modifications are reverted, except
+ * when the error is thrown from an event handler. In the latter case the state may or may not be
+ * reverted.
  *
  * @param {VM} vm
  * @param {RunTxOpts} opts
- * @returns
  */
 export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (vm['_opts'].profilerOpts?.reportAfterTx === true) {
