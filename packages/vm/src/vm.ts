@@ -6,18 +6,9 @@ import { Account, Address, AsyncEventEmitter, unprefixedHexToBytes } from '@ethe
 
 import { buildBlock } from './buildBlock.js'
 import { runBlock } from './runBlock.js'
-import { runTx } from './runTx.js'
 
 import type { BlockBuilder } from './buildBlock.js'
-import type {
-  BuildBlockOpts,
-  RunBlockOpts,
-  RunBlockResult,
-  RunTxOpts,
-  RunTxResult,
-  VMEvents,
-  VMOpts,
-} from './types.js'
+import type { BuildBlockOpts, RunBlockOpts, RunBlockResult, VMEvents, VMOpts } from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface, EVMPerformanceLogOutput } from '@ethereumjs/evm'
@@ -193,19 +184,6 @@ export class VM {
    */
   async runBlock(opts: RunBlockOpts): Promise<RunBlockResult> {
     return runBlock.bind(this)(opts)
-  }
-
-  /**
-   * Process a transaction. Run the vm. Transfers eth. Checks balances.
-   *
-   * This method modifies the state. If an error is thrown, the modifications are reverted, except
-   * when the error is thrown from an event handler. In the latter case the state may or may not be
-   * reverted.
-   *
-   * @param {RunTxOpts} opts
-   */
-  async runTx(opts: RunTxOpts): Promise<RunTxResult> {
-    return runTx.bind(this)(opts)
   }
 
   /**
