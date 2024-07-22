@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 0.10.1 - 2024-03-05
+## 0.10.1 - 2024-03-18
 
 This is mainly a maintenance release coming with a few internal changes and minor bug fixes, single user-focused addition is the support for the `eth_feeHistory` RPC call.
 
