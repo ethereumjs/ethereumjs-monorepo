@@ -12,6 +12,7 @@ import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { runBlock } from '../../src/index.js'
 import { VM } from '../../src/vm.js'
 
 import { setBalance } from './utils.js'
@@ -51,7 +52,7 @@ describe('BlockBuilder', () => {
       1,
       'should have the correct number of tx receipts'
     )
-    const result = await vmCopy.runBlock({ block })
+    const result = await runBlock(vmCopy, { block })
     assert.equal(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
@@ -294,7 +295,7 @@ describe('BlockBuilder', () => {
     const block = await blockBuilder.build()
 
     // block should successfully execute with VM.runBlock and have same outputs
-    const result = await vmCopy.runBlock({ block })
+    const result = await runBlock(vmCopy, { block })
     assert.equal(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
@@ -371,7 +372,7 @@ describe('BlockBuilder', () => {
       "baseFeePerGas should equal parentHeader's calcNextBaseFee"
     )
 
-    const result = await vmCopy.runBlock({ block })
+    const result = await runBlock(vmCopy, { block })
     assert.equal(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)

@@ -17,7 +17,7 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/withdrawals.json'
-import { VM } from '../../../src/index.js'
+import { VM, runBlock } from '../../../src/index.js'
 
 import type { Block } from '@ethereumjs/block'
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
@@ -112,7 +112,7 @@ describe('EIP4895 tests', () => {
       result = e.execResult.returnValue
     })
 
-    await vm.runBlock({ block, generate: true })
+    await runBlock(vm, { block, generate: true })
 
     for (let i = 0; i < addresses.length; i++) {
       const address = new Address(hexToBytes(`0x${addresses[i]}`))
@@ -161,7 +161,7 @@ describe('EIP4895 tests', () => {
     )
     postState = bytesToHex(await vm.stateManager.getStateRoot())
 
-    await vm.runBlock({ block, generate: true })
+    await runBlock(vm, { block, generate: true })
     assert.equal(
       postState,
       '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
@@ -181,7 +181,7 @@ describe('EIP4895 tests', () => {
       },
       { common: vm.common }
     )
-    await vm.runBlock({ block, generate: true })
+    await runBlock(vm, { block, generate: true })
     postState = bytesToHex(await vm.stateManager.getStateRoot())
     assert.equal(
       postState,
@@ -236,7 +236,7 @@ describe('EIP4895 tests', () => {
     )
 
     // block should successfully execute with VM.runBlock and have same outputs
-    const result = await vmCopy.runBlock({ block })
+    const result = await runBlock(vmCopy, { block })
     assert.equal(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)

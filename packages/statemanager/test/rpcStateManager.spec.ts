@@ -13,7 +13,7 @@ import {
   setLengthLeft,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { VM, runTx } from '@ethereumjs/vm'
+import { VM, runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
@@ -297,7 +297,7 @@ describe('runBlock test', () => {
     const vm = await VM.create({ common, stateManager: state })
     const block = createBlockFromRPC(blockData as JsonRpcBlock, [], { common })
     try {
-      const res = await vm.runBlock({
+      const res = await runBlock(vm, {
         block,
         generate: true,
         skipHeaderValidation: true,

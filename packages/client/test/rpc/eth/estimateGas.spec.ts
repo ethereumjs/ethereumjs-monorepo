@@ -4,7 +4,7 @@ import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
-import { runTx } from '@ethereumjs/vm'
+import { runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -80,7 +80,7 @@ describe(
       // deploy contract
       let ranBlock: Block | undefined = undefined
       vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-      const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+      const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
       const { createdAddress } = result.results[0]
       await vm.blockchain.putBlock(ranBlock!)
 
@@ -148,7 +148,7 @@ describe(
       )
 
       vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-      await vm.runBlock({ block: londonBlock, generate: true, skipBlockValidation: true })
+      await runBlock(vm, { block: londonBlock, generate: true, skipBlockValidation: true })
       await vm.blockchain.putBlock(ranBlock!)
 
       // Test EIP1559 tx

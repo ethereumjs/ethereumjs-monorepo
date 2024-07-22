@@ -19,7 +19,7 @@ import { assert, describe, it } from 'vitest'
 
 import { bytesToBigInt } from '../../../../util/src/bytes.js'
 import { BIGINT_0 } from '../../../../util/src/constants.js'
-import { VM, runTx } from '../../../src/index.js'
+import { VM, runBlock, runTx } from '../../../src/index.js'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -188,7 +188,7 @@ describe('EIP 2935: historical block hashes', () => {
         })
       ).build()
       await vm.blockchain.putBlock(block)
-      await vm.runBlock({ block, generate: true })
+      await runBlock(vm, { block, generate: true })
 
       const storage = await vm.stateManager.getContractStorage(
         historyAddress,
@@ -227,7 +227,7 @@ describe('EIP 2935: historical block hashes', () => {
           })
         ).build()
         await vm.blockchain.putBlock(lastBlock)
-        await vm.runBlock({
+        await runBlock(vm, {
           block: lastBlock,
           generate: true,
           skipHeaderValidation: true,

@@ -22,7 +22,7 @@ import {
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
-import { VM, runTx } from '@ethereumjs/vm'
+import { VM, runBlock, runTx } from '@ethereumjs/vm'
 import { writeFileSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
@@ -453,7 +453,7 @@ export class VMExecution extends Execution {
           }
           const reportPreimages = this.config.savePreimages
 
-          const result = await vm.runBlock({
+          const result = await runBlock(vm, {
             clearCache,
             ...opts,
             parentStateRoot: prevVMStateRoot,
@@ -744,7 +744,7 @@ export class VMExecution extends Execution {
 
                   this._statsVM = this.vm
                   const beforeTS = Date.now()
-                  const result = await this.vm.runBlock({
+                  const result = await runBlock(this.vm, {
                     block,
                     root: parentState,
                     clearCache,
@@ -1049,7 +1049,7 @@ export class VMExecution extends Execution {
         // we are skipping header validation because the block has been picked from the
         // blockchain and header should have already been validated while putBlock
         const beforeTS = Date.now()
-        const res = await vm.runBlock({
+        const res = await runBlock(this.vm, {
           block,
           root,
           clearCache: false,

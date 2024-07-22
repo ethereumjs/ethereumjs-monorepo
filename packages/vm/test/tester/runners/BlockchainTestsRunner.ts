@@ -16,7 +16,7 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import { VM } from '../../../src/index.js'
+import { VM, runBlock } from '../../../src/index.js'
 import { setupPreConditions, verifyPostConditions } from '../../util.js'
 
 import type { Block } from '@ethereumjs/block'
@@ -206,7 +206,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await vm.runBlock({ block, root: parentState, setHardfork: TD })
+            await runBlock(vm, { block, root: parentState, setHardfork: TD })
             // set as new head block
           } catch (error: any) {
             // remove invalid block

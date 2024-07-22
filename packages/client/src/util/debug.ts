@@ -1,5 +1,6 @@
 import { bytesToHex } from '@ethereumjs/util'
 
+import { runBlock } from '../../../vm/dist/esm/runBlock.js'
 import { DataDirectory } from '../index.js'
 
 import type { VMExecution } from '../execution/index.js'
@@ -28,7 +29,7 @@ export async function debugCodeReplayBlock(execution: VMExecution, block: Block)
 import { Level } from 'level';
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { VM }  from './src'
+import { VM, runBlock }  from './src'
 import { Trie } from '@ethereumjs/trie'
 import { DefaultStateManager } from './src/state'
 import { Blockchain } from '@ethereumjs/blockchain'
@@ -59,11 +60,11 @@ const main = async () => {
   })
   const vm = await VM.create({ stateManager, blockchain, common })
 
-  await vm.runBlock({ block })
+  await runBlock({ block })
 }
 
 main()
     `
-
+  runBlock
   execution.config.logger.info(code)
 }

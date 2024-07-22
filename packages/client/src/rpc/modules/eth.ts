@@ -29,6 +29,7 @@ import {
   type PreByzantiumTxReceipt,
   type TxReceipt,
   type VM,
+  runBlock,
   runTx,
 } from '@ethereumjs/vm'
 
@@ -941,7 +942,7 @@ export class Eth {
     const vmCopy = await this._vm!.shallowCopy()
     vmCopy.common.setHardfork(block.common.hardfork())
     // Run tx through copied vm to get tx gasUsed and createdAddress
-    const runBlockResult = await vmCopy.runBlock({
+    const runBlockResult = await runBlock(vmCopy, {
       block,
       root: parentBlock.header.stateRoot,
       skipBlockValidation: true,
@@ -1016,7 +1017,7 @@ export class Eth {
     const vmCopy = await this._vm!.shallowCopy()
     vmCopy.common.setHardfork(tx.common.hardfork())
     // Run tx through copied vm to get tx gasUsed and createdAddress
-    const runBlockResult = await vmCopy.runBlock({
+    const runBlockResult = await runBlock(vmCopy, {
       block,
       root: parentBlock.header.stateRoot,
       skipBlockValidation: true,

@@ -31,6 +31,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
+import { runBlock } from '../../src/index.js'
 import { VM } from '../../src/vm'
 import { getDAOCommon, setupPreConditions } from '../util'
 
@@ -68,7 +69,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
       'genesis state root should match calculated state root'
     )
 
-    const res = await vm.runBlock({
+    const res = await runBlock(vm, {
       block,
       root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
       skipBlockValidation: true,
@@ -90,7 +91,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const block1Rlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
     const block1 = createBlockFromRLPSerializedBlock(block1Rlp, { common })
-    await vm.runBlock({
+    await runBlock(vm, {
       block: block1,
       root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
       skipBlockValidation: true,
@@ -99,7 +100,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
 
     const block2Rlp = hexToBytes(testData.blocks[1].rlp as PrefixedHexString)
     const block2 = createBlockFromRLPSerializedBlock(block2Rlp, { common })
-    await vm.runBlock({
+    await runBlock(vm, {
       block: block2,
 
       root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
@@ -109,7 +110,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
 
     const block3Rlp = toBytes(testData.blocks[2].rlp as PrefixedHexString)
     const block3 = createBlockFromRLPSerializedBlock(block3Rlp, { common })
-    await vm.runBlock({
+    await runBlock(vm, {
       block: block3,
 
       root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
@@ -194,7 +195,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     const vm = await VM.create({ common: common1, setHardfork: true })
     const vm_noSelect = await VM.create({ common: common2 })
 
-    const txResultMuirGlacier = await vm.runBlock({
+    const txResultMuirGlacier = await runBlock(vm, {
       block: getBlock(common1),
       skipBlockValidation: true,
       generate: true,
@@ -270,7 +271,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     const block = Object.create(createBlockFromRLPSerializedBlock(blockRlp, { common }))
     ;(vm.blockchain as any).validateHeader = undefined
     try {
-      await vm.runBlock({ block })
+      await runBlock(vm, { block })
     } catch (err: any) {
       assert.equal(
         err.message,
@@ -335,7 +336,7 @@ describe('runBlock() -> runtime behavior', async () => {
     const accountRefund = createAccount(BigInt(0), fundBalanceRefund)
     await vm.stateManager.putAccount(DAORefundAddress, accountRefund)
 
-    await vm.runBlock({
+    await runBlock(vm, {
       block,
       skipBlockValidation: true,
       generate: true,
@@ -388,7 +389,7 @@ describe('runBlock() -> runtime behavior', async () => {
       { common, cliqueSigner: signer.privateKey }
     )
 
-    await vm.runBlock({ block, skipNonce: true, skipBlockValidation: true, generate: true })
+    await runBlock(vm, { block, skipNonce: true, skipBlockValidation: true, generate: true })
     const account = await vm.stateManager.getAccount(signer.address)
     assert.equal(
       account!.balance,
@@ -409,7 +410,7 @@ async function runBlockAndGetAfterBlockEvent(
 
   try {
     vm.events.once('afterBlock', handler)
-    await vm.runBlock(runBlockOpts)
+    await runBlock(vm, runBlockOpts)
   } finally {
     // We need this in case `runBlock` throws before emitting the event.
     // Otherwise we'd be leaking the listener until the next call to runBlock.
@@ -451,7 +452,7 @@ async function runWithHf(hardfork: string) {
 
   await setupPreConditions(vm.stateManager, testData)
 
-  const res = await vm.runBlock({
+  const res = await runBlock(vm, {
     block,
     generate: true,
     skipBlockValidation: true,
@@ -495,7 +496,7 @@ describe('runBlock() -> tx types', async () => {
 
     await setupPreConditions(vm.stateManager, testData)
 
-    const res = await vm.runBlock({
+    const res = await runBlock(vm, {
       block,
       skipBlockValidation: true,
       generate: true,
@@ -671,7 +672,7 @@ describe('runBlock() -> tx types', async () => {
       { common, setHardfork: false, skipConsensusFormatValidation: true }
     )
 
-    await vm.runBlock({ block, skipBlockValidation: true, generate: true })
+    await runBlock(vm, { block, skipBlockValidation: true, generate: true })
     const storage = await vm.stateManager.getContractStorage(defaultAuthAddr, zeros(32))
     assert.ok(equalsBytes(storage, new Uint8Array([2])))
   })

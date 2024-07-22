@@ -3,7 +3,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex, bytesToHex } from '@ethereumjs/util'
-import { runTx } from '@ethereumjs/vm'
+import { runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -71,7 +71,7 @@ describe(method, () => {
     // deploy contract
     let ranBlock: Block | undefined = undefined
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-    const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     const { createdAddress } = result.results[0]
     await vm.blockchain.putBlock(ranBlock!)
 

@@ -3,7 +3,7 @@ import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { runTx } from '../../src/index.js'
+import { runBlock, runTx } from '../../src/index.js'
 import { VM } from '../../src/vm.js'
 
 describe('VM events', () => {
@@ -19,7 +19,7 @@ describe('VM events', () => {
 
     const block = new Block()
 
-    await vm.runBlock({
+    await runBlock(vm, {
       block,
       generate: true,
       skipBlockValidation: true,
@@ -38,7 +38,7 @@ describe('VM events', () => {
 
     const block = new Block()
 
-    await vm.runBlock({
+    await runBlock(vm, {
       block,
       generate: true,
       skipBlockValidation: true,
