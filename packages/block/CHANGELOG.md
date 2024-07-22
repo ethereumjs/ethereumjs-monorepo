@@ -8,9 +8,116 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 5.3.0 - 2024-07-23
 
+### Blocks with EIP-7685 Consensus Layer Requests
+
+Starting with this release this library supports requests to the consensus layer (see PR [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372)) which have been introduce with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) and will come into play for deposit and withdrawal requests along the upcoming [Prague](https://eips.ethereum.org/EIPS/eip-7600) hardfork.
+
+#### EIP-6110 Deposit Requests
+
+[EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) introduces deposit requests allowing beacon chain deposits being triggered from the execution layer, see PR [#3390](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3390). Starting with this release this library supports deposit requests and a containing block can be instantiated as follows:
+
+```ts
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Block } from '@ethereumjs/block'
+import {
+  bytesToBigInt,
+  DepositRequest,
+  randomBytes,
+  type CLRequest,
+  type CLRequestType,
+} from '@ethereumjs/util'
+
+const main = async () => {
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Prague,
+  })
+
+  const depositRequestData = {
+    pubkey: randomBytes(48),
+    withdrawalCredentials: randomBytes(32),
+    amount: bytesToBigInt(randomBytes(8)),
+    signature: randomBytes(96),
+    index: bytesToBigInt(randomBytes(8)),
+  }
+  const request = DepositRequest.fromRequestData(depositRequestData) as CLRequest<CLRequestType>
+  const requests = [request]
+  const requestsRoot = await Block.genRequestsTrieRoot(requests)
+
+  const block = Block.fromBlockData(
+    {
+      requests,
+      header: { requestsRoot },
+    },
+    { common }
+  )
+  console.log(
+    `Instantiated block with ${
+      block.requests?.length
+    } request, requestTrieValid=${await block.requestsTrieIsValid()}`
+  )
+}
+
+main()
+```
+
+Have a look at the EIP for some guidance on how to use and fill in the various deposit request parameters.
+
+#### EIP-7002 Withdrawal Requests
+
+[EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) introduces the possibility for validators to trigger exits and partial withdrawals via the execution layer, see PR [#3385](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3385). Starting with this release this library supports withdrawal requests and a containing block can be instantiated as follows:
+
+```ts
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Block } from '@ethereumjs/block'
+import {
+  bytesToBigInt,
+  randomBytes,
+  WithdrawalRequest,
+  type CLRequest,
+  type CLRequestType,
+} from '@ethereumjs/util'
+
+const main = async () => {
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Prague,
+  })
+
+  const withdrawalRequestData = {
+    sourceAddress: randomBytes(20),
+    validatorPubkey: randomBytes(48),
+    amount: bytesToBigInt(randomBytes(8)),
+  }
+  const request = WithdrawalRequest.fromRequestData(
+    withdrawalRequestData
+  ) as CLRequest<CLRequestType>
+  const requests = [request]
+  const requestsRoot = await Block.genRequestsTrieRoot(requests)
+
+  const block = Block.fromBlockData(
+    {
+      requests,
+      header: { requestsRoot },
+    },
+    { common }
+  )
+  console.log(
+    `Instantiated block with ${
+      block.requests?.length
+    } withdrawal request, requestTrieValid=${await block.requestsTrieIsValid()}`
+  )
+}
+
+main()
+```
+
+Have a look at the EIP for some guidance on how to use and fill in the various withdrawal request parameters.
+
 ### Verkle Updates
 
 - Fixes for Kaustinen4 support, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
 
 ### Other Features
 

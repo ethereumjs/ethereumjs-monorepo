@@ -141,6 +141,15 @@ KZG interface (used for 4844 blob txs), see [@ethereumjs/tx](https://github.com/
 
 Simple map DB implementation using the `DB` interface (see above).
 
+### Module: [requests](src/requests.ts)
+
+Module with various type and an abstract base class for [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) general purpose execution layer requests to the CL (Prague hardfork) as well as concrete implementations for the currently supported request types:
+
+- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110): `DepositRequest` (Prague Harfork)
+- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002): `WithdrawawlRequest` (Prague Hardfork)
+
+These request types are mainly used within the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library where applied usage instructions are provided in the README.
+
 ### Module: [signature](src/signature.ts)
 
 Functionality for signing, signature validation, conversion, recovery.
