@@ -104,22 +104,6 @@ export const compactBytesToNibbles = (compact: Uint8Array) => {
 }
 
 /**
- * Packs every two nibbles into a single byte
- *
- * @param arr Nibble typed nibble array
- * @returns Uint8Array typed byte array
- */
-export const nibbleTypeToPackedBytes = (arr: Nibbles): Uint8Array => {
-  const buf = new Uint8Array(arr.length / 2)
-  for (let i = 0; i < buf.length; i++) {
-    let q = i * 2
-    buf[i] = (arr[q] << 4) + arr[++q]
-  }
-
-  return buf
-}
-
-/**
  * Converts each nibble into a single byte
  *
  * @param arr Nibble typed nibble array
