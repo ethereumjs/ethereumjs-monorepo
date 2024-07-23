@@ -229,9 +229,8 @@ describe('[Common]: Custom chains', () => {
       customHardforks: {
         // Hardfork which changes the gas of STOP from 0 to 10
         stop10Gas: {
-          name: 'stop10Gas',
           eips: [2935],
-          vm: {
+          params: {
             stop: BigInt(10),
           },
         },
@@ -250,14 +249,14 @@ describe('[Common]: Custom chains', () => {
     })
     c.setHardfork(Hardfork.Chainstart)
     assert.throws(() => {
-      c.param('vm', 'stop')
+      c.param('stop')
     })
     c.setHardforkBy({
       blockNumber: 1,
       timestamp: 1000,
     })
     assert.equal(c.hardfork(), 'stop10Gas')
-    assert.equal(c.param('vm', 'stop'), BigInt(10))
+    assert.equal(c.param('stop'), BigInt(10))
   })
 })
 

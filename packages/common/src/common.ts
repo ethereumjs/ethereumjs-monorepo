@@ -10,9 +10,9 @@ import {
 import { EventEmitter } from 'events'
 
 import { crc32 } from './crc.js'
-import { EIPs } from './eips.js'
+import { eipsDict } from './eips.js'
 import { Hardfork } from './enums.js'
-import { hardforks as HARDFORK_SPECS } from './hardforks.js'
+import { hardforksDict } from './hardforks.js'
 
 import { _getChainParams } from './index.js'
 
@@ -25,7 +25,6 @@ import type {
   CommonOpts,
   CustomCrypto,
   EIPConfig,
-  EIPOrHFConfig,
   EthashConfig,
   GenesisBlockConfig,
   HardforkByOpts,
@@ -34,10 +33,9 @@ import type {
 } from './types.js'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
-type HardforkSpecKeys = string // keyof typeof HARDFORK_SPECS
-type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
-
-type ParamsCacheConfig = Omit<EIPOrHFConfig, 'comment' | 'url' | 'status'>
+type ParamsCacheConfig = {
+  [key: string]: number | bigint | null
+}
 
 /**
  * Common class to access chain and hardfork parameters and to provide
@@ -60,7 +58,7 @@ export class Common {
   protected _paramsCache: ParamsCacheConfig = {}
   protected _activatedEIPsCache: number[] = []
 
-  protected HARDFORK_CHANGES: [HardforkSpecKeys, HardforkSpecValues][]
+  protected HARDFORK_CHANGES: [string, HardforkConfig][]
 
   public events: EventEmitter
 
@@ -72,8 +70,8 @@ export class Common {
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Shanghai
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
-      hf.name as HardforkSpecKeys,
-      HARDFORK_SPECS[hf.name] ??
+      hf.name,
+      hardforksDict[hf.name] ??
         (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]),
     ])
     this._hardfork = this.DEFAULT_HARDFORK
@@ -298,10 +296,10 @@ export class Common {
    */
   setEIPs(eips: number[] = []) {
     for (const eip of eips) {
-      if (!(eip in EIPs)) {
+      if (!(eip in eipsDict)) {
         throw new Error(`${eip} not supported`)
       }
-      const minHF = this.gteHardfork((EIPs as any)[eip]['minimumHardfork'])
+      const minHF = this.gteHardfork(eipsDict[eip]['minimumHardfork'])
       if (!minHF) {
         throw new Error(
           `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`
@@ -313,8 +311,8 @@ export class Common {
     this._buildActivatedEIPsCache()
 
     for (const eip of eips) {
-      if ((EIPs as any)[eip].requiredEIPs !== undefined) {
-        for (const elem of (EIPs as any)[eip].requiredEIPs) {
+      if (eipsDict[eip].requiredEIPs !== undefined) {
+        for (const elem of eipsDict[eip].requiredEIPs) {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
             throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
           }
@@ -327,25 +325,9 @@ export class Common {
    * Internal helper for _buildParamsCache()
    */
   protected _mergeWithParamsCache(params: HardforkConfig | EIPConfig) {
-    this._paramsCache['gasConfig'] = {
-      ...this._paramsCache['gasConfig'],
-      ...params['gasConfig'],
-    }
-    this._paramsCache['gasPrices'] = {
-      ...this._paramsCache['gasPrices'],
-      ...params['gasPrices'],
-    }
-    this._paramsCache['pow'] = {
-      ...this._paramsCache['pow'],
-      ...params['pow'],
-    }
-    this._paramsCache['sharding'] = {
-      ...this._paramsCache['sharding'],
-      ...params['sharding'],
-    }
-    this._paramsCache['vm'] = {
-      ...this._paramsCache['vm'],
-      ...params['vm'],
+    this._paramsCache = {
+      ...this._paramsCache,
+      ...params['params'],
     }
   }
 
@@ -361,34 +343,28 @@ export class Common {
       if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs!) {
-          if (!(eip in EIPs)) {
+          if (!(eip in eipsDict)) {
             throw new Error(`${eip} not supported`)
           }
 
-          this._mergeWithParamsCache(EIPs[eip])
+          this._mergeWithParamsCache(eipsDict[eip])
         }
         // Parameter-inlining HF config (e.g. for istanbul)
       } else {
         this._mergeWithParamsCache(hfChanges[1])
       }
-      if (
-        hfChanges[1].vm ||
-        hfChanges[1].gasConfig ||
-        hfChanges[1].gasPrices ||
-        hfChanges[1].pow ||
-        hfChanges[1].sharding
-      ) {
+      if (hfChanges[1].params !== undefined) {
         this._mergeWithParamsCache(hfChanges[1])
       }
       if (hfChanges[0] === hardfork) break
     }
     // Iterate through all additionally activated EIPs
     for (const eip of this._eips) {
-      if (!(eip in EIPs)) {
+      if (!(eip in eipsDict)) {
         throw new Error(`${eip} not supported`)
       }
 
-      this._mergeWithParamsCache(EIPs[eip])
+      this._mergeWithParamsCache(eipsDict[eip])
     }
   }
 
@@ -410,50 +386,43 @@ export class Common {
    * Otherwise the parameter is taken from the latest applied HF with
    * a change on the respective parameter.
    *
-   * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
-   * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
+   * @param name Parameter name (e.g. 'minGasLimit')
    * @returns The value requested (throws if not found)
    */
-  param(topic: string, name: string): bigint {
+  param(name: string): bigint {
     // TODO: consider the case that different active EIPs
     // can change the same parameter
-    let value
-    if (
-      (this._paramsCache as any)[topic] !== undefined &&
-      (this._paramsCache as any)[topic][name] !== undefined
-    ) {
-      value = (this._paramsCache as any)[topic][name]
-    }
-    if (value === undefined) {
+    if (!(name in this._paramsCache)) {
       throw new Error(`Missing parameter value for ${name}`)
     }
+    const value = this._paramsCache[name]
     return BigInt(value ?? 0)
   }
 
   /**
    * Returns the parameter corresponding to a hardfork
-   * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
-   * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
+   * @param name Parameter name (e.g. 'minGasLimit')
    * @param hardfork Hardfork name
    * @returns The value requested (throws if not found)
    */
-  paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): bigint {
+  paramByHardfork(name: string, hardfork: string | Hardfork): bigint {
     let value
     for (const hfChanges of this.HARDFORK_CHANGES) {
       // EIP-referencing HF config (e.g. for berlin)
       if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs!) {
-          const valueEIP = this.paramByEIP(topic, name, eip)
-          value = typeof valueEIP === 'bigint' ? valueEIP : value
+          const eipParams = eipsDict[eip]
+          const eipValue = eipParams.params?.[name]
+          if (eipValue !== undefined) {
+            value = eipValue
+          }
         }
         // Parameter-inlining HF config (e.g. for istanbul)
       } else {
-        if (
-          (hfChanges[1] as any)[topic] !== undefined &&
-          (hfChanges[1] as any)[topic][name] !== undefined
-        ) {
-          value = (hfChanges[1] as any)[topic][name]
+        const hfValue = hfChanges[1].params?.[name]
+        if (hfValue !== undefined) {
+          value = hfValue
         }
       }
       if (hfChanges[0] === hardfork) break
@@ -466,48 +435,39 @@ export class Common {
 
   /**
    * Returns a parameter corresponding to an EIP
-   * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
    * @param eip Number of the EIP
    * @returns The value requested (throws if not found)
    */
-  paramByEIP(topic: string, name: string, eip: number): bigint | undefined {
-    if (!(eip in EIPs)) {
+  paramByEIP(name: string, eip: number): bigint | undefined {
+    if (!(eip in eipsDict)) {
       throw new Error(`${eip} not supported`)
     }
 
-    const eipParams = (EIPs as any)[eip]
-    if (!(topic in eipParams)) {
-      return undefined
-    }
-    if (eipParams[topic][name] === undefined) {
-      return undefined
-    }
-    const value = eipParams[topic][name]
-    if (value === undefined) {
+    const eipParams = eipsDict[eip]
+    if (eipParams.params?.[name] === undefined) {
       throw new Error(`Missing parameter value for ${name}`)
     }
+    const value = eipParams.params![name]
     return BigInt(value ?? 0)
   }
 
   /**
    * Returns a parameter for the hardfork active on block number or
    * optional provided total difficulty (Merge HF)
-   * @param topic Parameter topic
    * @param name Parameter name
    * @param blockNumber Block number
    * @param td Total difficulty
    *    * @returns The value requested or `BigInt(0)` if not found
    */
   paramByBlock(
-    topic: string,
     name: string,
     blockNumber: BigIntLike,
     td?: BigIntLike,
     timestamp?: BigIntLike
   ): bigint {
     const hardfork = this.getHardforkBy({ blockNumber, td, timestamp })
-    return this.paramByHardfork(topic, name, hardfork)
+    return this.paramByHardfork(name, hardfork)
   }
 
   /**

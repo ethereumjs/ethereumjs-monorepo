@@ -1,6 +1,6 @@
 import type { HardforksDict } from './types.js'
 
-export const hardforks: HardforksDict = {
+export const hardforksDict: HardforksDict = {
   /**
    * Description: Start of the Ethereum main chain
    * URL        : -
