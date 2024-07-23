@@ -204,7 +204,7 @@ describe('EIP 2935: historical block hashes', () => {
       const commonGetHistoryServeWindow = eip2935ActiveAtCommon(0, historyAddressBigInt)
       commonGetHistoryServeWindow.setEIPs([2935])
       const common = eip2935ActiveAtCommon(blocksActivation, historyAddressBigInt)
-      const historyServeWindow = commonGetHistoryServeWindow.param('vm', 'historyServeWindow')
+      const historyServeWindow = commonGetHistoryServeWindow.param('historyServeWindow')
 
       const blockchain = await createBlockchain({
         common,

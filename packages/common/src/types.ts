@@ -163,33 +163,25 @@ export interface HardforkByOpts {
   td?: BigIntLike
 }
 
-export type EIPOrHFConfig = {
-  gasConfig?: {
-    [key: string]: number | bigint | null
-  }
-  gasPrices?: {
-    [key: string]: number | bigint | null
-  }
-  pow?: {
-    [key: string]: number | bigint | null
-  }
-  sharding?: {
-    [key: string]: number | bigint | null
-  }
-  vm?: {
+export type EIPConfig = {
+  minimumHardfork: Hardfork
+  requiredEIPs: number[]
+  params?: {
     [key: string]: number | bigint | null
   }
 }
 
-export type EIPConfig = {
-  minimumHardfork: Hardfork
-  requiredEIPs: number[]
-} & EIPOrHFConfig
-
 export type HardforkConfig = {
   eips?: number[]
   consensus?: ConsensusConfig
-} & EIPOrHFConfig
+  params?: {
+    [key: string]: number | bigint | null
+  }
+}
+
+export type EIPsDict = {
+  [key: string]: EIPConfig
+}
 
 export type HardforksDict = {
   [key: string]: HardforkConfig
