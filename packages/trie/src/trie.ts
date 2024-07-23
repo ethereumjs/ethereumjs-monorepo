@@ -3,11 +3,13 @@
 
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_0,
   KeyEncoding,
   Lock,
   MapDB,
   RLP_EMPTY_STRING,
   ValueEncoding,
+  bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
   bytesToUtf8,
@@ -29,6 +31,7 @@ import {
 import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
+import { nibbleTypeToPackedBytes } from './util/encoding.js'
 import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
 import { WalkController } from './util/walkController.js'
 
@@ -1217,5 +1220,46 @@ export class Trie {
     this.DEBUG &&
       this.debug(`Deleting ${this._db.checkpoints.length} checkpoints.`, ['FLUSH_CHECKPOINTS'])
     this._db.checkpoints = []
+  }
+
+  /**
+   * Returns a list of values stored in the trie
+   * @param startKey first unhashed key in the range to be returned (defaults to 0)
+   * @param limit - the number of keys to be returned (undefined means all keys)
+   * @returns an object with two properties (a map of all key/value pairs in the trie - or in the specified range) and then a `nextKey` reference if a range is specified
+   */
+  async getValueMap(
+    startKey = BIGINT_0,
+    limit?: number
+  ): Promise<{ values: { [key: string]: string }; nextKey: null | string }> {
+    // If limit is undefined, all keys are inRange
+    let inRange = limit !== undefined ? false : true
+    let i = 0
+    const values: { [key: string]: string } = {}
+    let nextKey: string | null = null
+    await this.walkAllValueNodes(async (node: TrieNode, currentKey: number[]) => {
+      if (node instanceof LeafNode) {
+        const keyBytes = nibbleTypeToPackedBytes(currentKey.concat(node.key()))
+        if (!inRange) {
+          // Check if the key is already in the correct range.
+          if (bytesToBigInt(keyBytes) >= startKey) {
+            inRange = true
+          } else {
+            return
+          }
+        }
+
+        if (limit === undefined || i < limit) {
+          values[bytesToHex(keyBytes)] = bytesToHex(node._value)
+          i++
+        } else if (i === limit) {
+          nextKey = bytesToHex(keyBytes)
+        }
+      }
+    })
+    return {
+      values,
+      nextKey,
+    }
   }
 }
