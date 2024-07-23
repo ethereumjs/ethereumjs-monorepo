@@ -1,8 +1,8 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import {
-  BlobEIP4844Transaction,
   Capability,
+  create4844BlobTxFromSerializedNetworkWrapper,
   createTxFromSerializedData,
   createTxFromTxData,
 } from '@ethereumjs/tx'
@@ -1162,7 +1162,7 @@ export class Eth {
       const txBuf = hexToBytes(serializedTx)
       if (txBuf[0] === 0x03) {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
-        tx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txBuf, { common })
+        tx = create4844BlobTxFromSerializedNetworkWrapper(txBuf, { common })
 
         const blobGasLimit = common.param('maxblobGasPerBlock')
         const blobGasPerBlob = common.param('blobGasPerBlob')

@@ -8,24 +8,26 @@ import {
   bytesToBigInt,
   toBytes,
   unpadBytes,
-  validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { BaseTransaction } from './baseTransaction.js'
-import * as Legacy from './capabilities/legacy.js'
-import { Capability, TransactionType } from './types.js'
+import { BaseTransaction } from '../baseTransaction.js'
+import * as Legacy from '../capabilities/legacy.js'
+import { Capability, TransactionType } from '../types.js'
+import { validateNotArray } from '../util.js'
+
+import { createLegacyTx } from './constructors.js'
 
 import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
   JsonTx,
   TxOptions,
-} from './types.js'
+} from '../types.js'
 import type { Common } from '@ethereumjs/common'
 
-type TxData = AllTypesTxData[TransactionType.Legacy]
-type TxValuesArray = AllTypesTxValuesArray[TransactionType.Legacy]
+export type TxData = AllTypesTxData[TransactionType.Legacy]
+export type TxValuesArray = AllTypesTxValuesArray[TransactionType.Legacy]
 
 function meetsEIP155(_v: bigint, chainId: bigint) {
   const v = Number(_v)
@@ -41,67 +43,6 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
 
   public readonly common: Common
   private keccakFunction: (msg: Uint8Array) => Uint8Array
-
-  /**
-   * Instantiate a transaction from a data dictionary.
-   *
-   * Format: { nonce, gasPrice, gasLimit, to, value, data, v, r, s }
-   *
-   * Notes:
-   * - All parameters are optional and have some basic default values
-   */
-  public static fromTxData(txData: TxData, opts: TxOptions = {}) {
-    return new LegacyTransaction(txData, opts)
-  }
-
-  /**
-   * Instantiate a transaction from the serialized tx.
-   *
-   * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
-   */
-  public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
-    const values = RLP.decode(serialized)
-
-    if (!Array.isArray(values)) {
-      throw new Error('Invalid serialized tx input. Must be array')
-    }
-
-    return this.fromValuesArray(values as TxValuesArray, opts)
-  }
-
-  /**
-   * Create a transaction from a values array.
-   *
-   * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
-   */
-  public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
-    // If length is not 6, it has length 9. If v/r/s are empty Uint8Arrays, it is still an unsigned transaction
-    // This happens if you get the RLP data from `raw()`
-    if (values.length !== 6 && values.length !== 9) {
-      throw new Error(
-        'Invalid transaction. Only expecting 6 values (for unsigned tx) or 9 values (for signed tx).'
-      )
-    }
-
-    const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
-
-    validateNoLeadingZeroes({ nonce, gasPrice, gasLimit, value, v, r, s })
-
-    return new LegacyTransaction(
-      {
-        nonce,
-        gasPrice,
-        gasLimit,
-        to,
-        value,
-        data,
-        v,
-        r,
-        s,
-      },
-      opts
-    )
-  }
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -123,7 +64,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     }
 
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
-    BaseTransaction._validateNotArray(txData)
+    validateNotArray(txData)
 
     if (this.common.gteHardfork('spuriousDragon')) {
       if (!this.isSigned()) {
@@ -288,7 +229,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
 
     const opts = { ...this.txOptions, common: this.common }
 
-    return LegacyTransaction.fromTxData(
+    return createLegacyTx(
       {
         nonce: this.nonce,
         gasPrice: this.gasPrice,

@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, equalsBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -41,7 +41,7 @@ describe('EIP 6780 tests', () => {
     const vm = await getVM(common)
 
     const value = 1
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       value,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -78,7 +78,7 @@ describe('EIP 6780 tests', () => {
     await vm.stateManager.putAccount(target, targetContract)
 
     const value = 1
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       value,
       gasLimit: 1000000,
       gasPrice: 10,

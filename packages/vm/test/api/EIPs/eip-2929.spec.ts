@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import { Address, createAccount, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -49,7 +49,7 @@ describe('EIP 2929: gas cost tests', () => {
 
     await vm.stateManager.putContractCode(address, hexToBytes(test.code))
 
-    const unsignedTx = LegacyTransaction.fromTxData({
+    const unsignedTx = createLegacyTx({
       gasLimit: initialGas, // ensure we pass a lot of gas, so we do not run out of gas
       to: address, // call to the contract address,
     })
@@ -76,7 +76,7 @@ describe('EIP 2929: gas cost tests', () => {
     await vm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
 
     // setup the call arguments
-    const unsignedTx = LegacyTransaction.fromTxData({
+    const unsignedTx = createLegacyTx({
       gasLimit: BigInt(21000 + 9000), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address,
       value: BigInt(1),

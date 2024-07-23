@@ -6,11 +6,7 @@ import {
   createCommonFromGethGenesis,
 } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import {
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-} from '@ethereumjs/tx'
+import { create1559FeeMarketTx, create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -120,7 +116,7 @@ describe('[PendingBlock]', async () => {
       to: to.address,
       value,
     }
-    const tx = LegacyTransaction.fromTxData(txData, { common })
+    const tx = createLegacyTx(txData, { common })
     const signedTx = tx.sign(from.privateKey)
     return signedTx
   }
@@ -239,7 +235,7 @@ describe('[PendingBlock]', async () => {
     await txPool.add(txA022)
 
     // This tx will not be added since its too big to fit
-    const txA03 = LegacyTransaction.fromTxData(
+    const txA03 = createLegacyTx(
       {
         data: '0xFE', // INVALID opcode, uses all gas
         gasLimit: 10000000,
@@ -283,7 +279,7 @@ describe('[PendingBlock]', async () => {
     await setBalance(vm, A.address, BigInt(5000000000000000))
     await txPool.add(txA01)
     await txPool.add(txA02)
-    const txA03 = LegacyTransaction.fromTxData(
+    const txA03 = createLegacyTx(
       {
         data: '0xFE', // INVALID opcode, uses all gas
         gasLimit: 10000000,
@@ -378,7 +374,7 @@ describe('[PendingBlock]', async () => {
 
     // Create 3 txs with 2 blobs each so that only 2 of them can be included in a build
     for (let x = 0; x <= 2; x++) {
-      const txA01 = BlobEIP4844Transaction.fromTxData(
+      const txA01 = create4844BlobTx(
         {
           blobVersionedHashes: [
             ...blobVersionedHashes,
@@ -401,7 +397,7 @@ describe('[PendingBlock]', async () => {
     }
 
     // Add one other normal tx for nonce 3 which should also be not included in the build
-    const txNorm = FeeMarketEIP1559Transaction.fromTxData(
+    const txNorm = create1559FeeMarketTx(
       {
         gasLimit: 0xffffffn,
         maxFeePerGas: 1000000000n,
@@ -456,7 +452,7 @@ describe('[PendingBlock]', async () => {
     const proofs = blobsToProofs(kzg, blobs, commitments)
 
     // create a tx with missing blob data which should be excluded from the build
-    const missingBlobTx = BlobEIP4844Transaction.fromTxData(
+    const missingBlobTx = create4844BlobTx(
       {
         blobVersionedHashes,
         kzgCommitments: commitments,

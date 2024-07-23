@@ -1,7 +1,7 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVMErrorMessage } from '@ethereumjs/evm'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -240,7 +240,7 @@ describe('EIP-3074 AUTH', () => {
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -264,7 +264,7 @@ describe('EIP-3074 AUTH', () => {
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -289,7 +289,7 @@ describe('EIP-3074 AUTH', () => {
     const code = concatBytes(getAuthCode(message, signature, contractAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -312,7 +312,7 @@ describe('EIP-3074 AUTH', () => {
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -336,7 +336,7 @@ describe('EIP-3074 AUTH', () => {
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -365,7 +365,7 @@ describe('EIP-3074 AUTH', () => {
     )
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -391,7 +391,7 @@ describe('EIP-3074 AUTH', () => {
     )
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -414,7 +414,7 @@ describe('EIP-3074 AUTH', () => {
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNMEMSIZE)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -440,7 +440,7 @@ describe('EIP-3074 AUTH', () => {
     )
 
     await vm.stateManager.putContractCode(contractAddress, code2)
-    const tx2 = LegacyTransaction.fromTxData({
+    const tx2 = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -485,7 +485,7 @@ describe('EIP-3074 AUTHCALL', () => {
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -519,7 +519,7 @@ describe('EIP-3074 AUTHCALL', () => {
       }
     })
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -560,7 +560,7 @@ describe('EIP-3074 AUTHCALL', () => {
       }
     })
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -604,7 +604,7 @@ describe('EIP-3074 AUTHCALL', () => {
       }
     })
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 900000,
       gasPrice: 10,
@@ -648,7 +648,7 @@ describe('EIP-3074 AUTHCALL', () => {
     const value = 3n
     const gasPrice = 10n
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: PREBALANCE / gasPrice - value * gasPrice,
       gasPrice,
@@ -698,7 +698,7 @@ describe('EIP-3074 AUTHCALL', () => {
     const value = 3n
     const gasPrice = 10n
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: PREBALANCE / gasPrice - value * gasPrice,
       gasPrice,
@@ -719,7 +719,7 @@ describe('EIP-3074 AUTHCALL', () => {
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -755,7 +755,7 @@ describe('EIP-3074 AUTHCALL', () => {
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -783,7 +783,7 @@ describe('EIP-3074 AUTHCALL', () => {
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -811,7 +811,7 @@ describe('EIP-3074 AUTHCALL', () => {
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -844,7 +844,7 @@ describe('EIP-3074 AUTHCALL', () => {
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,

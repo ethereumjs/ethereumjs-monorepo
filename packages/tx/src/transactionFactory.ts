@@ -1,11 +1,15 @@
 import { fetchFromProvider, getProvider } from '@ethereumjs/util'
 
-import { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
-import { AccessListEIP2930Transaction } from './eip2930Transaction.js'
-import { BlobEIP4844Transaction } from './eip4844Transaction.js'
-import { EOACodeEIP7702Transaction } from './eip7702Transaction.js'
+import { create1559FeeMarketTx, create1559FeeMarketTxFromRLP } from './1559/constructors.js'
+import { create2930AccessListTx, create2930AccessListTxFromRLP } from './2930/constructors.js'
+import { create4844BlobTx, create4844BlobTxFromRLP } from './4844/constructors.js'
+import { create7702EOACodeTx, create7702EOACodeTxFromRLP } from './7702/constructors.js'
 import { normalizeTxParams } from './fromRpc.js'
-import { LegacyTransaction } from './legacyTransaction.js'
+import {
+  createLegacyTx,
+  createLegacyTxFromBytesArray,
+  createLegacyTxFromRLP,
+} from './legacy/constructors.js'
 import {
   TransactionType,
   isAccessListEIP2930TxData,
@@ -29,18 +33,18 @@ export function createTxFromTxData<T extends TransactionType>(
 ): Transaction[T] {
   if (!('type' in txData) || txData.type === undefined) {
     // Assume legacy transaction
-    return LegacyTransaction.fromTxData(txData, txOptions) as Transaction[T]
+    return createLegacyTx(txData, txOptions) as Transaction[T]
   } else {
     if (isLegacyTxData(txData)) {
-      return LegacyTransaction.fromTxData(txData, txOptions) as Transaction[T]
+      return createLegacyTx(txData, txOptions) as Transaction[T]
     } else if (isAccessListEIP2930TxData(txData)) {
-      return AccessListEIP2930Transaction.fromTxData(txData, txOptions) as Transaction[T]
+      return create2930AccessListTx(txData, txOptions) as Transaction[T]
     } else if (isFeeMarketEIP1559TxData(txData)) {
-      return FeeMarketEIP1559Transaction.fromTxData(txData, txOptions) as Transaction[T]
+      return create1559FeeMarketTx(txData, txOptions) as Transaction[T]
     } else if (isBlobEIP4844TxData(txData)) {
-      return BlobEIP4844Transaction.fromTxData(txData, txOptions) as Transaction[T]
+      return create4844BlobTx(txData, txOptions) as Transaction[T]
     } else if (isEOACodeEIP7702TxData(txData)) {
-      return EOACodeEIP7702Transaction.fromTxData(txData, txOptions) as Transaction[T]
+      return create7702EOACodeTx(txData, txOptions) as Transaction[T]
     } else {
       throw new Error(`Tx instantiation with type ${(txData as TypedTxData)?.type} not supported`)
     }
@@ -61,18 +65,18 @@ export function createTxFromSerializedData<T extends TransactionType>(
     // Determine the type.
     switch (data[0]) {
       case TransactionType.AccessListEIP2930:
-        return AccessListEIP2930Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
+        return create2930AccessListTxFromRLP(data, txOptions) as Transaction[T]
       case TransactionType.FeeMarketEIP1559:
-        return FeeMarketEIP1559Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
+        return create1559FeeMarketTxFromRLP(data, txOptions) as Transaction[T]
       case TransactionType.BlobEIP4844:
-        return BlobEIP4844Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
+        return create4844BlobTxFromRLP(data, txOptions) as Transaction[T]
       case TransactionType.EOACodeEIP7702:
-        return EOACodeEIP7702Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
+        return create7702EOACodeTxFromRLP(data, txOptions) as Transaction[T]
       default:
         throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
     }
   } else {
-    return LegacyTransaction.fromSerializedTx(data, txOptions) as Transaction[T]
+    return createLegacyTxFromRLP(data, txOptions) as Transaction[T]
   }
 }
 
@@ -93,7 +97,7 @@ export function createTxFromBlockBodyData(
     return createTxFromSerializedData(data, txOptions)
   } else if (Array.isArray(data)) {
     // It is a legacy transaction
-    return LegacyTransaction.fromValuesArray(data, txOptions)
+    return createLegacyTxFromBytesArray(data, txOptions)
   } else {
     throw new Error('Cannot decode transaction: unknown type input')
   }
