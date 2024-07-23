@@ -90,7 +90,7 @@ describe('EIP4844 tests', () => {
       'blob transaction should be same'
     )
 
-    const blobGasPerBlob = common.param('gasConfig', 'blobGasPerBlob')
+    const blobGasPerBlob = common.param('blobGasPerBlob')
     assert.equal(block.header.blobGasUsed, blobGasPerBlob, 'blob gas used for 1 blob should match')
 
     // block should successfully execute with VM.runBlock and have same outputs

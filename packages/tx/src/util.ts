@@ -19,11 +19,10 @@ import type {
 import type { AuthorizationListItem, Common } from '@ethereumjs/common'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {
-  const maxInitCodeSize = common.param('vm', 'maxInitCodeSize')
+  const maxInitCodeSize = common.param('maxInitCodeSize')
   if (maxInitCodeSize && BigInt(length) > maxInitCodeSize) {
     throw new Error(
       `the initcode size of this transaction is too large: it is ${length} while the max is ${common.param(
-        'vm',
         'maxInitCodeSize'
       )}`
     )
@@ -114,8 +113,8 @@ export class AccessLists {
   }
 
   public static getDataFeeEIP2930(accessList: AccessListBytes, common: Common): number {
-    const accessListStorageKeyCost = common.param('gasPrices', 'accessListStorageKeyCost')
-    const accessListAddressCost = common.param('gasPrices', 'accessListAddressCost')
+    const accessListStorageKeyCost = common.param('accessListStorageKeyGas')
+    const accessListAddressCost = common.param('accessListAddressGas')
 
     let slots = 0
     for (let index = 0; index < accessList.length; index++) {
@@ -216,7 +215,7 @@ export class AuthorizationLists {
   }
 
   public static getDataFeeEIP7702(authorityList: AuthorizationListBytes, common: Common): number {
-    const perAuthBaseCost = common.param('gasPrices', 'perAuthBaseCost')
+    const perAuthBaseCost = common.param('perAuthBaseGas')
     return authorityList.length * Number(perAuthBaseCost)
   }
 }

@@ -499,10 +499,8 @@ export async function accumulateParentBlockHash(
   if (!vm.common.isActivatedEIP(2935)) {
     throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
   }
-  const historyAddress = new Address(
-    bigIntToAddressBytes(vm.common.param('vm', 'historyStorageAddress'))
-  )
-  const historyServeWindow = vm.common.param('vm', 'historyServeWindow')
+  const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('historyStorageAddress')))
+  const historyServeWindow = vm.common.param('historyServeWindow')
 
   // getAccount with historyAddress will throw error as witnesses are not bundeled
   // but we need to put account so as to query later for slot
@@ -542,7 +540,7 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
     throw new Error('Cannot call `accumulateParentBeaconBlockRoot`: EIP 4788 is not active')
   }
   // Save the parentBeaconBlockRoot to the beaconroot stateful precompile ring buffers
-  const historicalRootsLength = BigInt(vm.common.param('vm', 'historicalRootsLength'))
+  const historicalRootsLength = BigInt(vm.common.param('historicalRootsLength'))
   const timestampIndex = timestamp % historicalRootsLength
   const timestampExtended = timestampIndex + historicalRootsLength
 
@@ -614,7 +612,7 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
 
     let maxGasLimit
     if (vm.common.isActivatedEIP(1559)) {
-      maxGasLimit = block.header.gasLimit * vm.common.param('gasConfig', 'elasticityMultiplier')
+      maxGasLimit = block.header.gasLimit * vm.common.param('elasticityMultiplier')
     } else {
       maxGasLimit = block.header.gasLimit
     }
@@ -693,7 +691,7 @@ async function assignBlockRewards(vm: VM, block: Block): Promise<void> {
   if (vm.DEBUG) {
     debug(`Assign block rewards`)
   }
-  const minerReward = vm.common.param('pow', 'minerReward')
+  const minerReward = vm.common.param('minerReward')
   const ommers = block.uncleHeaders
   // Reward ommers
   for (const ommer of ommers) {

@@ -55,6 +55,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "vitest run",
+    "test:node": "npm run test",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {

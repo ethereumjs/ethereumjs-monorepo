@@ -252,7 +252,7 @@ describe(method, () => {
       hardfork: Hardfork.London,
     })
 
-    const initialBaseFee = common.param('gasConfig', 'initialBaseFee')
+    const initialBaseFee = common.param('initialBaseFee')
     const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
 
     const rpc = getRpcClient(server)
