@@ -19,7 +19,7 @@ export function createLegacyTx(txData: TxData, opts: TxOptions = {}) {
 }
 
 /**
- * Create a transaction from a values array.
+ * Create a transaction from an array of byte encoded values ordered according to the devp2p network encoding - format noted below.
  *
  * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
  */
@@ -52,6 +52,12 @@ export function createLegacyTxFromBytesArray(values: TxValuesArray, opts: TxOpti
   )
 }
 
+/**
+ * Instantiate a transaction from a RLP serialized tx.
+ *
+ * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data,
+ * signatureV, signatureR, signatureS])`
+ */
 export function createLegacyTxFromRLP(serialized: Uint8Array, opts: TxOptions = {}) {
   const values = RLP.decode(serialized)
 

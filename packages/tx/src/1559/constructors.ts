@@ -24,7 +24,7 @@ export function create1559FeeMarketTx(txData: TxData, opts: TxOptions = {}) {
 }
 
 /**
- * Create a transaction from a values array.
+ * Create a transaction from an array of byte encoded values ordered according to the devp2p network encoding - format noted below.
  *
  * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
  * accessList, signatureYParity, signatureR, signatureS]`
@@ -77,7 +77,7 @@ export function createEIP1559FeeMarketTxFromBytesArray(
 }
 
 /**
- * Instantiate a transaction from the serialized tx.
+ * Instantiate a transaction from an RLP serialized tx.
  *
  * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
  * accessList, signatureYParity, signatureR, signatureS])`

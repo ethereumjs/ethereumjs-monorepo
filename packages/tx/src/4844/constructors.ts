@@ -104,7 +104,7 @@ export function create4844BlobTx(txData: TxData, opts?: TxOptions) {
 }
 
 /**
- * Create a transaction from a values array.
+ * Create a transaction from an array of byte encoded values ordered according to the devp2p network encoding - format noted below.
  *
  * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
  * accessList, signatureYParity, signatureR, signatureS]`
@@ -174,7 +174,7 @@ export function create4844BlobTxFromBytesArray(values: TxValuesArray, opts: TxOp
 }
 
 /**
- * Instantiate a transaction from the serialized tx.
+ * Instantiate a transaction from a RLP serialized tx.
  *
  * Format: `0x03 || rlp([chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, to, value, data,
  * access_list, max_fee_per_data_gas, blob_versioned_hashes, y_parity, r, s])`

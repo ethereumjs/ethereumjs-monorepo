@@ -24,7 +24,7 @@ export function create2930AccessListTx(txData: TxData, opts: TxOptions = {}) {
 }
 
 /**
- * Create a transaction from a values array.
+ * Create a transaction from an array of byte encoded values ordered according to the devp2p network encoding - format noted below.
  *
  * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
  * signatureYParity (v), signatureR (r), signatureS (s)]`
@@ -62,7 +62,7 @@ export function create2930AccessListTxFromBytesArray(values: TxValuesArray, opts
 }
 
 /**
- * Instantiate a transaction from the serialized tx.
+ * Instantiate a transaction from a RLP serialized tx.
  *
  * Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
  * signatureYParity (v), signatureR (r), signatureS (s)])`
