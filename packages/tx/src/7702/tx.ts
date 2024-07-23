@@ -1,4 +1,3 @@
-import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
   BIGINT_27,
@@ -6,10 +5,7 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  bytesToHex,
-  equalsBytes,
   toBytes,
-  validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
 import { BaseTransaction } from '../baseTransaction.js'
@@ -18,7 +14,9 @@ import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP7702 from '../capabilities/eip7702.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { TransactionType } from '../types.js'
-import { AccessLists, AuthorizationLists, txTypeBytes } from '../util.js'
+import { AccessLists, AuthorizationLists, validateNotArray } from '../util.js'
+
+import { create7702EOACodeTx } from './constructors.js'
 
 import type {
   AccessList,
@@ -32,8 +30,8 @@ import type {
 } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 
-type TxData = AllTypesTxData[TransactionType.EOACodeEIP7702]
-type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702]
+export type TxData = AllTypesTxData[TransactionType.EOACodeEIP7702]
+export type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702]
 
 /**
  * Typed transaction with the ability to set codes on EOA accounts
@@ -51,98 +49,6 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
   public readonly maxFeePerGas: bigint
 
   public readonly common: Common
-
-  /**
-   * Instantiate a transaction from a data dictionary.
-   *
-   * Format: { chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-   * accessList, v, r, s }
-   *
-   * Notes:
-   * - `chainId` will be set automatically if not provided
-   * - All parameters are optional and have some basic default values
-   */
-  public static fromTxData(txData: TxData, opts: TxOptions = {}) {
-    return new EOACodeEIP7702Transaction(txData, opts)
-  }
-
-  /**
-   * Instantiate a transaction from the serialized tx.
-   *
-   * Format: `0x04 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-   * accessList, signatureYParity, signatureR, signatureS])`
-   */
-  public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
-    if (
-      equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.EOACodeEIP7702)) === false
-    ) {
-      throw new Error(
-        `Invalid serialized tx input: not an EIP-7702 transaction (wrong tx type, expected: ${
-          TransactionType.EOACodeEIP7702
-        }, received: ${bytesToHex(serialized.subarray(0, 1))}`
-      )
-    }
-
-    const values = RLP.decode(serialized.subarray(1))
-
-    if (!Array.isArray(values)) {
-      throw new Error('Invalid serialized tx input: must be array')
-    }
-
-    return EOACodeEIP7702Transaction.fromValuesArray(values as TxValuesArray, opts)
-  }
-
-  /**
-   * Create a transaction from a values array.
-   *
-   * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-   * accessList, signatureYParity, signatureR, signatureS]`
-   */
-  public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
-    if (values.length !== 10 && values.length !== 13) {
-      throw new Error(
-        'Invalid EIP-7702 transaction. Only expecting 10 values (for unsigned tx) or 13 values (for signed tx).'
-      )
-    }
-
-    const [
-      chainId,
-      nonce,
-      maxPriorityFeePerGas,
-      maxFeePerGas,
-      gasLimit,
-      to,
-      value,
-      data,
-      accessList,
-      authorityList,
-      v,
-      r,
-      s,
-    ] = values
-
-    this._validateNotArray({ chainId, v })
-    validateNoLeadingZeroes({ nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, value, v, r, s })
-
-    return new EOACodeEIP7702Transaction(
-      {
-        chainId: bytesToBigInt(chainId),
-        nonce,
-        maxPriorityFeePerGas,
-        maxFeePerGas,
-        gasLimit,
-        to,
-        value,
-        data,
-        accessList: accessList ?? [],
-        authorizationList: authorityList ?? [],
-        v: v !== undefined ? bytesToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Uint8Array)
-        r,
-        s,
-      },
-      opts
-    )
-  }
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -187,7 +93,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
 
-    BaseTransaction._validateNotArray(txData)
+    validateNotArray(txData)
 
     if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
       const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
@@ -338,7 +244,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
 
-    return EOACodeEIP7702Transaction.fromTxData(
+    return create7702EOACodeTx(
       {
         chainId: this.chainId,
         nonce: this.nonce,
