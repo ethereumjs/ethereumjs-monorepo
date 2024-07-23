@@ -13,7 +13,7 @@ export const hardforks: HardforksDict = {
       maxRefundQuotient: 2, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
     },
     gasPrices: {
-      baseGas: 2, // Gas base cost, used e.g. for ChainID opcode (Istanbul)
+      basefeeGas: 2, // Gas base cost, used e.g. for ChainID opcode (Istanbul)
       expGas: 10, // Base fee of the EXP opcode
       expByteGas: 10, // Times ceil(log256(exponent)) for the EXP instruction
       keccak256Gas: 30, // Base fee of the SHA3 opcode

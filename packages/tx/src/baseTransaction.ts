@@ -198,7 +198,7 @@ export abstract class BaseTransaction<T extends TransactionType>
 
     if ((this.to === undefined || this.to === null) && this.common.isActivatedEIP(3860)) {
       const dataLength = BigInt(Math.ceil(this.data.length / 32))
-      const initCodeCost = this.common.param('gasPrices', 'initCodeWordCostGas') * dataLength
+      const initCodeCost = this.common.param('gasPrices', 'initCodeWordGas') * dataLength
       cost += initCodeCost
     }
 

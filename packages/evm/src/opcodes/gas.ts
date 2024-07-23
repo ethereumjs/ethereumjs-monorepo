@@ -546,8 +546,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (common.isActivatedEIP(3860)) {
-          gas +=
-            ((length + BIGINT_31) / BIGINT_32) * common.param('gasPrices', 'initCodeWordCostGas')
+          gas += ((length + BIGINT_31) / BIGINT_32) * common.param('gasPrices', 'initCodeWordGas')
         }
 
         gas += subMemUsage(runState, offset, length, common)
@@ -759,8 +758,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (common.isActivatedEIP(3860)) {
-          gas +=
-            ((length + BIGINT_31) / BIGINT_32) * common.param('gasPrices', 'initCodeWordCostGas')
+          gas += ((length + BIGINT_31) / BIGINT_32) * common.param('gasPrices', 'initCodeWordGas')
         }
 
         gas += common.param('gasPrices', 'keccak256WordGas') * divCeil(length, BIGINT_32)

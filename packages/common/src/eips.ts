@@ -16,9 +16,9 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [3540, 5450],
     gasPrices: {
-      dupn: 3, // Base fee of the DUPN opcode
-      swapn: 3, // Base fee of the SWAPN opcode
-      exchange: 3, // Base fee of the EXCHANGE opcode
+      dupnGas: 3, // Base fee of the DUPN opcode
+      swapnGas: 3, // Base fee of the SWAPN opcode
+      exchangeGas: 3, // Base fee of the EXCHANGE opcode
     },
   },
   /**
@@ -30,8 +30,8 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [],
     gasPrices: {
-      tstore: 100, // Base fee of the TSTORE opcode
-      tload: 100, // Base fee of the TLOAD opcode
+      tstoreGas: 100, // Base fee of the TSTORE opcode
+      tloadGas: 100, // Base fee of the TLOAD opcode
     },
   },
   /**
@@ -43,9 +43,9 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Berlin,
     requiredEIPs: [2930],
     gasConfig: {
-      baseFeeMaxChangeDenominator: 8, // Maximum base fee change denominator
-      elasticityMultiplier: 2, // Maximum block gas target elasticity
-      initialBaseFee: 1000000000, // Initial base fee on first EIP1559 block
+      baseFeeMaxChangeDenominatorGas: 8, // Maximum base fee change denominator
+      elasticityMultiplierGas: 2, // Maximum block gas target elasticity
+      initialBaseFeeGas: 1000000000, // Initial base fee on first EIP1559 block
     },
   },
   /**
@@ -57,7 +57,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Byzantium,
     requiredEIPs: [],
     gasPrices: {
-      modexpGquaddivisor: 3, // Gquaddivisor from modexp precompile for gas calculation
+      modexpGquaddivisorGas: 3, // Gquaddivisor from modexp precompile for gas calculation
     },
   },
   /**
@@ -100,24 +100,24 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [],
     gasPrices: {
-      coldsload: 2100, // Gas cost of the first read of storage from a given location (per transaction)
-      coldaccountaccess: 2600, // Gas cost of the first read of a given address (per transaction)
-      warmstorageread: 100, // Gas cost of reading storage locations which have already loaded 'cold'
-      sstoreCleanGasEIP2200: 2900, // Once per SSTORE operation from clean non-zero to something else
-      sstoreNoopGasEIP2200: 100, // Once per SSTORE operation if the value doesn't change
-      sstoreDirtyGasEIP2200: 100, // Once per SSTORE operation if a dirty value is changed
-      sstoreInitRefundEIP2200: 19900, // Once per SSTORE operation for resetting to the original zero value
-      sstoreCleanRefundEIP2200: 4900, // Once per SSTORE operation for resetting to the original non-zero value
-      call: 0, // Base fee of the CALL opcode
-      callcode: 0, // Base fee of the CALLCODE opcode
-      delegatecall: 0, // Base fee of the DELEGATECALL opcode
-      staticcall: 0, // Base fee of the STATICCALL opcode
-      balance: 0, // Base fee of the BALANCE opcode
-      extcodesize: 0, // Base fee of the EXTCODESIZE opcode
-      extcodecopy: 0, // Base fee of the EXTCODECOPY opcode
-      extcodehash: 0, // Base fee of the EXTCODEHASH opcode
-      sload: 0, // Base fee of the SLOAD opcode
-      sstore: 0, // Base fee of the SSTORE opcode
+      coldsloadGas: 2100, // Gas cost of the first read of storage from a given location (per transaction)
+      coldaccountaccessGas: 2600, // Gas cost of the first read of a given address (per transaction)
+      warmstoragereadGas: 100, // Gas cost of reading storage locations which have already loaded 'cold'
+      sstoreCleanEIP2200Gas: 2900, // Once per SSTORE operation from clean non-zero to something else
+      sstoreNoopEIP2200Gas: 100, // Once per SSTORE operation if the value doesn't change
+      sstoreDirtyEIP2200Gas: 100, // Once per SSTORE operation if a dirty value is changed
+      sstoreInitRefundEIP2200Gas: 19900, // Once per SSTORE operation for resetting to the original zero value
+      sstoreCleanRefundEIP2200Gas: 4900, // Once per SSTORE operation for resetting to the original non-zero value
+      callGas: 0, // Base fee of the CALL opcode
+      callcodeGas: 0, // Base fee of the CALLCODE opcode
+      delegatecallGas: 0, // Base fee of the DELEGATECALL opcode
+      staticcallGas: 0, // Base fee of the STATICCALL opcode
+      balanceGas: 0, // Base fee of the BALANCE opcode
+      extcodesizeGas: 0, // Base fee of the EXTCODESIZE opcode
+      extcodecopyGas: 0, // Base fee of the EXTCODECOPY opcode
+      extcodehashGas: 0, // Base fee of the EXTCODEHASH opcode
+      sloadGas: 0, // Base fee of the SLOAD opcode
+      sstoreGas: 0, // Base fee of the SSTORE opcode
     },
   },
   /**
@@ -129,8 +129,8 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Istanbul,
     requiredEIPs: [2718, 2929],
     gasPrices: {
-      accessListStorageKeyCost: 1900, // Gas cost per storage key in an Access List transaction
-      accessListAddressCost: 2400, // Gas cost per storage key in an Access List transaction
+      accessListStorageKeyGas: 1900, // Gas cost per storage key in an Access List transaction
+      accessListAddressGas: 2400, // Gas cost per storage key in an Access List transaction
     },
   },
   /**
@@ -155,9 +155,9 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
     gasPrices: {
-      auth: 3100, // Gas cost of the AUTH opcode
-      authcall: 0, // Gas cost of the AUTHCALL opcode
-      authcallValueTransfer: 6700, // Paid for CALL when the value transfer is non-zero
+      authGas: 3100, // Gas cost of the AUTH opcode
+      authcallGas: 0, // Gas cost of the AUTHCALL opcode
+      authcallValueTransferGas: 6700, // Paid for CALL when the value transfer is non-zero
     },
   },
   /**
@@ -169,7 +169,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
     gasPrices: {
-      basefee: 2, // Gas cost of the BASEFEE opcode
+      basefeeGas: 2, // Gas cost of the BASEFEE opcode
     },
   },
   /**
@@ -181,11 +181,11 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Berlin,
     requiredEIPs: [2929],
     gasConfig: {
-      maxRefundQuotient: 5, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
+      maxRefundQuotientGas: 5, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
     },
     gasPrices: {
-      selfdestructRefund: 0, // Refunded following a selfdestruct operation
-      sstoreClearRefundEIP2200: 4800, // Once per SSTORE operation for clearing an originally existing storage slot
+      selfdestructRefundGas: 0, // Refunded following a selfdestruct operation
+      sstoreClearRefundEIP2200Gas: 4800, // Once per SSTORE operation for clearing an originally existing storage slot
     },
   },
   /**
@@ -263,7 +263,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [],
     gasPrices: {
-      push0: 2, // Base fee of the PUSH0 opcode
+      push0Gas: 2, // Base fee of the PUSH0 opcode
     },
   },
   /**
@@ -275,7 +275,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.SpuriousDragon,
     requiredEIPs: [],
     gasPrices: {
-      initCodeWordCost: 2, // Gas to pay for each word (32 bytes) of initcode when creating a contract
+      initCodeWordGas: 2, // Gas to pay for each word (32 bytes) of initcode when creating a contract
     },
     vm: {
       maxInitCodeSize: 49152, // Maximum length of initialization code when creating a contract
@@ -290,9 +290,9 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [3540, 3670],
     gasPrices: {
-      rjump: 2, // Base fee of the RJUMP opcode
-      rjumpi: 4, // Base fee of the RJUMPI opcode
-      rjumpv: 4, // Base fee of the RJUMPV opcode
+      rjumpGas: 2, // Base fee of the RJUMP opcode
+      rjumpiGas: 4, // Base fee of the RJUMPI opcode
+      rjumpvGas: 4, // Base fee of the RJUMPV opcode
     },
   },
   /**
@@ -316,7 +316,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
     gasPrices: {
-      prevrandao: 2, // Base fee of the PREVRANDAO opcode (previously DIFFICULTY)
+      prevrandaoGas: 2, // Base fee of the PREVRANDAO opcode (previously DIFFICULTY)
     },
   },
   /**
@@ -328,8 +328,8 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [3540, 3670, 5450],
     gasPrices: {
-      callf: 5, // Base fee of the CALLF opcode
-      retf: 3, // Base fee of the RETF opcode
+      callfGas: 5, // Base fee of the CALLF opcode
+      retfGas: 3, // Base fee of the RETF opcode
     },
   },
   /**
@@ -360,10 +360,10 @@ export const EIPs: EIPsDict = {
       blobGasPriceUpdateFraction: 3338477, // The denominator used in the exponential when calculating a blob gas price
     },
     gasPrices: {
-      simpleGasPerBlob: 12000, // The basic gas fee for each blob
-      minBlobGasPrice: 1, // The minimum fee per blob gas
-      kzgPointEvaluationGasPrecompilePrice: 50000, // The fee associated with the point evaluation precompile
-      blobhash: 3, // Base fee of the BLOBHASH opcode
+      simplePerBlobGas: 12000, // The basic gas fee for each blob
+      minBlobGas: 1, // The minimum fee per blob gas
+      kzgPointEvaluationPrecompileGas: 50000, // The fee associated with the point evaluation precompile
+      blobhashGas: 3, // Base fee of the BLOBHASH opcode
     },
     sharding: {
       blobCommitmentVersionKzg: 1, // The number indicated a versioned hash is a KZG commitment
@@ -409,7 +409,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Shanghai,
     requiredEIPs: [],
     gasPrices: {
-      mcopy: 3, // Base fee of the MCOPY opcode
+      mcopyGas: 3, // Base fee of the MCOPY opcode
     },
   },
   /**
@@ -430,7 +430,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [4750, 5450],
     gasPrices: {
-      jumpf: 5, // Base fee of the JUMPF opcode
+      jumpfGas: 5, // Base fee of the JUMPF opcode
     },
   },
   /**
@@ -451,8 +451,8 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
     gasPrices: {
-      create: 1000, // Base fee of the CREATE opcode
-      coldsload: 0, // Gas cost of the first read of storage from a given location (per transaction)
+      createGas: 1000, // Base fee of the CREATE opcode
+      coldsloadGas: 0, // Gas cost of the first read of storage from a given location (per transaction)
     },
     vm: {
       // kaustinen 6 current uses this address, however this will be updated to correct address
@@ -497,10 +497,10 @@ export const EIPs: EIPsDict = {
     */
     requiredEIPs: [2929],
     gasPrices: {
-      extcall: 0, // Base fee of the EXTCALL opcode
-      extdelegatecall: 0, // Base fee of the EXTDELEGATECALL opcode
-      extstaticcall: 0, // Base fee of the EXTSTATICCALL opcode
-      returndataload: 3, // Base fee of the RETURNDATALOAD opcode
+      extcallGas: 0, // Base fee of the EXTCALL opcode
+      extdelegatecallGas: 0, // Base fee of the EXTDELEGATECALL opcode
+      extstaticcallGas: 0, // Base fee of the EXTSTATICCALL opcode
+      returndataloadGas: 3, // Base fee of the RETURNDATALOAD opcode
       minRetainedGas: 5000, // Minimum gas retained prior to executing an EXT*CALL opcode (this is the minimum gas available after performing the EXT*CALL)
       minCalleeGas: 2300, //Minimum gas available to the the address called by an EXT*CALL opcode
     },
@@ -528,10 +528,10 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [3540, 3670],
     gasPrices: {
-      dataload: 4, // Base fee of the DATALOAD opcode
-      dataloadn: 3, // Base fee of the DATALOADN opcode
-      datasize: 2, // Base fee of the DATASIZE opcode
-      datacopy: 3, // Base fee of the DATACOPY opcode
+      dataloadGas: 4, // Base fee of the DATALOAD opcode
+      dataloadnGas: 3, // Base fee of the DATALOADN opcode
+      datasizeGas: 2, // Base fee of the DATASIZE opcode
+      datacopyGas: 3, // Base fee of the DATACOPY opcode
     },
   },
   /**
@@ -543,7 +543,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Paris,
     requiredEIPs: [4844],
     gasPrices: {
-      blobbasefee: 2, // Gas cost of the BLOBBASEFEE opcode
+      blobbasefeeGas: 2, // Gas cost of the BLOBBASEFEE opcode
     },
   },
   /**
@@ -558,8 +558,8 @@ export const EIPs: EIPsDict = {
     */
     requiredEIPs: [3540, 3541, 3670],
     gasPrices: {
-      eofcreate: 32000, // Base fee of the EOFCREATE opcode (Same as CREATE/CREATE2)
-      returncontract: 0, // Base fee of the RETURNCONTRACT opcode
+      eofcreateGas: 32000, // Base fee of the EOFCREATE opcode (Same as CREATE/CREATE2)
+      returncontractGas: 0, // Base fee of the RETURNCONTRACT opcode
     },
   },
   /**
@@ -602,7 +602,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Cancun,
     requiredEIPs: [2718, 2929, 2930],
     gasPrices: {
-      perAuthBaseCost: 2500, // Gas cost of each authority item
+      perAuthBaseGas: 2500, // Gas cost of each authority item
     },
   },
   /**
