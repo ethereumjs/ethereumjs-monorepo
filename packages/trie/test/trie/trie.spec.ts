@@ -289,7 +289,7 @@ describe('keyHashingFunction', async () => {
 })
 
 describe('getValueMap', () => {
-  it.only('should return a map of all hashed keys and values', async () => {
+  it('should return a map of all hashed keys and values', async () => {
     const trie = await createTrie({})
     const entries: [Uint8Array, string][] = [
       [bigIntToBytes(1n), '0x' + '0a'.repeat(32)],
