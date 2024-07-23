@@ -1,8 +1,8 @@
-import { hexToBytes, toBytes, unprefixedHexToBytes } from '@ethereumjs/util'
+import { concatBytes, hexToBytes, toBytes, unprefixedHexToBytes } from '@ethereumjs/util'
+
+import { nibblesTypeToPackedBytes } from './nibbles.js'
 
 import type { Nibbles } from '../types.js'
-import { nibblesTypeToPackedBytes } from './nibbles.js'
-import { concatBytes } from '@ethereumjs/util'
 
 // Reference: https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/
 //
