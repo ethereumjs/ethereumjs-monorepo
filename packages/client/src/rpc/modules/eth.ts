@@ -23,6 +23,15 @@ import {
   setLengthLeft,
   toType,
 } from '@ethereumjs/util'
+import {
+  type EIP4844BlobTxReceipt,
+  type PostByzantiumTxReceipt,
+  type PreByzantiumTxReceipt,
+  type TxReceipt,
+  type VM,
+  runBlock,
+  runTx,
+} from '@ethereumjs/vm'
 
 import { INTERNAL_ERROR, INVALID_HEX_STRING, INVALID_PARAMS, PARSE_ERROR } from '../error-code.js'
 import { callWithStackTrace, getBlockByOption, jsonRpcTx } from '../helpers.js'
@@ -43,13 +52,6 @@ import type {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type {
-  EIP4844BlobTxReceipt,
-  PostByzantiumTxReceipt,
-  PreByzantiumTxReceipt,
-  TxReceipt,
-  VM,
-} from '@ethereumjs/vm'
 
 const EMPTY_SLOT = `0x${'00'.repeat(32)}`
 
@@ -611,7 +613,7 @@ export class Eth {
       return from
     }
 
-    const { totalGasSpent } = await vm.runTx({
+    const { totalGasSpent } = await runTx(vm, {
       tx,
       skipNonce: true,
       skipBalance: true,
@@ -940,7 +942,7 @@ export class Eth {
     const vmCopy = await this._vm!.shallowCopy()
     vmCopy.common.setHardfork(block.common.hardfork())
     // Run tx through copied vm to get tx gasUsed and createdAddress
-    const runBlockResult = await vmCopy.runBlock({
+    const runBlockResult = await runBlock(vmCopy, {
       block,
       root: parentBlock.header.stateRoot,
       skipBlockValidation: true,
@@ -1015,7 +1017,7 @@ export class Eth {
     const vmCopy = await this._vm!.shallowCopy()
     vmCopy.common.setHardfork(tx.common.hardfork())
     // Run tx through copied vm to get tx gasUsed and createdAddress
-    const runBlockResult = await vmCopy.runBlock({
+    const runBlockResult = await runBlock(vmCopy, {
       block,
       root: parentBlock.header.stateRoot,
       skipBlockValidation: true,

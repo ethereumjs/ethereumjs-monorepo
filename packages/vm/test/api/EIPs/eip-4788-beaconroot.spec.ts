@@ -24,6 +24,7 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src'
+import { runBlock as runBlockVM } from '../../../src/index.js'
 
 import type { Block } from '@ethereumjs/block'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
@@ -108,7 +109,7 @@ async function runBlock(block: Block) {
   await vm.stateManager.putContractCode(contractAddress, hexToBytes(CODE))
   await vm.stateManager.putContractCode(BROOT_Address, hexToBytes(BROOT_CODE))
   return {
-    vmResult: await vm.runBlock({
+    vmResult: await runBlockVM(vm, {
       block,
       skipBalance: true,
       skipBlockValidation: true,

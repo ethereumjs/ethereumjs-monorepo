@@ -1,5 +1,5 @@
 import { Address, TypeOutput, bigIntToHex, bytesToHex, hexToBytes, toType } from '@ethereumjs/util'
-import { type VM, encodeReceipt } from '@ethereumjs/vm'
+import { type VM, encodeReceipt, runTx } from '@ethereumjs/vm'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code.js'
 import { callWithStackTrace, getBlockByOption } from '../helpers.js'
@@ -166,7 +166,7 @@ export class Debug {
     await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
     for (let x = 0; x < txIndex; x++) {
       // Run all txns in the block prior to the traced transaction
-      await vmCopy.runTx({ tx: block.transactions[x], block })
+      await runTx(vmCopy, { tx: block.transactions[x], block })
     }
 
     const trace = {
@@ -210,7 +210,7 @@ export class Debug {
       }
       next?.()
     })
-    const res = await vmCopy.runTx({ tx, block })
+    const res = await runTx(vmCopy, { tx, block })
     trace.gas = bigIntToHex(res.totalGasSpent)
     trace.failed = res.execResult.exceptionError !== undefined
     trace.returnValue = bytesToHex(res.execResult.returnValue)
@@ -349,7 +349,7 @@ export class Debug {
     const vmCopy = await this.vm.shallowCopy()
     await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
     for (let i = 0; i <= txIndex; i++) {
-      await vmCopy.runTx({ tx: block.transactions[i], block })
+      await runTx(vmCopy, { tx: block.transactions[i], block })
     }
 
     // await here so that any error can be handled in the catch below for proper response

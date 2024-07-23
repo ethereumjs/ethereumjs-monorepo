@@ -3,8 +3,8 @@ import { EVMErrorMessage } from '@ethereumjs/evm'
 import { Address, bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
-import { createAccount } from '../utils'
+import { VM } from '../../../src/index.js'
+import { createAccount } from '../utils.js'
 
 const testCases = [
   { chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, selfbalance: '0xf1' },

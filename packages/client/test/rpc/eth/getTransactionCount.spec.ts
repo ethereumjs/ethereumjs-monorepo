@@ -4,6 +4,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { LegacyTransaction, createTxFromTxData } from '@ethereumjs/tx'
 import { Account, Address, hexToBytes, randomBytes } from '@ethereumjs/util'
+import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
@@ -62,7 +63,7 @@ describe(method, () => {
 
     let ranBlock: Block | undefined = undefined
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-    await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
 
     // verify nonce increments after a tx

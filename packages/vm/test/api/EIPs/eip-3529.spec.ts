@@ -3,7 +3,7 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -165,7 +165,7 @@ describe('EIP-3529 tests', () => {
       gasLimit: 100000,
     }).sign(pkey)
 
-    const result = await vm.runTx({
+    const result = await runTx(vm, {
       tx,
       skipHardForkValidation: true,
     })
@@ -217,7 +217,7 @@ describe('EIP-3529 tests', () => {
       gasLimit: 10000000,
     }).sign(pkey)
 
-    const result = await vm.runTx({ tx, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, skipHardForkValidation: true })
 
     const actualGasUsed = startGas! - finalGas! + BigInt(21000)
     const maxRefund = actualGasUsed / BigInt(5)

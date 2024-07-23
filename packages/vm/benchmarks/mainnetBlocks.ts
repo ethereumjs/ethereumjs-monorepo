@@ -2,15 +2,13 @@ import { readFileSync } from 'fs'
 import Benchmark from 'benchmark'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Block, createBlockFromRPC } from '@ethereumjs/block'
-import { VM } from '@ethereumjs/vm'
+import { runBlock as runBlockVM, VM } from '@ethereumjs/vm'
 import { getPreState, getBlockchain, verifyResult } from './util.js'
 
 const BLOCK_FIXTURE = 'benchmarks/fixture/blocks-prestate.json'
 
 const runBlock = async (vm: VM, block: Block, receipts: any) => {
-  await (
-    await vm.shallowCopy()
-  ).runBlock({
+  await runBlockVM(await vm.shallowCopy(), {
     block,
     generate: true,
     skipBlockValidation: true,

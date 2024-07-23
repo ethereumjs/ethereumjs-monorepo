@@ -3,7 +3,7 @@ import { Address, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 // eslint-disable-next-line import/order
-import { VM } from '../../../src/vm.js'
+import { VM } from '../../../src/index.js'
 
 // See https://github.com/holiman/go-ethereum/blob/2c99023b68c573ba24a5b01db13e000bd9b82417/core/vm/testdata/precompiles/modexp_eip2565.json
 import testData from '../testdata/eip-2565.json'

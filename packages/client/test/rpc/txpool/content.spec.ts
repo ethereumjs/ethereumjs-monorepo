@@ -4,6 +4,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import { randomBytes } from '@ethereumjs/util'
+import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
@@ -44,7 +45,7 @@ describe(method, () => {
 
     let ranBlock: Block | undefined = undefined
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-    await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
     const service = client.services[0] as FullEthereumService
     service.execution.vm.common.setHardfork('london')
@@ -69,7 +70,7 @@ describe(method, () => {
     )
 
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-    await vm.runBlock({ block: londonBlock, generate: true, skipBlockValidation: true })
+    await runBlock(vm, { block: londonBlock, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
     ;(service.txPool as any).validate = () => {}
     await service.txPool.add(createTxFromTxData({ type: 2 }, {}).sign(randomBytes(32)))
