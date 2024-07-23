@@ -5,6 +5,7 @@ import {
   bytesToHex,
   concatBytes,
   equalsBytes,
+  hexToBytes,
   randomBytes,
   unprefixedHexToBytes,
   utf8ToBytes,
@@ -292,14 +293,13 @@ describe('getValueMap', () => {
   it.only('should return a map of all hashed keys and values', async () => {
     const trie = await createTrie({})
     const entries: [Uint8Array, string][] = [
-      [bigIntToBytes(1n), 'bingo'],
-      [bigIntToBytes(2n), 'dingo'],
-      [bigIntToBytes(3n), 'mingo'],
+      [bigIntToBytes(1n), '0x' + '0a'.repeat(32)],
+      [bigIntToBytes(2n), '0x' + '0b'.repeat(32)],
+      [bigIntToBytes(3n), '0x' + '0c'.repeat(32)],
     ]
     for (const entry of entries) {
       await trie.put(entry[0], utf8ToBytes(entry[1]))
     }
-
     const dump = await trie.getValueMap()
     assert.equal(Object.entries(dump.values).length, 3)
   })
