@@ -1,11 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { txFromTxData } from '@ethereumjs/tx'
-
-import { assert, describe, it } from 'vitest'
-
-import { VM } from '../../../src/vm.js'
-
 import { Address, bytesToHex, createAccount, hexToBytes } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
 import { VM, runTx } from '../../../src/index.js'
 

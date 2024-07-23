@@ -1,7 +1,8 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { txFromTxData } from '@ethereumjs/tx'
-import { createAccount, Address, hexToBytes } from '@ethereumjs/util'
+import { Address, createAccount, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
+
 import { VM, runTx } from '../../../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
