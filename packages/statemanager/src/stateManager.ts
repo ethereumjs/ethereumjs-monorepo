@@ -995,16 +995,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
     const trie = this._getStorageTrie(address, account)
 
-    return new Promise((resolve, _) => {
-      const storage: StorageDump = {}
-
-      return trie
-        .walkAllValueNodes(async (node: TrieNode, _) => {
-          if (node instanceof LeafNode) {
-            storage[bytesToHex(nibbleTypeToPackedBytes(node._nibbles))] = bytesToHex(node._value)
-          }
-        })
-        .then((_) => resolve(storage))
+    return trie.getValueMap().then((value) => {
+      return value.values
     })
   }
 
@@ -1030,45 +1022,21 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     const trie = this._getStorageTrie(address, account)
 
-    return new Promise((resolve, _) => {
-      let inRange = false
-      let i = 0
+    return trie.getValueMap(startKey, limit).then((value) => {
+      const values = value.values
+      const dump = Object.create(null)
+      for (const key of Object.keys(values)) {
+        const val = values[key]
+        dump[key] = {
+          key: null,
+          value: val,
+        }
+      }
 
-      /** Object conforming to {@link StorageRange.storage}. */
-      const storageMap: StorageRange['storage'] = {}
-
-      return trie
-        .walkAllValueNodes(async (node: TrieNode, currentKey: number[]) => {
-          if (node instanceof LeafNode) {
-            // storage[bytesToHex(nibblestoBytes(node._nibbles))] = bytesToHex(node._value)
-
-            const keyBytes = nibbleTypeToPackedBytes(currentKey.concat(node.key()))
-            if (!inRange) {
-              // Check if the key is already in the correct range.
-              if (bytesToBigInt(keyBytes) >= startKey) {
-                inRange = true
-              } else {
-                return
-              }
-            }
-
-            if (i < limit) {
-              storageMap[bytesToHex(keyBytes)] = { key: null, value: bytesToHex(node._value) }
-              i++
-            } else if (i === limit) {
-              resolve({
-                storage: storageMap,
-                nextKey: bytesToHex(keyBytes),
-              })
-            }
-          }
-        })
-        .then((_) =>
-          resolve({
-            storage: storageMap,
-            nextKey: null,
-          })
-        )
+      return {
+        storage: dump,
+        nextKey: value.nextKey,
+      }
     })
   }
 
