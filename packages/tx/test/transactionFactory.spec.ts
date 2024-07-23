@@ -7,6 +7,9 @@ import {
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
   TransactionType,
+  create1559FeeMarketTx,
+  create2930AccessListTx,
+  createLegacyTx,
   createTxFromBlockBodyData,
   createTxFromSerializedData,
   createTxFromTxData,
@@ -19,15 +22,12 @@ const common = new Common({
 
 const pKey = hexToBytes('0x4646464646464646464646464646464646464646464646464646464646464646')
 
-const unsignedLegacyTx = LegacyTransaction.fromTxData({})
+const unsignedLegacyTx = createLegacyTx({})
 const signedLegacyTx = unsignedLegacyTx.sign(pKey)
 
-const unsignedEIP2930Tx = AccessListEIP2930Transaction.fromTxData(
-  { chainId: BigInt(1) },
-  { common }
-)
+const unsignedEIP2930Tx = create2930AccessListTx({ chainId: BigInt(1) }, { common })
 const signedEIP2930Tx = unsignedEIP2930Tx.sign(pKey)
-const unsignedEIP1559Tx = FeeMarketEIP1559Transaction.fromTxData({ chainId: BigInt(1) }, { common })
+const unsignedEIP1559Tx = create1559FeeMarketTx({ chainId: BigInt(1) }, { common })
 const signedEIP1559Tx = unsignedEIP1559Tx.sign(pKey)
 
 const txTypes = [

@@ -2,11 +2,11 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
-  AccessListEIP2930Transaction,
-  BlobEIP4844Transaction,
-  EOACodeEIP7702Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
+  create1559FeeMarketTx,
+  create2930AccessListTx,
+  create4844BlobTx,
+  create7702EOACodeTx,
+  createLegacyTx,
 } from '@ethereumjs/tx'
 import {
   Account,
@@ -27,7 +27,14 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { BlockOptions } from '@ethereumjs/block'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
-import type { TxOptions } from '@ethereumjs/tx'
+import type {
+  AccessListEIP2930Transaction,
+  BlobEIP4844Transaction,
+  EOACodeEIP7702Transaction,
+  FeeMarketEIP1559Transaction,
+  LegacyTransaction,
+  TxOptions,
+} from '@ethereumjs/tx'
 import type * as tape from 'tape'
 
 export function dumpState(state: any, cb: Function) {
@@ -136,15 +143,15 @@ export function makeTx(
         signature.nonce[0] = '0x'
       }
     }
-    tx = EOACodeEIP7702Transaction.fromTxData(txData, opts)
+    tx = create7702EOACodeTx(txData, opts)
   } else if (txData.blobVersionedHashes !== undefined) {
-    tx = BlobEIP4844Transaction.fromTxData(txData, opts)
+    tx = create4844BlobTx(txData, opts)
   } else if (txData.maxFeePerGas !== undefined) {
-    tx = FeeMarketEIP1559Transaction.fromTxData(txData, opts)
+    tx = create1559FeeMarketTx(txData, opts)
   } else if (txData.accessLists !== undefined) {
-    tx = AccessListEIP2930Transaction.fromTxData(txData, opts)
+    tx = create2930AccessListTx(txData, opts)
   } else {
-    tx = LegacyTransaction.fromTxData(txData, opts)
+    tx = createLegacyTx(txData, opts)
   }
 
   if (txData.secretKey !== undefined) {

@@ -1,15 +1,15 @@
-import path from 'path'
-import { fileURLToPath } from 'url'
-import { readFileSync } from 'fs'
-import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
-import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { VM, runTx } from '@ethereumjs/vm'
-import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.js'
-import { getAccountNonce, insertAccount } from './helpers/account-utils.js'
 import { createBlockFromBlockData } from '@ethereumjs/block'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { runTx, VM } from '@ethereumjs/vm'
+import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
+import { readFileSync } from 'fs'
+import path from 'path'
 import solc from 'solc'
+import { fileURLToPath } from 'url'
+import { getAccountNonce, insertAccount } from './helpers/account-utils.js'
+import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.js'
 
 const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
@@ -105,9 +105,7 @@ async function deployContract(
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
-  const tx = LegacyTransaction.fromTxData(buildTransaction(txData as any), { common }).sign(
-    senderPrivateKey
-  )
+  const tx = createLegacyTx(buildTransaction(txData as any), { common }).sign(senderPrivateKey)
 
   const deploymentResult = await runTx(vm, { tx, block })
 
@@ -135,9 +133,7 @@ async function setGreeting(
     nonce: await getAccountNonce(vm as any, senderPrivateKey),
   }
 
-  const tx = LegacyTransaction.fromTxData(buildTransaction(txData as any), { common }).sign(
-    senderPrivateKey
-  )
+  const tx = createLegacyTx(buildTransaction(txData as any), { common }).sign(senderPrivateKey)
 
   const setGreetingResult = await runTx(vm, { tx, block })
 

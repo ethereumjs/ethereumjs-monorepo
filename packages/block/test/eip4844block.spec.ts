@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { create4844BlobTx } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
@@ -171,7 +171,7 @@ describe('transaction validation tests', () => {
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
 
-    const tx1 = BlobEIP4844Transaction.fromTxData(
+    const tx1 = create4844BlobTx(
       {
         blobVersionedHashes,
         blobs,
@@ -182,7 +182,7 @@ describe('transaction validation tests', () => {
       },
       { common }
     ).sign(randomBytes(32))
-    const tx2 = BlobEIP4844Transaction.fromTxData(
+    const tx2 = create4844BlobTx(
       {
         blobVersionedHashes,
         blobs,

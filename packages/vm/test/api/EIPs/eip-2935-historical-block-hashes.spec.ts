@@ -1,7 +1,7 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, createCustomCommon } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -120,7 +120,7 @@ describe('EIP 2935: historical block hashes', () => {
 
     // eslint-disable-next-line no-inner-declarations
     async function testBlockhashContract(vm: VM, block: Block, i: bigint): Promise<Uint8Array> {
-      const tx = LegacyTransaction.fromTxData({
+      const tx = createLegacyTx({
         to: historyAddress,
         gasLimit: 1000000,
         gasPrice: 10,
@@ -155,7 +155,7 @@ describe('EIP 2935: historical block hashes', () => {
         s: deploymentS,
       }
 
-      const deployTx = LegacyTransaction.fromTxData(deployContractTxData)
+      const deployTx = createLegacyTx(deployContractTxData)
       const txSender = Address.fromPublicKey(deployTx.getSenderPublicKey()).toString()
       assert.equal(txSender, deploymentSender, 'tx sender should match')
 

@@ -1,4 +1,4 @@
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -32,7 +32,7 @@ describe(method, async () => {
     const rpc = getRpcClient(server)
     // deploy contracts at two different addresses
     const txData = { gasLimit: 2000000, gasPrice: 100 }
-    const tx1 = LegacyTransaction.fromTxData(
+    const tx1 = createLegacyTx(
       {
         ...txData,
         data: logExampleBytecode,
@@ -40,7 +40,7 @@ describe(method, async () => {
       },
       { common }
     ).sign(dummy.privKey)
-    const tx2 = LegacyTransaction.fromTxData(
+    const tx2 = createLegacyTx(
       {
         ...txData,
         data: logExampleBytecode,
@@ -56,7 +56,7 @@ describe(method, async () => {
     const data = hexToBytes(
       '0xaefb4f0a000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000004'
     )
-    const tx3 = LegacyTransaction.fromTxData(
+    const tx3 = createLegacyTx(
       {
         ...txData,
         data,
@@ -65,7 +65,7 @@ describe(method, async () => {
       },
       { common }
     ).sign(dummy.privKey)
-    const tx4 = LegacyTransaction.fromTxData(
+    const tx4 = createLegacyTx(
       {
         ...txData,
         data,

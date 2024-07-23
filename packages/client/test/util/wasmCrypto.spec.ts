@@ -1,5 +1,5 @@
 import { Common } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import {
   BIGINT_2,
   bytesToHex,
@@ -50,8 +50,8 @@ describe('WASM crypto tests', () => {
     const common = new Common({ chain: 'mainnet' })
 
     const pk = randomBytes(32)
-    const tx = LegacyTransaction.fromTxData({}, { common }).sign(pk)
-    const tx2 = LegacyTransaction.fromTxData({}, { common: commonWithCustomCrypto }).sign(pk)
+    const tx = createLegacyTx({}, { common }).sign(pk)
+    const tx2 = createLegacyTx({}, { common: commonWithCustomCrypto }).sign(pk)
 
     assert.deepEqual(tx.getSenderPublicKey(), tx2.getSenderPublicKey())
     assert.deepEqual(tx.hash(), tx2.hash())

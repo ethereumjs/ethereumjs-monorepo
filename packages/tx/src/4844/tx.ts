@@ -1,79 +1,37 @@
-import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
   BIGINT_27,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
-  blobsToCommitments,
-  blobsToProofs,
   bytesToBigInt,
   bytesToHex,
-  commitmentsToVersionedHashes,
-  computeVersionedHash,
-  equalsBytes,
-  getBlobs,
   toBytes,
-  validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
-import { BaseTransaction } from './baseTransaction.js'
-import * as EIP1559 from './capabilities/eip1559.js'
-import * as EIP2718 from './capabilities/eip2718.js'
-import * as EIP2930 from './capabilities/eip2930.js'
-import * as Legacy from './capabilities/legacy.js'
-import { LIMIT_BLOBS_PER_TX } from './constants.js'
-import { TransactionType } from './types.js'
-import { AccessLists, txTypeBytes } from './util.js'
+import { BaseTransaction } from '../baseTransaction.js'
+import * as EIP1559 from '../capabilities/eip1559.js'
+import * as EIP2718 from '../capabilities/eip2718.js'
+import * as EIP2930 from '../capabilities/eip2930.js'
+import * as Legacy from '../capabilities/legacy.js'
+import { LIMIT_BLOBS_PER_TX } from '../constants.js'
+import { TransactionType } from '../types.js'
+import { AccessLists, validateNotArray } from '../util.js'
+
+import { create4844BlobTx } from './constructors.js'
 
 import type {
   AccessList,
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
-  BlobEIP4844NetworkValuesArray,
-  JsonBlobTxNetworkWrapper,
   JsonTx,
   TxOptions,
-} from './types.js'
+} from '../types.js'
 import type { Common } from '@ethereumjs/common'
-import type { Kzg } from '@ethereumjs/util'
 
-type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
-type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
-
-const validateBlobTransactionNetworkWrapper = (
-  blobVersionedHashes: Uint8Array[],
-  blobs: Uint8Array[],
-  commitments: Uint8Array[],
-  kzgProofs: Uint8Array[],
-  version: number,
-  kzg: Kzg
-) => {
-  if (!(blobVersionedHashes.length === blobs.length && blobs.length === commitments.length)) {
-    throw new Error('Number of blobVersionedHashes, blobs, and commitments not all equal')
-  }
-  if (blobVersionedHashes.length === 0) {
-    throw new Error('Invalid transaction with empty blobs')
-  }
-
-  let isValid
-  try {
-    isValid = kzg.verifyBlobKzgProofBatch(blobs, commitments, kzgProofs)
-  } catch (error) {
-    throw new Error(`KZG verification of blobs fail with error=${error}`)
-  }
-  if (!isValid) {
-    throw new Error('KZG proof cannot be verified from blobs/commitments')
-  }
-
-  for (let x = 0; x < blobVersionedHashes.length; x++) {
-    const computedVersionedHash = computeVersionedHash(commitments[x], version)
-    if (!equalsBytes(computedVersionedHash, blobVersionedHashes[x])) {
-      throw new Error(`commitment for blob at index ${x} does not match versionedHash`)
-    }
-  }
-}
+export type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
+export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
 
 /**
  * Typed transaction with a new gas fee market mechanism for transactions that include "blobs" of data
@@ -133,7 +91,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
 
-    BaseTransaction._validateNotArray(txData)
+    validateNotArray(txData)
 
     if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
       const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
@@ -188,244 +146,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     }
   }
 
-  public static fromTxData(txData: TxData, opts?: TxOptions) {
-    if (opts?.common?.customCrypto?.kzg === undefined) {
-      throw new Error(
-        'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
-      )
-    }
-    const kzg = opts!.common!.customCrypto!.kzg!
-    if (txData.blobsData !== undefined) {
-      if (txData.blobs !== undefined) {
-        throw new Error('cannot have both raw blobs data and encoded blobs in constructor')
-      }
-      if (txData.kzgCommitments !== undefined) {
-        throw new Error('cannot have both raw blobs data and KZG commitments in constructor')
-      }
-      if (txData.blobVersionedHashes !== undefined) {
-        throw new Error('cannot have both raw blobs data and versioned hashes in constructor')
-      }
-      if (txData.kzgProofs !== undefined) {
-        throw new Error('cannot have both raw blobs data and KZG proofs in constructor')
-      }
-      txData.blobs = getBlobs(txData.blobsData.reduce((acc, cur) => acc + cur))
-      txData.kzgCommitments = blobsToCommitments(kzg, txData.blobs as Uint8Array[])
-      txData.blobVersionedHashes = commitmentsToVersionedHashes(
-        txData.kzgCommitments as Uint8Array[]
-      )
-      txData.kzgProofs = blobsToProofs(
-        kzg,
-        txData.blobs as Uint8Array[],
-        txData.kzgCommitments as Uint8Array[]
-      )
-    }
-
-    return new BlobEIP4844Transaction(txData, opts)
-  }
-
   /**
    * Returns the minimum of calculated priority fee (from maxFeePerGas and baseFee) and maxPriorityFeePerGas
    * @param baseFee Base fee retrieved from block
    */
   getEffectivePriorityFee(baseFee: bigint): bigint {
     return EIP1559.getEffectivePriorityFee(this, baseFee)
-  }
-
-  /**
-   * Creates the minimal representation of a blob transaction from the network wrapper version.
-   * The minimal representation is used when adding transactions to an execution payload/block
-   * @param txData a {@link BlobEIP4844Transaction} containing optional blobs/kzg commitments
-   * @param opts - dictionary of {@link TxOptions}
-   * @returns the "minimal" representation of a BlobEIP4844Transaction (i.e. transaction object minus blobs and kzg commitments)
-   */
-  public static minimalFromNetworkWrapper(
-    txData: BlobEIP4844Transaction,
-    opts?: TxOptions
-  ): BlobEIP4844Transaction {
-    if (opts?.common?.customCrypto?.kzg === undefined) {
-      throw new Error(
-        'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
-      )
-    }
-
-    const tx = BlobEIP4844Transaction.fromTxData(
-      {
-        ...txData,
-        ...{ blobs: undefined, kzgCommitments: undefined, kzgProofs: undefined },
-      },
-      opts
-    )
-    return tx
-  }
-
-  /**
-   * Instantiate a transaction from the serialized tx.
-   *
-   * Format: `0x03 || rlp([chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, to, value, data,
-   * access_list, max_fee_per_data_gas, blob_versioned_hashes, y_parity, r, s])`
-   */
-  public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
-    if (opts.common?.customCrypto?.kzg === undefined) {
-      throw new Error(
-        'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
-      )
-    }
-
-    if (
-      equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.BlobEIP4844)) === false
-    ) {
-      throw new Error(
-        `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${
-          TransactionType.BlobEIP4844
-        }, received: ${bytesToHex(serialized.subarray(0, 1))}`
-      )
-    }
-
-    const values = RLP.decode(serialized.subarray(1))
-
-    if (!Array.isArray(values)) {
-      throw new Error('Invalid serialized tx input: must be array')
-    }
-
-    return BlobEIP4844Transaction.fromValuesArray(values as TxValuesArray, opts)
-  }
-
-  /**
-   * Create a transaction from a values array.
-   *
-   * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-   * accessList, signatureYParity, signatureR, signatureS]`
-   */
-  public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
-    if (opts.common?.customCrypto?.kzg === undefined) {
-      throw new Error(
-        'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
-      )
-    }
-
-    if (values.length !== 11 && values.length !== 14) {
-      throw new Error(
-        'Invalid EIP-4844 transaction. Only expecting 11 values (for unsigned tx) or 14 values (for signed tx).'
-      )
-    }
-
-    const [
-      chainId,
-      nonce,
-      maxPriorityFeePerGas,
-      maxFeePerGas,
-      gasLimit,
-      to,
-      value,
-      data,
-      accessList,
-      maxFeePerBlobGas,
-      blobVersionedHashes,
-      v,
-      r,
-      s,
-    ] = values
-
-    this._validateNotArray({ chainId, v })
-    validateNoLeadingZeroes({
-      nonce,
-      maxPriorityFeePerGas,
-      maxFeePerGas,
-      gasLimit,
-      value,
-      maxFeePerBlobGas,
-      v,
-      r,
-      s,
-    })
-
-    return new BlobEIP4844Transaction(
-      {
-        chainId: bytesToBigInt(chainId),
-        nonce,
-        maxPriorityFeePerGas,
-        maxFeePerGas,
-        gasLimit,
-        to,
-        value,
-        data,
-        accessList: accessList ?? [],
-        maxFeePerBlobGas,
-        blobVersionedHashes,
-        v: v !== undefined ? bytesToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Uint8Array)
-        r,
-        s,
-      },
-      opts
-    )
-  }
-
-  /**
-   * Creates a transaction from the network encoding of a blob transaction (with blobs/commitments/proof)
-   * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
-   * @param opts any TxOptions defined
-   * @returns a BlobEIP4844Transaction
-   */
-  public static fromSerializedBlobTxNetworkWrapper(
-    serialized: Uint8Array,
-    opts?: TxOptions
-  ): BlobEIP4844Transaction {
-    if (!opts || !opts.common) {
-      throw new Error('common instance required to validate versioned hashes')
-    }
-
-    if (opts.common?.customCrypto?.kzg === undefined) {
-      throw new Error(
-        'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
-      )
-    }
-
-    if (
-      equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.BlobEIP4844)) === false
-    ) {
-      throw new Error(
-        `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${
-          TransactionType.BlobEIP4844
-        }, received: ${bytesToHex(serialized.subarray(0, 1))}`
-      )
-    }
-
-    // Validate network wrapper
-    const networkTxValues = RLP.decode(serialized.subarray(1))
-    if (networkTxValues.length !== 4) {
-      throw Error(`Expected 4 values in the deserialized network transaction`)
-    }
-    const [txValues, blobs, kzgCommitments, kzgProofs] =
-      networkTxValues as BlobEIP4844NetworkValuesArray
-
-    // Construct the tx but don't freeze yet, we will assign blobs etc once validated
-    const decodedTx = BlobEIP4844Transaction.fromValuesArray(txValues, { ...opts, freeze: false })
-    if (decodedTx.to === undefined) {
-      throw Error('BlobEIP4844Transaction can not be send without a valid `to`')
-    }
-
-    const version = Number(opts.common.param('blobCommitmentVersionKzg'))
-    validateBlobTransactionNetworkWrapper(
-      decodedTx.blobVersionedHashes,
-      blobs,
-      kzgCommitments,
-      kzgProofs,
-      version,
-      opts.common.customCrypto.kzg
-    )
-
-    // set the network blob data on the tx
-    decodedTx.blobs = blobs
-    decodedTx.kzgCommitments = kzgCommitments
-    decodedTx.kzgProofs = kzgProofs
-
-    // freeze the tx
-    const freeze = opts?.freeze ?? true
-    if (freeze) {
-      Object.freeze(decodedTx)
-    }
-
-    return decodedTx
   }
 
   /**
@@ -553,36 +279,6 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     return Legacy.getSenderPublicKey(this)
   }
 
-  /**
-   * Returns the EIP 4844 transaction network wrapper in JSON format similar to toJSON, including
-   * blobs, commitments, and proofs fields
-   * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
-   * @param opts any TxOptions defined
-   * @returns JsonBlobTxNetworkWrapper with blobs, KZG commitments, and KZG proofs fields
-   */
-  public static networkWrapperToJson(
-    serialized: Uint8Array,
-    opts?: TxOptions
-  ): JsonBlobTxNetworkWrapper {
-    const tx = this.fromSerializedBlobTxNetworkWrapper(serialized, opts)
-
-    const accessListJSON = AccessLists.getAccessListJSON(tx.accessList)
-    const baseJson = tx.toJSON()
-
-    return {
-      ...baseJson,
-      chainId: bigIntToHex(tx.chainId),
-      maxPriorityFeePerGas: bigIntToHex(tx.maxPriorityFeePerGas),
-      maxFeePerGas: bigIntToHex(tx.maxFeePerGas),
-      accessList: accessListJSON,
-      maxFeePerBlobGas: bigIntToHex(tx.maxFeePerBlobGas),
-      blobVersionedHashes: tx.blobVersionedHashes.map((hash) => bytesToHex(hash)),
-      blobs: tx.blobs!.map((bytes) => bytesToHex(bytes)),
-      kzgCommitments: tx.kzgCommitments!.map((bytes) => bytesToHex(bytes)),
-      kzgProofs: tx.kzgProofs!.map((bytes) => bytesToHex(bytes)),
-    }
-  }
-
   toJSON(): JsonTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
     const baseJson = super.toJSON()
@@ -608,7 +304,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
 
-    return BlobEIP4844Transaction.fromTxData(
+    return create4844BlobTx(
       {
         chainId: this.chainId,
         nonce: this.nonce,

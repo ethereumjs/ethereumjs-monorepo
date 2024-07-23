@@ -1,9 +1,5 @@
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import {
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-} from '@ethereumjs/tx'
+import { create1559FeeMarketTx, create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
 import {
   bigIntToHex,
   blobsToCommitments,
@@ -32,7 +28,7 @@ describe(method, () => {
     const { chain, common, execution, server } = await setupChain(pow, 'pow')
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = LegacyTransaction.fromTxData(
+    const tx = createLegacyTx(
       {
         gasLimit: 2000000,
         gasPrice: 100,
@@ -40,7 +36,7 @@ describe(method, () => {
       },
       { common }
     ).sign(dummy.privKey)
-    const tx2 = LegacyTransaction.fromTxData(
+    const tx2 = createLegacyTx(
       {
         gasLimit: 2000000,
         gasPrice: 100,
@@ -63,7 +59,7 @@ describe(method, () => {
     )
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = create1559FeeMarketTx(
       {
         gasLimit: 2000000,
         maxFeePerGas: 975000000,
@@ -72,7 +68,7 @@ describe(method, () => {
       },
       { common }
     ).sign(dummy.privKey)
-    const tx1 = FeeMarketEIP1559Transaction.fromTxData(
+    const tx1 = create1559FeeMarketTx(
       {
         gasLimit: 2000000,
         maxFeePerGas: 975000000,
@@ -128,7 +124,7 @@ describe(method, () => {
       const commitments = blobsToCommitments(kzg, blobs)
       const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
       const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
-      const tx = BlobEIP4844Transaction.fromTxData(
+      const tx = create4844BlobTx(
         {
           blobVersionedHashes,
           blobs,
