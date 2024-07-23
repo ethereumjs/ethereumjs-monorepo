@@ -12,13 +12,13 @@ import {
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
-import { BaseTransaction } from './baseTransaction.js'
-import * as EIP1559 from './capabilities/eip1559.js'
-import * as EIP2718 from './capabilities/eip2718.js'
-import * as EIP7702 from './capabilities/eip7702.js'
-import * as Legacy from './capabilities/legacy.js'
-import { TransactionType } from './types.js'
-import { AccessLists, AuthorizationLists, txTypeBytes } from './util.js'
+import { BaseTransaction } from '../baseTransaction.js'
+import * as EIP1559 from '../capabilities/eip1559.js'
+import * as EIP2718 from '../capabilities/eip2718.js'
+import * as EIP7702 from '../capabilities/eip7702.js'
+import * as Legacy from '../capabilities/legacy.js'
+import { TransactionType } from '../types.js'
+import { AccessLists, AuthorizationLists, txTypeBytes } from '../util.js'
 
 import type {
   AccessList,
@@ -29,7 +29,7 @@ import type {
   AuthorizationListBytes,
   JsonTx,
   TxOptions,
-} from './types.js'
+} from '../types.js'
 import type { Common } from '@ethereumjs/common'
 
 type TxData = AllTypesTxData[TransactionType.EOACodeEIP7702]

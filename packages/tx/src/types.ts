@@ -1,10 +1,10 @@
 import { bytesToBigInt, toBytes } from '@ethereumjs/util'
 
-import type { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
-import type { AccessListEIP2930Transaction } from './eip2930Transaction.js'
-import type { BlobEIP4844Transaction } from './eip4844Transaction.js'
-import type { EOACodeEIP7702Transaction } from './eip7702Transaction.js'
-import type { LegacyTransaction } from './legacyTransaction.js'
+import type { FeeMarketEIP1559Transaction } from './1559/tx.js'
+import type { AccessListEIP2930Transaction } from './2930/tx.js'
+import type { BlobEIP4844Transaction } from './4844/tx.js'
+import type { EOACodeEIP7702Transaction } from './7702/tx.js'
+import type { LegacyTransaction } from './legacy/tx.js'
 import type {
   AccessList,
   AccessListBytes,

@@ -1,11 +1,11 @@
 import { fetchFromProvider, getProvider } from '@ethereumjs/util'
 
-import { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
-import { AccessListEIP2930Transaction } from './eip2930Transaction.js'
-import { BlobEIP4844Transaction } from './eip4844Transaction.js'
-import { EOACodeEIP7702Transaction } from './eip7702Transaction.js'
+import { FeeMarketEIP1559Transaction } from './1559/tx.js'
+import { AccessListEIP2930Transaction } from './2930/tx.js'
+import { BlobEIP4844Transaction } from './4844/tx.js'
+import { EOACodeEIP7702Transaction } from './7702/tx.js'
 import { normalizeTxParams } from './fromRpc.js'
-import { LegacyTransaction } from './legacyTransaction.js'
+import { LegacyTransaction } from './legacy/tx.js'
 import {
   TransactionType,
   isAccessListEIP2930TxData,

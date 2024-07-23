@@ -17,14 +17,14 @@ import {
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
-import { BaseTransaction } from './baseTransaction.js'
-import * as EIP1559 from './capabilities/eip1559.js'
-import * as EIP2718 from './capabilities/eip2718.js'
-import * as EIP2930 from './capabilities/eip2930.js'
-import * as Legacy from './capabilities/legacy.js'
-import { LIMIT_BLOBS_PER_TX } from './constants.js'
-import { TransactionType } from './types.js'
-import { AccessLists, txTypeBytes } from './util.js'
+import { BaseTransaction } from '../baseTransaction.js'
+import * as EIP1559 from '../capabilities/eip1559.js'
+import * as EIP2718 from '../capabilities/eip2718.js'
+import * as EIP2930 from '../capabilities/eip2930.js'
+import * as Legacy from '../capabilities/legacy.js'
+import { LIMIT_BLOBS_PER_TX } from '../constants.js'
+import { TransactionType } from '../types.js'
+import { AccessLists, txTypeBytes } from '../util.js'
 
 import type {
   AccessList,
@@ -35,7 +35,7 @@ import type {
   JsonBlobTxNetworkWrapper,
   JsonTx,
   TxOptions,
-} from './types.js'
+} from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Kzg } from '@ethereumjs/util'
 
