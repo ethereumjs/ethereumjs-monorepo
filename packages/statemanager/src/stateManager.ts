@@ -1,12 +1,6 @@
 import { Chain, Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import {
-  LeafNode,
-  Trie,
-  createTrieFromProof,
-  nibbleTypeToPackedBytes,
-  verifyTrieProof,
-} from '@ethereumjs/trie'
+import { Trie, createTrieFromProof, verifyTrieProof } from '@ethereumjs/trie'
 import {
   Account,
   Address,
@@ -15,7 +9,6 @@ import {
   KECCAK256_RLP,
   KECCAK256_RLP_S,
   bigIntToHex,
-  bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
@@ -47,7 +40,6 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { TrieNode } from '@ethereumjs/trie'
 import type { DB, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
