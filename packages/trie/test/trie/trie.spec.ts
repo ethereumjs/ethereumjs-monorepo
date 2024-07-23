@@ -5,7 +5,6 @@ import {
   bytesToHex,
   concatBytes,
   equalsBytes,
-  hexToBytes,
   randomBytes,
   unprefixedHexToBytes,
   utf8ToBytes,
