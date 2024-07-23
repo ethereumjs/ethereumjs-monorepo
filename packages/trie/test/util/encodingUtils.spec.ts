@@ -7,12 +7,12 @@ import {
   compactBytesToNibbles,
   mergeAndFormatKeyPaths,
   nibbleTypeToByteType,
-  nibbleTypeToPackedBytes,
   nibblesToCompactBytes,
   pathToHexKey,
 } from '../../src/util/encoding.js'
 
 import type { Nibbles } from '../../src/types.js'
+import { nibblesTypeToPackedBytes } from '../../src/util/nibbles.js'
 
 describe('encoding', () => {
   it('nibblesToCompactBytes and compactBytesToNibbles should encode hex data correctly', () => {
@@ -93,7 +93,7 @@ describe('encoding', () => {
     // Calculate the expected result manually based on the functions used in the pathToHexKey function
     const b = hexToBytes(`0x${path}`)
     const n = byteTypeToNibbleType(b)
-    const expected = nibbleTypeToPackedBytes(n.concat(extension))
+    const expected = nibblesTypeToPackedBytes(n.concat(extension))
 
     assert.deepEqual(
       result,
