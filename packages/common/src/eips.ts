@@ -43,9 +43,9 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Berlin,
     requiredEIPs: [2930],
     gasConfig: {
-      baseFeeMaxChangeDenominatorGas: 8, // Maximum base fee change denominator
-      elasticityMultiplierGas: 2, // Maximum block gas target elasticity
-      initialBaseFeeGas: 1000000000, // Initial base fee on first EIP1559 block
+      baseFeeMaxChangeDenominator: 8, // Maximum base fee change denominator
+      elasticityMultiplier: 2, // Maximum block gas target elasticity
+      initialBaseFee: 1000000000, // Initial base fee on first EIP1559 block
     },
   },
   /**
@@ -181,7 +181,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Berlin,
     requiredEIPs: [2929],
     gasConfig: {
-      maxRefundQuotientGas: 5, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
+      maxRefundQuotient: 5, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
     },
     gasPrices: {
       selfdestructRefundGas: 0, // Refunded following a selfdestruct operation

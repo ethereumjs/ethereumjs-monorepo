@@ -277,8 +277,6 @@ export class Block {
   getTransactionsValidationErrors(): string[] {
     const errors: string[] = []
     let blobGasUsed = BIGINT_0
-    const blobGasLimit = this.common.param('gasConfig', 'maxblobGasPerBlock')
-    const blobGasPerBlob = this.common.param('gasConfig', 'blobGasPerBlob')
 
     // eslint-disable-next-line prefer-const
     for (let [i, tx] of this.transactions.entries()) {
@@ -297,6 +295,8 @@ export class Block {
         }
       }
       if (this.common.isActivatedEIP(4844)) {
+        const blobGasLimit = this.common.param('gasConfig', 'maxblobGasPerBlock')
+        const blobGasPerBlob = this.common.param('gasConfig', 'blobGasPerBlob')
         if (tx instanceof BlobEIP4844Transaction) {
           blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
           if (blobGasUsed > blobGasLimit) {

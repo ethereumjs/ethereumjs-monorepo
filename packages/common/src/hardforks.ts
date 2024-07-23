@@ -11,6 +11,9 @@ export const hardforks: HardforksDict = {
       minGasLimit: 5000, // Minimum the gas limit may ever be
       gasLimitBoundDivisor: 1024, // The bound divisor of the gas limit, used in update calculations
       maxRefundQuotient: 2, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
+      targetBlobGasPerBlock: 0, // Base value needed here since called pre-4844 in BlockHeader.calcNextExcessBlobGas()
+      blobGasPerBlob: 0,
+      maxblobGasPerBlock: 0,
     },
     gasPrices: {
       basefeeGas: 2, // Gas base cost, used e.g. for ChainID opcode (Istanbul)
@@ -105,6 +108,11 @@ export const hardforks: HardforksDict = {
       returnGas: 0, // Base fee of the RETURN opcode
       invalidGas: 0, // Base fee of the INVALID opcode
       selfdestructGas: 0, // Base fee of the SELFDESTRUCT opcode
+      prevrandaoGas: 0, // TODO: these below 0-gas additons might also point to non-clean implementations in the code base
+      authGas: 0, // ...allowing access to non-existing gas parameters. Might be worth to fix at some point.
+      authcallGas: 0,
+      accessListStorageKeyGas: 0,
+      accessListAddressGas: 0,
     },
     vm: {
       stackLimit: 1024, // Maximum size of VM stack allowed
