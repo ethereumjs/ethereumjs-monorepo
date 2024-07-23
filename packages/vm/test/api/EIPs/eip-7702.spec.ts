@@ -17,7 +17,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { equalsBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm.js'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { AuthorizationListBytesItem } from '@ethereumjs/common'
 
@@ -89,7 +89,7 @@ async function runTest(
   acc.balance = BigInt(1_000_000_000)
   await vm.stateManager.putAccount(defaultSenderAddr, acc)
 
-  await vm.runTx({ tx })
+  await runTx(vm, { tx })
 
   const slot = hexToBytes('0x' + '00'.repeat(31) + '01')
   const value = await vm.stateManager.getContractStorage(defaultAuthAddr, slot)
@@ -229,7 +229,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
     acc.balance = BigInt(1_000_000_000)
     await vm.stateManager.putAccount(defaultSenderAddr, acc)
 
-    const res = await vm.runTx({ tx })
+    const res = await runTx(vm, { tx })
     assert.ok(res.execResult.executionGasUsed === BigInt(115))
   })
 
@@ -266,7 +266,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
     acc.balance = BigInt(1_000_000_000)
     await vm.stateManager.putAccount(defaultSenderAddr, acc)
 
-    await vm.runTx({ tx })
+    await runTx(vm, { tx })
 
     // Note: due to EIP-161, defaultAuthAddr is now deleted
     const account = await vm.stateManager.getAccount(defaultAuthAddr)

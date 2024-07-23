@@ -3,7 +3,7 @@ import { txFromTxData } from '@ethereumjs/tx'
 import { Account, Address, bytesToInt, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm.js'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -61,7 +61,7 @@ describe('EIP 1153: transient storage', () => {
     await vm.stateManager.putAccount(fromAddress, new Account(BigInt(0), BigInt(0xfffffffff)))
     const results = []
     for (const tx of test.transactions) {
-      const result = await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+      const result = await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
       results.push(result)
     }
 

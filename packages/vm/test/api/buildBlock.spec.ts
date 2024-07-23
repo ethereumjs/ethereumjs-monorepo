@@ -9,9 +9,10 @@ import {
 } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { txFromTxData } from '@ethereumjs/tx'
-import { Account, Address, concatBytes, hexToBytes } from '@ethereumjs/util'
+import { Address, concatBytes, createAccount, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { buildBlock, runBlock } from '../../src/index.js'
 import { VM } from '../../src/vm.js'
 
 import { setBalance } from './utils.js'
@@ -32,7 +33,7 @@ describe('BlockBuilder', () => {
 
     const vmCopy = await vm.shallowCopy()
 
-    const blockBuilder = await vm.buildBlock({
+    const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       headerData: { coinbase: '0x96dc73c8b5969608c77375f085949744b5177660' },
       blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
@@ -53,7 +54,7 @@ describe('BlockBuilder', () => {
       1,
       'should have the correct number of tx receipts'
     )
-    const result = await vmCopy.runBlock({ block })
+    const result = await runBlock(vmCopy, { block })
     assert.equal(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
@@ -65,7 +66,7 @@ describe('BlockBuilder', () => {
     const vm = await VM.create({ common })
     const genesis = createBlockFromBlockData({}, { common })
 
-    const blockBuilder = await vm.buildBlock({ parentBlock: genesis })
+    const blockBuilder = await buildBlock(vm, { parentBlock: genesis })
     const gasLimit = genesis.header.gasLimit + BigInt(1)
     const tx = txFromTxData.LegacyTransaction({ gasLimit }, { common })
     try {
@@ -105,7 +106,7 @@ describe('BlockBuilder', () => {
 
     await setBalance(vm, pKeyAddress)
 
-    const blockBuilder = await vm.buildBlock({
+    const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
     })
@@ -203,9 +204,9 @@ describe('BlockBuilder', () => {
     const vm = await VM.create({ common, blockchain })
 
     // add balance for tx
-    await vm.stateManager.putAccount(signer.address, Account.fromAccountData({ balance: 100000 }))
+    await vm.stateManager.putAccount(signer.address, createAccount({ balance: 100000 }))
 
-    const blockBuilder = await vm.buildBlock({
+    const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       headerData: { difficulty: 2, extraData: new Uint8Array(97) },
       blockOpts: { cliqueSigner, freeze: false },
@@ -239,7 +240,7 @@ describe('BlockBuilder', () => {
 
     await setBalance(vm, pKeyAddress)
 
-    let blockBuilder = await vm.buildBlock({
+    let blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       blockOpts: { calcDifficultyFromHeader: genesisBlock.header },
     })
@@ -265,7 +266,7 @@ describe('BlockBuilder', () => {
       assert.fail('shoud not throw')
     }
 
-    blockBuilder = await vm.buildBlock({ parentBlock: genesisBlock })
+    blockBuilder = await buildBlock(vm, { parentBlock: genesisBlock })
 
     const tx2 = txFromTxData
       .LegacyTransaction(
@@ -296,7 +297,7 @@ describe('BlockBuilder', () => {
     const vm = await VM.create({ common, blockchain })
     const vmCopy = await vm.shallowCopy()
 
-    const blockBuilder = await vm.buildBlock({
+    const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
     })
@@ -304,7 +305,7 @@ describe('BlockBuilder', () => {
     const block = await blockBuilder.build()
 
     // block should successfully execute with VM.runBlock and have same outputs
-    const result = await vmCopy.runBlock({ block })
+    const result = await runBlock(vmCopy, { block })
     assert.equal(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
@@ -324,7 +325,7 @@ describe('BlockBuilder', () => {
 
     const vmCopy = await vm.shallowCopy()
 
-    const blockBuilder = await vm.buildBlock({
+    const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       headerData: { coinbase: '0x96dc73c8b5969608c77375f085949744b5177660' },
       blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
@@ -389,7 +390,7 @@ describe('BlockBuilder', () => {
       "baseFeePerGas should equal parentHeader's calcNextBaseFee"
     )
 
-    const result = await vmCopy.runBlock({ block })
+    const result = await runBlock(vmCopy, { block })
     assert.equal(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)

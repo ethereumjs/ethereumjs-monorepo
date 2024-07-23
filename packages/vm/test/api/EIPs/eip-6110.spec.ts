@@ -1,10 +1,11 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork, getInitializedChains } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
+import { Address, bytesToHex, createAccount, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
+import { buildBlock, runBlock } from '../../../src/index.js'
 import { setupVM } from '../utils.js'
 
 import type { DepositRequest } from '../../../../util/src/requests.js'
@@ -41,23 +42,20 @@ describe('EIP-6110 runBlock tests', () => {
       type: 2,
       to: DEPOSIT_CONTRACT_ADDRESS,
     }).sign(pk)
-    const beaconContractAccount = Account.fromAccountData({
+    const beaconContractAccount = createAccount({
       codeHash: keccak256(depositContractByteCode),
     })
     const beaconContractAddress = Address.fromString(DEPOSIT_CONTRACT_ADDRESS)
     await vm.stateManager.putAccount(beaconContractAddress, beaconContractAccount)
     await vm.stateManager.putContractCode(beaconContractAddress, depositContractByteCode)
-    await vm.stateManager.putAccount(
-      sender,
-      Account.fromAccountData({ balance: 540000000030064771065n })
-    )
+    await vm.stateManager.putAccount(sender, createAccount({ balance: 540000000030064771065n }))
     const block = createBlockFromBlockData(
       {
         transactions: [depositTx],
       },
       { common }
     )
-    const res = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    const res = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     assert.equal(res.requests?.length, 1)
     const reqPubkey = (res.requests![0] as DepositRequest).pubkey
     assert.equal(bytesToHex(reqPubkey), pubkey)
@@ -77,19 +75,16 @@ describe('EIP-7685 buildBlock tests', () => {
       type: 2,
       to: DEPOSIT_CONTRACT_ADDRESS,
     }).sign(pk)
-    const beaconContractAccount = Account.fromAccountData({
+    const beaconContractAccount = createAccount({
       codeHash: keccak256(depositContractByteCode),
     })
     const beaconContractAddress = Address.fromString(DEPOSIT_CONTRACT_ADDRESS)
     await vm.stateManager.putAccount(beaconContractAddress, beaconContractAccount)
     await vm.stateManager.putContractCode(beaconContractAddress, depositContractByteCode)
-    await vm.stateManager.putAccount(
-      sender,
-      Account.fromAccountData({ balance: 540000000030064771065n })
-    )
+    await vm.stateManager.putAccount(sender, createAccount({ balance: 540000000030064771065n }))
     const block = createBlockFromBlockData({}, { common })
     ;(vm.blockchain as any)['dbManager']['getHeader'] = () => block.header
-    const blockBuilder = await vm.buildBlock({ parentBlock: block })
+    const blockBuilder = await buildBlock(vm, { parentBlock: block })
     await blockBuilder.addTransaction(depositTx)
     const res = await blockBuilder.build()
     assert.equal(res.requests?.length, 1)

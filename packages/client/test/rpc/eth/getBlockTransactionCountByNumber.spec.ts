@@ -4,6 +4,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { txFromTxData } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
+import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -56,7 +57,7 @@ describe(method, () => {
 
     let ranBlock: Block | undefined = undefined
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-    await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
 
     // verify that the transaction count is 1
@@ -120,7 +121,7 @@ describe(method, () => {
 
     let ranBlock: Block | undefined = undefined
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-    await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
 
     // verify that the transaction count is 3

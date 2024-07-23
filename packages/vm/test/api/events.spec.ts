@@ -3,7 +3,8 @@ import { txFromTxData } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../src/vm'
+import { runBlock, runTx } from '../../src/index.js'
+import { VM } from '../../src/vm.js'
 
 describe('VM events', () => {
   const privKey = toBytes('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
@@ -18,7 +19,7 @@ describe('VM events', () => {
 
     const block = new Block()
 
-    await vm.runBlock({
+    await runBlock(vm, {
       block,
       generate: true,
       skipBlockValidation: true,
@@ -37,7 +38,7 @@ describe('VM events', () => {
 
     const block = new Block()
 
-    await vm.runBlock({
+    await runBlock(vm, {
       block,
       generate: true,
       skipBlockValidation: true,
@@ -63,7 +64,7 @@ describe('VM events', () => {
       })
       .sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(emitted, tx)
   })
@@ -86,7 +87,7 @@ describe('VM events', () => {
       })
       .sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(bytesToHex(emitted.execResult.returnValue), '0x')
   })
@@ -109,7 +110,7 @@ describe('VM events', () => {
       })
       .sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(emitted.to.toString(), '0x1111111111111111111111111111111111111111')
     assert.equal(bytesToHex(emitted.code), '0x')
@@ -133,7 +134,7 @@ describe('VM events', () => {
       })
       .sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(bytesToHex(emitted.createdAddress), '0x')
   })
@@ -157,7 +158,7 @@ describe('VM events', () => {
       })
       .sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(lastEmitted.opcode.name, 'RETURN')
   })
@@ -181,7 +182,7 @@ describe('VM events', () => {
       })
       .sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(
       bytesToHex(emitted.code),

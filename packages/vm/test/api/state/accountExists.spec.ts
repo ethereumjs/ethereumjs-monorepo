@@ -2,7 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Account, Address, hexToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm.js'
+import { VM } from '../../../src/index.js'
 
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 

@@ -1,9 +1,8 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { txFromTxData } from '@ethereumjs/tx'
-import { Account, Address, hexToBytes } from '@ethereumjs/util'
+import { createAccount, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
-
-import { VM } from '../../../src/vm.js'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -56,7 +55,7 @@ describe('EIP 2929: gas cost tests', () => {
 
     const tx = unsignedTx.sign(senderKey)
 
-    const result = await vm.runTx({ tx, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, skipHardForkValidation: true })
 
     const totalGasUsed = initialGas - currentGas
     assert.equal(true, totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000)) // Add tx upfront cost.
@@ -90,10 +89,10 @@ describe('EIP 2929: gas cost tests', () => {
     const account = await vm.stateManager.getAccount(address)
     await vm.stateManager.putAccount(
       address,
-      Account.fromAccountData({ ...account, balance: initialBalance })
+      createAccount({ ...account, balance: initialBalance })
     )
 
-    const result = await vm.runTx({ tx, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, skipHardForkValidation: true })
 
     assert.equal(result.totalGasSpent, expectedGasUsed)
   }

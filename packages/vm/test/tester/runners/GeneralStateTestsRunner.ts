@@ -5,7 +5,7 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
 
-import { VM } from '../../../src/index.js'
+import { VM, runTx } from '../../../src/index.js'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.js'
 
 import type * as tape from 'tape'
@@ -143,7 +143,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
         vm.events.on('afterTx', afterTxHandler)
       }
       try {
-        await vm.runTx({ tx, block })
+        await runTx(vm, { tx, block })
         execInfo = 'successful tx run'
       } catch (e: any) {
         console.log(e)

@@ -20,7 +20,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm.js'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { ECDSASignature } from '@ethereumjs/util'
@@ -253,7 +253,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
     assert.deepEqual(buf, hexToBytes('0x01'), 'auth should return 1')
   })
@@ -279,7 +279,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue
     assert.deepEqual(buf, zeros(32), 'auth puts 0 on stack on invalid signature')
   })
@@ -306,7 +306,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue
     assert.deepEqual(buf, zeros(32), 'auth puts 0')
   })
@@ -331,7 +331,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue
     assert.deepEqual(buf, zeros(32), 'auth puts 0')
   })
@@ -357,7 +357,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue
     assert.deepEqual(buf, zeros(32), 'auth puts 0')
   })
@@ -388,7 +388,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
     assert.deepEqual(buf, hexToBytes('0x01'), 'auth returned right address')
   })
@@ -416,7 +416,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
     assert.deepEqual(buf, hexToBytes('0x01'), 'auth returned right address')
   })
@@ -441,7 +441,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(20000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
 
     assert.deepEqual(
       result.execResult.returnValue.slice(31),
@@ -465,7 +465,7 @@ describe('EIP-3074 AUTH', () => {
       })
       .sign(callerPrivateKey)
 
-    const result2 = await vm.runTx({ tx: tx2, block, skipHardForkValidation: true })
+    const result2 = await runTx(vm, { tx: tx2, block, skipHardForkValidation: true })
 
     // the memory size in AUTH is 0x90 (so extra 16 bytes), but memory expands with words (32 bytes)
     // so the correct amount of msize is 0xa0, not 0x90
@@ -511,7 +511,7 @@ describe('EIP-3074 AUTHCALL', () => {
       })
       .sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
 
     const buf = result.execResult.returnValue.slice(31)
     assert.deepEqual(buf, hexToBytes('0x01'), 'authcall success')
@@ -547,7 +547,7 @@ describe('EIP-3074 AUTHCALL', () => {
       })
       .sign(callerPrivateKey)
 
-    await vm.runTx({ tx, block, skipHardForkValidation: true })
+    await runTx(vm, { tx, block, skipHardForkValidation: true })
 
     const gasUsed = await vm.stateManager.getContractStorage(
       contractStorageAddress,
@@ -592,7 +592,7 @@ describe('EIP-3074 AUTHCALL', () => {
       })
       .sign(callerPrivateKey)
 
-    await vm.runTx({ tx, block, skipHardForkValidation: true })
+    await runTx(vm, { tx, block, skipHardForkValidation: true })
 
     const gasUsed = await vm.stateManager.getContractStorage(
       contractStorageAddress,
@@ -639,7 +639,7 @@ describe('EIP-3074 AUTHCALL', () => {
       })
       .sign(callerPrivateKey)
 
-    await vm.runTx({ tx, block, skipHardForkValidation: true })
+    await runTx(vm, { tx, block, skipHardForkValidation: true })
 
     const gasBigInt = gas! - gasAfterCall!
     const expected =
@@ -685,7 +685,7 @@ describe('EIP-3074 AUTHCALL', () => {
       })
       .sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
 
     const gasUsed = await vm.stateManager.getContractStorage(
       contractStorageAddress,
@@ -737,7 +737,7 @@ describe('EIP-3074 AUTHCALL', () => {
       })
       .sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
 
     assert.ok(result.execResult.exceptionError?.error === EVMErrorMessage.OUT_OF_GAS)
   })
@@ -759,7 +759,7 @@ describe('EIP-3074 AUTHCALL', () => {
       })
       .sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     assert.equal(
       result.execResult.exceptionError?.error,
       EVMErrorMessage.AUTHCALL_UNSET,
@@ -797,7 +797,7 @@ describe('EIP-3074 AUTHCALL', () => {
       })
       .sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     assert.equal(
       result.execResult.exceptionError?.error,
       EVMErrorMessage.AUTHCALL_UNSET,
@@ -827,7 +827,7 @@ describe('EIP-3074 AUTHCALL', () => {
       })
       .sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     assert.equal(result.amountSpent, tx.gasLimit * tx.gasPrice, 'spent all gas')
     assert.equal(
       result.execResult.exceptionError?.error,
@@ -857,7 +857,7 @@ describe('EIP-3074 AUTHCALL', () => {
       })
       .sign(callerPrivateKey)
 
-    await vm.runTx({ tx, block, skipHardForkValidation: true })
+    await runTx(vm, { tx, block, skipHardForkValidation: true })
     const gas = await vm.stateManager.getContractStorage(
       contractStorageAddress,
       hexToBytes(`0x${'00'.repeat(31)}01`)
@@ -892,7 +892,7 @@ describe('EIP-3074 AUTHCALL', () => {
       })
       .sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const callInput = await vm.stateManager.getContractStorage(
       contractStorageAddress,
       hexToBytes(`0x${'00'.repeat(31)}02`)

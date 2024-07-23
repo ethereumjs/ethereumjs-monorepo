@@ -3,17 +3,17 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
 import { createTxFromRPC, txFromTxData } from '@ethereumjs/tx'
 import {
-  Account,
   Address,
   bigIntToBytes,
   bytesToHex,
   bytesToUnprefixedHex,
+  createAccountFromRLP,
   equalsBytes,
   hexToBytes,
   setLengthLeft,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { VM } from '@ethereumjs/vm'
+import { VM, runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
@@ -85,7 +85,7 @@ describe('RPC State Manager API tests', () => {
 
     await state.putAccount(vitalikDotEth, account!)
 
-    const retrievedVitalikAccount = Account.fromRlpSerializedAccount(
+    const retrievedVitalikAccount = createAccountFromRLP(
       (state as any)._accountCache.get(vitalikDotEth)!.accountRLP
     )
 
@@ -249,7 +249,7 @@ describe('runTx custom transaction test', () => {
       )
       .sign(privateKey)
 
-    const result = await vm.runTx({
+    const result = await runTx(vm, {
       skipBalance: true,
       skipNonce: true,
       tx,
@@ -272,7 +272,7 @@ describe('runTx test: replay mainnet transactions', () => {
       blockTag: blockTag - 1n,
     })
     const vm = await VM.create({ common, stateManager: state })
-    const res = await vm.runTx({ tx })
+    const res = await runTx(vm, { tx })
     assert.equal(
       res.totalGasSpent,
       21000n,
@@ -299,7 +299,7 @@ describe('runBlock test', () => {
     const vm = await VM.create({ common, stateManager: state })
     const block = createBlockFromRPC(blockData as unknown as JsonRpcBlock, [], { common })
     try {
-      const res = await vm.runBlock({
+      const res = await runBlock(vm, {
         block,
         generate: true,
         skipHeaderValidation: true,

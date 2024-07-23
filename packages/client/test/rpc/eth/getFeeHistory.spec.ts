@@ -10,6 +10,7 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
 } from '@ethereumjs/util'
+import { buildBlock } from '@ethereumjs/vm'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
@@ -36,7 +37,7 @@ const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gas
   const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.shallowCopy()
   // Set block's gas used to max
-  const blockBuilder = await vmCopy.buildBlock({
+  const blockBuilder = await buildBlock(vmCopy, {
     parentBlock,
     headerData: {
       timestamp: parentBlock.header.timestamp + BigInt(1),
@@ -75,7 +76,7 @@ const produceBlockWithTx = async (
   const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.shallowCopy()
   // Set block's gas used to max
-  const blockBuilder = await vmCopy.buildBlock({
+  const blockBuilder = await buildBlock(vmCopy, {
     parentBlock,
     headerData: {
       timestamp: parentBlock.header.timestamp + BigInt(1),
@@ -132,7 +133,7 @@ const produceBlockWith4844Tx = async (
   const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.shallowCopy()
   // Set block's gas used to max
-  const blockBuilder = await vmCopy.buildBlock({
+  const blockBuilder = await buildBlock(vmCopy, {
     parentBlock,
     headerData: {
       timestamp: parentBlock.header.timestamp + BigInt(1),

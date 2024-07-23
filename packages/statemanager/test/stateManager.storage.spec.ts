@@ -12,7 +12,7 @@ import { assert, describe, it } from 'vitest'
 
 import { DefaultStateManager } from '../src/index.js'
 
-import { createAccount } from './util.js'
+import { createAccountWithDefaults } from './util.js'
 
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 describe('StateManager -> Storage', () => {
@@ -25,7 +25,7 @@ describe('StateManager -> Storage', () => {
       it.skipIf(isBrowser() === true)(`should dump storage`, async () => {
         const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
-        const account = createAccount()
+        const account = createAccountWithDefaults()
 
         await stateManager.putAccount(address, account)
 
@@ -41,7 +41,7 @@ describe('StateManager -> Storage', () => {
       it("should validate the key's length when modifying a contract's storage", async () => {
         const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
-        const account = createAccount()
+        const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
 
         try {
@@ -57,7 +57,7 @@ describe('StateManager -> Storage', () => {
       it("should validate the key's length when reading a contract's storage", async () => {
         const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
-        const account = createAccount()
+        const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
 
         try {
@@ -73,7 +73,7 @@ describe('StateManager -> Storage', () => {
       it(`should throw on storage values larger than 32 bytes`, async () => {
         const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
         const address = Address.zero()
-        const account = createAccount()
+        const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
 
         const key = zeros(32)
@@ -89,7 +89,7 @@ describe('StateManager -> Storage', () => {
       it(`should strip zeros of storage values`, async () => {
         const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
         const address = Address.zero()
-        const account = createAccount()
+        const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
 
         const key0 = zeros(32)
@@ -118,7 +118,7 @@ describe('StateManager -> Storage', () => {
 
         for (const length of zeroLengths) {
           const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
-          const account = createAccount()
+          const account = createAccountWithDefaults()
           await stateManager.putAccount(address, account)
 
           const value = zeros(length)
@@ -139,7 +139,7 @@ describe('StateManager -> Storage', () => {
       it(`should not strip trailing zeros`, async () => {
         const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
         const address = Address.zero()
-        const account = createAccount()
+        const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
 
         const key = zeros(32)

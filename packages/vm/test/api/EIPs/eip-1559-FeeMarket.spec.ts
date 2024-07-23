@@ -15,7 +15,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm.js'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
 
@@ -88,7 +88,7 @@ describe('EIP1559 tests', () => {
     const balance = GWEI * BigInt(21000) * BigInt(10)
     account!.balance = balance
     await vm.stateManager.putAccount(sender, account!)
-    const results = await vm.runTx({
+    const results = await runTx(vm, {
       tx: block.transactions[0],
       block,
     })
@@ -121,7 +121,7 @@ describe('EIP1559 tests', () => {
     const block2 = makeBlock(GWEI, tx2, 1)
     await vm.stateManager.modifyAccountFields(sender, { balance })
     await vm.stateManager.modifyAccountFields(coinbase, { balance: BigInt(0) })
-    const results2 = await vm.runTx({
+    const results2 = await runTx(vm, {
       tx: block2.transactions[0],
       block: block2,
       skipNonce: true,
@@ -149,7 +149,7 @@ describe('EIP1559 tests', () => {
     const block3 = makeBlock(GWEI, tx3, 0)
     await vm.stateManager.modifyAccountFields(sender, { balance })
     await vm.stateManager.modifyAccountFields(coinbase, { balance: BigInt(0) })
-    const results3 = await vm.runTx({
+    const results3 = await runTx(vm, {
       tx: block3.transactions[0],
       block: block3,
       skipNonce: true,
@@ -198,7 +198,7 @@ describe('EIP1559 tests', () => {
     const code = hexToBytes('0x3A60005260206000F3')
     await vm.stateManager.putContractCode(contractAddress, code)
 
-    const result = await vm.runTx({ tx: block.transactions[0], block })
+    const result = await runTx(vm, { tx: block.transactions[0], block })
     const returnValue = result.execResult.returnValue
 
     const expectedCost = GWEI * BigInt(3)

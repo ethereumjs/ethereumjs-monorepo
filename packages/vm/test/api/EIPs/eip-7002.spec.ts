@@ -16,6 +16,7 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import { bytesToBigInt } from '../../../../util/src/bytes.js'
+import { runBlock } from '../../../src/index.js'
 import { setupVM } from '../utils.js'
 
 import type { Block } from '@ethereumjs/block'
@@ -84,7 +85,7 @@ describe('EIP-7002 tests', () => {
     await vm.stateManager.putAccount(addr, acc)
 
     // Deploy withdrawals contract
-    const results = await vm.runBlock({
+    const results = await runBlock(vm, {
       block,
       skipHeaderValidation: true,
       skipBlockValidation: true,
@@ -112,7 +113,7 @@ describe('EIP-7002 tests', () => {
       generatedBlock = e.block
     })
 
-    await vm.runBlock({
+    await runBlock(vm, {
       block: block2,
       skipHeaderValidation: true,
       skipBlockValidation: true,
@@ -135,7 +136,7 @@ describe('EIP-7002 tests', () => {
     // off the amountBytes because it was serialized in request from bigint
     assert.equal(bytesToBigInt(amountBytes), bytesToBigInt(amountRequest))
 
-    await vm.runBlock({ block: generatedBlock!, skipHeaderValidation: true, root })
+    await runBlock(vm, { block: generatedBlock!, skipHeaderValidation: true, root })
 
     // Run block with 2 requests
 
@@ -153,7 +154,7 @@ describe('EIP-7002 tests', () => {
       { common }
     )
 
-    await vm.runBlock({
+    await runBlock(vm, {
       block: block3,
       skipHeaderValidation: true,
       skipBlockValidation: true,
@@ -176,7 +177,7 @@ describe('EIP-7002 tests', () => {
       { common }
     )
     try {
-      await vm.runBlock({
+      await runBlock(vm, {
         block,
         skipHeaderValidation: true,
         skipBlockValidation: true,

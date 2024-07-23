@@ -1,7 +1,7 @@
 import { Address } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction, txFromTxData } from '@ethereumjs/tx'
-import { VM } from '@ethereumjs/vm'
+import { runTx, VM } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
@@ -16,7 +16,7 @@ const main = async () => {
     r: BigInt('62886504200765677832366398998081608852310526822767264927793100349258111544447'),
     s: BigInt('21948396863567062449199529794141973192314514851405455194940751428901681436138'),
   })
-  const res = await vm.runTx({ tx, skipBalance: true })
+  const res = await runTx(vm, { tx, skipBalance: true })
   console.log(res.totalGasSpent) // 21000n - gas cost for simple ETH transfer
 }
 

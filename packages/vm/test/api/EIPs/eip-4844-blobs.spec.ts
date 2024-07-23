@@ -17,7 +17,7 @@ import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
-import { VM } from '../../../src/vm.js'
+import { VM, buildBlock, runBlock } from '../../../src/index.js'
 import { setBalance } from '../utils.js'
 
 const pk = hexToBytes(`0x${'20'.repeat(32)}`)
@@ -48,7 +48,7 @@ describe('EIP4844 tests', () => {
     await setBalance(vm, address, 14680063125000000000n)
     const vmCopy = await vm.shallowCopy()
 
-    const blockBuilder = await vm.buildBlock({
+    const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       withdrawals: [],
       blockOpts: {
@@ -94,7 +94,7 @@ describe('EIP4844 tests', () => {
     assert.equal(block.header.blobGasUsed, blobGasPerBlob, 'blob gas used for 1 blob should match')
 
     // block should successfully execute with VM.runBlock and have same outputs
-    const result = await vmCopy.runBlock({ block, skipBlockValidation: true })
+    const result = await runBlock(vmCopy, { block, skipBlockValidation: true })
     assert.equal(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)

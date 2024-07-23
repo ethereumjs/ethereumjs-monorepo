@@ -18,12 +18,12 @@ import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
-export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
+export function createAccountWithDefaults(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)
 }
 
 export async function setBalance(vm: VM, address: Address, balance = BigInt(100000000)) {
-  const account = createAccount(BigInt(0), balance)
+  const account = createAccountWithDefaults(BigInt(0), balance)
   await vm.stateManager.checkpoint()
   await vm.stateManager.putAccount(address, account)
   await vm.stateManager.commit()

@@ -4,6 +4,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { txFromTxData } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
+import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -54,7 +55,7 @@ describe(
       const block = createBlockFromBlockData({}, { common })
       block.transactions[0] = tx
 
-      const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+      const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
       const { amountSpent } = result.results[0]
 
       // verify balance is genesis amount minus amountSpent

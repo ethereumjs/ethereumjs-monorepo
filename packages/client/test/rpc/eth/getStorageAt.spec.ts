@@ -1,6 +1,7 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { txFromTxData } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
+import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -47,7 +48,11 @@ describe(method, async () => {
     // deploy contract
     let ranBlock: Block | undefined = undefined
     execution.vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-    const result = await execution.vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    const result = await runBlock(execution.vm, {
+      block,
+      generate: true,
+      skipBlockValidation: true,
+    })
     const { createdAddress } = result.results[0]
     await chain.putBlocks([ranBlock as unknown as Block])
 
