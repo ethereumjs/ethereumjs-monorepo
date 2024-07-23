@@ -68,8 +68,8 @@ describe('EIP 3651 tests', () => {
 
     const result2 = await runTx(vm2, { block, tx, skipHardForkValidation: true })
     const expectedDiff =
-      common.param('gasPrices', 'coldaccountaccess')! -
-      common.param('gasPrices', 'warmstorageread')!
+      common.param('gasPrices', 'coldaccountaccessGas')! -
+      common.param('gasPrices', 'warmstoragereadGas')!
     assert.equal(
       result2.totalGasSpent - result.totalGasSpent,
       expectedDiff,

@@ -6,15 +6,15 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
   it('Basic usage', () => {
     const c = new Common({ chain: Chain.Mainnet, eips: [2537] })
     let msg = 'Should return correct value when HF directly provided'
-    assert.equal(c.paramByHardfork('gasPrices', 'ecAdd', 'byzantium'), BigInt(500), msg)
+    assert.equal(c.paramByHardfork('gasPrices', 'ecAddGas', 'byzantium'), BigInt(500), msg)
 
     msg = 'Should return correct value for HF set in class'
     c.setHardfork(Hardfork.Byzantium)
-    assert.equal(c.param('gasPrices', 'ecAdd'), BigInt(500), msg)
+    assert.equal(c.param('gasPrices', 'ecAddGas'), BigInt(500), msg)
     c.setHardfork(Hardfork.Istanbul)
-    assert.equal(c.param('gasPrices', 'ecAdd'), BigInt(150), msg)
+    assert.equal(c.param('gasPrices', 'ecAddGas'), BigInt(150), msg)
     c.setHardfork(Hardfork.MuirGlacier)
-    assert.equal(c.param('gasPrices', 'ecAdd'), BigInt(150), msg)
+    assert.equal(c.param('gasPrices', 'ecAddGas'), BigInt(150), msg)
 
     msg = 'Should return 0n for non-existing value'
     assert.equal(c.param('gasPrices', 'notexistingvalue'), BigInt(0), msg)
@@ -26,7 +26,7 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     // To run please manually add an "ecAdd" entry with value 12345 to EIP2537 config
     // and uncomment the test
     msg = 'EIP config should take precedence over HF config'
-    assert.equal(c.param('gasPrices', 'ecAdd'), 12345, msg)
+    assert.equal(c.param('gasPrices', 'ecAddGas'), 12345, msg)
     */
   })
 
@@ -38,7 +38,7 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
 
     c.setHardfork(Hardfork.Byzantium)
     assert.equal(
-      c.param('gasPrices', 'ecAdd'),
+      c.param('gasPrices', 'ecAddGas'),
       BigInt(500),
       'Should return correct value for HF set in class'
     )

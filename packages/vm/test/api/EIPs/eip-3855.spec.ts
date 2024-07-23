@@ -29,7 +29,7 @@ describe('EIP 3855 tests', () => {
 
     assert.ok(stack!.length === 1)
     assert.equal(stack![0], BigInt(0))
-    assert.equal(result.executionGasUsed, common.param('gasPrices', 'push0'))
+    assert.equal(result.executionGasUsed, common.param('gasPrices', 'push0Gas'))
   })
 
   it('should correctly use push0 to create a stack with stack limit length', async () => {
@@ -52,7 +52,7 @@ describe('EIP 3855 tests', () => {
         assert.fail('stack element is not 0')
       }
     }
-    assert.equal(result.executionGasUsed, common.param('gasPrices', 'push0')! * BigInt(depth))
+    assert.equal(result.executionGasUsed, common.param('gasPrices', 'push0Gas')! * BigInt(depth))
   })
 
   it('should correctly use push0 to create a stack with stack limit + 1 length', async () => {

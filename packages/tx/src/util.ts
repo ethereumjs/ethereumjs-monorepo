@@ -114,8 +114,8 @@ export class AccessLists {
   }
 
   public static getDataFeeEIP2930(accessList: AccessListBytes, common: Common): number {
-    const accessListStorageKeyCost = common.param('gasPrices', 'accessListStorageKeyCost')
-    const accessListAddressCost = common.param('gasPrices', 'accessListAddressCost')
+    const accessListStorageKeyCost = common.param('gasPrices', 'accessListStorageKeyGas')
+    const accessListAddressCost = common.param('gasPrices', 'accessListAddressGas')
 
     let slots = 0
     for (let index = 0; index < accessList.length; index++) {
@@ -216,7 +216,7 @@ export class AuthorizationLists {
   }
 
   public static getDataFeeEIP7702(authorityList: AuthorizationListBytes, common: Common): number {
-    const perAuthBaseCost = common.param('gasPrices', 'perAuthBaseCost')
+    const perAuthBaseCost = common.param('gasPrices', 'perAuthBaseGas')
     return authorityList.length * Number(perAuthBaseCost)
   }
 }

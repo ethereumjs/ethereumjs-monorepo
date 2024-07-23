@@ -23,7 +23,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   if (opts.common.customCrypto?.kzg === undefined) {
     throw new Error('kzg not initialized')
   }
-  const gasUsed = opts.common.param('gasPrices', 'kzgPointEvaluationGasPrecompilePrice')
+  const gasUsed = opts.common.param('gasPrices', 'kzgPointEvaluationPrecompileGas')
   if (opts._debug !== undefined) {
     opts._debug(
       `Run KZG_POINT_EVALUATION (0x14) precompile data=${short(opts.data)} length=${

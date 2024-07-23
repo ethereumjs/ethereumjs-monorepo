@@ -553,7 +553,7 @@ export class EVM implements EVMInterface {
     let returnFee = BIGINT_0
     if (!result.exceptionError && !this.common.isActivatedEIP(6800)) {
       returnFee =
-        BigInt(result.returnValue.length) * BigInt(this.common.param('gasPrices', 'createData'))
+        BigInt(result.returnValue.length) * BigInt(this.common.param('gasPrices', 'createDataGas'))
       totalGas = totalGas + returnFee
       if (this.DEBUG) {
         debugGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)

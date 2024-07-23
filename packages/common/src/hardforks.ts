@@ -13,98 +13,98 @@ export const hardforks: HardforksDict = {
       maxRefundQuotient: 2, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
     },
     gasPrices: {
-      base: 2, // Gas base cost, used e.g. for ChainID opcode (Istanbul)
-      exp: 10, // Base fee of the EXP opcode
-      expByte: 10, // Times ceil(log256(exponent)) for the EXP instruction
-      keccak256: 30, // Base fee of the SHA3 opcode
-      keccak256Word: 6, // Once per word of the SHA3 operation's data
-      sload: 50, // Base fee of the SLOAD opcode
-      sstoreSet: 20000, // Once per SSTORE operation if the zeroness changes from zero
-      sstoreReset: 5000, // Once per SSTORE operation if the zeroness does not change from zero
-      sstoreRefund: 15000, // Once per SSTORE operation if the zeroness changes to zero
-      jumpdest: 1, // Base fee of the JUMPDEST opcode
-      log: 375, // Base fee of the LOG opcode
-      logData: 8, // Per byte in a LOG* operation's data
-      logTopic: 375, // Multiplied by the * of the LOG*, per LOG transaction. e.g. LOG0 incurs 0 * c_txLogTopicGas, LOG4 incurs 4 * c_txLogTopicGas
-      create: 32000, // Base fee of the CREATE opcode
-      call: 40, // Base fee of the CALL opcode
-      callStipend: 2300, // Free gas given at beginning of call
-      callValueTransfer: 9000, // Paid for CALL when the value transfor is non-zero
-      callNewAccount: 25000, // Paid for CALL when the destination address didn't exist prior
-      selfdestructRefund: 24000, // Refunded following a selfdestruct operation
-      memory: 3, // Times the address of the (highest referenced byte in memory + 1). NOTE: referencing happens on read, write and in instructions such as RETURN and CALL
-      quadCoeffDiv: 512, // Divisor for the quadratic particle of the memory cost equation
-      createData: 200, //
-      tx: 21000, // Per transaction. NOTE: Not payable on data of calls between transactions
-      txCreation: 32000, // The cost of creating a contract via tx
-      txDataZero: 4, // Per byte of data attached to a transaction that equals zero. NOTE: Not payable on data of calls between transactions
-      txDataNonZero: 68, // Per byte of data attached to a transaction that is not equal to zero. NOTE: Not payable on data of calls between transactions
-      copy: 3, // Multiplied by the number of 32-byte words that are copied (round up) for any *COPY operation and added
-      ecRecover: 3000,
-      sha256: 60,
-      sha256Word: 12,
-      ripemd160: 600,
-      ripemd160Word: 120,
-      identity: 15,
-      identityWord: 3,
-      stop: 0, // Base fee of the STOP opcode
-      add: 3, // Base fee of the ADD opcode
-      mul: 5, // Base fee of the MUL opcode
-      sub: 3, // Base fee of the SUB opcode
-      div: 5, // Base fee of the DIV opcode
-      sdiv: 5, // Base fee of the SDIV opcode
-      mod: 5, // Base fee of the MOD opcode
-      smod: 5, // Base fee of the SMOD opcode
-      addmod: 8, // Base fee of the ADDMOD opcode
-      mulmod: 8, // Base fee of the MULMOD opcode
-      signextend: 5, // Base fee of the SIGNEXTEND opcode
-      lt: 3, // Base fee of the LT opcode
-      gt: 3, // Base fee of the GT opcode
-      slt: 3, // Base fee of the SLT opcode
-      sgt: 3, // Base fee of the SGT opcode
-      eq: 3, // Base fee of the EQ opcode
-      iszero: 3, // Base fee of the ISZERO opcode
-      and: 3, // Base fee of the AND opcode
-      or: 3, // Base fee of the OR opcode
-      xor: 3, // Base fee of the XOR opcode
-      not: 3, // Base fee of the NOT opcode
-      byte: 3, // Base fee of the BYTE opcode
-      address: 2, // Base fee of the ADDRESS opcode
-      balance: 20, // Base fee of the BALANCE opcode
-      origin: 2, // Base fee of the ORIGIN opcode
-      caller: 2, // Base fee of the CALLER opcode
-      callvalue: 2, // Base fee of the CALLVALUE opcode
-      calldataload: 3, // Base fee of the CALLDATALOAD opcode
-      calldatasize: 2, // Base fee of the CALLDATASIZE opcode
-      calldatacopy: 3, // Base fee of the CALLDATACOPY opcode
-      codesize: 2, // Base fee of the CODESIZE opcode
-      codecopy: 3, // Base fee of the CODECOPY opcode
-      gasprice: 2, // Base fee of the GASPRICE opcode
-      extcodesize: 20, // Base fee of the EXTCODESIZE opcode
-      extcodecopy: 20, // Base fee of the EXTCODECOPY opcode
-      blockhash: 20, // Base fee of the BLOCKHASH opcode
-      coinbase: 2, // Base fee of the COINBASE opcode
-      timestamp: 2, // Base fee of the TIMESTAMP opcode
-      number: 2, // Base fee of the NUMBER opcode
-      difficulty: 2, // Base fee of the DIFFICULTY opcode
-      gaslimit: 2, // Base fee of the GASLIMIT opcode
-      pop: 2, // Base fee of the POP opcode
-      mload: 3, // Base fee of the MLOAD opcode
-      mstore: 3, // Base fee of the MSTORE opcode
-      mstore8: 3, // Base fee of the MSTORE8 opcode
-      sstore: 0, // Base fee of the SSTORE opcode
-      jump: 8, // Base fee of the JUMP opcode
-      jumpi: 10, // Base fee of the JUMPI opcode
-      pc: 2, // Base fee of the PC opcode
-      msize: 2, // Base fee of the MSIZE opcode
-      gas: 2, // Base fee of the GAS opcode
-      push: 3, // Base fee of the PUSH opcode
-      dup: 3, // Base fee of the DUP opcode
-      swap: 3, // Base fee of the SWAP opcode
-      callcode: 40, // Base fee of the CALLCODE opcode
-      return: 0, // Base fee of the RETURN opcode
-      invalid: 0, // Base fee of the INVALID opcode
-      selfdestruct: 0, // Base fee of the SELFDESTRUCT opcode
+      baseGas: 2, // Gas base cost, used e.g. for ChainID opcode (Istanbul)
+      expGas: 10, // Base fee of the EXP opcode
+      expByteGas: 10, // Times ceil(log256(exponent)) for the EXP instruction
+      keccak256Gas: 30, // Base fee of the SHA3 opcode
+      keccak256WordGas: 6, // Once per word of the SHA3 operation's data
+      sloadGas: 50, // Base fee of the SLOAD opcode
+      sstoreSetGas: 20000, // Once per SSTORE operation if the zeroness changes from zero
+      sstoreResetGas: 5000, // Once per SSTORE operation if the zeroness does not change from zero
+      sstoreRefundGas: 15000, // Once per SSTORE operation if the zeroness changes to zero
+      jumpdestGas: 1, // Base fee of the JUMPDEST opcode
+      logGas: 375, // Base fee of the LOG opcode
+      logDataGas: 8, // Per byte in a LOG* operation's data
+      logTopicGas: 375, // Multiplied by the * of the LOG*, per LOG transaction. e.g. LOG0 incurs 0 * c_txLogTopicGas, LOG4 incurs 4 * c_txLogTopicGas
+      createGas: 32000, // Base fee of the CREATE opcode
+      callGas: 40, // Base fee of the CALL opcode
+      callStipendGas: 2300, // Free gas given at beginning of call
+      callValueTransferGas: 9000, // Paid for CALL when the value transfor is non-zero
+      callNewAccountGas: 25000, // Paid for CALL when the destination address didn't exist prior
+      selfdestructRefundGas: 24000, // Refunded following a selfdestruct operation
+      memoryGas: 3, // Times the address of the (highest referenced byte in memory + 1). NOTE: referencing happens on read, write and in instructions such as RETURN and CALL
+      quadCoeffDivGas: 512, // Divisor for the quadratic particle of the memory cost equation
+      createDataGas: 200, //
+      txGas: 21000, // Per transaction. NOTE: Not payable on data of calls between transactions
+      txCreationGas: 32000, // The cost of creating a contract via tx
+      txDataZeroGas: 4, // Per byte of data attached to a transaction that equals zero. NOTE: Not payable on data of calls between transactions
+      txDataNonZeroGas: 68, // Per byte of data attached to a transaction that is not equal to zero. NOTE: Not payable on data of calls between transactions
+      copyGas: 3, // Multiplied by the number of 32-byte words that are copied (round up) for any *COPY operation and added
+      ecRecoverGas: 3000,
+      sha256Gas: 60,
+      sha256WordGas: 12,
+      ripemd160Gas: 600,
+      ripemd160WordGas: 120,
+      identityGas: 15,
+      identityWordGas: 3,
+      stopGas: 0, // Base fee of the STOP opcode
+      addGas: 3, // Base fee of the ADD opcode
+      mulGas: 5, // Base fee of the MUL opcode
+      subGas: 3, // Base fee of the SUB opcode
+      divGas: 5, // Base fee of the DIV opcode
+      sdivGas: 5, // Base fee of the SDIV opcode
+      modGas: 5, // Base fee of the MOD opcode
+      smodGas: 5, // Base fee of the SMOD opcode
+      addmodGas: 8, // Base fee of the ADDMOD opcode
+      mulmodGas: 8, // Base fee of the MULMOD opcode
+      signextendGas: 5, // Base fee of the SIGNEXTEND opcode
+      ltGas: 3, // Base fee of the LT opcode
+      gtGas: 3, // Base fee of the GT opcode
+      sltGas: 3, // Base fee of the SLT opcode
+      sgtGas: 3, // Base fee of the SGT opcode
+      eqGas: 3, // Base fee of the EQ opcode
+      iszeroGas: 3, // Base fee of the ISZERO opcode
+      andGas: 3, // Base fee of the AND opcode
+      orGas: 3, // Base fee of the OR opcode
+      xorGas: 3, // Base fee of the XOR opcode
+      notGas: 3, // Base fee of the NOT opcode
+      byteGas: 3, // Base fee of the BYTE opcode
+      addressGas: 2, // Base fee of the ADDRESS opcode
+      balanceGas: 20, // Base fee of the BALANCE opcode
+      originGas: 2, // Base fee of the ORIGIN opcode
+      callerGas: 2, // Base fee of the CALLER opcode
+      callvalueGas: 2, // Base fee of the CALLVALUE opcode
+      calldataloadGas: 3, // Base fee of the CALLDATALOAD opcode
+      calldatasizeGas: 2, // Base fee of the CALLDATASIZE opcode
+      calldatacopyGas: 3, // Base fee of the CALLDATACOPY opcode
+      codesizeGas: 2, // Base fee of the CODESIZE opcode
+      codecopyGas: 3, // Base fee of the CODECOPY opcode
+      gaspriceGas: 2, // Base fee of the GASPRICE opcode
+      extcodesizeGas: 20, // Base fee of the EXTCODESIZE opcode
+      extcodecopyGas: 20, // Base fee of the EXTCODECOPY opcode
+      blockhashGas: 20, // Base fee of the BLOCKHASH opcode
+      coinbaseGas: 2, // Base fee of the COINBASE opcode
+      timestampGas: 2, // Base fee of the TIMESTAMP opcode
+      numberGas: 2, // Base fee of the NUMBER opcode
+      difficultyGas: 2, // Base fee of the DIFFICULTY opcode
+      gaslimitGas: 2, // Base fee of the GASLIMIT opcode
+      popGas: 2, // Base fee of the POP opcode
+      mloadGas: 3, // Base fee of the MLOAD opcode
+      mstoreGas: 3, // Base fee of the MSTORE opcode
+      mstore8Gas: 3, // Base fee of the MSTORE8 opcode
+      sstoreGas: 0, // Base fee of the SSTORE opcode
+      jumpGas: 8, // Base fee of the JUMP opcode
+      jumpiGas: 10, // Base fee of the JUMPI opcode
+      pcGas: 2, // Base fee of the PC opcode
+      msizeGas: 2, // Base fee of the MSIZE opcode
+      gasGas: 2, // Base fee of the GAS opcode
+      pushGas: 3, // Base fee of the PUSH opcode
+      dupGas: 3, // Base fee of the DUP opcode
+      swapGas: 3, // Base fee of the SWAP opcode
+      callcodeGas: 40, // Base fee of the CALLCODE opcode
+      returnGas: 0, // Base fee of the RETURN opcode
+      invalidGas: 0, // Base fee of the INVALID opcode
+      selfdestructGas: 0, // Base fee of the SELFDESTRUCT opcode
     },
     vm: {
       stackLimit: 1024, // Maximum size of VM stack allowed
@@ -128,7 +128,7 @@ export const hardforks: HardforksDict = {
    */
   homestead: {
     gasPrices: {
-      delegatecall: 40, // Base fee of the DELEGATECALL opcode
+      delegatecallGas: 40, // Base fee of the DELEGATECALL opcode
     },
   },
   /**
@@ -144,14 +144,14 @@ export const hardforks: HardforksDict = {
    */
   tangerineWhistle: {
     gasPrices: {
-      sload: 200, // Once per SLOAD operation
-      call: 700, // Once per CALL operation & message call transaction
-      extcodesize: 700, // Base fee of the EXTCODESIZE opcode
-      extcodecopy: 700, // Base fee of the EXTCODECOPY opcode
-      balance: 400, // Base fee of the BALANCE opcode
-      delegatecall: 700, // Base fee of the DELEGATECALL opcode
-      callcode: 700, // Base fee of the CALLCODE opcode
-      selfdestruct: 5000, // Base fee of the SELFDESTRUCT opcode
+      sloadGas: 200, // Once per SLOAD operation
+      callGas: 700, // Once per CALL operation & message call transaction
+      extcodesizeGas: 700, // Base fee of the EXTCODESIZE opcode
+      extcodecopyGas: 700, // Base fee of the EXTCODECOPY opcode
+      balanceGas: 400, // Base fee of the BALANCE opcode
+      delegatecallGas: 700, // Base fee of the DELEGATECALL opcode
+      callcodeGas: 700, // Base fee of the CALLCODE opcode
+      selfdestructGas: 5000, // Base fee of the SELFDESTRUCT opcode
     },
   },
   /**
@@ -161,7 +161,7 @@ export const hardforks: HardforksDict = {
    */
   spuriousDragon: {
     gasPrices: {
-      expByte: 50, // Times ceil(log256(exponent)) for the EXP instruction
+      expByteGas: 50, // Times ceil(log256(exponent)) for the EXP instruction
     },
     vm: {
       maxCodeSize: 24576, // Maximum length of contract code
@@ -174,15 +174,15 @@ export const hardforks: HardforksDict = {
    */
   byzantium: {
     gasPrices: {
-      modexpGquaddivisor: 20, // Gquaddivisor from modexp precompile for gas calculation
-      ecAdd: 500, // Gas costs for curve addition precompile
-      ecMul: 40000, // Gas costs for curve multiplication precompile
-      ecPairing: 100000, // Base gas costs for curve pairing precompile
-      ecPairingWord: 80000, // Gas costs regarding curve pairing precompile input length
-      revert: 0, // Base fee of the REVERT opcode
-      staticcall: 700, // Base fee of the STATICCALL opcode
-      returndatasize: 2, // Base fee of the RETURNDATASIZE opcode
-      returndatacopy: 3, // Base fee of the RETURNDATACOPY opcode
+      modexpGquaddivisorGas: 20, // Gquaddivisor from modexp precompile for gas calculation
+      ecAddGas: 500, // Gas costs for curve addition precompile
+      ecMulGas: 40000, // Gas costs for curve multiplication precompile
+      ecPairingGas: 100000, // Base gas costs for curve pairing precompile
+      ecPairingWordGas: 80000, // Gas costs regarding curve pairing precompile input length
+      revertGas: 0, // Base fee of the REVERT opcode
+      staticcallGas: 700, // Base fee of the STATICCALL opcode
+      returndatasizeGas: 2, // Base fee of the RETURNDATASIZE opcode
+      returndatacopyGas: 3, // Base fee of the RETURNDATACOPY opcode
     },
     pow: {
       minerReward: BigInt('3000000000000000000'), // the amount a miner get rewarded for mining a block
@@ -200,14 +200,14 @@ export const hardforks: HardforksDict = {
       netSstoreInitGas: 20000, // Once per SSTORE operation from clean zero
       netSstoreCleanGas: 5000, // Once per SSTORE operation from clean non-zero
       netSstoreDirtyGas: 200, // Once per SSTORE operation from dirty
-      netSstoreClearRefund: 15000, // Once per SSTORE operation for clearing an originally existing storage slot
-      netSstoreResetRefund: 4800, // Once per SSTORE operation for resetting to the original non-zero value
-      netSstoreResetClearRefund: 19800, // Once per SSTORE operation for resetting to the original zero value
-      shl: 3, // Base fee of the SHL opcode
-      shr: 3, // Base fee of the SHR opcode
-      sar: 3, // Base fee of the SAR opcode
-      extcodehash: 400, // Base fee of the EXTCODEHASH opcode
-      create2: 32000, // Base fee of the CREATE2 opcode
+      netSstoreClearRefundGas: 15000, // Once per SSTORE operation for clearing an originally existing storage slot
+      netSstoreResetRefundGas: 4800, // Once per SSTORE operation for resetting to the original non-zero value
+      netSstoreResetClearRefundGas: 19800, // Once per SSTORE operation for resetting to the original zero value
+      shlGas: 3, // Base fee of the SHL opcode
+      shrGas: 3, // Base fee of the SHR opcode
+      sarGas: 3, // Base fee of the SAR opcode
+      extcodehashGas: 400, // Base fee of the EXTCODEHASH opcode
+      create2Gas: 32000, // Base fee of the CREATE2 opcode
     },
     pow: {
       minerReward: BigInt('2000000000000000000'), // The amount a miner gets rewarded for mining a block
@@ -225,9 +225,9 @@ export const hardforks: HardforksDict = {
       netSstoreInitGas: null, // Removed along EIP-1283
       netSstoreCleanGas: null, // Removed along EIP-1283
       netSstoreDirtyGas: null, // Removed along EIP-1283
-      netSstoreClearRefund: null, // Removed along EIP-1283
-      netSstoreResetRefund: null, // Removed along EIP-1283
-      netSstoreResetClearRefund: null, // Removed along EIP-1283
+      netSstoreClearRefundGas: null, // Removed along EIP-1283
+      netSstoreResetRefundGas: null, // Removed along EIP-1283
+      netSstoreResetClearRefundGas: null, // Removed along EIP-1283
     },
   },
   /**
@@ -238,25 +238,25 @@ export const hardforks: HardforksDict = {
   istanbul: {
     gasConfig: {},
     gasPrices: {
-      blake2Round: 1, // Gas cost per round for the Blake2 F precompile
-      ecAdd: 150, // Gas costs for curve addition precompile
-      ecMul: 6000, // Gas costs for curve multiplication precompile
-      ecPairing: 45000, // Base gas costs for curve pairing precompile
-      ecPairingWord: 34000, // Gas costs regarding curve pairing precompile input length
-      txDataNonZero: 16, // Per byte of data attached to a transaction that is not equal to zero. NOTE: Not payable on data of calls between transactions
-      sstoreSentryGasEIP2200: 2300, // Minimum gas required to be present for an SSTORE call, not consumed
-      sstoreNoopGasEIP2200: 800, // Once per SSTORE operation if the value doesn't change
-      sstoreDirtyGasEIP2200: 800, // Once per SSTORE operation if a dirty value is changed
-      sstoreInitGasEIP2200: 20000, // Once per SSTORE operation from clean zero to non-zero
-      sstoreInitRefundEIP2200: 19200, // Once per SSTORE operation for resetting to the original zero value
-      sstoreCleanGasEIP2200: 5000, // Once per SSTORE operation from clean non-zero to something else
-      sstoreCleanRefundEIP2200: 4200, // Once per SSTORE operation for resetting to the original non-zero value
-      sstoreClearRefundEIP2200: 15000, // Once per SSTORE operation for clearing an originally existing storage slot
-      balance: 700, // Base fee of the BALANCE opcode
-      extcodehash: 700, // Base fee of the EXTCODEHASH opcode
-      chainid: 2, // Base fee of the CHAINID opcode
-      selfbalance: 5, // Base fee of the SELFBALANCE opcode
-      sload: 800, // Base fee of the SLOAD opcode
+      blake2RoundGas: 1, // Gas cost per round for the Blake2 F precompile
+      ecAddGas: 150, // Gas costs for curve addition precompile
+      ecMulGas: 6000, // Gas costs for curve multiplication precompile
+      ecPairingGas: 45000, // Base gas costs for curve pairing precompile
+      ecPairingWordGas: 34000, // Gas costs regarding curve pairing precompile input length
+      txDataNonZeroGas: 16, // Per byte of data attached to a transaction that is not equal to zero. NOTE: Not payable on data of calls between transactions
+      sstoreSentryEIP2200Gas: 2300, // Minimum gas required to be present for an SSTORE call, not consumed
+      sstoreNoopEIP2200Gas: 800, // Once per SSTORE operation if the value doesn't change
+      sstoreDirtyEIP2200Gas: 800, // Once per SSTORE operation if a dirty value is changed
+      sstoreInitEIP2200Gas: 20000, // Once per SSTORE operation from clean zero to non-zero
+      sstoreInitRefundEIP2200Gas: 19200, // Once per SSTORE operation for resetting to the original zero value
+      sstoreCleanEIP2200Gas: 5000, // Once per SSTORE operation from clean non-zero to something else
+      sstoreCleanRefundEIP2200Gas: 4200, // Once per SSTORE operation for resetting to the original non-zero value
+      sstoreClearRefundEIP2200Gas: 15000, // Once per SSTORE operation for clearing an originally existing storage slot
+      balanceGas: 700, // Base fee of the BALANCE opcode
+      extcodehashGas: 700, // Base fee of the EXTCODEHASH opcode
+      chainidGas: 2, // Base fee of the CHAINID opcode
+      selfbalanceGas: 5, // Base fee of the SELFBALANCE opcode
+      sloadGas: 800, // Base fee of the SLOAD opcode
     },
   },
   /**

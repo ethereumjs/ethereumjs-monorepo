@@ -1440,7 +1440,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let gasLimit = runState.messageGasLimit!
       if (value !== BIGINT_0) {
-        const callStipend = common.param('gasPrices', 'callStipend')
+        const callStipend = common.param('gasPrices', 'callStipendGas')
         runState.interpreter.addStipend(callStipend)
         gasLimit += callStipend
       }
@@ -1463,7 +1463,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let gasLimit = runState.messageGasLimit!
       if (value !== BIGINT_0) {
-        const callStipend = common.param('gasPrices', 'callStipend')
+        const callStipend = common.param('gasPrices', 'callStipendGas')
         runState.interpreter.addStipend(callStipend)
         gasLimit += callStipend
       }

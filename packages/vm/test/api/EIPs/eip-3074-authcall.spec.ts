@@ -534,8 +534,8 @@ describe('EIP-3074 AUTHCALL', () => {
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas =
       gas! -
-      common.param('gasPrices', 'warmstorageread')! -
-      common.param('gasPrices', 'coldaccountaccess')!
+      common.param('gasPrices', 'warmstoragereadGas')! -
+      common.param('gasPrices', 'coldaccountaccessGas')!
     const expected = preGas - preGas / 64n - 2n
     assert.equal(gasBigInt, expected, 'forwarded max call gas')
   })
@@ -575,7 +575,7 @@ describe('EIP-3074 AUTHCALL', () => {
       hexToBytes(`0x${'00'.repeat(31)}01`)
     )
     const gasBigInt = bytesToBigInt(gasUsed)
-    const preGas = gas! - common.param('gasPrices', 'warmstorageread')!
+    const preGas = gas! - common.param('gasPrices', 'warmstoragereadGas')!
     const expected = preGas - preGas / 64n - 2n
     assert.equal(gasBigInt, expected, 'forwarded max call gas')
   })
@@ -617,10 +617,10 @@ describe('EIP-3074 AUTHCALL', () => {
 
     const gasBigInt = gas! - gasAfterCall!
     const expected =
-      common.param('gasPrices', 'coldaccountaccess')! +
-      common.param('gasPrices', 'warmstorageread')! +
-      common.param('gasPrices', 'callNewAccount')! +
-      common.param('gasPrices', 'authcallValueTransfer')!
+      common.param('gasPrices', 'coldaccountaccessGas')! +
+      common.param('gasPrices', 'warmstoragereadGas')! +
+      common.param('gasPrices', 'callNewAccountGas')! +
+      common.param('gasPrices', 'authcallValueTransferGas')!
 
     assert.equal(gasBigInt, expected, 'forwarded max call gas')
   })
@@ -666,9 +666,9 @@ describe('EIP-3074 AUTHCALL', () => {
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas =
       gas! -
-      common.param('gasPrices', 'warmstorageread')! -
-      common.param('gasPrices', 'authcallValueTransfer')! -
-      common.param('gasPrices', 'coldaccountaccess')!
+      common.param('gasPrices', 'warmstoragereadGas')! -
+      common.param('gasPrices', 'authcallValueTransferGas')! -
+      common.param('gasPrices', 'coldaccountaccessGas')!
     const expected = preGas - preGas / 64n - 2n
     assert.equal(gasBigInt, expected, 'forwarded max call gas')
 

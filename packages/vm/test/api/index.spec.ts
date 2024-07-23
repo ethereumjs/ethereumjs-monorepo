@@ -156,7 +156,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     let common = createCustomCommon({ chainId: 3 })
     common.setHardfork(Hardfork.Byzantium)
     let vm = await VM.create({ common })
-    assert.equal(vm.common.param('gasPrices', 'ecAdd'), BigInt(500))
+    assert.equal(vm.common.param('gasPrices', 'ecAddGas'), BigInt(500))
 
     try {
       common = new Common({ chain: 'mainchain', hardfork: Hardfork.Homestead })
@@ -313,7 +313,7 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
 
       const diff =
         resultNotActivated.execResult.executionGasUsed - resultActivated.execResult.executionGasUsed
-      const expected = common.param('gasPrices', 'callNewAccount')
+      const expected = common.param('gasPrices', 'callNewAccountGas')
 
       assert.equal(diff, expected, 'precompiles are activated')
     })

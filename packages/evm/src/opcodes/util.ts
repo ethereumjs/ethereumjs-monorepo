@@ -169,8 +169,8 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
   if (newMemoryWordCount <= runState.memoryWordCount) return BIGINT_0
 
   const words = newMemoryWordCount
-  const fee = common.param('gasPrices', 'memory')
-  const quadCoeff = common.param('gasPrices', 'quadCoeffDiv')
+  const fee = common.param('gasPrices', 'memoryGas')
+  const quadCoeff = common.param('gasPrices', 'quadCoeffDivGas')
   // words * 3 + words ^2 / 512
   let cost = words * fee + (words * words) / quadCoeff
 
@@ -215,11 +215,11 @@ export function updateSstoreGas(
     (value.length === 0 && currentStorage.length === 0) ||
     (value.length > 0 && currentStorage.length > 0)
   ) {
-    const gas = common.param('gasPrices', 'sstoreReset')
+    const gas = common.param('gasPrices', 'sstoreResetGas')
     return gas
   } else if (value.length === 0 && currentStorage.length > 0) {
-    const gas = common.param('gasPrices', 'sstoreReset')
-    runState.interpreter.refundGas(common.param('gasPrices', 'sstoreRefund'), 'updateSstoreGas')
+    const gas = common.param('gasPrices', 'sstoreResetGas')
+    runState.interpreter.refundGas(common.param('gasPrices', 'sstoreRefundGas'), 'updateSstoreGas')
     return gas
   } else {
     /*
@@ -229,7 +229,7 @@ export function updateSstoreGas(
       -> Value is zero, but slot is nonzero
       Thus, the remaining case is where value is nonzero, but slot is zero, which is this clause
     */
-    return common.param('gasPrices', 'sstoreSet')
+    return common.param('gasPrices', 'sstoreSetGas')
   }
 }
 

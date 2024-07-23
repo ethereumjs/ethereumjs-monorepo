@@ -633,7 +633,7 @@ export class BlockHeader {
    */
   private _getBlobGasPrice(excessBlobGas: bigint) {
     return fakeExponential(
-      this.common.param('gasPrices', 'minBlobGasPrice'),
+      this.common.param('gasPrices', 'minBlobGas'),
       excessBlobGas,
       this.common.param('gasConfig', 'blobGasPriceUpdateFraction')
     )

@@ -475,14 +475,14 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     )
     // Cost should be:
     // Base fee + 2*TxDataNonZero + TxDataZero + AccessListAddressCost + AccessListSlotCost
-    const txDataZero: number = Number(common.param('gasPrices', 'txDataZero'))
-    const txDataNonZero: number = Number(common.param('gasPrices', 'txDataNonZero'))
+    const txDataZero: number = Number(common.param('gasPrices', 'txDataZeroGas'))
+    const txDataNonZero: number = Number(common.param('gasPrices', 'txDataNonZeroGas'))
     const accessListStorageKeyCost: number = Number(
-      common.param('gasPrices', 'accessListStorageKeyCost')
+      common.param('gasPrices', 'accessListStorageKeyGas')
     )
-    const accessListAddressCost: number = Number(common.param('gasPrices', 'accessListAddressCost'))
-    const baseFee: number = Number(common.param('gasPrices', 'tx'))
-    const creationFee: number = Number(common.param('gasPrices', 'txCreation'))
+    const accessListAddressCost: number = Number(common.param('gasPrices', 'accessListAddressGas'))
+    const baseFee: number = Number(common.param('gasPrices', 'txGas'))
+    const creationFee: number = Number(common.param('gasPrices', 'txCreationGas'))
 
     assert.ok(
       tx.getBaseFee() ===

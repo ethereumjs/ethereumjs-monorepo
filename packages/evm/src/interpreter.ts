@@ -1189,7 +1189,7 @@ export class Interpreter {
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
     if (!this._result.selfdestruct.has(bytesToHex(this._env.address.bytes))) {
-      this.refundGas(this.common.param('gasPrices', 'selfdestructRefund'))
+      this.refundGas(this.common.param('gasPrices', 'selfdestructRefundGas'))
     }
 
     this._result.selfdestruct.add(bytesToHex(this._env.address.bytes))
