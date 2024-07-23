@@ -1,6 +1,5 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { runBlock } from '../../../vm/dist/esm/runBlock.js'
 import { DataDirectory } from '../index.js'
 
 import type { VMExecution } from '../execution/index.js'
@@ -65,6 +64,5 @@ const main = async () => {
 
 main()
     `
-  runBlock
   execution.config.logger.info(code)
 }
