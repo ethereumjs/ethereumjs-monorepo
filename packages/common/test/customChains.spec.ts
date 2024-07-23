@@ -1,4 +1,3 @@
-import { BIGINT_0 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -230,9 +229,8 @@ describe('[Common]: Custom chains', () => {
       customHardforks: {
         // Hardfork which changes the gas of STOP from 0 to 10
         stop10Gas: {
-          name: 'stop10Gas',
           eips: [2935],
-          vm: {
+          params: {
             stop: BigInt(10),
           },
         },
@@ -250,13 +248,15 @@ describe('[Common]: Custom chains', () => {
       ],
     })
     c.setHardfork(Hardfork.Chainstart)
-    assert.equal(c.param('vm', 'stop'), BIGINT_0)
+    assert.throws(() => {
+      c.param('stop')
+    })
     c.setHardforkBy({
       blockNumber: 1,
       timestamp: 1000,
     })
     assert.equal(c.hardfork(), 'stop10Gas')
-    assert.equal(c.param('vm', 'stop'), BigInt(10))
+    assert.equal(c.param('stop'), BigInt(10))
   })
 })
 

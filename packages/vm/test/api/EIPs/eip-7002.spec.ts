@@ -52,7 +52,7 @@ const amountBytes = setLengthLeft(bigIntToBytes(amount), 8)
 
 function generateTx(nonce: bigint) {
   const addressBytes = setLengthLeft(
-    bigIntToBytes(common.param('vm', 'withdrawalRequestPredeployAddress')),
+    bigIntToBytes(common.param('withdrawalRequestPredeployAddress')),
     20
   )
   const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))

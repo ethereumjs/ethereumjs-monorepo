@@ -150,7 +150,7 @@ describe('EIP 3860 tests', () => {
       // It tries to deploy a contract too large, where the code is all zeros
       // (since memory which is not allocated/resized to yet is always defaulted to 0)
       data: concatBytes(
-        hexToBytes(`0x${'00'.repeat(Number(common.param('vm', 'maxInitCodeSize')) + 1)}`),
+        hexToBytes(`0x${'00'.repeat(Number(common.param('maxInitCodeSize')) + 1)}`),
         bytes
       ),
     }

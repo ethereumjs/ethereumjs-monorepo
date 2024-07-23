@@ -62,7 +62,7 @@ const accumulateEIP7002Requests = async (
 ): Promise<void> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
-    bigIntToBytes(vm.common.param('vm', 'withdrawalRequestPredeployAddress')),
+    bigIntToBytes(vm.common.param('withdrawalRequestPredeployAddress')),
     20
   )
   const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
@@ -75,7 +75,7 @@ const accumulateEIP7002Requests = async (
     )
   }
 
-  const systemAddressBytes = bigIntToAddressBytes(vm.common.param('vm', 'systemAddress'))
+  const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
   const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
 
   const originalAccount = await vm.stateManager.getAccount(systemAddress)
@@ -112,7 +112,7 @@ const accumulateEIP7251Requests = async (
 ): Promise<void> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
-    bigIntToBytes(vm.common.param('vm', 'consolidationRequestPredeployAddress')),
+    bigIntToBytes(vm.common.param('consolidationRequestPredeployAddress')),
     20
   )
   const consolidationsAddress = Address.fromString(bytesToHex(addressBytes))
@@ -125,7 +125,7 @@ const accumulateEIP7251Requests = async (
     )
   }
 
-  const systemAddressBytes = bigIntToAddressBytes(vm.common.param('vm', 'systemAddress'))
+  const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
   const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
 
   const originalAccount = await vm.stateManager.getAccount(systemAddress)

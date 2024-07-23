@@ -10,7 +10,7 @@ const common = new Common({
   eips: [3860, 4844, 4895],
 })
 
-const maxInitCodeSize = common.param('vm', 'maxInitCodeSize')
+const maxInitCodeSize = common.param('maxInitCodeSize')
 const txTypes = [
   TransactionType.Legacy,
   TransactionType.AccessListEIP2930,

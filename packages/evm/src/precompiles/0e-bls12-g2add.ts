@@ -12,7 +12,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
 
   // note: the gas used is constant; even if the input is incorrect.
-  const gasUsed = opts.common.paramByEIP('gasPrices', 'Bls12381G2AddGas', 2537) ?? BigInt(0)
+  const gasUsed = opts.common.paramByEIP('Bls12381G2AddGas', 2537) ?? BigInt(0)
   if (!gasCheck(opts, gasUsed, 'BLS12G2ADD (0x0e)')) {
     return OOGResult(opts.gasLimit)
   }
