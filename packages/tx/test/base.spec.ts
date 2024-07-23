@@ -18,6 +18,12 @@ import {
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
   TransactionType,
+  create1559FeeMarketTx,
+  create2930AccessListTx,
+  create2930AccessListTxFromBytesArray,
+  createEIP1559FeeMarketTxFromBytesArray,
+  createLegacyTx,
+  createLegacyTxFromBytesArray,
 } from '../src/index.js'
 
 import eip1559Fixtures from './json/eip1559txs.json'
@@ -33,21 +39,17 @@ describe('[BaseTransaction]', () => {
 
   const legacyTxs: BaseTransaction<TransactionType.Legacy>[] = []
   for (const tx of legacyFixtures.slice(0, 4)) {
-    legacyTxs.push(LegacyTransaction.fromTxData(tx.data as LegacyTxData, { common }))
+    legacyTxs.push(createLegacyTx(tx.data as LegacyTxData, { common }))
   }
 
   const eip2930Txs: BaseTransaction<TransactionType.AccessListEIP2930>[] = []
   for (const tx of eip2930Fixtures) {
-    eip2930Txs.push(
-      AccessListEIP2930Transaction.fromTxData(tx.data as AccessListEIP2930TxData, { common })
-    )
+    eip2930Txs.push(create2930AccessListTx(tx.data as AccessListEIP2930TxData, { common }))
   }
 
   const eip1559Txs: BaseTransaction<TransactionType.FeeMarketEIP1559>[] = []
   for (const tx of eip1559Fixtures) {
-    eip1559Txs.push(
-      FeeMarketEIP1559Transaction.fromTxData(tx.data as FeeMarketEIP1559TxData, { common })
-    )
+    eip1559Txs.push(create1559FeeMarketTx(tx.data as FeeMarketEIP1559TxData, { common }))
   }
 
   const zero = new Uint8Array(0)
@@ -162,7 +164,7 @@ describe('[BaseTransaction]', () => {
     let rlpData: any = legacyTxs[0].raw()
     rlpData[0] = toBytes('0x0')
     try {
-      LegacyTransaction.fromValuesArray(rlpData)
+      createLegacyTxFromBytesArray(rlpData)
       assert.fail('should have thrown when nonce has leading zeroes')
     } catch (err: any) {
       assert.ok(
@@ -173,7 +175,7 @@ describe('[BaseTransaction]', () => {
     rlpData[0] = toBytes('0x')
     rlpData[6] = toBytes('0x0')
     try {
-      LegacyTransaction.fromValuesArray(rlpData)
+      createLegacyTxFromBytesArray(rlpData)
       assert.fail('should have thrown when v has leading zeroes')
     } catch (err: any) {
       assert.ok(
@@ -184,7 +186,7 @@ describe('[BaseTransaction]', () => {
     rlpData = eip2930Txs[0].raw()
     rlpData[3] = toBytes('0x0')
     try {
-      AccessListEIP2930Transaction.fromValuesArray(rlpData)
+      create2930AccessListTxFromBytesArray(rlpData)
       assert.fail('should have thrown when gasLimit has leading zeroes')
     } catch (err: any) {
       assert.ok(
@@ -195,7 +197,7 @@ describe('[BaseTransaction]', () => {
     rlpData = eip1559Txs[0].raw()
     rlpData[2] = toBytes('0x0')
     try {
-      FeeMarketEIP1559Transaction.fromValuesArray(rlpData)
+      createEIP1559FeeMarketTxFromBytesArray(rlpData)
       assert.fail('should have thrown when maxPriorityFeePerGas has leading zeroes')
     } catch (err: any) {
       assert.ok(
@@ -386,7 +388,7 @@ describe('[BaseTransaction]', () => {
 
   it('initialization with defaults', () => {
     const bufferZero = toBytes('0x')
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       nonce: undefined,
       gasLimit: undefined,
       gasPrice: undefined,
@@ -409,7 +411,7 @@ describe('[BaseTransaction]', () => {
   })
 
   it('_validateCannotExceedMaxInteger()', () => {
-    const tx = FeeMarketEIP1559Transaction.fromTxData(eip1559Txs[0])
+    const tx = create1559FeeMarketTx(eip1559Txs[0])
     try {
       ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER }, 256, true)
     } catch (err: any) {

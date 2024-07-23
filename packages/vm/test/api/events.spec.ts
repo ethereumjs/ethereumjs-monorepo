@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { create1559FeeMarketTx } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -56,7 +56,7 @@ describe('VM events', () => {
       emitted = val
     })
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    const tx = create1559FeeMarketTx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
@@ -76,7 +76,7 @@ describe('VM events', () => {
       emitted = val
     })
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    const tx = create1559FeeMarketTx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
@@ -97,7 +97,7 @@ describe('VM events', () => {
       emitted = val
     })
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    const tx = create1559FeeMarketTx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
@@ -119,7 +119,7 @@ describe('VM events', () => {
       emitted = val
     })
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    const tx = create1559FeeMarketTx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
@@ -142,7 +142,7 @@ describe('VM events', () => {
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
     // This deploys a contract which has a single byte of code, 0x41.
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    const tx = create1559FeeMarketTx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
@@ -164,7 +164,7 @@ describe('VM events', () => {
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
     // This deploys a contract which has a single byte of code, 0x41.
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    const tx = create1559FeeMarketTx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',

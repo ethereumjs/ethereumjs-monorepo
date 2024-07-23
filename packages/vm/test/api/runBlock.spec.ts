@@ -6,11 +6,12 @@ import {
 import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
-  AccessListEIP2930Transaction,
   Capability,
-  EOACodeEIP7702Transaction,
-  FeeMarketEIP1559Transaction,
   LegacyTransaction,
+  create1559FeeMarketTx,
+  create2930AccessListTx,
+  create7702EOACodeTx,
+  createLegacyTx,
 } from '@ethereumjs/tx'
 import {
   Account,
@@ -179,7 +180,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
             number: BigInt(10000000),
           },
           transactions: [
-            LegacyTransaction.fromTxData(
+            createLegacyTx(
               {
                 data: '0x600154', // PUSH 01 SLOAD
                 gasLimit: BigInt(100000),
@@ -374,7 +375,7 @@ describe('runBlock() -> runtime behavior', async () => {
 
     // add balance to otherUser to send two txs to zero address
     await vm.stateManager.putAccount(otherUser.address, new Account(BigInt(0), BigInt(42000)))
-    const tx = LegacyTransaction.fromTxData(
+    const tx = createLegacyTx(
       { to: Address.zero(), gasLimit: 21000, gasPrice: 1 },
       { common }
     ).sign(otherUser.privateKey)
@@ -514,10 +515,7 @@ describe('runBlock() -> tx types', async () => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const tx = LegacyTransaction.fromTxData(
-      { gasLimit: 53000, value: 1 },
-      { common, freeze: false }
-    )
+    const tx = createLegacyTx({ gasLimit: 53000, value: 1 }, { common, freeze: false })
 
     tx.getSenderAddress = () => {
       return address
@@ -533,7 +531,7 @@ describe('runBlock() -> tx types', async () => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const tx = AccessListEIP2930Transaction.fromTxData(
+    const tx = create2930AccessListTx(
       { gasLimit: 53000, value: 1, v: 1, r: 1, s: 1 },
       { common, freeze: false }
     )
@@ -552,7 +550,7 @@ describe('runBlock() -> tx types', async () => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = create1559FeeMarketTx(
       { maxFeePerGas: 10, maxPriorityFeePerGas: 4, gasLimit: 100000, value: 6 },
       { common, freeze: false }
     )
@@ -638,7 +636,7 @@ describe('runBlock() -> tx types', async () => {
 
     const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
     const authList2 = authorizationListOpts2.map((opt) => getAuthorizationListItem(opt))
-    const tx1 = EOACodeEIP7702Transaction.fromTxData(
+    const tx1 = create7702EOACodeTx(
       {
         gasLimit: 1000000000,
         maxFeePerGas: 100000,
@@ -649,7 +647,7 @@ describe('runBlock() -> tx types', async () => {
       },
       { common }
     ).sign(defaultSenderPkey)
-    const tx2 = EOACodeEIP7702Transaction.fromTxData(
+    const tx2 = create7702EOACodeTx(
       {
         gasLimit: 1000000000,
         maxFeePerGas: 100000,

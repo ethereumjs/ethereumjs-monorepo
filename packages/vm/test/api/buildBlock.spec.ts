@@ -8,7 +8,7 @@ import {
   createCommonFromGethGenesis,
 } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
-import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
+import { create1559FeeMarketTx, createLegacyTx } from '@ethereumjs/tx'
 import { Address, concatBytes, createAccount, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -40,7 +40,7 @@ describe('BlockBuilder', () => {
     })
 
     // Set up tx
-    const tx = LegacyTransaction.fromTxData(
+    const tx = createLegacyTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
     ).sign(privateKey)
@@ -66,7 +66,7 @@ describe('BlockBuilder', () => {
 
     const blockBuilder = await buildBlock(vm, { parentBlock: genesis })
     const gasLimit = genesis.header.gasLimit + BigInt(1)
-    const tx = LegacyTransaction.fromTxData({ gasLimit }, { common })
+    const tx = createLegacyTx({ gasLimit }, { common })
     try {
       await blockBuilder.addTransaction(tx)
       assert.fail('should throw error')
@@ -110,7 +110,7 @@ describe('BlockBuilder', () => {
     })
 
     // Set up tx
-    const tx = LegacyTransaction.fromTxData(
+    const tx = createLegacyTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
     ).sign(privateKey)
@@ -209,7 +209,7 @@ describe('BlockBuilder', () => {
     })
 
     // Set up tx
-    const tx = LegacyTransaction.fromTxData(
+    const tx = createLegacyTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
     ).sign(signer.privateKey)
@@ -239,7 +239,7 @@ describe('BlockBuilder', () => {
       blockOpts: { calcDifficultyFromHeader: genesisBlock.header },
     })
 
-    const tx = LegacyTransaction.fromTxData(
+    const tx = createLegacyTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
     ).sign(privateKey)
@@ -260,7 +260,7 @@ describe('BlockBuilder', () => {
 
     blockBuilder = await buildBlock(vm, { parentBlock: genesisBlock })
 
-    const tx2 = LegacyTransaction.fromTxData(
+    const tx2 = createLegacyTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1, nonce: 1 },
       { common, freeze: false }
     ).sign(privateKey)
@@ -322,12 +322,12 @@ describe('BlockBuilder', () => {
     })
 
     // Set up underpriced txs to test error response
-    const tx1 = LegacyTransaction.fromTxData(
+    const tx1 = createLegacyTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
     ).sign(privateKey)
 
-    const tx2 = FeeMarketEIP1559Transaction.fromTxData(
+    const tx2 = create1559FeeMarketTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, maxFeePerGas: 10 },
       { common, freeze: false }
     ).sign(privateKey)
@@ -345,12 +345,12 @@ describe('BlockBuilder', () => {
     }
 
     // Set up correctly priced txs
-    const tx3 = LegacyTransaction.fromTxData(
+    const tx3 = createLegacyTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 101 },
       { common, freeze: false }
     ).sign(privateKey)
 
-    const tx4 = FeeMarketEIP1559Transaction.fromTxData(
+    const tx4 = create1559FeeMarketTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, maxFeePerGas: 101, nonce: 1 },
       { common, freeze: false }
     ).sign(privateKey)

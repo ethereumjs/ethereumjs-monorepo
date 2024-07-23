@@ -18,6 +18,8 @@ import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   TransactionType,
+  create2930AccessListTx,
+  create2930AccessListTxFromBytesArray,
 } from '../src/index.js'
 
 import type { AccessList, AccessListBytesItem, JsonTx } from '../src/index.js'
@@ -141,7 +143,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
         ) {
           txData[value] = testCase
           assert.throws(() => {
-            AccessListEIP2930Transaction.fromTxData(txData)
+            create2930AccessListTx(txData)
           })
         }
       }
@@ -367,7 +369,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
 
   it('addSignature() -> correctly adds correct signature values', () => {
     const privateKey = pKey
-    const tx = AccessListEIP2930Transaction.fromTxData({})
+    const tx = create2930AccessListTx({})
     const signedTx = tx.sign(privateKey)
     const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
 
@@ -376,7 +378,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
 
   it('addSignature() -> correctly converts raw ecrecover values', () => {
     const privKey = pKey
-    const tx = AccessListEIP2930Transaction.fromTxData({})
+    const tx = create2930AccessListTx({})
 
     const msgHash = tx.getHashedMessageToSign()
     const { v, r, s } = ecsign(msgHash, privKey)
@@ -389,7 +391,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
 
   it('addSignature() -> throws when adding the wrong v value', () => {
     const privKey = pKey
-    const tx = AccessListEIP2930Transaction.fromTxData({})
+    const tx = create2930AccessListTx({})
 
     const msgHash = tx.getHashedMessageToSign()
     const { v, r, s } = ecsign(msgHash, privKey)
@@ -418,9 +420,9 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
 
 describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
   it(`Initialization`, () => {
-    const tx = AccessListEIP2930Transaction.fromTxData({}, { common })
+    const tx = create2930AccessListTx({}, { common })
     assert.ok(
-      AccessListEIP2930Transaction.fromTxData(tx, { common }),
+      create2930AccessListTx(tx, { common }),
       'should initialize correctly from its own data'
     )
 
@@ -428,7 +430,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     const validSlot = hexToBytes(`0x${'01'.repeat(32)}`)
     const chainId = BigInt(1)
     try {
-      AccessListEIP2930Transaction.fromTxData(
+      create2930AccessListTx(
         {
           data: hexToBytes('0x010200'),
           to: validAddress,
@@ -453,7 +455,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
       const address = new Uint8Array(0)
       const storageKeys = [new Uint8Array(0), new Uint8Array(0)]
       const aclBytes: AccessListBytesItem = [address, storageKeys]
-      AccessListEIP2930Transaction.fromValuesArray(
+      create2930AccessListTxFromBytesArray(
         [bytes, bytes, bytes, bytes, bytes, bytes, bytes, [aclBytes], bytes],
         {}
       )
@@ -464,7 +466,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
   )
 
   it(`should return right upfront cost`, () => {
-    let tx = AccessListEIP2930Transaction.fromTxData(
+    let tx = create2930AccessListTx(
       {
         data: hexToBytes('0x010200'),
         to: validAddress,
@@ -494,7 +496,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     )
 
     // In this Tx, `to` is `undefined`, so we should charge homestead creation gas.
-    tx = AccessListEIP2930Transaction.fromTxData(
+    tx = create2930AccessListTx(
       {
         data: hexToBytes('0x010200'),
         accessList: [[validAddress, [validSlot]]],
@@ -516,7 +518,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     )
 
     // Explicitly check that even if we have duplicates in our list, we still charge for those
-    tx = AccessListEIP2930Transaction.fromTxData(
+    tx = create2930AccessListTx(
       {
         to: validAddress,
         accessList: [
@@ -534,7 +536,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
   })
 
   it('getEffectivePriorityFee() -> should return correct values', () => {
-    const tx = AccessListEIP2930Transaction.fromTxData({
+    const tx = create2930AccessListTx({
       gasPrice: BigInt(100),
     })
 
@@ -545,7 +547,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
   })
 
   it('getUpfrontCost() -> should return upfront cost', () => {
-    const tx = AccessListEIP2930Transaction.fromTxData(
+    const tx = create2930AccessListTx(
       {
         gasPrice: 1000,
         gasLimit: 10000000,
@@ -557,7 +559,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
   })
 
   it('unsigned tx -> getHashedMessageToSign()/getMessageToSign()', () => {
-    const unsignedTx = AccessListEIP2930Transaction.fromTxData(
+    const unsignedTx = create2930AccessListTx(
       {
         data: hexToBytes('0x010200'),
         to: validAddress,
@@ -627,7 +629,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
       hexToBytes('0x0be950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d')
     )
 
-    const unsignedTx = AccessListEIP2930Transaction.fromTxData(txData, { common: usedCommon })
+    const unsignedTx = create2930AccessListTx(txData, { common: usedCommon })
 
     const serializedMessageRaw = unsignedTx.serialize()
 
@@ -669,14 +671,14 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
   })
 
   it('freeze property propagates from unsigned tx to signed tx', () => {
-    const tx = AccessListEIP2930Transaction.fromTxData({}, { freeze: false })
+    const tx = create2930AccessListTx({}, { freeze: false })
     assert.notOk(Object.isFrozen(tx), 'tx object is not frozen')
     const signedTxn = tx.sign(pKey)
     assert.notOk(Object.isFrozen(signedTxn), 'tx object is not frozen')
   })
 
   it('common propagates from the common of tx, not the common in TxOptions', () => {
-    const txn = AccessListEIP2930Transaction.fromTxData({}, { common, freeze: false })
+    const txn = create2930AccessListTx({}, { common, freeze: false })
     const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {

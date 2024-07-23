@@ -8,6 +8,7 @@ import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BlobEIP4844Transaction,
+  create4844BlobTxFromSerializedNetworkWrapper,
   createTxFromBlockBodyData,
   createTxFromSerializedData,
   isAccessListEIP2930Tx,
@@ -295,7 +296,7 @@ export class EthProtocol extends Protocol {
           txs.map((txData) => {
             // Blob transactions are deserialized with network wrapper
             if (txData[0] === 3) {
-              return BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txData, { common })
+              return create4844BlobTxFromSerializedNetworkWrapper(txData, { common })
             } else {
               return createTxFromBlockBodyData(txData, { common })
             }
