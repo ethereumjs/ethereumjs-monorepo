@@ -214,7 +214,7 @@ describe('[VMExecution]', () => {
     )
 
     // reset head and run again
-    await blockchain.setIteratorHead(oldHead.hash())
+    await blockchain.setIteratorHead('vm', oldHead.hash())
     newHead = await blockchain.getIteratorHead()
     assert.equal(
       bytesToHex(oldHead.hash()),
