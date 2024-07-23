@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721721534937,
+  "lastUpdate": 1721724375138,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "8d5bca0e2c4ab89124fac324aedbf48297d6d8d5",
-          "message": "Implement EIP 7702 (#3470)\n\n* common/tx: implement EIP7702\n\n* tx: add 7702 cap and update authority checks\n\n* vm: add 7702 support\n\n* tx: add 7702 tests\n\n* client: fix build\n\n* evm: support 7702\n\n* vm: add basic 7702 test and fix decoding auth list\n\n* vm: add specific eip-161 test\n\n* Merge branch 'master' into eip7702\n\n* vm: bump 7702 test coverage with one passing test\n\n* vm: add more 7702 tests\n\n* vm: add extra 7702 tests\n\n* tx: address feedback\n\n* vm: address review\n\n* vm: add 7702 test to check for empty code (fails)\n\n* vm: fix 7702 empty code clearing\n\n* Merge branch 'master' into eip7702\n\n* Merge remote-tracking branch 'origin/master' into eip7702\n\n* Merge branch 'master' into eip7702\n\n* add 7702 type to tx factory constructors\n\n* add 7702 test to runBlock test\n\n* vm: comment 7702 test\n\n* vm: remove runBlock .only\n\n* tx: address reviews\n\n* tx: 7702 do not unpad address in authority list\n\n* vm: update eip7702 test",
-          "timestamp": "2024-07-04T15:25:18-04:00",
-          "tree_id": "e6e82f23b7d464bc3ff6c883252cb03f3f5f1e3b",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8d5bca0e2c4ab89124fac324aedbf48297d6d8d5"
-        },
-        "date": 1720121477210,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 37257,
-            "range": "±2.64%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 36940,
-            "range": "±1.40%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 36578,
-            "range": "±1.51%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 33826,
-            "range": "±5.53%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35144,
-            "range": "±1.75%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.93%",
             "unit": "ops/sec",
             "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0e18cb29cf3f72d192c4a3b2502aa392d7ff58a4",
+          "message": "util: Replace account static constructors (#3524)\n\n* Account: move static constructors to functions\r\n\r\n* update downstream\r\n\r\n* update examples\r\n\r\n* util: account constructors: use naming conventions\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2024-07-23T10:43:28+02:00",
+          "tree_id": "cc327975349bcc91c90504b49a01ac98bae0ea30",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0e18cb29cf3f72d192c4a3b2502aa392d7ff58a4"
+        },
+        "date": 1721724373953,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38230,
+            "range": "±2.10%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 35986,
+            "range": "±4.37%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 36762,
+            "range": "±1.67%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35818,
+            "range": "±1.69%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 34435,
+            "range": "±2.43%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
