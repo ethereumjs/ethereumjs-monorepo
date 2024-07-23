@@ -72,7 +72,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (byteLength < 1 || byteLength > 32) {
           trap(ERROR.OUT_OF_RANGE)
         }
-        const expPricePerByte = common.param('gasPrices', 'expByte')
+        const expPricePerByte = common.param('expByteGas')
         gas += BigInt(byteLength) * expPricePerByte
         return gas
       },
@@ -83,7 +83,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         const [offset, length] = runState.stack.peek(2)
         gas += subMemUsage(runState, offset, length, common)
-        gas += common.param('gasPrices', 'keccak256Word') * divCeil(length, BIGINT_32)
+        gas += common.param('keccak256WordGas') * divCeil(length, BIGINT_32)
         return gas
       },
     ],
@@ -120,7 +120,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         gas += subMemUsage(runState, memOffset, dataLength, common)
         if (dataLength !== BIGINT_0) {
-          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BIGINT_32)
+          gas += common.param('copyGas') * divCeil(dataLength, BIGINT_32)
         }
         return gas
       },
@@ -133,7 +133,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         gas += subMemUsage(runState, memOffset, dataLength, common)
         if (dataLength !== BIGINT_0) {
-          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BIGINT_32)
+          gas += common.param('copyGas') * divCeil(dataLength, BIGINT_32)
 
           if (common.isActivatedEIP(6800) && runState.env.chargeCodeAccesses === true) {
             const contract = runState.interpreter.getAddress()
@@ -226,7 +226,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (dataLength !== BIGINT_0) {
-          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BIGINT_32)
+          gas += common.param('copyGas') * divCeil(dataLength, BIGINT_32)
 
           if (common.isActivatedEIP(6800)) {
             let codeEnd = _codeOffset + dataLength
@@ -262,7 +262,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, memOffset, dataLength, common)
 
         if (dataLength !== BIGINT_0) {
-          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BIGINT_32)
+          gas += common.param('copyGas') * divCeil(dataLength, BIGINT_32)
         }
         return gas
       },
@@ -451,8 +451,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         gas += subMemUsage(runState, memOffset, memLength, common)
         gas +=
-          common.param('gasPrices', 'logTopic') * BigInt(topicsCount) +
-          memLength * common.param('gasPrices', 'logData')
+          common.param('logTopicGas') * BigInt(topicsCount) + memLength * common.param('logDataGas')
         return gas
       },
     ],
@@ -464,7 +463,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         gas += subMemUsage(runState, memOffset, dataLength, common)
         if (dataLength !== BIGINT_0) {
-          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BIGINT_32)
+          gas += common.param('copyGas') * divCeil(dataLength, BIGINT_32)
         }
         return gas
       },
@@ -504,8 +503,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const container = runState.env.eof!.container.body.containerSections[containerIndex]
 
         // Charge for hashing cost
-        gas +=
-          common.param('gasPrices', 'keccak256Word') * divCeil(BigInt(container.length), BIGINT_32)
+        gas += common.param('keccak256WordGas') * divCeil(BigInt(container.length), BIGINT_32)
 
         const gasLeft = runState.interpreter.getGasLeft() - gas
         runState.messageGasLimit = maxCallGas(gasLeft, gasLeft, runState, common)
@@ -545,7 +543,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (common.isActivatedEIP(3860)) {
-          gas += ((length + BIGINT_31) / BIGINT_32) * common.param('gasPrices', 'initCodeWordCost')
+          gas += ((length + BIGINT_31) / BIGINT_32) * common.param('initCodeWordGas')
         }
 
         gas += subMemUsage(runState, offset, length, common)
@@ -595,7 +593,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (value !== BIGINT_0 && !common.isActivatedEIP(6800)) {
-          gas += common.param('gasPrices', 'callValueTransfer')
+          gas += common.param('callValueTransferGas')
         }
 
         if (common.gteHardfork(Hardfork.SpuriousDragon)) {
@@ -609,12 +607,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           }
 
           if (deadAccount && !(value === BIGINT_0)) {
-            gas += common.param('gasPrices', 'callNewAccount')
+            gas += common.param('callNewAccountGas')
           }
         } else if ((await runState.stateManager.getAccount(toAddress)) === undefined) {
           // We are before Spurious Dragon and the account does not exist.
           // Call new account gas: account does not exist (it is not in the state trie, not even as an "empty" account)
-          gas += common.param('gasPrices', 'callNewAccount')
+          gas += common.param('callNewAccountGas')
         }
 
         const gasLimit = maxCallGas(
@@ -664,7 +662,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (value !== BIGINT_0) {
-          gas += common.param('gasPrices', 'callValueTransfer')
+          gas += common.param('callValueTransferGas')
         }
 
         const gasLimit = maxCallGas(
@@ -757,10 +755,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (common.isActivatedEIP(3860)) {
-          gas += ((length + BIGINT_31) / BIGINT_32) * common.param('gasPrices', 'initCodeWordCost')
+          gas += ((length + BIGINT_31) / BIGINT_32) * common.param('initCodeWordGas')
         }
 
-        gas += common.param('gasPrices', 'keccak256Word') * divCeil(length, BIGINT_32)
+        gas += common.param('keccak256WordGas') * divCeil(length, BIGINT_32)
         let gasLimit = runState.interpreter.getGasLeft() - gas
         gasLimit = maxCallGas(gasLimit, gasLimit, runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
         runState.messageGasLimit = gasLimit
@@ -792,7 +790,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         const toAddress = new Address(addresstoBytes(addr))
 
-        gas += common.param('gasPrices', 'warmstorageread')
+        gas += common.param('warmstoragereadGas')
 
         gas += accessAddressEIP2929(runState, toAddress.bytes, common, true, true)
 
@@ -800,10 +798,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, retOffset, retLength, common)
 
         if (value > BIGINT_0) {
-          gas += common.param('gasPrices', 'authcallValueTransfer')
+          gas += common.param('authcallValueTransferGas')
           const account = await runState.stateManager.getAccount(toAddress)
           if (!account) {
-            gas += common.param('gasPrices', 'callNewAccount')
+            gas += common.param('callNewAccountGas')
           }
         }
 
@@ -855,7 +853,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         // If value > 0, charge CALL_VALUE_COST
         if (value > BIGINT_0) {
-          gas += common.param('gasPrices', 'callValueTransfer')
+          gas += common.param('callValueTransferGas')
         }
 
         // Check if the target address > 20 bytes
@@ -877,12 +875,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           const deadAccount = account === undefined || account.isEmpty()
 
           if (deadAccount) {
-            gas += common.param('gasPrices', 'callNewAccount')
+            gas += common.param('callNewAccountGas')
           }
         }
 
-        const minRetainedGas = common.param('gasPrices', 'minRetainedGas')
-        const minCalleeGas = common.param('gasPrices', 'minCalleeGas')
+        const minRetainedGas = common.param('minRetainedGas')
+        const minCalleeGas = common.param('minCalleeGas')
 
         const currentGasAvailable = runState.interpreter.getGasLeft() - gas
         const reducedGas = currentGasAvailable / BIGINT_64
@@ -896,7 +894,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (
-          runState.env.depth >= Number(common.param('vm', 'stackLimit')) ||
+          runState.env.depth >= Number(common.param('stackLimit')) ||
           runState.env.contract.balance < value ||
           gasLimit < minCalleeGas
         ) {
@@ -934,8 +932,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // (in case if address is already warm, this charges the 100 gas)
         gas += accessAddressEIP2929(runState, toAddress.bytes, common)
 
-        const minRetainedGas = common.param('gasPrices', 'minRetainedGas')
-        const minCalleeGas = common.param('gasPrices', 'minCalleeGas')
+        const minRetainedGas = common.param('minRetainedGas')
+        const minCalleeGas = common.param('minCalleeGas')
 
         const currentGasAvailable = runState.interpreter.getGasLeft() - gas
         const reducedGas = currentGasAvailable / BIGINT_64
@@ -948,10 +946,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gasLimit = currentGasAvailable - reducedGas
         }
 
-        if (
-          runState.env.depth >= Number(common.param('vm', 'stackLimit')) ||
-          gasLimit < minCalleeGas
-        ) {
+        if (runState.env.depth >= Number(common.param('stackLimit')) || gasLimit < minCalleeGas) {
           // Note: this is a hack, TODO: get around this hack and clean this up
           // This special case will ensure that the actual EXT*CALL is being ran,
           // But, the code in `function.ts` will note that `runState.messageGasLimit` is set to a negative number
@@ -1021,8 +1016,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // (in case if address is already warm, this charges the 100 gas)
         gas += accessAddressEIP2929(runState, toAddress.bytes, common)
 
-        const minRetainedGas = common.param('gasPrices', 'minRetainedGas')
-        const minCalleeGas = common.param('gasPrices', 'minCalleeGas')
+        const minRetainedGas = common.param('minRetainedGas')
+        const minCalleeGas = common.param('minCalleeGas')
 
         const currentGasAvailable = runState.interpreter.getGasLeft() - gas
         const reducedGas = currentGasAvailable / BIGINT_64
@@ -1035,10 +1030,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gasLimit = currentGasAvailable - reducedGas
         }
 
-        if (
-          runState.env.depth >= Number(common.param('vm', 'stackLimit')) ||
-          gasLimit < minCalleeGas
-        ) {
+        if (runState.env.depth >= Number(common.param('stackLimit')) || gasLimit < minCalleeGas) {
           // Note: this is a hack, TODO: get around this hack and clean this up
           // This special case will ensure that the actual EXT*CALL is being ran,
           // But, the code in `function.ts` will note that `runState.messageGasLimit` is set to a negative number
@@ -1093,7 +1085,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           }
         }
         if (deductGas) {
-          gas += common.param('gasPrices', 'callNewAccount')
+          gas += common.param('callNewAccountGas')
         }
 
         let selfDestructToCharge2929Gas = true

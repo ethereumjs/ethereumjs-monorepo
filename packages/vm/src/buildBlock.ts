@@ -99,7 +99,7 @@ export class BlockBuilder {
       typeof this.headerData.baseFeePerGas === 'undefined'
     ) {
       if (this.headerData.number === vm.common.hardforkBlock(Hardfork.London)) {
-        this.headerData.baseFeePerGas = vm.common.param('gasConfig', 'initialBaseFee')
+        this.headerData.baseFeePerGas = vm.common.param('initialBaseFee')
       } else {
         this.headerData.baseFeePerGas = opts.parentBlock.header.calcNextBaseFee()
       }
@@ -176,7 +176,7 @@ export class BlockBuilder {
    * Adds the block miner reward to the coinbase account.
    */
   private async rewardMiner() {
-    const minerReward = this.vm.common.param('pow', 'minerReward')
+    const minerReward = this.vm.common.param('minerReward')
     const reward = calculateMinerReward(minerReward, 0)
     const coinbase =
       this.headerData.coinbase !== undefined
@@ -223,8 +223,8 @@ export class BlockBuilder {
     // cannot be greater than the remaining gas in the block
     const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
 
-    const blobGasLimit = this.vm.common.param('gasConfig', 'maxblobGasPerBlock')
-    const blobGasPerBlob = this.vm.common.param('gasConfig', 'blobGasPerBlob')
+    const blobGasLimit = this.vm.common.param('maxblobGasPerBlock')
+    const blobGasPerBlob = this.vm.common.param('blobGasPerBlob')
 
     const blockGasRemaining = blockGasLimit - this.gasUsed
     if (tx.gasLimit > blockGasRemaining) {

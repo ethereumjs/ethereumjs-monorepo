@@ -4,7 +4,7 @@ type ChainsDict = {
   [key: string]: ChainConfig
 }
 
-export const chains: ChainsDict = {
+export const chainsDict: ChainsDict = {
   mainnet: {
     name: 'mainnet',
     chainId: 1,

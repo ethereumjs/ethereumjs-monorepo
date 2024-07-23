@@ -1164,8 +1164,8 @@ export class Eth {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
         tx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txBuf, { common })
 
-        const blobGasLimit = common.param('gasConfig', 'maxblobGasPerBlock')
-        const blobGasPerBlob = common.param('gasConfig', 'blobGasPerBlob')
+        const blobGasLimit = common.param('maxblobGasPerBlock')
+        const blobGasPerBlob = common.param('blobGasPerBlob')
 
         if (BigInt((tx.blobs ?? []).length) * blobGasPerBlob > blobGasLimit) {
           throw Error(
@@ -1320,7 +1320,10 @@ export class Eth {
    * @returns a hex code of an integer representing the suggested gas price in wei.
    */
   async gasPrice() {
-    const minGasPrice: bigint = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
+    // TODO: going more strict on parameter accesses in Common (PR #3532) revealed that this line had
+    // absolutely no effect by accessing a non-present gas parameter. Someone familiar with the RPC method
+    // implementation should look over it and recall what was meant to be accomplished here.
+    const minGasPrice = BIGINT_0 //: bigint = this._chain.config.chainCommon.param('minPrice')
     let gasPrice = BIGINT_0
     const latest = await this._chain.getCanonicalHeadHeader()
     if (this._vm !== undefined && this._vm.common.isActivatedEIP(1559)) {
@@ -1399,7 +1402,7 @@ export class Eth {
         let blobGasUsedRatio = 0
         if (b.header.excessBlobGas !== undefined) {
           baseFeePerBlobGas = b.header.getBlobGasPrice()
-          const max = b.common.param('gasConfig', 'maxblobGasPerBlock')
+          const max = b.common.param('maxblobGasPerBlock')
           blobGasUsedRatio = Number(blobGasUsed) / Number(max)
         }
 

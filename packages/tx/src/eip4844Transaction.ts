@@ -160,7 +160,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
         const msg = this._errorMsg('versioned hash is invalid length')
         throw new Error(msg)
       }
-      if (BigInt(hash[0]) !== this.common.param('sharding', 'blobCommitmentVersionKzg')) {
+      if (BigInt(hash[0]) !== this.common.param('blobCommitmentVersionKzg')) {
         const msg = this._errorMsg('versioned hash does not start with KZG commitment version')
         throw new Error(msg)
       }
@@ -404,7 +404,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       throw Error('BlobEIP4844Transaction can not be send without a valid `to`')
     }
 
-    const version = Number(opts.common.param('sharding', 'blobCommitmentVersionKzg'))
+    const version = Number(opts.common.param('blobCommitmentVersionKzg'))
     validateBlobTransactionNetworkWrapper(
       decodedTx.blobVersionedHashes,
       blobs,

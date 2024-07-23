@@ -107,7 +107,7 @@ describe('blob gas tests', () => {
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
     })
-    blobGasPerBlob = common.param('gasConfig', 'blobGasPerBlob')
+    blobGasPerBlob = common.param('blobGasPerBlob')
   })
   it('should work', () => {
     const preShardingHeader = BlockHeader.fromHeaderData({})
@@ -164,7 +164,7 @@ describe('transaction validation tests', () => {
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
     })
-    blobGasPerBlob = common.param('gasConfig', 'blobGasPerBlob')
+    blobGasPerBlob = common.param('blobGasPerBlob')
   })
   it('should work', () => {
     const blobs = getBlobs('hello world')
