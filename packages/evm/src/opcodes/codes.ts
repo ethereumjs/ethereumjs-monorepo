@@ -6,7 +6,7 @@ import { getFullname } from './util.js'
 
 import type { CustomOpcode } from '../types.js'
 import type { OpHandler } from './functions.js'
-import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './gas.js'
+import type { GasHandler } from './gas.js'
 import type { Common } from '@ethereumjs/common'
 
 export class Opcode {
@@ -391,8 +391,8 @@ function createOpcodes(opcodes: OpcodeEntryFee): OpcodeList {
 }
 
 type OpcodeContext = {
-  dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler>
-  handlers: Map<number, OpHandler>
+  dynamicGasHandlers: GasHandler[]
+  handlers: OpHandler[]
   opcodes: OpcodeList
   opcodeMap: OpcodeMap
 }
@@ -400,7 +400,7 @@ type OpcodeContext = {
 export type OpcodeMapEntry = {
   opcodeInfo: Opcode
   opHandler: OpHandler
-  gasHandler: AsyncDynamicGasHandler | SyncDynamicGasHandler
+  gasHandler: GasHandler
 }
 export type OpcodeMap = OpcodeMapEntry[]
 
@@ -414,8 +414,8 @@ export type OpcodeMap = OpcodeMapEntry[]
 export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]): OpcodeContext {
   let opcodeBuilder: any = { ...opcodes }
 
-  const handlersCopy = new Map(handlers)
-  const dynamicGasHandlersCopy = new Map(dynamicGasHandlers)
+  const handlersCopy = [...handlers]
+  const dynamicGasHandlersCopy = [...dynamicGasHandlers]
 
   for (let fork = 0; fork < hardforkOpcodes.length; fork++) {
     if (common.gteHardfork(hardforkOpcodes[fork].hardfork)) {
@@ -462,10 +462,10 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
       }
       opcodeBuilder = { ...opcodeBuilder, ...entry }
       if (code.gasFunction !== undefined) {
-        dynamicGasHandlersCopy.set(code.opcode, code.gasFunction)
+        dynamicGasHandlersCopy[code.opcode] = code.gasFunction
       }
       // logicFunction is never undefined
-      handlersCopy.set(code.opcode, code.logicFunction)
+      handlersCopy[code.opcode] = code.logicFunction
     }
   }
 
@@ -476,8 +476,8 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
   const opcodeMap: OpcodeMap = []
 
   for (const [opNumber, op] of ops) {
-    const dynamicGas = dynamicGasHandlersCopy.get(opNumber)!
-    const handler = handlersCopy.get(opNumber)!
+    const dynamicGas = dynamicGasHandlersCopy[opNumber]
+    const handler = handlersCopy[opNumber]
     opcodeMap[opNumber] = {
       opcodeInfo: op,
       opHandler: handler,
