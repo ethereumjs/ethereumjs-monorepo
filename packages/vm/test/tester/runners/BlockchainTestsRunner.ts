@@ -201,7 +201,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       //
       //vm.common.genesis().stateRoot = await vm.stateManager.getStateRoot()
       try {
-        await blockchain.iterator('vm', async (block: Block) => {
+        await blockchain.iterator(async (block: Block) => {
           const parentBlock = await blockchain!.getBlock(block.header.parentHash)
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid

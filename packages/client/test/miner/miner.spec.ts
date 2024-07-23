@@ -647,7 +647,7 @@ describe.skip('should handle mining over the london hardfork block', async () =>
     blockHeader3.gasLimit,
     'gas limit should be double previous block'
   )
-  const initialBaseFee = config.execCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559)!
+  const initialBaseFee = config.execCommon.paramByEIP('initialBaseFee', 1559)!
   assert.equal(blockHeader3.baseFeePerGas!, initialBaseFee, 'baseFee should be initial value')
 
   // block 4

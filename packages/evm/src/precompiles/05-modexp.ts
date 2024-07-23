@@ -118,7 +118,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   if (maxLen < mLen) {
     maxLen = mLen
   }
-  const Gquaddivisor = opts.common.param('gasPrices', 'modexpGquaddivisorGas')
+  const Gquaddivisor = opts.common.param('modexpGquaddivisorGas')
   let gasUsed
 
   const bStart = BIGINT_96

@@ -15,7 +15,7 @@ const method = 'debug_getRawTransaction'
 
 describe(method, () => {
   it('call with legacy tx', async () => {
-    const { chain, common, execution, server } = await setupChain(pow, 'pow', { txLookupLimit: 1 })
+    const { chain, common, execution, server } = await setupChain(pow, { txLookupLimit: 1 })
     const rpc = getRpcClient(server)
     // construct tx
     const tx = LegacyTransaction.fromTxData(

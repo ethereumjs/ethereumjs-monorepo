@@ -988,7 +988,7 @@ export class Interpreter {
 
     // Check if account has enough ether and max depth not exceeded
     if (
-      this._env.depth >= Number(this.common.param('vm', 'stackLimit')) ||
+      this._env.depth >= Number(this.common.param('stackLimit')) ||
       (msg.delegatecall !== true && this._env.contract.balance < msg.value)
     ) {
       return BIGINT_0
@@ -1053,7 +1053,7 @@ export class Interpreter {
 
     // Check if account has enough ether and max depth not exceeded
     if (
-      this._env.depth >= Number(this.common.param('vm', 'stackLimit')) ||
+      this._env.depth >= Number(this.common.param('stackLimit')) ||
       this._env.contract.balance < value
     ) {
       return BIGINT_0
@@ -1069,7 +1069,7 @@ export class Interpreter {
 
     if (this.common.isActivatedEIP(3860)) {
       if (
-        codeToRun.length > Number(this.common.param('vm', 'maxInitCodeSize')) &&
+        codeToRun.length > Number(this.common.param('maxInitCodeSize')) &&
         this._evm.allowUnlimitedInitCodeSize === false
       ) {
         return BIGINT_0
@@ -1182,7 +1182,7 @@ export class Interpreter {
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
     if (!this._result.selfdestruct.has(bytesToHex(this._env.address.bytes))) {
-      this.refundGas(this.common.param('gasPrices', 'selfdestructRefundGas'))
+      this.refundGas(this.common.param('selfdestructRefundGas'))
     }
 
     this._result.selfdestruct.add(bytesToHex(this._env.address.bytes))

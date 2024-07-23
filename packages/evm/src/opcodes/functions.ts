@@ -650,9 +650,9 @@ export const handlers: Map<number, OpHandler> = new Map([
         }
 
         const historyAddress = new Address(
-          bigIntToAddressBytes(common.param('vm', 'historyStorageAddress'))
+          bigIntToAddressBytes(common.param('historyStorageAddress'))
         )
-        const historyServeWindow = common.param('vm', 'historyServeWindow')
+        const historyServeWindow = common.param('historyServeWindow')
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
         if (common.isActivatedEIP(6800)) {
@@ -1360,7 +1360,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       if (
         common.isActivatedEIP(3860) &&
-        length > Number(common.param('vm', 'maxInitCodeSize')) &&
+        length > Number(common.param('maxInitCodeSize')) &&
         !runState.interpreter._evm.allowUnlimitedInitCodeSize
       ) {
         trap(ERROR.INITCODE_SIZE_VIOLATION)
@@ -1396,7 +1396,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       if (
         common.isActivatedEIP(3860) &&
-        length > Number(common.param('vm', 'maxInitCodeSize')) &&
+        length > Number(common.param('maxInitCodeSize')) &&
         !runState.interpreter._evm.allowUnlimitedInitCodeSize
       ) {
         trap(ERROR.INITCODE_SIZE_VIOLATION)
@@ -1440,7 +1440,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let gasLimit = runState.messageGasLimit!
       if (value !== BIGINT_0) {
-        const callStipend = common.param('gasPrices', 'callStipendGas')
+        const callStipend = common.param('callStipendGas')
         runState.interpreter.addStipend(callStipend)
         gasLimit += callStipend
       }
@@ -1463,7 +1463,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let gasLimit = runState.messageGasLimit!
       if (value !== BIGINT_0) {
-        const callStipend = common.param('gasPrices', 'callStipendGas')
+        const callStipend = common.param('callStipendGas')
         runState.interpreter.addStipend(callStipend)
         gasLimit += callStipend
       }

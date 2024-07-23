@@ -30,11 +30,11 @@ export function accessAddressEIP2929(
     // selfdestruct beneficiary address reads are charged an *additional* cold access
     // if verkle not activated
     if (chargeGas && !common.isActivatedEIP(6800)) {
-      return common.param('gasPrices', 'coldaccountaccessGas')
+      return common.param('coldaccountaccessGas')
     }
     // Warm: (selfdestruct beneficiary address reads are not charged when warm)
   } else if (chargeGas && !isSelfdestructOrAuthcall) {
-    return common.param('gasPrices', 'warmstoragereadGas')
+    return common.param('warmstoragereadGas')
   }
   return BIGINT_0
 }
@@ -63,10 +63,10 @@ export function accessStorageEIP2929(
   if (slotIsCold) {
     runState.interpreter.journal.addWarmedStorage(address, key)
     if (chargeGas && !common.isActivatedEIP(6800)) {
-      return common.param('gasPrices', 'coldsloadGas')
+      return common.param('coldsloadGas')
     }
   } else if (chargeGas && (!isSstore || common.isActivatedEIP(6800))) {
-    return common.param('gasPrices', 'warmstoragereadGas')
+    return common.param('warmstoragereadGas')
   }
   return BIGINT_0
 }
@@ -91,17 +91,17 @@ export function adjustSstoreGasEIP2929(
   if (!common.isActivatedEIP(2929)) return defaultCost
 
   const address = runState.interpreter.getAddress().bytes
-  const warmRead = common.param('gasPrices', 'warmstoragereadGas')
-  const coldSload = common.param('gasPrices', 'coldsloadGas')
+  const warmRead = common.param('warmstoragereadGas')
+  const coldSload = common.param('coldsloadGas')
 
   if (runState.interpreter.journal.isWarmedStorage(address, key)) {
     switch (costName) {
       case 'noop':
         return warmRead
       case 'initRefund':
-        return common.param('gasPrices', 'sstoreInitEIP2200Gas') - warmRead
+        return common.param('sstoreInitEIP2200Gas') - warmRead
       case 'cleanRefund':
-        return common.param('gasPrices', 'sstoreResetGas') - coldSload - warmRead
+        return common.param('sstoreResetGas') - coldSload - warmRead
     }
   }
 

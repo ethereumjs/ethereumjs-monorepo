@@ -174,11 +174,11 @@ export abstract class BaseTransaction<T extends TransactionType>
    * The minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
    */
   getBaseFee(): bigint {
-    const txFee = this.common.param('gasPrices', 'txGas')
+    const txFee = this.common.param('txGas')
     let fee = this.getDataFee()
     if (txFee) fee += txFee
     if (this.common.gteHardfork('homestead') && this.toCreationAddress()) {
-      const txCreationFee = this.common.param('gasPrices', 'txCreationGas')
+      const txCreationFee = this.common.param('txCreationGas')
       if (txCreationFee) fee += txCreationFee
     }
     return fee
@@ -188,8 +188,8 @@ export abstract class BaseTransaction<T extends TransactionType>
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    const txDataZero = this.common.param('gasPrices', 'txDataZeroGas')
-    const txDataNonZero = this.common.param('gasPrices', 'txDataNonZeroGas')
+    const txDataZero = this.common.param('txDataZeroGas')
+    const txDataNonZero = this.common.param('txDataNonZeroGas')
 
     let cost = BIGINT_0
     for (let i = 0; i < this.data.length; i++) {
@@ -198,7 +198,7 @@ export abstract class BaseTransaction<T extends TransactionType>
 
     if ((this.to === undefined || this.to === null) && this.common.isActivatedEIP(3860)) {
       const dataLength = BigInt(Math.ceil(this.data.length / 32))
-      const initCodeCost = this.common.param('gasPrices', 'initCodeWordGas') * dataLength
+      const initCodeCost = this.common.param('initCodeWordGas') * dataLength
       cost += initCodeCost
     }
 

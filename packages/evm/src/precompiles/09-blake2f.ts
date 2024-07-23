@@ -188,7 +188,7 @@ export function precompile09(opts: PrecompileInput): ExecResult {
   // final
   const f = lastByte === 1
 
-  let gasUsed = opts.common.param('gasPrices', 'blake2RoundGas')
+  let gasUsed = opts.common.param('blake2RoundGas')
   gasUsed *= BigInt(rounds)
   if (opts._debug !== undefined) {
     opts._debug(

@@ -396,7 +396,7 @@ export class EVM implements EVMInterface {
 
     if (this.common.isActivatedEIP(3860)) {
       if (
-        message.data.length > Number(this.common.param('vm', 'maxInitCodeSize')) &&
+        message.data.length > Number(this.common.param('maxInitCodeSize')) &&
         !this.allowUnlimitedInitCodeSize
       ) {
         return {
@@ -552,8 +552,7 @@ export class EVM implements EVMInterface {
     let totalGas = result.executionGasUsed
     let returnFee = BIGINT_0
     if (!result.exceptionError && !this.common.isActivatedEIP(6800)) {
-      returnFee =
-        BigInt(result.returnValue.length) * BigInt(this.common.param('gasPrices', 'createDataGas'))
+      returnFee = BigInt(result.returnValue.length) * BigInt(this.common.param('createDataGas'))
       totalGas = totalGas + returnFee
       if (this.DEBUG) {
         debugGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)
@@ -565,7 +564,7 @@ export class EVM implements EVMInterface {
     if (
       !result.exceptionError &&
       this.common.gteHardfork(Hardfork.SpuriousDragon) &&
-      result.returnValue.length > Number(this.common.param('vm', 'maxCodeSize'))
+      result.returnValue.length > Number(this.common.param('maxCodeSize'))
     ) {
       allowedCodeSize = false
     }

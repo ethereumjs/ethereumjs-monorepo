@@ -533,9 +533,7 @@ describe('EIP-3074 AUTHCALL', () => {
     )
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas =
-      gas! -
-      common.param('gasPrices', 'warmstoragereadGas')! -
-      common.param('gasPrices', 'coldaccountaccessGas')!
+      gas! - common.param('warmstoragereadGas')! - common.param('coldaccountaccessGas')!
     const expected = preGas - preGas / 64n - 2n
     assert.equal(gasBigInt, expected, 'forwarded max call gas')
   })
@@ -575,7 +573,7 @@ describe('EIP-3074 AUTHCALL', () => {
       hexToBytes(`0x${'00'.repeat(31)}01`)
     )
     const gasBigInt = bytesToBigInt(gasUsed)
-    const preGas = gas! - common.param('gasPrices', 'warmstoragereadGas')!
+    const preGas = gas! - common.param('warmstoragereadGas')!
     const expected = preGas - preGas / 64n - 2n
     assert.equal(gasBigInt, expected, 'forwarded max call gas')
   })
@@ -617,10 +615,10 @@ describe('EIP-3074 AUTHCALL', () => {
 
     const gasBigInt = gas! - gasAfterCall!
     const expected =
-      common.param('gasPrices', 'coldaccountaccessGas')! +
-      common.param('gasPrices', 'warmstoragereadGas')! +
-      common.param('gasPrices', 'callNewAccountGas')! +
-      common.param('gasPrices', 'authcallValueTransferGas')!
+      common.param('coldaccountaccessGas')! +
+      common.param('warmstoragereadGas')! +
+      common.param('callNewAccountGas')! +
+      common.param('authcallValueTransferGas')!
 
     assert.equal(gasBigInt, expected, 'forwarded max call gas')
   })
@@ -666,9 +664,9 @@ describe('EIP-3074 AUTHCALL', () => {
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas =
       gas! -
-      common.param('gasPrices', 'warmstoragereadGas')! -
-      common.param('gasPrices', 'authcallValueTransferGas')! -
-      common.param('gasPrices', 'coldaccountaccessGas')!
+      common.param('warmstoragereadGas')! -
+      common.param('authcallValueTransferGas')! -
+      common.param('coldaccountaccessGas')!
     const expected = preGas - preGas / 64n - 2n
     assert.equal(gasBigInt, expected, 'forwarded max call gas')
 

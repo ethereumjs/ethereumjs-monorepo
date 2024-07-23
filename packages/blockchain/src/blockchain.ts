@@ -527,7 +527,7 @@ export class Blockchain implements BlockchainInterface {
       const londonHfBlock = this.common.hardforkBlock(Hardfork.London)
       const isInitialEIP1559Block = number === londonHfBlock
       if (isInitialEIP1559Block) {
-        expectedBaseFee = header.common.param('gasConfig', 'initialBaseFee')
+        expectedBaseFee = header.common.param('initialBaseFee')
       } else {
         expectedBaseFee = parentHeader.calcNextBaseFee()
       }

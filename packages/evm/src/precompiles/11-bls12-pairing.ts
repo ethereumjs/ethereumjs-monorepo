@@ -11,7 +11,7 @@ import type { PrecompileInput } from './types.js'
 export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
 
-  const baseGas = opts.common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537) ?? BigInt(0)
+  const baseGas = opts.common.paramByEIP('Bls12381PairingBaseGas', 2537) ?? BigInt(0)
 
   // TODO: confirm that this is not a thing for the other precompiles
   if (opts.data.length === 0) {
@@ -21,8 +21,7 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit)
   }
 
-  const gasUsedPerPair =
-    opts.common.paramByEIP('gasPrices', 'Bls12381PairingPerPairGas', 2537) ?? BigInt(0)
+  const gasUsedPerPair = opts.common.paramByEIP('Bls12381PairingPerPairGas', 2537) ?? BigInt(0)
 
   // TODO: For this precompile it is the only exception that the length check is placed before the
   // gas check. I will keep it there to not side-change the existing implementation, but we should
