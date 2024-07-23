@@ -14,6 +14,7 @@ import {
   KECCAK256_NULL,
   MAX_INTEGER,
   bytesToHex,
+  createAccount,
   equalsBytes,
   hexToBytes,
   zeros,
@@ -24,7 +25,7 @@ import { assert, describe, it } from 'vitest'
 import { runTx } from '../../src/index.js'
 import { VM } from '../../src/vm.js'
 
-import { createAccount, getTransaction, setBalance } from './utils.js'
+import { createAccountWithDefaults, getTransaction, setBalance } from './utils.js'
 
 import type { FeeMarketEIP1559TxData, TypedTxData } from '@ethereumjs/tx'
 
@@ -51,7 +52,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       const tx = getTransaction(vm.common, txType.type, true)
 
       const caller = tx.getSenderAddress()
-      const acc = createAccount()
+      const acc = createAccountWithDefaults()
       await vm.stateManager.putAccount(caller, acc)
       let block
       if (vm.common.consensusType() === 'poa') {
@@ -88,7 +89,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     })
     const tx = getTransaction(vm.common, 0, true)
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
     const block = createBlockFromBlockData({}, { common: vm.common.copy() })
     await runTx(vm, { tx, block })
@@ -103,7 +104,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     })
     const tx = getTransaction(vm.common, 0, true)
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
     const block = createBlockFromBlockData({}, { common: vm.common.copy() })
 
@@ -146,7 +147,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     })
     const tx = getTransaction(vm.common, 0, true)
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
     const block = createBlockFromBlockData({}, { common: vm.common.copy() })
 
@@ -167,7 +168,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     const tx = getTransaction(vm.common, 0, true)
 
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
 
     const blockGasUsed = BigInt(1000)
@@ -186,7 +187,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     const tx = getTransaction(vm.common, 0, true)
 
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
 
     const res = await runTx(vm, { tx })
@@ -209,7 +210,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       const account = await vm.stateManager.getAccount(address)
       await vm.stateManager.putAccount(
         address,
-        Account.fromAccountData({ ...account, balance: initialBalance })
+        createAccount({ ...account, balance: initialBalance })
       )
 
       const transferCost = 21000
@@ -286,7 +287,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     )
 
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
 
     try {
@@ -307,7 +308,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     const tx = getTransaction(vm.common, 0, true)
 
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
 
     const res = await runTx(vm, { tx, reportAccessList: true })
@@ -324,7 +325,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     const tx = getTransaction(vm.common, 0, true)
 
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
 
     const res = await runTx(vm, { tx, reportPreimages: true })
@@ -374,7 +375,10 @@ describe('runTx() -> API parameter usage/data errors', () => {
     const address = tx.getSenderAddress()
     tx = Object.create(tx)
     const maxCost: bigint = tx.gasLimit * tx.maxFeePerGas
-    await vm.stateManager.putAccount(address, createAccount(BigInt(0), maxCost - BigInt(1)))
+    await vm.stateManager.putAccount(
+      address,
+      createAccountWithDefaults(BigInt(0), maxCost - BigInt(1))
+    )
     try {
       await runTx(vm, { tx })
       assert.fail('should throw error')
@@ -385,7 +389,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
       )
     }
     // set sufficient balance
-    await vm.stateManager.putAccount(address, createAccount(BigInt(0), maxCost))
+    await vm.stateManager.putAccount(address, createAccountWithDefaults(BigInt(0), maxCost))
     const res = await runTx(vm, { tx })
     assert.ok(res, 'should pass if balance is sufficient')
   })
@@ -482,7 +486,7 @@ describe('runTx() -> runtime behavior', () => {
       }
       const tx = createTxFromTxData(txParams, { common }).sign(privateKey)
 
-      await vm.stateManager.putAccount(tx.getSenderAddress(), createAccount())
+      await vm.stateManager.putAccount(tx.getSenderAddress(), createAccountWithDefaults())
 
       await runTx(vm, { tx }) // this tx will fail, but we have to ensure that the cache is cleared
 
@@ -502,10 +506,10 @@ describe('runTx() -> runtime errors', () => {
       const tx = getTransaction(vm.common, txType.type, true, '0x01')
 
       const caller = tx.getSenderAddress()
-      const from = createAccount()
+      const from = createAccountWithDefaults()
       await vm.stateManager.putAccount(caller, from)
 
-      const to = createAccount(BigInt(0), MAX_INTEGER)
+      const to = createAccountWithDefaults(BigInt(0), MAX_INTEGER)
       await vm.stateManager.putAccount(tx.to!, to)
 
       const res = await runTx(vm, { tx })
@@ -529,11 +533,11 @@ describe('runTx() -> runtime errors', () => {
       const tx = getTransaction(vm.common, txType.type, true, '0x01', true)
 
       const caller = tx.getSenderAddress()
-      const from = createAccount()
+      const from = createAccountWithDefaults()
       await vm.stateManager.putAccount(caller, from)
 
       const contractAddress = Address.fromString('0x61de9dc6f6cff1df2809480882cfd3c2364b28f7')
-      const to = createAccount(BigInt(0), MAX_INTEGER)
+      const to = createAccountWithDefaults(BigInt(0), MAX_INTEGER)
       await vm.stateManager.putAccount(contractAddress, to)
 
       const res = await runTx(vm, { tx })
@@ -560,7 +564,7 @@ describe('runTx() -> API return values', () => {
       const tx = getTransaction(vm.common, txType.type, true)
 
       const caller = tx.getSenderAddress()
-      const acc = createAccount()
+      const acc = createAccountWithDefaults()
       await vm.stateManager.putAccount(caller, acc)
 
       const res = await runTx(vm, { tx })
@@ -589,7 +593,7 @@ describe('runTx() -> API return values', () => {
       const tx = getTransaction(vm.common, txType.type, true)
 
       const caller = tx.getSenderAddress()
-      const acc = createAccount()
+      const acc = createAccountWithDefaults()
       await vm.stateManager.putAccount(caller, acc)
 
       const res = await runTx(vm, { tx })

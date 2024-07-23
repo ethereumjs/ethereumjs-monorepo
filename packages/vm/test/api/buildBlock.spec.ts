@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
-import { Account, Address, concatBytes, hexToBytes } from '@ethereumjs/util'
+import { Address, concatBytes, createAccount, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { buildBlock, runBlock } from '../../src/index.js'
@@ -200,7 +200,7 @@ describe('BlockBuilder', () => {
     const vm = await VM.create({ common, blockchain })
 
     // add balance for tx
-    await vm.stateManager.putAccount(signer.address, Account.fromAccountData({ balance: 100000 }))
+    await vm.stateManager.putAccount(signer.address, createAccount({ balance: 100000 }))
 
     const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,

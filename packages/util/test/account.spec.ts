@@ -10,6 +10,9 @@ import {
   accountBodyToSlim,
   bytesToBigInt,
   bytesToHex,
+  createAccount,
+  createAccountFromBytesArray,
+  createAccountFromRLP,
   equalsBytes,
   generateAddress,
   generateAddress2,
@@ -61,7 +64,7 @@ describe('Account', () => {
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', // storageRoot
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', // codeHash
     ]
-    const account = Account.fromValuesArray(raw.map((el) => hexToBytes(el)))
+    const account = createAccountFromBytesArray(raw.map((el) => hexToBytes(el)))
 
     assert.equal(account.nonce, BigInt(2), 'should have correct nonce')
     assert.equal(account.balance, BigInt(900), 'should have correct balance')
@@ -84,7 +87,7 @@ describe('Account', () => {
       storageRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
-    const account = Account.fromAccountData(raw)
+    const account = createAccount(raw)
     assert.equal(account.nonce, BigInt(2), 'should have correct nonce')
     assert.equal(account.balance, BigInt(900), 'should have correct balance')
     assert.equal(
@@ -103,7 +106,7 @@ describe('Account', () => {
     const accountRlp = hexToBytes(
       '0xf84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
     )
-    const account = Account.fromRlpSerializedAccount(accountRlp)
+    const account = createAccountFromRLP(accountRlp)
     assert.equal(account.nonce, BigInt(2), 'should have correct nonce')
     assert.equal(account.balance, BigInt(900), 'should have correct balance')
     assert.equal(
@@ -125,7 +128,7 @@ describe('Account', () => {
       storageRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
-    const account = Account.fromAccountData(raw)
+    const account = createAccount(raw)
     const accountRlp = RLP.encode([raw.nonce, raw.balance, raw.storageRoot, raw.codeHash] as Input)
 
     assert.ok(equalsBytes(account.serialize(), accountRlp), 'should serialize correctly')
@@ -135,7 +138,7 @@ describe('Account', () => {
     const accountRlp = hexToBytes(
       '0xf84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
     )
-    let account = Account.fromRlpSerializedAccount(accountRlp)
+    let account = createAccountFromRLP(accountRlp)
     assert.notOk(account.isContract(), 'should return false for a non-contract account')
 
     const raw: AccountData = {
@@ -144,7 +147,7 @@ describe('Account', () => {
       storageRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
-    account = Account.fromAccountData(raw)
+    account = createAccount(raw)
     assert.ok(account.isContract(), 'should return true for a contract account')
   })
 
@@ -158,7 +161,7 @@ describe('Account', () => {
       storageRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       codeHash: '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
     }
-    account = Account.fromAccountData(raw)
+    account = createAccount(raw)
     assert.notOk(account.isEmpty(), 'should return false for a non-empty account')
   })
 
@@ -184,7 +187,7 @@ describe('Account', () => {
     const data = { balance: BigInt(5) }
     assert.throws(
       () => {
-        Account.fromRlpSerializedAccount(data as any)
+        createAccountFromRLP(data as any)
       },
       undefined,
       undefined,

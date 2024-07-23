@@ -14,6 +14,8 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
+  createAccount,
+  createAccountFromRLP,
   equalsBytes,
   hexToBytes,
   isHexString,
@@ -35,7 +37,7 @@ export function dumpState(state: any, cb: Function) {
       const rs = state.createReadStream()
       rs.on('data', function (data: any) {
         const rlp = data.value
-        const account = Account.fromRlpSerializedAccount(rlp)
+        const account = createAccountFromRLP(rlp)
         accounts.push(account)
       })
       rs.on('end', function () {
@@ -170,7 +172,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
 
     stream.on('data', function (data: any) {
       const rlp = data.value
-      const account = Account.fromRlpSerializedAccount(rlp)
+      const account = createAccountFromRLP(rlp)
       const key = bytesToHex(data.key)
       const testData = hashedAccounts[key]
       const address = keyMap[key]
@@ -386,7 +388,7 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
     }
 
     // Put account data
-    const account = Account.fromAccountData({ nonce, balance, codeHash, storageRoot })
+    const account = createAccount({ nonce, balance, codeHash, storageRoot })
     await state.putAccount(address, account)
   }
   await state.commit()

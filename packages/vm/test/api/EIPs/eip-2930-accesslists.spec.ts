@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { Address, bytesToHex, createAccount, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM, runTx } from '../../../src/index.js'
@@ -56,7 +56,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
     const account = await vm.stateManager.getAccount(address)
     await vm.stateManager.putAccount(
       address,
-      Account.fromAccountData({ ...account, balance: initialBalance })
+      createAccount({ ...account, balance: initialBalance })
     )
 
     let trace: any = []

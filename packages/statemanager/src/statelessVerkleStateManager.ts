@@ -7,6 +7,8 @@ import {
   bytesToBigInt,
   bytesToHex,
   bytesToInt32,
+  createPartialAccount,
+  createPartialAccountFromRLP,
   getVerkleKey,
   getVerkleStem,
   getVerkleTreeKeyForCodeChunk,
@@ -423,9 +425,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       const elem = this._accountCache!.get(address)
       if (elem !== undefined) {
         const account =
-          elem.accountRLP !== undefined
-            ? Account.fromRlpSerializedPartialAccount(elem.accountRLP)
-            : undefined
+          elem.accountRLP !== undefined ? createPartialAccountFromRLP(elem.accountRLP) : undefined
         if (account === undefined) {
           const errorMsg = `account=${account} in cache`
           debug(errorMsg)
@@ -514,7 +514,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       const elem = this._accountCache!.get(address)
       if (elem !== undefined) {
         return elem.accountRLP !== undefined
-          ? Account.fromRlpSerializedPartialAccount(elem.accountRLP)
+          ? createPartialAccountFromRLP(elem.accountRLP)
           : undefined
       }
     }
@@ -572,7 +572,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       throw Error(errorMsg)
     }
 
-    const account = Account.fromPartialAccountData({
+    const account = createPartialAccount({
       version: typeof versionRaw === 'string' ? bytesToInt32(hexToBytes(versionRaw), true) : null,
       balance: typeof balanceRaw === 'string' ? bytesToBigInt(hexToBytes(balanceRaw), true) : null,
       nonce: typeof nonceRaw === 'string' ? bytesToBigInt(hexToBytes(nonceRaw), true) : null,
@@ -777,7 +777,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
           return null
         }
 
-        const balanceBigint = Account.fromRlpSerializedPartialAccount(encodedAccount).balance
+        const balanceBigint = createPartialAccountFromRLP(encodedAccount).balance
         return bytesToHex(setLengthRight(bigIntToBytes(balanceBigint, true), 32))
       }
 
@@ -786,7 +786,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         if (encodedAccount === undefined) {
           return null
         }
-        const nonceBigint = Account.fromRlpSerializedPartialAccount(encodedAccount).nonce
+        const nonceBigint = createPartialAccountFromRLP(encodedAccount).nonce
         return bytesToHex(setLengthRight(bigIntToBytes(nonceBigint, true), 32))
       }
 
@@ -795,7 +795,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         if (encodedAccount === undefined) {
           return null
         }
-        return bytesToHex(Account.fromRlpSerializedPartialAccount(encodedAccount).codeHash)
+        return bytesToHex(createPartialAccountFromRLP(encodedAccount).codeHash)
       }
 
       case AccessedStateType.CodeSize: {
@@ -807,7 +807,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
             return null
           }
 
-          const account = Account.fromRlpSerializedPartialAccount(encodedAccount)
+          const account = createPartialAccountFromRLP(encodedAccount)
           if (account.isContract()) {
             const errorMsg = `Code cache not found for address=${address.toString()}`
             debug(errorMsg)

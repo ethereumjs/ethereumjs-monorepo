@@ -37,7 +37,7 @@ import { getDAOCommon, setupPreConditions } from '../util'
 
 import * as testData from './testdata/blockchain.json'
 import * as testnet from './testdata/testnet.json'
-import { createAccount, setBalance, setupVM } from './utils'
+import { createAccountWithDefaults, setBalance, setupVM } from './utils.js'
 
 import type {
   AfterBlockEvent,
@@ -314,14 +314,14 @@ describe('runBlock() -> runtime behavior', async () => {
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
     const fundBalance1 = BigInt('0x1111')
-    const accountFunded1 = createAccount(BigInt(0), fundBalance1)
+    const accountFunded1 = createAccountWithDefaults(BigInt(0), fundBalance1)
     const DAOFundedContractAddress1 = new Address(
       hexToBytes('0xd4fe7bc31cedb7bfb8a345f31e668033056b2728')
     )
     await vm.stateManager.putAccount(DAOFundedContractAddress1, accountFunded1)
 
     const fundBalance2 = BigInt('0x2222')
-    const accountFunded2 = createAccount(BigInt(0), fundBalance2)
+    const accountFunded2 = createAccountWithDefaults(BigInt(0), fundBalance2)
     const DAOFundedContractAddress2 = new Address(
       hexToBytes('0xb3fb0e5aba0e20e5c49d252dfd30e102b171a425')
     )
@@ -329,7 +329,7 @@ describe('runBlock() -> runtime behavior', async () => {
 
     const DAORefundAddress = new Address(hexToBytes('0xbf4ed7b27f1d666546e30d74d50d173d20bca754'))
     const fundBalanceRefund = BigInt('0x4444')
-    const accountRefund = createAccount(BigInt(0), fundBalanceRefund)
+    const accountRefund = createAccountWithDefaults(BigInt(0), fundBalanceRefund)
     await vm.stateManager.putAccount(DAORefundAddress, accountRefund)
 
     await runBlock(vm, {
