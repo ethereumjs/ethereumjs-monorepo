@@ -9,6 +9,7 @@ import { describe, it } from 'vitest'
 
 import * as verkleBlockJSON from '../../../../statemanager/test/testdata/verkleKaustinen6Block72.json'
 import { VM } from '../../../src'
+import { runBlock } from '../../../src/index.js'
 
 import type { BlockData } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -46,6 +47,6 @@ describe('EIP 6800 tests', () => {
 
     // We need to skip validation of the header validation
     // As otherwise the vm will attempt retrieving the parent block, which is not available in a stateless context
-    await vm.runBlock({ block, skipHeaderValidation: true, parentStateRoot })
+    await runBlock(vm, { block, skipHeaderValidation: true, parentStateRoot })
   })
 })

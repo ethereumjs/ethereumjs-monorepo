@@ -27,7 +27,7 @@ import {
 } from '@ethereumjs/blockchain'
 import { Common, ConsensusAlgorithm, ConsensusType } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
-import { VM } from '@ethereumjs/vm'
+import { runBlock, VM } from '@ethereumjs/vm'
 
 import testData from './helpers/blockchain-mock-data.json'
 
@@ -58,7 +58,7 @@ async function main() {
     const parentBlock = await blockchain!.getBlock(block.header.parentHash)
     const parentState = parentBlock.header.stateRoot
     // run block
-    await vm.runBlock({ block, root: parentState, skipHardForkValidation: true })
+    await runBlock(vm, { block, root: parentState, skipHardForkValidation: true })
   })
 
   const blockchainHead = await vm.blockchain.getIteratorHead!()

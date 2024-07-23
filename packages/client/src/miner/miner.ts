@@ -2,6 +2,7 @@ import { BlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { BIGINT_0, BIGINT_1, BIGINT_2, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import { type TxReceipt, buildBlock } from '@ethereumjs/vm'
 import { MemoryLevel } from 'memory-level'
 
 import { LevelDB } from '../execution/level.js'
@@ -14,7 +15,6 @@ import type { FullSynchronizer } from '../sync/index.js'
 import type { CliqueConsensus } from '@ethereumjs/blockchain'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { Miner as EthashMiner, Solution } from '@ethereumjs/ethash'
-import type { TxReceipt } from '@ethereumjs/vm'
 
 export interface MinerOptions {
   /* Config */
@@ -275,7 +275,7 @@ export class Miner {
       coinbase = this.config.minerCoinbase ?? this.config.accounts[0][0]
     }
 
-    const blockBuilder = await vmCopy.buildBlock({
+    const blockBuilder = await buildBlock(vmCopy, {
       parentBlock,
       headerData: {
         number,

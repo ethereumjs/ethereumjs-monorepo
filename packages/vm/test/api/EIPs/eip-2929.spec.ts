@@ -3,7 +3,7 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, createAccount, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -56,7 +56,7 @@ describe('EIP 2929: gas cost tests', () => {
 
     const tx = unsignedTx.sign(senderKey)
 
-    const result = await vm.runTx({ tx, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, skipHardForkValidation: true })
 
     const totalGasUsed = initialGas - currentGas
     assert.equal(true, totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000)) // Add tx upfront cost.
@@ -93,7 +93,7 @@ describe('EIP 2929: gas cost tests', () => {
       createAccount({ ...account, balance: initialBalance })
     )
 
-    const result = await vm.runTx({ tx, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, skipHardForkValidation: true })
 
     assert.equal(result.totalGasSpent, expectedGasUsed)
   }

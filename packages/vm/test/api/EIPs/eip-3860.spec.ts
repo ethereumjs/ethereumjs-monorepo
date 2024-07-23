@@ -3,7 +3,7 @@ import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
@@ -38,7 +38,7 @@ describe('EIP 3860 tests', () => {
       },
       { common: txCommon }
     ).sign(pkey)
-    const result = await vm.runTx({ tx })
+    const result = await runTx(vm, { tx })
     assert.ok(
       (result.execResult.exceptionError?.error as string) === 'initcode exceeds max initcode size',
       'initcode exceeds max size'

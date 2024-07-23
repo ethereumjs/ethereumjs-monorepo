@@ -32,6 +32,8 @@ import {
   rewardAccount,
 } from './runBlock.js'
 
+import { runTx } from './index.js'
+
 import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.js'
 import type { VM } from './vm.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
@@ -256,7 +258,7 @@ export class BlockBuilder {
     const blockData = { header, transactions: this.transactions }
     const block = createBlockFromBlockData(blockData, this.blockOpts)
 
-    const result = await this.vm.runTx({ tx, block, skipHardForkValidation })
+    const result = await runTx(this.vm, { tx, block, skipHardForkValidation })
 
     // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
     if (tx instanceof BlobEIP4844Transaction) {
@@ -388,7 +390,7 @@ export class BlockBuilder {
       const parentBeaconBlockRootBuf =
         toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
 
-      await accumulateParentBeaconBlockRoot.bind(this.vm)(parentBeaconBlockRootBuf, timestampBigInt)
+      await accumulateParentBeaconBlockRoot(this.vm, parentBeaconBlockRootBuf, timestampBigInt)
     }
     if (this.vm.common.isActivatedEIP(2935)) {
       if (!this.checkpointed) {
@@ -401,13 +403,28 @@ export class BlockBuilder {
       const numberBigInt = toType(number ?? 0, TypeOutput.BigInt)
       const parentHashSanitized = toType(parentHash, TypeOutput.Uint8Array) ?? zeros(32)
 
-      await accumulateParentBlockHash.bind(this.vm)(numberBigInt, parentHashSanitized)
+      await accumulateParentBlockHash(this.vm, numberBigInt, parentHashSanitized)
     }
   }
 }
 
-export async function buildBlock(this: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
-  const blockBuilder = new BlockBuilder(this, opts)
+/**
+ * Build a block on top of the current state
+ * by adding one transaction at a time.
+ *
+ * Creates a checkpoint on the StateManager and modifies the state
+ * as transactions are run. The checkpoint is committed on {@link BlockBuilder.build}
+ * or discarded with {@link BlockBuilder.revert}.
+ *
+ * @param {VM} vm
+ * @param {BuildBlockOpts} opts
+ * @returns An instance of {@link BlockBuilder} with methods:
+ * - {@link BlockBuilder.addTransaction}
+ * - {@link BlockBuilder.build}
+ * - {@link BlockBuilder.revert}
+ */
+export async function buildBlock(vm: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
+  const blockBuilder = new BlockBuilder(vm, opts)
   await blockBuilder.initState()
   return blockBuilder
 }

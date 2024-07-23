@@ -5,6 +5,7 @@ import { Address, bytesToHex, createAccount, hexToBytes, randomBytes } from '@et
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
+import { buildBlock, runBlock } from '../../../src/index.js'
 import { setupVM } from '../utils.js'
 
 import type { DepositRequest } from '../../../../util/src/requests.js'
@@ -54,7 +55,7 @@ describe('EIP-6110 runBlock tests', () => {
       },
       { common }
     )
-    const res = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    const res = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     assert.equal(res.requests?.length, 1)
     const reqPubkey = (res.requests![0] as DepositRequest).pubkey
     assert.equal(bytesToHex(reqPubkey), pubkey)
@@ -83,7 +84,7 @@ describe('EIP-7685 buildBlock tests', () => {
     await vm.stateManager.putAccount(sender, createAccount({ balance: 540000000030064771065n }))
     const block = createBlockFromBlockData({}, { common })
     ;(vm.blockchain as any)['dbManager']['getHeader'] = () => block.header
-    const blockBuilder = await vm.buildBlock({ parentBlock: block })
+    const blockBuilder = await buildBlock(vm, { parentBlock: block })
     await blockBuilder.addTransaction(depositTx)
     const res = await blockBuilder.build()
     assert.equal(res.requests?.length, 1)

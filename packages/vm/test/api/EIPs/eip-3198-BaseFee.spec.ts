@@ -4,7 +4,7 @@ import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -87,7 +87,7 @@ describe('EIP3198 tests', () => {
       }
     })
 
-    const results = await vm.runTx({
+    const results = await runTx(vm, {
       tx: block.transactions[0],
       block,
     })
