@@ -77,7 +77,6 @@ describe(method, () => {
 
     const averageGasPrice = (G1 + G2) / 2
     const res = await rpc.request(method, [])
-    console.log(res)
     assert.equal(
       res.result,
       intToHex(Math.trunc(averageGasPrice)),
