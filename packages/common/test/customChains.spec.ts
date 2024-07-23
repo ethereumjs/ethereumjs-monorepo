@@ -1,4 +1,3 @@
-import { BIGINT_0 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {

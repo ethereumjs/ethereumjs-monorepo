@@ -32,8 +32,6 @@ import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const debugGas = debugDefault('evm:gas')
 
-let counter = 0
-
 export interface InterpreterOpts {
   pc?: number
 }
@@ -339,11 +337,6 @@ export class Interpreter {
    * reducing its base gas cost, and increments the program counter.
    */
   async runStep(opcodeObj?: OpcodeMapEntry): Promise<void> {
-    counter += 1
-    if (counter % 1000 === 0) {
-      console.log(counter)
-    }
-
     const opEntry = opcodeObj ?? this.lookupOpInfo(this._runState.opCode)
     const opInfo = opEntry.opcodeInfo
 
