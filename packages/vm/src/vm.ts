@@ -6,7 +6,7 @@ import {
   Account,
   Address,
   AsyncEventEmitter,
-  accountFromAccountData,
+  createAccount,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
@@ -148,7 +148,7 @@ export class VM {
         // Note: in the case that custom genesis has storage fields, this is preserved
         if (account === undefined) {
           account = new Account()
-          const newAccount = accountFromAccountData({
+          const newAccount = createAccount({
             balance: 1,
             storageRoot: account.storageRoot,
           })

@@ -4,9 +4,9 @@ import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
   Address,
   VerkleLeafType,
-  accountFromAccountData,
   bytesToBigInt,
   bytesToHex,
+  createAccount,
   getVerkleKey,
   getVerkleStem,
   hexToBytes,
@@ -84,7 +84,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
       )
     }
 
-    const account = accountFromAccountData({
+    const account = createAccount({
       nonce: BigInt(2),
     })
 

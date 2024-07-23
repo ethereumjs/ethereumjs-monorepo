@@ -1,5 +1,5 @@
 import { VM } from '@ethereumjs/vm'
-import { Account, accountFromAccountData, Address } from '@ethereumjs/util'
+import { Account, createAccount, Address } from '@ethereumjs/util'
 
 export const keyPair = {
   secretKey: '0x3cd7232cd6f3fc66a57a6bedc1a8ed6c228fff0a327e169c2bcc5e869ed49511',
@@ -12,7 +12,7 @@ export const insertAccount = async (vm: VM, address: Address) => {
     nonce: 0,
     balance: BigInt(10) ** BigInt(18), // 1 eth
   }
-  const account = accountFromAccountData(acctData)
+  const account = createAccount(acctData)
 
   await vm.stateManager.putAccount(address, account)
 }

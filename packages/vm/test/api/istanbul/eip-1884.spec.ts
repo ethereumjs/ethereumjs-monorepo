@@ -4,7 +4,7 @@ import { Address, bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
-import { createAccount } from '../utils'
+import { createAccountWithDefaults } from '../utils.js'
 
 const testCases = [
   { chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, selfbalance: '0xf1' },
@@ -28,7 +28,7 @@ describe('Istanbul: EIP-1884', () => {
       const vm = await VM.create({ common })
 
       const balance = testCase.selfbalance !== undefined ? BigInt(testCase.selfbalance) : undefined
-      const account = createAccount(BigInt(0), balance)
+      const account = createAccountWithDefaults(BigInt(0), balance)
 
       await vm.stateManager.putAccount(addr, account)
 

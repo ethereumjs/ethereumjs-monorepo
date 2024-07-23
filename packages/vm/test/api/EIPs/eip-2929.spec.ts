@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
-import { Address, accountFromAccountData, hexToBytes } from '@ethereumjs/util'
+import { Address, createAccount, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
@@ -90,7 +90,7 @@ describe('EIP 2929: gas cost tests', () => {
     const account = await vm.stateManager.getAccount(address)
     await vm.stateManager.putAccount(
       address,
-      accountFromAccountData({ ...account, balance: initialBalance })
+      createAccount({ ...account, balance: initialBalance })
     )
 
     const result = await vm.runTx({ tx, skipHardForkValidation: true })

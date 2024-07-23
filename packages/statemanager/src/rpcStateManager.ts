@@ -3,10 +3,10 @@ import { RLP } from '@ethereumjs/rlp'
 import { verifyTrieProof } from '@ethereumjs/trie'
 import {
   Account,
-  accountFromAccountData,
-  accountFromRlp,
   bigIntToHex,
   bytesToHex,
+  createAccount,
+  createAccountFromRLP,
   equalsBytes,
   fetchFromProvider,
   hexToBytes,
@@ -259,7 +259,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
   async getAccount(address: Address): Promise<Account | undefined> {
     const elem = this._accountCache?.get(address)
     if (elem !== undefined) {
-      return elem.accountRLP !== undefined ? accountFromRlp(elem.accountRLP) : undefined
+      return elem.accountRLP !== undefined ? createAccountFromRLP(elem.accountRLP) : undefined
     }
 
     const accountFromProvider = await this.getAccountFromProvider(address)
@@ -267,7 +267,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
       equalsBytes(accountFromProvider.codeHash, new Uint8Array(32).fill(0)) ||
       equalsBytes(accountFromProvider.serialize(), KECCAK256_RLP_EMPTY_ACCOUNT)
         ? undefined
-        : accountFromRlp(accountFromProvider.serialize())
+        : createAccountFromRLP(accountFromProvider.serialize())
 
     this._accountCache?.put(address, account)
 
@@ -285,7 +285,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
       method: 'eth_getProof',
       params: [address.toString(), [] as any, this._blockTag],
     })
-    const account = accountFromAccountData({
+    const account = createAccount({
       balance: BigInt(accountData.balance),
       nonce: BigInt(accountData.nonce),
       codeHash: toBytes(accountData.codeHash),

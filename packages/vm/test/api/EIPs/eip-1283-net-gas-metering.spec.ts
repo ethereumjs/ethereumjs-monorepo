@@ -3,7 +3,7 @@ import { Address, bigIntToBytes, hexToBytes, setLengthLeft } from '@ethereumjs/u
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
-import { createAccount } from '../utils'
+import { createAccountWithDefaults } from '../utils.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -40,7 +40,7 @@ describe('Constantinople: EIP-1283', () => {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
       const vm = await VM.create({ common })
 
-      const account = createAccount(BigInt(0), BigInt(0))
+      const account = createAccountWithDefaults(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)
       await vm.stateManager.putContractCode(addr, hexToBytes(testCase.code as PrefixedHexString))
       if (testCase.original !== BigInt(0)) {

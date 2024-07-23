@@ -1,13 +1,7 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork, getInitializedChains } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
-import {
-  Address,
-  accountFromAccountData,
-  bytesToHex,
-  hexToBytes,
-  randomBytes,
-} from '@ethereumjs/util'
+import { Address, bytesToHex, createAccount, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
@@ -47,16 +41,13 @@ describe('EIP-6110 runBlock tests', () => {
       type: 2,
       to: DEPOSIT_CONTRACT_ADDRESS,
     }).sign(pk)
-    const beaconContractAccount = accountFromAccountData({
+    const beaconContractAccount = createAccount({
       codeHash: keccak256(depositContractByteCode),
     })
     const beaconContractAddress = Address.fromString(DEPOSIT_CONTRACT_ADDRESS)
     await vm.stateManager.putAccount(beaconContractAddress, beaconContractAccount)
     await vm.stateManager.putContractCode(beaconContractAddress, depositContractByteCode)
-    await vm.stateManager.putAccount(
-      sender,
-      accountFromAccountData({ balance: 540000000030064771065n })
-    )
+    await vm.stateManager.putAccount(sender, createAccount({ balance: 540000000030064771065n }))
     const block = createBlockFromBlockData(
       {
         transactions: [depositTx],
@@ -83,16 +74,13 @@ describe('EIP-7685 buildBlock tests', () => {
       type: 2,
       to: DEPOSIT_CONTRACT_ADDRESS,
     }).sign(pk)
-    const beaconContractAccount = accountFromAccountData({
+    const beaconContractAccount = createAccount({
       codeHash: keccak256(depositContractByteCode),
     })
     const beaconContractAddress = Address.fromString(DEPOSIT_CONTRACT_ADDRESS)
     await vm.stateManager.putAccount(beaconContractAddress, beaconContractAccount)
     await vm.stateManager.putContractCode(beaconContractAddress, depositContractByteCode)
-    await vm.stateManager.putAccount(
-      sender,
-      accountFromAccountData({ balance: 540000000030064771065n })
-    )
+    await vm.stateManager.putAccount(sender, createAccount({ balance: 540000000030064771065n }))
     const block = createBlockFromBlockData({}, { common })
     ;(vm.blockchain as any)['dbManager']['getHeader'] = () => block.header
     const blockBuilder = await vm.buildBlock({ parentBlock: block })

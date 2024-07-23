@@ -4,10 +4,10 @@ import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
 import { FeeMarketEIP1559Transaction, createTxFromRPC } from '@ethereumjs/tx'
 import {
   Address,
-  accountFromRlp,
   bigIntToBytes,
   bytesToHex,
   bytesToUnprefixedHex,
+  createAccountFromRLP,
   equalsBytes,
   hexToBytes,
   setLengthLeft,
@@ -85,7 +85,7 @@ describe('RPC State Manager API tests', () => {
 
     await state.putAccount(vitalikDotEth, account!)
 
-    const retrievedVitalikAccount = accountFromRlp(
+    const retrievedVitalikAccount = createAccountFromRLP(
       (state as any)._accountCache.get(vitalikDotEth)!.accountRLP
     )
 

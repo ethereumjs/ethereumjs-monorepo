@@ -270,7 +270,7 @@ export class Account {
 
 // Account constructors
 
-export function accountFromAccountData(accountData: AccountData) {
+export function createAccount(accountData: AccountData) {
   const { nonce, balance, storageRoot, codeHash } = accountData
   if (nonce === null || balance === null || storageRoot === null || codeHash === null) {
     throw Error(`Partial fields not supported in fromAccountData`)
@@ -284,13 +284,13 @@ export function accountFromAccountData(accountData: AccountData) {
   )
 }
 
-export function accountFromValuesArray(values: Uint8Array[]) {
+export function createAccountFromBytesArray(values: Uint8Array[]) {
   const [nonce, balance, storageRoot, codeHash] = values
 
   return new Account(bytesToBigInt(nonce), bytesToBigInt(balance), storageRoot, codeHash)
 }
 
-export function accountFromPartialAccountData(partialAccountData: PartialAccountData) {
+export function createPartialAccount(partialAccountData: PartialAccountData) {
   const { nonce, balance, storageRoot, codeHash, codeSize, version } = partialAccountData
 
   if (
@@ -314,17 +314,17 @@ export function accountFromPartialAccountData(partialAccountData: PartialAccount
   )
 }
 
-export function accountFromRlp(serialized: Uint8Array) {
+export function createAccountFromRLP(serialized: Uint8Array) {
   const values = RLP.decode(serialized) as Uint8Array[]
 
   if (!Array.isArray(values)) {
     throw new Error('Invalid serialized account input. Must be array')
   }
 
-  return accountFromValuesArray(values)
+  return createAccountFromBytesArray(values)
 }
 
-export function accountFromPartialRlp(serialized: Uint8Array) {
+export function createPartialAccountFromRLP(serialized: Uint8Array) {
   const values = RLP.decode(serialized) as Uint8Array[][]
 
   if (!Array.isArray(values)) {
@@ -409,7 +409,7 @@ export function accountFromPartialRlp(serialized: Uint8Array) {
     }
   }
 
-  return accountFromPartialAccountData({ balance, nonce, storageRoot, codeHash, codeSize, version })
+  return createPartialAccount({ balance, nonce, storageRoot, codeHash, codeSize, version })
 }
 
 /**
