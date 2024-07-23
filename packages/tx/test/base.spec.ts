@@ -19,11 +19,14 @@ import {
   LegacyTransaction,
   TransactionType,
   create1559FeeMarketTx,
+  create1559FeeMarketTxFromRLP,
   create2930AccessListTx,
   create2930AccessListTxFromBytesArray,
+  create2930AccessListTxFromRLP,
   createEIP1559FeeMarketTxFromBytesArray,
   createLegacyTx,
   createLegacyTxFromBytesArray,
+  createLegacyTxFromRLP,
 } from '../src/index.js'
 
 import eip1559Fixtures from './json/eip1559txs.json'
@@ -62,6 +65,11 @@ describe('[BaseTransaction]', () => {
       txs: legacyTxs,
       fixtures: legacyFixtures,
       activeCapabilities: [],
+      create: {
+        txData: createLegacyTx,
+        rlp: createLegacyTxFromRLP,
+        bytesArray: createLegacyTxFromBytesArray,
+      },
       notActiveCapabilities: [
         Capability.EIP1559FeeMarket,
         Capability.EIP2718TypedTransaction,
@@ -77,6 +85,11 @@ describe('[BaseTransaction]', () => {
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,
       activeCapabilities: [Capability.EIP2718TypedTransaction, Capability.EIP2930AccessLists],
+      create: {
+        txData: create2930AccessListTx,
+        rlp: create2930AccessListTxFromRLP,
+        bytesArray: create2930AccessListTxFromBytesArray,
+      },
       notActiveCapabilities: [Capability.EIP1559FeeMarket, 9999],
     },
     {
@@ -91,13 +104,18 @@ describe('[BaseTransaction]', () => {
         Capability.EIP2718TypedTransaction,
         Capability.EIP2930AccessLists,
       ],
+      create: {
+        txData: create1559FeeMarketTx,
+        rlp: create1559FeeMarketTxFromRLP,
+        bytesArray: createEIP1559FeeMarketTxFromBytesArray,
+      },
       notActiveCapabilities: [9999],
     },
   ]
 
   it('Initialization', () => {
     for (const txType of txTypes) {
-      let tx = txType.class.fromTxData({}, { common })
+      let tx = txType.create.txData({}, { common })
       assert.equal(
         tx.common.hardfork(),
         'london',
@@ -109,7 +127,7 @@ describe('[BaseTransaction]', () => {
         chain: Chain.Mainnet,
         hardfork: Hardfork.London,
       })
-      tx = txType.class.fromTxData({}, { common: initCommon })
+      tx = txType.create.txData({}, { common: initCommon })
       assert.equal(
         tx.common.hardfork(),
         'london',
@@ -123,7 +141,7 @@ describe('[BaseTransaction]', () => {
         `${txType.name}: should stay on correct HF if outer common HF changes`
       )
 
-      tx = txType.class.fromTxData({}, { common, freeze: false })
+      tx = txType.create.txData({}, { common, freeze: false })
       assert.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
@@ -131,10 +149,10 @@ describe('[BaseTransaction]', () => {
 
       // Perform the same test as above, but now using a different construction method. This also implies that passing on the
       // options object works as expected.
-      tx = txType.class.fromTxData({}, { common, freeze: false })
+      tx = txType.create.txData({}, { common, freeze: false })
       const rlpData = tx.serialize()
 
-      tx = txType.class.fromSerializedTx(rlpData, { common })
+      tx = txType.create.rlp(rlpData, { common })
       assert.equal(
         tx.type,
         txType.type,
@@ -143,16 +161,16 @@ describe('[BaseTransaction]', () => {
 
       assert.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
-      tx = txType.class.fromSerializedTx(rlpData, { common, freeze: false })
+      tx = txType.create.rlp(rlpData, { common, freeze: false })
       assert.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
       )
 
-      tx = txType.class.fromValuesArray(txType.values as any, { common })
+      tx = txType.create.bytesArray(txType.values as any, { common })
       assert.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
-      tx = txType.class.fromValuesArray(txType.values as any, { common, freeze: false })
+      tx = txType.create.bytesArray(txType.values as any, { common, freeze: false })
       assert.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
@@ -211,11 +229,11 @@ describe('[BaseTransaction]', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
         assert.ok(
-          txType.class.fromSerializedTx(tx.serialize(), { common }),
+          txType.create.rlp(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`
         )
         assert.ok(
-          txType.class.fromSerializedTx(tx.serialize(), { common }),
+          txType.create.rlp(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`
         )
       }
@@ -245,7 +263,7 @@ describe('[BaseTransaction]', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
         assert.ok(
-          txType.class.fromValuesArray(tx.raw() as any, { common }),
+          txType.create.bytesArray(tx.raw() as any, { common }),
           `${txType.name}: should do roundtrip raw() -> fromValuesArray()`
         )
       }
@@ -265,7 +283,7 @@ describe('[BaseTransaction]', () => {
       for (const txFixture of txType.fixtures.slice(0, 4)) {
         // set `s` to a single zero
         txFixture.data.s = '0x' + '0'
-        const tx = txType.class.fromTxData((txFixture as any).data, { common })
+        const tx = txType.create.txData((txFixture as any).data, { common })
         assert.equal(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
         assert.ok(
           tx.getValidationErrors().includes('Invalid Signature'),
@@ -300,7 +318,7 @@ describe('[BaseTransaction]', () => {
         ...txType.txs,
         // add unsigned variants
         ...txType.txs.map((tx) =>
-          txType.class.fromTxData({
+          txType.create.txData({
             ...tx,
             v: undefined,
             r: undefined,
