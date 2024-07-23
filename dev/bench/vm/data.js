@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721724375138,
+  "lastUpdate": 1721755536151,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "3171920e59f89263b5ad57906103d1e6a103ce9a",
-          "message": "Fix statemanager empty code bug (#3483)\n\n* common/tx: implement EIP7702\r\n\r\n* tx: add 7702 cap and update authority checks\r\n\r\n* vm: add 7702 support\r\n\r\n* tx: add 7702 tests\r\n\r\n* client: fix build\r\n\r\n* evm: support 7702\r\n\r\n* vm: add basic 7702 test and fix decoding auth list\r\n\r\n* vm: add specific eip-161 test\r\n\r\n* vm: bump 7702 test coverage with one passing test\r\n\r\n* vm: add more 7702 tests\r\n\r\n* vm: add extra 7702 tests\r\n\r\n* tx: address feedback\r\n\r\n* vm: address review\r\n\r\n* vm: add 7702 test to check for empty code (fails)\r\n\r\n* vm: fix 7702 empty code clearing\r\n\r\n* add 7702 type to tx factory constructors\r\n\r\n* add 7702 test to runBlock test\r\n\r\n* vm: comment 7702 test\r\n\r\n* stateManager: fix bug by putting empty code on an existing account\r\n\r\n* vm: 7702: remove modifyAccountFields\r\n\r\n* vm: remove .only from runBlock test\r\n\r\n* vm: remove runBlock .only\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>",
-          "timestamp": "2024-07-04T21:57:01+02:00",
-          "tree_id": "584ae462b5c4524f702850c5a17c78a6d1e2b14c",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3171920e59f89263b5ad57906103d1e6a103ce9a"
-        },
-        "date": 1720123292476,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 37930,
-            "range": "±2.95%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 37402,
-            "range": "±1.25%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37390,
-            "range": "±1.40%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 34869,
-            "range": "±4.23%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35835,
-            "range": "±1.65%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.43%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f66a5e0d0ae405323eb06c95b657314085c87d0c",
+          "message": "Common Refactor (#3532)\n\n* Align gas price names\n\n* Throw for parameter accesses on non-existing values instead of implicitly 0-lifying\n\n* Gas price fixes\n\n* Some fixes\n\n* Fixes\n\n* Fix client eth_gasPrice RPC call test\n\n* Switch to a consistent EIP based structure (remove hybrid HF/EIP parameter structure)\n\n* Code simplifications, locally remove topic from param* API in Common, fix tests\n\n* Monorepo-wide topic removal\n\n* Fixes\n\n* Minor\n\n* Fix client test",
+          "timestamp": "2024-07-23T13:20:52-04:00",
+          "tree_id": "49722e28063b6ea18b4a533193f53aec2f01e853",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f66a5e0d0ae405323eb06c95b657314085c87d0c"
+        },
+        "date": 1721755535529,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38185,
+            "range": "±1.69%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 37076,
+            "range": "±2.20%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 35969,
+            "range": "±3.56%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36162,
+            "range": "±1.63%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35731,
+            "range": "±1.68%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
           }
         ]
       }
