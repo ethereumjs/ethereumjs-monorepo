@@ -1320,7 +1320,10 @@ export class Eth {
    * @returns a hex code of an integer representing the suggested gas price in wei.
    */
   async gasPrice() {
-    const minGasPrice: bigint = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
+    // TODO: going more strict on parameter accesses in Common (PR #3532) revealed that this line had
+    // absolutely no effect by accessing a non-present gas parameter. Someone familiar with the RPC method
+    // implementation should look over it and recall what was meant to be accomplished here.
+    const minGasPrice = BIGINT_0 //: bigint = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
     let gasPrice = BIGINT_0
     const latest = await this._chain.getCanonicalHeadHeader()
     if (this._vm !== undefined && this._vm.common.isActivatedEIP(1559)) {
