@@ -22,12 +22,12 @@ export function isSigned(tx: LegacyTxInterface): boolean {
 /**
  * The amount of gas paid for the data in this tx
  */
-export function getDataFee(tx: LegacyTxInterface, extraCost?: bigint): bigint {
+export function getDataGas(tx: LegacyTxInterface, extraCost?: bigint): bigint {
   if (tx.cache.dataFee && tx.cache.dataFee.hardfork === tx.common.hardfork()) {
     return tx.cache.dataFee.value
   }
 
-  const cost = BaseTransaction.prototype.getDataFee.bind(tx)() + (extraCost ?? 0n)
+  const cost = BaseTransaction.prototype.getDataGas.bind(tx)() + (extraCost ?? 0n)
 
   if (Object.isFrozen(tx)) {
     tx.cache.dataFee = {

@@ -157,8 +157,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
   /**
    * The amount of gas paid for the data in this tx
    */
-  getDataFee(): bigint {
-    return EIP2930.getDataFee(this)
+  getDataGas(): bigint {
+    return EIP2930.getDataGas(this)
   }
 
   /**

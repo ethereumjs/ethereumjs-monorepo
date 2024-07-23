@@ -119,8 +119,8 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
   /**
    * The amount of gas paid for the data in this tx
    */
-  getDataFee(): bigint {
-    return EIP7702.getDataFee(this)
+  getDataGas(): bigint {
+    return EIP7702.getDataGas(this)
   }
 
   /**

@@ -153,8 +153,10 @@ export abstract class BaseTransaction<T extends TransactionType>
       errors.push('Invalid Signature')
     }
 
-    if (this.getBaseFee() > this.gasLimit) {
-      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
+    if (this.getIntrinsicGas() > this.gasLimit) {
+      errors.push(
+        `gasLimit is too low. given ${this.gasLimit}, need at least ${this.getIntrinsicGas()}`
+      )
     }
 
     return errors
@@ -171,11 +173,14 @@ export abstract class BaseTransaction<T extends TransactionType>
   }
 
   /**
-   * The minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
+   * The minimum gas limit which the tx to have to be valid.
+   * This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
+   * the optional creation fee (if the transaction creates a contract), and if relevant the gas
+   * to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
    */
-  getBaseFee(): bigint {
+  getIntrinsicGas(): bigint {
     const txFee = this.common.param('txGas')
-    let fee = this.getDataFee()
+    let fee = this.getDataGas()
     if (txFee) fee += txFee
     if (this.common.gteHardfork('homestead') && this.toCreationAddress()) {
       const txCreationFee = this.common.param('txCreationGas')
@@ -185,9 +190,9 @@ export abstract class BaseTransaction<T extends TransactionType>
   }
 
   /**
-   * The amount of gas paid for the data in this tx
+   * The amount of gas paid for the calldata in this tx
    */
-  getDataFee(): bigint {
+  getDataGas(): bigint {
     const txDataZero = this.common.param('txDataZeroGas')
     const txDataNonZero = this.common.param('txDataNonZeroGas')
 
@@ -213,7 +218,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   abstract getEffectivePriorityFee(baseFee: bigint | undefined): bigint
 
   /**
-   * The up front amount that an account must have for this transaction to be valid
+   * The upfront amount of wei to be paid in order for this tx to be valid and included in a block
    */
   abstract getUpfrontCost(): bigint
 

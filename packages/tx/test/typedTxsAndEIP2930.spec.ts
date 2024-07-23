@@ -413,18 +413,18 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
     })
   })
 
-  it('getDataFee()', () => {
+  it('getDataGas()', () => {
     for (const txType of txTypes) {
       let tx = txType.create.txData({}, { common })
-      assert.equal(tx.getDataFee(), BigInt(0), 'Should return data fee when frozen')
+      assert.equal(tx.getDataGas(), BigInt(0), 'Should return data fee when frozen')
 
       tx = txType.create.txData({}, { common, freeze: false })
-      assert.equal(tx.getDataFee(), BigInt(0), 'Should return data fee when not frozen')
+      assert.equal(tx.getDataGas(), BigInt(0), 'Should return data fee when not frozen')
 
       const mutableCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
       tx = txType.create.txData({}, { common: mutableCommon })
       tx.common.setHardfork(Hardfork.Istanbul)
-      assert.equal(tx.getDataFee(), BigInt(0), 'Should invalidate cached value on hardfork change')
+      assert.equal(tx.getDataGas(), BigInt(0), 'Should invalidate cached value on hardfork change')
     }
   })
 })
@@ -496,7 +496,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     const creationFee: number = Number(common.param('txCreationGas'))
 
     assert.ok(
-      tx.getBaseFee() ===
+      tx.getIntrinsicGas() ===
         BigInt(
           txDataNonZero * 2 +
             txDataZero +
@@ -517,7 +517,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     )
 
     assert.ok(
-      tx.getBaseFee() ===
+      tx.getIntrinsicGas() ===
         BigInt(
           txDataNonZero * 2 +
             txDataZero +
@@ -542,7 +542,8 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     )
 
     assert.ok(
-      tx.getBaseFee() === BigInt(baseFee + accessListAddressCost * 2 + accessListStorageKeyCost * 3)
+      tx.getIntrinsicGas() ===
+        BigInt(baseFee + accessListAddressCost * 2 + accessListStorageKeyCost * 3)
     )
   })
 
