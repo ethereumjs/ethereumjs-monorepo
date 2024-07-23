@@ -2,6 +2,7 @@ import { hexToBytes, toBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import type { Nibbles } from '../types.js'
 import { nibblesTypeToPackedBytes } from './nibbles.js'
+import { concatBytes } from '@ethereumjs/util'
 
 // Reference: https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/
 //
@@ -33,10 +34,13 @@ export const hasTerminator = (nibbles: Uint8Array) => {
   return nibbles.length > 0 && nibbles[nibbles.length - 1] === 16
 }
 
-export const nibblesToBytes = (nibbles: Uint8Array, bytes: Uint8Array) => {
+export const nibblesToBytes = (nibbles: Uint8Array) => {
+  const bytes = new Uint8Array(nibbles.length / 2)
   for (let bi = 0, ni = 0; ni < nibbles.length; bi += 1, ni += 2) {
     bytes[bi] = (nibbles[ni] << 4) | nibbles[ni + 1]
   }
+
+  return bytes
 }
 
 export const hexToKeybytes = (hex: Uint8Array) => {
@@ -46,10 +50,8 @@ export const hexToKeybytes = (hex: Uint8Array) => {
   if (hex.length % 2 === 1) {
     throw Error("Can't convert hex key of odd length")
   }
-  const key = new Uint8Array(hex.length / 2)
-  nibblesToBytes(hex, key)
 
-  return key
+  return nibblesToBytes(hex)
 }
 
 // hex to compact
@@ -70,9 +72,9 @@ export const nibblesToCompactBytes = (nibbles: Uint8Array) => {
     buf[0] |= nibbles[0]
     nibbles = nibbles.subarray(1)
   }
+
   // create bytes out of the rest even nibbles
-  nibblesToBytes(nibbles, buf.subarray(1))
-  return buf
+  return concatBytes(buf.subarray(0, 1), nibblesToBytes(nibbles))
 }
 
 export const bytesToNibbles = (str: Uint8Array) => {
