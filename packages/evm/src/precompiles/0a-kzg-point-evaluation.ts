@@ -23,7 +23,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   if (opts.common.customCrypto?.kzg === undefined) {
     throw new Error('kzg not initialized')
   }
-  const gasUsed = opts.common.param('gasPrices', 'kzgPointEvaluationGasPrecompilePrice')
+  const gasUsed = opts.common.param('kzgPointEvaluationPrecompileGas')
   if (opts._debug !== undefined) {
     opts._debug(
       `Run KZG_POINT_EVALUATION (0x14) precompile data=${short(opts.data)} length=${
@@ -43,8 +43,8 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
-  const version = Number(opts.common.param('sharding', 'blobCommitmentVersionKzg'))
-  const fieldElementsPerBlob = opts.common.param('sharding', 'fieldElementsPerBlob')
+  const version = Number(opts.common.param('blobCommitmentVersionKzg'))
+  const fieldElementsPerBlob = opts.common.param('fieldElementsPerBlob')
   const versionedHash = opts.data.subarray(0, 32)
   const z = opts.data.subarray(32, 64)
   const y = opts.data.subarray(64, 96)

@@ -112,7 +112,7 @@ describe('EIP1559 tests', () => {
           parentHash: genesis.hash(),
           gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
           timestamp: BigInt(1),
-          baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+          baseFeePerGas: common.param('initialBaseFee'),
         },
       },
       {
@@ -188,10 +188,9 @@ describe('EIP1559 tests', () => {
           timestamp: BigInt(1),
           gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
           gasUsed:
-            genesis.header.gasLimit *
-              (common.param('gasConfig', 'elasticityMultiplier') ?? BigInt(0)) +
+            genesis.header.gasLimit * (common.param('elasticityMultiplier') ?? BigInt(0)) +
             BigInt(1),
-          baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+          baseFeePerGas: common.param('initialBaseFee'),
         },
         {
           calcDifficultyFromHeader: genesis.header,
@@ -212,7 +211,7 @@ describe('EIP1559 tests', () => {
         timestamp: BigInt(1),
         gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
         gasUsed: genesis.header.gasLimit * BigInt(2),
-        baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+        baseFeePerGas: common.param('initialBaseFee'),
       },
       {
         calcDifficultyFromHeader: genesis.header,
@@ -230,7 +229,7 @@ describe('EIP1559 tests', () => {
         parentHash: genesis.hash(),
         gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
         timestamp: BigInt(1),
-        baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+        baseFeePerGas: common.param('initialBaseFee'),
       },
     },
     {
@@ -247,7 +246,7 @@ describe('EIP1559 tests', () => {
         parentHash: genesis.hash(),
         timestamp: BigInt(1),
         gasLimit: parentGasLimit + parentGasLimit / BigInt(1024) - BigInt(1),
-        baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+        baseFeePerGas: common.param('initialBaseFee'),
       },
       {
         calcDifficultyFromHeader: genesis.header,
@@ -263,7 +262,7 @@ describe('EIP1559 tests', () => {
         parentHash: genesis.hash(),
         timestamp: BigInt(1),
         gasLimit: parentGasLimit - parentGasLimit / BigInt(1024) + BigInt(1),
-        baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+        baseFeePerGas: common.param('initialBaseFee'),
       },
       {
         calcDifficultyFromHeader: genesis.header,
@@ -315,7 +314,7 @@ describe('EIP1559 tests', () => {
         parentHash: genesis.hash(),
         timestamp: BigInt(1),
         gasLimit: parentGasLimit + parentGasLimit,
-        baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+        baseFeePerGas: common.param('initialBaseFee'),
       },
       {
         calcDifficultyFromHeader: genesis.header,
@@ -365,7 +364,7 @@ describe('EIP1559 tests', () => {
         parentHash: genesis.hash(),
         timestamp: BigInt(1),
         gasLimit: parentGasLimit - parentGasLimit / BigInt(1024),
-        baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+        baseFeePerGas: common.param('initialBaseFee'),
       },
       {
         calcDifficultyFromHeader: genesis.header,
@@ -422,7 +421,7 @@ describe('EIP1559 tests', () => {
           parentHash: genesis.hash(),
           gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
           timestamp: BigInt(1),
-          baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+          baseFeePerGas: common.param('initialBaseFee'),
         },
         transactions: [
           {

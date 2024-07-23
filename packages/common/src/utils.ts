@@ -1,6 +1,6 @@
 import { intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
-import { chains as CHAIN_SPECS } from './chains.js'
+import { chainsDict } from './chains.js'
 import { Chain, Hardfork } from './enums.js'
 
 import type { ChainConfig, ChainName, ChainsConfig } from './index.js'
@@ -243,7 +243,7 @@ export function getInitializedChains(customChains?: ChainConfig[]): ChainsConfig
   for (const [name, id] of Object.entries(Chain)) {
     names[id] = name.toLowerCase()
   }
-  const chains = { ...CHAIN_SPECS } as ChainsConfig
+  const chains = { ...chainsDict } as ChainsConfig
   if (customChains) {
     for (const chain of customChains) {
       const { name } = chain
