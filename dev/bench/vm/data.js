@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721652336707,
+  "lastUpdate": 1721721534937,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "436bcc956d58c147da1b1afadb0d1efc11e824a5",
-          "message": "VM: EVM Opts Chaining for better DevEx (#3481)\n\n* Basic integration in create() and shallowCopy()\r\n\r\n* Adopt VM shallowCopy(), add additional shallowCopy() related tests\r\n\r\n* option assignment optimization",
-          "timestamp": "2024-07-02T13:51:53+02:00",
-          "tree_id": "a959f7e6e9632477f3dbc8c9f626e310f4197c9b",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/436bcc956d58c147da1b1afadb0d1efc11e824a5"
-        },
-        "date": 1719921401762,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38187,
-            "range": "±2.46%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 37414,
-            "range": "±1.52%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37432,
-            "range": "±1.52%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 34443,
-            "range": "±4.66%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36010,
-            "range": "±1.73%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.83%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fb506280ff40b11d526f9429356609de16554d19",
+          "message": " VM: runTx(), runBlock(), buildBlock() Standalone Methods (#3530)\n\n* Move over runTx()\r\n\r\n* runTx() test and upstream usage fixes\r\n\r\n* client/test: fix import\r\n\r\n* vm: add original runTx docs to runTx\r\n\r\n* vm: unbind runBlock\r\n\r\n* vm: export runBlock\r\n\r\n* unbind runBlock in tests and client\r\n\r\n* vm/client: unbind buildBlock\r\n\r\n* vm: standalone emitEVMProfile\r\n\r\n* vm: fix tests\r\n\r\n* client: fix tests\r\n\r\n* client: fix docker build\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2024-07-23T09:54:17+02:00",
+          "tree_id": "7f9cd3dee1943e50eca014641dc82cca2a3ba30f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fb506280ff40b11d526f9429356609de16554d19"
+        },
+        "date": 1721721534169,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38883,
+            "range": "±1.54%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36623,
+            "range": "±3.44%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37845,
+            "range": "±1.43%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37142,
+            "range": "±1.54%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36031,
+            "range": "±1.93%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
           }
         ]
       }
