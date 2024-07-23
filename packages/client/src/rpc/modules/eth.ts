@@ -779,10 +779,6 @@ export class Eth {
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
-    const account = await vm.stateManager.getAccount(address)
-    if (account === undefined) {
-      return EMPTY_SLOT
-    }
     const key = setLengthLeft(hexToBytes(keyHex), 32)
     const storage = await vm.stateManager.getContractStorage(address, key)
     return storage !== null && storage !== undefined

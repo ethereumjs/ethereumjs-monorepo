@@ -497,7 +497,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     const account = await this.getAccount(address)
     if (!account) {
-      throw new Error('getContractStorage() called on non-existing account')
+      return new Uint8Array()
     }
     const trie = this._getStorageTrie(address, account)
     const value = await trie.get(key)
@@ -732,7 +732,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     await this.flush()
     const account = await this.getAccount(address)
     if (!account) {
-      // throw new Error(`getProof() can only be called for an existing account`)
       const returnValue: Proof = {
         address: address.toString(),
         balance: '0x0',
