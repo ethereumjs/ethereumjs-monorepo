@@ -250,7 +250,9 @@ describe('[Common]: Custom chains', () => {
       ],
     })
     c.setHardfork(Hardfork.Chainstart)
-    assert.equal(c.param('vm', 'stop'), BIGINT_0)
+    assert.throws(() => {
+      c.param('vm', 'stop')
+    })
     c.setHardforkBy({
       blockNumber: 1,
       timestamp: 1000,

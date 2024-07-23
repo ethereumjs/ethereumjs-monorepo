@@ -16,9 +16,9 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     c.setHardfork(Hardfork.MuirGlacier)
     assert.equal(c.param('gasPrices', 'ecAddGas'), BigInt(150), msg)
 
-    msg = 'Should return 0n for non-existing value'
-    assert.equal(c.param('gasPrices', 'notexistingvalue'), BigInt(0), msg)
-    assert.equal(c.paramByHardfork('gasPrices', 'notexistingvalue', 'byzantium'), BigInt(0), msg)
+    assert.throws(() => {
+      c.paramByHardfork('gasPrices', 'notexistingvalue', 'byzantium')
+    })
 
     /*
     // Manual test since no test triggering EIP config available
@@ -33,8 +33,9 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
   it('Error cases for param(), paramByHardfork()', () => {
     const c = new Common({ chain: Chain.Mainnet })
 
-    const msg = 'Should return 0n when called with non-existing topic'
-    assert.equal(c.paramByHardfork('gasPrizes', 'ecAdd', 'byzantium'), 0n, msg)
+    assert.throws(() => {
+      c.paramByHardfork('gasPrizes', 'ecAdd', 'byzantium')
+    })
 
     c.setHardfork(Hardfork.Byzantium)
     assert.equal(

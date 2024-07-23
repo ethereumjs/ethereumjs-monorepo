@@ -412,17 +412,20 @@ export class Common {
    *
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
-   * @returns The value requested or `BigInt(0)` if not found
+   * @returns The value requested (throws if not found)
    */
   param(topic: string, name: string): bigint {
     // TODO: consider the case that different active EIPs
     // can change the same parameter
-    let value = null
+    let value
     if (
       (this._paramsCache as any)[topic] !== undefined &&
       (this._paramsCache as any)[topic][name] !== undefined
     ) {
       value = (this._paramsCache as any)[topic][name]
+    }
+    if (value === undefined) {
+      throw new Error(`Missing parameter value for ${name}`)
     }
     return BigInt(value ?? 0)
   }
@@ -432,10 +435,10 @@ export class Common {
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
    * @param hardfork Hardfork name
-   * @returns The value requested or `BigInt(0)` if not found
+   * @returns The value requested (throws if not found)
    */
   paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): bigint {
-    let value: bigint | null = null
+    let value
     for (const hfChanges of this.HARDFORK_CHANGES) {
       // EIP-referencing HF config (e.g. for berlin)
       if ('eips' in hfChanges[1]) {
@@ -455,6 +458,9 @@ export class Common {
       }
       if (hfChanges[0] === hardfork) break
     }
+    if (value === undefined) {
+      throw new Error(`Missing parameter value for ${name}`)
+    }
     return BigInt(value ?? 0)
   }
 
@@ -463,7 +469,7 @@ export class Common {
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
    * @param eip Number of the EIP
-   * @returns The value requested or `undefined` if not found
+   * @returns The value requested (throws if not found)
    */
   paramByEIP(topic: string, name: string, eip: number): bigint | undefined {
     if (!(eip in EIPs)) {
@@ -478,7 +484,10 @@ export class Common {
       return undefined
     }
     const value = eipParams[topic][name]
-    return BigInt(value)
+    if (value === undefined) {
+      throw new Error(`Missing parameter value for ${name}`)
+    }
+    return BigInt(value ?? 0)
   }
 
   /**
