@@ -1,4 +1,4 @@
-import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
+import { create1559FeeMarketTx, createLegacyTx } from '@ethereumjs/tx'
 import { bigIntToHex, intToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -11,6 +11,8 @@ import {
   setupChain,
 } from '../helpers.js'
 
+import type { LegacyTransaction } from '@ethereumjs/tx'
+
 const method = 'eth_gasPrice'
 
 describe(method, () => {
@@ -19,7 +21,7 @@ describe(method, () => {
     const rpc = getRpcClient(server)
     const GAS_PRICE = 100
     // construct tx
-    const tx = LegacyTransaction.fromTxData(
+    const tx = createLegacyTx(
       { gasLimit: 21000, gasPrice: GAS_PRICE, to: '0x0000000000000000000000000000000000000000' },
       { common }
     ).sign(dummy.privKey)
@@ -42,7 +44,7 @@ describe(method, () => {
     for (let i = 0; i < iterations; i++) {
       const gasPrice = i * 100
       averageGasPrice += BigInt(gasPrice)
-      const tx = LegacyTransaction.fromTxData(
+      const tx = createLegacyTx(
         { nonce: i, gasLimit: 21000, gasPrice, to: '0x0000000000000000000000000000000000000000' },
         { common }
       ).sign(dummy.privKey)
@@ -64,11 +66,11 @@ describe(method, () => {
     const G1 = 100
     const G2 = 1231231
 
-    const tx1 = LegacyTransaction.fromTxData(
+    const tx1 = createLegacyTx(
       { gasLimit: 21000, gasPrice: G1, to: '0x0000000000000000000000000000000000000000' },
       { common }
     ).sign(dummy.privKey)
-    const tx2 = LegacyTransaction.fromTxData(
+    const tx2 = createLegacyTx(
       { nonce: 1, gasLimit: 21000, gasPrice: G2, to: '0x0000000000000000000000000000000000000000' },
       { common }
     ).sign(dummy.privKey)
@@ -90,7 +92,7 @@ describe(method, () => {
       'powLondon'
     )
     const rpc = getRpcClient(server)
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = create1559FeeMarketTx(
       {
         gasLimit: 21000,
         maxPriorityFeePerGas: 10,
@@ -120,7 +122,7 @@ describe(method, () => {
     const rpc = getRpcClient(server)
     const maxPriority1 = 10
     const maxPriority2 = 1231231
-    const tx1 = FeeMarketEIP1559Transaction.fromTxData(
+    const tx1 = create1559FeeMarketTx(
       {
         gasLimit: 21000,
         maxPriorityFeePerGas: maxPriority1,
@@ -129,7 +131,7 @@ describe(method, () => {
       },
       { common }
     ).sign(dummy.privKey)
-    const tx2 = FeeMarketEIP1559Transaction.fromTxData(
+    const tx2 = create1559FeeMarketTx(
       {
         nonce: 1,
         gasLimit: 21000,
@@ -162,7 +164,7 @@ describe(method, () => {
     let tx: LegacyTransaction
     for (let i = 0; i < iterations; i++) {
       if (i === 0) {
-        tx = LegacyTransaction.fromTxData(
+        tx = createLegacyTx(
           {
             nonce: i,
             gasLimit: 21000,
@@ -172,7 +174,7 @@ describe(method, () => {
           { common }
         ).sign(dummy.privKey)
       } else {
-        tx = LegacyTransaction.fromTxData(
+        tx = createLegacyTx(
           {
             nonce: i,
             gasLimit: 21000,

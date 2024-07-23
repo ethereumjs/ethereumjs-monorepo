@@ -1,6 +1,6 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { AccessListEIP2930Transaction, LegacyTransaction } from '@ethereumjs/tx'
+import { create2930AccessListTx, createLegacyTx } from '@ethereumjs/tx'
 import { assert, describe, it } from 'vitest'
 
 import type { BlockData } from '@ethereumjs/block'
@@ -32,12 +32,12 @@ describe('[Types]', () => {
 
     // Legacy tx
     const legacyTx: RequiredExceptOptionals<TxData[TransactionType.Legacy], OptionalTxFields> =
-      LegacyTransaction.fromTxData({}, { common })
+      createLegacyTx({}, { common })
     assert.ok(legacyTx, 'legacy tx')
 
     // Access List tx
     const accessListTx: RequiredExceptOptionals<AccessListEIP2930TxData, OptionalTxFields> =
-      AccessListEIP2930Transaction.fromTxData({}, { common })
+      create2930AccessListTx({}, { common })
     assert.ok(accessListTx, 'accessList tx')
   })
 })

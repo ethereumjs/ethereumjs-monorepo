@@ -2,7 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EOACodeEIP7702Transaction } from '../src/index.js'
+import { create7702EOACodeTx } from '../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -15,7 +15,7 @@ const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
 
 describe('[EOACodeEIP7702Transaction]', () => {
   it('sign()', () => {
-    const txn = EOACodeEIP7702Transaction.fromTxData(
+    const txn = create7702EOACodeTx(
       {
         value: 1,
         maxFeePerGas: 1,
@@ -37,7 +37,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
 
   it('valid and invalid authorizationList values', () => {
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -55,7 +55,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
     }, 'address length should be 20 bytes')
 
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -73,7 +73,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
     }, 'nonce list should consist of at most 1 item')
 
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -91,7 +91,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
     }, 's is not defined')
 
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -109,7 +109,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
     }, 'r is not defined')
 
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -127,7 +127,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
     }, 'yParity is not defined')
 
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -145,7 +145,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
     }, 'nonce is not defined')
 
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -163,7 +163,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
     }, 'address is not defined')
 
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -181,7 +181,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
     }, 'chainId is not defined')
 
     assert.doesNotThrow(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {

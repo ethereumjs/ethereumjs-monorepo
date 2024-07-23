@@ -1,6 +1,6 @@
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { createCustomCommon } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, LegacyTransaction } from '@ethereumjs/tx'
+import { create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
@@ -13,9 +13,9 @@ const kzg = await loadKZG()
 const common = createCustomCommon({ chainId: 1 }, { customCrypto: { kzg } })
 
 common.setHardfork('cancun')
-const mockedTx1 = LegacyTransaction.fromTxData({}).sign(dummy.privKey)
-const mockedTx2 = LegacyTransaction.fromTxData({ nonce: 1 }).sign(dummy.privKey)
-const mockedBlobTx3 = BlobEIP4844Transaction.fromTxData(
+const mockedTx1 = createLegacyTx({}).sign(dummy.privKey)
+const mockedTx2 = createLegacyTx({ nonce: 1 }).sign(dummy.privKey)
+const mockedBlobTx3 = create4844BlobTx(
   { nonce: 2, blobsData: ['0x1234'], to: Address.zero() },
   { common }
 ).sign(dummy.privKey)

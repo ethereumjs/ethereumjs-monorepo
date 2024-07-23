@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
+import { create2930AccessListTx } from '@ethereumjs/tx'
 import { Address, bytesToHex, createAccount, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -26,7 +26,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
         storageKeys: [bytesToHex(validSlot)],
       },
     ]
-    const txnWithAccessList = AccessListEIP2930Transaction.fromTxData(
+    const txnWithAccessList = create2930AccessListTx(
       {
         accessList: access,
         chainId: BigInt(1),
@@ -35,7 +35,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
       },
       { common }
     ).sign(privateKey)
-    const txnWithoutAccessList = AccessListEIP2930Transaction.fromTxData(
+    const txnWithoutAccessList = create2930AccessListTx(
       {
         accessList: [],
         chainId: BigInt(1),

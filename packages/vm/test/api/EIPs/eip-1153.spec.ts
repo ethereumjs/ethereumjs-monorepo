@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, bytesToInt, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -74,7 +74,7 @@ describe('EIP 1153: transient storage', () => {
     returndata[31] = 0x02
 
     const address = new Address(hexToBytes('0x00000000000000000000000636F6E7472616374'))
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       gasLimit: BigInt(21000 + 9000),
       to: address,
       value: BigInt(1),
@@ -117,12 +117,12 @@ describe('EIP 1153: transient storage', () => {
     const test = {
       contracts: [{ address, code }],
       transactions: [
-        LegacyTransaction.fromTxData({
+        createLegacyTx({
           gasLimit: BigInt(15000000),
           to: address,
           data: new Uint8Array(32),
         }).sign(senderKey),
-        LegacyTransaction.fromTxData({
+        createLegacyTx({
           nonce: 1,
           gasLimit: BigInt(15000000),
           to: address,
@@ -186,7 +186,7 @@ describe('EIP 1153: transient storage', () => {
     const callingCode =
       '0x6362fdb9be600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff163afc874d2600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff16343ac1c39600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff1366000803760206000f3'
 
-    const unsignedTx = LegacyTransaction.fromTxData({
+    const unsignedTx = createLegacyTx({
       gasLimit: BigInt(15000000),
       to: callingAddress,
     })

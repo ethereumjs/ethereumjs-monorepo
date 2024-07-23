@@ -1,7 +1,7 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -40,7 +40,7 @@ const deploymentTxData = {
   s: BigInt('0xaba653c9d105790c'),
 }
 
-const deploymentTx = LegacyTransaction.fromTxData(deploymentTxData)
+const deploymentTx = createLegacyTx(deploymentTxData)
 const sender = deploymentTx.getSenderAddress()
 const upfrontCost = deploymentTx.getUpfrontCost()
 const acc = new Account()
@@ -57,7 +57,7 @@ function generateTx(nonce: bigint) {
   )
   const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
 
-  return LegacyTransaction.fromTxData({
+  return createLegacyTx({
     nonce,
     gasPrice: BigInt(100),
     data: concatBytes(validatorPubkey, amountBytes),

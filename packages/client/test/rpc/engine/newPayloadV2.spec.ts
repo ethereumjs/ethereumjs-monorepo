@@ -1,5 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { create1559FeeMarketTx } from '@ethereumjs/tx'
 import { Address, bytesToHex, hexToBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
@@ -153,7 +153,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     chain.config.logger.silent = true
 
     // Let's mock a non-signed transaction so execution fails
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = create1559FeeMarketTx(
       {
         gasLimit: 21_000,
         maxFeePerGas: 10,
@@ -192,7 +192,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
 
     const { server, common } = await setupChain(newGenesisJSON, 'post-merge', { engine: true })
     const rpc = getRpcClient(server)
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = create1559FeeMarketTx(
       {
         maxFeePerGas: '0x7',
         value: 6,
