@@ -10,7 +10,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
-import { VM } from '../../../src/vm.js'
+import { VM, buildBlock, runBlock } from '../../../src/index.js'
 import { setupVM } from '../utils.js'
 
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
@@ -35,7 +35,7 @@ describe('EIP-7685 runBlock tests', () => {
   it('should not error when a valid requestsRoot is provided', async () => {
     const vm = await setupVM({ common })
     const emptyBlock = createBlockFromBlockData({}, { common })
-    const res = await vm.runBlock({
+    const res = await runBlock(vm, {
       block: emptyBlock,
       generate: true,
     })
@@ -49,7 +49,7 @@ describe('EIP-7685 runBlock tests', () => {
       { common }
     )
     await expect(async () =>
-      vm.runBlock({
+      runBlock(vm, {
         block: emptyBlock,
       })
     ).rejects.toThrow('invalid requestsRoot')
@@ -65,7 +65,7 @@ describe('EIP-7685 runBlock tests', () => {
       },
       { common }
     )
-    await expect(async () => vm.runBlock({ block })).rejects.toThrow(/invalid requestsRoot/)
+    await expect(async () => runBlock(vm, { block })).rejects.toThrow(/invalid requestsRoot/)
   })
   it('should error when requestsRoot does not match requests provided', async () => {
     const vm = await setupVM({ common })
@@ -77,7 +77,7 @@ describe('EIP-7685 runBlock tests', () => {
       },
       { common }
     )
-    await expect(() => vm.runBlock({ block })).rejects.toThrow('invalid requestsRoot')
+    await expect(() => runBlock(vm, { block })).rejects.toThrow('invalid requestsRoot')
   })
 })
 
@@ -94,7 +94,7 @@ describe('EIP 7685 buildBlock tests', () => {
     )
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
-    const blockBuilder = await vm.buildBlock({
+    const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
     })

@@ -143,13 +143,8 @@ describe('[VMExecution]', () => {
     })
 
     exec = await testSetup(blockchain)
-
     await exec.run()
-
-    assert.doesNotThrow(
-      async () => exec.executeBlocks(1, 5, []),
-      'blocks should execute without error'
-    )
+    await exec.executeBlocks(1, 5, [])
   })
 
   it('Should fail opening if vmPromise already assigned', async () => {

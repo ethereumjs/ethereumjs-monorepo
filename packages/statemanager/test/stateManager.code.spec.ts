@@ -1,9 +1,9 @@
-import { Account, Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { Address, createAccount, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { DefaultStateManager } from '../src/index.js'
 
-import { createAccount } from './util.js'
+import { createAccountWithDefaults } from './util.js'
 
 import type { AccountData } from '@ethereumjs/util'
 
@@ -28,7 +28,7 @@ describe('StateManager -> Code', () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const codeStateManager = new DefaultStateManager({ accountCacheOpts })
       const address1 = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
-      const account = createAccount()
+      const account = createAccountWithDefaults()
       const key1 = hexToBytes(`0x${'00'.repeat(32)}`)
       const key2 = hexToBytes(`0x${'00'.repeat(31)}01`)
 
@@ -91,7 +91,7 @@ describe('StateManager -> Code', () => {
         balance: '0x03e7',
         codeHash: '0xb30fb32201fe0486606ad451e1a61e2ae1748343cd3d411ed992ffcc0774edd4',
       }
-      const account = Account.fromAccountData(raw)
+      const account = createAccount(raw)
       await stateManager.putAccount(address, account)
       await stateManager.putContractCode(address, code)
       const codeRetrieved = await stateManager.getContractCode(address)
@@ -105,7 +105,7 @@ describe('StateManager -> Code', () => {
         nonce: '0x0',
         balance: '0x03e7',
       }
-      const account = Account.fromAccountData(raw)
+      const account = createAccount(raw)
       await stateManager.putAccount(address, account)
       const code = await stateManager.getContractCode(address)
       assert.ok(equalsBytes(code, new Uint8Array(0)))
@@ -118,7 +118,7 @@ describe('StateManager -> Code', () => {
         nonce: '0x0',
         balance: '0x03e7',
       }
-      const account = Account.fromAccountData(raw)
+      const account = createAccount(raw)
       const code = new Uint8Array(0)
       await stateManager.putAccount(address, account)
       await stateManager.putContractCode(address, code)

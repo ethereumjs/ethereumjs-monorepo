@@ -1,5 +1,6 @@
 import { createTxFromTxData } from '@ethereumjs/tx'
 import { bigIntToHex, bytesToBigInt, bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
+import { buildBlock } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, beforeEach, describe, it } from 'vitest'
 
@@ -102,7 +103,7 @@ describe(method, () => {
 
     const vmCopy = await execution.vm.shallowCopy()
     const parentBlock = await chain.getCanonicalHeadBlock()
-    const blockBuilder = await vmCopy.buildBlock({
+    const blockBuilder = await buildBlock(vmCopy, {
       parentBlock,
       headerData: {
         timestamp: parentBlock.header.timestamp + BigInt(1),

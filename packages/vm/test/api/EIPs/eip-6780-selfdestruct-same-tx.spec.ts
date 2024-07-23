@@ -3,7 +3,7 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address, equalsBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 
@@ -48,7 +48,7 @@ describe('EIP 6780 tests', () => {
       data: payload,
     }).sign(pkey)
 
-    const result = await vm.runTx({ tx })
+    const result = await runTx(vm, { tx })
     const createdAddress = result.createdAddress!
 
     const contract = (await vm.stateManager.getAccount(createdAddress)) ?? new Account()
@@ -85,7 +85,7 @@ describe('EIP 6780 tests', () => {
       to: target,
     }).sign(pkey)
 
-    await vm.runTx({ tx })
+    await runTx(vm, { tx })
 
     const contract = (await vm.stateManager.getAccount(target)) ?? new Account()
     assert.equal(contract.balance, BigInt(0), 'value sent')

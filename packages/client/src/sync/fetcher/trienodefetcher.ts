@@ -9,16 +9,16 @@ import {
   pathToHexKey,
 } from '@ethereumjs/trie'
 import {
-  Account,
   BIGINT_0,
   KECCAK256_NULL,
   KECCAK256_RLP,
+  createAccountFromRLP,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
+import { OrderedMap } from '@js-sdsl/ordered-map'
 import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
-import { OrderedMap } from 'js-sdsl'
 
 import { Fetcher } from './fetcher.js'
 import { getInitFecherDoneFlags } from './types.js'
@@ -253,7 +253,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           this.debug('leaf node found')
           if (storagePath === undefined) {
             this.debug('account leaf node found')
-            const account = Account.fromRlpSerializedAccount(node.value())
+            const account = createAccountFromRLP(node.value())
             const storageRoot: Uint8Array = account.storageRoot
             if (equalsBytes(storageRoot, KECCAK256_RLP) === false) {
               this.debug('storage component found')
@@ -366,7 +366,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               }
               await storageTrie.batch(storageTrieOps, true)
               await storageTrie.persistRoot()
-              const a = Account.fromRlpSerializedAccount(node.value())
+              const a = createAccountFromRLP(node.value())
               this.debug(
                 `Stored storageTrie with root actual=${bytesToHex(
                   storageTrie.root()

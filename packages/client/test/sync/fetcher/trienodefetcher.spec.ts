@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { decodeNode } from '@ethereumjs/trie'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { OrderedMap } from 'js-sdsl'
+import { OrderedMap } from '@js-sdsl/ordered-map'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/index.js'

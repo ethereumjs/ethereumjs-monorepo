@@ -2,11 +2,11 @@ import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
-  Account,
   Address,
   VerkleLeafType,
   bytesToBigInt,
   bytesToHex,
+  createAccount,
   getVerkleKey,
   getVerkleStem,
   hexToBytes,
@@ -84,7 +84,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
       )
     }
 
-    const account = Account.fromAccountData({
+    const account = createAccount({
       nonce: BigInt(2),
     })
 

@@ -9,6 +9,7 @@ import {
   hexToBytes,
   parseGethGenesisState,
 } from '@ethereumjs/util'
+import { buildBlock } from '@ethereumjs/vm'
 import { Client, Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 import { assert } from 'vitest'
@@ -285,7 +286,7 @@ export async function runBlockWithTxs(
   // build block with tx
   const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.shallowCopy()
-  const blockBuilder = await vmCopy.buildBlock({
+  const blockBuilder = await buildBlock(vmCopy, {
     parentBlock,
     headerData: {
       timestamp: parentBlock.header.timestamp + BIGINT_1,

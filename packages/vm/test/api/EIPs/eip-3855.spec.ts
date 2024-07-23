@@ -3,7 +3,7 @@ import { EVMErrorMessage } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 

@@ -3,6 +3,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
+import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
@@ -146,7 +147,7 @@ describe(method, async () => {
     // deploy contract
     let ranBlock: Block | undefined = undefined
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-    const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     const { createdAddress } = result.results[0]
     await vm.blockchain.putBlock(ranBlock!)
 
@@ -178,7 +179,7 @@ describe(method, async () => {
     // run block
     let ranBlock2: Block | undefined = undefined
     vm.events.once('afterBlock', (result: any) => (ranBlock2 = result.block))
-    await vm.runBlock({ block: block2, generate: true, skipBlockValidation: true })
+    await runBlock(vm, { block: block2, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock2!)
 
     // verify proof is accurate

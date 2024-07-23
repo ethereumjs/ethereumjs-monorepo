@@ -2,8 +2,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
-import { createAccount } from '../utils'
+import { VM } from '../../../src/index.js'
+import { createAccountWithDefaults } from '../utils.js'
 
 const testCases = [
   {
@@ -52,7 +52,7 @@ describe('Istanbul: EIP-2200', () => {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
       const vm = await VM.create({ common })
 
-      const account = createAccount(BigInt(0), BigInt(0))
+      const account = createAccountWithDefaults(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)
       await vm.stateManager.putContractCode(addr, hexToBytes(`0x${testCase.code}`))
       if (testCase.original !== BigInt(0)) {

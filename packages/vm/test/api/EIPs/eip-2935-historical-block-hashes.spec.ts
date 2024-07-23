@@ -19,7 +19,7 @@ import { assert, describe, it } from 'vitest'
 
 import { bytesToBigInt } from '../../../../util/src/bytes.js'
 import { BIGINT_0 } from '../../../../util/src/constants.js'
-import { VM } from '../../../src/vm.js'
+import { VM, buildBlock, runBlock, runTx } from '../../../src/index.js'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -133,7 +133,7 @@ describe('EIP 2935: historical block hashes', () => {
       await vm.stateManager.putAccount(callerAddress, account!)
       await vm.stateManager.putContractCode(historyAddress, contract2935Code)
 
-      const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+      const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
       const blockHashi = result.execResult.returnValue
       return blockHashi
     }
@@ -180,7 +180,7 @@ describe('EIP 2935: historical block hashes', () => {
       })
       const genesis = await vm.blockchain.getBlock(0)
       const block = await (
-        await vm.buildBlock({
+        await buildBlock(vm, {
           parentBlock: genesis,
           blockOpts: {
             putBlockIntoBlockchain: false,
@@ -188,7 +188,7 @@ describe('EIP 2935: historical block hashes', () => {
         })
       ).build()
       await vm.blockchain.putBlock(block)
-      await vm.runBlock({ block, generate: true })
+      await runBlock(vm, { block, generate: true })
 
       const storage = await vm.stateManager.getContractStorage(
         historyAddress,
@@ -215,7 +215,7 @@ describe('EIP 2935: historical block hashes', () => {
       let lastBlock = await vm.blockchain.getBlock(0)
       for (let i = 1; i <= blocksToBuild; i++) {
         lastBlock = await (
-          await vm.buildBlock({
+          await buildBlock(vm, {
             parentBlock: lastBlock,
             blockOpts: {
               putBlockIntoBlockchain: false,
@@ -227,7 +227,7 @@ describe('EIP 2935: historical block hashes', () => {
           })
         ).build()
         await vm.blockchain.putBlock(lastBlock)
-        await vm.runBlock({
+        await runBlock(vm, {
           block: lastBlock,
           generate: true,
           skipHeaderValidation: true,
@@ -280,7 +280,7 @@ describe('EIP 2935: historical block hashes', () => {
       }
 
       // validate the contract code cases
-      // const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+      // const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
       const block = createBlockFromBlockData(
         {
           header: {

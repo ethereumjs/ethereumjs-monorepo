@@ -1,9 +1,9 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { Address, bytesToHex, createAccount, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 const common = new Common({
   eips: [2718, 2929, 2930],
@@ -56,7 +56,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
     const account = await vm.stateManager.getAccount(address)
     await vm.stateManager.putAccount(
       address,
-      Account.fromAccountData({ ...account, balance: initialBalance })
+      createAccount({ ...account, balance: initialBalance })
     )
 
     let trace: any = []
@@ -65,13 +65,13 @@ describe('EIP-2930 Optional Access Lists tests', () => {
       trace.push([o.opcode.name, o.gasLeft])
     })
 
-    await vm.runTx({ tx: txnWithAccessList })
+    await runTx(vm, { tx: txnWithAccessList })
     assert.ok(trace[1][0] === 'SLOAD')
     let gasUsed = trace[1][1] - trace[2][1]
     assert.equal(gasUsed, 100, 'charge warm sload gas')
 
     trace = []
-    await vm.runTx({ tx: txnWithoutAccessList, skipNonce: true })
+    await runTx(vm, { tx: txnWithoutAccessList, skipNonce: true })
     assert.ok(trace[1][0] === 'SLOAD')
     gasUsed = trace[1][1] - trace[2][1]
     assert.equal(gasUsed, 2100, 'charge cold sload gas')

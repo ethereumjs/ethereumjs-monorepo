@@ -1,6 +1,6 @@
 import { bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
+import { OrderedMap } from '@js-sdsl/ordered-map'
 import debugDefault from 'debug'
-import { OrderedMap } from 'js-sdsl'
 import { LRUCache } from 'lru-cache'
 
 import { Cache } from './cache.js'

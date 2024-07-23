@@ -54,9 +54,9 @@
     "@ethereumjs/rlp": "^5.0.2",
     "@ethereumjs/trie": "^6.2.0",
     "@ethereumjs/util": "^9.0.3",
+    "@js-sdsl/ordered-map": "^4.4.2",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.2.1",
-    "js-sdsl": "^4.1.4",
     "lru-cache": "10.1.0"
   },
   "devDependencies": {
