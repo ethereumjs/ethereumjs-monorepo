@@ -26,7 +26,7 @@ export function bytesToNibbles(key: Uint8Array): Nibbles {
  * @private
  * @param arr - Nibble array
  */
-export function nibbleTypeToPackedBytes(arr: Nibbles): Uint8Array {
+export function nibblesTypeToPackedBytes(arr: Nibbles): Uint8Array {
   const buf = new Uint8Array(arr.length / 2)
   for (let i = 0; i < buf.length; i++) {
     let q = i * 2

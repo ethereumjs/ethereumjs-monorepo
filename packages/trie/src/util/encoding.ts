@@ -1,6 +1,7 @@
 import { hexToBytes, toBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import type { Nibbles } from '../types.js'
+import { nibblesTypeToPackedBytes } from './nibbles.js'
 
 // Reference: https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/
 //
@@ -151,7 +152,7 @@ export const pathToHexKey = (path: string, extension: Nibbles, retType: string):
   if (retType === 'hex') {
     return nibbleTypeToByteType(n.concat(extension))
   } else if (retType === 'keybyte') {
-    return nibbleTypeToPackedBytes(n.concat(extension))
+    return nibblesTypeToPackedBytes(n.concat(extension))
   }
   throw Error('retType must be either "keybyte" or "hex"')
 }
