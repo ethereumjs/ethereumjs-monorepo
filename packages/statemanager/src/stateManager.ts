@@ -9,7 +9,6 @@ import {
   KECCAK256_RLP,
   KECCAK256_RLP_S,
   bigIntToHex,
-  bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
@@ -231,7 +230,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       type: opts.accountCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.accountCacheOpts?.size ?? 100000,
     }
-
     if (!this._accountCacheSettings.deactivate) {
       this._accountCache = new AccountCache({
         size: this._accountCacheSettings.size,
@@ -245,7 +243,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       type: opts.storageCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.storageCacheOpts?.size ?? 20000,
     }
-
     if (!this._storageCacheSettings.deactivate) {
       this._storageCache = new StorageCache({
         size: this._storageCacheSettings.size,
@@ -259,7 +256,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       type: opts.codeCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.codeCacheOpts?.size ?? 20000,
     }
-
     if (!this._codeCacheSettings.deactivate) {
       this._codeCache = new CodeCache({
         size: this._codeCacheSettings.size,
@@ -991,19 +987,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
     const trie = this._getStorageTrie(address, account)
 
-    return new Promise((resolve, reject) => {
-      const storage: StorageDump = {}
-      const stream = trie.createReadStream()
-
-      stream.on('data', (val: any) => {
-        storage[bytesToHex(val.key)] = bytesToHex(val.value)
-      })
-      stream.on('end', () => {
-        resolve(storage)
-      })
-      stream.on('error', (e) => {
-        reject(e)
-      })
+    return trie.getValueMap().then((value) => {
+      return value.values
     })
   }
 
@@ -1026,44 +1011,24 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!account) {
       throw new Error(`Account does not exist.`)
     }
+
     const trie = this._getStorageTrie(address, account)
 
-    return new Promise((resolve, reject) => {
-      let inRange = false
-      let i = 0
-
-      /** Object conforming to {@link StorageRange.storage}. */
-      const storageMap: StorageRange['storage'] = {}
-      const stream = trie.createReadStream()
-
-      stream.on('data', (val: any) => {
-        if (!inRange) {
-          // Check if the key is already in the correct range.
-          if (bytesToBigInt(val.key) >= startKey) {
-            inRange = true
-          } else {
-            return
-          }
+    return trie.getValueMap(startKey, limit).then((value) => {
+      const values = value.values
+      const dump = Object.create(null)
+      for (const key of Object.keys(values)) {
+        const val = values[key]
+        dump[key] = {
+          key: null,
+          value: val,
         }
+      }
 
-        if (i < limit) {
-          storageMap[bytesToHex(val.key)] = { key: null, value: bytesToHex(val.value) }
-          i++
-        } else if (i === limit) {
-          resolve({
-            storage: storageMap,
-            nextKey: bytesToHex(val.key),
-          })
-        }
-      })
-
-      stream.on('end', () => {
-        resolve({
-          storage: storageMap,
-          nextKey: null,
-        })
-      })
-      stream.on('error', (e) => reject(e))
+      return {
+        storage: dump,
+        nextKey: value.nextKey,
+      }
     })
   }
 
