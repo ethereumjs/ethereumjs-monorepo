@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721763853407,
+  "lastUpdate": 1721821328185,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c6ff99a31a872a0855d28c36f88fa6737dc60a82",
-          "message": "Add `trie.del` (#3486)\n\n* add trie.del function and tests\r\n\r\n* lint\r\n\r\n* Add last put to test\r\n\r\n* test: adjust test case description\r\n\r\n* Allow zeroes to be written for non-existent leafnode\r\n\r\n* clean up utility methods\r\n\r\n* address feedback, lint\r\n\r\n* fixes\r\n\r\n* Update packages/verkle/test/verkle.spec.ts\r\n\r\n* return zeroes when leaf value is \"deleted\"\r\n\r\n* fix test\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
-          "timestamp": "2024-07-09T15:19:35-04:00",
-          "tree_id": "bb9b7233a13c5739b9496b45a8af7525a14e1527",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c6ff99a31a872a0855d28c36f88fa6737dc60a82"
-        },
-        "date": 1720553049242,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38355,
-            "range": "±1.79%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 36621,
-            "range": "±3.02%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37288,
-            "range": "±1.40%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36155,
-            "range": "±1.56%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35322,
-            "range": "±1.76%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.83%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "da22a3881cab3baa9c655ffd48273ae9bbd3b028",
+          "message": "Refactor trie util helpers (#3534)\n\n* Rename nibblestoBytes to nibblesTypeToPackedBytes\r\n\r\n* Rename function\r\n\r\n* Fix function name\r\n\r\n* Make nibblesToBytes return a byte array to conform to how bytesToNibbles returns one\r\n\r\n* Fix lint issues\r\n\r\n* Fix function name\r\n\r\n* Fix lint issue\r\n\r\n* update import\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-07-24T07:39:29-04:00",
+          "tree_id": "87c80d02717fd67648f3e1257e7c78c6bc094843",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/da22a3881cab3baa9c655ffd48273ae9bbd3b028"
+        },
+        "date": 1721821326999,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37812,
+            "range": "±2.10%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 35518,
+            "range": "±3.29%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 36960,
+            "range": "±1.46%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35937,
+            "range": "±1.68%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35314,
+            "range": "±1.65%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
           }
         ]
       }
