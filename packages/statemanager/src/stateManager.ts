@@ -1,6 +1,6 @@
 import { Chain, Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie, createTrieFromProof, verifyTrieProof } from '@ethereumjs/trie'
+import { ProofTrie, createTrieFromProof, verifyTrieProof } from '@ethereumjs/trie'
 import {
   Account,
   Address,
@@ -117,9 +117,9 @@ export const CODEHASH_PREFIX = utf8ToBytes('c')
  */
 export interface DefaultStateManagerOpts {
   /**
-   * A {@link Trie} instance
+   * A {@link ProofTrie} instance
    */
-  trie?: Trie
+  trie?: ProofTrie
   /**
    * Option to prefix codehashes in the database. This defaults to `true`.
    * If this is disabled, note that it is possible to corrupt the trie, by deploying code
@@ -175,8 +175,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
   originalStorageCache: OriginalStorageCache
 
-  protected _trie: Trie
-  protected _storageTries: { [key: string]: Trie }
+  protected _trie: ProofTrie
+  protected _storageTries: { [key: string]: ProofTrie }
 
   protected readonly _prefixCodeHashes: boolean
   protected readonly _prefixStorageTrieKeys: boolean
@@ -215,7 +215,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     this._checkpointCount = 0
 
-    this._trie = opts.trie ?? new Trie({ useKeyHashing: true, common: this.common })
+    this._trie = opts.trie ?? new ProofTrie({ useKeyHashing: true, common: this.common })
     this._storageTries = {}
 
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
@@ -432,7 +432,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   protected _getStorageTrie(
     addressOrHash: Address | { bytes: Uint8Array } | Uint8Array,
     rootAccount?: Account
-  ): Trie {
+  ): ProofTrie {
     // use hashed key for lookup from storage cache
     const addressBytes: Uint8Array =
       addressOrHash instanceof Uint8Array ? addressOrHash : this.keccakFunction(addressOrHash.bytes)
@@ -457,7 +457,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * cache or does a lookup.
    * @private
    */
-  protected _getAccountTrie(): Trie {
+  protected _getAccountTrie(): ProofTrie {
     return this._trie
   }
 
@@ -513,7 +513,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   protected async _modifyContractStorage(
     address: Address,
     account: Account,
-    modifyTrie: (storageTrie: Trie, done: Function) => void
+    modifyTrie: (storageTrie: ProofTrie, done: Function) => void
   ): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve) => {

@@ -10,6 +10,7 @@ import { concatBytes } from 'ethereum-cryptography/utils'
 import { ROOT_DB_KEY, Trie } from './index.js'
 
 import type { Proof, TrieOpts } from './index.js'
+import { ProofTrie } from './proof/proofTrie.js'
 
 export async function createTrie(opts?: TrieOpts) {
   const keccakFunction =
@@ -49,7 +50,7 @@ export async function createTrie(opts?: TrieOpts) {
     }
   }
 
-  return new Trie(opts)
+  return new ProofTrie(opts)
 }
 
 /**
@@ -62,7 +63,7 @@ export async function createTrie(opts?: TrieOpts) {
  */
 export async function createTrieFromProof(proof: Proof, trieOpts?: TrieOpts) {
   const shouldVerifyRoot = trieOpts?.root !== undefined
-  const trie = new Trie(trieOpts)
+  const trie = new ProofTrie(trieOpts)
   const root = await trie.updateFromProof(proof, shouldVerifyRoot)
   trie.root(root)
   await trie.persistRoot()

@@ -65,3 +65,4 @@ export function verifyTrieRangeProof(
 }
 
 export * from './range.js'
+export * from './proofTrie.js'
