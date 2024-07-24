@@ -271,12 +271,12 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Validate gas limit against tx base fee (DataFee + TxFee + Creation Fee)
-  const txBaseFee = tx.getBaseFee()
+  const intrinsicGas = tx.getIntrinsicGas()
   let gasLimit = tx.gasLimit
-  if (gasLimit < txBaseFee) {
+  if (gasLimit < intrinsicGas) {
     const msg = _errorMsg(
       `tx gas limit ${Number(gasLimit)} is lower than the minimum gas limit of ${Number(
-        txBaseFee
+        intrinsicGas
       )}`,
       vm,
       block,
@@ -284,9 +284,9 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     )
     throw new Error(msg)
   }
-  gasLimit -= txBaseFee
+  gasLimit -= intrinsicGas
   if (vm.DEBUG) {
-    debugGas(`Subtracting base fee (${txBaseFee}) from gasLimit (-> ${gasLimit})`)
+    debugGas(`Subtracting base fee (${intrinsicGas}) from gasLimit (-> ${gasLimit})`)
   }
 
   if (vm.common.isActivatedEIP(1559)) {
@@ -576,9 +576,9 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Calculate the total gas used
-  results.totalGasSpent = results.execResult.executionGasUsed + txBaseFee
+  results.totalGasSpent = results.execResult.executionGasUsed + intrinsicGas
   if (vm.DEBUG) {
-    debugGas(`tx add baseFee ${txBaseFee} to totalGasSpent (-> ${results.totalGasSpent})`)
+    debugGas(`tx add baseFee ${intrinsicGas} to totalGasSpent (-> ${results.totalGasSpent})`)
   }
 
   // Add blob gas used to result

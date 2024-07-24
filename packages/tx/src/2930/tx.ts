@@ -99,8 +99,8 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
   /**
    * The amount of gas paid for the data in this tx
    */
-  getDataFee(): bigint {
-    return EIP2930.getDataFee(this)
+  getDataGas(): bigint {
+    return EIP2930.getDataGas(this)
   }
 
   /**

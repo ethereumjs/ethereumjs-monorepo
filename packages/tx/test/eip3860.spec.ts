@@ -95,7 +95,7 @@ describe('[EIP3860 tests]', () => {
           { common, allowUnlimitedInitCodeSize: false }
         )
         assert.ok(
-          eip3860ActiveTx.getDataFee() === eip3860DeactivedTx.getDataFee(),
+          eip3860ActiveTx.getDataGas() === eip3860DeactivedTx.getDataGas(),
           'charged initcode analysis gas'
         )
       }
