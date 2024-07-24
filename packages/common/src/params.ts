@@ -45,6 +45,8 @@ export const paramsDict: ParamsDict = {
   609: {
     // pow VM
     minerReward: BigInt('3000000000000000000'), // the amount a miner get rewarded for mining a block
+    // pow Block
+    difficultyBombDelay: 3000000, // the amount of blocks to delay the difficulty bomb with
   },
   /**
 .  * Constantinope HF Meta EIP
@@ -52,6 +54,8 @@ export const paramsDict: ParamsDict = {
   1013: {
     // pow VM
     minerReward: BigInt('2000000000000000000'), // The amount a miner gets rewarded for mining a block
+    // pow
+    difficultyBombDelay: 5000000, // the amount of blocks to delay the difficulty bomb with
   },
 
   /**
@@ -60,6 +64,13 @@ export const paramsDict: ParamsDict = {
   1679: {
     // gasPrices Tx
     txDataNonZeroGas: 16, // Per byte of data attached to a transaction that is not equal to zero. NOTE: Not payable on data of calls between transactions
+  },
+  /**
+.  * MuirGlacier HF Meta EIP
+.  */
+  2384: {
+    // pow Block
+    difficultyBombDelay: 9000000, // the amount of blocks to delay the difficulty bomb with
   },
   /**
 .  * Fee market change for ETH 1.0 chain
@@ -97,6 +108,13 @@ export const paramsDict: ParamsDict = {
     // gasConfig VM (access via EVM?)
     maxRefundQuotient: 5, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
   },
+  /**
+.  * Difficulty Bomb Delay to December 1st 2021
+.  */
+  3554: {
+    // pow Block
+    difficultyBombDelay: 9500000, // the amount of blocks to delay the difficulty bomb with
+  },
 
   /**
 .  * Limit and meter initcode
@@ -106,6 +124,13 @@ export const paramsDict: ParamsDict = {
     initCodeWordGas: 2, // Gas to pay for each word (32 bytes) of initcode when creating a contract
     // tx
     maxInitCodeSize: 49152, // Maximum length of initialization code when creating a contract
+  },
+  /**
+.  * Difficulty Bomb Delay to June 2022
+.  */
+  4345: {
+    // pow
+    difficultyBombDelay: 10700000, // the amount of blocks to delay the difficulty bomb with
   },
 
   /**
@@ -131,6 +156,13 @@ export const paramsDict: ParamsDict = {
     minBlobGas: 1, // The minimum fee per blob gas
     // sharding
     blobCommitmentVersionKzg: 1, // The number indicated a versioned hash is a KZG commitment
+  },
+  /**
+   * Delaying Difficulty Bomb to mid-September 2022
+   */
+  5133: {
+    // pow
+    difficultyBombDelay: 11400000, // the amount of blocks to delay the difficulty bomb with
   },
   /**
    * Ethereum state using a unified verkle tree (experimental)

@@ -147,8 +147,6 @@ export const paramsEVM: ParamsDict = {
     staticcallGas: 700, // Base fee of the STATICCALL opcode
     returndatasizeGas: 2, // Base fee of the RETURNDATASIZE opcode
     returndatacopyGas: 3, // Base fee of the RETURNDATACOPY opcode
-    // pow
-    difficultyBombDelay: 3000000, // the amount of blocks to delay the difficulty bomb with
   },
   /**
 .  * Constantinope HF Meta EIP
@@ -167,8 +165,6 @@ export const paramsEVM: ParamsDict = {
     sarGas: 3, // Base fee of the SAR opcode
     extcodehashGas: 400, // Base fee of the EXTCODEHASH opcode
     create2Gas: 32000, // Base fee of the CREATE2 opcode
-    // pow
-    difficultyBombDelay: 5000000, // the amount of blocks to delay the difficulty bomb with
   },
   /**
 .  * Petersburg HF Meta EIP
@@ -207,13 +203,7 @@ export const paramsEVM: ParamsDict = {
     selfbalanceGas: 5, // Base fee of the SELFBALANCE opcode
     sloadGas: 800, // Base fee of the SLOAD opcode
   },
-  /**
-.  * MuirGlacier HF Meta EIP
-.  */
-  2384: {
-    // pow
-    difficultyBombDelay: 9000000, // the amount of blocks to delay the difficulty bomb with
-  },
+
   /**
 .  * SWAPN, DUPN and EXCHANGE instructions
 .  */
@@ -314,13 +304,6 @@ export const paramsEVM: ParamsDict = {
     sstoreClearRefundEIP2200Gas: 4800, // Once per SSTORE operation for clearing an originally existing storage slot
   },
   /**
-.  * Difficulty Bomb Delay to December 1st 2021
-.  */
-  3554: {
-    // pow
-    difficultyBombDelay: 9500000, // the amount of blocks to delay the difficulty bomb with
-  },
-  /**
 .  * PUSH0 instruction
 .  */
   3855: {
@@ -346,13 +329,6 @@ export const paramsEVM: ParamsDict = {
     rjumpvGas: 4, // Base fee of the RJUMPV opcode
   },
   /**
-.  * Difficulty Bomb Delay to June 2022
-.  */
-  4345: {
-    // pow
-    difficultyBombDelay: 10700000, // the amount of blocks to delay the difficulty bomb with
-  },
-  /**
 .  * Supplant DIFFICULTY opcode with PREVRANDAO
 .  */
   4399: {
@@ -376,13 +352,6 @@ export const paramsEVM: ParamsDict = {
     // sharding
     blobCommitmentVersionKzg: 1, // The number indicated a versioned hash is a KZG commitment
     fieldElementsPerBlob: 4096, // The number of field elements allowed per blob
-  },
-  /**
-   * Delaying Difficulty Bomb to mid-September 2022
-   */
-  5133: {
-    // pow
-    difficultyBombDelay: 11400000, // the amount of blocks to delay the difficulty bomb with
   },
   /**
    * MCOPY - Memory copying instruction
