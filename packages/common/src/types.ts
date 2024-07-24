@@ -166,21 +166,24 @@ export interface HardforkByOpts {
 export type EIPConfig = {
   minimumHardfork: Hardfork
   requiredEIPs: number[]
-  params?: {
-    [key: string]: number | bigint | null
-  }
+}
+
+export type ParamsConfig = {
+  [key: string]: number | bigint | null
 }
 
 export type HardforkConfig = {
   eips?: number[]
   consensus?: ConsensusConfig
-  params?: {
-    [key: string]: number | bigint | null
-  }
+  params?: ParamsConfig
 }
 
 export type EIPsDict = {
-  [key: string]: EIPConfig
+  [key: number]: EIPConfig
+}
+
+export type ParamsDict = {
+  [key: number]: ParamsConfig
 }
 
 export type HardforksDict = {

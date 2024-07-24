@@ -13,6 +13,7 @@ import { crc32 } from './crc.js'
 import { eipsDict } from './eips.js'
 import { Hardfork } from './enums.js'
 import { hardforksDict } from './hardforks.js'
+import { paramsDict } from './params.js'
 
 import { _getChainParams } from './index.js'
 
@@ -24,18 +25,14 @@ import type {
   CliqueConfig,
   CommonOpts,
   CustomCrypto,
-  EIPConfig,
   EthashConfig,
   GenesisBlockConfig,
   HardforkByOpts,
   HardforkConfig,
   HardforkTransitionConfig,
+  ParamsConfig,
 } from './types.js'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
-
-type ParamsCacheConfig = {
-  [key: string]: number | bigint | null
-}
 
 /**
  * Common class to access chain and hardfork parameters and to provide
@@ -55,7 +52,7 @@ export class Common {
 
   public readonly customCrypto: CustomCrypto
 
-  protected _paramsCache: ParamsCacheConfig = {}
+  protected _paramsCache: ParamsConfig = {}
   protected _activatedEIPsCache: number[] = []
 
   protected HARDFORK_CHANGES: [string, HardforkConfig][]
@@ -324,10 +321,10 @@ export class Common {
   /**
    * Internal helper for _buildParamsCache()
    */
-  protected _mergeWithParamsCache(params: HardforkConfig | EIPConfig) {
+  protected _mergeWithParamsCache(params: ParamsConfig) {
     this._paramsCache = {
       ...this._paramsCache,
-      ...params['params'],
+      ...params,
     }
   }
 
@@ -346,25 +343,16 @@ export class Common {
           if (!(eip in eipsDict)) {
             throw new Error(`${eip} not supported`)
           }
-
-          this._mergeWithParamsCache(eipsDict[eip])
+          this._mergeWithParamsCache(paramsDict[eip] ?? {})
         }
-        // Parameter-inlining HF config (e.g. for istanbul)
-      } else {
-        this._mergeWithParamsCache(hfChanges[1])
       }
-      if (hfChanges[1].params !== undefined) {
-        this._mergeWithParamsCache(hfChanges[1])
-      }
+      // Parameter-inlining HF config (e.g. for istanbul)
+      this._mergeWithParamsCache(hfChanges[1].params ?? {})
       if (hfChanges[0] === hardfork) break
     }
     // Iterate through all additionally activated EIPs
     for (const eip of this._eips) {
-      if (!(eip in eipsDict)) {
-        throw new Error(`${eip} not supported`)
-      }
-
-      this._mergeWithParamsCache(eipsDict[eip])
+      this._mergeWithParamsCache(paramsDict[eip] ?? {})
     }
   }
 
@@ -412,8 +400,8 @@ export class Common {
       if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs!) {
-          const eipParams = eipsDict[eip]
-          const eipValue = eipParams.params?.[name]
+          const eipParams = paramsDict[eip]
+          const eipValue = eipParams?.[name]
           if (eipValue !== undefined) {
             value = eipValue
           }
@@ -444,11 +432,11 @@ export class Common {
       throw new Error(`${eip} not supported`)
     }
 
-    const eipParams = eipsDict[eip]
-    if (eipParams.params?.[name] === undefined) {
+    const eipParams = paramsDict[eip]
+    if (eipParams?.[name] === undefined) {
       throw new Error(`Missing parameter value for ${name}`)
     }
-    const value = eipParams.params![name]
+    const value = eipParams![name]
     return BigInt(value ?? 0)
   }
 
