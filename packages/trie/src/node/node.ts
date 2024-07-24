@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 
 import { addHexPrefix, removeHexPrefix } from '../util/hex.js'
-import { nibblestoBytes } from '../util/nibbles.js'
+import { nibblesTypeToPackedBytes } from '../util/nibbles.js'
 
 import type { Nibbles } from '../types.js'
 
@@ -45,7 +45,7 @@ export class Node {
   }
 
   raw(): [Uint8Array, Uint8Array] {
-    return [nibblestoBytes(this.encodedKey()), this._value]
+    return [nibblesTypeToPackedBytes(this.encodedKey()), this._value]
   }
 
   serialize(): Uint8Array {
