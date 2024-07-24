@@ -9,63 +9,54 @@ export const eipsDict: EIPsDict = {
    */
   1: {
     minimumHardfork: Hardfork.Chainstart,
-    requiredEIPs: [],
   },
   /**
    * Homestead HF Meta EIP
    */
   606: {
     minimumHardfork: Hardfork.Chainstart,
-    requiredEIPs: [],
   },
   /**
    * TangerineWhistle HF Meta EIP
    */
   608: {
     minimumHardfork: Hardfork.Homestead,
-    requiredEIPs: [],
   },
   /**
    * Spurious Dragon HF Meta EIP
    */
   607: {
     minimumHardfork: Hardfork.TangerineWhistle,
-    requiredEIPs: [],
   },
   /**
    * Byzantium HF Meta EIP
    */
   609: {
     minimumHardfork: Hardfork.SpuriousDragon,
-    requiredEIPs: [],
   },
   /**
    * Constantinope HF Meta EIP
    */
   1013: {
     minimumHardfork: Hardfork.Constantinople,
-    requiredEIPs: [],
   },
   /**
    * Petersburg HF Meta EIP
    */
   1716: {
     minimumHardfork: Hardfork.Constantinople,
-    requiredEIPs: [],
   },
   /**
    * Istanbul HF Meta EIP
    */
   1679: {
     minimumHardfork: Hardfork.Constantinople,
-    requiredEIPs: [],
   },
   /**
    * MuirGlacier HF Meta EIP
    */
   2384: {
     minimumHardfork: Hardfork.Istanbul,
-    requiredEIPs: [],
   },
   /**
    * Description : SWAPN, DUPN and EXCHANGE instructions
@@ -83,7 +74,6 @@ export const eipsDict: EIPsDict = {
    */
   1153: {
     minimumHardfork: Hardfork.Chainstart,
-    requiredEIPs: [],
   },
   /**
    * Description : Fee market change for ETH 1.0 chain
@@ -101,7 +91,6 @@ export const eipsDict: EIPsDict = {
    */
   2565: {
     minimumHardfork: Hardfork.Byzantium,
-    requiredEIPs: [],
   },
   /**
    * Description : BLS12-381 precompiles
@@ -110,7 +99,6 @@ export const eipsDict: EIPsDict = {
    */
   2537: {
     minimumHardfork: Hardfork.Chainstart,
-    requiredEIPs: [],
   },
   /**
    * Description : Typed Transaction Envelope
@@ -119,7 +107,6 @@ export const eipsDict: EIPsDict = {
    */
   2718: {
     minimumHardfork: Hardfork.Chainstart,
-    requiredEIPs: [],
   },
   /**
    * Description : Gas cost increases for state access opcodes
@@ -128,7 +115,6 @@ export const eipsDict: EIPsDict = {
    */
   2929: {
     minimumHardfork: Hardfork.Chainstart,
-    requiredEIPs: [],
   },
   /**
    * Description : Optional access lists
@@ -146,7 +132,6 @@ export const eipsDict: EIPsDict = {
    */
   2935: {
     minimumHardfork: Hardfork.Chainstart,
-    requiredEIPs: [],
   },
   /**
    * Description : AUTH and AUTHCALL opcodes
@@ -155,7 +140,6 @@ export const eipsDict: EIPsDict = {
    */
   3074: {
     minimumHardfork: Hardfork.London,
-    requiredEIPs: [],
   },
   /**
    * Description : BASEFEE opcode
@@ -164,7 +148,6 @@ export const eipsDict: EIPsDict = {
    */
   3198: {
     minimumHardfork: Hardfork.London,
-    requiredEIPs: [],
   },
   /**
    * Description : Reduction in refunds
@@ -191,7 +174,6 @@ export const eipsDict: EIPsDict = {
    */
   3541: {
     minimumHardfork: Hardfork.Berlin,
-    requiredEIPs: [],
   },
   /**
    * Description : Difficulty Bomb Delay to December 1st 2021
@@ -200,7 +182,6 @@ export const eipsDict: EIPsDict = {
    */
   3554: {
     minimumHardfork: Hardfork.MuirGlacier,
-    requiredEIPs: [],
   },
   /**
    * Description : Reject transactions from senders with deployed code
@@ -209,7 +190,6 @@ export const eipsDict: EIPsDict = {
    */
   3607: {
     minimumHardfork: Hardfork.Chainstart,
-    requiredEIPs: [],
   },
   /**
    * Description : Warm COINBASE
@@ -236,7 +216,6 @@ export const eipsDict: EIPsDict = {
    */
   3675: {
     minimumHardfork: Hardfork.London,
-    requiredEIPs: [],
   },
   /**
    * Description : PUSH0 instruction
@@ -245,7 +224,6 @@ export const eipsDict: EIPsDict = {
    */
   3855: {
     minimumHardfork: Hardfork.Chainstart,
-    requiredEIPs: [],
   },
   /**
    * Description : Limit and meter initcode
@@ -254,7 +232,6 @@ export const eipsDict: EIPsDict = {
    */
   3860: {
     minimumHardfork: Hardfork.SpuriousDragon,
-    requiredEIPs: [],
   },
   /**
    * Description : EOF - Static relative jumps
@@ -272,7 +249,6 @@ export const eipsDict: EIPsDict = {
    */
   4345: {
     minimumHardfork: Hardfork.London,
-    requiredEIPs: [],
   },
   /**
    * Description : Supplant DIFFICULTY opcode with PREVRANDAO
@@ -281,7 +257,6 @@ export const eipsDict: EIPsDict = {
    */
   4399: {
     minimumHardfork: Hardfork.London,
-    requiredEIPs: [],
   },
   /**
    * Description : EOF - Functions
@@ -299,7 +274,6 @@ export const eipsDict: EIPsDict = {
    */
   4788: {
     minimumHardfork: Hardfork.Cancun,
-    requiredEIPs: [],
   },
   /**
    * Description : Shard Blob Transactions
@@ -317,7 +291,6 @@ export const eipsDict: EIPsDict = {
    */
   4895: {
     minimumHardfork: Hardfork.Paris,
-    requiredEIPs: [],
   },
   /**
    * Description : Delaying Difficulty Bomb to mid-September 2022
@@ -326,7 +299,6 @@ export const eipsDict: EIPsDict = {
    */
   5133: {
     minimumHardfork: Hardfork.GrayGlacier,
-    requiredEIPs: [],
   },
   /**
    * Description : EOF - Stack Validation
@@ -344,7 +316,6 @@ export const eipsDict: EIPsDict = {
    */
   5656: {
     minimumHardfork: Hardfork.Shanghai,
-    requiredEIPs: [],
   },
   /**
    * Description : Supply validator deposits on chain
@@ -371,7 +342,6 @@ export const eipsDict: EIPsDict = {
    */
   6780: {
     minimumHardfork: Hardfork.London,
-    requiredEIPs: [],
   },
   /**
    * Description : Ethereum state using a unified verkle tree (experimental)
@@ -380,7 +350,6 @@ export const eipsDict: EIPsDict = {
    */
   6800: {
     minimumHardfork: Hardfork.London,
-    requiredEIPs: [],
   },
   /**
    * Description : Execution layer triggerable withdrawals (experimental)

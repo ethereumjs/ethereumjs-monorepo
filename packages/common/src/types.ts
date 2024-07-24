@@ -165,7 +165,7 @@ export interface HardforkByOpts {
 
 export type EIPConfig = {
   minimumHardfork: Hardfork
-  requiredEIPs: number[]
+  requiredEIPs?: number[]
 }
 
 export type ParamsConfig = {
