@@ -2,11 +2,11 @@ import { RLP } from '@ethereumjs/rlp'
 import { bytesToUtf8, equalsBytes, setLengthLeft, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie, createTrieFromProof, verifyTrieProof } from '../src/index.js'
+import { ProofTrie, Trie, createTrieFromProof, verifyTrieProof } from '../src/index.js'
 
 describe('simple merkle proofs generation and verification', () => {
   it('create a merkle proof and verify it', async () => {
-    const trie = new Trie()
+    const trie = new ProofTrie()
 
     await trie.put(utf8ToBytes('key1aa'), utf8ToBytes('0123456789012345678901234567890123456789xx'))
     await trie.put(utf8ToBytes('key2bb'), utf8ToBytes('aval2'))
@@ -76,7 +76,7 @@ describe('simple merkle proofs generation and verification', () => {
   })
 
   it('create a merkle proof and verify it with a single long key', async () => {
-    const trie = new Trie()
+    const trie = new ProofTrie()
 
     await trie.put(utf8ToBytes('key1aa'), utf8ToBytes('0123456789012345678901234567890123456789xx'))
 
@@ -86,7 +86,7 @@ describe('simple merkle proofs generation and verification', () => {
   })
 
   it('create a merkle proof and verify it with a single short key', async () => {
-    const trie = new Trie()
+    const trie = new ProofTrie()
 
     await trie.put(utf8ToBytes('key1aa'), utf8ToBytes('01234'))
 
@@ -96,7 +96,7 @@ describe('simple merkle proofs generation and verification', () => {
   })
 
   it('create a merkle proof and verify it whit keys in the middle', async () => {
-    const trie = new Trie()
+    const trie = new ProofTrie()
 
     await trie.put(
       utf8ToBytes('key1aa'),
@@ -125,7 +125,7 @@ describe('simple merkle proofs generation and verification', () => {
   })
 
   it('should succeed with a simple embedded extension-branch', async () => {
-    const trie = new Trie()
+    const trie = new ProofTrie()
 
     await trie.put(utf8ToBytes('a'), utf8ToBytes('a'))
     await trie.put(utf8ToBytes('b'), utf8ToBytes('b'))
@@ -145,7 +145,7 @@ describe('simple merkle proofs generation and verification', () => {
   })
 
   it('creates and updates tries from proof', async () => {
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = new ProofTrie({ useKeyHashing: true })
 
     const key = setLengthLeft(new Uint8Array([1, 2, 3]), 32)
     const encodedValue = RLP.encode(new Uint8Array([5]))
@@ -177,7 +177,7 @@ describe('simple merkle proofs generation and verification', () => {
     const trieValue3 = await newTrie.get(key3)
     assert.equal(trieValue3, null, 'cannot reach the third key')
 
-    const safeTrie = new Trie({ useKeyHashing: true })
+    const safeTrie = new ProofTrie({ useKeyHashing: true })
     const safeKey = setLengthLeft(new Uint8Array([100]), 32)
     const safeValue = RLP.encode(new Uint8Array([1337]))
 

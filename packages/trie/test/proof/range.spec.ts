@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../../src/index.js'
+import { ProofTrie, Trie } from '../../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
 
@@ -24,7 +24,7 @@ const TRIE_SIZE = 512
  */
 async function randomTrie(db: DB<string, string>, addKey: boolean = true) {
   const entries: [Uint8Array, Uint8Array][] = []
-  const trie = new Trie({ db })
+  const trie = new ProofTrie({ db })
 
   if (addKey) {
     for (let i = 0; i < 100; i++) {
@@ -76,7 +76,7 @@ function increaseKey(key: Uint8Array) {
 }
 
 async function verify(
-  trie: Trie,
+  trie: ProofTrie,
   entries: [Uint8Array, Uint8Array][],
   start: number,
   end: number,
@@ -199,7 +199,7 @@ describe('simple merkle range proofs generation and verification', () => {
     )
 
     // Test the mini trie with only a single element.
-    const tinyTrie = new Trie()
+    const tinyTrie = new ProofTrie()
     const tinyEntries: [Uint8Array, Uint8Array][] = [[randomBytes(32), randomBytes(20)]]
     await tinyTrie.put(tinyEntries[0][0], tinyEntries[0][1])
 
@@ -320,7 +320,7 @@ describe('simple merkle range proofs generation and verification', () => {
   })
 
   it('create a gapped range proof and verify it', async () => {
-    const trie = new Trie()
+    const trie = new ProofTrie()
     const entries: [Uint8Array, Uint8Array][] = []
     for (let i = 0; i < 10; i++) {
       const key = setLengthLeft(toBytes(i), 32)

@@ -1,7 +1,7 @@
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { LeafNode, Trie, createTrieFromProof, verifyTrieProof } from '../../src/index.js'
+import { LeafNode, ProofTrie, Trie, createTrieFromProof, verifyTrieProof } from '../../src/index.js'
 import { _walkTrie } from '../../src/util/asyncWalk.js'
 import { bytesToNibbles } from '../../src/util/nibbles.js'
 import trieTests from '../fixtures/trietest.json'
@@ -12,7 +12,7 @@ describe('walk the tries from official tests', async () => {
   const testNames = Object.keys(trieTests.tests)
 
   for await (const testName of testNames) {
-    const trie = new Trie()
+    const trie = new ProofTrie()
     describe(testName, async () => {
       const inputs = (trieTests as any).tests[testName].in
       const expect = (trieTests as any).tests[testName].root
@@ -57,7 +57,7 @@ describe('walk the tries from official tests', async () => {
 })
 
 describe('walk a sparse trie', async () => {
-  const trie = new Trie()
+  const trie = new ProofTrie()
   const inputs = (trieTests as any).tests.jeff.in
   const expect = (trieTests as any).tests.jeff.root
 

@@ -10,7 +10,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY, Trie, verifyTrieProof } from '../../src/index.js'
+import { ProofTrie, ROOT_DB_KEY, Trie, verifyTrieProof } from '../../src/index.js'
 import secureTrieTests from '../fixtures/trietest_secureTrie.json'
 
 describe('SecureTrie', () => {
@@ -49,7 +49,7 @@ describe('SecureTrie', () => {
 
 describe('SecureTrie proof', () => {
   it('create a merkle proof and verify it with a single short key', async () => {
-    const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+    const trie = new ProofTrie({ useKeyHashing: true, db: new MapDB() })
     await trie.put(utf8ToBytes('key1aa'), utf8ToBytes('01234'))
 
     const proof = await trie.createProof(utf8ToBytes('key1aa'))
