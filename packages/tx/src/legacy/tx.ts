@@ -176,8 +176,8 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   /**
    * The amount of gas paid for the data in this tx
    */
-  getDataFee(): bigint {
-    return Legacy.getDataFee(this)
+  getDataGas(): bigint {
+    return Legacy.getDataGas(this)
   }
 
   /**

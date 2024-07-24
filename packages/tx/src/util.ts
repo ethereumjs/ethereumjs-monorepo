@@ -112,7 +112,7 @@ export class AccessLists {
     return accessListJSON
   }
 
-  public static getDataFeeEIP2930(accessList: AccessListBytes, common: Common): number {
+  public static getDataGasEIP2930(accessList: AccessListBytes, common: Common): number {
     const accessListStorageKeyCost = common.param('accessListStorageKeyGas')
     const accessListAddressCost = common.param('accessListAddressGas')
 
@@ -214,7 +214,7 @@ export class AuthorizationLists {
     }
   }
 
-  public static getDataFeeEIP7702(authorityList: AuthorizationListBytes, common: Common): number {
+  public static getDataGasEIP7702(authorityList: AuthorizationListBytes, common: Common): number {
     const perAuthBaseCost = common.param('perAuthBaseGas')
     return authorityList.length * Number(perAuthBaseCost)
   }

@@ -107,8 +107,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
   /**
    * The amount of gas paid for the data in this tx
    */
-  getDataFee(): bigint {
-    return EIP2930.getDataFee(this)
+  getDataGas(): bigint {
+    return EIP2930.getDataGas(this)
   }
 
   /**

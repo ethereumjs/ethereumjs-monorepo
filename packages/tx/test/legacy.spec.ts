@@ -181,31 +181,31 @@ describe('[Transaction]', () => {
     }
   })
 
-  it('getBaseFee() -> should return base fee', () => {
+  it('getIntrinsicGas() -> should return base fee', () => {
     const tx = createLegacyTx({})
-    assert.equal(tx.getBaseFee(), BigInt(53000))
+    assert.equal(tx.getIntrinsicGas(), BigInt(53000))
   })
 
-  it('getDataFee() -> should return data fee', () => {
+  it('getDataGas() -> should return data fee', () => {
     let tx = createLegacyTx({})
-    assert.equal(tx.getDataFee(), BigInt(0))
+    assert.equal(tx.getDataGas(), BigInt(0))
 
     tx = createLegacyTxFromBytesArray(
       txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
     )
-    assert.equal(tx.getDataFee(), BigInt(1716))
+    assert.equal(tx.getDataGas(), BigInt(1716))
 
     tx = createLegacyTxFromBytesArray(
       txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
       { freeze: false }
     )
-    assert.equal(tx.getDataFee(), BigInt(1716))
+    assert.equal(tx.getDataGas(), BigInt(1716))
   })
 
-  it('getDataFee() -> should return correct data fee for istanbul', () => {
+  it('getDataGas() -> should return correct data fee for istanbul', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     let tx = createLegacyTx({}, { common })
-    assert.equal(tx.getDataFee(), BigInt(0))
+    assert.equal(tx.getDataGas(), BigInt(0))
 
     tx = createLegacyTxFromBytesArray(
       txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
@@ -213,10 +213,10 @@ describe('[Transaction]', () => {
         common,
       }
     )
-    assert.equal(tx.getDataFee(), BigInt(1716))
+    assert.equal(tx.getDataGas(), BigInt(1716))
   })
 
-  it('getDataFee() -> should invalidate cached value on hardfork change', () => {
+  it('getDataGas() -> should invalidate cached value on hardfork change', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
     const tx = createLegacyTxFromBytesArray(
       txFixtures[0].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
@@ -224,9 +224,9 @@ describe('[Transaction]', () => {
         common,
       }
     )
-    assert.equal(tx.getDataFee(), BigInt(656))
+    assert.equal(tx.getDataGas(), BigInt(656))
     tx.common.setHardfork(Hardfork.Istanbul)
-    assert.equal(tx.getDataFee(), BigInt(240))
+    assert.equal(tx.getDataGas(), BigInt(240))
   })
 
   it('getEffectivePriorityFee() -> should return correct values', () => {

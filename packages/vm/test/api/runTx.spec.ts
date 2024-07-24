@@ -601,8 +601,8 @@ describe('runTx() -> API return values', () => {
 
       assert.equal(
         res.totalGasSpent,
-        tx.getBaseFee(),
-        `runTx result -> gasUsed -> tx.getBaseFee() (${txType.name})`
+        tx.getIntrinsicGas(),
+        `runTx result -> gasUsed -> tx.getIntrinsicGas() (${txType.name})`
       )
       if (tx instanceof FeeMarketEIP1559Transaction) {
         const baseFee = BigInt(7)
