@@ -1,6 +1,7 @@
 import { PutBatch, bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
-import { Proof, Trie, TrieOpts, TrieShallowCopyOpts, verifyRangeProof } from '../index.js'
-import { bytesToNibbles } from '../util/nibbles.js'
+import { Proof, TrieOpts, TrieShallowCopyOpts, verifyRangeProof } from './index.js'
+import { Trie } from './trie.js'
+import { bytesToNibbles } from './util/nibbles.js'
 
 export class ProofTrie extends Trie {
   constructor(opts?: TrieOpts) {

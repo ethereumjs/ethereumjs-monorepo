@@ -10,7 +10,7 @@ import { concatBytes } from 'ethereum-cryptography/utils'
 import { ROOT_DB_KEY, Trie } from './index.js'
 
 import type { Proof, TrieOpts } from './index.js'
-import { ProofTrie } from './proof/proofTrie.js'
+import { ProofTrie } from './prooftrie.js'
 
 export async function createTrie(opts?: TrieOpts) {
   const keccakFunction =
