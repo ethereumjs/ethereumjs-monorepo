@@ -115,11 +115,11 @@ module.exports = {
   parserOptions: {
     extraFileExtensions: ['.json'],
     sourceType: 'module',
-    project: './tsconfig.json',
+    project: './tsconfig.lint.json',
   },
   overrides: [
     {
-      files: ['test/**/*.ts', 'tests/**/*.ts'],
+      files: ['test/**/*.ts', 'tests/**/*.ts', 'examples/**/*.ts'],
       rules: {
         'implicit-dependencies/no-implicit': 'off',
         'import/no-extraneous-dependencies': 'off',
