@@ -11,6 +11,7 @@ import { BaseTransaction } from '../baseTransaction.js'
 import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP2930 from '../capabilities/eip2930.js'
 import * as Legacy from '../capabilities/legacy.js'
+import { paramsTx } from '../index.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, validateNotArray } from '../util.js'
 
@@ -55,6 +56,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
     const { chainId, accessList, gasPrice } = txData
 
     this.common = this._getCommon(opts.common, chainId)
+    this.common.updateParams(paramsTx)
     this.chainId = this.common.chainId()
 
     // EIP-2718 check is done in Common

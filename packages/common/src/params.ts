@@ -8,14 +8,6 @@ export const paramsDict: ParamsDict = {
     // VM, Client, Block
     blobGasPerBlob: 0,
 
-    // Tx gasPrice
-    txGas: 21000, // Per transaction. NOTE: Not payable on data of calls between transactions
-    txCreationGas: 32000, // The cost of creating a contract via tx
-    txDataZeroGas: 4, // Per byte of data attached to a transaction that equals zero. NOTE: Not payable on data of calls between transactions
-    txDataNonZeroGas: 68, // Per byte of data attached to a transaction that is not equal to zero. NOTE: Not payable on data of calls between transactions
-    accessListStorageKeyGas: 0,
-    accessListAddressGas: 0,
-
     // gasConfig VM (access via EVM?)
     maxRefundQuotient: 2, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
 
@@ -28,8 +20,6 @@ export const paramsDict: ParamsDict = {
   609: {
     // pow VM
     minerReward: BigInt('3000000000000000000'), // the amount a miner get rewarded for mining a block
-    // pow Block
-    difficultyBombDelay: 3000000, // the amount of blocks to delay the difficulty bomb with
   },
   /**
 .  * Constantinope HF Meta EIP
@@ -37,14 +27,6 @@ export const paramsDict: ParamsDict = {
   1013: {
     // pow VM
     minerReward: BigInt('2000000000000000000'), // The amount a miner gets rewarded for mining a block
-  },
-
-  /**
-.  * Istanbul HF Meta EIP
-.  */
-  1679: {
-    // gasPrices Tx
-    txDataNonZeroGas: 16, // Per byte of data attached to a transaction that is not equal to zero. NOTE: Not payable on data of calls between transactions
   },
 
   /**

@@ -21,6 +21,13 @@ export const paramsBlock: ParamsDict = {
     difficultyBombDelay: 0, // the amount of blocks to delay the difficulty bomb with
   },
   /**
+.  * Byzantium HF Meta EIP
+.  */
+  609: {
+    // pow
+    difficultyBombDelay: 3000000, // the amount of blocks to delay the difficulty bomb with
+  },
+  /**
 .  * Constantinope HF Meta EIP
 .  */
   1013: {
