@@ -28,7 +28,6 @@ import {
   decodeRawNode,
   isRawNode,
 } from './node/index.js'
-import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
 import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from './util/nibbles.js'
@@ -39,7 +38,6 @@ import type {
   FoundNodeFunction,
   Nibbles,
   Path,
-  Proof,
   TrieNode,
   TrieOpts,
   TrieOptsWithDefaults,
