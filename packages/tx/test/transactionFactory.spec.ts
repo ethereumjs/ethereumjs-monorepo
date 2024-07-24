@@ -65,7 +65,7 @@ describe('[TransactionFactory]: Basic functions', () => {
       assert.equal(
         factoryTx.constructor.name,
         txType.class.name,
-        `should return the right type (${txType.name})`
+        `should return the right type (${txType.name})`,
       )
     }
   })
@@ -82,7 +82,7 @@ describe('[TransactionFactory]: Basic functions', () => {
           },
           undefined,
           undefined,
-          `should throw when trying to create typed tx when not allowed in Common (${txType.name})`
+          `should throw when trying to create typed tx when not allowed in Common (${txType.name})`,
         )
 
         assert.throws(
@@ -93,7 +93,7 @@ describe('[TransactionFactory]: Basic functions', () => {
           },
           undefined,
           undefined,
-          `should throw when trying to create typed tx with wrong type (${txType.name})`
+          `should throw when trying to create typed tx with wrong type (${txType.name})`,
         )
       }
     }
@@ -111,19 +111,19 @@ describe('[TransactionFactory]: Basic functions', () => {
       assert.equal(
         tx.constructor.name,
         txType.name,
-        `should return the right type (${txType.name})`
+        `should return the right type (${txType.name})`,
       )
       if (txType.eip2718) {
         assert.deepEqual(
           tx.serialize(),
           rawTx,
-          `round-trip serialization should match (${txType.name})`
+          `round-trip serialization should match (${txType.name})`,
         )
       } else {
         assert.deepEqual(
           tx.raw(),
           rawTx as Uint8Array[],
-          `round-trip raw() creation should match (${txType.name})`
+          `round-trip raw() creation should match (${txType.name})`,
         )
       }
     }
@@ -135,14 +135,14 @@ describe('[TransactionFactory]: Basic functions', () => {
       assert.equal(
         tx.constructor.name,
         txType.class.name,
-        `should return the right type (${txType.name})`
+        `should return the right type (${txType.name})`,
       )
       if (!txType.eip2718) {
         const tx = createTxFromTxData({})
         assert.equal(
           tx.constructor.name,
           txType.class.name,
-          `should return the right type (${txType.name})`
+          `should return the right type (${txType.name})`,
         )
       }
     }

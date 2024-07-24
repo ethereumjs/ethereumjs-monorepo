@@ -41,7 +41,7 @@ type GetBlockHeadersOpts = {
  */
 export interface LesProtocolMethods {
   getBlockHeaders: (
-    opts: GetBlockHeadersOpts
+    opts: GetBlockHeadersOpts,
   ) => Promise<{ reqId: bigint; bv: bigint; headers: BlockHeader[] }>
 }
 
@@ -112,7 +112,7 @@ export class LesProtocol extends Protocol {
           BlockHeader.fromValuesArray(h, {
             setHardfork: true,
             common: this.config.chainCommon, // eslint-disable-line no-invalid-this
-          })
+          }),
         ),
       }),
     },
@@ -186,10 +186,10 @@ export class LesProtocol extends Protocol {
 
     const forkHash = this.config.chainCommon.forkHash(
       this.config.chainCommon.hardfork(),
-      this.chain.genesis.hash()
+      this.chain.genesis.hash(),
     )
     const nextFork = this.config.chainCommon.nextHardforkBlockOrTimestamp(
-      this.config.chainCommon.hardfork()
+      this.config.chainCommon.hardfork(),
     )
     const forkID = [hexToBytes(forkHash), bigIntToUnpaddedBytes(nextFork ?? 0n)]
 

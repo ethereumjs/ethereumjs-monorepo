@@ -20,7 +20,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 export const assembleBlock = async (
   payload: ExecutionPayload,
   chain: Chain,
-  chainCache: ChainCache
+  chainCache: ChainCache,
 ): Promise<{ block?: Block; error?: PayloadStatusV1 }> => {
   const { blockNumber, timestamp } = payload
   const { config } = chain
@@ -44,7 +44,7 @@ export const assembleBlock = async (
     const latestValidHash = await validHash(
       hexToBytes(payload.parentHash as PrefixedHexString),
       chain,
-      chainCache
+      chainCache,
     )
     const response = {
       status: `${error}`.includes('Invalid blockHash') ? Status.INVALID_BLOCK_HASH : Status.INVALID,
@@ -57,7 +57,7 @@ export const assembleBlock = async (
 
 export const validate4844BlobVersionedHashes = (
   headBlock: Block,
-  blobVersionedHashes: PrefixedHexString[]
+  blobVersionedHashes: PrefixedHexString[],
 ): string | null => {
   let validationError: string | null = null
 
@@ -79,7 +79,7 @@ export const validate4844BlobVersionedHashes = (
       // if mismatch, record error and break
       if (!equalsBytes(hexToBytes(blobVersionedHashes[vIndex]), txVersionedHashes[vIndex])) {
         validationError = `Error verifying blobVersionedHashes: mismatch at index=${vIndex} expected=${short(
-          txVersionedHashes[vIndex]
+          txVersionedHashes[vIndex],
         )} received=${short(blobVersionedHashes[vIndex])}`
         break
       }

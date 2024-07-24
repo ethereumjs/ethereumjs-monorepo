@@ -62,7 +62,7 @@ describe('StateManager -> General/Account', () => {
       const contract0 = await stateManager.getContractStorage(address, key)
       assert.ok(
         equalsBytes(contract0, value),
-        "contract key's value is set in the _storageTries cache"
+        "contract key's value is set in the _storageTries cache",
       )
 
       await stateManager.commit()
@@ -135,7 +135,7 @@ describe('StateManager -> General/Account', () => {
       await stateManager.modifyAccountFields(address, {
         codeHash: hexToBytes('0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'),
         storageRoot: hexToBytes(
-          '0xcafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
+          '0xcafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7',
         ),
       })
 
@@ -143,11 +143,11 @@ describe('StateManager -> General/Account', () => {
 
       assert.equal(
         bytesToHex(res3!.codeHash),
-        '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
+        '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
       )
       assert.equal(
         bytesToHex(res3!.storageRoot),
-        '0xcafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
+        '0xcafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7',
       )
     })
   }

@@ -98,7 +98,7 @@ export class PendingBlock {
     vm: VM,
     parentBlock: Block,
     headerData: Partial<HeaderData> = {},
-    withdrawals?: WithdrawalData[]
+    withdrawals?: WithdrawalData[],
   ) {
     const number = parentBlock.header.number + BIGINT_1
     const { timestamp, mixHash, parentBeaconBlockRoot, coinbase } = headerData
@@ -138,7 +138,7 @@ export class PendingBlock {
       for (const withdrawal of withdrawals) {
         const indexBuf = bigIntToUnpaddedBytes(toType(withdrawal.index ?? 0, TypeOutput.BigInt))
         const validatorIndex = bigIntToUnpaddedBytes(
-          toType(withdrawal.validatorIndex ?? 0, TypeOutput.BigInt)
+          toType(withdrawal.validatorIndex ?? 0, TypeOutput.BigInt),
         )
         const address = toType(withdrawal.address ?? Address.zero(), TypeOutput.Uint8Array)
         const amount = bigIntToUnpaddedBytes(toType(withdrawal.amount ?? 0, TypeOutput.BigInt))
@@ -158,9 +158,9 @@ export class PendingBlock {
           gasLimitBuf,
           parentBeaconBlockRootBuf,
           coinbaseBuf,
-          withdrawalsBuf
-        )
-      ).subarray(0, 8)
+          withdrawalsBuf,
+        ),
+      ).subarray(0, 8),
     )
     const payloadId = bytesToHex(payloadIdBytes)
 
@@ -210,12 +210,12 @@ export class PendingBlock {
       allowedBlobs,
     })
     this.config.logger.info(
-      `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
+      `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`,
     )
 
     const { addedTxs, skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
     this.config.logger.info(
-      `Pending: Added txs=${addedTxs} skippedByAddErrors=${skippedByAddErrors} from total=${txs.length} tx candidates`
+      `Pending: Added txs=${addedTxs} skippedByAddErrors=${skippedByAddErrors} from total=${txs.length} tx candidates`,
     )
 
     // Construct initial blobs bundle when payload is constructed
@@ -244,7 +244,7 @@ export class PendingBlock {
    * Returns the completed block
    */
   async build(
-    payloadIdBytes: Uint8Array | string
+    payloadIdBytes: Uint8Array | string,
   ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint, blobs?: BlobsBundle]> {
     const payloadId =
       typeof payloadIdBytes !== 'string' ? bytesToHex(payloadIdBytes) : payloadIdBytes
@@ -283,8 +283,8 @@ export class PendingBlock {
     ).filter(
       (tx) =>
         (builder as any).transactions.some((t: TypedTransaction) =>
-          equalsBytes(t.hash(), tx.hash())
-        ) === false
+          equalsBytes(t.hash(), tx.hash()),
+        ) === false,
     )
 
     const { skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
@@ -303,8 +303,8 @@ export class PendingBlock {
       `Pending: Built block number=${block.header.number} txs=${
         block.transactions.length
       }${withdrawalsStr}${blobsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${bytesToHex(
-        block.hash()
-      )}`
+        block.hash(),
+      )}`,
     )
 
     return [block, builder.transactionReceipts, builder.minerValue, blobs]
@@ -365,15 +365,15 @@ export class PendingBlock {
         // Remove the blob tx which doesn't has blobs bundled
         this.txPool.removeByHash(bytesToHex(tx.hash()), tx)
         this.config.logger.error(
-          `Pending: Removed from txPool a blob tx ${bytesToHex(tx.hash())} with missing blobs`
+          `Pending: Removed from txPool a blob tx ${bytesToHex(tx.hash())} with missing blobs`,
         )
         addTxResult = AddTxResult.RemovedByErrors
       } else {
         // If there is an error adding a tx, it will be skipped
         this.config.logger.debug(
           `Pending: Skipping tx ${bytesToHex(
-            tx.hash()
-          )}, error encountered when trying to add tx:\n${error}`
+            tx.hash(),
+          )}, error encountered when trying to add tx:\n${error}`,
         )
         addTxResult = AddTxResult.SkippedByErrors
       }

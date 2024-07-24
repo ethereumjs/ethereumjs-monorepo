@@ -50,7 +50,7 @@ async function genBlockWithdrawals(blockNumber: number) {
           }
         })
   const withdrawalsRoot = bytesToHex(
-    await genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData))
+    await genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData)),
   )
 
   return { withdrawals, withdrawalsRoot }
@@ -66,7 +66,7 @@ async function runBlock(
     receiptTrie: PrefixedHexString
     gasUsed: PrefixedHexString
     coinbase: PrefixedHexString
-  }
+  },
 ) {
   const { transactions, parentHash, blockNumber, stateRoot, receiptTrie, gasUsed, coinbase } =
     runData
@@ -116,7 +116,7 @@ describe(`valid verkle network setup`, async () => {
     {
       engine: true,
       savePreimages: true,
-    }
+    },
   )
   ;(chain.blockchain as any).validateHeader = () => {}
 
@@ -252,12 +252,12 @@ describe(`valid verkle network setup`, async () => {
       for (const preimage of preimages) {
         const preimageBytes = hexToBytes(preimage)
         const savedPreimage = await execution.preimagesManager!.getPreimage(
-          keccak256(preimageBytes)
+          keccak256(preimageBytes),
         )
         assert.isNotNull(savedPreimage, `Missing preimage for ${preimage}`)
         assert.ok(
           savedPreimage !== null && equalsBytes(savedPreimage, preimageBytes),
-          `Incorrect preimage for ${preimage}`
+          `Incorrect preimage for ${preimage}`,
         )
       }
       parentHash = blockHash

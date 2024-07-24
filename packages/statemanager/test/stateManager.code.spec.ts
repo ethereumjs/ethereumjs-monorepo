@@ -84,7 +84,7 @@ describe('StateManager -> Code', () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const code = hexToBytes(
-        '0x73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157'
+        '0x73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157',
       )
       const raw: AccountData = {
         nonce: '0x0',

@@ -119,7 +119,7 @@ describe('[BaseTransaction]', () => {
       assert.equal(
         tx.common.hardfork(),
         'london',
-        `${txType.name}: should initialize with correct HF provided`
+        `${txType.name}: should initialize with correct HF provided`,
       )
       assert.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
@@ -131,20 +131,20 @@ describe('[BaseTransaction]', () => {
       assert.equal(
         tx.common.hardfork(),
         'london',
-        `${txType.name}: should initialize with correct HF provided`
+        `${txType.name}: should initialize with correct HF provided`,
       )
 
       initCommon.setHardfork(Hardfork.Byzantium)
       assert.equal(
         tx.common.hardfork(),
         'london',
-        `${txType.name}: should stay on correct HF if outer common HF changes`
+        `${txType.name}: should stay on correct HF if outer common HF changes`,
       )
 
       tx = txType.create.txData({}, { common, freeze: false })
       assert.ok(
         !Object.isFrozen(tx),
-        `${txType.name}: tx should not be frozen when freeze deactivated in options`
+        `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
 
       // Perform the same test as above, but now using a different construction method. This also implies that passing on the
@@ -156,7 +156,7 @@ describe('[BaseTransaction]', () => {
       assert.equal(
         tx.type,
         txType.type,
-        `${txType.name}: fromSerializedTx() -> should initialize correctly`
+        `${txType.name}: fromSerializedTx() -> should initialize correctly`,
       )
 
       assert.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
@@ -164,7 +164,7 @@ describe('[BaseTransaction]', () => {
       tx = txType.create.rlp(rlpData, { common, freeze: false })
       assert.ok(
         !Object.isFrozen(tx),
-        `${txType.name}: tx should not be frozen when freeze deactivated in options`
+        `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
 
       tx = txType.create.bytesArray(txType.values as any, { common })
@@ -173,7 +173,7 @@ describe('[BaseTransaction]', () => {
       tx = txType.create.bytesArray(txType.values as any, { common, freeze: false })
       assert.ok(
         !Object.isFrozen(tx),
-        `${txType.name}: tx should not be frozen when freeze deactivated in options`
+        `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
     }
   })
@@ -187,7 +187,7 @@ describe('[BaseTransaction]', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('nonce cannot have leading zeroes'),
-        'should throw with nonce with leading zeroes'
+        'should throw with nonce with leading zeroes',
       )
     }
     rlpData[0] = toBytes('0x')
@@ -198,7 +198,7 @@ describe('[BaseTransaction]', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('v cannot have leading zeroes'),
-        'should throw with v with leading zeroes'
+        'should throw with v with leading zeroes',
       )
     }
     rlpData = eip2930Txs[0].raw()
@@ -209,7 +209,7 @@ describe('[BaseTransaction]', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('gasLimit cannot have leading zeroes'),
-        'should throw with gasLimit with leading zeroes'
+        'should throw with gasLimit with leading zeroes',
       )
     }
     rlpData = eip1559Txs[0].raw()
@@ -220,7 +220,7 @@ describe('[BaseTransaction]', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('maxPriorityFeePerGas cannot have leading zeroes'),
-        'should throw with maxPriorityFeePerGas with leading zeroes'
+        'should throw with maxPriorityFeePerGas with leading zeroes',
       )
     }
   })
@@ -230,11 +230,11 @@ describe('[BaseTransaction]', () => {
       for (const tx of txType.txs) {
         assert.ok(
           txType.create.rlp(tx.serialize(), { common }),
-          `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`
+          `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`,
         )
         assert.ok(
           txType.create.rlp(tx.serialize(), { common }),
-          `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`
+          `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`,
         )
       }
     }
@@ -246,13 +246,13 @@ describe('[BaseTransaction]', () => {
         for (const activeCapability of txType.activeCapabilities) {
           assert.ok(
             tx.supports(activeCapability),
-            `${txType.name}: should recognize all supported capabilities`
+            `${txType.name}: should recognize all supported capabilities`,
           )
         }
         for (const notActiveCapability of txType.notActiveCapabilities) {
           assert.notOk(
             tx.supports(notActiveCapability),
-            `${txType.name}: should reject non-active existing and not existing capabilities`
+            `${txType.name}: should reject non-active existing and not existing capabilities`,
           )
         }
       }
@@ -264,7 +264,7 @@ describe('[BaseTransaction]', () => {
       for (const tx of txType.txs) {
         assert.ok(
           txType.create.bytesArray(tx.raw() as any, { common }),
-          `${txType.name}: should do roundtrip raw() -> fromValuesArray()`
+          `${txType.name}: should do roundtrip raw() -> fromValuesArray()`,
         )
       }
     }
@@ -287,7 +287,7 @@ describe('[BaseTransaction]', () => {
         assert.equal(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
         assert.ok(
           tx.getValidationErrors().includes('Invalid Signature'),
-          `${txType.name}: should return an error string about not verifying signatures`
+          `${txType.name}: should return an error string about not verifying signatures`,
         )
         assert.notOk(tx.isValid(), `${txType.name}: should not validate correctly`)
       }
@@ -306,7 +306,7 @@ describe('[BaseTransaction]', () => {
           () => tx.sign(utf8ToBytes('invalid')),
           undefined,
           undefined,
-          `${txType.name}: should fail with invalid PK`
+          `${txType.name}: should fail with invalid PK`,
         )
       }
     }
@@ -323,14 +323,14 @@ describe('[BaseTransaction]', () => {
             v: undefined,
             r: undefined,
             s: undefined,
-          })
+          }),
         ),
       ]
       for (const tx of txs) {
         assert.equal(
           tx.isSigned(),
           tx.v !== undefined && tx.r !== undefined && tx.s !== undefined,
-          'isSigned() returns correctly'
+          'isSigned() returns correctly',
         )
       }
     }
@@ -345,7 +345,7 @@ describe('[BaseTransaction]', () => {
           assert.equal(
             signedTx.getSenderAddress().toString(),
             `0x${sendersAddress}`,
-            `${txType.name}: should get sender's address after signing it`
+            `${txType.name}: should get sender's address after signing it`,
           )
         }
       }
@@ -362,7 +362,7 @@ describe('[BaseTransaction]', () => {
           const pubKeyFromPriv = privateToPublic(hexToBytes(`0x${privateKey}`))
           assert.ok(
             equalsBytes(txPubKey, pubKeyFromPriv),
-            `${txType.name}: should get sender's public key after signing it`
+            `${txType.name}: should get sender's public key after signing it`,
           )
         }
       }
@@ -385,7 +385,7 @@ describe('[BaseTransaction]', () => {
             },
             undefined,
             undefined,
-            'should throw when s-value is greater than secp256k1n/2'
+            'should throw when s-value is greater than secp256k1n/2',
           )
         }
       }
@@ -435,7 +435,7 @@ describe('[BaseTransaction]', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('equal or exceed MAX_INTEGER'),
-        'throws when value equals or exceeds MAX_INTEGER'
+        'throws when value equals or exceeds MAX_INTEGER',
       )
     }
     try {
@@ -448,7 +448,7 @@ describe('[BaseTransaction]', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('unimplemented bits value'),
-        'throws when bits value other than 64 or 256 provided'
+        'throws when bits value other than 64 or 256 provided',
       )
     }
     try {
@@ -461,7 +461,7 @@ describe('[BaseTransaction]', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('2^64'),
-        'throws when 64 bit integer equals or exceeds MAX_UINT64'
+        'throws when 64 bit integer equals or exceeds MAX_UINT64',
       )
     }
   })

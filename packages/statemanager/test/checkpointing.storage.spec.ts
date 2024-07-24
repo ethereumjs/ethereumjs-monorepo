@@ -11,12 +11,12 @@ const storageEval = async (
   key: Uint8Array,
   value: Uint8Array,
   root: Uint8Array,
-  rootCheck = true
+  rootCheck = true,
 ) => {
   assert.deepEqual(
     await sm.getContractStorage(address, key),
     value,
-    'storage value should be equal'
+    'storage value should be equal',
   )
   if (rootCheck) {
     const accountCMP = await sm.getAccount(address)

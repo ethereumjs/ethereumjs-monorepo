@@ -90,7 +90,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
       const msg = this._errorMsg(
-        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)'
+        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
       )
       throw new Error(msg)
     }
@@ -225,7 +225,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV: boolean = false
+    convertV: boolean = false,
   ): FeeMarketEIP1559Transaction {
     r = toBytes(r)
     s = toBytes(s)
@@ -246,7 +246,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },
-      opts
+      opts,
     )
   }
 

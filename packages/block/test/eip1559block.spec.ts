@@ -45,12 +45,12 @@ describe('EIP1559 tests', () => {
           },
           {
             common,
-          }
+          },
         )
       },
       undefined,
       undefined,
-      'should throw when setting baseFeePerGas with EIP1559 not being activated'
+      'should throw when setting baseFeePerGas with EIP1559 not being activated',
     )
   })
 
@@ -68,14 +68,14 @@ describe('EIP1559 tests', () => {
           calcDifficultyFromHeader: genesis.header,
           common,
           freeze: false,
-        }
+        },
       )
       assert.fail('should throw when baseFeePerGas is not set to initial base fee')
     } catch (e: any) {
       const expectedError = 'Initial EIP1559 block does not have initial base fee'
       assert.ok(
         e.message.includes(expectedError),
-        'should throw if base fee is not set to initial value'
+        'should throw if base fee is not set to initial value',
       )
     }
 
@@ -91,7 +91,7 @@ describe('EIP1559 tests', () => {
           calcDifficultyFromHeader: genesis.header,
           common,
           freeze: false,
-        }
+        },
       )
       ;(header as any).baseFeePerGas = undefined
       await (header as any)._genericFormatValidation()
@@ -99,7 +99,7 @@ describe('EIP1559 tests', () => {
       const expectedError = 'EIP1559 block has no base fee field'
       assert.ok(
         e.message.includes(expectedError),
-        'should throw with no base fee field when EIP1559 is activated'
+        'should throw with no base fee field when EIP1559 is activated',
       )
     }
   })
@@ -118,7 +118,7 @@ describe('EIP1559 tests', () => {
       {
         calcDifficultyFromHeader: genesis.header,
         common,
-      }
+      },
     )
 
     assert.ok(true, 'Valid initial EIP1559 header should be valid')
@@ -137,7 +137,7 @@ describe('EIP1559 tests', () => {
         {
           calcDifficultyFromHeader: genesis.header,
           common,
-        }
+        },
       )
       assert.fail('should throw')
     } catch (e: any) {
@@ -159,7 +159,7 @@ describe('EIP1559 tests', () => {
       {
         calcDifficultyFromHeader: genesis.header,
         common,
-      }
+      },
     )
     createBlockFromBlockData(
       {
@@ -174,7 +174,7 @@ describe('EIP1559 tests', () => {
       {
         calcDifficultyFromHeader: block1.header,
         common,
-      }
+      },
     )
     assert.ok(true, 'should correctly validate subsequent EIP-1559 blocks')
   })
@@ -195,7 +195,7 @@ describe('EIP1559 tests', () => {
         {
           calcDifficultyFromHeader: genesis.header,
           common,
-        }
+        },
       )
       assert.fail('should throw')
     } catch (e: any) {
@@ -216,7 +216,7 @@ describe('EIP1559 tests', () => {
       {
         calcDifficultyFromHeader: genesis.header,
         common,
-      }
+      },
     )
 
     assert.ok(true, 'should not throw when elasticity is exactly matched')
@@ -235,7 +235,7 @@ describe('EIP1559 tests', () => {
     {
       calcDifficultyFromHeader: genesis.header,
       common,
-    }
+    },
   )
 
   it('Header -> validate() -> gasLimit -> success cases', async () => {
@@ -251,7 +251,7 @@ describe('EIP1559 tests', () => {
       {
         calcDifficultyFromHeader: genesis.header,
         common,
-      }
+      },
     )
 
     assert.ok(true, 'should not throw if gas limit is between bounds (HF transition block)')
@@ -267,7 +267,7 @@ describe('EIP1559 tests', () => {
       {
         calcDifficultyFromHeader: genesis.header,
         common,
-      }
+      },
     )
 
     assert.ok(true, 'should not throw if gas limit is between bounds (HF transition block)')
@@ -284,7 +284,7 @@ describe('EIP1559 tests', () => {
       {
         calcDifficultyFromHeader: block1.header,
         common,
-      }
+      },
     )
 
     assert.ok(true, 'should not throw if gas limit is between bounds (post-HF transition block)')
@@ -300,7 +300,7 @@ describe('EIP1559 tests', () => {
       {
         calcDifficultyFromHeader: block1.header,
         common,
-      }
+      },
     )
 
     assert.ok(true, 'should not throw if gas limit is between bounds (post-HF transition block)')
@@ -319,7 +319,7 @@ describe('EIP1559 tests', () => {
       {
         calcDifficultyFromHeader: genesis.header,
         common,
-      }
+      },
     )
     try {
       header.validateGasLimit(genesis.header)
@@ -327,7 +327,7 @@ describe('EIP1559 tests', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('gas limit increased too much'),
-        'should throw if gas limit is increased too much (HF transition block)'
+        'should throw if gas limit is increased too much (HF transition block)',
       )
     }
 
@@ -343,7 +343,7 @@ describe('EIP1559 tests', () => {
       {
         calcDifficultyFromHeader: block1.header,
         common,
-      }
+      },
     )
     try {
       header.validateGasLimit(block1.header)
@@ -351,7 +351,7 @@ describe('EIP1559 tests', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('gas limit increased too much'),
-        'should throw if gas limit is increased too much (post-HF transition block)'
+        'should throw if gas limit is increased too much (post-HF transition block)',
       )
     }
   })
@@ -369,7 +369,7 @@ describe('EIP1559 tests', () => {
       {
         calcDifficultyFromHeader: genesis.header,
         common,
-      }
+      },
     )
     try {
       header.validateGasLimit(genesis.header)
@@ -377,7 +377,7 @@ describe('EIP1559 tests', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('gas limit decreased too much'),
-        'should throw if gas limit is decreased too much (HF transition block)'
+        'should throw if gas limit is decreased too much (HF transition block)',
       )
     }
 
@@ -393,7 +393,7 @@ describe('EIP1559 tests', () => {
       {
         calcDifficultyFromHeader: block1.header,
         common,
-      }
+      },
     )
     try {
       header.validateGasLimit(block1.header)
@@ -401,7 +401,7 @@ describe('EIP1559 tests', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('gas limit decreased too much'),
-        'should throw if gas limit is decreased too much (post-HF transition block)'
+        'should throw if gas limit is decreased too much (post-HF transition block)',
       )
     }
   })
@@ -412,7 +412,7 @@ describe('EIP1559 tests', () => {
         maxFeePerGas: BigInt(0),
         maxPriorityFeePerGas: BigInt(0),
       },
-      { common }
+      { common },
     ).sign(hexToBytes(`0x${'46'.repeat(32)}`))
     const block = createBlockFromBlockData(
       {
@@ -438,13 +438,13 @@ describe('EIP1559 tests', () => {
       {
         common,
         calcDifficultyFromHeader: genesis.header,
-      }
+      },
     )
 
     const errs = block.getTransactionsValidationErrors()
     assert.ok(
       errs[0].includes('unable to pay base fee'),
-      'should throw if transaction is unable to pay base fee'
+      'should throw if transaction is unable to pay base fee',
     )
   })
 
@@ -457,7 +457,7 @@ describe('EIP1559 tests', () => {
           gasUsed: BigInt(item.parentGasUsed),
           gasLimit: BigInt(item.parentTargetGasUsed) * BigInt(2),
         },
-        { common }
+        { common },
       ).calcNextBaseFee()
       const expected = BigInt(item.expectedBaseFee)
       assert.equal(expected, result, 'base fee correct')
@@ -475,7 +475,7 @@ describe('EIP1559 tests', () => {
       },
       {
         common,
-      }
+      },
     )
     assert.equal(header.toJSON().baseFeePerGas, '0x5')
   })

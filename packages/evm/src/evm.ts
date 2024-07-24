@@ -179,7 +179,7 @@ export class EVM implements EVMInterface {
 
     if (!EVM.supportedHardforks.includes(this.common.hardfork() as Hardfork)) {
       throw new Error(
-        `Hardfork ${this.common.hardfork()} not set as supported in supportedHardforks`
+        `Hardfork ${this.common.hardfork()} not set as supported in supportedHardforks`,
       )
     }
 
@@ -214,7 +214,7 @@ export class EVM implements EVMInterface {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   /**
@@ -282,13 +282,13 @@ export class EVM implements EVMInterface {
     if (!toAccount) {
       if (this.common.isActivatedEIP(6800)) {
         const absenceProofAccessGas = message.accessWitness!.touchAndChargeProofOfAbsence(
-          message.to
+          message.to,
         )
         gasLimit -= absenceProofAccessGas
         if (gasLimit < BIGINT_0) {
           if (this.DEBUG) {
             debugGas(
-              `Proof of absense access charged(${absenceProofAccessGas}) caused OOG (-> ${gasLimit})`
+              `Proof of absense access charged(${absenceProofAccessGas}) caused OOG (-> ${gasLimit})`,
             )
           }
           return { execResult: OOGResult(message.gasLimit) }
@@ -429,13 +429,13 @@ export class EVM implements EVMInterface {
 
     if (this.common.isActivatedEIP(6800)) {
       const contractCreateAccessGas = message.accessWitness!.touchAndChargeContractCreateInit(
-        message.to
+        message.to,
       )
       gasLimit -= contractCreateAccessGas
       if (gasLimit < BIGINT_0) {
         if (this.DEBUG) {
           debugGas(
-            `ContractCreateInit charge(${contractCreateAccessGas}) caused OOG (-> ${gasLimit})`
+            `ContractCreateInit charge(${contractCreateAccessGas}) caused OOG (-> ${gasLimit})`,
           )
         }
         return { execResult: OOGResult(message.gasLimit) }
@@ -518,13 +518,13 @@ export class EVM implements EVMInterface {
         if (gasLimit < BIGINT_0) {
           if (this.DEBUG) {
             debug(
-              `ContractCreateComplete access gas (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`
+              `ContractCreateComplete access gas (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`,
             )
           }
           return { execResult: OOGResult(message.gasLimit) }
         } else {
           debug(
-            `ContractCreateComplete access used (${createCompleteAccessGas}) gas (-> ${gasLimit})`
+            `ContractCreateComplete access used (${createCompleteAccessGas}) gas (-> ${gasLimit})`,
           )
         }
       }
@@ -627,19 +627,19 @@ export class EVM implements EVMInterface {
     gasLimit = message.gasLimit - result.executionGasUsed
     if (!result.exceptionError && this.common.isActivatedEIP(6800)) {
       const createCompleteAccessGas = message.accessWitness!.touchAndChargeContractCreateCompleted(
-        message.to
+        message.to,
       )
       gasLimit -= createCompleteAccessGas
       if (gasLimit < BIGINT_0) {
         if (this.DEBUG) {
           debug(
-            `ContractCreateComplete access gas (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`
+            `ContractCreateComplete access gas (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`,
           )
         }
         result = { ...result, ...OOGResult(message.gasLimit) }
       } else {
         debug(
-          `ContractCreateComplete access used (${createCompleteAccessGas}) gas (-> ${gasLimit})`
+          `ContractCreateComplete access used (${createCompleteAccessGas}) gas (-> ${gasLimit})`,
         )
         result.executionGasUsed += createCompleteAccessGas
       }
@@ -657,13 +657,13 @@ export class EVM implements EVMInterface {
           message.accessWitness!.touchCodeChunksRangeOnWriteAndChargeGas(
             message.to,
             0,
-            result.returnValue.length - 1
+            result.returnValue.length - 1,
           )
         gasLimit -= byteCodeWriteAccessfee
         if (gasLimit < BIGINT_0) {
           if (this.DEBUG) {
             debug(
-              `byteCodeWrite access gas (${byteCodeWriteAccessfee}) caused OOG (-> ${gasLimit})`
+              `byteCodeWrite access gas (${byteCodeWriteAccessfee}) caused OOG (-> ${gasLimit})`,
             )
           }
           result = { ...result, ...OOGResult(message.gasLimit) }
@@ -700,7 +700,7 @@ export class EVM implements EVMInterface {
    */
   protected async runInterpreter(
     message: Message,
-    opts: InterpreterOpts = {}
+    opts: InterpreterOpts = {},
   ): Promise<ExecResult> {
     let contract = await this.stateManager.getAccount(message.to ?? Address.zero())
     if (!contract) {
@@ -736,7 +736,7 @@ export class EVM implements EVMInterface {
       message.gasLimit,
       this.journal,
       this.performanceLogger,
-      this._optsCached.profiler
+      this._optsCached.profiler,
     )
     if (message.selfdestruct) {
       interpreter._result.selfdestruct = message.selfdestruct
@@ -870,7 +870,7 @@ export class EVM implements EVMInterface {
       debug(
         `New message caller=${caller} gasLimit=${gasLimit} to=${
           to?.toString() ?? 'none'
-        } value=${value} delegatecall=${delegatecall ? 'yes' : 'no'}`
+        } value=${value} delegatecall=${delegatecall ? 'yes' : 'no'}`,
       )
     }
     if (message.to) {
@@ -889,7 +889,7 @@ export class EVM implements EVMInterface {
       debug(
         `Received message execResult: [ gasUsed=${executionGasUsed} exceptionError=${
           exceptionError ? `'${exceptionError.error}'` : 'none'
-        } returnValue=${short(returnValue)} gasRefund=${result.execResult.gasRefund ?? 0} ]`
+        } returnValue=${short(returnValue)} gasRefund=${result.execResult.gasRefund ?? 0} ]`,
       )
     }
     const err = result.execResult.exceptionError
@@ -971,7 +971,7 @@ export class EVM implements EVMInterface {
   protected runPrecompile(
     code: PrecompileFunc,
     data: Uint8Array,
-    gasLimit: bigint
+    gasLimit: bigint,
   ): Promise<ExecResult> | ExecResult {
     if (typeof code !== 'function') {
       throw new Error('Invalid precompile')

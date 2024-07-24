@@ -37,7 +37,7 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     assert.equal(
       c.param('ecAddGas'),
       BigInt(500),
-      'Should return correct value for HF set in class'
+      'Should return correct value for HF set in class',
     )
   })
 

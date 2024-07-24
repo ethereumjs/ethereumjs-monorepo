@@ -81,7 +81,7 @@ describe('encoding', () => {
     assert.deepEqual(
       result,
       expected,
-      'Returned hex-encoded key does not match the expected result'
+      'Returned hex-encoded key does not match the expected result',
     )
   })
 
@@ -98,7 +98,7 @@ describe('encoding', () => {
     assert.deepEqual(
       result,
       expected,
-      'Returned hex-encoded key in "keybyte" encoding does not match the expected result'
+      'Returned hex-encoded key in "keybyte" encoding does not match the expected result',
     )
   })
 
@@ -110,7 +110,7 @@ describe('encoding', () => {
     assert.throws(
       () => pathToHexKey(path, extension, 'invalid'),
       Error,
-      'retType must be either "keybyte" or "hex"'
+      'retType must be either "keybyte" or "hex"',
     )
   })
 
@@ -122,17 +122,17 @@ describe('encoding', () => {
     assert.equal(
       paths.reduce((count, subArray) => count + subArray.length, 0),
       pathStrings.length,
-      'should have correct number of paths'
+      'should have correct number of paths',
     )
     assert.deepEqual(
       paths[0],
       [Uint8Array.of(26), Uint8Array.of(27), Uint8Array.of(28), Uint8Array.of(29)],
-      'should merge paths correctly'
+      'should merge paths correctly',
     )
     assert.deepEqual(
       paths[1],
       [Uint8Array.of(30), Uint8Array.of(26)],
-      'should merge paths correctly'
+      'should merge paths correctly',
     )
     assert.deepEqual(paths[2], [Uint8Array.of(31)], 'should merge paths correctly')
   })

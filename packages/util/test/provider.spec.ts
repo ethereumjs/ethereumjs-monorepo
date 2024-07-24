@@ -18,13 +18,13 @@ describe('getProvider', () => {
     assert.equal(
       getProvider(fakeEthersProvider),
       fakeEthersProvider._getConnection().url,
-      'returned correct provider url string'
+      'returned correct provider url string',
     )
     assert.throws(
       () => getProvider(<any>1),
       'Must provide valid provider URL or Web3Provider',
       undefined,
-      'throws correct error'
+      'throws correct error',
     )
   })
 })

@@ -12,7 +12,7 @@ import type { Account } from '@ethereumjs/util'
 const accountEval = async (
   sm: StateManagerInterface,
   address: Address,
-  compare: bigint | undefined
+  compare: bigint | undefined,
 ) => {
   const account = await sm.getAccount(address)
   if (compare === undefined) {

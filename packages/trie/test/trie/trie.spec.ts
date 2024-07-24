@@ -47,7 +47,7 @@ for (const { constructor, defaults, title } of [
     it('creates an instance via createTrie and defaults to `false` with a database', async () => {
       // TODO: check this test
       assert.isUndefined(
-        ((await createTrie({ ...defaults, db: new MapDB() })) as any)._useRootPersistence
+        ((await createTrie({ ...defaults, db: new MapDB() })) as any)._useRootPersistence,
       )
     })
 
@@ -60,7 +60,7 @@ for (const { constructor, defaults, title } of [
             db: new MapDB(),
             useRootPersistence: false,
           })) as any
-        )._useRootPersistence
+        )._useRootPersistence,
       )
     })
 
@@ -73,14 +73,14 @@ for (const { constructor, defaults, title } of [
             db: new MapDB(),
             useRootPersistence: false,
           })) as any
-        )._useRootPersistence
+        )._useRootPersistence,
       )
     })
 
     it('creates an instance via createTrie and defaults to `false` without a database', async () => {
       // TODO: check this test
       assert.isUndefined(
-        ((await createTrie({ ...defaults, db: new MapDB() })) as any)._useRootPersistence
+        ((await createTrie({ ...defaults, db: new MapDB() })) as any)._useRootPersistence,
       )
     })
 
@@ -189,7 +189,7 @@ for (const { constructor, defaults, title } of [
       for (const root of roots) {
         assert.isTrue(
           await trie.checkRoot(unprefixedHexToBytes(root)),
-          'Should return true for all nodes in trie'
+          'Should return true for all nodes in trie',
         )
       }
     })
@@ -207,16 +207,16 @@ for (const { constructor, defaults, title } of [
       assert.deepEqual(emptyTrie.EMPTY_TRIE_ROOT, emptyTrie.root(), 'Should return empty trie root')
       assert.isTrue(
         await emptyTrie.checkRoot(emptyTrie.EMPTY_TRIE_ROOT),
-        'Should return true for empty root'
+        'Should return true for empty root',
       )
       assert.isFalse(
         await emptyTrie.checkRoot(emptyTrie['appliedKey'](ROOT_DB_KEY)),
-        'Should return false for persistence key'
+        'Should return false for persistence key',
       )
       for (const root of roots) {
         assert.isFalse(
           await emptyTrie.checkRoot(unprefixedHexToBytes(root)),
-          'Should always return false'
+          'Should always return false',
         )
       }
     })
@@ -235,7 +235,7 @@ for (const { constructor, defaults, title } of [
         assert.notEqual(
           'Missing node in DB',
           e.message,
-          'Should throw when error is unrelated to checkroot'
+          'Should throw when error is unrelated to checkroot',
         )
       }
     })
@@ -259,7 +259,7 @@ describe('keyHashingFunction', async () => {
     assert.equal(
       bytesToHex(trieWithHashFunction.root()),
       '0x8001',
-      'used hash function from customKeyHashingFunction'
+      'used hash function from customKeyHashingFunction',
     )
     assert.equal(bytesToHex(trieWithCommon.root()), '0x80', 'used hash function from common')
   })
@@ -282,7 +282,7 @@ describe('keyHashingFunction', async () => {
     assert.equal(
       bytesToHex(trieWithHashFunctionCopy.root()),
       '0x8001',
-      'used hash function from customKeyHashingFunction'
+      'used hash function from customKeyHashingFunction',
     )
     assert.equal(bytesToHex(trieWithCommonCopy.root()), '0x80', 'used hash function from common')
   })

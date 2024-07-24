@@ -219,7 +219,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV: boolean = false
+    convertV: boolean = false,
   ): LegacyTransaction {
     r = toBytes(r)
     s = toBytes(s)
@@ -241,7 +241,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },
-      opts
+      opts,
     )
   }
 
@@ -268,7 +268,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
       // v is 2. not matching the classic v=27 or v=28 case
       if (v < 37 && v !== 27 && v !== 28) {
         throw new Error(
-          `Legacy txs need either v = 27/28 or v >= 37 (EIP-155 replay protection), got v = ${v}`
+          `Legacy txs need either v = 27/28 or v >= 37 (EIP-155 replay protection), got v = ${v}`,
         )
       }
     }
@@ -284,7 +284,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
       if (common) {
         if (!meetsEIP155(BigInt(v), common.chainId())) {
           throw new Error(
-            `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`
+            `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`,
           )
         }
       } else {

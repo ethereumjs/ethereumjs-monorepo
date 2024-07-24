@@ -19,7 +19,7 @@ export const gasCheck = (opts: PrecompileInput, gasUsed: bigint, pName: string) 
     opts._debug(
       `Run ${pName} precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
         opts.gasLimit
-      } gasUsed=${gasUsed}`
+      } gasUsed=${gasUsed}`,
     )
   }
   if (opts.gasLimit < gasUsed) {
@@ -68,7 +68,7 @@ export const equalityLengthCheck = (opts: PrecompileInput, length: number, pName
   if (opts.data.length !== length) {
     if (opts._debug !== undefined) {
       opts._debug(
-        `${pName} failed: Invalid input length length=${opts.data.length} (expected: ${length})`
+        `${pName} failed: Invalid input length length=${opts.data.length} (expected: ${length})`,
       )
     }
     return false
@@ -89,7 +89,7 @@ export const moduloLengthCheck = (opts: PrecompileInput, length: number, pName: 
   if (opts.data.length % length !== 0) {
     if (opts._debug !== undefined) {
       opts._debug(
-        `${pName} failed: Invalid input length length=${opts.data.length} (expected: ${length}*k bytes)`
+        `${pName} failed: Invalid input length length=${opts.data.length} (expected: ${length}*k bytes)`,
       )
     }
     return false
@@ -123,12 +123,12 @@ export const leading16ZeroBytesCheck = (
   opts: PrecompileInput,
   zeroByteRanges: number[][],
   pName: string,
-  pairStart = 0
+  pairStart = 0,
 ) => {
   for (const index in zeroByteRanges) {
     const slicedBuffer = opts.data.subarray(
       zeroByteRanges[index][0] + pairStart,
-      zeroByteRanges[index][1] + pairStart
+      zeroByteRanges[index][1] + pairStart,
     )
     if (!(equalsBytes(slicedBuffer, ZERO_BYTES_16) === true)) {
       if (opts._debug !== undefined) {

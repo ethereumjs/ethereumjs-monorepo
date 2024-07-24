@@ -31,11 +31,11 @@ export function create1559FeeMarketTx(txData: TxData, opts: TxOptions = {}) {
  */
 export function createEIP1559FeeMarketTxFromBytesArray(
   values: TxValuesArray,
-  opts: TxOptions = {}
+  opts: TxOptions = {},
 ) {
   if (values.length !== 9 && values.length !== 12) {
     throw new Error(
-      'Invalid EIP-1559 transaction. Only expecting 9 values (for unsigned tx) or 12 values (for signed tx).'
+      'Invalid EIP-1559 transaction. Only expecting 9 values (for unsigned tx) or 12 values (for signed tx).',
     )
   }
 
@@ -72,7 +72,7 @@ export function createEIP1559FeeMarketTxFromBytesArray(
       r,
       s,
     },
-    opts
+    opts,
   )
 }
 
@@ -89,7 +89,7 @@ export function create1559FeeMarketTxFromRLP(serialized: Uint8Array, opts: TxOpt
     throw new Error(
       `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${
         TransactionType.FeeMarketEIP1559
-      }, received: ${bytesToHex(serialized.subarray(0, 1))}`
+      }, received: ${bytesToHex(serialized.subarray(0, 1))}`,
     )
   }
 

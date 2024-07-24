@@ -17,7 +17,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 
 const pkey = hexToBytes(
   (process.env.PRIVATE_KEY as PrefixedHexString) ??
-    '0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e'
+    '0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e',
 )
 const sender = bytesToHex(privateToAddress(pkey))
 const rpcUrl =
@@ -68,7 +68,7 @@ describe(`running txes on ${rpcUrl}`, async () => {
       const nonceFetch = await client.request(
         'eth_getTransactionCount',
         [sender.toString(), 'latest'],
-        2.0
+        2.0,
       )
       const nonce = Number(nonceFetch.result)
       assert.ok(true, `fetched ${sender}'s  nonce=${nonce} for blob txs`)
@@ -86,7 +86,7 @@ describe(`running txes on ${rpcUrl}`, async () => {
           gasLimit: BigInt(process.env.GAS_LIMIT ?? 0xffffffn),
           blobSize: Number(process.env.BLOB_SIZE ?? 4096),
         },
-        { common }
+        { common },
       )
       const txHashes = []
       for (const txn of txns) {
@@ -101,7 +101,7 @@ describe(`running txes on ${rpcUrl}`, async () => {
       }
       assert.ok(true, `posted txs=${txHashes.length}`)
     },
-    10 * 60_000
+    10 * 60_000,
   )
 
   it('cleanup', async () => {

@@ -18,7 +18,7 @@ export class LevelDB implements DB {
    * @param leveldb - An abstract-leveldown compliant store
    */
   constructor(
-    leveldb?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+    leveldb?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>,
   ) {
     this._leveldb = leveldb ?? new MemoryLevel(ENCODING_OPTS)
   }

@@ -86,7 +86,7 @@ export class VerkleTree {
     this.verkleCrypto = opts?.verkleCrypto
 
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
     this.debug = this.DEBUG
       ? (message: string, namespaces: string[] = []) => {
           let log = this._debug
@@ -237,7 +237,7 @@ export class VerkleTree {
       // Sanity check to verify we have the right node type
       if (!isLeafNode(foundPath.node)) {
         throw new Error(
-          `expected leaf node found at ${bytesToHex(stem)}. Got internal node instead`
+          `expected leaf node found at ${bytesToHex(stem)}. Got internal node instead`,
         )
       }
       leafNode = foundPath.node
@@ -245,8 +245,8 @@ export class VerkleTree {
       if (!equalsBytes(leafNode.stem, stem)) {
         throw new Error(
           `invalid leaf node found. Expected stem: ${bytesToHex(stem)}; got ${bytesToHex(
-            foundPath.node.stem
-          )}`
+            foundPath.node.stem,
+          )}`,
         )
       }
     } else {
@@ -265,7 +265,7 @@ export class VerkleTree {
     this.DEBUG &&
       this.debug(
         `Updating value for suffix: ${suffix} at leaf node with stem: ${bytesToHex(stem)}`,
-        ['PUT']
+        ['PUT'],
       )
     putStack.push([leafNode.hash(), leafNode])
 
@@ -296,9 +296,9 @@ export class VerkleTree {
         this.DEBUG &&
           this.debug(
             `Updating child reference for node with path: ${bytesToHex(
-              lastPath
+              lastPath,
             )} at index ${childIndex} in internal node at path ${bytesToHex(nextPath)}`,
-            ['PUT']
+            ['PUT'],
           )
         // Hold onto `path` to current node for updating next parent node child index
         lastPath = nextPath
@@ -318,7 +318,7 @@ export class VerkleTree {
         `Updating child reference for node with path: ${bytesToHex(lastPath)} at index ${
           lastPath[0]
         } in root node`,
-        ['PUT']
+        ['PUT'],
       )
     this.DEBUG && this.debug(`Updating root node hash to ${bytesToHex(this._root)}`, ['PUT'])
     putStack.push([this._root, rootNode])
@@ -342,7 +342,7 @@ export class VerkleTree {
   updateParent(
     leafNode: LeafNode,
     nearestNode: VerkleNode,
-    pathToNode: Uint8Array
+    pathToNode: Uint8Array,
   ): { node: InternalNode; lastPath: Uint8Array } {
     // Compute the portion of leafNode.stem and nearestNode.path that match (i.e. the partial path closest to leafNode.stem)
     const partialMatchingStemIndex = matchingBytesLength(leafNode.stem, pathToNode)
@@ -375,13 +375,13 @@ export class VerkleTree {
       this.DEBUG &&
         this.debug(
           `Updating child reference for leaf node with stem: ${bytesToHex(
-            leafNode.stem
+            leafNode.stem,
           )} at index ${
             leafNode.stem[partialMatchingStemIndex]
           } in internal node at path ${bytesToHex(
-            leafNode.stem.slice(0, partialMatchingStemIndex)
+            leafNode.stem.slice(0, partialMatchingStemIndex),
           )}`,
-          ['PUT']
+          ['PUT'],
         )
     }
     return { node: internalNode, lastPath: pathToNode }
@@ -440,9 +440,9 @@ export class VerkleTree {
           this.DEBUG &&
             this.debug(
               `Path ${bytesToHex(key)} - found full path to node ${bytesToHex(
-                decodedNode.hash()
+                decodedNode.hash(),
               )}.`,
-              ['FIND_PATH']
+              ['FIND_PATH'],
             )
           result.node = decodedNode
           result.remaining = new Uint8Array()
@@ -455,9 +455,9 @@ export class VerkleTree {
         this.DEBUG &&
           this.debug(
             `Path ${bytesToHex(pathToNearestNode)} - found path to nearest node ${bytesToHex(
-              decodedNode.hash()
+              decodedNode.hash(),
             )} but target node not found.`,
-            ['FIND_PATH']
+            ['FIND_PATH'],
           )
         result.stack.push([decodedNode, pathToNearestNode])
         return result
@@ -467,9 +467,9 @@ export class VerkleTree {
       this.DEBUG &&
         this.debug(
           `Partial Path ${bytesToHex(
-            key.slice(0, matchingKeyLength)
+            key.slice(0, matchingKeyLength),
           )} - found next node in path ${bytesToHex(decodedNode.hash())}.`,
-          ['FIND_PATH']
+          ['FIND_PATH'],
         )
       // Get the next child node in the path
       const childIndex = key[matchingKeyLength]
@@ -478,9 +478,9 @@ export class VerkleTree {
     this.DEBUG &&
       this.debug(
         `Found partial path ${key.slice(
-          31 - result.remaining.length
+          31 - result.remaining.length,
         )} but sought node is not present in trie.`,
-        ['FIND_PATH']
+        ['FIND_PATH'],
       )
     return result
   }
@@ -547,7 +547,7 @@ export class VerkleTree {
   async verifyProof(
     _rootHash: Uint8Array,
     _key: Uint8Array,
-    _proof: Proof
+    _proof: Proof,
   ): Promise<Uint8Array | null> {
     throw new Error('Not implemented')
   }

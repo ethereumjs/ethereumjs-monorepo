@@ -14,7 +14,7 @@ describe('[Common]: Custom Crypto', () => {
     v: bigint,
     r: Uint8Array,
     s: Uint8Array,
-    _chainID?: bigint
+    _chainID?: bigint,
   ) => {
     return concatBytes(msgHash, Uint8Array.from([Number(v)]), r, s)
   }
@@ -58,8 +58,8 @@ describe('[Common]: Custom Crypto', () => {
         Uint8Array.from([1]),
         BigInt(2),
         Uint8Array.from([3]),
-        Uint8Array.from([4])
-      )
+        Uint8Array.from([4]),
+      ),
     )
   })
 

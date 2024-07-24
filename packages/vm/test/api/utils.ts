@@ -53,7 +53,7 @@ export function getTransaction(
   sign = false,
   value = '0x00',
   createContract = false,
-  nonce = 0
+  nonce = 0,
 ) {
   let to: string | undefined = '0x0000000000000000000000000000000000000000'
   let data = '0x7f7465737432000000000000000000000000000000000000000000000000000000600057'
@@ -105,11 +105,11 @@ export function getTransaction(
     txParams['kzgProofs'] = txParams['blobs'].map((blob: Uint8Array, ctx: number) =>
       common.customCrypto!.kzg!.computeBlobKzgProof(
         blob,
-        txParams['kzgCommitments'][ctx] as Uint8Array
-      )
+        txParams['kzgCommitments'][ctx] as Uint8Array,
+      ),
     )
     txParams['blobVersionedHashes'] = txParams['kzgCommitments'].map((commitment: Uint8Array) =>
-      computeVersionedHash(commitment, 0x1)
+      computeVersionedHash(commitment, 0x1),
     )
   }
 
@@ -117,7 +117,7 @@ export function getTransaction(
 
   if (sign) {
     const privateKey = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
     return tx.sign(privateKey)
   }

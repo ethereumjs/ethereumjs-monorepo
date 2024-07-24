@@ -125,7 +125,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
  */
 export function makeTx(
   txData: any,
-  opts?: TxOptions
+  opts?: TxOptions,
 ):
   | EOACodeEIP7702Transaction
   | BlobEIP4844Transaction
@@ -215,7 +215,7 @@ export function verifyAccountPostConditions(
   address: string,
   account: Account,
   acctData: any,
-  t: tape.Test
+  t: tape.Test,
 ) {
   return new Promise<void>((resolve) => {
     t.comment('Account: ' + address)
@@ -223,12 +223,12 @@ export function verifyAccountPostConditions(
       t.comment(
         `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
           account.balance
-        }`
+        }`,
       )
     }
     if (!equalsBytes(format(account.nonce, true), format(acctData.nonce, true))) {
       t.comment(
-        `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`
+        `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`,
       )
     }
 
@@ -258,7 +258,7 @@ export function verifyAccountPostConditions(
         t.comment(
           `Expected storage key ${bytesToHex(data.key)} at address ${address} to have value ${
             hashedStorage[key] ?? '0x'
-          }, but got ${val}}`
+          }, but got ${val}}`,
         )
       }
       delete hashedStorage[key]
@@ -332,7 +332,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
           gasUsed: parentGasUsed,
           baseFeePerGas: parentBaseFee,
         },
-        { common: opts.common }
+        { common: opts.common },
       )
       headerData['baseFeePerGas'] = parentBlockHeader.calcNextBaseFee()
     }
@@ -429,7 +429,7 @@ export function getDAOCommon(activationBlock: number) {
     {
       baseChain: 'mainnet',
       hardfork: Hardfork.Dao,
-    }
+    },
   )
   return DAOCommon
 }

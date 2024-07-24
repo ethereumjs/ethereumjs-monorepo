@@ -239,7 +239,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   async getTransitionStateRoot(_: DefaultStateManager, __: Uint8Array): Promise<Uint8Array> {
@@ -249,7 +249,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   public initVerkleExecutionWitness(
     blockNum: bigint,
     executionWitness?: VerkleExecutionWitness | null,
-    accessWitness?: AccessWitness
+    accessWitness?: AccessWitness,
   ) {
     this._blockNum = blockNum
     if (executionWitness === null || executionWitness === undefined) {
@@ -316,7 +316,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   async checkChunkWitnessPresent(address: Address, codeOffset: number) {
     const chunkId = codeOffset / 31
     const chunkKey = bytesToHex(
-      await getVerkleTreeKeyForCodeChunk(address, chunkId, this.verkleCrypto)
+      await getVerkleTreeKeyForCodeChunk(address, chunkId, this.verkleCrypto),
     )
     return this._state[chunkKey] !== undefined
   }
@@ -389,7 +389,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const chunks = Math.floor(codeSize / 31) + 1
     for (let chunkId = 0; chunkId < chunks; chunkId++) {
       const chunkKey = bytesToHex(
-        await getVerkleTreeKeyForCodeChunk(address, chunkId, this.verkleCrypto)
+        await getVerkleTreeKeyForCodeChunk(address, chunkId, this.verkleCrypto),
       )
       const codeChunk = this._state[chunkKey]
       if (codeChunk === null) {
@@ -463,7 +463,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const storageKey = await getVerkleTreeKeyForStorageSlot(
       address,
       BigInt(bytesToHex(key)),
-      this.verkleCrypto
+      this.verkleCrypto,
     )
     const storageValue = toBytes(this._state[bytesToHex(storageKey)])
 
@@ -489,7 +489,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       const storageKey = await getVerkleTreeKeyForStorageSlot(
         address,
         BigInt(bytesToHex(key)),
-        this.verkleCrypto
+        this.verkleCrypto,
       )
       this._state[bytesToHex(storageKey)] = bytesToHex(setLengthRight(value, 32))
     }
@@ -542,7 +542,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         typeof codeHashRaw === 'string'
       ) {
         const errorMsg = `Invalid witness for a non existing address=${address} stem=${bytesToHex(
-          stem
+          stem,
         )}`
         debug(errorMsg)
         throw Error(errorMsg)
@@ -554,7 +554,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // check if codehash is correct 32 bytes prefixed hex string
     if (codeHashRaw !== undefined && codeHashRaw !== null && codeHashRaw.length !== 66) {
       const errorMsg = `Invalid codeHashRaw=${codeHashRaw} for address=${address} chunkKey=${bytesToHex(
-        codeHashKey
+        codeHashKey,
       )}`
       debug(errorMsg)
       throw Error(errorMsg)
@@ -584,8 +584,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         typeof codeSizeRaw === 'string'
           ? bytesToInt32(hexToBytes(codeSizeRaw), true)
           : codeSizeRaw === null
-          ? 0
-          : null,
+            ? 0
+            : null,
       storageRoot: null,
     })
 
@@ -695,7 +695,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       const computedValue = this.getComputedValue(accessedState) ?? this._preState[chunkKey]
       if (computedValue === undefined) {
         debug(
-          `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`
+          `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
         )
         postFailures++
         continue
@@ -705,7 +705,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
       if (canonicalValue === undefined) {
         debug(
-          `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`
+          `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
         )
         postFailures++
         continue
@@ -738,7 +738,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
             : `${canonicalValue} (${decodedCanonicalValue})`
 
         debug(
-          `Block accesses mismatch address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`
+          `Block accesses mismatch address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
         )
         debug(`expected=${displayCanonicalValue}`)
         debug(`computed=${displayComputedValue}`)

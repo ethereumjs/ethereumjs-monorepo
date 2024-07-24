@@ -32,7 +32,7 @@ export class RPCManager {
   getMethods(engine = false, rpcDebug = false) {
     const methods: { [key: string]: Function } = {}
     const mods = modules.list.filter((name: string) =>
-      engine ? name === 'Engine' : name !== 'Engine'
+      engine ? name === 'Engine' : name !== 'Engine',
     )
     for (const modName of mods) {
       const mod = new (modules as any)[modName](this._client, rpcDebug)
@@ -64,7 +64,7 @@ export class RPCManager {
    */
   static getMethodNames(mod: Object): string[] {
     const methodNames = Object.getOwnPropertyNames((mod as any).prototype).filter(
-      (methodName: string) => methodName !== 'constructor'
+      (methodName: string) => methodName !== 'constructor',
     )
     return methodNames
   }

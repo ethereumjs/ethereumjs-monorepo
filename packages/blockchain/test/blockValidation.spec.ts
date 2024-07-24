@@ -35,7 +35,7 @@ describe('[Blockchain]: Block validation tests', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('uncle is already included'),
-        'block throws if uncle is already included'
+        'block throws if uncle is already included',
       )
     }
   })
@@ -62,7 +62,7 @@ describe('[Blockchain]: Block validation tests', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('not found in DB'),
-        'block throws if uncle parent hash is not part of the canonical chain'
+        'block throws if uncle parent hash is not part of the canonical chain',
       )
     }
   })
@@ -86,7 +86,7 @@ describe('[Blockchain]: Block validation tests', () => {
       lastBlock,
       'too-old-uncle',
       [uncleBlock.header],
-      common
+      common,
     )
 
     try {
@@ -95,7 +95,7 @@ describe('[Blockchain]: Block validation tests', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('uncle block has a parent that is too old'),
-        'block throws uncle is too old'
+        'block throws uncle is too old',
       )
     }
   })
@@ -117,7 +117,7 @@ describe('[Blockchain]: Block validation tests', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('uncle block has a parent that is too old or too young'),
-        'block throws uncle is too young'
+        'block throws uncle is too young',
       )
     }
   })
@@ -139,7 +139,7 @@ describe('[Blockchain]: Block validation tests', () => {
           gasLimit: BigInt(5000),
         },
       },
-      { common }
+      { common },
     )
 
     const block1 = createBlock(genesis, 'block1', [], common)
@@ -153,7 +153,7 @@ describe('[Blockchain]: Block validation tests', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('invalid difficulty block header number=1 '),
-        'block throws when uncle header is invalid'
+        'block throws when uncle header is invalid',
       )
     }
   })
@@ -176,7 +176,7 @@ describe('[Blockchain]: Block validation tests', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('The uncle is a canonical block'),
-        'block throws if an uncle is a canonical block'
+        'block throws if an uncle is a canonical block',
       )
     }
   })
@@ -198,7 +198,7 @@ describe('[Blockchain]: Block validation tests', () => {
     assert.deepEqual(
       (await blockchain.getCanonicalHeadHeader()).uncleHash,
       block2.header.uncleHash,
-      'uncle blocks validated successfully'
+      'uncle blocks validated successfully',
     )
   })
 
@@ -236,7 +236,7 @@ describe('[Blockchain]: Block validation tests', () => {
         calcDifficultyFromHeader: genesis.header,
         common,
         freeze: false,
-      }
+      },
     )
 
     const block = createBlockFromBlockData({ header }, { common })
@@ -253,7 +253,7 @@ describe('[Blockchain]: Block validation tests', () => {
         {
           calcDifficultyFromHeader: block.header,
           common,
-        }
+        },
       )
       const block2 = createBlockFromBlockData({ header }, { common })
       await blockchain.putBlock(block2)
@@ -261,7 +261,7 @@ describe('[Blockchain]: Block validation tests', () => {
       const expectedError = 'Invalid block: base fee not correct'
       assert.ok(
         (e.message as string).includes(expectedError),
-        'should throw when base fee is not correct'
+        'should throw when base fee is not correct',
       )
     }
   })
@@ -319,7 +319,7 @@ describe('[Blockchain]: Block validation tests', () => {
           gasLimit: BigInt(5000),
         },
       },
-      { common }
+      { common },
     )
     await blockchain.putBlock(rootBlock)
 
@@ -332,7 +332,7 @@ describe('[Blockchain]: Block validation tests', () => {
     assert.deepEqual(
       (await blockchain.getCanonicalHeadHeader()).uncleHash,
       preForkBlock.header.uncleHash,
-      'able to put pre-london block in chain with pre-london uncles'
+      'able to put pre-london block in chain with pre-london uncles',
     )
     common.setHardfork(Hardfork.London)
     const forkBlock = createBlock(preForkBlock, 'forkBlock', [], common)
@@ -357,13 +357,13 @@ describe('[Blockchain]: Block validation tests', () => {
       {
         common,
         setHardfork: false,
-      }
+      },
     )
 
     assert.deepEqual(
       forkBlock_ValidCommon.uncleHeaders[0].hash(),
       uncleHeader.hash(),
-      'successfully validated a pre-london uncle on a london block'
+      'successfully validated a pre-london uncle on a london block',
     )
     assert.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
 
@@ -377,9 +377,9 @@ describe('[Blockchain]: Block validation tests', () => {
           {
             common,
             setHardfork: false,
-          }
+          },
         ),
-      'should create block even with pre-London uncle and common evaluated with london since uncle is given default base fee'
+      'should create block even with pre-London uncle and common evaluated with london since uncle is given default base fee',
     )
     assert.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
   })
@@ -405,7 +405,7 @@ describe('EIP 7685: requests field validation tests', () => {
           gasLimit: 5000,
         },
       },
-      { common }
+      { common },
     )
 
     await expect(async () => blockchain.putBlock(block)).rejects.toThrow('invalid requestsRoot')
@@ -422,10 +422,10 @@ describe('EIP 7685: requests field validation tests', () => {
         },
         requests: [{ type: 0x1, bytes: randomBytes(12), serialize: () => randomBytes(32) } as any],
       },
-      { common }
+      { common },
     )
     await expect(async () => blockchain.putBlock(blockWithRequest)).rejects.toThrow(
-      'invalid requestsRoot'
+      'invalid requestsRoot',
     )
   })
 })

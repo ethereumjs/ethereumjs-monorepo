@@ -82,7 +82,7 @@ describe('[LesProtocol]', () => {
         bytesToHex(status['flowControl/MRC'][0][0]) === '0x02' &&
         bytesToHex(status['flowControl/MRC'][0][1]) === '0x0a' &&
         bytesToHex(status['flowControl/MRC'][0][2]) === '0x0a',
-      'encode status'
+      'encode status',
     )
     status = { ...status, chainId: [0x01] }
     status = p.decodeStatus(status)
@@ -105,7 +105,7 @@ describe('[LesProtocol]', () => {
         status.mrc['2'].req === 10 &&
         status.mrc.GetBlockHeaders.base === 10 &&
         status.mrc.GetBlockHeaders.req === 10,
-      'decode status'
+      'decode status',
     )
   })
 })

@@ -30,7 +30,7 @@ export type FoundNodeFunction = (
   nodeRef: Uint8Array,
   node: TrieNode | null,
   key: Nibbles,
-  walkController: WalkController
+  walkController: WalkController,
 ) => void
 
 export type HashKeysFunction = (msg: Uint8Array) => Uint8Array

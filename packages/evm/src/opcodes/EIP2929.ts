@@ -18,7 +18,7 @@ export function accessAddressEIP2929(
   address: Uint8Array,
   common: Common,
   chargeGas = true,
-  isSelfdestructOrAuthcall = false
+  isSelfdestructOrAuthcall = false,
 ): bigint {
   if (!common.isActivatedEIP(2929)) return BIGINT_0
 
@@ -52,7 +52,7 @@ export function accessStorageEIP2929(
   key: Uint8Array,
   isSstore: boolean,
   common: Common,
-  chargeGas = true
+  chargeGas = true,
 ): bigint {
   if (!common.isActivatedEIP(2929)) return BIGINT_0
 
@@ -86,7 +86,7 @@ export function adjustSstoreGasEIP2929(
   key: Uint8Array,
   defaultCost: bigint,
   costName: string,
-  common: Common
+  common: Common,
 ): bigint {
   if (!common.isActivatedEIP(2929)) return defaultCost
 

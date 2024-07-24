@@ -22,7 +22,7 @@ describe('Miner', () => {
           number: BigInt(1),
         },
       },
-      { common }
+      { common },
     )
 
     const invalidBlockResult = await e.verifyPOW(block)
@@ -46,7 +46,7 @@ describe('Miner', () => {
           mixHash: solution?.mixHash,
         },
       },
-      { common }
+      { common },
     )
 
     const validBlockResult = await e.verifyPOW(validBlock)
@@ -64,14 +64,14 @@ describe('Miner', () => {
           number: BigInt(1),
         },
       },
-      { common }
+      { common },
     )
     const miner = e.getMiner(block.header)
     const solution = <BlockHeader>await miner.mine(-1)
 
     assert.ok(
       e.verifyPOW(createBlockFromBlockData({ header: solution.toJSON() }, { common })),
-      'successfully mined block'
+      'successfully mined block',
     )
 
     const blockMiner = e.getMiner(block)
@@ -90,7 +90,7 @@ describe('Miner', () => {
           number: BigInt(1),
         },
       },
-      { common }
+      { common },
     )
     const miner = e.getMiner(block.header)
     setTimeout(function () {
@@ -111,7 +111,7 @@ describe('Miner', () => {
       },
       undefined,
       undefined,
-      'miner constructor successfully throws if no BlockHeader or Block object is passed'
+      'miner constructor successfully throws if no BlockHeader or Block object is passed',
     )
   })
 
@@ -127,7 +127,7 @@ describe('Miner', () => {
       },
       {
         common,
-      }
+      },
     )
 
     const miner = e.getMiner(block.header)

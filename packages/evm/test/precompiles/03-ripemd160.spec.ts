@@ -29,7 +29,7 @@ describe('Precompiles: RIPEMD160', () => {
     assert.deepEqual(
       bytesToHex(result.returnValue),
       `0x${expected}`,
-      'should generate expected value'
+      'should generate expected value',
     )
 
     result = await RIPEMD160({

@@ -55,7 +55,7 @@ describe(method, () => {
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
       },
-      { common }
+      { common },
     ).sign(pkey)
     const tx2 = createTxFromTxData(
       {
@@ -66,27 +66,27 @@ describe(method, () => {
         gasLimit: 30000000n,
         nonce: 1n,
       },
-      { common }
+      { common },
     ).sign(pkey)
     const block = createBlockFromBlockData(
       {
         transactions: [tx],
         header: BlockHeader.fromHeaderData(
           { parentHash: chain.genesis.hash(), number: 1n },
-          { common, skipConsensusFormatValidation: true }
+          { common, skipConsensusFormatValidation: true },
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
     const block2 = createBlockFromBlockData(
       {
         transactions: [tx2],
         header: BlockHeader.fromHeaderData(
           { parentHash: block.hash(), number: 2n },
-          { common, skipConsensusFormatValidation: true }
+          { common, skipConsensusFormatValidation: true },
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
 
     await chain.putBlocks([block, block2], true)
@@ -95,19 +95,19 @@ describe(method, () => {
     assert.equal(
       res.result[0].transactions[0],
       bytesToHex(tx.serialize()),
-      'got expected transaction from first payload'
+      'got expected transaction from first payload',
     )
     assert.equal(
       res.result.length,
       2,
-      'length of response matches start of range up to highest known block'
+      'length of response matches start of range up to highest known block',
     )
 
     const res2 = await rpc.request(method, ['0x3', '0x2'])
     assert.equal(
       res2.result.length,
       0,
-      'got empty array when start of requested range is beyond current chain head'
+      'got empty array when start of requested range is beyond current chain head',
     )
   })
 
@@ -137,7 +137,7 @@ describe(method, () => {
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
       },
-      { common }
+      { common },
     ).sign(pkey)
     const tx2 = createTxFromTxData(
       {
@@ -148,27 +148,27 @@ describe(method, () => {
         gasLimit: 30000000n,
         nonce: 1n,
       },
-      { common }
+      { common },
     ).sign(pkey)
     const block = createBlockFromBlockData(
       {
         transactions: [tx],
         header: BlockHeader.fromHeaderData(
           { parentHash: chain.genesis.hash(), number: 1n },
-          { common, skipConsensusFormatValidation: true }
+          { common, skipConsensusFormatValidation: true },
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
     const block2 = createBlockFromBlockData(
       {
         transactions: [tx2],
         header: BlockHeader.fromHeaderData(
           { parentHash: block.hash(), number: 2n },
-          { common, skipConsensusFormatValidation: true }
+          { common, skipConsensusFormatValidation: true },
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
 
     await chain.putBlocks([block, block2], true)

@@ -101,7 +101,7 @@ export class Common {
     } else if (typeof chain === 'object') {
       if (this._customChains.length > 0) {
         throw new Error(
-          'Chain must be a string, number, or bigint when initialized with customChains passed in'
+          'Chain must be a string, number, or bigint when initialized with customChains passed in',
         )
       }
       const required = ['chainId', 'genesis', 'hardforks', 'bootstrapNodes']
@@ -163,7 +163,9 @@ export class Common {
     // Filter out hardforks with no block number, no ttd or no timestamp (i.e. unapplied hardforks)
     const hfs = this.hardforks().filter(
       (hf) =>
-        hf.block !== null || (hf.ttd !== null && hf.ttd !== undefined) || hf.timestamp !== undefined
+        hf.block !== null ||
+        (hf.ttd !== null && hf.ttd !== undefined) ||
+        hf.timestamp !== undefined,
     )
     const mergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
     const doubleTTDHF = hfs
@@ -180,7 +182,7 @@ export class Common {
     let hfIndex = hfs.findIndex(
       (hf) =>
         (blockNumber !== undefined && hf.block !== null && BigInt(hf.block) > blockNumber) ||
-        (timestamp !== undefined && hf.timestamp !== undefined && BigInt(hf.timestamp) > timestamp)
+        (timestamp !== undefined && hf.timestamp !== undefined && BigInt(hf.timestamp) > timestamp),
     )
 
     if (hfIndex === -1) {
@@ -239,7 +241,7 @@ export class Common {
         .slice(0, hfStartIndex)
         .reduce(
           (acc: number, hf: HardforkTransitionConfig) => Math.max(Number(hf.timestamp ?? '0'), acc),
-          0
+          0,
         )
       if (minTimeStamp > timestamp) {
         throw Error(`Maximum HF determined by timestamp is lower than the block number/ttd HF`)
@@ -250,7 +252,7 @@ export class Common {
         .reduce(
           (acc: number, hf: HardforkTransitionConfig) =>
             Math.min(Number(hf.timestamp ?? timestamp), acc),
-          Number(timestamp)
+          Number(timestamp),
         )
       if (maxTimeStamp < timestamp) {
         throw Error(`Maximum HF determined by block number/ttd is lower than timestamp HF`)
@@ -302,7 +304,7 @@ export class Common {
       const minHF = this.gteHardfork(eipsDict[eip]['minimumHardfork'])
       if (!minHF) {
         throw new Error(
-          `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`
+          `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`,
         )
       }
     }
@@ -464,7 +466,7 @@ export class Common {
     name: string,
     blockNumber: BigIntLike,
     td?: BigIntLike,
-    timestamp?: BigIntLike
+    timestamp?: BigIntLike,
   ): bigint {
     const hardfork = this.getHardforkBy({ blockNumber, td, timestamp })
     return this.paramByHardfork(name, hardfork)

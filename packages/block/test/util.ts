@@ -17,7 +17,7 @@ function createBlock(
   parentBlock: Block,
   extraData: string,
   uncles?: BlockHeader[],
-  common?: Common
+  common?: Common,
 ): Block {
   uncles = uncles ?? []
   common = common ?? new Common({ chain: Chain.Mainnet })
@@ -53,7 +53,7 @@ function createBlock(
     {
       common,
       calcDifficultyFromHeader: parentBlock.header,
-    }
+    },
   )
 }
 

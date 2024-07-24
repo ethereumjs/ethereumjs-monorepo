@@ -39,7 +39,7 @@ export class ReverseBlockFetcher extends BlockFetcher {
       this.debug(
         `Fetcher results stored in skeleton chain (blocks num=${blocks.length} first=${
           blocks[0]?.header.number
-        } last=${blocks[blocks.length - 1]?.header.number})`
+        } last=${blocks[blocks.length - 1]?.header.number})`,
       )
       this.config.events.emit(Event.SYNC_FETCHED_BLOCKS, blocks.slice(0, num))
     } catch (e: any) {
@@ -53,7 +53,7 @@ export class ReverseBlockFetcher extends BlockFetcher {
         this.debug(
           `Error storing fetcher results in skeleton chain (blocks num=${blocks.length} first=${
             blocks[0]?.header.number
-          } last=${blocks[blocks.length - 1]?.header.number}): ${e}`
+          } last=${blocks[blocks.length - 1]?.header.number}): ${e}`,
         )
         throw e
       }
@@ -62,11 +62,11 @@ export class ReverseBlockFetcher extends BlockFetcher {
 
   processStoreError(
     error: Error,
-    _task: JobTask
+    _task: JobTask,
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
     const stepBack = BIGINT_0
     const destroyFetcher = !(error.message as string).includes(
-      `Blocks don't extend canonical subchain`
+      `Blocks don't extend canonical subchain`,
     )
     const banPeer = true
     return { destroyFetcher, banPeer, stepBack }

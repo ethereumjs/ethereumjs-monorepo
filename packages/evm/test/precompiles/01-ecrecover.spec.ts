@@ -34,7 +34,7 @@ describe('Precompiles: ECRECOVER', () => {
     assert.deepEqual(
       bytesToHex(result.returnValue.slice(-20)),
       address,
-      'should recover expected address'
+      'should recover expected address',
     )
 
     result = await ECRECOVER({

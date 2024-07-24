@@ -96,9 +96,9 @@ describe('Transient Storage', () => {
     assert.deepEqual(
       transientStorage.get(
         Address.fromString('0xff00000000000000000000000000000000000002'),
-        new Uint8Array(32).fill(0xff)
+        new Uint8Array(32).fill(0xff),
       ),
-      value
+      value,
     )
   })
 

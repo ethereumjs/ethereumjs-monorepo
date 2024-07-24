@@ -20,7 +20,7 @@ export async function getTests(
   fileFilter: RegExp | string[] = /.json$/,
   skipPredicate: (...args: any[]) => boolean = falsePredicate,
   directory: string,
-  excludeDir: RegExp | string[] = []
+  excludeDir: RegExp | string[] = [],
 ): Promise<string[]> {
   const options = {
     match: fileFilter,
@@ -38,7 +38,7 @@ export async function getTests(
       err: Error | undefined,
       content: string | Uint8Array,
       fileName: string,
-      next: Function
+      next: Function,
     ) => {
       if (err) {
         reject(err)

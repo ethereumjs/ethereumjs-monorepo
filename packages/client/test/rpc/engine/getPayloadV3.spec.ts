@@ -106,7 +106,7 @@ describe(method, () => {
         gasLimit: 30000000n,
         to: Address.zero(),
       },
-      { common }
+      { common },
     ).sign(pkey)
 
     await service.txPool.add(tx, true)
@@ -116,14 +116,14 @@ describe(method, () => {
     assert.equal(
       executionPayload.blockHash,
       '0x8c71ad199a3dda94de6a1c31cc50a26b1f03a8a4924e9ea3fd7420c6411cac42',
-      'built expected block'
+      'built expected block',
     )
     assert.equal(executionPayload.excessBlobGas, '0x0', 'correct execess blob gas')
     assert.equal(executionPayload.blobGasUsed, '0x20000', 'correct blob gas used')
     const { commitments, proofs, blobs } = blobsBundle
     assert.ok(
       commitments.length === proofs.length && commitments.length === blobs.length,
-      'equal commitments, proofs and blobs'
+      'equal commitments, proofs and blobs',
     )
     assert.equal(blobs.length, 1, '1 blob should be returned')
     assert.equal(proofs[0], bytesToHex(txProofs[0]), 'proof should match')

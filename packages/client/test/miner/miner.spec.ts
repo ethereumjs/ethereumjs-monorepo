@@ -168,7 +168,7 @@ const createTx = (
   value = 1,
   gasPrice = 1000000000,
   gasLimit = 100000,
-  common = customCommon
+  common = customCommon,
 ) => {
   const txData = {
     nonce,
@@ -191,7 +191,7 @@ const txA011 = createTx(
   1,
   1000000000,
   100000,
-  goerliCommon
+  goerliCommon,
 ) // A -> B, nonce: 0, value: 1, normal gasPrice
 
 const txA02 = createTx(A, B, 1, 1, 2000000000) // A -> B, nonce: 1, value: 1, 2x gasPrice
@@ -287,7 +287,7 @@ describe('assembleBlocks() -> with a hardfork mismatching tx', async () => {
       assert.equal(
         blocks[0].transactions.length,
         0,
-        'new block should not include tx due to hardfork mismatch'
+        'new block should not include tx due to hardfork mismatch',
       )
       assert.equal(txPool.txsInPool, 1, 'transaction should remain in pool')
     })
@@ -455,7 +455,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
   // the default block baseFee will be 7
   // add tx with maxFeePerGas of 6
   const tx = create1559FeeMarketTx({ to: B.address, maxFeePerGas: 6 }, { common }).sign(
-    A.privateKey
+    A.privateKey,
   )
   try {
     await txPool.add(tx, true)
@@ -480,7 +480,7 @@ describe("assembleBlocks() -> should stop assembling a block after it's full", a
   const gasLimit = 100000
   const block = createBlockFromBlockData(
     { header: { gasLimit } },
-    { common: customCommon, setHardfork: true }
+    { common: customCommon, setHardfork: true },
   )
   Object.defineProperty(chain, 'headers', {
     get() {
@@ -509,11 +509,11 @@ describe("assembleBlocks() -> should stop assembling a block after it's full", a
   const data = '0xfe' // INVALID opcode, consumes all gas
   const tx1FillsBlockGasLimit = createLegacyTx(
     { gasLimit: gasLimit - 1, data, gasPrice: BigInt('1000000000') },
-    { common: customCommon }
+    { common: customCommon },
   ).sign(A.privateKey)
   const tx2ExceedsBlockGasLimit = createLegacyTx(
     { gasLimit: 21000, to: B.address, nonce: 1, gasPrice: BigInt('1000000000') },
-    { common: customCommon }
+    { common: customCommon },
   ).sign(A.privateKey)
   await txPool.add(tx1FillsBlockGasLimit)
   await txPool.add(tx2ExceedsBlockGasLimit)

@@ -166,7 +166,7 @@ export class NobleBLS implements EVMBLSInterface {
   addG1(input: Uint8Array): Uint8Array {
     const p1 = BLS12_381_ToG1Point(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH))
     const p2 = BLS12_381_ToG1Point(
-      input.subarray(BLS_G1_POINT_BYTE_LENGTH, BLS_G1_POINT_BYTE_LENGTH * 2)
+      input.subarray(BLS_G1_POINT_BYTE_LENGTH, BLS_G1_POINT_BYTE_LENGTH * 2),
     )
 
     const p = p1.add(p2)
@@ -190,7 +190,7 @@ export class NobleBLS implements EVMBLSInterface {
   addG2(input: Uint8Array): Uint8Array {
     const p1 = BLS12_381_ToG2Point(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH))
     const p2 = BLS12_381_ToG2Point(
-      input.subarray(BLS_G2_POINT_BYTE_LENGTH, BLS_G2_POINT_BYTE_LENGTH * 2)
+      input.subarray(BLS_G2_POINT_BYTE_LENGTH, BLS_G2_POINT_BYTE_LENGTH * 2),
     )
     const p = p1.add(p2)
     const result = BLS12_381_FromG2Point(p)
@@ -240,10 +240,10 @@ export class NobleBLS implements EVMBLSInterface {
     for (let k = 0; k < numPairs; k++) {
       const pairStart = pairLength * k
       const G1 = BLS12_381_ToG1Point(
-        input.subarray(pairStart, pairStart + BLS_G1_POINT_BYTE_LENGTH)
+        input.subarray(pairStart, pairStart + BLS_G1_POINT_BYTE_LENGTH),
       )
       const Fr = BLS12_381_ToFrPoint(
-        input.subarray(pairStart + BLS_G1_POINT_BYTE_LENGTH, pairStart + pairLength)
+        input.subarray(pairStart + BLS_G1_POINT_BYTE_LENGTH, pairStart + pairLength),
       )
       let pMul
       if (Fr === BIGINT_0) {
@@ -272,10 +272,10 @@ export class NobleBLS implements EVMBLSInterface {
     for (let k = 0; k < numPairs; k++) {
       const pairStart = pairLength * k
       const G2 = BLS12_381_ToG2Point(
-        input.subarray(pairStart, pairStart + BLS_G2_POINT_BYTE_LENGTH)
+        input.subarray(pairStart, pairStart + BLS_G2_POINT_BYTE_LENGTH),
       )
       const Fr = BLS12_381_ToFrPoint(
-        input.subarray(pairStart + BLS_G2_POINT_BYTE_LENGTH, pairStart + pairLength)
+        input.subarray(pairStart + BLS_G2_POINT_BYTE_LENGTH, pairStart + pairLength),
       )
       let pMul
       if (Fr === BIGINT_0) {
@@ -296,7 +296,7 @@ export class NobleBLS implements EVMBLSInterface {
     for (let k = 0; k < input.length / pairLength; k++) {
       const pairStart = pairLength * k
       const G1 = BLS12_381_ToG1Point(
-        input.subarray(pairStart, pairStart + BLS_G1_POINT_BYTE_LENGTH)
+        input.subarray(pairStart, pairStart + BLS_G1_POINT_BYTE_LENGTH),
       )
 
       const g2start = pairStart + BLS_G1_POINT_BYTE_LENGTH

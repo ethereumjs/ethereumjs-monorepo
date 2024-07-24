@@ -148,7 +148,7 @@ export function maxCallGas(
   gasLimit: bigint,
   gasLeft: bigint,
   runState: RunState,
-  common: Common
+  common: Common,
 ): bigint {
   if (common.gteHardfork(Hardfork.TangerineWhistle)) {
     const gasAllowed = gasLeft - gasLeft / BIGINT_64
@@ -209,7 +209,7 @@ export function updateSstoreGas(
   runState: RunState,
   currentStorage: Uint8Array,
   value: Uint8Array,
-  common: Common
+  common: Common,
 ): bigint {
   if (
     (value.length === 0 && currentStorage.length === 0) ||

@@ -14,7 +14,7 @@ import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export const BLS_MODULUS = BigInt(
-  '52435875175126190479447740508185965837690552500527637822603658699938581184513'
+  '52435875175126190479447740508185965837690552500527637822603658699938581184513',
 )
 
 const modulusBuffer = setLengthLeft(bigIntToBytes(BLS_MODULUS), 32)
@@ -28,7 +28,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     opts._debug(
       `Run KZG_POINT_EVALUATION (0x14) precompile data=${short(opts.data)} length=${
         opts.data.length
-      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
+      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`,
     )
   }
 
@@ -61,8 +61,8 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   if (opts._debug !== undefined) {
     opts._debug(
       `KZG_POINT_EVALUATION (0x14): proof verification with commitment=${bytesToHex(
-        commitment
-      )} z=${bytesToHex(z)} y=${bytesToHex(y)} kzgProof=${bytesToHex(kzgProof)}`
+        commitment,
+      )} z=${bytesToHex(z)} y=${bytesToHex(y)} kzgProof=${bytesToHex(kzgProof)}`,
     )
   }
   try {
@@ -89,8 +89,8 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   if (opts._debug !== undefined) {
     opts._debug(
       `KZG_POINT_EVALUATION (0x14) return fieldElements=${bytesToHex(
-        fieldElementsBuffer
-      )} modulus=${bytesToHex(modulusBuffer)}`
+        fieldElementsBuffer,
+      )} modulus=${bytesToHex(modulusBuffer)}`,
     )
   }
 

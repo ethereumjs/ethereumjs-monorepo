@@ -159,7 +159,7 @@ export class FullEthereumService extends Service {
           this.synchronizer instanceof BeaconSynchronizer
             ? 'BeaconSynchronizer'
             : 'FullSynchronizer'
-        }.`
+        }.`,
       )
     } else {
       this.config.logger.info('Starting FullEthereumService with no syncing.')
@@ -197,13 +197,13 @@ export class FullEthereumService extends Service {
           throw Error(`Currently stateful verkle execution not supported`)
         }
         this.execution.config.logger.info(
-          `Skipping VM verkle statemanager genesis hardfork=${this.execution.hardfork}`
+          `Skipping VM verkle statemanager genesis hardfork=${this.execution.hardfork}`,
         )
         await this.execution.setupVerkleVM()
         this.execution.vm = this.execution.verkleVM!
       } else {
         this.execution.config.logger.info(
-          `Initializing VM merkle statemanager genesis hardfork=${this.execution.hardfork}`
+          `Initializing VM merkle statemanager genesis hardfork=${this.execution.hardfork}`,
         )
         await this.execution.setupMerkleVM()
         this.execution.vm = this.execution.merkleVM!
@@ -262,12 +262,12 @@ export class FullEthereumService extends Service {
           }
         } else {
           this.config.logger.debug(
-            `skipping snapsync since cl (skeleton) synchronized=${this.skeleton?.synchronized}`
+            `skipping snapsync since cl (skeleton) synchronized=${this.skeleton?.synchronized}`,
           )
         }
       } else {
         this.config.logger.warn(
-          'skipping building head state as neither execution is started nor snapsync is available'
+          'skipping building head state as neither execution is started nor snapsync is available',
         )
       }
     } catch (error) {
@@ -329,7 +329,7 @@ export class FullEthereumService extends Service {
           chain: this.chain,
           flow: this.flow,
           timeout: this.timeout,
-        })
+        }),
       )
     }
     return protocols
@@ -379,7 +379,7 @@ export class FullEthereumService extends Service {
       case 'GetBlockBodies': {
         const { reqId, hashes } = message.data
         const blocks: Block[] = await Promise.all(
-          hashes.map((hash: Uint8Array) => this.chain.getBlock(hash))
+          hashes.map((hash: Uint8Array) => this.chain.getBlock(hash)),
         )
         const bodies = blocks.map((block) => block.raw().slice(1))
         peer.eth!.send('BlockBodies', { reqId, bodies })
@@ -388,7 +388,7 @@ export class FullEthereumService extends Service {
       case 'NewBlockHashes': {
         if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
           this.config.logger.debug(
-            `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`
+            `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`,
           )
           this.pool.ban(peer, 9000000)
         } else if (this.synchronizer instanceof FullSynchronizer) {
@@ -403,7 +403,7 @@ export class FullEthereumService extends Service {
       case 'NewBlock': {
         if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
           this.config.logger.debug(
-            `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`
+            `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`,
           )
           this.pool.ban(peer, 9000000)
         } else if (this.synchronizer instanceof FullSynchronizer) {

@@ -33,7 +33,7 @@ const deploymentTxData = {
   gasLimit: BigInt('0x3d090'),
   gasPrice: BigInt('0xe8d4a51000'),
   data: hexToBytes(
-    '0x61049d5f5561013280600f5f395ff33373fffffffffffffffffffffffffffffffffffffffe146090573615156028575f545f5260205ff35b366038141561012e5760115f54600182026001905f5b5f82111560595781019083028483029004916001019190603e565b90939004341061012e57600154600101600155600354806003026004013381556001015f3581556001016020359055600101600355005b6003546002548082038060101160a4575060105b5f5b81811460dd5780604c02838201600302600401805490600101805490600101549160601b83528260140152906034015260010160a6565b910180921460ed579060025560f8565b90505f6002555f6003555b5f548061049d141561010757505f5b60015460028282011161011c5750505f610122565b01600290035b5f555f600155604c025ff35b5f5ffd'
+    '0x61049d5f5561013280600f5f395ff33373fffffffffffffffffffffffffffffffffffffffe146090573615156028575f545f5260205ff35b366038141561012e5760115f54600182026001905f5b5f82111560595781019083028483029004916001019190603e565b90939004341061012e57600154600101600155600354806003026004013381556001015f3581556001016020359055600101600355005b6003546002548082038060101160a4575060105b5f5b81811460dd5780604c02838201600302600401805490600101805490600101549160601b83528260140152906034015260010160a6565b910180921460ed579060025560f8565b90505f6002555f6003555b5f548061049d141561010757505f5b60015460028282011161011c5750505f610122565b01600290035b5f555f600155604c025ff35b5f5ffd',
   ),
   v: BigInt('0x1b'),
   r: BigInt('0x539'),
@@ -53,7 +53,7 @@ const amountBytes = setLengthLeft(bigIntToBytes(amount), 8)
 function generateTx(nonce: bigint) {
   const addressBytes = setLengthLeft(
     bigIntToBytes(common.param('withdrawalRequestPredeployAddress')),
-    20
+    20,
   )
   const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
 
@@ -77,7 +77,7 @@ describe('EIP-7002 tests', () => {
         },
         transactions: [deploymentTx],
       },
-      { common }
+      { common },
     )
     await vm.stateManager.putAccount(sender, acc)
     await vm.stateManager.putAccount(addr, acc)
@@ -103,7 +103,7 @@ describe('EIP-7002 tests', () => {
         },
         transactions: [tx],
       },
-      { common }
+      { common },
     )
 
     let generatedBlock: Block
@@ -149,7 +149,7 @@ describe('EIP-7002 tests', () => {
         },
         transactions: [tx2, tx3],
       },
-      { common }
+      { common },
     )
 
     await runBlock(vm, {
@@ -172,7 +172,7 @@ describe('EIP-7002 tests', () => {
           number: 1,
         },
       },
-      { common }
+      { common },
     )
     try {
       await runBlock(vm, {

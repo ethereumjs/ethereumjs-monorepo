@@ -27,7 +27,7 @@ async function unset(
   key: Nibbles,
   pos: number,
   removeLeft: boolean,
-  stack: TrieNode[]
+  stack: TrieNode[],
 ): Promise<number> {
   if (child instanceof BranchNode) {
     /**
@@ -321,7 +321,7 @@ async function verifyProof(
   rootHash: Uint8Array,
   key: Uint8Array,
   proof: Uint8Array[],
-  useKeyHashingFunction: HashKeysFunction
+  useKeyHashingFunction: HashKeysFunction,
 ): Promise<{ value: Uint8Array | null; trie: Trie }> {
   const proofTrie = await createTrieFromProof(proof, {
     root: rootHash,
@@ -416,7 +416,7 @@ export async function verifyRangeProof(
   keys: Nibbles[],
   values: Uint8Array[],
   proof: Uint8Array[] | null,
-  useKeyHashingFunction: HashKeysFunction
+  useKeyHashingFunction: HashKeysFunction,
 ): Promise<boolean> {
   if (keys.length !== values.length) {
     throw new Error('invalid keys length or values length')
@@ -454,7 +454,7 @@ export async function verifyRangeProof(
         rootHash,
         nibblesTypeToPackedBytes(firstKey),
         proof,
-        useKeyHashingFunction
+        useKeyHashingFunction,
       )
 
       if (value !== null || (await hasRightElement(trie, firstKey))) {
@@ -467,7 +467,7 @@ export async function verifyRangeProof(
 
   if (proof === null || firstKey === null || lastKey === null) {
     throw new Error(
-      'invalid all elements proof: proof, firstKey, lastKey must be null at the same time'
+      'invalid all elements proof: proof, firstKey, lastKey must be null at the same time',
     )
   }
 
@@ -477,7 +477,7 @@ export async function verifyRangeProof(
       rootHash,
       nibblesTypeToPackedBytes(firstKey),
       proof,
-      useKeyHashingFunction
+      useKeyHashingFunction,
     )
 
     if (nibblesCompare(firstKey, keys[0]) !== 0) {
@@ -496,7 +496,7 @@ export async function verifyRangeProof(
   }
   if (firstKey.length !== lastKey.length) {
     throw new Error(
-      'invalid two edge elements proof: the length of firstKey should be equal to the length of lastKey'
+      'invalid two edge elements proof: the length of firstKey should be equal to the length of lastKey',
     )
   }
 

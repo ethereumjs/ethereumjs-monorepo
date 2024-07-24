@@ -13,7 +13,7 @@ describe('EVM -> getActiveOpcodes()', () => {
     assert.equal(
       evm.getActiveOpcodes().get(CHAINID),
       undefined,
-      'istanbul opcode not exposed (HF: < istanbul (petersburg)'
+      'istanbul opcode not exposed (HF: < istanbul (petersburg)',
     )
   })
 
@@ -23,7 +23,7 @@ describe('EVM -> getActiveOpcodes()', () => {
     assert.equal(
       evm.getActiveOpcodes().get(CHAINID)!.name,
       'CHAINID',
-      'istanbul opcode exposed (HF: istanbul)'
+      'istanbul opcode exposed (HF: istanbul)',
     )
 
     common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
@@ -31,7 +31,7 @@ describe('EVM -> getActiveOpcodes()', () => {
     assert.equal(
       evm.getActiveOpcodes().get(CHAINID)!.name,
       'CHAINID',
-      'istanbul opcode exposed (HF: > istanbul (muirGlacier)'
+      'istanbul opcode exposed (HF: > istanbul (muirGlacier)',
     )
   })
 
@@ -41,7 +41,7 @@ describe('EVM -> getActiveOpcodes()', () => {
     assert.equal(
       evm.getActiveOpcodes().get(DIFFICULTY_PREVRANDAO)!.name,
       'DIFFICULTY',
-      'Opcode x44 named DIFFICULTY pre-Merge'
+      'Opcode x44 named DIFFICULTY pre-Merge',
     )
 
     common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
@@ -49,7 +49,7 @@ describe('EVM -> getActiveOpcodes()', () => {
     assert.equal(
       evm.getActiveOpcodes().get(DIFFICULTY_PREVRANDAO)!.name,
       'PREVRANDAO',
-      'Opcode x44 named PREVRANDAO post-Merge'
+      'Opcode x44 named PREVRANDAO post-Merge',
     )
   })
 
@@ -61,14 +61,14 @@ describe('EVM -> getActiveOpcodes()', () => {
     assert.equal(
       evm.getActiveOpcodes().get(CHAINID),
       undefined,
-      'opcode not exposed after HF change (-> < istanbul)'
+      'opcode not exposed after HF change (-> < istanbul)',
     )
 
     common.setHardfork(Hardfork.Istanbul)
     assert.equal(
       evm.getActiveOpcodes().get(CHAINID)!.name,
       'CHAINID',
-      'opcode exposed after HF change (-> istanbul)'
+      'opcode exposed after HF change (-> istanbul)',
     )
   })
 })

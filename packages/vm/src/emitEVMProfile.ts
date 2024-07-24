@@ -111,7 +111,7 @@ export function emitEVMProfile(logs: EVMPerformanceLogOutput[], profileTitle: st
   console.log(
     `+== Calls: ${calls}, Total time: ${
       Math.round(totalMs * 1e3) / 1e3
-    }ms, Total gas: ${totalGas}, MGas/s: ${mGasSAvg}, Blocks per Slot (BpS): ${bpSAvg} ==+`
+    }ms, Total gas: ${totalGas}, MGas/s: ${mGasSAvg}, Blocks per Slot (BpS): ${bpSAvg} ==+`,
   )
 
   // Generate and write the header

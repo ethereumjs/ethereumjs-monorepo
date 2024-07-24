@@ -26,7 +26,7 @@ const hardforks = new Common({ chain: ChainCommon.Goerli })
   .map((h) =>
     h.name === Hardfork.London
       ? { ...h, block: 0, timestamp: undefined }
-      : { ...h, timestamp: undefined }
+      : { ...h, timestamp: undefined },
   )
 const common = createCustomCommon(
   {
@@ -40,7 +40,7 @@ const common = createCustomCommon(
       },
     },
   },
-  { baseChain: ChainCommon.Goerli, hardfork: Hardfork.London }
+  { baseChain: ChainCommon.Goerli, hardfork: Hardfork.London },
 )
 const accounts: [Address, Uint8Array][] = [
   [
@@ -103,7 +103,7 @@ describe(
             assert.equal(
               remoteService.chain.blocks.height,
               targetHeight,
-              'synced blocks successfully'
+              'synced blocks successfully',
             )
           })
           await destroy(server, service)
@@ -115,5 +115,5 @@ describe(
       })
     })
   },
-  { timeout: 25000 }
+  { timeout: 25000 },
 )

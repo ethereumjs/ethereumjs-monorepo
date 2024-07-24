@@ -185,7 +185,7 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
       payload.execution_witness.verkleProof !== undefined
         ? payload.execution_witness
         : parseExecutionWitnessFromSnakeJson(
-            payload.execution_witness as unknown as VerkleExecutionWitnessSnakeJson
+            payload.execution_witness as unknown as VerkleExecutionWitnessSnakeJson,
           )
   }
 

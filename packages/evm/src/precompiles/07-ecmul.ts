@@ -13,7 +13,7 @@ export function precompile07(opts: PrecompileInput): ExecResult {
     opts._debug(
       `Run ECMUL (0x07) precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
         opts.gasLimit
-      } gasUsed=${gasUsed}`
+      } gasUsed=${gasUsed}`,
     )
   }
 

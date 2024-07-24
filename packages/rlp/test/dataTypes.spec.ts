@@ -57,7 +57,7 @@ describe('RLP encoding (string)', () => {
 
   it('length of string >55 should return 0xb7+len(len(data)) plus len(data) plus data', () => {
     const encodedLongString = RLP.encode(
-      'zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss'
+      'zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss',
     )
     assert.deepEqual(72, encodedLongString.length)
     assert.deepEqual(encodedLongString[0], 184)
@@ -92,7 +92,7 @@ describe('RLP encoding (list)', () => {
     }
     // Verified with Geth's RLPDump
     const expected = hexToBytes(
-      'f85483646f6783676f6483636174b8467a6f6f3235357a6f6f3235357a7a7a7a7a7a7a7a7a7a7a7a73737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373'
+      'f85483646f6783676f6483636174b8467a6f6f3235357a6f6f3235357a7a7a7a7a7a7a7a7a7a7a7a73737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373',
     )
     assert.deepEqual(encodedArrayOfStrings, expected)
   })
@@ -324,7 +324,7 @@ describe('empty values', () => {
 describe('bad values', () => {
   it('wrong encoded a zero', () => {
     const val = hexToBytes(
-      'f9005f030182520894b94f5374fce5edbc8e2a8697c15331677e6ebf0b0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3'
+      'f9005f030182520894b94f5374fce5edbc8e2a8697c15331677e6ebf0b0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3',
     )
     let result
     try {
@@ -337,7 +337,7 @@ describe('bad values', () => {
 
   it('invalid length', () => {
     const a = hexToBytes(
-      'f86081000182520894b94f5374fce5edbc8e2a8697c15331677e6ebf0b0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3'
+      'f86081000182520894b94f5374fce5edbc8e2a8697c15331677e6ebf0b0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3',
     )
 
     let result
@@ -405,11 +405,8 @@ describe('hex prefix', () => {
 
 describe('recursive typings', () => {
   it('should not throw compilation error', () => {
-    type IsType<T, U> = Exclude<T, U> extends never
-      ? Exclude<U, T> extends never
-        ? true
-        : false
-      : false
+    type IsType<T, U> =
+      Exclude<T, U> extends never ? (Exclude<U, T> extends never ? true : false) : false
     const assertType = <T, U>(isTrue: IsType<T, U>) => {
       return isTrue
     }
