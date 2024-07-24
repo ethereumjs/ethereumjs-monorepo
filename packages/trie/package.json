@@ -59,8 +59,7 @@
     "@types/readable-stream": "^2.3.13",
     "debug": "^4.3.4",
     "lru-cache": "10.1.0",
-    "ethereum-cryptography": "^2.2.1",
-    "readable-stream": "^3.6.0"
+    "ethereum-cryptography": "^2.2.1"
   },
   "devDependencies": {
     "@ethereumjs/genesis": "^0.2.2",
