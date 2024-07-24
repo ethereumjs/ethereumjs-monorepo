@@ -34,19 +34,23 @@ export const paramsDict: ParamsDict = {
     epochDuration: 30000, // Duration between proof-of-work epochs
     timebombPeriod: 100000, // Exponential difficulty timebomb period
     difficultyBombDelay: 0, // the amount of blocks to delay the difficulty bomb with
+
+    // pow VM
+    // pow
+    minerReward: BigInt('5000000000000000000'), // the amount a miner get rewarded for mining a block
   },
   /**
 .  * Byzantium HF Meta EIP
 .  */
   609: {
-    // pow Block
+    // pow VM
     minerReward: BigInt('3000000000000000000'), // the amount a miner get rewarded for mining a block
   },
   /**
 .  * Constantinope HF Meta EIP
 .  */
   1013: {
-    // pow Block
+    // pow VM
     minerReward: BigInt('2000000000000000000'), // The amount a miner gets rewarded for mining a block
   },
 

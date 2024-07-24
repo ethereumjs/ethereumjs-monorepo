@@ -102,9 +102,6 @@ export const paramsEVM: ParamsDict = {
     // evm
     stackLimit: 1024, // Maximum size of VM stack allowed
     callCreateDepth: 1024, // Maximum depth of call/create stack
-
-    // pow
-    minerReward: BigInt('5000000000000000000'), // the amount a miner get rewarded for mining a block
   },
   /**
 .  * Homestead HF Meta EIP
