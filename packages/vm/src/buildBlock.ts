@@ -7,7 +7,7 @@ import {
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
 import {
   Address,
   BIGINT_0,
@@ -264,7 +264,7 @@ export class BlockBuilder {
     if (tx instanceof BlobEIP4844Transaction) {
       const txData = tx as BlobEIP4844Transaction
       this.blobGasUsed += BigInt(txData.blobVersionedHashes.length) * blobGasPerBlob
-      tx = BlobEIP4844Transaction.minimalFromNetworkWrapper(txData, {
+      tx = createMinimal4844TxFromNetworkWrapper(txData, {
         common: this.blockOpts.common,
       })
     }

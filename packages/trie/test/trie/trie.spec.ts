@@ -1,6 +1,7 @@
 import {
   KECCAK256_RLP,
   MapDB,
+  bigIntToBytes,
   bytesToHex,
   concatBytes,
   equalsBytes,
@@ -284,5 +285,21 @@ describe('keyHashingFunction', async () => {
       'used hash function from customKeyHashingFunction'
     )
     assert.equal(bytesToHex(trieWithCommonCopy.root()), '0x80', 'used hash function from common')
+  })
+})
+
+describe('getValueMap', () => {
+  it('should return a map of all hashed keys and values', async () => {
+    const trie = await createTrie({})
+    const entries: [Uint8Array, string][] = [
+      [bigIntToBytes(1n), '0x' + '0a'.repeat(32)],
+      [bigIntToBytes(2n), '0x' + '0b'.repeat(32)],
+      [bigIntToBytes(3n), '0x' + '0c'.repeat(32)],
+    ]
+    for (const entry of entries) {
+      await trie.put(entry[0], utf8ToBytes(entry[1]))
+    }
+    const dump = await trie.getValueMap()
+    assert.equal(Object.entries(dump.values).length, 3)
   })
 })

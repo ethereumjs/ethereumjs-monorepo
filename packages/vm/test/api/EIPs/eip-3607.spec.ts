@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -13,7 +13,7 @@ describe('EIP-3607 tests', () => {
   it('should reject txs from senders with deployed code when EIP is enabled', async () => {
     const vm = await VM.create({ common })
     await vm.stateManager.putContractCode(precompileAddr, new Uint8Array(32).fill(1))
-    const tx = LegacyTransaction.fromTxData({ gasLimit: 100000 }, { freeze: false })
+    const tx = createLegacyTx({ gasLimit: 100000 }, { freeze: false })
     tx.getSenderAddress = () => precompileAddr
     try {
       await runTx(vm, { tx, skipHardForkValidation: true })
@@ -30,7 +30,7 @@ describe('EIP-3607 tests', () => {
   it('should not reject txs from senders with deployed code when EIP is not enabled', async () => {
     const vm = await VM.create({ common: commonNoEIP3607 })
     await vm.stateManager.putContractCode(precompileAddr, new Uint8Array(32).fill(1))
-    const tx = LegacyTransaction.fromTxData({ gasLimit: 100000 }, { freeze: false })
+    const tx = createLegacyTx({ gasLimit: 100000 }, { freeze: false })
     tx.getSenderAddress = () => precompileAddr
     try {
       await runTx(vm, { tx, skipHardForkValidation: true })

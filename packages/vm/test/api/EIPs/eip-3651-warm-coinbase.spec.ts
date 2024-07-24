@@ -1,6 +1,6 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -46,7 +46,7 @@ describe('EIP 3651 tests', () => {
   it('invalid contract code transactions', async () => {
     const vm = await getVM(common)
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       value: 1,
       gasLimit: 1000000,

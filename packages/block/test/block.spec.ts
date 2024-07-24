@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import {
   KECCAK256_RLP_ARRAY,
   bytesToHex,
@@ -199,7 +199,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('should test transaction validation - transaction not signed', async () => {
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       gasLimit: 53000,
       gasPrice: 7,
     })
@@ -252,7 +252,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('should test data integrity', async () => {
-    const unsignedTx = LegacyTransaction.fromTxData({})
+    const unsignedTx = createLegacyTx({})
     const txRoot = await genTransactionsTrieRoot([unsignedTx])
 
     let block = createBlockFromBlockData({

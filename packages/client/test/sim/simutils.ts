@@ -1,6 +1,6 @@
 import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { create1559FeeMarketTx, create4844BlobTx } from '@ethereumjs/tx'
 import {
   Address,
   BIGINT_1,
@@ -279,7 +279,7 @@ export async function runTxHelper(
   const block = await client.request('eth_getBlockByNumber', ['latest', false])
   const baseFeePerGas = BigInt(block.result.baseFeePerGas) * 100n
   const maxPriorityFeePerGas = 100000000n
-  const tx = FeeMarketEIP1559Transaction.fromTxData(
+  const tx = create1559FeeMarketTx(
     {
       data,
       gasLimit: 1000000,
@@ -346,7 +346,7 @@ export const runBlobTx = async (
   txData.gasLimit = BigInt(1000000)
   const nonce = await client.request('eth_getTransactionCount', [sender.toString(), 'latest'], 2.0)
   txData.nonce = BigInt(nonce.result)
-  const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
+  const blobTx = create4844BlobTx(txData, opts).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
@@ -407,7 +407,7 @@ export const createBlobTxs = async (
       gas: undefined,
     }
 
-    const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
+    const blobTx = create4844BlobTx(txData, opts).sign(pkey)
 
     const serializedWrapper = blobTx.serializeNetworkWrapper()
     await fs.appendFile('./blobs.txt', bytesToHex(serializedWrapper) + '\n')

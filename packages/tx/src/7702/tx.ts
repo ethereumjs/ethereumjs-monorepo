@@ -1,4 +1,3 @@
-import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
   BIGINT_27,
@@ -6,139 +5,50 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  bytesToHex,
-  equalsBytes,
   toBytes,
-  validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
-import { BaseTransaction } from './baseTransaction.js'
-import * as EIP1559 from './capabilities/eip1559.js'
-import * as EIP2718 from './capabilities/eip2718.js'
-import * as EIP2930 from './capabilities/eip2930.js'
-import * as Legacy from './capabilities/legacy.js'
-import { TransactionType } from './types.js'
-import { AccessLists, txTypeBytes } from './util.js'
+import { BaseTransaction } from '../baseTransaction.js'
+import * as EIP1559 from '../capabilities/eip1559.js'
+import * as EIP2718 from '../capabilities/eip2718.js'
+import * as EIP7702 from '../capabilities/eip7702.js'
+import * as Legacy from '../capabilities/legacy.js'
+import { TransactionType } from '../types.js'
+import { AccessLists, AuthorizationLists, validateNotArray } from '../util.js'
+
+import { create7702EOACodeTx } from './constructors.js'
 
 import type {
   AccessList,
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
+  AuthorizationList,
+  AuthorizationListBytes,
   JsonTx,
   TxOptions,
-} from './types.js'
+} from '../types.js'
 import type { Common } from '@ethereumjs/common'
 
-type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
-type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
+export type TxData = AllTypesTxData[TransactionType.EOACodeEIP7702]
+export type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702]
 
 /**
- * Typed transaction with a new gas fee market mechanism
+ * Typed transaction with the ability to set codes on EOA accounts
  *
- * - TransactionType: 2
- * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
+ * - TransactionType: 4
+ * - EIP: [EIP-7702](https://github.com/ethereum/EIPs/blob/62419ca3f45375db00b04a368ea37c0bfb05386a/EIPS/eip-7702.md)
  */
-export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType.FeeMarketEIP1559> {
-  // implements EIP1559CompatibleTx<TransactionType.FeeMarketEIP1559>
+export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.EOACodeEIP7702> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
+  public readonly authorizationList: AuthorizationListBytes
+  public readonly AuthorizationListJSON: AuthorizationList
   public readonly maxPriorityFeePerGas: bigint
   public readonly maxFeePerGas: bigint
 
   public readonly common: Common
-
-  /**
-   * Instantiate a transaction from a data dictionary.
-   *
-   * Format: { chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-   * accessList, v, r, s }
-   *
-   * Notes:
-   * - `chainId` will be set automatically if not provided
-   * - All parameters are optional and have some basic default values
-   */
-  public static fromTxData(txData: TxData, opts: TxOptions = {}) {
-    return new FeeMarketEIP1559Transaction(txData, opts)
-  }
-
-  /**
-   * Instantiate a transaction from the serialized tx.
-   *
-   * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-   * accessList, signatureYParity, signatureR, signatureS])`
-   */
-  public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
-    if (
-      equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.FeeMarketEIP1559)) ===
-      false
-    ) {
-      throw new Error(
-        `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${
-          TransactionType.FeeMarketEIP1559
-        }, received: ${bytesToHex(serialized.subarray(0, 1))}`
-      )
-    }
-
-    const values = RLP.decode(serialized.subarray(1))
-
-    if (!Array.isArray(values)) {
-      throw new Error('Invalid serialized tx input: must be array')
-    }
-
-    return FeeMarketEIP1559Transaction.fromValuesArray(values as TxValuesArray, opts)
-  }
-
-  /**
-   * Create a transaction from a values array.
-   *
-   * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-   * accessList, signatureYParity, signatureR, signatureS]`
-   */
-  public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
-    if (values.length !== 9 && values.length !== 12) {
-      throw new Error(
-        'Invalid EIP-1559 transaction. Only expecting 9 values (for unsigned tx) or 12 values (for signed tx).'
-      )
-    }
-
-    const [
-      chainId,
-      nonce,
-      maxPriorityFeePerGas,
-      maxFeePerGas,
-      gasLimit,
-      to,
-      value,
-      data,
-      accessList,
-      v,
-      r,
-      s,
-    ] = values
-
-    this._validateNotArray({ chainId, v })
-    validateNoLeadingZeroes({ nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, value, v, r, s })
-
-    return new FeeMarketEIP1559Transaction(
-      {
-        chainId: bytesToBigInt(chainId),
-        nonce,
-        maxPriorityFeePerGas,
-        maxFeePerGas,
-        gasLimit,
-        to,
-        value,
-        data,
-        accessList: accessList ?? [],
-        v: v !== undefined ? bytesToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Uint8Array)
-        r,
-        s,
-      },
-      opts
-    )
-  }
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -148,16 +58,16 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TransactionType.FeeMarketEIP1559 }, opts)
-    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
+    super({ ...txData, type: TransactionType.EOACodeEIP7702 }, opts)
+    const { chainId, accessList, authorizationList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
     this.chainId = this.common.chainId()
 
-    if (!this.common.isActivatedEIP(1559)) {
-      throw new Error('EIP-1559 not enabled on Common')
+    if (!this.common.isActivatedEIP(7702)) {
+      throw new Error('EIP-7702 not enabled on Common')
     }
-    this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
+    this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930, 7702])
 
     // Populate the access list fields
     const accessListData = AccessLists.getAccessListData(accessList ?? [])
@@ -165,6 +75,15 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
     this.AccessListJSON = accessListData.AccessListJSON
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
+
+    // Populate the authority list fields
+    const authorizationListData = AuthorizationLists.getAuthorizationListData(
+      authorizationList ?? []
+    )
+    this.authorizationList = authorizationListData.authorizationList
+    this.AuthorizationListJSON = authorizationListData.AuthorizationListJSON
+    // Verify the authority list format.
+    AuthorizationLists.verifyAuthorizationList(this.authorizationList)
 
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
@@ -174,7 +93,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
 
-    BaseTransaction._validateNotArray(txData)
+    validateNotArray(txData)
 
     if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
       const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
@@ -201,7 +120,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    return EIP2930.getDataFee(this)
+    return EIP7702.getDataFee(this)
   }
 
   /**
@@ -221,17 +140,17 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
   }
 
   /**
-   * Returns a Uint8Array Array of the raw Bytes of the EIP-1559 transaction, in order.
+   * Returns a Uint8Array Array of the raw Bytes of the EIP-7702 transaction, in order.
    *
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-   * accessList, signatureYParity, signatureR, signatureS]`
+   * accessList, authorizationList, signatureYParity, signatureR, signatureS]`
    *
-   * Use {@link FeeMarketEIP1559Transaction.serialize} to add a transaction to a block
+   * Use {@link EOACodeEIP7702Transaction.serialize} to add a transaction to a block
    * with {@link createBlockFromValuesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-   * representation for external signing use {@link FeeMarketEIP1559Transaction.getMessageToSign}.
+   * representation for external signing use {@link EOACodeEIP7702Transaction.getMessageToSign}.
    */
   raw(): TxValuesArray {
     return [
@@ -244,6 +163,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
       bigIntToUnpaddedBytes(this.value),
       this.data,
       this.accessList,
+      this.authorizationList,
       this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : new Uint8Array(0),
       this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
       this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : new Uint8Array(0),
@@ -251,10 +171,10 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
   }
 
   /**
-   * Returns the serialized encoding of the EIP-1559 transaction.
+   * Returns the serialized encoding of the EIP-7702 transaction.
    *
    * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-   * accessList, signatureYParity, signatureR, signatureS])`
+   * accessList, authorizationList, signatureYParity, signatureR, signatureS])`
    *
    * Note that in contrast to the legacy tx serialization format this is not
    * valid RLP any more due to the raw tx type preceding and concatenated to
@@ -276,7 +196,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * ```
    */
   getMessageToSign(): Uint8Array {
-    return EIP2718.serialize(this, this.raw().slice(0, 9))
+    return EIP2718.serialize(this, this.raw().slice(0, 10))
   }
 
   /**
@@ -294,7 +214,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use {@link FeeMarketEIP1559Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * Use {@link EOACodeEIP7702Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
     return Legacy.hash(this)
@@ -319,12 +239,12 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
     convertV: boolean = false
-  ): FeeMarketEIP1559Transaction {
+  ): EOACodeEIP7702Transaction {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
 
-    return FeeMarketEIP1559Transaction.fromTxData(
+    return create7702EOACodeTx(
       {
         chainId: this.chainId,
         nonce: this.nonce,
@@ -335,6 +255,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
         value: this.value,
         data: this.data,
         accessList: this.accessList,
+        authorizationList: this.authorizationList,
         v: convertV ? v - BIGINT_27 : v, // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
@@ -356,6 +277,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
       maxPriorityFeePerGas: bigIntToHex(this.maxPriorityFeePerGas),
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),
       accessList: accessListJSON,
+      authorizationList: this.AuthorizationListJSON,
     }
   }
 

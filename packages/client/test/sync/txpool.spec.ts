@@ -1,7 +1,7 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { create1559FeeMarketTx, create2930AccessListTx } from '@ethereumjs/tx'
 import {
   Account,
   bytesToHex,
@@ -176,7 +176,7 @@ describe('[TxPool]', async () => {
     }
     txData.maxFeePerGas += (txData.maxFeePerGas * feeBump) / 100
     txData.maxPriorityFeePerGas += (txData.maxPriorityFeePerGas * feeBump) / 100
-    const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
+    const tx = create1559FeeMarketTx(txData, { common })
     const signedTx = tx.sign(from.privateKey)
     return signedTx
   }
@@ -531,7 +531,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
+      create1559FeeMarketTx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
       })
@@ -547,7 +547,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
+      create1559FeeMarketTx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         nonce: 0,
@@ -567,7 +567,7 @@ describe('[TxPool]', async () => {
 
     const txs = []
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData(
+      create1559FeeMarketTx(
         {
           maxFeePerGas: 1000000000,
           maxPriorityFeePerGas: 1000000000,
@@ -590,7 +590,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
+      create1559FeeMarketTx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         gasLimit: 21000,
@@ -610,7 +610,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
+      create1559FeeMarketTx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         nonce: 0,
@@ -633,7 +633,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
+      create1559FeeMarketTx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         nonce: 0,
@@ -657,7 +657,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
+      create1559FeeMarketTx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
       }).sign(A.privateKey)
@@ -677,7 +677,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
+      create1559FeeMarketTx({
         maxFeePerGas: 10000000,
         maxPriorityFeePerGas: 10000000,
         nonce: 0,
@@ -694,7 +694,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      AccessListEIP2930Transaction.fromTxData({
+      create2930AccessListTx({
         gasPrice: 10000000,
         nonce: 0,
       }).sign(A.privateKey)
@@ -709,7 +709,7 @@ describe('[TxPool]', async () => {
   it('announcedTxHashes() -> reject txs with too low gas price (invalid tx type)', async () => {
     const txs = []
 
-    const tx = AccessListEIP2930Transaction.fromTxData(
+    const tx = create2930AccessListTx(
       {
         gasPrice: 1000000000 - 1,
         nonce: 0,

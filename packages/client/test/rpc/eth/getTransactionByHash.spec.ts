@@ -1,4 +1,4 @@
-import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
+import { create1559FeeMarketTx, createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -18,7 +18,7 @@ describe(method, () => {
     const { chain, common, execution, server } = await setupChain(pow, 'pow', { txLookupLimit: 1 })
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = LegacyTransaction.fromTxData(
+    const tx = createLegacyTx(
       { gasLimit: 2000000, gasPrice: 100, to: '0x0000000000000000000000000000000000000000' },
       { common }
     ).sign(dummy.privKey)
@@ -43,7 +43,7 @@ describe(method, () => {
     )
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = create1559FeeMarketTx(
       {
         gasLimit: 2000000,
         maxFeePerGas: 975000000,

@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -160,7 +160,7 @@ describe('EIP-3529 tests', () => {
   it('should not refund selfdestructs', async () => {
     const vm = await VM.create({ common })
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       data: '0x6000ff',
       gasLimit: 100000,
     }).sign(pkey)
@@ -212,7 +212,7 @@ describe('EIP-3529 tests', () => {
 
     await vm.stateManager.putContractCode(address, hexToBytes(code))
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: address,
       gasLimit: 10000000,
     }).sign(pkey)
