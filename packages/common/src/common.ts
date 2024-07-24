@@ -362,7 +362,7 @@ export class Common {
 
     for (const eip of eips) {
       if (eipsDict[eip].requiredEIPs !== undefined) {
-        for (const elem of eipsDict[eip].requiredEIPs) {
+        for (const elem of eipsDict[eip].requiredEIPs!) {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
             throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
           }
