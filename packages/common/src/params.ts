@@ -5,14 +5,6 @@ export const paramsDict: ParamsDict = {
    * Frontier/Chainstart
    */
   1: {
-    // Block gasConfig
-    minGasLimit: 5000, // Minimum the gas limit may ever be
-    gasLimitBoundDivisor: 1024, // The bound divisor of the gas limit, used in update calculations
-    targetBlobGasPerBlock: 0, // Base value needed here since called pre-4844 in BlockHeader.calcNextExcessBlobGas()
-    maxblobGasPerBlock: 0,
-    // Format Block
-    maxExtraDataSize: 32, // Maximum size extra data may be after Genesis
-
     // VM, Client, Block
     blobGasPerBlob: 0,
 
@@ -27,16 +19,7 @@ export const paramsDict: ParamsDict = {
     // gasConfig VM (access via EVM?)
     maxRefundQuotient: 2, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
 
-    // pow Block
-    minimumDifficulty: 131072, // The minimum that the difficulty may ever be
-    difficultyBoundDivisor: 2048, // The bound divisor of the difficulty, used in the update calculations
-    durationLimit: 13, // The decision boundary on the blocktime duration used to determine whether difficulty should go up or not
-    epochDuration: 30000, // Duration between proof-of-work epochs
-    timebombPeriod: 100000, // Exponential difficulty timebomb period
-    difficultyBombDelay: 0, // the amount of blocks to delay the difficulty bomb with
-
     // pow VM
-    // pow
     minerReward: BigInt('5000000000000000000'), // the amount a miner get rewarded for mining a block
   },
   /**
@@ -54,8 +37,6 @@ export const paramsDict: ParamsDict = {
   1013: {
     // pow VM
     minerReward: BigInt('2000000000000000000'), // The amount a miner gets rewarded for mining a block
-    // pow
-    difficultyBombDelay: 5000000, // the amount of blocks to delay the difficulty bomb with
   },
 
   /**
@@ -65,23 +46,15 @@ export const paramsDict: ParamsDict = {
     // gasPrices Tx
     txDataNonZeroGas: 16, // Per byte of data attached to a transaction that is not equal to zero. NOTE: Not payable on data of calls between transactions
   },
-  /**
-.  * MuirGlacier HF Meta EIP
-.  */
-  2384: {
-    // pow Block
-    difficultyBombDelay: 9000000, // the amount of blocks to delay the difficulty bomb with
-  },
+
   /**
 .  * Fee market change for ETH 1.0 chain
 .  */
   1559: {
-    // gasConfig Block
-    baseFeeMaxChangeDenominator: 8, // Maximum base fee change denominator
-    elasticityMultiplier: 2, // Maximum block gas target elasticity
-
     // Various libraries, closer look
     initialBaseFee: 1000000000, // Initial base fee on first EIP1559 block
+    // Block, VM
+    elasticityMultiplier: 2, // Maximum block gas target elasticity
   },
 
   /**
@@ -108,13 +81,6 @@ export const paramsDict: ParamsDict = {
     // gasConfig VM (access via EVM?)
     maxRefundQuotient: 5, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
   },
-  /**
-.  * Difficulty Bomb Delay to December 1st 2021
-.  */
-  3554: {
-    // pow Block
-    difficultyBombDelay: 9500000, // the amount of blocks to delay the difficulty bomb with
-  },
 
   /**
 .  * Limit and meter initcode
@@ -124,13 +90,6 @@ export const paramsDict: ParamsDict = {
     initCodeWordGas: 2, // Gas to pay for each word (32 bytes) of initcode when creating a contract
     // tx
     maxInitCodeSize: 49152, // Maximum length of initialization code when creating a contract
-  },
-  /**
-.  * Difficulty Bomb Delay to June 2022
-.  */
-  4345: {
-    // pow
-    difficultyBombDelay: 10700000, // the amount of blocks to delay the difficulty bomb with
   },
 
   /**
@@ -147,23 +106,11 @@ export const paramsDict: ParamsDict = {
     // gasConfig
     // VM, Client, Block
     blobGasPerBlob: 131072, // The base fee for blob gas per blob
-    // Block
-    targetBlobGasPerBlock: 393216, // The target blob gas consumed per block
-    maxblobGasPerBlock: 786432, // The max blob gas allowable per block
-    blobGasPriceUpdateFraction: 3338477, // The denominator used in the exponential when calculating a blob gas price
-    // gasPrices Block
-    simplePerBlobGas: 12000, // The basic gas fee for each blob
-    minBlobGas: 1, // The minimum fee per blob gas
-    // sharding
+
+    // sharding EVM/Tx
     blobCommitmentVersionKzg: 1, // The number indicated a versioned hash is a KZG commitment
   },
-  /**
-   * Delaying Difficulty Bomb to mid-September 2022
-   */
-  5133: {
-    // pow
-    difficultyBombDelay: 11400000, // the amount of blocks to delay the difficulty bomb with
-  },
+
   /**
    * Ethereum state using a unified verkle tree (experimental)
    */
