@@ -31,8 +31,7 @@ import {
 import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
-import { nibbleTypeToPackedBytes } from './util/encoding.js'
-import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
+import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from './util/nibbles.js'
 import { WalkController } from './util/walkController.js'
 
 import type {
@@ -1239,7 +1238,7 @@ export class Trie {
     let nextKey: string | null = null
     await this.walkAllValueNodes(async (node: TrieNode, currentKey: number[]) => {
       if (node instanceof LeafNode) {
-        const keyBytes = nibbleTypeToPackedBytes(currentKey.concat(node.key()))
+        const keyBytes = nibblesTypeToPackedBytes(currentKey.concat(node.key()))
         if (!inRange) {
           // Check if the key is already in the correct range.
           if (bytesToBigInt(keyBytes) >= startKey) {
