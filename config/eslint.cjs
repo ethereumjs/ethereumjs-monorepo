@@ -19,7 +19,6 @@ module.exports = {
     'benchmarks',
     'coverage',
     'dist',
-    'examples',
     'node_modules',
     'prettier.config.js',
     'recipes',
