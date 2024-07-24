@@ -141,6 +141,7 @@ export type EVMEvents = {
 }
 
 export interface EVMInterface {
+  common: Common
   journal: {
     commit(): Promise<void>
     revert(): Promise<void>

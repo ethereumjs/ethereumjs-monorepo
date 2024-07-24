@@ -47,6 +47,7 @@ export const paramsBlock: ParamsDict = {
   1559: {
     // gasConfig
     baseFeeMaxChangeDenominator: 8, // Maximum base fee change denominator
+    elasticityMultiplier: 2, // Maximum block gas target elasticity
   },
   /**
 .  * Difficulty Bomb Delay to December 1st 2021

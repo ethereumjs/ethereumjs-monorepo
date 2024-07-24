@@ -19,7 +19,7 @@ import { assert, describe, it } from 'vitest'
 
 import { bytesToBigInt } from '../../../../util/src/bytes.js'
 import { BIGINT_0 } from '../../../../util/src/constants.js'
-import { VM, buildBlock, runBlock, runTx } from '../../../src/index.js'
+import { VM, buildBlock, paramsVM, runBlock, runTx } from '../../../src/index.js'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -203,6 +203,7 @@ describe('EIP 2935: historical block hashes', () => {
       const blocksToBuild = 500
       const commonGetHistoryServeWindow = eip2935ActiveAtCommon(0, historyAddressBigInt)
       commonGetHistoryServeWindow.setEIPs([2935])
+      commonGetHistoryServeWindow.updateParams(paramsVM)
       const common = eip2935ActiveAtCommon(blocksActivation, historyAddressBigInt)
       const historyServeWindow = commonGetHistoryServeWindow.param('historyServeWindow')
 

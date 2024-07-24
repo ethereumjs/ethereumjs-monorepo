@@ -10,6 +10,8 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
+import { paramsVM } from './params.js'
+
 import type { VMEvents, VMOpts } from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
@@ -158,6 +160,7 @@ export class VM {
    */
   protected constructor(opts: VMOpts = {}) {
     this.common = opts.common!
+    this.common.updateParams(paramsVM)
     this.stateManager = opts.stateManager!
     this.blockchain = opts.blockchain!
     this.evm = opts.evm!

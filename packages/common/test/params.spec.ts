@@ -84,7 +84,7 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
   })
 
   it('Access by block number, paramByBlock()', () => {
-    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, params: paramsTest })
     let msg = 'Should correctly translate block numbers into HF states (updated value)'
     assert.equal(c.paramByBlock('minerReward', 4370000), BigInt(3000000000000000000), msg)
 
@@ -97,7 +97,7 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
   })
 
   it('Access on copied Common instances', () => {
-    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, params: paramsTest })
     let msg = 'Should correctly access param with param() on original Common'
     assert.equal(c.param('minerReward'), BigInt(2000000000000000000), msg)
 
