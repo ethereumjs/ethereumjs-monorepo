@@ -1,6 +1,31 @@
 import { assert, describe, it } from 'vitest'
 
 import { Chain, Common, Hardfork } from '../src/index.js'
+import { paramsDict } from '../src/params.js'
+
+describe('[Common]: Parameter instantion / params option / Updates', () => {
+  it('Param option', () => {
+    const c = new Common({ chain: Chain.Mainnet, params: paramsDict })
+    let msg = 'Should also work with parameters passed with params option'
+    assert.equal(c.param('ecAddGas'), BigInt(150), msg)
+
+    const params = {
+      1679: {
+        ecAddGas: 250,
+      },
+    }
+    c.updateParams(params)
+    msg = 'Should update parameter on updateParams() and properly rebuild cache'
+    assert.equal(c.param('ecAddGas'), BigInt(250), msg)
+
+    c.resetParams(params)
+    msg = 'Should reset all parameters on resetParams() and properly rebuild cache'
+    assert.equal(c.param('ecAddGas'), BigInt(250), msg)
+    assert.throws(() => {
+      c.param('ecMulGas'), BigInt(250)
+    })
+  })
+})
 
 describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
   it('Basic usage', () => {

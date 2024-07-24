@@ -31,6 +31,7 @@ import type {
   HardforkConfig,
   HardforkTransitionConfig,
   ParamsConfig,
+  ParamsDict,
 } from './types.js'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
@@ -48,6 +49,7 @@ export class Common {
   protected _chainParams: ChainConfig
   protected _hardfork: string | Hardfork
   protected _eips: number[] = []
+  protected _params: ParamsDict
   protected _customChains: ChainConfig[]
 
   public readonly customCrypto: CustomCrypto
@@ -72,6 +74,8 @@ export class Common {
         (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]),
     ])
     this._hardfork = this.DEFAULT_HARDFORK
+    this._params = { ...(opts.params ?? paramsDict) } // copy
+
     if (opts.hardfork !== undefined) {
       this.setHardfork(opts.hardfork)
     }
@@ -84,6 +88,55 @@ export class Common {
       this._buildParamsCache()
       this._buildActivatedEIPsCache()
     }
+  }
+
+  /**
+   * Update the internal Common EIP params set. Existing values
+   * will get preserved unless there is a new value for a paramter
+   * provided with params.
+   *
+   * Example Format:
+   *
+   * ```ts
+   * {
+   *   1559: {
+   *     initialBaseFee: 1000000000,
+   *   }
+   * }
+   * ```
+   *
+   * @param params
+   */
+  updateParams(params: ParamsDict) {
+    for (const [eip, paramsConfig] of Object.entries(params)) {
+      if (!(eip in this._params)) {
+        this._params[eip] = { ...paramsConfig } // copy
+      } else {
+        this._params[eip] = { ...this._params[eip], ...params[eip] }
+      }
+    }
+
+    this._buildParamsCache()
+  }
+
+  /**
+   * Fully resets the internal Common EIP params set with the values provided.
+   *
+   * Example Format:
+   *
+   * ```ts
+   * {
+   *   1559: {
+   *     initialBaseFee: 1000000000,
+   *   }
+   * }
+   * ```
+   *
+   * @param params
+   */
+  resetParams(params: ParamsDict) {
+    this._params = { ...params } // copy
+    this._buildParamsCache()
   }
 
   /**
@@ -340,10 +393,7 @@ export class Common {
       if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs!) {
-          if (!(eip in eipsDict)) {
-            throw new Error(`${eip} not supported`)
-          }
-          this._mergeWithParamsCache(paramsDict[eip] ?? {})
+          this._mergeWithParamsCache(this._params[eip] ?? {})
         }
       }
       // Parameter-inlining HF config (e.g. for istanbul)
@@ -352,7 +402,7 @@ export class Common {
     }
     // Iterate through all additionally activated EIPs
     for (const eip of this._eips) {
-      this._mergeWithParamsCache(paramsDict[eip] ?? {})
+      this._mergeWithParamsCache(this._params[eip] ?? {})
     }
   }
 
@@ -400,7 +450,7 @@ export class Common {
       if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs!) {
-          const eipParams = paramsDict[eip]
+          const eipParams = this._params[eip]
           const eipValue = eipParams?.[name]
           if (eipValue !== undefined) {
             value = eipValue
@@ -432,7 +482,7 @@ export class Common {
       throw new Error(`${eip} not supported`)
     }
 
-    const eipParams = paramsDict[eip]
+    const eipParams = this._params[eip]
     if (eipParams?.[name] === undefined) {
       throw new Error(`Missing parameter value for ${name}`)
     }
