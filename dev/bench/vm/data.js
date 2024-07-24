@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721821328185,
+  "lastUpdate": 1721823930728,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "7ec47a30312252aea85b412b348740e8a9d2d824",
-          "message": "Monorepo: Set \"type\": \"module\" in package.json files (default ESM internally) (#3494)\n\n* Do a simple test and see what happens (Util) (npm i works, test:node works, lint works, docs do not work (maybe unrelated), examples work)\r\n\r\n* Switch all other libraries over\r\n\r\n* Move view specialized debug functionality out of trie src since debug module causes too much problem in this intense usage setup (not ESM ready)\r\n\r\n* Trie import fixes\r\n\r\n* VM example file extension renaming\r\n\r\n* Fix VM examples\r\n\r\n* Import fix\r\n\r\n* Make the switch-over in tsconfig files\r\n\r\n* Fix some new lint failures\r\n\r\n* Bugfix (wrong import extension)\r\n\r\n* Import file extension fixes\r\n\r\n* Fix benchmarks\r\n\r\n* Fix various import issues\r\n\r\n* Remove duplicative node types and clean up references\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-07-11T21:12:36+02:00",
-          "tree_id": "7d12ba04c5ffb86cc2fd590e3b80ef05cef451a8",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7ec47a30312252aea85b412b348740e8a9d2d824"
-        },
-        "date": 1720725448145,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 37577,
-            "range": "±1.85%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 35617,
-            "range": "±1.98%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 35125,
-            "range": "±3.24%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 35872,
-            "range": "±1.75%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34887,
-            "range": "±1.86%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 35314,
             "range": "±1.65%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "759dcd2cc49372243f78b20990a6124f8e3d8c11",
+          "message": "tx: clarify some method names (#3535)\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-07-24T14:22:35+02:00",
+          "tree_id": "eb64eca16ea18393887f7f46fe86e779ab7ddbb6",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/759dcd2cc49372243f78b20990a6124f8e3d8c11"
+        },
+        "date": 1721823929974,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38269,
+            "range": "±1.97%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 35894,
+            "range": "±3.20%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37109,
+            "range": "±1.39%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36326,
+            "range": "±1.47%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35489,
+            "range": "±1.57%",
             "unit": "ops/sec",
             "extra": "89 samples"
           }
