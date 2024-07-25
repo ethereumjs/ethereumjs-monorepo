@@ -14,4 +14,4 @@ const main = async () => {
   console.log(common.customCrypto.kzg) // should output the KZG API as an object
 }
 
-main()
+void main()

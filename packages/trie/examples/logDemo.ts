@@ -1,8 +1,8 @@
 /**
  * Run with DEBUG=ethjs,trie:* to see debug log ouput
  */
-import { utf8ToBytes } from '@ethereumjs/util'
 import { Trie } from '@ethereumjs/trie'
+import { utf8ToBytes } from '@ethereumjs/util'
 
 const trie_entries: [string, string | null][] = [
   ['do', 'verb'],
@@ -27,4 +27,4 @@ const main = async () => {
   console.log('valid', valid)
 }
 
-main()
+void main()

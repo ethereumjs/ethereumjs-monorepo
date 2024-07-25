@@ -1,5 +1,5 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common, createCommonFromGethGenesis, parseGethGenesis } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 
 import gethGenesisJson from './genesisData/post-merge.json'
@@ -19,4 +19,4 @@ const main = async () => {
   )
 }
 
-main()
+void main()

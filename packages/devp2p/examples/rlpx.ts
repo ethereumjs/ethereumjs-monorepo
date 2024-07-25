@@ -16,4 +16,4 @@ const main = async () => {
   await rlpx.destroy()
 }
 
-main()
+void main()

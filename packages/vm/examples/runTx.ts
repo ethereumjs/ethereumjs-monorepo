@@ -20,4 +20,4 @@ const main = async () => {
   console.log(res.totalGasSpent) // 21000n - gas cost for simple ETH transfer
 }
 
-main()
+void main()

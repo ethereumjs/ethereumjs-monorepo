@@ -44,4 +44,4 @@ const main = async () => {
   console.log(slot1FromNewSM, storageValue1) // should match
   console.log(slot2FromNewSM, storageValue2) // should match
 }
-main()
+void main()

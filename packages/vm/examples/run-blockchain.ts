@@ -48,7 +48,7 @@ async function main() {
 
   await putBlocks(blockchain, common, testData)
 
-  await blockchain.iterator('vm', async (block: Block, reorg: boolean) => {
+  await blockchain.iterator('vm', async (block: Block, _reorg: boolean) => {
     const parentBlock = await blockchain!.getBlock(block.header.parentHash)
     const parentState = parentBlock.header.stateRoot
     // run block

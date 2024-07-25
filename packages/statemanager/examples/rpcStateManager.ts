@@ -12,4 +12,4 @@ const main = async () => {
     console.log(e.message) // fetch fails because provider url is not real. please replace provider with a valid rpc url string.
   }
 }
-main()
+void main()

@@ -39,4 +39,4 @@ const main = async () => {
   console.log(`Built a block with hash ${bytesToHex(block.hash())}`)
 }
 
-main()
+void main()

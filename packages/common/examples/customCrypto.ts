@@ -1,4 +1,4 @@
-import { Block, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
 import { keccak256, waitReady } from '@polkadot/wasm-crypto'
 
@@ -14,4 +14,4 @@ const main = async () => {
   console.log(block.hash())
 }
 
-main()
+void main()

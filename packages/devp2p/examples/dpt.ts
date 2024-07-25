@@ -1,5 +1,5 @@
 import { DPT } from '@ethereumjs/devp2p'
-import { bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 const PRIVATE_KEY = hexToBytes('0xed6df2d4b7e82d105538e4a1279925a16a84e772243e80a561e1b201f2e78220')
 const main = async () => {
@@ -15,4 +15,4 @@ const main = async () => {
   await dpt.destroy()
 }
 
-main()
+void main()

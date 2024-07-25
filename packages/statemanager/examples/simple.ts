@@ -10,4 +10,4 @@ const main = async () => {
   console.log(await sm.getAccount(address))
 }
 
-main()
+void main()
