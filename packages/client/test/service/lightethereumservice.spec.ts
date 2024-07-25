@@ -1,6 +1,6 @@
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain/chain'
+import { Chain } from '../../src/blockchain/chain.js'
 import { Config } from '../../src/config.js'
 import { LesProtocol } from '../../src/net/protocol/index.js'
 import { RlpxServer } from '../../src/net/server/index.js'

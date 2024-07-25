@@ -46,7 +46,7 @@ vi.doMock('@ethereumjs/devp2p', () => {
   }
 })
 
-const { RlpxServer } = await import('../../../src/net/server/rlpxserver')
+const { RlpxServer } = await import('../../../src/net/server/rlpxserver.js')
 describe('[RlpxServer]', async () => {
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })

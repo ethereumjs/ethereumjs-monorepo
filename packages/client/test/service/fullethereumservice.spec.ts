@@ -136,7 +136,7 @@ describe('should start/stop', async () => {
 describe('should correctly handle GetBlockHeaders', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   vi.unmock('../../src/blockchain')
-  await import('../../src/blockchain')
+  await import('../../src/blockchain/index.js')
   const chain = await Chain.create({ config })
   chain.getHeaders = () => [{ number: 1n }] as any
   const service = new FullEthereumService({ config, chain })
