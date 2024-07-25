@@ -4,14 +4,14 @@ import { Account, Address, KECCAK256_RLP, hexToBytes } from '@ethereumjs/util'
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../src/vm'
+import { VM } from '../../src/vm.js'
 
 import * as testnet from './testdata/testnet.json'
 import * as testnet2 from './testdata/testnet2.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
-import { setupVM } from './utils'
+import { setupVM } from './utils.js'
 
-import type { VMOpts } from '../../src'
+import type { VMOpts } from '../../src/index.js'
 import type { ChainConfig } from '@ethereumjs/common'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 

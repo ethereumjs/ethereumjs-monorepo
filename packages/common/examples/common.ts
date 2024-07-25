@@ -1,4 +1,4 @@
-import { Chain, Common, createCustomCommon, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
 
 // With enums:
 const commonWithEnums = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })

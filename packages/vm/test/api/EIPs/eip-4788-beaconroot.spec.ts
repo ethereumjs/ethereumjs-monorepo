@@ -23,8 +23,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src'
-import { runBlock as runBlockVM } from '../../../src/index.js'
+import { VM, runBlock as runBlockVM } from '../../../src/index.js'
 
 import type { Block } from '@ethereumjs/block'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'

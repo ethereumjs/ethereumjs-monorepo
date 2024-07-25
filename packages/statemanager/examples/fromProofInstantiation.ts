@@ -1,6 +1,5 @@
-import { Address } from '@ethereumjs/util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { hexToBytes } from '@ethereumjs/util'
+import { Address, hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
   // setup `stateManager` with some existing address
@@ -45,4 +44,4 @@ const main = async () => {
   console.log(slot1FromNewSM, storageValue1) // should match
   console.log(slot2FromNewSM, storageValue2) // should match
 }
-main()
+void main()

@@ -1,7 +1,9 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { createEVM, EVM } from '@ethereumjs/evm'
+import { createEVM } from '@ethereumjs/evm'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -26,7 +28,7 @@ const main = async () => {
 
   evm
     .runCode({
-      code: hexToBytes('0x' + code.join('')),
+      code: hexToBytes(('0x' + code.join('')) as PrefixedHexString),
       gasLimit: BigInt(0xffff),
     })
     .then((results) => {

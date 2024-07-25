@@ -1,5 +1,5 @@
-import { getGenesis } from '@ethereumjs/genesis'
 import { Chain } from '@ethereumjs/common' // or directly use chain ID
+import { getGenesis } from '@ethereumjs/genesis'
 
 const mainnetGenesis = getGenesis(Chain.Mainnet)
 console.log(

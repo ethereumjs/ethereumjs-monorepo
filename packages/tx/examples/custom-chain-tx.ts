@@ -1,7 +1,6 @@
-import { Address } from '@ethereumjs/util'
 import { createCustomCommon } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { hexToBytes } from '@ethereumjs/util'
+import { Address, hexToBytes } from '@ethereumjs/util'
 
 // In this example we create a transaction for a custom network.
 

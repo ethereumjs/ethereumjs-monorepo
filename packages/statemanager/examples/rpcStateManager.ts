@@ -1,5 +1,5 @@
-import { Address } from '@ethereumjs/util'
 import { RPCStateManager } from '@ethereumjs/statemanager'
+import { Address } from '@ethereumjs/util'
 
 const main = async () => {
   try {
@@ -12,4 +12,4 @@ const main = async () => {
     console.log(e.message) // fetch fails because provider url is not real. please replace provider with a valid rpc url string.
   }
 }
-main()
+void main()

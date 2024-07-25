@@ -2,7 +2,7 @@ import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { buildBlock, VM } from '@ethereumjs/vm'
+import { VM, buildBlock } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet })
@@ -39,4 +39,4 @@ const main = async () => {
   console.log(`Built a block with hash ${bytesToHex(block.hash())}`)
 }
 
-main()
+void main()

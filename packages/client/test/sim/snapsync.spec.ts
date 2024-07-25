@@ -22,9 +22,9 @@ import {
   setupEngineUpdateRelay,
   startNetwork,
   waitForELStart,
-} from './simutils'
+} from './simutils.js'
 
-import type { EthereumClient } from '../../src/client'
+import type { EthereumClient } from '../../src/client.js'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { PrefixedHexString } from '@ethereumjs/util'
 

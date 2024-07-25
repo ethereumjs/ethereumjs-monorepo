@@ -1,7 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
-import { runTx, VM } from '@ethereumjs/vm'
+import { VM, runTx } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
@@ -20,4 +20,4 @@ const main = async () => {
   console.log(res.totalGasSpent) // 21000n - gas cost for simple ETH transfer
 }
 
-main()
+void main()

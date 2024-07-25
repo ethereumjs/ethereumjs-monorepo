@@ -1,5 +1,5 @@
-import { createTrie, Trie } from '@ethereumjs/trie'
-import { bytesToUtf8, MapDB, utf8ToBytes } from '@ethereumjs/util'
+import { createTrie } from '@ethereumjs/trie'
+import { MapDB, bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 
 async function test() {
   const trie = await createTrie({ db: new MapDB() })
@@ -8,4 +8,4 @@ async function test() {
   console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
 }
 
-test()
+void test()

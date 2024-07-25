@@ -1,5 +1,6 @@
-import { Interface, defaultAbiCoder as AbiCoder } from '@ethersproject/abi'
-import { LegacyTxData } from '@ethereumjs/tx'
+import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
+
+import type { LegacyTxData } from '@ethereumjs/tx'
 
 export const encodeFunction = (
   method: string,

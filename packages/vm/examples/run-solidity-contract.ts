@@ -2,12 +2,13 @@ import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { runTx, VM } from '@ethereumjs/vm'
+import { VM, runTx } from '@ethereumjs/vm'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { readFileSync } from 'fs'
 import path from 'path'
 import solc from 'solc'
 import { fileURLToPath } from 'url'
+
 import { getAccountNonce, insertAccount } from './helpers/account-utils.js'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.js'
 
@@ -65,7 +66,7 @@ function compileContracts() {
 
   let compilationFailed = false
 
-  if (output.errors) {
+  if (output.errors !== undefined) {
     for (const error of output.errors) {
       if (error.severity === 'error') {
         console.error(error.formattedMessage)
@@ -147,7 +148,7 @@ async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
 
   const greetResult = await vm.evm.runCall({
     to: contractAddress,
-    caller: caller,
+    caller,
     origin: caller, // The tx.origin is also the caller here
     data: hexToBytes(sigHash),
     block,

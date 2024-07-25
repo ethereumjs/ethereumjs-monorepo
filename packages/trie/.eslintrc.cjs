@@ -1,11 +1,11 @@
 module.exports = {
   extends: '../../config/eslint.cjs',
   parserOptions: {
-    project: ['./tsconfig.json', './tsconfig.benchmarks.json'],
+    project: ['./tsconfig.lint.json'],
   },
   overrides: [
     {
-      files: ['benchmarks/*.ts'],
+      files: ['benchmarks/*.ts', 'examples/**/*'],
       rules: {
         'no-console': 'off',
       },

@@ -1,6 +1,8 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Ethash } from '@ethereumjs/ethash'
-import { DBObject, MapDB, bytesToHex } from '@ethereumjs/util'
+import { MapDB, bytesToHex } from '@ethereumjs/util'
+
+import type { DBObject } from '@ethereumjs/util'
 
 const block = createBlockFromBlockData(
   {

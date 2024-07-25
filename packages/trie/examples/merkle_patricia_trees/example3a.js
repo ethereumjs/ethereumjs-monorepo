@@ -1,9 +1,11 @@
 // Example 3a - Generating a hash
 
-const { Trie } = require('../../dist/cjs')
 const rlp = require('@ethereumjs/rlp')
 const { bytesToHex, utf8ToBytes } = require('@ethereumjs/util')
 const { keccak256 } = require('ethereum-cryptography/keccak')
+
+const { Trie } = require('../../dist/cjs/index.js')
+
 const trie = new Trie()
 
 async function test() {
@@ -32,4 +34,4 @@ async function test() {
   console.log('The extension node hash: ', bytesToHex(node1.node._branches[3]))
 }
 
-test()
+void test()

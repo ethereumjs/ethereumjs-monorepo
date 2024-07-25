@@ -1,4 +1,4 @@
-import { createTrie, Trie } from '@ethereumjs/trie'
+import { createTrie } from '@ethereumjs/trie'
 import { utf8ToBytes } from '@ethereumjs/util'
 
 async function main() {
@@ -11,4 +11,4 @@ async function main() {
     console.log({ node, currentKey })
   }
 }
-main()
+void main()

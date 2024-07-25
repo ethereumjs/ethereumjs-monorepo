@@ -1,22 +1,23 @@
+import { BlockHeader, createBlockFromValuesArray } from '@ethereumjs/block'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import * as devp2p from '@ethereumjs/devp2p'
+import { RLP } from '@ethereumjs/rlp'
+import { createTxFromBlockBodyData } from '@ethereumjs/tx'
 import {
   bytesToInt,
-  intToBytes,
-  randomBytes,
   bytesToUnprefixedHex,
   equalsBytes,
   hexToBytes,
+  intToBytes,
+  randomBytes,
 } from '@ethereumjs/util'
-import { Block, BlockHeader, createBlockFromValuesArray } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { RLP } from '@ethereumjs/rlp'
-import { createTxFromBlockBodyData, TypedTransaction } from '@ethereumjs/tx'
 import chalk from 'chalk'
 import { LRUCache } from 'lru-cache'
-
 import ms from 'ms'
 
-import * as devp2p from '@ethereumjs/devp2p'
-import { ETH, Peer } from '@ethereumjs/devp2p'
+import type { Block } from '@ethereumjs/block'
+import type { ETH, Peer } from '@ethereumjs/devp2p'
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 const PRIVATE_KEY = randomBytes(32)
 

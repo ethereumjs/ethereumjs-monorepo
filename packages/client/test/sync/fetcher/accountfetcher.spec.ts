@@ -38,7 +38,7 @@ describe('[AccountFetcher]', async () => {
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
 
-  const { AccountFetcher } = await import('../../../src/sync/fetcher/accountfetcher')
+  const { AccountFetcher } = await import('../../../src/sync/fetcher/accountfetcher.js')
 
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })

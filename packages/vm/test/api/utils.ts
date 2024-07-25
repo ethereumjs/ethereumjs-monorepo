@@ -9,11 +9,11 @@ import {
 } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
-import { VM } from '../../src/vm'
+import { VM } from '../../src/vm.js'
 
-import { LevelDB } from './level'
+import { LevelDB } from './level.js'
 
-import type { VMOpts } from '../../src/types'
+import type { VMOpts } from '../../src/types.js'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'

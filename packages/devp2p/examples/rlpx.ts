@@ -1,5 +1,5 @@
 import { Chain, Common } from '@ethereumjs/common'
-import { RLPx, ETH } from '@ethereumjs/devp2p'
+import { ETH, RLPx } from '@ethereumjs/devp2p'
 import { hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
@@ -13,7 +13,7 @@ const main = async () => {
     common,
   })
   console.log(`RLPx is active - ${rlpx._isAlive()}`)
-  await rlpx.destroy()
+  rlpx.destroy()
 }
 
-main()
+void main()

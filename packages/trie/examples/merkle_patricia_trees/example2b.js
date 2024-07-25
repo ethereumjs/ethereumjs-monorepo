@@ -1,7 +1,8 @@
 // Example 2b - Creating and looking up a branch node
 
-const { Trie } = require('../../dist/cjs')
 const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
+
+const { Trie } = require('../../dist/cjs/index.js')
 
 const trie = new Trie()
 
@@ -47,4 +48,4 @@ async function test() {
   console.log('Node 2: ', node2.node)
 }
 
-test()
+void test()
