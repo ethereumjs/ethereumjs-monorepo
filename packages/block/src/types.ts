@@ -48,11 +48,11 @@ export interface BlockOptions {
   setHardfork?: boolean | BigIntLike
   /**
    * Block parameters sorted by EIP can be found in the exported `paramsBlock` dictionary,
-   * which is internally passed to the associate `@ethereumjs/common` instance which
+   * which is internally passed to the associated `@ethereumjs/common` instance which
    * manages parameter selection based on the hardfork and EIP settings.
    *
-   * This option allows to provide a set of own parameters. Note that parameters
-   * get fully overwritten, so you need to blend off from the default params dict
+   * This option allows providing a custom set of parameters. Note that parameters
+   * get fully overwritten, so you need to extend the default parameter dict
    * to provide the full parameter set.
    *
    * It is recommended to deep-clone the params object for this to avoid side effects:

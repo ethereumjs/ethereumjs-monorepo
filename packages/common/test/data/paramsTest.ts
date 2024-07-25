@@ -6,7 +6,7 @@ export const paramsTest: ParamsDict = {
    */
   1: {
     // pow
-    minerReward: BigInt('5000000000000000000'), // the amount a miner get rewarded for mining a block
+    minerReward: '5000000000000000000', // the amount a miner get rewarded for mining a block
   },
   /**
    * Byzantium HF Meta EIP
@@ -15,7 +15,7 @@ export const paramsTest: ParamsDict = {
     // gasPrices
     ecAddGas: 500, // Gas costs for curve addition precompile
     // pow
-    minerReward: BigInt('3000000000000000000'), // the amount a miner get rewarded for mining a block
+    minerReward: '3000000000000000000', // the amount a miner get rewarded for mining a block
   },
   /**
 .  * Constantinope HF Meta EIP
@@ -24,9 +24,8 @@ export const paramsTest: ParamsDict = {
     // gasPrices
     netSstoreNoopGas: 200, // Once per SSTORE operation if the value doesn't change
     // pow
-    minerReward: BigInt('2000000000000000000'), // The amount a miner gets rewarded for mining a block
+    minerReward: '2000000000000000000', // The amount a miner gets rewarded for mining a block
   },
-
   /**
 .  * Petersburg HF Meta EIP
 .  */
@@ -34,7 +33,6 @@ export const paramsTest: ParamsDict = {
     // gasPrices
     netSstoreNoopGas: null, // Removed along EIP-1283
   },
-
   /**
    * Istanbul HF Meta EIP
    */
