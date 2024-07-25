@@ -1,3 +1,4 @@
+import { paramsBlock } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
@@ -250,6 +251,7 @@ describe(method, () => {
       eips: [1559],
       chain: CommonChain.Mainnet,
       hardfork: Hardfork.London,
+      params: paramsBlock,
     })
 
     const initialBaseFee = common.param('initialBaseFee')

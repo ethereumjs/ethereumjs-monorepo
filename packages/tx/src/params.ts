@@ -37,4 +37,10 @@ export const paramsTx: ParamsDict = {
     // format
     maxInitCodeSize: 49152, // Maximum length of initialization code when creating a contract
   },
+  /**
+.  * Shard Blob Transactions
+.  */
+  4844: {
+    blobCommitmentVersionKzg: 1, // The number indicated a versioned hash is a KZG commitment
+  },
 }

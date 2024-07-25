@@ -9,6 +9,7 @@ export const paramsBlock: ParamsDict = {
     minGasLimit: 5000, // Minimum the gas limit may ever be
     gasLimitBoundDivisor: 1024, // The bound divisor of the gas limit, used in update calculations
     targetBlobGasPerBlock: 0, // Base value needed here since called pre-4844 in BlockHeader.calcNextExcessBlobGas()
+    blobGasPerBlob: 0,
     maxblobGasPerBlock: 0,
     // format
     maxExtraDataSize: 32, // Maximum size extra data may be after Genesis
@@ -48,6 +49,7 @@ export const paramsBlock: ParamsDict = {
     // gasConfig
     baseFeeMaxChangeDenominator: 8, // Maximum base fee change denominator
     elasticityMultiplier: 2, // Maximum block gas target elasticity
+    initialBaseFee: 1000000000, // Initial base fee on first EIP1559 block
   },
   /**
 .  * Difficulty Bomb Delay to December 1st 2021
@@ -69,6 +71,7 @@ export const paramsBlock: ParamsDict = {
   4844: {
     // gasConfig
     targetBlobGasPerBlock: 393216, // The target blob gas consumed per block
+    blobGasPerBlob: 131072, // The base fee for blob gas per blob
     maxblobGasPerBlock: 786432, // The max blob gas allowable per block
     blobGasPriceUpdateFraction: 3338477, // The denominator used in the exponential when calculating a blob gas price
     // gasPrices

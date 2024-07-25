@@ -369,7 +369,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // the signer must be able to afford the transaction
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
     const castTx = tx as BlobEIP4844Transaction
-    totalblobGas = castTx.common.param('blobGasPerBlob') * BigInt(castTx.numBlobs())
+    totalblobGas = vm.common.param('blobGasPerBlob') * BigInt(castTx.numBlobs())
     maxCost += totalblobGas * castTx.maxFeePerBlobGas
 
     // 4844 minimum blobGas price check

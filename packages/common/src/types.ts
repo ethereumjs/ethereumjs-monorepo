@@ -104,6 +104,24 @@ interface BaseOpts {
    */
   eips?: number[]
   /**
+   * Optionally pass in an EIP params dictionary, see one of the
+   * EthereumJS library `params.ts` files for an example (e.g. tx, evm).
+   * By default parameters are set by the respective library, so this
+   * is only relevant if you want to use EthereumJS libraries with a
+   * custom parameter set.
+   *
+   * Example Format:
+   *
+   * ```ts
+   * {
+   *   1559: {
+   *     initialBaseFee: 1000000000,
+   *   }
+   * }
+   * ```
+   */
+  params?: ParamsDict
+  /**
    * This option can be used to replace the most common crypto primitives
    * (keccak256 hashing e.g.) within the EthereumJS ecosystem libraries
    * with alternative implementations (e.g. more performant WASM libraries).
@@ -126,25 +144,6 @@ export interface CommonOpts extends BaseOpts {
    * passed in via {@link CommonOpts.customChains}.
    */
   chain: string | number | Chain | bigint | object
-
-  /**
-   * Optionally pass in an EIP params dictionary, see one of the
-   * EthereumJS library `params.ts` files for an example (e.g. tx, evm).
-   * By default parameters are set by the respective library, so this
-   * is only relevant if you want to use EthereumJS libraries with a
-   * custom parameter set.
-   *
-   * Example Format:
-   *
-   * ```ts
-   * {
-   *   1559: {
-   *     initialBaseFee: 1000000000,
-   *   }
-   * }
-   * ```
-   */
-  params?: ParamsDict
 
   /**
    * Initialize (in addition to the supported chains) with the selected

@@ -7,6 +7,8 @@ export const paramsVM: ParamsDict = {
   1: {
     // gasConfig
     maxRefundQuotient: 2, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
+    blobGasPerBlob: 0,
+    maxblobGasPerBlock: 0,
     // pow
     minerReward: BigInt('5000000000000000000'), // the amount a miner get rewarded for mining a block
   },
@@ -30,6 +32,7 @@ export const paramsVM: ParamsDict = {
   1559: {
     // gasConfig
     elasticityMultiplier: 2, // Maximum block gas target elasticity
+    initialBaseFee: 1000000000, // Initial base fee on first EIP1559 block
   },
   /**
    * Save historical block hashes in state (Verkle related usage, UNSTABLE)
@@ -45,6 +48,13 @@ export const paramsVM: ParamsDict = {
   3529: {
     // gasConfig
     maxRefundQuotient: 5, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
+  },
+  /**
+.  * Shard Blob Transactions
+.  */
+  4844: {
+    blobGasPerBlob: 131072, // The base fee for blob gas per blob
+    maxblobGasPerBlock: 786432, // The max blob gas allowable per block
   },
   /**
 .  * Beacon block root in the EVM

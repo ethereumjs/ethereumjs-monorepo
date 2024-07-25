@@ -112,13 +112,14 @@ export function createCustomCommon(
  */
 export function createCommonFromGethGenesis(
   genesisJson: any,
-  { chain, eips, genesisHash, hardfork, mergeForkIdPostMerge, customCrypto }: GethConfigOpts
+  { chain, eips, genesisHash, hardfork, params, mergeForkIdPostMerge, customCrypto }: GethConfigOpts
 ): Common {
   const genesisParams = parseGethGenesis(genesisJson, chain, mergeForkIdPostMerge)
   const common = new Common({
     chain: genesisParams.name ?? 'custom',
     customChains: [genesisParams],
     eips,
+    params,
     hardfork: hardfork ?? genesisParams.hardfork,
     customCrypto,
   })
