@@ -388,8 +388,7 @@ export class Config {
   // engine new payload calls can come in batch of 64, keeping 128 as the lookup factor
   public static readonly ENGINE_PARENTLOOKUP_MAX_DEPTH = 128
   public static readonly ENGINE_NEWPAYLOAD_MAX_EXECUTE = 2
-  // currently ethereumjs can execute 200 txs in 12 second window so keeping 1/2 target for blocking response
-  public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 100
+  public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 200
   public static readonly SNAP_AVAILABILITY_DEPTH = BigInt(128)
   // distance from head at which we can safely transition from a synced snapstate to vmexecution
   // randomly kept it at 5 for fast testing purposes but ideally should be >=32 slots
