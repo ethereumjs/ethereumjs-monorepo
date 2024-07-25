@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721919075689,
+  "lastUpdate": 1721924082724,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f484f6d20ed4d98aa0bfa36a8df33834edc73f65",
-          "message": "RPC: implement debug_getRaw...  methods   (#3490)\n\n* RPC: implement debug_getRawBlock\r\n\r\n* RPC: implement debug_getRawHeader\r\n\r\n* RPC: implement debug_getRawReceipts\r\n\r\n* RPC: implement debug_getRawTransaction\r\n\r\n* RPC: return block from test helper method\r\n\r\n* RPC: test getRawBlock\r\n\r\n* RPC: test getRawHeader\r\n\r\n* RPC: test getRawReceipt\r\n\r\n* RPC: test getRawTransaction",
-          "timestamp": "2024-07-11T15:00:45-06:00",
-          "tree_id": "fe033a88a64930309630f044d3ab7839fc4271a2",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f484f6d20ed4d98aa0bfa36a8df33834edc73f65"
-        },
-        "date": 1720731802534,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38786,
-            "range": "±1.70%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 36701,
-            "range": "±2.97%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37718,
-            "range": "±1.51%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36963,
-            "range": "±1.62%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36094,
-            "range": "±1.67%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 35129,
             "range": "±1.99%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bf588e25a14f4f9f5b8976dc5abfb58467f2699c",
+          "message": "client: change MAX_TXS_EXECUTE default to 200 (#3540)",
+          "timestamp": "2024-07-25T12:11:53-04:00",
+          "tree_id": "281742bca9fc231641e72598b5348cdf93a2d844",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bf588e25a14f4f9f5b8976dc5abfb58467f2699c"
+        },
+        "date": 1721924081480,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38557,
+            "range": "±1.66%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 35951,
+            "range": "±3.26%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37605,
+            "range": "±1.56%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36549,
+            "range": "±1.64%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35810,
+            "range": "±1.81%",
             "unit": "ops/sec",
             "extra": "88 samples"
           }
