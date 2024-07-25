@@ -13,7 +13,6 @@ import { crc32 } from './crc.js'
 import { eipsDict } from './eips.js'
 import { Hardfork } from './enums.js'
 import { hardforksDict } from './hardforks.js'
-import { paramsDict } from './params.js'
 
 import { _getChainParams } from './index.js'
 
@@ -74,7 +73,7 @@ export class Common {
         (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]),
     ])
     this._hardfork = this.DEFAULT_HARDFORK
-    this._params = { ...(opts.params ?? paramsDict) } // copy
+    this._params = { ...(opts.params ?? {}) } // copy
 
     if (opts.hardfork !== undefined) {
       this.setHardfork(opts.hardfork)
