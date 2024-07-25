@@ -16,7 +16,7 @@ describe('initialization', () => {
     let evm = await createEVM()
     assert.equal(evm.common.param('ecAddGas'), BigInt(150), 'should use default EVM parameters')
 
-    const params = { ...paramsEVM }
+    const params = JSON.parse(JSON.stringify(paramsEVM))
     params['1679']['ecAddGas'] = 100 // 150
     evm = await createEVM({ params })
     assert.equal(evm.common.param('ecAddGas'), BigInt(100), 'should use custom parameters provided')

@@ -25,6 +25,9 @@ describe('[Common]: Parameter instantion / params option / Updates', () => {
     assert.throws(() => {
       c.param('ecMulGas'), BigInt(250)
     })
+
+    msg = 'Should not side-manipulate the original params file during updating internally'
+    assert.equal(paramsTest['1679']['ecAddGas'], 150)
   })
 })
 
@@ -63,7 +66,7 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     assert.equal(
       c.param('ecAddGas'),
       BigInt(500),
-      'Should return correct value for HF set in class'
+      'Should return correct value for HF set in class',
     )
   })
 

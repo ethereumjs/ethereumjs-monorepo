@@ -54,6 +54,13 @@ export interface BlockOptions {
    * This option allows to provide a set of own parameters. Note that parameters
    * get fully overwritten, so you need to blend off from the default params dict
    * to provide the full parameter set.
+   *
+   * It is recommended to deep-clone the params object for this to avoid side effects:
+   *
+   * ```ts
+   * const params = JSON.parse(JSON.stringify(paramsBlock))
+   * params['1']['minGasLimit'] = 3000 // 5000
+   * ```
    */
   params?: ParamsDict
   /**
@@ -149,7 +156,7 @@ export type BlockBytes =
       UncleHeadersBytes,
       WithdrawalsBytes,
       RequestsBytes,
-      ExecutionWitnessBytes
+      ExecutionWitnessBytes,
     ]
 
 /**
@@ -160,7 +167,7 @@ export type BlockBodyBytes = [
   TransactionsBytes,
   UncleHeadersBytes,
   WithdrawalsBytes?,
-  RequestBytes?
+  RequestBytes?,
 ]
 /**
  * TransactionsBytes can be an array of serialized txs for Typed Transactions or an array of Uint8Array Arrays for legacy transactions.

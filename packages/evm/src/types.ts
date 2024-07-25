@@ -241,6 +241,13 @@ export interface EVMOpts {
    * This option allows to provide a set of own parameters. Note that parameters
    * get fully overwritten, so you need to blend off from the default params dict
    * to provide the full parameter set.
+   *
+   * It is recommended to deep-clone the params object for this to avoid side effects:
+   *
+   * ```ts
+   * const params = JSON.parse(JSON.stringify(paramsEVM))
+   * params['1679']['ecAddGas'] = 100 // 150
+   * ```
    */
   params?: ParamsDict
 
