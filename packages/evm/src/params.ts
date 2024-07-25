@@ -274,8 +274,8 @@ export const paramsEVM: ParamsDict = {
    */
   2935: {
     // evm
-    historyStorageAddress: BigInt('0x0aae40965e6800cd9b1f4b05ff21581047e3f91e'), // The address where the historical blockhashes are stored
-    historyServeWindow: BigInt(8192), // The amount of blocks to be served by the historical blockhash contract
+    historyStorageAddress: '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e', // The address where the historical blockhashes are stored
+    historyServeWindow: 8192, // The amount of blocks to be served by the historical blockhash contract
   },
   /**
 .  * AUTH and AUTHCALL opcodes

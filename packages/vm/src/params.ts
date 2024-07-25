@@ -10,21 +10,21 @@ export const paramsVM: ParamsDict = {
     blobGasPerBlob: 0,
     maxblobGasPerBlock: 0,
     // pow
-    minerReward: BigInt('5000000000000000000'), // the amount a miner get rewarded for mining a block
+    minerReward: '5000000000000000000', // the amount a miner get rewarded for mining a block
   },
   /**
 .  * Byzantium HF Meta EIP
 .  */
   609: {
     // pow
-    minerReward: BigInt('3000000000000000000'), // the amount a miner get rewarded for mining a block
+    minerReward: '3000000000000000000', // the amount a miner get rewarded for mining a block
   },
   /**
 .  * Constantinope HF Meta EIP
 .  */
   1013: {
     // pow
-    minerReward: BigInt('2000000000000000000'), // The amount a miner gets rewarded for mining a block
+    minerReward: '2000000000000000000', // The amount a miner gets rewarded for mining a block
   },
   /**
 .  * Fee market change for ETH 1.0 chain
@@ -39,8 +39,8 @@ export const paramsVM: ParamsDict = {
    */
   2935: {
     // config
-    historyStorageAddress: BigInt('0x0aae40965e6800cd9b1f4b05ff21581047e3f91e'), // The address where the historical blockhashes are stored
-    historyServeWindow: BigInt(8192), // The amount of blocks to be served by the historical blockhash contract
+    historyStorageAddress: '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e', // The address where the historical blockhashes are stored
+    historyServeWindow: 8192, // The amount of blocks to be served by the historical blockhash contract
   },
   /**
 .  * Reduction in refunds
@@ -70,15 +70,15 @@ export const paramsVM: ParamsDict = {
     // kaustinen 6 current uses this address, however this will be updated to correct address
     // in next iteration
     // config
-    historyStorageAddress: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'), // The address where the historical blockhashes are stored
+    historyStorageAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The address where the historical blockhashes are stored
   },
   /**
    * Execution layer triggerable withdrawals (experimental)
    */
   7002: {
     // config
-    systemAddress: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'), // The system address to perform operations on the withdrawal requests predeploy address
-    withdrawalRequestPredeployAddress: BigInt('0x00A3ca265EBcb825B45F985A16CEFB49958cE017'), // Address of the validator excess address
+    systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the withdrawal requests predeploy address
+    withdrawalRequestPredeployAddress: '0x00A3ca265EBcb825B45F985A16CEFB49958cE017', // Address of the validator excess address
   },
 
   /**
@@ -86,7 +86,7 @@ export const paramsVM: ParamsDict = {
    */
   7251: {
     // config
-    systemAddress: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'), // The system address to perform operations on the consolidation requests predeploy address
-    consolidationRequestPredeployAddress: BigInt('0x00b42dbF2194e931E80326D950320f7d9Dbeac02'), // Address of the consolidations contract
+    systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the consolidation requests predeploy address
+    consolidationRequestPredeployAddress: '0x00b42dbF2194e931E80326D950320f7d9Dbeac02', // Address of the consolidations contract
   },
 }
