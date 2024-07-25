@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721823930728,
+  "lastUpdate": 1721919075689,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a075860c3c741ac7a3301e2e6bbad8d8fed8f041",
-          "message": "Update main README Release Table after Breaking Release Work Start (#3492)\n\n* Update main README branch table and associated text\n\n* Add stats.html, bundle.js (from Vite) to .gitignore\n\n* Adopt EVM npm bundle:visualize command to not kill of the main dist directory, rename vite.config.ts -> vite.config.bundler.ts to not have this confused as our main toolchain setup configuration\n\n* Remove FUNDING.json\n\n* Fix linting\n\n* Merge branch 'master' into update-main-readme-branch-table",
-          "timestamp": "2024-07-11T15:34:04-04:00",
-          "tree_id": "3567fe3649f83099cf33a1f823a141870f145ddf",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a075860c3c741ac7a3301e2e6bbad8d8fed8f041"
-        },
-        "date": 1720726727307,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38926,
-            "range": "±1.78%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 36503,
-            "range": "±4.49%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37504,
-            "range": "±1.60%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36811,
-            "range": "±1.55%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36138,
-            "range": "±1.78%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.57%",
             "unit": "ops/sec",
             "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "23d796d9223958af937aa2039f45f7cd5f323ab9",
+          "message": "Update linting (#3539)",
+          "timestamp": "2024-07-25T10:48:35-04:00",
+          "tree_id": "8475c15a05085bd9c8a609ab42a74d233806cd2f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/23d796d9223958af937aa2039f45f7cd5f323ab9"
+        },
+        "date": 1721919075068,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37936,
+            "range": "±2.08%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 35827,
+            "range": "±3.26%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 36390,
+            "range": "±1.76%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35759,
+            "range": "±1.78%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35129,
+            "range": "±1.99%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
