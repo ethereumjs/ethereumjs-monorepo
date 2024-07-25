@@ -56,7 +56,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
     const { chainId, accessList, gasPrice } = txData
 
     this.common = this._getCommon(opts.common, chainId)
-    this.common.updateParams(paramsTx)
+    this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 
     // EIP-2718 check is done in Common

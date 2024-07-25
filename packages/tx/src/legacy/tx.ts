@@ -56,7 +56,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     super({ ...txData, type: TransactionType.Legacy }, opts)
 
     this.common = this._validateTxV(this.v, opts.common)
-    this.common.updateParams(paramsTx)
+    this.common.updateParams(opts.params ?? paramsTx)
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
     this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice))
 

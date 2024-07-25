@@ -12,6 +12,7 @@ import type {
   AuthorizationListBytes,
   Common,
   Hardfork,
+  ParamsDict,
 } from '@ethereumjs/common'
 import type {
   Address,
@@ -82,6 +83,16 @@ export interface TxOptions {
    * Current default hardfork: `istanbul`
    */
   common?: Common
+  /**
+   * Tx parameters sorted by EIP can be found in the exported `paramsTx` dictionary,
+   * which is internally passed to the associate `@ethereumjs/common` instance which
+   * manages parameter selection based on the hardfork and EIP settings.
+   *
+   * This option allows to provide a set of own parameters. Note that parameters
+   * get fully overwritten, so you need to blend off from the default params dict
+   * to provide the full parameter set.
+   */
+  params?: ParamsDict
   /**
    * A transaction object by default gets frozen along initialization. This gives you
    * strong additional security guarantees on the consistency of the tx parameters.

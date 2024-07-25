@@ -160,7 +160,7 @@ export class VM {
    */
   protected constructor(opts: VMOpts = {}) {
     this.common = opts.common!
-    this.common.updateParams(paramsVM)
+    this.common.updateParams(opts.params ?? paramsVM)
     this.stateManager = opts.stateManager!
     this.blockchain = opts.blockchain!
     this.evm = opts.evm!

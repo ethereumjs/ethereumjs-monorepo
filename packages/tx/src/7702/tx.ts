@@ -63,7 +63,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
     const { chainId, accessList, authorizationList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
-    this.common.updateParams(paramsTx)
+    this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(7702)) {

@@ -184,7 +184,7 @@ export class EVM implements EVMInterface {
       )
     }
 
-    this.common.updateParams(paramsEVM)
+    this.common.updateParams(opts.params ?? paramsEVM)
 
     this.allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
     this.allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false

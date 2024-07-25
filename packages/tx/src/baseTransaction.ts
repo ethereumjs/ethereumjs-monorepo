@@ -109,7 +109,7 @@ export abstract class BaseTransaction<T extends TransactionType>
     const createContract = this.to === undefined || this.to === null
     const allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
     const common = opts.common ?? this._getCommon()
-    common.updateParams(paramsTx)
+    common.updateParams(opts.params ?? paramsTx)
     if (createContract && common.isActivatedEIP(3860) && allowUnlimitedInitCodeSize === false) {
       checkMaxInitCodeSize(common, this.data.length)
     }

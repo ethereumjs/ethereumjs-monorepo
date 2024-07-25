@@ -168,7 +168,7 @@ export class BlockHeader {
         chain: Chain.Mainnet, // default
       })
     }
-    this.common.updateParams(paramsBlock)
+    this.common.updateParams(opts.params ?? paramsBlock)
 
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
 
