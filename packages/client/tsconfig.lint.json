@@ -1,7 +1,3 @@
 {
-  "extends": "../../config/tsconfig.json",
-  "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts", "bin/**/*.ts"],
-  "compilerOptions": {
-    "noEmit": true
-  }
+  "extends": "../../config/tsconfig.lint.json"
 }
