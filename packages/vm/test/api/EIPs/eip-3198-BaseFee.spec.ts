@@ -53,7 +53,7 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction) {
       },
       transactions: [json],
     },
-    { common }
+    { common },
   )
   return block
 }
@@ -72,7 +72,7 @@ describe('EIP3198 tests', () => {
       },
       {
         common,
-      }
+      },
     )
     const block = makeBlock(fee, tx)
     const vm = await VM.create({ common })

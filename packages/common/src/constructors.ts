@@ -28,7 +28,7 @@ import type { ChainConfig, CustomCommonOpts, GethConfigOpts } from './index.js'
  */
 export function createCustomCommon(
   chainParamsOrName: Partial<ChainConfig> | CustomChain,
-  opts: CustomCommonOpts = {}
+  opts: CustomCommonOpts = {},
 ): Common {
   const baseChain = opts.baseChain ?? 'mainnet'
   const standardChainParams = { ..._getChainParams(baseChain) }
@@ -49,7 +49,7 @@ export function createCustomCommon(
           name: CustomChain.PolygonMainnet,
           chainId: 137,
         },
-        opts
+        opts,
       )
     }
     if (chainParamsOrName === CustomChain.PolygonMumbai) {
@@ -58,7 +58,7 @@ export function createCustomCommon(
           name: CustomChain.PolygonMumbai,
           chainId: 80001,
         },
-        opts
+        opts,
       )
     }
     if (chainParamsOrName === CustomChain.ArbitrumOne) {
@@ -67,7 +67,7 @@ export function createCustomCommon(
           name: CustomChain.ArbitrumOne,
           chainId: 42161,
         },
-        opts
+        opts,
       )
     }
     if (chainParamsOrName === CustomChain.xDaiChain) {
@@ -76,7 +76,7 @@ export function createCustomCommon(
           name: CustomChain.xDaiChain,
           chainId: 100,
         },
-        opts
+        opts,
       )
     }
 
@@ -86,7 +86,7 @@ export function createCustomCommon(
           name: CustomChain.OptimisticKovan,
           chainId: 69,
         },
-        opts
+        opts,
       )
     }
 
@@ -97,7 +97,7 @@ export function createCustomCommon(
           chainId: 10,
         },
         // Optimism has not implemented the London hardfork yet (targeting Q1.22)
-        { hardfork: Hardfork.Berlin, ...opts }
+        { hardfork: Hardfork.Berlin, ...opts },
       )
     }
     throw new Error(`Custom chain ${chainParamsOrName} not supported`)
@@ -112,7 +112,15 @@ export function createCustomCommon(
  */
 export function createCommonFromGethGenesis(
   genesisJson: any,
-  { chain, eips, genesisHash, hardfork, params, mergeForkIdPostMerge, customCrypto }: GethConfigOpts
+  {
+    chain,
+    eips,
+    genesisHash,
+    hardfork,
+    params,
+    mergeForkIdPostMerge,
+    customCrypto,
+  }: GethConfigOpts,
 ): Common {
   const genesisParams = parseGethGenesis(genesisJson, chain, mergeForkIdPostMerge)
   const common = new Common({

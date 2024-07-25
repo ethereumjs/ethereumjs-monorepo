@@ -30,7 +30,7 @@ const hardforkTestData: TestData = {
   muirGlacier: Object.assign(
     difficultyEIP2384.difficultyEIP2384.Berlin,
     difficultyEIP2384_random.difficultyEIP2384_random.Berlin,
-    difficultyEIP2384_random_to20M.difficultyEIP2384_random_to20M.Berlin
+    difficultyEIP2384_random_to20M.difficultyEIP2384_random_to20M.Berlin,
   ),
   arrowGlacier: difficultyArrowGlacier.difficultyArrowGlacier.ArrowGlacier,
   grayGlacier: difficultyGrayGlacier.difficultyGrayGlacier.GrayGlacier,
@@ -65,7 +65,7 @@ describe('[Header]: difficulty tests', () => {
               uncleHash,
             },
           },
-          blockOpts
+          blockOpts,
         )
 
         const block = createBlockFromBlockData(
@@ -76,7 +76,7 @@ describe('[Header]: difficulty tests', () => {
               number: test.currentBlockNumber,
             },
           },
-          blockOpts
+          blockOpts,
         )
 
         runDifficultyTests(test, parentBlock, block, `fork determination by hardfork (${hardfork})`)
@@ -101,7 +101,7 @@ describe('[Header]: difficulty tests', () => {
               uncleHash,
             },
           },
-          blockOpts
+          blockOpts,
         )
 
         const block = createBlockFromBlockData(
@@ -112,14 +112,14 @@ describe('[Header]: difficulty tests', () => {
               number: test.currentBlockNumber,
             },
           },
-          blockOpts
+          blockOpts,
         )
 
         runDifficultyTests(
           test,
           parentBlock,
           block,
-          `fork determination by block number (${test.currentBlockNumber})`
+          `fork determination by block number (${test.currentBlockNumber})`,
         )
       }
     }

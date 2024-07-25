@@ -10,7 +10,7 @@ const main = async () => {
 
   const parentBlock = createBlockFromBlockData(
     { header: { number: 1n } },
-    { skipConsensusFormatValidation: true }
+    { skipConsensusFormatValidation: true },
   )
   const headerData = {
     number: 2n,

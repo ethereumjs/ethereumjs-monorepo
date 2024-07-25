@@ -66,7 +66,7 @@ export function validateHighS(tx: LegacyTxInterface): void {
   if (tx.common.gteHardfork('homestead') && s !== undefined && s > SECP256K1_ORDER_DIV_2) {
     const msg = errorMsg(
       tx,
-      'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
+      'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid',
     )
     throw new Error(msg)
   }
@@ -90,7 +90,7 @@ export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
       v!,
       bigIntToUnpaddedBytes(r!),
       bigIntToUnpaddedBytes(s!),
-      tx.supports(Capability.EIP155ReplayProtection) ? tx.common.chainId() : undefined
+      tx.supports(Capability.EIP155ReplayProtection) ? tx.common.chainId() : undefined,
     )
     if (Object.isFrozen(tx)) {
       tx.cache.senderPubKey = sender

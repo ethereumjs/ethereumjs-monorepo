@@ -14,7 +14,7 @@ const main = async () => {
   console.log(
     `Account at address ${address.toString()} has balance ${
       (await stateManager.getAccount(address))?.balance
-    }`
+    }`,
   )
 }
 void main()

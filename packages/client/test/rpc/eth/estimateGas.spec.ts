@@ -73,7 +73,7 @@ describe(
             gasLimit,
           },
         },
-        { common, calcDifficultyFromHeader: parent }
+        { common, calcDifficultyFromHeader: parent },
       )
       block.transactions[0] = tx
 
@@ -114,7 +114,7 @@ describe(
       assert.equal(
         res.result,
         '0x' + totalGasSpent.toString(16),
-        'should return the correct gas estimate'
+        'should return the correct gas estimate',
       )
 
       // Test without blockopt as its optional and should default to latest
@@ -122,7 +122,7 @@ describe(
       assert.equal(
         res2.result,
         '0x' + totalGasSpent.toString(16),
-        'should return the correct gas estimate'
+        'should return the correct gas estimate',
       )
       // Setup chain to run an EIP1559 tx
       const service = client.services[0] as FullEthereumService
@@ -141,10 +141,10 @@ describe(
               common: service.chain.config.chainCommon,
               skipConsensusFormatValidation: true,
               calcDifficultyFromHeader: headBlock.header,
-            }
+            },
           ),
         },
-        { common: service.chain.config.chainCommon }
+        { common: service.chain.config.chainCommon },
       )
 
       vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
@@ -158,7 +158,7 @@ describe(
       assert.equal(
         EIP1559res.result,
         '0x' + totalGasSpent.toString(16),
-        'should return the correct gas estimate for EIP1559 tx'
+        'should return the correct gas estimate for EIP1559 tx',
       )
 
       // Test EIP1559 tx with no maxFeePerGas
@@ -174,7 +174,7 @@ describe(
       assert.equal(
         EIP1559reqNoGas.result,
         '0x' + totalGasSpent.toString(16),
-        'should return the correct gas estimate'
+        'should return the correct gas estimate',
       )
 
       // Test legacy tx with London head block
@@ -184,7 +184,7 @@ describe(
       assert.equal(
         legacyTxNoGas.result,
         '0x' + totalGasSpent.toString(16),
-        'should return the correct gas estimate'
+        'should return the correct gas estimate',
       )
     })
 
@@ -214,5 +214,5 @@ describe(
       assert.ok(res.error.message.includes('"pending" is not yet supported'))
     })
   },
-  20000
+  20000,
 )

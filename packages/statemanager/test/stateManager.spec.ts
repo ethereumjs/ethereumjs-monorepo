@@ -24,7 +24,7 @@ function verifyAccount(
     codeHash: Uint8Array
     nonce: BigInt
     storageRoot: Uint8Array
-  }
+  },
 ) {
   assert.equal(account.balance, state.balance)
   assert.equal(account.nonce, state.nonce)
@@ -60,7 +60,7 @@ describe('StateManager -> General', () => {
     assert.equal(
       JSON.stringify(storage),
       JSON.stringify(new Uint8Array()),
-      'clears contract storage'
+      'clears contract storage',
     )
   })
 
@@ -75,7 +75,7 @@ describe('StateManager -> General', () => {
     assert.equal(
       smCopy['_prefixCodeHashes'],
       sm['_prefixCodeHashes'],
-      'should retain non-default values'
+      'should retain non-default values',
     )
 
     sm = new DefaultStateManager({
@@ -92,12 +92,12 @@ describe('StateManager -> General', () => {
     assert.equal(
       smCopy['_accountCacheSettings'].type,
       CacheType.ORDERED_MAP,
-      'should switch to ORDERED_MAP account cache on copy()'
+      'should switch to ORDERED_MAP account cache on copy()',
     )
     assert.equal(
       smCopy['_storageCacheSettings'].type,
       CacheType.ORDERED_MAP,
-      'should switch to ORDERED_MAP storage cache on copy()'
+      'should switch to ORDERED_MAP storage cache on copy()',
     )
     assert.equal(smCopy['_trie']['_opts'].cacheSize, 0, 'should set trie cache size to 0')
 
@@ -105,17 +105,17 @@ describe('StateManager -> General', () => {
     assert.equal(
       smCopy['_accountCacheSettings'].type,
       CacheType.LRU,
-      'should retain account cache type when deactivate cache downleveling'
+      'should retain account cache type when deactivate cache downleveling',
     )
     assert.equal(
       smCopy['_storageCacheSettings'].type,
       CacheType.LRU,
-      'should retain storage cache type when deactivate cache downleveling'
+      'should retain storage cache type when deactivate cache downleveling',
     )
     assert.equal(
       smCopy['_trie']['_opts'].cacheSize,
       1000,
-      'should retain trie cache size when deactivate cache downleveling'
+      'should retain trie cache size when deactivate cache downleveling',
     )
   })
 
@@ -304,12 +304,12 @@ describe('StateManager -> General', () => {
       const keys = Object.keys(storage) as PrefixedHexString[]
       const proof = await sm.getProof(
         address,
-        keys.map((key) => hexToBytes(key))
+        keys.map((key) => hexToBytes(key)),
       )
       const proof2 = await sm.getProof(address2)
       const newTrie = await createTrieFromProof(
         proof.accountProof.map((e) => hexToBytes(e)),
-        { useKeyHashing: false }
+        { useKeyHashing: false },
       )
       const partialSM = await DefaultStateManager.fromProof([proof, proof2], true, {
         trie: newTrie,
@@ -317,11 +317,11 @@ describe('StateManager -> General', () => {
       assert.equal(
         partialSM['_trie']['_opts'].useKeyHashing,
         false,
-        'trie opts are preserved in new sm'
+        'trie opts are preserved in new sm',
       )
       assert.deepEqual(
         intToBytes(32),
-        await partialSM.getContractStorage(address, hexToBytes(keys[0]))
+        await partialSM.getContractStorage(address, hexToBytes(keys[0])),
       )
       assert.equal((await partialSM.getAccount(address2))?.balance, 100n)
       const partialSM2 = await DefaultStateManager.fromProof(proof, true, {
@@ -331,13 +331,13 @@ describe('StateManager -> General', () => {
       assert.equal(
         partialSM2['_trie']['_opts'].useKeyHashing,
         false,
-        'trie opts are preserved in new sm'
+        'trie opts are preserved in new sm',
       )
       assert.deepEqual(
         intToBytes(32),
-        await partialSM2.getContractStorage(address, hexToBytes(keys[0]))
+        await partialSM2.getContractStorage(address, hexToBytes(keys[0])),
       )
       assert.equal((await partialSM2.getAccount(address2))?.balance, 100n)
-    }
+    },
   )
 })

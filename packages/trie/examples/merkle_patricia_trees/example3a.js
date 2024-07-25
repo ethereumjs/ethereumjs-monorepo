@@ -26,7 +26,7 @@ async function test() {
     'path: ',
     bytesToHex(node3._branches[4][0]),
     ' | value: ',
-    bytesToHex(node3._branches[4][1])
+    bytesToHex(node3._branches[4][1]),
   )
 
   console.log('Raw node:', bytesToHex(rlp.encode(node2.raw())))

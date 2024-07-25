@@ -205,6 +205,6 @@ export const mergeAndFormatKeyPaths = (pathStrings: string[]) => {
         // full path is keybyte encoded
         return hexToKeybytes(unprefixedHexToBytes(s))
       }
-    })
+    }),
   )
 }

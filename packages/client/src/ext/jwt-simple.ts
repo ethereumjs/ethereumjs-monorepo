@@ -102,7 +102,7 @@ const decode = function jwt_decode(
   token: string,
   key: string,
   noVerify: boolean = false,
-  algorithm: string = ''
+  algorithm: string = '',
 ) {
   // check token
   if (!token) {
@@ -168,7 +168,7 @@ const encode = function jwt_encode(
   payload: any,
   key: string,
   algorithm: string = '',
-  options: any = undefined
+  options: any = undefined,
 ) {
   // Check key
   if (!key) {

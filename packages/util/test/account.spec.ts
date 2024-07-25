@@ -48,12 +48,12 @@ describe('Account', () => {
     assert.equal(
       bytesToHex(account.storageRoot),
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      'should have storageRoot equal to KECCAK256_RLP'
+      'should have storageRoot equal to KECCAK256_RLP',
     )
     assert.equal(
       bytesToHex(account.codeHash),
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-      'should have codeHash equal to KECCAK256_NULL'
+      'should have codeHash equal to KECCAK256_NULL',
     )
   })
 
@@ -71,12 +71,12 @@ describe('Account', () => {
     assert.equal(
       bytesToHex(account.storageRoot),
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      'should have correct storageRoot'
+      'should have correct storageRoot',
     )
     assert.equal(
       bytesToHex(account.codeHash),
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-      'should have correct codeHash'
+      'should have correct codeHash',
     )
   })
 
@@ -93,18 +93,18 @@ describe('Account', () => {
     assert.equal(
       bytesToHex(account.storageRoot),
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      'should have correct storageRoot'
+      'should have correct storageRoot',
     )
     assert.equal(
       bytesToHex(account.codeHash),
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-      'should have correct codeHash'
+      'should have correct codeHash',
     )
   })
 
   it('from RLP data', () => {
     const accountRlp = hexToBytes(
-      '0xf84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+      '0xf84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     )
     const account = createAccountFromRLP(accountRlp)
     assert.equal(account.nonce, BigInt(2), 'should have correct nonce')
@@ -112,12 +112,12 @@ describe('Account', () => {
     assert.equal(
       bytesToHex(account.storageRoot),
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      'should have correct storageRoot'
+      'should have correct storageRoot',
     )
     assert.equal(
       bytesToHex(account.codeHash),
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-      'should have correct codeHash'
+      'should have correct codeHash',
     )
   })
 
@@ -136,7 +136,7 @@ describe('Account', () => {
 
   it('isContract', () => {
     const accountRlp = hexToBytes(
-      '0xf84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+      '0xf84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     )
     let account = createAccountFromRLP(accountRlp)
     assert.notOk(account.isContract(), 'should return false for a non-contract account')
@@ -172,7 +172,7 @@ describe('Account', () => {
       },
       undefined,
       undefined,
-      'should only accept length 32 buffer for storageRoot'
+      'should only accept length 32 buffer for storageRoot',
     )
 
     assert.throws(
@@ -181,7 +181,7 @@ describe('Account', () => {
       },
       undefined,
       undefined,
-      'should only accept length 32 buffer for codeHash'
+      'should only accept length 32 buffer for codeHash',
     )
 
     const data = { balance: BigInt(5) }
@@ -191,7 +191,7 @@ describe('Account', () => {
       },
       undefined,
       undefined,
-      'should only accept an array in fromRlpSerializedAccount'
+      'should only accept an array in fromRlpSerializedAccount',
     )
 
     assert.throws(
@@ -200,7 +200,7 @@ describe('Account', () => {
       },
       undefined,
       undefined,
-      'should not accept nonce less than 0'
+      'should not accept nonce less than 0',
     )
 
     assert.throws(
@@ -209,7 +209,7 @@ describe('Account', () => {
       },
       undefined,
       undefined,
-      'should not accept balance less than 0'
+      'should not accept balance less than 0',
     )
   })
 })
@@ -223,66 +223,66 @@ describe('Utility Functions', () => {
     assert.notOk(
       isValidPrivate(
         hexToBytes(
-          '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
-        )
+          '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
+        ),
       ),
-      'should fail on too big input'
+      'should fail on too big input',
     )
 
     assert.notOk(
       isValidPrivate((<unknown>'WRONG_INPUT_TYPE') as Uint8Array),
-      'should fail on wrong input type'
+      'should fail on wrong input type',
     )
 
     assert.notOk(
       isValidPrivate(
-        hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000')
+        hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000'),
       ),
-      'should fail on invalid curve (zero)'
+      'should fail on invalid curve (zero)',
     )
 
     assert.notOk(
       isValidPrivate(hexToBytes(`0x${SECP256K1_N.toString(16)}`)),
-      'should fail on invalid curve (== N)'
+      'should fail on invalid curve (== N)',
     )
 
     assert.notOk(
       isValidPrivate(hexToBytes(`0x${(SECP256K1_N + BigInt(1)).toString(16)}`)),
-      'should fail on invalid curve (>= N)'
+      'should fail on invalid curve (>= N)',
     )
 
     assert.ok(
       isValidPrivate(hexToBytes(`0x${(SECP256K1_N - BigInt(1)).toString(16)}`)),
-      'should work otherwise (< N)'
+      'should work otherwise (< N)',
     )
   })
 
   it('isValidPublic', () => {
     let pubKey = hexToBytes(
-      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744'
+      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744',
     )
     assert.notOk(isValidPublic(pubKey), 'should fail on too short input')
 
     pubKey = hexToBytes(
-      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d00'
+      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d00',
     )
     assert.notOk(isValidPublic(pubKey), 'should fail on too big input')
 
     pubKey = hexToBytes(
-      '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+      '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
     assert.notOk(isValidPublic(pubKey), 'should fail on SEC1 key')
 
     pubKey = hexToBytes(
-      '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+      '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
     assert.ok(
       isValidPublic(pubKey, true),
-      "shouldn't fail on SEC1 key wt.testh sant.testize enabled"
+      "shouldn't fail on SEC1 key wt.testh sant.testize enabled",
     )
 
     pubKey = hexToBytes(
-      '0x023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+      '0x023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
     assert.notOk(isValidPublic(pubKey), 'should fail wt.testh an invalid SEC1 public key')
 
@@ -290,28 +290,28 @@ describe('Utility Functions', () => {
     assert.notOk(isValidPublic(pubKey), 'should fail an invalid 33-byte public key')
 
     pubKey = hexToBytes(
-      '0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f0000000000000000000000000000000000000000000000000000000000000001'
+      '0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f0000000000000000000000000000000000000000000000000000000000000001',
     )
     assert.notOk(isValidPublic(pubKey), 'should fail an invalid 64-byte public key')
 
     pubKey = hexToBytes(
-      '0x04fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f0000000000000000000000000000000000000000000000000000000000000001'
+      '0x04fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f0000000000000000000000000000000000000000000000000000000000000001',
     )
     assert.notOk(isValidPublic(pubKey, true), 'should fail an invalid 65-byte public key')
 
     pubKey = hexToBytes('0x033a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a')
     assert.ok(
       isValidPublic(pubKey, true),
-      'should work wt.testh compressed keys wt.testh sant.testize enabled'
+      'should work wt.testh compressed keys wt.testh sant.testize enabled',
     )
 
     pubKey = hexToBytes(
-      '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+      '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
     assert.ok(isValidPublic(pubKey, true), 'should work wt.testh sant.testize enabled')
 
     pubKey = hexToBytes(
-      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
     assert.ok(isValidPublic(pubKey), 'should work otherwise')
 
@@ -322,7 +322,7 @@ describe('Utility Functions', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('This method only supports Uint8Array'),
-        'should throw if input is not Uint8Array'
+        'should throw if input is not Uint8Array',
       )
     }
   })
@@ -335,34 +335,34 @@ describe('Utility Functions', () => {
       bytesToHex(
         importPublic(
           hexToBytes(
-            '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
-          )
-        )
+            '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
+          ),
+        ),
       ),
       pubKey,
-      'should work wt.testh an Ethereum public key'
+      'should work wt.testh an Ethereum public key',
     )
 
     assert.equal(
       bytesToHex(
         importPublic(
           hexToBytes(
-            '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
-          )
-        )
+            '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
+          ),
+        ),
       ),
       pubKey,
-      'should work wt.testh uncompressed SEC1 keys'
+      'should work wt.testh uncompressed SEC1 keys',
     )
 
     assert.equal(
       bytesToHex(
         importPublic(
-          hexToBytes('0x033a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a')
-        )
+          hexToBytes('0x033a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a'),
+        ),
       ),
       pubKey,
-      'should work wt.testh compressed SEC1 keys'
+      'should work wt.testh compressed SEC1 keys',
     )
 
     assert.throws(
@@ -371,27 +371,27 @@ describe('Utility Functions', () => {
       },
       undefined,
       undefined,
-      'should throw if input is not Uint8Array'
+      'should throw if input is not Uint8Array',
     )
   })
 
   it('publicToAddress', () => {
     let pubKey = hexToBytes(
-      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
     let address = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     let r = publicToAddress(pubKey)
     assert.equal(bytesToHex(r), address, 'should produce an address given a public key')
 
     pubKey = hexToBytes(
-      '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+      '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
     address = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     r = publicToAddress(pubKey, true)
     assert.equal(bytesToHex(r), address, 'should produce an address given a SEC1 public key')
 
     pubKey = hexToBytes(
-      '0x023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+      '0x023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
     assert.throws(
       function () {
@@ -399,11 +399,11 @@ describe('Utility Functions', () => {
       },
       undefined,
       undefined,
-      "shouldn't produce an address given an invalid SEC1 public key"
+      "shouldn't produce an address given an invalid SEC1 public key",
     )
 
     pubKey = hexToBytes(
-      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744'
+      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744',
     )
     assert.throws(
       function () {
@@ -411,7 +411,7 @@ describe('Utility Functions', () => {
       },
       undefined,
       undefined,
-      "shouldn't produce an address given an invalid public key"
+      "shouldn't produce an address given an invalid public key",
     )
 
     pubKey =
@@ -422,7 +422,7 @@ describe('Utility Functions', () => {
       },
       undefined,
       undefined,
-      'should throw if input is not a Uint8Array'
+      'should throw if input is not a Uint8Array',
     )
   })
 
@@ -430,7 +430,7 @@ describe('Utility Functions', () => {
     const pubKey =
       '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     let privateKey = hexToBytes(
-      '0xea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f'
+      '0xea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f',
     )
     const r = privateToPublic(privateKey)
     assert.equal(bytesToHex(r), pubKey, 'should produce a public key given a private key')
@@ -442,7 +442,7 @@ describe('Utility Functions', () => {
       },
       undefined,
       undefined,
-      "shouldn't produce a public key given an invalid private key"
+      "shouldn't produce a public key given an invalid private key",
     )
 
     privateKey = hexToBytes('0xea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c')
@@ -452,7 +452,7 @@ describe('Utility Functions', () => {
       },
       undefined,
       undefined,
-      "shouldn't produce a public key given an invalid private key"
+      "shouldn't produce a public key given an invalid private key",
     )
 
     privateKey = '0xea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f' as any
@@ -461,7 +461,7 @@ describe('Utility Functions', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('This method only supports Uint8Array'),
-        'should throw if private key is not Uint8Array'
+        'should throw if private key is not Uint8Array',
       )
       assert.ok(err.message.includes(privateKey), 'should throw if private key is not Uint8Array')
     }
@@ -471,7 +471,7 @@ describe('Utility Functions', () => {
     const address = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     // Our private key
     const privateKey = hexToBytes(
-      '0xea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f'
+      '0xea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f',
     )
     const r = privateToAddress(privateKey)
     assert.equal(bytesToHex(r), address, 'should produce an address given a private key')
@@ -480,12 +480,12 @@ describe('Utility Functions', () => {
   it('generateAddress', () => {
     const addr = generateAddress(
       utf8ToBytes('990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
-      toBytes(14)
+      toBytes(14),
     )
     assert.equal(
       bytesToHex(addr),
       '0x936a4295d8d74e310c0c95f0a63e53737b998d12',
-      'should produce an address given a public key'
+      'should produce an address given a public key',
     )
   })
 
@@ -494,7 +494,7 @@ describe('Utility Functions', () => {
     assert.equal(
       bytesToHex(addr),
       '0xd658a4b8247c14868f3c512fa5cbb6e458e4a989',
-      'should produce an address given a public key'
+      'should produce an address given a public key',
     )
   })
 
@@ -503,7 +503,7 @@ describe('Utility Functions', () => {
     assert.equal(
       bytesToHex(addr),
       '0xbfa69ba91385206bfdd2d8b9c1a5d6c10097a85b',
-      'should produce an address given a public key'
+      'should produce an address given a public key',
     )
   })
 
@@ -512,24 +512,24 @@ describe('Utility Functions', () => {
       function () {
         generateAddress(
           (<unknown>'0x990ccf8a0de58091c028d6ff76bb235ee67c1c39') as Uint8Array,
-          toBytes(0)
+          toBytes(0),
         )
       },
       undefined,
       undefined,
-      'should throw if address is not Uint8Array'
+      'should throw if address is not Uint8Array',
     )
 
     assert.throws(
       function () {
         generateAddress(
           toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
-          (<unknown>0) as Uint8Array
+          (<unknown>0) as Uint8Array,
         )
       },
       undefined,
       undefined,
-      'should throw if nonce is not Uint8Array'
+      'should throw if nonce is not Uint8Array',
     )
   })
 
@@ -539,7 +539,7 @@ describe('Utility Functions', () => {
       const addr = generateAddress2(
         hexToBytes(address as PrefixedHexString),
         hexToBytes(salt as PrefixedHexString),
-        hexToBytes(initCode as PrefixedHexString)
+        hexToBytes(initCode as PrefixedHexString),
       )
       assert.equal(bytesToHex(addr), result, `${comment}: should generate the addresses provided`)
     }
@@ -553,12 +553,12 @@ describe('Utility Functions', () => {
         generateAddress2(
           (<unknown>address) as Uint8Array,
           hexToBytes(salt as PrefixedHexString),
-          hexToBytes(initCode as PrefixedHexString)
+          hexToBytes(initCode as PrefixedHexString),
         )
       },
       undefined,
       undefined,
-      'should throw if address is not Uint8Array'
+      'should throw if address is not Uint8Array',
     )
 
     assert.throws(
@@ -566,12 +566,12 @@ describe('Utility Functions', () => {
         generateAddress2(
           hexToBytes(address as PrefixedHexString),
           (<unknown>salt) as Uint8Array,
-          hexToBytes(initCode as PrefixedHexString)
+          hexToBytes(initCode as PrefixedHexString),
         )
       },
       undefined,
       undefined,
-      'should throw if salt is not Uint8Array'
+      'should throw if salt is not Uint8Array',
     )
 
     assert.throws(
@@ -579,12 +579,12 @@ describe('Utility Functions', () => {
         generateAddress2(
           hexToBytes(address as PrefixedHexString),
           hexToBytes(salt as PrefixedHexString),
-          (<unknown>initCode) as Uint8Array
+          (<unknown>initCode) as Uint8Array,
         )
       },
       undefined,
       undefined,
-      'should throw if initCode is not Uint8Array'
+      'should throw if initCode is not Uint8Array',
     )
   })
 
@@ -657,17 +657,17 @@ describe('Utility Functions', () => {
             assert.equal(
               toChecksumAddress(
                 addr.toLowerCase(),
-                hexToBytes(`0x${padToEven(chainId)}`)
+                hexToBytes(`0x${padToEven(chainId)}`),
               ).toLowerCase(),
-              addr.toLowerCase()
+              addr.toLowerCase(),
             )
             assert.equal(
               toChecksumAddress(addr.toLowerCase(), BigInt(chainId)).toLowerCase(),
-              addr.toLowerCase()
+              addr.toLowerCase(),
             )
             assert.equal(
               toChecksumAddress(addr.toLowerCase(), `0x${padToEven(chainId)}`).toLowerCase(),
-              addr.toLowerCase()
+              addr.toLowerCase(),
             )
           }
         }
@@ -688,7 +688,7 @@ describe('Utility Functions', () => {
         },
         undefined,
         undefined,
-        'Should throw when the address is not hex-prefixed'
+        'Should throw when the address is not hex-prefixed',
       )
 
       assert.throws(
@@ -697,7 +697,7 @@ describe('Utility Functions', () => {
         },
         undefined,
         undefined,
-        'Should throw when the chainId is not hex-prefixed'
+        'Should throw when the chainId is not hex-prefixed',
       )
     })
   })
@@ -718,7 +718,7 @@ describe('Utility Functions', () => {
             assert.ok(isValidChecksumAddress(addr, intToBytes(parseInt(chainId))))
             assert.ok(isValidChecksumAddress(addr, BigInt(chainId)))
             assert.ok(
-              isValidChecksumAddress(addr, `0x${padToEven(intToHex(parseInt(chainId)).slice(2))}`)
+              isValidChecksumAddress(addr, `0x${padToEven(intToHex(parseInt(chainId)).slice(2))}`),
             )
           }
         }
@@ -773,12 +773,12 @@ describe('Utility Functions', () => {
     assert.equal(
       JSON.stringify(result[2]),
       JSON.stringify(KECCAK256_RLP),
-      'Empty storageRoot should be changed to hash of RLP of null'
+      'Empty storageRoot should be changed to hash of RLP of null',
     )
     assert.equal(
       JSON.stringify(result[3]),
       JSON.stringify(KECCAK256_NULL),
-      'Empty codeRoot should be changed to hash of RLP of null'
+      'Empty codeRoot should be changed to hash of RLP of null',
     )
   })
 

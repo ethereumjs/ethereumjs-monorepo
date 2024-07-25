@@ -608,7 +608,7 @@ export class Config {
             this.synchronized = true
             // Log to console the sync status
             this.superMsg(
-              `Synchronized blockchain at height=${height} hash=${short(latest.hash())} 🎉`
+              `Synchronized blockchain at height=${height} hash=${short(latest.hash())} 🎉`,
             )
           }
 
@@ -623,7 +623,7 @@ export class Config {
         if (diff >= this.syncedStateRemovalPeriod) {
           this.synchronized = false
           this.logger.info(
-            `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`
+            `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`,
           )
         }
       }
@@ -635,7 +635,7 @@ export class Config {
           latest !== null && latest !== undefined ? ' height=' + latest.number : ''
         } syncTargetHeight=${this.syncTargetHeight} lastSyncDate=${
           (Date.now() - this.lastSyncDate) / 1000
-        } secs ago`
+        } secs ago`,
       )
       this.lastsyncronized = this.synchronized
     }

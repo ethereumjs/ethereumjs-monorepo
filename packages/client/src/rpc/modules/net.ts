@@ -33,12 +33,12 @@ export class Net {
     this.listening = middleware(
       callWithStackTrace(this.listening.bind(this), this._rpcDebug),
       0,
-      []
+      [],
     )
     this.peerCount = middleware(
       callWithStackTrace(this.peerCount.bind(this), this._rpcDebug),
       0,
-      []
+      [],
     )
   }
 

@@ -26,7 +26,7 @@ describe('EIP-2565 ModExp gas cost tests', () => {
 
       if (result.execResult.executionGasUsed !== BigInt(test.Gas)) {
         assert.fail(
-          `[${testName}]: Gas usage incorrect, expected ${test.Gas}, got ${result.execResult.executionGasUsed}`
+          `[${testName}]: Gas usage incorrect, expected ${test.Gas}, got ${result.execResult.executionGasUsed}`,
         )
         continue
       }
@@ -40,7 +40,7 @@ describe('EIP-2565 ModExp gas cost tests', () => {
         assert.fail(
           `[${testName}]: Return value not the expected value (expected: ${
             test.Expected
-          }, received: ${bytesToHex(result.execResult.returnValue)})`
+          }, received: ${bytesToHex(result.execResult.returnValue)})`,
         )
         continue
       }

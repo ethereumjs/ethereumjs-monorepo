@@ -266,7 +266,7 @@ export class Chain {
     this.config.chainCommon.events.on('hardforkChanged', async (hardfork: string) => {
       const block = this.config.chainCommon.hardforkBlock()
       this.config.superMsg(
-        `New hardfork reached 🪢 ! hardfork=${hardfork} ${block !== null ? `block=${block}` : ''}`
+        `New hardfork reached 🪢 ! hardfork=${hardfork} ${block !== null ? `block=${block}` : ''}`,
       )
     })
   }
@@ -353,17 +353,17 @@ export class Chain {
       if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Paris)) {
         this.config.logger.info('*'.repeat(85))
         this.config.logger.info(
-          `Paris (Merge) hardfork reached 🐼 👉 👈 🐼 ! block=${headers.height} td=${headers.td}`
+          `Paris (Merge) hardfork reached 🐼 👉 👈 🐼 ! block=${headers.height} td=${headers.td}`,
         )
         this.config.logger.info('-'.repeat(85))
         this.config.logger.info(' ')
         this.config.logger.info('Consensus layer client (CL) needed for continued sync:')
         this.config.logger.info(
-          'https://ethereum.org/en/developers/docs/nodes-and-clients/#consensus-clients'
+          'https://ethereum.org/en/developers/docs/nodes-and-clients/#consensus-clients',
         )
         this.config.logger.info(' ')
         this.config.logger.info(
-          'Make sure to have the JSON RPC (--rpc) and Engine API (--rpcEngine) endpoints exposed'
+          'Make sure to have the JSON RPC (--rpc) and Engine API (--rpcEngine) endpoints exposed',
         )
         this.config.logger.info('and JWT authentication configured (see client README).')
         this.config.logger.info(' ')
@@ -371,7 +371,7 @@ export class Chain {
         this.config.logger.info(
           `Transitioning to PoS! First block for CL-framed execution: block=${
             headers.height + BIGINT_1
-          }`
+          }`,
         )
       }
     }
@@ -393,7 +393,7 @@ export class Chain {
     block: Uint8Array | bigint,
     max = 1,
     skip = 0,
-    reverse = false
+    reverse = false,
   ): Promise<Block[]> {
     if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getBlocks(block, max, skip, reverse)
@@ -427,7 +427,7 @@ export class Chain {
         const canonicalBlock = await this.getBlock(block.header.number)
         if (!equalsBytes(canonicalBlock.hash(), block.hash())) {
           throw Error(
-            `Invalid putBlock for block=${block.header.number} before finalized=${this.headers.finalized.number}`
+            `Invalid putBlock for block=${block.header.number} before finalized=${this.headers.finalized.number}`,
           )
         }
       } else {
@@ -449,7 +449,7 @@ export class Chain {
         await this.blockchain.checkAndTransitionHardForkByNumber(
           b.header.number,
           td,
-          b.header.timestamp
+          b.header.timestamp,
         )
         await this.blockchain.consensus?.setup({ blockchain: this.blockchain })
       }
@@ -479,7 +479,7 @@ export class Chain {
     block: Uint8Array | bigint,
     max: number,
     skip: number,
-    reverse: boolean
+    reverse: boolean,
   ): Promise<BlockHeader[]> {
     const blocks = await this.getBlocks(block, max, skip, reverse)
     return blocks.map((b) => b.header)

@@ -44,7 +44,7 @@ export interface BlockchainInterface {
     name: string,
     onBlock: OnBlock,
     maxBlocks?: number,
-    releaseLockOnCallback?: boolean
+    releaseLockOnCallback?: boolean,
   ): Promise<number>
 
   /**
@@ -243,7 +243,7 @@ export interface Consensus {
   newBlock(
     block: Block,
     commonAncestor?: BlockHeader,
-    ancientHeaders?: BlockHeader[]
+    ancientHeaders?: BlockHeader[],
   ): Promise<void>
 }
 

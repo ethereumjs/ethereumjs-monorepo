@@ -98,7 +98,7 @@ export class Block {
     withdrawals?: Withdrawal[],
     opts: BlockOptions = {},
     requests?: CLRequest<CLRequestType>[],
-    executionWitness?: VerkleExecutionWitness | null
+    executionWitness?: VerkleExecutionWitness | null,
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this.common = this.header.common
@@ -132,13 +132,13 @@ export class Block {
       this.validateUncles()
       if (this.common.consensusType() === ConsensusType.ProofOfAuthority) {
         const msg = this._errorMsg(
-          'Block initialization with uncleHeaders on a PoA network is not allowed'
+          'Block initialization with uncleHeaders on a PoA network is not allowed',
         )
         throw new Error(msg)
       }
       if (this.common.consensusType() === ConsensusType.ProofOfStake) {
         const msg = this._errorMsg(
-          'Block initialization with uncleHeaders on a PoS network is not allowed'
+          'Block initialization with uncleHeaders on a PoS network is not allowed',
         )
         throw new Error(msg)
       }
@@ -181,7 +181,7 @@ export class Block {
     const bytesArray = <BlockBytes>[
       this.header.raw(),
       this.transactions.map((tx) =>
-        tx.supports(Capability.EIP2718TypedTransaction) ? tx.serialize() : tx.raw()
+        tx.supports(Capability.EIP2718TypedTransaction) ? tx.serialize() : tx.raw(),
       ) as Uint8Array[],
       this.uncleHeaders.map((uh) => uh.raw()),
     ]
@@ -301,7 +301,7 @@ export class Block {
           blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
           if (blobGasUsed > blobGasLimit) {
             errs.push(
-              `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`
+              `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`,
             )
           }
         }
@@ -357,7 +357,7 @@ export class Block {
       for (const [index, tx] of this.transactions.entries()) {
         if (!tx.isSigned()) {
           const msg = this._errorMsg(
-            `invalid transactions: transaction at index ${index} is unsigned`
+            `invalid transactions: transaction at index ${index} is unsigned`,
           )
           throw new Error(msg)
         }
@@ -406,7 +406,7 @@ export class Block {
       const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
       if (this.header.excessBlobGas !== expectedExcessBlobGas) {
         throw new Error(
-          `block excessBlobGas mismatch: have ${this.header.excessBlobGas}, want ${expectedExcessBlobGas}`
+          `block excessBlobGas mismatch: have ${this.header.excessBlobGas}, want ${expectedExcessBlobGas}`,
         )
       }
 
@@ -419,7 +419,7 @@ export class Block {
             throw new Error(
               `blob transaction maxFeePerBlobGas ${
                 tx.maxFeePerBlobGas
-              } < than block blob gas price ${blobGasPrice} - ${this.errorStr()}`
+              } < than block blob gas price ${blobGasPrice} - ${this.errorStr()}`,
             )
           }
 
@@ -427,7 +427,7 @@ export class Block {
 
           if (blobGasUsed > blobGasLimit) {
             throw new Error(
-              `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`
+              `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`,
             )
           }
         }
@@ -435,7 +435,7 @@ export class Block {
 
       if (this.header.blobGasUsed !== blobGasUsed) {
         throw new Error(
-          `block blobGasUsed mismatch: have ${this.header.blobGasUsed}, want ${blobGasUsed}`
+          `block blobGasUsed mismatch: have ${this.header.blobGasUsed}, want ${blobGasUsed}`,
         )
       }
     }
@@ -472,7 +472,7 @@ export class Block {
     if (this.cache.withdrawalsTrieRoot === undefined) {
       this.cache.withdrawalsTrieRoot = await genWithdrawalsTrieRoot(
         this.withdrawals!,
-        new Trie({ common: this.common })
+        new Trie({ common: this.common }),
       )
     }
     result = equalsBytes(this.cache.withdrawalsTrieRoot, this.header.withdrawalsRoot!)

@@ -46,7 +46,7 @@ export function assertEq(
   actual: assertInput,
   msg: string,
   debug: Function,
-  messageName?: string
+  messageName?: string,
 ): void {
   let fullMsg
 

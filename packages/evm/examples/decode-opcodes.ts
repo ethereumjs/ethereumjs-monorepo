@@ -33,7 +33,7 @@ function nameOpCodes(raw: Uint8Array) {
         '  ' +
         curOpCode +
         ' ' +
-        (pushData?.length > 0 ? bytesToHex(pushData as Uint8Array) : '')
+        (pushData?.length > 0 ? bytesToHex(pushData as Uint8Array) : ''),
     )
 
     pushData = new Uint8Array()

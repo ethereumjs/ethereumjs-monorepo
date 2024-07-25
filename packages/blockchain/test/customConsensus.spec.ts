@@ -24,7 +24,7 @@ class fibonacciConsensus implements Consensus {
   validateConsensus(_block: Block): Promise<void> {
     if (bytesToHex(_block.header.extraData) !== '0x12358d') {
       throw new Error(
-        'header contains invalid extradata - must match first 6 elements of fibonacci sequence'
+        'header contains invalid extradata - must match first 6 elements of fibonacci sequence',
       )
     }
     return new Promise<void>((resolve) => resolve())
@@ -55,7 +55,7 @@ describe('Optional consensus parameter in blockchain constructor', () => {
       assert.equal(
         (blockchain.consensus as fibonacciConsensus).algorithm,
         'fibonacciConsensus',
-        'consensus algorithm matches'
+        'consensus algorithm matches',
       )
     } catch (err) {
       assert.fail('blockchain should instantiate successfully')
@@ -78,7 +78,7 @@ describe('Custom consensus validation rules', () => {
           gasLimit: blockchain.genesisBlock.header.gasLimit + 1n,
         },
       },
-      { common }
+      { common },
     )
 
     try {
@@ -86,7 +86,7 @@ describe('Custom consensus validation rules', () => {
       assert.deepEqual(
         (await blockchain.getBlock(block.header.number)).header.hash(),
         block.header.hash(),
-        'put block with valid difficulty and extraData'
+        'put block with valid difficulty and extraData',
       )
     } catch {
       assert.fail('should have put block with valid difficulty and extraData')
@@ -102,7 +102,7 @@ describe('Custom consensus validation rules', () => {
           timestamp: block.header.timestamp + 1n,
         },
       },
-      { common }
+      { common },
     )
     try {
       await blockchain.putBlock(blockWithBadDifficulty)
@@ -110,7 +110,7 @@ describe('Custom consensus validation rules', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('invalid difficulty'),
-        'failed to put block with invalid difficulty'
+        'failed to put block with invalid difficulty',
       )
     }
 
@@ -125,7 +125,7 @@ describe('Custom consensus validation rules', () => {
           gasLimit: block.header.gasLimit + 1n,
         },
       },
-      { common }
+      { common },
     )
     try {
       await blockchain.putBlock(blockWithBadExtraData)
@@ -134,7 +134,7 @@ describe('Custom consensus validation rules', () => {
       assert.ok(
         err.message ===
           'header contains invalid extradata - must match first 6 elements of fibonacci sequence',
-        'failed to put block with invalid extraData'
+        'failed to put block with invalid extraData',
       )
     }
   })
@@ -150,7 +150,7 @@ describe('consensus transition checks', () => {
       assert.ok('checkAndTransitionHardForkByNumber does not throw with custom consensus')
     } catch (err: any) {
       assert.fail(
-        `checkAndTransitionHardForkByNumber should not throw with custom consensus, error=${err.message}`
+        `checkAndTransitionHardForkByNumber should not throw with custom consensus, error=${err.message}`,
       )
     }
 
@@ -159,7 +159,7 @@ describe('consensus transition checks', () => {
     try {
       await blockchain.checkAndTransitionHardForkByNumber(5n)
       assert.fail(
-        'checkAndTransitionHardForkByNumber should throw when using standard consensus (ethash, clique, casper) but consensus algorithm defined in common is different'
+        'checkAndTransitionHardForkByNumber should throw when using standard consensus (ethash, clique, casper) but consensus algorithm defined in common is different',
       )
     } catch (err: any) {
       assert.ok(err.message.includes('Consensus object for ethash must be passed'))

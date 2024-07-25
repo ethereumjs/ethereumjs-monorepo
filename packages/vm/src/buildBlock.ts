@@ -210,7 +210,7 @@ export class BlockBuilder {
    */
   async addTransaction(
     tx: TypedTransaction,
-    { skipHardForkValidation }: { skipHardForkValidation?: boolean } = {}
+    { skipHardForkValidation }: { skipHardForkValidation?: boolean } = {},
   ) {
     this.checkStatus()
 

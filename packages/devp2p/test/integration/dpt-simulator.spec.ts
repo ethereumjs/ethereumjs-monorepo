@@ -37,7 +37,7 @@ describe('DPT simulator tests', () => {
         assert.equal(
           dpts[0].getPeers().length,
           0,
-          'should have removed peer from k-bucket on peer:removed'
+          'should have removed peer from k-bucket on peer:removed',
         )
         await util.delay(500)
         util.destroyDPTs(dpts)
@@ -60,7 +60,7 @@ describe('DPT simulator tests', () => {
         assert.equal(
           dpts[0].getPeers().length,
           0,
-          'should have removed peer from k-bucket on peer:removed'
+          'should have removed peer from k-bucket on peer:removed',
         )
         await util.delay(500)
         util.destroyDPTs(dpts)

@@ -14,12 +14,12 @@ export interface Kzg {
     polynomialKzg: Uint8Array,
     z: Uint8Array,
     y: Uint8Array,
-    kzgProof: Uint8Array
+    kzgProof: Uint8Array,
   ): boolean
   verifyBlobKzgProofBatch(
     blobs: Uint8Array[],
     expectedKzgCommitments: Uint8Array[],
-    kzgProofs: Uint8Array[]
+    kzgProofs: Uint8Array[],
   ): boolean
 }
 

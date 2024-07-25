@@ -76,7 +76,7 @@ export class AccessWitness implements AccessWitnessInterface {
       verkleCrypto?: VerkleCrypto
       stems?: Map<PrefixedHexString, StemAccessEvent & StemMeta>
       chunks?: Map<PrefixedHexString, ChunkAccessEvent>
-    } = {}
+    } = {},
   ) {
     if (opts.verkleCrypto === undefined) {
       throw new Error('verkle crypto required')
@@ -179,7 +179,7 @@ export class AccessWitness implements AccessWitnessInterface {
   touchCodeChunksRangeOnWriteAndChargeGas(
     contact: Address,
     startPc: number,
-    endPc: number
+    endPc: number,
   ): bigint {
     let gas = BIGINT_0
     for (let chunkNum = Math.floor(startPc / 31); chunkNum <= Math.floor(endPc / 31); chunkNum++) {
@@ -192,7 +192,7 @@ export class AccessWitness implements AccessWitnessInterface {
   touchAddressOnWriteAndComputeGas(
     address: Address,
     treeIndex: number | bigint,
-    subIndex: number | Uint8Array
+    subIndex: number | Uint8Array,
   ): bigint {
     return this.touchAddressAndChargeGas(address, treeIndex, subIndex, { isWrite: true })
   }
@@ -200,7 +200,7 @@ export class AccessWitness implements AccessWitnessInterface {
   touchAddressOnReadAndComputeGas(
     address: Address,
     treeIndex: number | bigint,
-    subIndex: number | Uint8Array
+    subIndex: number | Uint8Array,
   ): bigint {
     return this.touchAddressAndChargeGas(address, treeIndex, subIndex, { isWrite: false })
   }
@@ -209,7 +209,7 @@ export class AccessWitness implements AccessWitnessInterface {
     address: Address,
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
-    { isWrite }: { isWrite?: boolean }
+    { isWrite }: { isWrite?: boolean },
   ): bigint {
     let gas = BIGINT_0
 
@@ -217,7 +217,7 @@ export class AccessWitness implements AccessWitnessInterface {
       address,
       treeIndex,
       subIndex,
-      { isWrite }
+      { isWrite },
     )
 
     if (stemRead === true) {
@@ -238,7 +238,7 @@ export class AccessWitness implements AccessWitnessInterface {
     }
 
     debug(
-      `touchAddressAndChargeGas=${gas} address=${address} treeIndex=${treeIndex} subIndex=${subIndex}`
+      `touchAddressAndChargeGas=${gas} address=${address} treeIndex=${treeIndex} subIndex=${subIndex}`,
     )
 
     return gas
@@ -248,7 +248,7 @@ export class AccessWitness implements AccessWitnessInterface {
     address: Address,
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
-    { isWrite }: { isWrite?: boolean } = {}
+    { isWrite }: { isWrite?: boolean } = {},
   ): AccessEventFlags {
     let stemRead = false,
       stemWrite = false,
@@ -269,7 +269,7 @@ export class AccessWitness implements AccessWitnessInterface {
 
     const accessedChunkKey = getVerkleKey(
       accessedStemKey,
-      typeof subIndex === 'number' ? intToBytes(subIndex) : subIndex
+      typeof subIndex === 'number' ? intToBytes(subIndex) : subIndex,
     )
     const accessedChunkKeyHex = bytesToHex(accessedChunkKey)
     let accessedChunk = this.chunks.get(accessedChunkKeyHex)
@@ -294,7 +294,7 @@ export class AccessWitness implements AccessWitnessInterface {
     }
 
     debug(
-      `${accessedChunkKeyHex}: isWrite=${isWrite} for steamRead=${stemRead} stemWrite=${stemWrite} chunkRead=${chunkRead} chunkWrite=${chunkWrite} chunkFill=${chunkFill}`
+      `${accessedChunkKeyHex}: isWrite=${isWrite} for steamRead=${stemRead} stemWrite=${stemWrite} chunkRead=${chunkRead} chunkWrite=${chunkWrite} chunkFill=${chunkFill}`,
     )
     return { stemRead, stemWrite, chunkRead, chunkWrite, chunkFill }
   }
@@ -382,7 +382,7 @@ export function decodeAccessedState(treeIndex: number | bigint, chunkIndex: numb
         return { type: AccessedStateType.Storage, slot }
       } else {
         throw Error(
-          `Invalid treeIndex=${treeIndex} chunkIndex=${chunkIndex} for verkle tree access`
+          `Invalid treeIndex=${treeIndex} chunkIndex=${chunkIndex} for verkle tree access`,
         )
       }
   }

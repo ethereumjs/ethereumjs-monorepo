@@ -137,12 +137,12 @@ describe('EVM -> custom precompiles', () => {
     assert.deepEqual(
       shaResult.execResult.returnValue,
       shaResult2.execResult.returnValue,
-      'restored sha precompile - returndata correct'
+      'restored sha precompile - returndata correct',
     )
     assert.equal(
       shaResult.execResult.executionGasUsed,
       shaResult2.execResult.executionGasUsed,
-      'restored sha precompile - gas correct'
+      'restored sha precompile - gas correct',
     )
   })
   it('shold copy custom precompiles', async () => {
@@ -158,7 +158,7 @@ describe('EVM -> custom precompiles', () => {
     assert.deepEqual(
       (evm as any)._customPrecompiles,
       (evmCopy as any)._customPrecompiles,
-      'evm.shallowCopy() successfully copied customPrecompiles option'
+      'evm.shallowCopy() successfully copied customPrecompiles option',
     )
   })
 })

@@ -174,6 +174,6 @@ describe('DNS: (integration)', () => {
         seen.push(peer!.address as string)
       }
     },
-    { timeout: 10000 }
+    { timeout: 10000 },
   )
 })

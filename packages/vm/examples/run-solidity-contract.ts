@@ -92,7 +92,7 @@ async function deployContract(
   vm: VM,
   senderPrivateKey: Uint8Array,
   deploymentBytecode: string,
-  greeting: string
+  greeting: string,
 ): Promise<Address> {
   // Contracts are deployed by sending their deployment bytecode to the address 0
   // The contract params should be abi-encoded and appended to the deployment bytecode.
@@ -121,7 +121,7 @@ async function setGreeting(
   vm: VM,
   senderPrivateKey: Uint8Array,
   contractAddress: Address,
-  greeting: string
+  greeting: string,
 ) {
   const data = encodeFunction('setGreeting', {
     types: ['string'],
@@ -195,7 +195,7 @@ async function main() {
 
   if (greeting !== INITIAL_GREETING)
     throw new Error(
-      `initial greeting not equal, received ${greeting}, expected ${INITIAL_GREETING}`
+      `initial greeting not equal, received ${greeting}, expected ${INITIAL_GREETING}`,
     )
 
   console.log('Changing greeting...')

@@ -7,7 +7,7 @@ const block = createBlockFromBlockData(
   {
     // Provide your block data here or use default values
   },
-  { common }
+  { common },
 )
 
 console.log(`Proof-of-Stake (default) block created with hardfork=${block.common.hardfork()}`)

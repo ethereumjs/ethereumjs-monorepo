@@ -64,7 +64,7 @@ describe(method, () => {
           gasLimit,
         },
       },
-      { common, calcDifficultyFromHeader: parent }
+      { common, calcDifficultyFromHeader: parent },
     )
     block.transactions[0] = tx
 
@@ -104,21 +104,21 @@ describe(method, () => {
     assert.equal(
       res.result,
       bytesToHex(execResult.returnValue),
-      'should return the correct return value'
+      'should return the correct return value',
     )
 
     res = await rpc.request(method, [{ ...estimateTxData }, 'latest'])
     assert.equal(
       res.result,
       bytesToHex(execResult.returnValue),
-      'should return the correct return value with no gas limit provided'
+      'should return the correct return value with no gas limit provided',
     )
 
     res = await rpc.request(method, [{ gasLimit, data }, 'latest'])
     assert.equal(
       res.result,
       bytesToHex(result.results[0].execResult.returnValue),
-      `should let run call without 'to' for contract creation`
+      `should let run call without 'to' for contract creation`,
     )
   })
 

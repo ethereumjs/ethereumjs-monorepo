@@ -79,7 +79,7 @@ for (const bls of [undefined, mclbls]) {
               assert.deepEqual(
                 '0x' + data.Expected,
                 bytesToHex(result.returnValue),
-                'return value should match testVectorResult'
+                'return value should match testVectorResult',
               )
               assert.equal(result.executionGasUsed, BigInt(data.Gas))
             } catch (e) {

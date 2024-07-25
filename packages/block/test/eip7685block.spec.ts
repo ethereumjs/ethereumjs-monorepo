@@ -59,7 +59,7 @@ describe('7685 tests', () => {
         requests: [request],
         header: { requestsRoot },
       },
-      { common }
+      { common },
     )
     assert.equal(block.requests?.length, 1)
     assert.deepEqual(block.header.requestsRoot, requestsRoot)
@@ -71,7 +71,7 @@ describe('7685 tests', () => {
         requests: [request],
         header: { requestsRoot: randomBytes(32) },
       },
-      { common }
+      { common },
     )
 
     assert.equal(await block.requestsTrieIsValid(), false)
@@ -90,7 +90,7 @@ describe('7685 tests', () => {
         requests,
         header: { requestsRoot },
       },
-      { common }
+      { common },
     )
 
     assert.ok(await block.requestsTrieIsValid())
@@ -102,8 +102,8 @@ describe('7685 tests', () => {
           requests: [request1, request3, request2],
           header: { requestsRoot },
         },
-        { common }
-      )
+        { common },
+      ),
     ).rejects.toThrow('ascending order')
   })
 })
@@ -114,7 +114,7 @@ describe('fromValuesArray tests', () => {
       [BlockHeader.fromHeaderData({}, { common }).raw(), [], [], [], []],
       {
         common,
-      }
+      },
     )
     assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
   })
@@ -136,7 +136,7 @@ describe('fromValuesArray tests', () => {
       ],
       {
         common,
-      }
+      },
     )
     assert.deepEqual(block.header.requestsRoot, requestsRoot)
     assert.equal(block.requests?.length, 3)
@@ -162,7 +162,7 @@ describe('fromRPC tests', () => {
       ],
       {
         common,
-      }
+      },
     )
     const jsonBlock = block.toJSON()
     const rpcBlock: any = { ...jsonBlock.header, requests: jsonBlock.requests }

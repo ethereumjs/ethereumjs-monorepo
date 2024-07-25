@@ -209,7 +209,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV: boolean = false
+    convertV: boolean = false,
   ): AccessListEIP2930Transaction {
     r = toBytes(r)
     s = toBytes(s)
@@ -229,7 +229,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },
-      opts
+      opts,
     )
   }
 

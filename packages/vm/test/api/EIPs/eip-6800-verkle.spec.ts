@@ -19,18 +19,18 @@ const common = createCustomCommon(customChainParams, {
   eips: [2935, 4895, 6800],
 })
 const decodedTxs = verkleBlockJSON.transactions.map((tx) =>
-  createTxFromSerializedData(hexToBytes(tx as PrefixedHexString))
+  createTxFromSerializedData(hexToBytes(tx as PrefixedHexString)),
 )
 
 const parentStateRoot = hexToBytes(
-  '0x64e1a647f42e5c2e3c434531ccf529e1b3e93363a40db9fc8eec81f492123510'
+  '0x64e1a647f42e5c2e3c434531ccf529e1b3e93363a40db9fc8eec81f492123510',
 )
 
 const block = createBlockFromBlockData(
   { ...verkleBlockJSON, transactions: decodedTxs } as BlockData,
   {
     common,
-  }
+  },
 )
 
 describe('EIP 6800 tests', () => {

@@ -10,6 +10,6 @@ const tx = createTxFromTxData(txData, { common })
 
 if (tx.supports(Capability.EIP1559FeeMarket)) {
   console.log(
-    `The max fee per gas for this transaction is ${(tx as EIP1559CompatibleTx).maxFeePerGas}`
+    `The max fee per gas for this transaction is ${(tx as EIP1559CompatibleTx).maxFeePerGas}`,
   )
 }

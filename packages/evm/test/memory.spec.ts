@@ -38,13 +38,13 @@ describe('Memory', () => {
     assert.equal(
       memory._store.length,
       CONTAINER_SIZE,
-      'memory should remain in CONTAINER_SIZE length'
+      'memory should remain in CONTAINER_SIZE length',
     )
     memory.write(CONTAINER_SIZE, 1, Uint8Array.from([1]))
     assert.equal(
       memory._store.length,
       8192 * 2,
-      'memory buffer length expanded by CONTAINER_SIZE bytes'
+      'memory buffer length expanded by CONTAINER_SIZE bytes',
     )
   })
 

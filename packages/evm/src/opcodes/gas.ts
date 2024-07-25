@@ -98,7 +98,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           const coldAccessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             balanceAddress,
             0,
-            VERKLE_BALANCE_LEAF_KEY
+            VERKLE_BALANCE_LEAF_KEY,
           )
 
           gas += coldAccessGas
@@ -146,7 +146,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             gas += runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
               contract,
               Number(_codeOffset),
-              Number(codeEnd)
+              Number(codeEnd),
             )
           }
         }
@@ -169,12 +169,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             0,
-            VERKLE_VERSION_LEAF_KEY
+            VERKLE_VERSION_LEAF_KEY,
           )
           coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             0,
-            VERKLE_CODE_SIZE_LEAF_KEY
+            VERKLE_CODE_SIZE_LEAF_KEY,
           )
 
           gas += coldAccessGas
@@ -208,12 +208,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             0,
-            VERKLE_VERSION_LEAF_KEY
+            VERKLE_VERSION_LEAF_KEY,
           )
           coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             0,
-            VERKLE_CODE_SIZE_LEAF_KEY
+            VERKLE_CODE_SIZE_LEAF_KEY,
           )
 
           gas += coldAccessGas
@@ -238,7 +238,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             gas += runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
               address,
               Number(_codeOffset),
-              Number(codeEnd)
+              Number(codeEnd),
             )
           }
         }
@@ -281,7 +281,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             codeAddress,
             0,
-            VERKLE_CODE_HASH_LEAF_KEY
+            VERKLE_CODE_HASH_LEAF_KEY,
           )
 
           gas += coldAccessGas
@@ -336,7 +336,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           const coldAccessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             treeIndex,
-            subIndex
+            subIndex,
           )
 
           gas += coldAccessGas
@@ -369,10 +369,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         const currentStorage = setLengthLeftStorage(
-          await runState.interpreter.storageLoad(keyBytes)
+          await runState.interpreter.storageLoad(keyBytes),
         )
         const originalStorage = setLengthLeftStorage(
-          await runState.interpreter.storageLoad(keyBytes, true)
+          await runState.interpreter.storageLoad(keyBytes, true),
         )
         if (common.hardfork() === Hardfork.Constantinople) {
           gas += updateSstoreGasEIP1283(
@@ -380,7 +380,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             currentStorage,
             originalStorage,
             setLengthLeftStorage(value),
-            common
+            common,
           )
         } else if (common.gteHardfork(Hardfork.Istanbul)) {
           if (!common.isActivatedEIP(6800)) {
@@ -390,7 +390,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
               originalStorage,
               setLengthLeftStorage(value),
               keyBytes,
-              common
+              common,
             )
           }
         } else {
@@ -404,7 +404,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           const coldAccessGas = runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
             contract,
             treeIndex,
-            subIndex
+            subIndex,
           )
 
           gas += coldAccessGas
@@ -538,7 +538,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             runState,
             runState.interpreter.getAddress().bytes,
             common,
-            false
+            false,
           )
         }
 
@@ -580,7 +580,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             const contractAddress = runState.interpreter.getAddress()
             gas += runState.env.accessWitness!.touchAndChargeValueTransfer(
               contractAddress,
-              toAddress
+              toAddress,
             )
           }
 
@@ -619,7 +619,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           currentGasLimit,
           runState.interpreter.getGasLeft() - gas,
           runState,
-          common
+          common,
         )
         // note that TangerineWhistle or later this cannot happen
         // (it could have ran out of gas prior to getting here though)
@@ -669,7 +669,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           currentGasLimit,
           runState.interpreter.getGasLeft() - gas,
           runState,
-          common
+          common,
         )
         // note that TangerineWhistle or later this cannot happen
         // (it could have ran out of gas prior to getting here though)
@@ -721,7 +721,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           currentGasLimit,
           runState.interpreter.getGasLeft() - gas,
           runState,
-          common
+          common,
         )
         // note that TangerineWhistle or later this cannot happen
         // (it could have ran out of gas prior to getting here though)
@@ -750,7 +750,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             runState,
             runState.interpreter.getAddress().bytes,
             common,
-            false
+            false,
           )
         }
 
@@ -809,7 +809,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           runState.interpreter.getGasLeft() - gas,
           runState.interpreter.getGasLeft() - gas,
           runState,
-          common
+          common,
         )
         if (currentGasLimit !== BIGINT_0) {
           if (currentGasLimit > gasLimit) {
@@ -987,7 +987,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           currentGasLimit,
           runState.interpreter.getGasLeft() - gas,
           runState,
-          common
+          common,
         ) // we set TangerineWhistle or later to true here, as STATICCALL was available from Byzantium (which is after TangerineWhistle)
 
         runState.messageGasLimit = gasLimit
@@ -1095,25 +1095,25 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
               contractAddress,
               0,
-              VERKLE_VERSION_LEAF_KEY
+              VERKLE_VERSION_LEAF_KEY,
             )
             gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
               contractAddress,
               0,
-              VERKLE_CODE_SIZE_LEAF_KEY
+              VERKLE_CODE_SIZE_LEAF_KEY,
             )
           }
 
           gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             contractAddress,
             0,
-            VERKLE_BALANCE_LEAF_KEY
+            VERKLE_BALANCE_LEAF_KEY,
           )
           if (balance > BIGINT_0) {
             gas += runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
               contractAddress,
               0,
-              VERKLE_BALANCE_LEAF_KEY
+              VERKLE_BALANCE_LEAF_KEY,
             )
           }
 
@@ -1121,14 +1121,14 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
               selfdestructToAddress,
               0,
-              VERKLE_BALANCE_LEAF_KEY
+              VERKLE_BALANCE_LEAF_KEY,
             )
           if (balance > BIGINT_0) {
             selfDestructToColdAccessGas +=
               runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
                 selfdestructToAddress,
                 0,
-                VERKLE_BALANCE_LEAF_KEY
+                VERKLE_BALANCE_LEAF_KEY,
               )
           }
 
@@ -1142,7 +1142,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             selfdestructToAddress.bytes,
             common,
             selfDestructToCharge2929Gas,
-            true
+            true,
           )
         }
 

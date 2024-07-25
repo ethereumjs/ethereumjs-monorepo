@@ -15,7 +15,7 @@ function parseTestCases(
   testData: any,
   data: string | undefined,
   gasLimit: string | undefined,
-  value: string | undefined
+  value: string | undefined,
 ) {
   let testCases = []
 
@@ -183,7 +183,7 @@ export async function runStateTest(options: any, testData: any, t: tape.Test) {
       testData,
       options.data,
       options.gasLimit,
-      options.value
+      options.value,
     )
     if (testCases.length === 0) {
       t.comment(`No ${options.forkConfigTestSuite} post state defined, skip test`)

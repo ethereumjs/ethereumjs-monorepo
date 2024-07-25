@@ -141,7 +141,7 @@ export class Blockchain implements BlockchainInterface {
   private _consensusCheck() {
     if (this._validateConsensus && this.consensus === undefined) {
       throw new Error(
-        `Consensus object for ${this.common.consensusAlgorithm()} must be passed (see consensusDict option) if consensus validation is activated`
+        `Consensus object for ${this.common.consensusAlgorithm()} must be passed (see consensusDict option) if consensus validation is activated`,
       )
     }
   }
@@ -168,7 +168,7 @@ export class Blockchain implements BlockchainInterface {
   shallowCopy(): Blockchain {
     const copiedBlockchain = Object.create(
       Object.getPrototypeOf(this),
-      Object.getOwnPropertyDescriptors(this)
+      Object.getOwnPropertyDescriptors(this),
     )
     copiedBlockchain.common = this.common.copy()
     return copiedBlockchain
@@ -366,7 +366,7 @@ export class Blockchain implements BlockchainInterface {
             return
           }
           throw new Error(
-            'Cannot put a different genesis block than current blockchain genesis: create a new Blockchain'
+            'Cannot put a different genesis block than current blockchain genesis: create a new Blockchain',
           )
         }
 
@@ -379,7 +379,7 @@ export class Blockchain implements BlockchainInterface {
 
         if (block.common.chainId() !== this.common.chainId()) {
           throw new Error(
-            `Chain mismatch while trying to put block or header. Chain ID of block: ${block.common.chainId}, chain ID of blockchain : ${this.common.chainId}`
+            `Chain mismatch while trying to put block or header. Chain ID of block: ${block.common.chainId}, chain ID of blockchain : ${this.common.chainId}`,
           )
         }
 
@@ -515,7 +515,7 @@ export class Blockchain implements BlockchainInterface {
 
       if (!(dif < BIGINT_8 && dif > BIGINT_1)) {
         throw new Error(
-          `uncle block has a parent that is too old or too young ${header.errorStr()}`
+          `uncle block has a parent that is too old or too young ${header.errorStr()}`,
         )
       }
     }
@@ -637,7 +637,7 @@ export class Blockchain implements BlockchainInterface {
 
       if (!canonicalChainHashes[parentHash]) {
         throw new Error(
-          `The parent hash of the uncle header is not part of the canonical chain ${block.errorStr()}`
+          `The parent hash of the uncle header is not part of the canonical chain ${block.errorStr()}`,
         )
       }
 
@@ -712,7 +712,7 @@ export class Blockchain implements BlockchainInterface {
     blockId: Uint8Array | bigint | number,
     maxBlocks: number,
     skip: number,
-    reverse: boolean
+    reverse: boolean,
   ): Promise<Block[]> {
     return this.runWithLock<Block[]>(async () => {
       const blocks: Block[] = []
@@ -853,7 +853,7 @@ export class Blockchain implements BlockchainInterface {
     blockHash: Uint8Array,
     blockNumber: bigint,
     headHash: Uint8Array | null,
-    ops: DBOp[]
+    ops: DBOp[],
   ) {
     // delete header, body, hash to number mapping and td
     ops.push(DBOp.del(DBTarget.Header, { blockHash, blockNumber }))
@@ -901,7 +901,7 @@ export class Blockchain implements BlockchainInterface {
     name: string,
     onBlock: OnBlock,
     maxBlocks?: number,
-    releaseLockOnCallback?: boolean
+    releaseLockOnCallback?: boolean,
   ): Promise<number> {
     return this.runWithLock<number>(async (): Promise<number> => {
       let headHash = this._heads[name] ?? this.genesisBlock.hash()
@@ -943,7 +943,7 @@ export class Blockchain implements BlockchainInterface {
                 await this._lock.acquire()
                 // If lock was released check if reorg occured
                 const nextBlockMayBeReorged = await this.getBlock(nextBlockNumber).catch(
-                  (_e) => null
+                  (_e) => null,
                 )
                 reorgWhileOnBlock = nextBlockMayBeReorged
                   ? !equalsBytes(nextBlockMayBeReorged.hash(), nextBlock.hash())
@@ -1041,7 +1041,7 @@ export class Blockchain implements BlockchainInterface {
   private async _deleteCanonicalChainReferences(
     blockNumber: bigint,
     headHash: Uint8Array,
-    ops: DBOp[]
+    ops: DBOp[],
   ) {
     try {
       let hash: Uint8Array | false
@@ -1177,7 +1177,7 @@ export class Blockchain implements BlockchainInterface {
     // LevelDB doesn't handle Uint8Arrays properly when they are part
     // of a JSON object being stored as a value in the DB
     const hexHeads = Object.fromEntries(
-      Object.entries(this._heads).map((entry) => [entry[0], bytesToUnprefixedHex(entry[1])])
+      Object.entries(this._heads).map((entry) => [entry[0], bytesToUnprefixedHex(entry[1])]),
     )
     return [
       DBOp.set(DBTarget.Heads, hexHeads),
@@ -1212,7 +1212,7 @@ export class Blockchain implements BlockchainInterface {
   async checkAndTransitionHardForkByNumber(
     number: BigIntLike,
     td?: BigIntLike,
-    timestamp?: BigIntLike
+    timestamp?: BigIntLike,
   ): Promise<void> {
     this.common.setHardforkBy({
       blockNumber: number,
@@ -1284,7 +1284,7 @@ export class Blockchain implements BlockchainInterface {
     }
     return createBlockFromBlockData(
       { header, withdrawals: common.isActivatedEIP(4895) ? [] : undefined },
-      { common }
+      { common },
     )
   }
 }

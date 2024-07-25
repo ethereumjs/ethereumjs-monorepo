@@ -32,7 +32,7 @@ export function create7702EOACodeTx(txData: TxData, opts: TxOptions = {}) {
 export function create7702EOACodeTxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
   if (values.length !== 10 && values.length !== 13) {
     throw new Error(
-      'Invalid EIP-7702 transaction. Only expecting 10 values (for unsigned tx) or 13 values (for signed tx).'
+      'Invalid EIP-7702 transaction. Only expecting 10 values (for unsigned tx) or 13 values (for signed tx).',
     )
   }
 
@@ -71,7 +71,7 @@ export function create7702EOACodeTxFromBytesArray(values: TxValuesArray, opts: T
       r,
       s,
     },
-    opts
+    opts,
   )
 }
 
@@ -88,7 +88,7 @@ export function create7702EOACodeTxFromRLP(serialized: Uint8Array, opts: TxOptio
     throw new Error(
       `Invalid serialized tx input: not an EIP-7702 transaction (wrong tx type, expected: ${
         TransactionType.EOACodeEIP7702
-      }, received: ${bytesToHex(serialized.subarray(0, 1))}`
+      }, received: ${bytesToHex(serialized.subarray(0, 1))}`,
     )
   }
 

@@ -17,7 +17,7 @@ export type JsonReturnType = {
 export const getValues = async <Method extends SupportedMethods>(
   method: Method,
   id: number,
-  params: any[]
+  params: any[],
 ): Promise<JsonReturnType[Method]> => {
   switch (method) {
     case 'eth_getProof':

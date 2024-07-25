@@ -41,7 +41,7 @@ const block = createBlockFromBlockData(
       baseFeePerGas: BigInt(7),
     },
   },
-  { common }
+  { common },
 )
 
 const callerPrivateKey = hexToBytes(`0x${'44'.repeat(32)}`)
@@ -71,7 +71,7 @@ function signMessage(
   commitUnpadded: Uint8Array,
   address: Address,
   privateKey: Uint8Array,
-  nonce: bigint = BIGINT_0
+  nonce: bigint = BIGINT_0,
 ) {
   const commit = setLengthLeft(commitUnpadded, 32)
   const paddedInvokerAddress = setLengthLeft(address.bytes, 32)
@@ -82,7 +82,7 @@ function signMessage(
     chainId,
     noncePadded,
     paddedInvokerAddress,
-    commit
+    commit,
   )
   const msgHash = keccak256(message)
   return ecsign(msgHash, privateKey)
@@ -99,7 +99,7 @@ function getAuthCode(
   commitUnpadded: Uint8Array,
   signature: ECDSASignature,
   address: Address,
-  msizeBuffer?: Uint8Array
+  msizeBuffer?: Uint8Array,
 ) {
   const commit = setLengthLeft(commitUnpadded, 32)
   let v: Uint8Array
@@ -154,7 +154,7 @@ function getAuthCode(
     hexToBytes('0x6000'),
     PUSH32,
     addressBuffer,
-    AUTH
+    AUTH,
   )
 }
 
@@ -180,7 +180,7 @@ function MSTORE(position: Uint8Array, value: Uint8Array) {
     setLengthLeft(value, 32),
     hexToBytes('0x7F'),
     setLengthLeft(position, 32),
-    hexToBytes('0x52')
+    hexToBytes('0x52'),
   )
 }
 
@@ -361,7 +361,7 @@ describe('EIP-3074 AUTH', () => {
     const code = concatBytes(
       getAuthCode(message, signature, authAddress),
       getAuthCode(message, signature2, callerAddress),
-      RETURNTOP
+      RETURNTOP,
     )
 
     await vm.stateManager.putContractCode(contractAddress, code)
@@ -387,7 +387,7 @@ describe('EIP-3074 AUTH', () => {
     const signature = signMessage(message, contractAddress, privateKey)
     const code = concatBytes(
       getAuthCode(message, signature, authAddress, hexToBytes('0x60')),
-      RETURNTOP
+      RETURNTOP,
     )
 
     await vm.stateManager.putContractCode(contractAddress, code)
@@ -430,13 +430,13 @@ describe('EIP-3074 AUTH', () => {
     assert.deepEqual(
       result.execResult.returnValue.slice(31),
       hexToBytes('0x80'),
-      'reported msize is correct'
+      'reported msize is correct',
     )
     const gas = result.execResult.executionGasUsed
 
     const code2 = concatBytes(
       getAuthCode(message, signature, authAddress, hexToBytes('0x90')),
-      RETURNMEMSIZE
+      RETURNMEMSIZE,
     )
 
     await vm.stateManager.putContractCode(contractAddress, code2)
@@ -454,7 +454,7 @@ describe('EIP-3074 AUTH', () => {
     assert.deepEqual(
       result2.execResult.returnValue.slice(31),
       hexToBytes('0xa0'),
-      'reported msize is correct'
+      'reported msize is correct',
     )
     assert.ok(result2.execResult.executionGasUsed > gas, 'charged more gas for memory expansion')
   })
@@ -481,7 +481,7 @@ describe('EIP-3074 AUTHCALL', () => {
       getAuthCallCode({
         address: contractStorageAddress,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
@@ -508,7 +508,7 @@ describe('EIP-3074 AUTHCALL', () => {
       getAuthCallCode({
         address: contractStorageAddress,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
@@ -529,7 +529,7 @@ describe('EIP-3074 AUTHCALL', () => {
 
     const gasUsed = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      hexToBytes(`0x${'00'.repeat(31)}01`)
+      hexToBytes(`0x${'00'.repeat(31)}01`),
     )
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas =
@@ -549,7 +549,7 @@ describe('EIP-3074 AUTHCALL', () => {
       getAuthCallCode({
         address: contractStorageAddress,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
@@ -570,7 +570,7 @@ describe('EIP-3074 AUTHCALL', () => {
 
     const gasUsed = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      hexToBytes(`0x${'00'.repeat(31)}01`)
+      hexToBytes(`0x${'00'.repeat(31)}01`),
     )
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas = gas! - common.param('warmstoragereadGas')!
@@ -587,7 +587,7 @@ describe('EIP-3074 AUTHCALL', () => {
         address: new Address(hexToBytes(`0x${'cc'.repeat(20)}`)),
         value: 1n,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
     const account = new Account(BIGINT_0, BIGINT_1)
@@ -632,7 +632,7 @@ describe('EIP-3074 AUTHCALL', () => {
         address: contractStorageAddress,
         value: 1n,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
     const authAccount = new Account(BIGINT_0, BIGINT_1)
@@ -659,7 +659,7 @@ describe('EIP-3074 AUTHCALL', () => {
 
     const gasUsed = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      hexToBytes(`0x${'00'.repeat(31)}01`)
+      hexToBytes(`0x${'00'.repeat(31)}01`),
     )
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas =
@@ -691,7 +691,7 @@ describe('EIP-3074 AUTHCALL', () => {
         address: contractStorageAddress,
         value: 1n,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
@@ -715,7 +715,7 @@ describe('EIP-3074 AUTHCALL', () => {
       getAuthCallCode({
         address: contractStorageAddress,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
@@ -729,7 +729,7 @@ describe('EIP-3074 AUTHCALL', () => {
     assert.equal(
       result.execResult.exceptionError?.error,
       EVMErrorMessage.AUTHCALL_UNSET,
-      'threw with right error'
+      'threw with right error',
     )
     assert.equal(result.amountSpent, tx.gasPrice * tx.gasLimit, 'spent all gas')
   })
@@ -751,7 +751,7 @@ describe('EIP-3074 AUTHCALL', () => {
       getAuthCallCode({
         address: contractStorageAddress,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
@@ -765,7 +765,7 @@ describe('EIP-3074 AUTHCALL', () => {
     assert.equal(
       result.execResult.exceptionError?.error,
       EVMErrorMessage.AUTHCALL_UNSET,
-      'threw with right error'
+      'threw with right error',
     )
     assert.equal(result.amountSpent, tx.gasPrice * tx.gasLimit, 'spent all gas')
   })
@@ -779,7 +779,7 @@ describe('EIP-3074 AUTHCALL', () => {
         address: contractStorageAddress,
         gasLimit: 10000000n,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
@@ -794,7 +794,7 @@ describe('EIP-3074 AUTHCALL', () => {
     assert.equal(
       result.execResult.exceptionError?.error,
       EVMErrorMessage.OUT_OF_GAS,
-      'correct error type'
+      'correct error type',
     )
   })
 
@@ -807,7 +807,7 @@ describe('EIP-3074 AUTHCALL', () => {
         address: contractStorageAddress,
         gasLimit: 700000n,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
@@ -820,7 +820,7 @@ describe('EIP-3074 AUTHCALL', () => {
     await runTx(vm, { tx, block, skipHardForkValidation: true })
     const gas = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      hexToBytes(`0x${'00'.repeat(31)}01`)
+      hexToBytes(`0x${'00'.repeat(31)}01`),
     )
     const gasBigInt = bytesToBigInt(gas)
     assert.equal(gasBigInt, BigInt(700000 - 2), 'forwarded the right amount of gas') // The 2 is subtracted due to the GAS opcode base fee
@@ -840,7 +840,7 @@ describe('EIP-3074 AUTHCALL', () => {
         retOffset: 64n,
         retLength: 32n,
       }),
-      hexToBytes('0x60206040F3') // PUSH 32 PUSH 64 RETURN -> This returns the 32 bytes at memory position 64
+      hexToBytes('0x60206040F3'), // PUSH 32 PUSH 64 RETURN -> This returns the 32 bytes at memory position 64
     )
     const vm = await setupVM(code)
 
@@ -853,7 +853,7 @@ describe('EIP-3074 AUTHCALL', () => {
     const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const callInput = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      hexToBytes(`0x${'00'.repeat(31)}02`)
+      hexToBytes(`0x${'00'.repeat(31)}02`),
     )
     assert.deepEqual(callInput, input, 'authcall input ok')
     assert.deepEqual(result.execResult.returnValue, input, 'authcall output ok')

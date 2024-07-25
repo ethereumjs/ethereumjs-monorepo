@@ -15,7 +15,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 export const recursivelyFindParents = async (
   vmHeadHash: Uint8Array,
   parentHash: Uint8Array,
-  chain: Chain
+  chain: Chain,
 ) => {
   if (equalsBytes(parentHash, vmHeadHash) || equalsBytes(parentHash, new Uint8Array(32))) {
     return []
@@ -28,7 +28,7 @@ export const recursivelyFindParents = async (
 
   while (!equalsBytes(parentBlocks[parentBlocks.length - 1].hash(), vmHeadHash)) {
     const block: Block = await chain.getBlock(
-      parentBlocks[parentBlocks.length - 1].header.parentHash
+      parentBlocks[parentBlocks.length - 1].header.parentHash,
     )
     parentBlocks.push(block)
 
@@ -50,7 +50,7 @@ export const recursivelyFindParents = async (
  */
 export const validExecutedChainBlock = async (
   blockOrHash: Uint8Array | Block,
-  chain: Chain
+  chain: Chain,
 ): Promise<Block | null> => {
   try {
     const block = blockOrHash instanceof Block ? blockOrHash : await chain.getBlock(blockOrHash)
@@ -77,7 +77,7 @@ export const validExecutedChainBlock = async (
 export const validHash = async (
   hash: Uint8Array,
   chain: Chain,
-  chainCache: ChainCache
+  chainCache: ChainCache,
 ): Promise<PrefixedHexString | null> => {
   const { remoteBlocks, executedBlocks, invalidBlocks, skeleton } = chainCache
   const maxDepth = chain.config.engineParentLookupMaxDepth
@@ -136,7 +136,7 @@ export function validateHardforkRange(
   methodVersion: number,
   checkNotBeforeHf: Hardfork | null,
   checkNotAfterHf: Hardfork | null,
-  timestamp: bigint
+  timestamp: bigint,
 ) {
   if (checkNotBeforeHf !== null) {
     const hfTimeStamp = chainCommon.hardforkTimestamp(checkNotBeforeHf)

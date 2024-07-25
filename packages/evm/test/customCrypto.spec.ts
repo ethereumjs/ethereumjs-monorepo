@@ -37,7 +37,7 @@ describe('custom crypto', () => {
   it('should use custom ecrecover function', async () => {
     const customEcrecover = (_msg: Uint8Array) => {
       return hexToBytes(
-        '0x84b2586da9b582d3cb260e8fd136129c734f3c80453f48a68e8217ea0b81e08342520f318d202f27a548ad8d3f814ca76d0ee621de2cc510c29e2db4d4f39418'
+        '0x84b2586da9b582d3cb260e8fd136129c734f3c80453f48a68e8217ea0b81e08342520f318d202f27a548ad8d3f814ca76d0ee621de2cc510c29e2db4d4f39418',
       )
     }
     const customCrypto = {
@@ -57,7 +57,7 @@ describe('custom crypto', () => {
     assert.equal(
       bytesToHex(result.returnValue),
       '0x00000000000000000000000063304c5c6884567b84b18f5bc5774d829a32d25d',
-      'used custom ecrecover hashing function'
+      'used custom ecrecover hashing function',
     )
   })
 })

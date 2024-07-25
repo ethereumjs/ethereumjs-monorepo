@@ -52,7 +52,7 @@ describe('TransactionTests', async () => {
       _filename: string,
       subDir: string,
       testName: string,
-      testData: OfficialTransactionTestData
+      testData: OfficialTransactionTestData,
     ) => {
       it(testName, () => {
         for (const forkName of forkNames) {
@@ -83,7 +83,7 @@ describe('TransactionTests', async () => {
             } else {
               assert.ok(
                 hashAndSenderAreCorrect && txIsValid,
-                `Transaction should be valid on ${forkName}`
+                `Transaction should be valid on ${forkName}`,
               )
             }
           } catch (e: any) {
@@ -98,6 +98,6 @@ describe('TransactionTests', async () => {
     },
     fileFilterRegex,
     undefined,
-    'TransactionTests'
+    'TransactionTests',
   )
 })

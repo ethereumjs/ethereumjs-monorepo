@@ -51,7 +51,7 @@ export class Journal {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
     this._debug = debugDefault('statemanager:statemanager')
 
@@ -100,7 +100,7 @@ export class Journal {
       const bytesAddress = unprefixedHexToBytes(address)
       if (this.stateManager.getAppliedKey === undefined) {
         throw new Error(
-          'touchAccount: stateManager.getAppliedKey can not be undefined if preimage storing is enabled'
+          'touchAccount: stateManager.getAppliedKey can not be undefined if preimage storing is enabled',
         )
       }
       const hashedKey = this.stateManager.getAppliedKey(bytesAddress)

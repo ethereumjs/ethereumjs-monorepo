@@ -10,7 +10,7 @@ const verifySubmit = async (
   ethash: Ethash,
   number: number,
   headerHash: Uint8Array,
-  nonce: Uint8Array
+  nonce: Uint8Array,
 ): Promise<Uint8Array> => {
   console.log('Verifying number: ', number)
   await ethash.loadEpoc(BigInt(number))

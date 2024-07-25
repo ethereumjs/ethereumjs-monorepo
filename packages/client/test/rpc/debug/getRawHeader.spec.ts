@@ -17,7 +17,7 @@ const mockedTx1 = createLegacyTx({}).sign(dummy.privKey)
 const mockedTx2 = createLegacyTx({ nonce: 1 }).sign(dummy.privKey)
 const mockedBlobTx3 = create4844BlobTx(
   { nonce: 2, blobsData: ['0x1234'], to: Address.zero() },
-  { common }
+  { common },
 ).sign(dummy.privKey)
 const blockHash = hexToBytes('0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5')
 const transactions = [mockedTx1]
@@ -41,7 +41,7 @@ const block = {
 }
 
 const genesisBlockHash = hexToBytes(
-  '0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5'
+  '0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5',
 )
 const genesisBlock = {
   hash: () => genesisBlockHash,
@@ -76,7 +76,7 @@ describe(method, async () => {
     assert.equal(
       res.result,
       bytesToHex(genesisBlock.header.serialize()),
-      'should return a valid block'
+      'should return a valid block',
     )
   })
 
@@ -88,7 +88,7 @@ describe(method, async () => {
     assert.equal(
       res.result,
       bytesToHex(genesisBlock.header.serialize()),
-      'should return the genesis block as earliest'
+      'should return the genesis block as earliest',
     )
   })
 
@@ -123,8 +123,8 @@ describe(method, async () => {
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
       res.error.message.includes(
-        'invalid argument 0: block option must be a valid 0x-prefixed block hash or hex integer, or "latest", "earliest" or "pending"'
-      )
+        'invalid argument 0: block option must be a valid 0x-prefixed block hash or hex integer, or "latest", "earliest" or "pending"',
+      ),
     )
   })
 })
@@ -136,7 +136,7 @@ describe('call with block with blob txs', () => {
         header: { number: 1, parentHash: genesisBlock.header.hash() },
         transactions: [mockedBlobTx3],
       },
-      { common }
+      { common },
     )
     const manager = createManager(await createClient({ chain: createChain(block1 as any) }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
@@ -145,7 +145,7 @@ describe('call with block with blob txs', () => {
     assert.equal(
       res.result,
       bytesToHex(block1.header.serialize()),
-      'block body contains a transaction with the blobVersionedHashes field'
+      'block body contains a transaction with the blobVersionedHashes field',
     )
   })
 })

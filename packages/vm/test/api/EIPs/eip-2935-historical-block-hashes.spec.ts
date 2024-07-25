@@ -192,7 +192,7 @@ describe('EIP 2935: historical block hashes', () => {
 
       const storage = await vm.stateManager.getContractStorage(
         historyAddress,
-        setLengthLeft(bigIntToBytes(BigInt(0)), 32)
+        setLengthLeft(bigIntToBytes(BigInt(0)), 32),
       )
       assert.ok(equalsBytes(storage, genesis.hash()))
     })
@@ -249,7 +249,7 @@ describe('EIP 2935: historical block hashes', () => {
         const block = await blockchain.getBlock(i)
         const storage = await vm.stateManager.getContractStorage(
           historyAddress,
-          setLengthLeft(bigIntToBytes(BigInt(i) % historyServeWindow), 32)
+          setLengthLeft(bigIntToBytes(BigInt(i) % historyServeWindow), 32),
         )
 
         // we will evaluate on lastBlock where 7709 is active and BLOCKHASH
@@ -289,7 +289,7 @@ describe('EIP 2935: historical block hashes', () => {
             number: blocksToBuild,
           },
         },
-        { common }
+        { common },
       )
 
       // should be able to resolve blockhash via contract code but from the blocksActivation -1 onwards

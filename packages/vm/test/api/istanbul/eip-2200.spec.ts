@@ -59,7 +59,7 @@ describe('Istanbul: EIP-2200', () => {
         await vm.stateManager.putContractStorage(
           addr,
           key,
-          hexToBytes(`0x${testCase.original.toString(16)}`)
+          hexToBytes(`0x${testCase.original.toString(16)}`),
         )
       }
 

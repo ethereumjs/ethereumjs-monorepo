@@ -32,13 +32,13 @@ async function test() {
     'Node 1 branch 3 (hex): path: ',
     bytesToHex(node1.node._branches[3][0]),
     ' | value: ',
-    bytesToHex(node1.node._branches[3][1])
+    bytesToHex(node1.node._branches[3][1]),
   )
   console.log(
     'Node 1 branch 4 (hex): path: ',
     bytesToHex(node1.node._branches[4][0]),
     ' | value:',
-    bytesToHex(node1.node._branches[4][1])
+    bytesToHex(node1.node._branches[4][1]),
   )
 
   console.log('Value of branch at index 3: ', bytesToUtf8(node1.node._branches[3][1]))

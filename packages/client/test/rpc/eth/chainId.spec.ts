@@ -23,7 +23,7 @@ describe(method, () => {
 
   it('returns 3 for Goerli', async () => {
     const manager = createManager(
-      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
+      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) }),
     )
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 

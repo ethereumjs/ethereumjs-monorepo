@@ -96,7 +96,7 @@ export class Trie {
         opts.common?.customCrypto.keccak256 ?? opts.useKeyHashingFunction ?? keccak256
 
       valueEncoding =
-        opts.db !== undefined ? opts.valueEncoding ?? ValueEncoding.String : ValueEncoding.Bytes
+        opts.db !== undefined ? (opts.valueEncoding ?? ValueEncoding.String) : ValueEncoding.Bytes
     } else {
       // No opts are given, so create a MapDB later on
       // Use `Bytes` for ValueEncoding
@@ -104,7 +104,7 @@ export class Trie {
     }
 
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
     this.debug = this.DEBUG
       ? (message: string, namespaces: string[] = []) => {
           let log = this._debug
@@ -153,7 +153,7 @@ export class Trie {
     lastKey: Uint8Array | null,
     keys: Uint8Array[],
     values: Uint8Array[],
-    proof: Uint8Array[] | null
+    proof: Uint8Array[] | null,
   ): Promise<boolean> {
     return verifyRangeProof(
       rootHash,
@@ -162,7 +162,7 @@ export class Trie {
       keys.map((k) => this.appliedKey(k)).map(bytesToNibbles),
       values,
       proof,
-      this._opts.useKeyHashingFunction
+      this._opts.useKeyHashingFunction,
     )
   }
 
@@ -228,15 +228,15 @@ export class Trie {
   async verifyProof(
     rootHash: Uint8Array,
     key: Uint8Array,
-    proof: Proof
+    proof: Proof,
   ): Promise<Uint8Array | null> {
     this.DEBUG &&
       this.debug(
         `Verifying Proof:\n|| Key: ${bytesToHex(key)}\n|| Root: ${bytesToHex(
-          rootHash
+          rootHash,
         )}\n|| Proof: (${proof.length}) nodes
     `,
-        ['VERIFY_PROOF']
+        ['VERIFY_PROOF'],
       )
     const proofTrie = new Trie({
       root: rootHash,
@@ -308,7 +308,7 @@ export class Trie {
       this.DEBUG && this.debug(`Setting root to ${bytesToHex(value)}`)
       if (value.length !== this._hashLen) {
         throw new Error(
-          `Invalid root length. Roots are ${this._hashLen} bytes, got ${value.length} bytes`
+          `Invalid root length. Roots are ${this._hashLen} bytes, got ${value.length} bytes`,
         )
       }
 
@@ -360,7 +360,7 @@ export class Trie {
   async put(
     key: Uint8Array,
     value: Uint8Array | null,
-    skipKeyTransform: boolean = false
+    skipKeyTransform: boolean = false,
   ): Promise<void> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['PUT'])
     this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(key)}`, ['PUT'])
@@ -474,7 +474,7 @@ export class Trie {
       stack: TrieNode[]
     } = {
       stack: [],
-    }
+    },
   ): Promise<Path> {
     const targetKey = bytesToNibbles(key)
     const keyLen = targetKey.length
@@ -505,9 +505,9 @@ export class Trie {
               branchNode === null
                 ? 'NULL'
                 : branchNode instanceof Uint8Array
-                ? `NodeHash: ${bytesToHex(branchNode)}`
-                : `Raw_Node: ${branchNode.toString()}`,
-              ['FIND_PATH', 'BranchNode', branchIndex.toString()]
+                  ? `NodeHash: ${bytesToHex(branchNode)}`
+                  : `Raw_Node: ${branchNode.toString()}`,
+              ['FIND_PATH', 'BranchNode', branchIndex.toString()],
             )
           if (!branchNode) {
             result = { node: null, remaining: targetKey.slice(progress), stack }
@@ -535,13 +535,13 @@ export class Trie {
           this.debug(
             `Comparing node key to expected\n|| Node_Key: [${node.key()}]\n|| Expected: [${targetKey.slice(
               progress,
-              progress + node.key().length
+              progress + node.key().length,
             )}]\n|| Matching: [${
               targetKey.slice(progress, progress + node.key().length).toString() ===
               node.key().toString()
             }]
             `,
-            ['FIND_PATH', 'ExtensionNode']
+            ['FIND_PATH', 'ExtensionNode'],
           )
         const _progress = progress
         for (const k of node.key()) {
@@ -561,9 +561,9 @@ export class Trie {
       this.DEBUG &&
         this.debug(
           `Walking trie from ${startingNode === undefined ? 'ROOT' : 'NODE'}: ${bytesToHex(
-            start as Uint8Array
+            start as Uint8Array,
           )}`,
-          ['FIND_PATH']
+          ['FIND_PATH'],
         )
       await this.walkTrie(start, onFound)
     } catch (error: any) {
@@ -580,7 +580,7 @@ export class Trie {
         result.node !== null
           ? `Target Node FOUND for ${bytesToNibbles(key)}`
           : `Target Node NOT FOUND`,
-        ['FIND_PATH']
+        ['FIND_PATH'],
       )
 
     result.stack = result.stack.filter((e) => e !== undefined)
@@ -591,7 +591,7 @@ export class Trie {
         || Remaining: [${result.remaining}]\n|| Stack: ${result.stack
           .map((e) => e.constructor.name)
           .join(', ')}`,
-        ['FIND_PATH']
+        ['FIND_PATH'],
       )
     return result
   }
@@ -631,7 +631,7 @@ export class Trie {
       undefined,
       async (node) => {
         return node instanceof LeafNode || (node instanceof BranchNode && node.value() !== null)
-      }
+      },
     )) {
       await onFound(node, currentKey)
     }
@@ -687,7 +687,7 @@ export class Trie {
     k: Uint8Array,
     value: Uint8Array,
     keyRemainder: Nibbles,
-    stack: TrieNode[]
+    stack: TrieNode[],
   ): Promise<void> {
     const toSave: BatchDBOp[] = []
     const lastNode = stack.pop()
@@ -792,7 +792,7 @@ export class Trie {
       branchKey: number,
       branchNode: TrieNode,
       parentNode: TrieNode,
-      stack: TrieNode[]
+      stack: TrieNode[],
     ) => {
       // branchNode is the node ON the branch node not THE branch node
       if (parentNode === null || parentNode === undefined || parentNode instanceof BranchNode) {
@@ -966,7 +966,7 @@ export class Trie {
     node: TrieNode,
     topLevel: boolean,
     opStack: BatchDBOp[],
-    remove: boolean = false
+    remove: boolean = false,
   ): Uint8Array | (EmbeddedNode | null)[] {
     const encoded = node.serialize()
 
@@ -1053,7 +1053,7 @@ export class Trie {
               if (
                 item !== null &&
                 bytesToUnprefixedHex(
-                  isRawNode(item) ? controller.trie.appliedKey(RLP.encode(item)) : item
+                  isRawNode(item) ? controller.trie.appliedKey(RLP.encode(item)) : item,
                 ) === dbkey
               ) {
                 found = true
@@ -1117,9 +1117,9 @@ export class Trie {
       this.DEBUG &&
         this.debug(
           `Persisting root: \n|| RootHash: ${bytesToHex(this.root())}\n|| RootKey: ${bytesToHex(
-            this.appliedKey(ROOT_DB_KEY)
+            this.appliedKey(ROOT_DB_KEY),
           )}`,
-          ['PERSIST_ROOT']
+          ['PERSIST_ROOT'],
         )
       let key = this.appliedKey(ROOT_DB_KEY)
       key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, key) : key
@@ -1229,7 +1229,7 @@ export class Trie {
    */
   async getValueMap(
     startKey = BIGINT_0,
-    limit?: number
+    limit?: number,
   ): Promise<{ values: { [key: string]: string }; nextKey: null | string }> {
     // If limit is undefined, all keys are inRange
     let inRange = limit !== undefined ? false : true

@@ -15,7 +15,7 @@ const main = async () => {
   const genesisBlockHash = blockchain.genesisBlock.hash()
   common.setForkHashes(genesisBlockHash)
   console.log(
-    `Genesis hash from geth genesis parameters - ${bytesToHex(blockchain.genesisBlock.hash())}`
+    `Genesis hash from geth genesis parameters - ${bytesToHex(blockchain.genesisBlock.hash())}`,
   )
 }
 

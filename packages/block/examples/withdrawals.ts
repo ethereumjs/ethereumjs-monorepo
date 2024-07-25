@@ -17,14 +17,14 @@ const block = createBlockFromBlockData(
   {
     header: {
       withdrawalsRoot: hexToBytes(
-        '0x69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357'
+        '0x69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357',
       ),
     },
     withdrawals: [withdrawal],
   },
   {
     common,
-  }
+  },
 )
 
 console.log(`Block with ${block.withdrawals!.length} withdrawal(s) created`)

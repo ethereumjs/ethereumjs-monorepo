@@ -110,7 +110,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
         undefined,
         {
           common,
-        }
+        },
       )
       assert.fail('should have thrown')
     } catch (e: any) {
@@ -123,7 +123,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
     let block = createBlockFromBlockData({ header: { mixHash } }, { common })
     assert.ok(
       equalsBytes(block.header.prevRandao, mixHash),
-      'prevRandao should return mixHash value'
+      'prevRandao should return mixHash value',
     )
 
     const commonLondon = common.copy()

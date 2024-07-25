@@ -135,7 +135,7 @@ export class Account {
     storageRoot: Uint8Array | null = KECCAK256_RLP,
     codeHash: Uint8Array | null = KECCAK256_NULL,
     codeSize: number | null = null,
-    version: number | null = 0
+    version: number | null = 0,
   ) {
     this._nonce = nonce
     this._balance = balance
@@ -280,7 +280,7 @@ export function createAccount(accountData: AccountData) {
     nonce !== undefined ? bytesToBigInt(toBytes(nonce)) : undefined,
     balance !== undefined ? bytesToBigInt(toBytes(balance)) : undefined,
     storageRoot !== undefined ? toBytes(storageRoot) : undefined,
-    codeHash !== undefined ? toBytes(codeHash) : undefined
+    codeHash !== undefined ? toBytes(codeHash) : undefined,
   )
 }
 
@@ -310,7 +310,7 @@ export function createPartialAccount(partialAccountData: PartialAccountData) {
     storageRoot !== undefined && storageRoot !== null ? toBytes(storageRoot) : storageRoot,
     codeHash !== undefined && codeHash !== null ? toBytes(codeHash) : codeHash,
     codeSize !== undefined && codeSize !== null ? bytesToInt(toBytes(codeSize)) : codeSize,
-    version !== undefined && version !== null ? bytesToInt(toBytes(version)) : version
+    version !== undefined && version !== null ? bytesToInt(toBytes(version)) : version,
   )
 }
 
@@ -439,7 +439,7 @@ export const isValidAddress = function (hexAddress: string): hexAddress is Prefi
  */
 export const toChecksumAddress = function (
   hexAddress: string,
-  eip1191ChainId?: BigIntLike
+  eip1191ChainId?: BigIntLike,
 ): PrefixedHexString {
   assertIsHexString(hexAddress)
   const address = stripHexPrefix(hexAddress).toLowerCase()
@@ -472,7 +472,7 @@ export const toChecksumAddress = function (
  */
 export const isValidChecksumAddress = function (
   hexAddress: string,
-  eip1191ChainId?: BigIntLike
+  eip1191ChainId?: BigIntLike,
 ): boolean {
   return isValidAddress(hexAddress) && toChecksumAddress(hexAddress, eip1191ChainId) === hexAddress
 }
@@ -505,7 +505,7 @@ export const generateAddress = function (from: Uint8Array, nonce: Uint8Array): U
 export const generateAddress2 = function (
   from: Uint8Array,
   salt: Uint8Array,
-  initCode: Uint8Array
+  initCode: Uint8Array,
 ): Uint8Array {
   assertIsBytes(from)
   assertIsBytes(salt)

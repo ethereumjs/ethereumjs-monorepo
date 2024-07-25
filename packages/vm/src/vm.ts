@@ -98,7 +98,7 @@ export class VM {
       const profilerOpts = opts.profilerOpts
       if (profilerOpts.reportAfterBlock === true && profilerOpts.reportAfterTx === true) {
         throw new Error(
-          'Cannot have `reportProfilerAfterBlock` and `reportProfilerAfterTx` set to `true` at the same time'
+          'Cannot have `reportProfilerAfterBlock` and `reportProfilerAfterTx` set to `true` at the same time',
         )
       }
     }
@@ -174,7 +174,7 @@ export class VM {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   /**

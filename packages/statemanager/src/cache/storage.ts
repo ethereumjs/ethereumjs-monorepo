@@ -88,7 +88,7 @@ export class StorageCache extends Cache {
       this._debug(
         `Put storage for ${addressHex}: ${keyHex} -> ${
           value !== undefined ? bytesToUnprefixedHex(value) : ''
-        }`
+        }`,
       )
     }
     if (this._lruCache) {

@@ -58,7 +58,7 @@ const block = createBlockFromBlockData(
   },
   {
     common,
-  }
+  },
 )
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
@@ -77,7 +77,7 @@ describe('VM initialized with custom state', () => {
       },
       {
         common,
-      }
+      },
     ).sign(privateKey)
     const result = await runTx(vm, {
       tx,
@@ -95,7 +95,7 @@ describe('VM initialized with custom state', () => {
     common.setHardfork(Hardfork.London)
     const vm = await VM.create({ blockchain, common, genesisState })
     const sigHash = new Interface(['function retrieve()']).getSighash(
-      'retrieve'
+      'retrieve',
     ) as PrefixedHexString
 
     const callResult = await vm.evm.runCall({

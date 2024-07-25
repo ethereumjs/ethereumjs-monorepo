@@ -11,7 +11,7 @@ const block = createBlockFromBlockData(
       number: BigInt(1),
     },
   },
-  { setHardfork: true, skipConsensusFormatValidation: true }
+  { setHardfork: true, skipConsensusFormatValidation: true },
 )
 
 const cacheDB = new MapDB<number, DBObject>()

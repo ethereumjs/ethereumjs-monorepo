@@ -25,14 +25,14 @@ describe('[HeaderFetcher]', async () => {
     assert.deepEqual(
       fetcher.process(
         { task: { count: 2 }, peer: 'peer0' } as any,
-        { headers, bv: BigInt(1) } as any
+        { headers, bv: BigInt(1) } as any,
       ),
       headers as any,
-      'got results'
+      'got results',
     )
     assert.notOk(
       fetcher.process({ task: { count: 2 } } as any, { headers: [], bv: BigInt(1) } as any),
-      'bad results'
+      'bad results',
     )
     expect((fetcher as any).flow.handleReply).toHaveBeenCalledWith('peer0', 1)
   })
@@ -126,7 +126,7 @@ describe('store()', async () => {
   config.events.on(Event.SYNC_FETCHED_HEADERS, () =>
     it('should emit event on put headers', () => {
       assert.ok(true, 'store() emitted SYNC_FETCHED_HEADERS event on putting headers')
-    })
+    }),
   )
   await fetcher.store([1 as any])
 })

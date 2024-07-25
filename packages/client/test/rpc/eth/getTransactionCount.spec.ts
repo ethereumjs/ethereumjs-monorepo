@@ -57,7 +57,7 @@ describe(method, () => {
           gasLimit: 2000000,
         },
       },
-      { common, calcDifficultyFromHeader: parent }
+      { common, calcDifficultyFromHeader: parent },
     )
     block.transactions[0] = tx
 

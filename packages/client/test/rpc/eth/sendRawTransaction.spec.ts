@@ -56,7 +56,7 @@ describe(method, () => {
     assert.equal(
       res.result,
       '0xd7217a7d3251880051783f305a3536e368c604aa1f1602e6cd107eb7b87129da',
-      'should return the correct tx hash'
+      'should return the correct tx hash',
     )
 
     // Restore setStateRoot
@@ -84,7 +84,7 @@ describe(method, () => {
     assert.equal(
       res.result,
       '0xf6798d5ed936a464ef4f49dd5a3abe1ad6947364912bd47c5e56781125d44ac3',
-      'local tx with lower gasprice than minimum gasprice added to pool'
+      'local tx with lower gasprice than minimum gasprice added to pool',
     )
 
     // Restore setStateRoot
@@ -122,8 +122,8 @@ describe(method, () => {
     assert.equal(res.error.code, INTERNAL_ERROR)
     assert.ok(
       res.error.message.includes(
-        'client is not aware of the current chain height yet (give sync some more time)'
-      )
+        'client is not aware of the current chain height yet (give sync some more time)',
+      ),
     )
   })
 
@@ -245,7 +245,7 @@ describe(method, () => {
         maxPriorityFeePerGas: 1000000n,
         to: randomBytes(20),
       },
-      { common }
+      { common },
     ).sign(pk)
 
     const replacementTx = create4844BlobTx(
@@ -260,7 +260,7 @@ describe(method, () => {
         maxPriorityFeePerGas: 10000000n,
         to: randomBytes(20),
       },
-      { common }
+      { common },
     ).sign(pk)
     const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
     await vm.stateManager.putAccount(tx.getSenderAddress(), new Account())

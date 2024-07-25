@@ -82,7 +82,7 @@ describe('should get idle peers', () => {
     assert.equal(
       pool.idle((p: any) => p.id > 1),
       peers[1],
-      'correct idle peer with filter'
+      'correct idle peer with filter',
     )
   })
 })

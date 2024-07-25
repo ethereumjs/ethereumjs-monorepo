@@ -48,11 +48,11 @@ describe('[fromRPC]:', () => {
     const createBlockFromTransactionValueAsInteger = createBlockFromRpc(
       blockDataTransactionValueAsInteger as JsonRpcBlock,
       undefined,
-      { common }
+      { common },
     )
     assert.equal(
       createBlockFromTransactionValueAsInteger.transactions[0].value.toString(),
-      valueAsIntegerString
+      valueAsIntegerString,
     )
   })
 
@@ -64,13 +64,13 @@ describe('[fromRPC]:', () => {
     const createBlockFromTransactionGasPriceAsInteger = createBlockFromRpc(
       blockDataTransactionGasPriceAsInteger as JsonRpcBlock,
       undefined,
-      { common }
+      { common },
     )
     assert.equal(
       (
         createBlockFromTransactionGasPriceAsInteger.transactions[0] as LegacyTransaction
       ).gasPrice.toString(),
-      gasPriceAsIntegerString
+      gasPriceAsIntegerString,
     )
   })
 
@@ -81,11 +81,11 @@ describe('[fromRPC]:', () => {
       undefined,
       {
         common,
-      }
+      },
     )
     assert.equal(
       blockDifficultyAsInteger.header.difficulty.toString(),
-      blockDataDifficultyAsInteger.difficulty
+      blockDataDifficultyAsInteger.difficulty,
     )
   })
 
@@ -94,7 +94,7 @@ describe('[fromRPC]:', () => {
     const block = createBlockFromRpc(testDataFromRpcGoerliLondon as JsonRpcBlock, [], { common })
     assert.equal(
       `0x${block.header.baseFeePerGas?.toString(16)}`,
-      testDataFromRpcGoerliLondon.baseFeePerGas
+      testDataFromRpcGoerliLondon.baseFeePerGas,
     )
     assert.equal(bytesToHex(block.hash()), testDataFromRpcGoerliLondon.hash)
   })
@@ -137,13 +137,13 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
     assert.equal(
       bytesToHex(block.hash()),
       infura2000004woTxs.hash,
-      'created premerge block w/o txns'
+      'created premerge block w/o txns',
     )
     block = createBlockFromRpc(infura2000004wTxs as JsonRpcBlock, [], { common, setHardfork: true })
     assert.equal(
       bytesToHex(block.hash()),
       infura2000004wTxs.hash,
-      'created premerge block with txns'
+      'created premerge block with txns',
     )
     block = createBlockFromRpc(infura15571241woTxs as JsonRpcBlock, [], {
       common,
@@ -152,7 +152,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
     assert.equal(
       bytesToHex(block.hash()),
       infura15571241woTxs.hash,
-      'created post merge block without txns'
+      'created post merge block without txns',
     )
 
     block = createBlockFromRpc(infura15571241wTxs as JsonRpcBlock, [], {
@@ -162,7 +162,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
     assert.equal(
       bytesToHex(block.hash()),
       infura15571241wTxs.hash,
-      'created post merge block with txns'
+      'created post merge block with txns',
     )
   })
 
@@ -212,7 +212,7 @@ describe('[fromJsonRpcProvider]', () => {
     assert.equal(
       bytesToHex(block.hash()),
       blockHash,
-      'assembled a block from blockdata from a provider'
+      'assembled a block from blockdata from a provider',
     )
     try {
       await createBlockFromJsonRpcProvider(provider, bytesToHex(randomBytes(32)), {})
@@ -220,7 +220,7 @@ describe('[fromJsonRpcProvider]', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('No block data returned from provider'),
-        'returned correct error message'
+        'returned correct error message',
       )
     }
     global.fetch = realFetch

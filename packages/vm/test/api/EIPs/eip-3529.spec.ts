@@ -135,7 +135,7 @@ describe('EIP-3529 tests', () => {
       await vm.stateManager.putContractStorage(
         address,
         key,
-        hexToBytes(`0x${testCase.original.toString().padStart(64, '0')}`)
+        hexToBytes(`0x${testCase.original.toString().padStart(64, '0')}`),
       )
 
       await vm.stateManager.getContractStorage(address, key)

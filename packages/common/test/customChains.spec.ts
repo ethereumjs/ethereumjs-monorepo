@@ -33,7 +33,7 @@ describe('[Common]: Custom chains', () => {
       },
       /Missing required/,
       undefined,
-      'should throw an exception on missing parameter'
+      'should throw an exception on missing parameter',
     )
   })
 
@@ -67,14 +67,14 @@ describe('[Common]: Custom chains', () => {
     assert.deepEqual(
       common.chainId(),
       BigInt(80001),
-      'supported chain -> should initialize with correct chain ID'
+      'supported chain -> should initialize with correct chain ID',
     )
     for (const customChain of Object.values(CustomChain)) {
       common = createCustomCommon(customChain)
       assert.equal(
         common.chainName(),
         customChain,
-        `supported chain -> should initialize with enum name (${customChain})`
+        `supported chain -> should initialize with enum name (${customChain})`,
       )
     }
 
@@ -82,14 +82,14 @@ describe('[Common]: Custom chains', () => {
     assert.equal(
       common.hardfork(),
       common.DEFAULT_HARDFORK,
-      'uses default hardfork when no options are present'
+      'uses default hardfork when no options are present',
     )
 
     common = createCustomCommon(CustomChain.OptimisticEthereum, { hardfork: Hardfork.Byzantium })
     assert.equal(
       common.hardfork(),
       Hardfork.Byzantium,
-      'should correctly set an option (default options present)'
+      'should correctly set an option (default options present)',
     )
 
     try {
@@ -99,7 +99,7 @@ describe('[Common]: Custom chains', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('not supported'),
-        'supported chain -> should throw if chain name is not supported'
+        'supported chain -> should throw if chain name is not supported',
       )
     }
   })
@@ -111,9 +111,9 @@ describe('[Common]: Custom chains', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes(
-          'Chain must be a string, number, or bigint when initialized with customChains passed in'
+          'Chain must be a string, number, or bigint when initialized with customChains passed in',
         ),
-        'should throw an exception on wrong initialization'
+        'should throw an exception on wrong initialization',
       )
     }
   })
@@ -149,7 +149,7 @@ describe('[Common]: Custom chains', () => {
     assert.equal(
       c.hardforkBlock()!,
       BigInt(10),
-      'customChains, chain initialized with custom chain'
+      'customChains, chain initialized with custom chain',
     )
 
     const customChainParams: Partial<ChainConfig> = {
@@ -163,14 +163,14 @@ describe('[Common]: Custom chains', () => {
 
     assert.equal(
       customChainCommon['_chainParams'].depositContractAddress,
-      customChainParams.depositContractAddress
+      customChainParams.depositContractAddress,
     )
     c.setChain('testnet')
     assert.equal(c.chainName(), 'testnet', 'customChains, should allow to switch custom chain')
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfWork,
-      'customChains, should allow to switch custom chain'
+      'customChains, should allow to switch custom chain',
     )
   })
 
@@ -276,7 +276,7 @@ describe('custom chain setup with hardforks with undefined/null block numbers', 
       () => createCustomCommon({ hardforks: undefinedHardforks as HardforkTransitionConfig[] }),
       undefined,
       undefined,
-      'throws when a hardfork with an undefined block number is passed'
+      'throws when a hardfork with an undefined block number is passed',
     )
 
     const nullHardforks = [

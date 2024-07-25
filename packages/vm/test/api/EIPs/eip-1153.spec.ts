@@ -32,13 +32,13 @@ describe('EIP 1153: transient storage', () => {
       assert.equal(
         step.opcode.name,
         test.steps[i].expectedOpcode,
-        `Expected Opcode: ${test.steps[i].expectedOpcode}`
+        `Expected Opcode: ${test.steps[i].expectedOpcode}`,
       )
 
       assert.deepEqual(
         step.stack.map((e: bigint) => e.toString()),
         test.steps[i].expectedStack.map((e: bigint) => e.toString()),
-        `Expected stack: ${step.stack}`
+        `Expected stack: ${step.stack}`,
       )
 
       if (i > 0) {
@@ -47,7 +47,7 @@ describe('EIP 1153: transient storage', () => {
           gasUsed === expectedGasUsed,
           `Opcode: ${
             test.steps[i - 1].expectedOpcode
-          }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`
+          }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`,
         )
       }
       i++

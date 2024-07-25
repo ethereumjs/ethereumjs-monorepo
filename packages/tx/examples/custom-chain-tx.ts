@@ -14,7 +14,7 @@ const customCommon = createCustomCommon(
   {
     baseChain: 'mainnet',
     hardfork: 'petersburg',
-  }
+  },
 )
 
 // We pass our custom Common object whenever we create a transaction
@@ -26,7 +26,7 @@ const tx = createLegacyTx(
     gasLimit: 1000000000,
     value: 100000,
   },
-  opts
+  opts,
 )
 
 // Once we created the transaction using the custom Common object, we can use it as a normal tx.

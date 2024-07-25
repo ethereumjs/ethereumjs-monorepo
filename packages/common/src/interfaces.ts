@@ -84,7 +84,7 @@ export type AuthorizationListBytesItem = [
   Uint8Array[],
   Uint8Array,
   Uint8Array,
-  Uint8Array
+  Uint8Array,
 ]
 export type AuthorizationListBytes = AuthorizationListBytesItem[]
 export type AuthorizationList = AuthorizationListItem[]
@@ -120,24 +120,24 @@ export interface AccessWitnessInterface {
   touchAddressOnWriteAndComputeGas(
     address: Address,
     treeIndex: number | bigint,
-    subIndex: number | Uint8Array
+    subIndex: number | Uint8Array,
   ): bigint
   touchAddressOnReadAndComputeGas(
     address: Address,
     treeIndex: number | bigint,
-    subIndex: number | Uint8Array
+    subIndex: number | Uint8Array,
   ): bigint
   touchAddressAndChargeGas(
     address: Address,
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
-    { isWrite }: { isWrite?: boolean }
+    { isWrite }: { isWrite?: boolean },
   ): bigint
   touchAddress(
     address: Address,
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
-    { isWrite }: { isWrite?: boolean }
+    { isWrite }: { isWrite?: boolean },
   ): AccessEventFlags
   shallowCopy(): AccessWitnessInterface
   merge(accessWitness: AccessWitnessInterface): void

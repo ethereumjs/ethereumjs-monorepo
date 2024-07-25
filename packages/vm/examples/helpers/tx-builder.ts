@@ -7,7 +7,7 @@ export const encodeFunction = (
   params?: {
     types: any[]
     values: unknown[]
-  }
+  },
 ): string => {
   const parameters = params?.types ?? []
   const methodWithParameters = `function ${method}(${parameters.join(',')})`
@@ -22,7 +22,7 @@ export const encodeDeployment = (
   params?: {
     types: any[]
     values: unknown[]
-  }
+  },
 ) => {
   const deploymentData = '0x' + bytecode
   if (params) {

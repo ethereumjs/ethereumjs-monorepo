@@ -19,7 +19,7 @@ describe('invalid tests', () => {
         },
         undefined,
         undefined,
-        `should not decode invalid RLPs, input: ${out}`
+        `should not decode invalid RLPs, input: ${out}`,
       )
     })
   }
@@ -27,7 +27,7 @@ describe('invalid tests', () => {
   it('should pass long string sanity check test', function () {
     // long string invalid test; string length > 55
     const longBufferTest = RLP.encode(
-      'zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss'
+      'zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss',
     )
     // sanity checks
     assert.ok(longBufferTest[0] > 0xb7)
@@ -40,7 +40,7 @@ describe('invalid tests', () => {
       },
       undefined,
       undefined,
-      'string longer than 55 bytes: should throw'
+      'string longer than 55 bytes: should throw',
     )
   })
 })
@@ -87,7 +87,7 @@ describe('invalid geth tests', () => {
         },
         undefined,
         undefined,
-        `should throw: ${gethCase}`
+        `should throw: ${gethCase}`,
       )
     })
   }

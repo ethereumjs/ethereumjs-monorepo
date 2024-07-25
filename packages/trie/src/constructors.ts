@@ -44,7 +44,7 @@ export async function createTrie(opts?: TrieOpts) {
         {
           keyEncoding: KeyEncoding.String,
           valueEncoding: encoding,
-        }
+        },
       )
     }
   }

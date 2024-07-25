@@ -72,7 +72,7 @@ export function getTestRLPXs(
   maxPeers: number = 10,
   basePort: number,
   capabilities?: Capabilities[],
-  common?: Object | Common
+  common?: Object | Common,
 ) {
   const rlpxs = []
   if (typeof capabilities === 'undefined') {
@@ -101,7 +101,7 @@ export function initTwoPeerRLPXSetup(
   maxPeers?: any,
   capabilities?: any,
   common?: Object | Common,
-  basePort = 30306
+  basePort = 30306,
 ): RLPx[] {
   const rlpxs = getTestRLPXs(2, maxPeers, basePort, capabilities, common)
   const peer = { address: localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
@@ -128,7 +128,7 @@ export function twoPeerMsgExchange(
   opts: any,
   capabilities?: Capabilities[],
   common?: Object | Common,
-  basePort = 30306
+  basePort = 30306,
 ) {
   const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
   rlpxs[0].events.on('peer:added', function (peer: any) {
@@ -190,7 +190,7 @@ export async function twoPeerMsgExchange2(
   opts: any,
   capabilities?: any,
   common?: Object | Common,
-  basePort = 30306
+  basePort = 30306,
 ) {
   const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
   rlpxs[0].events.on('peer:added', function (peer: any) {
@@ -223,7 +223,7 @@ export async function twoPeerMsgExchange2(
       assert.equal(
         err.message,
         'Invalid Snappy bitstream',
-        'unable to process snappy compressed message'
+        'unable to process snappy compressed message',
       )
       destroyRLPXs(rlpxs)
       opts.promise(undefined)
@@ -245,7 +245,7 @@ export function twoPeerMsgExchange3(
   opts: any,
   capabilities?: any,
   common?: Object | Common,
-  basePort = 30306
+  basePort = 30306,
 ) {
   const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
   rlpxs[0].events.on('peer:added', function (peer: any) {

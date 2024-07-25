@@ -42,7 +42,7 @@ function createBlock(parentBlock: Block) {
         gasLimit: parentBlock.header.gasLimit,
       },
     },
-    { common }
+    { common },
   )
   return block
 }
@@ -60,8 +60,8 @@ describe(method, () => {
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
       res.error.message.includes(
-        "invalid argument 0 for key 'headBlockHash': hex string without 0x prefix"
-      )
+        "invalid argument 0 for key 'headBlockHash': hex string without 0x prefix",
+      ),
     )
   })
 
@@ -76,8 +76,8 @@ describe(method, () => {
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
       res.error.message.includes(
-        "invalid argument 0 for key 'finalizedBlockHash': invalid block hash"
-      )
+        "invalid argument 0 for key 'finalizedBlockHash': invalid block hash",
+      ),
     )
   })
 
@@ -103,7 +103,7 @@ describe(method, () => {
     assert.equal(res.result.payloadStatus.status, 'VALID')
     assert.equal(
       res.result.payloadStatus.latestValidHash,
-      '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a'
+      '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a',
     )
     assert.equal(res.result.payloadStatus.validationError, null)
     assert.notEqual(res.result.payloadId, null)
@@ -118,7 +118,7 @@ describe(method, () => {
     const res = await rpc.request(method, invalidTimestampPayload)
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
-      res.error.message.includes('invalid timestamp in payloadAttributes, got 0, need at least 1')
+      res.error.message.includes('invalid timestamp in payloadAttributes, got 0, need at least 1'),
     )
   })
 
@@ -175,7 +175,7 @@ describe(method, () => {
           extraData: new Uint8Array(97),
         },
       } as BlockData,
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
 
     await chain.putBlocks([newBlock])
@@ -317,7 +317,7 @@ describe(method, () => {
     }
 
     const canonicalPayload = canonical.map(
-      (e) => blockToExecutionPayload(e, BigInt(0)).executionPayload
+      (e) => blockToExecutionPayload(e, BigInt(0)).executionPayload,
     )
     const reorgPayload = reorg.map((e) => blockToExecutionPayload(e, BigInt(0)).executionPayload)
 
@@ -357,7 +357,7 @@ describe(method, () => {
     }
 
     const canonicalPayload = canonical.map(
-      (e) => blockToExecutionPayload(e, BigInt(0)).executionPayload
+      (e) => blockToExecutionPayload(e, BigInt(0)).executionPayload,
     )
     const reorgPayload = reorg.map((e) => blockToExecutionPayload(e, BigInt(0)).executionPayload)
 

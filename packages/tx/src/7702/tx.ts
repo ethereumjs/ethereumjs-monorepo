@@ -80,7 +80,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
 
     // Populate the authority list fields
     const authorizationListData = AuthorizationLists.getAuthorizationListData(
-      authorizationList ?? []
+      authorizationList ?? [],
     )
     this.authorizationList = authorizationListData.authorizationList
     this.AuthorizationListJSON = authorizationListData.AuthorizationListJSON
@@ -104,7 +104,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
       const msg = this._errorMsg(
-        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)'
+        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
       )
       throw new Error(msg)
     }
@@ -240,7 +240,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV: boolean = false
+    convertV: boolean = false,
   ): EOACodeEIP7702Transaction {
     r = toBytes(r)
     s = toBytes(s)
@@ -262,7 +262,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },
-      opts
+      opts,
     )
   }
 

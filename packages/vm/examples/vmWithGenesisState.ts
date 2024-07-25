@@ -10,12 +10,12 @@ const main = async () => {
   const blockchain = await createBlockchain({ genesisState })
   const vm = await VM.create({ blockchain, genesisState })
   const account = await vm.stateManager.getAccount(
-    Address.fromString('0x000d836201318ec6899a67540690382780743280')
+    Address.fromString('0x000d836201318ec6899a67540690382780743280'),
   )
   console.log(
     `This balance for account 0x000d836201318ec6899a67540690382780743280 in this chain's genesis state is ${Number(
-      account?.balance
-    )}`
+      account?.balance,
+    )}`,
   )
 }
 void main()

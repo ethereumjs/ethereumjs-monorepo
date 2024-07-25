@@ -51,7 +51,7 @@ describe('support for Uint8Array', () => {
     for (const value of db._database.values()) {
       assert.ok(
         typeof value === 'string',
-        'if a database is provided, string values will be used internally'
+        'if a database is provided, string values will be used internally',
       )
     }
   })

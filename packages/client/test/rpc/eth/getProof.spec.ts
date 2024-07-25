@@ -140,7 +140,7 @@ describe(method, async () => {
           gasLimit,
         },
       },
-      { common, calcDifficultyFromHeader: parent }
+      { common, calcDifficultyFromHeader: parent },
     )
     block.transactions[0] = tx
 
@@ -172,7 +172,7 @@ describe(method, async () => {
           gasLimit,
         },
       },
-      { common, calcDifficultyFromHeader: block.header }
+      { common, calcDifficultyFromHeader: block.header },
     )
     block2.transactions[0] = storeTx
 

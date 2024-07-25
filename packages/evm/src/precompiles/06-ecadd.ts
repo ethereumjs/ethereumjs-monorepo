@@ -14,7 +14,7 @@ export function precompile06(opts: PrecompileInput): ExecResult {
     opts._debug(
       `Run ECADD (0x06) precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
         opts.gasLimit
-      } gasUsed=${gasUsed}`
+      } gasUsed=${gasUsed}`,
     )
   }
   if (opts.gasLimit < gasUsed) {

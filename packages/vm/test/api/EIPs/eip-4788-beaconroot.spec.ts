@@ -40,7 +40,7 @@ const contractAddress = Address.fromString('0x' + 'c0de'.repeat(10))
 function beaconrootBlock(
   blockroot: bigint,
   timestamp: BigIntLike,
-  transactions: Array<TxData[TransactionType]>
+  transactions: Array<TxData[TransactionType]>,
 ) {
   const newTxData = []
 
@@ -61,7 +61,7 @@ function beaconrootBlock(
       parentBeaconBlockRoot: root,
       timestamp,
     },
-    { common, freeze: false }
+    { common, freeze: false },
   )
   const block = createBlockFromBlockData(
     {
@@ -71,7 +71,7 @@ function beaconrootBlock(
     {
       common,
       freeze: false,
-    }
+    },
   )
   return block
 }
@@ -143,7 +143,7 @@ async function runBlockTest(input: {
 
   const data = setLengthRight(
     setLengthLeft(bigIntToBytes(timestamp), input.extLeft ?? 32),
-    input.extRight ?? 32
+    input.extRight ?? 32,
   )
   const block = beaconrootBlock(blockRoot, timestampBlock, [
     {

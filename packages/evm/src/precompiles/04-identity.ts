@@ -14,7 +14,7 @@ export function precompile04(opts: PrecompileInput): ExecResult {
     opts._debug(
       `Run IDENTITY (0x04) precompile data=${short(opts.data)} length=${
         opts.data.length
-      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
+      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`,
     )
   }
 

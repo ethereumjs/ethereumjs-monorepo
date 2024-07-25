@@ -51,7 +51,7 @@ import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/ut
 const debug = debugDefault('vm:block')
 
 const parentBeaconBlockRootAddress = Address.fromString(
-  '0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02'
+  '0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02',
 )
 
 let enableProfiler = false
@@ -126,7 +126,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     debug(
       `Running block hash=${bytesToHex(block.hash())} number=${
         block.header.number
-      } hardfork=${vm.common.hardfork()}`
+      } hardfork=${vm.common.hardfork()}`,
     )
   }
 
@@ -203,7 +203,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
           result.bloom.bitvector.length
         } bytes) receiptsRoot=${bytesToHex(result.receiptsRoot)} receipts=${
           result.receipts.length
-        } txResults=${result.results.length}`
+        } txResults=${result.results.length}`,
       )
     }
   } catch (err: any) {
@@ -263,8 +263,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         if (vm.DEBUG)
           debug(
             `Invalid requestsRoot received=${bytesToHex(
-              block.header.requestsRoot!
-            )} expected=${bytesToHex(validRoot)}`
+              block.header.requestsRoot!,
+            )} expected=${bytesToHex(validRoot)}`,
           )
         const msg = _errorMsg('invalid requestsRoot', vm, block)
         throw new Error(msg)
@@ -276,8 +276,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         if (vm.DEBUG) {
           debug(
             `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
-              block.header.receiptTrie
-            )}`
+              block.header.receiptTrie,
+            )}`,
           )
         }
         const msg = _errorMsg('invalid receiptTrie', vm, block)
@@ -287,8 +287,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         if (vm.DEBUG) {
           debug(
             `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
-              block.header.logsBloom
-            )}`
+              block.header.logsBloom,
+            )}`,
           )
         }
         const msg = _errorMsg('invalid bloom', vm, block)
@@ -305,16 +305,16 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         if (vm.DEBUG) {
           debug(
             `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
-              block.header.stateRoot
-            )}`
+              block.header.stateRoot,
+            )}`,
           )
         }
         const msg = _errorMsg(
           `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
-            block.header.stateRoot
+            block.header.stateRoot,
           )}`,
           vm,
-          block
+          block,
         )
         throw new Error(msg)
       }
@@ -358,7 +358,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     debug(
       `Running block finished hash=${bytesToHex(block.hash())} number=${
         block.header.number
-      } hardfork=${vm.common.hardfork()}`
+      } hardfork=${vm.common.hardfork()}`,
     )
   }
 
@@ -415,7 +415,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     await accumulateParentBeaconBlockRoot(
       vm,
       block.header.parentBeaconBlockRoot!,
-      block.header.timestamp
+      block.header.timestamp,
     )
   }
   if (vm.common.isActivatedEIP(2935)) {
@@ -448,12 +448,12 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
   if (opts.reportPreimages === true) {
     if (vm.evm.stateManager.getAppliedKey === undefined) {
       throw new Error(
-        'applyBlock: evm.stateManager.getAppliedKey can not be undefined if reportPreimages is true'
+        'applyBlock: evm.stateManager.getAppliedKey can not be undefined if reportPreimages is true',
       )
     }
     blockResults.preimages.set(
       bytesToHex(vm.evm.stateManager.getAppliedKey(block.header.coinbase.toBytes())),
-      block.header.coinbase.toBytes()
+      block.header.coinbase.toBytes(),
     )
     for (const txResult of blockResults.results) {
       if (txResult.preimages !== undefined) {
@@ -494,7 +494,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
 export async function accumulateParentBlockHash(
   vm: VM,
   currentBlockNumber: bigint,
-  parentHash: Uint8Array
+  parentHash: Uint8Array,
 ) {
   if (!vm.common.isActivatedEIP(2935)) {
     throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
@@ -567,12 +567,12 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
   await vm.stateManager.putContractStorage(
     parentBeaconBlockRootAddress,
     setLengthLeft(bigIntToBytes(timestampIndex), 32),
-    bigIntToBytes(timestamp)
+    bigIntToBytes(timestamp),
   )
   await vm.stateManager.putContractStorage(
     parentBeaconBlockRootAddress,
     setLengthLeft(bigIntToBytes(timestampExtended), 32),
-    root
+    root,
   )
 
   // do cleanup if the code was not deployed
@@ -712,7 +712,7 @@ async function assignBlockRewards(vm: VM, block: Block): Promise<void> {
 function calculateOmmerReward(
   ommerBlockNumber: bigint,
   blockNumber: bigint,
-  minerReward: bigint
+  minerReward: bigint,
 ): bigint {
   const heightDiff = blockNumber - ommerBlockNumber
   let reward = ((BIGINT_8 - heightDiff) * minerReward) / BIGINT_8
@@ -734,7 +734,7 @@ export async function rewardAccount(
   evm: EVMInterface,
   address: Address,
   reward: bigint,
-  common?: Common
+  common?: Common,
 ): Promise<Account> {
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
@@ -752,7 +752,7 @@ export async function rewardAccount(
     // use vm utility to build access but the computed gas is not charged and hence free
     ;(evm.stateManager as StatelessVerkleStateManager).accessWitness!.touchTxTargetAndComputeGas(
       address,
-      { sendsValue: true }
+      { sendsValue: true },
     )
   }
   return account
