@@ -19,5 +19,5 @@ const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3
 
 const signedTx = tx.sign(privateKey)
 
-const serializedTx = signedTx.serialize()
+const _serializedTx = signedTx.serialize()
 console.log(bytesToHex(signedTx.hash())) // 0x894b72d87f8333fccd29d1b3aca39af69d97a6bc281e7e7a3a60640690a3cd2b
