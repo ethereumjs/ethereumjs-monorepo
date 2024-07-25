@@ -33,8 +33,8 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
 import { runBlock } from '../../src/index.js'
-import { VM } from '../../src/vm'
-import { getDAOCommon, setupPreConditions } from '../util'
+import { VM } from '../../src/vm.js'
+import { getDAOCommon, setupPreConditions } from '../util.js'
 
 import * as testData from './testdata/blockchain.json'
 import * as testnet from './testdata/testnet.json'

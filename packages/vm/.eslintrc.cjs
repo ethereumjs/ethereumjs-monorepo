@@ -1,5 +1,8 @@
 module.exports = {
   extends: '../../config/eslint.cjs',
+  parserOptions: {
+    project: ['./tsconfig.lint.json'],
+  },
   rules: {
     '@typescript-eslint/no-use-before-define': 'off',
     'no-invalid-this': 'off',

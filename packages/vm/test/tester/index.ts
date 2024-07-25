@@ -15,10 +15,10 @@ import {
   getRequiredForkConfigAlias,
   getSkipTests,
   getTestDirs,
-} from './config'
-import { runBlockchainTest } from './runners/BlockchainTestsRunner'
-import { runStateTest } from './runners/GeneralStateTestsRunner'
-import { getTestFromSource, getTestsFromArgs } from './testLoader'
+} from './config.js'
+import { runBlockchainTest } from './runners/BlockchainTestsRunner.js'
+import { runStateTest } from './runners/GeneralStateTestsRunner.js'
+import { getTestFromSource, getTestsFromArgs } from './testLoader.js'
 
 import type { Common } from '@ethereumjs/common'
 import type { EVMBLSInterface } from '@ethereumjs/evm/dist/cjs/types'
