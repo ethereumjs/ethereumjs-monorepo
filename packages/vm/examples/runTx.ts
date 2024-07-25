@@ -1,7 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
-import { runTx, VM } from '@ethereumjs/vm'
+import { VM, runTx } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })

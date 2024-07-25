@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { create1559FeeMarketTx, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { FeeMarketEIP1559Transaction, create1559FeeMarketTx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })

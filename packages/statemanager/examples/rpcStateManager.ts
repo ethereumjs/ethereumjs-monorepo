@@ -1,5 +1,5 @@
-import { Address } from '@ethereumjs/util'
 import { RPCStateManager } from '@ethereumjs/statemanager'
+import { Address } from '@ethereumjs/util'
 
 const main = async () => {
   try {

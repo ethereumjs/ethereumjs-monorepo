@@ -16,7 +16,7 @@ const tx = createLegacyTx(txParams, { common })
 
 const privateKey = Buffer.from(
   'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-  'hex'
+  'hex',
 )
 
 const signedTx = tx.sign(privateKey)

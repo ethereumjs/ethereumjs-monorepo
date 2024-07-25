@@ -1,5 +1,5 @@
-import { loadKZG } from 'kzg-wasm'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { loadKZG } from 'kzg-wasm'
 
 const main = async () => {
   const kzg = await loadKZG()

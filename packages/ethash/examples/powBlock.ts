@@ -1,6 +1,8 @@
-import { Ethash } from '@ethereumjs/ethash'
 import { createBlockFromRLPSerializedBlock } from '@ethereumjs/block'
-import { DBObject, hexToBytes, MapDB } from '@ethereumjs/util'
+import { Ethash } from '@ethereumjs/ethash'
+import { MapDB, hexToBytes } from '@ethereumjs/util'
+
+import type { DBObject } from '@ethereumjs/util'
 
 const cacheDB = new MapDB<number, DBObject>()
 

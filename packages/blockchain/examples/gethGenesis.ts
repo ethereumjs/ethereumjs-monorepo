@@ -1,6 +1,7 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, createCommonFromGethGenesis, parseGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
+
 import gethGenesisJson from './genesisData/post-merge.json'
 
 const main = async () => {
@@ -14,7 +15,7 @@ const main = async () => {
   const genesisBlockHash = blockchain.genesisBlock.hash()
   common.setForkHashes(genesisBlockHash)
   console.log(
-    `Genesis hash from geth genesis parameters - ${bytesToHex(blockchain.genesisBlock.hash())}`
+    `Genesis hash from geth genesis parameters - ${bytesToHex(blockchain.genesisBlock.hash())}`,
   )
 }
 

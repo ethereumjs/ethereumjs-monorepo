@@ -1,5 +1,5 @@
 import { Chain, Common } from '@ethereumjs/common'
-import { createEVM, EVM } from '@ethereumjs/evm'
+import { EVM, createEVM } from '@ethereumjs/evm'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet, eips: [3074] })

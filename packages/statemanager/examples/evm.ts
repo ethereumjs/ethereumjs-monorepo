@@ -1,5 +1,5 @@
-import { RPCStateManager, RPCBlockChain } from '@ethereumjs/statemanager'
-import { createEVM, EVM } from '@ethereumjs/evm'
+import { EVM, createEVM } from '@ethereumjs/evm'
+import { RPCBlockChain, RPCStateManager } from '@ethereumjs/statemanager'
 
 const main = async () => {
   try {

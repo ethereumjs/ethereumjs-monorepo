@@ -1,5 +1,7 @@
-import { createBlockchain, CliqueConsensus, ConsensusDict } from '@ethereumjs/blockchain'
+import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+
+import type { ConsensusDict } from '@ethereumjs/blockchain'
 
 const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
 

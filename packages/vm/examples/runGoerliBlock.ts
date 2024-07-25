@@ -1,9 +1,11 @@
 import { Block, createBlockFromRPC } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { VM } from '../src/vm.js'
-import goerliBlock2 from './testData/goerliBlock2.json'
+
 import { runBlock } from '../src/index.js'
+import { VM } from '../src/vm.js'
+
+import goerliBlock2 from './testData/goerliBlock2.json'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Goerli, hardfork: 'london' })

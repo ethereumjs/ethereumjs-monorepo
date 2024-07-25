@@ -1,6 +1,6 @@
-import { keccak256, waitReady } from '@polkadot/wasm-crypto'
-import { Chain, Common } from '@ethereumjs/common'
 import { Block, createBlockFromBlockData } from '@ethereumjs/block'
+import { Chain, Common } from '@ethereumjs/common'
+import { keccak256, waitReady } from '@polkadot/wasm-crypto'
 
 const main = async () => {
   // @polkadot/wasm-crypto specific initialization

@@ -6,30 +6,24 @@
 // 4. Puts the blocks from ../utils/blockchain-mock-data "blocks" attribute into the Blockchain
 // 5. Runs the Blockchain on the VM.
 
-import {
-  Address,
-  toBytes,
-  setLengthLeft,
-  bytesToHex,
-  hexToBytes,
-  createAccount,
-} from '@ethereumjs/util'
-import {
-  Block,
-  createBlockFromBlockData,
-  createBlockFromRLPSerializedBlock,
-} from '@ethereumjs/block'
-import {
-  Blockchain,
-  ConsensusDict,
-  createBlockchain,
-  EthashConsensus,
-} from '@ethereumjs/blockchain'
+import { createBlockFromBlockData, createBlockFromRLPSerializedBlock } from '@ethereumjs/block'
+import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { Common, ConsensusAlgorithm, ConsensusType } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
-import { runBlock, VM } from '@ethereumjs/vm'
+import {
+  Address,
+  bytesToHex,
+  createAccount,
+  hexToBytes,
+  setLengthLeft,
+  toBytes,
+} from '@ethereumjs/util'
+import { VM, runBlock } from '@ethereumjs/vm'
 
 import testData from './helpers/blockchain-mock-data.json'
+
+import type { Block } from '@ethereumjs/block'
+import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 
 async function main() {
   const common = new Common({ chain: 1, hardfork: testData.network.toLowerCase() })

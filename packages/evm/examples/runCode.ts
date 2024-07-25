@@ -1,6 +1,6 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { createEVM, EVM } from '@ethereumjs/evm'
+import { EVM, createEVM } from '@ethereumjs/evm'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {

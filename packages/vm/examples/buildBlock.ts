@@ -2,7 +2,7 @@ import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { buildBlock, VM } from '@ethereumjs/vm'
+import { VM, buildBlock } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet })
@@ -10,7 +10,7 @@ const main = async () => {
 
   const parentBlock = createBlockFromBlockData(
     { header: { number: 1n } },
-    { skipConsensusFormatValidation: true }
+    { skipConsensusFormatValidation: true },
   )
   const headerData = {
     number: 2n,

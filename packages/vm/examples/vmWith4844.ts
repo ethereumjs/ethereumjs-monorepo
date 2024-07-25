@@ -1,4 +1,5 @@
-import { Common, Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+
 import { VM } from '../src/vm.js'
 
 const main = async () => {
