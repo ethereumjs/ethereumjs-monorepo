@@ -1,5 +1,5 @@
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { loadKZG } from 'kzg-wasm'
-import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const main = async () => {
   const kzg = await loadKZG()
@@ -11,4 +11,4 @@ const main = async () => {
   console.log(common.customCrypto.kzg) // Should print the initialized KZG interface
 }
 
-main()
+void main()

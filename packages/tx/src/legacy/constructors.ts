@@ -28,7 +28,7 @@ export function createLegacyTxFromBytesArray(values: TxValuesArray, opts: TxOpti
   // This happens if you get the RLP data from `raw()`
   if (values.length !== 6 && values.length !== 9) {
     throw new Error(
-      'Invalid transaction. Only expecting 6 values (for unsigned tx) or 9 values (for signed tx).'
+      'Invalid transaction. Only expecting 6 values (for unsigned tx) or 9 values (for signed tx).',
     )
   }
 
@@ -48,7 +48,7 @@ export function createLegacyTxFromBytesArray(values: TxValuesArray, opts: TxOpti
       r,
       s,
     },
-    opts
+    opts,
   )
 }
 

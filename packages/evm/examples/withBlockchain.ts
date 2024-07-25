@@ -1,8 +1,10 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { createEVM, EVM } from '@ethereumjs/evm'
+import { createEVM } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { bytesToHex } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
@@ -28,7 +30,7 @@ const main = async () => {
   })
 
   const results = await evm.runCode({
-    code: Buffer.from(code.join(''), 'hex'),
+    code: hexToBytes(('0x' + code.join('')) as PrefixedHexString),
     gasLimit: BigInt(0xffff),
   })
 

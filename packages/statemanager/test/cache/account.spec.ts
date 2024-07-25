@@ -65,7 +65,7 @@ describe('Account Cache: checkpointing', () => {
 
       let elem = cache.get(addr)
       assert.ok(
-        elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, updatedAccRLP)
+        elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, updatedAccRLP),
       )
 
       cache.revert()

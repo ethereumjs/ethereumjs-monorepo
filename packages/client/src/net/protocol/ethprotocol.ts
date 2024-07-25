@@ -175,7 +175,7 @@ export class EthProtocol extends Protocol {
           // to correct hardfork choice
           const header = BlockHeader.fromValuesArray(
             h,
-            difficulty > 0 ? { common, setHardfork: true } : { common, setHardfork: this.chainTTD }
+            difficulty > 0 ? { common, setHardfork: true } : { common, setHardfork: this.chainTTD },
           )
           return header
         }),
@@ -231,7 +231,7 @@ export class EthProtocol extends Protocol {
             ]
       },
       decode: (
-        params: Uint8Array[] | [types: PrefixedHexString, sizes: number[], hashes: Uint8Array[]]
+        params: Uint8Array[] | [types: PrefixedHexString, sizes: number[], hashes: Uint8Array[]],
       ) => {
         if (isNestedUint8Array(params) === true) {
           return params
@@ -337,7 +337,7 @@ export class EthProtocol extends Protocol {
             Uint8Array,
             Uint8Array,
             Uint8Array,
-            Log[]
+            Log[],
           ]
           const receipt = {
             cumulativeBlockGasUsed: bytesToBigInt(cumulativeGasUsed),

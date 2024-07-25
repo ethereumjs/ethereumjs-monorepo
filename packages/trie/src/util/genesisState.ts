@@ -36,7 +36,7 @@ export async function genesisStateRoot(genesisState: GenesisState) {
         for (const [k, val] of storage) {
           const storageKey = isHexString(k) ? hexToBytes(k) : unprefixedHexToBytes(k)
           const storageVal = RLP.encode(
-            unpadBytes(isHexString(val) ? hexToBytes(val) : unprefixedHexToBytes(val))
+            unpadBytes(isHexString(val) ? hexToBytes(val) : unprefixedHexToBytes(val)),
           )
           await storageTrie.put(storageKey, storageVal)
         }

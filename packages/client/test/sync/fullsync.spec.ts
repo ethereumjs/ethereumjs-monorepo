@@ -135,7 +135,7 @@ describe('[FullSynchronizer]', async () => {
       txPool,
       execution,
     })
-    sync.best = td.func<typeof sync['best']>()
+    sync.best = td.func<(typeof sync)['best']>()
     td.when(sync.best()).thenResolve({
       les: { status: { headNum: BigInt(2) } },
       latest: () => {
@@ -247,7 +247,7 @@ describe('[FullSynchronizer]', async () => {
     chain.putBlocks = vi.fn((input) => {
       assert.ok(
         JSON.stringify(input) === JSON.stringify([newBlock]),
-        'putBlocks is called as expected'
+        'putBlocks is called as expected',
       )
     }) as any
     // NewBlock message from Peer 3

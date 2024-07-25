@@ -46,7 +46,7 @@ vi.doMock('@ethereumjs/devp2p', () => {
   }
 })
 
-const { RlpxServer } = await import('../../../src/net/server/rlpxserver')
+const { RlpxServer } = await import('../../../src/net/server/rlpxserver.js')
 describe('[RlpxServer]', async () => {
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -60,7 +60,7 @@ describe('[RlpxServer]', async () => {
     assert.deepEqual(
       server.bootnodes,
       [multiaddr('/ip4/10.0.0.1/tcp/1234'), multiaddr('/ip4/10.0.0.2/tcp/1234')],
-      'bootnodes split'
+      'bootnodes split',
     )
   })
 
@@ -89,7 +89,7 @@ describe('[RlpxServer]', async () => {
     }
     server.rlpx = { destroy: vi.fn() }
     server.config.events.on(Event.PEER_ERROR, (err: any) =>
-      assert.equal(err.message, 'err0', 'got error')
+      assert.equal(err.message, 'err0', 'got error'),
     )
     await server.start()
     expect((server as any).initDpt).toHaveBeenCalled()
@@ -172,7 +172,7 @@ describe('should return rlpx server info with ip4 as default', async () => {
         listenAddr: '0.0.0.0:30303',
         ports: { discovery: 30303, listener: 30303 },
       },
-      'get nodeInfo'
+      'get nodeInfo',
     )
   })
   await server.stop()
@@ -227,7 +227,7 @@ describe('should return rlpx server info with ip6', async () => {
         listenAddr: '[::]:30303',
         ports: { discovery: 30303, listener: 30303 },
       },
-      'get nodeInfo'
+      'get nodeInfo',
     )
   })
   await server.stop()
@@ -278,7 +278,7 @@ describe('should init dpt', async () => {
   config.events.on(Event.SERVER_ERROR, (err) =>
     it('should throw', async () => {
       assert.equal(err.message, 'err0', 'got error')
-    })
+    }),
   )
   server['dpt']?.events.emit('error', new Error('err0'))
 })
@@ -323,22 +323,22 @@ describe('should init rlpx', async () => {
   config.events.on(Event.PEER_CONNECTED, (peer) =>
     it('should connect', async () => {
       assert.ok(peer instanceof RlpxPeer, 'connected')
-    })
+    }),
   )
   config.events.on(Event.PEER_DISCONNECTED, (peer) =>
     it('should disconnect', async () => {
       assert.equal(peer.id, '01', 'disconnected')
-    })
+    }),
   )
   config.events.on(Event.SERVER_ERROR, (err) =>
     it('should throw error', async () => {
       assert.equal(err.message, 'err0', 'got error')
-    })
+    }),
   )
   config.events.on(Event.SERVER_LISTENING, (info) =>
     it('should listen', async () => {
       assert.deepEqual(info, { transport: 'rlpx', url: 'enode://ff@0.0.0.0:30303' }, 'listening')
-    })
+    }),
   )
   server.rlpx!.events.emit('peer:added', rlpxPeer)
   ;(server as any).peers.set('01', { id: '01' } as any)

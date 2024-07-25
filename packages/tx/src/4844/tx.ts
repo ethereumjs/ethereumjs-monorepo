@@ -100,13 +100,13 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
       const msg = this._errorMsg(
-        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)'
+        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
       )
       throw new Error(msg)
     }
 
     this.maxFeePerBlobGas = bytesToBigInt(
-      toBytes((maxFeePerBlobGas ?? '') === '' ? '0x' : maxFeePerBlobGas)
+      toBytes((maxFeePerBlobGas ?? '') === '' ? '0x' : maxFeePerBlobGas),
     )
 
     this.blobVersionedHashes = (txData.blobVersionedHashes ?? []).map((vh) => toBytes(vh))
@@ -132,7 +132,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     }
     if (this.to === undefined) {
       const msg = this._errorMsg(
-        `tx should have a "to" field and cannot be used to create contracts`
+        `tx should have a "to" field and cannot be used to create contracts`,
       )
       throw new Error(msg)
     }
@@ -225,7 +225,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       this.kzgProofs === undefined
     ) {
       throw new Error(
-        'cannot serialize network wrapper without blobs, KZG commitments and KZG proofs provided'
+        'cannot serialize network wrapper without blobs, KZG commitments and KZG proofs provided',
       )
     }
 
@@ -298,7 +298,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV: boolean = false
+    convertV: boolean = false,
   ): BlobEIP4844Transaction {
     r = toBytes(r)
     s = toBytes(s)
@@ -324,7 +324,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
         kzgCommitments: this.kzgCommitments,
         kzgProofs: this.kzgProofs,
       },
-      opts
+      opts,
     )
   }
   /**

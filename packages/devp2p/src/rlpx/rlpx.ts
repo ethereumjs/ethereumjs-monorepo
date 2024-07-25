@@ -94,7 +94,7 @@ export class RLPx {
       this._dpt.events.on('peer:removed', (peer: PeerInfo) => {
         // remove from queue
         this._peersQueue = this._peersQueue.filter(
-          (item) => !equalsBytes(item.peer.id! as Uint8Array, peer.id as Uint8Array)
+          (item) => !equalsBytes(item.peer.id! as Uint8Array, peer.id as Uint8Array),
         )
       })
     }
@@ -119,7 +119,7 @@ export class RLPx {
     this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak256
 
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   listen(...args: any[]) {
@@ -157,7 +157,7 @@ export class RLPx {
 
     if (this.DEBUG) {
       this._debug(
-        `connect to ${peer.address}:${peer.tcpPort} (id: ${formatLogId(peerKey, verbose)})`
+        `connect to ${peer.address}:${peer.tcpPort} (id: ${formatLogId(peerKey, verbose)})`,
       )
     }
     const deferred = createDeferred()
@@ -272,7 +272,7 @@ export class RLPx {
         if (this.DEBUG) {
           this._debug(
             `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASON[reason]}`,
-            `disconnect`
+            `disconnect`,
           )
         }
       }
@@ -309,7 +309,7 @@ export class RLPx {
             this._refillIntervalSelectionCounter
           } peers: ${this._peers.size}, queue size: ${
             this._peersQueue.length
-          }, open slots: ${this._getOpenSlots()}`
+          }, open slots: ${this._getOpenSlots()}`,
         )
       }
     }

@@ -107,7 +107,7 @@ const handleTxs = async (
   txs: any[],
   failMessage: string,
   stateManager?: DefaultStateManager,
-  pool?: TxPool
+  pool?: TxPool,
 ) => {
   if (pool === undefined) {
     pool = setup().pool
@@ -134,7 +134,7 @@ const handleTxs = async (
     await pool.handleAnnouncedTxHashes(
       validTxs.map((e) => e.hash()),
       peer,
-      peerPool
+      peerPool,
     )
 
     await pool.add(txs[txs.length - 1])
@@ -262,13 +262,13 @@ describe('[TxPool]', async () => {
     assert.equal(
       (pool as any).knownByPeer.size,
       2,
-      'known tx hashes size 2 (entries for both peers)'
+      'known tx hashes size 2 (entries for both peers)',
     )
     assert.equal((pool as any).knownByPeer.get(peer.id).length, 1, 'one tx added for peer 1')
     assert.equal(
       (pool as any).knownByPeer.get(peer.id)[0].hash,
       bytesToUnprefixedHex(txA01.hash()),
-      'new known tx hashes entry for announcing peer'
+      'new known tx hashes entry for announcing peer',
     )
 
     const txs = pool.getByHash([txA01.hash()])
@@ -276,7 +276,7 @@ describe('[TxPool]', async () => {
     assert.equal(
       bytesToHex(txs[0].serialize()),
       bytesToHex(txA01.serialize()),
-      'should get correct tx by hash'
+      'should get correct tx by hash',
     )
 
     // check if transaction added in metrics
@@ -294,7 +294,7 @@ describe('[TxPool]', async () => {
     assert.equal(
       feeMarketEip1559TransactionCountInPool,
       pool.pool.size,
-      'pool should contain single eip 1559 transaction'
+      'pool should contain single eip 1559 transaction',
     )
 
     pool.pool.clear()
@@ -303,12 +303,12 @@ describe('[TxPool]', async () => {
     assert.equal(
       (pool as any).knownByPeer.get(peer.id).length,
       1,
-      'should add tx only once to known tx hashes'
+      'should add tx only once to known tx hashes',
     )
     assert.equal(
       (pool as any).knownByPeer.size,
       2,
-      'known tx hashes size 2 (entries for both peers)'
+      'known tx hashes size 2 (entries for both peers)',
     )
 
     pool.stop()
@@ -329,7 +329,7 @@ describe('[TxPool]', async () => {
           assert.equal(
             res['hashes'].length,
             TX_RETRIEVAL_LIMIT,
-            'should limit to TX_RETRIEVAL_LIMIT'
+            'should limit to TX_RETRIEVAL_LIMIT',
           )
           return [null, []]
         },
@@ -431,7 +431,7 @@ describe('[TxPool]', async () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('replacement gas too low'),
-        'successfully failed adding underpriced txn'
+        'successfully failed adding underpriced txn',
       )
       const poolObject = pool['handled'].get(bytesToUnprefixedHex(txA02_Underpriced.hash()))
       assert.equal(poolObject?.error, e, 'should have an errored poolObject')
@@ -444,7 +444,7 @@ describe('[TxPool]', async () => {
     assert.equal(
       (pool as any).knownByPeer.get(peer2.id)[0]?.error?.message,
       'NewPooledTransactionHashes',
-      'should have errored sendObject for NewPooledTransactionHashes broadcast'
+      'should have errored sendObject for NewPooledTransactionHashes broadcast',
     )
     const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
@@ -492,7 +492,7 @@ describe('[TxPool]', async () => {
     for (let account = 0; account < 51; account++) {
       const pkey = concatBytes(
         hexToBytes(`0x${'aa'.repeat(31)}`),
-        hexToBytes(`0x${account.toString(16).padStart(2, '0')}`)
+        hexToBytes(`0x${account.toString(16).padStart(2, '0')}`),
       )
       const from = {
         address: privateToAddress(pkey),
@@ -523,7 +523,7 @@ describe('[TxPool]', async () => {
 
     assert.notOk(
       await handleTxs(txs, 'already have max amount of txs for this account'),
-      'successfully rejected too many txs from same account'
+      'successfully rejected too many txs from same account',
     )
   })
 
@@ -534,12 +534,12 @@ describe('[TxPool]', async () => {
       create1559FeeMarketTx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
-      })
+      }),
     )
 
     assert.notOk(
       await handleTxs(txs, 'Cannot call hash method if transaction is not signed'),
-      'successfully rejected unsigned tx'
+      'successfully rejected unsigned tx',
     )
   })
 
@@ -551,14 +551,14 @@ describe('[TxPool]', async () => {
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         nonce: 0,
-      }).sign(A.privateKey)
+      }).sign(A.privateKey),
     )
 
     assert.notOk(
       await handleTxs(txs, 'tx nonce too low', {
         getAccount: () => new Account(BigInt(1), BigInt('50000000000000000000')),
       } as any),
-      'successfully rejected tx with invalid nonce'
+      'successfully rejected tx with invalid nonce',
     )
   })
 
@@ -574,15 +574,15 @@ describe('[TxPool]', async () => {
           nonce: 0,
           data: `0x${'00'.repeat(128 * 1024 + 1)}`,
         },
-        { common }
-      ).sign(A.privateKey)
+        { common },
+      ).sign(A.privateKey),
     )
 
     assert.notOk(
       await handleTxs(txs, 'exceeds the max data size', {
         getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000000')),
       } as any),
-      'successfully rejected tx with too much data'
+      'successfully rejected tx with too much data',
     )
   })
 
@@ -595,14 +595,14 @@ describe('[TxPool]', async () => {
         maxPriorityFeePerGas: 1000000000,
         gasLimit: 21000,
         nonce: 0,
-      }).sign(A.privateKey)
+      }).sign(A.privateKey),
     )
 
     assert.notOk(
       await handleTxs(txs, 'insufficient balance', {
         getAccount: () => new Account(BigInt(0), BigInt('0')),
       } as any),
-      'successfully rejected account with too low balance'
+      'successfully rejected account with too low balance',
     )
   })
 
@@ -614,7 +614,7 @@ describe('[TxPool]', async () => {
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         nonce: 0,
-      }).sign(A.privateKey)
+      }).sign(A.privateKey),
     )
 
     const { pool } = setup()
@@ -625,7 +625,7 @@ describe('[TxPool]', async () => {
 
     assert.notOk(
       await handleTxs(txs, 'not within 50% range of current basefee', undefined, pool),
-      'successfully rejected tx with too low gas price'
+      'successfully rejected tx with too low gas price',
     )
   })
 
@@ -638,7 +638,7 @@ describe('[TxPool]', async () => {
         maxPriorityFeePerGas: 1000000000,
         nonce: 0,
         gasLimit: 21000,
-      }).sign(A.privateKey)
+      }).sign(A.privateKey),
     )
 
     const { pool } = setup()
@@ -649,7 +649,7 @@ describe('[TxPool]', async () => {
 
     assert.notOk(
       await handleTxs(txs, 'exceeds last block gas limit', undefined, pool),
-      'successfully rejected tx which has gas limit higher than block gas limit'
+      'successfully rejected tx which has gas limit higher than block gas limit',
     )
   })
 
@@ -660,7 +660,7 @@ describe('[TxPool]', async () => {
       create1559FeeMarketTx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
-      }).sign(A.privateKey)
+      }).sign(A.privateKey),
     )
 
     txs.push(txs[0])
@@ -669,7 +669,7 @@ describe('[TxPool]', async () => {
 
     assert.notOk(
       await handleTxs(txs, 'this transaction is already in the TxPool', undefined, pool),
-      'successfully rejected tx which is already in pool'
+      'successfully rejected tx which is already in pool',
     )
   })
 
@@ -681,12 +681,12 @@ describe('[TxPool]', async () => {
         maxFeePerGas: 10000000,
         maxPriorityFeePerGas: 10000000,
         nonce: 0,
-      }).sign(A.privateKey)
+      }).sign(A.privateKey),
     )
 
     assert.notOk(
       await handleTxs(txs, 'does not pay the minimum gas price of'),
-      'successfully rejected tx with too low gas price'
+      'successfully rejected tx with too low gas price',
     )
   })
 
@@ -697,12 +697,12 @@ describe('[TxPool]', async () => {
       create2930AccessListTx({
         gasPrice: 10000000,
         nonce: 0,
-      }).sign(A.privateKey)
+      }).sign(A.privateKey),
     )
 
     assert.notOk(
       await handleTxs(txs, 'does not pay the minimum gas price of'),
-      'successfully rejected tx with too low gas price'
+      'successfully rejected tx with too low gas price',
     )
   })
 
@@ -716,7 +716,7 @@ describe('[TxPool]', async () => {
       },
       {
         freeze: false,
-      }
+      },
     ).sign(A.privateKey)
 
     Object.defineProperty(tx, 'type', { get: () => 5 })
@@ -836,17 +836,17 @@ describe('[TxPool]', async () => {
     assert.equal(
       pool.pool.size,
       2,
-      'should not remove txs from pool (POOLED_STORAGE_TIME_LIMIT within range)'
+      'should not remove txs from pool (POOLED_STORAGE_TIME_LIMIT within range)',
     )
     assert.equal(
       (pool as any).knownByPeer.size,
       1,
-      'should not remove txs from known by peer map (POOLED_STORAGE_TIME_LIMIT within range)'
+      'should not remove txs from known by peer map (POOLED_STORAGE_TIME_LIMIT within range)',
     )
     assert.equal(
       (pool as any).handled.size,
       2,
-      'should not remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT within range)'
+      'should not remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT within range)',
     )
 
     const address = txB01.getSenderAddress().toString().slice(2)
@@ -868,17 +868,17 @@ describe('[TxPool]', async () => {
     assert.equal(
       pool.pool.size,
       1,
-      'should remove txs from pool (POOLED_STORAGE_TIME_LIMIT before range)'
+      'should remove txs from pool (POOLED_STORAGE_TIME_LIMIT before range)',
     )
     assert.equal(
       (pool as any).knownByPeer.get(peer.id).length,
       1,
-      'should remove one tx from known by peer map (POOLED_STORAGE_TIME_LIMIT before range)'
+      'should remove one tx from known by peer map (POOLED_STORAGE_TIME_LIMIT before range)',
     )
     assert.equal(
       (pool as any).handled.size,
       1,
-      'should remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT before range)'
+      'should remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT before range)',
     )
 
     pool.stop()

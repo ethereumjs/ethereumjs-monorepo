@@ -38,7 +38,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   static async create(
     stem: Uint8Array,
     verkleCrypto: VerkleCrypto,
-    values?: (Uint8Array | VerkleLeafNodeValue)[]
+    values?: (Uint8Array | VerkleLeafNodeValue)[],
   ): Promise<LeafNode> {
     // Generate the value arrays for c1 and c2
     values = values !== undefined ? values : createDefaultLeafValues()
@@ -66,13 +66,13 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       verkleCrypto.zeroCommitment,
       0,
       new Uint8Array(32),
-      setLengthLeft(intToBytes(1), 32)
+      setLengthLeft(intToBytes(1), 32),
     )
     commitment = verkleCrypto.updateCommitment(
       commitment,
       1,
       new Uint8Array(32),
-      setLengthRight(stem, 32)
+      setLengthRight(stem, 32),
     )
     commitment = verkleCrypto.updateCommitment(
       commitment,
@@ -80,13 +80,13 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       new Uint8Array(32),
       // We hash the commitment when using in the leaf node commitment since c1 is 64 bytes long
       // and we need a 32 byte input for the scalar value in `updateCommitment`
-      verkleCrypto.hashCommitment(c1)
+      verkleCrypto.hashCommitment(c1),
     )
     commitment = verkleCrypto.updateCommitment(
       commitment,
       3,
       new Uint8Array(32),
-      verkleCrypto.hashCommitment(c2)
+      verkleCrypto.hashCommitment(c2),
     )
     return new LeafNode({
       stem,
@@ -164,7 +164,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       commitmentIndex,
       cValues[commitmentIndex],
       // Right pad the value with zeroes since commitments require 32 byte scalars
-      setLengthRight(val.slice(0, 16), 32)
+      setLengthRight(val.slice(0, 16), 32),
     )
     // Update the commitment for the second 16 bytes of the value
     cCommitment = this.verkleCrypto.updateCommitment(
@@ -172,7 +172,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       commitmentIndex + 1,
       cValues[commitmentIndex + 1],
       // Right pad the value with zeroes since commitments require 32 byte scalars
-      setLengthRight(val.slice(16), 32)
+      setLengthRight(val.slice(16), 32),
     )
     // Update the cCommitment corresponding to the index
     let oldCCommitment: Uint8Array | undefined
@@ -191,7 +191,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       this.commitment,
       cIndex,
       this.verkleCrypto.hashCommitment(oldCCommitment!),
-      this.verkleCrypto.hashCommitment(cCommitment)
+      this.verkleCrypto.hashCommitment(cCommitment),
     )
   }
 

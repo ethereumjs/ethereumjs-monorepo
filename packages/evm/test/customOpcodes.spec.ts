@@ -117,18 +117,18 @@ describe('VM: custom opcodes', () => {
     assert.deepEqual(
       (evmCopy as any)._customOpcodes,
       (evmCopy as any)._customOpcodes,
-      'evm.shallowCopy() successfully copied customOpcodes option'
+      'evm.shallowCopy() successfully copied customOpcodes option',
     )
 
     assert.equal(
       evm.events.listenerCount('beforeMessage'),
       2,
-      'original EVM instance should have two listeners'
+      'original EVM instance should have two listeners',
     )
     assert.equal(
       evmCopy!.events!.listenerCount('beforeMessage'),
       0,
-      'copied EVM instance should have zero listeners'
+      'copied EVM instance should have zero listeners',
     )
   })
 })

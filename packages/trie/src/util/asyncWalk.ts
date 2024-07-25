@@ -29,7 +29,7 @@ export async function* _walkTrie(
   currentKey: number[] = [],
   onFound: OnFound = async (_trieNode: TrieNode, _key: number[]) => {},
   filter: NodeFilter = async (_trieNode: TrieNode, _key: number[]) => true,
-  visited: Set<string> = new Set<string>()
+  visited: Set<string> = new Set<string>(),
 ): AsyncIterable<{ node: TrieNode; currentKey: number[] }> {
   if (equalsBytes(nodeHash, this.EMPTY_TRIE_ROOT)) {
     return

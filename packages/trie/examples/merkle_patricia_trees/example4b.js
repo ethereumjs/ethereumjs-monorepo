@@ -3,8 +3,9 @@
 const rlp = require('@ethereumjs/rlp')
 const { bytesToHex } = require('@ethereumjs/util')
 const { keccak256 } = require('ethereum-cryptography/keccak')
-const INFURA_ENDPOINT = require('./infura_endpoint')
 const https = require('https')
+
+const INFURA_ENDPOINT = require('./infura_endpoint.js')
 
 function recomputeTransactionHash(transactionHash) {
   const data = JSON.stringify({

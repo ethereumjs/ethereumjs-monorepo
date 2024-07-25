@@ -110,7 +110,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   t.deepEquals(
     await vm.stateManager.getStateRoot(),
     genesisBlock.header.stateRoot,
-    'correct pre stateRoot'
+    'correct pre stateRoot',
   )
 
   async function handleError(error: string | undefined, expectException: string | boolean) {
@@ -245,7 +245,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   t.equal(
     bytesToHex((blockchain as any)._headHeaderHash),
     '0x' + testData.lastblockhash,
-    'correct last header block'
+    'correct last header block',
   )
 
   const end = Date.now()

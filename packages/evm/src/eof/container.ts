@@ -290,7 +290,7 @@ class EOFBody {
     buf: Uint8Array, // The buffer of the body. This should be the entire body. It is not valid to pass an entire EOF container in here
     header: EOFHeader, // The EOFHeader corresponding to this body
     eofMode: EOFContainerMode = EOFContainerMode.Default, // The container mode of EOF
-    dataSectionAllowedSmaller = false // Only for validation: Deployment containers are allowed to have smaller data section size
+    dataSectionAllowedSmaller = false, // Only for validation: Deployment containers are allowed to have smaller data section size
   ) {
     const stream = new StreamReader(buf)
     const typeSections: TypeSection[] = []
@@ -415,7 +415,7 @@ export class EOFContainer {
   constructor(
     buf: Uint8Array,
     eofMode: EOFContainerMode = EOFContainerMode.Default,
-    dataSectionAllowedSmaller = false
+    dataSectionAllowedSmaller = false,
   ) {
     this.eofMode = eofMode
     this.header = new EOFHeader(buf)
@@ -423,7 +423,7 @@ export class EOFContainer {
       buf.slice(this.header.buffer.length),
       this.header,
       eofMode,
-      dataSectionAllowedSmaller
+      dataSectionAllowedSmaller,
     )
     this.buffer = buf
   }
@@ -443,12 +443,12 @@ export function validateEOF(
   input: Uint8Array,
   evm: EVM,
   containerMode: ContainerSectionType = ContainerSectionType.RuntimeCode,
-  eofMode: EOFContainerMode = EOFContainerMode.Default
+  eofMode: EOFContainerMode = EOFContainerMode.Default,
 ) {
   const container = new EOFContainer(
     input,
     eofMode,
-    containerMode === ContainerSectionType.DeploymentCode
+    containerMode === ContainerSectionType.DeploymentCode,
   )
   const containerMap = verifyCode(container, evm, containerMode)
   // Recursively validate the containerSections

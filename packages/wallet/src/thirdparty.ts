@@ -117,7 +117,7 @@ export interface EtherWalletOptions {
  */
 export async function fromEtherWallet(
   input: string | EtherWalletOptions,
-  password: string
+  password: string,
 ): Promise<Wallet> {
   const json: EtherWalletOptions = typeof input === 'object' ? input : JSON.parse(input)
 

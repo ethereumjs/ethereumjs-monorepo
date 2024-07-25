@@ -39,7 +39,7 @@ const originalValidate = (BlockHeader as any).prototype._consensusFormatValidati
 
 async function fetchExecutionPayload(
   peerBeaconUrl: string,
-  slot: number | string
+  slot: number | string,
 ): Promise<BeaconPayloadJson | undefined> {
   let beaconPayload: BeaconPayloadJson | undefined = undefined
   try {
@@ -55,7 +55,7 @@ async function runBlock(
   { chain, rpc, common }: { chain: Chain; rpc: HttpClient; common: Common },
   { execute, parent }: { execute: any; parent: any },
   isBeaconData: boolean,
-  context: any
+  context: any,
 ) {
   const blockCache = chain.blockCache
 

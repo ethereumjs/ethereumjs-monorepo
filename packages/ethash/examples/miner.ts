@@ -1,6 +1,8 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Ethash } from '@ethereumjs/ethash'
-import { DBObject, MapDB, bytesToHex } from '@ethereumjs/util'
+import { MapDB, bytesToHex } from '@ethereumjs/util'
+
+import type { DBObject } from '@ethereumjs/util'
 
 const block = createBlockFromBlockData(
   {
@@ -9,7 +11,7 @@ const block = createBlockFromBlockData(
       number: BigInt(1),
     },
   },
-  { setHardfork: true, skipConsensusFormatValidation: true }
+  { setHardfork: true, skipConsensusFormatValidation: true },
 )
 
 const cacheDB = new MapDB<number, DBObject>()

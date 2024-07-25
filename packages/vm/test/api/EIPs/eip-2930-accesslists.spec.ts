@@ -33,7 +33,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
         gasLimit: BigInt(100000),
         to: contractAddress,
       },
-      { common }
+      { common },
     ).sign(privateKey)
     const txnWithoutAccessList = create2930AccessListTx(
       {
@@ -42,7 +42,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
         gasLimit: BigInt(100000),
         to: contractAddress,
       },
-      { common }
+      { common },
     ).sign(privateKey)
 
     const vm = await VM.create({ common })
@@ -56,7 +56,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
     const account = await vm.stateManager.getAccount(address)
     await vm.stateManager.putAccount(
       address,
-      createAccount({ ...account, balance: initialBalance })
+      createAccount({ ...account, balance: initialBalance }),
     )
 
     let trace: any = []

@@ -60,7 +60,7 @@ describe('trace a call', async () => {
       value: 10000,
       data: '0x60AA',
     },
-    { common, freeze: false }
+    { common, freeze: false },
   ).sign(dummy.privKey)
   tx.getSenderAddress = () => {
     return dummy.addr
@@ -103,7 +103,7 @@ describe('trace a call', async () => {
           },
         ],
       },
-      'produced a correct trace'
+      'produced a correct trace',
     )
   })
 })

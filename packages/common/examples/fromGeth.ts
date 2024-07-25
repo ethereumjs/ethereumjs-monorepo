@@ -1,4 +1,4 @@
-import { Common, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { hexToBytes } from '@ethereumjs/util'
 
 import genesisJson from './genesisData/post-merge.json'

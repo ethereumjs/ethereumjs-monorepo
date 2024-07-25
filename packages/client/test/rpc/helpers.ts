@@ -60,7 +60,7 @@ type createClientArgs = {
 export function startRPC(
   methods: any,
   opts: StartRPCOpts = { port: 0 },
-  withEngineMiddleware?: WithEngineMiddleware
+  withEngineMiddleware?: WithEngineMiddleware,
 ) {
   const { port, wsServer } = opts
   const server = new RPCServer(methods)
@@ -123,7 +123,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
   if ((chain as any)._headers !== undefined) {
     ;(chain as any)._headers.latest = BlockHeader.fromHeaderData(
       { withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined },
-      { common }
+      { common },
     )
   }
 
@@ -280,7 +280,7 @@ export async function runBlockWithTxs(
   chain: Chain,
   execution: VMExecution,
   txs: TypedTransaction[],
-  fromEngine = false
+  fromEngine = false,
 ) {
   const { vm } = execution
   // build block with tx

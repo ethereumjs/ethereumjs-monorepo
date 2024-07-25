@@ -11,7 +11,7 @@ import type { Capabilities } from '../../src/index.js'
 
 const GENESIS_TD = 17179869184
 const GENESIS_HASH = hexToBytes(
-  '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+  '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
 )
 
 const capabilities = [devp2p.ETH.eth63, devp2p.ETH.eth62]
@@ -98,7 +98,7 @@ describe('ETH simulator tests', () => {
     t: typeof it,
     version: number,
     cap: Capabilities[],
-    expectedCode: ETH.MESSAGE_CODES
+    expectedCode: ETH.MESSAGE_CODES,
   ) {
     await new Promise((resolve) => {
       const opts: any = {}
@@ -142,7 +142,7 @@ describe('ETH simulator tests', () => {
           resolve(undefined)
         })
       })
-    }
+    },
   )
 
   it('ETH: send not-allowed eth67', async () => {

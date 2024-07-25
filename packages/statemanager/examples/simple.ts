@@ -1,5 +1,6 @@
-import { SimpleStateManager } from '../src/index.js'
 import { Account, Address, randomBytes } from '@ethereumjs/util'
+
+import { SimpleStateManager } from '../src/index.js'
 
 const main = async () => {
   const sm = new SimpleStateManager()
@@ -9,4 +10,4 @@ const main = async () => {
   console.log(await sm.getAccount(address))
 }
 
-main()
+void main()

@@ -39,11 +39,11 @@ describe('[Chain]', () => {
     assert.equal(
       bytesToHex(chain.genesis.hash()),
       '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-      'get chain.genesis'
+      'get chain.genesis',
     )
     assert.ok(
       equalsBytes(chain.genesis.hash(), chain.blocks.latest!.hash()),
-      'get chain.block.latest'
+      'get chain.block.latest',
     )
     await chain.close()
   })

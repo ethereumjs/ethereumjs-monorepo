@@ -155,7 +155,7 @@ export abstract class BaseTransaction<T extends TransactionType>
 
     if (this.getIntrinsicGas() > this.gasLimit) {
       errors.push(
-        `gasLimit is too low. given ${this.gasLimit}, need at least ${this.getIntrinsicGas()}`
+        `gasLimit is too low. given ${this.gasLimit}, need at least ${this.getIntrinsicGas()}`,
       )
     }
 
@@ -367,7 +367,7 @@ export abstract class BaseTransaction<T extends TransactionType>
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV?: boolean
+    convertV?: boolean,
   ): Transaction[T]
 
   /**
@@ -385,7 +385,7 @@ export abstract class BaseTransaction<T extends TransactionType>
       if (common) {
         if (common.chainId() !== chainIdBigInt) {
           const msg = this._errorMsg(
-            `The chain ID does not match the chain ID of Common. Got: ${chainIdBigInt}, expected: ${common.chainId()}`
+            `The chain ID does not match the chain ID of Common. Got: ${chainIdBigInt}, expected: ${common.chainId()}`,
           )
           throw new Error(msg)
         }
@@ -405,7 +405,7 @@ export abstract class BaseTransaction<T extends TransactionType>
               name: 'custom-chain',
               chainId: chainIdBigInt,
             },
-            { baseChain: this.DEFAULT_CHAIN }
+            { baseChain: this.DEFAULT_CHAIN },
           )
         }
       }
@@ -425,7 +425,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   protected _validateCannotExceedMaxInteger(
     values: { [key: string]: bigint | undefined },
     bits = 256,
-    cannotEqual = false
+    cannotEqual = false,
   ) {
     for (const [key, value] of Object.entries(values)) {
       switch (bits) {
@@ -433,7 +433,7 @@ export abstract class BaseTransaction<T extends TransactionType>
           if (cannotEqual) {
             if (value !== undefined && value >= MAX_UINT64) {
               const msg = this._errorMsg(
-                `${key} cannot equal or exceed MAX_UINT64 (2^64-1), given ${value}`
+                `${key} cannot equal or exceed MAX_UINT64 (2^64-1), given ${value}`,
               )
               throw new Error(msg)
             }
@@ -448,14 +448,14 @@ export abstract class BaseTransaction<T extends TransactionType>
           if (cannotEqual) {
             if (value !== undefined && value >= MAX_INTEGER) {
               const msg = this._errorMsg(
-                `${key} cannot equal or exceed MAX_INTEGER (2^256-1), given ${value}`
+                `${key} cannot equal or exceed MAX_INTEGER (2^256-1), given ${value}`,
               )
               throw new Error(msg)
             }
           } else {
             if (value !== undefined && value > MAX_INTEGER) {
               const msg = this._errorMsg(
-                `${key} cannot exceed MAX_INTEGER (2^256-1), given ${value}`
+                `${key} cannot exceed MAX_INTEGER (2^256-1), given ${value}`,
               )
               throw new Error(msg)
             }

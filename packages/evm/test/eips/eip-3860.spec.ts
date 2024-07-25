@@ -29,15 +29,15 @@ describe('EIP 3860 tests', () => {
       // (since memory which is not allocated/resized to yet is always defaulted to 0)
       data: concatBytes(
         hexToBytes(
-          '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3'
+          '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3',
         ),
-        buffer
+        buffer,
       ),
     }
     const result = await evm.runCall(runCallArgs)
     assert.ok(
       (result.execResult.exceptionError?.error as string) === 'initcode exceeds max initcode size',
-      'initcode exceeds max size'
+      'initcode exceeds max size',
     )
   })
 
@@ -65,7 +65,7 @@ describe('EIP 3860 tests', () => {
     await evm.stateManager.putAccount(contractFactory, contractAccount!)
     await evmWithout3860.stateManager.putAccount(contractFactory, contractAccount!)
     const factoryCode = hexToBytes(
-      '0x7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a8160006000f05a8203600a55806000556001600155505050'
+      '0x7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a8160006000f05a8203600a55806000556001600155505050',
     )
 
     await evm.stateManager.putContractCode(contractFactory, factoryCode)
@@ -81,7 +81,7 @@ describe('EIP 3860 tests', () => {
     const res2 = await evmWithout3860.runCall(runCallArgs)
     assert.ok(
       res.execResult.executionGasUsed > res2.execResult.executionGasUsed,
-      'execution gas used is higher with EIP 3860 active'
+      'execution gas used is higher with EIP 3860 active',
     )
   })
 
@@ -109,7 +109,7 @@ describe('EIP 3860 tests', () => {
     await evm.stateManager.putAccount(contractFactory, contractAccount!)
     await evmWithout3860.stateManager.putAccount(contractFactory, contractAccount!)
     const factoryCode = hexToBytes(
-      '0x7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a60008260006000f55a8203600a55806000556001600155505050'
+      '0x7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a60008260006000f55a8203600a55806000556001600155505050',
     )
 
     await evm.stateManager.putContractCode(contractFactory, factoryCode)
@@ -125,7 +125,7 @@ describe('EIP 3860 tests', () => {
     const res2 = await evmWithout3860.runCall(runCallArgs)
     assert.ok(
       res.execResult.executionGasUsed > res2.execResult.executionGasUsed,
-      'execution gas used is higher with EIP 3860 active'
+      'execution gas used is higher with EIP 3860 active',
     )
   })
 
@@ -151,13 +151,13 @@ describe('EIP 3860 tests', () => {
       // (since memory which is not allocated/resized to yet is always defaulted to 0)
       data: concatBytes(
         hexToBytes(`0x${'00'.repeat(Number(common.param('maxInitCodeSize')) + 1)}`),
-        bytes
+        bytes,
       ),
     }
     const result = await evm.runCall(runCallArgs)
     assert.ok(
       result.execResult.exceptionError === undefined,
-      'succesfully created a contract with data size > MAX_INITCODE_SIZE and allowUnlimitedInitCodeSize active'
+      'succesfully created a contract with data size > MAX_INITCODE_SIZE and allowUnlimitedInitCodeSize active',
     )
   })
 
@@ -207,16 +207,16 @@ describe('EIP 3860 tests', () => {
       const storageActive = await evm.stateManager.getContractStorage(contractFactory, key0)
       const storageInactive = await evmDisabled.stateManager.getContractStorage(
         contractFactory,
-        key0
+        key0,
       )
 
       assert.ok(
         !equalsBytes(storageActive, new Uint8Array()),
-        'created contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=true'
+        'created contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=true',
       )
       assert.ok(
         equalsBytes(storageInactive, new Uint8Array()),
-        'did not create contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=false'
+        'did not create contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=false',
       )
 
       // gas check
@@ -236,7 +236,7 @@ describe('EIP 3860 tests', () => {
 
       assert.ok(
         res.execResult.executionGasUsed > res2.execResult.executionGasUsed,
-        'charged initcode analysis gas cost on both allowUnlimitedCodeSize=true, allowUnlimitedInitCodeSize=false'
+        'charged initcode analysis gas cost on both allowUnlimitedCodeSize=true, allowUnlimitedInitCodeSize=false',
       )
     }
   })

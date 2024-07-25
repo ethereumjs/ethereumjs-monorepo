@@ -2,7 +2,7 @@ import { concatBytes, hexToBytes } from '@ethereumjs/util'
 
 // base field modulus as described in the EIP
 export const BLS_FIELD_MODULUS = BigInt(
-  '0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab'
+  '0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab',
 )
 
 export const BLS_G1_POINT_BYTE_LENGTH = 128

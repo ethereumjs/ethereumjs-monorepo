@@ -81,7 +81,7 @@ describe('should handle peer messages', async () => {
   config.events.on(Event.POOL_PEER_ADDED, (peer: any) =>
     it('should add peer', () => {
       assert.equal(peer.id, 'peer0', 'added peer')
-    })
+    }),
   )
   config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, peer: any) => {
     it('should get message', () => {

@@ -1,6 +1,5 @@
-import { Account, Address } from '@ethereumjs/util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { hexToBytes } from '@ethereumjs/util'
+import { Account, Address, hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
   const stateManager = new DefaultStateManager()
@@ -15,7 +14,7 @@ const main = async () => {
   console.log(
     `Account at address ${address.toString()} has balance ${
       (await stateManager.getAccount(address))?.balance
-    }`
+    }`,
   )
 }
-main()
+void main()

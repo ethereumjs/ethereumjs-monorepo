@@ -242,7 +242,7 @@ describe('toBytes', () => {
           return Uint8Array.from([1])
         },
       }),
-      Uint8Array.from([1])
+      Uint8Array.from([1]),
     )
   })
   it('should fail', () => {
@@ -287,7 +287,7 @@ describe('intToBytes', () => {
       () => intToBytes(Number.MAX_SAFE_INTEGER + 1),
       undefined,
       undefined,
-      'throws on unsafe integers'
+      'throws on unsafe integers',
     )
   })
 
@@ -316,7 +316,7 @@ describe('intToHex', () => {
       () => intToHex(Number.MAX_SAFE_INTEGER + 1),
       undefined,
       undefined,
-      'throws on unsafe integers'
+      'throws on unsafe integers',
     )
   })
   it('should pass on correct input', () => {
@@ -349,19 +349,19 @@ describe('validateNoLeadingZeroes', () => {
   it('should pass on correct input', () => {
     assert.doesNotThrow(
       () => validateNoLeadingZeroes(noLeadingZeroes),
-      'does not throw when no leading zeroes'
+      'does not throw when no leading zeroes',
     )
     assert.doesNotThrow(
       () => validateNoLeadingZeroes(emptyBuffer),
-      'does not throw with empty buffer'
+      'does not throw with empty buffer',
     )
     assert.doesNotThrow(
       () => validateNoLeadingZeroes(undefinedValue),
-      'does not throw when undefined passed in'
+      'does not throw when undefined passed in',
     )
     assert.doesNotThrow(
       () => validateNoLeadingZeroes(noleadingZeroBytes),
-      'does not throw when value has leading zero bytes'
+      'does not throw when value has leading zero bytes',
     )
   })
 
@@ -370,13 +370,13 @@ describe('validateNoLeadingZeroes', () => {
       () => validateNoLeadingZeroes(leadingZeroBytes),
       undefined,
       undefined,
-      'throws when value has leading zero bytes'
+      'throws when value has leading zero bytes',
     )
     assert.throws(
       () => validateNoLeadingZeroes(onlyZeroes),
       undefined,
       undefined,
-      'throws when value has only zeroes'
+      'throws when value has only zeroes',
     )
   })
 })

@@ -227,7 +227,7 @@ export class Ethash {
       const p =
         (fnv(
           i ^ new DataView(s.buffer).getUint32(0, true),
-          new DataView(mix.buffer).getUint32((i % w) * 4, true)
+          new DataView(mix.buffer).getUint32((i % w) * 4, true),
         ) %
           Math.floor(n / mixhashes)) *
         mixhashes
@@ -344,7 +344,7 @@ export class Ethash {
         {
           keyEncoding: KeyEncoding.Number,
           valueEncoding: ValueEncoding.JSON,
-        }
+        },
       )
     } else {
       this.cache = data.cache.map((a: Uint8Array) => {

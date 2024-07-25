@@ -36,7 +36,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
         calcDifficultyFromHeader: blocks[number - 1].header,
         common,
         setHardfork: await blockchain.getTotalDifficulty(blocks[number - 1].hash()),
-      }
+      },
     )
     blocks.push(block)
     await blockchain.putBlock(block)
@@ -70,7 +70,7 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
       assert.equal(
         bytesToHex(genesisHeader.hash()),
         '0x1119dc5ff680bf7b4c3d9cd41168334dee127d46b3626482076025cdd498ed0b',
-        'genesis hash matches'
+        'genesis hash matches',
       )
       await buildChain(blockchain, s.common, 15)
 
@@ -80,13 +80,13 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
       assert.equal(
         (blockchain as any).common.hardfork(),
         'paris',
-        'HF should have been correctly updated'
+        'HF should have been correctly updated',
       )
       const td = await blockchain.getTotalDifficulty(latestHeader.hash())
       assert.equal(
         td,
         BigInt(1313601),
-        'should have calculated the correct post-Merge total difficulty'
+        'should have calculated the correct post-Merge total difficulty',
       )
 
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -100,7 +100,7 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
             gasLimit: BigInt(10000),
           },
         },
-        { common }
+        { common },
       )
       try {
         await blockchain.putBlock(powBlock)
@@ -108,7 +108,7 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
       } catch (err: any) {
         assert.ok(
           err.message.includes('invalid difficulty'),
-          'should throw with invalid difficulty message'
+          'should throw with invalid difficulty message',
         )
       }
     })

@@ -83,7 +83,7 @@ async function verify(
   startKey?: Uint8Array,
   endKey?: Uint8Array,
   keys?: Uint8Array[],
-  vals?: Uint8Array[]
+  vals?: Uint8Array[],
 ) {
   startKey = startKey ?? entries[start][0]
   endKey = endKey ?? entries[end][0]
@@ -94,7 +94,7 @@ async function verify(
     endKey,
     keys ?? targetRange.map(([key]) => key),
     vals ?? targetRange.map(([, val]) => val),
-    [...(await trie.createProof(startKey)), ...(await trie.createProof(endKey))]
+    [...(await trie.createProof(startKey)), ...(await trie.createProof(endKey))],
   )
 }
 
@@ -136,7 +136,7 @@ describe('simple merkle range proofs generation and verification', () => {
 
       assert.equal(
         await verify(trie, entries, start, end, startKey, endKey),
-        end !== entries.length - 1
+        end !== entries.length - 1,
       )
     }
 
@@ -195,7 +195,7 @@ describe('simple merkle range proofs generation and verification', () => {
     // One element with two non-existent edge proofs
     assert.equal(
       await verify(trie, entries, start, start, decreasedStartKey, increasedEndKey),
-      true
+      true,
     )
 
     // Test the mini trie with only a single element.
@@ -217,9 +217,9 @@ describe('simple merkle range proofs generation and verification', () => {
         null,
         entries.map(([key]) => key),
         entries.map(([, val]) => val),
-        null
+        null,
       ),
-      false
+      false,
     )
 
     // With edge proofs, it should still work.
@@ -233,9 +233,9 @@ describe('simple merkle range proofs generation and verification', () => {
         0,
         entries.length - 1,
         hexToBytes(`0x${'00'.repeat(32)}`),
-        hexToBytes(`0x${'ff'.repeat(32)}`)
+        hexToBytes(`0x${'ff'.repeat(32)}`),
       ),
-      false
+      false,
     )
   })
 
@@ -261,7 +261,7 @@ describe('simple merkle range proofs generation and verification', () => {
 
   it('create a bad range proof and verify it', async () => {
     const runTest = async (
-      cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>
+      cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>,
     ) => {
       const { trie, entries } = await randomTrie(new MapDB(), false)
 
@@ -349,7 +349,7 @@ describe('simple merkle range proofs generation and verification', () => {
         undefined,
         undefined,
         targetRange.map(([key]) => key),
-        targetRange.map(([, val]) => val)
+        targetRange.map(([, val]) => val),
       )
       result = true
     } catch (err) {

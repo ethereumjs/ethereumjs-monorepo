@@ -32,7 +32,7 @@ describe('[Utils/Parse]', () => {
     assert.deepEqual(
       params.consensus,
       { type: 'poa', algorithm: 'clique', clique: { period: 15, epoch: 30000 } },
-      'consensus config matches'
+      'consensus config matches',
     )
     const poaJSONCopy = Object.assign({}, poaJSON)
     poaJSONCopy.nonce = '00'
@@ -40,7 +40,7 @@ describe('[Utils/Parse]', () => {
     assert.equal(
       params.genesis.nonce,
       '0x0000000000000000',
-      'non-hex prefixed nonce is formatted correctly'
+      'non-hex prefixed nonce is formatted correctly',
     )
     assert.equal(params.hardfork, Hardfork.London, 'should correctly infer current hardfork')
   })
@@ -78,7 +78,7 @@ describe('[Utils/Parse]', () => {
         'mergeForkIdTransition',
         'paris',
       ],
-      'hardfork parse order should be correct'
+      'hardfork parse order should be correct',
     )
     for (const hf of common.hardforks()) {
       /* eslint-disable @typescript-eslint/no-use-before-define */
@@ -113,7 +113,7 @@ describe('[Utils/Parse]', () => {
         'mergeForkIdTransition',
         'shanghai',
       ],
-      'hardfork parse order should be correct'
+      'hardfork parse order should be correct',
     )
 
     assert.equal(common1.hardfork(), Hardfork.Shanghai, 'should correctly infer current hardfork')
@@ -140,36 +140,36 @@ describe('[Utils/Parse]', () => {
         'paris',
         'shanghai',
       ],
-      'hardfork parse order should be correct'
+      'hardfork parse order should be correct',
     )
 
     assert.equal(common.getHardforkBy({ blockNumber: 0n }), Hardfork.London, 'london at genesis')
     assert.equal(
       common.getHardforkBy({ blockNumber: 1n, td: 2n }),
       Hardfork.Paris,
-      'merge at block 1'
+      'merge at block 1',
     )
     // shanghai is at timestamp 8
     assert.equal(
       common.getHardforkBy({ blockNumber: 8n }),
       Hardfork.London,
-      'without timestamp still london'
+      'without timestamp still london',
     )
     assert.equal(
       common.getHardforkBy({ blockNumber: 8n, td: 2n }),
       Hardfork.Paris,
-      'without timestamp at merge'
+      'without timestamp at merge',
     )
     assert.equal(
       common.getHardforkBy({ blockNumber: 8n, timestamp: 8n }),
       Hardfork.Shanghai,
-      'with timestamp at shanghai'
+      'with timestamp at shanghai',
     )
     // should be post merge at shanghai
     assert.equal(
       common.getHardforkBy({ blockNumber: 8n, td: 2n, timestamp: 8n }),
       Hardfork.Shanghai,
-      'post merge shanghai'
+      'post merge shanghai',
     )
     assert.equal(common.hardfork(), Hardfork.Shanghai, 'should correctly infer common hardfork')
   })
@@ -185,7 +185,7 @@ describe('[Utils/Parse]', () => {
     assert.equal(
       depositContractAddress,
       getInitializedChains().mainnet.depositContractAddress,
-      'should assign mainnet deposit contract'
+      'should assign mainnet deposit contract',
     )
   })
 
@@ -206,7 +206,7 @@ describe('[Utils/Parse]', () => {
     assert.equal(
       depositContractAddress,
       '0x4242424242424242424242424242424242424242',
-      'should parse correct address'
+      'should parse correct address',
     )
   })
 })

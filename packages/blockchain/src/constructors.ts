@@ -26,7 +26,7 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
     } else {
       stateRoot = await getGenesisStateRoot(
         Number(blockchain.common.chainId()) as Chain,
-        blockchain.common
+        blockchain.common,
       )
     }
   }
@@ -42,7 +42,7 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
   // DB is indeed the Genesis block generated or assigned.
   if (dbGenesisBlock !== undefined && !equalsBytes(genesisBlock.hash(), dbGenesisBlock.hash())) {
     throw new Error(
-      'The genesis block in the DB has a different hash than the provided genesis block.'
+      'The genesis block in the DB has a different hash than the provided genesis block.',
     )
   }
 
@@ -82,7 +82,7 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
     await blockchain.checkAndTransitionHardForkByNumber(
       latestHeader.number,
       td,
-      latestHeader.timestamp
+      latestHeader.timestamp,
     )
   }
 
@@ -98,7 +98,7 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
  */
 export async function createBlockchainFromBlocksData(
   blocksData: BlockData[],
-  opts: BlockchainOptions = {}
+  opts: BlockchainOptions = {},
 ) {
   const blockchain = await createBlockchain(opts)
   for (const blockData of blocksData) {

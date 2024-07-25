@@ -64,7 +64,7 @@ describe('EIP4895 tests', () => {
     */
     await vm.stateManager.putContractCode(
       contractAddress,
-      hexToBytes(`0x73${addresses[0]}3160005260206000F3`)
+      hexToBytes(`0x73${addresses[0]}3160005260206000F3`),
     )
 
     const transaction = create1559FeeMarketTx({
@@ -95,16 +95,16 @@ describe('EIP4895 tests', () => {
         header: {
           baseFeePerGas: BigInt(7),
           withdrawalsRoot: hexToBytes(
-            '0x267414525d22e2be123b619719b92c561f31e0cdd40959148230f5713aecd6b8'
+            '0x267414525d22e2be123b619719b92c561f31e0cdd40959148230f5713aecd6b8',
           ),
           transactionsTrie: hexToBytes(
-            '0x9a744e8acc2886e5809ff013e3b71bf8ec97f9941cafbd7730834fc8f76391ba'
+            '0x9a744e8acc2886e5809ff013e3b71bf8ec97f9941cafbd7730834fc8f76391ba',
           ),
         },
         transactions: [transaction],
         withdrawals,
       },
-      { common: vm.common }
+      { common: vm.common },
     )
 
     let result: Uint8Array
@@ -135,12 +135,12 @@ describe('EIP4895 tests', () => {
     assert.equal(
       preState,
       '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
-      'preState should be correct'
+      'preState should be correct',
     )
 
     const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp))
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>
-      Withdrawal.fromValuesArray(wa)
+      Withdrawal.fromValuesArray(wa),
     )
     assert.equal(withdrawals[0].amount, BigInt(0), 'withdrawal 0 should have 0 amount')
     let block: Block
@@ -157,7 +157,7 @@ describe('EIP4895 tests', () => {
         transactions: [],
         withdrawals: withdrawals.slice(0, 1),
       },
-      { common: vm.common }
+      { common: vm.common },
     )
     postState = bytesToHex(await vm.stateManager.getStateRoot())
 
@@ -165,7 +165,7 @@ describe('EIP4895 tests', () => {
     assert.equal(
       postState,
       '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
-      'post state should not change'
+      'post state should not change',
     )
 
     // construct a block with all the withdrawals
@@ -179,14 +179,14 @@ describe('EIP4895 tests', () => {
         transactions: [],
         withdrawals,
       },
-      { common: vm.common }
+      { common: vm.common },
     )
     await runBlock(vm, { block, generate: true })
     postState = bytesToHex(await vm.stateManager.getStateRoot())
     assert.equal(
       postState,
       '0x23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
-      'post state should match'
+      'post state should match',
     )
   })
 
@@ -205,7 +205,7 @@ describe('EIP4895 tests', () => {
     assert.equal(
       bytesToHex(genesisBlock.header.stateRoot),
       '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
-      'correct state root should be generated'
+      'correct state root should be generated',
     )
     const vm = await VM.create({ common, blockchain })
     await vm.stateManager.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
@@ -213,7 +213,7 @@ describe('EIP4895 tests', () => {
 
     const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp))
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>
-      Withdrawal.fromValuesArray(wa)
+      Withdrawal.fromValuesArray(wa),
     )
     const td = await blockchain.getTotalDifficulty(genesisBlock.hash())
 
@@ -232,7 +232,7 @@ describe('EIP4895 tests', () => {
     assert.equal(
       bytesToHex(block.header.stateRoot),
       '0x23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
-      'correct state root should be generated'
+      'correct state root should be generated',
     )
 
     // block should successfully execute with VM.runBlock and have same outputs

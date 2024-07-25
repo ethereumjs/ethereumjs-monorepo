@@ -88,7 +88,7 @@ describe(
           difficulty: 1,
         },
       },
-      { common: config.chainCommon }
+      { common: config.chainCommon },
     )
     peer.eth!.send('NewBlock', [block, BigInt(1)])
 
@@ -97,12 +97,12 @@ describe(
     const tx = create1559FeeMarketTxFromRLP(toBytes(txData))
     await service.execution.vm.stateManager.putAccount(
       tx.getSenderAddress(),
-      new Account(BigInt(0), BigInt('40000000000100000'))
+      new Account(BigInt(0), BigInt('40000000000100000')),
     )
     await service.txPool.add(tx)
     service.config.chainCommon.getHardforkBy = td.func<typeof config.chainCommon.getHardforkBy>()
     td.when(service.config.chainCommon.getHardforkBy(td.matchers.anything())).thenReturn(
-      Hardfork.London
+      Hardfork.London,
     )
     const [_, txs] = await peer.eth!.getPooledTransactions({ hashes: [tx.hash()] })
     it('should handle GetPooledTransactions', async () => {
@@ -111,7 +111,7 @@ describe(
 
     peer.eth!.send('Transactions', [tx])
   },
-  { timeout: 30000 }
+  { timeout: 30000 },
 )
 
 describe('should handle LES requests', async () => {
@@ -122,7 +122,7 @@ describe('should handle LES requests', async () => {
     assert.equal(
       bytesToHex(headers[1].hash()),
       '0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
-      'handled GetBlockHeaders'
+      'handled GetBlockHeaders',
     )
   })
   await destroy(server, service)

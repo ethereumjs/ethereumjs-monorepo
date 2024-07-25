@@ -38,7 +38,7 @@ export class MockChain extends Chain {
             parentHash: number ? blocks[number - 1].hash() : this.genesis.hash(),
           },
         },
-        { common }
+        { common },
       )
       blocks.push(block)
     }

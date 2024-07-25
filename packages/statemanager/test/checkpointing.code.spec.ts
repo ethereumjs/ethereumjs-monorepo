@@ -8,7 +8,7 @@ const codeEval = async (
   sm: StateManagerInterface,
   address: Address,
   value: Uint8Array,
-  root: Uint8Array
+  root: Uint8Array,
 ) => {
   assert.deepEqual(await sm.getContractCode(address), value, 'contract code value should be equal')
   const accountCMP = await sm.getAccount(address)

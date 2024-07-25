@@ -94,7 +94,7 @@ export class Debug {
     this.traceTransaction = middleware(
       callWithStackTrace(this.traceTransaction.bind(this), this._rpcDebug),
       1,
-      [[validators.hex]]
+      [[validators.hex]],
     )
     this.traceCall = middleware(callWithStackTrace(this.traceCall.bind(this), this._rpcDebug), 2, [
       [validators.transaction()],
@@ -109,27 +109,27 @@ export class Debug {
         [validators.address],
         [validators.uint256],
         [validators.unsignedInteger],
-      ]
+      ],
     )
     this.getRawBlock = middleware(
       callWithStackTrace(this.getRawBlock.bind(this), this._rpcDebug),
       1,
-      [[validators.blockOption]]
+      [[validators.blockOption]],
     )
     this.getRawHeader = middleware(
       callWithStackTrace(this.getRawHeader.bind(this), this._rpcDebug),
       1,
-      [[validators.blockOption]]
+      [[validators.blockOption]],
     )
     this.getRawReceipts = middleware(
       callWithStackTrace(this.getRawReceipts.bind(this), this._rpcDebug),
       1,
-      [[validators.blockOption]]
+      [[validators.blockOption]],
     )
     this.getRawTransaction = middleware(
       callWithStackTrace(this.getRawTransaction.bind(this), this._rpcDebug),
       1,
-      [[validators.hex]]
+      [[validators.hex]],
     )
   }
 
@@ -153,7 +153,7 @@ export class Debug {
     const opts = validateTracerConfig(config)
 
     const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
-      hexToBytes(txHash)
+      hexToBytes(txHash),
     )
     if (!result) return null
     const [_, blockHash, txIndex] = result
@@ -318,7 +318,7 @@ export class Debug {
    * The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
    */
   async storageRangeAt(
-    params: [PrefixedHexString, number, PrefixedHexString, PrefixedHexString, number]
+    params: [PrefixedHexString, number, PrefixedHexString, PrefixedHexString, number],
   ) {
     const [blockHash, txIndex, account, startKey, limit] = params
 
@@ -357,7 +357,7 @@ export class Debug {
       // Validator already verified that `account` and `startKey` are properly formatted.
       Address.fromString(account),
       BigInt(startKey),
-      limit
+      limit,
     )
   }
   /**
@@ -390,7 +390,7 @@ export class Debug {
     const receipts = await this.service.execution.receiptsManager.getReceipts(
       block.hash(),
       true,
-      true
+      true,
     )
     return receipts.map((r) => bytesToHex(encodeReceipt(r, r.txType)))
   }
@@ -402,7 +402,7 @@ export class Debug {
     const [txHash] = params
     if (!this.service.execution.receiptsManager) throw new Error('missing receiptsManager')
     const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
-      hexToBytes(txHash)
+      hexToBytes(txHash),
     )
     if (!result) return null
     const [_receipt, blockHash, txIndex] = result

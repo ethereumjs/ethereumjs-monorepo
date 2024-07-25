@@ -77,7 +77,7 @@ describe(method, () => {
           gasLimit,
         },
       },
-      { common, calcDifficultyFromHeader: parent }
+      { common, calcDifficultyFromHeader: parent },
     )
     block.transactions[0] = tx
 
@@ -91,7 +91,7 @@ describe(method, () => {
     const expectedContractAddress = Address.generate(address, BigInt(0))
     assert.ok(
       createdAddress!.equals(expectedContractAddress),
-      'should match the expected contract address'
+      'should match the expected contract address',
     )
 
     // verify contract has code

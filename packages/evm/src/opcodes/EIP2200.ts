@@ -23,7 +23,7 @@ export function updateSstoreGasEIP2200(
   originalStorage: Uint8Array,
   value: Uint8Array,
   key: Uint8Array,
-  common: Common
+  common: Common,
 ) {
   // Fail if not enough gas is left
   if (runState.interpreter.getGasLeft() <= common.param('sstoreSentryEIP2200Gas')) {
@@ -44,7 +44,7 @@ export function updateSstoreGasEIP2200(
     if (value.length === 0) {
       runState.interpreter.refundGas(
         common.param('sstoreClearRefundEIP2200Gas'),
-        'EIP-2200 -> sstoreClearRefundEIP2200'
+        'EIP-2200 -> sstoreClearRefundEIP2200',
       )
     }
     // Write existing slot
@@ -55,13 +55,13 @@ export function updateSstoreGasEIP2200(
       // Recreate slot
       runState.interpreter.subRefund(
         common.param('sstoreClearRefundEIP2200Gas'),
-        'EIP-2200 -> sstoreClearRefundEIP2200'
+        'EIP-2200 -> sstoreClearRefundEIP2200',
       )
     } else if (value.length === 0) {
       // Delete slot
       runState.interpreter.refundGas(
         common.param('sstoreClearRefundEIP2200Gas'),
-        'EIP-2200 -> sstoreClearRefundEIP2200'
+        'EIP-2200 -> sstoreClearRefundEIP2200',
       )
     }
   }
@@ -71,14 +71,14 @@ export function updateSstoreGasEIP2200(
       const sstoreInitRefund = common.param('sstoreInitRefundEIP2200Gas')
       runState.interpreter.refundGas(
         adjustSstoreGasEIP2929(runState, key, sstoreInitRefund, 'initRefund', common),
-        'EIP-2200 -> initRefund'
+        'EIP-2200 -> initRefund',
       )
     } else {
       // Reset to original existing slot
       const sstoreCleanRefund = common.param('sstoreCleanRefundEIP2200Gas')
       runState.interpreter.refundGas(
         BigInt(adjustSstoreGasEIP2929(runState, key, sstoreCleanRefund, 'cleanRefund', common)),
-        'EIP-2200 -> cleanRefund'
+        'EIP-2200 -> cleanRefund',
       )
     }
   }

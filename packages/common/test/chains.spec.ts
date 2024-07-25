@@ -18,7 +18,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     assert.equal(
       c.hardfork(),
       c.DEFAULT_HARDFORK,
-      'should set hardfork to hardfork set as DEFAULT_HARDFORK'
+      'should set hardfork to hardfork set as DEFAULT_HARDFORK',
     )
 
     c = new Common({ chain: 1 })
@@ -33,7 +33,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     assert.equal(
       c.hardfork(),
       c.DEFAULT_HARDFORK,
-      'should set hardfork to hardfork set as DEFAULT_HARDFORK'
+      'should set hardfork to hardfork set as DEFAULT_HARDFORK',
     )
   })
 
@@ -68,12 +68,12 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfWork,
-      'should return correct consensus type'
+      'should return correct consensus type',
     )
     assert.equal(
       c.consensusAlgorithm(),
       ConsensusAlgorithm.Ethash,
-      'should return correct consensus algorithm'
+      'should return correct consensus algorithm',
     )
     assert.deepEqual(c.consensusConfig(), {}, 'should return empty dictionary for consensus config')
 
@@ -83,17 +83,17 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfAuthority,
-      'should return correct consensus type'
+      'should return correct consensus type',
     )
     assert.equal(
       c.consensusAlgorithm(),
       ConsensusAlgorithm.Clique,
-      'should return correct consensus algorithm'
+      'should return correct consensus algorithm',
     )
     assert.equal(
       c.consensusConfig().epoch,
       30000,
-      'should return correct consensus config parameters'
+      'should return correct consensus config parameters',
     )
   })
 
@@ -108,12 +108,12 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
       assert.equal(
         typeof bootnode.location,
         'string',
-        'returns the location as string (empty string if unavailable)'
+        'returns the location as string (empty string if unavailable)',
       )
       assert.equal(
         typeof bootnode.comment,
         'string',
-        'returns a comment as string (empty string if unavailable)'
+        'returns a comment as string (empty string if unavailable)',
       )
     }
   })
@@ -149,12 +149,12 @@ describe('[Common]: copy() listener tests', () => {
     assert.equal(
       common.events.listenerCount('hardforkChanged'),
       2,
-      'original common instance should have two listeners'
+      'original common instance should have two listeners',
     )
     assert.equal(
       commonCopy.events.listenerCount('hardforkChanged'),
       0,
-      'copied common instance should have zero listeners'
+      'copied common instance should have zero listeners',
     )
   })
 })

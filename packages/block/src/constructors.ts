@@ -108,7 +108,7 @@ export function createBlockFromBlockData(blockData: BlockData = {}, opts?: Block
     withdrawals,
     opts,
     clRequests,
-    executionWitness
+    executionWitness,
   )
 }
 
@@ -146,7 +146,7 @@ export function createBlockFromValuesArray(values: BlockBytes, opts?: BlockOptio
     (withdrawalBytes === undefined || !Array.isArray(withdrawalBytes))
   ) {
     throw new Error(
-      'Invalid serialized block input: EIP-4895 is active, and no withdrawals were provided as array'
+      'Invalid serialized block input: EIP-4895 is active, and no withdrawals were provided as array',
     )
   }
 
@@ -155,13 +155,13 @@ export function createBlockFromValuesArray(values: BlockBytes, opts?: BlockOptio
     (requestBytes === undefined || !Array.isArray(requestBytes))
   ) {
     throw new Error(
-      'Invalid serialized block input: EIP-7685 is active, and no requestBytes were provided as array'
+      'Invalid serialized block input: EIP-7685 is active, and no requestBytes were provided as array',
     )
   }
 
   if (header.common.isActivatedEIP(6800) && executionWitnessBytes === undefined) {
     throw new Error(
-      'Invalid serialized block input: EIP-6800 is active, and execution witness is undefined'
+      'Invalid serialized block input: EIP-6800 is active, and execution witness is undefined',
     )
   }
 
@@ -173,7 +173,7 @@ export function createBlockFromValuesArray(values: BlockBytes, opts?: BlockOptio
         ...opts,
         // Use header common in case of setHardfork being activated
         common: header.common,
-      })
+      }),
     )
   }
 
@@ -206,7 +206,7 @@ export function createBlockFromValuesArray(values: BlockBytes, opts?: BlockOptio
   let requests
   if (header.common.isActivatedEIP(7685)) {
     requests = (requestBytes as RequestBytes[]).map((bytes) =>
-      CLRequestFactory.fromSerializedRequest(bytes)
+      CLRequestFactory.fromSerializedRequest(bytes),
     )
   }
   // executionWitness are not part of the EL fetched blocks via eth_ bodies method
@@ -231,7 +231,7 @@ export function createBlockFromValuesArray(values: BlockBytes, opts?: BlockOptio
     withdrawals,
     opts,
     requests,
-    executionWitness
+    executionWitness,
   )
 }
 
@@ -272,7 +272,7 @@ export function createBlockFromRPC(blockData: JsonRpcBlock, uncles?: any[], opts
 export const createBlockFromJsonRpcProvider = async (
   provider: string | EthersProvider,
   blockTag: string | bigint,
-  opts: BlockOptions
+  opts: BlockOptions,
 ) => {
   let blockData
   const providerUrl = getProvider(provider)
@@ -301,7 +301,7 @@ export const createBlockFromJsonRpcProvider = async (
     })
   } else {
     throw new Error(
-      `expected blockTag to be block hash, bigint, hex prefixed string, or earliest/latest/pending; got ${blockTag}`
+      `expected blockTag to be block hash, bigint, hex prefixed string, or earliest/latest/pending; got ${blockTag}`,
     )
   }
 
@@ -331,7 +331,7 @@ export const createBlockFromJsonRpcProvider = async (
  */
 export async function createBlockFromExecutionPayload(
   payload: ExecutionPayload,
-  opts?: BlockOptions
+  opts?: BlockOptions,
 ): Promise<Block> {
   const {
     blockNumber: number,
@@ -409,7 +409,7 @@ export async function createBlockFromExecutionPayload(
   // we are not setting setHardfork as common is already set to the correct hf
   const block = createBlockFromBlockData(
     { header, transactions: txs, withdrawals, executionWitness, requests },
-    opts
+    opts,
   )
   if (
     block.common.isActivatedEIP(6800) &&
@@ -436,7 +436,7 @@ export async function createBlockFromExecutionPayload(
  */
 export async function createBlockFromBeaconPayloadJson(
   payload: BeaconPayloadJson,
-  opts?: BlockOptions
+  opts?: BlockOptions,
 ): Promise<Block> {
   const executionPayload = executionPayloadFromBeaconPayload(payload)
   return createBlockFromExecutionPayload(executionPayload, opts)

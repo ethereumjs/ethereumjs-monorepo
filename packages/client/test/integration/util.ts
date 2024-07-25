@@ -22,7 +22,7 @@ interface SetupOptions {
 }
 
 export async function setup(
-  options: SetupOptions = {}
+  options: SetupOptions = {},
 ): Promise<[MockServer, FullEthereumService | LightEthereumService]> {
   const { location, height, interval, syncmode } = options
   const minPeers = options.minPeers ?? 1
@@ -86,7 +86,7 @@ export async function setup(
 
 export async function destroy(
   server: MockServer,
-  service: FullEthereumService | LightEthereumService
+  service: FullEthereumService | LightEthereumService,
 ): Promise<void> {
   service.config.events.emit(Event.CLIENT_SHUTDOWN)
   await server.stop()

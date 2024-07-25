@@ -63,7 +63,7 @@ export class Server {
     this._common = options.common
 
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   bind(...args: any[]) {
@@ -111,7 +111,7 @@ export class Server {
             this._debug(
               `ping timeout: ${peer.address}:${peer.udpPort} ${
                 peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
-              }`
+              }`,
             )
           }
           this._requests.delete(rkey)
@@ -140,7 +140,7 @@ export class Server {
         typename,
         `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
           peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
-        })`
+        })`,
       )
     }
 
@@ -159,8 +159,8 @@ export class Server {
         info.typename.toString(),
         `received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${formatLogId(
           bytesToHex(peerId),
-          verbose
-        )})`
+          verbose,
+        )})`,
       )
     }
 
@@ -217,7 +217,7 @@ export class Server {
       case 'neighbours': {
         this.events.emit(
           'peers',
-          info.data.peers.map((peer: any) => peer.endpoint)
+          info.data.peers.map((peer: any) => peer.endpoint),
         )
         break
       }

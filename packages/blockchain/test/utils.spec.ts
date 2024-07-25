@@ -27,7 +27,7 @@ describe('[Utils/Parse]', () => {
     assert.equal(
       bytesToHex(stateRoot),
       '0x52e628c7f35996ba5a0402d02b34535993c89ff7fc4c430b2763ada8554bee62',
-      'kiln stateRoot matches'
+      'kiln stateRoot matches',
     )
   })
 
@@ -38,7 +38,7 @@ describe('[Utils/Parse]', () => {
     assert.equal(
       bytesToHex(genesisHash),
       '0x51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8',
-      'kiln genesis hash matches'
+      'kiln genesis hash matches',
     )
   })
 })

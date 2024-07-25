@@ -27,7 +27,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
         to: Address.zero(),
         data: new Uint8Array(1),
       },
-      { common }
+      { common },
     )
     const signed = txn.sign(pkey)
     assert.ok(signed.getSenderAddress().equals(addr))
@@ -50,7 +50,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 'address length should be 20 bytes')
 
@@ -68,7 +68,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 'nonce list should consist of at most 1 item')
 
@@ -86,7 +86,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 's is not defined')
 
@@ -104,7 +104,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 'r is not defined')
 
@@ -122,7 +122,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 'yParity is not defined')
 
@@ -140,7 +140,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 'nonce is not defined')
 
@@ -158,7 +158,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 'address is not defined')
 
@@ -176,7 +176,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 'chainId is not defined')
 
@@ -194,7 +194,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     })
   })

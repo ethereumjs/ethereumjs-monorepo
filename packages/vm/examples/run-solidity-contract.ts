@@ -2,12 +2,13 @@ import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { runTx, VM } from '@ethereumjs/vm'
+import { VM, runTx } from '@ethereumjs/vm'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { readFileSync } from 'fs'
 import path from 'path'
 import solc from 'solc'
 import { fileURLToPath } from 'url'
+
 import { getAccountNonce, insertAccount } from './helpers/account-utils.js'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.js'
 
@@ -65,7 +66,7 @@ function compileContracts() {
 
   let compilationFailed = false
 
-  if (output.errors) {
+  if (output.errors !== undefined) {
     for (const error of output.errors) {
       if (error.severity === 'error') {
         console.error(error.formattedMessage)
@@ -91,7 +92,7 @@ async function deployContract(
   vm: VM,
   senderPrivateKey: Uint8Array,
   deploymentBytecode: string,
-  greeting: string
+  greeting: string,
 ): Promise<Address> {
   // Contracts are deployed by sending their deployment bytecode to the address 0
   // The contract params should be abi-encoded and appended to the deployment bytecode.
@@ -120,7 +121,7 @@ async function setGreeting(
   vm: VM,
   senderPrivateKey: Uint8Array,
   contractAddress: Address,
-  greeting: string
+  greeting: string,
 ) {
   const data = encodeFunction('setGreeting', {
     types: ['string'],
@@ -147,7 +148,7 @@ async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
 
   const greetResult = await vm.evm.runCall({
     to: contractAddress,
-    caller: caller,
+    caller,
     origin: caller, // The tx.origin is also the caller here
     data: hexToBytes(sigHash),
     block,
@@ -194,7 +195,7 @@ async function main() {
 
   if (greeting !== INITIAL_GREETING)
     throw new Error(
-      `initial greeting not equal, received ${greeting}, expected ${INITIAL_GREETING}`
+      `initial greeting not equal, received ${greeting}, expected ${INITIAL_GREETING}`,
     )
 
   console.log('Changing greeting...')

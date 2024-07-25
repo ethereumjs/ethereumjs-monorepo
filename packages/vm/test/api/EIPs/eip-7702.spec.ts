@@ -62,7 +62,7 @@ async function runTest(
   authorizationListOpts: GetAuthListOpts[],
   expect: Uint8Array,
   vm?: VM,
-  skipEmptyCode?: boolean
+  skipEmptyCode?: boolean,
 ) {
   vm = vm ?? (await VM.create({ common }))
   const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
@@ -74,7 +74,7 @@ async function runTest(
       to: defaultAuthAddr,
       value: BIGINT_1,
     },
-    { common }
+    { common },
   ).sign(defaultSenderPkey)
 
   const code1 = hexToBytes('0x600160015500')
@@ -109,7 +109,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
           address: code1Addr,
         },
       ],
-      new Uint8Array([1])
+      new Uint8Array([1]),
     )
 
     // Try to set code to two different addresses
@@ -123,7 +123,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
           address: code2Addr,
         },
       ],
-      new Uint8Array([1])
+      new Uint8Array([1]),
     )
 
     // Chain id check: is chain id 1 also valid?
@@ -138,7 +138,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
           address: code2Addr,
         },
       ],
-      new Uint8Array([2])
+      new Uint8Array([2]),
     )
 
     // Check if chain id 2 is ignored
@@ -152,7 +152,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
           address: code2Addr,
         },
       ],
-      new Uint8Array([2])
+      new Uint8Array([2]),
     )
 
     // Check if nonce is ignored in case the nonce is incorrect
@@ -166,7 +166,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
           address: code2Addr,
         },
       ],
-      new Uint8Array([2])
+      new Uint8Array([2]),
     )
   })
 
@@ -181,7 +181,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
       ],
       new Uint8Array(),
       vm,
-      true
+      true,
     )
   })
 
@@ -201,7 +201,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
     // 1x warm call: 100
     // Total: 115
     const checkAddressWarmCode = hexToBytes(
-      `0x5F5F5F5F5F73${defaultAuthAddr.toString().slice(2)}5AF1`
+      `0x5F5F5F5F5F73${defaultAuthAddr.toString().slice(2)}5AF1`,
     )
     const checkAddressWarm = Address.fromString(`0x${'FA'.repeat(20)}`)
 
@@ -215,7 +215,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
         to: checkAddressWarm,
         value: BIGINT_1,
       },
-      { common }
+      { common },
     ).sign(defaultSenderPkey)
 
     const code1 = hexToBytes('0x')
@@ -248,7 +248,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
         // value: BIGINT_1 // Note, by enabling this line, the account will not get deleted
         // Therefore, this test will pass
       },
-      { common }
+      { common },
     ).sign(defaultSenderPkey)
 
     // Store value 1 in storage slot 1

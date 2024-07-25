@@ -162,21 +162,21 @@ describe('[Invalid Array Input values]', () => {
           switch (txType) {
             case TransactionType.Legacy:
               assert.throws(() =>
-                createLegacyTxFromBytesArray(rawValues as TxValuesArray[TransactionType.Legacy])
+                createLegacyTxFromBytesArray(rawValues as TxValuesArray[TransactionType.Legacy]),
               )
               break
             case TransactionType.AccessListEIP2930:
               assert.throws(() =>
                 create2930AccessListTxFromBytesArray(
-                  rawValues as TxValuesArray[TransactionType.AccessListEIP2930]
-                )
+                  rawValues as TxValuesArray[TransactionType.AccessListEIP2930],
+                ),
               )
               break
             case TransactionType.FeeMarketEIP1559:
               assert.throws(() =>
                 createEIP1559FeeMarketTxFromBytesArray(
-                  rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559]
-                )
+                  rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559],
+                ),
               )
               break
           }
@@ -243,15 +243,15 @@ describe('[Invalid Access Lists]', () => {
             case TransactionType.AccessListEIP2930:
               assert.throws(() =>
                 create2930AccessListTxFromBytesArray(
-                  rawValues as TxValuesArray[TransactionType.AccessListEIP2930]
-                )
+                  rawValues as TxValuesArray[TransactionType.AccessListEIP2930],
+                ),
               )
               break
             case TransactionType.FeeMarketEIP1559:
               assert.throws(() =>
                 createEIP1559FeeMarketTxFromBytesArray(
-                  rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559]
-                )
+                  rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559],
+                ),
               )
               break
           }

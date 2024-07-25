@@ -535,13 +535,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (typeof runState.stateManager.getContractCodeSize === 'function') {
         size = BigInt(
           await runState.stateManager.getContractCodeSize(
-            new Address(addresstoBytes(addressBigInt))
-          )
+            new Address(addresstoBytes(addressBigInt)),
+          ),
         )
       } else {
         size = BigInt(
           (await runState.stateManager.getContractCode(new Address(addresstoBytes(addressBigInt))))
-            .length
+            .length,
         )
       }
 
@@ -556,7 +556,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       if (dataLength !== BIGINT_0) {
         let code = await runState.stateManager.getContractCode(
-          new Address(addresstoBytes(addressBigInt))
+          new Address(addresstoBytes(addressBigInt)),
         )
 
         if (isEOF(code)) {
@@ -613,7 +613,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const data = getDataSlice(
           runState.interpreter.getReturnData(),
           returnDataOffset,
-          dataLength
+          dataLength,
         )
         const memOffsetNum = Number(memOffset)
         const lengthNum = Number(dataLength)
@@ -650,7 +650,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         }
 
         const historyAddress = new Address(
-          bigIntToAddressBytes(common.param('historyStorageAddress'))
+          bigIntToAddressBytes(common.param('historyStorageAddress')),
         )
         const historyServeWindow = common.param('historyServeWindow')
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
@@ -661,7 +661,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           const statelessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             historyAddress,
             treeIndex,
-            subIndex
+            subIndex,
           )
           runState.interpreter.useGas(statelessGas, `BLOCKHASH`)
         }
@@ -957,7 +957,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const statelessGas = runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
           contract,
           startOffset,
-          endOffset
+          endOffset,
         )
         runState.interpreter.useGas(statelessGas, `PUSH`)
       }
@@ -967,7 +967,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.programCounter += numToPush
       } else {
         const loaded = bytesToBigInt(
-          runState.code.subarray(runState.programCounter, runState.programCounter + numToPush)
+          runState.code.subarray(runState.programCounter, runState.programCounter + numToPush),
         )
         runState.programCounter += numToPush
         runState.stack.push(loaded)
@@ -1045,10 +1045,10 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.INVALID_OPCODE)
       }
       const toLoad = Number(
-        bytesToBigInt(runState.code.subarray(runState.programCounter, runState.programCounter + 2))
+        bytesToBigInt(runState.code.subarray(runState.programCounter, runState.programCounter + 2)),
       )
       const data = bytesToBigInt(
-        runState.env.eof!.container.body.dataSection.subarray(toLoad, toLoad + 32)
+        runState.env.eof!.container.body.dataSection.subarray(toLoad, toLoad + 32),
       )
       runState.stack.push(data)
       runState.programCounter += 2
@@ -1134,7 +1134,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const jumptableCase = runState.stack.pop()
         if (jumptableCase <= jumptableEntries) {
           const rjumpDest = new DataView(code.buffer).getInt16(
-            runState.programCounter + Number(jumptableCase) * 2
+            runState.programCounter + Number(jumptableCase) * 2,
           )
           runState.programCounter += jumptableSize + rjumpDest
         } else {
@@ -1152,7 +1152,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.INVALID_OPCODE)
       }
       const sectionTarget = bytesToInt(
-        runState.code.slice(runState.programCounter, runState.programCounter + 2)
+        runState.code.slice(runState.programCounter, runState.programCounter + 2),
       )
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
@@ -1196,7 +1196,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       // (and also the return stack overflow check)
       // It is commented out here
       const sectionTarget = bytesToInt(
-        runState.code.slice(runState.programCounter, runState.programCounter + 2)
+        runState.code.slice(runState.programCounter, runState.programCounter + 2),
       )
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
@@ -1223,8 +1223,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       const toDup =
         Number(
           bytesToBigInt(
-            runState.code.subarray(runState.programCounter, runState.programCounter + 1)
-          )
+            runState.code.subarray(runState.programCounter, runState.programCounter + 1),
+          ),
         ) + 1
       runState.stack.dup(toDup)
       runState.programCounter++
@@ -1241,8 +1241,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       const toSwap =
         Number(
           bytesToBigInt(
-            runState.code.subarray(runState.programCounter, runState.programCounter + 1)
-          )
+            runState.code.subarray(runState.programCounter, runState.programCounter + 1),
+          ),
         ) + 1
       runState.stack.swap(toSwap)
       runState.programCounter++
@@ -1257,7 +1257,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.INVALID_OPCODE)
       }
       const toExchange = Number(
-        bytesToBigInt(runState.code.subarray(runState.programCounter, runState.programCounter + 1))
+        bytesToBigInt(runState.code.subarray(runState.programCounter, runState.programCounter + 1)),
       )
       const n = (toExchange >> 4) + 1
       const m = (toExchange & 0x0f) + 1
@@ -1295,7 +1295,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           value,
           containerCode,
           setLengthLeft(bigIntToBytes(salt), 32),
-          data
+          data,
         )
         runState.stack.push(ret)
       }
@@ -1420,7 +1420,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         gasLimit,
         value,
         data,
-        setLengthLeft(bigIntToBytes(salt), 32)
+        setLengthLeft(bigIntToBytes(salt), 32),
       )
       runState.stack.push(ret)
     },

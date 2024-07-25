@@ -224,7 +224,7 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
   // normal hard fork, return the common with this hard fork
   // find the right upper/lowercased version
   const hfName = normalHardforks.reduce((previousValue, currentValue) =>
-    currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue
+    currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue,
   )
   const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
   const hardforks = mainnetCommon.hardforks()
@@ -270,7 +270,7 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
       hardforks: testHardforks,
       defaultHardfork: hfName,
     },
-    { eips: [3607], customCrypto: { kzg } }
+    { eips: [3607], customCrypto: { kzg } },
   )
   // Activate EIPs
   const eips = network.match(/(?<=\+)(.\d+)/g)
@@ -358,7 +358,7 @@ export function getCommon(network: string, kzg?: Kzg): Common {
         hardfork: transitionForks.startFork,
         eips: [3607],
         customCrypto: { kzg },
-      }
+      },
     )
     return common
   }
@@ -422,7 +422,7 @@ const expectedTestsFull: {
  */
 export function getExpectedTests(
   fork: string,
-  name: 'BlockchainTests' | 'GeneralStateTests'
+  name: 'BlockchainTests' | 'GeneralStateTests',
 ): number | undefined {
   if (expectedTestsFull[name] === undefined) {
     return

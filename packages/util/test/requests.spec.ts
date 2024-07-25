@@ -49,7 +49,7 @@ describe('Requests', () => {
   for (const [requestName, requestData, requestType, RequestInstanceType] of testCases) {
     it(`${requestName}`, () => {
       const requestObject = RequestInstanceType.fromRequestData(
-        requestData
+        requestData,
       ) as CLRequest<CLRequestType>
       const requestJSON = requestObject.toJSON()
       const serialized = requestObject.serialize()

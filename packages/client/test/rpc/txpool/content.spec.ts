@@ -40,7 +40,7 @@ describe(method, () => {
           gasLimit,
         },
       },
-      { common, calcDifficultyFromHeader: parent }
+      { common, calcDifficultyFromHeader: parent },
     )
 
     let ranBlock: Block | undefined = undefined
@@ -63,10 +63,10 @@ describe(method, () => {
             common: service.chain.config.chainCommon,
             skipConsensusFormatValidation: true,
             calcDifficultyFromHeader: headBlock.header,
-          }
+          },
         ),
       },
-      { common: service.chain.config.chainCommon }
+      { common: service.chain.config.chainCommon },
     )
 
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
@@ -79,7 +79,7 @@ describe(method, () => {
     assert.equal(
       Object.keys(res.result.pending).length,
       1,
-      'received one pending transaction back from response'
+      'received one pending transaction back from response',
     )
   })
 })

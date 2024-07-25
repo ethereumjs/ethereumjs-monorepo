@@ -118,7 +118,7 @@ export function isAccessList(input: AccessListBytes | AccessList): input is Acce
 }
 
 export function isAuthorizationListBytes(
-  input: AuthorizationListBytes | AuthorizationList
+  input: AuthorizationListBytes | AuthorizationList,
 ): input is AuthorizationListBytes {
   if (input.length === 0) {
     return true
@@ -131,7 +131,7 @@ export function isAuthorizationListBytes(
 }
 
 export function isAuthorizationList(
-  input: AuthorizationListBytes | AuthorizationList
+  input: AuthorizationListBytes | AuthorizationList,
 ): input is AuthorizationList {
   return !isAuthorizationListBytes(input) // This is exactly the same method, except the output is negated.
 }
@@ -447,7 +447,7 @@ type AccessListEIP2930TxValuesArray = [
   AccessListBytes,
   Uint8Array?,
   Uint8Array?,
-  Uint8Array?
+  Uint8Array?,
 ]
 
 /**
@@ -465,7 +465,7 @@ type FeeMarketEIP1559TxValuesArray = [
   AccessListBytes,
   Uint8Array?,
   Uint8Array?,
-  Uint8Array?
+  Uint8Array?,
 ]
 
 /**
@@ -484,7 +484,7 @@ type EOACodeEIP7702TxValuesArray = [
   AuthorizationListBytes,
   Uint8Array?,
   Uint8Array?,
-  Uint8Array?
+  Uint8Array?,
 ]
 
 /**
@@ -504,14 +504,14 @@ type BlobEIP4844TxValuesArray = [
   Uint8Array[],
   Uint8Array?,
   Uint8Array?,
-  Uint8Array?
+  Uint8Array?,
 ]
 
 export type BlobEIP4844NetworkValuesArray = [
   BlobEIP4844TxValuesArray,
   Uint8Array[],
   Uint8Array[],
-  Uint8Array[]
+  Uint8Array[],
 ]
 
 type JsonAccessListItem = { address: string; storageKeys: string[] }

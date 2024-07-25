@@ -6,4 +6,4 @@ const main = async () => {
   const vm = await VM.create({ common })
   console.log(`EIP 3074 is active in the VM - ${vm.common.isActivatedEIP(3074)}`)
 }
-main()
+void main()

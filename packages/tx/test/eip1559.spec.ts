@@ -75,7 +75,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
         gasLimit: 100,
         value: 6,
       },
-      { common }
+      { common },
     )
     assert.equal(tx.getUpfrontCost(), BigInt(806), 'correct upfront cost with default base fee')
     let baseFee = BigInt(0)
@@ -84,7 +84,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     assert.equal(
       tx.getUpfrontCost(baseFee),
       BigInt(1006),
-      'correct upfront cost with cost-changing base fee value'
+      'correct upfront cost with cost-changing base fee value',
     )
   })
 
@@ -94,7 +94,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
         maxFeePerGas: 10,
         maxPriorityFeePerGas: 8,
       },
-      { common }
+      { common },
     )
     assert.equal(tx.getEffectivePriorityFee(BigInt(10)), BigInt(0))
     assert.equal(tx.getEffectivePriorityFee(BigInt(9)), BigInt(1))
@@ -114,7 +114,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
       const rlpSerialized = RLP.encode(Uint8Array.from(signed.serialize()))
       assert.ok(
         equalsBytes(rlpSerialized, hexToBytes(data.signedTransactionRLP as PrefixedHexString)),
-        'Should sign txs correctly'
+        'Should sign txs correctly',
       )
     }
   })
@@ -160,11 +160,11 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     let txn = create1559FeeMarketTx(data as FeeMarketEIP1559TxData, { common })
     let signed = txn.sign(pkey)
     const expectedHash = hexToBytes(
-      '0x2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446'
+      '0x2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446',
     )
     assert.ok(
       equalsBytes(signed.hash(), expectedHash),
-      'Should provide the correct hash when frozen'
+      'Should provide the correct hash when frozen',
     )
     txn = create1559FeeMarketTx(data as FeeMarketEIP1559TxData, {
       common,
@@ -173,7 +173,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     signed = txn.sign(pkey)
     assert.ok(
       equalsBytes(signed.hash(), expectedHash),
-      'Should provide the correct hash when not frozen'
+      'Should provide the correct hash when not frozen',
     )
   })
 
@@ -209,7 +209,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     const signedTxn = txn.sign(pkey)
     assert.ok(
       signedTxn.common.hardfork() === Hardfork.Paris,
-      'signed tx common is taken from tx.common'
+      'signed tx common is taken from tx.common',
     )
   })
 
@@ -221,20 +221,20 @@ describe('[FeeMarketEIP1559Transaction]', () => {
         accessList: [[validAddress, [validSlot]]],
         chainId,
       },
-      { common }
+      { common },
     )
     const expectedHash = hexToBytes(
-      '0xfa81814f7dd57bad435657a05eabdba2815f41e3f15ddd6139027e7db56b0dea'
+      '0xfa81814f7dd57bad435657a05eabdba2815f41e3f15ddd6139027e7db56b0dea',
     )
     assert.deepEqual(unsignedTx.getHashedMessageToSign(), expectedHash), 'correct hashed version'
 
     const expectedSerialization = hexToBytes(
-      '0x02f85904808080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101'
+      '0x02f85904808080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101',
     )
     assert.deepEqual(
       unsignedTx.getMessageToSign(),
       expectedSerialization,
-      'correct serialized unhashed version'
+      'correct serialized unhashed version',
     )
   })
 
@@ -273,7 +273,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
           gasLimit: 1,
           value: 6,
         },
-        { common }
+        { common },
       )
     }, 'fee can be 2^256 - 1')
     assert.throws(
@@ -285,12 +285,12 @@ describe('[FeeMarketEIP1559Transaction]', () => {
             gasLimit: 100,
             value: 6,
           },
-          { common }
+          { common },
         )
       },
       undefined,
       undefined,
-      'fee must be less than 2^256'
+      'fee must be less than 2^256',
     )
     assert.throws(
       () => {
@@ -301,12 +301,12 @@ describe('[FeeMarketEIP1559Transaction]', () => {
             gasLimit: 100,
             value: 6,
           },
-          { common }
+          { common },
         )
       },
       undefined,
       undefined,
-      'total fee must be the larger of the two'
+      'total fee must be the larger of the two',
     )
   })
 })

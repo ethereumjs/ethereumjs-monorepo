@@ -63,7 +63,7 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: Trans
       },
       transactions: [json],
     },
-    { common }
+    { common },
   )
   return block
 }
@@ -79,7 +79,7 @@ describe('EIP1559 tests', () => {
       },
       {
         common,
-      }
+      },
     )
     const block = makeBlock(GWEI, tx, 2)
     const vm = await VM.create({ common })
@@ -116,7 +116,7 @@ describe('EIP1559 tests', () => {
         gasPrice: GWEI * BigInt(5),
         to: Address.zero(),
       },
-      { common }
+      { common },
     )
     const block2 = makeBlock(GWEI, tx2, 1)
     await vm.stateManager.modifyAccountFields(sender, { balance })
@@ -144,7 +144,7 @@ describe('EIP1559 tests', () => {
         gasPrice: GWEI * BigInt(5),
         to: Address.zero(),
       },
-      { common }
+      { common },
     )
     const block3 = makeBlock(GWEI, tx3, 0)
     await vm.stateManager.modifyAccountFields(sender, { balance })
@@ -178,7 +178,7 @@ describe('EIP1559 tests', () => {
       },
       {
         common,
-      }
+      },
     )
     const block = makeBlock(GWEI, tx, 2)
     const vm = await VM.create({ common })

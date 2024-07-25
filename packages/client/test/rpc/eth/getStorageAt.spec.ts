@@ -41,7 +41,7 @@ describe(method, async () => {
           gasLimit,
         },
       },
-      { common, calcDifficultyFromHeader: parent }
+      { common, calcDifficultyFromHeader: parent },
     )
     block.transactions[0] = signedTx
 
@@ -65,7 +65,7 @@ describe(method, async () => {
     assert.equal(
       res.result,
       emptySlotStr,
-      'should not have new slot value for block that is addressed by "earliest" tag and is older than latest'
+      'should not have new slot value for block that is addressed by "earliest" tag and is older than latest',
     )
 
     // call with integer for block number to see if getStorageAt allows addressing blocks by number index
@@ -73,7 +73,7 @@ describe(method, async () => {
     assert.equal(
       res.result,
       expectedSlotValue,
-      'should return the correct slot value when addressing the latest block by integer index'
+      'should return the correct slot value when addressing the latest block by integer index',
     )
 
     // call with unsupported block argument

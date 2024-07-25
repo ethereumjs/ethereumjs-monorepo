@@ -54,7 +54,7 @@ describe('[Util/RPC]', () => {
 
         assert.ok(
           httpServer !== undefined && wsServer !== undefined,
-          'should return http and ws servers'
+          'should return http and ws servers',
         )
       }
     }
@@ -81,7 +81,7 @@ describe('[Util/RPC]', () => {
     })
     assert.ok(
       httpServer !== undefined && wsServer !== undefined,
-      'should return http and ws servers'
+      'should return http and ws servers',
     )
   })
 })

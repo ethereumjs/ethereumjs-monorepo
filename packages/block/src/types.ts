@@ -139,7 +139,7 @@ export type BlockBytes =
       UncleHeadersBytes,
       WithdrawalsBytes,
       RequestsBytes,
-      ExecutionWitnessBytes
+      ExecutionWitnessBytes,
     ]
 
 /**
@@ -150,7 +150,7 @@ export type BlockBodyBytes = [
   TransactionsBytes,
   UncleHeadersBytes,
   WithdrawalsBytes?,
-  RequestBytes?
+  RequestBytes?,
 ]
 /**
  * TransactionsBytes can be an array of serialized txs for Typed Transactions or an array of Uint8Array Arrays for legacy transactions.

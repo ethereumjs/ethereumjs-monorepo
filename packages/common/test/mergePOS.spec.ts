@@ -16,7 +16,7 @@ describe('[Common]: Merge/POS specific logic', () => {
     assert.equal(
       c.hardforkTTD('thisHardforkDoesNotExist'),
       null,
-      'should return null if HF does not exist on chain'
+      'should return null if HF does not exist on chain',
     )
   })
 
@@ -159,7 +159,7 @@ describe('[Common]: Merge/POS specific logic', () => {
     assert.equal(
       c.hardforkTTD(Hardfork.Chainstart),
       BigInt(0),
-      'should get the HF total difficulty'
+      'should get the HF total difficulty',
     )
 
     const msg = 'block number > last HF block number set, TD set (0) and equal'
@@ -197,7 +197,7 @@ describe('[Common]: Merge/POS specific logic', () => {
     assert.equal(
       c.getHardforkBy({ blockNumber: 1450409n, td: 17000000000000000n }),
       Hardfork.Paris,
-      msg
+      msg,
     )
     // should select MergeForkIdTransition even without td specified as the block is set for this hardfork
     assert.equal(c.getHardforkBy({ blockNumber: 1735371n }), Hardfork.MergeForkIdTransition, msg)
@@ -205,24 +205,24 @@ describe('[Common]: Merge/POS specific logic', () => {
     assert.equal(
       c.getHardforkBy({ blockNumber: 1735371n, td: 17000000000000000n }),
       Hardfork.MergeForkIdTransition,
-      msg
+      msg,
     )
 
     // Check nextHardforkBlockOrTimestamp should be MergeForkIdTransition's block on london and merge both
     assert.equal(
       c.nextHardforkBlockOrTimestamp(Hardfork.Berlin),
       1735371n,
-      `should get nextHardforkBlockOrTimestamp correctly`
+      `should get nextHardforkBlockOrTimestamp correctly`,
     )
     assert.equal(
       c.nextHardforkBlockOrTimestamp(Hardfork.London),
       1735371n,
-      `should get nextHardforkBlockOrTimestamp correctly`
+      `should get nextHardforkBlockOrTimestamp correctly`,
     )
     assert.equal(
       c.nextHardforkBlockOrTimestamp(Hardfork.Paris),
       1735371n,
-      `should get nextHardforkBlockOrTimestamp correctly`
+      `should get nextHardforkBlockOrTimestamp correctly`,
     )
 
     let f = () => {
@@ -232,7 +232,7 @@ describe('[Common]: Merge/POS specific logic', () => {
       f,
       undefined,
       undefined,
-      'throws error as specified td < merge ttd for a post merge hardfork'
+      'throws error as specified td < merge ttd for a post merge hardfork',
     )
 
     msg = 'should set HF correctly'
@@ -242,13 +242,13 @@ describe('[Common]: Merge/POS specific logic', () => {
     assert.equal(
       c.setHardforkBy({ blockNumber: 1450409n, td: 17000000000000000n }),
       Hardfork.Paris,
-      msg
+      msg,
     )
     assert.equal(c.setHardforkBy({ blockNumber: 1735371n }), Hardfork.MergeForkIdTransition, msg)
     assert.equal(
       c.setHardforkBy({ blockNumber: 1735371n, td: 17000000000000000n }),
       Hardfork.MergeForkIdTransition,
-      msg
+      msg,
     )
     f = () => {
       c.setHardforkBy({ blockNumber: 1735371n, td: 15000000000000000n })
@@ -257,7 +257,7 @@ describe('[Common]: Merge/POS specific logic', () => {
       f,
       undefined,
       undefined,
-      'throws error as specified td < merge ttd for a post merge hardfork'
+      'throws error as specified td < merge ttd for a post merge hardfork',
     )
 
     // restore value
@@ -278,25 +278,25 @@ describe('[Common]: Merge/POS specific logic', () => {
     assert.equal(
       c.setHardforkBy({ blockNumber: 1450409n, td: 17000000000000000n }),
       Hardfork.Paris,
-      msg
+      msg,
     )
     assert.equal(c.setHardforkBy({ blockNumber: 1735371n }), Hardfork.MergeForkIdTransition, msg)
     assert.equal(
       c.setHardforkBy({ blockNumber: 1735371n, td: 17000000000000000n }),
       Hardfork.MergeForkIdTransition,
-      msg
+      msg,
     )
 
     // Check nextHardforkBlockOrTimestamp should be MergeForkIdTransition's block on london and merge both
     assert.equal(
       c.nextHardforkBlockOrTimestamp(Hardfork.London),
       1735371n,
-      `should get nextHardforkBlockOrTimestamp correctly`
+      `should get nextHardforkBlockOrTimestamp correctly`,
     )
     assert.equal(
       c.nextHardforkBlockOrTimestamp(Hardfork.Paris),
       1735371n,
-      `should get nextHardforkBlockOrTimestamp correctly`
+      `should get nextHardforkBlockOrTimestamp correctly`,
     )
 
     // restore value

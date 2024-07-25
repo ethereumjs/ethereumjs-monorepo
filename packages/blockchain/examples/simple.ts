@@ -1,4 +1,4 @@
-import { Block, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
@@ -21,7 +21,7 @@ const main = async () => {
         difficulty: blockchain.genesisBlock.header.difficulty + 1n,
       },
     },
-    { common, setHardfork: true }
+    { common, setHardfork: true },
   )
   const block2 = createBlockFromBlockData(
     {
@@ -31,7 +31,7 @@ const main = async () => {
         difficulty: block.header.difficulty + 1n,
       },
     },
-    { common, setHardfork: true }
+    { common, setHardfork: true },
   )
   // See @ethereumjs/block for more details on how to create a block
   await blockchain.putBlock(block)
@@ -47,4 +47,4 @@ const main = async () => {
   // Block 1: 0xa1a061528d74ba81f560e1ebc4f29d6b58171fc13b72b876cdffe6e43b01bdc5
   // Block 2: 0x5583be91cf9fb14f5dbeb03ad56e8cef19d1728f267c35a25ba5a355a528f602
 }
-main()
+void main()

@@ -51,12 +51,12 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
 
   if (values.length > 21) {
     throw new Error(
-      `invalid header. More values than expected were received. Max: 20, got: ${values.length}`
+      `invalid header. More values than expected were received. Max: 20, got: ${values.length}`,
     )
   }
   if (values.length < 15) {
     throw new Error(
-      `invalid header. Less values than expected were received. Min: 15, got: ${values.length}`
+      `invalid header. Less values than expected were received. Min: 15, got: ${values.length}`,
     )
   }
 

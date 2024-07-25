@@ -47,8 +47,8 @@ export const fetchFromProvider = async (url: string, params: rpcParams) => {
           }),
         },
         null,
-        2
-      )}`
+        2,
+      )}`,
     )
   }
   const json = await res.json()

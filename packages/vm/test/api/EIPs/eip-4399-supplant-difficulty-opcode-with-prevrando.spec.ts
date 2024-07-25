@@ -21,7 +21,7 @@ describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
     }
     let block = createBlockFromBlockData(
       { header },
-      { common, calcDifficultyFromHeader: genesis.header }
+      { common, calcDifficultyFromHeader: genesis.header },
     )
 
     // Track stack
@@ -48,7 +48,7 @@ describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
           mixHash: prevRandao,
         },
       },
-      { common }
+      { common },
     )
     await vm.evm.runCode!({ ...runCodeArgs, block })
     assert.equal(stack[0], prevRandao, '0x44 returns PREVRANDAO (Merge)')

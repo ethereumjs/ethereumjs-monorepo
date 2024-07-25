@@ -153,7 +153,7 @@ export class Interpreter {
     gasLeft: bigint,
     journal: Journal,
     performanceLogs: EVMPerformanceLogger,
-    profilerOpts?: EVMProfilerOpts
+    profilerOpts?: EVMProfilerOpts,
   ) {
     this._evm = evm
     this._stateManager = stateManager
@@ -228,7 +228,7 @@ export class Interpreter {
             this._runState.code,
             this._evm,
             ContainerSectionType.InitCode,
-            EOFContainerMode.TxInitmode
+            EOFContainerMode.TxInitmode,
           )
         } catch (e) {
           // Trying to deploy an invalid EOF container
@@ -360,7 +360,7 @@ export class Interpreter {
           this._runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
             contract,
             this._runState.programCounter,
-            this._runState.programCounter
+            this._runState.programCounter,
           )
         gas += statelessGas
         debugGas(`codechunk accessed statelessGas=${statelessGas} (-> ${gas})`)
@@ -398,7 +398,7 @@ export class Interpreter {
           Number(gas),
           'opcodes',
           opInfo.fee,
-          Number(gas) - opInfo.fee
+          Number(gas) - opInfo.fee,
         )
       }
     }
@@ -543,7 +543,7 @@ export class Interpreter {
       debugGas(
         `${typeof context === 'string' ? context + ': ' : ''}refund ${amount} gas (-> ${
           this._runState.gasRefund
-        })`
+        })`,
       )
     }
     this._runState.gasRefund += amount
@@ -559,7 +559,7 @@ export class Interpreter {
       debugGas(
         `${typeof context === 'string' ? context + ': ' : ''}sub gas refund ${amount} (-> ${
           this._runState.gasRefund
-        })`
+        })`,
       )
     }
     this._runState.gasRefund -= amount
@@ -874,7 +874,7 @@ export class Interpreter {
     gasLimit: bigint,
     address: Address,
     value: bigint,
-    data: Uint8Array
+    data: Uint8Array,
   ): Promise<bigint> {
     const msg = new Message({
       caller: this._runState.auth,
@@ -899,7 +899,7 @@ export class Interpreter {
     gasLimit: bigint,
     address: Address,
     value: bigint,
-    data: Uint8Array
+    data: Uint8Array,
   ): Promise<bigint> {
     const msg = new Message({
       caller: this._env.address,
@@ -926,7 +926,7 @@ export class Interpreter {
     gasLimit: bigint,
     address: Address,
     value: bigint,
-    data: Uint8Array
+    data: Uint8Array,
   ): Promise<bigint> {
     const msg = new Message({
       caller: this._env.address,
@@ -951,7 +951,7 @@ export class Interpreter {
     gasLimit: bigint,
     address: Address,
     value: bigint,
-    data: Uint8Array
+    data: Uint8Array,
   ): Promise<bigint> {
     const msg = new Message({
       caller: this._env.caller,
@@ -1042,7 +1042,7 @@ export class Interpreter {
     value: bigint,
     codeToRun: Uint8Array,
     salt?: Uint8Array,
-    eofCallData?: Uint8Array
+    eofCallData?: Uint8Array,
   ): Promise<bigint> {
     const selfdestruct = new Set(this._result.selfdestruct)
     const caller = this._env.address
@@ -1150,7 +1150,7 @@ export class Interpreter {
     gasLimit: bigint,
     value: bigint,
     data: Uint8Array,
-    salt: Uint8Array
+    salt: Uint8Array,
   ): Promise<bigint> {
     return this.create(gasLimit, value, data, salt)
   }
@@ -1164,7 +1164,7 @@ export class Interpreter {
     value: bigint,
     containerData: Uint8Array,
     salt: Uint8Array,
-    callData: Uint8Array
+    callData: Uint8Array,
   ): Promise<bigint> {
     return this.create(gasLimit, value, containerData, salt, callData)
   }

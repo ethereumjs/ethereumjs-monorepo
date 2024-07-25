@@ -123,7 +123,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.debug(
       `Trie node fetcher instantiated with ${this.pathToNodeRequestData.size()} node requests destroyWhenDone=${
         this.destroyWhenDone
-      }`
+      }`,
     )
   }
 
@@ -139,7 +139,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    * @param peer
    */
   async request(
-    job: Job<JobTask, Uint8Array[], Uint8Array>
+    job: Job<JobTask, Uint8Array[], Uint8Array>,
   ): Promise<TrieNodesResponse | undefined> {
     const { task, peer } = job
     // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
@@ -193,7 +193,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    */
   process(
     job: Job<JobTask, Uint8Array[], Uint8Array>,
-    result: TrieNodesResponse
+    result: TrieNodesResponse,
   ): Uint8Array[] | undefined {
     const fullResult = (job.partialResult ?? []).concat(result)
     job.partialResult = undefined
@@ -295,7 +295,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             // if error is thrown, than the node is unknown and should be queued for fetching
             unknownChildNodeCount++
             const { parentAccountHash } = this.pathToNodeRequestData.getElementByKey(
-              pathString
+              pathString,
             ) as NodeRequestData
             this.pathToNodeRequestData.setElement(childNode.path, {
               nodeHash: bytesToHex(childNode.nodeHash as Uint8Array),
@@ -307,13 +307,13 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
         // record new node for batched storing after all subtrie nodes have been received
         const { nodeParentHash, parentAccountHash } = this.pathToNodeRequestData.getElementByKey(
-          pathString
+          pathString,
         ) as NodeRequestData
         if (storagePath !== undefined) {
           // if fetched node has a storagePath, it's storage node data and should be stored with
           // account leaf node data from where it originates
           const { pathToStorageNode } = this.fetchedAccountNodes.get(
-            parentAccountHash as string
+            parentAccountHash as string,
           ) as unknown as FetchedNodeData
           pathToStorageNode!.set(storagePath, nodeData as unknown as Uint8Array)
         } else {
@@ -369,8 +369,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               const a = createAccountFromRLP(node.value())
               this.debug(
                 `Stored storageTrie with root actual=${bytesToHex(
-                  storageTrie.root()
-                )} expected=${bytesToHex(a.storageRoot)}`
+                  storageTrie.root(),
+                )} expected=${bytesToHex(a.storageRoot)}`,
               )
             }
           }
@@ -379,8 +379,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         await this.accountTrie.persistRoot()
         this.debug(
           `Stored accountTrie with root actual=${bytesToHex(
-            this.accountTrie.root()
-          )} expected=${bytesToHex(this.root)}`
+            this.accountTrie.root(),
+          )} expected=${bytesToHex(this.root)}`,
         )
       }
     } catch (e) {
@@ -468,7 +468,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
   processStoreError(
     error: Error,
-    _task: JobTask
+    _task: JobTask,
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
     const stepBack = BIGINT_0
     const destroyFetcher =

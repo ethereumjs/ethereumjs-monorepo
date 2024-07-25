@@ -249,8 +249,8 @@ export class DBManager {
         op.baseDBOp.type !== undefined
           ? op.baseDBOp.type
           : op.baseDBOp.value !== undefined
-          ? 'put'
-          : 'del'
+            ? 'put'
+            : 'del'
       const convertedOp = {
         key: op.baseDBOp.key,
         value: op.baseDBOp.value,

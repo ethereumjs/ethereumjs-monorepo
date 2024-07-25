@@ -36,7 +36,7 @@ describe('RunCall tests', () => {
     assert.equal(
       res.createdAddress?.toString(),
       '0xbd770416a3345f91e4b34576cb804a576fa48eb1',
-      'created valid address when FROM account nonce is 0'
+      'created valid address when FROM account nonce is 0',
     )
   })
 
@@ -137,11 +137,11 @@ describe('RunCall tests', () => {
     assert.ok(
       byzantiumResult.execResult.exceptionError &&
         byzantiumResult.execResult.exceptionError.error === 'invalid opcode',
-      'byzantium cannot accept constantinople opcodes (SHL)'
+      'byzantium cannot accept constantinople opcodes (SHL)',
     )
     assert.ok(
       !constantinopleResult.execResult.exceptionError,
-      'constantinople can access the SHL opcode'
+      'constantinople can access the SHL opcode',
     )
   })
 
@@ -178,7 +178,7 @@ describe('RunCall tests', () => {
     await evm.stateManager.putContractStorage(
       address,
       new Uint8Array(32),
-      hexToBytes(`0x${'00'.repeat(31)}01`)
+      hexToBytes(`0x${'00'.repeat(31)}01`),
     )
 
     // setup the call arguments
@@ -414,7 +414,7 @@ describe('RunCall tests', () => {
     assert.deepEqual(
       storage,
       emptyBytes,
-      'failed to create contract; nonce of creating contract is too high (MAX_UINT64)'
+      'failed to create contract; nonce of creating contract is too high (MAX_UINT64)',
     )
   })
 
@@ -469,7 +469,7 @@ describe('RunCall tests', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('value field cannot be negative'),
-        'throws on negative call value'
+        'throws on negative call value',
       )
     }
   })
@@ -483,7 +483,7 @@ describe('RunCall tests', () => {
     const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
     await evm.stateManager.putContractCode(contractAddress, contractCode)
     const senderKey = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
     const sender = Address.fromPrivateKey(senderKey)
 
@@ -503,7 +503,7 @@ describe('RunCall tests', () => {
       assert.equal(
         senderBalance,
         balance ?? BigInt(0),
-        'sender balance should be the same before and after call execution with skipBalance'
+        'sender balance should be the same before and after call execution with skipBalance',
       )
       assert.equal(res.execResult.exceptionError, undefined, 'no exceptionError with skipBalance')
     }
@@ -511,7 +511,7 @@ describe('RunCall tests', () => {
     const res2 = await evm.runCall({ ...runCallArgs, skipBalance: false })
     assert.ok(
       res2.execResult.exceptionError?.error.match('insufficient balance'),
-      'runCall reverts when insufficient sender balance and skipBalance is false'
+      'runCall reverts when insufficient sender balance and skipBalance is false',
     )
   })
 
@@ -536,7 +536,7 @@ describe('RunCall tests', () => {
     assert.equal(
       result.execResult.exceptionError?.error,
       ERROR.CODESIZE_EXCEEDS_MAXIMUM,
-      'reported error is correct'
+      'reported error is correct',
     )
   })
   it('runCall() => use BLOBHASH opcode from EIP 4844', async () => {
@@ -558,7 +558,7 @@ describe('RunCall tests', () => {
     assert.equal(
       bytesToHex(unpadBytes(res.execResult.returnValue)),
       '0xab',
-      'retrieved correct versionedHash from runState'
+      'retrieved correct versionedHash from runState',
     )
 
     // setup the call arguments
@@ -572,7 +572,7 @@ describe('RunCall tests', () => {
     assert.equal(
       bytesToHex(unpadBytes(res2.execResult.returnValue)),
       '0x',
-      'retrieved no versionedHash when specified versionedHash does not exist in runState'
+      'retrieved no versionedHash when specified versionedHash does not exist in runState',
     )
   })
 
@@ -588,7 +588,7 @@ describe('RunCall tests', () => {
     assert.equal(
       evm.getActiveOpcodes().get(BLOBBASEFEE_OPCODE)!.name,
       'BLOBBASEFEE',
-      'Opcode 0x4a named BLOBBASEFEE'
+      'Opcode 0x4a named BLOBBASEFEE',
     )
 
     const block = defaultBlock()
@@ -605,7 +605,7 @@ describe('RunCall tests', () => {
     assert.equal(
       bytesToBigInt(unpadBytes(res.execResult.returnValue)),
       BigInt(119),
-      'retrieved correct gas fee'
+      'retrieved correct gas fee',
     )
     assert.equal(res.execResult.executionGasUsed, BigInt(6417), 'correct blob gas fee (2) charged')
   })
@@ -742,7 +742,7 @@ describe('RunCall tests', () => {
       await evm.runCall(runCallArgs)
 
       const callResult = bytesToHex(
-        await evm.stateManager.getContractStorage(callerAddress, zeros(32))
+        await evm.stateManager.getContractStorage(callerAddress, zeros(32)),
       )
       // Expect slot to have value of either: 0 since CALLCODE and CODE did not have enough gas to execute
       // Or 1, if CALL(CODE) has enough gas to enter the new call frame

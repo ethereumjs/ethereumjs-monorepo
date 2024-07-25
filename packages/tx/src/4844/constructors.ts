@@ -31,7 +31,7 @@ const validateBlobTransactionNetworkWrapper = (
   commitments: Uint8Array[],
   kzgProofs: Uint8Array[],
   version: number,
-  kzg: Kzg
+  kzg: Kzg,
 ) => {
   if (!(blobVersionedHashes.length === blobs.length && blobs.length === commitments.length)) {
     throw new Error('Number of blobVersionedHashes, blobs, and commitments not all equal')
@@ -73,7 +73,7 @@ const validateBlobTransactionNetworkWrapper = (
 export function create4844BlobTx(txData: TxData, opts?: TxOptions) {
   if (opts?.common?.customCrypto?.kzg === undefined) {
     throw new Error(
-      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
+      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
     )
   }
   const kzg = opts!.common!.customCrypto!.kzg!
@@ -96,7 +96,7 @@ export function create4844BlobTx(txData: TxData, opts?: TxOptions) {
     txData.kzgProofs = blobsToProofs(
       kzg,
       txData.blobs as Uint8Array[],
-      txData.kzgCommitments as Uint8Array[]
+      txData.kzgCommitments as Uint8Array[],
     )
   }
 
@@ -112,13 +112,13 @@ export function create4844BlobTx(txData: TxData, opts?: TxOptions) {
 export function create4844BlobTxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
   if (opts.common?.customCrypto?.kzg === undefined) {
     throw new Error(
-      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
+      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
     )
   }
 
   if (values.length !== 11 && values.length !== 14) {
     throw new Error(
-      'Invalid EIP-4844 transaction. Only expecting 11 values (for unsigned tx) or 14 values (for signed tx).'
+      'Invalid EIP-4844 transaction. Only expecting 11 values (for unsigned tx) or 14 values (for signed tx).',
     )
   }
 
@@ -169,7 +169,7 @@ export function create4844BlobTxFromBytesArray(values: TxValuesArray, opts: TxOp
       r,
       s,
     },
-    opts
+    opts,
   )
 }
 
@@ -182,7 +182,7 @@ export function create4844BlobTxFromBytesArray(values: TxValuesArray, opts: TxOp
 export function create4844BlobTxFromRLP(serialized: Uint8Array, opts: TxOptions = {}) {
   if (opts.common?.customCrypto?.kzg === undefined) {
     throw new Error(
-      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
+      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
     )
   }
 
@@ -190,7 +190,7 @@ export function create4844BlobTxFromRLP(serialized: Uint8Array, opts: TxOptions 
     throw new Error(
       `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${
         TransactionType.BlobEIP4844
-      }, received: ${bytesToHex(serialized.subarray(0, 1))}`
+      }, received: ${bytesToHex(serialized.subarray(0, 1))}`,
     )
   }
 
@@ -211,7 +211,7 @@ export function create4844BlobTxFromRLP(serialized: Uint8Array, opts: TxOptions 
  */
 export function create4844BlobTxFromSerializedNetworkWrapper(
   serialized: Uint8Array,
-  opts?: TxOptions
+  opts?: TxOptions,
 ): BlobEIP4844Transaction {
   if (!opts || !opts.common) {
     throw new Error('common instance required to validate versioned hashes')
@@ -219,7 +219,7 @@ export function create4844BlobTxFromSerializedNetworkWrapper(
 
   if (opts.common?.customCrypto?.kzg === undefined) {
     throw new Error(
-      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
+      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
     )
   }
 
@@ -227,7 +227,7 @@ export function create4844BlobTxFromSerializedNetworkWrapper(
     throw new Error(
       `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${
         TransactionType.BlobEIP4844
-      }, received: ${bytesToHex(serialized.subarray(0, 1))}`
+      }, received: ${bytesToHex(serialized.subarray(0, 1))}`,
     )
   }
 
@@ -252,7 +252,7 @@ export function create4844BlobTxFromSerializedNetworkWrapper(
     kzgCommitments,
     kzgProofs,
     version,
-    opts.common.customCrypto.kzg
+    opts.common.customCrypto.kzg,
   )
 
   // set the network blob data on the tx
@@ -278,11 +278,11 @@ export function create4844BlobTxFromSerializedNetworkWrapper(
  */
 export function createMinimal4844TxFromNetworkWrapper(
   txData: BlobEIP4844Transaction,
-  opts?: TxOptions
+  opts?: TxOptions,
 ): BlobEIP4844Transaction {
   if (opts?.common?.customCrypto?.kzg === undefined) {
     throw new Error(
-      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
+      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
     )
   }
 
@@ -291,7 +291,7 @@ export function createMinimal4844TxFromNetworkWrapper(
       ...txData,
       ...{ blobs: undefined, kzgCommitments: undefined, kzgProofs: undefined },
     },
-    opts
+    opts,
   )
   return tx
 }
@@ -305,7 +305,7 @@ export function createMinimal4844TxFromNetworkWrapper(
  */
 export function blobTxNetworkWrapperToJSON(
   serialized: Uint8Array,
-  opts?: TxOptions
+  opts?: TxOptions,
 ): JsonBlobTxNetworkWrapper {
   const tx = create4844BlobTxFromSerializedNetworkWrapper(serialized, opts)
 

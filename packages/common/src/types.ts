@@ -78,7 +78,7 @@ export interface CustomCrypto {
     v: bigint,
     r: Uint8Array,
     s: Uint8Array,
-    chainId?: bigint
+    chainId?: bigint,
   ) => Uint8Array
   sha256?: (msg: Uint8Array) => Uint8Array
   ecsign?: (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => ECDSASignature

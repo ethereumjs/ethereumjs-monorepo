@@ -1,7 +1,6 @@
 import { Trie } from '@ethereumjs/trie'
-import { Level } from 'level'
-
 import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
+import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
 
 import type { BatchDBOp, DB, DBObject, EncodingOpts } from '@ethereumjs/util'
@@ -44,7 +43,7 @@ const getEncodings = (opts: EncodingOpts = {}) => {
  */
 export class LevelDB<
   TKey extends Uint8Array | string = Uint8Array | string,
-  TValue extends Uint8Array | string | DBObject = Uint8Array | string | DBObject
+  TValue extends Uint8Array | string | DBObject = Uint8Array | string | DBObject,
 > implements DB<TKey, TValue>
 {
   _leveldb: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
@@ -55,7 +54,7 @@ export class LevelDB<
    * @param leveldb - An abstract-leveldown compliant store
    */
   constructor(
-    leveldb?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+    leveldb?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>,
   ) {
     this._leveldb = leveldb ?? new MemoryLevel()
   }
@@ -126,6 +125,6 @@ export class LevelDB<
 
 async function main() {
   const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION') as any) })
-  console.log(await trie.database().db) // LevelDB { ...
+  console.log(trie.database().db) // LevelDB { ...
 }
-main()
+void main()

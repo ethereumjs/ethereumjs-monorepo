@@ -55,7 +55,7 @@ function B2B_G(
   c: number,
   d: number,
   ix: number,
-  iy: number
+  iy: number,
 ) {
   const x0 = mw[ix]
   const x1 = mw[ix + 1]
@@ -110,7 +110,7 @@ const SIGMA8 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 14, 10, 4,
 const SIGMA82 = new Uint8Array(
   SIGMA8.map(function (x) {
     return x * 2
-  })
+  }),
 )
 
 export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, rounds: number) {
@@ -194,7 +194,7 @@ export function precompile09(opts: PrecompileInput): ExecResult {
     opts._debug(
       `Run BLAKE2F (0x09) precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
         opts.gasLimit
-      } gasUsed=${gasUsed}`
+      } gasUsed=${gasUsed}`,
     )
   }
 

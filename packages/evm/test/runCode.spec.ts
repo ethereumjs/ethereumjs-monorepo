@@ -37,7 +37,7 @@ describe('VM.runCode: initial program counter', () => {
           assert.equal(
             result.runState?.programCounter,
             testData.resultPC,
-            `should start the execution at the specified pc or 0, testCases[${i}]`
+            `should start the execution at the specified pc or 0, testCases[${i}]`,
           )
         }
       } catch (e: any) {
@@ -118,7 +118,7 @@ describe('VM.runCode: RunCodeOptions', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('value field cannot be negative'),
-        'throws on negative call value'
+        'throws on negative call value',
       )
     }
   })

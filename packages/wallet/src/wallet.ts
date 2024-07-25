@@ -99,7 +99,7 @@ function validateBytes(paramName: string, bytes: Uint8Array, length?: number) {
       typeof length === 'number' ? `${length * 2}` : 'empty or a non-zero even number of'
     const howManyBytes = typeof length === 'number' ? ` (${length} bytes)` : ''
     throw new Error(
-      `Invalid ${paramName}, must be a string (${howManyHex} hex characters) or Uint8Array${howManyBytes}`
+      `Invalid ${paramName}, must be a string (${howManyHex} hex characters) or Uint8Array${howManyBytes}`,
     )
   }
   if (typeof length === 'number' && bytes.length !== length) {
@@ -265,7 +265,7 @@ interface EthSaleKeystore {
 export class Wallet {
   constructor(
     private readonly privateKey?: Uint8Array | undefined,
-    private publicKey: Uint8Array | undefined = undefined
+    private publicKey: Uint8Array | undefined = undefined,
   ) {
     if (privateKey && publicKey) {
       throw new Error('Cannot supply both a private and a public key to the constructor')
@@ -393,7 +393,7 @@ export class Wallet {
       ciphertext,
       keccak256(derivedKey.subarray(0, 16)).subarray(0, 16),
       unprefixedHexToBytes(json.Crypto.IV),
-      'aes-128-cbc'
+      'aes-128-cbc',
     )
     return new Wallet(seed)
   }
@@ -407,7 +407,7 @@ export class Wallet {
   public static async fromV3(
     input: string | V3Keystore,
     password: string,
-    nonStrict = false
+    nonStrict = false,
   ): Promise<Wallet> {
     const json: V3Keystore =
       typeof input === 'object' ? input : JSON.parse(nonStrict ? input.toLowerCase() : input)
@@ -433,7 +433,7 @@ export class Wallet {
         unprefixedHexToBytes(kdfparams.salt),
         kdfparams.c,
         kdfparams.dklen,
-        'sha256'
+        'sha256',
       )
     } else {
       throw new Error('Unsupported key derivation scheme')
@@ -449,7 +449,7 @@ export class Wallet {
       ciphertext,
       derivedKey.subarray(0, 16),
       unprefixedHexToBytes(json.crypto.cipherparams.iv),
-      json.crypto.cipher
+      json.crypto.cipher,
     )
     return new Wallet(seed)
   }
@@ -464,7 +464,7 @@ export class Wallet {
    */
   public static async fromEthSale(
     input: string | EthSaleKeystore,
-    password: string
+    password: string,
   ): Promise<Wallet> {
     const json: EthSaleKeystore = typeof input === 'object' ? input : JSON.parse(input)
 
@@ -482,7 +482,7 @@ export class Wallet {
       derivedKey,
       encseed.subarray(0, 16),
       'aes-128-cbc',
-      true
+      true,
     )
 
     const wallet = new Wallet(keccak256(seed))
@@ -587,7 +587,7 @@ export class Wallet {
           kdfParams.salt,
           kdfParams.c,
           kdfParams.dklen,
-          'sha256'
+          'sha256',
         )
         break
       case KDFFunctions.Scrypt:
@@ -604,7 +604,7 @@ export class Wallet {
       derivedKey.subarray(0, 16),
       v3Params.iv,
       v3Params.cipher,
-      false
+      false,
     )
     const mac = keccak256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
 

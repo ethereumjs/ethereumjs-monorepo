@@ -32,7 +32,7 @@ describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
     assert.equal(
       bytesToHex(unpadBytes(res.execResult.returnValue)),
       '0xab',
-      'retrieved correct versionedHash from runState'
+      'retrieved correct versionedHash from runState',
     )
   })
 })
@@ -81,7 +81,7 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
       assert.equal(
         bytesToHex(unpadBytes(res.execResult.returnValue)),
         '0xab',
-        `retrieved correct versionedHash from runState through callCode=${callCode}`
+        `retrieved correct versionedHash from runState through callCode=${callCode}`,
       )
     }
   })
@@ -137,7 +137,7 @@ describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () =>
       assert.equal(
         bytesToHex(code),
         '0x' + 'ab'.padStart(64, '0'), // have to padStart here, since `BLOBHASH` will push 32 bytes on stack
-        `retrieved correct versionedHash from runState through createOP=${createOP}`
+        `retrieved correct versionedHash from runState through createOP=${createOP}`,
       )
     }
   })
