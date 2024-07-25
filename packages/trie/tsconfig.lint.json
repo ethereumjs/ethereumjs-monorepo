@@ -1,6 +1,12 @@
 {
   "extends": "../../config/tsconfig.json",
-  "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "examples/**/*.ts",
+    "examples/**/*.js",
+    "benchmarks/**/*.ts"
+  ],
   "compilerOptions": {
     "noEmit": true
   }

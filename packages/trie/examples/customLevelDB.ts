@@ -1,7 +1,6 @@
 import { Trie } from '@ethereumjs/trie'
-import { Level } from 'level'
-
 import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
+import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
 
 import type { BatchDBOp, DB, DBObject, EncodingOpts } from '@ethereumjs/util'
@@ -126,6 +125,6 @@ export class LevelDB<
 
 async function main() {
   const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION') as any) })
-  console.log(await trie.database().db) // LevelDB { ...
+  console.log(trie.database().db) // LevelDB { ...
 }
 void main()
