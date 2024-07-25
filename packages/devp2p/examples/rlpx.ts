@@ -13,7 +13,7 @@ const main = async () => {
     common,
   })
   console.log(`RLPx is active - ${rlpx._isAlive()}`)
-  await rlpx.destroy()
+  rlpx.destroy()
 }
 
 void main()

@@ -1,7 +1,6 @@
 import { BlockHeader, createBlockFromValuesArray } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import * as devp2p from '@ethereumjs/devp2p'
-import { ETH } from '@ethereumjs/devp2p'
 import { bytesToHex, bytesToInt, hexToBytes, intToBytes, randomBytes } from '@ethereumjs/util'
 import chalk from 'chalk'
 import ms from 'ms'

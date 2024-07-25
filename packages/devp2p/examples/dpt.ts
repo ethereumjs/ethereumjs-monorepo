@@ -12,7 +12,7 @@ const main = async () => {
   })
   console.log(`DPT is active and has id - ${bytesToHex(dpt.id!)}`)
   // Should log the DPT's hex ID - 0xcd80bb7a768432302d267729c15da61d172373ea036...
-  await dpt.destroy()
+  dpt.destroy()
 }
 
 void main()

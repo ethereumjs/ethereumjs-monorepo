@@ -66,7 +66,7 @@ function compileContracts() {
 
   let compilationFailed = false
 
-  if (output.errors) {
+  if (output.errors !== undefined) {
     for (const error of output.errors) {
       if (error.severity === 'error') {
         console.error(error.formattedMessage)

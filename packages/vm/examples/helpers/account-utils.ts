@@ -1,4 +1,4 @@
-import { Account, Address, createAccount } from '@ethereumjs/util'
+import { Address, createAccount } from '@ethereumjs/util'
 
 import type { VM } from '@ethereumjs/vm'
 
