@@ -87,7 +87,7 @@ export function createAddressFromBigInt(value: bigint): Address {
   if (bytes.length > 20) {
     throw new Error(`Invalid address, too long: ${bytes.length}`)
   }
-  return new Address(setLengthLeft(bigIntToBytes(value), 20))
+  return new Address(setLengthLeft(bytes, 20))
 }
 
 /**
