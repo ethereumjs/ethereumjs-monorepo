@@ -50,19 +50,9 @@ export type CacheSettings = {
 }
 
 /**
- * Options for constructing a {@link SimpleStateManager}.
+ * Basic state manager options (not to be used directly)
  */
-export interface SimpleStateManagerOpts {
-  /**
-   * The common to use
-   */
-  common?: Common
-}
-
-export interface RPCStateManagerOpts {
-  provider: string
-  blockTag: bigint | 'earliest'
-
+interface BaseStateManagerOpts {
   /**
    * The common to use
    */
@@ -70,9 +60,30 @@ export interface RPCStateManagerOpts {
 }
 
 /**
+ * Cache state manager options (not to be used directly)
+ */
+interface CacheStateManagerOpts {
+  accountCacheOpts?: CacheOptions
+  storageCacheOpts?: CacheOptions
+  codeCacheOpts?: CacheOptions
+}
+
+/**
+ * Options for constructing a {@link SimpleStateManager}.
+ */
+export interface SimpleStateManagerOpts extends BaseStateManagerOpts {
+  // Keep this as an alias so that it might be able to extend in the future
+}
+
+export interface RPCStateManagerOpts extends BaseStateManagerOpts {
+  provider: string
+  blockTag: bigint | 'earliest'
+}
+
+/**
  * Options for constructing a {@link StateManager}.
  */
-export interface DefaultStateManagerOpts {
+export interface DefaultStateManagerOpts extends BaseStateManagerOpts, CacheStateManagerOpts {
   /**
    * A {@link Trie} instance
    */
@@ -96,17 +107,17 @@ export interface DefaultStateManagerOpts {
    * Default: false (for backwards compatibility reasons)
    */
   prefixStorageTrieKeys?: boolean
+}
 
-  accountCacheOpts?: CacheOptions
-
-  storageCacheOpts?: CacheOptions
-
-  codeCacheOpts?: CacheOptions
-
-  /**
-   * The common to use
-   */
-  common?: Common
+/**
+ * Options dictionary.
+ */
+export interface StatelessVerkleStateManagerOpts
+  extends BaseStateManagerOpts,
+    CacheStateManagerOpts {
+  accesses?: AccessWitness
+  verkleCrypto: VerkleCrypto
+  initialStateRoot?: Uint8Array
 }
 
 export interface VerkleState {
@@ -115,22 +126,6 @@ export interface VerkleState {
 
 export interface EncodedVerkleProof {
   [key: PrefixedHexString]: PrefixedHexString
-}
-
-/**
- * Options dictionary.
- */
-export interface StatelessVerkleStateManagerOpts {
-  /**
-   * The common to use
-   */
-  common?: Common
-  accountCacheOpts?: CacheOptions
-  storageCacheOpts?: CacheOptions
-  codeCacheOpts?: CacheOptions
-  accesses?: AccessWitness
-  verkleCrypto: VerkleCrypto
-  initialStateRoot?: Uint8Array
 }
 
 /**
