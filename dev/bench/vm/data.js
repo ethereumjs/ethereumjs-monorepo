@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1722034440818,
+  "lastUpdate": 1722036875784,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ef209306672e3d6bafbd3d21bf4a5b29eebdf84e",
-          "message": "EVM/Common: SimpleStateManager (#3482)\n\n* Add SimpleStateManager implementation\r\n\r\n* Common SimpleStateManager fixes, add explicit ethereum-cryptography dependency (already in through Util dependency)\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Integrate SimpleStateManager into existing checkpointing tests\r\n\r\n* Integrate into EVM, remove stateManager dependency\r\n\r\n* Rebuild packack-lock.json\r\n\r\n* Move OriginalStorageCache class to Common, deprecate old location\r\n\r\n* Use full OriginalStorageCache implementation in SimpleStateManager\r\n\r\n* Add some docs\r\n\r\n* Rename topA, topC, topS to something more expressive, make protected\r\n\r\n* Rename add() -> checkpointSync(), make protected\r\n\r\n* More elegant commit() implementation\r\n\r\n* Add flexible keccak256\r\n\r\n* Minor\r\n\r\n* Update packages/common/src/state/simple.ts\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* move simple to stateManager\r\n\r\n* add simple example\r\n\r\n* lint\r\n\r\n* Revert bundler config changes\r\n\r\n* update docs\r\n\r\n* address feedback\r\n\r\n* address feedback\r\n\r\n---------\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-07-12T21:30:42+02:00",
-          "tree_id": "937d07adc68cad377b02f5c60c59a4de7700bf81",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ef209306672e3d6bafbd3d21bf4a5b29eebdf84e"
-        },
-        "date": 1720812798900,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38255,
-            "range": "±2.04%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 36725,
-            "range": "±2.24%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 36006,
-            "range": "±2.33%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36476,
-            "range": "±1.63%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34638,
-            "range": "±2.61%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.68%",
             "unit": "ops/sec",
             "extra": "91 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bcb0a84f24afada45cb574ac3e9e4cc501d65681",
+          "message": "RPC: add data field to RpcError / eth_call error (#3547)\n\n* RPC: add optional data field to RpcError\r\n\r\n* RPC: throw error with data in eth_call\r\n\r\n* update tests\r\n\r\n* add tests for error code\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2024-07-27T01:31:57+02:00",
+          "tree_id": "6aac8fc267413b8d43333248c59a6814b34aaf1f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bcb0a84f24afada45cb574ac3e9e4cc501d65681"
+        },
+        "date": 1722036874364,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38637,
+            "range": "±1.82%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36433,
+            "range": "±3.45%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37375,
+            "range": "±1.36%",
+            "unit": "ops/sec",
+            "extra": "92 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35952,
+            "range": "±2.17%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35925,
+            "range": "±1.68%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
           }
         ]
       }
