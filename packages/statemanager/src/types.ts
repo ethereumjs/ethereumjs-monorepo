@@ -6,7 +6,7 @@ import type { Common } from '@ethereumjs/common'
 import type { Trie } from '@ethereumjs/trie'
 import type { VerkleCrypto } from '@ethereumjs/util'
 
-export type CacheOptions = {
+type CacheOptions = {
   /**
    * Allows for cache deactivation
    *

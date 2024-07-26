@@ -179,11 +179,7 @@ export interface StateManagerInterface {
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
   getAppliedKey?(address: Uint8Array): Uint8Array
 
-  /*
-   * The following optional methods are Verkle related
-   *
-   * Experimental (do not implement)
-   */
+  // Verkle (experimental)
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
 }
 

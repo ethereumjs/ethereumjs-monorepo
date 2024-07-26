@@ -168,9 +168,6 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   async clearContractStorage(): Promise<void> {}
 
   // Only "core" methods implemented
-  checkChunkWitnessPresent?(): Promise<boolean> {
-    throw new Error('Method not implemented.')
-  }
   dumpStorage(): Promise<StorageDump> {
     throw new Error('Method not implemented.')
   }

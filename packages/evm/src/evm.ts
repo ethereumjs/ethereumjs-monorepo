@@ -160,6 +160,17 @@ export class EVM implements EVMInterface {
     this.blockchain = opts.blockchain!
     this.stateManager = opts.stateManager!
 
+    if (this.common.isActivatedEIP(6800)) {
+      const mandatory = ['checkChunkWitnessPresent']
+      for (const m of mandatory) {
+        if (!(m in this.stateManager)) {
+          throw new Error(
+            `State manager used must implement ${m} if Verkle (EIP-6800) is activated`,
+          )
+        }
+      }
+    }
+
     this._bn128 = bn128
     this.events = new AsyncEventEmitter()
     this._optsCached = opts
