@@ -6,7 +6,7 @@ import { crc32 } from '../src/crc.js'
 // Test vectors generated from https://asecuritysite.com/encryption/crc32?word
 const TEST_VECTORS: [string, number][] = [
   ['Hello from ethereum', 0xe647a5d1],
-  ['typescript is better', 0x7c5aa27e],
+  ['typescript is better', 0x7c5aa27e]
 ]
 
 describe('crc32', () => {
