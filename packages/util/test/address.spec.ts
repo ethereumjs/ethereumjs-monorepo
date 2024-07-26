@@ -2,6 +2,7 @@ import { assert, describe, it } from 'vitest'
 
 import {
   Address,
+  createAddressFromBigInt,
   createAddressFromPrivateKey,
   createAddressFromPublicKey,
   createAddressFromString,
@@ -45,6 +46,17 @@ describe('Address', () => {
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const addr = createAddressFromString(str)
     assert.notOk(addr.isZero())
+  })
+
+  it('should create an address from a bigint', () => {
+    const addr = createAddressFromBigInt(BigInt(0))
+    assert.ok(addr.isZero())
+    const addr2 = createAddressFromBigInt(BigInt(1))
+    assert.notOk(addr2.isZero())
+  })
+
+  it('should throw if bigint is too long', () => {
+    assert.throws(() => createAddressFromBigInt(BigInt(2) ** BigInt(160)))
   })
 
   it('should instantiate from public key', () => {
