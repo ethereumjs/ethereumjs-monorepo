@@ -43,9 +43,7 @@ type AccountDataResponse = AccountData[] & { completed?: boolean }
  * @memberof module:sync/fetcher
  */
 export interface AccountFetcherOptions extends FetcherOptions {
-  /** Root hash of the account trie to serve */
-  root: Uint8Array
-
+  // height of block being targeted for snap sync
   height: bigint
 
   /** The origin to start account fetcher from (including), by default starts from 0 (0x0000...) */
@@ -74,7 +72,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   stateManager: DefaultStateManager
   accountTrie: Trie
 
-  root: Uint8Array
   height: bigint
   highestKnownHash: Uint8Array | undefined
 
@@ -95,7 +92,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     super(options)
     this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
 
-    this.root = options.root
     this.height = options.height
     this.first = options.first
     this.count = options.count ?? BIGINT_2EXP256 - this.first

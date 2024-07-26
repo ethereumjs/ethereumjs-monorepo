@@ -42,9 +42,7 @@ export type StorageRequest = {
  * @memberof module:sync/fetcher
  */
 export interface StorageFetcherOptions extends FetcherOptions {
-  /** Root hash of the account trie to serve */
-  root: Uint8Array
-
+  // height of block being targeted for snap sync
   height: bigint
 
   /** Storage requests to fetch */
@@ -71,7 +69,6 @@ export type JobTask = {
 
 export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageData[]> {
   protected debug: Debugger
-  root: Uint8Array
   height: bigint
   stateManager: DefaultStateManager
   fetcherDoneFlags: SnapFetcherDoneFlags
@@ -91,7 +88,6 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     super(options)
     this.fragmentedRequests = []
 
-    this.root = options.root
     this.height = options.height
     this.stateManager = options.stateManager ?? new DefaultStateManager()
     this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()

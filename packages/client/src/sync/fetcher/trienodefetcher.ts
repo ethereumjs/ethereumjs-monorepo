@@ -37,7 +37,6 @@ type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
  * @memberof module:sync/fetcher
  */
 export interface TrieNodeFetcherOptions extends FetcherOptions {
-  root: Uint8Array
   height: bigint
   accountToStorageTrie?: Map<String, Trie>
   stateManager?: DefaultStateManager
@@ -70,7 +69,8 @@ type NodeRequestData = {
 
 export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
   protected debug: Debugger
-  root: Uint8Array
+
+  // height of block being targeted for snap sync
   height: bigint
 
   stateManager: DefaultStateManager
@@ -103,7 +103,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    */
   constructor(options: TrieNodeFetcherOptions) {
     super(options)
-    this.root = options.root
     this.height = options.height
     this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
     this.pathToNodeRequestData = new OrderedMap<string, NodeRequestData>()
