@@ -18,7 +18,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { AccountCache, CacheType, OriginalStorageCache, StorageCache } from './cache/index.js'
 
-import type { Proof } from './index.js'
+import type { Proof, RPCStateManagerOpts } from './index.js'
 import type {
   AccountFields,
   EVMStateManagerInterface,
@@ -27,16 +27,6 @@ import type {
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-
-export interface RPCStateManagerOpts {
-  provider: string
-  blockTag: bigint | 'earliest'
-
-  /**
-   * The common to use
-   */
-  common?: Common
-}
 
 const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(2)
 

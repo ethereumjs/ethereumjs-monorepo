@@ -3,6 +3,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
+import type { SimpleStateManagerOpts } from './index.js'
 import type {
   AccountFields,
   Common,
@@ -12,16 +13,6 @@ import type {
   StorageRange,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
-
-/**
- * Options for constructing a {@link SimpleStateManager}.
- */
-export interface SimpleStateManagerOpts {
-  /**
-   * The common to use
-   */
-  common?: Common
-}
 
 /**
  * Simple and dependency-free state manager for basic state access use cases
