@@ -75,11 +75,11 @@ async function setupPreConditions(vm: VM, data: any) {
     for (const [key, val] of Object.entries(storage)) {
       const storageKey = setLengthLeft(hexToBytes(key), 32)
       const storageVal = hexToBytes(val as string)
-      await vm.stateManager.putContractStorage(address, storageKey, storageVal)
+      await vm.stateManager.putStorage(address, storageKey, storageVal)
     }
 
     const codeBuf = hexToBytes('0x' + code)
-    await vm.stateManager.putContractCode(address, codeBuf)
+    await vm.stateManager.putCode(address, codeBuf)
   }
 
   await vm.stateManager.commit()

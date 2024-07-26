@@ -47,7 +47,7 @@ describe('EIP 2929: gas cost tests', () => {
       i++
     })
 
-    await vm.stateManager.putContractCode(address, hexToBytes(test.code))
+    await vm.stateManager.putCode(address, hexToBytes(test.code))
 
     const unsignedTx = createLegacyTx({
       gasLimit: initialGas, // ensure we pass a lot of gas, so we do not run out of gas
@@ -73,7 +73,7 @@ describe('EIP 2929: gas cost tests', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
     const vm = await VM.create({ common })
 
-    await vm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
+    await vm.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
 
     // setup the call arguments
     const unsignedTx = createLegacyTx({

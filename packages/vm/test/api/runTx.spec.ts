@@ -468,8 +468,8 @@ describe('runTx() -> runtime behavior', () => {
       */
       const code = hexToBytes('0x6001600055FE')
       const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
-      await vm.stateManager.putContractCode(address, code)
-      await vm.stateManager.putContractStorage(
+      await vm.stateManager.putCode(address, code)
+      await vm.stateManager.putStorage(
         address,
         hexToBytes(`0x${'00'.repeat(32)}`),
         hexToBytes(`0x${'00'.repeat(31)}01`),
@@ -797,7 +797,7 @@ it('Validate EXTCODEHASH puts KECCAK256_NULL on stack if calling account has no 
   // Puts EXTCODEHASH of CALLER into slot 0
   const code = hexToBytes('0x333F60005500')
   const codeAddr = Address.fromString('0x' + '20'.repeat(20))
-  await vm.stateManager.putContractCode(codeAddr, code)
+  await vm.stateManager.putCode(codeAddr, code)
 
   const tx = createLegacyTx({
     gasLimit: 100000,
@@ -812,7 +812,7 @@ it('Validate EXTCODEHASH puts KECCAK256_NULL on stack if calling account has no 
   await vm.stateManager.putAccount(addr, acc!)
   await runTx(vm, { tx, skipHardForkValidation: true })
 
-  const hash = await vm.stateManager.getContractStorage(codeAddr, zeros(32))
+  const hash = await vm.stateManager.getStorage(codeAddr, zeros(32))
   assert.deepEqual(hash, KECCAK256_NULL, 'hash ok')
 })
 
@@ -830,7 +830,7 @@ it('Validate CALL does not charge new account gas when calling CALLER and caller
   // Calls CALLER and sends back the ETH just sent with the transaction
   const code = hexToBytes('0x600080808034335AF100')
   const codeAddr = Address.fromString('0x' + '20'.repeat(20))
-  await vm.stateManager.putContractCode(codeAddr, code)
+  await vm.stateManager.putCode(codeAddr, code)
 
   const tx = createLegacyTx({
     gasLimit: 100000,
@@ -861,7 +861,7 @@ it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER an
   // Puts EXTCODEHASH of CALLER into slot 0
   const code = hexToBytes('0x33FF')
   const codeAddr = Address.fromString('0x' + '20'.repeat(20))
-  await vm.stateManager.putContractCode(codeAddr, code)
+  await vm.stateManager.putCode(codeAddr, code)
 
   const tx = createLegacyTx({
     gasLimit: 100000,

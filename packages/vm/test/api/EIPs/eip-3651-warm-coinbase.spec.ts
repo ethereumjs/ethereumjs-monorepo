@@ -38,7 +38,7 @@ async function getVM(common: Common) {
   account!.balance = balance
   await vm.stateManager.putAccount(sender, account!)
 
-  await vm.stateManager.putContractCode(contractAddress, code)
+  await vm.stateManager.putCode(contractAddress, code)
   return vm
 }
 

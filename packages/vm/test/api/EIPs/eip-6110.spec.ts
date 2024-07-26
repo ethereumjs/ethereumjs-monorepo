@@ -47,7 +47,7 @@ describe('EIP-6110 runBlock tests', () => {
     })
     const beaconContractAddress = Address.fromString(DEPOSIT_CONTRACT_ADDRESS)
     await vm.stateManager.putAccount(beaconContractAddress, beaconContractAccount)
-    await vm.stateManager.putContractCode(beaconContractAddress, depositContractByteCode)
+    await vm.stateManager.putCode(beaconContractAddress, depositContractByteCode)
     await vm.stateManager.putAccount(sender, createAccount({ balance: 540000000030064771065n }))
     const block = createBlockFromBlockData(
       {
@@ -80,7 +80,7 @@ describe('EIP-7685 buildBlock tests', () => {
     })
     const beaconContractAddress = Address.fromString(DEPOSIT_CONTRACT_ADDRESS)
     await vm.stateManager.putAccount(beaconContractAddress, beaconContractAccount)
-    await vm.stateManager.putContractCode(beaconContractAddress, depositContractByteCode)
+    await vm.stateManager.putCode(beaconContractAddress, depositContractByteCode)
     await vm.stateManager.putAccount(sender, createAccount({ balance: 540000000030064771065n }))
     const block = createBlockFromBlockData({}, { common })
     ;(vm.blockchain as any)['dbManager']['getHeader'] = () => block.header

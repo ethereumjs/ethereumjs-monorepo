@@ -78,10 +78,10 @@ async function runTest(
   ).sign(defaultSenderPkey)
 
   const code1 = hexToBytes('0x600160015500')
-  await vm.stateManager.putContractCode(code1Addr, code1)
+  await vm.stateManager.putCode(code1Addr, code1)
 
   const code2 = hexToBytes('0x600260015500')
-  await vm.stateManager.putContractCode(code2Addr, code2)
+  await vm.stateManager.putCode(code2Addr, code2)
 
   const acc = (await vm.stateManager.getAccount(defaultSenderAddr)) ?? new Account()
   acc.balance = BigInt(1_000_000_000)
@@ -90,7 +90,7 @@ async function runTest(
   await runTx(vm, { tx })
 
   const slot = hexToBytes('0x' + '00'.repeat(31) + '01')
-  const value = await vm.stateManager.getContractStorage(defaultAuthAddr, slot)
+  const value = await vm.stateManager.getStorage(defaultAuthAddr, slot)
   assert.ok(equalsBytes(unpadBytes(expect), value))
 
   if (skipEmptyCode === undefined) {
@@ -172,7 +172,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
 
   it('Code is already present in account', async () => {
     const vm = await VM.create({ common })
-    await vm.stateManager.putContractCode(defaultAuthAddr, new Uint8Array([1]))
+    await vm.stateManager.putCode(defaultAuthAddr, new Uint8Array([1]))
     await runTest(
       [
         {
@@ -205,7 +205,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
     )
     const checkAddressWarm = Address.fromString(`0x${'FA'.repeat(20)}`)
 
-    await vm.stateManager.putContractCode(checkAddressWarm, checkAddressWarmCode)
+    await vm.stateManager.putCode(checkAddressWarm, checkAddressWarmCode)
 
     const tx = create7702EOACodeTx(
       {
@@ -219,7 +219,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
     ).sign(defaultSenderPkey)
 
     const code1 = hexToBytes('0x')
-    await vm.stateManager.putContractCode(code1Addr, code1)
+    await vm.stateManager.putCode(code1Addr, code1)
 
     const acc = (await vm.stateManager.getAccount(defaultSenderAddr)) ?? new Account()
     acc.balance = BigInt(1_000_000_000)
@@ -254,7 +254,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
     // Store value 1 in storage slot 1
     // PUSH1 PUSH1 SSTORE STOP
     const code = hexToBytes('0x600160015500')
-    await vm.stateManager.putContractCode(code1Addr, code)
+    await vm.stateManager.putCode(code1Addr, code)
 
     const acc = (await vm.stateManager.getAccount(defaultSenderAddr)) ?? new Account()
     acc.balance = BigInt(1_000_000_000)

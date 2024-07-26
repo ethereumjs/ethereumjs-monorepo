@@ -328,9 +328,9 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
           STOP
       */
 
-      await vmNotActivated.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
+      await vmNotActivated.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
       await vmNotActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
-      await vmActivated.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
+      await vmActivated.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
       await vmActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
       // setup the call arguments
       const runCallArgs = {

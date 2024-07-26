@@ -196,7 +196,7 @@ describe('EIP1559 tests', () => {
 
     // (This code returns the reported GASPRICE)
     const code = hexToBytes('0x3A60005260206000F3')
-    await vm.stateManager.putContractCode(contractAddress, code)
+    await vm.stateManager.putCode(contractAddress, code)
 
     const result = await runTx(vm, { tx: block.transactions[0], block })
     const returnValue = result.execResult.returnValue

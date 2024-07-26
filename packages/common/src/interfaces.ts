@@ -148,31 +148,38 @@ export interface AccessWitnessInterface {
  *
  */
 export interface StateManagerInterface {
+  // Account methods
   getAccount(address: Address): Promise<Account | undefined>
   putAccount(address: Address, account?: Account): Promise<void>
   deleteAccount(address: Address): Promise<void>
   modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
-  putContractCode(address: Address, value: Uint8Array): Promise<void>
-  getContractCode(address: Address): Promise<Uint8Array>
-  getContractCodeSize?(address: Address): Promise<number>
-  getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
-  putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
-  clearContractStorage(address: Address): Promise<void>
+
+  // Code methods
+  putCode(address: Address, value: Uint8Array): Promise<void>
+  getCode(address: Address): Promise<Uint8Array>
+  getCodeSize(address: Address): Promise<number>
+
+  // Storage methods
+  getStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
+  putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
+  clearStorage(address: Address): Promise<void>
+
+  // Checkpointing methods
   checkpoint(): Promise<void>
   commit(): Promise<void>
   revert(): Promise<void>
+
+  // State root methods
   getStateRoot(): Promise<Uint8Array>
   setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
-  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
   hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
+
+  // Other
+  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
   getAppliedKey?(address: Uint8Array): Uint8Array
 
-  /*
-   * The following optional methods are Verkle related
-   *
-   * Experimental (do not implement)
-   */
+  // Verkle (experimental)
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
 }
 
