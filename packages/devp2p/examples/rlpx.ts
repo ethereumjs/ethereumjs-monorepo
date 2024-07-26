@@ -1,5 +1,5 @@
 import { Chain, Common } from '@ethereumjs/common'
-import { ETH, RLPx } from '@ethereumjs/devp2p'
+import { ETH, RLPx, RLPxOptions } from '@ethereumjs/devp2p'
 import { hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
@@ -10,7 +10,7 @@ const main = async () => {
   const rlpx = new RLPx(PRIVATE_KEY, {
     maxPeers: 25,
     capabilities: [ETH.eth65, ETH.eth64],
-    common,
+    common
   })
   console.log(`RLPx is active - ${rlpx._isAlive()}`)
   rlpx.destroy()
