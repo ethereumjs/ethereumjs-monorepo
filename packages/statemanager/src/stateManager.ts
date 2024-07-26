@@ -276,7 +276,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @returns {Promise<Uint8Array>} -  Resolves with the code corresponding to the provided address.
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
-  async getContractCode(address: Address): Promise<Uint8Array> {
+  async getCode(address: Address): Promise<Uint8Array> {
     if (!this._codeCacheSettings.deactivate) {
       const elem = this._codeCache?.get(address)
       if (elem !== undefined) {
@@ -301,8 +301,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     return code
   }
 
-  async getContractCodeSize(address: Address): Promise<number> {
-    const contractCode = await this.getContractCode(address)
+  async getCodeSize(address: Address): Promise<number> {
+    const contractCode = await this.getCode(address)
     return contractCode.length
   }
 

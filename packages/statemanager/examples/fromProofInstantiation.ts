@@ -25,7 +25,7 @@ const main = async () => {
 
   // To add more proof data, use `addProofData`
   await partialStateManager.addProofData(proofWithStorage)
-  console.log(await partialStateManager.getContractCode(contractAddress)) // contract bytecode is not included in proof
+  console.log(await partialStateManager.getCode(contractAddress)) // contract bytecode is not included in proof
   console.log(
     await partialStateManager.getContractStorage(contractAddress, storageKey1),
     storageValue1,

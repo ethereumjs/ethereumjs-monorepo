@@ -1010,7 +1010,7 @@ export class EVM implements EVMInterface {
         message.code = precompile
         message.isCompiled = true
       } else {
-        message.code = await this.stateManager.getContractCode(message.codeAddress)
+        message.code = await this.stateManager.getCode(message.codeAddress)
         message.isCompiled = false
         message.chargeCodeAccesses = true
       }

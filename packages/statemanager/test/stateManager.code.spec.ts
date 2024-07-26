@@ -46,7 +46,7 @@ describe('StateManager -> Code', () => {
       assert.ok(codeSlot1.length === 0, 'slot 0 is empty')
       assert.ok(codeSlot2.length === 0, 'slot 1 is empty')
 
-      const code = await codeStateManager.getContractCode(address1)
+      const code = await codeStateManager.getCode(address1)
       assert.ok(code.length > 0, 'code deposited correctly')
 
       const slot1 = await stateManager.getContractStorage(address1, key1)
@@ -55,7 +55,7 @@ describe('StateManager -> Code', () => {
       assert.ok(slot1.length > 0, 'storage key0 deposited correctly')
       assert.ok(slot2.length > 0, 'storage key1 deposited correctly')
 
-      let slotCode = await stateManager.getContractCode(address1)
+      let slotCode = await stateManager.getCode(address1)
       assert.ok(slotCode.length === 0, 'code cannot be loaded')
 
       // Checks by either setting state root to codeHash, or codeHash to stateRoot
@@ -65,7 +65,7 @@ describe('StateManager -> Code', () => {
 
       await stateManager.putAccount(address1, account1!)
 
-      slotCode = await stateManager.getContractCode(address1)
+      slotCode = await stateManager.getCode(address1)
       assert.ok(slotCode.length === 0, 'code cannot be loaded') // This test fails if no code prefix is used
 
       account1 = await codeStateManager.getAccount(address1)
@@ -94,7 +94,7 @@ describe('StateManager -> Code', () => {
       const account = createAccount(raw)
       await stateManager.putAccount(address, account)
       await stateManager.putCode(address, code)
-      const codeRetrieved = await stateManager.getContractCode(address)
+      const codeRetrieved = await stateManager.getCode(address)
       assert.ok(equalsBytes(code, codeRetrieved))
     })
 
@@ -107,7 +107,7 @@ describe('StateManager -> Code', () => {
       }
       const account = createAccount(raw)
       await stateManager.putAccount(address, account)
-      const code = await stateManager.getContractCode(address)
+      const code = await stateManager.getCode(address)
       assert.ok(equalsBytes(code, new Uint8Array(0)))
     })
 
@@ -122,7 +122,7 @@ describe('StateManager -> Code', () => {
       const code = new Uint8Array(0)
       await stateManager.putAccount(address, account)
       await stateManager.putCode(address, code)
-      const codeRetrieved = await stateManager.getContractCode(address)
+      const codeRetrieved = await stateManager.getCode(address)
       assert.ok(equalsBytes(codeRetrieved, new Uint8Array(0)))
     })
 
@@ -131,7 +131,7 @@ describe('StateManager -> Code', () => {
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const code = hexToBytes('0x80')
       await stateManager.putCode(address, code)
-      const codeRetrieved = await stateManager.getContractCode(address)
+      const codeRetrieved = await stateManager.getCode(address)
       assert.ok(equalsBytes(codeRetrieved, code))
     })
 

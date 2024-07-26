@@ -494,7 +494,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
 
       const addressConverted = new Address(address)
-      const addressCode = await vm.stateManager.getContractCode(addressConverted)
+      const addressCode = await vm.stateManager.getCode(addressConverted)
       await vm.stateManager.putCode(authority, addressCode)
 
       writtenAddresses.add(authority.toString())

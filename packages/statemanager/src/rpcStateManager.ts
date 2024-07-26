@@ -115,7 +115,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * @returns {Promise<Uint8Array>} - Resolves with the code corresponding to the provided address.
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
-  async getContractCode(address: Address): Promise<Uint8Array> {
+  async getCode(address: Address): Promise<Uint8Array> {
     let codeBytes = this._contractCache.get(address.toString())
     if (codeBytes !== undefined) return codeBytes
     const code = await fetchFromProvider(this._provider, {
@@ -127,8 +127,8 @@ export class RPCStateManager implements EVMStateManagerInterface {
     return codeBytes
   }
 
-  async getContractCodeSize(address: Address): Promise<number> {
-    const contractCode = await this.getContractCode(address)
+  async getCodeSize(address: Address): Promise<number> {
+    const contractCode = await this.getCode(address)
     return contractCode.length
   }
 

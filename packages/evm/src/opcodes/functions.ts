@@ -524,7 +524,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const addressBigInt = runState.stack.pop()
       const address = new Address(addresstoBytes(addressBigInt))
       // EOF check
-      const code = await runState.stateManager.getContractCode(address)
+      const code = await runState.stateManager.getCode(address)
       if (isEOF(code)) {
         // In legacy code, the target code is treated as to be "EOFBYTES" code
         runState.stack.push(BigInt(EOFBYTES.length))
@@ -532,7 +532,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       const size = BigInt(
-        await runState.stateManager.getContractCodeSize(new Address(addresstoBytes(addressBigInt))),
+        await runState.stateManager.getCodeSize(new Address(addresstoBytes(addressBigInt))),
       )
 
       runState.stack.push(size)
@@ -545,9 +545,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [addressBigInt, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
 
       if (dataLength !== BIGINT_0) {
-        let code = await runState.stateManager.getContractCode(
-          new Address(addresstoBytes(addressBigInt)),
-        )
+        let code = await runState.stateManager.getCode(new Address(addresstoBytes(addressBigInt)))
 
         if (isEOF(code)) {
           // In legacy code, the target code is treated as to be "EOFBYTES" code
@@ -569,7 +567,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const address = new Address(addresstoBytes(addressBigInt))
 
       // EOF check
-      const code = await runState.stateManager.getContractCode(address)
+      const code = await runState.stateManager.getCode(address)
       if (isEOF(code)) {
         // In legacy code, the target code is treated as to be "EOFBYTES" code
         // Therefore, push the hash of EOFBYTES to the stack
@@ -1664,7 +1662,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
         const toAddress = new Address(addresstoBytes(toAddr))
 
-        const code = await runState.stateManager.getContractCode(toAddress)
+        const code = await runState.stateManager.getCode(toAddress)
 
         if (!isEOF(code)) {
           // EXTDELEGATECALL cannot call legacy contracts

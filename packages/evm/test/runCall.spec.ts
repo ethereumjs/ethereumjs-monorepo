@@ -448,7 +448,7 @@ describe('RunCall tests', () => {
       '0x00000000000000000000000028373a29d17af317e669579d97e7dddc9da6e3e2e7dddc9da6e3e200000000000000000000000000000000000000000000000000'
 
     assert.equal(result.createdAddress?.toString(), expectedAddress, 'created address correct')
-    const deployedCode = await evm.stateManager.getContractCode(result.createdAddress!)
+    const deployedCode = await evm.stateManager.getCode(result.createdAddress!)
     assert.equal(bytesToHex(deployedCode), expectedCode, 'deployed code correct')
   })
 

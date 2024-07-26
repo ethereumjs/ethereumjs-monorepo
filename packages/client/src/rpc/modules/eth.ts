@@ -738,7 +738,7 @@ export class Eth {
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
-    const code = await vm.stateManager.getContractCode(address)
+    const code = await vm.stateManager.getCode(address)
     return bytesToHex(code)
   }
 

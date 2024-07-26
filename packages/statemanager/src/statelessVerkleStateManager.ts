@@ -294,9 +294,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @returns {Promise<Uint8Array>} -  Resolves with the code corresponding to the provided address.
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
-  async getContractCode(address: Address): Promise<Uint8Array> {
+  async getCode(address: Address): Promise<Uint8Array> {
     if (this.DEBUG) {
-      debug(`getContractCode address=${address.toString()}`)
+      debug(`getCode address=${address.toString()}`)
     }
 
     if (!this._codeCacheSettings.deactivate) {
@@ -353,7 +353,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     return contactCode
   }
 
-  async getContractCodeSize(address: Address): Promise<number> {
+  async getCodeSize(address: Address): Promise<number> {
     if (!this._accountCacheSettings.deactivate) {
       const elem = this._accountCache!.get(address)
       if (elem !== undefined) {

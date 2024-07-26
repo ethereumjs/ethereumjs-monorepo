@@ -10,7 +10,7 @@ const codeEval = async (
   value: Uint8Array,
   root: Uint8Array,
 ) => {
-  assert.deepEqual(await sm.getContractCode(address), value, 'contract code value should be equal')
+  assert.deepEqual(await sm.getCode(address), value, 'contract code value should be equal')
   const accountCMP = await sm.getAccount(address)
   assert.deepEqual(accountCMP!.codeHash, root, 'account code root should be equal')
 }
@@ -102,7 +102,7 @@ describe('StateManager -> Code Checkpointing', () => {
         await codeEval(sm, address, c.c1.value, c.c1.root)
 
         sm.clearCaches()
-        assert.deepEqual(await sm.getContractCode(address), c.c1.value)
+        assert.deepEqual(await sm.getCode(address), c.c1.value)
         await codeEval(sm, address, c.c1.value, c.c1.root)
       })
 

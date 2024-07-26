@@ -96,7 +96,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     await this.putAccount(address, account)
   }
 
-  async getContractCode(address: Address): Promise<Uint8Array> {
+  async getCode(address: Address): Promise<Uint8Array> {
     return this.topCodeStack().get(address.toString()) ?? new Uint8Array(0)
   }
 
@@ -110,8 +110,8 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     })
   }
 
-  async getContractCodeSize(address: Address): Promise<number> {
-    const contractCode = await this.getContractCode(address)
+  async getCodeSize(address: Address): Promise<number> {
+    const contractCode = await this.getCode(address)
     return contractCode.length
   }
 

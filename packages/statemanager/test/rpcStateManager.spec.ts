@@ -98,7 +98,7 @@ describe('RPC State Manager API tests', () => {
     assert.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
 
     const UNIerc20ContractAddress = Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
-    const UNIContractCode = await state.getContractCode(UNIerc20ContractAddress)
+    const UNIContractCode = await state.getCode(UNIerc20ContractAddress)
     assert.ok(UNIContractCode.length > 0, 'was able to retrieve UNI contract code')
 
     await state.putCode(UNIerc20ContractAddress, UNIContractCode)
