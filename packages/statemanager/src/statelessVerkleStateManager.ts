@@ -871,10 +871,6 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._storageCache?.clear()
   }
 
-  generateCanonicalGenesis(_initState: any): Promise<void> {
-    return Promise.resolve()
-  }
-
   getAppliedKey(_: Uint8Array): Uint8Array {
     throw Error('not implemented')
   }

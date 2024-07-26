@@ -436,10 +436,6 @@ export class RPCStateManager implements EVMStateManagerInterface {
   hasStateRoot = () => {
     throw new Error('function not implemented')
   }
-
-  generateCanonicalGenesis(_initState: any): Promise<void> {
-    return Promise.resolve()
-  }
 }
 
 export class RPCBlockChain {

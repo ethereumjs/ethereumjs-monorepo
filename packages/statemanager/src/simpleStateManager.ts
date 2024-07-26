@@ -174,9 +174,6 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   dumpStorageRange(): Promise<StorageRange> {
     throw new Error('Method not implemented.')
   }
-  generateCanonicalGenesis(): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
   getProof(): Promise<Proof> {
     throw new Error('Method not implemented.')
   }

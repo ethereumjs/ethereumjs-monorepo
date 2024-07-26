@@ -8,7 +8,6 @@ import type {
   BigIntLike,
   CLRequest,
   CLRequestType,
-  GenesisState,
   PrefixedHexString,
   WithdrawalData,
 } from '@ethereumjs/util'
@@ -137,11 +136,6 @@ export interface VMOpts {
    * Default: `false`
    */
   activatePrecompiles?: boolean
-  /**
-   * A genesisState to generate canonical genesis for the "in-house" created stateManager if external
-   * stateManager not provided for the VM, defaults to an empty state
-   */
-  genesisState?: GenesisState
 
   /**
    * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number

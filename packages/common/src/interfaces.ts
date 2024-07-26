@@ -184,11 +184,10 @@ export interface StateManagerInterface {
   /*
    * Proof Functionality
    */
-  // Only client, should not be mandatory
+  // Only client (should not be mandatory)
   getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
 
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
-  getAppliedKey?(address: Uint8Array): Uint8Array
 
   /*
    * EVM/VM Specific Functionality
@@ -197,14 +196,15 @@ export interface StateManagerInterface {
     get(address: Address, key: Uint8Array): Promise<Uint8Array>
     clear(): void
   }
+  generateCanonicalGenesis?(initState: any): Promise<void> // TODO make input more typesafe
   // only Verkle/EIP-6800 (experimental)
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
+  getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 }
 
 export interface EVMStateManagerInterface extends StateManagerInterface {
   dumpStorage(address: Address): Promise<StorageDump> // only used in client
   dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> // only used in client
-  generateCanonicalGenesis(initState: any): Promise<void> // TODO make input more typesafe
 
   shallowCopy(downlevelCaches?: boolean): EVMStateManagerInterface
 }

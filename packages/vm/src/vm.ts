@@ -89,11 +89,6 @@ export class VM {
       opts.blockchain = await createBlockchain({ common: opts.common })
     }
 
-    const genesisState = opts.genesisState ?? {}
-    if (opts.genesisState !== undefined) {
-      await opts.stateManager.generateCanonicalGenesis(genesisState)
-    }
-
     if (opts.profilerOpts !== undefined) {
       const profilerOpts = opts.profilerOpts
       if (profilerOpts.reportAfterBlock === true && profilerOpts.reportAfterTx === true) {
