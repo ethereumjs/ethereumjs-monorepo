@@ -1,7 +1,7 @@
 import type { Bloom } from './bloom/index.js'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
-import type { Common, StateManagerInterface, ParamsDict } from '@ethereumjs/common'
+import type { Common, ParamsDict, StateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface, EVMOpts, EVMResult, Log } from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type {

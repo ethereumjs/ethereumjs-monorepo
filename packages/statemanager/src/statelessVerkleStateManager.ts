@@ -36,7 +36,7 @@ import {
 import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { CacheSettings, StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
 import type { DefaultStateManager } from './stateManager.js'
-import type { AccountFields, StateManagerInterface, Proof } from '@ethereumjs/common'
+import type { AccountFields, Proof, StateManagerInterface } from '@ethereumjs/common'
 import type {
   Address,
   PrefixedHexString,

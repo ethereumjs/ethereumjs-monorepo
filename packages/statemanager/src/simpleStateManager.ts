@@ -118,9 +118,7 @@ export class SimpleStateManager implements StateManagerInterface {
     this.topStorageStack().set(`${address.toString()}_${bytesToHex(key)}`, value)
   }
 
-  async clearStorage(): Promise<void> {
-    this.storageStack = []
-  }
+  async clearStorage(): Promise<void> {}
 
   async checkpoint(): Promise<void> {
     this.checkpointSync()

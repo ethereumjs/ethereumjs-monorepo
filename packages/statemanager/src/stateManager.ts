@@ -38,8 +38,8 @@ import { CODEHASH_PREFIX, type CacheSettings, type DefaultStateManagerOpts } fro
 import type { StorageProof } from './index.js'
 import type {
   AccountFields,
-  StateManagerInterface,
   Proof,
+  StateManagerInterface,
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'

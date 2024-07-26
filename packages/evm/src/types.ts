@@ -11,8 +11,8 @@ import type { PrecompileFunc } from './precompiles/types.js'
 import type {
   AccessWitnessInterface,
   Common,
-  StateManagerInterface,
   ParamsDict,
+  StateManagerInterface,
 } from '@ethereumjs/common'
 import type { Account, Address, AsyncEventEmitter, PrefixedHexString } from '@ethereumjs/util'
 
