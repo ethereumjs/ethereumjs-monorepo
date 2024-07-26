@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721992309208,
+  "lastUpdate": 1722020089844,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "645cd9124878f6dbdbddb9c0e42f852ffb7c398c",
-          "message": "Monorepo: Set sideEffects to false for all Packages (#3497)\n\n* Add sideEffects set to false to first package (RLP)\r\n\r\n* Activate sideEffects set to false for all libraries (except client)",
-          "timestamp": "2024-07-12T08:59:06-04:00",
-          "tree_id": "f0d4af78a60ed6dea7d5e4b674f9bbe6225b8e34",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/645cd9124878f6dbdbddb9c0e42f852ffb7c398c"
-        },
-        "date": 1720789306294,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38679,
-            "range": "±1.76%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 36820,
-            "range": "±3.29%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37538,
-            "range": "±1.42%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36799,
-            "range": "±1.52%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35960,
-            "range": "±1.73%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.74%",
             "unit": "ops/sec",
             "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8d87e806add36b8face7a90e69636bf5f14a08b1",
+          "message": "StateManager: Interface Refactor/Simplification (#3543)\n\n* Move originalStorageCache to main interface (implemented by all SMs, alternative: make optional)\r\n\r\n* Remove redundand getProof from interface\r\n\r\n* Move generateCanonicalGenesis to main SM interface, make optional, remove VM genesisState option (only 1 internal usage, can be easily replaced)\r\n\r\n* Move dumpStorage() over to main interface, make optional\r\n\r\n* Move dumpStorageRange() over to main interface, make optional, SM method clean up\r\n\r\n* Bug fix, fix Kaustinen6 test\r\n\r\n* Add simple clearStorage() implementation for simple SM\r\n\r\n* Fully remove EVMStateManager interface\r\n\r\n* Add clearCaches() to the official interface (called into from runBlock(), implemented by all SMs\r\n\r\n* Lint and test fixes\r\n\r\n* Edit comment\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-07-26T14:52:15-04:00",
+          "tree_id": "0e519af7d0aa16bd38cd394a01b1dac2a4df620f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8d87e806add36b8face7a90e69636bf5f14a08b1"
+        },
+        "date": 1722020089242,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38681,
+            "range": "±2.01%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36897,
+            "range": "±2.76%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37372,
+            "range": "±1.38%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36901,
+            "range": "±1.46%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35835,
+            "range": "±1.82%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
