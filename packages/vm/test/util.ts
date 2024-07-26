@@ -26,7 +26,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { BlockOptions } from '@ethereumjs/block'
-import type { EVMStateManagerInterface } from '@ethereumjs/common'
+import type { StateManagerInterface } from '@ethereumjs/common'
 import type {
   AccessListEIP2930Transaction,
   BlobEIP4844Transaction,
@@ -363,7 +363,7 @@ export function makeBlockFromEnv(env: any, opts?: BlockOptions): Block {
  * @param state - the state DB/trie
  * @param testData - JSON from tests repo
  */
-export async function setupPreConditions(state: EVMStateManagerInterface, testData: any) {
+export async function setupPreConditions(state: StateManagerInterface, testData: any) {
   await state.checkpoint()
   for (const addressStr of Object.keys(testData.pre)) {
     const { nonce, balance, code, storage } = testData.pre[addressStr]

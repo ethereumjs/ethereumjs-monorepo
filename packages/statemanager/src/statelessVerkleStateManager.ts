@@ -36,13 +36,7 @@ import {
 import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { CacheSettings, StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
 import type { DefaultStateManager } from './stateManager.js'
-import type {
-  AccountFields,
-  EVMStateManagerInterface,
-  Proof,
-  StorageDump,
-  StorageRange,
-} from '@ethereumjs/common'
+import type { AccountFields, Proof, StateManagerInterface } from '@ethereumjs/common'
 import type {
   Address,
   PrefixedHexString,
@@ -72,7 +66,7 @@ const ZEROVALUE = '0x00000000000000000000000000000000000000000000000000000000000
  * to fetch data requested by the the VM.
  *
  */
-export class StatelessVerkleStateManager implements EVMStateManagerInterface {
+export class StatelessVerkleStateManager implements StateManagerInterface {
   _accountCache?: AccountCache
   _storageCache?: StorageCache
   _codeCache?: CodeCache
@@ -259,7 +253,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * at the last fully committed point, i.e. as if all current
    * checkpoints were reverted.
    */
-  shallowCopy(): EVMStateManagerInterface {
+  shallowCopy(): StateManagerInterface {
     const stateManager = new StatelessVerkleStateManager({ verkleCrypto: this.verkleCrypto })
     return stateManager
   }
@@ -848,21 +842,6 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   }
 
   /**
-   * Dumps the RLP-encoded storage values for an `account` specified by `address`.
-   * @param address - The address of the `account` to return storage for
-   * @returns {Promise<StorageDump>} - The state of the account as an `Object` map.
-   * Keys are are the storage keys, values are the storage values as strings.
-   * Both are represented as hex strings without the `0x` prefix.
-   */
-  async dumpStorage(_: Address): Promise<StorageDump> {
-    throw Error('not implemented')
-  }
-
-  dumpStorageRange(_: Address, __: bigint, ___: number): Promise<StorageRange> {
-    throw Error('not implemented')
-  }
-
-  /**
    * Clears all underlying caches
    */
   clearCaches() {
@@ -871,11 +850,11 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._storageCache?.clear()
   }
 
+  // TODO: Removing this causes a Kaustinen6 test in client to fail
+  // Seems to point to a more general (non-severe) bug and can likely be fixed
+  // by having the `statelessVerkle` config option more properly set by the
+  // test for the check in the VM execution to call into this method
   generateCanonicalGenesis(_initState: any): Promise<void> {
     return Promise.resolve()
-  }
-
-  getAppliedKey(_: Uint8Array): Uint8Array {
-    throw Error('not implemented')
   }
 }

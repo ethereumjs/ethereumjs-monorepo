@@ -130,7 +130,7 @@ describe('EIP4895 tests', () => {
   it('EIP4895: state updation should exclude 0 amount updates', async () => {
     const vm = await VM.create({ common })
 
-    await vm.stateManager.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
+    await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(genesisJSON))
     const preState = bytesToHex(await vm.stateManager.getStateRoot())
     assert.equal(
       preState,
@@ -208,7 +208,7 @@ describe('EIP4895 tests', () => {
       'correct state root should be generated',
     )
     const vm = await VM.create({ common, blockchain })
-    await vm.stateManager.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
+    await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(genesisJSON))
     const vmCopy = await vm.shallowCopy()
 
     const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp))
