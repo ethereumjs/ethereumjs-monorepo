@@ -148,6 +148,9 @@ export interface AccessWitnessInterface {
  *
  */
 export interface StateManagerInterface {
+  /*
+   * Core Access Functionality
+   */
   // Account methods
   getAccount(address: Address): Promise<Account | undefined>
   putAccount(address: Address, account?: Account): Promise<void>
@@ -164,28 +167,37 @@ export interface StateManagerInterface {
   putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
   clearStorage(address: Address): Promise<void>
 
-  // Checkpointing methods
+  /*
+   * Checkpointing Functionality
+   */
   checkpoint(): Promise<void>
   commit(): Promise<void>
   revert(): Promise<void>
 
-  // State root methods
+  /*
+   * State Root Functionality
+   */
   getStateRoot(): Promise<Uint8Array>
   setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
   hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
 
-  // Other
+  /*
+   * Proof Functionality
+   */
+  // Only client, should not be mandatory
   getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
+
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
   getAppliedKey?(address: Uint8Array): Uint8Array
 
-  // EVM/VM
+  /*
+   * EVM/VM Specific Functionality
+   */
   originalStorageCache: {
     get(address: Address, key: Uint8Array): Promise<Uint8Array>
     clear(): void
   }
-
-  // EVM, only Verkle/EIP-6800 (experimental)
+  // only Verkle/EIP-6800 (experimental)
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
 }
 
@@ -193,7 +205,6 @@ export interface EVMStateManagerInterface extends StateManagerInterface {
   dumpStorage(address: Address): Promise<StorageDump> // only used in client
   dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> // only used in client
   generateCanonicalGenesis(initState: any): Promise<void> // TODO make input more typesafe
-  getProof(address: Address, storageSlots?: Uint8Array[]): Promise<Proof>
 
   shallowCopy(downlevelCaches?: boolean): EVMStateManagerInterface
 }
