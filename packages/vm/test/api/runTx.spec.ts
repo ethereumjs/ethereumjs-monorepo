@@ -60,7 +60,7 @@ describe('runTx() -> successful API parameter usage', async () => {
         // Setup block with correct extraData for POA
         block = createBlockFromBlockData(
           { header: { extraData: new Uint8Array(97) } },
-          { common: vm.common }
+          { common: vm.common },
         )
       }
 
@@ -117,7 +117,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       assert.equal(
         (e as Error).message.includes('block has a different hardfork than the vm'),
         true,
-        'block has a different hardfork than the vm'
+        'block has a different hardfork than the vm',
       )
       assert.ok(true, 'vm/tx mismatched hardfork correctly failed')
     }
@@ -131,7 +131,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       assert.equal(
         (e as Error).message.includes('block has a different hardfork than the vm'),
         true,
-        'block has a different hardfork than the vm'
+        'block has a different hardfork than the vm',
       )
       assert.ok(true, 'vm/tx mismatched hardfork correctly failed')
     }
@@ -177,7 +177,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     assert.equal(
       res.receipt.cumulativeBlockGasUsed,
       blockGasUsed + res.totalGasSpent,
-      'receipt.gasUsed should equal block gas used + tx gas used'
+      'receipt.gasUsed should equal block gas used + tx gas used',
     )
   })
 
@@ -194,7 +194,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     const res = await runTx(vm, { tx })
     assert.isTrue(
       res.totalGasSpent > BigInt(0),
-      `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
+      `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`,
     )
   })
 
@@ -203,7 +203,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       const vm = await VM.create({ common })
 
       const privateKey = hexToBytes(
-        '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+        '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
       )
       const address = Address.fromPrivateKey(privateKey)
       const initialBalance = BigInt(10) ** BigInt(18)
@@ -211,7 +211,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       const account = await vm.stateManager.getAccount(address)
       await vm.stateManager.putAccount(
         address,
-        createAccount({ ...account, balance: initialBalance })
+        createAccount({ ...account, balance: initialBalance }),
       )
 
       const transferCost = 21000
@@ -225,7 +225,7 @@ describe('runTx() -> successful API parameter usage', async () => {
           maxPriorityFeePerGas: 50,
           maxFeePerGas: 50,
         } as TypedTxData,
-        { common }
+        { common },
       )
       const tx = unsignedTx.sign(privateKey)
 
@@ -238,7 +238,7 @@ describe('runTx() -> successful API parameter usage', async () => {
             baseFeePerGas: 7,
           },
         },
-        { common }
+        { common },
       )
 
       const result = await runTx(vm, {
@@ -264,13 +264,13 @@ describe('runTx() -> successful API parameter usage', async () => {
       assert.equal(
         coinbaseAccount!.balance,
         expectedCoinbaseBalance,
-        `should use custom block (${txType.name})`
+        `should use custom block (${txType.name})`,
       )
 
       assert.equal(
         result.execResult.exceptionError,
         undefined,
-        `should run ${txType.name} without errors`
+        `should run ${txType.name} without errors`,
       )
     }
   })
@@ -284,7 +284,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     const tx = getTransaction(
       new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
       1,
-      true
+      true,
     )
 
     const caller = tx.getSenderAddress()
@@ -298,7 +298,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('(EIP-2718) not activated'),
-        `should fail for ${TRANSACTION_TYPES[1].name}`
+        `should fail for ${TRANSACTION_TYPES[1].name}`,
       )
     }
   })
@@ -315,7 +315,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     const res = await runTx(vm, { tx, reportAccessList: true })
     assert.isTrue(
       res.totalGasSpent > BigInt(0),
-      `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
+      `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`,
     )
     assert.deepEqual(res.accessList, [])
   })
@@ -349,7 +349,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
         assert.ok(
           e.message.includes('not signed') === true ||
             e.message.includes('Invalid Signature') === true,
-          `should fail for ${txType.name}`
+          `should fail for ${txType.name}`,
         )
       }
     }
@@ -364,7 +364,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
       } catch (e: any) {
         assert.ok(
           e.message.toLowerCase().includes('enough funds'),
-          `should fail for ${txType.name}`
+          `should fail for ${txType.name}`,
         )
       }
     }
@@ -378,7 +378,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     const maxCost: bigint = tx.gasLimit * tx.maxFeePerGas
     await vm.stateManager.putAccount(
       address,
-      createAccountWithDefaults(BigInt(0), maxCost - BigInt(1))
+      createAccountWithDefaults(BigInt(0), maxCost - BigInt(1)),
     )
     try {
       await runTx(vm, { tx })
@@ -386,7 +386,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     } catch (e: any) {
       assert.ok(
         e.message.toLowerCase().includes('max cost'),
-        `should fail if max cost exceeds balance`
+        `should fail if max cost exceeds balance`,
       )
     }
     // set sufficient balance
@@ -445,7 +445,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
       } catch (e: any) {
         assert.ok(
           e.message.includes("is less than the block's baseFeePerGas"),
-          'should fail with appropriate error'
+          'should fail with appropriate error',
         )
       }
     }
@@ -458,7 +458,7 @@ describe('runTx() -> runtime behavior', () => {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
       const vm = await VM.create({ common })
       const privateKey = hexToBytes(
-        '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+        '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
       )
       /* Code which is deployed here:
         PUSH1 01
@@ -472,7 +472,7 @@ describe('runTx() -> runtime behavior', () => {
       await vm.stateManager.putContractStorage(
         address,
         hexToBytes(`0x${'00'.repeat(32)}`),
-        hexToBytes(`0x${'00'.repeat(31)}01`)
+        hexToBytes(`0x${'00'.repeat(31)}01`),
       )
       const txParams: any = {
         nonce: '0x00',
@@ -494,7 +494,7 @@ describe('runTx() -> runtime behavior', () => {
       assert.equal(
         (<any>vm.stateManager).originalStorageCache.map.size,
         0,
-        `should clear storage cache after every ${txType.name}`
+        `should clear storage cache after every ${txType.name}`,
       )
     }
   })
@@ -518,12 +518,12 @@ describe('runTx() -> runtime errors', () => {
       assert.equal(
         res.execResult!.exceptionError!.error,
         'value overflow',
-        `result should have 'value overflow' error set (${txType.name})`
+        `result should have 'value overflow' error set (${txType.name})`,
       )
       assert.equal(
         (<any>vm.stateManager)._checkpointCount,
         0,
-        `checkpoint count should be 0 (${txType.name})`
+        `checkpoint count should be 0 (${txType.name})`,
       )
     }
   })
@@ -546,12 +546,12 @@ describe('runTx() -> runtime errors', () => {
       assert.equal(
         res.execResult!.exceptionError!.error,
         'value overflow',
-        `result should have 'value overflow' error set (${txType.name})`
+        `result should have 'value overflow' error set (${txType.name})`,
       )
       assert.equal(
         (<any>vm.stateManager)._checkpointCount,
         0,
-        `checkpoint count should be 0 (${txType.name})`
+        `checkpoint count should be 0 (${txType.name})`,
       )
     }
   })
@@ -572,17 +572,17 @@ describe('runTx() -> API return values', () => {
       assert.equal(
         res.execResult.executionGasUsed,
         BigInt(0),
-        `execution result -> gasUsed -> 0 (${txType.name})`
+        `execution result -> gasUsed -> 0 (${txType.name})`,
       )
       assert.equal(
         res.execResult.exceptionError,
         undefined,
-        `execution result -> exception error -> undefined (${txType.name})`
+        `execution result -> exception error -> undefined (${txType.name})`,
       )
       assert.deepEqual(
         res.execResult.returnValue,
         Uint8Array.from([]),
-        `execution result -> return value -> empty Uint8Array (${txType.name})`
+        `execution result -> return value -> empty Uint8Array (${txType.name})`,
       )
       assert.equal(res.gasRefund, BigInt(0), `gasRefund -> 0 (${txType.name})`)
     }
@@ -601,8 +601,8 @@ describe('runTx() -> API return values', () => {
 
       assert.equal(
         res.totalGasSpent,
-        tx.getBaseFee(),
-        `runTx result -> gasUsed -> tx.getBaseFee() (${txType.name})`
+        tx.getIntrinsicGas(),
+        `runTx result -> gasUsed -> tx.getIntrinsicGas() (${txType.name})`,
       )
       if (tx instanceof FeeMarketEIP1559Transaction) {
         const baseFee = BigInt(7)
@@ -614,35 +614,35 @@ describe('runTx() -> API return values', () => {
         assert.equal(
           res.amountSpent,
           res.totalGasSpent * gasPrice,
-          `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
+          `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`,
         )
       } else {
         assert.equal(
           res.amountSpent,
           res.totalGasSpent * (<LegacyTransaction>tx).gasPrice,
-          `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
+          `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`,
         )
       }
 
       assert.deepEqual(
         res.bloom.bitvector,
         hexToBytes(`0x${'00'.repeat(256)}`),
-        `runTx result -> bloom.bitvector -> should be empty (${txType.name})`
+        `runTx result -> bloom.bitvector -> should be empty (${txType.name})`,
       )
       assert.equal(
         res.receipt.cumulativeBlockGasUsed,
         res.totalGasSpent,
-        `runTx result -> receipt.gasUsed -> result.gasUsed (${txType.name})`
+        `runTx result -> receipt.gasUsed -> result.gasUsed (${txType.name})`,
       )
       assert.deepEqual(
         res.receipt.bitvector,
         res.bloom.bitvector,
-        `runTx result -> receipt.bitvector -> result.bloom.bitvector (${txType.name})`
+        `runTx result -> receipt.bitvector -> result.bloom.bitvector (${txType.name})`,
       )
       assert.deepEqual(
         res.receipt.logs,
         [],
-        `runTx result -> receipt.logs -> empty array (${txType.name})`
+        `runTx result -> receipt.logs -> empty array (${txType.name})`,
       )
     }
   })
@@ -726,7 +726,7 @@ describe('runTx() -> consensus bugs', () => {
     assert.equal(
       result.totalGasSpent,
       BigInt(66382),
-      'should use the right amount of gas and not consume all'
+      'should use the right amount of gas and not consume all',
     )
   })
 })
@@ -751,7 +751,7 @@ describe('runTx() -> RunTxOptions', () => {
         } catch (err: any) {
           assert.ok(
             err.message.includes('value field cannot be negative'),
-            'throws on negative call value'
+            'throws on negative call value',
           )
         }
       }
@@ -781,7 +781,7 @@ it('runTx() -> skipBalance behavior', async () => {
     assert.equal(
       afterTxBalance,
       balance !== undefined ? balance - 1n : BigInt(0),
-      `sender balance should be >= 0 after transaction with skipBalance`
+      `sender balance should be >= 0 after transaction with skipBalance`,
     )
     assert.equal(res.execResult.exceptionError, undefined, 'no exceptionError with skipBalance')
   }
@@ -847,7 +847,7 @@ it('Validate CALL does not charge new account gas when calling CALLER and caller
   assert.equal(
     (await runTx(vm, { tx, skipHardForkValidation: true })).totalGasSpent,
     BigInt(27818),
-    'did not charge callNewAccount'
+    'did not charge callNewAccount',
   )
 })
 
@@ -878,7 +878,7 @@ it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER an
   assert.equal(
     (await runTx(vm, { tx, skipHardForkValidation: true })).totalGasSpent,
     BigInt(13001),
-    'did not charge callNewAccount'
+    'did not charge callNewAccount',
   )
 })
 
@@ -909,13 +909,13 @@ describe('EIP 4844 transaction tests', () => {
             {
               common,
               skipConsensusFormatValidation: true,
-            }
+            },
           ),
         },
         {
           common,
           skipConsensusFormatValidation: true,
-        }
+        },
       )
     }
     const blockchain = await createBlockchain({
@@ -937,10 +937,10 @@ describe('EIP 4844 transaction tests', () => {
           {
             common,
             skipConsensusFormatValidation: true,
-          }
+          },
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
     const res = await runTx(vm, { tx, block, skipBalance: true })
     assert.ok(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')

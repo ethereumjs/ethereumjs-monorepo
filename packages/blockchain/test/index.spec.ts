@@ -34,14 +34,14 @@ describe('blockchain test', () => {
     assert.deepEqual(
       iteratorHead.hash(),
       blockchain.genesisBlock.hash(),
-      'correct genesis hash (getIteratorHead())'
+      'correct genesis hash (getIteratorHead())',
     )
 
     blockchain = await createBlockchain({ common, hardforkByHeadBlockNumber: true })
     assert.equal(
       common.hardfork(),
       'chainstart',
-      'correct HF setting with hardforkByHeadBlockNumber option'
+      'correct HF setting with hardforkByHeadBlockNumber option',
     )
   })
 
@@ -94,7 +94,7 @@ describe('blockchain test', () => {
     assert.deepEqual(
       genesisBlock.hash(),
       (await blockchain.getCanonicalHeadHeader()).hash(),
-      'genesis block hash should be correct'
+      'genesis block hash should be correct',
     )
   })
 
@@ -223,7 +223,7 @@ describe('blockchain test', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('not found in DB'),
-        `should throw for non-existing block-by-number request`
+        `should throw for non-existing block-by-number request`,
       )
     }
 
@@ -233,7 +233,7 @@ describe('blockchain test', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('not found in DB'),
-        `should throw for non-existing block-by-hash request`
+        `should throw for non-existing block-by-hash request`,
       )
     }
   })
@@ -270,7 +270,7 @@ describe('blockchain test', () => {
       assert.equal(
         err.message,
         'header with number 22 not found in canonical chain',
-        'canonical references correctly deleted'
+        'canonical references correctly deleted',
       )
     }
 
@@ -285,7 +285,7 @@ describe('blockchain test', () => {
     assert.equal(
       bytesToHex(newblock22.hash()),
       bytesToHex(newheader22.hash()),
-      'fetched block should match'
+      'fetched block should match',
     )
   })
 
@@ -308,7 +308,7 @@ describe('blockchain test', () => {
     assert.equal(
       getBlocks![1].header.number,
       blocks[3].header.number,
-      'should skip two blocks apart'
+      'should skip two blocks apart',
     )
     assert.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
   })
@@ -541,7 +541,7 @@ describe('blockchain test', () => {
       assert.equal(
         e.message,
         'uncle hash should be equal to hash of empty array',
-        'block not constructed from empty bodies'
+        'block not constructed from empty bodies',
       )
     }
   })
@@ -775,7 +775,7 @@ describe('initialization tests', () => {
     assert.deepEqual(
       (await blockchain.getIteratorHead()).hash(),
       genesisHash,
-      'head hash should equal expected mainnet genesis hash'
+      'head hash should equal expected mainnet genesis hash',
     )
 
     const db = blockchain.db
@@ -785,7 +785,7 @@ describe('initialization tests', () => {
     assert.deepEqual(
       (await newBlockchain.getIteratorHead()).hash(),
       genesisHash,
-      'head hash should be read from the provided db'
+      'head hash should be read from the provided db',
     )
   })
 
@@ -797,7 +797,7 @@ describe('initialization tests', () => {
           extraData: utf8ToBytes('custom extra data'),
         },
       },
-      { common }
+      { common },
     )
     const hash = genesisBlock.hash()
     const blockchain = await createBlockchain({ common, genesisBlock })
@@ -806,14 +806,14 @@ describe('initialization tests', () => {
     assert.deepEqual(
       (await blockchain.getIteratorHead()).hash(),
       hash,
-      'blockchain should put custom genesis block'
+      'blockchain should put custom genesis block',
     )
 
     const newBlockchain = await createBlockchain({ db, genesisBlock })
     assert.deepEqual(
       (await newBlockchain.getIteratorHead()).hash(),
       hash,
-      'head hash should be read from the provided db'
+      'head hash should be read from the provided db',
     )
   })
 
@@ -825,7 +825,7 @@ describe('initialization tests', () => {
           extraData: utf8ToBytes('custom extra data'),
         },
       },
-      { common }
+      { common },
     )
     const hash = genesisBlock.hash()
     const blockchain = await createBlockchain({ common, genesisBlock })
@@ -837,7 +837,7 @@ describe('initialization tests', () => {
           extraData: utf8ToBytes('other extra data'),
         },
       },
-      { common }
+      { common },
     )
 
     // assert that this is a block with a new hash
@@ -853,7 +853,7 @@ describe('initialization tests', () => {
       assert.equal(
         e.message,
         'Cannot put a different genesis block than current blockchain genesis: create a new Blockchain',
-        'putting a genesis block did throw (otherGenesisBlock not found in chain)'
+        'putting a genesis block did throw (otherGenesisBlock not found in chain)',
       )
     }
 
@@ -865,7 +865,7 @@ describe('initialization tests', () => {
       assert.equal(
         e.message,
         'The genesis block in the DB has a different hash than the provided genesis block.',
-        'creating blockchain with different genesis block than in db throws'
+        'creating blockchain with different genesis block than in db throws',
       )
     }
   })
@@ -875,10 +875,10 @@ it('should correctly derive mainnet genesis block hash and stateRoot', async () 
   const common = new Common({ chain: Chain.Mainnet })
   const blockchain = await createBlockchain({ common })
   const mainnetGenesisBlockHash = hexToBytes(
-    '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+    '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
   )
   const mainnetGenesisStateRoot = hexToBytes(
-    '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
+    '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544',
   )
   assert.deepEqual(blockchain.genesisBlock.hash(), mainnetGenesisBlockHash)
   assert.deepEqual(blockchain.genesisBlock.header.stateRoot, mainnetGenesisStateRoot)

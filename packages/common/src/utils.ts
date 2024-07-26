@@ -81,7 +81,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   // but have different configuration parameters in geth genesis parameters
   if (config.eip155Block !== config.eip158Block) {
     throw new Error(
-      'EIP155 block number must equal EIP 158 block number since both are part of SpuriousDragon hardfork and the client only supports activating the full hardfork'
+      'EIP155 block number must equal EIP 158 block number since both are part of SpuriousDragon hardfork and the client only supports activating the full hardfork',
     )
   }
 
@@ -143,12 +143,15 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   }
 
   // forkMapRev is the map from config field name to Hardfork
-  const forkMapRev = Object.keys(forkMap).reduce((acc, elem) => {
-    acc[forkMap[elem].name] = elem
-    return acc
-  }, {} as { [key: string]: string })
+  const forkMapRev = Object.keys(forkMap).reduce(
+    (acc, elem) => {
+      acc[forkMap[elem].name] = elem
+      return acc
+    },
+    {} as { [key: string]: string },
+  )
   const configHardforkNames = Object.keys(config).filter(
-    (key) => forkMapRev[key] !== undefined && config[key] !== undefined && config[key] !== null
+    (key) => forkMapRev[key] !== undefined && config[key] !== undefined && config[key] !== null,
   )
 
   params.hardforks = configHardforkNames
@@ -196,7 +199,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
 
     // Merge hardfork has to be placed before first hardfork that is dependent on merge
     const postMergeIndex = params.hardforks.findIndex(
-      (hf: any) => forkMap[hf.name]?.postMerge === true
+      (hf: any) => forkMap[hf.name]?.postMerge === true,
     )
     if (postMergeIndex !== -1) {
       params.hardforks.splice(postMergeIndex, 0, mergeConfig as unknown as ConfigHardfork)
@@ -267,7 +270,7 @@ export function isSupportedChainId(chainId: bigint): boolean {
 
 export function _getChainParams(
   chain: string | number | Chain | bigint,
-  customChains?: ChainConfig[]
+  customChains?: ChainConfig[],
 ): ChainConfig {
   const initializedChains = getInitializedChains(customChains)
   if (typeof chain === 'number' || typeof chain === 'bigint') {

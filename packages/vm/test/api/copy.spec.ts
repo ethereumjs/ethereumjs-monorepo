@@ -1,7 +1,7 @@
 import { Address, createAccount } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { setupVM } from './utils'
+import { setupVM } from './utils.js'
 
 describe('VM Copy Test', () => {
   it('should pass copy of state manager', async () => {
@@ -15,13 +15,13 @@ describe('VM Copy Test', () => {
 
     assert.ok(
       (await vm.stateManager.getAccount(address)) !== undefined,
-      'account exists before copy'
+      'account exists before copy',
     )
 
     const vmCopy = await vm.shallowCopy()
     assert.isUndefined(
       await vmCopy.stateManager.getAccount(address),
-      'non-committed checkpoints will not be copied'
+      'non-committed checkpoints will not be copied',
     )
 
     await vm.stateManager.checkpoint()
@@ -31,7 +31,7 @@ describe('VM Copy Test', () => {
 
     assert.ok(
       (await vmCopy2.stateManager.getAccount(address)) !== undefined,
-      'committed checkpoints will be copied'
+      'committed checkpoints will be copied',
     )
   })
 })

@@ -4,14 +4,14 @@ import { Account, Address, KECCAK256_RLP, hexToBytes } from '@ethereumjs/util'
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../src/vm'
+import { type VMOpts, paramsVM } from '../../src/index.js'
+import { VM } from '../../src/vm.js'
 
 import * as testnet from './testdata/testnet.json'
 import * as testnet2 from './testdata/testnet2.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
-import { setupVM } from './utils'
+import { setupVM } from './utils.js'
 
-import type { VMOpts } from '../../src'
 import type { ChainConfig } from '@ethereumjs/common'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
@@ -37,7 +37,7 @@ describe('VM -> basic instantiation / boolean switches', () => {
     assert.deepEqual(
       (vm.stateManager as DefaultStateManager)['_trie'].root(),
       KECCAK256_RLP,
-      'it has default trie'
+      'it has default trie',
     )
     assert.equal(vm.common.hardfork(), Hardfork.Shanghai, 'it has correct default HF')
   })
@@ -47,7 +47,7 @@ describe('VM -> basic instantiation / boolean switches', () => {
     assert.notDeepEqual(
       (vm.stateManager as DefaultStateManager)['_trie'].root(),
       KECCAK256_RLP,
-      'it has different root'
+      'it has different root',
     )
   })
 })
@@ -73,7 +73,7 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
     const copiedVM = await vm.shallowCopy()
     assert.isTrue(
       (copiedVM.evm as EVM).allowUnlimitedContractSize,
-      'allowUnlimitedContractSize=true (for shallowCopied VM)'
+      'allowUnlimitedContractSize=true (for shallowCopied VM)',
     )
   })
 
@@ -86,7 +86,7 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
     assert.equal(
       (copiedVM.evm as EVM).common.hardfork(),
       'byzantium',
-      'use modfied HF from VM common (for shallowCopied VM)'
+      'use modfied HF from VM common (for shallowCopied VM)',
     )
   })
 
@@ -99,7 +99,7 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
     assert.equal(
       (copiedVM.evm as EVM).common.hardfork(),
       'byzantium',
-      'use modfied HF from evmOpts (for shallowCopied VM)'
+      'use modfied HF from evmOpts (for shallowCopied VM)',
     )
   })
 })
@@ -141,14 +141,46 @@ describe('VM -> supportedHardforks', () => {
     const vm = await VM.create({ common })
     assert.equal(vm.common.hardfork(), Hardfork.Byzantium)
   })
+
+  it('should overwrite parameters when param option is used', async () => {
+    let vm = await VM.create()
+    assert.equal(
+      vm.common.param('elasticityMultiplier'),
+      BigInt(2),
+      'should use correct default EVM parameters',
+    )
+
+    const params = JSON.parse(JSON.stringify(paramsVM))
+    params['1559']['elasticityMultiplier'] = 10 // 2
+    vm = await VM.create({ params })
+    assert.equal(
+      vm.common.param('elasticityMultiplier'),
+      BigInt(10),
+      'should use custom parameters provided',
+    )
+
+    vm = await VM.create()
+    assert.equal(
+      vm.common.param('elasticityMultiplier'),
+      BigInt(2),
+      'should again use the correct default EVM parameters',
+    )
+  })
 })
 
 describe('VM -> common (chain, HFs, EIPs)', () => {
   it('should accept a common object as option', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
-    const vm = await VM.create({ common })
+    let vm = await VM.create({ common })
     assert.equal(vm.common, common)
+
+    vm = await VM.create()
+    assert.equal(
+      vm.common.param('elasticityMultiplier'),
+      BigInt(2),
+      'should use correct default EVM parameters',
+    )
   })
 
   it('should only accept valid chain and fork', async () => {
@@ -218,7 +250,7 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
     assert.deepEqual(
       (vm.stateManager as DefaultStateManager)['_trie'].root(),
       KECCAK256_RLP,
-      'it has default trie'
+      'it has default trie',
     )
   })
 
@@ -245,12 +277,12 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
     assert.deepEqual(
       (vmCopy as any)._setHardfork,
       true,
-      'copy() correctly passes setHardfork option'
+      'copy() correctly passes setHardfork option',
     )
     assert.deepEqual(
       (vm as any)._setHardfork,
       (vmCopy as any)._setHardfork,
-      'setHardfork options match'
+      'setHardfork options match',
     )
 
     //
@@ -263,12 +295,12 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
     assert.deepEqual(
       (vmCopy as any)._setHardfork,
       BigInt(5001),
-      'copy() correctly passes setHardfork option'
+      'copy() correctly passes setHardfork option',
     )
     assert.deepEqual(
       (vm as any)._setHardfork,
       (vmCopy as any)._setHardfork,
-      'setHardfork options match'
+      'setHardfork options match',
     )
   })
   describe('Ensure that precompile activation creates non-empty accounts', () => {

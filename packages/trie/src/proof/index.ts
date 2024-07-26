@@ -19,7 +19,7 @@ import type { Proof, TrieOpts } from '../index.js'
 export async function verifyTrieProof(
   key: Uint8Array,
   proof: Proof,
-  opts?: TrieOpts
+  opts?: TrieOpts,
 ): Promise<Uint8Array | null> {
   try {
     const proofTrie = await createTrieFromProof(proof, opts)
@@ -51,7 +51,7 @@ export function verifyTrieRangeProof(
   keys: Uint8Array[],
   values: Uint8Array[],
   proof: Uint8Array[] | null,
-  opts?: TrieOpts
+  opts?: TrieOpts,
 ): Promise<boolean> {
   return verifyRangeProof(
     rootHash,
@@ -60,7 +60,7 @@ export function verifyTrieRangeProof(
     keys.map((k) => k).map(bytesToNibbles),
     values,
     proof,
-    opts?.useKeyHashingFunction ?? keccak256
+    opts?.useKeyHashingFunction ?? keccak256,
   )
 }
 

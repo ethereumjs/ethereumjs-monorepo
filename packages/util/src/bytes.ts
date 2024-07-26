@@ -125,7 +125,7 @@ export const hexToBytes = (hex: PrefixedHexString): Uint8Array => {
   const unprefixedHex = hex.slice(2)
 
   return _unprefixedHexToBytes(
-    unprefixedHex.length % 2 === 0 ? unprefixedHex : padToEven(unprefixedHex)
+    unprefixedHex.length % 2 === 0 ? unprefixedHex : padToEven(unprefixedHex),
   )
 }
 
@@ -226,7 +226,7 @@ export const setLengthRight = (msg: Uint8Array, length: number): Uint8Array => {
  * @return {Uint8Array|number[]|string}
  */
 const stripZeros = <T extends Uint8Array | number[] | string = Uint8Array | number[] | string>(
-  a: T
+  a: T,
 ): T => {
   let first = a[0]
   while (a.length > 0 && first.toString() === '0') {
@@ -296,7 +296,7 @@ export const toBytes = (v: ToBytesInputTypes): Uint8Array => {
   if (typeof v === 'string') {
     if (!isHexString(v)) {
       throw new Error(
-        `Cannot convert string to Uint8Array. toBytes only supports 0x-prefixed hex strings and this string was given: ${v}`
+        `Cannot convert string to Uint8Array. toBytes only supports 0x-prefixed hex strings and this string was given: ${v}`,
       )
     }
     return hexToBytes(v)

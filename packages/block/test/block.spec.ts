@@ -18,6 +18,7 @@ import {
 } from '../src/constructors.js'
 import { createBlockFromRpc } from '../src/from-rpc.js'
 import { genTransactionsTrieRoot } from '../src/helpers.js'
+import { type Block, type BlockBytes, type JsonRpcBlock, paramsBlock } from '../src/index.js'
 
 import * as testDataGenesis from './testdata/genesishashestest.json'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
@@ -25,7 +26,6 @@ import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
-import type { Block, BlockBytes, JsonRpcBlock } from '../src/index.js'
 import type { ChainConfig } from '@ethereumjs/common'
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
@@ -35,15 +35,24 @@ describe('[Block]: block functions', () => {
     const genesis = createBlockFromBlockData({}, { common })
     assert.ok(bytesToHex(genesis.hash()), 'block should initialize')
 
+    const params = JSON.parse(JSON.stringify(paramsBlock))
+    params['1']['minGasLimit'] = 3000 // 5000
+    let block = createBlockFromBlockData({}, { params })
+    assert.equal(
+      block.common.param('minGasLimit'),
+      BigInt(3000),
+      'should use custom parameters provided',
+    )
+
     // test default freeze values
     // also test if the options are carried over to the constructor
-    let block = createBlockFromBlockData({})
+    block = createBlockFromBlockData({})
     assert.ok(Object.isFrozen(block), 'block should be frozen by default')
 
     block = createBlockFromBlockData({}, { freeze: false })
     assert.ok(
       !Object.isFrozen(block),
-      'block should not be frozen when freeze deactivated in options'
+      'block should not be frozen when freeze deactivated in options',
     )
 
     const rlpBlock = block.serialize()
@@ -53,7 +62,7 @@ describe('[Block]: block functions', () => {
     block = createBlockFromRLPSerializedBlock(rlpBlock, { freeze: false })
     assert.ok(
       !Object.isFrozen(block),
-      'block should not be frozen when freeze deactivated in options'
+      'block should not be frozen when freeze deactivated in options',
     )
 
     const zero = new Uint8Array(0)
@@ -79,7 +88,7 @@ describe('[Block]: block functions', () => {
     block = createBlockFromValuesArray(valuesArray, { common, freeze: false })
     assert.ok(
       !Object.isFrozen(block),
-      'block should not be frozen when freeze deactivated in options'
+      'block should not be frozen when freeze deactivated in options',
     )
   })
 
@@ -98,7 +107,7 @@ describe('[Block]: block functions', () => {
           extraData: new Uint8Array(97),
         },
       },
-      { common, setHardfork: true }
+      { common, setHardfork: true },
     )
     assert.equal(block.common.hardfork(), Hardfork.Berlin, 'should use setHardfork option')
 
@@ -108,12 +117,12 @@ describe('[Block]: block functions', () => {
           number: 20, // Future block
         },
       },
-      { common, setHardfork: 5001 }
+      { common, setHardfork: 5001 },
     )
     assert.equal(
       block.common.hardfork(),
       Hardfork.Paris,
-      'should use setHardfork option (td > threshold)'
+      'should use setHardfork option (td > threshold)',
     )
 
     block = createBlockFromBlockData(
@@ -123,12 +132,12 @@ describe('[Block]: block functions', () => {
           extraData: new Uint8Array(97),
         },
       },
-      { common, setHardfork: 3000 }
+      { common, setHardfork: 3000 },
     )
     assert.equal(
       block.common.hardfork(),
       Hardfork.Berlin,
-      'should work with setHardfork option (td < threshold)'
+      'should work with setHardfork option (td < threshold)',
     )
   })
 
@@ -150,7 +159,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Chain.Mainnet })
     const uncleBlock = createBlockFromBlockData(
       { header: { extraData: new Uint8Array(117) } },
-      { common }
+      { common },
     )
     assert.throws(function () {
       createBlockFromBlockData({ uncleHeaders: [uncleBlock.header] }, { common })
@@ -233,7 +242,7 @@ describe('[Block]: block functions', () => {
     const result = block.getTransactionsValidationErrors()
     assert.ok(
       result[0].includes('tx unable to pay base fee (non EIP-1559 tx)'),
-      'should throw when legacy tx is unable to pay base fee'
+      'should throw when legacy tx is unable to pay base fee',
     )
   })
 
@@ -293,7 +302,7 @@ describe('[Block]: block functions', () => {
           uncleHash: KECCAK256_RLP_ARRAY,
         },
       },
-      { common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai }) }
+      { common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai }) },
     )
     await checkThrowsAsync(block.validateData(false, false), 'invalid withdrawals trie')
 
@@ -304,7 +313,7 @@ describe('[Block]: block functions', () => {
           uncleHash: zeroRoot,
         },
       },
-      { common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart }) }
+      { common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart }) },
     )
     await checkThrowsAsync(block.validateData(false, false), 'invalid uncle hash')
 
@@ -315,7 +324,7 @@ describe('[Block]: block functions', () => {
     block = createBlockFromBlockData({ executionWitness: null }, { common })
     await checkThrowsAsync(
       block.validateData(false, false),
-      'Invalid block: ethereumjs stateless client needs executionWitness'
+      'Invalid block: ethereumjs stateless client needs executionWitness',
     )
   })
 
@@ -361,7 +370,7 @@ describe('[Block]: block functions', () => {
       },
       undefined,
       undefined,
-      'input must be array'
+      'input must be array',
     )
     assert.throws(
       () => {
@@ -369,7 +378,7 @@ describe('[Block]: block functions', () => {
       },
       undefined,
       undefined,
-      'input length must be 3 or less'
+      'input length must be 3 or less',
     )
   })
 
@@ -379,7 +388,7 @@ describe('[Block]: block functions', () => {
       toBytes(testDataPreLondon2.blocks[2].rlp as PrefixedHexString),
       {
         common,
-      }
+      },
     )
     const createBlockFromRaw = createBlockFromValuesArray(block.raw(), { common })
     assert.ok(equalsBytes(block.hash(), createBlockFromRaw.hash()))
@@ -391,14 +400,14 @@ describe('[Block]: block functions', () => {
       toBytes(testDataPreLondon2.blocks[2].rlp as PrefixedHexString),
       {
         common,
-      }
+      },
     )
     assert.equal(typeof block.toJSON(), 'object')
   })
 
   it('DAO hardfork', () => {
     const blockData = RLP.decode(
-      testDataPreLondon2.blocks[0].rlp as PrefixedHexString
+      testDataPreLondon2.blocks[0].rlp as PrefixedHexString,
     ) as NestedUint8Array
     // Set block number from test block to mainnet DAO fork block 1920000
     blockData[0][8] = hexToBytes('0x1D4C00')
@@ -410,7 +419,7 @@ describe('[Block]: block functions', () => {
       },
       /extraData should be 'dao-hard-fork/,
       undefined,
-      'should throw on DAO HF block with wrong extra data'
+      'should throw on DAO HF block with wrong extra data',
     ) // eslint-disable-line
 
     // Set extraData to dao-hard-fork
@@ -435,14 +444,14 @@ describe('[Block]: block functions', () => {
       {
         header: nextBlockHeaderData,
       },
-      { common }
+      { common },
     )
 
     // test if difficulty defaults to 0
     assert.equal(
       blockWithoutDifficultyCalculation.header.difficulty,
       BigInt(0),
-      'header difficulty should default to 0'
+      'header difficulty should default to 0',
     )
 
     // test if we set difficulty if we have a "difficulty header" in options; also verify this is equal to reported canonical difficulty.
@@ -453,17 +462,17 @@ describe('[Block]: block functions', () => {
       {
         common,
         calcDifficultyFromHeader: genesis.header,
-      }
+      },
     )
 
     assert.ok(
       blockWithDifficultyCalculation.header.difficulty > BigInt(0),
-      'header difficulty should be set if difficulty header is given'
+      'header difficulty should be set if difficulty header is given',
     )
     assert.ok(
       blockWithDifficultyCalculation.header.ethashCanonicalDifficulty(genesis.header) ===
         blockWithDifficultyCalculation.header.difficulty,
-      'header difficulty is canonical difficulty if difficulty header is given'
+      'header difficulty is canonical difficulty if difficulty header is given',
     )
 
     // test if we can provide a block which is too far ahead to still calculate difficulty
@@ -479,12 +488,12 @@ describe('[Block]: block functions', () => {
       {
         common,
         calcDifficultyFromHeader: genesis.header,
-      }
+      },
     )
 
     assert.ok(
       block_farAhead.header.difficulty > BigInt(0),
-      'should allow me to provide a bogus next block to calculate difficulty on when providing a difficulty header'
+      'should allow me to provide a bogus next block to calculate difficulty on when providing a difficulty header',
     )
   })
 

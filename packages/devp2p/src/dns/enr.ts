@@ -74,7 +74,7 @@ export class ENR {
     const isVerified = ecdsaVerify(
       signature as Uint8Array,
       (common?.customCrypto.keccak256 ?? keccak256)(RLP.encode([seq, ...kvs])),
-      obj.secp256k1
+      obj.secp256k1,
     )
 
     if (!isVerified) throw new Error('Unable to verify ENR signature')
@@ -106,7 +106,7 @@ export class ENR {
       'eRoot',
       'lRoot',
       'seq',
-      'signature'
+      'signature',
     ) as ENRRootValues
 
     if (!rootVals.eRoot) throw new Error("Could not parse 'e' value from ENR root entry")
@@ -122,7 +122,7 @@ export class ENR {
     const signedComponent = root.split(' sig')[0]
     const signedComponentBytes = utf8ToBytes(signedComponent)
     const signatureBytes = Uint8Array.from(
-      [...base64url.decode(rootVals.signature + '=').values()].slice(0, 64)
+      [...base64url.decode(rootVals.signature + '=').values()].slice(0, 64),
     )
 
     const keyBytes = Uint8Array.from(decodedPublicKey)
@@ -130,7 +130,7 @@ export class ENR {
     const isVerified = ecdsaVerify(
       signatureBytes,
       (common?.customCrypto.keccak256 ?? keccak256)(signedComponentBytes),
-      keyBytes
+      keyBytes,
     )
 
     if (!isVerified) throw new Error('Unable to verify ENR root signature')
@@ -154,7 +154,7 @@ export class ENR {
       tree,
       `${this.TREE_PREFIX}//%s@%s`,
       'publicKey',
-      'domain'
+      'domain',
     ) as ENRTreeValues
 
     if (!treeVals.publicKey) throw new Error('Could not parse public key from ENR tree entry')

@@ -24,7 +24,7 @@ const block = createBlockFromBlockData(
       coinbase,
     },
   },
-  { common }
+  { common },
 )
 
 const code = hexToBytes('0x60008080806001415AF100')
@@ -63,7 +63,7 @@ describe('EIP 3651 tests', () => {
       new Common({
         chain: Chain.Mainnet,
         hardfork: Hardfork.London,
-      })
+      }),
     )
 
     const result2 = await runTx(vm2, { block, tx, skipHardForkValidation: true })
@@ -71,7 +71,7 @@ describe('EIP 3651 tests', () => {
     assert.equal(
       result2.totalGasSpent - result.totalGasSpent,
       expectedDiff,
-      'gas difference is correct'
+      'gas difference is correct',
     )
   })
 })

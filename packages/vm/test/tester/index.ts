@@ -15,10 +15,10 @@ import {
   getRequiredForkConfigAlias,
   getSkipTests,
   getTestDirs,
-} from './config'
-import { runBlockchainTest } from './runners/BlockchainTestsRunner'
-import { runStateTest } from './runners/GeneralStateTestsRunner'
-import { getTestFromSource, getTestsFromArgs } from './testLoader'
+} from './config.js'
+import { runBlockchainTest } from './runners/BlockchainTestsRunner.js'
+import { runStateTest } from './runners/GeneralStateTestsRunner.js'
+import { getTestFromSource, getTestsFromArgs } from './testLoader.js'
 
 import type { Common } from '@ethereumjs/common'
 import type { EVMBLSInterface } from '@ethereumjs/evm/dist/cjs/types'
@@ -169,8 +169,8 @@ async function runTests() {
     argv['verify-test-amount-alltests'] > 0
       ? getExpectedTests(FORK_CONFIG_VM, name)
       : argv['expected-test-amount'] !== undefined && argv['expected-test-amount'] > 0
-      ? argv['expected-test-amount']
-      : undefined
+        ? argv['expected-test-amount']
+        : undefined
 
   /**
    * Initialization output to console
@@ -186,7 +186,7 @@ async function runTests() {
         .filter(([_k, v]) => typeof v === 'string' || (Array.isArray(v) && v.length !== 0))
         .map(([k, v]) => ({
           [k]: Array.isArray(v) && v.length > 0 ? v.length : v,
-        }))
+        })),
     )
   }
   const formattedGetterArgs = formatArgs(testGetterArgs)
@@ -268,7 +268,7 @@ async function runTests() {
                 await runner(runnerArgs, test, t)
               }
             },
-            testGetterArgs
+            testGetterArgs,
           )
             .then(() => {
               resolve()

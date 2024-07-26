@@ -104,8 +104,8 @@ export class FullSynchronizer extends Synchronizer {
 
     this.config.logger.info(
       `Latest local block number=${Number(number)} td=${td} hash=${short(
-        hash
-      )} hardfork=${this.config.chainCommon.hardfork()}`
+        hash,
+      )} hardfork=${this.config.chainCommon.hardfork()}`,
     )
   }
 
@@ -260,7 +260,7 @@ export class FullSynchronizer extends Synchronizer {
       } first=${first} last=${last} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
         this.pool.size
       }`,
-      { attentionHF }
+      { attentionHF },
     )
 
     this.txPool.removeNewBlockTxs(blocks)
@@ -320,7 +320,7 @@ export class FullSynchronizer extends Synchronizer {
       this.config.logger.debug(
         `Error processing new block from peer ${
           peer ? `id=${peer.id.slice(0, 8)}` : '(no peer)'
-        } hash=${short(block.hash())}`
+        } hash=${short(block.hash())}`,
       )
       this.config.logger.debug(err)
       return

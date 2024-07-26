@@ -11,7 +11,7 @@ export function middleware(
   method: any,
   requiredParamsCount: number,
   validators: any[] = [],
-  names: string[] = []
+  names: string[] = [],
 ): any {
   return function (params: any[] = []) {
     return new Promise((resolve, reject) => {
@@ -430,7 +430,13 @@ export const validators = {
 
   get depositRequest() {
     return (
-      requiredFields: string[] = ['pubkey', 'withdrawalCredentials', 'amount', 'signature', 'index']
+      requiredFields: string[] = [
+        'pubkey',
+        'withdrawalCredentials',
+        'amount',
+        'signature',
+        'index',
+      ],
     ) => {
       return (params: any[], index: number) => {
         if (typeof params[index] !== 'object') {

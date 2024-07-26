@@ -15,6 +15,7 @@ import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP2930 from '../capabilities/eip2930.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { LIMIT_BLOBS_PER_TX } from '../constants.js'
+import { paramsTx } from '../index.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, validateNotArray } from '../util.js'
 
@@ -65,6 +66,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas, maxFeePerBlobGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
+    this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(1559)) {
@@ -100,13 +102,13 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
       const msg = this._errorMsg(
-        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)'
+        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
       )
       throw new Error(msg)
     }
 
     this.maxFeePerBlobGas = bytesToBigInt(
-      toBytes((maxFeePerBlobGas ?? '') === '' ? '0x' : maxFeePerBlobGas)
+      toBytes((maxFeePerBlobGas ?? '') === '' ? '0x' : maxFeePerBlobGas),
     )
 
     this.blobVersionedHashes = (txData.blobVersionedHashes ?? []).map((vh) => toBytes(vh))
@@ -132,7 +134,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     }
     if (this.to === undefined) {
       const msg = this._errorMsg(
-        `tx should have a "to" field and cannot be used to create contracts`
+        `tx should have a "to" field and cannot be used to create contracts`,
       )
       throw new Error(msg)
     }
@@ -157,8 +159,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
   /**
    * The amount of gas paid for the data in this tx
    */
-  getDataFee(): bigint {
-    return EIP2930.getDataFee(this)
+  getDataGas(): bigint {
+    return EIP2930.getDataGas(this)
   }
 
   /**
@@ -225,7 +227,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       this.kzgProofs === undefined
     ) {
       throw new Error(
-        'cannot serialize network wrapper without blobs, KZG commitments and KZG proofs provided'
+        'cannot serialize network wrapper without blobs, KZG commitments and KZG proofs provided',
       )
     }
 
@@ -298,7 +300,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV: boolean = false
+    convertV: boolean = false,
   ): BlobEIP4844Transaction {
     r = toBytes(r)
     s = toBytes(s)
@@ -324,7 +326,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
         kzgCommitments: this.kzgCommitments,
         kzgProofs: this.kzgProofs,
       },
-      opts
+      opts,
     )
   }
   /**

@@ -72,7 +72,7 @@ const entireTxLabel = 'Entire tx'
  */
 function execHardfork(
   hardfork: Hardfork | string,
-  preMergeHf: Hardfork | string
+  preMergeHf: Hardfork | string,
 ): string | Hardfork {
   return hardfork !== Hardfork.Paris ? hardfork : preMergeHf
 }
@@ -160,7 +160,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         'Cannot run transaction: EIP 2930 is not activated.',
         vm,
         opts.block,
-        opts.tx
+        opts.tx,
       )
       throw new Error(msg)
     }
@@ -170,7 +170,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         'Cannot run transaction: EIP 1559 is not activated.',
         vm,
         opts.block,
-        opts.tx
+        opts.tx,
       )
       throw new Error(msg)
     }
@@ -250,7 +250,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(
       `New tx run hash=${
         opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
-      } sender=${caller}`
+      } sender=${caller}`,
     )
   }
 
@@ -271,22 +271,22 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Validate gas limit against tx base fee (DataFee + TxFee + Creation Fee)
-  const txBaseFee = tx.getBaseFee()
+  const intrinsicGas = tx.getIntrinsicGas()
   let gasLimit = tx.gasLimit
-  if (gasLimit < txBaseFee) {
+  if (gasLimit < intrinsicGas) {
     const msg = _errorMsg(
       `tx gas limit ${Number(gasLimit)} is lower than the minimum gas limit of ${Number(
-        txBaseFee
+        intrinsicGas,
       )}`,
       vm,
       block,
-      tx
+      tx,
     )
     throw new Error(msg)
   }
-  gasLimit -= txBaseFee
+  gasLimit -= intrinsicGas
   if (vm.DEBUG) {
-    debugGas(`Subtracting base fee (${txBaseFee}) from gasLimit (-> ${gasLimit})`)
+    debugGas(`Subtracting base fee (${intrinsicGas}) from gasLimit (-> ${gasLimit})`)
   }
 
   if (vm.common.isActivatedEIP(1559)) {
@@ -302,7 +302,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         } (${maxFeePerGas}) is less than the block's baseFeePerGas (${baseFeePerGas})`,
         vm,
         block,
-        tx
+        tx,
       )
       throw new Error(msg)
     }
@@ -343,7 +343,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         `sender doesn't have enough funds to send tx. The upfront cost is: ${upFrontCost} and the sender's account (${caller}) only has: ${balance}`,
         vm,
         block,
-        tx
+        tx,
       )
       throw new Error(msg)
     }
@@ -369,7 +369,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // the signer must be able to afford the transaction
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
     const castTx = tx as BlobEIP4844Transaction
-    totalblobGas = castTx.common.param('blobGasPerBlob') * BigInt(castTx.numBlobs())
+    totalblobGas = vm.common.param('blobGasPerBlob') * BigInt(castTx.numBlobs())
     maxCost += totalblobGas * castTx.maxFeePerBlobGas
 
     // 4844 minimum blobGas price check
@@ -378,7 +378,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         `Block option must be supplied to compute blob gas price`,
         vm,
         block,
-        tx
+        tx,
       )
       throw new Error(msg)
     }
@@ -388,7 +388,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         `Transaction's maxFeePerBlobGas ${castTx.maxFeePerBlobGas}) is less than block blobGasPrice (${blobGasPrice}).`,
         vm,
         block,
-        tx
+        tx,
       )
       throw new Error(msg)
     }
@@ -404,7 +404,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         `sender doesn't have enough funds to send tx. The max cost is: ${maxCost} and the sender's account (${caller}) only has: ${balance}`,
         vm,
         block,
-        tx
+        tx,
       )
       throw new Error(msg)
     }
@@ -416,7 +416,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         `the tx doesn't have the correct nonce. account has nonce of: ${nonce} tx has nonce of: ${tx.nonce}`,
         vm,
         block,
-        tx
+        tx,
       )
       throw new Error(msg)
     }
@@ -523,7 +523,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         tx.isSigned() ? bytesToHex(tx.hash()) : 'unsigned'
       } with caller=${caller} gasLimit=${gasLimit} to=${
         to?.toString() ?? 'none'
-      } value=${value} data=${short(data)}`
+      } value=${value} data=${short(data)}`,
     )
   }
 
@@ -562,7 +562,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(
       `Received tx execResult: [ executionGasUsed=${executionGasUsed} exceptionError=${
         exceptionError !== undefined ? `'${exceptionError.error}'` : 'none'
-      } returnValue=${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`
+      } returnValue=${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`,
     )
   }
 
@@ -576,9 +576,9 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Calculate the total gas used
-  results.totalGasSpent = results.execResult.executionGasUsed + txBaseFee
+  results.totalGasSpent = results.execResult.executionGasUsed + intrinsicGas
   if (vm.DEBUG) {
-    debugGas(`tx add baseFee ${txBaseFee} to totalGasSpent (-> ${results.totalGasSpent})`)
+    debugGas(`tx add baseFee ${intrinsicGas} to totalGasSpent (-> ${results.totalGasSpent})`)
   }
 
   // Add blob gas used to result
@@ -615,7 +615,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await vm.evm.journal.putAccount(caller, fromAccount)
   if (vm.DEBUG) {
     debug(
-      `Refunded txCostDiff (${txCostDiff}) to fromAccount (caller) balance (-> ${fromAccount.balance})`
+      `Refunded txCostDiff (${txCostDiff}) to fromAccount (caller) balance (-> ${fromAccount.balance})`,
     )
   }
 
@@ -744,7 +744,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     results,
     cumulativeGasUsed,
     totalblobGas,
-    blobGasPrice
+    blobGasPrice,
   )
 
   if (enableProfiler) {
@@ -765,7 +765,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(
       `tx run finished hash=${
         opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
-      } sender=${caller}`
+      } sender=${caller}`,
     )
   }
 
@@ -808,7 +808,7 @@ export async function generateTxReceipt(
   txResult: RunTxResult,
   cumulativeGasUsed: bigint,
   blobGasUsed?: bigint,
-  blobGasPrice?: bigint
+  blobGasPrice?: bigint,
 ): Promise<TxReceipt> {
   const baseReceipt: BaseTxReceipt = {
     cumulativeBlockGasUsed: cumulativeGasUsed,
@@ -823,7 +823,7 @@ export async function generateTxReceipt(
         tx.type
       } cumulativeBlockGasUsed=${cumulativeGasUsed} bitvector=${short(baseReceipt.bitvector)} (${
         baseReceipt.bitvector.length
-      } bytes) logs=${baseReceipt.logs.length}`
+      } bytes) logs=${baseReceipt.logs.length}`,
     )
   }
 

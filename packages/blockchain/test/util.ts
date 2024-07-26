@@ -76,7 +76,7 @@ export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block
 export const generateConsecutiveBlock = (
   parentBlock: Block,
   difficultyChangeFactor: number,
-  gasLimit: bigint = BigInt(8000000)
+  gasLimit: bigint = BigInt(8000000),
 ): Block => {
   if (difficultyChangeFactor > 1) {
     difficultyChangeFactor = 1
@@ -87,7 +87,7 @@ export const generateConsecutiveBlock = (
       number: parentBlock.header.number + BigInt(1),
       timestamp: parentBlock.header.timestamp + BigInt(10 + -difficultyChangeFactor * 9),
     },
-    { common }
+    { common },
   )
   const header = BlockHeader.fromHeaderData(
     {
@@ -100,7 +100,7 @@ export const generateConsecutiveBlock = (
     {
       common,
       calcDifficultyFromHeader: parentBlock.header,
-    }
+    },
   )
 
   const block = new Block(header, undefined, undefined, undefined, { common }, undefined)
@@ -150,21 +150,21 @@ export const createTestDB = async (): Promise<
     {
       type: 'put',
       key: hexToBytes(
-        '0x680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+        '0x680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
       ),
       value: genesis.header.serialize(),
     },
     {
       type: 'put',
       key: hexToBytes(
-        '0x680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa374'
+        '0x680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa374',
       ),
       value: RLP.encode(toBytes(17179869184)),
     },
     {
       type: 'put',
       key: hexToBytes(
-        '0x620000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+        '0x620000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
       ),
       value: RLP.encode(genesis.raw().slice(1)),
     },
@@ -187,7 +187,7 @@ function createBlock(
   parentBlock: Block,
   extraData: string,
   uncles?: BlockHeader[],
-  common?: Common
+  common?: Common,
 ): Block {
   uncles = uncles ?? []
   common = common ?? new Common({ chain: Chain.Mainnet })
@@ -223,7 +223,7 @@ function createBlock(
     {
       common,
       calcDifficultyFromHeader: parentBlock.header,
-    }
+    },
   )
 }
 

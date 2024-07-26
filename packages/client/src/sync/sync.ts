@@ -123,7 +123,7 @@ export abstract class Synchronizer {
 
     this._syncedStatusCheckInterval = setInterval(
       this._syncedStatusCheck.bind(this),
-      this.SYNCED_STATE_REMOVAL_PERIOD
+      this.SYNCED_STATE_REMOVAL_PERIOD,
     )
 
     const timeout = setTimeout(() => {
@@ -161,7 +161,7 @@ export abstract class Synchronizer {
       return this.resolveSync()
     } catch (error: any) {
       this.config.logger.error(
-        `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
+        `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`,
       )
       this.clearFetcher()
       throw error

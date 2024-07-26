@@ -107,15 +107,15 @@ describe(`${method}: call with executionPayloadV4`, () => {
     const { executionPayload } = res.result
     assert.ok(
       executionPayload.depositRequests?.length === 1,
-      'depositRequests should have 1 deposit request'
+      'depositRequests should have 1 deposit request',
     )
     assert.ok(
       executionPayload.withdrawalRequests !== undefined,
-      'depositRequests field should be received'
+      'depositRequests field should be received',
     )
     assert.ok(
       executionPayload.consolidationRequests !== undefined,
-      'consolidationRequests field should be received'
+      'consolidationRequests field should be received',
     )
 
     res = await rpc.request(method, [executionPayload, [], parentBeaconBlockRoot])

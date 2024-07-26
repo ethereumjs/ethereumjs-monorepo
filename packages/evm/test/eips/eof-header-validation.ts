@@ -33,7 +33,7 @@ await new Promise<void>((resolve, reject) => {
     err: Error | undefined,
     content: string | Uint8Array,
     fileName: string,
-    next: Function
+    next: Function,
   ) => {
     if (err) {
       reject(err)
@@ -88,6 +88,6 @@ await new Promise<void>((resolve, reject) => {
       match: /.json$/,
     },
     fileCallback,
-    finishedCallback
+    finishedCallback,
   )
 })

@@ -1,3 +1,4 @@
+import { paramsBlock } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
@@ -28,7 +29,7 @@ const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3
 const pKeyAddress = Address.fromPrivateKey(privateKey)
 
 const privateKey4844 = hexToBytes(
-  '0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8'
+  '0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8',
 )
 const p4844Address = Address.fromPrivateKey(privateKey4844)
 
@@ -68,7 +69,7 @@ const produceBlockWithTx = async (
   execution: VMExecution,
   chain: Chain,
   maxPriorityFeesPerGas: bigint[] = [BigInt(0xff)],
-  gasLimits: bigint[] = [BigInt(0xfffff)]
+  gasLimits: bigint[] = [BigInt(0xfffff)],
 ) => {
   const { vm } = execution
   const account = await vm.stateManager.getAccount(pKeyAddress)
@@ -99,8 +100,8 @@ const produceBlockWithTx = async (
           nonce,
           data: '0xFE',
         },
-        { common: vmCopy.common }
-      ).sign(privateKey)
+        { common: vmCopy.common },
+      ).sign(privateKey),
     )
     nonce++
   }
@@ -119,7 +120,7 @@ const produceBlockWithTx = async (
 const produceBlockWith4844Tx = async (
   execution: VMExecution,
   chain: Chain,
-  blobsCount: number[]
+  blobsCount: number[],
 ) => {
   const kzg = await loadKZG()
   // 4844 sample blob
@@ -169,8 +170,8 @@ const produceBlockWith4844Tx = async (
           kzgCommitments,
           maxFeePerBlobGas: BigInt(1000),
         },
-        { common: vmCopy.common }
-      ).sign(privateKey4844)
+        { common: vmCopy.common },
+      ).sign(privateKey4844),
     )
     nonce++
   }
@@ -198,13 +199,13 @@ describe(method, () => {
     const [firstBaseFee, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [
       string,
       string,
-      string
+      string,
     ]
     const increase =
       Number(
         (1000n *
           (bytesToBigInt(hexToBytes(nextBaseFee)) - bytesToBigInt(hexToBytes(previousBaseFee)))) /
-          bytesToBigInt(hexToBytes(previousBaseFee))
+          bytesToBigInt(hexToBytes(previousBaseFee)),
       ) / 1000
 
     // Note: this also ensures that block 2,3 are returned, since gas of block 0 -> 1 and 1 -> 2 does not change
@@ -239,7 +240,7 @@ describe(method, () => {
       Number(
         (1000n *
           (bytesToBigInt(hexToBytes(nextBaseFee)) - bytesToBigInt(hexToBytes(previousBaseFee)))) /
-          bytesToBigInt(hexToBytes(previousBaseFee))
+          bytesToBigInt(hexToBytes(previousBaseFee)),
       ) / 1000
 
     assert.equal(decrease, -0.125)
@@ -250,6 +251,7 @@ describe(method, () => {
       eips: [1559],
       chain: CommonChain.Mainnet,
       hardfork: Hardfork.London,
+      params: paramsBlock,
     })
 
     const initialBaseFee = common.param('initialBaseFee')
@@ -323,12 +325,12 @@ describe(method, () => {
     assert.equal(
       parseInt(res.result.reward[0][0]),
       0,
-      'Should return 0 for empty block reward percentiles'
+      'Should return 0 for empty block reward percentiles',
     )
     assert.equal(
       res.result.reward[0][1],
       '0x0',
-      'Should return 0 for empty block reward percentiles'
+      'Should return 0 for empty block reward percentiles',
     )
   })
   it(`${method}: should generate reward percentiles`, async () => {
@@ -385,7 +387,7 @@ describe(method, () => {
     const res = await rpc.request(method, ['0x1', 'latest', [10, 20, 60, 100]])
 
     const expected = [priorityFees[0], priorityFees[0], priorityFees[1], priorityFees[1]].map(
-      bigIntToHex
+      bigIntToHex,
     )
     assert.deepEqual(res.result.reward[0], expected)
 
@@ -442,6 +444,6 @@ describe(method, () => {
     },
     {
       timeout: 60000,
-    }
+    },
   )
 })

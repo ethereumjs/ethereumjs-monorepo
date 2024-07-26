@@ -3,7 +3,7 @@ import { equalsBytes } from '@ethereumjs/util'
 import { createTrieFromProof } from '../index.js'
 import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
 import { Trie } from '../trie.js'
-import { nibblesCompare, nibblestoBytes } from '../util/nibbles.js'
+import { nibblesCompare, nibblesTypeToPackedBytes } from '../util/nibbles.js'
 
 import type { HashKeysFunction, Nibbles, TrieNode } from '../types.js'
 
@@ -27,7 +27,7 @@ async function unset(
   key: Nibbles,
   pos: number,
   removeLeft: boolean,
-  stack: TrieNode[]
+  stack: TrieNode[],
 ): Promise<number> {
   if (child instanceof BranchNode) {
     /**
@@ -321,7 +321,7 @@ async function verifyProof(
   rootHash: Uint8Array,
   key: Uint8Array,
   proof: Uint8Array[],
-  useKeyHashingFunction: HashKeysFunction
+  useKeyHashingFunction: HashKeysFunction,
 ): Promise<{ value: Uint8Array | null; trie: Trie }> {
   const proofTrie = await createTrieFromProof(proof, {
     root: rootHash,
@@ -416,7 +416,7 @@ export async function verifyRangeProof(
   keys: Nibbles[],
   values: Uint8Array[],
   proof: Uint8Array[] | null,
-  useKeyHashingFunction: HashKeysFunction
+  useKeyHashingFunction: HashKeysFunction,
 ): Promise<boolean> {
   if (keys.length !== values.length) {
     throw new Error('invalid keys length or values length')
@@ -439,7 +439,7 @@ export async function verifyRangeProof(
   if (proof === null && firstKey === null && lastKey === null) {
     const trie = new Trie({ useKeyHashingFunction })
     for (let i = 0; i < keys.length; i++) {
-      await trie.put(nibblestoBytes(keys[i]), values[i])
+      await trie.put(nibblesTypeToPackedBytes(keys[i]), values[i])
     }
     if (!equalsBytes(rootHash, trie.root())) {
       throw new Error('invalid all elements proof: root mismatch')
@@ -452,9 +452,9 @@ export async function verifyRangeProof(
     if (keys.length === 0) {
       const { trie, value } = await verifyProof(
         rootHash,
-        nibblestoBytes(firstKey),
+        nibblesTypeToPackedBytes(firstKey),
         proof,
-        useKeyHashingFunction
+        useKeyHashingFunction,
       )
 
       if (value !== null || (await hasRightElement(trie, firstKey))) {
@@ -467,7 +467,7 @@ export async function verifyRangeProof(
 
   if (proof === null || firstKey === null || lastKey === null) {
     throw new Error(
-      'invalid all elements proof: proof, firstKey, lastKey must be null at the same time'
+      'invalid all elements proof: proof, firstKey, lastKey must be null at the same time',
     )
   }
 
@@ -475,9 +475,9 @@ export async function verifyRangeProof(
   if (keys.length === 1 && nibblesCompare(firstKey, lastKey) === 0) {
     const { trie, value } = await verifyProof(
       rootHash,
-      nibblestoBytes(firstKey),
+      nibblesTypeToPackedBytes(firstKey),
       proof,
-      useKeyHashingFunction
+      useKeyHashingFunction,
     )
 
     if (nibblesCompare(firstKey, keys[0]) !== 0) {
@@ -496,7 +496,7 @@ export async function verifyRangeProof(
   }
   if (firstKey.length !== lastKey.length) {
     throw new Error(
-      'invalid two edge elements proof: the length of firstKey should be equal to the length of lastKey'
+      'invalid two edge elements proof: the length of firstKey should be equal to the length of lastKey',
     )
   }
 
@@ -513,7 +513,7 @@ export async function verifyRangeProof(
 
   // Put all elements to the trie
   for (let i = 0; i < keys.length; i++) {
-    await trie.put(nibblestoBytes(keys[i]), values[i])
+    await trie.put(nibblesTypeToPackedBytes(keys[i]), values[i])
   }
 
   // Compare rootHash

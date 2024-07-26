@@ -32,7 +32,7 @@ export function create2930AccessListTx(txData: TxData, opts: TxOptions = {}) {
 export function create2930AccessListTxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
   if (values.length !== 8 && values.length !== 11) {
     throw new Error(
-      'Invalid EIP-2930 transaction. Only expecting 8 values (for unsigned tx) or 11 values (for signed tx).'
+      'Invalid EIP-2930 transaction. Only expecting 8 values (for unsigned tx) or 11 values (for signed tx).',
     )
   }
 
@@ -57,7 +57,7 @@ export function create2930AccessListTxFromBytesArray(values: TxValuesArray, opts
       r,
       s,
     },
-    opts
+    opts,
   )
 }
 
@@ -74,7 +74,7 @@ export function create2930AccessListTxFromRLP(serialized: Uint8Array, opts: TxOp
     throw new Error(
       `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: ${
         TransactionType.AccessListEIP2930
-      }, received: ${bytesToHex(serialized.subarray(0, 1))}`
+      }, received: ${bytesToHex(serialized.subarray(0, 1))}`,
     )
   }
 

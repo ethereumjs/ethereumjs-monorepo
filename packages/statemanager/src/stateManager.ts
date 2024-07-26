@@ -9,7 +9,6 @@ import {
   KECCAK256_RLP,
   KECCAK256_RLP_S,
   bigIntToHex,
-  bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
@@ -208,7 +207,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
     this._debug = debugDefault('statemanager:statemanager')
 
@@ -231,7 +230,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       type: opts.accountCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.accountCacheOpts?.size ?? 100000,
     }
-
     if (!this._accountCacheSettings.deactivate) {
       this._accountCache = new AccountCache({
         size: this._accountCacheSettings.size,
@@ -245,7 +243,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       type: opts.storageCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.storageCacheOpts?.size ?? 20000,
     }
-
     if (!this._storageCacheSettings.deactivate) {
       this._storageCache = new StorageCache({
         size: this._storageCacheSettings.size,
@@ -259,7 +256,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       type: opts.codeCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.codeCacheOpts?.size ?? 20000,
     }
-
     if (!this._codeCacheSettings.deactivate) {
       this._codeCache = new CodeCache({
         size: this._codeCacheSettings.size,
@@ -301,7 +297,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
           account?.balance
         } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${
           account && account.isEmpty() ? 'yes' : 'no'
-        }`
+        }`,
       )
     }
     if (this._accountCacheSettings.deactivate) {
@@ -435,7 +431,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   // TODO PR: have a better interface for hashed address pull?
   protected _getStorageTrie(
     addressOrHash: Address | { bytes: Uint8Array } | Uint8Array,
-    rootAccount?: Account
+    rootAccount?: Account,
   ): Trie {
     // use hashed key for lookup from storage cache
     const addressBytes: Uint8Array =
@@ -517,7 +513,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   protected async _modifyContractStorage(
     address: Address,
     account: Account,
-    modifyTrie: (storageTrie: Trie, done: Function) => void
+    modifyTrie: (storageTrie: Trie, done: Function) => void,
   ): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve) => {
@@ -540,7 +536,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     address: Address,
     account: Account,
     key: Uint8Array,
-    value: Uint8Array
+    value: Uint8Array,
   ) {
     await this._modifyContractStorage(address, account, async (storageTrie, done) => {
       if (value instanceof Uint8Array && value.length) {
@@ -744,7 +740,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       return returnValue
     }
     const accountProof: PrefixedHexString[] = (await this._trie.createProof(address.bytes)).map(
-      (p) => bytesToHex(p)
+      (p) => bytesToHex(p),
     )
     const storageProof: StorageProof[] = []
     const storageTrie = this._getStorageTrie(address, account)
@@ -783,7 +779,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   static async fromProof(
     proof: Proof | Proof[],
     safe: boolean = false,
-    opts: DefaultStateManagerOpts = {}
+    opts: DefaultStateManagerOpts = {},
   ): Promise<DefaultStateManager> {
     if (Array.isArray(proof)) {
       if (proof.length === 0) {
@@ -793,7 +789,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
           opts.trie ??
           (await createTrieFromProof(
             proof[0].accountProof.map((e) => hexToBytes(e)),
-            { useKeyHashing: true }
+            { useKeyHashing: true },
           ))
         const sm = new DefaultStateManager({ ...opts, trie })
         const address = Address.fromString(proof[0].address)
@@ -821,14 +817,14 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     storageProof: StorageProof[],
     storageHash: PrefixedHexString,
     address: Address,
-    safe: boolean = false
+    safe: boolean = false,
   ) {
     const trie = this._getStorageTrie(address)
     trie.root(hexToBytes(storageHash))
     for (let i = 0; i < storageProof.length; i++) {
       await trie.updateFromProof(
         storageProof[i].proof.map((e) => hexToBytes(e)),
-        safe
+        safe,
       )
     }
   }
@@ -844,13 +840,13 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       for (let i = 0; i < proof.length; i++) {
         await this._trie.updateFromProof(
           proof[i].accountProof.map((e) => hexToBytes(e)),
-          safe
+          safe,
         )
         await this.addStorageProof(
           proof[i].storageProof,
           proof[i].storageHash,
           Address.fromString(proof[i].address),
-          safe
+          safe,
         )
       }
     } else {
@@ -865,7 +861,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   async verifyProof(proof: Proof): Promise<boolean> {
     const key = hexToBytes(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
-      hexToBytes(rlpString)
+      hexToBytes(rlpString),
     )
 
     // This returns the account if the proof is valid.
@@ -921,13 +917,13 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       })
       const reportedValue = setLengthLeft(
         RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,
-        32
+        32,
       )
       if (!equalsBytes(reportedValue, storageValue)) {
         throw new Error(
           `Reported trie value does not match storage, key: ${stProof.key}, reported: ${bytesToHex(
-            reportedValue
-          )}, actual: ${bytesToHex(storageValue)}`
+            reportedValue,
+          )}, actual: ${bytesToHex(storageValue)}`,
         )
       }
     }
@@ -990,19 +986,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
     const trie = this._getStorageTrie(address, account)
 
-    return new Promise((resolve, reject) => {
-      const storage: StorageDump = {}
-      const stream = trie.createReadStream()
-
-      stream.on('data', (val: any) => {
-        storage[bytesToHex(val.key)] = bytesToHex(val.value)
-      })
-      stream.on('end', () => {
-        resolve(storage)
-      })
-      stream.on('error', (e) => {
-        reject(e)
-      })
+    return trie.getValueMap().then((value) => {
+      return value.values
     })
   }
 
@@ -1025,44 +1010,24 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!account) {
       throw new Error(`Account does not exist.`)
     }
+
     const trie = this._getStorageTrie(address, account)
 
-    return new Promise((resolve, reject) => {
-      let inRange = false
-      let i = 0
-
-      /** Object conforming to {@link StorageRange.storage}. */
-      const storageMap: StorageRange['storage'] = {}
-      const stream = trie.createReadStream()
-
-      stream.on('data', (val: any) => {
-        if (!inRange) {
-          // Check if the key is already in the correct range.
-          if (bytesToBigInt(val.key) >= startKey) {
-            inRange = true
-          } else {
-            return
-          }
+    return trie.getValueMap(startKey, limit).then((value) => {
+      const values = value.values
+      const dump = Object.create(null)
+      for (const key of Object.keys(values)) {
+        const val = values[key]
+        dump[key] = {
+          key: null,
+          value: val,
         }
+      }
 
-        if (i < limit) {
-          storageMap[bytesToHex(val.key)] = { key: null, value: bytesToHex(val.value) }
-          i++
-        } else if (i === limit) {
-          resolve({
-            storage: storageMap,
-            nextKey: bytesToHex(val.key),
-          })
-        }
-      })
-
-      stream.on('end', () => {
-        resolve({
-          storage: storageMap,
-          nextKey: null,
-        })
-      })
-      stream.on('error', (e) => reject(e))
+      return {
+        storage: dump,
+        nextKey: value.nextKey,
+      }
     })
   }
 

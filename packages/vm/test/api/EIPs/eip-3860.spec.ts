@@ -30,18 +30,18 @@ describe('EIP 3860 tests', () => {
     const tx = create1559FeeMarketTx(
       {
         data: `0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3${bytesToHex(
-          bytes
+          bytes,
         ).slice(2)}`,
         gasLimit: 100000000000,
         maxFeePerGas: 7,
         nonce: 0,
       },
-      { common: txCommon }
+      { common: txCommon },
     ).sign(pkey)
     const result = await runTx(vm, { tx })
     assert.ok(
       (result.execResult.exceptionError?.error as string) === 'initcode exceeds max initcode size',
-      'initcode exceeds max size'
+      'initcode exceeds max size',
     )
   })
 })

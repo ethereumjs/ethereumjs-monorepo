@@ -1,7 +1,8 @@
 // Example 2d - Creating and looking up an extension node
 
-const { Trie } = require('../../dist/cjs')
 const { bytesToHex, utf8ToBytes } = require('@ethereumjs/util')
+
+const { Trie } = require('../../dist/cjs/index.js')
 
 const trie = new Trie()
 
@@ -25,4 +26,4 @@ async function test() {
   console.log(node3)
 }
 
-test()
+void test()

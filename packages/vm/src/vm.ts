@@ -10,6 +10,8 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
+import { paramsVM } from './params.js'
+
 import type { VMEvents, VMOpts } from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
@@ -96,7 +98,7 @@ export class VM {
       const profilerOpts = opts.profilerOpts
       if (profilerOpts.reportAfterBlock === true && profilerOpts.reportAfterTx === true) {
         throw new Error(
-          'Cannot have `reportProfilerAfterBlock` and `reportProfilerAfterTx` set to `true` at the same time'
+          'Cannot have `reportProfilerAfterBlock` and `reportProfilerAfterTx` set to `true` at the same time',
         )
       }
     }
@@ -158,6 +160,7 @@ export class VM {
    */
   protected constructor(opts: VMOpts = {}) {
     this.common = opts.common!
+    this.common.updateParams(opts.params ?? paramsVM)
     this.stateManager = opts.stateManager!
     this.blockchain = opts.blockchain!
     this.evm = opts.evm!
@@ -171,7 +174,7 @@ export class VM {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   /**

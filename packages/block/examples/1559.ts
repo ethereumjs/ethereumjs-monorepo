@@ -1,4 +1,4 @@
-import { Block, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
@@ -10,7 +10,7 @@ const block = createBlockFromBlockData(
       gasUsed: BigInt(60),
     },
   },
-  { common }
+  { common },
 )
 
 // Base fee will increase for next block since the
@@ -27,7 +27,7 @@ const blockWithMatchingBaseFee = createBlockFromBlockData(
       gasUsed: BigInt(60),
     },
   },
-  { common }
+  { common },
 )
 
 console.log(Number(blockWithMatchingBaseFee.header.baseFeePerGas)) // 11

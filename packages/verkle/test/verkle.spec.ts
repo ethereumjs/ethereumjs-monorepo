@@ -97,7 +97,7 @@ describe('Verkle tree', () => {
     assert.deepEqual(
       verkleCrypto.serializeCommitment(pathToNonExistentNode.stack[0][0].commitment),
       tree.root(),
-      'contains the root node in the stack'
+      'contains the root node in the stack',
     )
   })
 
@@ -264,7 +264,7 @@ describe('Verkle tree', () => {
     assert.ok(res.node !== null)
     assert.deepEqual(
       (res.node as LeafNode).values[hexToBytes(keys[0])[31]],
-      VerkleLeafNodeValue.Deleted
+      VerkleLeafNodeValue.Deleted,
     )
   })
 })

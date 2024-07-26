@@ -129,7 +129,7 @@ export class VMExecution extends Execution {
             if (resolve !== undefined) {
               resolve()
             }
-          }
+          },
         )
       }
       if (this.config.savePreimages) {
@@ -236,7 +236,7 @@ export class VMExecution extends Execution {
 
       const verkleStateRoot = await verkleStateManager.getTransitionStateRoot(
         merkleStateManager,
-        merkleStateRoot
+        merkleStateRoot,
       )
       await verkleStateManager.setStateRoot(verkleStateRoot)
 
@@ -285,7 +285,7 @@ export class VMExecution extends Execution {
         this.vm = this.verkleVM!
       } else {
         this.config.logger.info(
-          `Initializing VM merkle statemanager genesis hardfork=${this.hardfork}`
+          `Initializing VM merkle statemanager genesis hardfork=${this.hardfork}`,
         )
         await this.setupMerkleVM()
         this.vm = this.merkleVM!
@@ -369,7 +369,7 @@ export class VMExecution extends Execution {
     opts: RunBlockOpts & { parentBlock?: Block },
     receipts?: TxReceipt[],
     blocking: boolean = false,
-    skipBlockchain: boolean = false
+    skipBlockchain: boolean = false,
   ): Promise<boolean> {
     // if its not blocking request then return early if its already running else wait to grab the lock
     if ((!blocking && this.running) || !this.started || this.config.shutdown) return false
@@ -508,7 +508,7 @@ export class VMExecution extends Execution {
    */
   async setHead(
     blocks: Block[],
-    { finalizedBlock, safeBlock }: { finalizedBlock?: Block; safeBlock?: Block } = {}
+    { finalizedBlock, safeBlock }: { finalizedBlock?: Block; safeBlock?: Block } = {},
   ): Promise<boolean> {
     if (!this.started || this.config.shutdown) return false
 
@@ -524,8 +524,8 @@ export class VMExecution extends Execution {
         // execution run will always fail
         throw Error(
           `vmHeadBlock's stateRoot not found number=${vmHeadBlock.header.number} root=${short(
-            vmHeadBlock.header.stateRoot
-          )}`
+            vmHeadBlock.header.stateRoot,
+          )}`,
         )
       }
 
@@ -563,7 +563,7 @@ export class VMExecution extends Execution {
 
       const td = await this.chain.getTd(
         vmHeadBlock.header.parentHash,
-        vmHeadBlock.header.number - BIGINT_1
+        vmHeadBlock.header.number - BIGINT_1,
       )
       const hardfork = this.config.execCommon.setHardforkBy({
         blockNumber: vmHeadBlock.header.number,
@@ -596,7 +596,7 @@ export class VMExecution extends Execution {
     return this.runWithLock<void>(async () => {
       // check if the block is canonical in chain
       this.config.logger.warn(
-        `Setting execution head to hash=${short(jumpToHash)} number=${jumpToNumber}`
+        `Setting execution head to hash=${short(jumpToHash)} number=${jumpToNumber}`,
       )
       await this.vm.blockchain.setIteratorHead('vm', jumpToHash)
     })
@@ -626,13 +626,13 @@ export class VMExecution extends Execution {
 
         if (typeof blockchain.getCanonicalHeadBlock !== 'function') {
           throw new Error(
-            'cannot get iterator head: blockchain has no getCanonicalHeadBlock function'
+            'cannot get iterator head: blockchain has no getCanonicalHeadBlock function',
           )
         }
         let canonicalHead = await blockchain.getCanonicalHeadBlock()
 
         this.config.logger.debug(
-          `Running execution startHeadBlock=${startHeadBlock?.header.number} canonicalHead=${canonicalHead?.header.number} loop=${loop}`
+          `Running execution startHeadBlock=${startHeadBlock?.header.number} canonicalHead=${canonicalHead?.header.number} loop=${loop}`,
         )
 
         let headBlock: Block | undefined
@@ -672,7 +672,7 @@ export class VMExecution extends Execution {
                   if (reorg) {
                     clearCache = true
                     this.config.logger.info(
-                      `VM run: Chain reorged, setting new head to block number=${headBlock.header.number} clearCache=${clearCache}.`
+                      `VM run: Chain reorged, setting new head to block number=${headBlock.header.number} clearCache=${clearCache}.`,
                     )
                   } else {
                     const prevVMStateRoot = await this.vm.stateManager.getStateRoot()
@@ -688,7 +688,7 @@ export class VMExecution extends Execution {
                   const { number, timestamp } = block.header
                   if (typeof blockchain.getTotalDifficulty !== 'function') {
                     throw new Error(
-                      'cannot get iterator head: blockchain has no getTotalDifficulty function'
+                      'cannot get iterator head: blockchain has no getTotalDifficulty function',
                     )
                   }
                   const td = await blockchain.getTotalDifficulty(block.header.parentHash)
@@ -702,7 +702,7 @@ export class VMExecution extends Execution {
                     const wasPrePrague = !this.config.execCommon.gteHardfork(Hardfork.Osaka)
                     const hash = short(block.hash())
                     this.config.superMsg(
-                      `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
+                      `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`,
                     )
                     this.hardfork = this.config.execCommon.setHardforkBy({
                       blockNumber: number,
@@ -724,7 +724,7 @@ export class VMExecution extends Execution {
                     throw Error(
                       `Invalid vm stateManager type=${typeof this.vm.stateManager} for fork=${
                         this.hardfork
-                      }`
+                      }`,
                     )
                   }
 
@@ -785,7 +785,7 @@ export class VMExecution extends Execution {
               },
               this.config.numBlocksPerIteration,
               // release lock on this callback so other blockchain ops can happen while this block is being executed
-              true
+              true,
             )
             // Ensure to catch and not throw as this would lead to unCaughtException with process exit
             .catch(async (error) => {
@@ -812,7 +812,7 @@ export class VMExecution extends Execution {
                     hasParentStateRoot = false
                   if (headBlock !== undefined) {
                     hasParentStateRoot = await this.vm.stateManager.hasStateRoot(
-                      headBlock.header.stateRoot
+                      headBlock.header.stateRoot,
                     )
                     backStepTo = headBlock.header.number ?? BIGINT_0 - BIGINT_1
                     backStepToHash = headBlock.header.parentHash
@@ -822,17 +822,17 @@ export class VMExecution extends Execution {
                   if (hasParentStateRoot === true && backStepToHash !== undefined) {
                     this.config.logger.warn(
                       `${errorMsg}, backStepping vmHead to number=${backStepTo} hash=${short(
-                        backStepToHash ?? 'na'
-                      )} hasParentStateRoot=${short(backStepToRoot ?? 'na')}:\n${error}`
+                        backStepToHash ?? 'na',
+                      )} hasParentStateRoot=${short(backStepToRoot ?? 'na')}:\n${error}`,
                     )
                     await this.vm.blockchain.setIteratorHead('vm', backStepToHash)
                   } else {
                     this.config.logger.error(
                       `${errorMsg}, couldn't back step to vmHead number=${backStepTo} hash=${short(
-                        backStepToHash ?? 'na'
+                        backStepToHash ?? 'na',
                       )} hasParentStateRoot=${hasParentStateRoot} backStepToRoot=${short(
-                        backStepToRoot ?? 'na'
-                      )}:\n${error}`
+                        backStepToRoot ?? 'na',
+                      )}:\n${error}`,
                     )
                   }
                 } else {
@@ -869,7 +869,7 @@ export class VMExecution extends Execution {
                 }
                 this.config.events.emit(Event.SYNC_EXECUTION_VM_ERROR, error)
                 const actualExecuted = Number(
-                  errorBlock.header.number - startHeadBlock.header.number
+                  errorBlock.header.number - startHeadBlock.header.number,
                 )
                 return actualExecuted
               } else {
@@ -885,7 +885,7 @@ export class VMExecution extends Execution {
               endHeadBlock = await this.vm.blockchain.getIteratorHead('vm')
             } else {
               throw new Error(
-                'cannot get iterator head: blockchain has no getIteratorHead function'
+                'cannot get iterator head: blockchain has no getIteratorHead function',
               )
             }
 
@@ -904,7 +904,7 @@ export class VMExecution extends Execution {
               ;(this.config.execCommon.gteHardfork(Hardfork.Paris)
                 ? this.config.logger.debug
                 : this.config.logger.info)(
-                `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
+                `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`,
               )
 
               await this.chain.update(false)
@@ -912,13 +912,13 @@ export class VMExecution extends Execution {
               this.config.logger.debug(
                 `No blocks executed past chain head hash=${short(endHeadBlock.hash())} number=${
                   endHeadBlock.header.number
-                }`
+                }`,
               )
             }
             startHeadBlock = endHeadBlock
             if (typeof this.vm.blockchain.getCanonicalHeadBlock !== 'function') {
               throw new Error(
-                'cannot get iterator head: blockchain has no getCanonicalHeadBlock function'
+                'cannot get iterator head: blockchain has no getCanonicalHeadBlock function',
               )
             }
             canonicalHead = await this.vm.blockchain.getCanonicalHeadBlock()
@@ -939,7 +939,7 @@ export class VMExecution extends Execution {
     this._statsInterval = setInterval(
       // eslint-disable-next-line @typescript-eslint/await-thenable
       await this.stats.bind(this),
-      this.STATS_INTERVAL
+      this.STATS_INTERVAL,
     )
 
     const { blockchain } = this.vm
@@ -1075,7 +1075,7 @@ export class VMExecution extends Execution {
           if (allTxs || txHashes.includes(txHash)) {
             const res = await runTx(vm, { block, tx })
             this.config.logger.info(
-              `Executed tx hash=${txHash} gasUsed=${res.totalGasSpent} from block num=${blockNumber}`
+              `Executed tx hash=${txHash} gasUsed=${res.totalGasSpent} from block num=${blockNumber}`,
             )
             count += 1
           }
@@ -1099,22 +1099,22 @@ export class VMExecution extends Execution {
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       stats = !sm._accountCacheSettings.deactivate ? sm._accountCache.stats() : disactivatedStats
       this.config.logger.info(
-        `Account cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
+        `Account cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`,
       )
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       stats = !sm._storageCacheSettings.deactivate ? sm._storageCache.stats() : disactivatedStats
       this.config.logger.info(
-        `Storage cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
+        `Storage cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`,
       )
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       stats = !sm._codeCacheSettings.deactivate ? sm._codeCache.stats() : disactivatedStats
       this.config.logger.info(
-        `Code cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
+        `Code cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`,
       )
       const tStats = (sm._trie as Trie).database().stats()
       this.config.logger.info(
         `Trie cache stats size=${tStats.size} reads=${tStats.cache.reads} hits=${tStats.cache.hits} ` +
-          `writes=${tStats.cache.writes} readsDB=${tStats.db.reads} hitsDB=${tStats.db.hits} writesDB=${tStats.db.writes}`
+          `writes=${tStats.cache.writes} readsDB=${tStats.db.reads} hitsDB=${tStats.db.hits} writesDB=${tStats.db.writes}`,
       )
     }
   }

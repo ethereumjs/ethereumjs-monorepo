@@ -105,7 +105,7 @@ describe('Precompiles: BLAKE2F', () => {
       assert.equal(
         bytesToHex(result.returnValue),
         `0x${t.expected}`,
-        'should generate expected value'
+        'should generate expected value',
       )
       assert.deepEqual(result.executionGasUsed, BigInt(t.gas), 'should use expected amount of gas')
     })

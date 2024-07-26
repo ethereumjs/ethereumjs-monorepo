@@ -16,7 +16,7 @@ export function precompile08(opts: PrecompileInput): ExecResult {
     opts._debug(
       `Run ECPAIRING (0x08) precompile data=${short(opts.data)} length=${
         opts.data.length
-      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
+      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`,
     )
   }
 
@@ -28,7 +28,7 @@ export function precompile08(opts: PrecompileInput): ExecResult {
   }
 
   const returnData = hexToBytes(
-    (opts._EVM as EVM)['_bn128'].ec_pairing(bytesToUnprefixedHex(inputData))
+    (opts._EVM as EVM)['_bn128'].ec_pairing(bytesToUnprefixedHex(inputData)),
   )
 
   // check ecpairing success or failure by comparing the output length

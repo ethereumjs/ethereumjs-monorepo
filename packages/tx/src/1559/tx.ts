@@ -13,6 +13,7 @@ import * as EIP1559 from '../capabilities/eip1559.js'
 import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP2930 from '../capabilities/eip2930.js'
 import * as Legacy from '../capabilities/legacy.js'
+import { paramsTx } from '../params.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, validateNotArray } from '../util.js'
 
@@ -59,6 +60,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
+    this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(1559)) {
@@ -90,7 +92,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
       const msg = this._errorMsg(
-        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)'
+        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
       )
       throw new Error(msg)
     }
@@ -107,8 +109,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
   /**
    * The amount of gas paid for the data in this tx
    */
-  getDataFee(): bigint {
-    return EIP2930.getDataFee(this)
+  getDataGas(): bigint {
+    return EIP2930.getDataGas(this)
   }
 
   /**
@@ -225,7 +227,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV: boolean = false
+    convertV: boolean = false,
   ): FeeMarketEIP1559Transaction {
     r = toBytes(r)
     s = toBytes(s)
@@ -246,7 +248,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },
-      opts
+      opts,
     )
   }
 

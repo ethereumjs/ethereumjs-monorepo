@@ -553,7 +553,7 @@ async function executeBlocks(client: EthereumClient) {
     }
   } catch (e: any) {
     client.config.logger.error(
-      'Wrong input format for block execution, allowed format types: 5, 5-10, 5[0xba4b5fd92a26badad3cad22eb6f7c7e745053739b5f5d1e8a3afb00f8fb2a280,[TX_HASH_2],...], 5[*] (all txs in verbose mode)'
+      'Wrong input format for block execution, allowed format types: 5, 5-10, 5[0xba4b5fd92a26badad3cad22eb6f7c7e745053739b5f5d1e8a3afb00f8fb2a280,[TX_HASH_2],...], 5[*] (all txs in verbose mode)',
     )
     process.exit()
   }
@@ -597,7 +597,7 @@ async function startExecutionFrom(client: EthereumClient) {
   const startExecutionParent = await client.chain.getBlock(startExecutionBlock.header.parentHash)
   const startExecutionParentTd = await client.chain.getTd(
     startExecutionParent.hash(),
-    startExecutionParent.header.number
+    startExecutionParent.header.number,
   )
 
   const startExecutionHardfork = client.config.execCommon.getHardforkBy({
@@ -616,7 +616,7 @@ async function startExecutionFrom(client: EthereumClient) {
       await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
       await client.chain.update(false)
       logger.info(
-        `vmHead set to ${client.chain.headers.height} for starting stateless execution at hardfork=${startExecutionHardfork}`
+        `vmHead set to ${client.chain.headers.height} for starting stateless execution at hardfork=${startExecutionHardfork}`,
       )
     } catch (err: any) {
       logger.error(`Error setting vmHead for starting stateless execution: ${err}`)
@@ -634,7 +634,7 @@ async function startExecutionFrom(client: EthereumClient) {
  */
 async function startClient(
   config: Config,
-  genesisMeta: { genesisState?: GenesisState; genesisStateRoot?: Uint8Array } = {}
+  genesisMeta: { genesisState?: GenesisState; genesisStateRoot?: Uint8Array } = {},
 ) {
   config.logger.info(`Data directory: ${config.datadir}`)
   if (config.lightserv) {
@@ -691,11 +691,11 @@ async function startClient(
           config.logger.info(
             `Preloading block hash=0x${short(bytesToHex(block.header.hash()))} number=${
               block.header.number
-            }`
+            }`,
           )
         } catch (err: any) {
           config.logger.info(
-            `Encountered error while while preloading chain data  error=${err.message}`
+            `Encountered error while while preloading chain data  error=${err.message}`,
           )
           break
         }
@@ -837,7 +837,7 @@ async function inputAccounts() {
       for (const addressString of addresses) {
         const address = Address.fromString(addressString)
         const inputKey = (await question(
-          `Please enter the 0x-prefixed private key to unlock ${address}:\n`
+          `Please enter the 0x-prefixed private key to unlock ${address}:\n`,
         )) as PrefixedHexString
         ;(rl as any).history = (rl as any).history.slice(1)
         const privKey = hexToBytes(inputKey)
@@ -846,7 +846,7 @@ async function inputAccounts() {
           accounts.push([address, privKey])
         } else {
           console.error(
-            `Private key does not match for ${address} (address derived: ${derivedAddress})`
+            `Private key does not match for ${address} (address derived: ${derivedAddress})`,
           )
           process.exit()
         }
@@ -890,7 +890,7 @@ const stopClient = async (
   clientStartPromise: Promise<{
     client: EthereumClient
     servers: (RPCServer | http.Server)[]
-  } | null>
+  } | null>,
 ) => {
   config.logger.info('Caught interrupt signal. Obtaining client handle for clean shutdown...')
   config.logger.info('(This might take a little longer if client not yet fully started)')
@@ -945,14 +945,14 @@ async function run() {
       v: bigint,
       r: Uint8Array,
       s: Uint8Array,
-      chainID?: bigint
+      chainID?: bigint,
     ) =>
       secp256k1Expand(
         secp256k1Recover(
           msgHash,
           concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32)),
-          Number(calculateSigRecovery(v, chainID))
-        )
+          Number(calculateSigRecovery(v, chainID)),
+        ),
       ).slice(1)
     cryptoFunctions.sha256 = wasmSha256
     cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => {
@@ -1040,7 +1040,7 @@ async function run() {
 
   if (args.mine === true && accounts.length === 0) {
     console.error(
-      'Please provide an account to mine blocks with `--unlock [address]` or use `--dev` to generate'
+      'Please provide an account to mine blocks with `--unlock [address]` or use `--dev` to generate',
     )
     process.exit()
   }

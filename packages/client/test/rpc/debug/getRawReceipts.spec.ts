@@ -38,7 +38,7 @@ describe(method, () => {
         gasPrice: 100,
         to: '0x0000000000000000000000000000000000000000',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
     const block = await runBlockWithTxs(chain, execution, [tx])
     const res0 = await rpc.request(method, [bytesToHex(tx.hash())])
@@ -56,7 +56,7 @@ describe(method, () => {
   it('call with 1559 tx', async () => {
     const { chain, common, execution, server } = await setupChain(
       gethGenesisStartLondon(pow),
-      'powLondon'
+      'powLondon',
     )
     const rpc = getRpcClient(server)
     // construct tx
@@ -67,7 +67,7 @@ describe(method, () => {
         maxPriorityFeePerGas: 10,
         to: '0x1230000000000000000000000000000000000321',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     const block = await runBlockWithTxs(chain, execution, [tx])
@@ -134,7 +134,7 @@ describe(method, () => {
           to: randomBytes(20),
           nonce: 0n,
         },
-        { common }
+        { common },
       ).sign(dummy.privKey)
 
       const block = await runBlockWithTxs(chain, execution, [tx], true)

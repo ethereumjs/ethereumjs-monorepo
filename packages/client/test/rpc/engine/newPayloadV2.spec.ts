@@ -27,8 +27,8 @@ describe(`${method}: call with executionPayloadV1`, () => {
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
       res.error.message.includes(
-        "invalid argument 0 for key 'parentHash': hex string without 0x prefix"
-      )
+        "invalid argument 0 for key 'parentHash': hex string without 0x prefix",
+      ),
     )
   })
 
@@ -39,7 +39,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     const res = await rpc.request(method, blockDataWithInvalidBlockHash)
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
-      res.error.message.includes("invalid argument 0 for key 'blockHash': invalid block hash")
+      res.error.message.includes("invalid argument 0 for key 'blockHash': invalid block hash"),
     )
   })
 
@@ -143,7 +143,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     const expectedError = 'Invalid tx at index 0: Error: Invalid serialized tx input: must be array'
     assert.ok(
       res.result.validationError.includes(expectedError),
-      `should error with - ${expectedError}`
+      `should error with - ${expectedError}`,
     )
   })
 
@@ -160,7 +160,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
         value: 1,
         to: Address.fromString('0x61FfE691821291D02E9Ba5D33098ADcee71a3a17'),
       },
-      { common }
+      { common },
     )
 
     const transactions = [bytesToHex(tx.serialize())]
@@ -177,7 +177,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
 
   it('call with valid data & valid transaction', async () => {
     const accountPk = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
     const accountAddress = Address.fromPrivateKey(accountPk)
     const newGenesisJSON = {
@@ -198,7 +198,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
         value: 6,
         gasLimit: 53_000,
       },
-      { common }
+      { common },
     ).sign(accountPk)
     const transactions = [bytesToHex(tx.serialize())]
     const blockDataWithValidTransaction = {

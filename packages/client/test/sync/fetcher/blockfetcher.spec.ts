@@ -71,7 +71,7 @@ describe('[BlockFetcher]', async () => {
     assert.equal(
       fetcher.first + fetcher.count - BigInt(1) === BigInt(15),
       true,
-      'height should now be 15'
+      'height should now be 15',
     )
 
     // Clear fetcher queue for next test of gap when following head
@@ -83,7 +83,7 @@ describe('[BlockFetcher]', async () => {
     assert.equal(
       (fetcher as any).in.length,
       11,
-      '10 new tasks to catch up to head (1-49, 5 per request), 1 new task for subsequent block numbers (50-51)'
+      '10 new tasks to catch up to head (1-49, 5 per request), 1 new task for subsequent block numbers (50-51)',
     )
 
     fetcher.destroy()
@@ -104,7 +104,7 @@ describe('[BlockFetcher]', async () => {
     assert.deepEqual(fetcher.process({ task: { count: 2 } } as any, blocks), blocks, 'got results')
     assert.notOk(
       fetcher.process({ task: { count: 2 } } as any, { blocks: [] } as any),
-      'bad results'
+      'bad results',
     )
   })
 
@@ -213,7 +213,7 @@ describe('[BlockFetcher]', async () => {
 
     const shanghaiHeader = BlockHeader.fromHeaderData(
       { number: 1, withdrawalsRoot: KECCAK256_RLP },
-      { common: config.chainCommon, setHardfork: true }
+      { common: config.chainCommon, setHardfork: true },
     )
 
     const task = { count: 1, first: BigInt(1) }
@@ -267,7 +267,7 @@ describe('store()', async () => {
   config.events.on(Event.SYNC_FETCHED_BLOCKS, () =>
     it('should emit fetched blocks event', () => {
       assert.ok(true, 'store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')
-    })
+    }),
   )
   await fetcher.store([])
 })

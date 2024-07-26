@@ -69,7 +69,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     }
     const bodies = bodiesResult[1]
     this.debug(
-      `Requested blocks=${blocksRange} from ${peerInfo} (received: ${headers.length} headers / ${bodies.length} bodies)`
+      `Requested blocks=${blocksRange} from ${peerInfo} (received: ${headers.length} headers / ${bodies.length} bodies)`,
     )
     const blocks: Block[] = []
     for (const [i, [txsData, unclesData, withdrawalsData]] of bodies.entries()) {
@@ -82,7 +82,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
           (withdrawalsData?.length ?? 0) === 0)
       ) {
         this.debug(
-          `Requested block=${headers[i].number}} from peer ${peerInfo} missing non-empty txs=${txsData.length} or uncles=${unclesData.length} or withdrawals=${withdrawalsData?.length}`
+          `Requested block=${headers[i].number}} from peer ${peerInfo} missing non-empty txs=${txsData.length} or uncles=${unclesData.length} or withdrawals=${withdrawalsData?.length}`,
         )
         return []
       }
@@ -100,7 +100,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       blocks.push(block)
     }
     this.debug(
-      `Returning blocks=${blocksRange} from ${peerInfo} (received: ${headers.length} headers / ${bodies.length} bodies)`
+      `Returning blocks=${blocksRange} from ${peerInfo} (received: ${headers.length} headers / ${bodies.length} bodies)`,
     )
     return blocks
   }
@@ -136,14 +136,14 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       this.debug(
         `Fetcher results stored in blockchain (blocks num=${blocks.length} first=${
           blocks[0]?.header.number
-        } last=${blocks[blocks.length - 1]?.header.number})`
+        } last=${blocks[blocks.length - 1]?.header.number})`,
       )
       this.config.events.emit(Event.SYNC_FETCHED_BLOCKS, blocks.slice(0, num))
     } catch (e: any) {
       this.debug(
         `Error storing fetcher results in blockchain (blocks num=${blocks.length} first=${
           blocks[0]?.header.number
-        } last=${blocks[blocks.length - 1]?.header.number}): ${e}`
+        } last=${blocks[blocks.length - 1]?.header.number}): ${e}`,
       )
       throw e
     }

@@ -266,14 +266,14 @@ type CustomPrecompile = AddPrecompile | DeletePrecompile
 
 function getActivePrecompiles(
   common: Common,
-  customPrecompiles?: CustomPrecompile[]
+  customPrecompiles?: CustomPrecompile[],
 ): Map<string, PrecompileFunc> {
   const precompileMap = new Map()
   if (customPrecompiles) {
     for (const precompile of customPrecompiles) {
       precompileMap.set(
         bytesToUnprefixedHex(precompile.address.bytes),
-        'function' in precompile ? precompile.function : undefined
+        'function' in precompile ? precompile.function : undefined,
       )
     }
   }

@@ -36,4 +36,4 @@ const main = async () => {
   console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
 }
 
-main()
+void main()

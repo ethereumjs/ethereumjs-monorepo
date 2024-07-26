@@ -1,5 +1,5 @@
+import { createEVM } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
-import { createEVM, EVM } from '@ethereumjs/evm'
 
 const main = async () => {
   const evm = await createEVM()
@@ -7,4 +7,4 @@ const main = async () => {
   console.log(res.executionGasUsed) // 3n
 }
 
-main()
+void main()

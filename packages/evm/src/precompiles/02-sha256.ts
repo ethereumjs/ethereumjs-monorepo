@@ -16,7 +16,7 @@ export function precompile02(opts: PrecompileInput): ExecResult {
     opts._debug(
       `Run KECCAK256 (0x02) precompile data=${short(opts.data)} length=${
         opts.data.length
-      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
+      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`,
     )
   }
 

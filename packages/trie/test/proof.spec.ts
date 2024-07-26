@@ -100,11 +100,11 @@ describe('simple merkle proofs generation and verification', () => {
 
     await trie.put(
       utf8ToBytes('key1aa'),
-      utf8ToBytes('0123456789012345678901234567890123456789xxx')
+      utf8ToBytes('0123456789012345678901234567890123456789xxx'),
     )
     await trie.put(
       utf8ToBytes('key1'),
-      utf8ToBytes('0123456789012345678901234567890123456789Very_Long')
+      utf8ToBytes('0123456789012345678901234567890123456789Very_Long'),
     )
     await trie.put(utf8ToBytes('key2bb'), utf8ToBytes('aval3'))
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('short'))
@@ -203,7 +203,7 @@ describe('simple merkle proofs generation and verification', () => {
     const updatedNewSafeValue = await newTrie.get(safeKey)
     assert.ok(
       equalsBytes(updatedNewSafeValue!, safeValue),
-      'succesfully set the trie to the new root and got the correct value'
+      'succesfully set the trie to the new root and got the correct value',
     )
   })
 })

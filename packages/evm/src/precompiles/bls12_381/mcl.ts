@@ -226,7 +226,7 @@ export class MCLBLS implements EVMBLSInterface {
     const p2 = BLS12_381_ToG1Point(
       input.subarray(BLS_G1_POINT_BYTE_LENGTH, BLS_G1_POINT_BYTE_LENGTH * 2),
       this._mcl,
-      false
+      false,
     )
 
     const result = this._mcl.add(p1, p2)
@@ -250,7 +250,7 @@ export class MCLBLS implements EVMBLSInterface {
     const p2 = BLS12_381_ToG2Point(
       input.subarray(BLS_G2_POINT_BYTE_LENGTH, BLS_G2_POINT_BYTE_LENGTH * 2),
       this._mcl,
-      false
+      false,
     )
 
     const result = this._mcl.add(p1, p2)
@@ -296,11 +296,11 @@ export class MCLBLS implements EVMBLSInterface {
       const pairStart = pairLength * k
       const G1 = BLS12_381_ToG1Point(
         input.subarray(pairStart, pairStart + BLS_G1_POINT_BYTE_LENGTH),
-        this._mcl
+        this._mcl,
       )
       const Fr = BLS12_381_ToFrPoint(
         input.subarray(pairStart + BLS_G1_POINT_BYTE_LENGTH, pairStart + pairLength),
-        this._mcl
+        this._mcl,
       )
 
       G1Array.push(G1)
@@ -322,11 +322,11 @@ export class MCLBLS implements EVMBLSInterface {
       const pairStart = pairLength * k
       const G2 = BLS12_381_ToG2Point(
         input.subarray(pairStart, pairStart + BLS_G2_POINT_BYTE_LENGTH),
-        this._mcl
+        this._mcl,
       )
       const Fr = BLS12_381_ToFrPoint(
         input.subarray(pairStart + BLS_G2_POINT_BYTE_LENGTH, pairStart + pairLength),
-        this._mcl
+        this._mcl,
       )
 
       G2Array.push(G2)
@@ -344,13 +344,13 @@ export class MCLBLS implements EVMBLSInterface {
       const pairStart = pairLength * k
       const G1 = BLS12_381_ToG1Point(
         input.subarray(pairStart, pairStart + BLS_G1_POINT_BYTE_LENGTH),
-        this._mcl
+        this._mcl,
       )
 
       const g2start = pairStart + BLS_G1_POINT_BYTE_LENGTH
       const G2 = BLS12_381_ToG2Point(
         input.subarray(g2start, g2start + BLS_G2_POINT_BYTE_LENGTH),
-        this._mcl
+        this._mcl,
       )
 
       pairs.push([G1, G2])

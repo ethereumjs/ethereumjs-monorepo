@@ -58,7 +58,7 @@ export function blockHeaderFromRpc(blockParams: JsonRpcBlock, options?: BlockOpt
       parentBeaconBlockRoot,
       requestsRoot,
     },
-    options
+    options,
   )
 
   return blockHeader

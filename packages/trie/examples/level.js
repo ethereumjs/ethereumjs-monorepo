@@ -1,7 +1,8 @@
+const { utf8ToBytes, bytesToUtf8 } = require('ethereum-cryptography/utils')
 const { Level } = require('level')
 const { MemoryLevel } = require('memory-level')
 
-const { Trie } = require('../dist')
+const { Trie } = require('../../dist/cjs/index.js')
 
 const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
 
@@ -46,9 +47,9 @@ class LevelDB {
 const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 
 async function test() {
-  await trie.put(Buffer.from('test'), Buffer.from('one'))
-  const value = await trie.get(Buffer.from('test'))
-  console.log(value.toString()) // 'one'
+  await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
+  const value = await trie.get(utf8ToBytes('test'))
+  console.log(bytesToUtf8(value)) // 'one'
 }
 
-test()
+void test()

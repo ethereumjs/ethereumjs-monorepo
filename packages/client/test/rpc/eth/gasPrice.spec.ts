@@ -23,7 +23,7 @@ describe(method, () => {
     // construct tx
     const tx = createLegacyTx(
       { gasLimit: 21000, gasPrice: GAS_PRICE, to: '0x0000000000000000000000000000000000000000' },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
@@ -32,7 +32,7 @@ describe(method, () => {
     assert.equal(
       res.result,
       intToHex(GAS_PRICE),
-      'should return the correct suggested gas price with 1 legacy transaction'
+      'should return the correct suggested gas price with 1 legacy transaction',
     )
   })
 
@@ -46,7 +46,7 @@ describe(method, () => {
       averageGasPrice += BigInt(gasPrice)
       const tx = createLegacyTx(
         { nonce: i, gasLimit: 21000, gasPrice, to: '0x0000000000000000000000000000000000000000' },
-        { common }
+        { common },
       ).sign(dummy.privKey)
       await runBlockWithTxs(chain, execution, [tx])
     }
@@ -56,7 +56,7 @@ describe(method, () => {
     assert.equal(
       res.result,
       bigIntToHex(averageGasPrice),
-      'should return the correct gas price with multiple legacy transactions'
+      'should return the correct gas price with multiple legacy transactions',
     )
   })
 
@@ -68,11 +68,11 @@ describe(method, () => {
 
     const tx1 = createLegacyTx(
       { gasLimit: 21000, gasPrice: G1, to: '0x0000000000000000000000000000000000000000' },
-      { common }
+      { common },
     ).sign(dummy.privKey)
     const tx2 = createLegacyTx(
       { nonce: 1, gasLimit: 21000, gasPrice: G2, to: '0x0000000000000000000000000000000000000000' },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx1, tx2])
@@ -82,14 +82,14 @@ describe(method, () => {
     assert.equal(
       res.result,
       intToHex(Math.trunc(averageGasPrice)),
-      'should return the correct gas price with multiple legacy transactions in a block'
+      'should return the correct gas price with multiple legacy transactions in a block',
     )
   })
 
   it('call with 1559 transaction data', async () => {
     const { chain, common, execution, server } = await setupChain(
       gethGenesisStartLondon(pow),
-      'powLondon'
+      'powLondon',
     )
     const rpc = getRpcClient(server)
     const tx = create1559FeeMarketTx(
@@ -99,7 +99,7 @@ describe(method, () => {
         maxFeePerGas: 975000000,
         to: '0x0000000000000000000000000000000000000000',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
@@ -110,14 +110,14 @@ describe(method, () => {
     assert.equal(
       res.result,
       bigIntToHex(gasPrice),
-      'should return the correct gas price with 1 1559 transaction'
+      'should return the correct gas price with 1 1559 transaction',
     )
   })
 
   it('call with multiple 1559 transactions', async () => {
     const { chain, common, execution, server } = await setupChain(
       gethGenesisStartLondon(pow),
-      'powLondon'
+      'powLondon',
     )
     const rpc = getRpcClient(server)
     const maxPriority1 = 10
@@ -129,7 +129,7 @@ describe(method, () => {
         maxFeePerGas: 975000000,
         to: '0x0000000000000000000000000000000000000000',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
     const tx2 = create1559FeeMarketTx(
       {
@@ -139,7 +139,7 @@ describe(method, () => {
         maxFeePerGas: 975000000,
         to: '0x0000000000000000000000000000000000000000',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx1, tx2])
@@ -151,7 +151,7 @@ describe(method, () => {
     assert.equal(
       res.result,
       bigIntToHex(gasPrice),
-      'should return the correct gas price with 1 1559 transaction'
+      'should return the correct gas price with 1 1559 transaction',
     )
   })
 
@@ -171,7 +171,7 @@ describe(method, () => {
             gasPrice: firstBlockGasPrice,
             to: '0x0000000000000000000000000000000000000000',
           },
-          { common }
+          { common },
         ).sign(dummy.privKey)
       } else {
         tx = createLegacyTx(
@@ -181,7 +181,7 @@ describe(method, () => {
             gasPrice,
             to: '0x0000000000000000000000000000000000000000',
           },
-          { common }
+          { common },
         ).sign(dummy.privKey)
       }
       await runBlockWithTxs(chain, execution, [tx!])
@@ -197,7 +197,7 @@ describe(method, () => {
     assert.equal(
       res.result,
       bigIntToHex(gasPrice),
-      'should return the correct gas price for 21 blocks'
+      'should return the correct gas price for 21 blocks',
     )
   })
 })

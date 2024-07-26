@@ -34,7 +34,7 @@ describe('EIP4844 tests', () => {
     })
     const genesisBlock = createBlockFromBlockData(
       { header: { gasLimit: 50000, parentBeaconBlockRoot: zeros(32) } },
-      { common }
+      { common },
     )
     const blockchain = await createBlockchain({
       genesisBlock,
@@ -76,7 +76,7 @@ describe('EIP4844 tests', () => {
         gasLimit: 0xffffn,
         to: hexToBytes('0xffb38a7a99e3e2335be83fc74b7faa19d5531243'),
       },
-      { common }
+      { common },
     )
     const signedTx = unsignedTx.sign(pk)
 
@@ -87,7 +87,7 @@ describe('EIP4844 tests', () => {
     assert.equal(
       bytesToHex(block.transactions[0].hash()),
       bytesToHex(signedTx.hash()),
-      'blob transaction should be same'
+      'blob transaction should be same',
     )
 
     const blobGasPerBlob = common.param('blobGasPerBlob')

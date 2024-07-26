@@ -19,7 +19,7 @@ import type { GenesisState } from '@ethereumjs/util'
  */
 export async function genGenesisStateRoot(
   genesisState: GenesisState,
-  common: Common
+  common: Common,
 ): Promise<Uint8Array> {
   const genCommon = common.copy()
   genCommon.setHardforkBy({

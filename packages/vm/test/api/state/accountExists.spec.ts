@@ -30,14 +30,14 @@ describe('correctly apply new account gas fee on pre-Spurious Dragon hardforks',
     await vm.stateManager.putContractStorage(
       contractAddress,
       hexToBytes('0xd08f588b94e47566eea77acec87441cecca23f61aea9ed8eb086c062d3837605'),
-      hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000001')
+      hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000001'),
     )
     // setup the call arguments
     const runCallArgs = {
       caller, // call address
       gasLimit: BigInt(174146 - 22872), // tx gas limit minus the tx fee (21000) and data fee (1872) to represent correct gas costs
       data: hexToBytes(
-        '0xa9059cbb000000000000000000000000f48a1bdc65d9ccb4b569ffd4bffff415b90783d60000000000000000000000000000000000000000000000000000000000000001'
+        '0xa9059cbb000000000000000000000000f48a1bdc65d9ccb4b569ffd4bffff415b90783d60000000000000000000000000000000000000000000000000000000000000001',
       ),
       to: contractAddress, // call to the contract address
       value: BigInt(0),
@@ -47,7 +47,7 @@ describe('correctly apply new account gas fee on pre-Spurious Dragon hardforks',
     assert.equal(
       result.execResult.executionGasUsed,
       BigInt(53552),
-      'vm correctly applies new account gas price'
+      'vm correctly applies new account gas price',
     )
   })
 })
@@ -73,20 +73,20 @@ describe('do not apply new account gas fee for empty account in DB on pre-Spurio
     const emptyAccount = (await vm.stateManager.getAccount(emptyAddress)) as Account
     await (vm.stateManager as DefaultStateManager)['_trie'].put(
       toBytes(emptyAddress),
-      emptyAccount.serialize()
+      emptyAccount.serialize(),
     )
     await vm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
     await vm.stateManager.putContractStorage(
       contractAddress,
       hexToBytes('0xd08f588b94e47566eea77acec87441cecca23f61aea9ed8eb086c062d3837605'),
-      hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000001')
+      hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000001'),
     )
     // setup the call arguments
     const runCallArgs = {
       caller, // call address
       gasLimit: BigInt(174146 - 22872), // tx gas limit minus the tx fee (21000) and data fee (1872) to represent correct gas costs
       data: hexToBytes(
-        '0xa9059cbb000000000000000000000000f48a1bdc65d9ccb4b569ffd4bffff415b90783d60000000000000000000000000000000000000000000000000000000000000001'
+        '0xa9059cbb000000000000000000000000f48a1bdc65d9ccb4b569ffd4bffff415b90783d60000000000000000000000000000000000000000000000000000000000000001',
       ),
       to: contractAddress, // call to the contract address
       value: BigInt(0),
@@ -96,7 +96,7 @@ describe('do not apply new account gas fee for empty account in DB on pre-Spurio
     assert.equal(
       result.execResult.executionGasUsed,
       BigInt(28552),
-      'new account price not applied as empty account exists'
+      'new account price not applied as empty account exists',
     )
   })
 })

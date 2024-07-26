@@ -108,12 +108,12 @@ type JsonRpcLog = {
 const jsonRpcBlock = async (
   block: Block,
   chain: Chain,
-  includeTransactions: boolean
+  includeTransactions: boolean,
 ): Promise<JsonRpcBlock> => {
   const json = block.toJSON()
   const header = json!.header!
   const transactions = block.transactions.map((tx, txIndex) =>
-    includeTransactions ? jsonRpcTx(tx, block, txIndex) : bytesToHex(tx.hash())
+    includeTransactions ? jsonRpcTx(tx, block, txIndex) : bytesToHex(tx.hash()),
   )
   const withdrawalsAttr =
     header.withdrawalsRoot !== undefined
@@ -162,7 +162,7 @@ const jsonRpcLog = async (
   block?: Block,
   tx?: TypedTransaction,
   txIndex?: number,
-  logIndex?: number
+  logIndex?: number,
 ): Promise<JsonRpcLog> => ({
   removed: false, // TODO implement
   logIndex: logIndex !== undefined ? intToHex(logIndex) : null,
@@ -188,7 +188,7 @@ const jsonRpcReceipt = async (
   logIndex: number,
   contractAddress?: Address,
   blobGasUsed?: bigint,
-  blobGasPrice?: bigint
+  blobGasPrice?: bigint,
 ): Promise<JsonRpcReceipt> => ({
   transactionHash: bytesToHex(tx.hash()),
   transactionIndex: intToHex(txIndex),
@@ -201,7 +201,7 @@ const jsonRpcReceipt = async (
   gasUsed: bigIntToHex(gasUsed),
   contractAddress: contractAddress?.toString() ?? null,
   logs: await Promise.all(
-    receipt.logs.map((l, i) => jsonRpcLog(l, block, tx, txIndex, logIndex + i))
+    receipt.logs.map((l, i) => jsonRpcLog(l, block, tx, txIndex, logIndex + i)),
   ),
   logsBloom: bytesToHex(receipt.bitvector),
   root:
@@ -220,7 +220,7 @@ const jsonRpcReceipt = async (
 const calculateRewards = async (
   block: Block,
   receiptsManager: ReceiptsManager,
-  priorityFeePercentiles: number[]
+  priorityFeePercentiles: number[],
 ) => {
   if (priorityFeePercentiles.length === 0) {
     return []
@@ -315,7 +315,7 @@ export class Eth {
 
     this.blockNumber = middleware(
       callWithStackTrace(this.blockNumber.bind(this), this._rpcDebug),
-      0
+      0,
     )
 
     this.call = middleware(callWithStackTrace(this.call.bind(this), this._rpcDebug), 2, [
@@ -328,13 +328,13 @@ export class Eth {
     this.estimateGas = middleware(
       callWithStackTrace(this.estimateGas.bind(this), this._rpcDebug),
       1,
-      [[validators.transaction()], [validators.blockOption]]
+      [[validators.transaction()], [validators.blockOption]],
     )
 
     this.getBalance = middleware(
       callWithStackTrace(this.getBalance.bind(this), this._rpcDebug),
       2,
-      [[validators.address], [validators.blockOption]]
+      [[validators.address], [validators.blockOption]],
     )
 
     this.coinbase = middleware(callWithStackTrace(this.coinbase.bind(this), this._rpcDebug), 0, [])
@@ -342,19 +342,19 @@ export class Eth {
     this.getBlockByNumber = middleware(
       callWithStackTrace(this.getBlockByNumber.bind(this), this._rpcDebug),
       2,
-      [[validators.blockOption], [validators.bool]]
+      [[validators.blockOption], [validators.bool]],
     )
 
     this.getBlockByHash = middleware(
       callWithStackTrace(this.getBlockByHash.bind(this), this._rpcDebug),
       2,
-      [[validators.hex, validators.blockHash], [validators.bool]]
+      [[validators.hex, validators.blockHash], [validators.bool]],
     )
 
     this.getBlockTransactionCountByHash = middleware(
       callWithStackTrace(this.getBlockTransactionCountByHash.bind(this), this._rpcDebug),
       1,
-      [[validators.hex, validators.blockHash]]
+      [[validators.hex, validators.blockHash]],
     )
 
     this.getCode = middleware(callWithStackTrace(this.getCode.bind(this), this._rpcDebug), 2, [
@@ -365,54 +365,54 @@ export class Eth {
     this.getUncleCountByBlockNumber = middleware(
       callWithStackTrace(this.getUncleCountByBlockNumber.bind(this), this._rpcDebug),
       1,
-      [[validators.hex]]
+      [[validators.hex]],
     )
 
     this.getStorageAt = middleware(
       callWithStackTrace(this.getStorageAt.bind(this), this._rpcDebug),
       3,
-      [[validators.address], [validators.hex], [validators.blockOption]]
+      [[validators.address], [validators.hex], [validators.blockOption]],
     )
 
     this.getTransactionByBlockHashAndIndex = middleware(
       callWithStackTrace(this.getTransactionByBlockHashAndIndex.bind(this), this._rpcDebug),
       2,
-      [[validators.hex, validators.blockHash], [validators.hex]]
+      [[validators.hex, validators.blockHash], [validators.hex]],
     )
 
     this.getTransactionByBlockNumberAndIndex = middleware(
       callWithStackTrace(this.getTransactionByBlockNumberAndIndex.bind(this), this._rpcDebug),
       2,
-      [[validators.hex, validators.blockOption], [validators.hex]]
+      [[validators.hex, validators.blockOption], [validators.hex]],
     )
 
     this.getTransactionByHash = middleware(
       callWithStackTrace(this.getTransactionByHash.bind(this), this._rpcDebug),
       1,
-      [[validators.hex]]
+      [[validators.hex]],
     )
 
     this.getTransactionCount = middleware(
       callWithStackTrace(this.getTransactionCount.bind(this), this._rpcDebug),
       2,
-      [[validators.address], [validators.blockOption]]
+      [[validators.address], [validators.blockOption]],
     )
 
     this.getBlockReceipts = middleware(
       callWithStackTrace(this.getBlockReceipts.bind(this), this._rpcDebug),
       1,
-      [[validators.blockOption]]
+      [[validators.blockOption]],
     )
     this.getTransactionReceipt = middleware(
       callWithStackTrace(this.getTransactionReceipt.bind(this), this._rpcDebug),
       1,
-      [[validators.hex]]
+      [[validators.hex]],
     )
 
     this.getUncleCountByBlockNumber = middleware(
       callWithStackTrace(this.getUncleCountByBlockNumber.bind(this), this._rpcDebug),
       1,
-      [[validators.hex]]
+      [[validators.hex]],
     )
 
     this.getLogs = middleware(callWithStackTrace(this.getLogs.bind(this), this._rpcDebug), 1, [
@@ -421,14 +421,14 @@ export class Eth {
           fromBlock: validators.optional(validators.blockOption),
           toBlock: validators.optional(validators.blockOption),
           address: validators.optional(
-            validators.either(validators.array(validators.address), validators.address)
+            validators.either(validators.array(validators.address), validators.address),
           ),
           topics: validators.optional(
             validators.array(
               validators.optional(
-                validators.either(validators.hex, validators.array(validators.hex))
-              )
-            )
+                validators.either(validators.hex, validators.array(validators.hex)),
+              ),
+            ),
           ),
           blockHash: validators.optional(validators.blockHash),
         }),
@@ -438,13 +438,13 @@ export class Eth {
     this.sendRawTransaction = middleware(
       callWithStackTrace(this.sendRawTransaction.bind(this), this._rpcDebug),
       1,
-      [[validators.hex]]
+      [[validators.hex]],
     )
 
     this.protocolVersion = middleware(
       callWithStackTrace(this.protocolVersion.bind(this), this._rpcDebug),
       0,
-      []
+      [],
     )
 
     this.syncing = middleware(callWithStackTrace(this.syncing.bind(this), this._rpcDebug), 0, [])
@@ -458,7 +458,7 @@ export class Eth {
     this.getBlockTransactionCountByNumber = middleware(
       callWithStackTrace(this.getBlockTransactionCountByNumber.bind(this), this._rpcDebug),
       1,
-      [[validators.blockOption]]
+      [[validators.blockOption]],
     )
 
     this.gasPrice = middleware(callWithStackTrace(this.gasPrice.bind(this), this._rpcDebug), 0, [])
@@ -470,13 +470,13 @@ export class Eth {
         [validators.either(validators.hex, validators.integer)],
         [validators.either(validators.hex, validators.blockOption)],
         [validators.rewardPercentiles],
-      ]
+      ],
     )
 
     this.blobBaseFee = middleware(
       callWithStackTrace(this.blobBaseFee.bind(this), this._rpcDebug),
       0,
-      []
+      [],
     )
   }
 
@@ -596,7 +596,7 @@ export class Eth {
             : undefined,
         },
       },
-      { common: vm.common, setHardfork: true }
+      { common: vm.common, setHardfork: true },
     )
 
     vm.common.setHardforkBy({
@@ -882,7 +882,7 @@ export class Eth {
     // Add pending txns to nonce if blockOpt is 'pending'
     if (blockOpt === 'pending') {
       pendingTxsCount = BigInt(
-        (this.service as FullEthereumService).txPool.pool.get(addressHex.slice(2))?.length ?? 0
+        (this.service as FullEthereumService).txPool.pool.get(addressHex.slice(2))?.length ?? 0,
       )
     }
     return bigIntToHex(account.nonce + pendingTxsCount)
@@ -969,9 +969,9 @@ export class Eth {
           i,
           createdAddress,
           blobGasUsed,
-          blobGasPrice
+          blobGasPrice,
         )
-      })
+      }),
     )
     return receipts
   }
@@ -1031,7 +1031,7 @@ export class Eth {
       logIndex,
       createdAddress,
       blobGasUsed,
-      blobGasPrice
+      blobGasPrice,
     )
   }
 
@@ -1120,8 +1120,8 @@ export class Eth {
     const logs = await this.receiptsManager.getLogs(from, to, addressBytes, formattedTopics)
     return Promise.all(
       logs.map(({ log, block, tx, txIndex, logIndex }) =>
-        jsonRpcLog(log, block, tx, txIndex, logIndex)
-      )
+        jsonRpcLog(log, block, tx, txIndex, logIndex),
+      ),
     )
   }
 
@@ -1167,7 +1167,7 @@ export class Eth {
           throw Error(
             `tx blobs=${(tx.blobs ?? []).length} exceeds block limit=${
               blobGasLimit / blobGasPerBlob
-            }`
+            }`,
           )
         }
       } else {
@@ -1225,7 +1225,7 @@ export class Eth {
    * @returns The {@link Proof}
    */
   async getProof(
-    params: [PrefixedHexString, PrefixedHexString[], PrefixedHexString]
+    params: [PrefixedHexString, PrefixedHexString[], PrefixedHexString],
   ): Promise<Proof> {
     const [addressHex, slotsHex, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
@@ -1382,11 +1382,11 @@ export class Eth {
 
     const requestedBlockNumbers = Array.from(
       { length: Number(blockCount) },
-      (_, i) => oldestBlockNumber + BigInt(i)
+      (_, i) => oldestBlockNumber + BigInt(i),
     )
 
     const requestedBlocks = await Promise.all(
-      requestedBlockNumbers.map((n) => getBlockByOption(n.toString(), this._chain))
+      requestedBlockNumbers.map((n) => getBlockByOption(n.toString(), this._chain)),
     )
 
     const [baseFees, gasUsedRatios, baseFeePerBlobGas, blobGasUsedRatio] = requestedBlocks.reduce(
@@ -1410,7 +1410,7 @@ export class Eth {
 
         return [prevBaseFees, prevGasUsedRatios, prevBaseFeesPerBlobGas, prevBlobGasUsedRatio]
       },
-      [[], [], [], []] as [bigint[], number[], bigint[], number[]]
+      [[], [], [], []] as [bigint[], number[], bigint[], number[]],
     )
 
     const londonHardforkBlockNumber = this._chain.blockchain.common.hardforkBlock(Hardfork.London)!
@@ -1422,7 +1422,7 @@ export class Eth {
 
     if (this._chain.blockchain.common.isActivatedEIP(4844)) {
       baseFeePerBlobGas.push(
-        requestedBlocks[requestedBlocks.length - 1].header.calcNextBlobGasPrice()
+        requestedBlocks[requestedBlocks.length - 1].header.calcNextBlobGasPrice(),
       )
     } else {
       // TODO (?): known bug
@@ -1436,8 +1436,8 @@ export class Eth {
     if (this.receiptsManager && priorityFeePercentiles) {
       rewards = await Promise.all(
         requestedBlocks.map((b) =>
-          calculateRewards(b, this.receiptsManager!, priorityFeePercentiles)
-        )
+          calculateRewards(b, this.receiptsManager!, priorityFeePercentiles),
+        ),
       )
     }
 

@@ -8,7 +8,12 @@ import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/ga
 import type { OpHandler } from './opcodes/index.js'
 import type { CustomPrecompile } from './precompiles/index.js'
 import type { PrecompileFunc } from './precompiles/types.js'
-import type { AccessWitnessInterface, Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type {
+  AccessWitnessInterface,
+  Common,
+  EVMStateManagerInterface,
+  ParamsDict,
+} from '@ethereumjs/common'
 import type { Account, Address, AsyncEventEmitter, PrefixedHexString } from '@ethereumjs/util'
 
 export type DeleteOpcode = {
@@ -141,6 +146,7 @@ export type EVMEvents = {
 }
 
 export interface EVMInterface {
+  common: Common
   journal: {
     commit(): Promise<void>
     revert(): Promise<void>
@@ -226,6 +232,24 @@ export interface EVMOpts {
    * Gas cost for initcode size analysis will still be charged. Use with caution.
    */
   allowUnlimitedInitCodeSize?: boolean
+
+  /**
+   * EVM parameters sorted by EIP can be found in the exported `paramsEVM` dictionary,
+   * which is internally passed to the associated `@ethereumjs/common` instance which
+   * manages parameter selection based on the hardfork and EIP settings.
+   *
+   * This option allows providing a custom set of parameters. Note that parameters
+   * get fully overwritten, so you need to extend the default parameter dict
+   * to provide the full parameter set.
+   *
+   * It is recommended to deep-clone the params object for this to avoid side effects:
+   *
+   * ```ts
+   * const params = JSON.parse(JSON.stringify(paramsEVM))
+   * params['1679']['ecAddGas'] = 100 // 150
+   * ```
+   */
+  params?: ParamsDict
 
   /**
    * Override or add custom opcodes to the EVM instruction set

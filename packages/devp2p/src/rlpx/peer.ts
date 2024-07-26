@@ -143,7 +143,7 @@ export class Peer {
       this._sendAuth()
     }
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   /**
@@ -152,7 +152,7 @@ export class Peer {
   _sendAuth() {
     if (this._closed) return
     this._logger(
-      `Send auth (EIP8: ${this._EIP8}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`
+      `Send auth (EIP8: ${this._EIP8}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`,
     )
     if (this._EIP8 === true) {
       const authEIP8 = this._eciesSession.createAuthEIP8()
@@ -173,7 +173,7 @@ export class Peer {
   _sendAck() {
     if (this._closed) return
     this._logger(
-      `Send ack (EIP8: ${this._eciesSession['_gotEIP8Auth']}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`
+      `Send ack (EIP8: ${this._eciesSession['_gotEIP8Auth']}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`,
     )
 
     if (this._eciesSession['_gotEIP8Auth']) {
@@ -227,7 +227,7 @@ export class Peer {
           // TODO: Remove when we can also serve snap requests from other peers
           .filter((c) => c.name !== 'snap')
           .map((c) => `${c.name}${c.version}`)
-          .join(',')} clientId=${bytesToUtf8(this.clientId)}`
+          .join(',')} clientId=${bytesToUtf8(this.clientId)}`,
       )
     }
     const payload: HelloMsg = [
@@ -260,7 +260,7 @@ export class Peer {
       this.debug(
         'DISCONNECT',
         `Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort} (reason: ${reasonName})`,
-        reasonName
+        reasonName,
       )
     }
     const data = RLP.encode(reason)
@@ -340,7 +340,7 @@ export class Peer {
       if (parseData.subarray(0, 1) === hexToBytes('0x04')) {
         this._eciesSession.parseAckPlain(parseData)
         this._logger(
-          `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`
+          `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
         )
       } else {
         this._eciesSession['_gotEIP8Ack'] = true
@@ -350,7 +350,7 @@ export class Peer {
     } else {
       this._eciesSession.parseAckEIP8(parseData)
       this._logger(
-        `Received ack (EIP8) from ${this._socket.remoteAddress}:${this._socket.remotePort}`
+        `Received ack (EIP8) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
       )
     }
     this._state = 'Header'
@@ -380,7 +380,7 @@ export class Peer {
           this._hello.protocolVersion
         } capabilities=${(this._hello.capabilities ?? [])
           .map((c) => `${c.name}${c.version}`)
-          .join(',')} clientId=${this._hello.clientId}`
+          .join(',')} clientId=${this._hello.clientId}`,
       )
     }
 
@@ -458,7 +458,7 @@ export class Peer {
         `DISCONNECT reason: ${DISCONNECT_REASON[this._disconnectReason as number]} ${
           this._socket.remoteAddress
         }:${this._socket.remotePort}`,
-        DISCONNECT_REASON[this._disconnectReason as number]
+        DISCONNECT_REASON[this._disconnectReason as number],
       )
     }
     this._disconnectWe = false
@@ -534,8 +534,8 @@ export class Peer {
     this._logger(
       `Received body ${this._socket.remoteAddress}:${this._socket.remotePort} ${formatLogData(
         bytesToHex(body),
-        verbose
-      )}`
+        verbose,
+      )}`,
     )
     this._state = 'Header'
     this._nextPacketSize = 32

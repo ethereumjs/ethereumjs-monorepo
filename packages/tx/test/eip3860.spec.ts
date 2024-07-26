@@ -2,12 +2,13 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { TransactionType, createTxFromTxData } from '../src/index.js'
+import { TransactionType, createTxFromTxData, paramsTx } from '../src/index.js'
 
 const common = new Common({
   chain: Chain.Mainnet,
   hardfork: Hardfork.Paris,
   eips: [3860, 4844, 4895],
+  params: paramsTx,
 })
 
 const maxInitCodeSize = common.param('maxInitCodeSize')
@@ -88,15 +89,15 @@ describe('[EIP3860 tests]', () => {
       for (const txType of txTypes) {
         const eip3860ActiveTx = createTxFromTxData(
           { data, type: txType },
-          { common, allowUnlimitedInitCodeSize: true }
+          { common, allowUnlimitedInitCodeSize: true },
         )
         const eip3860DeactivedTx = createTxFromTxData(
           { data, type: txType },
-          { common, allowUnlimitedInitCodeSize: false }
+          { common, allowUnlimitedInitCodeSize: false },
         )
         assert.ok(
-          eip3860ActiveTx.getDataFee() === eip3860DeactivedTx.getDataFee(),
-          'charged initcode analysis gas'
+          eip3860ActiveTx.getDataGas() === eip3860DeactivedTx.getDataGas(),
+          'charged initcode analysis gas',
         )
       }
     })

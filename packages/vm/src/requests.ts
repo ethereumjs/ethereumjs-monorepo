@@ -25,7 +25,7 @@ import type { CLRequest, CLRequestType } from '@ethereumjs/util'
  */
 export const accumulateRequests = async (
   vm: VM,
-  txResults: RunTxResult[]
+  txResults: RunTxResult[],
 ): Promise<CLRequest<CLRequestType>[]> => {
   const requests: CLRequest<CLRequestType>[] = []
   const common = vm.common
@@ -58,12 +58,12 @@ export const accumulateRequests = async (
 
 const accumulateEIP7002Requests = async (
   vm: VM,
-  requests: CLRequest<CLRequestType>[]
+  requests: CLRequest<CLRequestType>[],
 ): Promise<void> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
     bigIntToBytes(vm.common.param('withdrawalRequestPredeployAddress')),
-    20
+    20,
   )
   const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
 
@@ -71,7 +71,7 @@ const accumulateEIP7002Requests = async (
 
   if (code.length === 0) {
     throw new Error(
-      'Attempt to accumulate EIP-7002 requests failed: the contract does not exist. Ensure the deployment tx has been run, or that the required contract code is stored'
+      'Attempt to accumulate EIP-7002 requests failed: the contract does not exist. Ensure the deployment tx has been run, or that the required contract code is stored',
     )
   }
 
@@ -108,12 +108,12 @@ const accumulateEIP7002Requests = async (
 
 const accumulateEIP7251Requests = async (
   vm: VM,
-  requests: CLRequest<CLRequestType>[]
+  requests: CLRequest<CLRequestType>[],
 ): Promise<void> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
     bigIntToBytes(vm.common.param('consolidationRequestPredeployAddress')),
-    20
+    20,
   )
   const consolidationsAddress = Address.fromString(bytesToHex(addressBytes))
 
@@ -121,7 +121,7 @@ const accumulateEIP7251Requests = async (
 
   if (code.length === 0) {
     throw new Error(
-      'Attempt to accumulate EIP-7251 requests failed: the contract does not exist. Ensure the deployment tx has been run, or that the required contract code is stored'
+      'Attempt to accumulate EIP-7251 requests failed: the contract does not exist. Ensure the deployment tx has been run, or that the required contract code is stored',
     )
   }
 
@@ -145,7 +145,7 @@ const accumulateEIP7251Requests = async (
       const sourcePubkey = slicedBytes.slice(20, 68) // 48 Bytes
       const targetPubkey = slicedBytes.slice(68, 116) // 48 bytes
       requests.push(
-        ConsolidationRequest.fromRequestData({ sourceAddress, sourcePubkey, targetPubkey })
+        ConsolidationRequest.fromRequestData({ sourceAddress, sourcePubkey, targetPubkey }),
       )
     }
   }
@@ -161,7 +161,7 @@ const accumulateEIP7251Requests = async (
 const accumulateDeposits = async (
   depositContractAddress: string,
   txResults: RunTxResult[],
-  requests: CLRequest<CLRequestType>[]
+  requests: CLRequest<CLRequestType>[],
 ) => {
   for (const [_, tx] of txResults.entries()) {
     for (let i = 0; i < tx.receipt.logs.length; i++) {
@@ -179,7 +179,7 @@ const accumulateDeposits = async (
         const pubKeySize = bytesToInt(log[2].slice(pubKeyIdx, pubKeyIdx + 32))
         const withdrawalCredsIdx = bytesToInt(log[2].slice(32, 64))
         const withdrawalCredsSize = bytesToInt(
-          log[2].slice(withdrawalCredsIdx, withdrawalCredsIdx + 32)
+          log[2].slice(withdrawalCredsIdx, withdrawalCredsIdx + 32),
         )
         const amountIdx = bytesToInt(log[2].slice(64, 96))
         const amountSize = bytesToInt(log[2].slice(amountIdx, amountIdx + 32))
@@ -190,7 +190,7 @@ const accumulateDeposits = async (
         const pubkey = log[2].slice(pubKeyIdx + 32, pubKeyIdx + 32 + pubKeySize)
         const withdrawalCredentials = log[2].slice(
           withdrawalCredsIdx + 32,
-          withdrawalCredsIdx + 32 + withdrawalCredsSize
+          withdrawalCredsIdx + 32 + withdrawalCredsSize,
         )
         const amountBytes = log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize)
         const amountBytesBigEndian = new Uint8Array([
@@ -228,7 +228,7 @@ const accumulateDeposits = async (
             amount,
             signature,
             index,
-          })
+          }),
         )
       }
     }

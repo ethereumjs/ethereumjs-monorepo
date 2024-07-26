@@ -13,6 +13,7 @@ import * as EIP1559 from '../capabilities/eip1559.js'
 import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP7702 from '../capabilities/eip7702.js'
 import * as Legacy from '../capabilities/legacy.js'
+import { paramsTx } from '../index.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, AuthorizationLists, validateNotArray } from '../util.js'
 
@@ -62,6 +63,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
     const { chainId, accessList, authorizationList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
+    this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(7702)) {
@@ -78,7 +80,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
 
     // Populate the authority list fields
     const authorizationListData = AuthorizationLists.getAuthorizationListData(
-      authorizationList ?? []
+      authorizationList ?? [],
     )
     this.authorizationList = authorizationListData.authorizationList
     this.AuthorizationListJSON = authorizationListData.AuthorizationListJSON
@@ -102,7 +104,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
       const msg = this._errorMsg(
-        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)'
+        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
       )
       throw new Error(msg)
     }
@@ -119,8 +121,8 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
   /**
    * The amount of gas paid for the data in this tx
    */
-  getDataFee(): bigint {
-    return EIP7702.getDataFee(this)
+  getDataGas(): bigint {
+    return EIP7702.getDataGas(this)
   }
 
   /**
@@ -238,7 +240,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV: boolean = false
+    convertV: boolean = false,
   ): EOACodeEIP7702Transaction {
     r = toBytes(r)
     s = toBytes(s)
@@ -260,7 +262,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },
-      opts
+      opts,
     )
   }
 

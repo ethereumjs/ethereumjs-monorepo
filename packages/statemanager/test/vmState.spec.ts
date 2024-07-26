@@ -20,7 +20,7 @@ describe('stateManager', () => {
       return
     }
     const expectedStateRoot = hexToBytes(
-      '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
+      '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544',
     )
     const stateManager = new StateManager({})
 
@@ -30,7 +30,7 @@ describe('stateManager', () => {
     assert.deepEqual(
       stateRoot,
       expectedStateRoot,
-      `generateCanonicalGenesis should produce correct state root for mainnet from common`
+      `generateCanonicalGenesis should produce correct state root for mainnet from common`,
     )
   })
 
@@ -55,7 +55,7 @@ describe('stateManager', () => {
       assert.deepEqual(
         stateRoot,
         expectedStateRoot,
-        `generateCanonicalGenesis should produce correct state root for ${Chain[chain]}`
+        `generateCanonicalGenesis should produce correct state root for ${Chain[chain]}`,
       )
     }
   })

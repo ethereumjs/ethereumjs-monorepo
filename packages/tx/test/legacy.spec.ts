@@ -62,7 +62,7 @@ describe('[Transaction]', () => {
     const nonEIP2930Common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     assert.ok(
       createLegacyTx({}, { common: nonEIP2930Common }),
-      'should initialize on a pre-Berlin Harfork (EIP-2930 not activated)'
+      'should initialize on a pre-Berlin Harfork (EIP-2930 not activated)',
     )
 
     const txData = txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
@@ -70,14 +70,14 @@ describe('[Transaction]', () => {
     let tx = createLegacyTxFromBytesArray(txData)
     assert.ok(
       tx.common.chainId() === BigInt(5),
-      'should initialize Common with chain ID (supported) derived from v value (v with 0-parity)'
+      'should initialize Common with chain ID (supported) derived from v value (v with 0-parity)',
     )
 
     txData[6] = intToBytes(46) // v with 1-parity and chain ID 5
     tx = createLegacyTxFromBytesArray(txData)
     assert.ok(
       tx.common.chainId() === BigInt(5),
-      'should initialize Common with chain ID (supported) derived from v value (v with 1-parity)'
+      'should initialize Common with chain ID (supported) derived from v value (v with 1-parity)',
     )
 
     txData[6] = intToBytes(2033) // v with 0-parity and chain ID 999
@@ -85,7 +85,7 @@ describe('[Transaction]', () => {
     assert.equal(
       tx.common.chainId(),
       BigInt(999),
-      'should initialize Common with chain ID (unsupported) derived from v value (v with 0-parity)'
+      'should initialize Common with chain ID (unsupported) derived from v value (v with 0-parity)',
     )
 
     txData[6] = intToBytes(2034) // v with 1-parity and chain ID 999
@@ -93,7 +93,7 @@ describe('[Transaction]', () => {
     assert.equal(
       tx.common.chainId(),
       BigInt(999),
-      'should initialize Common with chain ID (unsupported) derived from v value (v with 1-parity)'
+      'should initialize Common with chain ID (unsupported) derived from v value (v with 1-parity)',
     )
   })
 
@@ -181,52 +181,52 @@ describe('[Transaction]', () => {
     }
   })
 
-  it('getBaseFee() -> should return base fee', () => {
+  it('getIntrinsicGas() -> should return base fee', () => {
     const tx = createLegacyTx({})
-    assert.equal(tx.getBaseFee(), BigInt(53000))
+    assert.equal(tx.getIntrinsicGas(), BigInt(53000))
   })
 
-  it('getDataFee() -> should return data fee', () => {
+  it('getDataGas() -> should return data fee', () => {
     let tx = createLegacyTx({})
-    assert.equal(tx.getDataFee(), BigInt(0))
-
-    tx = createLegacyTxFromBytesArray(
-      txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
-    )
-    assert.equal(tx.getDataFee(), BigInt(1716))
+    assert.equal(tx.getDataGas(), BigInt(0))
 
     tx = createLegacyTxFromBytesArray(
       txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
-      { freeze: false }
     )
-    assert.equal(tx.getDataFee(), BigInt(1716))
+    assert.equal(tx.getDataGas(), BigInt(1716))
+
+    tx = createLegacyTxFromBytesArray(
+      txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
+      { freeze: false },
+    )
+    assert.equal(tx.getDataGas(), BigInt(1716))
   })
 
-  it('getDataFee() -> should return correct data fee for istanbul', () => {
+  it('getDataGas() -> should return correct data fee for istanbul', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     let tx = createLegacyTx({}, { common })
-    assert.equal(tx.getDataFee(), BigInt(0))
+    assert.equal(tx.getDataGas(), BigInt(0))
 
     tx = createLegacyTxFromBytesArray(
       txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
       {
         common,
-      }
+      },
     )
-    assert.equal(tx.getDataFee(), BigInt(1716))
+    assert.equal(tx.getDataGas(), BigInt(1716))
   })
 
-  it('getDataFee() -> should invalidate cached value on hardfork change', () => {
+  it('getDataGas() -> should invalidate cached value on hardfork change', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
     const tx = createLegacyTxFromBytesArray(
       txFixtures[0].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
       {
         common,
-      }
+      },
     )
-    assert.equal(tx.getDataFee(), BigInt(656))
+    assert.equal(tx.getDataGas(), BigInt(656))
     tx.common.setHardfork(Hardfork.Istanbul)
-    assert.equal(tx.getDataFee(), BigInt(240))
+    assert.equal(tx.getDataGas(), BigInt(240))
   })
 
   it('getEffectivePriorityFee() -> should return correct values', () => {
@@ -277,7 +277,7 @@ describe('[Transaction]', () => {
       txFixtures[3].raw.slice(0, 6).map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
       {
         common,
-      }
+      },
     )
     assert.throws(
       () => {
@@ -285,44 +285,44 @@ describe('[Transaction]', () => {
       },
       undefined,
       undefined,
-      'should throw calling hash with unsigned tx'
+      'should throw calling hash with unsigned tx',
     )
     tx = createLegacyTxFromBytesArray(
       txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
       {
         common,
-      }
+      },
     )
     assert.deepEqual(
       tx.hash(),
-      hexToBytes('0x375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa')
+      hexToBytes('0x375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa'),
     )
     assert.deepEqual(
       tx.getHashedMessageToSign(),
-      hexToBytes('0x61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0')
+      hexToBytes('0x61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0'),
     )
     assert.equal(tx.getMessageToSign().length, 6)
     assert.deepEqual(
       tx.hash(),
-      hexToBytes('0x375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa')
+      hexToBytes('0x375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa'),
     )
   })
 
   it('hash() -> with defined chainId', () => {
     const tx = createLegacyTxFromBytesArray(
-      txFixtures[4].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
+      txFixtures[4].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
     )
     assert.equal(
       bytesToHex(tx.hash()),
-      '0x0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
+      '0x0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4',
     )
     assert.equal(
       bytesToHex(tx.hash()),
-      '0x0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
+      '0x0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4',
     )
     assert.equal(
       bytesToHex(tx.getHashedMessageToSign()),
-      '0xf97c73fdca079da7652dbc61a46cd5aeef804008e057be3e712c43eac389aaf0'
+      '0xf97c73fdca079da7652dbc61a46cd5aeef804008e057be3e712c43eac389aaf0',
     )
   })
 
@@ -346,10 +346,10 @@ describe('[Transaction]', () => {
       '0x',
     ]
     const privateKey = hexToBytes(
-      '0x4646464646464646464646464646464646464646464646464646464646464646'
+      '0x4646464646464646464646464646464646464646464646464646464646464646',
     )
     const pt = createLegacyTxFromBytesArray(
-      txRaw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
+      txRaw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
     )
 
     // Note that Vitalik's example has a very similar value denoted "signing data".
@@ -357,16 +357,16 @@ describe('[Transaction]', () => {
     // We don't have a getter for such a value in LegacyTransaction.
     assert.equal(
       bytesToHex(pt.serialize()),
-      '0xec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080'
+      '0xec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080',
     )
     const signedTx = pt.sign(privateKey)
     assert.equal(
       bytesToHex(signedTx.getHashedMessageToSign()),
-      '0xdaf5a779ae972f972197303d7b574746c7ef83eadac0f2791ad23db92e4c8e53'
+      '0xdaf5a779ae972f972197303d7b574746c7ef83eadac0f2791ad23db92e4c8e53',
     )
     assert.equal(
       bytesToHex(signedTx.serialize()),
-      '0xf86c098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a028ef61340bd939bc2195fe537567866003e1a15d3c71ff63e1590620aa636276a067cbe9d8997f761aecb703304b3800ccf555c9f3dc64214b297fb1966a3b6d83'
+      '0xf86c098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a028ef61340bd939bc2195fe537567866003e1a15d3c71ff63e1590620aa636276a067cbe9d8997f761aecb703304b3800ccf555c9f3dc64214b297fb1966a3b6d83',
     )
   })
 
@@ -377,7 +377,7 @@ describe('[Transaction]', () => {
         txData.raw.slice(0, 6).map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
         {
           common,
-        }
+        },
       )
 
       const privKey = hexToBytes(`0x${txData.privateKey}`)
@@ -386,7 +386,7 @@ describe('[Transaction]', () => {
       assert.equal(
         txSigned.getSenderAddress().toString(),
         '0x' + txData.sendersAddress,
-        "computed sender address should equal the fixture's one"
+        "computed sender address should equal the fixture's one",
       )
     }
   })
@@ -401,17 +401,17 @@ describe('[Transaction]', () => {
       '0x',
     ]
     const privateKey = hexToBytes(
-      '0xDE3128752F183E8930D7F00A2AAA302DCB5E700B2CBA2D8CA5795660F07DEFD5'
+      '0xDE3128752F183E8930D7F00A2AAA302DCB5E700B2CBA2D8CA5795660F07DEFD5',
     )
     const common = createCustomCommon({ chainId: 3 })
     const tx = createLegacyTxFromBytesArray(
       txRaw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
-      { common }
+      { common },
     )
     const signedTx = tx.sign(privateKey)
     assert.equal(
       bytesToHex(signedTx.serialize()),
-      '0xf86c018502540be40082520894d7250824390ec5c8b71d856b5de895e271170d9d880de0b6b3a76400008029a0d3512c68099d184ccf54f44d9d6905bff303128574b663dcf10b4c726ddd8133a0628acc8f481dea593f13309dfc5f0340f83fdd40cf9fbe47f782668f6f3aec74'
+      '0xf86c018502540be40082520894d7250824390ec5c8b71d856b5de895e271170d9d880de0b6b3a76400008029a0d3512c68099d184ccf54f44d9d6905bff303128574b663dcf10b4c726ddd8133a0628acc8f481dea593f13309dfc5f0340f83fdd40cf9fbe47f782668f6f3aec74',
     )
   })
 
@@ -426,7 +426,7 @@ describe('[Transaction]', () => {
     }
 
     const privateKey = hexToBytes(
-      '0x4646464646464646464646464646464646464646464646464646464646464646'
+      '0x4646464646464646464646464646464646464646464646464646464646464646',
     )
 
     const common = new Common({
@@ -457,7 +457,7 @@ describe('[Transaction]', () => {
     assert.isTrue(signedWithoutEIP155.verifySignature())
     assert.isTrue(
       signedWithoutEIP155.v?.toString(16) === '1c' || signedWithoutEIP155.v?.toString(16) === '1b',
-      "v shouldn't be EIP155 encoded"
+      "v shouldn't be EIP155 encoded",
     )
 
     signedWithoutEIP155 = createLegacyTx(<any>txData, {
@@ -467,7 +467,7 @@ describe('[Transaction]', () => {
     assert.isTrue(signedWithoutEIP155.verifySignature())
     assert.isTrue(
       signedWithoutEIP155.v?.toString(16) === '1c' || signedWithoutEIP155.v?.toString(16) === '1b',
-      "v shouldn't be EIP155 encoded"
+      "v shouldn't be EIP155 encoded",
     )
   })
 
@@ -525,7 +525,7 @@ describe('[Transaction]', () => {
     const signedTxn = txn.sign(pkey)
     assert.ok(
       signedTxn.common.hardfork() === Hardfork.Paris,
-      'signed tx common is taken from tx.common'
+      'signed tx common is taken from tx.common',
     )
   })
 
@@ -542,7 +542,7 @@ describe('[Transaction]', () => {
       value: '0x0',
     }
     const privateKey = hexToBytes(
-      '0x4646464646464646464646464646464646464646464646464646464646464646'
+      '0x4646464646464646464646464646464646464646464646464646464646464646',
     )
     tx = createLegacyTx(txData)
     assert.notOk(tx.isSigned())

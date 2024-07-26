@@ -28,6 +28,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique.js'
 import { fakeExponential, valuesArrayToHeaderData } from './helpers.js'
+import { paramsBlock } from './params.js'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
 import type { CliqueConfig } from '@ethereumjs/common'
@@ -79,7 +80,7 @@ export class BlockHeader {
   get prevRandao() {
     if (!this.common.isActivatedEIP(4399)) {
       const msg = this._errorMsg(
-        'The prevRandao parameter can only be accessed when EIP-4399 is activated'
+        'The prevRandao parameter can only be accessed when EIP-4399 is activated',
       )
       throw new Error(msg)
     }
@@ -167,6 +168,8 @@ export class BlockHeader {
         chain: Chain.Mainnet, // default
       })
     }
+    this.common.updateParams(opts.params ?? paramsBlock)
+
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
 
     const skipValidateConsensusFormat = opts.skipConsensusFormatValidation ?? false
@@ -192,7 +195,7 @@ export class BlockHeader {
     const parentHash = toType(headerData.parentHash, TypeOutput.Uint8Array) ?? defaults.parentHash
     const uncleHash = toType(headerData.uncleHash, TypeOutput.Uint8Array) ?? defaults.uncleHash
     const coinbase = new Address(
-      toType(headerData.coinbase ?? defaults.coinbase, TypeOutput.Uint8Array)
+      toType(headerData.coinbase ?? defaults.coinbase, TypeOutput.Uint8Array),
     )
     const stateRoot = toType(headerData.stateRoot, TypeOutput.Uint8Array) ?? defaults.stateRoot
     const transactionsTrie =
@@ -257,7 +260,7 @@ export class BlockHeader {
 
     if (!this.common.isActivatedEIP(4895) && withdrawalsRoot !== undefined) {
       throw new Error(
-        'A withdrawalsRoot for a header can only be provided with EIP4895 being activated'
+        'A withdrawalsRoot for a header can only be provided with EIP4895 being activated',
       )
     }
 
@@ -273,7 +276,7 @@ export class BlockHeader {
 
     if (!this.common.isActivatedEIP(4788) && parentBeaconBlockRoot !== undefined) {
       throw new Error(
-        'A parentBeaconBlockRoot for a header can only be provided with EIP4788 being activated'
+        'A parentBeaconBlockRoot for a header can only be provided with EIP4788 being activated',
       )
     }
 
@@ -352,13 +355,13 @@ export class BlockHeader {
     }
     if (transactionsTrie.length !== 32) {
       const msg = this._errorMsg(
-        `transactionsTrie must be 32 bytes, received ${transactionsTrie.length} bytes`
+        `transactionsTrie must be 32 bytes, received ${transactionsTrie.length} bytes`,
       )
       throw new Error(msg)
     }
     if (receiptTrie.length !== 32) {
       const msg = this._errorMsg(
-        `receiptTrie must be 32 bytes, received ${receiptTrie.length} bytes`
+        `receiptTrie must be 32 bytes, received ${receiptTrie.length} bytes`,
       )
       throw new Error(msg)
     }
@@ -375,7 +378,7 @@ export class BlockHeader {
     // check if the block used too much gas
     if (this.gasUsed > this.gasLimit) {
       const msg = this._errorMsg(
-        `Invalid block: too much gas used. Used: ${this.gasUsed}, gas limit: ${this.gasLimit}`
+        `Invalid block: too much gas used. Used: ${this.gasUsed}, gas limit: ${this.gasLimit}`,
       )
       throw new Error(msg)
     }
@@ -407,7 +410,7 @@ export class BlockHeader {
       }
       if (this.withdrawalsRoot?.length !== 32) {
         const msg = this._errorMsg(
-          `withdrawalsRoot must be 32 bytes, received ${this.withdrawalsRoot!.length} bytes`
+          `withdrawalsRoot must be 32 bytes, received ${this.withdrawalsRoot!.length} bytes`,
         )
         throw new Error(msg)
       }
@@ -422,7 +425,7 @@ export class BlockHeader {
         const msg = this._errorMsg(
           `parentBeaconBlockRoot must be 32 bytes, received ${
             this.parentBeaconBlockRoot!.length
-          } bytes`
+          } bytes`,
         )
         throw new Error(msg)
       }
@@ -459,7 +462,7 @@ export class BlockHeader {
         // ExtraData length on epoch transition
         if (this.extraData.length !== minLength) {
           const msg = this._errorMsg(
-            `extraData must be ${minLength} bytes on non-epoch transition blocks, received ${this.extraData.length} bytes`
+            `extraData must be ${minLength} bytes on non-epoch transition blocks, received ${this.extraData.length} bytes`,
           )
           throw new Error(msg)
         }
@@ -467,14 +470,14 @@ export class BlockHeader {
         const signerLength = this.extraData.length - minLength
         if (signerLength % 20 !== 0) {
           const msg = this._errorMsg(
-            `invalid signer list length in extraData, received signer length of ${signerLength} (not divisible by 20)`
+            `invalid signer list length in extraData, received signer length of ${signerLength} (not divisible by 20)`,
           )
           throw new Error(msg)
         }
         // coinbase (beneficiary) on epoch transition
         if (!this.coinbase.isZero()) {
           const msg = this._errorMsg(
-            `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase}`
+            `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase}`,
           )
           throw new Error(msg)
         }
@@ -492,7 +495,7 @@ export class BlockHeader {
 
       if (!equalsBytes(uncleHash, KECCAK256_RLP_ARRAY)) {
         errorMsg += `, uncleHash: ${bytesToHex(uncleHash)} (expected: ${bytesToHex(
-          KECCAK256_RLP_ARRAY
+          KECCAK256_RLP_ARRAY,
         )})`
         error = true
       }
@@ -504,7 +507,7 @@ export class BlockHeader {
         }
         if (extraData.length > 32) {
           errorMsg += `, extraData: ${bytesToHex(
-            extraData
+            extraData,
           )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
           error = true
         }
@@ -547,14 +550,14 @@ export class BlockHeader {
 
     if (gasLimit >= maxGasLimit) {
       const msg = this._errorMsg(
-        `gas limit increased too much. Gas limit: ${gasLimit}, max gas limit: ${maxGasLimit}`
+        `gas limit increased too much. Gas limit: ${gasLimit}, max gas limit: ${maxGasLimit}`,
       )
       throw new Error(msg)
     }
 
     if (gasLimit <= minGasLimit) {
       const msg = this._errorMsg(
-        `gas limit decreased too much. Gas limit: ${gasLimit}, min gas limit: ${minGasLimit}`
+        `gas limit decreased too much. Gas limit: ${gasLimit}, min gas limit: ${minGasLimit}`,
       )
       throw new Error(msg)
     }
@@ -562,8 +565,8 @@ export class BlockHeader {
     if (gasLimit < this.common.param('minGasLimit')) {
       const msg = this._errorMsg(
         `gas limit decreased below minimum gas limit. Gas limit: ${gasLimit}, minimum gas limit: ${this.common.param(
-          'minGasLimit'
-        )}`
+          'minGasLimit',
+        )}`,
       )
       throw new Error(msg)
     }
@@ -575,7 +578,7 @@ export class BlockHeader {
   public calcNextBaseFee(): bigint {
     if (!this.common.isActivatedEIP(1559)) {
       const msg = this._errorMsg(
-        'calcNextBaseFee() can only be called with EIP1559 being activated'
+        'calcNextBaseFee() can only be called with EIP1559 being activated',
       )
       throw new Error(msg)
     }
@@ -625,7 +628,7 @@ export class BlockHeader {
     return fakeExponential(
       this.common.param('minBlobGas'),
       excessBlobGas,
-      this.common.param('blobGasPriceUpdateFraction')
+      this.common.param('blobGasPriceUpdateFraction'),
     )
   }
 
@@ -740,7 +743,7 @@ export class BlockHeader {
   protected _requireClique(name: string) {
     if (this.common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
       const msg = this._errorMsg(
-        `BlockHeader.${name}() call only supported for clique PoA networks`
+        `BlockHeader.${name}() call only supported for clique PoA networks`,
       )
       throw new Error(msg)
     }
@@ -758,7 +761,7 @@ export class BlockHeader {
     }
     if (this.common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
       const msg = this._errorMsg(
-        'difficulty calculation currently only supports the ethash algorithm'
+        'difficulty calculation currently only supports the ethash algorithm',
       )
       throw new Error(msg)
     }
@@ -873,7 +876,7 @@ export class BlockHeader {
 
     const extraDataWithoutSeal = this.extraData.subarray(
       0,
-      this.extraData.length - CLIQUE_EXTRA_SEAL
+      this.extraData.length - CLIQUE_EXTRA_SEAL,
     )
     const extraData = concatBytes(extraDataWithoutSeal, signatureB)
     return extraData
@@ -1004,8 +1007,8 @@ export class BlockHeader {
     if (drift <= DAO_ForceExtraDataRange && !equalsBytes(this.extraData, DAO_ExtraData)) {
       const msg = this._errorMsg(
         `extraData should be 'dao-hard-fork', got ${bytesToUtf8(this.extraData)} (hex: ${bytesToHex(
-          this.extraData
-        )})`
+          this.extraData,
+        )})`,
       )
       throw new Error(msg)
     }

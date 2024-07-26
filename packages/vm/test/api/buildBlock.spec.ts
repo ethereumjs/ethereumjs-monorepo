@@ -42,7 +42,7 @@ describe('BlockBuilder', () => {
     // Set up tx
     const tx = createLegacyTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(privateKey)
 
     await blockBuilder.addTransaction(tx)
@@ -50,7 +50,7 @@ describe('BlockBuilder', () => {
     assert.equal(
       blockBuilder.transactionReceipts.length,
       1,
-      'should have the correct number of tx receipts'
+      'should have the correct number of tx receipts',
     )
     const result = await runBlock(vmCopy, { block })
     assert.equal(result.gasUsed, block.header.gasUsed)
@@ -73,7 +73,7 @@ describe('BlockBuilder', () => {
     } catch (error: any) {
       if (
         (error.message as string).includes(
-          'tx has a higher gas limit than the remaining gas in the block'
+          'tx has a higher gas limit than the remaining gas in the block',
         )
       ) {
         assert.ok(true, 'correct error thrown')
@@ -84,7 +84,7 @@ describe('BlockBuilder', () => {
     assert.equal(
       blockBuilder.transactionReceipts.length,
       0,
-      'should have the correct number of tx receipts'
+      'should have the correct number of tx receipts',
     )
   })
 
@@ -112,7 +112,7 @@ describe('BlockBuilder', () => {
     // Set up tx
     const tx = createLegacyTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(privateKey)
 
     await blockBuilder.addTransaction(tx)
@@ -133,7 +133,7 @@ describe('BlockBuilder', () => {
       address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
       privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
       publicKey: hexToBytes(
-        '0x40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195'
+        '0x40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195',
       ),
     }
 
@@ -194,7 +194,7 @@ describe('BlockBuilder', () => {
     const cliqueSigner = signer.privateKey
     const genesisBlock = createBlockFromBlockData(
       { header: { gasLimit: 50000, extraData } },
-      { common, cliqueSigner }
+      { common, cliqueSigner },
     )
     const blockchain = await createBlockchain({ genesisBlock, common })
     const vm = await VM.create({ common, blockchain })
@@ -211,7 +211,7 @@ describe('BlockBuilder', () => {
     // Set up tx
     const tx = createLegacyTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(signer.privateKey)
 
     await blockBuilder.addTransaction(tx)
@@ -222,7 +222,7 @@ describe('BlockBuilder', () => {
     assert.deepEqual(
       block.header.cliqueSigner(),
       signer.address,
-      'should recover the correct signer address'
+      'should recover the correct signer address',
     )
   })
 
@@ -241,7 +241,7 @@ describe('BlockBuilder', () => {
 
     const tx = createLegacyTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(privateKey)
 
     await blockBuilder.addTransaction(tx)
@@ -252,7 +252,7 @@ describe('BlockBuilder', () => {
       assert.equal(
         blockBuilder.getStatus().status,
         'reverted',
-        'block should be in reverted status'
+        'block should be in reverted status',
       )
     } catch (error: any) {
       assert.fail('shoud not throw')
@@ -262,7 +262,7 @@ describe('BlockBuilder', () => {
 
     const tx2 = createLegacyTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1, nonce: 1 },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(privateKey)
 
     await blockBuilder.addTransaction(tx2)
@@ -273,7 +273,7 @@ describe('BlockBuilder', () => {
       assert.equal(
         blockBuilder.getStatus().status,
         'reverted',
-        'block should be in reverted status'
+        'block should be in reverted status',
       )
     } catch (error: any) {
       assert.fail('shoud not throw')
@@ -306,7 +306,7 @@ describe('BlockBuilder', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [1559] })
     const genesisBlock = createBlockFromBlockData(
       { header: { gasLimit: 50000, baseFeePerGas: 100 } },
-      { common }
+      { common },
     )
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
@@ -324,12 +324,12 @@ describe('BlockBuilder', () => {
     // Set up underpriced txs to test error response
     const tx1 = createLegacyTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(privateKey)
 
     const tx2 = create1559FeeMarketTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, maxFeePerGas: 10 },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(privateKey)
 
     for (const tx of [tx1, tx2]) {
@@ -339,7 +339,7 @@ describe('BlockBuilder', () => {
       } catch (error: any) {
         assert.ok(
           (error.message as string).includes("is less than the block's baseFeePerGas"),
-          'should fail with appropriate error'
+          'should fail with appropriate error',
         )
       }
     }
@@ -347,12 +347,12 @@ describe('BlockBuilder', () => {
     // Set up correctly priced txs
     const tx3 = createLegacyTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 101 },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(privateKey)
 
     const tx4 = create1559FeeMarketTx(
       { to: Address.zero(), value: 1000, gasLimit: 21000, maxFeePerGas: 101, nonce: 1 },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(privateKey)
 
     for (const tx of [tx3, tx4]) {
@@ -364,12 +364,12 @@ describe('BlockBuilder', () => {
     assert.equal(
       blockBuilder.transactionReceipts.length,
       2,
-      'should have the correct number of tx receipts'
+      'should have the correct number of tx receipts',
     )
 
     assert.ok(
       block.header.baseFeePerGas! === genesisBlock.header.calcNextBaseFee(),
-      "baseFeePerGas should equal parentHeader's calcNextBaseFee"
+      "baseFeePerGas should equal parentHeader's calcNextBaseFee",
     )
 
     const result = await runBlock(vmCopy, { block })

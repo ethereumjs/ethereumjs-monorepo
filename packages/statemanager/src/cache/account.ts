@@ -68,7 +68,7 @@ export class AccountCache extends Cache {
   put(
     address: Address,
     account: Account | undefined,
-    couldBeParitalAccount: boolean = false
+    couldBeParitalAccount: boolean = false,
   ): void {
     const addressHex = bytesToUnprefixedHex(address.bytes)
     this._saveCachePreState(addressHex)

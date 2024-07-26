@@ -146,7 +146,7 @@ export class LightSynchronizer extends Synchronizer {
       ? `baseFee=${headers[0].baseFeePerGas} `
       : ''
     this.config.logger.info(
-      `Imported headers count=${headers.length} number=${first} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
+      `Imported headers count=${headers.length} number=${first} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`,
     )
   }
 

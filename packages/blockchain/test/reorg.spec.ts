@@ -22,7 +22,7 @@ describe('reorg tests', () => {
           gasLimit: BigInt(8000000),
         },
       },
-      { common }
+      { common },
     )
 
     const blocks_lowTD: Block[] = []
@@ -39,7 +39,7 @@ describe('reorg tests', () => {
     while (TD_High < TD_Low) {
       blocks_lowTD.push(generateConsecutiveBlock(blocks_lowTD[blocks_lowTD.length - 1], 0))
       blocks_highTD.push(
-        generateConsecutiveBlock(blocks_highTD[blocks_highTD.length - 1] ?? genesis, 1)
+        generateConsecutiveBlock(blocks_highTD[blocks_highTD.length - 1] ?? genesis, 1),
       )
 
       TD_Low += blocks_lowTD[blocks_lowTD.length - 1].header.difficulty
@@ -56,12 +56,12 @@ describe('reorg tests', () => {
     // ensure that the block difficulty is higher on the highTD chain when compared to the low TD chain
     assert.ok(
       number_lowTD > number_highTD,
-      'low TD should have a lower TD than the reported high TD'
+      'low TD should have a lower TD than the reported high TD',
     )
     assert.ok(
       blocks_lowTD[blocks_lowTD.length - 1].header.number >
         blocks_highTD[blocks_highTD.length - 1].header.number,
-      'low TD block should have a higher number than high TD block'
+      'low TD block should have a higher number than high TD block',
     )
   })
 
@@ -69,7 +69,7 @@ describe('reorg tests', () => {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
     const genesisBlock = createBlockFromBlockData(
       { header: { extraData: new Uint8Array(97) } },
-      { common }
+      { common },
     )
 
     const consensusDict: ConsensusDict = {}
@@ -83,7 +83,7 @@ describe('reorg tests', () => {
     })
 
     const extraData = hexToBytes(
-      '0x506172697479205465636820417574686f7269747900000000000000000000002bbf886181970654ed46e3fae0ded41ee53fec702c47431988a7ae80e6576f3552684f069af80ba11d36327aaf846d470526e4a1c461601b2fd4ebdcdc2b734a01'
+      '0x506172697479205465636820417574686f7269747900000000000000000000002bbf886181970654ed46e3fae0ded41ee53fec702c47431988a7ae80e6576f3552684f069af80ba11d36327aaf846d470526e4a1c461601b2fd4ebdcdc2b734a01',
     ) // from goerli block 1
     const { gasLimit } = genesisBlock.header
     const base = { extraData, gasLimit, difficulty: 1 }
@@ -101,7 +101,7 @@ describe('reorg tests', () => {
           timestamp: genesisBlock.header.timestamp + BigInt(30),
         },
       },
-      { common }
+      { common },
     )
     const block2_low = createBlockFromBlockData(
       {
@@ -114,7 +114,7 @@ describe('reorg tests', () => {
           coinbase: beneficiary1,
         },
       },
-      { common }
+      { common },
     )
 
     const block1_high = createBlockFromBlockData(
@@ -126,7 +126,7 @@ describe('reorg tests', () => {
           timestamp: genesisBlock.header.timestamp + BigInt(15),
         },
       },
-      { common }
+      { common },
     )
     const block2_high = createBlockFromBlockData(
       {
@@ -137,7 +137,7 @@ describe('reorg tests', () => {
           timestamp: block1_high.header.timestamp + BigInt(15),
         },
       },
-      { common }
+      { common },
     )
     const block3_high = createBlockFromBlockData(
       {
@@ -150,7 +150,7 @@ describe('reorg tests', () => {
           coinbase: beneficiary2,
         },
       },
-      { common }
+      { common },
     )
 
     await blockchain.putBlocks([block1_low, block2_low])
@@ -161,9 +161,9 @@ describe('reorg tests', () => {
 
     assert.ok(
       !signerStates.find(
-        (s: any) => s[0] === BigInt(2) && s[1].find((a: Address) => a.equals(beneficiary1))
+        (s: any) => s[0] === BigInt(2) && s[1].find((a: Address) => a.equals(beneficiary1)),
       ),
-      'should not find reorged signer state'
+      'should not find reorged signer state',
     )
 
     let signerVotes = (blockchain.consensus as CliqueConsensus)._cliqueLatestVotes
@@ -173,25 +173,25 @@ describe('reorg tests', () => {
           v[0] === BigInt(2) &&
           v[1][0].equal(block1_low.header.cliqueSigner()) &&
           v[1][1].equal(beneficiary1) &&
-          equalsBytes(v[1][2], CLIQUE_NONCE_AUTH)
+          equalsBytes(v[1][2], CLIQUE_NONCE_AUTH),
       ),
-      'should not find reorged clique vote'
+      'should not find reorged clique vote',
     )
 
     let blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
     assert.ok(
       !blockSigners.find(
-        (s: any) => s[0] === BigInt(1) && s[1].equal(block1_low.header.cliqueSigner())
+        (s: any) => s[0] === BigInt(1) && s[1].equal(block1_low.header.cliqueSigner()),
       ),
-      'should not find reorged block signer'
+      'should not find reorged block signer',
     )
 
     signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
     assert.ok(
       !!signerStates.find(
-        (s: any) => s[0] === BigInt(3) && s[1].find((a: Address) => a.equals(beneficiary2))
+        (s: any) => s[0] === BigInt(3) && s[1].find((a: Address) => a.equals(beneficiary2)),
       ),
-      'should find reorged signer state'
+      'should find reorged signer state',
     )
 
     signerVotes = (blockchain.consensus as CliqueConsensus)._cliqueLatestVotes
@@ -200,9 +200,9 @@ describe('reorg tests', () => {
     blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
     assert.ok(
       !!blockSigners.find(
-        (s: any) => s[0] === BigInt(3) && s[1].equals(block3_high.header.cliqueSigner())
+        (s: any) => s[0] === BigInt(3) && s[1].equals(block3_high.header.cliqueSigner()),
       ),
-      'should find reorged block signer'
+      'should find reorged block signer',
     )
   })
 })

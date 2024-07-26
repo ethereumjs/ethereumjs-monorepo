@@ -38,7 +38,7 @@ const main = async () => {
     execution.hardfork
   }' })
   const block = createBlockFromRLPSerializedBlock(hexToBytes('${bytesToHex(
-    block.serialize()
+    block.serialize(),
   )}'), { common })
 
   const stateDB = new Level('${execution.config.getDataDirectory(DataDirectory.State)}')
@@ -46,7 +46,7 @@ const main = async () => {
   const stateManager = new DefaultStateManager({ trie, common })
   // Ensure we run on the right root
   stateManager.setStateRoot(hexToBytes('${bytesToHex(
-    await execution.vm.stateManager.getStateRoot()
+    await execution.vm.stateManager.getStateRoot(),
   )}'))
 
 

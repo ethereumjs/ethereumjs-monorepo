@@ -1,4 +1,4 @@
-import { createCustomCommon, CustomChain } from '@ethereumjs/common'
+import { CustomChain, createCustomCommon } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 

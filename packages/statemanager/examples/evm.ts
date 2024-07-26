@@ -1,5 +1,5 @@
-import { RPCStateManager, RPCBlockChain } from '@ethereumjs/statemanager'
-import { createEVM, EVM } from '@ethereumjs/evm'
+import { createEVM } from '@ethereumjs/evm'
+import { RPCBlockChain, RPCStateManager } from '@ethereumjs/statemanager'
 
 const main = async () => {
   try {
@@ -12,4 +12,4 @@ const main = async () => {
     console.log(e.message) // fetch would fail because provider url is not real. please replace provider with a valid rpc url string.
   }
 }
-main()
+void main()

@@ -64,7 +64,7 @@ describe('[fromJsonRpcProvider]', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('No data returned from provider'),
-        'throws correct error when no tx returned'
+        'throws correct error when no tx returned',
       )
     }
     global.fetch = realFetch

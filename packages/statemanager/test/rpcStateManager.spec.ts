@@ -49,20 +49,20 @@ describe('RPC State Manager initialization tests', async () => {
     assert.equal(
       (state as any)._blockTag,
       '0x1',
-      'State manager starts with default block tag of 1'
+      'State manager starts with default block tag of 1',
     )
 
     state = new RPCStateManager({ provider, blockTag: 1n })
     assert.equal(
       (state as any)._blockTag,
       '0x1',
-      'State Manager instantiated with predefined blocktag'
+      'State Manager instantiated with predefined blocktag',
     )
 
     state = new RPCStateManager({ provider: 'https://google.com', blockTag: 1n })
     assert.ok(
       state instanceof RPCStateManager,
-      'was able to instantiate state manager with valid url'
+      'was able to instantiate state manager with valid url',
     )
 
     const invalidProvider = 'google.com'
@@ -70,7 +70,7 @@ describe('RPC State Manager initialization tests', async () => {
       () => new RPCStateManager({ provider: invalidProvider as any, blockTag: 1n }),
       undefined,
       undefined,
-      'cannot instantiate state manager with invalid provider'
+      'cannot instantiate state manager with invalid provider',
     )
   })
 })
@@ -86,12 +86,12 @@ describe('RPC State Manager API tests', () => {
     await state.putAccount(vitalikDotEth, account!)
 
     const retrievedVitalikAccount = createAccountFromRLP(
-      (state as any)._accountCache.get(vitalikDotEth)!.accountRLP
+      (state as any)._accountCache.get(vitalikDotEth)!.accountRLP,
     )
 
     assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
     const doesThisAccountExist = await state.accountExists(
-      Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
+      Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07'),
     )
     assert.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
 
@@ -104,12 +104,12 @@ describe('RPC State Manager API tests', () => {
     await state.putContractCode(UNIerc20ContractAddress, UNIContractCode)
     assert.ok(
       typeof (state as any)._contractCache.get(UNIerc20ContractAddress.toString()) !== 'undefined',
-      'UNI ERC20 contract code was found in cache'
+      'UNI ERC20 contract code was found in cache',
     )
 
     const storageSlot = await state.getContractStorage(
       UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBytes(1n), 32)
+      setLengthLeft(bigIntToBytes(1n), 32),
     )
     assert.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
 
@@ -120,11 +120,11 @@ describe('RPC State Manager API tests', () => {
     await state.putContractStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32),
-      utf8ToBytes('abcd')
+      utf8ToBytes('abcd'),
     )
     const slotValue = await state.getContractStorage(
       UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBytes(2n), 32)
+      setLengthLeft(bigIntToBytes(2n), 32),
     )
     assert.ok(equalsBytes(slotValue, utf8ToBytes('abcd')), 'should retrieve slot 2 value')
 
@@ -144,19 +144,19 @@ describe('RPC State Manager API tests', () => {
     await state.putContractStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32),
-      new Uint8Array(0)
+      new Uint8Array(0),
     )
 
     await state.modifyAccountFields(vitalikDotEth, { nonce: 39n })
     assert.equal(
       (await state.getAccount(vitalikDotEth))?.nonce,
       39n,
-      'modified account fields successfully'
+      'modified account fields successfully',
     )
 
     assert.doesNotThrow(
       async () => state.getAccount(vitalikDotEth),
-      'does not call getAccountFromProvider'
+      'does not call getAccountFromProvider',
     )
 
     try {
@@ -167,7 +167,7 @@ describe('RPC State Manager API tests', () => {
 
     const deletedSlot = await state.getContractStorage(
       UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBytes(2n), 32)
+      setLengthLeft(bigIntToBytes(2n), 32),
     )
 
     assert.equal(deletedSlot.length, 0, 'deleted slot from storage cache')
@@ -175,31 +175,31 @@ describe('RPC State Manager API tests', () => {
     await state.deleteAccount(vitalikDotEth)
     assert.ok(
       (await state.getAccount(vitalikDotEth)) === undefined,
-      'account should not exist after being deleted'
+      'account should not exist after being deleted',
     )
 
     await state.revert()
     assert.ok(
       (await state.getAccount(vitalikDotEth)) !== undefined,
-      'account deleted since last checkpoint should exist after revert called'
+      'account deleted since last checkpoint should exist after revert called',
     )
 
     const deletedSlotAfterRevert = await state.getContractStorage(
       UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBytes(2n), 32)
+      setLengthLeft(bigIntToBytes(2n), 32),
     )
 
     assert.equal(
       deletedSlotAfterRevert.length,
       4,
-      'slot deleted since last checkpoint should exist in storage cache after revert'
+      'slot deleted since last checkpoint should exist in storage cache after revert',
     )
 
     const cacheStorage = await state.dumpStorage(UNIerc20ContractAddress)
     assert.equal(
       2,
       Object.keys(cacheStorage).length,
-      'should have 2 storage slots in cache before clear'
+      'should have 2 storage slots in cache before clear',
     )
     await state.clearContractStorage(UNIerc20ContractAddress)
     const clearedStorage = await state.dumpStorage(UNIerc20ContractAddress)
@@ -211,14 +211,14 @@ describe('RPC State Manager API tests', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('expected blockTag to be block hash, bigint, hex prefixed string'),
-        'threw with correct error when invalid blockTag provided'
+        'threw with correct error when invalid blockTag provided',
       )
     }
 
     assert.equal(
       (state as any)._contractCache.get(UNIerc20ContractAddress),
       undefined,
-      'should not have any code for contract after cache is reverted'
+      'should not have any code for contract after cache is reverted',
     )
 
     assert.equal((state as any)._blockTag, '0x1', 'blockTag defaults to 1')
@@ -240,11 +240,11 @@ describe('runTx custom transaction test', () => {
 
     const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const privateKey = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
     const tx = create1559FeeMarketTx(
       { to: vitalikDotEth, value: '0x100', gasLimit: 500000n, maxFeePerGas: 7 },
-      { common }
+      { common },
     ).sign(privateKey)
 
     const result = await runTx(vm, {
@@ -274,7 +274,7 @@ describe('runTx test: replay mainnet transactions', () => {
     assert.equal(
       res.totalGasSpent,
       21000n,
-      'calculated correct total gas spent for simple transfer'
+      'calculated correct total gas spent for simple transfer',
     )
   })
 })
@@ -305,7 +305,7 @@ describe('runBlock test', () => {
       assert.equal(
         res.gasUsed,
         block.header.gasUsed,
-        'should compute correct cumulative gas for block'
+        'should compute correct cumulative gas for block',
       )
     } catch (err: any) {
       assert.fail(`should have successfully ran block; got error ${err.message}`)
@@ -325,7 +325,7 @@ describe('blockchain', () =>
 
     const caller = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     await evm.stateManager.setStateRoot(
-      hexToBytes('0xf8506f559699a58a4724df4fcf2ad4fd242d20324db541823f128f5974feb6c7')
+      hexToBytes('0xf8506f559699a58a4724df4fcf2ad4fd242d20324db541823f128f5974feb6c7'),
     )
     const block = await createBlockFromJsonRpcProvider(provider, 500000n, { setHardfork: true })
     await evm.stateManager.putContractCode(contractAddress, hexToBytes(code))
@@ -338,7 +338,7 @@ describe('blockchain', () =>
     const res = await evm.runCall(runCallArgs)
     assert.ok(
       bytesToHex(res.execResult.returnValue),
-      '0xd5ba853bc7151fc044b9d273a57e3f9ed35e66e0248ab4a571445650cc4fcaa6'
+      '0xd5ba853bc7151fc044b9d273a57e3f9ed35e66e0248ab4a571445650cc4fcaa6',
     )
   }))
 
@@ -352,7 +352,7 @@ describe('Should return same value as DefaultStateManager when account does not 
     assert.equal(
       account0,
       account1,
-      'Should return same value as DefaultStateManager when account does not exist'
+      'Should return same value as DefaultStateManager when account does not exist',
     )
   })
 })

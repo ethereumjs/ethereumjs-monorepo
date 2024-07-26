@@ -28,10 +28,10 @@ async function main() {
   proof = await trie.createProof(k2)
   proof[0].reverse()
   try {
-    const value = await trie.verifyProof(trie.root(), k2, proof) // results in error
+    const _value = await trie.verifyProof(trie.root(), k2, proof) // results in error
   } catch (err) {
     console.log(err)
   }
 }
 
-main()
+void main()

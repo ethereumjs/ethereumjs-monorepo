@@ -29,7 +29,7 @@ describe(
     })
     await localService.synchronizer!.start()
   },
-  { timeout: 30000 }
+  { timeout: 30000 },
 )
 
 describe(
@@ -56,7 +56,7 @@ describe(
       assert.ok('did not sync')
     })
   },
-  { timeout: 30000 }
+  { timeout: 30000 },
 )
 
 describe(
@@ -90,5 +90,5 @@ describe(
     })
     await localService.synchronizer!.start()
   },
-  { timeout: 30000 }
+  { timeout: 30000 },
 )

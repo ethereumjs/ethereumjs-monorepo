@@ -23,8 +23,8 @@ export function checkMaxInitCodeSize(common: Common, length: number) {
   if (maxInitCodeSize && BigInt(length) > maxInitCodeSize) {
     throw new Error(
       `the initcode size of this transaction is too large: it is ${length} while the max is ${common.param(
-        'maxInitCodeSize'
-      )}`
+        'maxInitCodeSize',
+      )}`,
     )
   }
 }
@@ -80,7 +80,7 @@ export class AccessLists {
       const storageSlots = accessListItem[1]
       if ((<any>accessListItem)[2] !== undefined) {
         throw new Error(
-          'Access list item cannot have 3 elements. It can only have an address, and an array of storage slots.'
+          'Access list item cannot have 3 elements. It can only have an address, and an array of storage slots.',
         )
       }
       if (address.length !== 20) {
@@ -112,7 +112,7 @@ export class AccessLists {
     return accessListJSON
   }
 
-  public static getDataFeeEIP2930(accessList: AccessListBytes, common: Common): number {
+  public static getDataGasEIP2930(accessList: AccessListBytes, common: Common): number {
     const accessListStorageKeyCost = common.param('accessListStorageKeyGas')
     const accessListAddressCost = common.param('accessListAddressGas')
 
@@ -130,7 +130,7 @@ export class AccessLists {
 
 export class AuthorizationLists {
   public static getAuthorizationListData(
-    authorizationList: AuthorizationListBytes | AuthorizationList
+    authorizationList: AuthorizationListBytes | AuthorizationList,
   ) {
     let AuthorizationListJSON
     let bufferAuthorizationList
@@ -214,7 +214,7 @@ export class AuthorizationLists {
     }
   }
 
-  public static getDataFeeEIP7702(authorityList: AuthorizationListBytes, common: Common): number {
+  public static getDataGasEIP7702(authorityList: AuthorizationListBytes, common: Common): number {
     const perAuthBaseCost = common.param('perAuthBaseGas')
     return authorityList.length * Number(perAuthBaseCost)
   }

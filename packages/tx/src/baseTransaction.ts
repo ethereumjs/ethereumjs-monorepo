@@ -13,6 +13,7 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 
+import { paramsTx } from './params.js'
 import { Capability, TransactionType } from './types.js'
 import { checkMaxInitCodeSize } from './util.js'
 
@@ -108,6 +109,7 @@ export abstract class BaseTransaction<T extends TransactionType>
     const createContract = this.to === undefined || this.to === null
     const allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
     const common = opts.common ?? this._getCommon()
+    common.updateParams(opts.params ?? paramsTx)
     if (createContract && common.isActivatedEIP(3860) && allowUnlimitedInitCodeSize === false) {
       checkMaxInitCodeSize(common, this.data.length)
     }
@@ -153,8 +155,10 @@ export abstract class BaseTransaction<T extends TransactionType>
       errors.push('Invalid Signature')
     }
 
-    if (this.getBaseFee() > this.gasLimit) {
-      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
+    if (this.getIntrinsicGas() > this.gasLimit) {
+      errors.push(
+        `gasLimit is too low. given ${this.gasLimit}, need at least ${this.getIntrinsicGas()}`,
+      )
     }
 
     return errors
@@ -171,11 +175,14 @@ export abstract class BaseTransaction<T extends TransactionType>
   }
 
   /**
-   * The minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
+   * The minimum gas limit which the tx to have to be valid.
+   * This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
+   * the optional creation fee (if the transaction creates a contract), and if relevant the gas
+   * to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
    */
-  getBaseFee(): bigint {
+  getIntrinsicGas(): bigint {
     const txFee = this.common.param('txGas')
-    let fee = this.getDataFee()
+    let fee = this.getDataGas()
     if (txFee) fee += txFee
     if (this.common.gteHardfork('homestead') && this.toCreationAddress()) {
       const txCreationFee = this.common.param('txCreationGas')
@@ -185,9 +192,9 @@ export abstract class BaseTransaction<T extends TransactionType>
   }
 
   /**
-   * The amount of gas paid for the data in this tx
+   * The amount of gas paid for the calldata in this tx
    */
-  getDataFee(): bigint {
+  getDataGas(): bigint {
     const txDataZero = this.common.param('txDataZeroGas')
     const txDataNonZero = this.common.param('txDataNonZeroGas')
 
@@ -213,7 +220,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   abstract getEffectivePriorityFee(baseFee: bigint | undefined): bigint
 
   /**
-   * The up front amount that an account must have for this transaction to be valid
+   * The upfront amount of wei to be paid in order for this tx to be valid and included in a block
    */
   abstract getUpfrontCost(): bigint
 
@@ -362,7 +369,7 @@ export abstract class BaseTransaction<T extends TransactionType>
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV?: boolean
+    convertV?: boolean,
   ): Transaction[T]
 
   /**
@@ -380,7 +387,7 @@ export abstract class BaseTransaction<T extends TransactionType>
       if (common) {
         if (common.chainId() !== chainIdBigInt) {
           const msg = this._errorMsg(
-            `The chain ID does not match the chain ID of Common. Got: ${chainIdBigInt}, expected: ${common.chainId()}`
+            `The chain ID does not match the chain ID of Common. Got: ${chainIdBigInt}, expected: ${common.chainId()}`,
           )
           throw new Error(msg)
         }
@@ -400,7 +407,7 @@ export abstract class BaseTransaction<T extends TransactionType>
               name: 'custom-chain',
               chainId: chainIdBigInt,
             },
-            { baseChain: this.DEFAULT_CHAIN }
+            { baseChain: this.DEFAULT_CHAIN },
           )
         }
       }
@@ -420,7 +427,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   protected _validateCannotExceedMaxInteger(
     values: { [key: string]: bigint | undefined },
     bits = 256,
-    cannotEqual = false
+    cannotEqual = false,
   ) {
     for (const [key, value] of Object.entries(values)) {
       switch (bits) {
@@ -428,7 +435,7 @@ export abstract class BaseTransaction<T extends TransactionType>
           if (cannotEqual) {
             if (value !== undefined && value >= MAX_UINT64) {
               const msg = this._errorMsg(
-                `${key} cannot equal or exceed MAX_UINT64 (2^64-1), given ${value}`
+                `${key} cannot equal or exceed MAX_UINT64 (2^64-1), given ${value}`,
               )
               throw new Error(msg)
             }
@@ -443,14 +450,14 @@ export abstract class BaseTransaction<T extends TransactionType>
           if (cannotEqual) {
             if (value !== undefined && value >= MAX_INTEGER) {
               const msg = this._errorMsg(
-                `${key} cannot equal or exceed MAX_INTEGER (2^256-1), given ${value}`
+                `${key} cannot equal or exceed MAX_INTEGER (2^256-1), given ${value}`,
               )
               throw new Error(msg)
             }
           } else {
             if (value !== undefined && value > MAX_INTEGER) {
               const msg = this._errorMsg(
-                `${key} cannot exceed MAX_INTEGER (2^256-1), given ${value}`
+                `${key} cannot exceed MAX_INTEGER (2^256-1), given ${value}`,
               )
               throw new Error(msg)
             }

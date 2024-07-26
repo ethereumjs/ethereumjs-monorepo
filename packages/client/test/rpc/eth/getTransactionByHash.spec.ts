@@ -20,7 +20,7 @@ describe(method, () => {
     // construct tx
     const tx = createLegacyTx(
       { gasLimit: 2000000, gasPrice: 100, to: '0x0000000000000000000000000000000000000000' },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
@@ -39,7 +39,7 @@ describe(method, () => {
     const { chain, common, execution, server } = await setupChain(
       gethGenesisStartLondon(pow),
       'powLondon',
-      { txLookupLimit: 0 }
+      { txLookupLimit: 0 },
     )
     const rpc = getRpcClient(server)
     // construct tx
@@ -50,7 +50,7 @@ describe(method, () => {
         maxPriorityFeePerGas: 10,
         to: '0x0000000000000000000000000000000000000000',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
@@ -67,7 +67,7 @@ describe(method, () => {
     assert.equal(
       res.result.hash,
       bytesToHex(tx.hash()),
-      'should return the correct tx when txLookupLimit=0'
+      'should return the correct tx when txLookupLimit=0',
     )
   })
 

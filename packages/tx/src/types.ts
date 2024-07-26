@@ -12,6 +12,7 @@ import type {
   AuthorizationListBytes,
   Common,
   Hardfork,
+  ParamsDict,
 } from '@ethereumjs/common'
 import type {
   Address,
@@ -83,6 +84,23 @@ export interface TxOptions {
    */
   common?: Common
   /**
+   * Tx parameters sorted by EIP can be found in the exported `paramsTx` dictionary,
+   * which is internally passed to the associated `@ethereumjs/common` instance which
+   * manages parameter selection based on the hardfork and EIP settings.
+   *
+   * This option allows providing a custom set of parameters. Note that parameters
+   * get fully overwritten, so you need to extend the default parameter dict
+   * to provide the full parameter set.
+   *
+   * It is recommended to deep-clone the params object for this to avoid side effects:
+   *
+   * ```ts
+   * const params = JSON.parse(JSON.stringify(paramsTx))
+   * params['1']['txGas'] = 30000 // 21000
+   * ```
+   */
+  params?: ParamsDict
+  /**
    * A transaction object by default gets frozen along initialization. This gives you
    * strong additional security guarantees on the consistency of the tx parameters.
    * It also enables tx hash caching when the `hash()` method is called multiple times.
@@ -118,7 +136,7 @@ export function isAccessList(input: AccessListBytes | AccessList): input is Acce
 }
 
 export function isAuthorizationListBytes(
-  input: AuthorizationListBytes | AuthorizationList
+  input: AuthorizationListBytes | AuthorizationList,
 ): input is AuthorizationListBytes {
   if (input.length === 0) {
     return true
@@ -131,7 +149,7 @@ export function isAuthorizationListBytes(
 }
 
 export function isAuthorizationList(
-  input: AuthorizationListBytes | AuthorizationList
+  input: AuthorizationListBytes | AuthorizationList,
 ): input is AuthorizationList {
   return !isAuthorizationListBytes(input) // This is exactly the same method, except the output is negated.
 }
@@ -199,8 +217,8 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   readonly cache: TransactionCache
   supports(capability: Capability): boolean
   type: TransactionType
-  getBaseFee(): bigint
-  getDataFee(): bigint
+  getIntrinsicGas(): bigint
+  getDataGas(): bigint
   getUpfrontCost(): bigint
   toCreationAddress(): boolean
   raw(): TxValuesArray[T]
@@ -447,7 +465,7 @@ type AccessListEIP2930TxValuesArray = [
   AccessListBytes,
   Uint8Array?,
   Uint8Array?,
-  Uint8Array?
+  Uint8Array?,
 ]
 
 /**
@@ -465,7 +483,7 @@ type FeeMarketEIP1559TxValuesArray = [
   AccessListBytes,
   Uint8Array?,
   Uint8Array?,
-  Uint8Array?
+  Uint8Array?,
 ]
 
 /**
@@ -484,7 +502,7 @@ type EOACodeEIP7702TxValuesArray = [
   AuthorizationListBytes,
   Uint8Array?,
   Uint8Array?,
-  Uint8Array?
+  Uint8Array?,
 ]
 
 /**
@@ -504,14 +522,14 @@ type BlobEIP4844TxValuesArray = [
   Uint8Array[],
   Uint8Array?,
   Uint8Array?,
-  Uint8Array?
+  Uint8Array?,
 ]
 
 export type BlobEIP4844NetworkValuesArray = [
   BlobEIP4844TxValuesArray,
   Uint8Array[],
   Uint8Array[],
-  Uint8Array[]
+  Uint8Array[],
 ]
 
 type JsonAccessListItem = { address: string; storageKeys: string[] }

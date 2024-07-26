@@ -46,7 +46,7 @@ function normalizeTxParams(_txParams: any) {
 export function createBlockFromRpc(
   blockParams: JsonRpcBlock,
   uncles: any[] = [],
-  options?: BlockOptions
+  options?: BlockOptions,
 ) {
   const header = blockHeaderFromRpc(blockParams, options)
 
@@ -66,6 +66,6 @@ export function createBlockFromRpc(
   })
   return createBlockFromBlockData(
     { header, transactions, uncleHeaders, withdrawals: blockParams.withdrawals, requests },
-    options
+    options,
   )
 }

@@ -149,7 +149,7 @@ describe('updates status correctly', async () => {
     assert.equal(
       manager['connectionStatus'],
       ConnectionStatus.Connected,
-      'connection status updated correctly'
+      'connection status updated correctly',
     )
   })
 })
@@ -165,7 +165,7 @@ describe('updates connection status correctly', async () => {
     assert.equal(
       manager['connectionStatus'],
       ConnectionStatus.Disconnected,
-      'should disconnect from CL'
+      'should disconnect from CL',
     )
   })
   it('should change status to uncertain', () => {
@@ -175,7 +175,7 @@ describe('updates connection status correctly', async () => {
     assert.equal(
       manager['connectionStatus'],
       ConnectionStatus.Uncertain,
-      'should update status to uncertain'
+      'should update status to uncertain',
     )
   })
 

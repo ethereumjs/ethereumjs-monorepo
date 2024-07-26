@@ -41,7 +41,7 @@ export enum ContainerSectionType {
 export function verifyCode(
   container: EOFContainer,
   evm: EVM,
-  mode: ContainerSectionType = ContainerSectionType.RuntimeCode
+  mode: ContainerSectionType = ContainerSectionType.RuntimeCode,
 ) {
   return validateOpcodes(container, evm, mode)
 }
@@ -58,7 +58,7 @@ function readUint16(code: Uint8Array, start: number) {
 function validateOpcodes(
   container: EOFContainer,
   evm: EVM,
-  mode: ContainerSectionType = ContainerSectionType.RuntimeCode
+  mode: ContainerSectionType = ContainerSectionType.RuntimeCode,
 ) {
   // Track the intermediate bytes
   const intermediateBytes = new Set<number>()

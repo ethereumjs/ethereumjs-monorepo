@@ -26,7 +26,7 @@ export interface VerkleCrypto {
     commitment: Uint8Array,
     commitmentIndex: number,
     oldScalarValue: Uint8Array,
-    newScalarValue: Uint8Array
+    newScalarValue: Uint8Array,
   ) => Uint8Array // Commitment
   zeroCommitment: Uint8Array
   verifyExecutionWitnessPreState: (prestateRoot: string, execution_witness_json: string) => boolean
@@ -45,7 +45,7 @@ export interface VerkleCrypto {
 export function getVerkleStem(
   ffi: VerkleCrypto,
   address: Address,
-  treeIndex: number | bigint = 0
+  treeIndex: number | bigint = 0,
 ): Uint8Array {
   const address32 = setLengthLeft(address.toBytes(), 32)
 
@@ -71,11 +71,11 @@ export function getVerkleStem(
 export function verifyVerkleProof(
   ffi: VerkleCrypto,
   prestateRoot: Uint8Array,
-  executionWitness: VerkleExecutionWitness
+  executionWitness: VerkleExecutionWitness,
 ): boolean {
   return ffi.verifyExecutionWitnessPreState(
     bytesToHex(prestateRoot),
-    JSON.stringify(executionWitness)
+    JSON.stringify(executionWitness),
   )
 }
 
@@ -190,7 +190,7 @@ export function getVerkleTreeIndicesForCodeChunk(chunkId: number) {
 export const getVerkleTreeKeyForCodeChunk = async (
   address: Address,
   chunkId: number,
-  verkleCrypto: VerkleCrypto
+  verkleCrypto: VerkleCrypto,
 ) => {
   const { treeIndex, subIndex } = getVerkleTreeIndicesForCodeChunk(chunkId)
   return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
@@ -209,7 +209,7 @@ export const chunkifyCode = (code: Uint8Array) => {
 export const getVerkleTreeKeyForStorageSlot = async (
   address: Address,
   storageKey: bigint,
-  verkleCrypto: VerkleCrypto
+  verkleCrypto: VerkleCrypto,
 ) => {
   const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(storageKey)
 

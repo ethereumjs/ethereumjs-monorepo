@@ -70,7 +70,7 @@ describe('Withdrawal', () => {
   const gethWithdrawalsRlp = bytesToHex(encode(gethWithdrawalsBuffer))
   it('fromWithdrawalData and toBytesArray', () => {
     const withdrawals = withdrawalsGethVector.map((withdrawal) =>
-      Withdrawal.fromWithdrawalData(withdrawal as WithdrawalData)
+      Withdrawal.fromWithdrawalData(withdrawal as WithdrawalData),
     )
     const withdrawalstoBytesArr = withdrawals.map((wt) => wt.raw())
     const withdrawalsToRlp = bytesToHex(encode(withdrawalstoBytesArr))
@@ -79,7 +79,7 @@ describe('Withdrawal', () => {
 
   it('toBytesArray from withdrawalData', () => {
     const withdrawalsDatatoBytesArr = withdrawalsGethVector.map((withdrawal) =>
-      Withdrawal.toBytesArray(withdrawal as WithdrawalData)
+      Withdrawal.toBytesArray(withdrawal as WithdrawalData),
     )
     const withdrawalsDataToRlp = bytesToHex(encode(withdrawalsDatatoBytesArr))
     assert.equal(gethWithdrawalsRlp, withdrawalsDataToRlp, 'The withdrawals to buffer should match')
@@ -93,7 +93,7 @@ describe('Withdrawal', () => {
     const withdrawalsValue = withdrawals.map((wt) => wt.toValue())
     assert.deepEqual(
       withdrawalsValue.map((wt) => bytesToHex(wt.address)),
-      withdrawalsJson.map((wt) => wt.address)
+      withdrawalsJson.map((wt) => wt.address),
     )
   })
 })

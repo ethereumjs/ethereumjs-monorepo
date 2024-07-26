@@ -210,7 +210,7 @@ describe('[VMExecution]', () => {
     assert.equal(
       bytesToHex(block.hash()),
       bytesToHex(newHead.hash()),
-      'vmHead should be on the latest block'
+      'vmHead should be on the latest block',
     )
 
     // reset head and run again
@@ -219,7 +219,7 @@ describe('[VMExecution]', () => {
     assert.equal(
       bytesToHex(oldHead.hash()),
       bytesToHex(newHead.hash()),
-      'vmHead should be on the latest block'
+      'vmHead should be on the latest block',
     )
     await execution.run()
 
@@ -227,7 +227,7 @@ describe('[VMExecution]', () => {
     assert.equal(
       bytesToHex(block.hash()),
       bytesToHex(newHead.hash()),
-      'vmHead should be on the latest block'
+      'vmHead should be on the latest block',
     )
 
     closeRPC(server)

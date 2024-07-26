@@ -63,7 +63,7 @@ describe('EIP 6780 tests', () => {
       (await vm.stateManager.getAccount(Address.fromString('0x' + '00'.repeat(19) + '01')))!
         .balance,
       BigInt(value),
-      'balance sent to target'
+      'balance sent to target',
     )
   })
 
@@ -99,7 +99,7 @@ describe('EIP 6780 tests', () => {
       (await vm.stateManager.getAccount(Address.fromString('0x' + '00'.repeat(19) + '01')))!
         .balance,
       BigInt(value),
-      'balance sent to target'
+      'balance sent to target',
     )
   })
 })

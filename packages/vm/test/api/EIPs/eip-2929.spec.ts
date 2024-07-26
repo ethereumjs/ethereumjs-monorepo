@@ -26,7 +26,7 @@ describe('EIP 2929: gas cost tests', () => {
         assert.equal(
           step.opcode.name,
           test.steps[i].expectedOpcode,
-          `Expected Opcode: ${test.steps[i].expectedOpcode}`
+          `Expected Opcode: ${test.steps[i].expectedOpcode}`,
         )
 
         // Validates the gas consumption of the (i - 1)th opcode
@@ -40,7 +40,7 @@ describe('EIP 2929: gas cost tests', () => {
             gasUsed === expectedGasUsed,
             `Opcode: ${
               test.steps[i - 1].expectedOpcode
-            }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`
+            }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`,
           )
         }
       }
@@ -66,7 +66,7 @@ describe('EIP 2929: gas cost tests', () => {
   const runCodeTest = async function (code: PrefixedHexString, expectedGasUsed: bigint) {
     // setup the accounts for this test
     const privateKey = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
 
@@ -90,7 +90,7 @@ describe('EIP 2929: gas cost tests', () => {
     const account = await vm.stateManager.getAccount(address)
     await vm.stateManager.putAccount(
       address,
-      createAccount({ ...account, balance: initialBalance })
+      createAccount({ ...account, balance: initialBalance }),
     )
 
     const result = await runTx(vm, { tx, skipHardForkValidation: true })
@@ -275,7 +275,7 @@ describe('EIP 2929: gas cost tests', () => {
     // call to contract, call 0xFF..FF, revert, call 0xFF..FF (should be cold)
     await runCodeTest(
       `0x341515601557${callFF}600080FD5B600080808080305AF1${callFF}00`,
-      BigInt(26414)
+      BigInt(26414),
     )
   })
 })

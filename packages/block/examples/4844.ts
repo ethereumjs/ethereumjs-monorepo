@@ -17,7 +17,7 @@ const main = async () => {
   })
   const blobTx = create4844BlobTx(
     { blobsData: ['myFirstBlob'], to: Address.fromPrivateKey(randomBytes(32)) },
-    { common }
+    { common },
   )
 
   const block = createBlockFromBlockData(
@@ -30,14 +30,14 @@ const main = async () => {
     {
       common,
       skipConsensusFormatValidation: true,
-    }
+    },
   )
 
   console.log(
     `4844 block header with excessBlobGas=${block.header.excessBlobGas} created and ${
       block.transactions.filter((tx) => tx.type === 3).length
-    } blob transactions`
+    } blob transactions`,
   )
 }
 
-main()
+void main()

@@ -197,7 +197,7 @@ export function decode(bytes: Uint8Array, common?: Common) {
     signature,
     recoverId,
     sighash,
-    false
+    false,
   )
   return { typename, data, publicKey }
 }

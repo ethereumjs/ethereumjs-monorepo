@@ -44,7 +44,7 @@ describe(
       assert.equal(
         res.result,
         bigIntToHex(genesisBalance),
-        'should return the correct genesis balance'
+        'should return the correct genesis balance',
       )
 
       // construct block with tx
@@ -64,7 +64,7 @@ describe(
       assert.equal(
         res.result,
         bigIntToHex(expectedNewBalance),
-        'should return the correct balance after a tx'
+        'should return the correct balance after a tx',
       )
 
       // verify we can query with "earliest"
@@ -72,7 +72,7 @@ describe(
       assert.equal(
         res.result,
         bigIntToHex(genesisBalance),
-        "should return the correct balance with 'earliest'"
+        "should return the correct balance with 'earliest'",
       )
 
       // verify we can query with a past block number
@@ -80,7 +80,7 @@ describe(
       assert.equal(
         res.result,
         bigIntToHex(genesisBalance),
-        'should return the correct balance with a past block number'
+        'should return the correct balance with a past block number',
       )
 
       // call with height that exceeds chain height
@@ -108,5 +108,5 @@ describe(
       assert.ok(res.error.message.includes('"pending" is not yet supported'))
     })
   },
-  40000
+  40000,
 )

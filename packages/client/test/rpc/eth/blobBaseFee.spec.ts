@@ -25,7 +25,7 @@ const accountAddress = Address.fromPrivateKey(privateKey)
 const produceBlockWith4844Tx = async (
   execution: VMExecution,
   chain: Chain,
-  blobsCount: number[]
+  blobsCount: number[],
 ) => {
   const kzg = await loadKZG()
   // 4844 sample blob
@@ -75,8 +75,8 @@ const produceBlockWith4844Tx = async (
           kzgCommitments,
           maxFeePerBlobGas: BigInt(1000),
         },
-        { common: vmCopy.common }
-      ).sign(privateKey)
+        { common: vmCopy.common },
+      ).sign(privateKey),
     )
     nonce++
   }

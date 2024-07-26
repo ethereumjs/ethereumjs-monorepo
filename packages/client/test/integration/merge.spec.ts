@@ -43,7 +43,7 @@ const commonPoA = createCustomCommon(
       },
     ],
   },
-  { baseChain: ChainCommon.Goerli, hardfork: Hardfork.London }
+  { baseChain: ChainCommon.Goerli, hardfork: Hardfork.London },
 )
 const commonPoW = createCustomCommon(
   {
@@ -64,7 +64,7 @@ const commonPoW = createCustomCommon(
       },
     ],
   },
-  { baseChain: ChainCommon.Mainnet, hardfork: Hardfork.London }
+  { baseChain: ChainCommon.Mainnet, hardfork: Hardfork.London },
 )
 const accounts: [Address, Uint8Array][] = [
   [
@@ -129,7 +129,7 @@ describe('should mine and stop at the merge (PoA)', async () => {
       assert.equal(
         remoteService.chain.headers.td,
         targetTTD,
-        'synced blocks to the merge successfully'
+        'synced blocks to the merge successfully',
       )
       // Make sure the miner has stopped
       assert.notOk(service.miner!.running, 'miner should not be running')
@@ -169,7 +169,7 @@ describe('should mine and stop at the merge (PoW)', async () => {
       assert.equal(
         remoteService.chain.headers.height,
         terminalHeight,
-        'synced blocks to the merge successfully'
+        'synced blocks to the merge successfully',
       )
       // Make sure the miner has stopped
       assert.notOk(service.miner!.running, 'miner should not be running')

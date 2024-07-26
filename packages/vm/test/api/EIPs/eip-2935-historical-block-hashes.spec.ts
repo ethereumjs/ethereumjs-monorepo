@@ -19,7 +19,7 @@ import { assert, describe, it } from 'vitest'
 
 import { bytesToBigInt } from '../../../../util/src/bytes.js'
 import { BIGINT_0 } from '../../../../util/src/constants.js'
-import { VM, buildBlock, runBlock, runTx } from '../../../src/index.js'
+import { VM, buildBlock, paramsVM, runBlock, runTx } from '../../../src/index.js'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -192,7 +192,7 @@ describe('EIP 2935: historical block hashes', () => {
 
       const storage = await vm.stateManager.getContractStorage(
         historyAddress,
-        setLengthLeft(bigIntToBytes(BigInt(0)), 32)
+        setLengthLeft(bigIntToBytes(BigInt(0)), 32),
       )
       assert.ok(equalsBytes(storage, genesis.hash()))
     })
@@ -203,6 +203,7 @@ describe('EIP 2935: historical block hashes', () => {
       const blocksToBuild = 500
       const commonGetHistoryServeWindow = eip2935ActiveAtCommon(0, historyAddressBigInt)
       commonGetHistoryServeWindow.setEIPs([2935])
+      commonGetHistoryServeWindow.updateParams(paramsVM)
       const common = eip2935ActiveAtCommon(blocksActivation, historyAddressBigInt)
       const historyServeWindow = commonGetHistoryServeWindow.param('historyServeWindow')
 
@@ -248,7 +249,7 @@ describe('EIP 2935: historical block hashes', () => {
         const block = await blockchain.getBlock(i)
         const storage = await vm.stateManager.getContractStorage(
           historyAddress,
-          setLengthLeft(bigIntToBytes(BigInt(i) % historyServeWindow), 32)
+          setLengthLeft(bigIntToBytes(BigInt(i) % historyServeWindow), 32),
         )
 
         // we will evaluate on lastBlock where 7709 is active and BLOCKHASH
@@ -288,7 +289,7 @@ describe('EIP 2935: historical block hashes', () => {
             number: blocksToBuild,
           },
         },
-        { common }
+        { common },
       )
 
       // should be able to resolve blockhash via contract code but from the blocksActivation -1 onwards

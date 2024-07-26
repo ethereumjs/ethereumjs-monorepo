@@ -53,7 +53,7 @@ describe(method, () => {
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
       },
-      { common }
+      { common },
     ).sign(pkey)
     const tx2 = createTxFromTxData(
       {
@@ -64,27 +64,27 @@ describe(method, () => {
         gasLimit: 30000000n,
         nonce: 1n,
       },
-      { common }
+      { common },
     ).sign(pkey)
     const block = createBlockFromBlockData(
       {
         transactions: [tx],
         header: BlockHeader.fromHeaderData(
           { parentHash: chain.genesis.hash(), number: 1n },
-          { common, skipConsensusFormatValidation: true }
+          { common, skipConsensusFormatValidation: true },
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
     const block2 = createBlockFromBlockData(
       {
         transactions: [tx2],
         header: BlockHeader.fromHeaderData(
           { parentHash: block.hash(), number: 2n },
-          { common, skipConsensusFormatValidation: true }
+          { common, skipConsensusFormatValidation: true },
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
 
     await chain.putBlocks([block, block2], true)
@@ -96,7 +96,7 @@ describe(method, () => {
     assert.equal(
       res.result[0].transactions[0],
       bytesToHex(tx.serialize()),
-      'got expected transaction from first payload'
+      'got expected transaction from first payload',
     )
     assert.equal(res.result[1], null, 'got null for block not found in chain')
     assert.equal(res.result.length, 3, 'length of response matches number of block hashes sent')
@@ -120,7 +120,7 @@ describe(method, () => {
       {
         engine: true,
         hardfork: Hardfork.London,
-      }
+      },
     )
     const rpc = getRpcClient(server)
     common.setHardfork(Hardfork.London)
@@ -139,7 +139,7 @@ describe(method, () => {
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
       },
-      { common }
+      { common },
     ).sign(pkey)
     const tx2 = createTxFromTxData(
       {
@@ -150,27 +150,27 @@ describe(method, () => {
         gasLimit: 30000000n,
         nonce: 1n,
       },
-      { common }
+      { common },
     ).sign(pkey)
     const block = createBlockFromBlockData(
       {
         transactions: [tx],
         header: BlockHeader.fromHeaderData(
           { parentHash: chain.genesis.hash(), number: 1n },
-          { common, skipConsensusFormatValidation: true }
+          { common, skipConsensusFormatValidation: true },
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
     const block2 = createBlockFromBlockData(
       {
         transactions: [tx2],
         header: BlockHeader.fromHeaderData(
           { parentHash: block.hash(), number: 2n },
-          { common, skipConsensusFormatValidation: true }
+          { common, skipConsensusFormatValidation: true },
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
 
     await chain.putBlocks([block, block2], true)
@@ -182,7 +182,7 @@ describe(method, () => {
     assert.equal(
       res.result[0].withdrawals,
       null,
-      'got null for withdrawals field on pre-Shanghai block'
+      'got null for withdrawals field on pre-Shanghai block',
     )
 
     // Restore setStateRoot

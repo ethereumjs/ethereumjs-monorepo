@@ -136,7 +136,7 @@ describe('should start/stop', async () => {
 describe('should correctly handle GetBlockHeaders', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   vi.unmock('../../src/blockchain')
-  await import('../../src/blockchain')
+  await import('../../src/blockchain/index.js')
   const chain = await Chain.create({ config })
   chain.getHeaders = () => [{ number: 1n }] as any
   const service = new FullEthereumService({ config, chain })
@@ -152,12 +152,12 @@ describe('should correctly handle GetBlockHeaders', async () => {
           it('should send empty headers', () => {
             assert.ok(
               title === 'BlockHeaders' && msg.headers.length === 0,
-              'sent empty headers when block height is too high'
+              'sent empty headers when block height is too high',
             )
           })
         },
       } as any,
-    } as any
+    } as any,
   )
   ;(service.chain as any)._headers = {
     height: 5n,
@@ -177,12 +177,12 @@ describe('should correctly handle GetBlockHeaders', async () => {
           it('should send 1 header', () => {
             assert.ok(
               title === 'BlockHeaders' && msg.headers.length === 1,
-              'sent 1 header when requested'
+              'sent 1 header when requested',
             )
           })
         },
       } as any,
-    } as any
+    } as any,
   )
 })
 
@@ -204,7 +204,7 @@ describe('should call handleNewBlock on NewBlock and handleNewBlockHashes on New
     await service.switchToBeaconSync()
     assert.ok(
       (service.synchronizer as BeaconSynchronizer).type === 'beacon',
-      'switched to BeaconSynchronizer'
+      'switched to BeaconSynchronizer',
     )
     assert.ok(service.beaconSync, 'can access BeaconSynchronizer')
   })
@@ -282,7 +282,7 @@ describe('should handle Transactions', async () => {
       data: [createTxFromTxData({ type: 2 })],
     },
     'eth',
-    undefined as any
+    undefined as any,
   )
 })
 
@@ -306,7 +306,7 @@ describe('should handle NewPooledTransactionHashes', async () => {
       eth: {
         versions: [66],
       },
-    } as any
+    } as any,
   )
 })
 
@@ -330,7 +330,7 @@ describe('should handle GetPooledTransactions', async () => {
           })
         },
       } as any,
-    } as any
+    } as any,
   )
 })
 
@@ -344,7 +344,7 @@ describe('should handle decoding NewPooledTransactionHashes with eth/68 message 
   ;(service.txPool as any).handleAnnouncedTxHashes = (
     hashes: Uint8Array[],
     _peer: any,
-    _pool: any
+    _pool: any,
   ) => {
     it('should get correct tx hash from eth68 message', () => {
       assert.deepEqual(hashes[0], txHash)
@@ -358,7 +358,7 @@ describe('should handle decoding NewPooledTransactionHashes with eth/68 message 
       eth: {
         versions: [67, 68],
       },
-    } as any
+    } as any,
   )
 })
 
@@ -381,7 +381,7 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
           },
         },
       } as any,
-    ]
+    ],
   )
 })
 

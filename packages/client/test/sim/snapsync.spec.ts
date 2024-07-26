@@ -22,9 +22,9 @@ import {
   setupEngineUpdateRelay,
   startNetwork,
   waitForELStart,
-} from './simutils'
+} from './simutils.js'
 
-import type { EthereumClient } from '../../src/client'
+import type { EthereumClient } from '../../src/client.js'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -92,7 +92,7 @@ describe('simple mainnet test run', async () => {
       assert.equal(
         EOATransferToBalance,
         BigInt(balance.result),
-        `fetched ${EOATransferToAccount} balance=${EOATransferToBalance}`
+        `fetched ${EOATransferToAccount} balance=${EOATransferToBalance}`,
       )
       balance = await client.request('eth_getBalance', [EOATransferToAccount, 'latest'])
 
@@ -110,11 +110,11 @@ describe('simple mainnet test run', async () => {
       balance = await client.request('eth_getBalance', [sender, 'latest'])
       assert.ok(
         balance.result !== undefined,
-        'remaining sender balance after transfers and gas fee'
+        'remaining sender balance after transfers and gas fee',
       )
       senderBalance = BigInt(balance.result)
     },
-    2 * 60_000
+    2 * 60_000,
   )
 
   it.skipIf(process.env.SNAP_SYNC === undefined)(
@@ -135,7 +135,7 @@ describe('simple mainnet test run', async () => {
           customGenesisState,
           [nodeInfo.enode],
           peerBeaconUrl,
-          ''
+          '',
         ).catch((e) => {
           console.log(e)
           return null
@@ -162,7 +162,7 @@ describe('simple mainnet test run', async () => {
         assert.fail('could not connect to geth peer in 10 seconds')
       }
     },
-    60_000
+    60_000,
   )
 
   it.skipIf(process.env.SNAP_SYNC === undefined)(
@@ -201,7 +201,7 @@ describe('simple mainnet test run', async () => {
         assert.fail('ethereumjs client not setup properly for snap sync')
       }
     },
-    10 * 60_000
+    10 * 60_000,
   )
 
   it.skipIf(stateManager !== undefined)('should match entire state', async () => {
@@ -222,7 +222,7 @@ describe('simple mainnet test run', async () => {
       assert.equal(
         account?.balance,
         BigInt(customGenesisState[addressString][0]),
-        `${addressString} balance should match`
+        `${addressString} balance should match`,
       )
     }
   })
@@ -244,7 +244,7 @@ async function createSnapClient(
   customGenesisState: any,
   bootnodes: any,
   peerBeaconUrl: any,
-  datadir: any
+  datadir: any,
 ) {
   // Turn on `debug` logs, defaults to all client logging
   debug.enable(process.env.DEBUG_SNAP ?? '')
@@ -272,7 +272,7 @@ async function createSnapClient(
     config.events.once(
       Event.SYNC_SNAPSYNC_COMPLETE,
       (stateRoot: Uint8Array, stateManager: DefaultStateManager) =>
-        resolve([stateRoot, stateManager])
+        resolve([stateRoot, stateManager]),
     )
   })
 

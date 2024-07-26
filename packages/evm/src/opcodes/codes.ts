@@ -384,7 +384,7 @@ function createOpcodes(opcodes: OpcodeEntryFee): OpcodeList {
         code,
         fullName: getFullname(code, value.name),
         ...value,
-      })
+      }),
     )
   }
   return result
@@ -448,7 +448,7 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
       // Sanity checks
       if (code.opcodeName === undefined || code.baseFee === undefined) {
         throw new Error(
-          `Custom opcode ${code.opcode} does not have the required values: opcodeName and baseFee are required`
+          `Custom opcode ${code.opcode} does not have the required values: opcodeName and baseFee are required`,
         )
       }
       const entry = {

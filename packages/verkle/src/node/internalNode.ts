@@ -33,7 +33,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
       childIndex,
       // The hashed child commitments are used when updating the internal node commitment
       this.verkleCrypto.hashCommitment(oldChildReference.commitment),
-      this.verkleCrypto.hashCommitment(child.commitment)
+      this.verkleCrypto.hashCommitment(child.commitment),
     )
   }
 

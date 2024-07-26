@@ -13,6 +13,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { BaseTransaction } from '../baseTransaction.js'
 import * as Legacy from '../capabilities/legacy.js'
+import { paramsTx } from '../index.js'
 import { Capability, TransactionType } from '../types.js'
 import { validateNotArray } from '../util.js'
 
@@ -55,6 +56,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     super({ ...txData, type: TransactionType.Legacy }, opts)
 
     this.common = this._validateTxV(this.v, opts.common)
+    this.common.updateParams(opts.params ?? paramsTx)
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
     this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice))
 
@@ -176,8 +178,8 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   /**
    * The amount of gas paid for the data in this tx
    */
-  getDataFee(): bigint {
-    return Legacy.getDataFee(this)
+  getDataGas(): bigint {
+    return Legacy.getDataGas(this)
   }
 
   /**
@@ -219,7 +221,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV: boolean = false
+    convertV: boolean = false,
   ): LegacyTransaction {
     r = toBytes(r)
     s = toBytes(s)
@@ -241,7 +243,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },
-      opts
+      opts,
     )
   }
 
@@ -268,7 +270,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
       // v is 2. not matching the classic v=27 or v=28 case
       if (v < 37 && v !== 27 && v !== 28) {
         throw new Error(
-          `Legacy txs need either v = 27/28 or v >= 37 (EIP-155 replay protection), got v = ${v}`
+          `Legacy txs need either v = 27/28 or v >= 37 (EIP-155 replay protection), got v = ${v}`,
         )
       }
     }
@@ -284,7 +286,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
       if (common) {
         if (!meetsEIP155(BigInt(v), common.chainId())) {
           throw new Error(
-            `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`
+            `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`,
           )
         }
       } else {

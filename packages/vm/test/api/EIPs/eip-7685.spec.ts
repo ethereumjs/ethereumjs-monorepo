@@ -16,7 +16,7 @@ import { setupVM } from '../utils.js'
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 
 const invalidRequestsRoot = hexToBytes(
-  '0xc98048d6605eb79ecc08d90b8817f44911ec474acd8d11688453d2c6ef743bc5'
+  '0xc98048d6605eb79ecc08d90b8817f44911ec474acd8d11688453d2c6ef743bc5',
 )
 function getRandomDepositRequest(): CLRequest<CLRequestType> {
   const depositRequestData = {
@@ -46,12 +46,12 @@ describe('EIP-7685 runBlock tests', () => {
 
     const emptyBlock = createBlockFromBlockData(
       { header: { requestsRoot: invalidRequestsRoot } },
-      { common }
+      { common },
     )
     await expect(async () =>
       runBlock(vm, {
         block: emptyBlock,
-      })
+      }),
     ).rejects.toThrow('invalid requestsRoot')
   })
   it('should not throw invalid requestsRoot error when valid requests are provided', async () => {
@@ -63,7 +63,7 @@ describe('EIP-7685 runBlock tests', () => {
         requests: [request],
         header: { requestsRoot },
       },
-      { common }
+      { common },
     )
     await expect(async () => runBlock(vm, { block })).rejects.toThrow(/invalid requestsRoot/)
   })
@@ -75,7 +75,7 @@ describe('EIP-7685 runBlock tests', () => {
         requests: [request],
         header: { requestsRoot: invalidRequestsRoot },
       },
-      { common }
+      { common },
     )
     await expect(() => runBlock(vm, { block })).rejects.toThrow('invalid requestsRoot')
   })
@@ -90,7 +90,7 @@ describe('EIP 7685 buildBlock tests', () => {
     })
     const genesisBlock = createBlockFromBlockData(
       { header: { gasLimit: 50000, baseFeePerGas: 100 } },
-      { common }
+      { common },
     )
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })

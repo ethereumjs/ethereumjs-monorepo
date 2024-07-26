@@ -29,14 +29,14 @@ describe('WASM crypto tests', () => {
       v: bigint,
       r: Uint8Array,
       s: Uint8Array,
-      chainID?: bigint
+      chainID?: bigint,
     ) =>
       secp256k1Expand(
         secp256k1Recover(
           msgHash,
           concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32)),
-          Number(calculateSigRecovery(v, chainID))
-        )
+          Number(calculateSigRecovery(v, chainID)),
+        ),
       ).slice(1)
 
     await waitReady()
@@ -90,7 +90,7 @@ describe('WASM crypto tests', () => {
     assert.deepEqual(wasmSig, jsSig, 'wasm signatures produce same result as js signatures')
     assert.throws(
       () => wasmSign(randomBytes(31), randomBytes(32)),
-      'message length must be 32 bytes or greater'
+      'message length must be 32 bytes or greater',
     )
   })
   it('should have the same signature and verification', async () => {

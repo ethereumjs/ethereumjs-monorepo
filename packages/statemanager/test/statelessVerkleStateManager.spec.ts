@@ -33,13 +33,13 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     eips: [2935, 4895, 6800],
   })
   const decodedTxs = verkleBlockJSON.transactions.map((tx) =>
-    createTxFromSerializedData(hexToBytes(tx as PrefixedHexString))
+    createTxFromSerializedData(hexToBytes(tx as PrefixedHexString)),
   )
   const block = createBlockFromBlockData(
     { ...verkleBlockJSON, transactions: decodedTxs } as BlockData,
     {
       common,
-    }
+    },
   )
 
   it('initPreState()', async () => {
@@ -54,7 +54,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const account = await stateManager.getAccount(
-      Address.fromString('0x6177843db3138ae69679a54b95cf345ed759450d')
+      Address.fromString('0x6177843db3138ae69679a54b95cf345ed759450d'),
     )
 
     assert.equal(account!.balance, 288610978528114322n, 'should have correct balance')
@@ -63,7 +63,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     assert.equal(
       bytesToHex(account!.codeHash),
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-      'should have correct codeHash'
+      'should have correct codeHash',
     )
   })
 
@@ -80,7 +80,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
       assert.equal(
         e.message.slice(0, 25),
         'No witness bundled for ad',
-        'should throw on getting account that does not exist in cache and witness'
+        'should throw on getting account that does not exist in cache and witness',
       )
     }
 
@@ -92,7 +92,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     assert.deepEqual(
       await stateManager.getAccount(address),
       account,
-      'should return correct account'
+      'should return correct account',
     )
 
     await stateManager.modifyAccountFields(address, {
@@ -102,14 +102,14 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     assert.deepEqual(
       await stateManager.getAccount(address),
       account,
-      'should return correct account'
+      'should return correct account',
     )
 
     await stateManager.deleteAccount(address)
 
     assert.isUndefined(
       await stateManager.getAccount(address),
-      'should return undefined for deleted account'
+      'should return undefined for deleted account',
     )
   })
 
@@ -133,12 +133,12 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     assert.equal(
       account!.balance,
       bytesToBigInt(hexToBytes(balanceRaw!), true),
-      'should have correct balance'
+      'should have correct balance',
     )
     assert.equal(
       account!.nonce,
       bytesToBigInt(hexToBytes(nonceRaw!), true),
-      'should have correct nonce'
+      'should have correct nonce',
     )
     assert.equal(bytesToHex(account!.codeHash), codeHash, 'should have correct codeHash')
   })
@@ -161,12 +161,12 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     assert.equal(
       (stateManagerCopy as any)['_accountCacheSettings'].type,
       CacheType.ORDERED_MAP,
-      'should switch to ORDERED_MAP account cache on copy()'
+      'should switch to ORDERED_MAP account cache on copy()',
     )
     assert.equal(
       (stateManagerCopy as any)['_storageCacheSettings'].type,
       CacheType.ORDERED_MAP,
-      'should switch to ORDERED_MAP storage cache on copy()'
+      'should switch to ORDERED_MAP storage cache on copy()',
     )
   })
 
@@ -181,11 +181,11 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     await stateManager.putContractStorage(
       contractAddress,
       hexToBytes(storageKey),
-      hexToBytes(storageValue)
+      hexToBytes(storageValue),
     )
     let contractStorage = await stateManager.getContractStorage(
       contractAddress,
-      hexToBytes(storageKey)
+      hexToBytes(storageKey),
     )
 
     assert.equal(bytesToHex(contractStorage), storageValue)

@@ -101,7 +101,7 @@ describe('ProofStateManager', () => {
     assert.equal(
       await stateManager.verifyProof(nonExistenceProof),
       true,
-      'verified proof of non-existence of account'
+      'verified proof of non-existence of account',
     )
   })
 

@@ -11,6 +11,7 @@ import { BaseTransaction } from '../baseTransaction.js'
 import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP2930 from '../capabilities/eip2930.js'
 import * as Legacy from '../capabilities/legacy.js'
+import { paramsTx } from '../index.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, validateNotArray } from '../util.js'
 
@@ -55,6 +56,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
     const { chainId, accessList, gasPrice } = txData
 
     this.common = this._getCommon(opts.common, chainId)
+    this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 
     // EIP-2718 check is done in Common
@@ -99,8 +101,8 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
   /**
    * The amount of gas paid for the data in this tx
    */
-  getDataFee(): bigint {
-    return EIP2930.getDataFee(this)
+  getDataGas(): bigint {
+    return EIP2930.getDataGas(this)
   }
 
   /**
@@ -207,7 +209,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV: boolean = false
+    convertV: boolean = false,
   ): AccessListEIP2930Transaction {
     r = toBytes(r)
     s = toBytes(s)
@@ -227,7 +229,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },
-      opts
+      opts,
     )
   }
 
