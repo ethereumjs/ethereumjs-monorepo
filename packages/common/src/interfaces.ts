@@ -209,7 +209,3 @@ export interface StateManagerInterface {
    */
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
 }
-
-export interface EVMStateManagerInterface extends StateManagerInterface {
-  shallowCopy(downlevelCaches?: boolean): EVMStateManagerInterface
-}

@@ -36,7 +36,7 @@ import {
 import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { CacheSettings, StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
 import type { DefaultStateManager } from './stateManager.js'
-import type { AccountFields, EVMStateManagerInterface, Proof } from '@ethereumjs/common'
+import type { AccountFields, StateManagerInterface, Proof } from '@ethereumjs/common'
 import type {
   Address,
   PrefixedHexString,
@@ -66,7 +66,7 @@ const ZEROVALUE = '0x00000000000000000000000000000000000000000000000000000000000
  * to fetch data requested by the the VM.
  *
  */
-export class StatelessVerkleStateManager implements EVMStateManagerInterface {
+export class StatelessVerkleStateManager implements StateManagerInterface {
   _accountCache?: AccountCache
   _storageCache?: StorageCache
   _codeCache?: CodeCache
@@ -253,7 +253,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * at the last fully committed point, i.e. as if all current
    * checkpoints were reverted.
    */
-  shallowCopy(): EVMStateManagerInterface {
+  shallowCopy(): StateManagerInterface {
     const stateManager = new StatelessVerkleStateManager({ verkleCrypto: this.verkleCrypto })
     return stateManager
   }

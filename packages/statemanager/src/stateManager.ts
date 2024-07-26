@@ -38,7 +38,7 @@ import { CODEHASH_PREFIX, type CacheSettings, type DefaultStateManagerOpts } fro
 import type { StorageProof } from './index.js'
 import type {
   AccountFields,
-  EVMStateManagerInterface,
+  StateManagerInterface,
   Proof,
   StorageDump,
   StorageRange,
@@ -61,7 +61,7 @@ import type { Debugger } from 'debug'
  * package which might be an alternative to this implementation
  * for many basic use cases.
  */
-export class DefaultStateManager implements EVMStateManagerInterface {
+export class DefaultStateManager implements StateManagerInterface {
   protected _debug: Debugger
   protected _accountCache?: AccountCache
   protected _storageCache?: StorageCache

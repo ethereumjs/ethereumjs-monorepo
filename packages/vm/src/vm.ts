@@ -14,7 +14,7 @@ import { paramsVM } from './params.js'
 
 import type { VMEvents, VMOpts } from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
-import type { EVMStateManagerInterface } from '@ethereumjs/common'
+import type { StateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface } from '@ethereumjs/evm'
 import type { BigIntLike } from '@ethereumjs/util'
 
@@ -28,7 +28,7 @@ export class VM {
   /**
    * The StateManager used by the VM
    */
-  readonly stateManager: EVMStateManagerInterface
+  readonly stateManager: StateManagerInterface
 
   /**
    * The blockchain the VM operates on

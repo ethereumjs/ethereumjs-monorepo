@@ -11,7 +11,7 @@ import type { PrecompileFunc } from './precompiles/types.js'
 import type {
   AccessWitnessInterface,
   Common,
-  EVMStateManagerInterface,
+  StateManagerInterface,
   ParamsDict,
 } from '@ethereumjs/common'
 import type { Account, Address, AsyncEventEmitter, PrefixedHexString } from '@ethereumjs/util'
@@ -162,7 +162,7 @@ export interface EVMInterface {
     startReportingAccessList(): void
     startReportingPreimages?(): void
   }
-  stateManager: EVMStateManagerInterface
+  stateManager: StateManagerInterface
   precompiles: Map<string, PrecompileFunc>
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
@@ -312,7 +312,7 @@ export interface EVMOpts {
    * implementations for different needs (MPT-tree backed, RPC, experimental verkle)
    * which can be used by this option as a replacement.
    */
-  stateManager?: EVMStateManagerInterface
+  stateManager?: StateManagerInterface
 
   /**
    *

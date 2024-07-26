@@ -4,7 +4,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { SimpleStateManagerOpts } from './index.js'
-import type { AccountFields, Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { AccountFields, Common, StateManagerInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 /**
@@ -22,7 +22,7 @@ import type { Address, PrefixedHexString } from '@ethereumjs/util'
  * For a more full fledged and MPT-backed state manager implementation
  * have a look at the `@ethereumjs/statemanager` package.
  */
-export class SimpleStateManager implements EVMStateManagerInterface {
+export class SimpleStateManager implements StateManagerInterface {
   public accountStack: Map<PrefixedHexString, Account | undefined>[] = []
   public codeStack: Map<PrefixedHexString, Uint8Array>[] = []
   public storageStack: Map<string, Uint8Array>[] = []
@@ -140,7 +140,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   async flush(): Promise<void> {}
   clearCaches(): void {}
 
-  shallowCopy(): EVMStateManagerInterface {
+  shallowCopy(): StateManagerInterface {
     const copy = new SimpleStateManager({ common: this.common })
     for (let i = 0; i < this.accountStack.length; i++) {
       copy.accountStack.push(new Map(this.accountStack[i]))
