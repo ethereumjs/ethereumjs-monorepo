@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1722020089844,
+  "lastUpdate": 1722034440818,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "94d02e6490a68a86e6576c5ba501e1fe78be2f08",
-          "message": "Fix Prague test runner (#3498)\n\n* prague: swap 3074 for 7702 eip\r\n\r\n* vm: requests: ensure system address nonce does not get updated\r\n\r\n* vm: state runner: fix some 7702 tests\r\n\r\n* vm: state: fix all 7702 state tests",
-          "timestamp": "2024-07-12T14:22:40-04:00",
-          "tree_id": "599017879d80f46882d30a5045d680c7cdf01269",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/94d02e6490a68a86e6576c5ba501e1fe78be2f08"
-        },
-        "date": 1720808717529,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 39021,
-            "range": "±1.80%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 36788,
-            "range": "±3.56%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37744,
-            "range": "±1.58%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36973,
-            "range": "±1.65%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36002,
-            "range": "±1.74%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.82%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8441f9c5341bba19a9ee5850d7253ba009d6ecb7",
+          "message": "util: refactor bigint to address helper into Address.fromBigInt method (#3544)\n\n* util: refactor bigint to address helper into fromBigInt constructor\r\n\r\n* evm: refactor using fromBigInt method\r\n\r\n* refactor: address constructor usage\r\n\r\n* evm: wrapper helper for evm stack bigint addresses\r\n\r\n* Update packages/evm/src/opcodes/util.ts\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\n\r\n* util: remove redundant conversion\r\n\r\n* address: add test vectors for big int constructor\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2024-07-27T00:51:27+02:00",
+          "tree_id": "60f414a7640262ced283a559287dc2d6145d57a2",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8441f9c5341bba19a9ee5850d7253ba009d6ecb7"
+        },
+        "date": 1722034440208,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37735,
+            "range": "±1.60%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36223,
+            "range": "±3.04%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 36748,
+            "range": "±1.39%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36086,
+            "range": "±1.57%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35233,
+            "range": "±1.68%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
           }
         ]
       }
