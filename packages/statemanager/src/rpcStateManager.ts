@@ -19,12 +19,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { AccountCache, CacheType, OriginalStorageCache, StorageCache } from './cache/index.js'
 
 import type { Proof, RPCStateManagerOpts } from './index.js'
-import type {
-  AccountFields,
-  EVMStateManagerInterface,
-  StorageDump,
-  StorageRange,
-} from '@ethereumjs/common'
+import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -211,11 +206,6 @@ export class RPCStateManager implements EVMStateManagerInterface {
       }
     }
     return Promise.resolve(dump)
-  }
-
-  dumpStorageRange(_address: Address, _startKey: bigint, _limit: number): Promise<StorageRange> {
-    // TODO: Implement.
-    return Promise.reject()
   }
 
   /**

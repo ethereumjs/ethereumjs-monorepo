@@ -36,13 +36,7 @@ import {
 import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { CacheSettings, StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
 import type { DefaultStateManager } from './stateManager.js'
-import type {
-  AccountFields,
-  EVMStateManagerInterface,
-  Proof,
-  StorageDump,
-  StorageRange,
-} from '@ethereumjs/common'
+import type { AccountFields, EVMStateManagerInterface, Proof } from '@ethereumjs/common'
 import type {
   Address,
   PrefixedHexString,
@@ -847,10 +841,6 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._cachedStateRoot = stateRoot
   }
 
-  dumpStorageRange(_: Address, __: bigint, ___: number): Promise<StorageRange> {
-    throw Error('not implemented')
-  }
-
   /**
    * Clears all underlying caches
    */
@@ -858,9 +848,5 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._accountCache?.clear()
     this._codeCache?.clear()
     this._storageCache?.clear()
-  }
-
-  getAppliedKey(_: Uint8Array): Uint8Array {
-    throw Error('not implemented')
   }
 }

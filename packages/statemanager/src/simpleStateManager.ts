@@ -4,14 +4,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { SimpleStateManagerOpts } from './index.js'
-import type {
-  AccountFields,
-  Common,
-  EVMStateManagerInterface,
-  Proof,
-  StorageDump,
-  StorageRange,
-} from '@ethereumjs/common'
+import type { AccountFields, Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 /**
@@ -166,9 +159,4 @@ export class SimpleStateManager implements EVMStateManagerInterface {
 
   // Only goes for long term create situations, skip
   async clearStorage(): Promise<void> {}
-
-  // Only "core" methods implemented
-  dumpStorageRange(): Promise<StorageRange> {
-    throw new Error('Method not implemented.')
-  }
 }

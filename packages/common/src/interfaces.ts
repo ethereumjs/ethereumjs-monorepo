@@ -187,9 +187,10 @@ export interface StateManagerInterface {
    * Optional non-essential methods, these methods should always be guarded
    * on usage (check for existance)
    */
-  // Client
+  // Client RPC
   getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
   dumpStorage?(address: Address): Promise<StorageDump>
+  dumpStorageRange?(address: Address, startKey: bigint, limit: number): Promise<StorageRange>
 
   /*
    * EVM/VM Specific Functionality
@@ -210,7 +211,5 @@ export interface StateManagerInterface {
 }
 
 export interface EVMStateManagerInterface extends StateManagerInterface {
-  dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> // only used in client
-
   shallowCopy(downlevelCaches?: boolean): EVMStateManagerInterface
 }
