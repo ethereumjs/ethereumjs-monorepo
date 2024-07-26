@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -6,7 +6,7 @@ import { create7702EOACodeTx } from '../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 
 const pkey = hexToBytes('0x' + '20'.repeat(32))
 const addr = new Address(privateToAddress(pkey))

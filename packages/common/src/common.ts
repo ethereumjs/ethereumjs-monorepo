@@ -38,7 +38,7 @@ import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
  *
  * Use the {@link Common.custom} static constructor for creating simple
  * custom chain {@link Common} objects (more complete custom chain setups
- * can be created via the main constructor and the {@link CommonOpts.customChains} parameter).
+ * can be created via the main constructor).
  */
 export class Common {
   readonly DEFAULT_HARDFORK: string | Hardfork
@@ -47,7 +47,6 @@ export class Common {
   protected _hardfork: string | Hardfork
   protected _eips: number[] = []
   protected _params: ParamsDict
-  protected _customChains: ChainConfig[]
 
   public readonly customCrypto: CustomCrypto
 
@@ -61,7 +60,6 @@ export class Common {
   constructor(opts: CommonOpts) {
     this.events = new EventEmitter()
 
-    this._customChains = opts.customChains ?? []
     this._chainParams = JSON.parse(JSON.stringify(opts.chain))
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Shanghai
     // Assign hardfork changes in the sequence of the applied hardforks
