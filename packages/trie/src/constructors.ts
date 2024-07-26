@@ -1,6 +1,7 @@
 import {
   KeyEncoding,
   ValueEncoding,
+  bytesToHex,
   bytesToUnprefixedHex,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'

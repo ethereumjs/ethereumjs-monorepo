@@ -60,7 +60,7 @@ export class Trie {
     useRootPersistence: false,
     useNodePruning: false,
     cacheSize: 0,
-    valueEncoding: ValueEncoding.String,
+    valueEncoding: ValueEncoding.String
   }
 
   /** The root for an empty trie */
