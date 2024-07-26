@@ -296,11 +296,11 @@ export class VMExecution extends Execution {
           this.chain['_customGenesisState'] ?? getGenesis(Number(blockchain.common.chainId()))
         if (
           !genesisState &&
-          (this.vm instanceof DefaultStateManager || !this.config.statelessVerkle)
+          (!('generateCanonicalGenesis' in this.vm.stateManager) || !this.config.statelessVerkle)
         ) {
           throw new Error('genesisState not available')
         } else {
-          await this.vm.stateManager.generateCanonicalGenesis(genesisState)
+          await this.vm.stateManager.generateCanonicalGenesis!(genesisState)
         }
       }
 

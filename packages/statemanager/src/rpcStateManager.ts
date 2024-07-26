@@ -19,18 +19,13 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { AccountCache, CacheType, OriginalStorageCache, StorageCache } from './cache/index.js'
 
 import type { Proof, RPCStateManagerOpts } from './index.js'
-import type {
-  AccountFields,
-  EVMStateManagerInterface,
-  StorageDump,
-  StorageRange,
-} from '@ethereumjs/common'
+import type { AccountFields, StateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(2)
 
-export class RPCStateManager implements EVMStateManagerInterface {
+export class RPCStateManager implements StateManagerInterface {
   protected _provider: string
   protected _contractCache: Map<string, Uint8Array>
   protected _storageCache: StorageCache
@@ -211,11 +206,6 @@ export class RPCStateManager implements EVMStateManagerInterface {
       }
     }
     return Promise.resolve(dump)
-  }
-
-  dumpStorageRange(_address: Address, _startKey: bigint, _limit: number): Promise<StorageRange> {
-    // TODO: Implement.
-    return Promise.reject()
   }
 
   /**
@@ -435,10 +425,6 @@ export class RPCStateManager implements EVMStateManagerInterface {
    */
   hasStateRoot = () => {
     throw new Error('function not implemented')
-  }
-
-  generateCanonicalGenesis(_initState: any): Promise<void> {
-    return Promise.resolve()
   }
 }
 

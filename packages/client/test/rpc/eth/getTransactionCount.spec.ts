@@ -40,7 +40,7 @@ describe(method, () => {
 
     // since synchronizer.run() is not executed in the mock setup,
     // manually run stateManager.generateCanonicalGenesis()
-    await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
+    await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))
 
     // a genesis address
     const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
