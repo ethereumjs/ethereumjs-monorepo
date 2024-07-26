@@ -33,7 +33,7 @@ import type { AccountData } from '../../net/protocol/snapprotocol.js'
 import type { FetcherOptions } from './fetcher.js'
 import type { StorageRequest } from './storagefetcher.js'
 import type { Job, SnapFetcherDoneFlags } from './types.js'
-import { Trie } from '@ethereumjs/trie'
+import type { Trie } from '@ethereumjs/trie'
 import type { Debugger } from 'debug'
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
@@ -425,7 +425,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // check zero-element proof
       if (rangeResult.proof.length > 0) {
         try {
-          const isMissingRightRange = await Trie.verifyRangeProof(
+          const isMissingRightRange = await verifyTrieRangeProof(
             this.fetcherDoneFlags.snapTargetRoot!,
             origin,
             null,
