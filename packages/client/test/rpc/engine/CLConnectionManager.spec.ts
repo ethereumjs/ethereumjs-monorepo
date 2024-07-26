@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Common, parseGethGenesis } from '@ethereumjs/common'
 import { assert, describe, expect, it, vi } from 'vitest'
 
@@ -122,7 +122,7 @@ describe('updates stats when a new block is processed', () => {
     const manager = new CLConnectionManager({ config })
     manager.lastForkchoiceUpdate(update)
     manager.lastNewPayload(payload)
-    const block = Block.fromBlockData({
+    const block = createBlockFromBlockData({
       header: {
         parentHash: payload.payload.blockHash,
         number: payload.payload.blockNumber,
@@ -149,7 +149,7 @@ describe('updates status correctly', async () => {
     assert.equal(
       manager['connectionStatus'],
       ConnectionStatus.Connected,
-      'connection status updated correctly'
+      'connection status updated correctly',
     )
   })
 })
@@ -165,7 +165,7 @@ describe('updates connection status correctly', async () => {
     assert.equal(
       manager['connectionStatus'],
       ConnectionStatus.Disconnected,
-      'should disconnect from CL'
+      'should disconnect from CL',
     )
   })
   it('should change status to uncertain', () => {
@@ -175,7 +175,7 @@ describe('updates connection status correctly', async () => {
     assert.equal(
       manager['connectionStatus'],
       ConnectionStatus.Uncertain,
-      'should update status to uncertain'
+      'should update status to uncertain',
     )
   })
 

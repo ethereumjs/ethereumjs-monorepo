@@ -1,8 +1,8 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlockFromBlockData, genWithdrawalsTrieRoot } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { create1559FeeMarketTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -17,8 +17,9 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/withdrawals.json'
-import { VM } from '../../../src/vm'
+import { VM, buildBlock, runBlock } from '../../../src/index.js'
 
+import type { Block } from '@ethereumjs/block'
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
 
 const common = new Common({
@@ -48,7 +49,7 @@ describe('EIP4895 tests', () => {
     const withdrawalCheckAddress = new Address(hexToBytes(`0x${'fe'.repeat(20)}`))
     const withdrawalCode = hexToBytes('0x6002600055')
 
-    await vm.stateManager.putContractCode(withdrawalCheckAddress, withdrawalCode)
+    await vm.stateManager.putCode(withdrawalCheckAddress, withdrawalCode)
 
     const contractAddress = new Address(hexToBytes(`0x${'ff'.repeat(20)}`))
 
@@ -61,12 +62,12 @@ describe('EIP4895 tests', () => {
         PUSH 0
         RETURN // Return the balance
     */
-    await vm.stateManager.putContractCode(
+    await vm.stateManager.putCode(
       contractAddress,
-      hexToBytes(`0x73${addresses[0]}3160005260206000F3`)
+      hexToBytes(`0x73${addresses[0]}3160005260206000F3`),
     )
 
-    const transaction = FeeMarketEIP1559Transaction.fromTxData({
+    const transaction = create1559FeeMarketTx({
       to: contractAddress,
       maxFeePerGas: BigInt(7),
       maxPriorityFeePerGas: BigInt(0),
@@ -89,21 +90,21 @@ describe('EIP4895 tests', () => {
       })
       index++
     }
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         header: {
           baseFeePerGas: BigInt(7),
           withdrawalsRoot: hexToBytes(
-            '0x267414525d22e2be123b619719b92c561f31e0cdd40959148230f5713aecd6b8'
+            '0x267414525d22e2be123b619719b92c561f31e0cdd40959148230f5713aecd6b8',
           ),
           transactionsTrie: hexToBytes(
-            '0x9a744e8acc2886e5809ff013e3b71bf8ec97f9941cafbd7730834fc8f76391ba'
+            '0x9a744e8acc2886e5809ff013e3b71bf8ec97f9941cafbd7730834fc8f76391ba',
           ),
         },
         transactions: [transaction],
         withdrawals,
       },
-      { common: vm.common }
+      { common: vm.common },
     )
 
     let result: Uint8Array
@@ -111,7 +112,7 @@ describe('EIP4895 tests', () => {
       result = e.execResult.returnValue
     })
 
-    await vm.runBlock({ block, generate: true })
+    await runBlock(vm, { block, generate: true })
 
     for (let i = 0; i < addresses.length; i++) {
       const address = new Address(hexToBytes(`0x${addresses[i]}`))
@@ -122,7 +123,7 @@ describe('EIP4895 tests', () => {
 
     assert.deepEqual(zeros(32), result!, 'withdrawals happen after transactions')
 
-    const slotValue = await vm.stateManager.getContractStorage(withdrawalCheckAddress, zeros(32))
+    const slotValue = await vm.stateManager.getStorage(withdrawalCheckAddress, zeros(32))
     assert.deepEqual(zeros(0), slotValue, 'withdrawals do not invoke code')
   })
 
@@ -134,66 +135,66 @@ describe('EIP4895 tests', () => {
     assert.equal(
       preState,
       '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
-      'preState should be correct'
+      'preState should be correct',
     )
 
     const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp))
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>
-      Withdrawal.fromValuesArray(wa)
+      Withdrawal.fromValuesArray(wa),
     )
     assert.equal(withdrawals[0].amount, BigInt(0), 'withdrawal 0 should have 0 amount')
     let block: Block
     let postState: string
 
     // construct a block with just the 0th withdrawal should have no effect on state
-    block = Block.fromBlockData(
+    block = createBlockFromBlockData(
       {
         header: {
           baseFeePerGas: BigInt(7),
-          withdrawalsRoot: await Block.genWithdrawalsTrieRoot(withdrawals.slice(0, 1)),
+          withdrawalsRoot: await genWithdrawalsTrieRoot(withdrawals.slice(0, 1)),
           transactionsTrie: KECCAK256_RLP,
         },
         transactions: [],
         withdrawals: withdrawals.slice(0, 1),
       },
-      { common: vm.common }
+      { common: vm.common },
     )
     postState = bytesToHex(await vm.stateManager.getStateRoot())
 
-    await vm.runBlock({ block, generate: true })
+    await runBlock(vm, { block, generate: true })
     assert.equal(
       postState,
       '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
-      'post state should not change'
+      'post state should not change',
     )
 
     // construct a block with all the withdrawals
-    block = Block.fromBlockData(
+    block = createBlockFromBlockData(
       {
         header: {
           baseFeePerGas: BigInt(7),
-          withdrawalsRoot: await Block.genWithdrawalsTrieRoot(withdrawals),
+          withdrawalsRoot: await genWithdrawalsTrieRoot(withdrawals),
           transactionsTrie: KECCAK256_RLP,
         },
         transactions: [],
         withdrawals,
       },
-      { common: vm.common }
+      { common: vm.common },
     )
-    await vm.runBlock({ block, generate: true })
+    await runBlock(vm, { block, generate: true })
     postState = bytesToHex(await vm.stateManager.getStateRoot())
     assert.equal(
       postState,
       '0x23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
-      'post state should match'
+      'post state should match',
     )
   })
 
   it('should build a block correctly with withdrawals', async () => {
-    const common = Common.fromGethGenesis(genesisJSON, { chain: 'custom' })
+    const common = createCommonFromGethGenesis(genesisJSON, { chain: 'custom' })
     common.setHardfork(Hardfork.Shanghai)
     const genesisState = parseGethGenesisState(genesisJSON)
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
       validateConsensus: false,
@@ -204,7 +205,7 @@ describe('EIP4895 tests', () => {
     assert.equal(
       bytesToHex(genesisBlock.header.stateRoot),
       '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
-      'correct state root should be generated'
+      'correct state root should be generated',
     )
     const vm = await VM.create({ common, blockchain })
     await vm.stateManager.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
@@ -212,11 +213,11 @@ describe('EIP4895 tests', () => {
 
     const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp))
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>
-      Withdrawal.fromValuesArray(wa)
+      Withdrawal.fromValuesArray(wa),
     )
     const td = await blockchain.getTotalDifficulty(genesisBlock.hash())
 
-    const blockBuilder = await vm.buildBlock({
+    const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       withdrawals,
       blockOpts: {
@@ -231,11 +232,11 @@ describe('EIP4895 tests', () => {
     assert.equal(
       bytesToHex(block.header.stateRoot),
       '0x23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
-      'correct state root should be generated'
+      'correct state root should be generated',
     )
 
     // block should successfully execute with VM.runBlock and have same outputs
-    const result = await vmCopy.runBlock({ block })
+    const result = await runBlock(vmCopy, { block })
     assert.equal(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)

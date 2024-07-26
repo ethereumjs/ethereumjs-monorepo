@@ -1,4 +1,5 @@
-import { Blockchain } from '@ethereumjs/blockchain'
+import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
+import { type Common, ConsensusAlgorithm } from '@ethereumjs/common'
 import { MemoryLevel } from 'memory-level'
 
 import { Config } from '../../src/config.js'
@@ -9,7 +10,7 @@ import { MockChain } from './mocks/mockchain.js'
 import { MockServer } from './mocks/mockserver.js'
 
 import type { SyncMode } from '../../src/config.js'
-import type { Common } from '@ethereumjs/common'
+import type { ConsensusDict } from '@ethereumjs/blockchain'
 
 interface SetupOptions {
   location?: string
@@ -21,7 +22,7 @@ interface SetupOptions {
 }
 
 export async function setup(
-  options: SetupOptions = {}
+  options: SetupOptions = {},
 ): Promise<[MockServer, FullEthereumService | LightEthereumService]> {
   const { location, height, interval, syncmode } = options
   const minPeers = options.minPeers ?? 1
@@ -39,9 +40,12 @@ export async function setup(
   })
 
   const server = new MockServer({ config, location }) as any
-  const blockchain = await Blockchain.create({
+  const consensusDict: ConsensusDict = {}
+  consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
+  const blockchain = await createBlockchain({
     validateBlocks: false,
     validateConsensus: false,
+    consensusDict,
     common,
   })
 
@@ -82,7 +86,7 @@ export async function setup(
 
 export async function destroy(
   server: MockServer,
-  service: FullEthereumService | LightEthereumService
+  service: FullEthereumService | LightEthereumService,
 ): Promise<void> {
   service.config.events.emit(Event.CLIENT_SHUTDOWN)
   await server.stop()

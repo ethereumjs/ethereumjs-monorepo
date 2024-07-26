@@ -29,8 +29,9 @@
     "Martin Becze <mb@ethdev.com>",
     "Holger Drewes <holger.drewes@gmail.com>"
   ],
-  "main": "dist/cjs/index.js",
   "type": "module",
+  "sideEffects": false,
+  "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
@@ -54,6 +55,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "vitest run",
+    "test:node": "npm run test",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {

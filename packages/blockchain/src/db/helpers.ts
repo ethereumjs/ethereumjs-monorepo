@@ -38,7 +38,7 @@ function DBSetBlockOrHeader(blockBody: Block | BlockHeader): DBOp[] {
     DBOp.set(DBTarget.Header, headerValue, {
       blockNumber,
       blockHash,
-    })
+    }),
   )
 
   const isGenesis = header.number === BIGINT_0
@@ -49,7 +49,7 @@ function DBSetBlockOrHeader(blockBody: Block | BlockHeader): DBOp[] {
       DBOp.set(DBTarget.Body, bodyValue, {
         blockNumber,
         blockHash,
-      })
+      }),
     )
   }
 
@@ -73,7 +73,7 @@ function DBSaveLookups(blockHash: Uint8Array, blockNumber: bigint, skipNumIndex?
   ops.push(
     DBOp.set(DBTarget.HashToNumber, blockNumber8Bytes, {
       blockHash,
-    })
+    }),
   )
   return ops
 }

@@ -11,13 +11,12 @@ export function precompile08(opts: PrecompileInput): ExecResult {
   // no need to care about non-divisible-by-192, because bn128.pairing will properly fail in that case
   const inputDataSize = BigInt(Math.floor(inputData.length / 192))
   const gasUsed =
-    opts.common.param('gasPrices', 'ecPairing') +
-    inputDataSize * opts.common.param('gasPrices', 'ecPairingWord')
+    opts.common.param('ecPairingGas') + inputDataSize * opts.common.param('ecPairingWordGas')
   if (opts._debug !== undefined) {
     opts._debug(
       `Run ECPAIRING (0x08) precompile data=${short(opts.data)} length=${
         opts.data.length
-      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
+      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`,
     )
   }
 
@@ -29,7 +28,7 @@ export function precompile08(opts: PrecompileInput): ExecResult {
   }
 
   const returnData = hexToBytes(
-    (opts._EVM as EVM)['_bn128'].ec_pairing(bytesToUnprefixedHex(inputData))
+    (opts._EVM as EVM)['_bn128'].ec_pairing(bytesToUnprefixedHex(inputData)),
   )
 
   // check ecpairing success or failure by comparing the output length

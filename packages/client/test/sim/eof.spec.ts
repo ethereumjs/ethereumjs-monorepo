@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { assert, describe, it } from 'vitest'
@@ -19,7 +19,7 @@ const client = Client.http({ port: 8545 })
 
 const network = 'eof'
 const eofJson = require(`./configs/${network}.json`)
-const common = Common.fromGethGenesis(eofJson, { chain: network })
+const common = createCommonFromGethGenesis(eofJson, { chain: network })
 
 export async function runTx(data: PrefixedHexString | '', to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
@@ -87,7 +87,7 @@ describe('EOF ephemeral hardfork tests', async () => {
     assert.equal(
       code.result,
       '0XEF00010100010200010000AA'.toLowerCase(),
-      'deposited valid EOF1 code'
+      'deposited valid EOF1 code',
     )
   })
   // ------------EIP 3860 tests-------------------------------
@@ -105,7 +105,7 @@ describe('EOF ephemeral hardfork tests', async () => {
     const push0res = await runTx('0x5F')
     assert.ok(
       BigInt(push1res.gasUsed) > BigInt(push0res.gasUsed),
-      'PUSH1 transaction costs higher gas than PUSH0'
+      'PUSH1 transaction costs higher gas than PUSH0',
     )
   })
   // ------------EIP 3651 tests-------------------------------
@@ -129,18 +129,18 @@ describe('EOF ephemeral hardfork tests', async () => {
      */
     const contractAddress = (
       await runTx(
-        '0x608060405234801561001057600080fd5b5061021d806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80635caba0a41461003b578063e178495614610057575b600080fd5b6100556004803603810190610050919061011b565b610061565b005b61005f6100b4565b005b7fe37f346e484eff2a55fc81911c0cd6f3f9403f2c3d4c34f3b705adaf5e15620f818273ffffffffffffffffffffffffffffffffffffffff16316040516100a9929190610166565b60405180910390a150565b7fe37f346e484eff2a55fc81911c0cd6f3f9403f2c3d4c34f3b705adaf5e15620f414173ffffffffffffffffffffffffffffffffffffffff16316040516100fc929190610166565b60405180910390a1565b600081359050610115816101d0565b92915050565b600060208284031215610131576101306101cb565b5b600061013f84828501610106565b91505092915050565b6101518161018f565b82525050565b610160816101c1565b82525050565b600060408201905061017b6000830185610148565b6101886020830184610157565b9392505050565b600061019a826101a1565b9050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6000819050919050565b600080fd5b6101d98161018f565b81146101e457600080fd5b5056fea2646970667358221220d00dedb6dcbb511fab3ae484199f836b4c36119fb6faec1baee5e29db1ead12864736f6c63430008070033'
+        '0x608060405234801561001057600080fd5b5061021d806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80635caba0a41461003b578063e178495614610057575b600080fd5b6100556004803603810190610050919061011b565b610061565b005b61005f6100b4565b005b7fe37f346e484eff2a55fc81911c0cd6f3f9403f2c3d4c34f3b705adaf5e15620f818273ffffffffffffffffffffffffffffffffffffffff16316040516100a9929190610166565b60405180910390a150565b7fe37f346e484eff2a55fc81911c0cd6f3f9403f2c3d4c34f3b705adaf5e15620f414173ffffffffffffffffffffffffffffffffffffffff16316040516100fc929190610166565b60405180910390a1565b600081359050610115816101d0565b92915050565b600060208284031215610131576101306101cb565b5b600061013f84828501610106565b91505092915050565b6101518161018f565b82525050565b610160816101c1565b82525050565b600060408201905061017b6000830185610148565b6101886020830184610157565b9392505050565b600061019a826101a1565b9050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6000819050919050565b600080fd5b6101d98161018f565b81146101e457600080fd5b5056fea2646970667358221220d00dedb6dcbb511fab3ae484199f836b4c36119fb6faec1baee5e29db1ead12864736f6c63430008070033',
       )
     ).contractAddress
 
     const readWarmCoinbase = await runTx('0xe1784956', contractAddress)
     const readCold = await runTx(
       '0x5caba0a40000000000000000000000004242424242424242424242424242424242424242',
-      contractAddress
+      contractAddress,
     )
     assert.ok(
       BigInt(readCold.gasUsed) > BigInt(readWarmCoinbase.gasUsed),
-      'read cold storage tx should have higher cumulative gas than than read coinbase tx'
+      'read cold storage tx should have higher cumulative gas than than read coinbase tx',
     )
   })
 

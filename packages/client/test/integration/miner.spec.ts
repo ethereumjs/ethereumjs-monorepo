@@ -1,10 +1,11 @@
-import { Blockchain } from '@ethereumjs/blockchain'
+import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
   Chain as ChainCommon,
   Common,
   ConsensusAlgorithm,
   ConsensusType,
   Hardfork,
+  createCustomCommon,
 } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -17,7 +18,7 @@ import { Event } from '../../src/types.js'
 import { MockServer } from './mocks/mockserver.js'
 import { destroy, setup } from './util.js'
 
-import type { CliqueConsensus } from '@ethereumjs/blockchain'
+import type { ConsensusDict } from '@ethereumjs/blockchain'
 
 // Schedule london at 0 and also unset any past scheduled timestamp hardforks that might collide with test
 const hardforks = new Common({ chain: ChainCommon.Goerli })
@@ -25,9 +26,9 @@ const hardforks = new Common({ chain: ChainCommon.Goerli })
   .map((h) =>
     h.name === Hardfork.London
       ? { ...h, block: 0, timestamp: undefined }
-      : { ...h, timestamp: undefined }
+      : { ...h, timestamp: undefined },
   )
-const common = Common.custom(
+const common = createCustomCommon(
   {
     hardforks,
     consensus: {
@@ -39,7 +40,7 @@ const common = Common.custom(
       },
     },
   },
-  { baseChain: ChainCommon.Goerli, hardfork: Hardfork.London }
+  { baseChain: ChainCommon.Goerli, hardfork: Hardfork.London },
 )
 const accounts: [Address, Uint8Array][] = [
   [
@@ -51,10 +52,13 @@ async function minerSetup(): Promise<[MockServer, FullEthereumService]> {
   const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
   const server = new MockServer({ config }) as any
 
-  const blockchain = await Blockchain.create({
+  const consensusDict: ConsensusDict = {}
+  consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
+  const blockchain = await createBlockchain({
     common,
     validateBlocks: false,
     validateConsensus: false,
+    consensusDict,
   })
   ;(blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [accounts[0][0]] // stub
   const chain = await Chain.create({ config, blockchain })
@@ -99,7 +103,7 @@ describe(
             assert.equal(
               remoteService.chain.blocks.height,
               targetHeight,
-              'synced blocks successfully'
+              'synced blocks successfully',
             )
           })
           await destroy(server, service)
@@ -111,5 +115,5 @@ describe(
       })
     })
   },
-  { timeout: 25000 }
+  { timeout: 25000 },
 )

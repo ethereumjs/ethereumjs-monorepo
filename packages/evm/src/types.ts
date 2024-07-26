@@ -1,5 +1,6 @@
 import { zeros } from '@ethereumjs/util'
 
+import type { EOFContainer } from './eof/container.js'
 import type { EvmError } from './exceptions.js'
 import type { InterpreterStep, RunState } from './interpreter.js'
 import type { Message } from './message.js'
@@ -7,7 +8,12 @@ import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/ga
 import type { OpHandler } from './opcodes/index.js'
 import type { CustomPrecompile } from './precompiles/index.js'
 import type { PrecompileFunc } from './precompiles/types.js'
-import type { AccessWitnessInterface, Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type {
+  AccessWitnessInterface,
+  Common,
+  EVMStateManagerInterface,
+  ParamsDict,
+} from '@ethereumjs/common'
 import type { Account, Address, AsyncEventEmitter, PrefixedHexString } from '@ethereumjs/util'
 
 export type DeleteOpcode = {
@@ -140,6 +146,7 @@ export type EVMEvents = {
 }
 
 export interface EVMInterface {
+  common: Common
   journal: {
     commit(): Promise<void>
     revert(): Promise<void>
@@ -227,6 +234,24 @@ export interface EVMOpts {
   allowUnlimitedInitCodeSize?: boolean
 
   /**
+   * EVM parameters sorted by EIP can be found in the exported `paramsEVM` dictionary,
+   * which is internally passed to the associated `@ethereumjs/common` instance which
+   * manages parameter selection based on the hardfork and EIP settings.
+   *
+   * This option allows providing a custom set of parameters. Note that parameters
+   * get fully overwritten, so you need to extend the default parameter dict
+   * to provide the full parameter set.
+   *
+   * It is recommended to deep-clone the params object for this to avoid side effects:
+   *
+   * ```ts
+   * const params = JSON.parse(JSON.stringify(paramsEVM))
+   * params['1679']['ecAddGas'] = 100 // 150
+   * ```
+   */
+  params?: ParamsDict
+
+  /**
    * Override or add custom opcodes to the EVM instruction set
    * These custom opcodes are EIP-agnostic and are always statically added
    * To delete an opcode, add an entry of format `{opcode: number}`. This will delete that opcode from the EVM.
@@ -273,13 +298,19 @@ export interface EVMOpts {
    * import * as mcl from 'mcl-wasm'
    *
    * await mcl.init(mcl.BLS12_381)
-   * const evm = await EVM.create({ bls: new MCLBLS(mcl) })
+   * const evm = await createEVM({ bls: new MCLBLS(mcl) })
    * ```
    */
   bls?: EVMBLSInterface
 
   /*
-   * The StateManager which is used to update the trie
+   * The EVM comes with a basic dependency-minimized `SimpleStateManager` implementation
+   * which serves most code execution use cases and which is included in the
+   * `@ethereumjs/statemanager` package.
+   *
+   * The `@ethereumjs/statemanager` package also provides a variety of state manager
+   * implementations for different needs (MPT-tree backed, RPC, experimental verkle)
+   * which can be used by this option as a replacement.
    */
   stateManager?: EVMStateManagerInterface
 
@@ -422,4 +453,12 @@ export interface bn128 {
   ec_pairing: (input_str: string) => PrefixedHexString
   ec_add: (input_str: string) => PrefixedHexString
   ec_mul: (input_hex: string) => PrefixedHexString
+}
+
+// EOF type which holds the execution-related data for EOF
+export type EOFEnv = {
+  container: EOFContainer
+  eofRunState: {
+    returnStack: number[]
+  }
 }

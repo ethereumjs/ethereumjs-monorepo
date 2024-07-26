@@ -1,6 +1,6 @@
 import { bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
+import { OrderedMap } from '@js-sdsl/ordered-map'
 import debugDefault from 'debug'
-import { OrderedMap } from 'js-sdsl'
 import { LRUCache } from 'lru-cache'
 
 import { Cache } from './cache.js'
@@ -8,7 +8,6 @@ import { CacheType } from './types.js'
 
 import type { CacheOpts } from './types.js'
 import type { Address } from '@ethereumjs/util'
-const { debug: createDebugLogger } = debugDefault
 
 /**
  * key -> storage mapping
@@ -47,7 +46,7 @@ export class StorageCache extends Cache {
     this._diffCache.push(new Map())
 
     if (this.DEBUG) {
-      this._debug = createDebugLogger('statemanager:cache:storage')
+      this._debug = debugDefault('statemanager:cache:storage')
     }
   }
 
@@ -89,7 +88,7 @@ export class StorageCache extends Cache {
       this._debug(
         `Put storage for ${addressHex}: ${keyHex} -> ${
           value !== undefined ? bytesToUnprefixedHex(value) : ''
-        }`
+        }`,
       )
     }
     if (this._lruCache) {
@@ -173,7 +172,7 @@ export class StorageCache extends Cache {
    * Deletes all storage slots for address from the cache
    * @param address
    */
-  clearContractStorage(address: Address): void {
+  clearStorage(address: Address): void {
     const addressHex = bytesToUnprefixedHex(address.bytes)
     if (this._lruCache) {
       this._lruCache!.set(addressHex, new Map())

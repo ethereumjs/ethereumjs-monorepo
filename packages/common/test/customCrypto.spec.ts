@@ -1,7 +1,7 @@
 import { concatBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Chain, Common } from '../src/index.js'
+import { Chain, Common, createCustomCommon } from '../src/index.js'
 
 import type { ECDSASignature } from '@ethereumjs/util'
 
@@ -14,7 +14,7 @@ describe('[Common]: Custom Crypto', () => {
     v: bigint,
     r: Uint8Array,
     s: Uint8Array,
-    _chainID?: bigint
+    _chainID?: bigint,
   ) => {
     return concatBytes(msgHash, Uint8Array.from([Number(v)]), r, s)
   }
@@ -41,8 +41,8 @@ describe('[Common]: Custom Crypto', () => {
     msg = 'Should still work on a copied instance'
     assert.deepEqual(c.copy().customCrypto.keccak256!(value), new Uint8Array([2, 1]), msg)
 
-    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-    c = Common.custom(customChainParams, { customCrypto })
+    const customChainParams = { name: 'custom', chainId: 123 }
+    c = createCustomCommon(customChainParams, { customCrypto })
     msg = 'Should initialize with custom keccak256 function and use properly (custom() constructor)'
     assert.deepEqual(c.customCrypto.keccak256!(value), new Uint8Array([2, 1]), msg)
   })
@@ -58,8 +58,8 @@ describe('[Common]: Custom Crypto', () => {
         Uint8Array.from([1]),
         BigInt(2),
         Uint8Array.from([3]),
-        Uint8Array.from([4])
-      )
+        Uint8Array.from([4]),
+      ),
     )
   })
 

@@ -14,7 +14,7 @@ import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export const BLS_MODULUS = BigInt(
-  '52435875175126190479447740508185965837690552500527637822603658699938581184513'
+  '52435875175126190479447740508185965837690552500527637822603658699938581184513',
 )
 
 const modulusBuffer = setLengthLeft(bigIntToBytes(BLS_MODULUS), 32)
@@ -23,12 +23,12 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   if (opts.common.customCrypto?.kzg === undefined) {
     throw new Error('kzg not initialized')
   }
-  const gasUsed = opts.common.param('gasPrices', 'kzgPointEvaluationGasPrecompilePrice')
+  const gasUsed = opts.common.param('kzgPointEvaluationPrecompileGas')
   if (opts._debug !== undefined) {
     opts._debug(
       `Run KZG_POINT_EVALUATION (0x14) precompile data=${short(opts.data)} length=${
         opts.data.length
-      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
+      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`,
     )
   }
 
@@ -43,8 +43,8 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
-  const version = Number(opts.common.param('sharding', 'blobCommitmentVersionKzg'))
-  const fieldElementsPerBlob = opts.common.param('sharding', 'fieldElementsPerBlob')
+  const version = Number(opts.common.param('blobCommitmentVersionKzg'))
+  const fieldElementsPerBlob = opts.common.param('fieldElementsPerBlob')
   const versionedHash = opts.data.subarray(0, 32)
   const z = opts.data.subarray(32, 64)
   const y = opts.data.subarray(64, 96)
@@ -61,8 +61,8 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   if (opts._debug !== undefined) {
     opts._debug(
       `KZG_POINT_EVALUATION (0x14): proof verification with commitment=${bytesToHex(
-        commitment
-      )} z=${bytesToHex(z)} y=${bytesToHex(y)} kzgProof=${bytesToHex(kzgProof)}`
+        commitment,
+      )} z=${bytesToHex(z)} y=${bytesToHex(y)} kzgProof=${bytesToHex(kzgProof)}`,
     )
   }
   try {
@@ -89,8 +89,8 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   if (opts._debug !== undefined) {
     opts._debug(
       `KZG_POINT_EVALUATION (0x14) return fieldElements=${bytesToHex(
-        fieldElementsBuffer
-      )} modulus=${bytesToHex(modulusBuffer)}`
+        fieldElementsBuffer,
+      )} modulus=${bytesToHex(modulusBuffer)}`,
     )
   }
 

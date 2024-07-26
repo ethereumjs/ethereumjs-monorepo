@@ -6,10 +6,9 @@ import { formatLogId } from '../util.js'
 import { KBucket } from './kbucket.js'
 
 import type { PeerInfo } from '../types.js'
-const { debug: createDebugLogger } = debugDefault
 
-const debug = createDebugLogger('devp2p:dpt:ban-list')
-const verbose = createDebugLogger('verbose').enabled
+const debug = debugDefault('devp2p:dpt:ban-list')
+const verbose = debugDefault('verbose').enabled
 
 export class BanList {
   private _lru: LRUCache<string, boolean>
@@ -17,7 +16,7 @@ export class BanList {
   constructor() {
     this._lru = new LRUCache({ max: 10000 })
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   add(obj: string | Uint8Array | PeerInfo, maxAge?: number) {

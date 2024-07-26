@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -11,7 +11,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Blockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
 
@@ -23,7 +23,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
   const opts = { common }
 
   if (blocks.length === 0) {
-    const genesis = Block.fromBlockData({ header: { gasLimit } }, opts)
+    const genesis = createBlockFromBlockData({ header: { gasLimit } }, opts)
     blocks.push(genesis)
   }
 
@@ -37,7 +37,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
         timestamp: lastBlock.header.timestamp + BigInt(1),
       },
     }
-    const block = Block.fromBlockData(blockData, {
+    const block = createBlockFromBlockData(blockData, {
       common,
       calcDifficultyFromHeader: lastBlock.header,
     })
@@ -51,9 +51,8 @@ export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block
   const existingBlocks: Block[] = genesis ? [genesis] : []
   const blocks = generateBlocks(numberOfBlocks, existingBlocks)
 
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     validateBlocks: true,
-    validateConsensus: false,
     genesisBlock: genesis ?? blocks[0],
   })
   try {
@@ -77,7 +76,7 @@ export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block
 export const generateConsecutiveBlock = (
   parentBlock: Block,
   difficultyChangeFactor: number,
-  gasLimit: bigint = BigInt(8000000)
+  gasLimit: bigint = BigInt(8000000),
 ): Block => {
   if (difficultyChangeFactor > 1) {
     difficultyChangeFactor = 1
@@ -88,7 +87,7 @@ export const generateConsecutiveBlock = (
       number: parentBlock.header.number + BigInt(1),
       timestamp: parentBlock.header.timestamp + BigInt(10 + -difficultyChangeFactor * 9),
     },
-    { common }
+    { common },
   )
   const header = BlockHeader.fromHeaderData(
     {
@@ -101,7 +100,7 @@ export const generateConsecutiveBlock = (
     {
       common,
       calcDifficultyFromHeader: parentBlock.header,
-    }
+    },
   )
 
   const block = new Block(header, undefined, undefined, undefined, { common }, undefined)
@@ -124,7 +123,7 @@ export const createTestDB = async (): Promise<
   [DB<string | Uint8Array, string | Uint8Array>, Block]
 > => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-  const genesis = Block.fromBlockData({ header: { number: 0 } }, { common })
+  const genesis = createBlockFromBlockData({ header: { number: 0 } }, { common })
   const db = new MapDB<any, any>()
 
   await db.batch([
@@ -151,21 +150,21 @@ export const createTestDB = async (): Promise<
     {
       type: 'put',
       key: hexToBytes(
-        '0x680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+        '0x680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
       ),
       value: genesis.header.serialize(),
     },
     {
       type: 'put',
       key: hexToBytes(
-        '0x680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa374'
+        '0x680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa374',
       ),
       value: RLP.encode(toBytes(17179869184)),
     },
     {
       type: 'put',
       key: hexToBytes(
-        '0x620000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+        '0x620000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
       ),
       value: RLP.encode(genesis.raw().slice(1)),
     },
@@ -188,7 +187,7 @@ function createBlock(
   parentBlock: Block,
   extraData: string,
   uncles?: BlockHeader[],
-  common?: Common
+  common?: Common,
 ): Block {
   uncles = uncles ?? []
   common = common ?? new Common({ chain: Chain.Mainnet })
@@ -208,7 +207,7 @@ function createBlock(
       ? parentBlock.header.calcNextBaseFee()
       : undefined
 
-  return Block.fromBlockData(
+  return createBlockFromBlockData(
     {
       header: {
         number,
@@ -224,7 +223,7 @@ function createBlock(
     {
       common,
       calcDifficultyFromHeader: parentBlock.header,
-    }
+    },
   )
 }
 

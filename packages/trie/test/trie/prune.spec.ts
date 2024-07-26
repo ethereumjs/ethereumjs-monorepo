@@ -1,7 +1,7 @@
 import { KECCAK256_RLP, equalsBytes, hexToBytes, randomBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie, isRawNode } from '../../src/index.js'
+import { Trie, createTrie, isRawNode } from '../../src/index.js'
 
 import type { BranchNode } from '../../src/index.js'
 
@@ -207,7 +207,7 @@ describe('Pruned trie tests', () => {
 
   it('should prune when keys are updated or deleted (with `useRootPersistence` enabled)', async () => {
     for (let testID = 0; testID < 1; testID++) {
-      const trie = await Trie.create({ useNodePruning: true, useRootPersistence: true })
+      const trie = await createTrie({ useNodePruning: true, useRootPersistence: true })
       const keys: Uint8Array[] = []
       for (let i = 0; i < 100; i++) {
         keys.push(randomBytes(32))

@@ -1,21 +1,21 @@
-import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
-import { VM } from '@ethereumjs/vm'
+import { createBlockFromBlockData } from '@ethereumjs/block'
+import { Chain, Common } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { VM, buildBlock } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet })
   const vm = await VM.create({ common })
 
-  const parentBlock = Block.fromBlockData(
+  const parentBlock = createBlockFromBlockData(
     { header: { number: 1n } },
-    { skipConsensusFormatValidation: true }
+    { skipConsensusFormatValidation: true },
   )
   const headerData = {
     number: 2n,
   }
-  const blockBuilder = await vm.buildBlock({
+  const blockBuilder = await buildBlock(vm, {
     parentBlock, // the parent @ethereumjs/block Block
     headerData, // header values for the new block
     blockOpts: {
@@ -30,7 +30,7 @@ const main = async () => {
   const address = Address.fromPrivateKey(pk)
   const account = new Account(0n, 0xfffffffffn)
   await vm.stateManager.putAccount(address, account) // create a sending account and give it a big balance
-  const tx = LegacyTransaction.fromTxData({ gasLimit: 0xffffff, gasPrice: 75n }).sign(pk)
+  const tx = createLegacyTx({ gasLimit: 0xffffff, gasPrice: 75n }).sign(pk)
   await blockBuilder.addTransaction(tx)
 
   // Add more transactions
@@ -39,4 +39,4 @@ const main = async () => {
   console.log(`Built a block with hash ${bytesToHex(block.hash())}`)
 }
 
-main()
+void main()

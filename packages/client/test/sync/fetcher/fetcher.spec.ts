@@ -44,7 +44,7 @@ it('should handle failure', () => {
   ;(fetcher as any).running = true
   fetcher.next = td.func<FetcherTest['next']>()
   config.events.on(Event.SYNC_FETCHER_ERROR, (err) =>
-    assert.equal(err.message, 'err0', 'got error')
+    assert.equal(err.message, 'err0', 'got error'),
   )
   ;(fetcher as any).failure(job as Job<any, any, any>, new Error('err0'))
   assert.equal((fetcher as any).in.length, 1, 'enqueued job')
@@ -131,7 +131,7 @@ describe('should re-enqueue on a non-fatal error', () => {
   ;(fetcher as any).running = true
   fetcher.store = td.func<FetcherTest['store']>()
   td.when(fetcher.store(td.matchers.anything())).thenReject(
-    new Error('could not find parent header')
+    new Error('could not find parent header'),
   )
   td.when(fetcher.processStoreError(td.matchers.anything(), td.matchers.anything())).thenReturn({
     destroyFetcher: false,
@@ -142,7 +142,7 @@ describe('should re-enqueue on a non-fatal error', () => {
   it('should step back', () => {
     assert.ok(
       (fetcher as any).in.peek().task.first === BigInt(1),
-      'should step back for safeReorgDistance'
+      'should step back for safeReorgDistance',
     )
   })
 })

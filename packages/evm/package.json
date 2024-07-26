@@ -21,6 +21,8 @@
   "contributors": [
     "Alex Beregszaszi <alex@rtfs.hu>"
   ],
+  "type": "module",
+  "sideEffects": false,
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
@@ -51,7 +53,7 @@
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh",
-    "visualize:bundle": "npx vite build"
+    "visualize:bundle": "npx vite build --config=./vite.config.bundler.ts --emptyOutDir=false --outDir ."
   },
   "dependencies": {
     "@ethereumjs/common": "^4.3.0",

@@ -37,7 +37,7 @@ export interface ECDSASignature {
 export function ecsign(
   msgHash: Uint8Array,
   privateKey: Uint8Array,
-  chainId?: bigint
+  chainId?: bigint,
 ): ECDSASignature {
   const sig = secp256k1.sign(msgHash, privateKey)
   const buf = sig.toCompactRawBytes()
@@ -75,7 +75,7 @@ export const ecrecover = function (
   v: bigint,
   r: Uint8Array,
   s: Uint8Array,
-  chainId?: bigint
+  chainId?: bigint,
 ): Uint8Array {
   const signature = concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32))
   const recovery = calculateSigRecovery(v, chainId)
@@ -97,7 +97,7 @@ export const toRpcSig = function (
   v: bigint,
   r: Uint8Array,
   s: Uint8Array,
-  chainId?: bigint
+  chainId?: bigint,
 ): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
@@ -118,7 +118,7 @@ export const toCompactSig = function (
   v: bigint,
   r: Uint8Array,
   s: Uint8Array,
-  chainId?: bigint
+  chainId?: bigint,
 ): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
@@ -183,7 +183,7 @@ export const isValidSignature = function (
   r: Uint8Array,
   s: Uint8Array,
   homesteadOrLater: boolean = true,
-  chainId?: bigint
+  chainId?: bigint,
 ): boolean {
   if (r.length !== 32 || s.length !== 32) {
     return false

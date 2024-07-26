@@ -1,4 +1,3 @@
-import { EOF } from './eof.js'
 import { EVM } from './evm.js'
 import { ERROR as EVMErrorMessage, EvmError } from './exceptions.js'
 import { Message } from './message.js'
@@ -21,6 +20,7 @@ import type {
   Log,
   bn128,
 } from './types.js'
+export * from './logger.js'
 
 export type {
   bn128,
@@ -36,7 +36,6 @@ export type {
 }
 
 export {
-  EOF,
   EVM,
   EvmError,
   EVMErrorMessage,
@@ -46,3 +45,6 @@ export {
   Message,
   NobleBLS,
 }
+
+export * from './constructors.js'
+export * from './params.js'

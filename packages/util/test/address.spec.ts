@@ -38,7 +38,7 @@ describe('Address', () => {
 
   it('should instantiate from public key', () => {
     const pubKey = hexToBytes(
-      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const addr = Address.fromPublicKey(pubKey)
@@ -47,7 +47,7 @@ describe('Address', () => {
 
   it('should fail to instantiate from invalid public key', () => {
     const pubKey = hexToBytes(
-      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744'
+      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744',
     )
     assert.throws(() => Address.fromPublicKey(pubKey))
   })
@@ -75,7 +75,7 @@ describe('Address', () => {
     const nonPrecompile = Address.fromString('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39')
     assert.isFalse(
       nonPrecompile.isPrecompileOrSystemAddress(),
-      'should detect non-precompile address'
+      'should detect non-precompile address',
     )
   })
 
@@ -86,7 +86,7 @@ describe('Address', () => {
       const addr = Address.generate2(
         from,
         hexToBytes(salt as PrefixedHexString),
-        hexToBytes(initCode as PrefixedHexString)
+        hexToBytes(initCode as PrefixedHexString),
       )
       assert.equal(addr.toString(), result)
     }

@@ -1,7 +1,13 @@
 import { assert, describe, it } from 'vitest'
 
-import { Status } from '../src/hardforks.js'
-import { Chain, Common, ConsensusType, CustomChain, Hardfork } from '../src/index.js'
+import {
+  Chain,
+  Common,
+  ConsensusType,
+  CustomChain,
+  Hardfork,
+  createCustomCommon,
+} from '../src/index.js'
 
 import * as testnet from './data/testnet.json'
 import * as testnet2 from './data/testnet2.json'
@@ -14,7 +20,6 @@ describe('[Common]: Custom chains', () => {
     const c = new Common({ chain: testnet, hardfork: Hardfork.Byzantium })
     assert.equal(c.chainName(), 'testnet', 'should initialize with chain name')
     assert.equal(c.chainId(), BigInt(12345), 'should return correct chain Id')
-    assert.equal(c.networkId(), BigInt(12345), 'should return correct network Id')
     assert.equal(c.hardforks()[3]['block'], 3, 'should return correct hardfork data')
     assert.equal(c.bootstrapNodes()[1].ip, '10.0.0.2', 'should return a bootstrap node array')
   })
@@ -28,20 +33,21 @@ describe('[Common]: Custom chains', () => {
       },
       /Missing required/,
       undefined,
-      'should throw an exception on missing parameter'
+      'should throw an exception on missing parameter',
     )
   })
 
   it('custom() -> base functionality', () => {
     const mainnetCommon = new Common({ chain: Chain.Mainnet })
 
-    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-    const customChainCommon = Common.custom(customChainParams, { hardfork: Hardfork.Byzantium })
+    const customChainParams = { name: 'custom', chainId: 123 }
+    const customChainCommon = createCustomCommon(customChainParams, {
+      hardfork: Hardfork.Byzantium,
+    })
 
     // From custom chain params
     assert.equal(customChainCommon.chainName(), customChainParams.name)
     assert.equal(customChainCommon.chainId(), BigInt(customChainParams.chainId))
-    assert.equal(customChainCommon.networkId(), BigInt(customChainParams.networkId))
 
     // Fallback params from mainnet
     assert.equal(customChainCommon.genesis(), mainnetCommon.genesis())
@@ -53,47 +59,47 @@ describe('[Common]: Custom chains', () => {
   })
 
   it('custom() -> behavior', () => {
-    let common = Common.custom({ chainId: 123 })
-    assert.deepEqual(common.networkId(), BigInt(1), 'should default to mainnet base chain')
+    let common = createCustomCommon({ chainId: 123 })
+    assert.equal(common.consensusAlgorithm(), 'casper', 'should default to mainnet base chain')
     assert.equal(common.chainName(), 'custom-chain', 'should set default custom chain name')
 
-    common = Common.custom(CustomChain.PolygonMumbai)
+    common = createCustomCommon(CustomChain.PolygonMumbai)
     assert.deepEqual(
-      common.networkId(),
+      common.chainId(),
       BigInt(80001),
-      'supported chain -> should initialize with correct chain ID'
+      'supported chain -> should initialize with correct chain ID',
     )
     for (const customChain of Object.values(CustomChain)) {
-      common = Common.custom(customChain)
+      common = createCustomCommon(customChain)
       assert.equal(
         common.chainName(),
         customChain,
-        `supported chain -> should initialize with enum name (${customChain})`
+        `supported chain -> should initialize with enum name (${customChain})`,
       )
     }
 
-    common = Common.custom(CustomChain.PolygonMumbai)
+    common = createCustomCommon(CustomChain.PolygonMumbai)
     assert.equal(
       common.hardfork(),
       common.DEFAULT_HARDFORK,
-      'uses default hardfork when no options are present'
+      'uses default hardfork when no options are present',
     )
 
-    common = Common.custom(CustomChain.OptimisticEthereum, { hardfork: Hardfork.Byzantium })
+    common = createCustomCommon(CustomChain.OptimisticEthereum, { hardfork: Hardfork.Byzantium })
     assert.equal(
       common.hardfork(),
       Hardfork.Byzantium,
-      'should correctly set an option (default options present)'
+      'should correctly set an option (default options present)',
     )
 
     try {
       //@ts-ignore TypeScript complains, nevertheless do the test for JS behavior
-      Common.custom('this-chain-is-not-supported')
+      createCustomCommon('this-chain-is-not-supported')
       assert.fail('test should fail')
     } catch (e: any) {
       assert.ok(
         e.message.includes('not supported'),
-        'supported chain -> should throw if chain name is not supported'
+        'supported chain -> should throw if chain name is not supported',
       )
     }
   })
@@ -105,9 +111,9 @@ describe('[Common]: Custom chains', () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes(
-          'Chain must be a string, number, or bigint when initialized with customChains passed in'
+          'Chain must be a string, number, or bigint when initialized with customChains passed in',
         ),
-        'should throw an exception on wrong initialization'
+        'should throw an exception on wrong initialization',
       )
     }
   })
@@ -143,38 +149,37 @@ describe('[Common]: Custom chains', () => {
     assert.equal(
       c.hardforkBlock()!,
       BigInt(10),
-      'customChains, chain initialized with custom chain'
+      'customChains, chain initialized with custom chain',
     )
 
     const customChainParams: Partial<ChainConfig> = {
       name: 'custom',
       chainId: 123,
-      networkId: 678,
       depositContractAddress: '0x4242424242424242424242424242424242424242',
     }
-    const customChainCommon = Common.custom(customChainParams, { hardfork: Hardfork.Byzantium })
+    const customChainCommon = createCustomCommon(customChainParams, {
+      hardfork: Hardfork.Byzantium,
+    })
 
     assert.equal(
       customChainCommon['_chainParams'].depositContractAddress,
-      customChainParams.depositContractAddress
+      customChainParams.depositContractAddress,
     )
     c.setChain('testnet')
     assert.equal(c.chainName(), 'testnet', 'customChains, should allow to switch custom chain')
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfWork,
-      'customChains, should allow to switch custom chain'
+      'customChains, should allow to switch custom chain',
     )
   })
 
   it('customHardforks parameter: initialization and transition tests', () => {
-    const c = Common.custom({
+    const c = createCustomCommon({
       customHardforks: {
+        // Hardfork to test EIP 2935
         testEIP2935Hardfork: {
           name: 'testEIP2935Hardfork',
-          comment: 'Hardfork to test EIP 2935',
-          url: '',
-          status: Status.Final,
           eips: [2935],
         },
       },
@@ -218,6 +223,41 @@ describe('[Common]: Custom chains', () => {
     assert.equal(c.hardfork(), 'testEIP2935Hardfork')
     assert.ok(c.isActivatedEIP(2935))
   })
+
+  it('customHardforks: override params', () => {
+    const c = createCustomCommon({
+      customHardforks: {
+        // Hardfork which changes the gas of STOP from 0 to 10
+        stop10Gas: {
+          eips: [2935],
+          params: {
+            stop: BigInt(10),
+          },
+        },
+      },
+      hardforks: [
+        {
+          name: 'chainstart',
+          block: 0,
+        },
+        {
+          name: 'stop10Gas',
+          block: null,
+          timestamp: 1000,
+        },
+      ],
+    })
+    c.setHardfork(Hardfork.Chainstart)
+    assert.throws(() => {
+      c.param('stop')
+    })
+    c.setHardforkBy({
+      blockNumber: 1,
+      timestamp: 1000,
+    })
+    assert.equal(c.hardfork(), 'stop10Gas')
+    assert.equal(c.param('stop'), BigInt(10))
+  })
 })
 
 describe('custom chain setup with hardforks with undefined/null block numbers', () => {
@@ -233,10 +273,10 @@ describe('custom chain setup with hardforks with undefined/null block numbers', 
     ]
 
     assert.throws(
-      () => Common.custom({ hardforks: undefinedHardforks as HardforkTransitionConfig[] }),
+      () => createCustomCommon({ hardforks: undefinedHardforks as HardforkTransitionConfig[] }),
       undefined,
       undefined,
-      'throws when a hardfork with an undefined block number is passed'
+      'throws when a hardfork with an undefined block number is passed',
     )
 
     const nullHardforks = [
@@ -248,7 +288,7 @@ describe('custom chain setup with hardforks with undefined/null block numbers', 
       { name: 'tangerineWhistle', block: 10 },
     ]
 
-    const common = Common.custom({ hardforks: nullHardforks })
+    const common = createCustomCommon({ hardforks: nullHardforks })
     common.setHardforkBy({ blockNumber: 10n })
     assert.equal('tangerineWhistle', common.hardfork(), 'set correct hardfork')
     common.setHardforkBy({ blockNumber: 3n })

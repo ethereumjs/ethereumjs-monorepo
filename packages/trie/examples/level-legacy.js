@@ -1,9 +1,10 @@
 // LevelDB from https://github.com/ethereumjs/ethereumjs-monorepo/blob/ac053e1f9a364f8ae489159fecb79a3d0ddd7053/packages/trie/src/db.ts
 
 // eslint-disable-next-line implicit-dependencies/no-implicit
+const { utf8ToBytes, bytesToUtf8 } = require('ethereum-cryptography/utils')
 const level = require('level-mem')
 
-const { Trie } = require('../dist')
+const { Trie } = require('../../dist/cjs/index.js')
 
 const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
 
@@ -19,7 +20,7 @@ class LevelDB {
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
     } catch (error) {
-      if (error.notFound) {
+      if (error.notFound !== undefined) {
         // not found, returning null
       } else {
         throw error
@@ -48,9 +49,9 @@ class LevelDB {
 const trie = new Trie({ db: new LevelDB(level('MY_TRIE_DB_LOCATION')) })
 
 async function test() {
-  await trie.put(Buffer.from('test'), Buffer.from('one'))
-  const value = await trie.get(Buffer.from('test'))
-  console.log(value.toString()) // 'one'
+  await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
+  const value = await trie.get(utf8ToBytes('test'))
+  console.log(bytesToUtf8(value)) // 'one'
 }
 
-test()
+void test()

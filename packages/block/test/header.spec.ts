@@ -12,6 +12,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { createBlockFromBlockData, createBlockFromRLPSerializedBlock } from '../src/constructors.js'
 import { BlockHeader } from '../src/header.js'
 import { Block } from '../src/index.js'
 
@@ -56,14 +57,14 @@ describe('[Block]: Header functions', () => {
     assert.equal(
       header.common.hardfork(),
       'chainstart',
-      'should initialize with correct HF provided'
+      'should initialize with correct HF provided',
     )
 
     common.setHardfork(Hardfork.Byzantium)
     assert.equal(
       header.common.hardfork(),
       'chainstart',
-      'should stay on correct HF if outer common HF changes'
+      'should stay on correct HF if outer common HF changes',
     )
 
     header = BlockHeader.fromHeaderData({}, { common })
@@ -77,7 +78,7 @@ describe('[Block]: Header functions', () => {
     header = BlockHeader.fromHeaderData({}, { freeze: false })
     assert.ok(
       !Object.isFrozen(header),
-      'block should not be frozen when freeze deactivated in options'
+      'block should not be frozen when freeze deactivated in options',
     )
   })
 
@@ -97,7 +98,7 @@ describe('[Block]: Header functions', () => {
     })
     assert.ok(
       !Object.isFrozen(header),
-      'block should not be frozen when freeze deactivated in options'
+      'block should not be frozen when freeze deactivated in options',
     )
 
     assert.throws(
@@ -109,19 +110,19 @@ describe('[Block]: Header functions', () => {
         }),
       'A base fee',
       undefined,
-      'throws when RLP serialized block with no base fee on default hardfork (london) and setHardfork left undefined'
+      'throws when RLP serialized block with no base fee on default hardfork (london) and setHardfork left undefined',
     )
 
     header = BlockHeader.fromRLPSerializedHeader(
       hexToBytes(
-        '0xf90214a00000000000000000000000000000000000000000000000000000000000000000a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a0d7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000850400000000808213888080a011bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82faa00000000000000000000000000000000000000000000000000000000000000000880000000000000042'
+        '0xf90214a00000000000000000000000000000000000000000000000000000000000000000a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a0d7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000850400000000808213888080a011bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82faa00000000000000000000000000000000000000000000000000000000000000000880000000000000042',
       ),
-      { common, setHardfork: false }
+      { common, setHardfork: false },
     )
     assert.equal(
       bytesToHex(header.hash()),
       '0xf0f936910ebf101b7b168bbe08e3f166ce1e75e16f513dd5a97af02fbe7de7c0',
-      'genesis block should produce incorrect hash since default hardfork is london'
+      'genesis block should produce incorrect hash since default hardfork is london',
     )
   })
 
@@ -157,7 +158,7 @@ describe('[Block]: Header functions', () => {
     header = BlockHeader.fromValuesArray(headerArray, { common, freeze: false })
     assert.ok(
       !Object.isFrozen(header),
-      'block should not be frozen when freeze deactivated in options'
+      'block should not be frozen when freeze deactivated in options',
     )
   })
 
@@ -197,7 +198,7 @@ describe('[Block]: Header functions', () => {
   it('should validate extraData', async () => {
     // PoW
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    let genesis = Block.fromBlockData({}, { common })
+    let genesis = createBlockFromBlockData({}, { common })
 
     const number = 1
     let parentHash = genesis.hash()
@@ -241,7 +242,7 @@ describe('[Block]: Header functions', () => {
 
     // PoA
     common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
-    genesis = Block.fromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
+    genesis = createBlockFromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
 
     parentHash = genesis.hash()
     gasLimit = genesis.header.gasLimit
@@ -268,9 +269,9 @@ describe('[Block]: Header functions', () => {
     } catch (error: any) {
       assert.ok(
         (error.message as string).includes(
-          'extraData must be 97 bytes on non-epoch transition blocks, received 32 bytes'
+          'extraData must be 97 bytes on non-epoch transition blocks, received 32 bytes',
         ),
-        testCase
+        testCase,
       )
     }
 
@@ -280,7 +281,7 @@ describe('[Block]: Header functions', () => {
       new Uint8Array(32),
       new Uint8Array(65),
       new Uint8Array(20),
-      new Uint8Array(21)
+      new Uint8Array(21),
     )
     const epoch = BigInt((common.consensusConfig() as CliqueConfig).epoch)
     try {
@@ -289,9 +290,9 @@ describe('[Block]: Header functions', () => {
     } catch (error: any) {
       assert.ok(
         (error.message as string).includes(
-          'invalid signer list length in extraData, received signer length of 41 (not divisible by 20)'
+          'invalid signer list length in extraData, received signer length of 41 (not divisible by 20)',
         ),
-        testCase
+        testCase,
       )
     }
   })
@@ -304,7 +305,7 @@ describe('[Block]: Header functions', () => {
       BlockHeader.fromHeaderData({ extraData }, { common, skipConsensusFormatValidation: true })
       assert.ok(
         true,
-        'should instantiate header with invalid extraData when skipConsensusFormatValidation === true'
+        'should instantiate header with invalid extraData when skipConsensusFormatValidation === true',
       )
     } catch (error: any) {
       assert.fail('should not throw')
@@ -318,26 +319,26 @@ describe('[Block]: Header functions', () => {
       () => BlockHeader.fromHeaderData({ parentHash: badHash }),
       'parentHash must be 32 bytes',
       undefined,
-      'throws on invalid parent hash length'
+      'throws on invalid parent hash length',
     )
     assert.throws(
       () => BlockHeader.fromHeaderData({ stateRoot: badHash }),
       'stateRoot must be 32 bytes',
       undefined,
-      'throws on invalid state root hash length'
+      'throws on invalid state root hash length',
     )
     assert.throws(
       () => BlockHeader.fromHeaderData({ transactionsTrie: badHash }),
       'transactionsTrie must be 32 bytes',
       undefined,
-      'throws on invalid transactionsTrie root hash length'
+      'throws on invalid transactionsTrie root hash length',
     )
 
     assert.throws(
       () => BlockHeader.fromHeaderData({ nonce: new Uint8Array(5) }),
       'nonce must be 8 bytes',
       undefined,
-      'contains nonce length error message'
+      'contains nonce length error message',
     )
   })
   /*
@@ -349,7 +350,7 @@ describe('[Block]: Header functions', () => {
     const blockchain = new Mockchain()
 
     const genesisRlp = toBytes(testDataPreLondon.genesisRLP)
-    const block = Block.fromRLPSerializedBlock(genesisRlp, { common })
+    const block = createBlockFromRLPSerializedBlock(genesisRlp, { common })
     await blockchain.putBlock(block)
 
     headerData.number = 1
@@ -429,7 +430,7 @@ describe('[Block]: Header functions', () => {
     const cliqueSigner = hexToBytes(
       '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
     )
-    const poaBlock = Block.fromRLPSerializedBlock(genesisRlp, { common, cliqueSigner })
+    const poaBlock = createBlockFromRLPSerializedBlock(genesisRlp, { common, cliqueSigner })
     await poaBlockchain.putBlock(poaBlock)
 
     header = BlockHeader.fromHeaderData(headerData, { common, cliqueSigner })
@@ -459,14 +460,14 @@ describe('[Block]: Header functions', () => {
     for (const key of Object.keys(bcBlockGasLimitTestData)) {
       const genesisRlp = hexToBytes(
         bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData]
-          .genesisRLP as PrefixedHexString
+          .genesisRLP as PrefixedHexString,
       )
-      const parentBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
+      const parentBlock = createBlockFromRLPSerializedBlock(genesisRlp, { common })
       const blockRlp = hexToBytes(
         bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData].blocks[0]
-          .rlp as PrefixedHexString
+          .rlp as PrefixedHexString,
       )
-      const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+      const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
       assert.doesNotThrow(() => block.validateGasLimit(parentBlock))
     }
   })
@@ -485,7 +486,7 @@ describe('[Block]: Header functions', () => {
     assert.equal(
       bytesToHex(header.hash()),
       '0x88e96d4537bea4d9c05d12549907b32561d3bf31f45aae734cdc119f13406cb6',
-      'correct PoW hash (mainnet block 1)'
+      'correct PoW hash (mainnet block 1)',
     )
 
     common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
@@ -493,7 +494,7 @@ describe('[Block]: Header functions', () => {
     assert.equal(
       bytesToHex(header.hash()),
       '0x8f5bab218b6bb34476f51ca588e9f4553a3a7ce5e13a66c660a5283e97e9a85a',
-      'correct PoA clique hash (goerli block 1)'
+      'correct PoA clique hash (goerli block 1)',
     )
   })
 
@@ -505,7 +506,7 @@ describe('[Block]: Header functions', () => {
     assert.deepEqual(
       header.withdrawalsRoot,
       KECCAK256_RLP,
-      'withdrawalsRoot should be set to KECCAK256_RLP'
+      'withdrawalsRoot should be set to KECCAK256_RLP',
     )
   })
 })

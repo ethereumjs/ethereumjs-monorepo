@@ -2,13 +2,13 @@
 // You can run them with tsx, as this project is developed in TypeScript.
 // Install the dependencies and run `npx tsx examples/transactions.ts`
 
-import { LegacyTransaction } from '../dist/cjs'
-import { bytesToHex, toBytes, hexToBytes } from '@ethereumjs/util'
+import { createLegacyTx, createLegacyTxFromBytesArray } from '@ethereumjs/tx'
+import { bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
 
 // We create an unsigned transaction.
 // Notice we don't set the `to` field because we are creating a new contract.
 // This transaction's chain is set to mainnet.
-const tx = LegacyTransaction.fromTxData({
+const tx = createLegacyTx({
   nonce: 0,
   gasPrice: 100,
   gasLimit: 1000000000,
@@ -50,7 +50,7 @@ const rawTx = [
   '0x5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13',
 ]
 
-const tx2 = LegacyTransaction.fromValuesArray(rawTx.map(toBytes)) // This is also a mainnet transaction
+const tx2 = createLegacyTxFromBytesArray(rawTx.map(toBytes)) // This is also a mainnet transaction
 
 // So assuming that you were able to parse the transaction, we will now get the sender's address.
 

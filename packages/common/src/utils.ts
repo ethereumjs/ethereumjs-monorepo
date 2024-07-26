@@ -1,7 +1,9 @@
 import { intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
-import { Hardfork } from './enums.js'
+import { chainsDict } from './chains.js'
+import { Chain, Hardfork } from './enums.js'
 
+import type { ChainConfig, ChainName, ChainsConfig } from './index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 type ConfigHardfork =
@@ -79,14 +81,13 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   // but have different configuration parameters in geth genesis parameters
   if (config.eip155Block !== config.eip158Block) {
     throw new Error(
-      'EIP155 block number must equal EIP 158 block number since both are part of SpuriousDragon hardfork and the client only supports activating the full hardfork'
+      'EIP155 block number must equal EIP 158 block number since both are part of SpuriousDragon hardfork and the client only supports activating the full hardfork',
     )
   }
 
   const params = {
     name,
     chainId,
-    networkId: chainId,
     depositContractAddress,
     genesis: {
       timestamp,
@@ -142,12 +143,15 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   }
 
   // forkMapRev is the map from config field name to Hardfork
-  const forkMapRev = Object.keys(forkMap).reduce((acc, elem) => {
-    acc[forkMap[elem].name] = elem
-    return acc
-  }, {} as { [key: string]: string })
+  const forkMapRev = Object.keys(forkMap).reduce(
+    (acc, elem) => {
+      acc[forkMap[elem].name] = elem
+      return acc
+    },
+    {} as { [key: string]: string },
+  )
   const configHardforkNames = Object.keys(config).filter(
-    (key) => forkMapRev[key] !== undefined && config[key] !== undefined && config[key] !== null
+    (key) => forkMapRev[key] !== undefined && config[key] !== undefined && config[key] !== null,
   )
 
   params.hardforks = configHardforkNames
@@ -195,7 +199,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
 
     // Merge hardfork has to be placed before first hardfork that is dependent on merge
     const postMergeIndex = params.hardforks.findIndex(
-      (hf: any) => forkMap[hf.name]?.postMerge === true
+      (hf: any) => forkMap[hf.name]?.postMerge === true,
     )
     if (postMergeIndex !== -1) {
       params.hardforks.splice(postMergeIndex, 0, mergeConfig as unknown as ConfigHardfork)
@@ -235,4 +239,54 @@ export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?
   } catch (e: any) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }
+}
+
+export function getInitializedChains(customChains?: ChainConfig[]): ChainsConfig {
+  const names: ChainName = {}
+  for (const [name, id] of Object.entries(Chain)) {
+    names[id] = name.toLowerCase()
+  }
+  const chains = { ...chainsDict } as ChainsConfig
+  if (customChains) {
+    for (const chain of customChains) {
+      const { name } = chain
+      names[chain.chainId.toString()] = name
+      chains[name] = chain
+    }
+  }
+  chains.names = names
+  return chains
+}
+
+/**
+ * Determine if a {@link chainId} is supported as a standard chain
+ * @param chainId bigint id (`1`) of a standard chain
+ * @returns boolean
+ */
+export function isSupportedChainId(chainId: bigint): boolean {
+  const initializedChains = getInitializedChains()
+  return Boolean((initializedChains['names'] as ChainName)[chainId.toString()])
+}
+
+export function _getChainParams(
+  chain: string | number | Chain | bigint,
+  customChains?: ChainConfig[],
+): ChainConfig {
+  const initializedChains = getInitializedChains(customChains)
+  if (typeof chain === 'number' || typeof chain === 'bigint') {
+    chain = chain.toString()
+
+    if ((initializedChains['names'] as ChainName)[chain]) {
+      const name: string = (initializedChains['names'] as ChainName)[chain]
+      return initializedChains[name] as ChainConfig
+    }
+
+    throw new Error(`Chain with ID ${chain} not supported`)
+  }
+
+  if (initializedChains[chain] !== undefined) {
+    return initializedChains[chain] as ChainConfig
+  }
+
+  throw new Error(`Chain with name ${chain} not supported`)
 }

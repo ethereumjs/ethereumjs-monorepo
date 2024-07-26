@@ -1,7 +1,15 @@
 import { hexToBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src/index.js'
+import {
+  Chain,
+  Common,
+  ConsensusAlgorithm,
+  ConsensusType,
+  Hardfork,
+  createCommonFromGethGenesis,
+  createCustomCommon,
+} from '../src/index.js'
 
 import * as gethGenesisKilnJSON from './data/geth-genesis/geth-genesis-kiln.json'
 
@@ -77,7 +85,7 @@ describe('[Common]: Hardfork logic', () => {
       },
     ]
 
-    const c = Common.custom({ hardforks }, { baseChain: Chain.Sepolia })
+    const c = createCustomCommon({ hardforks }, { baseChain: Chain.Sepolia })
     const f = () => {
       c.getHardforkBy({ blockNumber: 0n })
     }
@@ -252,7 +260,7 @@ describe('[Common]: Hardfork logic', () => {
     msg = 'should provide correct forkHash for HF provided'
     assert.equal(c.forkHash(Hardfork.SpuriousDragon), '0x3edd5b10', msg)
     const genesisHash = hexToBytes(
-      '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+      '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
     )
     assert.equal(c.forkHash(Hardfork.SpuriousDragon, genesisHash), '0x3edd5b10', msg)
 
@@ -314,7 +322,7 @@ describe('[Common]: Hardfork logic', () => {
       mergeForkIdPostMerge: true,
     }
     const genesisHash = zeros(32)
-    const zeroCommon = Common.fromGethGenesis(defaultConfig, gethConfig)
+    const zeroCommon = createCommonFromGethGenesis(defaultConfig, gethConfig)
 
     const zeroCommonShanghaiFork = zeroCommon.forkHash(Hardfork.Shanghai, genesisHash)
     const zeroCommonCancunFork = zeroCommon.forkHash(Hardfork.Shanghai, genesisHash)
@@ -349,34 +357,34 @@ describe('[Common]: Hardfork logic', () => {
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfAuthority,
-      'should provide the correct initial chain consensus type'
+      'should provide the correct initial chain consensus type',
     )
     assert.equal(
       c.consensusAlgorithm(),
       ConsensusAlgorithm.Clique,
-      'should provide the correct initial chain consensus algorithm'
+      'should provide the correct initial chain consensus algorithm',
     )
     assert.equal(
       c.consensusConfig()['period'],
       15,
-      'should provide the correct initial chain consensus configuration'
+      'should provide the correct initial chain consensus configuration',
     )
 
     c = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Paris })
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfStake,
-      'should provide the correct updated chain consensus type'
+      'should provide the correct updated chain consensus type',
     )
     assert.equal(
       c.consensusAlgorithm(),
       ConsensusAlgorithm.Casper,
-      'should provide the correct updated chain consensus algorithm'
+      'should provide the correct updated chain consensus algorithm',
     )
     assert.deepEqual(
       c.consensusConfig(),
       {},
-      'should provide the correct updated chain consensus configuration'
+      'should provide the correct updated chain consensus configuration',
     )
   })
 
@@ -386,35 +394,35 @@ describe('[Common]: Hardfork logic', () => {
     assert.equal(
       c['HARDFORK_CHANGES'][11][0],
       Hardfork.Paris,
-      'should correctly apply hardfork changes'
+      'should correctly apply hardfork changes',
     )
     assert.equal(
       c['HARDFORK_CHANGES'][12][0],
       Hardfork.MergeForkIdTransition,
-      'should correctly apply hardfork changes'
+      'should correctly apply hardfork changes',
     )
 
     // Should give correct ConsensusType pre and post merge
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfWork,
-      'should provide the correct initial chain consensus type'
+      'should provide the correct initial chain consensus type',
     )
     c.setHardfork(Hardfork.Paris)
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfStake,
-      `should switch to ProofOfStake consensus on merge`
+      `should switch to ProofOfStake consensus on merge`,
     )
     c.setHardfork(Hardfork.MergeForkIdTransition)
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfStake,
-      `should stay on ProofOfStake consensus post merge`
+      `should stay on ProofOfStake consensus post merge`,
     )
 
     // For kiln MergeForkIdTransition happens BEFORE Merge
-    c = Common.fromGethGenesis(gethGenesisKilnJSON, {
+    c = createCommonFromGethGenesis(gethGenesisKilnJSON, {
       chain: 'kiln',
       mergeForkIdPostMerge: false,
     })
@@ -423,12 +431,12 @@ describe('[Common]: Hardfork logic', () => {
     assert.equal(
       c['HARDFORK_CHANGES'][10][0],
       Hardfork.MergeForkIdTransition,
-      'should correctly apply hardfork changes'
+      'should correctly apply hardfork changes',
     )
     assert.equal(
       c['HARDFORK_CHANGES'][11][0],
       Hardfork.Paris,
-      'should correctly apply hardfork changes'
+      'should correctly apply hardfork changes',
     )
 
     // Should give correct ConsensusType pre and post merge
@@ -436,19 +444,19 @@ describe('[Common]: Hardfork logic', () => {
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfWork,
-      'should provide the correct initial chain consensus type'
+      'should provide the correct initial chain consensus type',
     )
     c.setHardfork(Hardfork.Paris)
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfStake,
-      `should switch to ProofOfStake consensus on merge`
+      `should switch to ProofOfStake consensus on merge`,
     )
     c.setHardfork(Hardfork.MergeForkIdTransition)
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfWork,
-      `should give pow consensus as MergeForkIdTransition is pre-merge`
+      `should give pow consensus as MergeForkIdTransition is pre-merge`,
     )
   })
 })

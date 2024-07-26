@@ -9,9 +9,9 @@
  *      - Input length < 32 bytes (reverts)
  */
 
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { type TransactionType, type TxData, createTxFromTxData } from '@ethereumjs/tx'
 import {
   Address,
   bigIntToBytes,
@@ -23,9 +23,9 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src'
+import { VM, runBlock as runBlockVM } from '../../../src/index.js'
 
-import type { TransactionType, TxData } from '@ethereumjs/tx'
+import type { Block } from '@ethereumjs/block'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
 const common = new Common({
@@ -40,12 +40,12 @@ const contractAddress = Address.fromString('0x' + 'c0de'.repeat(10))
 function beaconrootBlock(
   blockroot: bigint,
   timestamp: BigIntLike,
-  transactions: Array<TxData[TransactionType]>
+  transactions: Array<TxData[TransactionType]>,
 ) {
   const newTxData = []
 
   for (const txData of transactions) {
-    const tx = TransactionFactory.fromTxData({
+    const tx = createTxFromTxData({
       gasPrice: 7,
       gasLimit: 100000,
       ...txData,
@@ -61,9 +61,9 @@ function beaconrootBlock(
       parentBeaconBlockRoot: root,
       timestamp,
     },
-    { common, freeze: false }
+    { common, freeze: false },
   )
-  const block = Block.fromBlockData(
+  const block = createBlockFromBlockData(
     {
       header,
       transactions: newTxData,
@@ -71,7 +71,7 @@ function beaconrootBlock(
     {
       common,
       freeze: false,
-    }
+    },
   )
   return block
 }
@@ -105,10 +105,10 @@ async function runBlock(block: Block) {
     common,
   })
 
-  await vm.stateManager.putContractCode(contractAddress, hexToBytes(CODE))
-  await vm.stateManager.putContractCode(BROOT_Address, hexToBytes(BROOT_CODE))
+  await vm.stateManager.putCode(contractAddress, hexToBytes(CODE))
+  await vm.stateManager.putCode(BROOT_Address, hexToBytes(BROOT_CODE))
   return {
-    vmResult: await vm.runBlock({
+    vmResult: await runBlockVM(vm, {
       block,
       skipBalance: true,
       skipBlockValidation: true,
@@ -122,7 +122,7 @@ async function runBlock(block: Block) {
  * Get call status saved in the contract
  */
 async function getCallStatus(vm: VM) {
-  const stat = await vm.stateManager.getContractStorage(contractAddress, zeros(32))
+  const stat = await vm.stateManager.getStorage(contractAddress, zeros(32))
   return bytesToBigInt(stat)
 }
 
@@ -143,7 +143,7 @@ async function runBlockTest(input: {
 
   const data = setLengthRight(
     setLengthLeft(bigIntToBytes(timestamp), input.extLeft ?? 32),
-    input.extRight ?? 32
+    input.extRight ?? 32,
   )
   const block = beaconrootBlock(blockRoot, timestampBlock, [
     {

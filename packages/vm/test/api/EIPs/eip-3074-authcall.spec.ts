@@ -1,7 +1,7 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVMErrorMessage } from '@ethereumjs/evm'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -20,7 +20,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { ECDSASignature } from '@ethereumjs/util'
@@ -35,13 +35,13 @@ const common = new Common({
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 const authAddress = new Address(privateToAddress(privateKey))
 
-const block = Block.fromBlockData(
+const block = createBlockFromBlockData(
   {
     header: {
       baseFeePerGas: BigInt(7),
     },
   },
-  { common }
+  { common },
 )
 
 const callerPrivateKey = hexToBytes(`0x${'44'.repeat(32)}`)
@@ -71,7 +71,7 @@ function signMessage(
   commitUnpadded: Uint8Array,
   address: Address,
   privateKey: Uint8Array,
-  nonce: bigint = BIGINT_0
+  nonce: bigint = BIGINT_0,
 ) {
   const commit = setLengthLeft(commitUnpadded, 32)
   const paddedInvokerAddress = setLengthLeft(address.bytes, 32)
@@ -82,7 +82,7 @@ function signMessage(
     chainId,
     noncePadded,
     paddedInvokerAddress,
-    commit
+    commit,
   )
   const msgHash = keccak256(message)
   return ecsign(msgHash, privateKey)
@@ -99,7 +99,7 @@ function getAuthCode(
   commitUnpadded: Uint8Array,
   signature: ECDSASignature,
   address: Address,
-  msizeBuffer?: Uint8Array
+  msizeBuffer?: Uint8Array,
 ) {
   const commit = setLengthLeft(commitUnpadded, 32)
   let v: Uint8Array
@@ -154,7 +154,7 @@ function getAuthCode(
     hexToBytes('0x6000'),
     PUSH32,
     addressBuffer,
-    AUTH
+    AUTH,
   )
 }
 
@@ -180,7 +180,7 @@ function MSTORE(position: Uint8Array, value: Uint8Array) {
     setLengthLeft(value, 32),
     hexToBytes('0x7F'),
     setLengthLeft(position, 32),
-    hexToBytes('0x52')
+    hexToBytes('0x52'),
   )
 }
 
@@ -239,8 +239,8 @@ describe('EIP-3074 AUTH', () => {
     const signature = signMessage(message, contractAddress, privateKey)
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
-    await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    await vm.stateManager.putCode(contractAddress, code)
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -251,7 +251,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
     assert.deepEqual(buf, hexToBytes('0x01'), 'auth should return 1')
   })
@@ -263,8 +263,8 @@ describe('EIP-3074 AUTH', () => {
     signature.r = signature.s
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
-    await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    await vm.stateManager.putCode(contractAddress, code)
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -275,7 +275,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue
     assert.deepEqual(buf, zeros(32), 'auth puts 0 on stack on invalid signature')
   })
@@ -288,8 +288,8 @@ describe('EIP-3074 AUTH', () => {
     // use the contractAddress instead of authAddress for the expected address (this should fail)
     const code = concatBytes(getAuthCode(message, signature, contractAddress), RETURNTOP)
 
-    await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    await vm.stateManager.putCode(contractAddress, code)
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -300,7 +300,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue
     assert.deepEqual(buf, zeros(32), 'auth puts 0')
   })
@@ -311,8 +311,8 @@ describe('EIP-3074 AUTH', () => {
     const signature = flipSignature(signMessage(message, contractAddress, privateKey))
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
-    await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    await vm.stateManager.putCode(contractAddress, code)
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -323,7 +323,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue
     assert.deepEqual(buf, zeros(32), 'auth puts 0')
   })
@@ -335,8 +335,8 @@ describe('EIP-3074 AUTH', () => {
     signature.v = 2
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
-    await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    await vm.stateManager.putCode(contractAddress, code)
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -347,7 +347,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue
     assert.deepEqual(buf, zeros(32), 'auth puts 0')
   })
@@ -361,11 +361,11 @@ describe('EIP-3074 AUTH', () => {
     const code = concatBytes(
       getAuthCode(message, signature, authAddress),
       getAuthCode(message, signature2, callerAddress),
-      RETURNTOP
+      RETURNTOP,
     )
 
-    await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    await vm.stateManager.putCode(contractAddress, code)
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -376,7 +376,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
     assert.deepEqual(buf, hexToBytes('0x01'), 'auth returned right address')
   })
@@ -387,11 +387,11 @@ describe('EIP-3074 AUTH', () => {
     const signature = signMessage(message, contractAddress, privateKey)
     const code = concatBytes(
       getAuthCode(message, signature, authAddress, hexToBytes('0x60')),
-      RETURNTOP
+      RETURNTOP,
     )
 
-    await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    await vm.stateManager.putCode(contractAddress, code)
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -402,7 +402,7 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
     assert.deepEqual(buf, hexToBytes('0x01'), 'auth returned right address')
   })
@@ -413,8 +413,8 @@ describe('EIP-3074 AUTH', () => {
     const signature = signMessage(message, contractAddress, privateKey)
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNMEMSIZE)
 
-    await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = LegacyTransaction.fromTxData({
+    await vm.stateManager.putCode(contractAddress, code)
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -425,36 +425,36 @@ describe('EIP-3074 AUTH', () => {
     account!.balance = BigInt(20000000)
     await vm.stateManager.putAccount(callerAddress, account!)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
 
     assert.deepEqual(
       result.execResult.returnValue.slice(31),
       hexToBytes('0x80'),
-      'reported msize is correct'
+      'reported msize is correct',
     )
     const gas = result.execResult.executionGasUsed
 
     const code2 = concatBytes(
       getAuthCode(message, signature, authAddress, hexToBytes('0x90')),
-      RETURNMEMSIZE
+      RETURNMEMSIZE,
     )
 
-    await vm.stateManager.putContractCode(contractAddress, code2)
-    const tx2 = LegacyTransaction.fromTxData({
+    await vm.stateManager.putCode(contractAddress, code2)
+    const tx2 = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
       nonce: 1,
     }).sign(callerPrivateKey)
 
-    const result2 = await vm.runTx({ tx: tx2, block, skipHardForkValidation: true })
+    const result2 = await runTx(vm, { tx: tx2, block, skipHardForkValidation: true })
 
     // the memory size in AUTH is 0x90 (so extra 16 bytes), but memory expands with words (32 bytes)
     // so the correct amount of msize is 0xa0, not 0x90
     assert.deepEqual(
       result2.execResult.returnValue.slice(31),
       hexToBytes('0xa0'),
-      'reported msize is correct'
+      'reported msize is correct',
     )
     assert.ok(result2.execResult.executionGasUsed > gas, 'charged more gas for memory expansion')
   })
@@ -463,8 +463,8 @@ describe('EIP-3074 AUTH', () => {
 // Setups the environment for the VM, puts `code` at contractAddress and also puts the STORECALLER bytecode at the contractStorageAddress
 async function setupVM(code: Uint8Array) {
   const vm = await VM.create({ common: common.copy() })
-  await vm.stateManager.putContractCode(contractAddress, code)
-  await vm.stateManager.putContractCode(contractStorageAddress, STORECALLER)
+  await vm.stateManager.putCode(contractAddress, code)
+  await vm.stateManager.putCode(contractStorageAddress, STORECALLER)
   await vm.stateManager.putAccount(callerAddress, new Account())
   const account = await vm.stateManager.getAccount(callerAddress)
   account!.balance = PREBALANCE
@@ -481,22 +481,22 @@ describe('EIP-3074 AUTHCALL', () => {
       getAuthCallCode({
         address: contractStorageAddress,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
 
     const buf = result.execResult.returnValue.slice(31)
     assert.deepEqual(buf, hexToBytes('0x01'), 'authcall success')
 
-    const storage = await vm.stateManager.getContractStorage(contractStorageAddress, zeros(32))
+    const storage = await vm.stateManager.getStorage(contractStorageAddress, zeros(32))
     assert.deepEqual(storage, address.bytes, 'caller set correctly')
   })
 
@@ -508,7 +508,7 @@ describe('EIP-3074 AUTHCALL', () => {
       getAuthCallCode({
         address: contractStorageAddress,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
@@ -519,23 +519,21 @@ describe('EIP-3074 AUTHCALL', () => {
       }
     })
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    await vm.runTx({ tx, block, skipHardForkValidation: true })
+    await runTx(vm, { tx, block, skipHardForkValidation: true })
 
-    const gasUsed = await vm.stateManager.getContractStorage(
+    const gasUsed = await vm.stateManager.getStorage(
       contractStorageAddress,
-      hexToBytes(`0x${'00'.repeat(31)}01`)
+      hexToBytes(`0x${'00'.repeat(31)}01`),
     )
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas =
-      gas! -
-      common.param('gasPrices', 'warmstorageread')! -
-      common.param('gasPrices', 'coldaccountaccess')!
+      gas! - common.param('warmstoragereadGas')! - common.param('coldaccountaccessGas')!
     const expected = preGas - preGas / 64n - 2n
     assert.equal(gasBigInt, expected, 'forwarded max call gas')
   })
@@ -551,7 +549,7 @@ describe('EIP-3074 AUTHCALL', () => {
       getAuthCallCode({
         address: contractStorageAddress,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
@@ -562,20 +560,20 @@ describe('EIP-3074 AUTHCALL', () => {
       }
     })
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    await vm.runTx({ tx, block, skipHardForkValidation: true })
+    await runTx(vm, { tx, block, skipHardForkValidation: true })
 
-    const gasUsed = await vm.stateManager.getContractStorage(
+    const gasUsed = await vm.stateManager.getStorage(
       contractStorageAddress,
-      hexToBytes(`0x${'00'.repeat(31)}01`)
+      hexToBytes(`0x${'00'.repeat(31)}01`),
     )
     const gasBigInt = bytesToBigInt(gasUsed)
-    const preGas = gas! - common.param('gasPrices', 'warmstorageread')!
+    const preGas = gas! - common.param('warmstoragereadGas')!
     const expected = preGas - preGas / 64n - 2n
     assert.equal(gasBigInt, expected, 'forwarded max call gas')
   })
@@ -589,7 +587,7 @@ describe('EIP-3074 AUTHCALL', () => {
         address: new Address(hexToBytes(`0x${'cc'.repeat(20)}`)),
         value: 1n,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
     const account = new Account(BIGINT_0, BIGINT_1)
@@ -606,21 +604,21 @@ describe('EIP-3074 AUTHCALL', () => {
       }
     })
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 900000,
       gasPrice: 10,
       value: 1,
     }).sign(callerPrivateKey)
 
-    await vm.runTx({ tx, block, skipHardForkValidation: true })
+    await runTx(vm, { tx, block, skipHardForkValidation: true })
 
     const gasBigInt = gas! - gasAfterCall!
     const expected =
-      common.param('gasPrices', 'coldaccountaccess')! +
-      common.param('gasPrices', 'warmstorageread')! +
-      common.param('gasPrices', 'callNewAccount')! +
-      common.param('gasPrices', 'authcallValueTransfer')!
+      common.param('coldaccountaccessGas')! +
+      common.param('warmstoragereadGas')! +
+      common.param('callNewAccountGas')! +
+      common.param('authcallValueTransferGas')!
 
     assert.equal(gasBigInt, expected, 'forwarded max call gas')
   })
@@ -634,7 +632,7 @@ describe('EIP-3074 AUTHCALL', () => {
         address: contractStorageAddress,
         value: 1n,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
     const authAccount = new Account(BIGINT_0, BIGINT_1)
@@ -650,25 +648,25 @@ describe('EIP-3074 AUTHCALL', () => {
     const value = 3n
     const gasPrice = 10n
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: PREBALANCE / gasPrice - value * gasPrice,
       gasPrice,
       value,
     }).sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
 
-    const gasUsed = await vm.stateManager.getContractStorage(
+    const gasUsed = await vm.stateManager.getStorage(
       contractStorageAddress,
-      hexToBytes(`0x${'00'.repeat(31)}01`)
+      hexToBytes(`0x${'00'.repeat(31)}01`),
     )
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas =
       gas! -
-      common.param('gasPrices', 'warmstorageread')! -
-      common.param('gasPrices', 'authcallValueTransfer')! -
-      common.param('gasPrices', 'coldaccountaccess')!
+      common.param('warmstoragereadGas')! -
+      common.param('authcallValueTransferGas')! -
+      common.param('coldaccountaccessGas')!
     const expected = preGas - preGas / 64n - 2n
     assert.equal(gasBigInt, expected, 'forwarded max call gas')
 
@@ -693,21 +691,21 @@ describe('EIP-3074 AUTHCALL', () => {
         address: contractStorageAddress,
         value: 1n,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
     const value = 3n
     const gasPrice = 10n
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: PREBALANCE / gasPrice - value * gasPrice,
       gasPrice,
       value,
     }).sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
 
     assert.ok(result.execResult.exceptionError?.error === EVMErrorMessage.OUT_OF_GAS)
   })
@@ -717,21 +715,21 @@ describe('EIP-3074 AUTHCALL', () => {
       getAuthCallCode({
         address: contractStorageAddress,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     assert.equal(
       result.execResult.exceptionError?.error,
       EVMErrorMessage.AUTHCALL_UNSET,
-      'threw with right error'
+      'threw with right error',
     )
     assert.equal(result.amountSpent, tx.gasPrice * tx.gasLimit, 'spent all gas')
   })
@@ -753,21 +751,21 @@ describe('EIP-3074 AUTHCALL', () => {
       getAuthCallCode({
         address: contractStorageAddress,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     assert.equal(
       result.execResult.exceptionError?.error,
       EVMErrorMessage.AUTHCALL_UNSET,
-      'threw with right error'
+      'threw with right error',
     )
     assert.equal(result.amountSpent, tx.gasPrice * tx.gasLimit, 'spent all gas')
   })
@@ -781,22 +779,22 @@ describe('EIP-3074 AUTHCALL', () => {
         address: contractStorageAddress,
         gasLimit: 10000000n,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
     assert.equal(result.amountSpent, tx.gasLimit * tx.gasPrice, 'spent all gas')
     assert.equal(
       result.execResult.exceptionError?.error,
       EVMErrorMessage.OUT_OF_GAS,
-      'correct error type'
+      'correct error type',
     )
   })
 
@@ -809,20 +807,20 @@ describe('EIP-3074 AUTHCALL', () => {
         address: contractStorageAddress,
         gasLimit: 700000n,
       }),
-      RETURNTOP
+      RETURNTOP,
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    await vm.runTx({ tx, block, skipHardForkValidation: true })
-    const gas = await vm.stateManager.getContractStorage(
+    await runTx(vm, { tx, block, skipHardForkValidation: true })
+    const gas = await vm.stateManager.getStorage(
       contractStorageAddress,
-      hexToBytes(`0x${'00'.repeat(31)}01`)
+      hexToBytes(`0x${'00'.repeat(31)}01`),
     )
     const gasBigInt = bytesToBigInt(gas)
     assert.equal(gasBigInt, BigInt(700000 - 2), 'forwarded the right amount of gas') // The 2 is subtracted due to the GAS opcode base fee
@@ -842,20 +840,20 @@ describe('EIP-3074 AUTHCALL', () => {
         retOffset: 64n,
         retLength: 32n,
       }),
-      hexToBytes('0x60206040F3') // PUSH 32 PUSH 64 RETURN -> This returns the 32 bytes at memory position 64
+      hexToBytes('0x60206040F3'), // PUSH 32 PUSH 64 RETURN -> This returns the 32 bytes at memory position 64
     )
     const vm = await setupVM(code)
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
-    const callInput = await vm.stateManager.getContractStorage(
+    const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
+    const callInput = await vm.stateManager.getStorage(
       contractStorageAddress,
-      hexToBytes(`0x${'00'.repeat(31)}02`)
+      hexToBytes(`0x${'00'.repeat(31)}02`),
     )
     assert.deepEqual(callInput, input, 'authcall input ok')
     assert.deepEqual(result.execResult.returnValue, input, 'authcall output ok')

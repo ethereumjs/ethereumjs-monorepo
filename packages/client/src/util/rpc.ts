@@ -86,7 +86,7 @@ export function inspectParams(params: any, shorten?: number) {
 
 export function createRPCServer(
   manager: RPCManager,
-  opts: CreateRPCServerOpts
+  opts: CreateRPCServerOpts,
 ): CreateRPCServerReturn {
   const { methodConfig, rpcDebug, rpcDebugVerbose, logger } = opts
   const onRequest = (request: any) => {
@@ -102,7 +102,7 @@ export function createRPCServer(
       logger?.info(`${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`)
     } else if (checkFilter(request.method, rpcDebug)) {
       logger?.info(
-        `${request.method}${batchAddOn} responded with:\n${inspectParams(response, 125)}`
+        `${request.method}${batchAddOn} responded with:\n${inspectParams(response, 125)}`,
       )
     }
   }

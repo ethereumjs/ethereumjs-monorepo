@@ -1,10 +1,11 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockFromBlockData, createBlockFromRLPSerializedBlock } from '@ethereumjs/block'
+import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
+import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
   MapDB,
   bytesToBigInt,
@@ -15,10 +16,11 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import { VM } from '../../../src/vm'
-import { setupPreConditions, verifyPostConditions } from '../../util'
+import { VM, buildBlock, runBlock } from '../../../src/index.js'
+import { setupPreConditions, verifyPostConditions } from '../../util.js'
 
-import type { EthashConsensus } from '@ethereumjs/blockchain'
+import type { Block } from '@ethereumjs/block'
+import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type * as tape from 'tape'
@@ -65,17 +67,20 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const header = formatBlockHeader(testData.genesisBlockHeader)
   const withdrawals = common.isActivatedEIP(4895) ? [] : undefined
   const blockData = { header, withdrawals }
-  const genesisBlock = Block.fromBlockData(blockData, { common })
+  const genesisBlock = createBlockFromBlockData(blockData, { common })
 
   if (typeof testData.genesisRLP === 'string') {
     const rlp = toBytes(testData.genesisRLP)
     t.deepEquals(genesisBlock.serialize(), rlp, 'correct genesis RLP')
   }
 
-  let blockchain = await Blockchain.create({
+  const consensusDict: ConsensusDict = {}
+  consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())
+  let blockchain = await createBlockchain({
     common,
     validateBlocks: true,
     validateConsensus: validatePow,
+    consensusDict,
     genesisBlock,
   })
 
@@ -105,7 +110,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   t.deepEquals(
     await vm.stateManager.getStateRoot(),
     genesisBlock.header.stateRoot,
-    'correct pre stateRoot'
+    'correct pre stateRoot',
   )
 
   async function handleError(error: string | undefined, expectException: string | boolean) {
@@ -158,7 +163,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       // To run this field we try to import them on the current state.
       if (raw.transactionSequence !== undefined) {
         const parentBlock = await vm.blockchain.getIteratorHead()
-        const blockBuilder = await vm.buildBlock({
+        const blockBuilder = await buildBlock(vm, {
           parentBlock,
           blockOpts: { calcDifficultyFromHeader: parentBlock.header },
         })
@@ -170,7 +175,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const shouldFail = txData.valid === 'false'
           try {
             const txRLP = hexToBytes(txData.rawBytes as PrefixedHexString)
-            const tx = TransactionFactory.fromSerializedData(txRLP, { common })
+            const tx = createTxFromSerializedData(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
               t.fail('tx should fail, but did not fail')
@@ -186,7 +191,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      const block = Block.fromRLPSerializedBlock(blockRlp, { common, setHardfork: TD })
+      const block = createBlockFromRLPSerializedBlock(blockRlp, { common, setHardfork: TD })
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
@@ -201,7 +206,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await vm.runBlock({ block, root: parentState, setHardfork: TD })
+            await runBlock(vm, { block, root: parentState, setHardfork: TD })
             // set as new head block
           } catch (error: any) {
             // remove invalid block
@@ -240,7 +245,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   t.equal(
     bytesToHex((blockchain as any)._headHeaderHash),
     '0x' + testData.lastblockhash,
-    'correct last header block'
+    'correct last header block',
   )
 
   const end = Date.now()

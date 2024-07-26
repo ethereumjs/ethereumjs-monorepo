@@ -29,7 +29,7 @@ async function getNonce(client: Client, account: string) {
 async function run(data: any) {
   const kzg = await loadKZG()
 
-  const common = Common.fromGethGenesis(genesisJson, {
+  const common = createCommonFromGethGenesis(genesisJson, {
     chain: genesisJson.ChainName ?? 'devnet',
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },

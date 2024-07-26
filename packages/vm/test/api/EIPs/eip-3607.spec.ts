@@ -1,9 +1,9 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 describe('EIP-3607 tests', () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3607] })
@@ -12,11 +12,11 @@ describe('EIP-3607 tests', () => {
 
   it('should reject txs from senders with deployed code when EIP is enabled', async () => {
     const vm = await VM.create({ common })
-    await vm.stateManager.putContractCode(precompileAddr, new Uint8Array(32).fill(1))
-    const tx = LegacyTransaction.fromTxData({ gasLimit: 100000 }, { freeze: false })
+    await vm.stateManager.putCode(precompileAddr, new Uint8Array(32).fill(1))
+    const tx = createLegacyTx({ gasLimit: 100000 }, { freeze: false })
     tx.getSenderAddress = () => precompileAddr
     try {
-      await vm.runTx({ tx, skipHardForkValidation: true })
+      await runTx(vm, { tx, skipHardForkValidation: true })
       assert.fail('runTx should have thrown')
     } catch (error: any) {
       if ((error.message as string).includes('EIP-3607')) {
@@ -29,11 +29,11 @@ describe('EIP-3607 tests', () => {
 
   it('should not reject txs from senders with deployed code when EIP is not enabled', async () => {
     const vm = await VM.create({ common: commonNoEIP3607 })
-    await vm.stateManager.putContractCode(precompileAddr, new Uint8Array(32).fill(1))
-    const tx = LegacyTransaction.fromTxData({ gasLimit: 100000 }, { freeze: false })
+    await vm.stateManager.putCode(precompileAddr, new Uint8Array(32).fill(1))
+    const tx = createLegacyTx({ gasLimit: 100000 }, { freeze: false })
     tx.getSenderAddress = () => precompileAddr
     try {
-      await vm.runTx({ tx, skipHardForkValidation: true })
+      await runTx(vm, { tx, skipHardForkValidation: true })
       assert.ok('runTx successfully ran')
     } catch (error: any) {
       assert.fail('threw an unexpected error')

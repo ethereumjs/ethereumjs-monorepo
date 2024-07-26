@@ -1,4 +1,5 @@
 import { Common } from '@ethereumjs/common'
+
 import myCustomChain1 from './genesisData/testnet.json'
 
 // Add custom chain config

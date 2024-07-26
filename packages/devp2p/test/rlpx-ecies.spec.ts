@@ -64,7 +64,7 @@ it(
     const encrypted = t.context.a._encryptMessage(message)
     const decrypted = t.context.b._decryptMessage(encrypted as Uint8Array)
     assert.deepEqual(message, decrypted, 'encryptMessage -> decryptMessage should lead to same')
-  })
+  }),
 )
 
 it(
@@ -89,7 +89,7 @@ it(
 
     const parsedBody = t.context.b.parseBody(t.context.a.createBody(body) as Uint8Array)
     assert.deepEqual(parsedBody, body, 'createBody -> parseBody should lead to same')
-  })
+  }),
 )
 
 it(
@@ -106,7 +106,7 @@ it(
       t.context.a['_gotEIP8Ack'] = true
       t.context.a.parseAckEIP8(ack as Uint8Array)
     }, 'should not throw on ack creation/parsing')
-  })
+  }),
 )
 
 it(
@@ -122,7 +122,7 @@ it(
       t.context.a['_gotEIP8Ack'] = false
       t.context.a.parseAckPlain(t.context.h0?.ack as Uint8Array)
     }, 'should not throw on ack parsing')
-  })
+  }),
 )
 
 it(
@@ -137,5 +137,5 @@ it(
       t.context.a['_gotEIP8Ack'] = true
       t.context.a.parseAckEIP8(t.context.h1?.ack as Uint8Array)
     }, 'should not throw on ack parsing')
-  })
+  }),
 )

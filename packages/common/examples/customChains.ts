@@ -1,4 +1,5 @@
 import { Common } from '@ethereumjs/common'
+
 import myCustomChain1 from './genesisData/testnet.json'
 import myCustomChain2 from './genesisData/testnet2.json'
 // Add two custom chains, initial mainnet activation

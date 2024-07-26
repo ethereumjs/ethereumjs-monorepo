@@ -1,5 +1,5 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockFromBlockData, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   DepositRequest,
@@ -10,13 +10,13 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
-import { VM } from '../../../src/vm.js'
+import { VM, buildBlock, runBlock } from '../../../src/index.js'
 import { setupVM } from '../utils.js'
 
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 
 const invalidRequestsRoot = hexToBytes(
-  '0xc98048d6605eb79ecc08d90b8817f44911ec474acd8d11688453d2c6ef743bc5'
+  '0xc98048d6605eb79ecc08d90b8817f44911ec474acd8d11688453d2c6ef743bc5',
 )
 function getRandomDepositRequest(): CLRequest<CLRequestType> {
   const depositRequestData = {
@@ -34,8 +34,8 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eip
 describe('EIP-7685 runBlock tests', () => {
   it('should not error when a valid requestsRoot is provided', async () => {
     const vm = await setupVM({ common })
-    const emptyBlock = Block.fromBlockData({}, { common })
-    const res = await vm.runBlock({
+    const emptyBlock = createBlockFromBlockData({}, { common })
+    const res = await runBlock(vm, {
       block: emptyBlock,
       generate: true,
     })
@@ -44,40 +44,40 @@ describe('EIP-7685 runBlock tests', () => {
   it('should error when an invalid requestsRoot is provided', async () => {
     const vm = await setupVM({ common })
 
-    const emptyBlock = Block.fromBlockData(
+    const emptyBlock = createBlockFromBlockData(
       { header: { requestsRoot: invalidRequestsRoot } },
-      { common }
+      { common },
     )
     await expect(async () =>
-      vm.runBlock({
+      runBlock(vm, {
         block: emptyBlock,
-      })
+      }),
     ).rejects.toThrow('invalid requestsRoot')
   })
   it('should not throw invalid requestsRoot error when valid requests are provided', async () => {
     const vm = await setupVM({ common })
     const request = getRandomDepositRequest()
-    const requestsRoot = await Block.genRequestsTrieRoot([request])
-    const block = Block.fromBlockData(
+    const requestsRoot = await genRequestsTrieRoot([request])
+    const block = createBlockFromBlockData(
       {
         requests: [request],
         header: { requestsRoot },
       },
-      { common }
+      { common },
     )
-    await expect(async () => vm.runBlock({ block })).rejects.toThrow(/invalid requestsRoot/)
+    await expect(async () => runBlock(vm, { block })).rejects.toThrow(/invalid requestsRoot/)
   })
   it('should error when requestsRoot does not match requests provided', async () => {
     const vm = await setupVM({ common })
     const request = getRandomDepositRequest()
-    const block = Block.fromBlockData(
+    const block = createBlockFromBlockData(
       {
         requests: [request],
         header: { requestsRoot: invalidRequestsRoot },
       },
-      { common }
+      { common },
     )
-    await expect(() => vm.runBlock({ block })).rejects.toThrow('invalid requestsRoot')
+    await expect(() => runBlock(vm, { block })).rejects.toThrow('invalid requestsRoot')
   })
 })
 
@@ -88,13 +88,13 @@ describe('EIP 7685 buildBlock tests', () => {
       hardfork: Hardfork.Cancun,
       eips: [7685, 1559, 4895, 4844, 4788],
     })
-    const genesisBlock = Block.fromBlockData(
+    const genesisBlock = createBlockFromBlockData(
       { header: { gasLimit: 50000, baseFeePerGas: 100 } },
-      { common }
+      { common },
     )
-    const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
+    const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
-    const blockBuilder = await vm.buildBlock({
+    const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
     })

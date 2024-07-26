@@ -1,4 +1,5 @@
-import { Common, Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+
 import { VM } from '../src/vm.js'
 
 const main = async () => {
@@ -7,4 +8,4 @@ const main = async () => {
   console.log(`4844 is active in the VM - ${vm.common.isActivatedEIP(4844)}`)
 }
 
-main()
+void main()

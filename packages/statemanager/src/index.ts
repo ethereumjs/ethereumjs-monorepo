@@ -1,5 +1,7 @@
 export * from './accessWitness.js'
 export * from './cache/index.js'
 export * from './rpcStateManager.js'
+export * from './simpleStateManager.js'
 export * from './statelessVerkleStateManager.js'
 export * from './stateManager.js'
+export * from './types.js'

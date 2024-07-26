@@ -1,11 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import {
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-} from '@ethereumjs/tx'
+import { create1559FeeMarketTxFromRLP, create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   blobsToCommitments,
@@ -47,7 +43,7 @@ describe(method, () => {
     // Mainnet EIP-1559 tx
     const txData =
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
-    const transaction = FeeMarketEIP1559Transaction.fromSerializedTx(hexToBytes(txData))
+    const transaction = create1559FeeMarketTxFromRLP(hexToBytes(txData))
     const address = transaction.getSenderAddress()
     const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
 
@@ -60,7 +56,7 @@ describe(method, () => {
     assert.equal(
       res.result,
       '0xd7217a7d3251880051783f305a3536e368c604aa1f1602e6cd107eb7b87129da',
-      'should return the correct tx hash'
+      'should return the correct tx hash',
     )
 
     // Restore setStateRoot
@@ -75,7 +71,7 @@ describe(method, () => {
     const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
     const { rpc } = await baseSetup({ syncTargetHeight, includeVM: true })
 
-    const transaction = LegacyTransaction.fromTxData({
+    const transaction = createLegacyTx({
       gasLimit: 21000,
       gasPrice: 0,
       nonce: 0,
@@ -88,7 +84,7 @@ describe(method, () => {
     assert.equal(
       res.result,
       '0xf6798d5ed936a464ef4f49dd5a3abe1ad6947364912bd47c5e56781125d44ac3',
-      'local tx with lower gasprice than minimum gasprice added to pool'
+      'local tx with lower gasprice than minimum gasprice added to pool',
     )
 
     // Restore setStateRoot
@@ -126,8 +122,8 @@ describe(method, () => {
     assert.equal(res.error.code, INTERNAL_ERROR)
     assert.ok(
       res.error.message.includes(
-        'client is not aware of the current chain height yet (give sync some more time)'
-      )
+        'client is not aware of the current chain height yet (give sync some more time)',
+      ),
     )
   })
 
@@ -152,7 +148,7 @@ describe(method, () => {
     const txData =
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const tx = FeeMarketEIP1559Transaction.fromSerializedTx(hexToBytes(txData), {
+    const tx = create1559FeeMarketTxFromRLP(hexToBytes(txData), {
       common,
       freeze: false,
     })
@@ -187,7 +183,7 @@ describe(method, () => {
     // Mainnet EIP-1559 tx
     const txData =
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
-    const transaction = FeeMarketEIP1559Transaction.fromSerializedTx(hexToBytes(txData))
+    const transaction = create1559FeeMarketTxFromRLP(hexToBytes(txData))
     const address = transaction.getSenderAddress()
     const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
 
@@ -221,7 +217,7 @@ describe(method, () => {
 
     const kzg = await loadKZG()
 
-    const common = Common.fromGethGenesis(gethGenesis, {
+    const common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -237,7 +233,7 @@ describe(method, () => {
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
     const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
     const pk = randomBytes(32)
-    const tx = BlobEIP4844Transaction.fromTxData(
+    const tx = create4844BlobTx(
       {
         blobVersionedHashes,
         blobs,
@@ -249,10 +245,10 @@ describe(method, () => {
         maxPriorityFeePerGas: 1000000n,
         to: randomBytes(20),
       },
-      { common }
+      { common },
     ).sign(pk)
 
-    const replacementTx = BlobEIP4844Transaction.fromTxData(
+    const replacementTx = create4844BlobTx(
       {
         blobVersionedHashes,
         blobs,
@@ -264,7 +260,7 @@ describe(method, () => {
         maxPriorityFeePerGas: 10000000n,
         to: randomBytes(20),
       },
-      { common }
+      { common },
     ).sign(pk)
     const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
     await vm.stateManager.putAccount(tx.getSenderAddress(), new Account())

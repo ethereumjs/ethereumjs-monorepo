@@ -45,7 +45,7 @@ export class Withdrawal {
     /**
      * withdrawal amount in Gwei to match the CL repesentation and eventually ssz withdrawalsRoot
      */
-    public readonly amount: bigint
+    public readonly amount: bigint,
   ) {}
 
   public static fromWithdrawalData(withdrawalData: WithdrawalData) {

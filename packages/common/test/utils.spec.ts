@@ -1,9 +1,9 @@
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Common } from '../src/common.js'
+import { createCommonFromGethGenesis } from '../src/constructors.js'
 import { Hardfork } from '../src/enums.js'
-import { parseGethGenesis } from '../src/utils.js'
+import { getInitializedChains, parseGethGenesis } from '../src/utils.js'
 
 import * as gethGenesisKilnJSON from './data/geth-genesis/geth-genesis-kiln.json'
 import * as invalidSpuriousDragonJSON from './data/geth-genesis/invalid-spurious-dragon.json'
@@ -32,7 +32,7 @@ describe('[Utils/Parse]', () => {
     assert.deepEqual(
       params.consensus,
       { type: 'poa', algorithm: 'clique', clique: { period: 15, epoch: 30000 } },
-      'consensus config matches'
+      'consensus config matches',
     )
     const poaJSONCopy = Object.assign({}, poaJSON)
     poaJSONCopy.nonce = '00'
@@ -40,7 +40,7 @@ describe('[Utils/Parse]', () => {
     assert.equal(
       params.genesis.nonce,
       '0x0000000000000000',
-      'non-hex prefixed nonce is formatted correctly'
+      'non-hex prefixed nonce is formatted correctly',
     )
     assert.equal(params.hardfork, Hardfork.London, 'should correctly infer current hardfork')
   })
@@ -57,7 +57,7 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should successfully parse kiln genesis and set forkhash', async () => {
-    const common = Common.fromGethGenesis(gethGenesisKilnJSON, {
+    const common = createCommonFromGethGenesis(gethGenesisKilnJSON, {
       chain: 'customChain',
       genesisHash: hexToBytes('0x51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8'),
       mergeForkIdPostMerge: false,
@@ -78,7 +78,7 @@ describe('[Utils/Parse]', () => {
         'mergeForkIdTransition',
         'paris',
       ],
-      'hardfork parse order should be correct'
+      'hardfork parse order should be correct',
     )
     for (const hf of common.hardforks()) {
       /* eslint-disable @typescript-eslint/no-use-before-define */
@@ -91,7 +91,7 @@ describe('[Utils/Parse]', () => {
     // genesis if even mergeForkIdTransition is not confirmed to be post merge
     // This will also check if the forks are being correctly sorted based on block
     Object.assign(gethGenesisKilnJSON.config, { shanghaiTime: Math.floor(Date.now() / 1000) })
-    const common1 = Common.fromGethGenesis(gethGenesisKilnJSON, {
+    const common1 = createCommonFromGethGenesis(gethGenesisKilnJSON, {
       chain: 'customChain',
     })
     // merge hardfork is now scheduled just after shanghai even if mergeForkIdTransition is not confirmed
@@ -113,14 +113,14 @@ describe('[Utils/Parse]', () => {
         'mergeForkIdTransition',
         'shanghai',
       ],
-      'hardfork parse order should be correct'
+      'hardfork parse order should be correct',
     )
 
     assert.equal(common1.hardfork(), Hardfork.Shanghai, 'should correctly infer current hardfork')
   })
 
   it('should successfully parse genesis with hardfork scheduled post merge', async () => {
-    const common = Common.fromGethGenesis(postMergeHardforkJSON, {
+    const common = createCommonFromGethGenesis(postMergeHardforkJSON, {
       chain: 'customChain',
     })
     assert.deepEqual(
@@ -140,52 +140,52 @@ describe('[Utils/Parse]', () => {
         'paris',
         'shanghai',
       ],
-      'hardfork parse order should be correct'
+      'hardfork parse order should be correct',
     )
 
     assert.equal(common.getHardforkBy({ blockNumber: 0n }), Hardfork.London, 'london at genesis')
     assert.equal(
       common.getHardforkBy({ blockNumber: 1n, td: 2n }),
       Hardfork.Paris,
-      'merge at block 1'
+      'merge at block 1',
     )
     // shanghai is at timestamp 8
     assert.equal(
       common.getHardforkBy({ blockNumber: 8n }),
       Hardfork.London,
-      'without timestamp still london'
+      'without timestamp still london',
     )
     assert.equal(
       common.getHardforkBy({ blockNumber: 8n, td: 2n }),
       Hardfork.Paris,
-      'without timestamp at merge'
+      'without timestamp at merge',
     )
     assert.equal(
       common.getHardforkBy({ blockNumber: 8n, timestamp: 8n }),
       Hardfork.Shanghai,
-      'with timestamp at shanghai'
+      'with timestamp at shanghai',
     )
     // should be post merge at shanghai
     assert.equal(
       common.getHardforkBy({ blockNumber: 8n, td: 2n, timestamp: 8n }),
       Hardfork.Shanghai,
-      'post merge shanghai'
+      'post merge shanghai',
     )
     assert.equal(common.hardfork(), Hardfork.Shanghai, 'should correctly infer common hardfork')
   })
 
   it('should successfully assign mainnet deposit contract address when none provided', async () => {
-    const common = Common.fromGethGenesis(postMergeHardforkJSON, {
+    const common = createCommonFromGethGenesis(postMergeHardforkJSON, {
       chain: 'customChain',
     })
     const depositContractAddress =
       common['_chainParams'].depositContractAddress ??
-      Common.getInitializedChains().mainnet.depositContractAddress
+      getInitializedChains().mainnet.depositContractAddress
 
     assert.equal(
       depositContractAddress,
-      Common.getInitializedChains().mainnet.depositContractAddress,
-      'should assign mainnet deposit contract'
+      getInitializedChains().mainnet.depositContractAddress,
+      'should assign mainnet deposit contract',
     )
   })
 
@@ -196,17 +196,17 @@ describe('[Utils/Parse]', () => {
       depositContractAddress: '0x4242424242424242424242424242424242424242',
     })
 
-    const common = Common.fromGethGenesis(customJson, {
+    const common = createCommonFromGethGenesis(customJson, {
       chain: 'customChain',
     })
     const depositContractAddress =
       common['_chainParams'].depositContractAddress ??
-      Common.getInitializedChains().mainnet.depositContractAddress
+      getInitializedChains().mainnet.depositContractAddress
 
     assert.equal(
       depositContractAddress,
       '0x4242424242424242424242424242424242424242',
-      'should parse correct address'
+      'should parse correct address',
     )
   })
 })

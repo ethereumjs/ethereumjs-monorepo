@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, parseGethGenesisState, privateToAddress } from '@ethereumjs/util'
 import debug from 'debug'
 import { Client } from 'jayson/promise'
@@ -26,7 +26,7 @@ const client = Client.http({ port: 8545 })
 
 const network = 'mainnet'
 const networkJson = require(`./configs/${network}.json`)
-const common = Common.fromGethGenesis(networkJson, { chain: network })
+const common = createCommonFromGethGenesis(networkJson, { chain: network })
 const customGenesisState = parseGethGenesisState(networkJson)
 
 const pkey = hexToBytes('0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e')
@@ -51,7 +51,7 @@ describe('simple mainnet test run', async () => {
   }
 
   // Better add it as a option in startnetwork
-  process.env.NETWORKID = `${common.networkId()}`
+  process.env.NETWORKID = `${common.chainId()}`
   const { teardownCallBack, result } = await startNetwork(network, client, {
     filterKeywords,
     filterOutWords,
@@ -89,7 +89,7 @@ describe('simple mainnet test run', async () => {
       assert.equal(
         EOATransferToBalance,
         BigInt(balance.result),
-        `fetched ${EOATransferToAccount} balance=${EOATransferToBalance}`
+        `fetched ${EOATransferToAccount} balance=${EOATransferToBalance}`,
       )
       balance = await client.request('eth_getBalance', [EOATransferToAccount, 'latest'])
 
@@ -107,10 +107,10 @@ describe('simple mainnet test run', async () => {
       balance = await client.request('eth_getBalance', [sender, 'latest'])
       assert.ok(
         balance.result !== undefined,
-        'remaining sender balance after transfers and gas fee'
+        'remaining sender balance after transfers and gas fee',
       )
     },
-    2 * 60_000
+    2 * 60_000,
   )
 
   it.skipIf(process.env.BEACON_SYNC === undefined)(
@@ -127,7 +127,7 @@ describe('simple mainnet test run', async () => {
         common,
         customGenesisState,
         [nodeInfo.enode],
-        peerBeaconUrl
+        peerBeaconUrl,
       ).catch((e) => {
         console.log(e)
         return null
@@ -152,7 +152,7 @@ describe('simple mainnet test run', async () => {
         assert.fail('could not connect to geth peer in 10 seconds')
       }
     },
-    60_000
+    60_000,
   )
 
   it.skipIf(process.env.BEACON_SYNC === undefined)(
@@ -170,7 +170,7 @@ describe('simple mainnet test run', async () => {
           assert.equal(
             ['SYNCED', 'VALID'].includes(syncResponse.syncState),
             true,
-            'beaconSyncRelayer should have synced client'
+            'beaconSyncRelayer should have synced client',
           )
           await ejsClient.stop()
           assert.ok(true, 'completed beacon sync')
@@ -182,7 +182,7 @@ describe('simple mainnet test run', async () => {
         assert.fail('ethereumjs client not setup properly for beacon sync')
       }
     },
-    10 * 60_000
+    10 * 60_000,
   )
 
   it('network cleanup', async () => {
@@ -201,7 +201,7 @@ async function createBeaconSyncClient(
   customGenesisState?: any,
   bootnodes?: any,
   peerBeaconUrl?: any,
-  datadir?: any
+  datadir?: any,
 ) {
   // Turn on `debug` logs, defaults to all client logging
   debug.enable(process.env.DEBUG_SYNC ?? '')

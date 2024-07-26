@@ -1,9 +1,9 @@
-import { Common, Chain, Hardfork } from '@ethereumjs/common'
-import { Block } from '@ethereumjs/block'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { createBlockFromBlockData } from '@ethereumjs/block'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { create4844BlobTx } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
 import { randomBytes } from 'crypto'
+import { loadKZG } from 'kzg-wasm'
 
 const main = async () => {
   const kzg = await loadKZG()
@@ -15,12 +15,12 @@ const main = async () => {
       kzg,
     },
   })
-  const blobTx = BlobEIP4844Transaction.fromTxData(
+  const blobTx = create4844BlobTx(
     { blobsData: ['myFirstBlob'], to: Address.fromPrivateKey(randomBytes(32)) },
-    { common }
+    { common },
   )
 
-  const block = Block.fromBlockData(
+  const block = createBlockFromBlockData(
     {
       header: {
         excessBlobGas: 0n,
@@ -30,14 +30,14 @@ const main = async () => {
     {
       common,
       skipConsensusFormatValidation: true,
-    }
+    },
   )
 
   console.log(
     `4844 block header with excessBlobGas=${block.header.excessBlobGas} created and ${
       block.transactions.filter((tx) => tx.type === 3).length
-    } blob transactions`
+    } blob transactions`,
   )
 }
 
-main()
+void main()

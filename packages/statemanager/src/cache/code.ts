@@ -1,6 +1,6 @@
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
+import { OrderedMap } from '@js-sdsl/ordered-map'
 import debugDefault from 'debug'
-import { OrderedMap } from 'js-sdsl'
 import { LRUCache } from 'lru-cache'
 
 import { Cache } from './cache.js'
@@ -8,8 +8,6 @@ import { CacheType } from './types.js'
 
 import type { CacheOpts } from './types.js'
 import type { Address } from '@ethereumjs/util'
-
-const { debug: createDebugLogger } = debugDefault
 
 /**
  * Represents a cached code element.
@@ -45,7 +43,7 @@ export class CodeCache extends Cache {
     }
 
     this._diffCache.push(new Map<string, CodeCacheElement | undefined>())
-    this._debug = createDebugLogger('statemanager:cache:code')
+    this._debug = debugDefault('statemanager:cache:code')
   }
 
   /**

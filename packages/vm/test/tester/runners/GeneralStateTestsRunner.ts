@@ -1,12 +1,12 @@
 import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { type InterpreterStep } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
 
-import { VM } from '../../../src/vm'
-import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
+import { VM, runTx } from '../../../src/index.js'
+import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.js'
 
 import type * as tape from 'tape'
 
@@ -15,7 +15,7 @@ function parseTestCases(
   testData: any,
   data: string | undefined,
   gasLimit: string | undefined,
-  value: string | undefined
+  value: string | undefined,
 ) {
   let testCases = []
 
@@ -72,7 +72,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Have to create a blockchain with empty block as genesisBlock for Merge
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, undefined, { common })
-  const blockchain = await Blockchain.create({ genesisBlock, common })
+  const blockchain = await createBlockchain({ genesisBlock, common })
   const state = new Trie({ useKeyHashing: true, common })
   const stateManager = new DefaultStateManager({
     trie: state,
@@ -143,7 +143,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
         vm.events.on('afterTx', afterTxHandler)
       }
       try {
-        await vm.runTx({ tx, block })
+        await runTx(vm, { tx, block })
         execInfo = 'successful tx run'
       } catch (e: any) {
         console.log(e)
@@ -183,7 +183,7 @@ export async function runStateTest(options: any, testData: any, t: tape.Test) {
       testData,
       options.data,
       options.gasLimit,
-      options.value
+      options.value,
     )
     if (testCases.length === 0) {
       t.comment(`No ${options.forkConfigTestSuite} post state defined, skip test`)

@@ -1,9 +1,10 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createLegacyTx } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
+import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -18,7 +19,7 @@ describe(
   () => {
     it('ensure balance deducts after a tx', async () => {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-      const blockchain = await Blockchain.create({ common })
+      const blockchain = await createBlockchain({ common })
 
       const client = await createClient({ blockchain, commonChain: common, includeVM: true })
       const manager = createManager(client)
@@ -43,18 +44,18 @@ describe(
       assert.equal(
         res.result,
         bigIntToHex(genesisBalance),
-        'should return the correct genesis balance'
+        'should return the correct genesis balance',
       )
 
       // construct block with tx
-      const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
+      const tx = createLegacyTx({ gasLimit: 53000 }, { common, freeze: false })
       tx.getSenderAddress = () => {
         return address
       }
-      const block = Block.fromBlockData({}, { common })
+      const block = createBlockFromBlockData({}, { common })
       block.transactions[0] = tx
 
-      const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+      const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
       const { amountSpent } = result.results[0]
 
       // verify balance is genesis amount minus amountSpent
@@ -63,7 +64,7 @@ describe(
       assert.equal(
         res.result,
         bigIntToHex(expectedNewBalance),
-        'should return the correct balance after a tx'
+        'should return the correct balance after a tx',
       )
 
       // verify we can query with "earliest"
@@ -71,7 +72,7 @@ describe(
       assert.equal(
         res.result,
         bigIntToHex(genesisBalance),
-        "should return the correct balance with 'earliest'"
+        "should return the correct balance with 'earliest'",
       )
 
       // verify we can query with a past block number
@@ -79,7 +80,7 @@ describe(
       assert.equal(
         res.result,
         bigIntToHex(genesisBalance),
-        'should return the correct balance with a past block number'
+        'should return the correct balance with a past block number',
       )
 
       // call with height that exceeds chain height
@@ -93,7 +94,7 @@ describe(
     })
 
     it('call with unsupported block argument', async () => {
-      const blockchain = await Blockchain.create()
+      const blockchain = await createBlockchain()
 
       const client = await createClient({ blockchain, includeVM: true })
       const manager = createManager(client)
@@ -107,5 +108,5 @@ describe(
       assert.ok(res.error.message.includes('"pending" is not yet supported'))
     })
   },
-  40000
+  40000,
 )

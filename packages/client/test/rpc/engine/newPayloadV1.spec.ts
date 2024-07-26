@@ -1,5 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { create1559FeeMarketTx } from '@ethereumjs/tx'
 import { Address, bytesToHex, hexToBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
@@ -27,8 +27,8 @@ describe(method, () => {
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
       res.error.message.includes(
-        "invalid argument 0 for key 'parentHash': hex string without 0x prefix"
-      )
+        "invalid argument 0 for key 'parentHash': hex string without 0x prefix",
+      ),
     )
   })
 
@@ -39,7 +39,7 @@ describe(method, () => {
     const res = await rpc.request(method, blockDataWithInvalidBlockHash)
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
-      res.error.message.includes("invalid argument 0 for key 'blockHash': invalid block hash")
+      res.error.message.includes("invalid argument 0 for key 'blockHash': invalid block hash"),
     )
   })
 
@@ -145,7 +145,7 @@ describe(method, () => {
     const expectedError = 'Invalid tx at index 0: Error: Invalid serialized tx input: must be array'
     assert.ok(
       res.result.validationError.includes(expectedError),
-      `should error with - ${expectedError}`
+      `should error with - ${expectedError}`,
     )
   })
 
@@ -155,14 +155,14 @@ describe(method, () => {
     chain.config.logger.silent = true
 
     // Let's mock a non-signed transaction so execution fails
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = create1559FeeMarketTx(
       {
         gasLimit: 21_000,
         maxFeePerGas: 10,
         value: 1,
         to: Address.fromString('0x61FfE691821291D02E9Ba5D33098ADcee71a3a17'),
       },
-      { common }
+      { common },
     )
 
     const transactions = [bytesToHex(tx.serialize())]
@@ -180,7 +180,7 @@ describe(method, () => {
 
   it('call with valid data & valid transaction', async () => {
     const accountPk = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
     const accountAddress = Address.fromPrivateKey(accountPk)
     const newGenesisJSON = {
@@ -195,13 +195,13 @@ describe(method, () => {
 
     const { server, common } = await setupChain(newGenesisJSON, 'post-merge', { engine: true })
     const rpc = getRpcClient(server)
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = create1559FeeMarketTx(
       {
         maxFeePerGas: '0x7',
         value: 6,
         gasLimit: 53_000,
       },
-      { common }
+      { common },
     ).sign(accountPk)
     const transactions = [bytesToHex(tx.serialize())]
     const blockDataWithValidTransaction = {
@@ -220,7 +220,7 @@ describe(method, () => {
 
   it('call with too many transactions', async () => {
     const accountPk = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
     const accountAddress = Address.fromPrivateKey(accountPk)
     const newGenesisJSON = {
@@ -238,14 +238,14 @@ describe(method, () => {
     })
     const rpc = getRpcClient(server)
     const transactions = Array.from({ length: 101 }, (_v, i) => {
-      const tx = FeeMarketEIP1559Transaction.fromTxData(
+      const tx = create1559FeeMarketTx(
         {
           nonce: i,
           maxFeePerGas: '0x7',
           value: 6,
           gasLimit: 53_000,
         },
-        { common }
+        { common },
       ).sign(accountPk)
 
       return bytesToHex(tx.serialize())

@@ -19,9 +19,9 @@ export enum ERROR {
   INVALID_RETURNSUB = 'invalid RETURNSUB',
   INVALID_JUMPSUB = 'invalid JUMPSUB',
   INVALID_BYTECODE_RESULT = 'invalid bytecode deployed',
-  INVALID_EOF_FORMAT = 'invalid EOF format',
   INITCODE_SIZE_VIOLATION = 'initcode exceeds max initcode size',
   INVALID_INPUT_LENGTH = 'invalid input length',
+  INVALID_EOF_FORMAT = 'invalid EOF format',
 
   AUTHCALL_UNSET = 'attempting to AUTHCALL without AUTH set',
 

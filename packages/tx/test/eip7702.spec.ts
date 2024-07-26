@@ -2,7 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EOACodeEIP7702Transaction } from '../src/index.js'
+import { create7702EOACodeTx } from '../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -15,7 +15,7 @@ const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
 
 describe('[EOACodeEIP7702Transaction]', () => {
   it('sign()', () => {
-    const txn = EOACodeEIP7702Transaction.fromTxData(
+    const txn = create7702EOACodeTx(
       {
         value: 1,
         maxFeePerGas: 1,
@@ -27,7 +27,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
         to: Address.zero(),
         data: new Uint8Array(1),
       },
-      { common }
+      { common },
     )
     const signed = txn.sign(pkey)
     assert.ok(signed.getSenderAddress().equals(addr))
@@ -37,7 +37,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
 
   it('valid and invalid authorizationList values', () => {
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -50,12 +50,12 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 'address length should be 20 bytes')
 
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -68,12 +68,12 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 'nonce list should consist of at most 1 item')
 
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -86,12 +86,12 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 's is not defined')
 
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -104,12 +104,12 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 'r is not defined')
 
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -122,12 +122,12 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 'yParity is not defined')
 
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -140,12 +140,12 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 'nonce is not defined')
 
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -158,12 +158,12 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 'address is not defined')
 
     assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -176,12 +176,12 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     }, 'chainId is not defined')
 
     assert.doesNotThrow(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+      create7702EOACodeTx(
         {
           authorizationList: [
             {
@@ -194,7 +194,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
             },
           ],
         },
-        { common }
+        { common },
       )
     })
   })

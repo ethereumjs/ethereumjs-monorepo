@@ -1,17 +1,19 @@
-import { Common } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { genesisStateRoot } from '@ethereumjs/trie'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src/blockchain.js'
-
 // kiln genesis with deposit contract storage set
+import { createBlockchain } from '../src/index.js'
+
 import gethGenesisKilnJSON from './testdata/geth-genesis-kiln.json'
 
+import type { Blockchain } from '../src/blockchain.js'
+
 async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
-  const common = Common.fromGethGenesis(gethGenesis, { chain: 'kiln' })
+  const common = createCommonFromGethGenesis(gethGenesis, { chain: 'kiln' })
   const genesisState = parseGethGenesisState(gethGenesis)
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     genesisState,
     common,
   })
@@ -25,7 +27,7 @@ describe('[Utils/Parse]', () => {
     assert.equal(
       bytesToHex(stateRoot),
       '0x52e628c7f35996ba5a0402d02b34535993c89ff7fc4c430b2763ada8554bee62',
-      'kiln stateRoot matches'
+      'kiln stateRoot matches',
     )
   })
 
@@ -36,7 +38,7 @@ describe('[Utils/Parse]', () => {
     assert.equal(
       bytesToHex(genesisHash),
       '0x51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8',
-      'kiln genesis hash matches'
+      'kiln genesis hash matches',
     )
   })
 })

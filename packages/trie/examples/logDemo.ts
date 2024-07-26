@@ -1,8 +1,8 @@
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
-import { Trie } from '../dist/cjs/index.js'
-import { debug } from 'debug'
-
-debug.enable('*')
+/**
+ * Run with DEBUG=ethjs,trie:* to see debug log ouput
+ */
+import { Trie } from '@ethereumjs/trie'
+import { utf8ToBytes } from '@ethereumjs/util'
 
 const trie_entries: [string, string | null][] = [
   ['do', 'verb'],
@@ -16,7 +16,6 @@ const trie_entries: [string, string | null][] = [
 ]
 
 const main = async () => {
-  process.env.DEBUG = 'ethjs,*trie*'
   const trie = new Trie({
     useRootPersistence: true,
   })
@@ -28,4 +27,4 @@ const main = async () => {
   console.log('valid', valid)
 }
 
-main()
+void main()

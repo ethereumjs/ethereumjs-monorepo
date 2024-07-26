@@ -1,6 +1,6 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction, TransactionFactory, TransactionType } from '@ethereumjs/tx'
+import { TransactionType, create1559FeeMarketTx, createTxFromTxData } from '@ethereumjs/tx'
 import { Address, bigIntToBytes, bytesToBigInt, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
@@ -32,7 +32,7 @@ describe('[EthProtocol]', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
-    Object.defineProperty(chain, 'networkId', {
+    Object.defineProperty(chain, 'chainId', {
       get: () => {
         return BigInt(1)
       },
@@ -53,26 +53,26 @@ describe('[EthProtocol]', () => {
     assert.deepEqual(
       p.encodeStatus(),
       {
-        networkId: hexToBytes('0x01'),
+        chainId: hexToBytes('0x01'),
         td: hexToBytes('0x64'),
         bestHash: '0xaa',
         genesisHash: '0xbb',
         latestBlock: hexToBytes('0x0a'),
       },
-      'encode status'
+      'encode status',
     )
     const status = p.decodeStatus({
-      networkId: [0x01],
+      chainId: [0x01],
       td: hexToBytes('0x64'),
       bestHash: '0xaa',
       genesisHash: '0xbb',
     })
     assert.ok(
-      status.networkId === BigInt(1) &&
+      status.chainId === BigInt(1) &&
         status.td === BigInt(100) &&
         status.bestHash === '0xaa' &&
         status.genesisHash === '0xbb',
-      'decode status'
+      'decode status',
     )
   })
 
@@ -81,7 +81,7 @@ describe('[EthProtocol]', () => {
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     const td = BigInt(100)
-    const block = Block.fromBlockData({}, { common: config.chainCommon })
+    const block = createBlockFromBlockData({}, { common: config.chainCommon })
     const res = p.decode(p.messages.filter((message) => message.name === 'NewBlock')[0], [
       block.raw(),
       bigIntToBytes(td),
@@ -98,7 +98,7 @@ describe('[EthProtocol]', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
-    const block = Block.fromBlockData({})
+    const block = createBlockFromBlockData({})
     const res = p.decode(p.messages.filter((message) => message.name === 'GetReceipts')[0], [
       bigIntToBytes(1n),
       [block.hash()],
@@ -122,14 +122,14 @@ describe('[EthProtocol]', () => {
     const p = new EthProtocol({ config, chain })
 
     chain.config.chainCommon.setHardfork(Hardfork.London)
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = create1559FeeMarketTx(
       {
         maxFeePerGas: 10,
         maxPriorityFeePerGas: 8,
         gasLimit: 100,
         value: 6,
       },
-      { common: config.chainCommon }
+      { common: config.chainCommon },
     )
     const res = p.encode(p.messages.filter((message) => message.name === 'PooledTransactions')[0], {
       reqId: BigInt(1),
@@ -184,10 +184,10 @@ describe('[EthProtocol]', () => {
     assert.equal(bytesToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
     const expectedSerializedReceipts = [
       hexToBytes(
-        '0x02f9016d0164b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f866f864940000000000000000000000000000000000000000f842a00000000000000000000000000000000000000000000000000000000000000000a001010101010101010101010101010101010101010101010101010101010101018a00000000000000000000'
+        '0x02f9016d0164b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f866f864940000000000000000000000000000000000000000f842a00000000000000000000000000000000000000000000000000000000000000000a001010101010101010101010101010101010101010101010101010101010101018a00000000000000000000',
       ),
       hexToBytes(
-        '0xf9016f808203e8b9010001010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101f866f864940101010101010101010101010101010101010101f842a00101010101010101010101010101010101010101010101010101010101010101a001010101010101010101010101010101010101010101010101010101010101018a00000000000000000000'
+        '0xf9016f808203e8b9010001010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101f866f864940101010101010101010101010101010101010101f842a00101010101010101010101010101010101010101010101010101010101010101a001010101010101010101010101010101010101010101010101010101010101018a00000000000000000000',
       ),
     ]
     assert.deepEqual(res[1], expectedSerializedReceipts, 'correctly encoded receipts')
@@ -220,12 +220,12 @@ describe('[EthProtocol]', () => {
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
 
-    const legacyTx = TransactionFactory.fromTxData({ type: 0 }, { common: config.chainCommon })
-    const eip2929Tx = TransactionFactory.fromTxData({ type: 1 }, { common: config.chainCommon })
-    const eip1559Tx = TransactionFactory.fromTxData({ type: 2 }, { common: config.chainCommon })
-    const blobTx = TransactionFactory.fromTxData(
+    const legacyTx = createTxFromTxData({ type: 0 }, { common: config.chainCommon })
+    const eip2929Tx = createTxFromTxData({ type: 1 }, { common: config.chainCommon })
+    const eip1559Tx = createTxFromTxData({ type: 2 }, { common: config.chainCommon })
+    const blobTx = createTxFromTxData(
       { type: 3, to: Address.zero(), blobVersionedHashes: [hexToBytes(`0x01${'00'.repeat(31)}`)] },
-      { common: config.chainCommon }
+      { common: config.chainCommon },
     )
     const res = p.encode(p.messages.filter((message) => message.name === 'Transactions')[0], [
       legacyTx,
@@ -239,7 +239,7 @@ describe('[EthProtocol]', () => {
 
     const decoded = p.decode(
       p.messages.filter((message) => message.name === 'Transactions')[0],
-      res
+      res,
     )
     assert.deepEqual(decoded[0].type, legacyTx.type, 'decoded legacy tx correctly')
     assert.deepEqual(decoded[1].type, eip2929Tx.type, 'decoded eip2929 tx correctly')
@@ -255,27 +255,27 @@ describe('[EthProtocol]', () => {
     })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
-    const fakeTx = TransactionFactory.fromTxData({}).sign(randomBytes(32))
+    const fakeTx = createTxFromTxData({}).sign(randomBytes(32))
     const fakeHash = fakeTx.hash()
     const encoded = p.encode(
       p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],
-      [fakeHash]
+      [fakeHash],
     )
 
     const encodedEth68 = p.encode(
       p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],
-      [[fakeTx.type], [fakeTx.serialize().byteLength], [fakeHash]]
+      [[fakeTx.type], [fakeTx.serialize().byteLength], [fakeHash]],
     )
     assert.deepEqual(encoded[0], fakeHash, 'encoded hash correctly with pre-eth/68 format')
     assert.deepEqual(encodedEth68[2][0], fakeHash, 'encoded hash correctly with eth/68 format')
 
     const decoded = p.decode(
       p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],
-      encoded
+      encoded,
     )
     const decodedEth68 = p.decode(
       p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],
-      encodedEth68
+      encodedEth68,
     )
     assert.deepEqual(decoded[0], fakeHash, 'decoded hash correctly with pre-eth/68 format')
     assert.deepEqual(decodedEth68[2][0], fakeHash, 'decoded hash correctly with eth/68 format')

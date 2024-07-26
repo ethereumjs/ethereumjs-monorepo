@@ -1,27 +1,38 @@
 import { Account, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { DefaultStateManager } from '../src/index.js'
+import { DefaultStateManager, SimpleStateManager } from '../src/index.js'
+
+import type { StateManagerInterface } from '@ethereumjs/common'
 
 const storageEval = async (
-  sm: DefaultStateManager,
+  sm: StateManagerInterface,
   address: Address,
   key: Uint8Array,
   value: Uint8Array,
-  root: Uint8Array
+  root: Uint8Array,
+  rootCheck = true,
 ) => {
-  assert.deepEqual(
-    await sm.getContractStorage(address, key),
-    value,
-    'storage value should be equal'
-  )
-  const accountCMP = await sm.getAccount(address)
-  assert.deepEqual(accountCMP!.storageRoot, root, 'account storage root should be equal')
+  assert.deepEqual(await sm.getStorage(address, key), value, 'storage value should be equal')
+  if (rootCheck) {
+    const accountCMP = await sm.getAccount(address)
+    assert.deepEqual(accountCMP!.storageRoot, root, 'account storage root should be equal')
+  }
 }
 
 describe('StateManager -> Storage Checkpointing', () => {
   const address = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
-  const account = new Account()
+
+  const stateManagers = [
+    {
+      SM: DefaultStateManager,
+      rootCheck: true,
+    },
+    {
+      SM: SimpleStateManager,
+      rootCheck: false,
+    },
+  ]
 
   const key = hexToBytes(`0x${'01'.repeat(32)}`)
 
@@ -95,264 +106,266 @@ describe('StateManager -> Storage Checkpointing', () => {
     },
   ]
 
-  for (const s of storageSets) {
-    it(`No CP -> S1 -> Flush() (-> S1)`, async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+  for (const SMDict of stateManagers) {
+    for (const s of storageSets) {
+      it(`No CP -> S1 -> Flush() (-> S1)`, async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.putContractStorage(address, key, s.s1.value)
-      await sm.flush()
-      await storageEval(sm, address, key, s.s1.value, s.s1.root)
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.flush()
+        await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
 
-      sm.clearCaches()
-      assert.deepEqual(await sm.getContractStorage(address, key), s.s1.value)
-      await storageEval(sm, address, key, s.s1.value, s.s1.root)
-    })
+        sm.clearCaches()
+        assert.deepEqual(await sm.getStorage(address, key), s.s1.value)
+        await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
+      })
 
-    it(`CP -> S1.1 -> Commit -> Flush() (-> S1.1)`, async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it(`CP -> S1.1 -> Commit -> Flush() (-> S1.1)`, async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s1.value)
-      await sm.commit()
-      await sm.flush()
-      await storageEval(sm, address, key, s.s1.value, s.s1.root)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.commit()
+        await sm.flush()
+        await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
 
-      sm.clearCaches()
-      await storageEval(sm, address, key, s.s1.value, s.s1.root)
-    })
+        sm.clearCaches()
+        await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
+      })
 
-    it(`CP -> S1.1 -> Revert -> Flush() (-> Undefined)`, async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it(`CP -> S1.1 -> Revert -> Flush() (-> Undefined)`, async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s1.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s1.value)
 
-      await sm.revert()
-      await sm.flush()
-      await storageEval(sm, address, key, valueEmpty, rootEmpty)
+        await sm.revert()
+        await sm.flush()
+        await storageEval(sm, address, key, valueEmpty, rootEmpty)
 
-      sm.clearCaches()
+        sm.clearCaches()
 
-      await storageEval(sm, address, key, valueEmpty, rootEmpty)
-    })
+        await storageEval(sm, address, key, valueEmpty, rootEmpty)
+      })
 
-    it(`S1.1 -> CP -> Commit -> Flush() (-> S1.1)`, async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it(`S1.1 -> CP -> Commit -> Flush() (-> S1.1)`, async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.putContractStorage(address, key, s.s1.value)
-      await sm.checkpoint()
-      await sm.commit()
-      await sm.flush()
-      await storageEval(sm, address, key, s.s1.value, s.s1.root)
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.checkpoint()
+        await sm.commit()
+        await sm.flush()
+        await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
 
-      sm.clearCaches()
-      await storageEval(sm, address, key, s.s1.value, s.s1.root)
-    })
+        sm.clearCaches()
+        await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
+      })
 
-    it(`S1.1 -> CP -> Revert -> Flush() (-> S1.1)`, async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it(`S1.1 -> CP -> Revert -> Flush() (-> S1.1)`, async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.putContractStorage(address, key, s.s1.value)
-      await sm.checkpoint()
-      await sm.revert()
-      await sm.flush()
-      await storageEval(sm, address, key, s.s1.value, s.s1.root)
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.checkpoint()
+        await sm.revert()
+        await sm.flush()
+        await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
 
-      sm.clearCaches()
-      await storageEval(sm, address, key, s.s1.value, s.s1.root)
-    })
+        sm.clearCaches()
+        await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
+      })
 
-    it(`S1.1 -> CP -> S1.2 -> Commit -> Flush() (-> S1.2)`, async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it(`S1.1 -> CP -> S1.2 -> Commit -> Flush() (-> S1.2)`, async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.putContractStorage(address, key, s.s1.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s2.value)
-      await sm.commit()
-      await sm.flush()
-      await storageEval(sm, address, key, s.s2.value, s.s2.root)
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s2.value)
+        await sm.commit()
+        await sm.flush()
+        await storageEval(sm, address, key, s.s2.value, s.s2.root, SMDict.rootCheck)
 
-      sm.clearCaches()
-      await storageEval(sm, address, key, s.s2.value, s.s2.root)
-    })
+        sm.clearCaches()
+        await storageEval(sm, address, key, s.s2.value, s.s2.root, SMDict.rootCheck)
+      })
 
-    it(`S1.1 -> CP -> S1.2 -> Commit -> S1.3 -> Flush() (-> S1.3)`, async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it(`S1.1 -> CP -> S1.2 -> Commit -> S1.3 -> Flush() (-> S1.3)`, async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.putContractStorage(address, key, s.s1.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s2.value)
-      await sm.commit()
-      await sm.putContractStorage(address, key, s.s3.value)
-      await sm.flush()
-      await storageEval(sm, address, key, s.s3.value, s.s3.root)
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s2.value)
+        await sm.commit()
+        await sm.putStorage(address, key, s.s3.value)
+        await sm.flush()
+        await storageEval(sm, address, key, s.s3.value, s.s3.root, SMDict.rootCheck)
 
-      sm.clearCaches()
-      await storageEval(sm, address, key, s.s3.value, s.s3.root)
-    })
+        sm.clearCaches()
+        await storageEval(sm, address, key, s.s3.value, s.s3.root, SMDict.rootCheck)
+      })
 
-    it(`S1.1 -> CP -> S1.2 -> S1.3 -> Commit -> Flush() (-> S1.3)`, async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it(`S1.1 -> CP -> S1.2 -> S1.3 -> Commit -> Flush() (-> S1.3)`, async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.putContractStorage(address, key, s.s1.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s2.value)
-      await sm.putContractStorage(address, key, s.s3.value)
-      await sm.commit()
-      await sm.flush()
-      await storageEval(sm, address, key, s.s3.value, s.s3.root)
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s2.value)
+        await sm.putStorage(address, key, s.s3.value)
+        await sm.commit()
+        await sm.flush()
+        await storageEval(sm, address, key, s.s3.value, s.s3.root, SMDict.rootCheck)
 
-      sm.clearCaches()
-      await storageEval(sm, address, key, s.s3.value, s.s3.root)
-    })
+        sm.clearCaches()
+        await storageEval(sm, address, key, s.s3.value, s.s3.root, SMDict.rootCheck)
+      })
 
-    it(`CP -> S1.1 -> S1.2 -> Commit -> Flush() (-> S1.2)`, async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it(`CP -> S1.1 -> S1.2 -> Commit -> Flush() (-> S1.2)`, async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s1.value)
-      await sm.putContractStorage(address, key, s.s2.value)
-      await sm.commit()
-      await sm.flush()
-      await storageEval(sm, address, key, s.s2.value, s.s2.root)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s2.value)
+        await sm.commit()
+        await sm.flush()
+        await storageEval(sm, address, key, s.s2.value, s.s2.root, SMDict.rootCheck)
 
-      sm.clearCaches()
-      await storageEval(sm, address, key, s.s2.value, s.s2.root)
-    })
+        sm.clearCaches()
+        await storageEval(sm, address, key, s.s2.value, s.s2.root, SMDict.rootCheck)
+      })
 
-    it(`CP -> S1.1 -> S1.2 -> Revert -> Flush() (-> Undefined)`, async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it(`CP -> S1.1 -> S1.2 -> Revert -> Flush() (-> Undefined)`, async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s1.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s1.value)
 
-      await sm.putContractStorage(address, key, s.s2.value)
-      await sm.revert()
-      await sm.flush()
-      await storageEval(sm, address, key, valueEmpty, rootEmpty)
+        await sm.putStorage(address, key, s.s2.value)
+        await sm.revert()
+        await sm.flush()
+        await storageEval(sm, address, key, valueEmpty, rootEmpty)
 
-      sm.clearCaches()
-      await storageEval(sm, address, key, valueEmpty, rootEmpty)
-    })
+        sm.clearCaches()
+        await storageEval(sm, address, key, valueEmpty, rootEmpty)
+      })
 
-    it(`S1.1 -> CP -> S1.2 -> Revert -> Flush() (-> S1.1)`, async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it(`S1.1 -> CP -> S1.2 -> Revert -> Flush() (-> S1.1)`, async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.putContractStorage(address, key, s.s1.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s2.value)
-      await sm.revert()
-      await sm.flush()
-      await storageEval(sm, address, key, s.s1.value, s.s1.root)
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s2.value)
+        await sm.revert()
+        await sm.flush()
+        await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
 
-      sm.clearCaches()
-      await storageEval(sm, address, key, s.s1.value, s.s1.root)
-    })
+        sm.clearCaches()
+        await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
+      })
 
-    it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Commit -> Commit -> Flush() (-> S1.3)', async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Commit -> Commit -> Flush() (-> S1.3)', async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.putContractStorage(address, key, s.s1.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s2.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s3.value)
-      await sm.commit()
-      await sm.commit()
-      await sm.flush()
-      await storageEval(sm, address, key, s.s3.value, s.s3.root)
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s2.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s3.value)
+        await sm.commit()
+        await sm.commit()
+        await sm.flush()
+        await storageEval(sm, address, key, s.s3.value, s.s3.root, SMDict.rootCheck)
 
-      sm.clearCaches()
-      await storageEval(sm, address, key, s.s3.value, s.s3.root)
-    })
+        sm.clearCaches()
+        await storageEval(sm, address, key, s.s3.value, s.s3.root, SMDict.rootCheck)
+      })
 
-    it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Commit -> Revert -> Flush() (-> S1.1)', async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Commit -> Revert -> Flush() (-> S1.1)', async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.putContractStorage(address, key, s.s1.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s2.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s3.value)
-      await sm.commit()
-      await sm.revert()
-      await sm.flush()
-      await storageEval(sm, address, key, s.s1.value, s.s1.root)
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s2.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s3.value)
+        await sm.commit()
+        await sm.revert()
+        await sm.flush()
+        await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
 
-      sm.clearCaches()
-      await storageEval(sm, address, key, s.s1.value, s.s1.root)
-    })
+        sm.clearCaches()
+        await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
+      })
 
-    it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> Commit -> Flush() (-> S1.2)', async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> Commit -> Flush() (-> S1.2)', async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.putContractStorage(address, key, s.s1.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s2.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s3.value)
-      await sm.revert()
-      await sm.commit()
-      await sm.flush()
-      await storageEval(sm, address, key, s.s2.value, s.s2.root)
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s2.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s3.value)
+        await sm.revert()
+        await sm.commit()
+        await sm.flush()
+        await storageEval(sm, address, key, s.s2.value, s.s2.root, SMDict.rootCheck)
 
-      sm.clearCaches()
-      await storageEval(sm, address, key, s.s2.value, s.s2.root)
-    })
+        sm.clearCaches()
+        await storageEval(sm, address, key, s.s2.value, s.s2.root, SMDict.rootCheck)
+      })
 
-    it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> S1.4 -> Commit -> Flush() (-> S1.4)', async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> S1.4 -> Commit -> Flush() (-> S1.4)', async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.putContractStorage(address, key, s.s1.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s2.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s3.value)
-      await sm.revert()
-      await sm.putContractStorage(address, key, s.s4.value)
-      await sm.commit()
-      await sm.flush()
-      await storageEval(sm, address, key, s.s4.value, s.s4.root)
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s2.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s3.value)
+        await sm.revert()
+        await sm.putStorage(address, key, s.s4.value)
+        await sm.commit()
+        await sm.flush()
+        await storageEval(sm, address, key, s.s4.value, s.s4.root, SMDict.rootCheck)
 
-      sm.clearCaches()
-      await storageEval(sm, address, key, s.s4.value, s.s4.root)
-    })
+        sm.clearCaches()
+        await storageEval(sm, address, key, s.s4.value, s.s4.root, SMDict.rootCheck)
+      })
 
-    it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> S1.4 -> CP -> S1.5 -> Commit -> Commit -> Flush() (-> S1.5)', async () => {
-      const sm = new DefaultStateManager()
-      await sm.putAccount(address, account)
+      it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> S1.4 -> CP -> S1.5 -> Commit -> Commit -> Flush() (-> S1.5)', async () => {
+        const sm = new SMDict.SM()
+        await sm.putAccount(address, new Account())
 
-      await sm.putContractStorage(address, key, s.s1.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s2.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s3.value)
-      await sm.revert()
-      await sm.putContractStorage(address, key, s.s4.value)
-      await sm.checkpoint()
-      await sm.putContractStorage(address, key, s.s5.value)
-      await sm.commit()
-      await sm.commit()
-      await sm.flush()
-      await storageEval(sm, address, key, s.s5.value, s.s5.root)
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s2.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s3.value)
+        await sm.revert()
+        await sm.putStorage(address, key, s.s4.value)
+        await sm.checkpoint()
+        await sm.putStorage(address, key, s.s5.value)
+        await sm.commit()
+        await sm.commit()
+        await sm.flush()
+        await storageEval(sm, address, key, s.s5.value, s.s5.root, SMDict.rootCheck)
 
-      sm.clearCaches()
-      await storageEval(sm, address, key, s.s5.value, s.s5.root)
-    })
+        sm.clearCaches()
+        await storageEval(sm, address, key, s.s5.value, s.s5.root, SMDict.rootCheck)
+      })
+    }
   }
 })

@@ -1,10 +1,10 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -43,7 +43,7 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction) {
   const signed = transaction.sign(pkey)
   const json = signed.toJSON()
 
-  const block = Block.fromBlockData(
+  const block = createBlockFromBlockData(
     {
       header: {
         number: BigInt(1),
@@ -53,7 +53,7 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction) {
       },
       transactions: [json],
     },
-    { common }
+    { common },
   )
   return block
 }
@@ -72,7 +72,7 @@ describe('EIP3198 tests', () => {
       },
       {
         common,
-      }
+      },
     )
     const block = makeBlock(fee, tx)
     const vm = await VM.create({ common })
@@ -87,11 +87,11 @@ describe('EIP3198 tests', () => {
       }
     })
 
-    const results = await vm.runTx({
+    const results = await runTx(vm, {
       tx: block.transactions[0],
       block,
     })
-    const txBaseFee = block.transactions[0].getBaseFee()
+    const txBaseFee = block.transactions[0].getIntrinsicGas()
     const gasUsed = results.totalGasSpent - txBaseFee
     assert.equal(gasUsed, BigInt(2), 'gas used correct')
     assert.equal(stack[0], fee, 'right item pushed on stack')

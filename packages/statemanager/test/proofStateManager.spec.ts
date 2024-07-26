@@ -1,4 +1,4 @@
-import { Trie } from '@ethereumjs/trie'
+import { Trie, createTrie } from '@ethereumjs/trie'
 import {
   Account,
   Address,
@@ -40,7 +40,7 @@ describe('ProofStateManager', () => {
     await stateManager.putAccount(address, new Account(BigInt(100), BigInt(200)))
     const storageRoot = (await stateManager.getAccount(address))!.storageRoot
 
-    await stateManager.putContractStorage(address, key, new Uint8Array([10]))
+    await stateManager.putStorage(address, key, new Uint8Array([10]))
 
     const proof = await stateManager.getProof(address, [key])
     assert.ok(!equalsBytes(hexToBytes(proof.storageHash), storageRoot))
@@ -82,8 +82,8 @@ describe('ProofStateManager', () => {
     const stateManager = new DefaultStateManager()
     await stateManager.checkpoint()
     await stateManager.putAccount(address, new Account())
-    await stateManager.putContractStorage(address, key, value)
-    await stateManager.putContractCode(address, code)
+    await stateManager.putStorage(address, key, value)
+    await stateManager.putCode(address, code)
     const account = await stateManager.getAccount(address)
     account!.balance = BigInt(1)
     account!.nonce = BigInt(2)
@@ -101,7 +101,7 @@ describe('ProofStateManager', () => {
     assert.equal(
       await stateManager.verifyProof(nonExistenceProof),
       true,
-      'verified proof of non-existence of account'
+      'verified proof of non-existence of account',
     )
   })
 
@@ -111,7 +111,7 @@ describe('ProofStateManager', () => {
     // Account: 0xc626553e7c821d0f8308c28d56c60e3c15f8d55a
     // Storage slots: empty list
     const address = Address.fromString('0xc626553e7c821d0f8308c28d56c60e3c15f8d55a')
-    const trie = await Trie.create({ useKeyHashing: true })
+    const trie = await createTrie({ useKeyHashing: true })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined

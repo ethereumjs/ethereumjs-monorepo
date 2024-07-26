@@ -1,6 +1,6 @@
 import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { create1559FeeMarketTx, create4844BlobTx } from '@ethereumjs/tx'
 import {
   Address,
   BIGINT_1,
@@ -19,11 +19,11 @@ import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
 import qs from 'qs'
 
-import { EthereumClient } from '../../src/client'
+import { EthereumClient } from '../../src/client.js'
 import { Config } from '../../src/config.js'
-import { LevelDB } from '../../src/execution/level'
-import { RPCManager } from '../../src/rpc'
-import { Event } from '../../src/types'
+import { LevelDB } from '../../src/execution/level.js'
+import { RPCManager } from '../../src/rpc/index.js'
+import { Event } from '../../src/types.js'
 
 import type { Common } from '@ethereumjs/common'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
@@ -117,7 +117,7 @@ export async function validateBlockHashesInclusionInBeacon(
   beaconUrl: string,
   from: number,
   to: number,
-  blockHashes: string[]
+  blockHashes: string[],
 ) {
   const executionHashes: string[] = []
   for (let i = from; i <= to; i++) {
@@ -147,7 +147,7 @@ type RunOpts = {
 export function runNetwork(
   network: string,
   client: Client,
-  { filterKeywords, filterOutWords, withPeer }: RunOpts
+  { filterKeywords, filterOutWords, withPeer }: RunOpts,
 ): () => Promise<void> {
   const runProc = spawn('test/sim/single-run.sh', [], {
     env: {
@@ -255,7 +255,7 @@ export function runNetwork(
 export async function startNetwork(
   network: string,
   client: Client,
-  opts: RunOpts
+  opts: RunOpts,
 ): Promise<{ teardownCallBack: () => Promise<void>; result: string }> {
   let teardownCallBack
   if (opts.externalRun === undefined) {
@@ -271,7 +271,7 @@ export async function runTxHelper(
   opts: { client: Client; common: Common; sender: string; pkey: Uint8Array },
   data: PrefixedHexString | '',
   to?: PrefixedHexString,
-  value?: bigint
+  value?: bigint,
 ) {
   const { client, common, sender, pkey } = opts
   const nonce = BigInt((await client.request('eth_getTransactionCount', [sender, 'latest'])).result)
@@ -279,7 +279,7 @@ export async function runTxHelper(
   const block = await client.request('eth_getBlockByNumber', ['latest', false])
   const baseFeePerGas = BigInt(block.result.baseFeePerGas) * 100n
   const maxPriorityFeePerGas = 100000000n
-  const tx = FeeMarketEIP1559Transaction.fromTxData(
+  const tx = create1559FeeMarketTx(
     {
       data,
       gasLimit: 1000000,
@@ -289,7 +289,7 @@ export async function runTxHelper(
       to,
       value,
     },
-    { common }
+    { common },
   ).sign(pkey)
 
   const res = await client.request('eth_sendRawTransaction', [bytesToHex(tx.serialize())], 2.0)
@@ -316,7 +316,7 @@ export const runBlobTx = async (
   pkey: Uint8Array,
   to?: PrefixedHexString,
   value?: bigint,
-  opts?: TxOptions
+  opts?: TxOptions,
 ) => {
   const blobs = getBlobs(bytesToHex(randomBytes(blobSize)))
   const commitments = blobsToCommitments(kzg, blobs)
@@ -346,7 +346,7 @@ export const runBlobTx = async (
   txData.gasLimit = BigInt(1000000)
   const nonce = await client.request('eth_getTransactionCount', [sender.toString(), 'latest'], 2.0)
   txData.nonce = BigInt(nonce.result)
-  const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
+  const blobTx = create4844BlobTx(txData, opts).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
@@ -383,7 +383,7 @@ export const createBlobTxs = async (
     gasLimit: bigint
     blobSize: number
   },
-  opts?: TxOptions
+  opts?: TxOptions,
 ) => {
   const txHashes: string[] = []
   const blobSize = txMeta.blobSize ?? 2 ** 17 - 1
@@ -407,7 +407,7 @@ export const createBlobTxs = async (
       gas: undefined,
     }
 
-    const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
+    const blobTx = create4844BlobTx(txData, opts).sign(pkey)
 
     const serializedWrapper = blobTx.serializeNetworkWrapper()
     await fs.appendFile('./blobs.txt', bytesToHex(serializedWrapper) + '\n')
@@ -432,20 +432,20 @@ export async function createInlineClient(
   config: any,
   common: any,
   customGenesisState: any,
-  datadir: any = Config.DATADIR_DEFAULT
+  datadir: any = Config.DATADIR_DEFAULT,
 ) {
   config.events.setMaxListeners(50)
   const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
-    `${datadir}/${common.chainName()}/chainDB`
+    `${datadir}/${common.chainName()}/chainDB`,
   )
   const stateDB = new Level<string | Uint8Array, string | Uint8Array>(
-    `${datadir}/${common.chainName()}/stateDB`
+    `${datadir}/${common.chainName()}/stateDB`,
   )
   const metaDB = new Level<string | Uint8Array, string | Uint8Array>(
-    `${datadir}/${common.chainName()}/metaDB`
+    `${datadir}/${common.chainName()}/metaDB`,
   )
 
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     db: new LevelDB(chainDB),
     genesisState: customGenesisState,
     common: config.chainCommon,
@@ -506,7 +506,7 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
         !['SYNCING', 'VALID', 'ACCEPTED'].includes(newPayloadRes.status)
       ) {
         throw Error(
-          `newPayload error: status${newPayloadRes.status} validationError=${newPayloadRes.validationError} error=${newPayloadRes.error}`
+          `newPayload error: status${newPayloadRes.status} validationError=${newPayloadRes.validationError} error=${newPayloadRes.error}`,
         )
       }
 
@@ -545,7 +545,7 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
       const beaconHead = await (await fetch(`${peerBeaconUrl}/eth/v2/beacon/blocks/head`)).json()
 
       const payload = executionPayloadFromBeaconPayload(
-        beaconHead.data.message.body.execution_payload
+        beaconHead.data.message.body.execution_payload,
       )
       const finalizedBlockHash = beaconFinalized.data.finalized_header.execution.block_hash
 

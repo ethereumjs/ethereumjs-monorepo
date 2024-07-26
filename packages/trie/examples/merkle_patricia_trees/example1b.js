@@ -1,8 +1,9 @@
 /* Example 1b - Manually Creating and Updating a Secure Trie*/
 
-const { Trie } = require('../../dist/cjs')
 const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
 const { keccak256 } = require('ethereum-cryptography/keccak')
+
+const { Trie } = require('../../dist/cjs/index.js')
 
 const trie = new Trie()
 console.log('Empty trie root (Bytes): ', bytesToHex(trie.root())) // The trie root (32 bytes)
@@ -15,7 +16,7 @@ async function test() {
   console.log('Updated trie root:', bytesToHex(trie.root())) // The new trie root (32 bytes)
 }
 
-test()
+void test()
 
 /*
 Results:

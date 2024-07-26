@@ -1,12 +1,13 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork } from '@ethereumjs/common'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { Interface } from '@ethersproject/abi'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../src/vm'
+import { runTx } from '../../src/index.js'
+import { VM } from '../../src/vm.js'
 
 import * as testChain from './testdata/testnet.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
@@ -49,7 +50,7 @@ const common = new Common({
   hardfork: Hardfork.Chainstart,
   customChains: [testChain] as ChainConfig[],
 })
-const block = Block.fromBlockData(
+const block = createBlockFromBlockData(
   {
     header: {
       gasLimit: 21_000,
@@ -57,17 +58,17 @@ const block = Block.fromBlockData(
   },
   {
     common,
-  }
+  },
 )
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
 describe('VM initialized with custom state', () => {
   it('should transfer eth from already existent account', async () => {
-    const blockchain = await Blockchain.create({ common, genesisState })
+    const blockchain = await createBlockchain({ common, genesisState })
     const vm = await VM.create({ blockchain, common, genesisState })
 
     const to = '0x00000000000000000000000000000000000000ff'
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0,
         to,
@@ -76,9 +77,9 @@ describe('VM initialized with custom state', () => {
       },
       {
         common,
-      }
+      },
     ).sign(privateKey)
-    const result = await vm.runTx({
+    const result = await runTx(vm, {
       tx,
       block,
     })
@@ -90,11 +91,11 @@ describe('VM initialized with custom state', () => {
   })
 
   it('should retrieve value from storage', async () => {
-    const blockchain = await Blockchain.create({ common, genesisState })
+    const blockchain = await createBlockchain({ common, genesisState })
     common.setHardfork(Hardfork.London)
     const vm = await VM.create({ blockchain, common, genesisState })
     const sigHash = new Interface(['function retrieve()']).getSighash(
-      'retrieve'
+      'retrieve',
     ) as PrefixedHexString
 
     const callResult = await vm.evm.runCall({

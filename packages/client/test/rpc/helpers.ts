@@ -1,5 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, Hardfork, parseGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import {
@@ -9,6 +9,7 @@ import {
   hexToBytes,
   parseGethGenesisState,
 } from '@ethereumjs/util'
+import { buildBlock } from '@ethereumjs/vm'
 import { Client, Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 import { assert } from 'vitest'
@@ -28,6 +29,7 @@ import { mockBlockchain } from './mockBlockchain.js'
 
 import type { EthereumClient } from '../../src/client.js'
 import type { FullEthereumService } from '../../src/service/index.js'
+import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
@@ -58,7 +60,7 @@ type createClientArgs = {
 export function startRPC(
   methods: any,
   opts: StartRPCOpts = { port: 0 },
-  withEngineMiddleware?: WithEngineMiddleware
+  withEngineMiddleware?: WithEngineMiddleware,
 ) {
   const { port, wsServer } = opts
   const server = new RPCServer(methods)
@@ -121,7 +123,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
   if ((chain as any)._headers !== undefined) {
     ;(chain as any)._headers.latest = BlockHeader.fromHeaderData(
       { withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined },
-      { common }
+      { common },
     )
   }
 
@@ -235,7 +237,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   // use genesisStateRoot for blockchain init as well as to start of the stateless
   // client. else the stateroot could have been generated out of box
   const genesisMeta = common.gteHardfork(Hardfork.Osaka) ? { genesisStateRoot } : { genesisState }
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     common,
     validateBlocks: false,
     validateConsensus: false,
@@ -278,13 +280,13 @@ export async function runBlockWithTxs(
   chain: Chain,
   execution: VMExecution,
   txs: TypedTransaction[],
-  fromEngine = false
+  fromEngine = false,
 ) {
   const { vm } = execution
   // build block with tx
   const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.shallowCopy()
-  const blockBuilder = await vmCopy.buildBlock({
+  const blockBuilder = await buildBlock(vmCopy, {
     parentBlock,
     headerData: {
       timestamp: parentBlock.header.timestamp + BIGINT_1,
@@ -302,6 +304,7 @@ export async function runBlockWithTxs(
   // put block into chain and run execution
   await chain.putBlocks([block], fromEngine)
   await execution.run()
+  return block
 }
 
 /**

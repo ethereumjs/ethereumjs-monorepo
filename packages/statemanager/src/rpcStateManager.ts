@@ -1,10 +1,12 @@
 import { Chain, Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
+import { verifyTrieProof } from '@ethereumjs/trie'
 import {
   Account,
   bigIntToHex,
   bytesToHex,
+  createAccount,
+  createAccountFromRLP,
   equalsBytes,
   fetchFromProvider,
   hexToBytes,
@@ -16,7 +18,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { AccountCache, CacheType, OriginalStorageCache, StorageCache } from './cache/index.js'
 
-import type { Proof } from './index.js'
+import type { Proof, RPCStateManagerOpts } from './index.js'
 import type {
   AccountFields,
   EVMStateManagerInterface,
@@ -25,17 +27,6 @@ import type {
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
-
-export interface RPCStateManagerOpts {
-  provider: string
-  blockTag: bigint | 'earliest'
-
-  /**
-   * The common to use
-   */
-  common?: Common
-}
 
 const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(2)
 
@@ -55,9 +46,9 @@ export class RPCStateManager implements EVMStateManagerInterface {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
-    this._debug = createDebugLogger('statemanager:rpcStateManager')
+    this._debug = debugDefault('statemanager:rpcStateManager')
     if (typeof opts.provider === 'string' && opts.provider.startsWith('http')) {
       this._provider = opts.provider
     } else {
@@ -70,7 +61,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
     this._storageCache = new StorageCache({ size: 100000, type: CacheType.ORDERED_MAP })
     this._accountCache = new AccountCache({ size: 100000, type: CacheType.ORDERED_MAP })
 
-    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
   }
@@ -124,7 +115,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * @returns {Promise<Uint8Array>} - Resolves with the code corresponding to the provided address.
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
-  async getContractCode(address: Address): Promise<Uint8Array> {
+  async getCode(address: Address): Promise<Uint8Array> {
     let codeBytes = this._contractCache.get(address.toString())
     if (codeBytes !== undefined) return codeBytes
     const code = await fetchFromProvider(this._provider, {
@@ -136,8 +127,8 @@ export class RPCStateManager implements EVMStateManagerInterface {
     return codeBytes
   }
 
-  async getContractCodeSize(address: Address): Promise<number> {
-    const contractCode = await this.getContractCode(address)
+  async getCodeSize(address: Address): Promise<number> {
+    const contractCode = await this.getCode(address)
     return contractCode.length
   }
 
@@ -147,7 +138,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * @param address - Address of the `account` to add the `code` for
    * @param value - The value of the `code`
    */
-  async putContractCode(address: Address, value: Uint8Array): Promise<void> {
+  async putCode(address: Address, value: Uint8Array): Promise<void> {
     // Store contract code in the cache
     this._contractCache.set(address.toString(), value)
   }
@@ -161,7 +152,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * corresponding to the provided address at the provided key.
    * If this does not exist an empty `Uint8Array` is returned.
    */
-  async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
+  async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     // Check storage slot in cache
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
@@ -179,7 +170,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
     })
     value = toBytes(storage)
 
-    await this.putContractStorage(address, key, value)
+    await this.putStorage(address, key, value)
     return value
   }
 
@@ -192,7 +183,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * Cannot be more than 32 bytes. Leading zeros are stripped.
    * If it is empty or filled with zeros, deletes the value.
    */
-  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
+  async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     this._storageCache.put(address, key, value)
   }
 
@@ -200,8 +191,8 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * Clears all storage entries for the account corresponding to `address`.
    * @param address - Address to clear the storage of
    */
-  async clearContractStorage(address: Address): Promise<void> {
-    this._storageCache.clearContractStorage(address)
+  async clearStorage(address: Address): Promise<void> {
+    this._storageCache.clearStorage(address)
   }
 
   /**
@@ -244,7 +235,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
 
     const proofBuf = proof.accountProof.map((proofNode: PrefixedHexString) => toBytes(proofNode))
 
-    const verified = await Trie.verifyProof(address.bytes, proofBuf, {
+    const verified = await verifyTrieProof(address.bytes, proofBuf, {
       useKeyHashing: true,
     })
     // if not verified (i.e. verifyProof returns null), account does not exist
@@ -258,9 +249,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
   async getAccount(address: Address): Promise<Account | undefined> {
     const elem = this._accountCache?.get(address)
     if (elem !== undefined) {
-      return elem.accountRLP !== undefined
-        ? Account.fromRlpSerializedAccount(elem.accountRLP)
-        : undefined
+      return elem.accountRLP !== undefined ? createAccountFromRLP(elem.accountRLP) : undefined
     }
 
     const accountFromProvider = await this.getAccountFromProvider(address)
@@ -268,7 +257,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
       equalsBytes(accountFromProvider.codeHash, new Uint8Array(32).fill(0)) ||
       equalsBytes(accountFromProvider.serialize(), KECCAK256_RLP_EMPTY_ACCOUNT)
         ? undefined
-        : Account.fromRlpSerializedAccount(accountFromProvider.serialize())
+        : createAccountFromRLP(accountFromProvider.serialize())
 
     this._accountCache?.put(address, account)
 
@@ -286,7 +275,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
       method: 'eth_getProof',
       params: [address.toString(), [] as any, this._blockTag],
     })
-    const account = Account.fromAccountData({
+    const account = createAccount({
       balance: BigInt(accountData.balance),
       nonce: BigInt(accountData.nonce),
       codeHash: toBytes(accountData.codeHash),
@@ -307,7 +296,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
           account?.balance
         } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${
           account && account.isEmpty() ? 'yes' : 'no'
-        }`
+        }`,
       )
     }
     if (account !== undefined) {
@@ -334,8 +323,8 @@ export class RPCStateManager implements EVMStateManagerInterface {
             if (k === 'nonce') return v.toString()
             return v
           },
-          2
-        )
+          2,
+        ),
       )
     }
     let account = await this.getAccount(address)

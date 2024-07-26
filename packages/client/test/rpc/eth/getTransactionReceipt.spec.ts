@@ -1,9 +1,5 @@
-import { Common, Hardfork } from '@ethereumjs/common'
-import {
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-} from '@ethereumjs/tx'
+import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { create1559FeeMarketTx, create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   bytesToHex,
@@ -30,13 +26,13 @@ describe(method, () => {
     const { chain, common, execution, server } = await setupChain(pow, 'pow')
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = LegacyTransaction.fromTxData(
+    const tx = createLegacyTx(
       {
         gasLimit: 2000000,
         gasPrice: 100,
         to: '0x0000000000000000000000000000000000000000',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
@@ -49,18 +45,18 @@ describe(method, () => {
   it('call with 1559 tx', async () => {
     const { chain, common, execution, server } = await setupChain(
       gethGenesisStartLondon(pow),
-      'powLondon'
+      'powLondon',
     )
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = create1559FeeMarketTx(
       {
         gasLimit: 2000000,
         maxFeePerGas: 975000000,
         maxPriorityFeePerGas: 10,
         to: '0x1230000000000000000000000000000000000321',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
@@ -91,7 +87,7 @@ describe(method, () => {
 
       const kzg = await loadKZG()
 
-      const common = Common.fromGethGenesis(gethGenesis, {
+      const common = createCommonFromGethGenesis(gethGenesis, {
         chain: 'customChain',
         hardfork: Hardfork.Cancun,
         customCrypto: {
@@ -108,7 +104,7 @@ describe(method, () => {
       const commitments = blobsToCommitments(kzg, blobs)
       const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
       const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
-      const tx = BlobEIP4844Transaction.fromTxData(
+      const tx = create4844BlobTx(
         {
           blobVersionedHashes,
           blobs,
@@ -121,7 +117,7 @@ describe(method, () => {
           to: randomBytes(20),
           nonce: 0n,
         },
-        { common }
+        { common },
       ).sign(dummy.privKey)
 
       await runBlockWithTxs(chain, execution, [tx], true)

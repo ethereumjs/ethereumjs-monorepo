@@ -11,7 +11,9 @@ import * as difficultyEIP2384_random_to20M from '../../ethereum-tests/Difficulty
 import * as difficultyFrontier from '../../ethereum-tests/DifficultyTests/dfFrontier/difficultyFrontier.json'
 import * as difficultyGrayGlacier from '../../ethereum-tests/DifficultyTests/dfGrayGlacier/difficultyGrayGlacier.json'
 import * as difficultyHomestead from '../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json'
-import { Block } from '../src/index.js'
+import { createBlockFromBlockData } from '../src/constructors.js'
+
+import type { Block } from '../src/index.js'
 
 function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: string) {
   const dif = block.ethashCanonicalDifficulty(parentBlock)
@@ -28,7 +30,7 @@ const hardforkTestData: TestData = {
   muirGlacier: Object.assign(
     difficultyEIP2384.difficultyEIP2384.Berlin,
     difficultyEIP2384_random.difficultyEIP2384_random.Berlin,
-    difficultyEIP2384_random_to20M.difficultyEIP2384_random_to20M.Berlin
+    difficultyEIP2384_random_to20M.difficultyEIP2384_random_to20M.Berlin,
   ),
   arrowGlacier: difficultyArrowGlacier.difficultyArrowGlacier.ArrowGlacier,
   grayGlacier: difficultyGrayGlacier.difficultyGrayGlacier.GrayGlacier,
@@ -55,7 +57,7 @@ describe('[Header]: difficulty tests', () => {
           })
         const blockOpts = { common }
         const uncleHash = test.parentUncles === '0x00' ? undefined : test.parentUncles
-        const parentBlock = Block.fromBlockData(
+        const parentBlock = createBlockFromBlockData(
           {
             header: {
               timestamp: test.parentTimestamp,
@@ -63,10 +65,10 @@ describe('[Header]: difficulty tests', () => {
               uncleHash,
             },
           },
-          blockOpts
+          blockOpts,
         )
 
-        const block = Block.fromBlockData(
+        const block = createBlockFromBlockData(
           {
             header: {
               timestamp: test.currentTimestamp,
@@ -74,7 +76,7 @@ describe('[Header]: difficulty tests', () => {
               number: test.currentBlockNumber,
             },
           },
-          blockOpts
+          blockOpts,
         )
 
         runDifficultyTests(test, parentBlock, block, `fork determination by hardfork (${hardfork})`)
@@ -90,7 +92,7 @@ describe('[Header]: difficulty tests', () => {
         const common = new Common({ chain })
         const blockOpts = { common, setHardfork: true }
         const uncleHash = test.parentUncles === '0x00' ? undefined : test.parentUncles
-        const parentBlock = Block.fromBlockData(
+        const parentBlock = createBlockFromBlockData(
           {
             header: {
               timestamp: test.parentTimestamp,
@@ -99,10 +101,10 @@ describe('[Header]: difficulty tests', () => {
               uncleHash,
             },
           },
-          blockOpts
+          blockOpts,
         )
 
-        const block = Block.fromBlockData(
+        const block = createBlockFromBlockData(
           {
             header: {
               timestamp: test.currentTimestamp,
@@ -110,14 +112,14 @@ describe('[Header]: difficulty tests', () => {
               number: test.currentBlockNumber,
             },
           },
-          blockOpts
+          blockOpts,
         )
 
         runDifficultyTests(
           test,
           parentBlock,
           block,
-          `fork determination by block number (${test.currentBlockNumber})`
+          `fork determination by block number (${test.currentBlockNumber})`,
         )
       }
     }

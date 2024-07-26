@@ -3,6 +3,7 @@ import {
   Account,
   BIGINT_0,
   BIGINT_1,
+  BIGINT_2,
   MAX_UINT64,
   bigIntToHex,
   bytesToBigInt,
@@ -11,7 +12,10 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import { EOF } from './eof.js'
+import { FORMAT, MAGIC, VERSION } from './eof/constants.js'
+import { EOFContainerMode, validateEOF } from './eof/container.js'
+import { setupEOF } from './eof/setup.js'
+import { ContainerSectionType } from './eof/verify.js'
 import { ERROR, EvmError } from './exceptions.js'
 import { type EVMPerformanceLogger, type Timer } from './logger.js'
 import { Memory } from './memory.js'
@@ -22,12 +26,11 @@ import { Stack } from './stack.js'
 import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
-import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
+import type { Block, Blockchain, EOFEnv, EVMProfilerOpts, EVMResult, Log } from './types.js'
 import type { AccessWitnessInterface, Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
-const { debug: createDebugLogger } = debugDefault
 
-const debugGas = createDebugLogger('evm:gas')
+const debugGas = debugDefault('evm:gas')
 
 export interface InterpreterOpts {
   pc?: number
@@ -57,6 +60,7 @@ export interface Env {
   callValue: bigint
   code: Uint8Array
   isStatic: boolean
+  isCreate: boolean
   depth: number
   gasPrice: bigint
   origin: Address
@@ -64,7 +68,7 @@ export interface Env {
   contract: Account
   codeAddress: Address /* Different than address for DELEGATECALL and CALLCODE */
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
-  containerCode?: Uint8Array /** Full container code for EOF1 contracts */
+  eof?: EOFEnv /* Optional EOF environment in case of EOF execution */
   blobVersionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
   accessWitness?: AccessWitnessInterface
@@ -149,7 +153,7 @@ export class Interpreter {
     gasLeft: bigint,
     journal: Journal,
     performanceLogs: EVMPerformanceLogger,
-    profilerOpts?: EVMProfilerOpts
+    profilerOpts?: EVMProfilerOpts,
   ) {
     this._evm = evm
     this._stateManager = stateManager
@@ -185,40 +189,54 @@ export class Interpreter {
   }
 
   async run(code: Uint8Array, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    if (!this.common.isActivatedEIP(3540) || code[0] !== EOF.FORMAT) {
+    if (!this.common.isActivatedEIP(3540) || code[0] !== FORMAT) {
       // EIP-3540 isn't active and first byte is not 0xEF - treat as legacy bytecode
       this._runState.code = code
     } else if (this.common.isActivatedEIP(3540)) {
-      if (code[1] !== EOF.MAGIC) {
+      if (code[1] !== MAGIC) {
         // Bytecode contains invalid EOF magic byte
         return {
           runState: this._runState,
           exceptionError: new EvmError(ERROR.INVALID_BYTECODE_RESULT),
         }
       }
-      if (code[2] !== EOF.VERSION) {
+      if (code[2] !== VERSION) {
         // Bytecode contains invalid EOF version number
         return {
           runState: this._runState,
           exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
         }
       }
-      // Code is EOF1 format
-      const codeSections = EOF.codeAnalysis(code)
-      if (!codeSections) {
-        // Code is invalid EOF1 format if `codeSections` is falsy
+      this._runState.code = code
+
+      const isTxCreate = this._env.isCreate && this._env.depth === 0
+      const eofMode = isTxCreate ? EOFContainerMode.TxInitmode : EOFContainerMode.Default
+
+      try {
+        setupEOF(this._runState, eofMode)
+      } catch (e) {
         return {
           runState: this._runState,
-          exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
+          exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
         }
       }
 
-      if (codeSections.data) {
-        // Set code to EOF container code section which starts at byte position 10 if data section is present
-        this._runState.code = code.subarray(10, 10 + codeSections!.code)
-      } else {
-        // Set code to EOF container code section which starts at byte position 7 if no data section is present
-        this._runState.code = code.subarray(7, 7 + codeSections!.code)
+      if (isTxCreate) {
+        // Tx tries to deploy container
+        try {
+          validateEOF(
+            this._runState.code,
+            this._evm,
+            ContainerSectionType.InitCode,
+            EOFContainerMode.TxInitmode,
+          )
+        } catch (e) {
+          // Trying to deploy an invalid EOF container
+          return {
+            runState: this._runState,
+            exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
+          }
+        }
       }
     }
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
@@ -342,7 +360,7 @@ export class Interpreter {
           this._runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
             contract,
             this._runState.programCounter,
-            this._runState.programCounter
+            this._runState.programCounter,
           )
         gas += statelessGas
         debugGas(`codechunk accessed statelessGas=${statelessGas} (-> ${gas})`)
@@ -380,7 +398,7 @@ export class Interpreter {
           Number(gas),
           'opcodes',
           opInfo.fee,
-          Number(gas) - opInfo.fee
+          Number(gas) - opInfo.fee,
         )
       }
     }
@@ -435,7 +453,7 @@ export class Interpreter {
       }
 
       if (!(name in this.opDebuggers)) {
-        this.opDebuggers[name] = createDebugLogger(`evm:ops:${name}`)
+        this.opDebuggers[name] = debugDefault(`evm:ops:${name}`)
       }
       this.opDebuggers[name](JSON.stringify(opTrace))
     }
@@ -525,7 +543,7 @@ export class Interpreter {
       debugGas(
         `${typeof context === 'string' ? context + ': ' : ''}refund ${amount} gas (-> ${
           this._runState.gasRefund
-        })`
+        })`,
       )
     }
     this._runState.gasRefund += amount
@@ -541,7 +559,7 @@ export class Interpreter {
       debugGas(
         `${typeof context === 'string' ? context + ': ' : ''}sub gas refund ${amount} (-> ${
           this._runState.gasRefund
-        })`
+        })`,
       )
     }
     this._runState.gasRefund -= amount
@@ -583,7 +601,7 @@ export class Interpreter {
    * Store 256-bit a value in memory to persistent storage.
    */
   async storageStore(key: Uint8Array, value: Uint8Array): Promise<void> {
-    await this._stateManager.putContractStorage(this._env.address, key, value)
+    await this._stateManager.putStorage(this._env.address, key, value)
     const account = await this._stateManager.getAccount(this._env.address)
     if (!account) {
       throw new Error('could not read account while persisting memory')
@@ -600,7 +618,7 @@ export class Interpreter {
     if (original) {
       return this._stateManager.originalStorageCache.get(this._env.address, key)
     } else {
-      return this._stateManager.getContractStorage(this._env.address, key)
+      return this._stateManager.getStorage(this._env.address, key)
     }
   }
 
@@ -692,14 +710,14 @@ export class Interpreter {
    * Returns the size of code running in current environment.
    */
   getCodeSize(): bigint {
-    return BigInt(this._env.containerCode ? this._env.containerCode.length : this._env.code.length)
+    return BigInt(this._env.code.length)
   }
 
   /**
    * Returns the code running in current environment.
    */
   getCode(): Uint8Array {
-    return this._env.containerCode ?? this._env.code
+    return this._env.code
   }
 
   /**
@@ -856,7 +874,7 @@ export class Interpreter {
     gasLimit: bigint,
     address: Address,
     value: bigint,
-    data: Uint8Array
+    data: Uint8Array,
   ): Promise<bigint> {
     const msg = new Message({
       caller: this._runState.auth,
@@ -881,7 +899,7 @@ export class Interpreter {
     gasLimit: bigint,
     address: Address,
     value: bigint,
-    data: Uint8Array
+    data: Uint8Array,
   ): Promise<bigint> {
     const msg = new Message({
       caller: this._env.address,
@@ -908,7 +926,7 @@ export class Interpreter {
     gasLimit: bigint,
     address: Address,
     value: bigint,
-    data: Uint8Array
+    data: Uint8Array,
   ): Promise<bigint> {
     const msg = new Message({
       caller: this._env.address,
@@ -933,7 +951,7 @@ export class Interpreter {
     gasLimit: bigint,
     address: Address,
     value: bigint,
-    data: Uint8Array
+    data: Uint8Array,
   ): Promise<bigint> {
     const msg = new Message({
       caller: this._env.caller,
@@ -970,7 +988,7 @@ export class Interpreter {
 
     // Check if account has enough ether and max depth not exceeded
     if (
-      this._env.depth >= Number(this.common.param('vm', 'stackLimit')) ||
+      this._env.depth >= Number(this.common.param('stackLimit')) ||
       (msg.delegatecall !== true && this._env.contract.balance < msg.value)
     ) {
       return BIGINT_0
@@ -1022,8 +1040,9 @@ export class Interpreter {
   async create(
     gasLimit: bigint,
     value: bigint,
-    data: Uint8Array,
-    salt?: Uint8Array
+    codeToRun: Uint8Array,
+    salt?: Uint8Array,
+    eofCallData?: Uint8Array,
   ): Promise<bigint> {
     const selfdestruct = new Set(this._result.selfdestruct)
     const caller = this._env.address
@@ -1034,7 +1053,7 @@ export class Interpreter {
 
     // Check if account has enough ether and max depth not exceeded
     if (
-      this._env.depth >= Number(this.common.param('vm', 'stackLimit')) ||
+      this._env.depth >= Number(this.common.param('stackLimit')) ||
       this._env.contract.balance < value
     ) {
       return BIGINT_0
@@ -1050,7 +1069,7 @@ export class Interpreter {
 
     if (this.common.isActivatedEIP(3860)) {
       if (
-        data.length > Number(this.common.param('vm', 'maxInitCodeSize')) &&
+        codeToRun.length > Number(this.common.param('maxInitCodeSize')) &&
         this._evm.allowUnlimitedInitCodeSize === false
       ) {
         return BIGINT_0
@@ -1061,7 +1080,8 @@ export class Interpreter {
       caller,
       gasLimit,
       value,
-      data,
+      data: codeToRun,
+      eofCallData,
       salt,
       depth,
       selfdestruct,
@@ -1119,7 +1139,7 @@ export class Interpreter {
       }
     }
 
-    return this._getReturnCode(results)
+    return this._getReturnCode(results, true)
   }
 
   /**
@@ -1130,9 +1150,23 @@ export class Interpreter {
     gasLimit: bigint,
     value: bigint,
     data: Uint8Array,
-    salt: Uint8Array
+    salt: Uint8Array,
   ): Promise<bigint> {
     return this.create(gasLimit, value, data, salt)
+  }
+
+  /**
+   * Creates a new contract with a given value. Generates
+   * a deterministic address via EOFCREATE rules.
+   */
+  async eofcreate(
+    gasLimit: bigint,
+    value: bigint,
+    containerData: Uint8Array,
+    salt: Uint8Array,
+    callData: Uint8Array,
+  ): Promise<bigint> {
+    return this.create(gasLimit, value, containerData, salt, callData)
   }
 
   /**
@@ -1148,7 +1182,7 @@ export class Interpreter {
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
     if (!this._result.selfdestruct.has(bytesToHex(this._env.address.bytes))) {
-      this.refundGas(this.common.param('gasPrices', 'selfdestructRefund'))
+      this.refundGas(this.common.param('selfdestructRefundGas'))
     }
 
     this._result.selfdestruct.add(bytesToHex(this._env.address.bytes))
@@ -1206,11 +1240,25 @@ export class Interpreter {
     this._result.logs.push(log)
   }
 
-  private _getReturnCode(results: EVMResult) {
-    if (results.execResult.exceptionError) {
-      return BIGINT_0
+  private _getReturnCode(results: EVMResult, isEOFCreate = false) {
+    if (this._runState.env.eof === undefined || isEOFCreate) {
+      if (results.execResult.exceptionError) {
+        return BIGINT_0
+      } else {
+        return BIGINT_1
+      }
     } else {
-      return BIGINT_1
+      // EOF mode, call was either EXTCALL / EXTDELEGATECALL / EXTSTATICCALL
+      if (results.execResult.exceptionError !== undefined) {
+        if (results.execResult.exceptionError.error === ERROR.REVERT) {
+          // Revert
+          return BIGINT_1
+        } else {
+          // Failure
+          return BIGINT_2
+        }
+      }
+      return BIGINT_0
     }
   }
 }

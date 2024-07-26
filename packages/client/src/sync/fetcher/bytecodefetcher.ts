@@ -6,7 +6,7 @@ import {
   concatBytes,
   equalsBytes,
 } from '@ethereumjs/util'
-import debugDefault from 'debug'
+import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Fetcher } from './fetcher.js'
@@ -17,7 +17,6 @@ import type { FetcherOptions } from './fetcher.js'
 import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 type ByteCodeDataResponse = Uint8Array[] & { completed?: boolean }
 
@@ -62,11 +61,11 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
-    this.debug = createDebugLogger('client:ByteCodeFetcher')
+    this.debug = debug('client:ByteCodeFetcher')
     if (this.hashes.length > 0) {
       const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Uint8Array[], Uint8Array>
       this.debug(
-        `Bytecode fetcher instantiated ${fullJob.task.hashes.length} hash requests destroyWhenDone=${this.destroyWhenDone}`
+        `Bytecode fetcher instantiated ${fullJob.task.hashes.length} hash requests destroyWhenDone=${this.destroyWhenDone}`,
       )
     }
   }
@@ -83,7 +82,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    * @param peer
    */
   async request(
-    job: Job<JobTask, Uint8Array[], Uint8Array>
+    job: Job<JobTask, Uint8Array[], Uint8Array>,
   ): Promise<ByteCodeDataResponse | undefined> {
     const { task, peer } = job
     // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
@@ -156,7 +155,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    */
   process(
     job: Job<JobTask, Uint8Array[], Uint8Array>,
-    result: ByteCodeDataResponse
+    result: ByteCodeDataResponse,
   ): Uint8Array[] | undefined {
     const fullResult = (job.partialResult ?? []).concat(result)
     job.partialResult = undefined
@@ -214,7 +213,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.fetcherDoneFlags.byteCodeFetcher.count =
       this.fetcherDoneFlags.byteCodeFetcher.first + BigInt(this.hashes.length)
     this.debug(
-      `Number of bytecode fetch requests added to fetcher queue: ${byteCodeRequestList.length}`
+      `Number of bytecode fetch requests added to fetcher queue: ${byteCodeRequestList.length}`,
     )
     this.nextTasks()
   }
@@ -270,7 +269,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
   processStoreError(
     error: Error,
-    _task: JobTask
+    _task: JobTask,
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
     const stepBack = BIGINT_0
     const destroyFetcher =

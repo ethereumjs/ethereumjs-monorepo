@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   AccessListEIP2930Transaction,
@@ -15,7 +15,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
 
@@ -53,7 +53,7 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: Trans
   const signed = transaction.sign(pkey)
   const json = <any>signed.toJSON()
   json.type = txType
-  const block = Block.fromBlockData(
+  const block = createBlockFromBlockData(
     {
       header: {
         number: BigInt(1),
@@ -63,7 +63,7 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: Trans
       },
       transactions: [json],
     },
-    { common }
+    { common },
   )
   return block
 }
@@ -79,7 +79,7 @@ describe('EIP1559 tests', () => {
       },
       {
         common,
-      }
+      },
     )
     const block = makeBlock(GWEI, tx, 2)
     const vm = await VM.create({ common })
@@ -88,7 +88,7 @@ describe('EIP1559 tests', () => {
     const balance = GWEI * BigInt(21000) * BigInt(10)
     account!.balance = balance
     await vm.stateManager.putAccount(sender, account!)
-    const results = await vm.runTx({
+    const results = await runTx(vm, {
       tx: block.transactions[0],
       block,
     })
@@ -116,12 +116,12 @@ describe('EIP1559 tests', () => {
         gasPrice: GWEI * BigInt(5),
         to: Address.zero(),
       },
-      { common }
+      { common },
     )
     const block2 = makeBlock(GWEI, tx2, 1)
     await vm.stateManager.modifyAccountFields(sender, { balance })
     await vm.stateManager.modifyAccountFields(coinbase, { balance: BigInt(0) })
-    const results2 = await vm.runTx({
+    const results2 = await runTx(vm, {
       tx: block2.transactions[0],
       block: block2,
       skipNonce: true,
@@ -144,12 +144,12 @@ describe('EIP1559 tests', () => {
         gasPrice: GWEI * BigInt(5),
         to: Address.zero(),
       },
-      { common }
+      { common },
     )
     const block3 = makeBlock(GWEI, tx3, 0)
     await vm.stateManager.modifyAccountFields(sender, { balance })
     await vm.stateManager.modifyAccountFields(coinbase, { balance: BigInt(0) })
-    const results3 = await vm.runTx({
+    const results3 = await runTx(vm, {
       tx: block3.transactions[0],
       block: block3,
       skipNonce: true,
@@ -178,7 +178,7 @@ describe('EIP1559 tests', () => {
       },
       {
         common,
-      }
+      },
     )
     const block = makeBlock(GWEI, tx, 2)
     const vm = await VM.create({ common })
@@ -196,9 +196,9 @@ describe('EIP1559 tests', () => {
 
     // (This code returns the reported GASPRICE)
     const code = hexToBytes('0x3A60005260206000F3')
-    await vm.stateManager.putContractCode(contractAddress, code)
+    await vm.stateManager.putCode(contractAddress, code)
 
-    const result = await vm.runTx({ tx: block.transactions[0], block })
+    const result = await runTx(vm, { tx: block.transactions[0], block })
     const returnValue = result.execResult.returnValue
 
     const expectedCost = GWEI * BigInt(3)

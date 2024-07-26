@@ -1,11 +1,12 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
-  AccessListEIP2930Transaction,
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
+  create1559FeeMarketTx,
+  create2930AccessListTx,
+  create4844BlobTx,
+  create7702EOACodeTx,
+  createLegacyTx,
 } from '@ethereumjs/tx'
 import {
   Account,
@@ -13,17 +14,27 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
+  createAccount,
+  createAccountFromRLP,
   equalsBytes,
   hexToBytes,
   isHexString,
   setLengthLeft,
   toBytes,
+  unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { BlockOptions } from '@ethereumjs/block'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
-import type { TxOptions } from '@ethereumjs/tx'
+import type {
+  AccessListEIP2930Transaction,
+  BlobEIP4844Transaction,
+  EOACodeEIP7702Transaction,
+  FeeMarketEIP1559Transaction,
+  LegacyTransaction,
+  TxOptions,
+} from '@ethereumjs/tx'
 import type * as tape from 'tape'
 
 export function dumpState(state: any, cb: Function) {
@@ -33,7 +44,7 @@ export function dumpState(state: any, cb: Function) {
       const rs = state.createReadStream()
       rs.on('data', function (data: any) {
         const rlp = data.value
-        const account = Account.fromRlpSerializedAccount(rlp)
+        const account = createAccountFromRLP(rlp)
         accounts.push(account)
       })
       rs.on('end', function () {
@@ -110,25 +121,37 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
  * Make a tx using JSON from tests repo
  * @param {Object} txData The tx object from tests repo
  * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
- * @returns {BlobEIP4844Transaction | FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction} Transaction to be passed to VM.runTx function
+ * @returns {BlobEIP4844Transaction | FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction} Transaction to be passed to runTx() function
  */
 export function makeTx(
   txData: any,
-  opts?: TxOptions
+  opts?: TxOptions,
 ):
+  | EOACodeEIP7702Transaction
   | BlobEIP4844Transaction
   | FeeMarketEIP1559Transaction
   | AccessListEIP2930Transaction
   | LegacyTransaction {
   let tx
-  if (txData.blobVersionedHashes !== undefined) {
-    tx = BlobEIP4844Transaction.fromTxData(txData, opts)
+  if (txData.authorizationList !== undefined) {
+    // Convert `v` keys to `yParity`
+    for (const signature of txData.authorizationList) {
+      if (signature.v !== undefined) {
+        signature.yParity = bytesToHex(unpadBytes(hexToBytes(signature.v)))
+      }
+      if (signature.nonce !== undefined && signature.nonce[0] === '0x00') {
+        signature.nonce[0] = '0x'
+      }
+    }
+    tx = create7702EOACodeTx(txData, opts)
+  } else if (txData.blobVersionedHashes !== undefined) {
+    tx = create4844BlobTx(txData, opts)
   } else if (txData.maxFeePerGas !== undefined) {
-    tx = FeeMarketEIP1559Transaction.fromTxData(txData, opts)
+    tx = create1559FeeMarketTx(txData, opts)
   } else if (txData.accessLists !== undefined) {
-    tx = AccessListEIP2930Transaction.fromTxData(txData, opts)
+    tx = create2930AccessListTx(txData, opts)
   } else {
-    tx = LegacyTransaction.fromTxData(txData, opts)
+    tx = createLegacyTx(txData, opts)
   }
 
   if (txData.secretKey !== undefined) {
@@ -156,7 +179,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
 
     stream.on('data', function (data: any) {
       const rlp = data.value
-      const account = Account.fromRlpSerializedAccount(rlp)
+      const account = createAccountFromRLP(rlp)
       const key = bytesToHex(data.key)
       const testData = hashedAccounts[key]
       const address = keyMap[key]
@@ -192,7 +215,7 @@ export function verifyAccountPostConditions(
   address: string,
   account: Account,
   acctData: any,
-  t: tape.Test
+  t: tape.Test,
 ) {
   return new Promise<void>((resolve) => {
     t.comment('Account: ' + address)
@@ -200,12 +223,12 @@ export function verifyAccountPostConditions(
       t.comment(
         `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
           account.balance
-        }`
+        }`,
       )
     }
     if (!equalsBytes(format(account.nonce, true), format(acctData.nonce, true))) {
       t.comment(
-        `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`
+        `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`,
       )
     }
 
@@ -235,7 +258,7 @@ export function verifyAccountPostConditions(
         t.comment(
           `Expected storage key ${bytesToHex(data.key)} at address ${address} to have value ${
             hashedStorage[key] ?? '0x'
-          }, but got ${val}}`
+          }, but got ${val}}`,
         )
       }
       delete hashedStorage[key]
@@ -309,7 +332,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
           gasUsed: parentGasUsed,
           baseFeePerGas: parentBaseFee,
         },
-        { common: opts.common }
+        { common: opts.common },
       )
       headerData['baseFeePerGas'] = parentBlockHeader.calcNextBaseFee()
     }
@@ -359,11 +382,11 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
         continue
       }
       const key = setLengthLeft(format(storageKey), 32)
-      await state.putContractStorage(address, key, val)
+      await state.putStorage(address, key, val)
     }
 
     // Put contract code
-    await state.putContractCode(address, codeBuf)
+    await state.putCode(address, codeBuf)
 
     const storageRoot = (await state.getAccount(address))!.storageRoot
 
@@ -372,7 +395,7 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
     }
 
     // Put account data
-    const account = Account.fromAccountData({ nonce, balance, codeHash, storageRoot })
+    const account = createAccount({ nonce, balance, codeHash, storageRoot })
     await state.putAccount(address, account)
   }
   await state.commit()
@@ -399,14 +422,14 @@ export function getDAOCommon(activationBlock: number) {
       editedForks.push(fork)
     }
   }
-  const DAOCommon = Common.custom(
+  const DAOCommon = createCustomCommon(
     {
       hardforks: editedForks,
     },
     {
       baseChain: 'mainnet',
       hardfork: Hardfork.Dao,
-    }
+    },
   )
   return DAOCommon
 }

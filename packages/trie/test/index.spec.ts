@@ -22,7 +22,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
     describe('simple save and retrieve', () => {
       it('should not crash if given a non-existent root', async () => {
         const root = hexToBytes(
-          '0x3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
+          '0x3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d',
         )
 
         const trie = new Trie({ root, keyPrefix })
@@ -67,7 +67,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
         assert.equal(
           '0xde8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc',
-          bytesToHex(trie.root())
+          bytesToHex(trie.root()),
         )
       })
 
@@ -114,7 +114,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
           await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
           assert.equal(
             '0xf803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9',
-            bytesToHex(trie.root())
+            bytesToHex(trie.root()),
           )
         })
 
@@ -122,7 +122,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
           await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
           assert.equal(
             '0x409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
-            bytesToHex(trie.root())
+            bytesToHex(trie.root()),
           )
         })
       })
@@ -142,7 +142,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
           await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
           assert.equal(
             '0x409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
-            bytesToHex(trie.root())
+            bytesToHex(trie.root()),
           )
         })
       })
@@ -158,11 +158,11 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
         await trieSetup.trie.put(
           new Uint8Array([12, 22, 22]),
-          utf8ToBytes('create the first branch')
+          utf8ToBytes('create the first branch'),
         )
         await trieSetup.trie.put(
           new Uint8Array([12, 34, 44]),
-          utf8ToBytes('create the last branch')
+          utf8ToBytes('create the last branch'),
         )
 
         await trieSetup.trie.del(new Uint8Array([12, 22, 22]))
@@ -174,15 +174,15 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
         await trieSetup.trie.put(
           new Uint8Array([12, 22, 22]),
-          utf8ToBytes('create the first branch')
+          utf8ToBytes('create the first branch'),
         )
         await trieSetup.trie.put(
           new Uint8Array([12, 33, 33]),
-          utf8ToBytes('create the middle branch')
+          utf8ToBytes('create the middle branch'),
         )
         await trieSetup.trie.put(
           new Uint8Array([12, 34, 44]),
-          utf8ToBytes('create the last branch')
+          utf8ToBytes('create the last branch'),
         )
 
         await trieSetup.trie.del(new Uint8Array([12, 22, 22]))
@@ -194,15 +194,15 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
         await trieSetup.trie.put(
           new Uint8Array([12, 22, 22]),
-          utf8ToBytes('create the first branch')
+          utf8ToBytes('create the first branch'),
         )
         await trieSetup.trie.put(
           new Uint8Array([12, 33, 33]),
-          utf8ToBytes('create the middle branch')
+          utf8ToBytes('create the middle branch'),
         )
         await trieSetup.trie.put(
           new Uint8Array([12, 34, 44]),
-          utf8ToBytes('create the last branch')
+          utf8ToBytes('create the last branch'),
         )
 
         // delete the middle branch
@@ -215,15 +215,15 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
         await trieSetup.trie.put(
           new Uint8Array([12, 22, 22]),
-          utf8ToBytes('create the first branch')
+          utf8ToBytes('create the first branch'),
         )
         await trieSetup.trie.put(
           new Uint8Array([12, 33, 33]),
-          utf8ToBytes('create the middle branch')
+          utf8ToBytes('create the middle branch'),
         )
         await trieSetup.trie.put(
           new Uint8Array([12, 34, 44]),
-          utf8ToBytes('create the last branch')
+          utf8ToBytes('create the last branch'),
         )
         // delete the middle branch
         await trieSetup.trie.del(new Uint8Array([11, 11, 11]))
@@ -259,7 +259,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         assert.ok(path.node === null, 'findPath should not return a node now')
         assert.ok(
           path.stack.length === 1,
-          'findPath should find the first extension node which is still in the DB'
+          'findPath should find the first extension node which is still in the DB',
         )
       })
     })
@@ -310,7 +310,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         const v2 = utf8ToBytes('this-is-some-longer-value-to-test-the-delete-operation-value2')
 
         const rootAfterK1 = hexToBytes(
-          '0x809e75931f394603657e113eb7244794f35b8d326cff99407111d600722e9425'
+          '0x809e75931f394603657e113eb7244794f35b8d326cff99407111d600722e9425',
         )
 
         const trieSetup = {
@@ -325,7 +325,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         assert.equal(
           await trieSetup.trie.get(k1),
           null,
-          'should return null on latest state root independently from deleteFromDB setting'
+          'should return null on latest state root independently from deleteFromDB setting',
         )
 
         trieSetup.trie.root(rootAfterK1)
@@ -341,7 +341,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
             return concatBytes(
               utf8ToBytes('hash_'),
               new Uint8Array(hashLen - msg.length).fill(0),
-              msg
+              msg,
             )
           } else {
             return concatBytes(utf8ToBytes('hash_'), msg.slice(0, hashLen - 5))
@@ -364,7 +364,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
         assert.equal(
           bytesToHex(trie.root()),
-          '0xe118db4e01512253df38daafa16fc1d69e03e755595b5847d275d7404ebdc74a'
+          '0xe118db4e01512253df38daafa16fc1d69e03e755595b5847d275d7404ebdc74a',
         )
       })
     })

@@ -1,4 +1,4 @@
-import { TransactionFactory } from '@ethereumjs/tx'
+import { type TypedTransaction, createTxFromTxData } from '@ethereumjs/tx'
 import {
   CLRequestFactory,
   TypeOutput,
@@ -8,12 +8,10 @@ import {
   toType,
 } from '@ethereumjs/util'
 
+import { createBlockFromBlockData } from './constructors.js'
 import { blockHeaderFromRpc } from './header-from-rpc.js'
 
-import { Block } from './index.js'
-
 import type { BlockOptions, JsonRpcBlock } from './index.js'
-import type { TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 function normalizeTxParams(_txParams: any) {
@@ -45,10 +43,10 @@ function normalizeTxParams(_txParams: any) {
  * @param options - An object describing the blockchain
  * @deprecated
  */
-export function blockFromRpc(
+export function createBlockFromRpc(
   blockParams: JsonRpcBlock,
   uncles: any[] = [],
-  options?: BlockOptions
+  options?: BlockOptions,
 ) {
   const header = blockHeaderFromRpc(blockParams, options)
 
@@ -56,7 +54,7 @@ export function blockFromRpc(
   const opts = { common: header.common }
   for (const _txParams of blockParams.transactions ?? []) {
     const txParams = normalizeTxParams(_txParams)
-    const tx = TransactionFactory.fromTxData(txParams, opts)
+    const tx = createTxFromTxData(txParams, opts)
     transactions.push(tx)
   }
 
@@ -66,8 +64,8 @@ export function blockFromRpc(
     const bytes = hexToBytes(req as PrefixedHexString)
     return CLRequestFactory.fromSerializedRequest(bytes)
   })
-  return Block.fromBlockData(
+  return createBlockFromBlockData(
     { header, transactions, uncleHeaders, withdrawals: blockParams.withdrawals, requests },
-    options
+    options,
   )
 }

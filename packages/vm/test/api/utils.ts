@@ -1,5 +1,5 @@
-import { Blockchain } from '@ethereumjs/blockchain'
-import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { TransactionType, createTxFromTxData } from '@ethereumjs/tx'
 import {
   Account,
   blobsToCommitments,
@@ -9,21 +9,21 @@ import {
 } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
-import { VM } from '../../src/vm'
+import { VM } from '../../src/vm.js'
 
-import { LevelDB } from './level'
+import { LevelDB } from './level.js'
 
-import type { VMOpts } from '../../src/types'
+import type { VMOpts } from '../../src/types.js'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
-export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
+export function createAccountWithDefaults(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)
 }
 
 export async function setBalance(vm: VM, address: Address, balance = BigInt(100000000)) {
-  const account = createAccount(BigInt(0), balance)
+  const account = createAccountWithDefaults(BigInt(0), balance)
   await vm.stateManager.checkpoint()
   await vm.stateManager.putAccount(address, account)
   await vm.stateManager.commit()
@@ -33,7 +33,7 @@ export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
   const db: any = new LevelDB(new MemoryLevel())
   const { common, genesisBlock } = opts
   if (opts.blockchain === undefined) {
-    opts.blockchain = await Blockchain.create({
+    opts.blockchain = await createBlockchain({
       db,
       validateBlocks: false,
       validateConsensus: false,
@@ -53,7 +53,7 @@ export function getTransaction(
   sign = false,
   value = '0x00',
   createContract = false,
-  nonce = 0
+  nonce = 0,
 ) {
   let to: string | undefined = '0x0000000000000000000000000000000000000000'
   let data = '0x7f7465737432000000000000000000000000000000000000000000000000000000600057'
@@ -105,19 +105,19 @@ export function getTransaction(
     txParams['kzgProofs'] = txParams['blobs'].map((blob: Uint8Array, ctx: number) =>
       common.customCrypto!.kzg!.computeBlobKzgProof(
         blob,
-        txParams['kzgCommitments'][ctx] as Uint8Array
-      )
+        txParams['kzgCommitments'][ctx] as Uint8Array,
+      ),
     )
     txParams['blobVersionedHashes'] = txParams['kzgCommitments'].map((commitment: Uint8Array) =>
-      computeVersionedHash(commitment, 0x1)
+      computeVersionedHash(commitment, 0x1),
     )
   }
 
-  const tx = TransactionFactory.fromTxData(txParams, { common, freeze: false })
+  const tx = createTxFromTxData(txParams, { common, freeze: false })
 
   if (sign) {
     const privateKey = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
     return tx.sign(privateKey)
   }

@@ -165,12 +165,12 @@ describe('RLPx', () => {
     assert.equal(
       rlpx['_getOpenSlots'](),
       10,
-      'returns default number of open slots (i.e. `max_peers`) on startup'
+      'returns default number of open slots (i.e. `max_peers`) on startup',
     )
     assert.equal(
       rlpx['_getOpenQueueSlots'](),
       20,
-      'returns default number of open queue slots on startup'
+      'returns default number of open queue slots on startup',
     )
   })
 })

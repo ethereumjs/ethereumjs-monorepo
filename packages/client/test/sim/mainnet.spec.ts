@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { assert, describe, it } from 'vitest'
@@ -20,7 +20,7 @@ const client = Client.http({ port: 8545 })
 
 const network = 'mainnet'
 const eofJson = require(`./configs/${network}.json`)
-const common = Common.fromGethGenesis(eofJson, { chain: network })
+const common = createCommonFromGethGenesis(eofJson, { chain: network })
 
 export async function runTx(data: PrefixedHexString | '', to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
@@ -75,7 +75,7 @@ describe('simple mainnet test run', async () => {
       const latestBlock = await client.request('eth_getBlockByNumber', ['latest', false])
       blockHashes.push(latestBlock.result.hash)
     },
-    2 * 60_000
+    2 * 60_000,
   )
 
   it('Validate execution hashes present in beacon headers', async () => {
@@ -84,7 +84,7 @@ describe('simple mainnet test run', async () => {
       'http://127.0.0.1:9596',
       1,
       parseInt(eth2res.data[0].header.message.slot),
-      blockHashes
+      blockHashes,
     )
   }, 60_000)
 

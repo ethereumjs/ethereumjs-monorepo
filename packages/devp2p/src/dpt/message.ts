@@ -8,9 +8,8 @@ import { assertEq, ipToBytes, ipToString, isV4Format, isV6Format, unstrictDecode
 
 import type { PeerInfo } from '../types.js'
 import type { Common } from '@ethereumjs/common'
-const { debug: createDebugLogger } = debugDefault
 
-const debug = createDebugLogger('devp2p:dpt:server')
+const debug = debugDefault('devp2p:dpt:server')
 
 function getTimestamp() {
   return (Date.now() / 1000) | 0
@@ -198,7 +197,7 @@ export function decode(bytes: Uint8Array, common?: Common) {
     signature,
     recoverId,
     sighash,
-    false
+    false,
   )
   return { typename, data, publicKey }
 }

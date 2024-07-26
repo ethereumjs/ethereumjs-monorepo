@@ -178,7 +178,7 @@ export class Engine {
       middleware(callWithStackTrace(this.newPayloadV1.bind(this), this._rpcDebug), 1, [
         [validators.object(executionPayloadV1FieldValidators)],
       ]),
-      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
+      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response }),
     )
 
     this.newPayloadV2 = cmMiddleware(
@@ -186,11 +186,11 @@ export class Engine {
         [
           validators.either(
             validators.object(executionPayloadV1FieldValidators),
-            validators.object(executionPayloadV2FieldValidators)
+            validators.object(executionPayloadV2FieldValidators),
           ),
         ],
       ]),
-      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
+      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response }),
     )
 
     this.newPayloadV3 = cmMiddleware(
@@ -202,9 +202,9 @@ export class Engine {
           [validators.array(validators.bytes32)],
           [validators.bytes32],
         ],
-        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot']
+        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot'],
       ),
-      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
+      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response }),
     )
 
     this.newPayloadV4 = cmMiddleware(
@@ -216,9 +216,9 @@ export class Engine {
           [validators.array(validators.bytes32)],
           [validators.bytes32],
         ],
-        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot']
+        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot'],
       ),
-      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
+      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response }),
     )
 
     /**
@@ -227,7 +227,7 @@ export class Engine {
     const forkchoiceUpdatedResponseCMHandler = (
       [state]: ForkchoiceStateV1[],
       response?: ForkchoiceResponseV1 & { headBlock?: Block },
-      error?: string
+      error?: string,
     ) => {
       this.connectionManager.lastForkchoiceUpdate({
         state,
@@ -244,21 +244,21 @@ export class Engine {
         [validators.object(forkchoiceFieldValidators)],
         [validators.optional(validators.object(payloadAttributesFieldValidatorsV1))],
       ]),
-      forkchoiceUpdatedResponseCMHandler
+      forkchoiceUpdatedResponseCMHandler,
     )
     this.forkchoiceUpdatedV2 = cmMiddleware(
       middleware(callWithStackTrace(this.forkchoiceUpdatedV2.bind(this), this._rpcDebug), 1, [
         [validators.object(forkchoiceFieldValidators)],
         [validators.optional(validators.object(payloadAttributesFieldValidatorsV2))],
       ]),
-      forkchoiceUpdatedResponseCMHandler
+      forkchoiceUpdatedResponseCMHandler,
     )
     this.forkchoiceUpdatedV3 = cmMiddleware(
       middleware(callWithStackTrace(this.forkchoiceUpdatedV3.bind(this), this._rpcDebug), 1, [
         [validators.object(forkchoiceFieldValidators)],
         [validators.optional(validators.object(payloadAttributesFieldValidatorsV3))],
       ]),
-      forkchoiceUpdatedResponseCMHandler
+      forkchoiceUpdatedResponseCMHandler,
     )
 
     /**
@@ -268,28 +268,28 @@ export class Engine {
       middleware(callWithStackTrace(this.getPayloadV1.bind(this), this._rpcDebug), 1, [
         [validators.bytes8],
       ]),
-      () => this.connectionManager.updateStatus()
+      () => this.connectionManager.updateStatus(),
     )
 
     this.getPayloadV2 = cmMiddleware(
       middleware(callWithStackTrace(this.getPayloadV2.bind(this), this._rpcDebug), 1, [
         [validators.bytes8],
       ]),
-      () => this.connectionManager.updateStatus()
+      () => this.connectionManager.updateStatus(),
     )
 
     this.getPayloadV3 = cmMiddleware(
       middleware(callWithStackTrace(this.getPayloadV3.bind(this), this._rpcDebug), 1, [
         [validators.bytes8],
       ]),
-      () => this.connectionManager.updateStatus()
+      () => this.connectionManager.updateStatus(),
     )
 
     this.getPayloadV4 = cmMiddleware(
       middleware(callWithStackTrace(this.getPayloadV4.bind(this), this._rpcDebug), 1, [
         [validators.bytes8],
       ]),
-      () => this.connectionManager.updateStatus()
+      () => this.connectionManager.updateStatus(),
     )
 
     /**
@@ -307,9 +307,9 @@ export class Engine {
               terminalBlockNumber: validators.uint64,
             }),
           ],
-        ]
+        ],
       ),
-      () => this.connectionManager.updateStatus()
+      () => this.connectionManager.updateStatus(),
     )
 
     /**
@@ -317,7 +317,7 @@ export class Engine {
      */
     this.exchangeCapabilities = cmMiddleware(
       middleware(callWithStackTrace(this.exchangeCapabilities.bind(this), this._rpcDebug), 0, []),
-      () => this.connectionManager.updateStatus()
+      () => this.connectionManager.updateStatus(),
     )
 
     /**
@@ -327,7 +327,7 @@ export class Engine {
       middleware(callWithStackTrace(this.getPayloadBodiesByHashV1.bind(this), this._rpcDebug), 1, [
         [validators.array(validators.bytes32)],
       ]),
-      () => this.connectionManager.updateStatus()
+      () => this.connectionManager.updateStatus(),
     )
 
     /**
@@ -338,7 +338,7 @@ export class Engine {
         [validators.bytes8],
         [validators.bytes8],
       ]),
-      () => this.connectionManager.updateStatus()
+      () => this.connectionManager.updateStatus(),
     )
   }
 
@@ -360,7 +360,7 @@ export class Engine {
    *   3. validationError: String|null - validation error message
    */
   private async newPayload(
-    params: [ExecutionPayload, (Bytes32[] | null)?, (Bytes32 | null)?]
+    params: [ExecutionPayload, (Bytes32[] | null)?, (Bytes32 | null)?],
   ): Promise<PayloadStatusV1> {
     const [payload, blobVersionedHashes, parentBeaconBlockRoot] = params
     if (this.config.synchronized) {
@@ -386,7 +386,7 @@ export class Engine {
         parentBeaconBlockRoot: parentBeaconBlockRoot ?? undefined,
       },
       this.chain,
-      this.chainCache
+      this.chainCache,
     )
     if (headBlock === undefined || error !== undefined) {
       let response = error
@@ -396,7 +396,7 @@ export class Engine {
         const latestValidHash = await validHash(
           hexToBytes(parentHash as PrefixedHexString),
           this.chain,
-          this.chainCache
+          this.chainCache,
         )
         response = { status: Status.INVALID, latestValidHash, validationError }
       }
@@ -421,7 +421,7 @@ export class Engine {
         const latestValidHash = await validHash(
           hexToBytes(parentHash as PrefixedHexString),
           this.chain,
-          this.chainCache
+          this.chainCache,
         )
         const response = { status: Status.INVALID, latestValidHash, validationError }
         // skip marking the block invalid as this is more of a data issue from CL
@@ -432,7 +432,7 @@ export class Engine {
       const latestValidHash = await validHash(
         hexToBytes(parentHash as PrefixedHexString),
         this.chain,
-        this.chainCache
+        this.chainCache,
       )
       const response = { status: Status.INVALID, latestValidHash, validationError }
       // skip marking the block invalid as this is more of a data issue from CL
@@ -447,8 +447,8 @@ export class Engine {
     if (hardfork !== this.lastNewPayloadHF && this.lastNewPayloadHF !== '') {
       this.config.logger.info(
         `Hardfork change along new payload block number=${headBlock.header.number} hash=${short(
-          headBlock.hash()
-        )} old=${this.lastNewPayloadHF} new=${hardfork}`
+          headBlock.hash(),
+        )} old=${this.lastNewPayloadHF} new=${hardfork}`,
       )
     }
     this.lastNewPayloadHF = hardfork
@@ -474,7 +474,7 @@ export class Engine {
           }
           this.invalidBlocks.set(
             blockHash.slice(2),
-            new Error(response.validationError ?? 'Terminal block validation failed')
+            new Error(response.validationError ?? 'Terminal block validation failed'),
           )
           return response
         }
@@ -492,7 +492,7 @@ export class Engine {
           const latestValidHash = await validHash(
             hexToBytes(parentHash as PrefixedHexString),
             this.chain,
-            this.chainCache
+            this.chainCache,
           )
           const response = { status: Status.INVALID, latestValidHash, validationError }
           // skip marking the block invalid as this is more of a data issue from CL
@@ -546,17 +546,17 @@ export class Engine {
         // if the invalid block is canonical along the current chain return invalid
         const invalidBlock = await this.skeleton.getBlockByHash(
           this.execution.chainStatus.hash,
-          true
+          true,
         )
         if (invalidBlock !== undefined) {
           // hard luck: block along canonical chain is invalid
           const latestValidHash = await validHash(
             invalidBlock.header.parentHash,
             this.chain,
-            this.chainCache
+            this.chainCache,
           )
           const validationError = `Block number=${invalidBlock.header.number} hash=${short(
-            invalidBlock.hash()
+            invalidBlock.hash(),
           )} root=${short(invalidBlock.header.stateRoot)} along the canonical chain is invalid`
 
           const response = {
@@ -633,10 +633,10 @@ export class Engine {
         const latestValidHash = await validHash(
           invalidBlock.header.parentHash,
           this.chain,
-          this.chainCache
+          this.chainCache,
         )
         const validationError = `Block number=${invalidBlock.header.number} hash=${short(
-          invalidBlock.hash()
+          invalidBlock.hash(),
         )} root=${short(invalidBlock.header.stateRoot)} along the canonical chain is invalid`
 
         const response = {
@@ -695,9 +695,9 @@ export class Engine {
               const blockParent =
                 i > 0
                   ? blocks[i - 1]
-                  : this.chainCache.remoteBlocks.get(
-                      bytesToHex(block.header.parentHash).slice(2)
-                    ) ?? (await this.chain.getBlock(block.header.parentHash))
+                  : (this.chainCache.remoteBlocks.get(
+                      bytesToHex(block.header.parentHash).slice(2),
+                    ) ?? (await this.chain.getBlock(block.header.parentHash)))
               const blockExecuted = await this.execution.runWithoutSetHead({
                 block,
                 root: blockParent.header.stateRoot,
@@ -711,12 +711,12 @@ export class Engine {
           if (!executed) {
             this.config.logger.debug(
               `Skipping block(s) execution for headBlock=${headBlock.header.number} hash=${short(
-                headBlock.hash()
+                headBlock.hash(),
               )} : pendingBlocks=${blocks.length - i}(limit=${
                 this.chain.config.engineNewpayloadMaxExecute
               }) transactions=${block.transactions.length}(limit=${
                 this.chain.config.engineNewpayloadMaxTxsExecute
-              }) executionBusy=${this.execution.running}`
+              }) executionBusy=${this.execution.running}`,
             )
             // determind status to be returned depending on if block could extend chain or not
             const status = optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
@@ -731,7 +731,7 @@ export class Engine {
       const latestValidHash = await validHash(
         headBlock.header.parentHash,
         this.chain,
-        this.chainCache
+        this.chainCache,
       )
 
       const errorMsg = `${error}`.toLowerCase()
@@ -922,7 +922,7 @@ export class Engine {
    *   3. headBlock: Block|undefined - Block corresponding to headBlockHash if found
    */
   private async forkchoiceUpdated(
-    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributes | undefined]
+    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributes | undefined],
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
@@ -974,7 +974,7 @@ export class Engine {
         (await this.chain.getBlock(head))
     } catch (error) {
       this.config.logger.debug(
-        `Forkchoice announced head block unknown to EL hash=${short(headBlockHash)}`
+        `Forkchoice announced head block unknown to EL hash=${short(headBlockHash)}`,
       )
       const payloadStatus = {
         status: Status.SYNCING,
@@ -993,7 +993,7 @@ export class Engine {
       this.config.logger.info(
         `Hardfork change along forkchoice head block update number=${
           headBlock.header.number
-        } hash=${short(headBlock.hash())} old=${this.lastForkchoiceUpdatedHF} new=${hardfork}`
+        } hash=${short(headBlock.hash())} old=${this.lastForkchoiceUpdatedHF} new=${hardfork}`,
       )
     }
     this.lastForkchoiceUpdatedHF = hardfork
@@ -1002,8 +1002,8 @@ export class Engine {
     // requirements that might come later because of reorg or CL restarts
     this.config.logger.debug(
       `Forkchoice requested update to new head number=${headBlock.header.number} hash=${short(
-        headBlock.hash()
-      )}`
+        headBlock.hash(),
+      )}`,
     )
 
     /**
@@ -1064,17 +1064,17 @@ export class Engine {
         // see if the invalid block is canonical along the current skeleton/chain return invalid
         const invalidBlock = await this.skeleton.getBlockByHash(
           this.execution.chainStatus.hash,
-          true
+          true,
         )
         if (invalidBlock !== undefined) {
           // hard luck: block along canonical chain is invalid
           const latestValidHash = await validHash(
             invalidBlock.header.parentHash,
             this.chain,
-            this.chainCache
+            this.chainCache,
           )
           const validationError = `Block number=${invalidBlock.header.number} hash=${short(
-            invalidBlock.hash()
+            invalidBlock.hash(),
           )} root=${short(invalidBlock.header.stateRoot)} along the canonical chain is invalid`
 
           const payloadStatus = {
@@ -1094,11 +1094,11 @@ export class Engine {
       ) {
         // jump the vm head to failing block so that next block can be executed
         this.config.logger.debug(
-          `Jumping the stalled vmHead forward to hash=${this.execution.chainStatus.hash} height=${this.execution.chainStatus.height} to continue the execution`
+          `Jumping the stalled vmHead forward to hash=${this.execution.chainStatus.hash} height=${this.execution.chainStatus.height} to continue the execution`,
         )
         await this.execution.jumpVmHead(
           this.execution.chainStatus.hash,
-          this.execution.chainStatus.height
+          this.execution.chainStatus.height,
         )
       }
 
@@ -1129,7 +1129,7 @@ export class Engine {
           parentBlocks = await recursivelyFindParents(
             vmHeadHash,
             headBlock.header.parentHash,
-            this.chain
+            this.chain,
           )
         } catch (error) {
           const payloadStatus = {
@@ -1213,7 +1213,7 @@ export class Engine {
           coinbase: suggestedFeeRecipient,
           parentBeaconBlockRoot,
         },
-        withdrawals
+        withdrawals,
       )
       const latestValidHash = await validHash(headBlock.hash(), this.chain, this.chainCache)
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
@@ -1240,7 +1240,10 @@ export class Engine {
    * @returns
    */
   private async forkchoiceUpdatedV1(
-    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
+    params: [
+      forkchoiceState: ForkchoiceStateV1,
+      payloadAttributes: PayloadAttributesV1 | undefined,
+    ],
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const payloadAttributes = params[1]
     if (payloadAttributes !== undefined && payloadAttributes !== null) {
@@ -1258,7 +1261,7 @@ export class Engine {
         1,
         null,
         Hardfork.Paris,
-        BigInt(payloadAttributes.timestamp)
+        BigInt(payloadAttributes.timestamp),
       )
     }
 
@@ -1274,8 +1277,8 @@ export class Engine {
   private async forkchoiceUpdatedV2(
     params: [
       forkchoiceState: ForkchoiceStateV1,
-      payloadAttributes: PayloadAttributesV1 | PayloadAttributesV2 | undefined
-    ]
+      payloadAttributes: PayloadAttributesV1 | PayloadAttributesV2 | undefined,
+    ],
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const payloadAttributes = params[1]
     if (payloadAttributes !== undefined && payloadAttributes !== null) {
@@ -1294,7 +1297,7 @@ export class Engine {
         2,
         null,
         Hardfork.Shanghai,
-        BigInt(payloadAttributes.timestamp)
+        BigInt(payloadAttributes.timestamp),
       )
 
       const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
@@ -1335,7 +1338,10 @@ export class Engine {
    * @returns
    */
   private async forkchoiceUpdatedV3(
-    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV3 | undefined]
+    params: [
+      forkchoiceState: ForkchoiceStateV1,
+      payloadAttributes: PayloadAttributesV3 | undefined,
+    ],
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const payloadAttributes = params[1]
     if (payloadAttributes !== undefined && payloadAttributes !== null) {
@@ -1355,7 +1361,7 @@ export class Engine {
         Hardfork.Cancun,
         // this could be valid post cancun as well, if not then update the valid till hf here
         null,
-        BigInt(payloadAttributes.timestamp)
+        BigInt(payloadAttributes.timestamp),
       )
     }
 
@@ -1432,7 +1438,7 @@ export class Engine {
         payloadVersion,
         checkNotBeforeHf,
         checkNotAfterHf,
-        BigInt(executionPayload.executionPayload.timestamp)
+        BigInt(executionPayload.executionPayload.timestamp),
       )
       return executionPayload
     } catch (error: any) {
@@ -1492,7 +1498,7 @@ export class Engine {
    * @returns Instance of {@link TransitionConfigurationV1} or an error
    */
   async exchangeTransitionConfigurationV1(
-    params: [TransitionConfigurationV1]
+    params: [TransitionConfigurationV1],
   ): Promise<TransitionConfigurationV1> {
     const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
     const ttd = this.chain.config.chainCommon.hardforkTTD(Hardfork.Paris)
@@ -1506,7 +1512,7 @@ export class Engine {
       throw {
         code: INVALID_PARAMS,
         message: `terminalTotalDifficulty set to ${ttd}, received ${parseInt(
-          terminalTotalDifficulty
+          terminalTotalDifficulty,
         )}`,
       }
     }
@@ -1535,7 +1541,7 @@ export class Engine {
    * @returns an array of ExecutionPayloadBodyV1 objects or null if a given execution payload isn't stored locally
    */
   private async getPayloadBodiesByHashV1(
-    params: [[Bytes32]]
+    params: [[Bytes32]],
   ): Promise<(ExecutionPayloadBodyV1 | null)[]> {
     if (params[0].length > 32) {
       throw {
@@ -1567,7 +1573,7 @@ export class Engine {
    * @returns an array of ExecutionPayloadBodyV1 objects or null if a given execution payload isn't stored locally
    */
   private async getPayloadBodiesByRangeV1(
-    params: [Bytes8, Bytes8]
+    params: [Bytes8, Bytes8],
   ): Promise<(ExecutionPayloadBodyV1 | null)[]> {
     const start = BigInt(params[0])
     let count = BigInt(params[1])

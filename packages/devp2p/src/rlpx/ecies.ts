@@ -12,10 +12,9 @@ import { assertEq, genPrivateKey, id2pk, pk2id, unstrictDecode, xor, zfill } fro
 import { MAC } from './mac.js'
 
 import type { Common } from '@ethereumjs/common'
-const { debug: createDebugLogger } = debugDefault
 type Decipher = crypto.Decipher
 
-const debug = createDebugLogger('devp2p:rlpx:peer')
+const debug = debugDefault('devp2p:rlpx:peer')
 
 function ecdhX(publicKey: Uint8Array, privateKey: Uint8Array) {
   // return (publicKey * privateKey).x
@@ -44,7 +43,7 @@ function concatKDF(keyMaterial: Uint8Array, keyLength: number) {
     counter += 1
     new DataView(tmp.buffer).setUint32(0, counter)
     bytes.push(
-      Uint8Array.from(crypto.createHash('sha256').update(tmp).update(keyMaterial).digest())
+      Uint8Array.from(crypto.createHash('sha256').update(tmp).update(keyMaterial).digest()),
     )
   }
 
@@ -74,7 +73,7 @@ export class ECIES {
   protected _keccakFunction: (msg: Uint8Array) => Uint8Array
   protected _ecdsaSign: (
     msg: Uint8Array,
-    pk: Uint8Array
+    pk: Uint8Array,
   ) => {
     signature: Uint8Array
     recid: number
@@ -83,7 +82,7 @@ export class ECIES {
     sig: Uint8Array,
     recId: number,
     hash: Uint8Array,
-    compressed?: boolean
+    compressed?: boolean,
   ) => Uint8Array
 
   constructor(privateKey: Uint8Array, id: Uint8Array, remoteId: Uint8Array, common?: Common) {
@@ -102,7 +101,7 @@ export class ECIES {
 
   _encryptMessage(
     data: Uint8Array,
-    sharedMacData: Uint8Array | null = null
+    sharedMacData: Uint8Array | null = null,
   ): Uint8Array | undefined {
     const privateKey = genPrivateKey()
     if (!this._remotePublicKey) return
@@ -122,7 +121,7 @@ export class ECIES {
       sharedMacData = Uint8Array.from([])
     }
     const tag = Uint8Array.from(
-      crypto.createHmac('sha256', mkey).update(concatBytes(dataIV, sharedMacData)).digest()
+      crypto.createHmac('sha256', mkey).update(concatBytes(dataIV, sharedMacData)).digest(),
     )
 
     const publicKey = secp256k1.getPublicKey(privateKey, false)
@@ -134,7 +133,7 @@ export class ECIES {
       data.subarray(0, 1),
       hexToBytes('0x04'),
       'wrong ecies header (possible cause: EIP8 upgrade)',
-      debug
+      debug,
     )
 
     const publicKey = data.subarray(0, 65)
@@ -221,7 +220,7 @@ export class ECIES {
       this._keccakFunction(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
-      Uint8Array.from([0x00])
+      Uint8Array.from([0x00]),
     )
 
     this._initMsg = this._encryptMessage(data)
@@ -230,7 +229,7 @@ export class ECIES {
 
   parseAuthPlain(
     data: Uint8Array,
-    sharedMacData: Uint8Array | null = null
+    sharedMacData: Uint8Array | null = null,
   ): Uint8Array | undefined {
     const prefix = sharedMacData !== null ? sharedMacData : new Uint8Array()
     this._remoteInitMsg = concatBytes(prefix, data)
@@ -273,7 +272,7 @@ export class ECIES {
       signature,
       recoveryId,
       xor(x, this._remoteNonce),
-      false
+      false,
     )
 
     if (this._remoteEphemeralPublicKey === null) return
@@ -283,7 +282,7 @@ export class ECIES {
         this._keccakFunction(pk2id(this._remoteEphemeralPublicKey)),
         heid,
         'the hash of the ephemeral key should match',
-        debug
+        debug,
       )
     }
   }

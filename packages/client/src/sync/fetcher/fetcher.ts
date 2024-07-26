@@ -1,4 +1,4 @@
-import debugDefault from 'debug'
+import debug from 'debug'
 import { Readable, Writable } from 'stream'
 
 import { Heap } from '../../ext/qheap.js'
@@ -11,8 +11,6 @@ import type { PeerPool } from '../../net/peerpool.js'
 import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase.js'
 import type { Job } from './types.js'
 import type { Debugger } from 'debug'
-
-const { debug: createDebugLogger } = debugDefault
 
 export interface FetcherOptions {
   /* Common chain config*/
@@ -80,7 +78,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     super({ ...options, objectMode: true })
 
     this.config = options.config
-    this.debug = createDebugLogger('client:fetcher')
+    this.debug = debug('client:fetcher')
 
     this.pool = options.pool
     this.timeout = options.timeout ?? 8000
@@ -89,19 +87,19 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.maxQueue = options.maxQueue ?? 4
 
     this.debug(
-      `Fetcher initialized timeout=${this.timeout} interval=${this.interval} banTime=${this.banTime} maxQueue=${this.maxQueue}`
+      `Fetcher initialized timeout=${this.timeout} interval=${this.interval} banTime=${this.banTime} maxQueue=${this.maxQueue}`,
     )
 
     this.in = new Heap({
       comparBefore: (
         a: Job<JobTask, JobResult, StorageItem>,
-        b: Job<JobTask, JobResult, StorageItem>
+        b: Job<JobTask, JobResult, StorageItem>,
       ) => a.index < b.index,
     }) as QHeap<Job<JobTask, JobResult, StorageItem>>
     this.out = new Heap({
       comparBefore: (
         a: Job<JobTask, JobResult, StorageItem>,
-        b: Job<JobTask, JobResult, StorageItem>
+        b: Job<JobTask, JobResult, StorageItem>,
       ) => a.index < b.index,
     }) as QHeap<Job<JobTask, JobResult, StorageItem>>
     this.total = 0
@@ -121,7 +119,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   abstract request(
     _job?: Job<JobTask, JobResult, StorageItem>,
-    _peer?: Peer
+    _peer?: Peer,
   ): Promise<JobResult | undefined>
 
   /**
@@ -133,7 +131,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   abstract process(
     _job?: Job<JobTask, JobResult, StorageItem>,
-    _result?: JobResult
+    _result?: JobResult,
   ): StorageItem[] | undefined
 
   /**
@@ -148,7 +146,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   abstract processStoreError(
     _error: Error,
-    _task: JobTask | BlockFetcherJobTask
+    _task: JobTask | BlockFetcherJobTask,
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint }
 
   abstract jobStr(job: Job<JobTask, JobResult, StorageItem>, withIndex?: boolean): string
@@ -261,8 +259,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       this.debug(
         `Re-enqueuing job ${jobStr} from peer id=${job.peer?.id?.substr(
           0,
-          8
-        )} (${resultSet} result set returned).`
+          8,
+        )} (${resultSet} result set returned).`,
       )
       this.enqueue(job)
       void this.wait().then(() => {
@@ -280,8 +278,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.debug(
           `Re-enqueuing job ${jobStr} from peer id=${job.peer?.id?.substr(
             0,
-            8
-          )} (reply contains unexpected data).`
+            8,
+          )} (reply contains unexpected data).`,
         )
         this.enqueue(job)
       }
@@ -299,7 +297,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     error?: Error,
     irrecoverable?: boolean,
     dequeued?: boolean,
-    banPeer?: boolean
+    banPeer?: boolean,
   ) {
     const jobItems = job instanceof Array ? job : [job]
     if (irrecoverable === true || banPeer === true) {
@@ -316,8 +314,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.debug(
           `Failure - Re-enqueuing job ${jobStr} from peer id=${jobItem.peer?.id?.substr(
             0,
-            8
-          )} (error: ${error}).`
+            8,
+          )} (error: ${error}).`,
         )
         // If the job has been dequeued, then the processed count needs to be decreased
         this.enqueue(jobItem, dequeued)
@@ -341,7 +339,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       if (this.finished !== this.total) {
         // There are still jobs waiting to be processed out in the writer pipe
         this.debug(
-          `No job found as next task, skip next job execution processed=${this.processed} finished=${this.finished} total=${this.total}`
+          `No job found as next task, skip next job execution processed=${this.processed} finished=${this.finished} total=${this.total}`,
         )
       } else {
         // There are no more jobs in the fetcher, so its better to resolve
@@ -356,7 +354,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       this.debug(
         `Readable state length=${this._readableState!.length} exceeds max queue size=${
           this.maxQueue
-        }, skip job ${jobStr} execution.`
+        }, skip job ${jobStr} execution.`,
       )
       return false
     }
@@ -405,7 +403,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       this.in.remove()
     }
     this.debug(
-      `Cleared out fetcher total=${this.total} processed=${this.processed} finished=${this.finished}`
+      `Cleared out fetcher total=${this.total} processed=${this.processed} finished=${this.finished}`,
     )
   }
 
@@ -437,7 +435,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     const _write = async (
       job: Job<JobTask, JobResult, StorageItem> | Job<JobTask, JobResult, StorageItem>[],
       encoding: string | null,
-      cb: Function
+      cb: Function,
     ) => {
       const jobItems = job instanceof Array ? job : [job]
       this.debug(`Starting write for ${jobItems.length} jobs...`)
@@ -451,7 +449,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.config.logger.warn(`Error storing received block or header result: ${error}`)
         const { destroyFetcher, banPeer, stepBack } = this.processStoreError(
           error,
-          jobItems[0].task
+          jobItems[0].task,
         )
         if (!destroyFetcher) {
           // Non-fatal error: ban peer and re-enqueue job.
@@ -477,12 +475,12 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       write: _write,
       writev: (
         many: { chunk: Job<JobTask, JobResult, StorageItem>; encoding: string }[],
-        cb: Function
+        cb: Function,
       ) => {
         const items = (<Job<JobTask, JobResult, StorageItem>[]>[]).concat(
           ...many.map(
-            (x: { chunk: Job<JobTask, JobResult, StorageItem>; encoding: string }) => x.chunk
-          )
+            (x: { chunk: Job<JobTask, JobResult, StorageItem>; encoding: string }) => x.chunk,
+          ),
         )
         return _write(items, null, cb)
       },
