@@ -1,7 +1,7 @@
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
-  Address,
   bytesToHex,
+  createAddressFromString,
   hexToBytes,
   parseGethGenesisState,
   privateToAddress,
@@ -217,7 +217,7 @@ describe('simple mainnet test run', async () => {
     }
 
     for (const addressString of Object.keys(customGenesisState)) {
-      const address = Address.fromString(addressString)
+      const address = createAddressFromString(addressString)
       const account = await stateManager?.getAccount(address)
       assert.equal(
         account?.balance,

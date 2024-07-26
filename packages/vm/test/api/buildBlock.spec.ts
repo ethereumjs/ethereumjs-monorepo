@@ -9,7 +9,14 @@ import {
 } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { create1559FeeMarketTx, createLegacyTx } from '@ethereumjs/tx'
-import { Address, concatBytes, createAccount, hexToBytes } from '@ethereumjs/util'
+import {
+  Address,
+  concatBytes,
+  createAccount,
+  createAddressFromPrivateKey,
+  createZeroAddress,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { buildBlock, runBlock } from '../../src/index.js'
@@ -20,7 +27,7 @@ import { setBalance } from './utils.js'
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
-const pKeyAddress = Address.fromPrivateKey(privateKey)
+const pKeyAddress = createAddressFromPrivateKey(privateKey)
 
 describe('BlockBuilder', () => {
   it('should build a valid block', async () => {
@@ -41,7 +48,7 @@ describe('BlockBuilder', () => {
 
     // Set up tx
     const tx = createLegacyTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false },
     ).sign(privateKey)
 
@@ -111,7 +118,7 @@ describe('BlockBuilder', () => {
 
     // Set up tx
     const tx = createLegacyTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false },
     ).sign(privateKey)
 
@@ -210,7 +217,7 @@ describe('BlockBuilder', () => {
 
     // Set up tx
     const tx = createLegacyTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false },
     ).sign(signer.privateKey)
 
@@ -240,7 +247,7 @@ describe('BlockBuilder', () => {
     })
 
     const tx = createLegacyTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false },
     ).sign(privateKey)
 
@@ -261,7 +268,7 @@ describe('BlockBuilder', () => {
     blockBuilder = await buildBlock(vm, { parentBlock: genesisBlock })
 
     const tx2 = createLegacyTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1, nonce: 1 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 1, nonce: 1 },
       { common, freeze: false },
     ).sign(privateKey)
 
@@ -323,12 +330,12 @@ describe('BlockBuilder', () => {
 
     // Set up underpriced txs to test error response
     const tx1 = createLegacyTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false },
     ).sign(privateKey)
 
     const tx2 = create1559FeeMarketTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, maxFeePerGas: 10 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, maxFeePerGas: 10 },
       { common, freeze: false },
     ).sign(privateKey)
 
@@ -346,12 +353,12 @@ describe('BlockBuilder', () => {
 
     // Set up correctly priced txs
     const tx3 = createLegacyTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 101 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 101 },
       { common, freeze: false },
     ).sign(privateKey)
 
     const tx4 = create1559FeeMarketTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, maxFeePerGas: 101, nonce: 1 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, maxFeePerGas: 101, nonce: 1 },
       { common, freeze: false },
     ).sign(privateKey)
 

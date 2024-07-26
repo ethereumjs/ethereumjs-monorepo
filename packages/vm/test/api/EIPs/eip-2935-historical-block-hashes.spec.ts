@@ -8,6 +8,8 @@ import {
   BIGINT_1,
   bigIntToBytes,
   bytesToHex,
+  createAddressFromPublicKey,
+  createAddressFromString,
   equalsBytes,
   generateAddress,
   privateToAddress,
@@ -114,7 +116,7 @@ describe('EIP 2935: historical block hashes', () => {
       [deploymentSender, deploymentTxHash, deployedToAddress],
     ] = deploymentConfig
 
-    const historyAddress = Address.fromString(deployedToAddress)
+    const historyAddress = createAddressFromString(deployedToAddress)
     const historyAddressBigInt = bytesToBigInt(historyAddress.bytes)
     const contract2935Code = hexToBytes(contract2935CodeHex)
 
@@ -156,7 +158,7 @@ describe('EIP 2935: historical block hashes', () => {
       }
 
       const deployTx = createLegacyTx(deployContractTxData)
-      const txSender = Address.fromPublicKey(deployTx.getSenderPublicKey()).toString()
+      const txSender = createAddressFromPublicKey(deployTx.getSenderPublicKey()).toString()
       assert.equal(txSender, deploymentSender, 'tx sender should match')
 
       const txHash = bytesToHex(deployTx.hash())

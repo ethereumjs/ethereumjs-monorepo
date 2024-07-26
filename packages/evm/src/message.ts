@@ -1,13 +1,13 @@
-import { Address, BIGINT_0 } from '@ethereumjs/util'
+import { BIGINT_0, createZeroAddress } from '@ethereumjs/util'
 
 import type { PrecompileFunc } from './precompiles/index.js'
 import type { EOFEnv } from './types.js'
 import type { AccessWitnessInterface } from '@ethereumjs/common'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const defaults = {
   value: BIGINT_0,
-  caller: Address.zero(),
+  caller: createZeroAddress(),
   data: new Uint8Array(0),
   depth: 0,
   isStatic: false,

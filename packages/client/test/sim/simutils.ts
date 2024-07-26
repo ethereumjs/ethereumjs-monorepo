@@ -2,13 +2,13 @@ import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { create1559FeeMarketTx, create4844BlobTx } from '@ethereumjs/tx'
 import {
-  Address,
   BIGINT_1,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
   bytesToUtf8,
   commitmentsToVersionedHashes,
+  createAddressFromPrivateKey,
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
@@ -323,7 +323,7 @@ export const runBlobTx = async (
   const proofs = blobsToProofs(kzg, blobs, commitments)
   const hashes = commitmentsToVersionedHashes(commitments)
 
-  const sender = Address.fromPrivateKey(pkey)
+  const sender = createAddressFromPrivateKey(pkey)
   const txData: TxData[TransactionType.BlobEIP4844] = {
     to,
     data: '0x',
@@ -395,7 +395,7 @@ export const createBlobTxs = async (
   const txns = []
 
   for (let x = startNonce; x <= startNonce + numTxs; x++) {
-    const sender = Address.fromPrivateKey(pkey)
+    const sender = createAddressFromPrivateKey(pkey)
     const txData = {
       from: sender.toString(),
       ...txMeta,

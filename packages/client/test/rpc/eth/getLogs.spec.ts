@@ -1,5 +1,5 @@
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { bytesToHex, createContractAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -49,8 +49,8 @@ describe(method, async () => {
       { common },
     ).sign(dummy.privKey)
 
-    const contractAddr1 = Address.generate(dummy.addr, BigInt(0))
-    const contractAddr2 = Address.generate(dummy.addr, BigInt(1))
+    const contractAddr1 = createContractAddress(dummy.addr, BigInt(0))
+    const contractAddr2 = createContractAddress(dummy.addr, BigInt(1))
     // construct txs to emit the logs
     // data calls log(logCount: 10, num1: 1, num2: 2, num3: 3, num4: 4)
     const data = hexToBytes(

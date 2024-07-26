@@ -8,6 +8,7 @@ import {
   KECCAK256_NULL,
   bigIntToBytes,
   concatBytes,
+  createAddressFromString,
   ecsign,
   hexToBytes,
   privateToAddress,
@@ -29,8 +30,8 @@ const defaultAuthAddr = new Address(privateToAddress(defaultAuthPkey))
 const defaultSenderPkey = hexToBytes(`0x${'40'.repeat(32)}`)
 const defaultSenderAddr = new Address(privateToAddress(defaultSenderPkey))
 
-const code1Addr = Address.fromString(`0x${'01'.repeat(20)}`)
-const code2Addr = Address.fromString(`0x${'02'.repeat(20)}`)
+const code1Addr = createAddressFromString(`0x${'01'.repeat(20)}`)
+const code2Addr = createAddressFromString(`0x${'02'.repeat(20)}`)
 
 type GetAuthListOpts = {
   chainId?: number
@@ -89,7 +90,7 @@ async function runTest(
 
   await runTx(vm, { tx })
 
-  const slot = hexToBytes('0x' + '00'.repeat(31) + '01')
+  const slot = hexToBytes(`0x${'00'.repeat(31)}01`)
   const value = await vm.stateManager.getStorage(defaultAuthAddr, slot)
   assert.ok(equalsBytes(unpadBytes(expect), value))
 
@@ -203,7 +204,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
     const checkAddressWarmCode = hexToBytes(
       `0x5F5F5F5F5F73${defaultAuthAddr.toString().slice(2)}5AF1`,
     )
-    const checkAddressWarm = Address.fromString(`0x${'FA'.repeat(20)}`)
+    const checkAddressWarm = createAddressFromString(`0x${'FA'.repeat(20)}`)
 
     await vm.stateManager.putCode(checkAddressWarm, checkAddressWarmCode)
 

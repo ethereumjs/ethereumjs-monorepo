@@ -1,11 +1,12 @@
 import { Hardfork } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
-  Address,
   BIGINT_0,
   BIGINT_256,
   blobsToCommitments,
   commitmentsToVersionedHashes,
+  createAddressFromPrivateKey,
+  createZeroAddress,
   getBlobs,
   hexToBytes,
 } from '@ethereumjs/util'
@@ -21,7 +22,7 @@ import type { VMExecution } from '../../../src/execution/vmexecution.js'
 const method = 'eth_blobBaseFee'
 
 const privateKey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
-const accountAddress = Address.fromPrivateKey(privateKey)
+const accountAddress = createAddressFromPrivateKey(privateKey)
 const produceBlockWith4844Tx = async (
   execution: VMExecution,
   chain: Chain,
@@ -53,7 +54,7 @@ const produceBlockWith4844Tx = async (
     const blobVersionedHashes = []
     const blobs = []
     const kzgCommitments = []
-    const to = Address.zero()
+    const to = createZeroAddress()
     if (blobsCount[i] > 0) {
       for (let blob = 0; blob < blobsCount[i]; blob++) {
         blobVersionedHashes.push(...blobVersionedHash)

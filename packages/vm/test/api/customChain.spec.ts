@@ -2,7 +2,12 @@ import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
-import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import {
+  bytesToHex,
+  createAddressFromPrivateKey,
+  createAddressFromString,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { Interface } from '@ethersproject/abi'
 import { assert, describe, it } from 'vitest'
 
@@ -84,7 +89,7 @@ describe('VM initialized with custom state', () => {
       tx,
       block,
     })
-    const toAddress = Address.fromString(to)
+    const toAddress = createAddressFromString(to)
     const receiverAddress = await vm.stateManager.getAccount(toAddress)
 
     assert.equal(result.totalGasSpent.toString(), '21000')
@@ -101,9 +106,9 @@ describe('VM initialized with custom state', () => {
     ) as PrefixedHexString
 
     const callResult = await vm.evm.runCall({
-      to: Address.fromString(contractAddress),
+      to: createAddressFromString(contractAddress),
       data: hexToBytes(sigHash),
-      caller: Address.fromPrivateKey(privateKey),
+      caller: createAddressFromPrivateKey(privateKey),
     })
 
     const storage = genesisState[contractAddress][2]

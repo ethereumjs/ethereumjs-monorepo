@@ -570,7 +570,7 @@ describe.skip('assembleBlocks() -> should stop assembling when a new block is re
   for (let i = 0; i < 1000; i++) {
     // In order not to pollute TxPool with too many txs from the same address
     // (or txs which are already known), keep generating a new address for each tx
-    const address = Address.fromPrivateKey(privateKey)
+    const address = createAddressFromPrivateKey(privateKey)
     await setBalance(vm, address, BigInt('200000000000001'))
     const tx = createTx({ address, privateKey })
     await txPool.add(tx)

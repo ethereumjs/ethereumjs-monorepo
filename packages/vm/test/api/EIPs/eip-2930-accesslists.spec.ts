@@ -1,6 +1,12 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { create2930AccessListTx } from '@ethereumjs/tx'
-import { Address, bytesToHex, createAccount, hexToBytes } from '@ethereumjs/util'
+import {
+  Address,
+  bytesToHex,
+  createAccount,
+  createAddressFromPrivateKey,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM, runTx } from '../../../src/index.js'
@@ -50,7 +56,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
     // contract code PUSH1 0x00 SLOAD STOP
     await vm.stateManager.putCode(contractAddress, hexToBytes('0x60005400'))
 
-    const address = Address.fromPrivateKey(privateKey)
+    const address = createAddressFromPrivateKey(privateKey)
     const initialBalance = BigInt(10) ** BigInt(18)
 
     const account = await vm.stateManager.getAccount(address)

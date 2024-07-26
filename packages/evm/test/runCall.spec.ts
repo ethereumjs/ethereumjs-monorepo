@@ -6,6 +6,9 @@ import {
   bytesToBigInt,
   bytesToHex,
   concatBytes,
+  createAddressFromPrivateKey,
+  createAddressFromString,
+  createZeroAddress,
   hexToBytes,
   padToEven,
   unpadBytes,
@@ -459,7 +462,7 @@ describe('RunCall tests', () => {
 
     // setup the call arguments
     const runCallArgs = {
-      to: Address.zero(),
+      to: createZeroAddress(),
       value: BigInt(-10),
     }
 
@@ -480,12 +483,12 @@ describe('RunCall tests', () => {
 
     // runCall against a contract to reach `_reduceSenderBalance`
     const contractCode = hexToBytes('0x00') // 00: STOP
-    const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
+    const contractAddress = createAddressFromString('0x000000000000000000000000636F6E7472616374')
     await evm.stateManager.putCode(contractAddress, contractCode)
     const senderKey = hexToBytes(
       '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
-    const sender = Address.fromPrivateKey(senderKey)
+    const sender = createAddressFromPrivateKey(senderKey)
 
     const runCallArgs = {
       gasLimit: BigInt(21000),
@@ -615,7 +618,7 @@ describe('RunCall tests', () => {
     const evm = await createEVM({ common })
 
     const contractCode = hexToBytes('0x600060405200') // PUSH 0 PUSH 40 MSTORE STOP
-    const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
+    const contractAddress = createAddressFromString('0x000000000000000000000000636F6E7472616374')
     await evm.stateManager.putCode(contractAddress, contractCode)
 
     const runCallArgs = {
@@ -708,7 +711,7 @@ describe('RunCall tests', () => {
        * PUSH2 0x1a90 // Note: this is the gas available in the new call(code) frame, this value does not matter
        * CALLCODE/CALL
        */
-      const callCodeAddress = Address.fromString('0x000000000000000000000000000000000000aaaa')
+      const callCodeAddress = createAddressFromString('0x000000000000000000000000000000000000aaaa')
       const callCode = hexToBytes(`0x6000600060006000600161AACC611a90${opcode}`)
 
       const gasLimit = gas.toString(16).padStart(4, '0')
@@ -726,7 +729,7 @@ describe('RunCall tests', () => {
        * PUSH1 0x00
        * SSTORE
        */
-      const callerAddress = Address.fromString('0x000000000000000000000000000000000000aaab')
+      const callerAddress = createAddressFromString('0x000000000000000000000000000000000000aaab')
       const callerCode = hexToBytes(`0x60008080808061AAAA61${gasLimit}f1600055`)
 
       await evm.stateManager.putAccount(callCodeAddress, new Account())

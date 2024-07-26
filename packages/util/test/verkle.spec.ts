@@ -3,12 +3,12 @@ import { assert, beforeAll, describe, it } from 'vitest'
 
 import * as verkleBlockJSON from '../../statemanager/test/testdata/verkleKaustinen6Block72.json'
 import {
-  Address,
   type VerkleCrypto,
   type VerkleExecutionWitness,
   VerkleLeafType,
   bytesToHex,
   concatBytes,
+  createAddressFromString,
   getVerkleKey,
   getVerkleStem,
   hexToBytes,
@@ -27,7 +27,10 @@ describe('Verkle cryptographic helpers', () => {
     // Empty address
     assert.equal(
       bytesToHex(
-        getVerkleStem(verkle, Address.fromString('0x0000000000000000000000000000000000000000')),
+        getVerkleStem(
+          verkle,
+          createAddressFromString('0x0000000000000000000000000000000000000000'),
+        ),
       ),
       '0x1a100684fd68185060405f3f160e4bb6e034194336b547bdae323f888d5332',
     )
@@ -35,7 +38,10 @@ describe('Verkle cryptographic helpers', () => {
     // Non-empty address
     assert.equal(
       bytesToHex(
-        getVerkleStem(verkle, Address.fromString('0x71562b71999873DB5b286dF957af199Ec94617f7')),
+        getVerkleStem(
+          verkle,
+          createAddressFromString('0x71562b71999873DB5b286dF957af199Ec94617f7'),
+        ),
       ),
       '0x1540dfad7755b40be0768c6aa0a5096fbf0215e0e8cf354dd928a178346466',
     )

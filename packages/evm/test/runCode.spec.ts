@@ -1,4 +1,4 @@
-import { Account, Address, hexToBytes } from '@ethereumjs/util'
+import { Account, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createEVM } from '../src/index.js'
@@ -82,7 +82,7 @@ describe('VM.runCode: interpreter', () => {
     // does not exist, then if SSTORE/SLOAD is used, the runCode will immediately fail because StateManager now throws
     // TODO: is this behavior which we should fix? (Either in StateManager OR in runCode where we load the account first,
     // then re-put the account after (if account === undefined put empty account, such that the account exists))
-    const address = Address.fromString(`0x${'00'.repeat(20)}`)
+    const address = createAddressFromString(`0x${'00'.repeat(20)}`)
     await evm.stateManager.putAccount(address, new Account())
     evm.stateManager.putStorage = (..._args) => {
       throw new Error('Test')
