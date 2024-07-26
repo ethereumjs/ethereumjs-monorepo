@@ -38,6 +38,7 @@ type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
  */
 export interface TrieNodeFetcherOptions extends FetcherOptions {
   root: Uint8Array
+  height: bigint
   accountToStorageTrie?: Map<String, Trie>
   stateManager?: DefaultStateManager
 
@@ -70,6 +71,7 @@ type NodeRequestData = {
 export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
   protected debug: Debugger
   root: Uint8Array
+  height: bigint
 
   stateManager: DefaultStateManager
   fetcherDoneFlags: SnapFetcherDoneFlags
@@ -102,6 +104,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   constructor(options: TrieNodeFetcherOptions) {
     super(options)
     this.root = options.root
+    this.height = options.height
     this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
     this.pathToNodeRequestData = new OrderedMap<string, NodeRequestData>()
     this.requestedNodeToPath = new Map<string, string>()
@@ -119,7 +122,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     // will always start with root node as first set of node requests
     this.pathToNodeRequestData.setElement('', {
       requested: false,
-      nodeHash: bytesToHex(this.root),
+      nodeHash: bytesToHex(this.fetcherDoneFlags.snapTargetRoot!),
       nodeParentHash: '', // root node does not have a parent
     } as NodeRequestData)
 
@@ -149,12 +152,24 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     // TODOs:
     // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
     // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
-    await peer?.latest()
+    const latest = await peer?.latest()
+    if (latest !== undefined && latest.stateRoot !== undefined) {
+      const currentHeight = this.height
+      const newestHeight = latest.number
+      if (newestHeight - currentHeight >= 1) {
+        this.fetcherDoneFlags.snapTargetHeight = latest.number
+        this.fetcherDoneFlags.snapTargetRoot = latest.stateRoot
+        this.fetcherDoneFlags.snapTargetHash = latest.hash()
+
+        // TODO do we need to set this one since it's a duplicate of snapTargetRoot?
+        this.fetcherDoneFlags.stateRoot = latest.stateRoot
+      }
+    }
 
     const { paths, pathStrings } = task
 
     const rangeResult = await peer!.snap!.getTrieNodes({
-      root: this.root,
+      root: this.fetcherDoneFlags.snapTargetRoot!,
       paths,
       bytes: BigInt(this.config.maxRangeBytes),
     })
@@ -385,7 +400,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         this.debug(
           `Stored accountTrie with root actual=${bytesToHex(
             this.accountTrie.root()
-          )} expected=${bytesToHex(this.root)}`
+          )} expected=${bytesToHex(this.fetcherDoneFlags.snapTargetRoot!)}`
         )
       }
     } catch (e) {
@@ -445,10 +460,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     }
 
     return tasks
-  }
-
-  updateStateRoot(stateRoot: Uint8Array) {
-    this.root = stateRoot
   }
 
   nextTasks(): void {

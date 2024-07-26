@@ -45,6 +45,8 @@ export interface StorageFetcherOptions extends FetcherOptions {
   /** Root hash of the account trie to serve */
   root: Uint8Array
 
+  height: bigint
+
   /** Storage requests to fetch */
   storageRequests?: StorageRequest[]
 
@@ -70,6 +72,7 @@ export type JobTask = {
 export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageData[]> {
   protected debug: Debugger
   root: Uint8Array
+  height: bigint
   stateManager: DefaultStateManager
   fetcherDoneFlags: SnapFetcherDoneFlags
 
@@ -89,6 +92,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this.fragmentedRequests = []
 
     this.root = options.root
+    this.height = options.height
     this.stateManager = options.stateManager ?? new DefaultStateManager()
     this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
     this.storageRequests = options.storageRequests ?? []
@@ -105,9 +109,9 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       this.debug(
         `Storage fetcher instantiated with ${
           fullJob.task.storageRequests.length
-        } accounts requested and root=${short(this.root)} origin=${short(origin)} limit=${short(
-          limit
-        )} destroyWhenDone=${this.destroyWhenDone}`
+        } accounts requested and root=${short(
+          this.fetcherDoneFlags.snapTargetRoot!
+        )} origin=${short(origin)} limit=${short(limit)} destroyWhenDone=${this.destroyWhenDone}`
       )
     } else if (this.storageRequests.length === 0) {
       this.debug('Idle storage fetcher has been instantiated')
@@ -222,12 +226,26 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     // TODOs:
     // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
     // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
-    await peer?.latest()
+    const latest = await peer?.latest()
+    if (latest !== undefined && latest.stateRoot !== undefined) {
+      // TODO currently doing this check and update both in account and trienode fetchers since they
+      // could be running independently of eachother in some cases
+      const currentHeight = this.height
+      const newestHeight = latest.number
+      if (newestHeight - currentHeight >= 1) {
+        this.fetcherDoneFlags.snapTargetHeight = latest.number
+        this.fetcherDoneFlags.snapTargetRoot = latest.stateRoot
+        this.fetcherDoneFlags.snapTargetHash = latest.hash()
+
+        // TODO do we need to set this one since it's a duplicate of snapTargetRoot?
+        this.fetcherDoneFlags.stateRoot = latest.stateRoot
+      }
+    }
 
     const origin = this.getOrigin(job)
     const limit = this.getLimit(job)
 
-    this.debug(`requested root: ${bytesToHex(this.root)}`)
+    this.debug(`requested root: ${bytesToHex(this.fetcherDoneFlags.snapTargetRoot!)}`)
     this.debug(`requested origin: ${bytesToHex(origin)}`)
     this.debug(`requested limit: ${bytesToHex(limit)}`)
     this.debug(
@@ -250,7 +268,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     }
 
     const rangeResult = await peer!.snap!.getStorageRanges({
-      root: this.root,
+      root: this.fetcherDoneFlags.snapTargetRoot!,
       accounts: task.storageRequests.map((req) => req.accountHash),
       origin,
       limit,
@@ -615,10 +633,6 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     debugStr += ` limit=${short(setLengthLeft(bigIntToBytes(startedWith + pushedCount), 32))}`
     this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks
-  }
-
-  updateStateRoot(stateRoot: Uint8Array) {
-    this.root = stateRoot
   }
 
   nextTasks(): void {

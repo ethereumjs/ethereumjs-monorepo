@@ -11,7 +11,6 @@ import { LesProtocol } from '../net/protocol/lesprotocol.js'
 import { SnapProtocol } from '../net/protocol/snapprotocol.js'
 import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync/index.js'
 import { Event } from '../types.js'
-import { wait } from '../util/wait.js'
 
 import { Service, type ServiceOptions } from './service.js'
 import { Skeleton } from './skeleton.js'
@@ -244,36 +243,7 @@ export class FullEthereumService extends Service {
    * vm execution
    */
   async buildHeadState(): Promise<void> {
-    if (this.building) {
-      if (this.snapsync !== undefined) {
-        // discover best peer
-        let peer = await this.snapsync.best()
-        let numAttempts = 1
-        while (!peer && this.snapsync.opened) {
-          this.snapsync.config.logger.debug(`Waiting for best peer (attempt #${numAttempts})`)
-          await wait(5000)
-          peer = await this.snapsync.best()
-          numAttempts += 1
-        }
-
-        if (peer === undefined) throw new Error('Unable to find a peer to sync with')
-        const latest = await peer.latest()
-
-        if (latest === undefined || latest.stateRoot === undefined) {
-          // TODO if latest is undefined, latest known root is assumed to not yet have been updated?
-          return
-        }
-
-        // TODO only update root if it is a new one compared to what's already being used
-        const fetcher = this.snapsync.fetcher
-        if (fetcher === null) {
-          return
-        }
-        fetcher.updateStateRoot(latest!.stateRoot as Uint8Array)
-      }
-
-      return
-    }
+    if (this.building) return
     this.building = true
 
     try {

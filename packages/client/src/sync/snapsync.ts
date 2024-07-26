@@ -230,6 +230,7 @@ export class SnapSynchronizer extends Synchronizer {
         pool: this.pool,
         stateManager: this.execution.vm.stateManager as DefaultStateManager,
         root: stateRoot,
+        height: height,
         // This needs to be determined from the current state of the MPT dump
         first: BigInt(0),
         fetcherDoneFlags: this.fetcherDoneFlags,
