@@ -1,7 +1,13 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { TransactionType, create1559FeeMarketTx, createTxFromTxData } from '@ethereumjs/tx'
-import { Address, bigIntToBytes, bytesToBigInt, hexToBytes, randomBytes } from '@ethereumjs/util'
+import {
+  bigIntToBytes,
+  bytesToBigInt,
+  createZeroAddress,
+  hexToBytes,
+  randomBytes,
+} from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
@@ -224,7 +230,11 @@ describe('[EthProtocol]', () => {
     const eip2929Tx = createTxFromTxData({ type: 1 }, { common: config.chainCommon })
     const eip1559Tx = createTxFromTxData({ type: 2 }, { common: config.chainCommon })
     const blobTx = createTxFromTxData(
-      { type: 3, to: Address.zero(), blobVersionedHashes: [hexToBytes(`0x01${'00'.repeat(31)}`)] },
+      {
+        type: 3,
+        to: createZeroAddress(),
+        blobVersionedHashes: [hexToBytes(`0x01${'00'.repeat(31)}`)],
+      },
       { common: config.chainCommon },
     )
     const res = p.encode(p.messages.filter((message) => message.name === 'Transactions')[0], [

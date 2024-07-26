@@ -1,13 +1,13 @@
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
-  Address,
   BIGINT_1,
   BIGINT_2,
   TypeOutput,
   bigIntToUnpaddedBytes,
   bytesToHex,
   concatBytes,
+  createZeroAddress,
   equalsBytes,
   toBytes,
   toType,
@@ -140,7 +140,7 @@ export class PendingBlock {
         const validatorIndex = bigIntToUnpaddedBytes(
           toType(withdrawal.validatorIndex ?? 0, TypeOutput.BigInt),
         )
-        const address = toType(withdrawal.address ?? Address.zero(), TypeOutput.Uint8Array)
+        const address = toType(withdrawal.address ?? createZeroAddress(), TypeOutput.Uint8Array)
         const amount = bigIntToUnpaddedBytes(toType(withdrawal.amount ?? 0, TypeOutput.BigInt))
         withdrawalsBufTemp.push(concatBytes(indexBuf, validatorIndex, address, amount))
       }

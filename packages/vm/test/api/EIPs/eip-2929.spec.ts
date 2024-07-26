@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address, createAccount, hexToBytes } from '@ethereumjs/util'
+import { Address, createAccount, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM, runTx } from '../../../src/index.js'
@@ -84,7 +84,7 @@ describe('EIP 2929: gas cost tests', () => {
 
     const tx = unsignedTx.sign(privateKey)
 
-    const address = Address.fromPrivateKey(privateKey)
+    const address = createAddressFromPrivateKey(privateKey)
     const initialBalance = BigInt(10) ** BigInt(18)
 
     const account = await vm.stateManager.getAccount(address)

@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { EVM, createEVM } from '@ethereumjs/evm'
-import { Account, Address, KECCAK256_RLP, hexToBytes } from '@ethereumjs/util'
+import { Account, KECCAK256_RLP, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { assert, describe, it } from 'vitest'
 
@@ -306,8 +306,8 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
   describe('Ensure that precompile activation creates non-empty accounts', () => {
     it('should work', async () => {
       // setup the accounts for this test
-      const caller = Address.fromString('0x00000000000000000000000000000000000000ee') // caller address
-      const contractAddress = Address.fromString('0x00000000000000000000000000000000000000ff') // contract address
+      const caller = createAddressFromString('0x00000000000000000000000000000000000000ee') // caller address
+      const contractAddress = createAddressFromString('0x00000000000000000000000000000000000000ff') // contract address
       // setup the vm
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
       const vmNotActivated = await VM.create({ common })

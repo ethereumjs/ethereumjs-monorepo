@@ -1,5 +1,12 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, concatBytes, equalsBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
+import {
+  Address,
+  concatBytes,
+  createAddressFromString,
+  equalsBytes,
+  hexToBytes,
+  privateToAddress,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createEVM } from '../../src/index.js'
@@ -53,14 +60,14 @@ describe('EIP 3860 tests', () => {
       hardfork: Hardfork.London,
       eips: [],
     })
-    const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    const caller = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const evm = await createEVM({
       common: commonWith3860,
     })
     const evmWithout3860 = await createEVM({
       common: commonWithout3860,
     })
-    const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    const contractFactory = createAddressFromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const contractAccount = await evm.stateManager.getAccount(contractFactory)
     await evm.stateManager.putAccount(contractFactory, contractAccount!)
     await evmWithout3860.stateManager.putAccount(contractFactory, contractAccount!)
@@ -97,14 +104,14 @@ describe('EIP 3860 tests', () => {
       hardfork: Hardfork.London,
       eips: [],
     })
-    const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    const caller = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const evm = await createEVM({
       common: commonWith3860,
     })
     const evmWithout3860 = await createEVM({
       common: commonWithout3860,
     })
-    const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    const contractFactory = createAddressFromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const contractAccount = await evm.stateManager.getAccount(contractFactory)
     await evm.stateManager.putAccount(contractFactory, contractAccount!)
     await evmWithout3860.stateManager.putAccount(contractFactory, contractAccount!)
@@ -167,7 +174,7 @@ describe('EIP 3860 tests', () => {
       hardfork: Hardfork.London,
       eips: [3860],
     })
-    const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    const caller = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     for (const code of ['F0', 'F5']) {
       const evm = await createEVM({
         common: commonWith3860,
@@ -178,7 +185,7 @@ describe('EIP 3860 tests', () => {
         common: commonWith3860,
         allowUnlimitedInitCodeSize: false,
       })
-      const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+      const contractFactory = createAddressFromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
       const contractAccount = await evm.stateManager.getAccount(contractFactory)
       await evm.stateManager.putAccount(contractFactory, contractAccount!)
       await evmDisabled.stateManager.putAccount(contractFactory, contractAccount!)

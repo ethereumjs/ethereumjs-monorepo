@@ -4,10 +4,11 @@ import { RLP } from '@ethereumjs/rlp'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
-  Address,
   bigIntToBytes,
   bytesToHex,
   concatBytes,
+  createAddressFromPrivateKey,
+  createAddressFromString,
   equalsBytes,
   hexToBytes,
   setLengthLeft,
@@ -22,7 +23,7 @@ import { setupVM } from '../utils.js'
 import type { Block } from '@ethereumjs/block'
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
-const addr = Address.fromPrivateKey(pkey)
+const addr = createAddressFromPrivateKey(pkey)
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7685, 7002] })
 
@@ -55,7 +56,7 @@ function generateTx(nonce: bigint) {
     bigIntToBytes(common.param('withdrawalRequestPredeployAddress')),
     20,
   )
-  const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
+  const withdrawalsAddress = createAddressFromString(bytesToHex(addressBytes))
 
   return createLegacyTx({
     nonce,

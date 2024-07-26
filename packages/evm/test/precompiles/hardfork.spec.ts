@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, hexToBytes } from '@ethereumjs/util'
+import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createEVM, getActivePrecompiles } from '../../src/index.js'
@@ -24,7 +24,7 @@ describe('Precompiles: hardfork availability', () => {
       common: commonByzantium,
     })
     let result = await evm.runCall({
-      caller: Address.zero(),
+      caller: createZeroAddress(),
       gasLimit: BigInt(0xffffffffff),
       to: ECPAIR_Address,
       value: BigInt(0),
@@ -45,7 +45,7 @@ describe('Precompiles: hardfork availability', () => {
       common: commonPetersburg,
     })
     result = await evm.runCall({
-      caller: Address.zero(),
+      caller: createZeroAddress(),
       gasLimit: BigInt(0xffffffffff),
       to: ECPAIR_Address,
       value: BigInt(0),
@@ -68,7 +68,7 @@ describe('Precompiles: hardfork availability', () => {
     })
 
     result = await evm.runCall({
-      caller: Address.zero(),
+      caller: createZeroAddress(),
       gasLimit: BigInt(0xffffffffff),
       to: ECPAIR_Address,
       value: BigInt(0),

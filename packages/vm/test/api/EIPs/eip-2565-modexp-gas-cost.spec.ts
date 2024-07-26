@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { Address, bytesToHex, createZeroAddress, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 // eslint-disable-next-line import/order
@@ -17,7 +17,7 @@ describe('EIP-2565 ModExp gas cost tests', () => {
       const testName = test.Name
       const to = new Address(hexToBytes('0x0000000000000000000000000000000000000005'))
       const result = await vm.evm.runCall({
-        caller: Address.zero(),
+        caller: createZeroAddress(),
         gasLimit: BigInt(0xffffffffff),
         to,
         value: BigInt(0),

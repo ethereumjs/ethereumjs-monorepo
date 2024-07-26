@@ -17,6 +17,7 @@ import {
   KECCAK256_RLP,
   TypeOutput,
   Withdrawal,
+  createZeroAddress,
   toBytes,
   toType,
   zeros,
@@ -181,7 +182,7 @@ export class BlockBuilder {
     const coinbase =
       this.headerData.coinbase !== undefined
         ? new Address(toBytes(this.headerData.coinbase))
-        : Address.zero()
+        : createZeroAddress()
     await rewardAccount(this.vm.evm, coinbase, reward, this.vm.common)
   }
 

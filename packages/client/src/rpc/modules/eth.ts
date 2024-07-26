@@ -7,7 +7,6 @@ import {
   createTxFromTxData,
 } from '@ethereumjs/tx'
 import {
-  Address,
   BIGINT_0,
   BIGINT_1,
   BIGINT_100,
@@ -16,6 +15,8 @@ import {
   bigIntMax,
   bigIntToHex,
   bytesToHex,
+  createAddressFromString,
+  createZeroAddress,
   equalsBytes,
   hexToBytes,
   intToHex,
@@ -51,7 +52,7 @@ import type {
   LegacyTransaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const EMPTY_SLOT = `0x${'00'.repeat(32)}`
 
@@ -517,8 +518,8 @@ export class Eth {
     const data = transaction.data ?? transaction.input
 
     const runCallOpts = {
-      caller: from !== undefined ? Address.fromString(from) : undefined,
-      to: to !== undefined ? Address.fromString(to) : undefined,
+      caller: from !== undefined ? createAddressFromString(from) : undefined,
+      to: to !== undefined ? createAddressFromString(to) : undefined,
       gasLimit: toType(gasLimit, TypeOutput.BigInt),
       gasPrice: toType(gasPrice, TypeOutput.BigInt),
       value: toType(value, TypeOutput.BigInt),
@@ -615,7 +616,9 @@ export class Eth {
 
     // set from address
     const from =
-      transaction.from !== undefined ? Address.fromString(transaction.from) : Address.zero()
+      transaction.from !== undefined
+        ? createAddressFromString(transaction.from)
+        : createZeroAddress()
     tx.getSenderAddress = () => {
       return from
     }
@@ -638,7 +641,7 @@ export class Eth {
    */
   async getBalance(params: [string, string]) {
     const [addressHex, blockOpt] = params
-    const address = Address.fromString(addressHex)
+    const address = createAddressFromString(addressHex)
     const block = await getBlockByOption(blockOpt, this._chain)
 
     if (this._vm === undefined) {
@@ -744,7 +747,7 @@ export class Eth {
     const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const address = Address.fromString(addressHex)
+    const address = createAddressFromString(addressHex)
     const code = await vm.stateManager.getCode(address)
     return bytesToHex(code)
   }
@@ -785,7 +788,7 @@ export class Eth {
     const block = await getBlockByOption(blockOpt, this._chain)
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const address = Address.fromString(addressHex)
+    const address = createAddressFromString(addressHex)
     const account = await vm.stateManager.getAccount(address)
     if (account === undefined) {
       return EMPTY_SLOT
@@ -882,7 +885,7 @@ export class Eth {
     const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const address = Address.fromString(addressHex)
+    const address = createAddressFromString(addressHex)
     const account = await vm.stateManager.getAccount(address)
     if (account === undefined) {
       return '0x0'
@@ -1252,7 +1255,7 @@ export class Eth {
     }
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const address = Address.fromString(addressHex)
+    const address = createAddressFromString(addressHex)
     const slots = slotsHex.map((slotHex) => setLengthLeft(hexToBytes(slotHex), 32))
     const proof = await vm.stateManager.getProof!(address, slots)
     for (const p of proof.storageProof) {

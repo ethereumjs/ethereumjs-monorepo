@@ -41,7 +41,7 @@ import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.js'
 import { ERROR } from '../exceptions.js'
 
 import {
-  addresstoBytes,
+  createAddressFromStackBigInt,
   describeLocation,
   exponentiation,
   fromTwos,
@@ -428,7 +428,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x31,
     async function (runState) {
       const addressBigInt = runState.stack.pop()
-      const address = new Address(addresstoBytes(addressBigInt))
+      const address = createAddressFromStackBigInt(addressBigInt)
       const balance = await runState.interpreter.getExternalBalance(address)
       runState.stack.push(balance)
     },
@@ -522,7 +522,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x3b,
     async function (runState) {
       const addressBigInt = runState.stack.pop()
-      const address = new Address(addresstoBytes(addressBigInt))
+      const address = createAddressFromStackBigInt(addressBigInt)
       // EOF check
       const code = await runState.stateManager.getCode(address)
       if (isEOF(code)) {
@@ -532,7 +532,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       const size = BigInt(
-        await runState.stateManager.getCodeSize(new Address(addresstoBytes(addressBigInt))),
+        await runState.stateManager.getCodeSize(createAddressFromStackBigInt(addressBigInt)),
       )
 
       runState.stack.push(size)
@@ -545,7 +545,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [addressBigInt, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
 
       if (dataLength !== BIGINT_0) {
-        let code = await runState.stateManager.getCode(new Address(addresstoBytes(addressBigInt)))
+        let code = await runState.stateManager.getCode(createAddressFromStackBigInt(addressBigInt))
 
         if (isEOF(code)) {
           // In legacy code, the target code is treated as to be "EOFBYTES" code
@@ -564,7 +564,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x3f,
     async function (runState) {
       const addressBigInt = runState.stack.pop()
-      const address = new Address(addresstoBytes(addressBigInt))
+      const address = createAddressFromStackBigInt(addressBigInt)
 
       // EOF check
       const code = await runState.stateManager.getCode(address)
@@ -1419,7 +1419,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState: RunState, common: Common) {
       const [_currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(7)
-      const toAddress = new Address(addresstoBytes(toAddr))
+      const toAddress = createAddressFromStackBigInt(toAddr)
 
       let data = new Uint8Array(0)
       if (inLength !== BIGINT_0) {
@@ -1447,7 +1447,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState: RunState, common: Common) {
       const [_currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(7)
-      const toAddress = new Address(addresstoBytes(toAddr))
+      const toAddress = createAddressFromStackBigInt(toAddr)
 
       let gasLimit = runState.messageGasLimit!
       if (value !== BIGINT_0) {
@@ -1476,7 +1476,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const value = runState.interpreter.getCallValue()
       const [_currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(6)
-      const toAddress = new Address(addresstoBytes(toAddr))
+      const toAddress = createAddressFromStackBigInt(toAddr)
 
       let data = new Uint8Array(0)
       if (inLength !== BIGINT_0) {
@@ -1580,7 +1580,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const [_currentGasLimit, addr, value, argsOffset, argsLength, retOffset, retLength] =
           runState.stack.popN(7)
 
-        const toAddress = new Address(addresstoBytes(addr))
+        const toAddress = createAddressFromStackBigInt(addr)
 
         const gasLimit = runState.messageGasLimit!
         runState.messageGasLimit = undefined
@@ -1625,7 +1625,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           return
         }
 
-        const toAddress = new Address(addresstoBytes(toAddr))
+        const toAddress = createAddressFromStackBigInt(toAddr)
 
         let data = new Uint8Array(0)
         if (inLength !== BIGINT_0) {
@@ -1660,7 +1660,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           return
         }
 
-        const toAddress = new Address(addresstoBytes(toAddr))
+        const toAddress = createAddressFromStackBigInt(toAddr)
 
         const code = await runState.stateManager.getCode(toAddress)
 
@@ -1687,7 +1687,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const value = BIGINT_0
       const [_currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(6)
-      const toAddress = new Address(addresstoBytes(toAddr))
+      const toAddress = createAddressFromStackBigInt(toAddr)
 
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
@@ -1724,7 +1724,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           return
         }
 
-        const toAddress = new Address(addresstoBytes(toAddr))
+        const toAddress = createAddressFromStackBigInt(toAddr)
 
         let data = new Uint8Array(0)
         if (inLength !== BIGINT_0) {
@@ -1766,7 +1766,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0xff,
     async function (runState) {
       const selfdestructToAddressBigInt = runState.stack.pop()
-      const selfdestructToAddress = new Address(addresstoBytes(selfdestructToAddressBigInt))
+      const selfdestructToAddress = createAddressFromStackBigInt(selfdestructToAddressBigInt)
       return runState.interpreter.selfDestruct(selfdestructToAddress)
     },
   ],

@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
+import { createZeroAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { TransactionType, createTxFromTxData, paramsTx } from '../src/index.js'
@@ -18,7 +18,7 @@ const txTypes = [
   TransactionType.FeeMarketEIP1559,
   //TransactionType.BlobEIP4844, // Explicitly commented out: BlobEIP4844 txs cannot create contracts
 ]
-const addressZero = Address.zero()
+const addressZero = createZeroAddress()
 
 describe('[EIP3860 tests]', () => {
   it(`Should instantiate create txs with MAX_INITCODE_SIZE`, () => {
