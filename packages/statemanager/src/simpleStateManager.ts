@@ -168,16 +168,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   async clearStorage(): Promise<void> {}
 
   // Only "core" methods implemented
-  dumpStorage(): Promise<StorageDump> {
-    throw new Error('Method not implemented.')
-  }
   dumpStorageRange(): Promise<StorageRange> {
-    throw new Error('Method not implemented.')
-  }
-  getProof(): Promise<Proof> {
-    throw new Error('Method not implemented.')
-  }
-  getAppliedKey?(): Uint8Array {
     throw new Error('Method not implemented.')
   }
 }

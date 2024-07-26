@@ -847,17 +847,6 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._cachedStateRoot = stateRoot
   }
 
-  /**
-   * Dumps the RLP-encoded storage values for an `account` specified by `address`.
-   * @param address - The address of the `account` to return storage for
-   * @returns {Promise<StorageDump>} - The state of the account as an `Object` map.
-   * Keys are are the storage keys, values are the storage values as strings.
-   * Both are represented as hex strings without the `0x` prefix.
-   */
-  async dumpStorage(_: Address): Promise<StorageDump> {
-    throw Error('not implemented')
-  }
-
   dumpStorageRange(_: Address, __: bigint, ___: number): Promise<StorageRange> {
     throw Error('not implemented')
   }

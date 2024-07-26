@@ -179,7 +179,13 @@ export class Debug {
       const memory = []
       let storage = {}
       if (opts.disableStorage === false) {
-        storage = await vmCopy.stateManager.dumpStorage(step.address)
+        if (!('dumpStorage' in vmCopy.stateManager)) {
+          throw {
+            message: 'stateManager has no dumpStorage implementation',
+            code: INTERNAL_ERROR,
+          }
+        }
+        storage = await vmCopy.stateManager.dumpStorage!(step.address)
       }
       if (opts.enableMemory === true) {
         for (let x = 0; x < step.memoryWordCount; x++) {
@@ -260,7 +266,13 @@ export class Debug {
       const memory = []
       let storage = {}
       if (opts.disableStorage === false) {
-        storage = await vm.stateManager.dumpStorage(step.address)
+        if (!('dumpStorage' in vm.stateManager)) {
+          throw {
+            message: 'stateManager has no dumpStorage implementation',
+            code: INTERNAL_ERROR,
+          }
+        }
+        storage = await vm.stateManager.dumpStorage!(step.address)
       }
       if (opts.enableMemory === true) {
         for (let x = 0; x < step.memoryWordCount; x++) {

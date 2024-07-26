@@ -182,12 +182,14 @@ export interface StateManagerInterface {
   hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
 
   /*
-   * Proof Functionality
+   * Extra Functionality
+   *
+   * Optional non-essential methods, these methods should always be guarded
+   * on usage (check for existance)
    */
-  // Only client (should not be mandatory)
+  // Client
   getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
-
-  shallowCopy(downlevelCaches?: boolean): StateManagerInterface
+  dumpStorage?(address: Address): Promise<StorageDump>
 
   /*
    * EVM/VM Specific Functionality
@@ -200,10 +202,14 @@ export interface StateManagerInterface {
   // only Verkle/EIP-6800 (experimental)
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
+
+  /*
+   * Generic
+   */
+  shallowCopy(downlevelCaches?: boolean): StateManagerInterface
 }
 
 export interface EVMStateManagerInterface extends StateManagerInterface {
-  dumpStorage(address: Address): Promise<StorageDump> // only used in client
   dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> // only used in client
 
   shallowCopy(downlevelCaches?: boolean): EVMStateManagerInterface
