@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721979267866,
+  "lastUpdate": 1721992309208,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ea4bc06eb54b371b600c940ca1471c0249c1e94b",
-          "message": "Block: replace static constructors (#3489)\n\n* Block: rewrite static constructors as external functions\r\n\r\n* Block: rewrite  \"TrieRoot\" static methods to external functions\r\n\r\n* Block: remove static methods from Block class\r\n\r\n* Block: correct function name\r\n\r\n* Block: switch static methods for new functions\r\n\r\n* Blockchain: switch use of Block static methods to new functions\r\n\r\n* TX:  switch use of Block static methods to new functions\r\n\r\n* Common:  switch use of Block static methods to new functions\r\n\r\n* devp2p:  switch use of Block static methods to new functions\r\n\r\n* ethash:  switch use of Block static methods to new functions\r\n\r\n* statemanager:  switch use of Block static methods to new functions\r\n\r\n* VM:  switch use of Block static methods to new functions\r\n\r\n* client: replace Block static methods with new functions\r\n\r\n* block: export helper functions\r\n\r\n* VM: fix imports\r\n\r\n* fix imports\r\n\r\n* import helpers from util\r\n\r\n* rename blockFrom... to createBlockFrom...\r\n\r\n* fix import\r\n\r\n* Block: rename blockConstructor.ts to constructors.ts\r\n\r\n* Fix remaining client tests\r\n\r\n* Add central Block class TSDoc overview with a list with the linked constructor methods available\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2024-07-12T10:37:54+02:00",
-          "tree_id": "7e8f692e4a766955b0c4aaff8b2543b86154c2d7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ea4bc06eb54b371b600c940ca1471c0249c1e94b"
-        },
-        "date": 1720773631399,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38604,
-            "range": "±2.21%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 36314,
-            "range": "±4.28%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37645,
-            "range": "±1.54%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36761,
-            "range": "±1.73%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36031,
-            "range": "±1.75%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.74%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "91270f538fb25f49aa7137b6b2bba637fa311c58",
+          "message": "StateManager: Interface Reworking & Partial Refactor (Options, Name Simplifications)  (#3541)\n\n* Sort StateManagerInterface methods with comments, make getContractCodeSize() mandatory, clear legacy code\r\n\r\n* Move all types to a dedicated types.ts file (as we always do)\r\n\r\n* Option interface simplifications\r\n\r\n* Add explicit check for Verkle methods in EVM, associated clean-up\r\n\r\n* Rename putContractCode\r\n\r\n* Rename getContractCode, getContractCodeSize\r\n\r\n* Rename getContractStorage\r\n\r\n* Rename putContractStorage\r\n\r\n* Rename clearContractStorage",
+          "timestamp": "2024-07-26T13:05:27+02:00",
+          "tree_id": "938156f7962846694e01ffc9b757fb8091835019",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/91270f538fb25f49aa7137b6b2bba637fa311c58"
+        },
+        "date": 1721992308005,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37995,
+            "range": "±2.22%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36008,
+            "range": "±3.53%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37005,
+            "range": "±1.46%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36170,
+            "range": "±1.61%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35526,
+            "range": "±1.74%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
           }
         ]
       }
