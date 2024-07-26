@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { Address, bytesToHex, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { readFileSync, readdirSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { assert, describe, it } from 'vitest'
@@ -111,7 +111,7 @@ describe('EIP-2537 BLS precompile availability tests', () => {
     for (const address of precompiles) {
       const to = new Address(hexToBytes(address))
       const result = await evm.runCall({
-        caller: Address.zero(),
+        caller: createZeroAddress(),
         gasLimit: BigInt(0xffffffffff),
         to,
         value: BigInt(0),

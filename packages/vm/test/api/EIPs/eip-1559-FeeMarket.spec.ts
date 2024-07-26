@@ -9,6 +9,7 @@ import {
   Account,
   Address,
   bigIntToBytes,
+  createZeroAddress,
   hexToBytes,
   privateToAddress,
   setLengthLeft,
@@ -74,7 +75,7 @@ describe('EIP1559 tests', () => {
       {
         maxFeePerGas: GWEI * BigInt(5),
         maxPriorityFeePerGas: GWEI * BigInt(2),
-        to: Address.zero(),
+        to: createZeroAddress(),
         gasLimit: 21000,
       },
       {
@@ -114,7 +115,7 @@ describe('EIP1559 tests', () => {
       {
         gasLimit: 21000,
         gasPrice: GWEI * BigInt(5),
-        to: Address.zero(),
+        to: createZeroAddress(),
       },
       { common },
     )
@@ -142,7 +143,7 @@ describe('EIP1559 tests', () => {
       {
         gasLimit: 21000,
         gasPrice: GWEI * BigInt(5),
-        to: Address.zero(),
+        to: createZeroAddress(),
       },
       { common },
     )

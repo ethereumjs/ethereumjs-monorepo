@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, hexToBytes } from '@ethereumjs/util'
+import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { BlockHeader } from '../src/header.js'
@@ -68,7 +68,11 @@ describe('[Header]: Clique PoA Functionality', () => {
     )
     const msg =
       'cliqueEpochTransitionSigners() -> should return the correct epoch transition signer list on epoch block'
-    assert.deepEqual(header.cliqueEpochTransitionSigners(), [Address.zero(), Address.zero()], msg)
+    assert.deepEqual(
+      header.cliqueEpochTransitionSigners(),
+      [createZeroAddress(), createZeroAddress()],
+      msg,
+    )
   })
 
   type Signer = {
@@ -99,7 +103,7 @@ describe('[Header]: Clique PoA Functionality', () => {
 
     header = BlockHeader.fromHeaderData({ extraData: new Uint8Array(97) }, { common })
     assert.ok(
-      header.cliqueSigner().equals(Address.zero()),
+      header.cliqueSigner().equals(createZeroAddress()),
       'should return zero address on default block',
     )
   })

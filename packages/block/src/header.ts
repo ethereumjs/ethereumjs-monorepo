@@ -17,6 +17,8 @@ import {
   bytesToHex,
   bytesToUtf8,
   concatBytes,
+  createAddressFromPublicKey,
+  createZeroAddress,
   ecrecover,
   ecsign,
   equalsBytes,
@@ -177,7 +179,7 @@ export class BlockHeader {
     const defaults = {
       parentHash: zeros(32),
       uncleHash: KECCAK256_RLP_ARRAY,
-      coinbase: Address.zero(),
+      coinbase: createZeroAddress(),
       stateRoot: zeros(32),
       transactionsTrie: KECCAK256_RLP,
       receiptTrie: KECCAK256_RLP,
@@ -932,13 +934,13 @@ export class BlockHeader {
     const extraSeal = this.cliqueExtraSeal()
     // Reasonable default for default blocks
     if (extraSeal.length === 0 || equalsBytes(extraSeal, new Uint8Array(65))) {
-      return Address.zero()
+      return createZeroAddress()
     }
     const r = extraSeal.subarray(0, 32)
     const s = extraSeal.subarray(32, 64)
     const v = bytesToBigInt(extraSeal.subarray(64, 65)) + BIGINT_27
     const pubKey = ecrecover(this.cliqueSigHash(), v, r, s)
-    return Address.fromPublicKey(pubKey)
+    return createAddressFromPublicKey(pubKey)
   }
 
   /**

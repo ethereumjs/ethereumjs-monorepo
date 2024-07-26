@@ -3,7 +3,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { createAddressFromString, createContractAddress } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
@@ -31,7 +31,7 @@ describe(method, () => {
     await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
 
     // genesis address
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // verify code is null
     const res = await rpc.request(method, [address.toString(), 'latest'])
@@ -54,7 +54,7 @@ describe(method, () => {
     const { vm } = execution
 
     // genesis address with balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // sample contract from https://ethereum.stackexchange.com/a/70791
     const data =
@@ -88,7 +88,7 @@ describe(method, () => {
     const { createdAddress } = result.results[0]
     await vm.blockchain.putBlock(ranBlock!)
 
-    const expectedContractAddress = Address.generate(address, BigInt(0))
+    const expectedContractAddress = createContractAddress(address, BigInt(0))
     assert.ok(
       createdAddress!.equals(expectedContractAddress),
       'should match the expected contract address',

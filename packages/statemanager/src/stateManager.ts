@@ -3,7 +3,6 @@ import { RLP } from '@ethereumjs/rlp'
 import { Trie, createTrieFromProof, verifyTrieProof } from '@ethereumjs/trie'
 import {
   Account,
-  Address,
   KECCAK256_NULL,
   KECCAK256_NULL_S,
   KECCAK256_RLP,
@@ -14,6 +13,7 @@ import {
   concatBytes,
   createAccount,
   createAccountFromRLP,
+  createAddressFromString,
   equalsBytes,
   hexToBytes,
   setLengthLeft,
@@ -43,7 +43,7 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { DB, PrefixedHexString } from '@ethereumjs/util'
+import type { Address, DB, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 /**
@@ -562,7 +562,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!this._codeCacheSettings.deactivate) {
       const items = this._codeCache!.flush()
       for (const item of items) {
-        const addr = Address.fromString(`0x${item[0]}`)
+        const addr = createAddressFromString(`0x${item[0]}`)
 
         const code = item[1].code
         if (code === undefined) {
@@ -584,7 +584,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!this._storageCacheSettings.deactivate) {
       const items = this._storageCache!.flush()
       for (const item of items) {
-        const address = Address.fromString(`0x${item[0]}`)
+        const address = createAddressFromString(`0x${item[0]}`)
         const keyHex = item[1]
         const keyBytes = unprefixedHexToBytes(keyHex)
         const value = item[2]
@@ -687,7 +687,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
             { useKeyHashing: true },
           ))
         const sm = new DefaultStateManager({ ...opts, trie })
-        const address = Address.fromString(proof[0].address)
+        const address = createAddressFromString(proof[0].address)
         await sm.addStorageProof(proof[0].storageProof, proof[0].storageHash, address, safe)
         for (let i = 1; i < proof.length; i++) {
           const proofItem = proof[i]
@@ -740,7 +740,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         await this.addStorageProof(
           proof[i].storageProof,
           proof[i].storageHash,
-          Address.fromString(proof[i].address),
+          createAddressFromString(proof[i].address),
           safe,
         )
       }
@@ -940,7 +940,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
     const addresses = Object.keys(initState)
     for (const address of addresses) {
-      const addr = Address.fromString(address)
+      const addr = createAddressFromString(address)
       const state = initState[address]
       if (!Array.isArray(state)) {
         // Prior format: address -> balance

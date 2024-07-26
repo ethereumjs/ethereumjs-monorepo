@@ -1,11 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
-  Address,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   bytesToHex,
   concatBytes,
+  createZeroAddress,
   equalsBytes,
   hexToBytes,
   zeros,
@@ -28,7 +28,7 @@ describe('[Block]: Header functions', () => {
     function compareDefaultHeader(header: BlockHeader) {
       assert.ok(equalsBytes(header.parentHash, zeros(32)))
       assert.ok(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY))
-      assert.ok(header.coinbase.equals(Address.zero()))
+      assert.ok(header.coinbase.equals(createZeroAddress()))
       assert.ok(equalsBytes(header.stateRoot, zeros(32)))
       assert.ok(equalsBytes(header.transactionsTrie, KECCAK256_RLP))
       assert.ok(equalsBytes(header.receiptTrie, KECCAK256_RLP))
@@ -380,7 +380,7 @@ describe('[Block]: Header functions', () => {
 
     testCase = 'should throw on non-zero beneficiary (coinbase) for epoch transition block'
     headerData.number = common.consensusConfig().epoch
-    headerData.coinbase = Address.fromString('0x091dcd914fCEB1d47423e532955d1E62d1b2dAEf')
+    headerData.coinbase = createAddressFromString('0x091dcd914fCEB1d47423e532955d1E62d1b2dAEf')
     header = BlockHeader.fromHeaderData(headerData, { common })
     try {
       await header.validate(blockchain)
@@ -393,7 +393,7 @@ describe('[Block]: Header functions', () => {
       }
     }
     headerData.number = 1
-    headerData.coinbase = Address.zero()
+    headerData.coinbase = createZeroAddress()
 
     testCase = 'should throw on non-zero mixHash'
     headerData.mixHash = new Uint8Array(32).fill(1)
@@ -455,7 +455,7 @@ describe('[Block]: Header functions', () => {
 */
   it('should test validateGasLimit()', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const bcBlockGasLimitTestData = testData.tests.BlockGasLimit2p63m1
+    const bcBlockGasLimitTestData = testData.default.tests.BlockGasLimit2p63m1
 
     for (const key of Object.keys(bcBlockGasLimitTestData)) {
       const genesisRlp = hexToBytes(

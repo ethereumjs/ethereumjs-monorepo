@@ -16,6 +16,9 @@ import {
   MAX_INTEGER,
   bytesToHex,
   createAccount,
+  createAddressFromPrivateKey,
+  createAddressFromString,
+  createZeroAddress,
   equalsBytes,
   hexToBytes,
   zeros,
@@ -205,7 +208,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       const privateKey = hexToBytes(
         '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
       )
-      const address = Address.fromPrivateKey(privateKey)
+      const address = createAddressFromPrivateKey(privateKey)
       const initialBalance = BigInt(10) ** BigInt(18)
 
       const account = await vm.stateManager.getAccount(address)
@@ -537,7 +540,7 @@ describe('runTx() -> runtime errors', () => {
       const from = createAccountWithDefaults()
       await vm.stateManager.putAccount(caller, from)
 
-      const contractAddress = Address.fromString('0x61de9dc6f6cff1df2809480882cfd3c2364b28f7')
+      const contractAddress = createAddressFromString('0x61de9dc6f6cff1df2809480882cfd3c2364b28f7')
       const to = createAccountWithDefaults(BigInt(0), MAX_INTEGER)
       await vm.stateManager.putAccount(contractAddress, to)
 
@@ -674,7 +677,7 @@ describe('runTx() -> consensus bugs', () => {
     common.setHardforkBy({ blockNumber: 2772981 })
     const vm = await VM.create({ common })
 
-    const addr = Address.fromString('0xd3563d8f19a85c95beab50901fd59ca4de69174c')
+    const addr = createAddressFromString('0xd3563d8f19a85c95beab50901fd59ca4de69174c')
     await vm.stateManager.putAccount(addr, new Account())
     const acc = await vm.stateManager.getAccount(addr)
     acc!.balance = beforeBalance
@@ -712,7 +715,7 @@ describe('runTx() -> consensus bugs', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const vm = await VM.create({ common })
 
-    const addr = Address.fromPrivateKey(pkey)
+    const addr = createAddressFromPrivateKey(pkey)
     await vm.stateManager.putAccount(addr, new Account())
     const acc = await vm.stateManager.getAccount(addr)
     acc!.balance = BigInt(10000000000000)
@@ -734,10 +737,10 @@ describe('runTx() -> consensus bugs', () => {
 describe('runTx() -> RunTxOptions', () => {
   it('should throw on negative value args', async () => {
     const vm = await VM.create({ common })
-    await setBalance(vm, Address.zero(), BigInt(10000000000))
+    await setBalance(vm, createZeroAddress(), BigInt(10000000000))
     for (const txType of TRANSACTION_TYPES) {
       const tx = getTransaction(vm.common, txType.type, false)
-      tx.getSenderAddress = () => Address.zero()
+      tx.getSenderAddress = () => createZeroAddress()
       // @ts-ignore overwrite read-only property
       tx.value -= BigInt(1)
 
@@ -763,7 +766,7 @@ it('runTx() -> skipBalance behavior', async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
   const vm = await VM.create({ common })
   const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
-  const sender = Address.fromPrivateKey(senderKey)
+  const sender = createAddressFromPrivateKey(senderKey)
 
   for (const balance of [undefined, BigInt(5)]) {
     if (balance !== undefined) {
@@ -772,7 +775,7 @@ it('runTx() -> skipBalance behavior', async () => {
     const tx = createLegacyTx({
       gasLimit: BigInt(21000),
       value: BigInt(1),
-      to: Address.zero(),
+      to: createZeroAddress(),
     }).sign(senderKey)
 
     const res = await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
@@ -796,7 +799,7 @@ it('Validate EXTCODEHASH puts KECCAK256_NULL on stack if calling account has no 
   // CALLER EXTCODEHASH PUSH 0 SSTORE STOP
   // Puts EXTCODEHASH of CALLER into slot 0
   const code = hexToBytes('0x333F60005500')
-  const codeAddr = Address.fromString('0x' + '20'.repeat(20))
+  const codeAddr = createAddressFromString('0x' + '20'.repeat(20))
   await vm.stateManager.putCode(codeAddr, code)
 
   const tx = createLegacyTx({
@@ -805,7 +808,7 @@ it('Validate EXTCODEHASH puts KECCAK256_NULL on stack if calling account has no 
     to: codeAddr,
   }).sign(pkey)
 
-  const addr = Address.fromPrivateKey(pkey)
+  const addr = createAddressFromPrivateKey(pkey)
   await vm.stateManager.putAccount(addr, new Account())
   const acc = await vm.stateManager.getAccount(addr)
   acc!.balance = BigInt(tx.gasLimit * tx.gasPrice)
@@ -829,7 +832,7 @@ it('Validate CALL does not charge new account gas when calling CALLER and caller
 
   // Calls CALLER and sends back the ETH just sent with the transaction
   const code = hexToBytes('0x600080808034335AF100')
-  const codeAddr = Address.fromString('0x' + '20'.repeat(20))
+  const codeAddr = createAddressFromString('0x' + '20'.repeat(20))
   await vm.stateManager.putCode(codeAddr, code)
 
   const tx = createLegacyTx({
@@ -839,7 +842,7 @@ it('Validate CALL does not charge new account gas when calling CALLER and caller
     to: codeAddr,
   }).sign(pkey)
 
-  const addr = Address.fromPrivateKey(pkey)
+  const addr = createAddressFromPrivateKey(pkey)
   await vm.stateManager.putAccount(addr, new Account())
   const acc = await vm.stateManager.getAccount(addr)
   acc!.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
@@ -860,7 +863,7 @@ it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER an
   // CALLER EXTCODEHASH PUSH 0 SSTORE STOP
   // Puts EXTCODEHASH of CALLER into slot 0
   const code = hexToBytes('0x33FF')
-  const codeAddr = Address.fromString('0x' + '20'.repeat(20))
+  const codeAddr = createAddressFromString('0x' + '20'.repeat(20))
   await vm.stateManager.putCode(codeAddr, code)
 
   const tx = createLegacyTx({
@@ -870,7 +873,7 @@ it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER an
     to: codeAddr,
   }).sign(pkey)
 
-  const addr = Address.fromPrivateKey(pkey)
+  const addr = createAddressFromPrivateKey(pkey)
   await vm.stateManager.putAccount(addr, new Account())
   const acc = await vm.stateManager.getAccount(addr)
   acc!.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)

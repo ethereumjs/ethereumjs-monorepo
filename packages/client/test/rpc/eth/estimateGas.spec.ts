@@ -3,7 +3,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address, bigIntToHex } from '@ethereumjs/util'
+import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
 import { runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
@@ -42,7 +42,7 @@ describe(
       await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
 
       // genesis address with balance
-      const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+      const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
       // contract:
       /*
@@ -196,7 +196,7 @@ describe(
       const rpc = getRpcClient(startRPC(manager.getMethods()))
 
       // genesis address with balance
-      const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+      const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
       const funcHash = '26b85ee1' // borrowed from valid test above
       const estimateTxData = {

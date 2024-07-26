@@ -12,6 +12,7 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
+  createAddressFromString,
   ecrecover,
   equalsBytes,
   hexToBytes,
@@ -686,7 +687,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
    */
 
   for (const str of writtenAddresses) {
-    const address = Address.fromString(str)
+    const address = createAddressFromString(str)
     await vm.stateManager.putCode(address, new Uint8Array())
   }
 

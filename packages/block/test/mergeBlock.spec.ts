@@ -1,8 +1,8 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
-  Address,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
+  createZeroAddress,
   equalsBytes,
   hexToBytes,
   zeros,
@@ -21,7 +21,7 @@ const common = new Common({
 function validateMergeHeader(header: BlockHeader) {
   assert.ok(equalsBytes(header.parentHash, zeros(32)), 'parentHash')
   assert.ok(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY), 'uncleHash')
-  assert.ok(header.coinbase.equals(Address.zero()), 'coinbase')
+  assert.ok(header.coinbase.equals(createZeroAddress()), 'coinbase')
   assert.ok(equalsBytes(header.stateRoot, zeros(32)), 'stateRoot')
   assert.ok(equalsBytes(header.transactionsTrie, KECCAK256_RLP), 'transactionsTrie')
   assert.ok(equalsBytes(header.receiptTrie, KECCAK256_RLP), 'receiptTrie')

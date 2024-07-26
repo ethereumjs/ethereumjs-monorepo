@@ -7,7 +7,13 @@ import {
   Hardfork,
   createCustomCommon,
 } from '@ethereumjs/common'
-import { Address, concatBytes, hexToBytes } from '@ethereumjs/util'
+import {
+  Address,
+  concatBytes,
+  createAddressFromString,
+  createZeroAddress,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP, CliqueConsensus } from '../src/consensus/clique.js'
@@ -114,7 +120,7 @@ function getBlock(
   common = common ?? COMMON
   const number = lastBlock.header.number + BigInt(1)
 
-  let coinbase = Address.zero()
+  let coinbase = createZeroAddress()
   let nonce = CLIQUE_NONCE_DROP
   let extraData = EXTRA_DATA
   if (beneficiary) {
@@ -214,7 +220,7 @@ describe('Clique: Initialization', () => {
     // _validateConsensus needs to be true to trigger this test condition
     ;(blockchain as any)._validateConsensus = true
     const number = (COMMON.consensusConfig() as CliqueConfig).epoch
-    const unauthorizedSigner = Address.fromString('0x00a839de7922491683f547a67795204763ff8237')
+    const unauthorizedSigner = createAddressFromString('0x00a839de7922491683f547a67795204763ff8237')
     const extraData = concatBytes(
       new Uint8Array(32),
       A.address.toBytes(),

@@ -3,7 +3,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address, bigIntToHex } from '@ethereumjs/util'
+import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
@@ -35,7 +35,7 @@ describe(
       await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
 
       // genesis address with balance
-      const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+      const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
       // verify balance is genesis amount
       const genesisBalance = BigInt(0x15ac56edc4d12c0000)

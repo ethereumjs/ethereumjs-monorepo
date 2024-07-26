@@ -2,7 +2,7 @@ import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address, bigIntToHex } from '@ethereumjs/util'
+import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
@@ -106,7 +106,7 @@ describe(method, async () => {
     const { vm } = execution
 
     // genesis address with balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // contract inspired from https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_getstorageat/
     /*

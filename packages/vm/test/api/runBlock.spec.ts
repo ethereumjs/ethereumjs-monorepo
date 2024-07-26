@@ -20,6 +20,8 @@ import {
   KECCAK256_RLP,
   bigIntToBytes,
   concatBytes,
+  createAddressFromString,
+  createZeroAddress,
   ecsign,
   equalsBytes,
   hexToBytes,
@@ -120,7 +122,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     })
 
     const uncleReward = (await vm.stateManager.getAccount(
-      Address.fromString('0xb94f5374fce5ed0000000097c15331677e6ebf0b'),
+      createAddressFromString('0xb94f5374fce5ed0000000097c15331677e6ebf0b'),
     ))!.balance.toString(16)
 
     assert.equal(
@@ -376,7 +378,7 @@ describe('runBlock() -> runtime behavior', async () => {
     // add balance to otherUser to send two txs to zero address
     await vm.stateManager.putAccount(otherUser.address, new Account(BigInt(0), BigInt(42000)))
     const tx = createLegacyTx(
-      { to: Address.zero(), gasLimit: 21000, gasPrice: 1 },
+      { to: createZeroAddress(), gasLimit: 21000, gasPrice: 1 },
       { common },
     ).sign(otherUser.privateKey)
 
@@ -512,7 +514,7 @@ describe('runBlock() -> tx types', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = await setupVM({ common })
 
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
     const tx = createLegacyTx({ gasLimit: 53000, value: 1 }, { common, freeze: false })
@@ -528,7 +530,7 @@ describe('runBlock() -> tx types', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = await setupVM({ common })
 
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
     const tx = create2930AccessListTx(
@@ -547,7 +549,7 @@ describe('runBlock() -> tx types', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const vm = await setupVM({ common })
 
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
     const tx = create1559FeeMarketTx(
@@ -579,8 +581,8 @@ describe('runBlock() -> tx types', async () => {
     const defaultSenderPkey = hexToBytes(`0x${'40'.repeat(32)}`)
     const defaultSenderAddr = new Address(privateToAddress(defaultSenderPkey))
 
-    const code1Addr = Address.fromString(`0x${'01'.repeat(20)}`)
-    const code2Addr = Address.fromString(`0x${'02'.repeat(20)}`)
+    const code1Addr = createAddressFromString(`0x${'01'.repeat(20)}`)
+    const code2Addr = createAddressFromString(`0x${'02'.repeat(20)}`)
 
     type GetAuthListOpts = {
       chainId?: number

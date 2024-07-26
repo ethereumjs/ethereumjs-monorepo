@@ -1,7 +1,7 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createCustomCommon } from '@ethereumjs/common'
 import { create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
-import { Address, hexToBytes } from '@ethereumjs/util'
+import { createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
@@ -16,7 +16,7 @@ common.setHardfork('cancun')
 const mockedTx1 = createLegacyTx({}).sign(dummy.privKey)
 const mockedTx2 = createLegacyTx({ nonce: 1 }).sign(dummy.privKey)
 const mockedBlobTx3 = create4844BlobTx(
-  { nonce: 2, blobsData: ['0x1234'], to: Address.zero() },
+  { nonce: 2, blobsData: ['0x1234'], to: createZeroAddress() },
   { common },
 ).sign(dummy.privKey)
 const blockHash = hexToBytes('0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5')

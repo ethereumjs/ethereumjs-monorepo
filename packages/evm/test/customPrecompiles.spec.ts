@@ -1,4 +1,4 @@
-import { Address, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { Address, createZeroAddress, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { type PrecompileInput, createEVM } from '../src/index.js'
@@ -30,13 +30,13 @@ describe('EVM -> custom precompiles', () => {
     const EVMOverride = await createEVM({
       customPrecompiles: [
         {
-          address: Address.zero(),
+          address: createZeroAddress(),
           function: customPrecompileNoInput,
         },
       ],
     })
     const result = await EVMOverride.runCall({
-      to: Address.zero(),
+      to: createZeroAddress(),
       gasLimit: BigInt(30000),
       data: utf8ToBytes(''),
       caller: sender,

@@ -1,9 +1,11 @@
 import { Trie, createTrie, createTrieFromProof } from '@ethereumjs/trie'
 import {
   Account,
-  Address,
   KECCAK256_RLP,
   bigIntToBytes,
+  createAddressFromPrivateKey,
+  createAddressFromString,
+  createZeroAddress,
   equalsBytes,
   hexToBytes,
   intToBytes,
@@ -44,7 +46,7 @@ describe('StateManager -> General', () => {
   it(`should clear contract storage`, async () => {
     const sm = new DefaultStateManager()
 
-    const contractAddress = Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
+    const contractAddress = createAddressFromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
     const contractCode = Uint8Array.from([0, 1, 2, 3])
     const storageKey = setLengthLeft(bigIntToBytes(2n), 32)
     const storedData = utf8ToBytes('abcd')
@@ -142,9 +144,9 @@ describe('StateManager -> General', () => {
     const address2Str = '0x2'.padEnd(42, '0')
     const address3Str = '0x3'.padEnd(42, '0')
 
-    const address1 = Address.fromString(address1Str)
-    const address2 = Address.fromString(address2Str)
-    const address3 = Address.fromString(address3Str)
+    const address1 = createAddressFromString(address1Str)
+    const address2 = createAddressFromString(address2Str)
+    const address3 = createAddressFromString(address3Str)
 
     const key1 = setLengthLeft(new Uint8Array([1]), 32)
     const key2 = setLengthLeft(new Uint8Array([2]), 32)
@@ -184,7 +186,7 @@ describe('StateManager -> General', () => {
     const stateManager = new DefaultStateManager()
 
     for (const [addressStr, entry] of Object.entries(stateSetup)) {
-      const address = Address.fromString(addressStr)
+      const address = createAddressFromString(addressStr)
       const account = new Account(entry.nonce, entry.balance)
       await stateManager.putAccount(address, account)
       await stateManager.putCode(address, entry.code)
@@ -267,8 +269,8 @@ describe('StateManager -> General', () => {
     await postVerify(newPartialStateManager2)
 
     const zeroAddressNonce = BigInt(100)
-    await stateManager.putAccount(Address.zero(), new Account(zeroAddressNonce))
-    const zeroAddressProof = await stateManager.getProof(Address.zero())
+    await stateManager.putAccount(createZeroAddress(), new Account(zeroAddressNonce))
+    const zeroAddressProof = await stateManager.getProof(createZeroAddress())
 
     try {
       await DefaultStateManager.fromProof([proof1, zeroAddressProof], true)
@@ -279,11 +281,11 @@ describe('StateManager -> General', () => {
 
     await newPartialStateManager2.addProofData(zeroAddressProof)
 
-    let zeroAccount = await newPartialStateManager2.getAccount(Address.zero())
+    let zeroAccount = await newPartialStateManager2.getAccount(createZeroAddress())
     assert.ok(zeroAccount === undefined)
 
     await newPartialStateManager2.setStateRoot(await stateManager.getStateRoot())
-    zeroAccount = await newPartialStateManager2.getAccount(Address.zero())
+    zeroAccount = await newPartialStateManager2.getAccount(createZeroAddress())
     assert.ok(zeroAccount!.nonce === zeroAddressNonce)
   })
   it.skipIf(isBrowser() === true)(
@@ -293,8 +295,8 @@ describe('StateManager -> General', () => {
       const sm = new DefaultStateManager({ trie })
       const pk = hexToBytes('0x9f12aab647a25a81f821a5a0beec3330cd057b2346af4fb09d7a807e896701ea')
       const pk2 = hexToBytes('0x8724f27e2ce3714af01af3220478849db68a03c0f84edf1721d73d9a6139ad1c')
-      const address = Address.fromPrivateKey(pk)
-      const address2 = Address.fromPrivateKey(pk2)
+      const address = createAddressFromPrivateKey(pk)
+      const address2 = createAddressFromPrivateKey(pk2)
       const account = new Account()
       const account2 = new Account(undefined, 100n)
       await sm.putAccount(address, account)
