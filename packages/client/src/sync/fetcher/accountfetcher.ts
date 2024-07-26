@@ -104,7 +104,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.storageFetcher = new StorageFetcher({
       config: this.config,
       pool: this.pool,
-      root: this.fetcherDoneFlags.snapTargetRoot!,
       height: this.height,
       storageRequests: [],
       first: BIGINT_1,
@@ -123,7 +122,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.trieNodeFetcher = new TrieNodeFetcher({
       config: this.config,
       pool: this.pool,
-      root: this.fetcherDoneFlags.snapTargetRoot!,
       height: this.height,
       stateManager: this.stateManager,
       destroyWhenDone: false,
