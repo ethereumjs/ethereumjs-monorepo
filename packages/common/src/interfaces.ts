@@ -207,5 +207,6 @@ export interface StateManagerInterface {
   /*
    * Generic
    */
+  clearCaches(): void
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
 }
