@@ -117,7 +117,7 @@ describe('RPC State Manager API tests', () => {
       await state.getStorage(UNIerc20ContractAddress, setLengthLeft(bigIntToBytes(1n), 31))
     }).rejects.toThrowError('Storage key must be 32 bytes long')
 
-    await state.putContractStorage(
+    await state.putStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32),
       utf8ToBytes('abcd'),
@@ -141,7 +141,7 @@ describe('RPC State Manager API tests', () => {
 
     await state.checkpoint()
 
-    await state.putContractStorage(
+    await state.putStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32),
       new Uint8Array(0),

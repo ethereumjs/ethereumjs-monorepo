@@ -33,8 +33,8 @@ describe('StateManager -> Code', () => {
       const key2 = hexToBytes(`0x${'00'.repeat(31)}01`)
 
       await stateManager.putAccount(address1, account)
-      await stateManager.putContractStorage(address1, key1, key2)
-      await stateManager.putContractStorage(address1, key2, key2)
+      await stateManager.putStorage(address1, key1, key2)
+      await stateManager.putStorage(address1, key2, key2)
       const root = await stateManager.getStateRoot()
       const rawNode = await stateManager['_trie']['_db'].get(root)
 

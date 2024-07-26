@@ -460,7 +460,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Cannot be more than 32 bytes. Leading zeros are stripped.
    * If it is a empty or filled with zeros, deletes the value.
    */
-  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
+  async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
@@ -471,7 +471,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     const account = await this.getAccount(address)
     if (!account) {
-      throw new Error('putContractStorage() called on non-existing account')
+      throw new Error('putStorage() called on non-existing account')
     }
 
     value = unpadBytes(value)
@@ -956,7 +956,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         }
         if (storage !== undefined) {
           for (const [key, value] of storage) {
-            await this.putContractStorage(addr, toBytes(key), toBytes(value))
+            await this.putStorage(addr, toBytes(key), toBytes(value))
           }
         }
       }

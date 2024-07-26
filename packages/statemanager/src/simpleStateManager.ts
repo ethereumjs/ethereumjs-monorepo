@@ -121,7 +121,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     )
   }
 
-  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
+  async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     this.topStorageStack().set(`${address.toString()}_${bytesToHex(key)}`, value)
   }
 

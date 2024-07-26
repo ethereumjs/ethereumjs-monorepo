@@ -469,7 +469,7 @@ describe('runTx() -> runtime behavior', () => {
       const code = hexToBytes('0x6001600055FE')
       const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
       await vm.stateManager.putCode(address, code)
-      await vm.stateManager.putContractStorage(
+      await vm.stateManager.putStorage(
         address,
         hexToBytes(`0x${'00'.repeat(32)}`),
         hexToBytes(`0x${'00'.repeat(31)}01`),

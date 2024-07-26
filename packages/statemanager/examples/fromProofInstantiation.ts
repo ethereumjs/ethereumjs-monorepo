@@ -16,8 +16,8 @@ const main = async () => {
   const storageValue2 = hexToBytes('0x02')
 
   await stateManager.putCode(contractAddress, byteCode)
-  await stateManager.putContractStorage(contractAddress, storageKey1, storageValue1)
-  await stateManager.putContractStorage(contractAddress, storageKey2, storageValue2)
+  await stateManager.putStorage(contractAddress, storageKey1, storageValue1)
+  await stateManager.putStorage(contractAddress, storageKey2, storageValue2)
 
   const proof = await stateManager.getProof(contractAddress)
   const proofWithStorage = await stateManager.getProof(contractAddress, [storageKey1, storageKey2])

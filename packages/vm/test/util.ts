@@ -382,7 +382,7 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
         continue
       }
       const key = setLengthLeft(format(storageKey), 32)
-      await state.putContractStorage(address, key, val)
+      await state.putStorage(address, key, val)
     }
 
     // Put contract code

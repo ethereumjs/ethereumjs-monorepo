@@ -51,7 +51,7 @@ export async function getPreState(
       // verify if this value buffer is not a zero buffer. if so, we should not write it...
       const zeroBytesEquivalent = new Uint8Array(storageValueBytes.length)
       if (!equalsBytes(zeroBytesEquivalent, storageValueBytes)) {
-        await state.putContractStorage(
+        await state.putStorage(
           address,
           hexToBytes(isHexString(storageKey) ? storageKey : `0x${storageKey}`),
           storageValueBytes,

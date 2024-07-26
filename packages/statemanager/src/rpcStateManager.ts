@@ -170,7 +170,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
     })
     value = toBytes(storage)
 
-    await this.putContractStorage(address, key, value)
+    await this.putStorage(address, key, value)
     return value
   }
 
@@ -183,7 +183,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * Cannot be more than 32 bytes. Leading zeros are stripped.
    * If it is empty or filled with zeros, deletes the value.
    */
-  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
+  async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     this._storageCache.put(address, key, value)
   }
 

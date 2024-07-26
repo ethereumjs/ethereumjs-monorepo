@@ -83,7 +83,7 @@ describe('Original storage cache', async () => {
   })
 
   it(`should set original storage value`, async () => {
-    await stateManager.putContractStorage(address, key, value)
+    await stateManager.putStorage(address, key, value)
     const res = await stateManager.getStorage(address, key)
     assert.deepEqual(res, value)
   })
@@ -95,7 +95,7 @@ describe('Original storage cache', async () => {
 
   it(`should return correct original value after modification`, async () => {
     const newValue = hexToBytes('0x1235')
-    await stateManager.putContractStorage(address, key, newValue)
+    await stateManager.putStorage(address, key, newValue)
     const res = await stateManager.getStorage(address, key)
     assert.deepEqual(res, newValue)
 
@@ -107,14 +107,14 @@ describe('Original storage cache', async () => {
     const key2 = hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000012')
     const value2 = utf8ToBytes('12')
     const value3 = utf8ToBytes('123')
-    await stateManager.putContractStorage(address, key2, value2)
+    await stateManager.putStorage(address, key2, value2)
 
     let res = await stateManager.getStorage(address, key2)
     assert.deepEqual(res, value2)
     let origRes = await stateManager.originalStorageCache.get(address, key2)
     assert.deepEqual(origRes, value2)
 
-    await stateManager.putContractStorage(address, key2, value3)
+    await stateManager.putStorage(address, key2, value3)
 
     res = await stateManager.getStorage(address, key2)
     assert.deepEqual(res, value3)

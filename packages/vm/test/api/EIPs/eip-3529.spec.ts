@@ -132,7 +132,7 @@ describe('EIP-3529 tests', () => {
       const code = hexToBytes(`${testCase.code as PrefixedHexString}00`) // add a STOP opcode (0 gas) so we can find the gas used / effective gas
 
       await vm.stateManager.putAccount(address, new Account())
-      await vm.stateManager.putContractStorage(
+      await vm.stateManager.putStorage(
         address,
         key,
         hexToBytes(`0x${testCase.original.toString().padStart(64, '0')}`),
@@ -202,7 +202,7 @@ describe('EIP-3529 tests', () => {
     for (let i = 0; i < 100; i++) {
       const key = hexToBytes(`0x${i.toString(16).padStart(64, '0')}`)
       await vm.stateManager.putAccount(address, new Account())
-      await vm.stateManager.putContractStorage(address, key, value)
+      await vm.stateManager.putStorage(address, key, value)
       const hex = i.toString(16).padStart(2, '0')
       // push 0 push <hex> sstore
       code = `${code}600060${hex}55`

@@ -50,7 +50,7 @@ describe('StateManager -> General', () => {
     const storedData = utf8ToBytes('abcd')
 
     await sm.putCode(contractAddress, contractCode)
-    await sm.putContractStorage(contractAddress, storageKey, storedData)
+    await sm.putStorage(contractAddress, storageKey, storedData)
 
     let storage = await sm.getStorage(contractAddress, storageKey)
     assert.equal(JSON.stringify(storage), JSON.stringify(storedData), 'contract storage updated')
@@ -191,7 +191,7 @@ describe('StateManager -> General', () => {
       for (let i = 0; i < entry.keys.length; i++) {
         const key = entry.keys[i]
         const value = entry.values[i]
-        await stateManager.putContractStorage(address, key, value)
+        await stateManager.putStorage(address, key, value)
       }
       await stateManager.flush()
       stateSetup[addressStr].codeHash = (await stateManager.getAccount(address)!)?.codeHash
@@ -299,7 +299,7 @@ describe('StateManager -> General', () => {
       const account2 = new Account(undefined, 100n)
       await sm.putAccount(address, account)
       await sm.putAccount(address2, account2)
-      await sm.putContractStorage(address, setLengthLeft(intToBytes(0), 32), intToBytes(32))
+      await sm.putStorage(address, setLengthLeft(intToBytes(0), 32), intToBytes(32))
       const storage = await sm.dumpStorage(address)
       const keys = Object.keys(storage) as PrefixedHexString[]
       const proof = await sm.getProof(

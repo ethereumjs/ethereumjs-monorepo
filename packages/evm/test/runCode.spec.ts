@@ -84,7 +84,7 @@ describe('VM.runCode: interpreter', () => {
     // then re-put the account after (if account === undefined put empty account, such that the account exists))
     const address = Address.fromString(`0x${'00'.repeat(20)}`)
     await evm.stateManager.putAccount(address, new Account())
-    evm.stateManager.putContractStorage = (..._args) => {
+    evm.stateManager.putStorage = (..._args) => {
       throw new Error('Test')
     }
 

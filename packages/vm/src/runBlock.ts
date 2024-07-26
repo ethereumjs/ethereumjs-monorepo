@@ -527,7 +527,7 @@ export async function accumulateParentBlockHash(
       ).accessWitness!.touchAddressOnWriteAndComputeGas(historyAddress, treeIndex, subIndex)
     }
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
-    await vm.stateManager.putContractStorage(historyAddress, key, hash)
+    await vm.stateManager.putStorage(historyAddress, key, hash)
   }
   await putBlockHash(vm, parentHash, currentBlockNumber - BIGINT_1)
 
@@ -564,12 +564,12 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
     await vm.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
   }
 
-  await vm.stateManager.putContractStorage(
+  await vm.stateManager.putStorage(
     parentBeaconBlockRootAddress,
     setLengthLeft(bigIntToBytes(timestampIndex), 32),
     bigIntToBytes(timestamp),
   )
-  await vm.stateManager.putContractStorage(
+  await vm.stateManager.putStorage(
     parentBeaconBlockRootAddress,
     setLengthLeft(bigIntToBytes(timestampExtended), 32),
     root,

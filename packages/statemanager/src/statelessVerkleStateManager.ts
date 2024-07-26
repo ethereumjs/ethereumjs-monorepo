@@ -414,7 +414,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @param key - Key to set the value at. Must be 32 bytes long.
    * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
    */
-  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
+  async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     if (!this._storageCacheSettings.deactivate) {
       this._storageCache!.put(address, key, value)
     } else {

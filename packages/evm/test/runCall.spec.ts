@@ -175,7 +175,7 @@ describe('RunCall tests', () => {
     */
 
     await evm.stateManager.putCode(address, hexToBytes(code))
-    await evm.stateManager.putContractStorage(
+    await evm.stateManager.putStorage(
       address,
       new Uint8Array(32),
       hexToBytes(`0x${'00'.repeat(31)}01`),
