@@ -619,10 +619,10 @@ describe('runBlock() -> tx types', async () => {
     await setBalance(vm, defaultSenderAddr, 0xfffffffffffffn)
 
     const code1 = hexToBytes('0x600160005500')
-    await vm.stateManager.putContractCode(code1Addr, code1)
+    await vm.stateManager.putCode(code1Addr, code1)
 
     const code2 = hexToBytes('0x600260005500')
-    await vm.stateManager.putContractCode(code2Addr, code2)
+    await vm.stateManager.putCode(code2Addr, code2)
     const authorizationListOpts = [
       {
         address: code1Addr,

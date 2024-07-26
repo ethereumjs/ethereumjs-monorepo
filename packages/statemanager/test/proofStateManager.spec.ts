@@ -83,7 +83,7 @@ describe('ProofStateManager', () => {
     await stateManager.checkpoint()
     await stateManager.putAccount(address, new Account())
     await stateManager.putContractStorage(address, key, value)
-    await stateManager.putContractCode(address, code)
+    await stateManager.putCode(address, code)
     const account = await stateManager.getAccount(address)
     account!.balance = BigInt(1)
     account!.nonce = BigInt(2)

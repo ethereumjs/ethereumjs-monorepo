@@ -101,7 +101,7 @@ describe('RPC State Manager API tests', () => {
     const UNIContractCode = await state.getContractCode(UNIerc20ContractAddress)
     assert.ok(UNIContractCode.length > 0, 'was able to retrieve UNI contract code')
 
-    await state.putContractCode(UNIerc20ContractAddress, UNIContractCode)
+    await state.putCode(UNIerc20ContractAddress, UNIContractCode)
     assert.ok(
       typeof (state as any)._contractCache.get(UNIerc20ContractAddress.toString()) !== 'undefined',
       'UNI ERC20 contract code was found in cache',
@@ -328,7 +328,7 @@ describe('blockchain', () =>
       hexToBytes('0xf8506f559699a58a4724df4fcf2ad4fd242d20324db541823f128f5974feb6c7'),
     )
     const block = await createBlockFromJsonRpcProvider(provider, 500000n, { setHardfork: true })
-    await evm.stateManager.putContractCode(contractAddress, hexToBytes(code))
+    await evm.stateManager.putCode(contractAddress, hexToBytes(code))
     const runCallArgs: Partial<EVMRunCallOpts> = {
       caller,
       gasLimit: BigInt(0xffffffffff),

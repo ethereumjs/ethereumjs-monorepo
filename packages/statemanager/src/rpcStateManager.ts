@@ -138,7 +138,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * @param address - Address of the `account` to add the `code` for
    * @param value - The value of the `code`
    */
-  async putContractCode(address: Address, value: Uint8Array): Promise<void> {
+  async putCode(address: Address, value: Uint8Array): Promise<void> {
     // Store contract code in the cache
     this._contractCache.set(address.toString(), value)
   }

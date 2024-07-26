@@ -72,7 +72,7 @@ describe('EIP 6780 tests', () => {
 
     const target = Address.fromString('0x' + 'ff'.repeat(20))
 
-    await vm.stateManager.putContractCode(target, payload)
+    await vm.stateManager.putCode(target, payload)
     const targetContract = await vm.stateManager.getAccount(target)
     targetContract!.nonce = BigInt(1)
     await vm.stateManager.putAccount(target, targetContract)

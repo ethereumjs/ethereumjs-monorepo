@@ -131,7 +131,7 @@ describe('EIP 2935: historical block hashes', () => {
       const account = await vm.stateManager.getAccount(callerAddress)
       account!.balance = PREBALANCE
       await vm.stateManager.putAccount(callerAddress, account!)
-      await vm.stateManager.putContractCode(historyAddress, contract2935Code)
+      await vm.stateManager.putCode(historyAddress, contract2935Code)
 
       const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
       const blockHashi = result.execResult.returnValue

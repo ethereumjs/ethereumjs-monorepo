@@ -105,8 +105,8 @@ async function runBlock(block: Block) {
     common,
   })
 
-  await vm.stateManager.putContractCode(contractAddress, hexToBytes(CODE))
-  await vm.stateManager.putContractCode(BROOT_Address, hexToBytes(BROOT_CODE))
+  await vm.stateManager.putCode(contractAddress, hexToBytes(CODE))
+  await vm.stateManager.putCode(BROOT_Address, hexToBytes(BROOT_CODE))
   return {
     vmResult: await runBlockVM(vm, {
       block,

@@ -23,7 +23,7 @@ describe('EOF: should run a simple contract', async () => {
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee')) // caller address
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff')) // contract address
 
-    await evm.stateManager.putContractCode(contractAddress, code)
+    await evm.stateManager.putCode(contractAddress, code)
     await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111)))
 
     const runCallArgs = {

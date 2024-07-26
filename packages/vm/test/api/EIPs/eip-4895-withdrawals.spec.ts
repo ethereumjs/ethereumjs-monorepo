@@ -49,7 +49,7 @@ describe('EIP4895 tests', () => {
     const withdrawalCheckAddress = new Address(hexToBytes(`0x${'fe'.repeat(20)}`))
     const withdrawalCode = hexToBytes('0x6002600055')
 
-    await vm.stateManager.putContractCode(withdrawalCheckAddress, withdrawalCode)
+    await vm.stateManager.putCode(withdrawalCheckAddress, withdrawalCode)
 
     const contractAddress = new Address(hexToBytes(`0x${'ff'.repeat(20)}`))
 
@@ -62,7 +62,7 @@ describe('EIP4895 tests', () => {
         PUSH 0
         RETURN // Return the balance
     */
-    await vm.stateManager.putContractCode(
+    await vm.stateManager.putCode(
       contractAddress,
       hexToBytes(`0x73${addresses[0]}3160005260206000F3`),
     )

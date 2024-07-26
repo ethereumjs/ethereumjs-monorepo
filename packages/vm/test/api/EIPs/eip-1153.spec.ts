@@ -54,7 +54,7 @@ describe('EIP 1153: transient storage', () => {
     })
 
     for (const { code, address } of test.contracts) {
-      await vm.stateManager.putContractCode(address, hexToBytes(code as PrefixedHexString))
+      await vm.stateManager.putCode(address, hexToBytes(code as PrefixedHexString))
     }
 
     const fromAddress = new Address(privateToAddress(senderKey))

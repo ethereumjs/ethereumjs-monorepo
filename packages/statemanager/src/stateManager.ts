@@ -256,7 +256,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param address - Address of the `account` to add the `code` for
    * @param value - The value of the `code`
    */
-  async putContractCode(address: Address, value: Uint8Array): Promise<void> {
+  async putCode(address: Address, value: Uint8Array): Promise<void> {
     this._codeCache?.put(address, value)
     const codeHash = this.keccakFunction(value)
 
@@ -952,7 +952,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         const account = createAccount({ balance, nonce })
         await this.putAccount(addr, account)
         if (code !== undefined) {
-          await this.putContractCode(addr, toBytes(code))
+          await this.putCode(addr, toBytes(code))
         }
         if (storage !== undefined) {
           for (const [key, value] of storage) {

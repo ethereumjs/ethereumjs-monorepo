@@ -70,7 +70,7 @@ describe('RunCall tests', () => {
         RETURN          [0x00, 0x20]
     */
 
-    await evm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
+    await evm.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
     await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111))) // give the calling account a big balance so we don't run out of funds
     const codeHash = keccak256(new Uint8Array())
     for (let value = 0; value <= 1000; value += 20) {
@@ -122,8 +122,8 @@ describe('RunCall tests', () => {
         STOP
     */
 
-    await evmByzantium.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
-    await evmConstantinople.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
+    await evmByzantium.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
+    await evmConstantinople.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
 
     const runCallArgs = {
       caller, // call address
@@ -174,7 +174,7 @@ describe('RunCall tests', () => {
 
     */
 
-    await evm.stateManager.putContractCode(address, hexToBytes(code))
+    await evm.stateManager.putCode(address, hexToBytes(code))
     await evm.stateManager.putContractStorage(
       address,
       new Uint8Array(32),
@@ -204,7 +204,7 @@ describe('RunCall tests', () => {
     // push 1 push 0 sstore stop
     const code = '0x600160015500'
 
-    await evm.stateManager.putContractCode(address, hexToBytes(code))
+    await evm.stateManager.putCode(address, hexToBytes(code))
 
     // setup the call arguments
     const runCallArgs = {
@@ -229,7 +229,7 @@ describe('RunCall tests', () => {
     // code to call 0x00..00dd, which does not exist
     const code = '0x6000600060006000600060DD61FFFF5A03F100'
 
-    await evm.stateManager.putContractCode(address, hexToBytes(code))
+    await evm.stateManager.putCode(address, hexToBytes(code))
 
     // setup the call arguments
     const runCallArgs = {
@@ -257,7 +257,7 @@ describe('RunCall tests', () => {
     // but using too much memory
     const code = '0x61FFFF60FF60006000600060EE6000F200'
 
-    await evm.stateManager.putContractCode(address, hexToBytes(code))
+    await evm.stateManager.putCode(address, hexToBytes(code))
 
     // setup the call arguments
     const runCallArgs = {
@@ -285,7 +285,7 @@ describe('RunCall tests', () => {
     // this should thus go OOG
     const code = '0x60FEFF'
 
-    await evm.stateManager.putContractCode(address, hexToBytes(code))
+    await evm.stateManager.putCode(address, hexToBytes(code))
 
     // setup the call arguments
     const runCallArgs = {
@@ -314,7 +314,7 @@ describe('RunCall tests', () => {
     const code = '0x3460005500'
 
     await evm.stateManager.putAccount(caller, new Account())
-    await evm.stateManager.putContractCode(address, hexToBytes(code))
+    await evm.stateManager.putCode(address, hexToBytes(code))
 
     const account = await evm.stateManager.getAccount(caller)
     account!.balance = BigInt(100)
@@ -388,7 +388,7 @@ describe('RunCall tests', () => {
           STOP
     */
 
-    await evm.stateManager.putContractCode(address, hexToBytes(code))
+    await evm.stateManager.putCode(address, hexToBytes(code))
 
     const account = await evm.stateManager.getAccount(address)
     account!.nonce = MAX_UINT64 - BigInt(1)
@@ -481,7 +481,7 @@ describe('RunCall tests', () => {
     // runCall against a contract to reach `_reduceSenderBalance`
     const contractCode = hexToBytes('0x00') // 00: STOP
     const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
-    await evm.stateManager.putContractCode(contractAddress, contractCode)
+    await evm.stateManager.putCode(contractAddress, contractCode)
     const senderKey = hexToBytes(
       '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
@@ -616,7 +616,7 @@ describe('RunCall tests', () => {
 
     const contractCode = hexToBytes('0x600060405200') // PUSH 0 PUSH 40 MSTORE STOP
     const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
-    await evm.stateManager.putContractCode(contractAddress, contractCode)
+    await evm.stateManager.putCode(contractAddress, contractCode)
 
     const runCallArgs = {
       gasLimit: BigInt(21000),
@@ -730,10 +730,10 @@ describe('RunCall tests', () => {
       const callerCode = hexToBytes(`0x60008080808061AAAA61${gasLimit}f1600055`)
 
       await evm.stateManager.putAccount(callCodeAddress, new Account())
-      await evm.stateManager.putContractCode(callCodeAddress, callCode)
+      await evm.stateManager.putCode(callCodeAddress, callCode)
 
       await evm.stateManager.putAccount(callerAddress, new Account(undefined, BigInt(1)))
-      await evm.stateManager.putContractCode(callerAddress, callerCode)
+      await evm.stateManager.putCode(callerAddress, callerCode)
 
       const runCallArgs = {
         to: callerAddress,

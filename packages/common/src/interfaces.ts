@@ -155,7 +155,7 @@ export interface StateManagerInterface {
   modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
 
   // Code methods
-  putContractCode(address: Address, value: Uint8Array): Promise<void>
+  putCode(address: Address, value: Uint8Array): Promise<void>
   getContractCode(address: Address): Promise<Uint8Array>
   getContractCodeSize(address: Address): Promise<number>
 

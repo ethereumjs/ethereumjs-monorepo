@@ -100,7 +100,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     return this.topCodeStack().get(address.toString()) ?? new Uint8Array(0)
   }
 
-  async putContractCode(address: Address, value: Uint8Array): Promise<void> {
+  async putCode(address: Address, value: Uint8Array): Promise<void> {
     this.topCodeStack().set(address.toString(), value)
     if ((await this.getAccount(address)) === undefined) {
       await this.putAccount(address, new Account())

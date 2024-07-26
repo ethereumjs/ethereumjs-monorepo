@@ -79,7 +79,7 @@ async function setupPreConditions(vm: VM, data: any) {
     }
 
     const codeBuf = hexToBytes('0x' + code)
-    await vm.stateManager.putContractCode(address, codeBuf)
+    await vm.stateManager.putCode(address, codeBuf)
   }
 
   await vm.stateManager.commit()

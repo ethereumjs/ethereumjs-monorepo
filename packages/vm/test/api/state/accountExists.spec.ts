@@ -26,7 +26,7 @@ describe('correctly apply new account gas fee on pre-Spurious Dragon hardforks',
     const existingAccount = await vm.stateManager.getAccount(existingAddress)
     existingAccount!.balance = BigInt(1)
     await vm.stateManager.putAccount(existingAddress, existingAccount!)
-    await vm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
+    await vm.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
     await vm.stateManager.putContractStorage(
       contractAddress,
       hexToBytes('0xd08f588b94e47566eea77acec87441cecca23f61aea9ed8eb086c062d3837605'),
@@ -75,7 +75,7 @@ describe('do not apply new account gas fee for empty account in DB on pre-Spurio
       toBytes(emptyAddress),
       emptyAccount.serialize(),
     )
-    await vm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
+    await vm.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
     await vm.stateManager.putContractStorage(
       contractAddress,
       hexToBytes('0xd08f588b94e47566eea77acec87441cecca23f61aea9ed8eb086c062d3837605'),

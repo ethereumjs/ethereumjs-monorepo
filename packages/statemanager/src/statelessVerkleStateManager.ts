@@ -270,9 +270,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @param address - Address of the `account` to add the `code` for
    * @param value - The value of the `code`
    */
-  async putContractCode(address: Address, value: Uint8Array): Promise<void> {
+  async putCode(address: Address, value: Uint8Array): Promise<void> {
     if (this.DEBUG) {
-      debug(`putContractCode address=${address.toString()} value=${short(value)}`)
+      debug(`putCode address=${address.toString()} value=${short(value)}`)
     }
 
     this._codeCache?.put(address, value)

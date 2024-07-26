@@ -49,7 +49,7 @@ describe('StateManager -> General', () => {
     const storageKey = setLengthLeft(bigIntToBytes(2n), 32)
     const storedData = utf8ToBytes('abcd')
 
-    await sm.putContractCode(contractAddress, contractCode)
+    await sm.putCode(contractAddress, contractCode)
     await sm.putContractStorage(contractAddress, storageKey, storedData)
 
     let storage = await sm.getContractStorage(contractAddress, storageKey)
@@ -187,7 +187,7 @@ describe('StateManager -> General', () => {
       const address = Address.fromString(addressStr)
       const account = new Account(entry.nonce, entry.balance)
       await stateManager.putAccount(address, account)
-      await stateManager.putContractCode(address, entry.code)
+      await stateManager.putCode(address, entry.code)
       for (let i = 0; i < entry.keys.length; i++) {
         const key = entry.keys[i]
         const value = entry.values[i]

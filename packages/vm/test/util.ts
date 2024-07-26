@@ -386,7 +386,7 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
     }
 
     // Put contract code
-    await state.putContractCode(address, codeBuf)
+    await state.putCode(address, codeBuf)
 
     const storageRoot = (await state.getAccount(address))!.storageRoot
 

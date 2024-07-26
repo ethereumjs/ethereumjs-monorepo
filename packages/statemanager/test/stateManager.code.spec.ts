@@ -38,7 +38,7 @@ describe('StateManager -> Code', () => {
       const root = await stateManager.getStateRoot()
       const rawNode = await stateManager['_trie']['_db'].get(root)
 
-      await codeStateManager.putContractCode(address1, rawNode!)
+      await codeStateManager.putCode(address1, rawNode!)
 
       let codeSlot1 = await codeStateManager.getContractStorage(address1, key1)
       let codeSlot2 = await codeStateManager.getContractStorage(address1, key2)
@@ -93,7 +93,7 @@ describe('StateManager -> Code', () => {
       }
       const account = createAccount(raw)
       await stateManager.putAccount(address, account)
-      await stateManager.putContractCode(address, code)
+      await stateManager.putCode(address, code)
       const codeRetrieved = await stateManager.getContractCode(address)
       assert.ok(equalsBytes(code, codeRetrieved))
     })
@@ -121,7 +121,7 @@ describe('StateManager -> Code', () => {
       const account = createAccount(raw)
       const code = new Uint8Array(0)
       await stateManager.putAccount(address, account)
-      await stateManager.putContractCode(address, code)
+      await stateManager.putCode(address, code)
       const codeRetrieved = await stateManager.getContractCode(address)
       assert.ok(equalsBytes(codeRetrieved, new Uint8Array(0)))
     })
@@ -130,7 +130,7 @@ describe('StateManager -> Code', () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const code = hexToBytes('0x80')
-      await stateManager.putContractCode(address, code)
+      await stateManager.putCode(address, code)
       const codeRetrieved = await stateManager.getContractCode(address)
       assert.ok(equalsBytes(codeRetrieved, code))
     })
@@ -142,18 +142,18 @@ describe('StateManager -> Code', () => {
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const code = hexToBytes('0x80')
       try {
-        await stateManager.putContractCode(address, code)
+        await stateManager.putCode(address, code)
         assert.fail('should throw')
       } catch (e) {
         assert.ok(true, 'successfully threw')
       }
     })
 
-    it('putContractCode with empty code on existing address should correctly propagate', async () => {
+    it('putCode with empty code on existing address should correctly propagate', async () => {
       const stateManager = new DefaultStateManager()
       const address = Address.zero()
-      await stateManager.putContractCode(address, new Uint8Array([1]))
-      await stateManager.putContractCode(address, new Uint8Array())
+      await stateManager.putCode(address, new Uint8Array([1]))
+      await stateManager.putCode(address, new Uint8Array())
       const account = await stateManager.getAccount(address)
       assert.ok(account !== undefined)
       assert.ok(account?.isEmpty())

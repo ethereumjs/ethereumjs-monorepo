@@ -68,8 +68,8 @@ describe('EIP 3860 tests', () => {
       '0x7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a8160006000f05a8203600a55806000556001600155505050',
     )
 
-    await evm.stateManager.putContractCode(contractFactory, factoryCode)
-    await evmWithout3860.stateManager.putContractCode(contractFactory, factoryCode)
+    await evm.stateManager.putCode(contractFactory, factoryCode)
+    await evmWithout3860.stateManager.putCode(contractFactory, factoryCode)
     const data = hexToBytes('0x000000000000000000000000000000000000000000000000000000000000c000')
     const runCallArgs = {
       from: caller,
@@ -112,8 +112,8 @@ describe('EIP 3860 tests', () => {
       '0x7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a60008260006000f55a8203600a55806000556001600155505050',
     )
 
-    await evm.stateManager.putContractCode(contractFactory, factoryCode)
-    await evmWithout3860.stateManager.putContractCode(contractFactory, factoryCode)
+    await evm.stateManager.putCode(contractFactory, factoryCode)
+    await evmWithout3860.stateManager.putCode(contractFactory, factoryCode)
     const data = hexToBytes('0x000000000000000000000000000000000000000000000000000000000000c000')
     const runCallArgs = {
       from: caller,
@@ -190,8 +190,8 @@ describe('EIP 3860 tests', () => {
       // This is either the contract address if it was succesful, or 0 in case of error
       const factoryCode = hexToBytes(`0x600060003560006000${code}600055`)
 
-      await evm.stateManager.putContractCode(contractFactory, factoryCode)
-      await evmDisabled.stateManager.putContractCode(contractFactory, factoryCode)
+      await evm.stateManager.putCode(contractFactory, factoryCode)
+      await evmDisabled.stateManager.putCode(contractFactory, factoryCode)
 
       const runCallArgs = {
         from: caller,

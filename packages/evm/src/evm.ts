@@ -687,7 +687,7 @@ export class EVM implements EVMInterface {
         }
       }
 
-      await this.stateManager.putContractCode(message.to, result.returnValue)
+      await this.stateManager.putCode(message.to, result.returnValue)
       if (this.DEBUG) {
         debug(`Code saved on new contract creation`)
       }

@@ -33,7 +33,7 @@ export async function getPreState(
   pre: {
     [k: string]: StateTestPreAccount
   },
-  common: Common
+  common: Common,
 ): Promise<DefaultStateManager> {
   const state = new DefaultStateManager()
   await state.checkpoint()
@@ -42,11 +42,11 @@ export async function getPreState(
     const { nonce, balance, code, storage } = pre[k]
     const account = new Account(BigInt(nonce), BigInt(balance))
     await state.putAccount(address, account)
-    await state.putContractCode(address, toBytes(code))
+    await state.putCode(address, toBytes(code))
     for (const storageKey in storage) {
       const storageValue = storage[storageKey]
       const storageValueBytes = hexToBytes(
-        isHexString(storageValue) ? storageValue : `0x${storageValue}`
+        isHexString(storageValue) ? storageValue : `0x${storageValue}`,
       )
       // verify if this value buffer is not a zero buffer. if so, we should not write it...
       const zeroBytesEquivalent = new Uint8Array(storageValueBytes.length)
@@ -54,7 +54,7 @@ export async function getPreState(
         await state.putContractStorage(
           address,
           hexToBytes(isHexString(storageKey) ? storageKey : `0x${storageKey}`),
-          storageValueBytes
+          storageValueBytes,
         )
       }
     }

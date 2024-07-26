@@ -42,7 +42,7 @@ describe('Constantinople: EIP-1283', () => {
 
       const account = createAccountWithDefaults(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)
-      await vm.stateManager.putContractCode(addr, hexToBytes(testCase.code as PrefixedHexString))
+      await vm.stateManager.putCode(addr, hexToBytes(testCase.code as PrefixedHexString))
       if (testCase.original !== BigInt(0)) {
         await vm.stateManager.putContractStorage(addr, key, bigIntToBytes(testCase.original))
       }

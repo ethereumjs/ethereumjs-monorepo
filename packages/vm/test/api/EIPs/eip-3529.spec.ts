@@ -210,7 +210,7 @@ describe('EIP-3529 tests', () => {
 
     code = `${code}00`
 
-    await vm.stateManager.putContractCode(address, hexToBytes(code))
+    await vm.stateManager.putCode(address, hexToBytes(code))
 
     const tx = createLegacyTx({
       to: address,
