@@ -162,7 +162,7 @@ export interface StateManagerInterface {
   // Storage methods
   getStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
   putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
-  clearContractStorage(address: Address): Promise<void>
+  clearStorage(address: Address): Promise<void>
 
   // Checkpointing methods
   checkpoint(): Promise<void>

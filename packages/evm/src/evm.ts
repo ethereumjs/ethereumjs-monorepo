@@ -481,7 +481,7 @@ export class EVM implements EVMInterface {
     }
 
     await this.journal.putAccount(message.to, toAccount)
-    await this.stateManager.clearContractStorage(message.to)
+    await this.stateManager.clearStorage(message.to)
 
     const newContractEvent = {
       address: message.to,

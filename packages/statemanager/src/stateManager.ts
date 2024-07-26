@@ -246,7 +246,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       this._accountCache!.del(address)
     }
     if (!this._storageCacheSettings.deactivate) {
-      this._storageCache?.clearContractStorage(address)
+      this._storageCache?.clearStorage(address)
     }
   }
 
@@ -487,12 +487,12 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Clears all storage entries for the account corresponding to `address`.
    * @param address - Address to clear the storage of
    */
-  async clearContractStorage(address: Address): Promise<void> {
+  async clearStorage(address: Address): Promise<void> {
     let account = await this.getAccount(address)
     if (!account) {
       account = new Account()
     }
-    this._storageCache?.clearContractStorage(address)
+    this._storageCache?.clearStorage(address)
     await this._modifyContractStorage(address, account, (storageTrie, done) => {
       storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
       done()

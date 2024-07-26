@@ -434,10 +434,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * Clears all storage entries for the account corresponding to `address`.
    * @param address -  Address to clear the storage of
    */
-  async clearContractStorage(address: Address): Promise<void> {
+  async clearStorage(address: Address): Promise<void> {
     const stem = getVerkleStem(this.verkleCrypto, address, 0)
     const codeHashKey = getVerkleKey(stem, VerkleLeafType.CodeHash)
-    this._storageCache?.clearContractStorage(address)
+    this._storageCache?.clearStorage(address)
     // Update codeHash to `c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470`
     this._state[bytesToHex(codeHashKey)] = KECCAK256_NULL_S
   }
@@ -572,7 +572,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._accountCache!.del(address)
 
     if (!this._storageCacheSettings.deactivate) {
-      this._storageCache?.clearContractStorage(address)
+      this._storageCache?.clearStorage(address)
     }
   }
 

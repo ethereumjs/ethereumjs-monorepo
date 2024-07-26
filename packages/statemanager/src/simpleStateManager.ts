@@ -165,7 +165,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   }
 
   // Only goes for long term create situations, skip
-  async clearContractStorage(): Promise<void> {}
+  async clearStorage(): Promise<void> {}
 
   // Only "core" methods implemented
   dumpStorage(): Promise<StorageDump> {

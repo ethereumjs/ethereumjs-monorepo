@@ -191,8 +191,8 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * Clears all storage entries for the account corresponding to `address`.
    * @param address - Address to clear the storage of
    */
-  async clearContractStorage(address: Address): Promise<void> {
-    this._storageCache.clearContractStorage(address)
+  async clearStorage(address: Address): Promise<void> {
+    this._storageCache.clearStorage(address)
   }
 
   /**

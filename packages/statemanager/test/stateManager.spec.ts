@@ -55,7 +55,7 @@ describe('StateManager -> General', () => {
     let storage = await sm.getStorage(contractAddress, storageKey)
     assert.equal(JSON.stringify(storage), JSON.stringify(storedData), 'contract storage updated')
 
-    await sm.clearContractStorage(contractAddress)
+    await sm.clearStorage(contractAddress)
     storage = await sm.getStorage(contractAddress, storageKey)
     assert.equal(
       JSON.stringify(storage),

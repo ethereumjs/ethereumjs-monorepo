@@ -172,7 +172,7 @@ export class StorageCache extends Cache {
    * Deletes all storage slots for address from the cache
    * @param address
    */
-  clearContractStorage(address: Address): void {
+  clearStorage(address: Address): void {
     const addressHex = bytesToUnprefixedHex(address.bytes)
     if (this._lruCache) {
       this._lruCache!.set(addressHex, new Map())

@@ -201,7 +201,7 @@ describe('RPC State Manager API tests', () => {
       Object.keys(cacheStorage).length,
       'should have 2 storage slots in cache before clear',
     )
-    await state.clearContractStorage(UNIerc20ContractAddress)
+    await state.clearStorage(UNIerc20ContractAddress)
     const clearedStorage = await state.dumpStorage(UNIerc20ContractAddress)
     assert.deepEqual({}, clearedStorage, 'storage cache should be empty after clear')
 
