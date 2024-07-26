@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, expect } from 'vitest'
 
 import { createEVM } from '../../src/index.js'
 
@@ -22,7 +22,7 @@ const situations: Situation[] = [
     post: '000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f',
     dst: 0,
     src: 32,
-    length: 32,
+    length: 32
   },
   {
     pre: '0101010101010101010101010101010101010101010101010101010101010101',
