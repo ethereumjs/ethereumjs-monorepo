@@ -118,6 +118,10 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     this.topStorageStack().set(`${address.toString()}_${bytesToHex(key)}`, value)
   }
 
+  async clearStorage(): Promise<void> {
+    this.storageStack = []
+  }
+
   async checkpoint(): Promise<void> {
     this.checkpointSync()
   }
@@ -156,7 +160,4 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   hasStateRoot(): Promise<boolean> {
     throw new Error('Method not implemented.')
   }
-
-  // Only goes for long term create situations, skip
-  async clearStorage(): Promise<void> {}
 }
