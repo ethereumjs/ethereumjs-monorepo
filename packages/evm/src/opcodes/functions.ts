@@ -531,19 +531,9 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       }
 
-      let size
-      if (typeof runState.stateManager.getContractCodeSize === 'function') {
-        size = BigInt(
-          await runState.stateManager.getContractCodeSize(
-            new Address(addresstoBytes(addressBigInt)),
-          ),
-        )
-      } else {
-        size = BigInt(
-          (await runState.stateManager.getContractCode(new Address(addresstoBytes(addressBigInt))))
-            .length,
-        )
-      }
+      const size = BigInt(
+        await runState.stateManager.getContractCodeSize(new Address(addresstoBytes(addressBigInt))),
+      )
 
       runState.stack.push(size)
     },
