@@ -2,12 +2,13 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { TransactionType, createTxFromTxData } from '../src/index.js'
+import { TransactionType, createTxFromTxData, paramsTx } from '../src/index.js'
 
 const common = new Common({
   chain: Chain.Mainnet,
   hardfork: Hardfork.Paris,
   eips: [3860, 4844, 4895],
+  params: paramsTx,
 })
 
 const maxInitCodeSize = common.param('maxInitCodeSize')

@@ -48,7 +48,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
     const vm = await VM.create({ common })
 
     // contract code PUSH1 0x00 SLOAD STOP
-    await vm.stateManager.putContractCode(contractAddress, hexToBytes('0x60005400'))
+    await vm.stateManager.putCode(contractAddress, hexToBytes('0x60005400'))
 
     const address = Address.fromPrivateKey(privateKey)
     const initialBalance = BigInt(10) ** BigInt(18)

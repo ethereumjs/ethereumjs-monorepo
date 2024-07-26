@@ -105,8 +105,8 @@ async function runBlock(block: Block) {
     common,
   })
 
-  await vm.stateManager.putContractCode(contractAddress, hexToBytes(CODE))
-  await vm.stateManager.putContractCode(BROOT_Address, hexToBytes(BROOT_CODE))
+  await vm.stateManager.putCode(contractAddress, hexToBytes(CODE))
+  await vm.stateManager.putCode(BROOT_Address, hexToBytes(BROOT_CODE))
   return {
     vmResult: await runBlockVM(vm, {
       block,
@@ -122,7 +122,7 @@ async function runBlock(block: Block) {
  * Get call status saved in the contract
  */
 async function getCallStatus(vm: VM) {
-  const stat = await vm.stateManager.getContractStorage(contractAddress, zeros(32))
+  const stat = await vm.stateManager.getStorage(contractAddress, zeros(32))
   return bytesToBigInt(stat)
 }
 

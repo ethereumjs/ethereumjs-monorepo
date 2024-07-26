@@ -23,6 +23,7 @@ import {
   create2930AccessListTx,
   create2930AccessListTxFromBytesArray,
   create2930AccessListTxFromRLP,
+  paramsTx,
 } from '../src/index.js'
 
 import type { AccessList, AccessListBytesItem, JsonTx } from '../src/index.js'
@@ -33,6 +34,7 @@ const address = privateToAddress(pKey)
 const common = new Common({
   chain: Chain.Mainnet,
   hardfork: Hardfork.London,
+  params: paramsTx,
 })
 
 const txTypes = [

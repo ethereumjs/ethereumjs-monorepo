@@ -4,6 +4,7 @@ import { Account, Address, KECCAK256_RLP, hexToBytes } from '@ethereumjs/util'
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { assert, describe, it } from 'vitest'
 
+import { type VMOpts, paramsVM } from '../../src/index.js'
 import { VM } from '../../src/vm.js'
 
 import * as testnet from './testdata/testnet.json'
@@ -11,7 +12,6 @@ import * as testnet2 from './testdata/testnet2.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 import { setupVM } from './utils.js'
 
-import type { VMOpts } from '../../src/index.js'
 import type { ChainConfig } from '@ethereumjs/common'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
@@ -141,14 +141,46 @@ describe('VM -> supportedHardforks', () => {
     const vm = await VM.create({ common })
     assert.equal(vm.common.hardfork(), Hardfork.Byzantium)
   })
+
+  it('should overwrite parameters when param option is used', async () => {
+    let vm = await VM.create()
+    assert.equal(
+      vm.common.param('elasticityMultiplier'),
+      BigInt(2),
+      'should use correct default EVM parameters',
+    )
+
+    const params = JSON.parse(JSON.stringify(paramsVM))
+    params['1559']['elasticityMultiplier'] = 10 // 2
+    vm = await VM.create({ params })
+    assert.equal(
+      vm.common.param('elasticityMultiplier'),
+      BigInt(10),
+      'should use custom parameters provided',
+    )
+
+    vm = await VM.create()
+    assert.equal(
+      vm.common.param('elasticityMultiplier'),
+      BigInt(2),
+      'should again use the correct default EVM parameters',
+    )
+  })
 })
 
 describe('VM -> common (chain, HFs, EIPs)', () => {
   it('should accept a common object as option', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
-    const vm = await VM.create({ common })
+    let vm = await VM.create({ common })
     assert.equal(vm.common, common)
+
+    vm = await VM.create()
+    assert.equal(
+      vm.common.param('elasticityMultiplier'),
+      BigInt(2),
+      'should use correct default EVM parameters',
+    )
   })
 
   it('should only accept valid chain and fork', async () => {
@@ -296,9 +328,9 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
           STOP
       */
 
-      await vmNotActivated.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
+      await vmNotActivated.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
       await vmNotActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
-      await vmActivated.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
+      await vmActivated.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
       await vmActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
       // setup the call arguments
       const runCallArgs = {

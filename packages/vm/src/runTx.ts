@@ -369,7 +369,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // the signer must be able to afford the transaction
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
     const castTx = tx as BlobEIP4844Transaction
-    totalblobGas = castTx.common.param('blobGasPerBlob') * BigInt(castTx.numBlobs())
+    totalblobGas = vm.common.param('blobGasPerBlob') * BigInt(castTx.numBlobs())
     maxCost += totalblobGas * castTx.maxFeePerBlobGas
 
     // 4844 minimum blobGas price check
@@ -494,8 +494,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
 
       const addressConverted = new Address(address)
-      const addressCode = await vm.stateManager.getContractCode(addressConverted)
-      await vm.stateManager.putContractCode(authority, addressCode)
+      const addressCode = await vm.stateManager.getCode(addressConverted)
+      await vm.stateManager.putCode(authority, addressCode)
 
       writtenAddresses.add(authority.toString())
       vm.evm.journal.addAlwaysWarmAddress(authority.toString())
@@ -687,7 +687,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   for (const str of writtenAddresses) {
     const address = Address.fromString(str)
-    await vm.stateManager.putContractCode(address, new Uint8Array())
+    await vm.stateManager.putCode(address, new Uint8Array())
   }
 
   if (enableProfiler) {

@@ -26,7 +26,7 @@ describe('EIP 3541 tests', () => {
     let result = await runTx(vm, { tx, skipHardForkValidation: true })
     let created = result.createdAddress
 
-    let code = await vm.stateManager.getContractCode(created!)
+    let code = await vm.stateManager.getCode(created!)
 
     assert.equal(code.length, 0, 'did not deposit code')
 
@@ -42,7 +42,7 @@ describe('EIP 3541 tests', () => {
     result = await runTx(vm, { tx: tx1, skipHardForkValidation: true })
     created = result.createdAddress
 
-    code = await vm.stateManager.getContractCode(created!)
+    code = await vm.stateManager.getCode(created!)
 
     assert.ok(code.length > 0, 'did deposit code')
 
@@ -57,7 +57,7 @@ describe('EIP 3541 tests', () => {
     result = await runTx(vm, { tx: tx2, skipHardForkValidation: true })
     created = result.createdAddress
 
-    code = await vm.stateManager.getContractCode(created!)
+    code = await vm.stateManager.getCode(created!)
 
     assert.ok(code.length > 0, 'did deposit code')
   })
@@ -79,7 +79,7 @@ describe('EIP 3541 tests', () => {
 
     await runTx(vm, { tx, skipHardForkValidation: true })
 
-    let code = await vm.stateManager.getContractCode(address!)
+    let code = await vm.stateManager.getCode(address!)
 
     assert.equal(code.length, 0, 'did not deposit code')
 
@@ -92,7 +92,7 @@ describe('EIP 3541 tests', () => {
 
     await runTx(vm, { tx: tx1, skipHardForkValidation: true })
 
-    code = await vm.stateManager.getContractCode(address!)
+    code = await vm.stateManager.getCode(address!)
 
     assert.ok(code.length > 0, 'did deposit code')
   })
@@ -114,7 +114,7 @@ describe('EIP 3541 tests', () => {
 
     await runTx(vm, { tx, skipHardForkValidation: true })
 
-    let code = await vm.stateManager.getContractCode(address!)
+    let code = await vm.stateManager.getCode(address!)
 
     assert.equal(code.length, 0, 'did not deposit code')
 
@@ -127,7 +127,7 @@ describe('EIP 3541 tests', () => {
 
     await runTx(vm, { tx: tx1, skipHardForkValidation: true })
 
-    code = await vm.stateManager.getContractCode(address!)
+    code = await vm.stateManager.getCode(address!)
 
     assert.ok(code.length > 0, 'did deposit code')
   })

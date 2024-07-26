@@ -3,6 +3,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
+import type { SimpleStateManagerOpts } from './index.js'
 import type {
   AccountFields,
   Common,
@@ -12,16 +13,6 @@ import type {
   StorageRange,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
-
-/**
- * Options for constructing a {@link SimpleStateManager}.
- */
-export interface SimpleStateManagerOpts {
-  /**
-   * The common to use
-   */
-  common?: Common
-}
 
 /**
  * Simple and dependency-free state manager for basic state access use cases
@@ -52,7 +43,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
 
   constructor(opts: SimpleStateManagerOpts = {}) {
     this.checkpointSync()
-    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this.common = opts.common
   }
 
@@ -105,11 +96,11 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     await this.putAccount(address, account)
   }
 
-  async getContractCode(address: Address): Promise<Uint8Array> {
+  async getCode(address: Address): Promise<Uint8Array> {
     return this.topCodeStack().get(address.toString()) ?? new Uint8Array(0)
   }
 
-  async putContractCode(address: Address, value: Uint8Array): Promise<void> {
+  async putCode(address: Address, value: Uint8Array): Promise<void> {
     this.topCodeStack().set(address.toString(), value)
     if ((await this.getAccount(address)) === undefined) {
       await this.putAccount(address, new Account())
@@ -119,18 +110,18 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     })
   }
 
-  async getContractCodeSize(address: Address): Promise<number> {
-    const contractCode = await this.getContractCode(address)
+  async getCodeSize(address: Address): Promise<number> {
+    const contractCode = await this.getCode(address)
     return contractCode.length
   }
 
-  async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
+  async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     return (
       this.topStorageStack().get(`${address.toString()}_${bytesToHex(key)}`) ?? new Uint8Array(0)
     )
   }
 
-  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
+  async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     this.topStorageStack().set(`${address.toString()}_${bytesToHex(key)}`, value)
   }
 
@@ -174,12 +165,9 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   }
 
   // Only goes for long term create situations, skip
-  async clearContractStorage(): Promise<void> {}
+  async clearStorage(): Promise<void> {}
 
   // Only "core" methods implemented
-  checkChunkWitnessPresent?(): Promise<boolean> {
-    throw new Error('Method not implemented.')
-  }
   dumpStorage(): Promise<StorageDump> {
     throw new Error('Method not implemented.')
   }

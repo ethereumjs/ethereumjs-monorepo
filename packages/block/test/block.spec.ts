@@ -18,6 +18,7 @@ import {
 } from '../src/constructors.js'
 import { createBlockFromRpc } from '../src/from-rpc.js'
 import { genTransactionsTrieRoot } from '../src/helpers.js'
+import { type Block, type BlockBytes, type JsonRpcBlock, paramsBlock } from '../src/index.js'
 
 import * as testDataGenesis from './testdata/genesishashestest.json'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
@@ -25,7 +26,6 @@ import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
-import type { Block, BlockBytes, JsonRpcBlock } from '../src/index.js'
 import type { ChainConfig } from '@ethereumjs/common'
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
@@ -35,9 +35,18 @@ describe('[Block]: block functions', () => {
     const genesis = createBlockFromBlockData({}, { common })
     assert.ok(bytesToHex(genesis.hash()), 'block should initialize')
 
+    const params = JSON.parse(JSON.stringify(paramsBlock))
+    params['1']['minGasLimit'] = 3000 // 5000
+    let block = createBlockFromBlockData({}, { params })
+    assert.equal(
+      block.common.param('minGasLimit'),
+      BigInt(3000),
+      'should use custom parameters provided',
+    )
+
     // test default freeze values
     // also test if the options are carried over to the constructor
-    let block = createBlockFromBlockData({})
+    block = createBlockFromBlockData({})
     assert.ok(Object.isFrozen(block), 'block should be frozen by default')
 
     block = createBlockFromBlockData({}, { freeze: false })

@@ -1,5 +1,5 @@
 import type { BlockHeader } from './header.js'
-import type { Common } from '@ethereumjs/common'
+import type { Common, ParamsDict } from '@ethereumjs/common'
 import type { JsonRpcTx, JsonTx, TransactionType, TxData } from '@ethereumjs/tx'
 import type {
   AddressLike,
@@ -46,6 +46,23 @@ export interface BlockOptions {
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
   setHardfork?: boolean | BigIntLike
+  /**
+   * Block parameters sorted by EIP can be found in the exported `paramsBlock` dictionary,
+   * which is internally passed to the associated `@ethereumjs/common` instance which
+   * manages parameter selection based on the hardfork and EIP settings.
+   *
+   * This option allows providing a custom set of parameters. Note that parameters
+   * get fully overwritten, so you need to extend the default parameter dict
+   * to provide the full parameter set.
+   *
+   * It is recommended to deep-clone the params object for this to avoid side effects:
+   *
+   * ```ts
+   * const params = JSON.parse(JSON.stringify(paramsBlock))
+   * params['1']['minGasLimit'] = 3000 // 5000
+   * ```
+   */
+  params?: ParamsDict
   /**
    * If a preceding {@link BlockHeader} (usually the parent header) is given the preceding
    * header will be used to calculate the difficulty for this block and the calculated

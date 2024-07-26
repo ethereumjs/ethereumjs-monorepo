@@ -67,7 +67,7 @@ const accumulateEIP7002Requests = async (
   )
   const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
 
-  const code = await vm.stateManager.getContractCode(withdrawalsAddress)
+  const code = await vm.stateManager.getCode(withdrawalsAddress)
 
   if (code.length === 0) {
     throw new Error(
@@ -117,7 +117,7 @@ const accumulateEIP7251Requests = async (
   )
   const consolidationsAddress = Address.fromString(bytesToHex(addressBytes))
 
-  const code = await vm.stateManager.getContractCode(consolidationsAddress)
+  const code = await vm.stateManager.getCode(consolidationsAddress)
 
   if (code.length === 0) {
     throw new Error(

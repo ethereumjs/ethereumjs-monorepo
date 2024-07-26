@@ -13,6 +13,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { BaseTransaction } from '../baseTransaction.js'
 import * as Legacy from '../capabilities/legacy.js'
+import { paramsTx } from '../index.js'
 import { Capability, TransactionType } from '../types.js'
 import { validateNotArray } from '../util.js'
 
@@ -55,6 +56,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     super({ ...txData, type: TransactionType.Legacy }, opts)
 
     this.common = this._validateTxV(this.v, opts.common)
+    this.common.updateParams(opts.params ?? paramsTx)
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
     this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice))
 

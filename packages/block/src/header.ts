@@ -28,6 +28,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique.js'
 import { fakeExponential, valuesArrayToHeaderData } from './helpers.js'
+import { paramsBlock } from './params.js'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
 import type { CliqueConfig } from '@ethereumjs/common'
@@ -167,6 +168,8 @@ export class BlockHeader {
         chain: Chain.Mainnet, // default
       })
     }
+    this.common.updateParams(opts.params ?? paramsBlock)
+
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
 
     const skipValidateConsensusFormat = opts.skipConsensusFormatValidation ?? false

@@ -1,7 +1,7 @@
 import type { Bloom } from './bloom/index.js'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
-import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { Common, EVMStateManagerInterface, ParamsDict } from '@ethereumjs/common'
 import type { EVMInterface, EVMOpts, EVMResult, Log } from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type {
@@ -153,6 +153,23 @@ export interface VMOpts {
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
   setHardfork?: boolean | BigIntLike
+  /**
+   * VM parameters sorted by EIP can be found in the exported `paramsVM` dictionary,
+   * which is internally passed to the associated `@ethereumjs/common` instance which
+   * manages parameter selection based on the hardfork and EIP settings.
+   *
+   * This option allows providing a custom set of parameters. Note that parameters
+   * get fully overwritten, so you need to extend the default parameter dict
+   * to provide the full parameter set.
+   *
+   * It is recommended to deep-clone the params object for this to avoid side effects:
+   *
+   * ```ts
+   * const params = JSON.parse(JSON.stringify(paramsVM))
+   * params['1559']['elasticityMultiplier'] = 10 // 2
+   * ```
+   */
+  params?: ParamsDict
 
   /**
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.

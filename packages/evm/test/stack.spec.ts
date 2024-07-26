@@ -122,7 +122,7 @@ describe('Stack', () => {
           RETURN        stack: [0, 0x20] (we thus return the stack item which was originally pushed as 0, and then DUPed)
     */
     await evm.stateManager.putAccount(addr, account)
-    await evm.stateManager.putContractCode(addr, hexToBytes(code))
+    await evm.stateManager.putCode(addr, hexToBytes(code))
     await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
     const runCallArgs = {
       caller,

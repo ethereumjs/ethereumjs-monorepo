@@ -26,6 +26,7 @@ import { Journal } from './journal.js'
 import { EVMPerformanceLogger } from './logger.js'
 import { Message } from './message.js'
 import { getOpcodesForHF } from './opcodes/index.js'
+import { paramsEVM } from './params.js'
 import { NobleBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
 import { TransientStorage } from './transientStorage.js'
 
@@ -159,6 +160,17 @@ export class EVM implements EVMInterface {
     this.blockchain = opts.blockchain!
     this.stateManager = opts.stateManager!
 
+    if (this.common.isActivatedEIP(6800)) {
+      const mandatory = ['checkChunkWitnessPresent']
+      for (const m of mandatory) {
+        if (!(m in this.stateManager)) {
+          throw new Error(
+            `State manager used must implement ${m} if Verkle (EIP-6800) is activated`,
+          )
+        }
+      }
+    }
+
     this._bn128 = bn128
     this.events = new AsyncEventEmitter()
     this._optsCached = opts
@@ -182,6 +194,8 @@ export class EVM implements EVMInterface {
         `Hardfork ${this.common.hardfork()} not set as supported in supportedHardforks`,
       )
     }
+
+    this.common.updateParams(opts.params ?? paramsEVM)
 
     this.allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
     this.allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
@@ -467,7 +481,7 @@ export class EVM implements EVMInterface {
     }
 
     await this.journal.putAccount(message.to, toAccount)
-    await this.stateManager.clearContractStorage(message.to)
+    await this.stateManager.clearStorage(message.to)
 
     const newContractEvent = {
       address: message.to,
@@ -673,7 +687,7 @@ export class EVM implements EVMInterface {
         }
       }
 
-      await this.stateManager.putContractCode(message.to, result.returnValue)
+      await this.stateManager.putCode(message.to, result.returnValue)
       if (this.DEBUG) {
         debug(`Code saved on new contract creation`)
       }
@@ -996,7 +1010,7 @@ export class EVM implements EVMInterface {
         message.code = precompile
         message.isCompiled = true
       } else {
-        message.code = await this.stateManager.getContractCode(message.codeAddress)
+        message.code = await this.stateManager.getCode(message.codeAddress)
         message.isCompiled = false
         message.chargeCodeAccesses = true
       }

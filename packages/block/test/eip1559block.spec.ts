@@ -5,15 +5,17 @@ import { assert, describe, it } from 'vitest'
 
 import { createBlockFromBlockData } from '../src/constructors.js'
 import { BlockHeader } from '../src/header.js'
-
 // Test data from Besu (retrieved via Discord)
 // Older version at https://github.com/abdelhamidbakhta/besu/blob/bf54b6c0b40d3015fc85ff9b078fbc26592d80c0/ethereum/core/src/test/resources/org/hyperledger/besu/ethereum/core/fees/basefee-test.json
+import { paramsBlock } from '../src/params.js'
+
 import * as eip1559BaseFee from './testdata/eip1559baseFee.json'
 
 const common = new Common({
   eips: [1559],
   chain: Chain.Mainnet,
   hardfork: Hardfork.London,
+  params: paramsBlock,
 })
 
 const genesis = createBlockFromBlockData({})

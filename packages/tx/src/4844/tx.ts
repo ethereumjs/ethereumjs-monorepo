@@ -15,6 +15,7 @@ import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP2930 from '../capabilities/eip2930.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { LIMIT_BLOBS_PER_TX } from '../constants.js'
+import { paramsTx } from '../index.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, validateNotArray } from '../util.js'
 
@@ -65,6 +66,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas, maxFeePerBlobGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
+    this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(1559)) {
