@@ -1,7 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
 import {
   Account,
-  Address,
   BIGINT_0,
   BIGINT_1,
   BIGINT_3,
@@ -24,6 +23,7 @@ import { updateSstoreGasEIP1283 } from './EIP1283.js'
 import { updateSstoreGasEIP2200 } from './EIP2200.js'
 import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929.js'
 import {
+  createAddressFromStackBigInt,
   divCeil,
   maxCallGas,
   setLengthLeftStorage,
@@ -90,7 +90,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* BALANCE */
       0x31,
       async function (runState, gas, common): Promise<bigint> {
-        const address = Address.fromBigInt(runState.stack.peek()[0])
+        const address = createAddressFromStackBigInt(runState.stack.peek()[0])
         let charge2929Gas = true
         if (common.isActivatedEIP(6800)) {
           const coldAccessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
@@ -155,7 +155,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* EXTCODESIZE */
       0x3b,
       async function (runState, gas, common): Promise<bigint> {
-        const address = Address.fromBigInt(runState.stack.peek()[0])
+        const address = createAddressFromStackBigInt(runState.stack.peek()[0])
 
         let charge2929Gas = true
         if (
@@ -191,7 +191,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0x3c,
       async function (runState, gas, common): Promise<bigint> {
         const [addressBigInt, memOffset, _codeOffset, dataLength] = runState.stack.peek(4)
-        const address = Address.fromBigInt(addressBigInt)
+        const address = createAddressFromStackBigInt(addressBigInt)
 
         gas += subMemUsage(runState, memOffset, dataLength, common)
 
@@ -267,7 +267,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* EXTCODEHASH */
       0x3f,
       async function (runState, gas, common): Promise<bigint> {
-        const address = Address.fromBigInt(runState.stack.peek()[0])
+        const address = createAddressFromStackBigInt(runState.stack.peek()[0])
         let charge2929Gas = true
 
         if (common.isActivatedEIP(6800)) {
@@ -555,7 +555,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         const [currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
           runState.stack.peek(7)
-        const toAddress = Address.fromBigInt(toAddr)
+        const toAddress = createAddressFromStackBigInt(toAddr)
 
         if (runState.interpreter.isStatic() && value !== BIGINT_0) {
           trap(ERROR.STATIC_STATE_CHANGE)
@@ -635,7 +635,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         const [currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
           runState.stack.peek(7)
-        const toAddress = Address.fromBigInt(toAddr)
+        const toAddress = createAddressFromStackBigInt(toAddr)
 
         gas += subMemUsage(runState, inOffset, inLength, common)
         gas += subMemUsage(runState, outOffset, outLength, common)
@@ -654,7 +654,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (common.isActivatedEIP(2929)) {
           gas += accessAddressEIP2929(
             runState,
-            Address.fromBigInt(toAddr).bytes,
+            createAddressFromStackBigInt(toAddr).bytes,
             common,
             charge2929Gas,
           )
@@ -695,7 +695,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         const [currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
           runState.stack.peek(6)
-        const toAddress = Address.fromBigInt(toAddr)
+        const toAddress = createAddressFromStackBigInt(toAddr)
 
         gas += subMemUsage(runState, inOffset, inLength, common)
         gas += subMemUsage(runState, outOffset, outLength, common)
@@ -715,7 +715,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (common.isActivatedEIP(2929)) {
           gas += accessAddressEIP2929(
             runState,
-            Address.fromBigInt(toAddr).bytes,
+            createAddressFromStackBigInt(toAddr).bytes,
             common,
             charge2929Gas,
           )
@@ -792,7 +792,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const [currentGasLimit, addr, value, argsOffset, argsLength, retOffset, retLength] =
           runState.stack.peek(7)
 
-        const toAddress = Address.fromBigInt(addr)
+        const toAddress = createAddressFromStackBigInt(addr)
 
         gas += common.param('warmstoragereadGas')
 
@@ -831,7 +831,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           }
           account.balance -= value
 
-          const toAddr = Address.fromBigInt(addr)
+          const toAddr = createAddressFromStackBigInt(addr)
           const target = (await runState.stateManager.getAccount(toAddr)) ?? new Account()
           target.balance += value
 
@@ -868,7 +868,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // Charge for memory expansion
         gas += subMemUsage(runState, inOffset, inLength, common)
 
-        const toAddress = Address.fromBigInt(toAddr)
+        const toAddress = createAddressFromStackBigInt(toAddr)
         // Charge to make address warm (2600 gas)
         // (in case if address is already warm, this charges the 100 gas)
         gas += accessAddressEIP2929(runState, toAddress.bytes, common)
@@ -931,7 +931,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // Charge for memory expansion
         gas += subMemUsage(runState, inOffset, inLength, common)
 
-        const toAddress = Address.fromBigInt(toAddr)
+        const toAddress = createAddressFromStackBigInt(toAddr)
         // Charge to make address warm (2600 gas)
         // (in case if address is already warm, this charges the 100 gas)
         gas += accessAddressEIP2929(runState, toAddress.bytes, common)
@@ -975,7 +975,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         let charge2929Gas = true
         if (common.isActivatedEIP(6800)) {
-          const toAddress = Address.fromBigInt(toAddr)
+          const toAddress = createAddressFromStackBigInt(toAddr)
           // TODO: add check if toAddress is not a precompile
           const coldAccessGas = runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
 
@@ -986,7 +986,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (common.isActivatedEIP(2929)) {
           gas += accessAddressEIP2929(
             runState,
-            Address.fromBigInt(toAddr).bytes,
+            createAddressFromStackBigInt(toAddr).bytes,
             common,
             charge2929Gas,
           )
@@ -1020,7 +1020,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // Charge for memory expansion
         gas += subMemUsage(runState, inOffset, inLength, common)
 
-        const toAddress = Address.fromBigInt(toAddr)
+        const toAddress = createAddressFromStackBigInt(toAddr)
         // Charge to make address warm (2600 gas)
         // (in case if address is already warm, this charges the 100 gas)
         gas += accessAddressEIP2929(runState, toAddress.bytes, common)
@@ -1070,7 +1070,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
         const selfdestructToaddressBigInt = runState.stack.peek()[0]
 
-        const selfdestructToAddress = Address.fromBigInt(selfdestructToaddressBigInt)
+        const selfdestructToAddress = createAddressFromStackBigInt(selfdestructToaddressBigInt)
         const contractAddress = runState.interpreter.getAddress()
 
         let deductGas = false

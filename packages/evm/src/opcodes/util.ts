@@ -2,11 +2,13 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   BIGINT_0,
   BIGINT_1,
+  BIGINT_160,
   BIGINT_2,
   BIGINT_32,
   BIGINT_64,
   BIGINT_NEG1,
   bytesToHex,
+  createAddressFromBigInt,
   equalsBytes,
   setLengthLeft,
   setLengthRight,
@@ -18,6 +20,19 @@ import { EvmError } from '../exceptions.js'
 import type { ERROR } from '../exceptions.js'
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
+
+const MASK_160 = (BIGINT_1 << BIGINT_160) - BIGINT_1
+
+/**
+ * Create an address from a 160-bit integer.
+ * This wrapper ensures that the value is masked to 160 bits.
+ * @param value 160-bit integer
+ */
+export function createAddressFromStackBigInt(value: bigint): Address {
+  const maskedValue = value & MASK_160
+  return createAddressFromBigInt(maskedValue)
+}
 
 /**
  * Proxy function for @ethereumjs/util's setLengthLeft, except it returns a zero
