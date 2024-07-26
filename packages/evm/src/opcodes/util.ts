@@ -2,12 +2,10 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   BIGINT_0,
   BIGINT_1,
-  BIGINT_160,
   BIGINT_2,
   BIGINT_32,
   BIGINT_64,
   BIGINT_NEG1,
-  bigIntToBytes,
   bytesToHex,
   equalsBytes,
   setLengthLeft,
@@ -20,8 +18,6 @@ import { EvmError } from '../exceptions.js'
 import type { ERROR } from '../exceptions.js'
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
-
-const MASK_160 = (BIGINT_1 << BIGINT_160) - BIGINT_1
 
 /**
  * Proxy function for @ethereumjs/util's setLengthLeft, except it returns a zero
@@ -43,14 +39,6 @@ export function setLengthLeftStorage(value: Uint8Array) {
 export function trap(err: string) {
   // TODO: facilitate extra data along with errors
   throw new EvmError(err as ERROR)
-}
-
-/**
- * Converts bigint address (they're stored like this on the stack) to Uint8Array address
- */
-export function addresstoBytes(address: bigint | Uint8Array) {
-  if (address instanceof Uint8Array) return address
-  return setLengthLeft(bigIntToBytes(address & MASK_160), 20)
 }
 
 /**
