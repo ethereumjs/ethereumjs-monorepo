@@ -11,9 +11,10 @@ import {
   bytesToHex,
   equalsBytes,
   hexToBytes,
+  setLengthLeft,
   zeros,
 } from './bytes.js'
-import { BIGINT_0 } from './constants.js'
+import { BIGINT_0, MASK_160 } from './constants.js'
 
 import type { PrefixedHexString } from './types.js'
 
@@ -35,6 +36,14 @@ export class Address {
    */
   static zero(): Address {
     return new Address(zeros(20))
+  }
+
+  /**
+   * Returns an Address object from a bigint address (they are stored as bigints on the stack)
+   * @param value The bigint address
+   */
+  static fromBigInt(value: bigint): Address {
+    return new Address(setLengthLeft(bigIntToBytes(value & MASK_160), 20))
   }
 
   /**
