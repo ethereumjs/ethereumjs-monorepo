@@ -10,6 +10,7 @@ type RpcError = {
   code: number
   message: string
   trace?: string
+  data?: string
 }
 
 export function callWithStackTrace(handler: Function, debug: boolean) {
@@ -21,6 +22,7 @@ export function callWithStackTrace(handler: Function, debug: boolean) {
       const e: RpcError = {
         code: error.code ?? INTERNAL_ERROR,
         message: error.message,
+        data: error.data,
       }
       if (debug === true) {
         e['trace'] = error.stack

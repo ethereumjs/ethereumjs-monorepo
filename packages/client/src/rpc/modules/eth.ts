@@ -527,6 +527,13 @@ export class Eth {
       block,
     }
     const { execResult } = await vm.evm.runCall(runCallOpts)
+    if (execResult.exceptionError !== undefined) {
+      throw {
+        code: 3,
+        data: bytesToHex(execResult.returnValue),
+        message: execResult.exceptionError.error,
+      }
+    }
     return bytesToHex(execResult.returnValue)
   }
 
