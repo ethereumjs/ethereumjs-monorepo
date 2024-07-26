@@ -205,7 +205,7 @@ export interface StateManagerInterface {
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 
   /*
-   * Generic
+   * Utility
    */
   clearCaches(): void
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
