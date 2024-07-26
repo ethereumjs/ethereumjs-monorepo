@@ -102,14 +102,14 @@ describe(method, () => {
       'latest',
     ])
     assert.equal(
-      res.result,
+      res.error.data,
       bytesToHex(execResult.returnValue),
       'should return the correct return value',
     )
 
     res = await rpc.request(method, [{ ...estimateTxData }, 'latest'])
     assert.equal(
-      res.result,
+      res.error.data,
       bytesToHex(execResult.returnValue),
       'should return the correct return value with no gas limit provided',
     )
