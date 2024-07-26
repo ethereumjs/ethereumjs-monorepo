@@ -40,8 +40,8 @@ describe('StateManager -> Code', () => {
 
       await codeStateManager.putCode(address1, rawNode!)
 
-      let codeSlot1 = await codeStateManager.getContractStorage(address1, key1)
-      let codeSlot2 = await codeStateManager.getContractStorage(address1, key2)
+      let codeSlot1 = await codeStateManager.getStorage(address1, key1)
+      let codeSlot2 = await codeStateManager.getStorage(address1, key2)
 
       assert.ok(codeSlot1.length === 0, 'slot 0 is empty')
       assert.ok(codeSlot2.length === 0, 'slot 1 is empty')
@@ -49,8 +49,8 @@ describe('StateManager -> Code', () => {
       const code = await codeStateManager.getCode(address1)
       assert.ok(code.length > 0, 'code deposited correctly')
 
-      const slot1 = await stateManager.getContractStorage(address1, key1)
-      const slot2 = await stateManager.getContractStorage(address1, key2)
+      const slot1 = await stateManager.getStorage(address1, key1)
+      const slot2 = await stateManager.getStorage(address1, key2)
 
       assert.ok(slot1.length > 0, 'storage key0 deposited correctly')
       assert.ok(slot2.length > 0, 'storage key1 deposited correctly')
@@ -73,8 +73,8 @@ describe('StateManager -> Code', () => {
 
       await codeStateManager.putAccount(address1, account1!)
 
-      codeSlot1 = await codeStateManager.getContractStorage(address1, key1)
-      codeSlot2 = await codeStateManager.getContractStorage(address1, key2)
+      codeSlot1 = await codeStateManager.getStorage(address1, key1)
+      codeSlot2 = await codeStateManager.getStorage(address1, key2)
 
       assert.ok(codeSlot1.length === 0, 'slot 0 is empty')
       assert.ok(codeSlot2.length === 0, 'slot 1 is empty')

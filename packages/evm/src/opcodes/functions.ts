@@ -653,7 +653,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           )
           runState.interpreter.useGas(statelessGas, `BLOCKHASH`)
         }
-        const storage = await runState.stateManager.getContractStorage(historyAddress, key)
+        const storage = await runState.stateManager.getStorage(historyAddress, key)
 
         runState.stack.push(bytesToBigInt(storage))
       } else {

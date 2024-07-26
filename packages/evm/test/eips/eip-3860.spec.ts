@@ -204,11 +204,8 @@ describe('EIP 3860 tests', () => {
       await evmDisabled.runCall(runCallArgs)
 
       const key0 = hexToBytes(`0x${'00'.repeat(32)}`)
-      const storageActive = await evm.stateManager.getContractStorage(contractFactory, key0)
-      const storageInactive = await evmDisabled.stateManager.getContractStorage(
-        contractFactory,
-        key0,
-      )
+      const storageActive = await evm.stateManager.getStorage(contractFactory, key0)
+      const storageInactive = await evmDisabled.stateManager.getStorage(contractFactory, key0)
 
       assert.ok(
         !equalsBytes(storageActive, new Uint8Array()),

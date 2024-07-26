@@ -61,7 +61,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
     this._storageCache = new StorageCache({ size: 100000, type: CacheType.ORDERED_MAP })
     this._accountCache = new AccountCache({ size: 100000, type: CacheType.ORDERED_MAP })
 
-    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
   }
@@ -152,7 +152,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * corresponding to the provided address at the provided key.
    * If this does not exist an empty `Uint8Array` is returned.
    */
-  async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
+  async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     // Check storage slot in cache
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')

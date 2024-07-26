@@ -77,7 +77,7 @@ describe('VM.runCode: interpreter', () => {
 
   it('should throw on non-EvmError', async () => {
     const evm = await createEVM()
-    // NOTE: due to now throwing on `getContractStorage` if account does not exist
+    // NOTE: due to now throwing on `getStorage` if account does not exist
     // this now means that if `runCode` is called and the address it runs on (default: zero address)
     // does not exist, then if SSTORE/SLOAD is used, the runCode will immediately fail because StateManager now throws
     // TODO: is this behavior which we should fix? (Either in StateManager OR in runCode where we load the account first,

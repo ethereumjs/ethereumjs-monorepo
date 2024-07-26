@@ -90,7 +90,7 @@ async function runTest(
   await runTx(vm, { tx })
 
   const slot = hexToBytes('0x' + '00'.repeat(31) + '01')
-  const value = await vm.stateManager.getContractStorage(defaultAuthAddr, slot)
+  const value = await vm.stateManager.getStorage(defaultAuthAddr, slot)
   assert.ok(equalsBytes(unpadBytes(expect), value))
 
   if (skipEmptyCode === undefined) {

@@ -123,7 +123,7 @@ describe('EIP4895 tests', () => {
 
     assert.deepEqual(zeros(32), result!, 'withdrawals happen after transactions')
 
-    const slotValue = await vm.stateManager.getContractStorage(withdrawalCheckAddress, zeros(32))
+    const slotValue = await vm.stateManager.getStorage(withdrawalCheckAddress, zeros(32))
     assert.deepEqual(zeros(0), slotValue, 'withdrawals do not invoke code')
   })
 

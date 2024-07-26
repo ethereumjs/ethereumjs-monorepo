@@ -43,7 +43,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
 
   constructor(opts: SimpleStateManagerOpts = {}) {
     this.checkpointSync()
-    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this.common = opts.common
   }
 
@@ -115,7 +115,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     return contractCode.length
   }
 
-  async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
+  async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     return (
       this.topStorageStack().get(`${address.toString()}_${bytesToHex(key)}`) ?? new Uint8Array(0)
     )

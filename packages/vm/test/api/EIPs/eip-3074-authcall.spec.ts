@@ -496,7 +496,7 @@ describe('EIP-3074 AUTHCALL', () => {
     const buf = result.execResult.returnValue.slice(31)
     assert.deepEqual(buf, hexToBytes('0x01'), 'authcall success')
 
-    const storage = await vm.stateManager.getContractStorage(contractStorageAddress, zeros(32))
+    const storage = await vm.stateManager.getStorage(contractStorageAddress, zeros(32))
     assert.deepEqual(storage, address.bytes, 'caller set correctly')
   })
 
@@ -527,7 +527,7 @@ describe('EIP-3074 AUTHCALL', () => {
 
     await runTx(vm, { tx, block, skipHardForkValidation: true })
 
-    const gasUsed = await vm.stateManager.getContractStorage(
+    const gasUsed = await vm.stateManager.getStorage(
       contractStorageAddress,
       hexToBytes(`0x${'00'.repeat(31)}01`),
     )
@@ -568,7 +568,7 @@ describe('EIP-3074 AUTHCALL', () => {
 
     await runTx(vm, { tx, block, skipHardForkValidation: true })
 
-    const gasUsed = await vm.stateManager.getContractStorage(
+    const gasUsed = await vm.stateManager.getStorage(
       contractStorageAddress,
       hexToBytes(`0x${'00'.repeat(31)}01`),
     )
@@ -657,7 +657,7 @@ describe('EIP-3074 AUTHCALL', () => {
 
     const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
 
-    const gasUsed = await vm.stateManager.getContractStorage(
+    const gasUsed = await vm.stateManager.getStorage(
       contractStorageAddress,
       hexToBytes(`0x${'00'.repeat(31)}01`),
     )
@@ -818,7 +818,7 @@ describe('EIP-3074 AUTHCALL', () => {
     }).sign(callerPrivateKey)
 
     await runTx(vm, { tx, block, skipHardForkValidation: true })
-    const gas = await vm.stateManager.getContractStorage(
+    const gas = await vm.stateManager.getStorage(
       contractStorageAddress,
       hexToBytes(`0x${'00'.repeat(31)}01`),
     )
@@ -851,7 +851,7 @@ describe('EIP-3074 AUTHCALL', () => {
     }).sign(callerPrivateKey)
 
     const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
-    const callInput = await vm.stateManager.getContractStorage(
+    const callInput = await vm.stateManager.getStorage(
       contractStorageAddress,
       hexToBytes(`0x${'00'.repeat(31)}02`),
     )

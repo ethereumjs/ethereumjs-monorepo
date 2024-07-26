@@ -114,7 +114,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
-    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
     this._prefixStorageTrieKeys = opts.prefixStorageTrieKeys ?? false
@@ -373,7 +373,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * corresponding to the provided address at the provided key.
    * If this does not exist an empty `Uint8Array` is returned.
    */
-  async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
+  async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
@@ -387,7 +387,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     const account = await this.getAccount(address)
     if (!account) {
-      throw new Error('getContractStorage() called on non-existing account')
+      throw new Error('getStorage() called on non-existing account')
     }
     const trie = this._getStorageTrie(address, account)
     const value = await trie.get(key)
@@ -642,7 +642,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     for (const storageKey of storageSlots) {
       const proof = (await storageTrie.createProof(storageKey)).map((p) => bytesToHex(p))
-      const value = bytesToHex(await this.getContractStorage(address, storageKey))
+      const value = bytesToHex(await this.getStorage(address, storageKey))
       const proofItem: StorageProof = {
         key: bytesToHex(storageKey),
         value: value === '0x' ? '0x0' : value, // Return '0x' values as '0x0' since this is a JSON RPC response

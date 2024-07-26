@@ -13,11 +13,7 @@ const storageEval = async (
   root: Uint8Array,
   rootCheck = true,
 ) => {
-  assert.deepEqual(
-    await sm.getContractStorage(address, key),
-    value,
-    'storage value should be equal',
-  )
+  assert.deepEqual(await sm.getStorage(address, key), value, 'storage value should be equal')
   if (rootCheck) {
     const accountCMP = await sm.getAccount(address)
     assert.deepEqual(accountCMP!.storageRoot, root, 'account storage root should be equal')
@@ -121,7 +117,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
 
         sm.clearCaches()
-        assert.deepEqual(await sm.getContractStorage(address, key), s.s1.value)
+        assert.deepEqual(await sm.getStorage(address, key), s.s1.value)
         await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
       })
 

@@ -402,7 +402,7 @@ describe('RunCall tests', () => {
     }
 
     await evm.runCall(runCallArgs)
-    let storage = await evm.stateManager.getContractStorage(address, slot)
+    let storage = await evm.stateManager.getStorage(address, slot)
 
     // The nonce is MAX_UINT64 - 1, so we are allowed to create a contract (nonce of creating contract is now MAX_UINT64)
     assert.notDeepEqual(storage, emptyBytes, 'successfully created contract')
@@ -410,7 +410,7 @@ describe('RunCall tests', () => {
     await evm.runCall(runCallArgs)
 
     // The nonce is MAX_UINT64, so we are NOT allowed to create a contract (nonce of creating contract is now MAX_UINT64)
-    storage = await evm.stateManager.getContractStorage(address, slot)
+    storage = await evm.stateManager.getStorage(address, slot)
     assert.deepEqual(
       storage,
       emptyBytes,
@@ -741,9 +741,7 @@ describe('RunCall tests', () => {
       }
       await evm.runCall(runCallArgs)
 
-      const callResult = bytesToHex(
-        await evm.stateManager.getContractStorage(callerAddress, zeros(32)),
-      )
+      const callResult = bytesToHex(await evm.stateManager.getStorage(callerAddress, zeros(32)))
       // Expect slot to have value of either: 0 since CALLCODE and CODE did not have enough gas to execute
       // Or 1, if CALL(CODE) has enough gas to enter the new call frame
       assert.equal(callResult, expectedOutput, `should have result ${expectedOutput}`)

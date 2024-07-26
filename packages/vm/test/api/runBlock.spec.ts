@@ -667,7 +667,7 @@ describe('runBlock() -> tx types', async () => {
     )
 
     await runBlock(vm, { block, skipBlockValidation: true, generate: true })
-    const storage = await vm.stateManager.getContractStorage(defaultAuthAddr, zeros(32))
+    const storage = await vm.stateManager.getStorage(defaultAuthAddr, zeros(32))
     assert.ok(equalsBytes(storage, new Uint8Array([2])))
   })
 })

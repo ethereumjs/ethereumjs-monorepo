@@ -784,7 +784,7 @@ export class Eth {
       return EMPTY_SLOT
     }
     const key = setLengthLeft(hexToBytes(keyHex), 32)
-    const storage = await vm.stateManager.getContractStorage(address, key)
+    const storage = await vm.stateManager.getStorage(address, key)
     return storage !== null && storage !== undefined
       ? bytesToHex(setLengthLeft(Uint8Array.from(storage) as Uint8Array, 32))
       : EMPTY_SLOT

@@ -183,15 +183,12 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
       hexToBytes(storageKey),
       hexToBytes(storageValue),
     )
-    let contractStorage = await stateManager.getContractStorage(
-      contractAddress,
-      hexToBytes(storageKey),
-    )
+    let contractStorage = await stateManager.getStorage(contractAddress, hexToBytes(storageKey))
 
     assert.equal(bytesToHex(contractStorage), storageValue)
 
     await stateManager.clearContractStorage(contractAddress)
-    contractStorage = await stateManager.getContractStorage(contractAddress, hexToBytes(storageKey))
+    contractStorage = await stateManager.getStorage(contractAddress, hexToBytes(storageKey))
 
     assert.equal(bytesToHex(contractStorage), bytesToHex(new Uint8Array()))
   })

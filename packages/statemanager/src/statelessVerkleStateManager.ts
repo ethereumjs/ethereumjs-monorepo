@@ -118,7 +118,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * Instantiate the StateManager interface.
    */
   constructor(opts: StatelessVerkleStateManagerOpts) {
-    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
 
     this._accountCacheSettings = {
       deactivate: opts.accountCacheOpts?.deactivate ?? false,
@@ -385,7 +385,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * corresponding to the provided address at the provided key.
    * If this does not exist an empty `Uint8Array` is returned.
    */
-  async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
+  async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     if (!this._storageCacheSettings.deactivate) {
       const value = this._storageCache!.get(address, key)
       if (value !== undefined) {

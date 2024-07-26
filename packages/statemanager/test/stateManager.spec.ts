@@ -52,11 +52,11 @@ describe('StateManager -> General', () => {
     await sm.putCode(contractAddress, contractCode)
     await sm.putContractStorage(contractAddress, storageKey, storedData)
 
-    let storage = await sm.getContractStorage(contractAddress, storageKey)
+    let storage = await sm.getStorage(contractAddress, storageKey)
     assert.equal(JSON.stringify(storage), JSON.stringify(storedData), 'contract storage updated')
 
     await sm.clearContractStorage(contractAddress)
-    storage = await sm.getContractStorage(contractAddress, storageKey)
+    storage = await sm.getStorage(contractAddress, storageKey)
     assert.equal(
       JSON.stringify(storage),
       JSON.stringify(new Uint8Array()),
@@ -218,13 +218,13 @@ describe('StateManager -> General', () => {
     const stProof = await stateManager.getProof(address1, [state1.keys[0], state1.keys[1]])
     await partialStateManager.addProofData(stProof)
 
-    let stSlot1_0 = await partialStateManager.getContractStorage(address1, state1.keys[0])
+    let stSlot1_0 = await partialStateManager.getStorage(address1, state1.keys[0])
     assert.ok(equalsBytes(stSlot1_0, state1.values[0]))
 
-    let stSlot1_1 = await partialStateManager.getContractStorage(address1, state1.keys[1])
+    let stSlot1_1 = await partialStateManager.getStorage(address1, state1.keys[1])
     assert.ok(equalsBytes(stSlot1_1, state1.values[1]))
 
-    let stSlot1_2 = await partialStateManager.getContractStorage(address1, state1.keys[2])
+    let stSlot1_2 = await partialStateManager.getStorage(address1, state1.keys[2])
     assert.ok(equalsBytes(stSlot1_2, new Uint8Array()))
 
     // Check Array support as input
@@ -240,13 +240,13 @@ describe('StateManager -> General', () => {
       account3 = await sm.getAccount(address3)
       assert.ok(account3 === undefined)
 
-      stSlot1_0 = await sm.getContractStorage(address1, state1.keys[0])
+      stSlot1_0 = await sm.getStorage(address1, state1.keys[0])
       assert.ok(equalsBytes(stSlot1_0, state1.values[0]))
 
-      stSlot1_1 = await sm.getContractStorage(address1, state1.keys[1])
+      stSlot1_1 = await sm.getStorage(address1, state1.keys[1])
       assert.ok(equalsBytes(stSlot1_1, state1.values[1]))
 
-      stSlot1_2 = await sm.getContractStorage(address1, state1.keys[2])
+      stSlot1_2 = await sm.getStorage(address1, state1.keys[2])
       assert.ok(equalsBytes(stSlot1_2, new Uint8Array()))
     }
 
@@ -319,10 +319,7 @@ describe('StateManager -> General', () => {
         false,
         'trie opts are preserved in new sm',
       )
-      assert.deepEqual(
-        intToBytes(32),
-        await partialSM.getContractStorage(address, hexToBytes(keys[0])),
-      )
+      assert.deepEqual(intToBytes(32), await partialSM.getStorage(address, hexToBytes(keys[0])))
       assert.equal((await partialSM.getAccount(address2))?.balance, 100n)
       const partialSM2 = await DefaultStateManager.fromProof(proof, true, {
         trie: newTrie,
@@ -333,10 +330,7 @@ describe('StateManager -> General', () => {
         false,
         'trie opts are preserved in new sm',
       )
-      assert.deepEqual(
-        intToBytes(32),
-        await partialSM2.getContractStorage(address, hexToBytes(keys[0])),
-      )
+      assert.deepEqual(intToBytes(32), await partialSM2.getStorage(address, hexToBytes(keys[0])))
       assert.equal((await partialSM2.getAccount(address2))?.balance, 100n)
     },
   )

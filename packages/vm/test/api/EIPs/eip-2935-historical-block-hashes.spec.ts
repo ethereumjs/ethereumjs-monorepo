@@ -190,7 +190,7 @@ describe('EIP 2935: historical block hashes', () => {
       await vm.blockchain.putBlock(block)
       await runBlock(vm, { block, generate: true })
 
-      const storage = await vm.stateManager.getContractStorage(
+      const storage = await vm.stateManager.getStorage(
         historyAddress,
         setLengthLeft(bigIntToBytes(BigInt(0)), 32),
       )
@@ -247,7 +247,7 @@ describe('EIP 2935: historical block hashes', () => {
 
       for (let i = 1; i <= blocksToBuild; i++) {
         const block = await blockchain.getBlock(i)
-        const storage = await vm.stateManager.getContractStorage(
+        const storage = await vm.stateManager.getStorage(
           historyAddress,
           setLengthLeft(bigIntToBytes(BigInt(i) % historyServeWindow), 32),
         )

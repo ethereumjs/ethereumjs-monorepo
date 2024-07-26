@@ -618,7 +618,7 @@ export class Interpreter {
     if (original) {
       return this._stateManager.originalStorageCache.get(this._env.address, key)
     } else {
-      return this._stateManager.getContractStorage(this._env.address, key)
+      return this._stateManager.getStorage(this._env.address, key)
     }
   }
 

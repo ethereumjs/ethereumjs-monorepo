@@ -160,7 +160,7 @@ export interface StateManagerInterface {
   getCodeSize(address: Address): Promise<number>
 
   // Storage methods
-  getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
+  getStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
   putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
   clearContractStorage(address: Address): Promise<void>
 

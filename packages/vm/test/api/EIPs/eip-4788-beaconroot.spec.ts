@@ -122,7 +122,7 @@ async function runBlock(block: Block) {
  * Get call status saved in the contract
  */
 async function getCallStatus(vm: VM) {
-  const stat = await vm.stateManager.getContractStorage(contractAddress, zeros(32))
+  const stat = await vm.stateManager.getStorage(contractAddress, zeros(32))
   return bytesToBigInt(stat)
 }
 
