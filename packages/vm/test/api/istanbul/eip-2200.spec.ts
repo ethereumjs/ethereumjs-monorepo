@@ -54,9 +54,9 @@ describe('Istanbul: EIP-2200', () => {
 
       const account = createAccountWithDefaults(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)
-      await vm.stateManager.putContractCode(addr, hexToBytes(`0x${testCase.code}`))
+      await vm.stateManager.putCode(addr, hexToBytes(`0x${testCase.code}`))
       if (testCase.original !== BigInt(0)) {
-        await vm.stateManager.putContractStorage(
+        await vm.stateManager.putStorage(
           addr,
           key,
           hexToBytes(`0x${testCase.original.toString(16)}`),

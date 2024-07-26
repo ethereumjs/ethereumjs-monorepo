@@ -15,9 +15,9 @@ const main = async () => {
   const storageValue1 = hexToBytes('0x01')
   const storageValue2 = hexToBytes('0x02')
 
-  await stateManager.putContractCode(contractAddress, byteCode)
-  await stateManager.putContractStorage(contractAddress, storageKey1, storageValue1)
-  await stateManager.putContractStorage(contractAddress, storageKey2, storageValue2)
+  await stateManager.putCode(contractAddress, byteCode)
+  await stateManager.putStorage(contractAddress, storageKey1, storageValue1)
+  await stateManager.putStorage(contractAddress, storageKey2, storageValue2)
 
   const proof = await stateManager.getProof(contractAddress)
   const proofWithStorage = await stateManager.getProof(contractAddress, [storageKey1, storageKey2])
@@ -25,22 +25,16 @@ const main = async () => {
 
   // To add more proof data, use `addProofData`
   await partialStateManager.addProofData(proofWithStorage)
-  console.log(await partialStateManager.getContractCode(contractAddress)) // contract bytecode is not included in proof
-  console.log(
-    await partialStateManager.getContractStorage(contractAddress, storageKey1),
-    storageValue1,
-  ) // should match
-  console.log(
-    await partialStateManager.getContractStorage(contractAddress, storageKey2),
-    storageValue2,
-  ) // should match
+  console.log(await partialStateManager.getCode(contractAddress)) // contract bytecode is not included in proof
+  console.log(await partialStateManager.getStorage(contractAddress, storageKey1), storageValue1) // should match
+  console.log(await partialStateManager.getStorage(contractAddress, storageKey2), storageValue2) // should match
 
   const accountFromNewSM = await partialStateManager.getAccount(contractAddress)
   const accountFromOldSM = await stateManager.getAccount(contractAddress)
   console.log(accountFromNewSM, accountFromOldSM) // should match
 
-  const slot1FromNewSM = await stateManager.getContractStorage(contractAddress, storageKey1)
-  const slot2FromNewSM = await stateManager.getContractStorage(contractAddress, storageKey2)
+  const slot1FromNewSM = await stateManager.getStorage(contractAddress, storageKey1)
+  const slot2FromNewSM = await stateManager.getStorage(contractAddress, storageKey2)
   console.log(slot1FromNewSM, storageValue1) // should match
   console.log(slot2FromNewSM, storageValue2) // should match
 }

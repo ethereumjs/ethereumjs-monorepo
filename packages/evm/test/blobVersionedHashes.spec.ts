@@ -51,7 +51,7 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
 
     const getBlobHasIndexCode = '0x60004960005260206000F3'
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff')) // contract address
-    await evm.stateManager.putContractCode(contractAddress, hexToBytes(getBlobHasIndexCode)) // setup the contract code
+    await evm.stateManager.putCode(contractAddress, hexToBytes(getBlobHasIndexCode)) // setup the contract code
 
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee')) // caller address
     await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111))) // give the calling account a big balance so we don't run out of funds
@@ -132,7 +132,7 @@ describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () =>
       const res = await evm.runCall(runCallArgs)
 
       const address = Address.fromString(bytesToHex(res.execResult.returnValue.slice(12)))
-      const code = await evm.stateManager.getContractCode(address)
+      const code = await evm.stateManager.getCode(address)
 
       assert.equal(
         bytesToHex(code),

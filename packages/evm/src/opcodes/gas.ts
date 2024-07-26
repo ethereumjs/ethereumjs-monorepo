@@ -230,7 +230,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
           if (common.isActivatedEIP(6800)) {
             let codeEnd = _codeOffset + dataLength
-            const codeSize = BigInt((await runState.stateManager.getContractCode(address)).length)
+            const codeSize = BigInt((await runState.stateManager.getCode(address)).length)
             if (codeEnd > codeSize) {
               codeEnd = codeSize
             }

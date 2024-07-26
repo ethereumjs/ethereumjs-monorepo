@@ -98,31 +98,31 @@ describe('RPC State Manager API tests', () => {
     assert.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
 
     const UNIerc20ContractAddress = Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
-    const UNIContractCode = await state.getContractCode(UNIerc20ContractAddress)
+    const UNIContractCode = await state.getCode(UNIerc20ContractAddress)
     assert.ok(UNIContractCode.length > 0, 'was able to retrieve UNI contract code')
 
-    await state.putContractCode(UNIerc20ContractAddress, UNIContractCode)
+    await state.putCode(UNIerc20ContractAddress, UNIContractCode)
     assert.ok(
       typeof (state as any)._contractCache.get(UNIerc20ContractAddress.toString()) !== 'undefined',
       'UNI ERC20 contract code was found in cache',
     )
 
-    const storageSlot = await state.getContractStorage(
+    const storageSlot = await state.getStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBytes(1n), 32),
     )
     assert.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
 
     await expect(async () => {
-      await state.getContractStorage(UNIerc20ContractAddress, setLengthLeft(bigIntToBytes(1n), 31))
+      await state.getStorage(UNIerc20ContractAddress, setLengthLeft(bigIntToBytes(1n), 31))
     }).rejects.toThrowError('Storage key must be 32 bytes long')
 
-    await state.putContractStorage(
+    await state.putStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32),
       utf8ToBytes('abcd'),
     )
-    const slotValue = await state.getContractStorage(
+    const slotValue = await state.getStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32),
     )
@@ -141,7 +141,7 @@ describe('RPC State Manager API tests', () => {
 
     await state.checkpoint()
 
-    await state.putContractStorage(
+    await state.putStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32),
       new Uint8Array(0),
@@ -165,7 +165,7 @@ describe('RPC State Manager API tests', () => {
       assert.ok(true, 'calls getAccountFromProvider for non-cached account')
     }
 
-    const deletedSlot = await state.getContractStorage(
+    const deletedSlot = await state.getStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32),
     )
@@ -184,7 +184,7 @@ describe('RPC State Manager API tests', () => {
       'account deleted since last checkpoint should exist after revert called',
     )
 
-    const deletedSlotAfterRevert = await state.getContractStorage(
+    const deletedSlotAfterRevert = await state.getStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32),
     )
@@ -201,7 +201,7 @@ describe('RPC State Manager API tests', () => {
       Object.keys(cacheStorage).length,
       'should have 2 storage slots in cache before clear',
     )
-    await state.clearContractStorage(UNIerc20ContractAddress)
+    await state.clearStorage(UNIerc20ContractAddress)
     const clearedStorage = await state.dumpStorage(UNIerc20ContractAddress)
     assert.deepEqual({}, clearedStorage, 'storage cache should be empty after clear')
 
@@ -328,7 +328,7 @@ describe('blockchain', () =>
       hexToBytes('0xf8506f559699a58a4724df4fcf2ad4fd242d20324db541823f128f5974feb6c7'),
     )
     const block = await createBlockFromJsonRpcProvider(provider, 500000n, { setHardfork: true })
-    await evm.stateManager.putContractCode(contractAddress, hexToBytes(code))
+    await evm.stateManager.putCode(contractAddress, hexToBytes(code))
     const runCallArgs: Partial<EVMRunCallOpts> = {
       caller,
       gasLimit: BigInt(0xffffffffff),

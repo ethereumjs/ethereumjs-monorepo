@@ -239,7 +239,7 @@ describe('EIP-3074 AUTH', () => {
     const signature = signMessage(message, contractAddress, privateKey)
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
-    await vm.stateManager.putContractCode(contractAddress, code)
+    await vm.stateManager.putCode(contractAddress, code)
     const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
@@ -263,7 +263,7 @@ describe('EIP-3074 AUTH', () => {
     signature.r = signature.s
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
-    await vm.stateManager.putContractCode(contractAddress, code)
+    await vm.stateManager.putCode(contractAddress, code)
     const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
@@ -288,7 +288,7 @@ describe('EIP-3074 AUTH', () => {
     // use the contractAddress instead of authAddress for the expected address (this should fail)
     const code = concatBytes(getAuthCode(message, signature, contractAddress), RETURNTOP)
 
-    await vm.stateManager.putContractCode(contractAddress, code)
+    await vm.stateManager.putCode(contractAddress, code)
     const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
@@ -311,7 +311,7 @@ describe('EIP-3074 AUTH', () => {
     const signature = flipSignature(signMessage(message, contractAddress, privateKey))
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
-    await vm.stateManager.putContractCode(contractAddress, code)
+    await vm.stateManager.putCode(contractAddress, code)
     const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
@@ -335,7 +335,7 @@ describe('EIP-3074 AUTH', () => {
     signature.v = 2
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
-    await vm.stateManager.putContractCode(contractAddress, code)
+    await vm.stateManager.putCode(contractAddress, code)
     const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
@@ -364,7 +364,7 @@ describe('EIP-3074 AUTH', () => {
       RETURNTOP,
     )
 
-    await vm.stateManager.putContractCode(contractAddress, code)
+    await vm.stateManager.putCode(contractAddress, code)
     const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
@@ -390,7 +390,7 @@ describe('EIP-3074 AUTH', () => {
       RETURNTOP,
     )
 
-    await vm.stateManager.putContractCode(contractAddress, code)
+    await vm.stateManager.putCode(contractAddress, code)
     const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
@@ -413,7 +413,7 @@ describe('EIP-3074 AUTH', () => {
     const signature = signMessage(message, contractAddress, privateKey)
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNMEMSIZE)
 
-    await vm.stateManager.putContractCode(contractAddress, code)
+    await vm.stateManager.putCode(contractAddress, code)
     const tx = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
@@ -439,7 +439,7 @@ describe('EIP-3074 AUTH', () => {
       RETURNMEMSIZE,
     )
 
-    await vm.stateManager.putContractCode(contractAddress, code2)
+    await vm.stateManager.putCode(contractAddress, code2)
     const tx2 = createLegacyTx({
       to: contractAddress,
       gasLimit: 1000000,
@@ -463,8 +463,8 @@ describe('EIP-3074 AUTH', () => {
 // Setups the environment for the VM, puts `code` at contractAddress and also puts the STORECALLER bytecode at the contractStorageAddress
 async function setupVM(code: Uint8Array) {
   const vm = await VM.create({ common: common.copy() })
-  await vm.stateManager.putContractCode(contractAddress, code)
-  await vm.stateManager.putContractCode(contractStorageAddress, STORECALLER)
+  await vm.stateManager.putCode(contractAddress, code)
+  await vm.stateManager.putCode(contractStorageAddress, STORECALLER)
   await vm.stateManager.putAccount(callerAddress, new Account())
   const account = await vm.stateManager.getAccount(callerAddress)
   account!.balance = PREBALANCE
@@ -496,7 +496,7 @@ describe('EIP-3074 AUTHCALL', () => {
     const buf = result.execResult.returnValue.slice(31)
     assert.deepEqual(buf, hexToBytes('0x01'), 'authcall success')
 
-    const storage = await vm.stateManager.getContractStorage(contractStorageAddress, zeros(32))
+    const storage = await vm.stateManager.getStorage(contractStorageAddress, zeros(32))
     assert.deepEqual(storage, address.bytes, 'caller set correctly')
   })
 
@@ -527,7 +527,7 @@ describe('EIP-3074 AUTHCALL', () => {
 
     await runTx(vm, { tx, block, skipHardForkValidation: true })
 
-    const gasUsed = await vm.stateManager.getContractStorage(
+    const gasUsed = await vm.stateManager.getStorage(
       contractStorageAddress,
       hexToBytes(`0x${'00'.repeat(31)}01`),
     )
@@ -568,7 +568,7 @@ describe('EIP-3074 AUTHCALL', () => {
 
     await runTx(vm, { tx, block, skipHardForkValidation: true })
 
-    const gasUsed = await vm.stateManager.getContractStorage(
+    const gasUsed = await vm.stateManager.getStorage(
       contractStorageAddress,
       hexToBytes(`0x${'00'.repeat(31)}01`),
     )
@@ -657,7 +657,7 @@ describe('EIP-3074 AUTHCALL', () => {
 
     const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
 
-    const gasUsed = await vm.stateManager.getContractStorage(
+    const gasUsed = await vm.stateManager.getStorage(
       contractStorageAddress,
       hexToBytes(`0x${'00'.repeat(31)}01`),
     )
@@ -818,7 +818,7 @@ describe('EIP-3074 AUTHCALL', () => {
     }).sign(callerPrivateKey)
 
     await runTx(vm, { tx, block, skipHardForkValidation: true })
-    const gas = await vm.stateManager.getContractStorage(
+    const gas = await vm.stateManager.getStorage(
       contractStorageAddress,
       hexToBytes(`0x${'00'.repeat(31)}01`),
     )
@@ -851,7 +851,7 @@ describe('EIP-3074 AUTHCALL', () => {
     }).sign(callerPrivateKey)
 
     const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
-    const callInput = await vm.stateManager.getContractStorage(
+    const callInput = await vm.stateManager.getStorage(
       contractStorageAddress,
       hexToBytes(`0x${'00'.repeat(31)}02`),
     )

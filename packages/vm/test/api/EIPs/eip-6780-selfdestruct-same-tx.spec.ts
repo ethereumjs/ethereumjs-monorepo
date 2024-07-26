@@ -72,7 +72,7 @@ describe('EIP 6780 tests', () => {
 
     const target = Address.fromString('0x' + 'ff'.repeat(20))
 
-    await vm.stateManager.putContractCode(target, payload)
+    await vm.stateManager.putCode(target, payload)
     const targetContract = await vm.stateManager.getAccount(target)
     targetContract!.nonce = BigInt(1)
     await vm.stateManager.putAccount(target, targetContract)
@@ -92,7 +92,7 @@ describe('EIP 6780 tests', () => {
     assert.equal(contract.nonce, BigInt(1), 'nonce 1')
 
     const key = hexToBytes(`0x${'00'.repeat(31)}01`)
-    const storage = await vm.stateManager.getContractStorage(target, key)
+    const storage = await vm.stateManager.getStorage(target, key)
 
     assert.ok(equalsBytes(storage, hexToBytes('0x01')), 'storage not cleared')
     assert.equal(

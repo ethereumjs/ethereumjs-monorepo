@@ -34,10 +34,10 @@ import {
 } from './cache/index.js'
 
 import type { AccessedStateWithAddress } from './accessWitness.js'
+import type { CacheSettings, StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
 import type { DefaultStateManager } from './stateManager.js'
 import type {
   AccountFields,
-  Common,
   EVMStateManagerInterface,
   Proof,
   StorageDump,
@@ -52,73 +52,6 @@ import type {
 } from '@ethereumjs/util'
 
 const debug = debugDefault('statemanager:verkle')
-
-export interface VerkleState {
-  [key: PrefixedHexString]: PrefixedHexString | null
-}
-
-export interface EncodedVerkleProof {
-  [key: PrefixedHexString]: PrefixedHexString
-}
-
-type CacheOptions = {
-  /**
-   * Allows for cache deactivation
-   *
-   * Depending on the use case and underlying datastore (and eventual concurrent cache
-   * mechanisms there), usage with or without cache can be faster
-   *
-   * Default: false
-   */
-  deactivate?: boolean
-
-  /**
-   * Cache type to use.
-   *
-   * Available options:
-   *
-   * ORDERED_MAP: Cache with no fixed upper bound and dynamic allocation,
-   * use for dynamic setups like testing or similar.
-   *
-   * LRU: LRU cache with pre-allocation of memory and a fixed size.
-   * Use for larger and more persistent caches.
-   */
-  type?: CacheType
-
-  /**
-   * Size of the cache (only for LRU cache)
-   *
-   * Default: 100000 (account cache) / 20000 (storage cache)
-   *
-   * Note: the cache/trie interplay mechanism is designed in a way that
-   * the theoretical number of max modified accounts between two flush operations
-   * should be smaller than the cache size, otherwise the cache will "forget" the
-   * old modifications resulting in an incomplete set of trie-flushed accounts.
-   */
-  size?: number
-}
-
-type CacheSettings = {
-  deactivate: boolean
-  type: CacheType
-  size: number
-}
-
-/**
- * Options dictionary.
- */
-export interface StatelessVerkleStateManagerOpts {
-  /**
-   * The common to use
-   */
-  common?: Common
-  accountCacheOpts?: CacheOptions
-  storageCacheOpts?: CacheOptions
-  codeCacheOpts?: CacheOptions
-  accesses?: AccessWitness
-  verkleCrypto: VerkleCrypto
-  initialStateRoot?: Uint8Array
-}
 
 const PUSH_OFFSET = 95
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -185,7 +118,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * Instantiate the StateManager interface.
    */
   constructor(opts: StatelessVerkleStateManagerOpts) {
-    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
 
     this._accountCacheSettings = {
       deactivate: opts.accountCacheOpts?.deactivate ?? false,
@@ -337,9 +270,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @param address - Address of the `account` to add the `code` for
    * @param value - The value of the `code`
    */
-  async putContractCode(address: Address, value: Uint8Array): Promise<void> {
+  async putCode(address: Address, value: Uint8Array): Promise<void> {
     if (this.DEBUG) {
-      debug(`putContractCode address=${address.toString()} value=${short(value)}`)
+      debug(`putCode address=${address.toString()} value=${short(value)}`)
     }
 
     this._codeCache?.put(address, value)
@@ -361,9 +294,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @returns {Promise<Uint8Array>} -  Resolves with the code corresponding to the provided address.
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
-  async getContractCode(address: Address): Promise<Uint8Array> {
+  async getCode(address: Address): Promise<Uint8Array> {
     if (this.DEBUG) {
-      debug(`getContractCode address=${address.toString()}`)
+      debug(`getCode address=${address.toString()}`)
     }
 
     if (!this._codeCacheSettings.deactivate) {
@@ -420,7 +353,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     return contactCode
   }
 
-  async getContractCodeSize(address: Address): Promise<number> {
+  async getCodeSize(address: Address): Promise<number> {
     if (!this._accountCacheSettings.deactivate) {
       const elem = this._accountCache!.get(address)
       if (elem !== undefined) {
@@ -452,7 +385,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * corresponding to the provided address at the provided key.
    * If this does not exist an empty `Uint8Array` is returned.
    */
-  async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
+  async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     if (!this._storageCacheSettings.deactivate) {
       const value = this._storageCache!.get(address, key)
       if (value !== undefined) {
@@ -481,7 +414,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @param key - Key to set the value at. Must be 32 bytes long.
    * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
    */
-  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
+  async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     if (!this._storageCacheSettings.deactivate) {
       this._storageCache!.put(address, key, value)
     } else {
@@ -501,10 +434,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * Clears all storage entries for the account corresponding to `address`.
    * @param address -  Address to clear the storage of
    */
-  async clearContractStorage(address: Address): Promise<void> {
+  async clearStorage(address: Address): Promise<void> {
     const stem = getVerkleStem(this.verkleCrypto, address, 0)
     const codeHashKey = getVerkleKey(stem, VerkleLeafType.CodeHash)
-    this._storageCache?.clearContractStorage(address)
+    this._storageCache?.clearStorage(address)
     // Update codeHash to `c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470`
     this._state[bytesToHex(codeHashKey)] = KECCAK256_NULL_S
   }
@@ -639,7 +572,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._accountCache!.del(address)
 
     if (!this._storageCacheSettings.deactivate) {
-      this._storageCache?.clearContractStorage(address)
+      this._storageCache?.clearStorage(address)
     }
   }
 

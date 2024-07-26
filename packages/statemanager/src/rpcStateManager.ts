@@ -18,7 +18,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { AccountCache, CacheType, OriginalStorageCache, StorageCache } from './cache/index.js'
 
-import type { Proof } from './index.js'
+import type { Proof, RPCStateManagerOpts } from './index.js'
 import type {
   AccountFields,
   EVMStateManagerInterface,
@@ -27,16 +27,6 @@ import type {
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-
-export interface RPCStateManagerOpts {
-  provider: string
-  blockTag: bigint | 'earliest'
-
-  /**
-   * The common to use
-   */
-  common?: Common
-}
 
 const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(2)
 
@@ -71,7 +61,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
     this._storageCache = new StorageCache({ size: 100000, type: CacheType.ORDERED_MAP })
     this._accountCache = new AccountCache({ size: 100000, type: CacheType.ORDERED_MAP })
 
-    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
   }
@@ -125,7 +115,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * @returns {Promise<Uint8Array>} - Resolves with the code corresponding to the provided address.
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
-  async getContractCode(address: Address): Promise<Uint8Array> {
+  async getCode(address: Address): Promise<Uint8Array> {
     let codeBytes = this._contractCache.get(address.toString())
     if (codeBytes !== undefined) return codeBytes
     const code = await fetchFromProvider(this._provider, {
@@ -137,8 +127,8 @@ export class RPCStateManager implements EVMStateManagerInterface {
     return codeBytes
   }
 
-  async getContractCodeSize(address: Address): Promise<number> {
-    const contractCode = await this.getContractCode(address)
+  async getCodeSize(address: Address): Promise<number> {
+    const contractCode = await this.getCode(address)
     return contractCode.length
   }
 
@@ -148,7 +138,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * @param address - Address of the `account` to add the `code` for
    * @param value - The value of the `code`
    */
-  async putContractCode(address: Address, value: Uint8Array): Promise<void> {
+  async putCode(address: Address, value: Uint8Array): Promise<void> {
     // Store contract code in the cache
     this._contractCache.set(address.toString(), value)
   }
@@ -162,7 +152,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * corresponding to the provided address at the provided key.
    * If this does not exist an empty `Uint8Array` is returned.
    */
-  async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
+  async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     // Check storage slot in cache
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
@@ -180,7 +170,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
     })
     value = toBytes(storage)
 
-    await this.putContractStorage(address, key, value)
+    await this.putStorage(address, key, value)
     return value
   }
 
@@ -193,7 +183,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * Cannot be more than 32 bytes. Leading zeros are stripped.
    * If it is empty or filled with zeros, deletes the value.
    */
-  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
+  async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     this._storageCache.put(address, key, value)
   }
 
@@ -201,8 +191,8 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * Clears all storage entries for the account corresponding to `address`.
    * @param address - Address to clear the storage of
    */
-  async clearContractStorage(address: Address): Promise<void> {
-    this._storageCache.clearContractStorage(address)
+  async clearStorage(address: Address): Promise<void> {
+    this._storageCache.clearStorage(address)
   }
 
   /**

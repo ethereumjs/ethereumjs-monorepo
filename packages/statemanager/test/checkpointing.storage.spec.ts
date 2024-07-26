@@ -13,11 +13,7 @@ const storageEval = async (
   root: Uint8Array,
   rootCheck = true,
 ) => {
-  assert.deepEqual(
-    await sm.getContractStorage(address, key),
-    value,
-    'storage value should be equal',
-  )
+  assert.deepEqual(await sm.getStorage(address, key), value, 'storage value should be equal')
   if (rootCheck) {
     const accountCMP = await sm.getAccount(address)
     assert.deepEqual(accountCMP!.storageRoot, root, 'account storage root should be equal')
@@ -116,12 +112,12 @@ describe('StateManager -> Storage Checkpointing', () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
         await sm.flush()
         await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
 
         sm.clearCaches()
-        assert.deepEqual(await sm.getContractStorage(address, key), s.s1.value)
+        assert.deepEqual(await sm.getStorage(address, key), s.s1.value)
         await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
       })
 
@@ -130,7 +126,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await sm.putAccount(address, new Account())
 
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
         await sm.commit()
         await sm.flush()
         await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
@@ -144,7 +140,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await sm.putAccount(address, new Account())
 
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
 
         await sm.revert()
         await sm.flush()
@@ -159,7 +155,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
         await sm.checkpoint()
         await sm.commit()
         await sm.flush()
@@ -173,7 +169,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
         await sm.checkpoint()
         await sm.revert()
         await sm.flush()
@@ -187,9 +183,9 @@ describe('StateManager -> Storage Checkpointing', () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s2.value)
+        await sm.putStorage(address, key, s.s2.value)
         await sm.commit()
         await sm.flush()
         await storageEval(sm, address, key, s.s2.value, s.s2.root, SMDict.rootCheck)
@@ -202,11 +198,11 @@ describe('StateManager -> Storage Checkpointing', () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s2.value)
+        await sm.putStorage(address, key, s.s2.value)
         await sm.commit()
-        await sm.putContractStorage(address, key, s.s3.value)
+        await sm.putStorage(address, key, s.s3.value)
         await sm.flush()
         await storageEval(sm, address, key, s.s3.value, s.s3.root, SMDict.rootCheck)
 
@@ -218,10 +214,10 @@ describe('StateManager -> Storage Checkpointing', () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s2.value)
-        await sm.putContractStorage(address, key, s.s3.value)
+        await sm.putStorage(address, key, s.s2.value)
+        await sm.putStorage(address, key, s.s3.value)
         await sm.commit()
         await sm.flush()
         await storageEval(sm, address, key, s.s3.value, s.s3.root, SMDict.rootCheck)
@@ -235,8 +231,8 @@ describe('StateManager -> Storage Checkpointing', () => {
         await sm.putAccount(address, new Account())
 
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s1.value)
-        await sm.putContractStorage(address, key, s.s2.value)
+        await sm.putStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s2.value)
         await sm.commit()
         await sm.flush()
         await storageEval(sm, address, key, s.s2.value, s.s2.root, SMDict.rootCheck)
@@ -250,9 +246,9 @@ describe('StateManager -> Storage Checkpointing', () => {
         await sm.putAccount(address, new Account())
 
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
 
-        await sm.putContractStorage(address, key, s.s2.value)
+        await sm.putStorage(address, key, s.s2.value)
         await sm.revert()
         await sm.flush()
         await storageEval(sm, address, key, valueEmpty, rootEmpty)
@@ -265,9 +261,9 @@ describe('StateManager -> Storage Checkpointing', () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s2.value)
+        await sm.putStorage(address, key, s.s2.value)
         await sm.revert()
         await sm.flush()
         await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
@@ -280,11 +276,11 @@ describe('StateManager -> Storage Checkpointing', () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s2.value)
+        await sm.putStorage(address, key, s.s2.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s3.value)
+        await sm.putStorage(address, key, s.s3.value)
         await sm.commit()
         await sm.commit()
         await sm.flush()
@@ -298,11 +294,11 @@ describe('StateManager -> Storage Checkpointing', () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s2.value)
+        await sm.putStorage(address, key, s.s2.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s3.value)
+        await sm.putStorage(address, key, s.s3.value)
         await sm.commit()
         await sm.revert()
         await sm.flush()
@@ -316,11 +312,11 @@ describe('StateManager -> Storage Checkpointing', () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s2.value)
+        await sm.putStorage(address, key, s.s2.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s3.value)
+        await sm.putStorage(address, key, s.s3.value)
         await sm.revert()
         await sm.commit()
         await sm.flush()
@@ -334,13 +330,13 @@ describe('StateManager -> Storage Checkpointing', () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s2.value)
+        await sm.putStorage(address, key, s.s2.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s3.value)
+        await sm.putStorage(address, key, s.s3.value)
         await sm.revert()
-        await sm.putContractStorage(address, key, s.s4.value)
+        await sm.putStorage(address, key, s.s4.value)
         await sm.commit()
         await sm.flush()
         await storageEval(sm, address, key, s.s4.value, s.s4.root, SMDict.rootCheck)
@@ -353,15 +349,15 @@ describe('StateManager -> Storage Checkpointing', () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
-        await sm.putContractStorage(address, key, s.s1.value)
+        await sm.putStorage(address, key, s.s1.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s2.value)
+        await sm.putStorage(address, key, s.s2.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s3.value)
+        await sm.putStorage(address, key, s.s3.value)
         await sm.revert()
-        await sm.putContractStorage(address, key, s.s4.value)
+        await sm.putStorage(address, key, s.s4.value)
         await sm.checkpoint()
-        await sm.putContractStorage(address, key, s.s5.value)
+        await sm.putStorage(address, key, s.s5.value)
         await sm.commit()
         await sm.commit()
         await sm.flush()
