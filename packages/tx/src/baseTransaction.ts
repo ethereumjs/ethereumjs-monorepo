@@ -13,6 +13,7 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 
+import { paramsTx } from './params.js'
 import { Capability, TransactionType } from './types.js'
 import { checkMaxInitCodeSize } from './util.js'
 
@@ -108,6 +109,7 @@ export abstract class BaseTransaction<T extends TransactionType>
     const createContract = this.to === undefined || this.to === null
     const allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
     const common = opts.common ?? this._getCommon()
+    common.updateParams(opts.params ?? paramsTx)
     if (createContract && common.isActivatedEIP(3860) && allowUnlimitedInitCodeSize === false) {
       checkMaxInitCodeSize(common, this.data.length)
     }

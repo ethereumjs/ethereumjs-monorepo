@@ -27,6 +27,7 @@ import {
   createLegacyTx,
   createLegacyTxFromBytesArray,
   createLegacyTxFromRLP,
+  paramsTx,
 } from '../src/index.js'
 
 import eip1559Fixtures from './json/eip1559txs.json'
@@ -146,6 +147,11 @@ describe('[BaseTransaction]', () => {
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
+
+      const params = JSON.parse(JSON.stringify(paramsTx))
+      params['1']['txGas'] = 30000 // 21000
+      tx = txType.create.txData({}, { common, params })
+      assert.equal(tx.common.param('txGas'), BigInt(30000), 'should use custom parameters provided')
 
       // Perform the same test as above, but now using a different construction method. This also implies that passing on the
       // options object works as expected.

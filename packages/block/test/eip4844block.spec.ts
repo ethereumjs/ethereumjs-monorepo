@@ -12,6 +12,7 @@ import { assert, beforeAll, describe, it } from 'vitest'
 import { createBlockFromBlockData } from '../src/constructors.js'
 import { BlockHeader } from '../src/header.js'
 import { fakeExponential, getNumBlobs } from '../src/helpers.js'
+import { paramsBlock } from '../src/params.js'
 
 import gethGenesis from './testdata/4844-hardfork.json'
 
@@ -105,6 +106,7 @@ describe('blob gas tests', () => {
     common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      params: paramsBlock,
       customCrypto: { kzg },
     })
     blobGasPerBlob = common.param('blobGasPerBlob')
@@ -162,6 +164,7 @@ describe('transaction validation tests', () => {
     common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      params: paramsBlock,
       customCrypto: { kzg },
     })
     blobGasPerBlob = common.param('blobGasPerBlob')

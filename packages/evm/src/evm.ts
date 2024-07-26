@@ -26,6 +26,7 @@ import { Journal } from './journal.js'
 import { EVMPerformanceLogger } from './logger.js'
 import { Message } from './message.js'
 import { getOpcodesForHF } from './opcodes/index.js'
+import { paramsEVM } from './params.js'
 import { NobleBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
 import { TransientStorage } from './transientStorage.js'
 
@@ -182,6 +183,8 @@ export class EVM implements EVMInterface {
         `Hardfork ${this.common.hardfork()} not set as supported in supportedHardforks`,
       )
     }
+
+    this.common.updateParams(opts.params ?? paramsEVM)
 
     this.allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
     this.allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
