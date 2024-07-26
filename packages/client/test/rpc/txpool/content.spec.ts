@@ -29,7 +29,7 @@ describe(method, () => {
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
-    await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
+    await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))
     const gasLimit = 2000000
     const parent = await blockchain.getCanonicalHeadHeader()
     const block = createBlockFromBlockData(

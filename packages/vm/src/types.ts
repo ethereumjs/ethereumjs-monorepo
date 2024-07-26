@@ -1,14 +1,13 @@
 import type { Bloom } from './bloom/index.js'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
-import type { Common, EVMStateManagerInterface, ParamsDict } from '@ethereumjs/common'
+import type { Common, ParamsDict, StateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface, EVMOpts, EVMResult, Log } from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type {
   BigIntLike,
   CLRequest,
   CLRequestType,
-  GenesisState,
   PrefixedHexString,
   WithdrawalData,
 } from '@ethereumjs/util'
@@ -118,7 +117,7 @@ export interface VMOpts {
   /**
    * A {@link StateManager} instance to use as the state store
    */
-  stateManager?: EVMStateManagerInterface
+  stateManager?: StateManagerInterface
   /**
    * A {@link Blockchain} object for storing/retrieving blocks
    */
@@ -137,11 +136,6 @@ export interface VMOpts {
    * Default: `false`
    */
   activatePrecompiles?: boolean
-  /**
-   * A genesisState to generate canonical genesis for the "in-house" created stateManager if external
-   * stateManager not provided for the VM, defaults to an empty state
-   */
-  genesisState?: GenesisState
 
   /**
    * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number

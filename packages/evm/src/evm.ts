@@ -50,7 +50,7 @@ import type {
   ExecResult,
   bn128,
 } from './types.js'
-import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
 
 const debug = debugDefault('evm:evm')
 const debugGas = debugDefault('evm:gas')
@@ -94,7 +94,7 @@ export class EVM implements EVMInterface {
   public readonly common: Common
   public readonly events: AsyncEventEmitter<EVMEvents>
 
-  public stateManager: EVMStateManagerInterface
+  public stateManager: StateManagerInterface
   public blockchain: Blockchain
   public journal: Journal
 
