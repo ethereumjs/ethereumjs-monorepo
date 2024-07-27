@@ -176,7 +176,7 @@ export class DBManager {
       const parentHash = headerData.parentHash as Uint8Array
       opts.setHardfork = await this.getTotalDifficulty(parentHash, blockNumber - BIGINT_1)
     }
-    return BlockHeader.fromValuesArray(headerValues as Uint8Array[], opts)
+    return createHeaderFromValuesArray(headerValues as Uint8Array[], opts)
   }
 
   /**

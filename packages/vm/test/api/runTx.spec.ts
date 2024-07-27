@@ -903,7 +903,7 @@ describe('EIP 4844 transaction tests', () => {
     Blockchain.prototype.getBlock = async () => {
       return createBlockFromBlockData(
         {
-          header: BlockHeader.fromHeaderData(
+          header: createHeader(
             {
               excessBlobGas: 0n,
               number: 1,
@@ -931,7 +931,7 @@ describe('EIP 4844 transaction tests', () => {
 
     const block = createBlockFromBlockData(
       {
-        header: BlockHeader.fromHeaderData(
+        header: createHeader(
           {
             excessBlobGas: 1n,
             number: 2,

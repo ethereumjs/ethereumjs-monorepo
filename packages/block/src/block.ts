@@ -12,7 +12,6 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { BlockHeader } from './header.js'
 import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } from './helpers.js'
 
 /* eslint-disable */
@@ -21,14 +20,16 @@ import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } 
 // TODO: See if there is an easier way to achieve the same result.
 // See: https://github.com/microsoft/TypeScript/issues/47558
 // (situation will eventually improve on Typescript and/or Eslint update)
-import type {
-  createBlockFromBeaconPayloadJson,
-  createBlockFromBlockData,
-  createBlockFromExecutionPayload,
-  createBlockFromJsonRpcProvider,
-  createBlockFromRLPSerializedBlock,
-  createBlockFromRPC,
-  createBlockFromValuesArray,
+import {
+  BlockHeader,
+  createHeader,
+  type createBlockFromBeaconPayloadJson,
+  type createBlockFromBlockData,
+  type createBlockFromExecutionPayload,
+  type createBlockFromJsonRpcProvider,
+  type createBlockFromRLPSerializedBlock,
+  type createBlockFromRPC,
+  type createBlockFromValuesArray,
 } from './index.js'
 /* eslint-enable */
 import type { BlockBytes, BlockOptions, ExecutionPayload, JsonBlock } from './types.js'
@@ -100,7 +101,7 @@ export class Block {
     requests?: CLRequest<CLRequestType>[],
     executionWitness?: VerkleExecutionWitness | null,
   ) {
-    this.header = header ?? BlockHeader.fromHeaderData({}, opts)
+    this.header = header ?? createHeader({}, opts)
     this.common = this.header.common
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
 

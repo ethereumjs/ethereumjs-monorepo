@@ -56,7 +56,7 @@ describe('EIP4895 tests', () => {
     const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     assert.throws(
       () => {
-        BlockHeader.fromHeaderData(
+        createHeader(
           {
             withdrawalsRoot: zeros(32),
           },
@@ -70,7 +70,7 @@ describe('EIP4895 tests', () => {
       'should throw when setting withdrawalsRoot with EIP4895 not being activated',
     )
     assert.doesNotThrow(() => {
-      BlockHeader.fromHeaderData(
+      createHeader(
         {},
         {
           common,
@@ -78,7 +78,7 @@ describe('EIP4895 tests', () => {
       )
     }, 'should not throw when withdrawalsRoot is undefined with EIP4895 being activated')
     assert.doesNotThrow(() => {
-      BlockHeader.fromHeaderData(
+      createHeader(
         {
           withdrawalsRoot: zeros(32),
         },
@@ -141,7 +141,7 @@ describe('EIP4895 tests', () => {
       await block.withdrawalsTrieIsValid(),
       'should invalidate the empty withdrawals root',
     )
-    const validHeader = BlockHeader.fromHeaderData(
+    const validHeader = createHeader(
       {
         withdrawalsRoot: KECCAK256_RLP,
       },

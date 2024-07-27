@@ -53,7 +53,7 @@ describe(method, () => {
     const headBlock = await service.chain.getCanonicalHeadBlock()
     const londonBlock = createBlockFromBlockData(
       {
-        header: BlockHeader.fromHeaderData(
+        header: createHeader(
           {
             baseFeePerGas: 1000000000n,
             number: 2n,

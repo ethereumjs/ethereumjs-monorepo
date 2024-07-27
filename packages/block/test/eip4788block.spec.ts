@@ -12,7 +12,7 @@ describe('EIP4788 header tests', () => {
 
     assert.throws(
       () => {
-        BlockHeader.fromHeaderData(
+        createHeader(
           {
             parentBeaconBlockRoot: zeros(32),
           },
@@ -28,7 +28,7 @@ describe('EIP4788 header tests', () => {
 
     assert.throws(
       () => {
-        BlockHeader.fromHeaderData(
+        createHeader(
           {
             blobGasUsed: 1n,
           },
@@ -42,7 +42,7 @@ describe('EIP4788 header tests', () => {
       'should throw when setting blobGasUsed with EIP4844 not being activated',
     )
     assert.doesNotThrow(() => {
-      BlockHeader.fromHeaderData(
+      createHeader(
         {
           excessBlobGas: 0n,
           blobGasUsed: 0n,
@@ -57,7 +57,7 @@ describe('EIP4788 header tests', () => {
 
     const block = createBlockFromBlockData(
       {
-        header: BlockHeader.fromHeaderData({}, { common }),
+        header: createHeader({}, { common }),
       },
       { common, skipConsensusFormatValidation: true },
     )

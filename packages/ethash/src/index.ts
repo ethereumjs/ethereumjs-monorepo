@@ -101,7 +101,7 @@ export class Miner {
         const data = <HeaderData>this.blockHeader.toJSON()
         data.mixHash = solution.mixHash
         data.nonce = solution.nonce
-        return BlockHeader.fromHeaderData(data, { common: this.blockHeader.common })
+        return createHeader(data, { common: this.blockHeader.common })
       }
     }
   }

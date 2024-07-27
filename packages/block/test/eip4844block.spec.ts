@@ -37,7 +37,7 @@ describe('EIP4844 header tests', () => {
 
     assert.throws(
       () => {
-        BlockHeader.fromHeaderData(
+        createHeader(
           {
             excessBlobGas: 1n,
           },
@@ -53,7 +53,7 @@ describe('EIP4844 header tests', () => {
 
     assert.throws(
       () => {
-        BlockHeader.fromHeaderData(
+        createHeader(
           {
             blobGasUsed: 1n,
           },
@@ -67,7 +67,7 @@ describe('EIP4844 header tests', () => {
       'should throw when setting blobGasUsed with EIP4844 not being activated',
     )
 
-    const excessBlobGas = BlockHeader.fromHeaderData(
+    const excessBlobGas = createHeader(
       {},
       { common, skipConsensusFormatValidation: true },
     ).excessBlobGas
@@ -77,7 +77,7 @@ describe('EIP4844 header tests', () => {
       'instantiates block with reasonable default excess blob gas value when not provided',
     )
     assert.doesNotThrow(() => {
-      BlockHeader.fromHeaderData(
+      createHeader(
         {
           excessBlobGas: 0n,
         },
@@ -90,7 +90,7 @@ describe('EIP4844 header tests', () => {
 
     const block = createBlockFromBlockData(
       {
-        header: BlockHeader.fromHeaderData({}, { common, skipConsensusFormatValidation: true }),
+        header: createHeader({}, { common, skipConsensusFormatValidation: true }),
       },
       { common, skipConsensusFormatValidation: true },
     )
@@ -112,7 +112,7 @@ describe('blob gas tests', () => {
     blobGasPerBlob = common.param('blobGasPerBlob')
   })
   it('should work', () => {
-    const preShardingHeader = BlockHeader.fromHeaderData({})
+    const preShardingHeader = createHeader({})
 
     let excessBlobGas = preShardingHeader.calcNextExcessBlobGas()
     assert.equal(
@@ -128,7 +128,7 @@ describe('blob gas tests', () => {
       'calcDataFee throws when header has no excessBlobGas field',
     )
 
-    const lowGasHeader = BlockHeader.fromHeaderData(
+    const lowGasHeader = createHeader(
       { number: 1, excessBlobGas: 5000 },
       { common, skipConsensusFormatValidation: true },
     )
@@ -137,7 +137,7 @@ describe('blob gas tests', () => {
     let blobGasPrice = lowGasHeader.getBlobGasPrice()
     assert.equal(excessBlobGas, 0n, 'excess blob gas should be 0 for small parent header blob gas')
     assert.equal(blobGasPrice, 1n, 'blob gas price should be 1n when low or no excess blob gas')
-    const highGasHeader = BlockHeader.fromHeaderData(
+    const highGasHeader = createHeader(
       { number: 1, excessBlobGas: 6291456, blobGasUsed: BigInt(6) * blobGasPerBlob },
       { common, skipConsensusFormatValidation: true },
     )
@@ -197,7 +197,7 @@ describe('transaction validation tests', () => {
       { common },
     ).sign(randomBytes(32))
 
-    const parentHeader = BlockHeader.fromHeaderData(
+    const parentHeader = createHeader(
       { number: 1n, excessBlobGas: 4194304, blobGasUsed: 0 },
       { common, skipConsensusFormatValidation: true },
     )
@@ -207,7 +207,7 @@ describe('transaction validation tests', () => {
     function getBlock(transactions: TypedTransaction[]) {
       const blobs = getNumBlobs(transactions)
 
-      const blockHeader = BlockHeader.fromHeaderData(
+      const blockHeader = createHeader(
         {
           number: 2n,
           parentHash: parentHeader.hash(),

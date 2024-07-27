@@ -28,7 +28,7 @@ const block = {
   header: {
     number: BigInt(1),
     hash: () => blockHash,
-    serialize: () => BlockHeader.fromHeaderData({ number: 1 }).serialize(),
+    serialize: () => createHeader({ number: 1 }).serialize(),
   },
   toJSON: () => ({
     ...createBlockFromBlockData({ header: { number: 1 } }).toJSON(),

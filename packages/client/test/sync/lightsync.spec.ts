@@ -180,7 +180,7 @@ describe('import headers', () => {
     } as any)
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(true)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
-      config.events.emit(Event.SYNC_FETCHED_HEADERS, [BlockHeader.fromHeaderData({})]),
+      config.events.emit(Event.SYNC_FETCHED_HEADERS, [createHeader({})]),
     )
     config.logger.on('data', async (data) => {
       if ((data.message as string).includes('Imported headers count=1')) {

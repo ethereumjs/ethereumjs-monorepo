@@ -56,7 +56,7 @@ function beaconrootBlock(
   }
 
   const root = setLengthLeft(bigIntToBytes(blockroot), 32)
-  const header = BlockHeader.fromHeaderData(
+  const header = createHeader(
     {
       parentBeaconBlockRoot: root,
       timestamp,

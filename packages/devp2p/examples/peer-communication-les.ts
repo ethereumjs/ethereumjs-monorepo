@@ -109,7 +109,7 @@ rlpx.events.on('peer:added', (peer) => {
           )
           break
         }
-        const header = BlockHeader.fromValuesArray(payload[2][0], { common })
+        const header = createHeaderFromValuesArray(payload[2][0], { common })
 
         setTimeout(() => {
           les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_BODIES, [

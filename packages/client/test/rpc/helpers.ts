@@ -122,7 +122,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
 
   chain.getTd = async (_hash: Uint8Array, _num: bigint) => BigInt(1000)
   if ((chain as any)._headers !== undefined) {
-    ;(chain as any)._headers.latest = BlockHeader.fromHeaderData(
+    ;(chain as any)._headers.latest = createHeader(
       { withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined },
       { common },
     )

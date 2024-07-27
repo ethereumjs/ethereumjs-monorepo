@@ -209,10 +209,7 @@ export class Miner {
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
       // Abort if we have too recently signed
       const cliqueSigner = this.config.accounts[0][1]
-      const header = BlockHeader.fromHeaderData(
-        { number },
-        { common: this.config.chainCommon, cliqueSigner },
-      )
+      const header = createHeader({ number }, { common: this.config.chainCommon, cliqueSigner })
       if (
         (this.service.chain.blockchain as any).consensus.cliqueCheckRecentlySigned(header) === true
       ) {

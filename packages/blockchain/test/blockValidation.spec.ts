@@ -224,7 +224,7 @@ describe('[Blockchain]: Block validation tests', () => {
       return BigInt(0)
     }
 
-    const header = BlockHeader.fromHeaderData(
+    const header = createHeader(
       {
         number: BigInt(1),
         parentHash: genesis.hash(),
@@ -242,7 +242,7 @@ describe('[Blockchain]: Block validation tests', () => {
     const block = createBlockFromBlockData({ header }, { common })
     await blockchain.putBlock(block)
     try {
-      const header = BlockHeader.fromHeaderData(
+      const header = createHeader(
         {
           number: BigInt(2),
           parentHash: block.hash(),
@@ -343,7 +343,7 @@ describe('[Blockchain]: Block validation tests', () => {
     const uncleHeaderData = unclePreFork.header.toJSON()
 
     uncleHeaderData.extraData = '0xffff'
-    const uncleHeader = BlockHeader.fromHeaderData(uncleHeaderData, {
+    const uncleHeader = createHeader(uncleHeaderData, {
       common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
     })
 

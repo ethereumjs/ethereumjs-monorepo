@@ -504,7 +504,7 @@ export class Chain {
         }
         break
       }
-      const header = BlockHeader.fromValuesArray(h.raw(), {
+      const header = createHeaderFromValuesArray(h.raw(), {
         common: this.config.chainCommon,
         setHardfork: this.headers.td,
       })

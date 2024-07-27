@@ -28,7 +28,7 @@ const block = {
   header: {
     number: BigInt(1),
     hash: () => blockHash,
-    serialize: () => BlockHeader.fromHeaderData({ number: 1 }).serialize(),
+    serialize: () => createHeader({ number: 1 }).serialize(),
   },
   toJSON: () => ({
     ...createBlockFromBlockData({ header: { number: 1 } }).toJSON(),
@@ -47,7 +47,7 @@ const genesisBlock = {
   hash: () => genesisBlockHash,
   header: {
     number: BigInt(0),
-    serialize: () => BlockHeader.fromHeaderData({ number: 0 }).serialize(),
+    serialize: () => createHeader({ number: 0 }).serialize(),
   },
   toJSON: () => ({ ...createBlockFromBlockData({ header: { number: 0 } }).toJSON(), transactions }),
   serialize: () => createBlockFromBlockData({ header: { number: 0 }, transactions }).serialize(),

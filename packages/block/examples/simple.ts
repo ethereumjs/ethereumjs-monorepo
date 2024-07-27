@@ -7,5 +7,5 @@ const headerData = {
   gasLimit: 8000000,
   timestamp: 1562422144,
 }
-const header = BlockHeader.fromHeaderData(headerData)
+const header = createHeader(headerData)
 console.log(`Created block header with hash=${bytesToHex(header.hash())}`)

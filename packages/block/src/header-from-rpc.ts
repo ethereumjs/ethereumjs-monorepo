@@ -34,7 +34,7 @@ export function blockHeaderFromRpc(blockParams: JsonRpcBlock, options?: BlockOpt
     requestsRoot,
   } = blockParams
 
-  const blockHeader = BlockHeader.fromHeaderData(
+  const blockHeader = createHeader(
     {
       parentHash,
       uncleHash: sha3Uncles,

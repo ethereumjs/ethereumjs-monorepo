@@ -173,7 +173,7 @@ export class EthProtocol extends Protocol {
           const common = this.config.chainCommon
           // If this is a post merge block, we can still send chainTTD since it would still lead
           // to correct hardfork choice
-          const header = BlockHeader.fromValuesArray(
+          const header = createHeaderFromValuesArray(
             h,
             difficulty > 0 ? { common, setHardfork: true } : { common, setHardfork: this.chainTTD },
           )

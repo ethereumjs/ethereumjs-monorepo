@@ -174,7 +174,7 @@ rlpx.events.on('peer:added', (peer) => {
           }
 
           const expectedHash = CHECK_BLOCK
-          const header = BlockHeader.fromValuesArray(payload[1][0], { common })
+          const header = createHeaderFromValuesArray(payload[1][0], { common })
           if (bytesToUnprefixedHex(header.hash()) === expectedHash) {
             console.log(`${addr} verified to be on the same side of the ${CHECK_BLOCK_TITLE}`)
             clearTimeout(forkDrop)
@@ -189,7 +189,7 @@ rlpx.events.on('peer:added', (peer) => {
           }
 
           let isValidPayload = false
-          const header = BlockHeader.fromValuesArray(payload[1][0], { common })
+          const header = createHeaderFromValuesArray(payload[1][0], { common })
           while (requests.headers.length > 0) {
             const blockHash = requests.headers.shift()
             if (equalsBytes(header.hash(), blockHash)) {

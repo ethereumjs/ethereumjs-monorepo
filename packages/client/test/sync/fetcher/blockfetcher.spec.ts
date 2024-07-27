@@ -211,7 +211,7 @@ describe('[BlockFetcher]', async () => {
       count: BigInt(0),
     })
 
-    const shanghaiHeader = BlockHeader.fromHeaderData(
+    const shanghaiHeader = createHeader(
       { number: 1, withdrawalsRoot: KECCAK256_RLP },
       { common: config.chainCommon, setHardfork: true },
     )
