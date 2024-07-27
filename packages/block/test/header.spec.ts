@@ -16,7 +16,7 @@ import {
   createBlockFromBlockData,
   createBlockFromRLPSerializedBlock,
   createHeader,
-  createHeaderFromRLPSerializedHeader,
+  createHeaderFromRLP,
   createHeaderFromValuesArray,
 } from '../src/constructors.js'
 import { Block } from '../src/index.js'
@@ -93,12 +93,12 @@ describe('[Block]: Header functions', () => {
     let header = createHeader({}, { common, freeze: false })
 
     const rlpHeader = header.serialize()
-    header = createHeaderFromRLPSerializedHeader(rlpHeader, {
+    header = createHeaderFromRLP(rlpHeader, {
       common,
     })
     assert.ok(Object.isFrozen(header), 'block should be frozen by default')
 
-    header = createHeaderFromRLPSerializedHeader(rlpHeader, {
+    header = createHeaderFromRLP(rlpHeader, {
       common,
       freeze: false,
     })
@@ -109,7 +109,7 @@ describe('[Block]: Header functions', () => {
 
     assert.throws(
       () =>
-        createHeaderFromRLPSerializedHeader(rlpHeader, {
+        createHeaderFromRLP(rlpHeader, {
           common,
           freeze: false,
           setHardfork: 1n, // Added to bypass defaulting setHardfork to true in static constructor
@@ -119,7 +119,7 @@ describe('[Block]: Header functions', () => {
       'throws when RLP serialized block with no base fee on default hardfork (london) and setHardfork left undefined',
     )
 
-    header = createHeaderFromRLPSerializedHeader(
+    header = createHeaderFromRLP(
       hexToBytes(
         '0xf90214a00000000000000000000000000000000000000000000000000000000000000000a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a0d7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000850400000000808213888080a011bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82faa00000000000000000000000000000000000000000000000000000000000000000880000000000000042',
       ),
@@ -134,7 +134,7 @@ describe('[Block]: Header functions', () => {
 
   it('Initialization -> fromRLPSerializedHeader() -> error cases', () => {
     try {
-      createHeaderFromRLPSerializedHeader(RLP.encode('a'))
+      createHeaderFromRLP(RLP.encode('a'))
     } catch (e: any) {
       const expectedError = 'Invalid serialized header input. Must be array'
       assert.ok(e.message.includes(expectedError), 'should throw with header as rlp encoded string')

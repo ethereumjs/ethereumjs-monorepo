@@ -109,10 +109,7 @@ export function createHeaderFromValuesArray(values: BlockHeaderBytes, opts: Bloc
  * @param serializedHeaderData
  * @param opts
  */
-export function createHeaderFromRLPSerializedHeader(
-  serializedHeaderData: Uint8Array,
-  opts: BlockOptions = {},
-) {
+export function createHeaderFromRLP(serializedHeaderData: Uint8Array, opts: BlockOptions = {}) {
   const values = RLP.decode(serializedHeaderData)
   if (!Array.isArray(values)) {
     throw new Error('Invalid serialized header input. Must be array')
