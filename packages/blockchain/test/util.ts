@@ -183,7 +183,7 @@ export const createTestDB = async (): Promise<
  * @param extraData - Extra data graffiti in order to create equal blocks (like block number) but with different hashes
  * @param uncles - Optional, an array of uncle headers. Automatically calculates the uncleHash.
  */
-function createBlock(
+function generateBlock(
   parentBlock: Block,
   extraData: string,
   uncles?: BlockHeader[],
@@ -227,4 +227,4 @@ function createBlock(
   )
 }
 
-export { createBlock }
+export { generateBlock }
