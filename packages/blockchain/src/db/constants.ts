@@ -39,6 +39,8 @@ const BLOCK_HASH_PEFIX = utf8ToBytes('H')
  */
 const BODY_PREFIX = utf8ToBytes('b')
 
+export const SKELETON_PREFIX = utf8ToBytes('s')
+
 // Utility functions
 
 /**

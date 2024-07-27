@@ -9,9 +9,9 @@ import { Synchronizer } from './sync.js'
 
 import type { VMExecution } from '../execution/index.js'
 import type { Peer } from '../net/peer/peer.js'
-import type { Skeleton } from '../service/skeleton.js'
 import type { SnapFetcherDoneFlags } from './fetcher/types.js'
 import type { SynchronizerOptions } from './sync.js'
+import type { Skeleton } from '@ethereumjs/blockchain'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
 interface SnapSynchronizerOptions extends SynchronizerOptions {

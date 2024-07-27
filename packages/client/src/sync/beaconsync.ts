@@ -8,9 +8,9 @@ import { Synchronizer } from './sync.js'
 
 import type { VMExecution } from '../execution/index.js'
 import type { Peer } from '../net/peer/peer.js'
-import type { Skeleton } from '../service/skeleton.js'
 import type { SynchronizerOptions } from './sync.js'
 import type { Block } from '@ethereumjs/block'
+import type { Skeleton } from '@ethereumjs/blockchain'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */

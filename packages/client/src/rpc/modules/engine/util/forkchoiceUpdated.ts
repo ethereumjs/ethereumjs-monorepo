@@ -1,7 +1,11 @@
 import type { Chain } from '../../../../blockchain/index.js'
 import type { ChainCache } from '../types.js'
 
-export const pruneCachedBlocks = (chain: Chain, chainCache: ChainCache) => {
+export const pruneCachedBlocks = (
+  config: { maxInvalidBlocksErrorCache: number },
+  chain: Chain,
+  chainCache: ChainCache
+) => {
   const { remoteBlocks, executedBlocks, invalidBlocks } = chainCache
   const finalized = chain.blocks.finalized
   if (finalized !== null) {
@@ -28,7 +32,7 @@ export const pruneCachedBlocks = (chain: Chain, chainCache: ChainCache) => {
     }
 
     // prune invalidBlocks with some max length
-    const pruneInvalidLength = invalidBlocks.size - chain.config.maxInvalidBlocksErrorCache
+    const pruneInvalidLength = invalidBlocks.size - config.maxInvalidBlocksErrorCache
     let pruned = 0
     for (const blockHash of invalidBlocks.keys()) {
       if (pruned >= pruneInvalidLength) {

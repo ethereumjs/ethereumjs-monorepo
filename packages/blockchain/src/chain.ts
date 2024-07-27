@@ -1,16 +1,31 @@
 import { BlockHeader, createBlockFromValuesArray } from '@ethereumjs/block'
-import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { BIGINT_0, BIGINT_1, equalsBytes } from '@ethereumjs/util'
 
-import { LevelDB } from '../execution/level.js'
-import { Event } from '../types.js'
+import { CliqueConsensus } from './consensus/index.js'
+import { createBlockchain } from './constructors.js'
+import { LevelDB } from './level.js'
 
-import type { Config } from '../config.js'
+import type { Blockchain } from './blockchain.js'
+import type { ConsensusDict } from './types.js'
 import type { Block } from '@ethereumjs/block'
-import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
+import type { Common } from '@ethereumjs/common'
 import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
+import type { Logger as WinstonLogger } from 'winston'
+export type Logger = WinstonLogger
+
+export type ChainConfig = {
+  syncTargetHeight?: bigint
+  syncedStateRemovalPeriod: number
+  engineParentLookupMaxDepth: number
+  snapTransitionSafeDepth: bigint
+  skeletonSubchainMergeMinimum: number
+  numBlocksPerIteration: number
+  skeletonFillCanonicalBackStep: number
+  maxPerRequest: number
+  chainCommon: Common
+}
 
 /**
  * The options that the Blockchain constructor can receive.
@@ -19,7 +34,8 @@ export interface ChainOptions {
   /**
    * Client configuration instance
    */
-  config: Config
+  logger?: Logger
+  config: ChainConfig
 
   /**
    * Database to store blocks and metadata. Should be an abstract-leveldown compliant store.
@@ -123,7 +139,8 @@ type BlockCache = {
  * @memberof module:blockchain
  */
 export class Chain {
-  public config: Config
+  public config: ChainConfig
+  public logger?: Logger
   public chainDB: DB<string | Uint8Array, string | Uint8Array | DBObject>
   public blockchain: Blockchain
   public blockCache: BlockCache
@@ -190,6 +207,7 @@ export class Chain {
    */
   protected constructor(options: ChainOptions) {
     this.config = options.config
+    this.logger = options.logger
     this.blockchain = options.blockchain!
     this.blockCache = {
       remoteBlocks: new Map(),
@@ -201,6 +219,21 @@ export class Chain {
     this._customGenesisState = options.genesisState
     this._customGenesisStateRoot = options.genesisStateRoot
     this.opened = false
+  }
+
+  superMsg(msgs: string | string[], meta?: any) {
+    if (typeof msgs === 'string') {
+      msgs = [msgs]
+    }
+    let len = 0
+    for (const msg of msgs) {
+      len = msg.length > len ? msg.length : len
+    }
+    this.logger?.info('-'.repeat(len), meta)
+    for (const msg of msgs) {
+      this.logger?.info(msg, meta)
+    }
+    this.logger?.info('-'.repeat(len), meta)
   }
 
   /**
@@ -265,7 +298,7 @@ export class Chain {
 
     this.config.chainCommon.events.on('hardforkChanged', async (hardfork: string) => {
       const block = this.config.chainCommon.hardforkBlock()
-      this.config.superMsg(
+      this.superMsg(
         `New hardfork reached 🪢 ! hardfork=${hardfork} ${block !== null ? `block=${block}` : ''}`
       )
     })
@@ -351,33 +384,29 @@ export class Chain {
         td: headers.td,
       })
       if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Paris)) {
-        this.config.logger.info('*'.repeat(85))
-        this.config.logger.info(
+        this.logger?.info('*'.repeat(85))
+        this.logger?.info(
           `Paris (Merge) hardfork reached 🐼 👉 👈 🐼 ! block=${headers.height} td=${headers.td}`
         )
-        this.config.logger.info('-'.repeat(85))
-        this.config.logger.info(' ')
-        this.config.logger.info('Consensus layer client (CL) needed for continued sync:')
-        this.config.logger.info(
+        this.logger?.info('-'.repeat(85))
+        this.logger?.info(' ')
+        this.logger?.info('Consensus layer client (CL) needed for continued sync:')
+        this.logger?.info(
           'https://ethereum.org/en/developers/docs/nodes-and-clients/#consensus-clients'
         )
-        this.config.logger.info(' ')
-        this.config.logger.info(
+        this.logger?.info(' ')
+        this.logger?.info(
           'Make sure to have the JSON RPC (--rpc) and Engine API (--rpcEngine) endpoints exposed'
         )
-        this.config.logger.info('and JWT authentication configured (see client README).')
-        this.config.logger.info(' ')
-        this.config.logger.info('*'.repeat(85))
-        this.config.logger.info(
+        this.logger?.info('and JWT authentication configured (see client README).')
+        this.logger?.info(' ')
+        this.logger?.info('*'.repeat(85))
+        this.logger?.info(
           `Transitioning to PoS! First block for CL-framed execution: block=${
             headers.height + BIGINT_1
           }`
         )
       }
-    }
-
-    if (emit) {
-      this.config.events.emit(Event.CHAIN_UPDATED)
     }
   }
 

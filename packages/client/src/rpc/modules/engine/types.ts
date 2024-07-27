@@ -1,7 +1,7 @@
 import { UNKNOWN_PAYLOAD } from '../../error-code.js'
 
-import type { Skeleton } from '../../../service/index.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
+import type { Skeleton } from '@ethereumjs/blockchain'
 import type {
   ConsolidationRequestV1,
   DepositRequestV1,

@@ -9,8 +9,10 @@ import { Status } from '../types.js'
 import { validHash } from './generic.js'
 
 import type { Chain } from '../../../../blockchain/index.js'
+import type { Logger } from '../../../../logging.js'
 import type { ChainCache, PayloadStatusV1 } from '../types.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
+import type { Common } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 /**
@@ -18,12 +20,12 @@ import type { PrefixedHexString } from '@ethereumjs/util'
  * If errors, returns {@link PayloadStatusV1}
  */
 export const assembleBlock = async (
+  config: { chainCommon: Common; logger: Logger; engineParentLookupMaxDepth: number },
   payload: ExecutionPayload,
   chain: Chain,
   chainCache: ChainCache
 ): Promise<{ block?: Block; error?: PayloadStatusV1 }> => {
   const { blockNumber, timestamp } = payload
-  const { config } = chain
   const common = config.chainCommon.copy()
 
   // This is a post merge block, so set its common accordingly
@@ -42,6 +44,7 @@ export const assembleBlock = async (
     const validationError = `Error assembling block from payload: ${error}`
     config.logger.error(validationError)
     const latestValidHash = await validHash(
+      config,
       hexToBytes(payload.parentHash as PrefixedHexString),
       chain,
       chainCache

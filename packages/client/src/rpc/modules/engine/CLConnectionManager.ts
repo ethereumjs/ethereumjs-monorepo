@@ -1,9 +1,11 @@
 import { Hardfork } from '@ethereumjs/common'
+import { BIGINT_0, BIGINT_1, BIGINT_100, BIGINT_2EXP256, formatBigDecimal } from '@ethereumjs/util'
 
 import { Event } from '../../../types.js'
-import { short, timeDiff } from '../../../util/index.js'
+import { short, timeDiff, timeDuration } from '../../../util/index.js'
 
 import type { Config } from '../../../config.js'
+import type { SnapFetcherDoneFlags } from '../../../sync/fetcher/types.js'
 import type {
   ExecutionPayloadV1,
   ExecutionPayloadV2,
@@ -13,9 +15,16 @@ import type {
   PayloadStatusV1,
 } from './types.js'
 import type { Block } from '@ethereumjs/block'
+import type { Skeleton } from '@ethereumjs/blockchain'
 import type winston from 'winston'
 
 const enginePrefix = '[ CL ] '
+/**
+ * The Skeleton chain class helps support beacon sync by accepting head blocks
+ * while backfill syncing the rest of the chain.
+ */
+
+const STALE_WINDOW = 10 * 60_000
 
 enum logLevel {
   ERROR = 'error',
@@ -103,6 +112,23 @@ export class CLConnectionManager {
   private _initialPayload?: NewPayload
   private _initialForkchoiceUpdate?: ForkchoiceUpdate
   private _inActivityCb?: () => void
+
+  // skeleton chain statuses
+  private syncedchain = 0
+  private lastfilledAt = 0
+  private lastfilled = BIGINT_0
+
+  private lastexecutedAt = 0
+  private lastexecuted = BIGINT_0
+
+  private lastfetchedAt = 0
+  private lastfetched = BIGINT_0
+
+  private lastvalid = 0
+
+  private lastsyncedAt = 0
+
+  private STATUS_LOG_INTERVAL = 8000 /** How often to log sync status (in ms) */
 
   get running() {
     return !!this._connectionCheckInterval
@@ -442,6 +468,304 @@ export class CLConnectionManager {
         logLevel.INFO
       )
     }
+  }
+
+  logSyncStatus(
+    logPrefix: string,
+    skeleton: Skeleton,
+    {
+      forceShowInfo,
+      lastStatus,
+      vmexecution,
+      fetching,
+      snapsync,
+      peers,
+    }: {
+      forceShowInfo?: boolean
+      lastStatus?: string
+      vmexecution?: { running: boolean; started: boolean }
+      fetching?: boolean
+      snapsync?: SnapFetcherDoneFlags
+      peers?: number | string
+    } = {}
+  ): string {
+    const vmHead = skeleton.chain.blocks.vm
+    const subchain0 = skeleton.status.progress.subchains[0]
+
+    const isValid =
+      vmHead !== undefined &&
+      skeleton.status.linked &&
+      (vmHead?.header.number ?? BIGINT_0) === (subchain0?.head ?? BIGINT_0)
+
+    // track for printing log because validation oscillates between multiple calls
+    if (forceShowInfo === true) {
+      if (isValid) {
+        if (this.lastvalid === 0) {
+          this.config.superMsg('Chain validation completed')
+        }
+        this.lastvalid = Date.now()
+      } else {
+        this.lastvalid = 0
+      }
+    }
+
+    const isSynced =
+      skeleton.status.linked &&
+      (skeleton.chain.blocks.latest?.header.number ?? BIGINT_0) === (subchain0?.head ?? BIGINT_0)
+
+    const status = isValid
+      ? 'VALID'
+      : isSynced
+      ? vmexecution?.running === true
+        ? `EXECUTING`
+        : `SYNCED`
+      : `SYNCING`
+
+    if (peers === undefined || peers === 0) {
+      this.lastsyncedAt = 0
+    } else {
+      if (
+        status === 'SYNCING' &&
+        lastStatus !== undefined &&
+        (lastStatus !== status || this.lastsyncedAt === 0)
+      ) {
+        this.lastsyncedAt = Date.now()
+      }
+    }
+
+    if (status !== 'EXECUTING') {
+      this.lastexecutedAt = 0
+    } else {
+      if (this.lastexecutedAt === 0 || this.lastexecuted !== vmHead?.header.number) {
+        this.lastexecutedAt = Date.now()
+      }
+      this.lastexecuted = vmHead?.header.number ?? BIGINT_0
+    }
+
+    if (status !== 'SYNCED') {
+      this.syncedchain = 0
+    } else {
+      if (this.syncedchain === 0) {
+        this.syncedchain = Date.now()
+      }
+    }
+
+    if (fetching === false) {
+      this.lastfetchedAt = 0
+    } else if (fetching === true) {
+      if (this.lastfetchedAt === 0 || subchain0.tail !== this.lastfetched) {
+        this.lastfetchedAt = Date.now()
+      }
+      this.lastfetched = subchain0.tail
+    }
+
+    if (!skeleton.filling) {
+      this.lastfilledAt = 0
+    } else {
+      if (this.lastfilledAt === 0 || this.lastfilled !== skeleton.chain.blocks.height) {
+        this.lastfilledAt = Date.now()
+      }
+      this.lastfilled = skeleton.chain.blocks.height
+    }
+
+    let extraStatus
+    let scenario = ''
+    switch (status) {
+      case 'EXECUTING':
+        scenario = Date.now() - this.lastexecutedAt > STALE_WINDOW ? 'execution stalled?' : ''
+        extraStatus = ` (${scenario} vm=${vmHead?.header.number} cl=el=${skeleton.chain.blocks.height})`
+        break
+      case 'SYNCED':
+        if (vmexecution?.started === true) {
+          scenario =
+            Date.now() - this.syncedchain > STALE_WINDOW
+              ? 'execution stalled?'
+              : 'awaiting execution'
+        } else if (snapsync !== undefined) {
+          // stall detection yet to be added
+          if (snapsync.done) {
+            scenario = `snapsync-to-vm-transition=${
+              (snapsync.snapTargetHeight ?? BIGINT_0) + this.config.snapTransitionSafeDepth
+            }`
+          } else {
+            scenario = `snapsync target=${snapsync.snapTargetHeight}`
+          }
+        } else {
+          scenario = 'execution none'
+        }
+        extraStatus = ` (${scenario} vm=${vmHead?.header.number} cl=el=${skeleton.chain.blocks.height} )`
+        break
+      case 'SYNCING':
+        if (skeleton.filling) {
+          scenario = Date.now() - this.lastfilledAt > STALE_WINDOW ? 'filling stalled?' : 'filling'
+          extraStatus = ` (${scenario} | el=${skeleton.chain.blocks.height} cl=${subchain0?.head})`
+        } else {
+          if (fetching === true) {
+            scenario =
+              Date.now() - this.lastfetchedAt > STALE_WINDOW ? 'backfill stalled?' : 'backfilling'
+            extraStatus = ` (${scenario} tail=${subchain0.tail} | el=${skeleton.chain.blocks.height} cl=${subchain0?.head})`
+          } else {
+            if (subchain0 === undefined) {
+              scenario = 'awaiting fcu'
+            } else if (peers === undefined || peers === 0) {
+              scenario = 'awaiting peers'
+            } else {
+              if (Date.now() - skeleton.lastFcuTime > STALE_WINDOW) {
+                scenario = skeleton.lastFcuTime === 0 ? `awaiting fcu` : `cl stalled?`
+              } else {
+                scenario =
+                  Date.now() - this.lastsyncedAt > STALE_WINDOW ? `sync stalled?` : `awaiting sync`
+              }
+            }
+            extraStatus = ` (${scenario} | el=${skeleton.chain.blocks.height} cl=${subchain0?.head})`
+          }
+        }
+        break
+
+      // no additional status is needed on valid
+      default:
+        extraStatus = ''
+    }
+    const chainHead = `el=${skeleton.chain.blocks.latest?.header.number ?? 'na'} hash=${short(
+      skeleton.chain.blocks.latest?.hash() ?? 'na'
+    )}`
+
+    forceShowInfo = forceShowInfo ?? false
+    lastStatus = lastStatus ?? status
+
+    if (forceShowInfo || status !== lastStatus) {
+      let beaconSyncETA = 'na'
+      if (!skeleton.status.linked && subchain0 !== undefined) {
+        // Print a progress report making the UX a bit nicer
+        let left = skeleton.bounds().tail - BIGINT_1 - skeleton.chain.blocks.height
+        if (skeleton.status.linked) left = BIGINT_0
+        if (left > BIGINT_0) {
+          if (skeleton.pulled !== BIGINT_0 && fetching === true) {
+            const sinceStarted = (new Date().getTime() - skeleton.started) / 1000
+            beaconSyncETA = `${timeDuration(
+              (sinceStarted / Number(skeleton.pulled)) * Number(left)
+            )}`
+            this.config.logger.debug(
+              `Syncing beacon headers downloaded=${skeleton.pulled} left=${left} eta=${beaconSyncETA}`
+            )
+          }
+        }
+      }
+
+      let vmlogInfo
+      let snapLogInfo
+      let subchainLog = ''
+      if (isValid) {
+        vmlogInfo = `vm=cl=${chainHead}`
+      } else {
+        vmlogInfo = `vm=${vmHead?.header.number} hash=${short(vmHead?.hash() ?? 'na')} started=${
+          vmexecution?.started
+        }`
+
+        if (vmexecution?.started === true) {
+          vmlogInfo = `${vmlogInfo} executing=${vmexecution?.running}`
+        } else {
+          if (snapsync === undefined) {
+            snapLogInfo = `snapsync=false`
+          } else {
+            const { snapTargetHeight, snapTargetRoot, snapTargetHash } = snapsync
+            if (snapsync.done === true) {
+              snapLogInfo = `snapsync=synced height=${snapTargetHeight} hash=${short(
+                snapTargetHash ?? 'na'
+              )} root=${short(snapTargetRoot ?? 'na')}`
+            } else if (snapsync.syncing) {
+              const accountsDone = formatBigDecimal(
+                snapsync.accountFetcher.first * BIGINT_100,
+                BIGINT_2EXP256,
+                BIGINT_100
+              )
+              const storageReqsDone = formatBigDecimal(
+                snapsync.storageFetcher.first * BIGINT_100,
+                snapsync.storageFetcher.count,
+                BIGINT_100
+              )
+              const codeReqsDone = formatBigDecimal(
+                snapsync.byteCodeFetcher.first * BIGINT_100,
+                snapsync.byteCodeFetcher.count,
+                BIGINT_100
+              )
+
+              const snapprogress = `accounts=${accountsDone}% storage=${storageReqsDone}% of ${snapsync.storageFetcher.count} codes=${codeReqsDone}% of ${snapsync.byteCodeFetcher.count}`
+
+              let stage = 'snapsync=??'
+              stage = `snapsync=accounts`
+              // move the stage along
+              if (snapsync.accountFetcher.done === true) {
+                stage = `snapsync=storage&codes`
+              }
+              if (snapsync.storageFetcher.done === true && snapsync.byteCodeFetcher.done === true) {
+                stage = `snapsync=trienodes`
+              }
+              if (snapsync.trieNodeFetcher.done === true) {
+                stage = `finished`
+              }
+
+              snapLogInfo = `${stage} ${snapprogress} (hash=${short(
+                snapTargetHash ?? 'na'
+              )} root=${short(snapTargetRoot ?? 'na')})`
+            } else {
+              if (skeleton.synchronized) {
+                snapLogInfo = `snapsync=??`
+              } else {
+                snapLogInfo = `snapsync awaiting cl synchronization`
+              }
+            }
+          }
+        }
+
+        // if not synced add subchain info
+        if (!isSynced) {
+          const subchainLen = skeleton.status.progress.subchains.length
+          subchainLog = `subchains(${subchainLen}) linked=${
+            skeleton.status.linked
+          } ${skeleton.status.progress.subchains
+            // if info log show only first subchain to be succinct
+            .slice(0, 1)
+            .map((s) => `[tail=${s.tail} head=${s.head} next=${short(s.next)}]`)
+            .join(',')}${subchainLen > 1 ? '…' : ''} ${
+            beaconSyncETA !== undefined ? 'eta=' + beaconSyncETA : ''
+          } reorgsHead=${
+            skeleton.status.canonicalHeadReset &&
+            (subchain0?.tail ?? BIGINT_0) <= skeleton.chain.blocks.height
+          } synchronized=${skeleton.synchronized}`
+        }
+      }
+      peers = peers !== undefined ? `${peers}` : 'na'
+
+      // if valid then the status info is short and sweet
+      this.config.logger.info('')
+      if (isValid) {
+        this.config.logger.info(`${logPrefix} ${status}${extraStatus} ${vmlogInfo} peers=${peers}`)
+      } else {
+        // else break into two
+        this.config.logger.info(
+          `${logPrefix} ${status}${extraStatus} synchronized=${this.config.synchronized} peers=${peers}`
+        )
+        if (snapLogInfo !== undefined && snapLogInfo !== '') {
+          this.config.logger.info(`${logPrefix} ${snapLogInfo}`)
+        }
+        if (vmlogInfo !== undefined && vmlogInfo !== '') {
+          this.config.logger.info(`${logPrefix} ${vmlogInfo}`)
+        }
+        if (!isSynced) {
+          this.config.logger.info(`${logPrefix} ${subchainLog}`)
+        }
+      }
+    } else {
+      this.config.logger.debug(
+        `${logPrefix} ${status} linked=${
+          skeleton.status.linked
+        } subchains=${skeleton.status.progress.subchains
+          .map((s) => `[tail=${s.tail} head=${s.head} next=${short(s.next)}]`)
+          .join(',')} reset=${skeleton.status.canonicalHeadReset} ${chainHead}`
+      )
+    }
+    return status
   }
 }
 

@@ -30,7 +30,7 @@ import { middleware, validators } from '../validation.js'
 
 import type { Chain } from '../../blockchain/index.js'
 import type { ReceiptsManager } from '../../execution/receipt.js'
-import type { EthereumClient } from '../../index.js'
+import type { Config, EthereumClient } from '../../index.js'
 import type { EthProtocol } from '../../net/protocol/index.js'
 import type { FullEthereumService, Service } from '../../service/index.js'
 import type { RpcTx } from '../types.js'
@@ -292,6 +292,7 @@ export class Eth {
   private service: Service
   private receiptsManager: ReceiptsManager | undefined
   private _chain: Chain
+  private _config: Config
   private _vm: VM | undefined
   private _rpcDebug: boolean
   public ethVersion: number
@@ -304,6 +305,7 @@ export class Eth {
     this.client = client
     this.service = client.services.find((s) => s.name === 'eth') as Service
     this._chain = this.service.chain
+    this._config = this.service.config
     this._vm = (this.service as FullEthereumService).execution?.vm
     this.receiptsManager = (this.service as FullEthereumService).execution?.receiptsManager
     this._rpcDebug = rpcDebug
@@ -533,7 +535,7 @@ export class Eth {
    * @returns The chain ID.
    */
   async chainId(_params = []) {
-    const chainId = this._chain.config.chainCommon.chainId()
+    const chainId = this._config.chainCommon.chainId()
     return bigIntToHex(chainId)
   }
 
@@ -1318,7 +1320,7 @@ export class Eth {
    * @returns a hex code of an integer representing the suggested gas price in wei.
    */
   async gasPrice() {
-    const minGasPrice: bigint = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
+    const minGasPrice: bigint = this._config.chainCommon.param('gasConfig', 'minPrice')
     let gasPrice = BIGINT_0
     const latest = await this._chain.getCanonicalHeadHeader()
     if (this._vm !== undefined && this._vm.common.isActivatedEIP(1559)) {

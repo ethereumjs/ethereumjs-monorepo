@@ -2,4 +2,6 @@
  * @module blockchain
  */
 
-export * from './chain.js'
+import { Chain } from '@ethereumjs/blockchain'
+
+export { Chain }

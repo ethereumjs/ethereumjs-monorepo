@@ -1,3 +1,4 @@
+import { PutStatus } from '@ethereumjs/blockchain'
 import { Hardfork } from '@ethereumjs/common'
 import {
   BIGINT_0,
@@ -12,7 +13,6 @@ import {
 
 import { ExecStatus } from '../../../execution/index.js'
 import { PendingBlock } from '../../../miner/index.js'
-import { PutStatus } from '../../../sync/index.js'
 import { short } from '../../../util/index.js'
 import {
   INTERNAL_ERROR,
@@ -53,7 +53,7 @@ import type { Chain } from '../../../blockchain/index.js'
 import type { EthereumClient } from '../../../client.js'
 import type { Config } from '../../../config.js'
 import type { VMExecution } from '../../../execution/index.js'
-import type { FullEthereumService, Skeleton } from '../../../service/index.js'
+import type { FullEthereumService } from '../../../service/index.js'
 import type {
   Bytes32,
   Bytes8,
@@ -71,6 +71,7 @@ import type {
   TransitionConfigurationV1,
 } from './types.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
+import type { Skeleton } from '@ethereumjs/blockchain'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
 
@@ -113,7 +114,7 @@ export class Engine {
     this.client = client
     this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
     this.chain = this.service.chain
-    this.config = this.chain.config
+    this.config = client.config
     this._rpcDebug = rpcDebug
 
     if (this.service.execution === undefined) {
@@ -128,7 +129,7 @@ export class Engine {
     this.skeleton = this.service.skeleton
 
     this.connectionManager = new CLConnectionManager({
-      config: this.chain.config,
+      config: this.config,
       inActivityCb: this.logELStatus,
     })
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
@@ -157,7 +158,7 @@ export class Engine {
     }
     const fetcher = this.service.beaconSync?.fetcher
 
-    this.lastAnnouncementStatus = this.skeleton.logSyncStatus('[ EL ]', {
+    this.lastAnnouncementStatus = this.connectionManager.logSyncStatus('[ EL ]', this.skeleton, {
       forceShowInfo,
       lastStatus: this.lastAnnouncementStatus,
       vmexecution: { started: this.execution.started, running: this.execution.running },
@@ -380,6 +381,7 @@ export class Engine {
      */
     // newpayloadv3 comes with parentBeaconBlockRoot out of the payload
     const { block: headBlock, error } = await assembleBlock(
+      this.config,
       {
         ...payload,
         // ExecutionPayload only handles undefined
@@ -394,6 +396,7 @@ export class Engine {
         const validationError = `Error assembling block from payload during initialization`
         this.config.logger.debug(validationError)
         const latestValidHash = await validHash(
+          this.config,
           hexToBytes(parentHash as PrefixedHexString),
           this.chain,
           this.chainCache
@@ -419,6 +422,7 @@ export class Engine {
       if (validationError !== null) {
         this.config.logger.debug(validationError)
         const latestValidHash = await validHash(
+          this.config,
           hexToBytes(parentHash as PrefixedHexString),
           this.chain,
           this.chainCache
@@ -430,6 +434,7 @@ export class Engine {
     } else if (blobVersionedHashes !== undefined && blobVersionedHashes !== null) {
       const validationError = `Invalid blobVersionedHashes before EIP-4844 is activated`
       const latestValidHash = await validHash(
+        this.config,
         hexToBytes(parentHash as PrefixedHexString),
         this.chain,
         this.chainCache
@@ -465,7 +470,7 @@ export class Engine {
 
       // Validations with parent
       if (!parent.common.gteHardfork(Hardfork.Paris)) {
-        const validTerminalBlock = await validateTerminalBlock(parent, this.chain)
+        const validTerminalBlock = await validateTerminalBlock(this.config, parent, this.chain)
         if (!validTerminalBlock) {
           const response = {
             status: Status.INVALID,
@@ -490,6 +495,7 @@ export class Engine {
         } catch (error: any) {
           const validationError = `Invalid 4844 transactions: ${error}`
           const latestValidHash = await validHash(
+            this.config,
             hexToBytes(parentHash as PrefixedHexString),
             this.chain,
             this.chainCache
@@ -525,7 +531,12 @@ export class Engine {
       ) {
         const latestValidHash =
           this.chain.blocks.latest !== null
-            ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
+            ? await validHash(
+                this.config,
+                this.chain.blocks.latest.hash(),
+                this.chain,
+                this.chainCache
+              )
             : bytesToHex(zeros(32))
         const response = {
           status: Status.INVALID,
@@ -551,6 +562,7 @@ export class Engine {
         if (invalidBlock !== undefined) {
           // hard luck: block along canonical chain is invalid
           const latestValidHash = await validHash(
+            this.config,
             invalidBlock.header.parentHash,
             this.chain,
             this.chainCache
@@ -594,7 +606,12 @@ export class Engine {
     ) {
       const latestValidHash =
         this.chain.blocks.latest !== null
-          ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
+          ? await validHash(
+              this.config,
+              this.chain.blocks.latest.hash(),
+              this.chain,
+              this.chainCache
+            )
           : bytesToHex(zeros(32))
       const response = {
         status: Status.INVALID,
@@ -631,6 +648,7 @@ export class Engine {
       if (invalidBlock !== undefined) {
         // hard luck: block along canonical chain is invalid
         const latestValidHash = await validHash(
+          this.config,
           invalidBlock.header.parentHash,
           this.chain,
           this.chainCache
@@ -660,7 +678,12 @@ export class Engine {
     let blocks: Block[]
     try {
       // find parents till vmHead but limit lookups till engineParentLookupMaxDepth
-      blocks = await recursivelyFindParents(vmHead.hash(), headBlock.header.parentHash, this.chain)
+      blocks = await recursivelyFindParents(
+        this.config,
+        vmHead.hash(),
+        headBlock.header.parentHash,
+        this.chain
+      )
     } catch (error) {
       const response = { status: Status.SYNCING, latestValidHash: null, validationError: null }
       return response
@@ -684,8 +707,8 @@ export class Engine {
           //   ii) Txs to execute in blocking call is within the supported limit
           // else return SYNCING/ACCEPTED and let skeleton led chain execution catch up
           const shouldExecuteBlock =
-            blocks.length - i <= this.chain.config.engineNewpayloadMaxExecute &&
-            block.transactions.length <= this.chain.config.engineNewpayloadMaxTxsExecute
+            blocks.length - i <= this.config.engineNewpayloadMaxExecute &&
+            block.transactions.length <= this.config.engineNewpayloadMaxTxsExecute
 
           const executed =
             shouldExecuteBlock &&
@@ -713,9 +736,9 @@ export class Engine {
               `Skipping block(s) execution for headBlock=${headBlock.header.number} hash=${short(
                 headBlock.hash()
               )} : pendingBlocks=${blocks.length - i}(limit=${
-                this.chain.config.engineNewpayloadMaxExecute
+                this.config.engineNewpayloadMaxExecute
               }) transactions=${block.transactions.length}(limit=${
-                this.chain.config.engineNewpayloadMaxTxsExecute
+                this.config.engineNewpayloadMaxTxsExecute
               }) executionBusy=${this.execution.running}`
             )
             // determind status to be returned depending on if block could extend chain or not
@@ -729,6 +752,7 @@ export class Engine {
       }
     } catch (error) {
       const latestValidHash = await validHash(
+        this.config,
         headBlock.header.parentHash,
         this.chain,
         this.chainCache
@@ -786,7 +810,7 @@ export class Engine {
    * @returns
    */
   async newPayloadV1(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
-    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
+    const shanghaiTimestamp = this.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
     const ts = parseInt(params[0].timestamp)
     if (shanghaiTimestamp !== null && ts >= shanghaiTimestamp) {
       throw {
@@ -805,8 +829,8 @@ export class Engine {
    * @returns
    */
   async newPayloadV2(params: [ExecutionPayloadV2 | ExecutionPayloadV1]): Promise<PayloadStatusV1> {
-    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
-    const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
+    const shanghaiTimestamp = this.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
+    const eip4844Timestamp = this.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
     const ts = parseInt(params[0].timestamp)
 
     const withdrawals = (params[0] as ExecutionPayloadV2).withdrawals
@@ -861,8 +885,8 @@ export class Engine {
    * @returns
    */
   async newPayloadV3(params: [ExecutionPayloadV3, Bytes32[], Bytes32]): Promise<PayloadStatusV1> {
-    const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
-    const pragueTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
+    const eip4844Timestamp = this.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
+    const pragueTimestamp = this.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
 
     const ts = parseInt(params[0].timestamp)
     if (pragueTimestamp !== null && ts >= pragueTimestamp) {
@@ -886,7 +910,7 @@ export class Engine {
   }
 
   async newPayloadV4(params: [ExecutionPayloadV4, Bytes32[], Bytes32]): Promise<PayloadStatusV1> {
-    const pragueTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
+    const pragueTimestamp = this.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
     const ts = parseInt(params[0].timestamp)
     if (pragueTimestamp === null || ts < pragueTimestamp) {
       throw {
@@ -1017,7 +1041,12 @@ export class Engine {
     if (this.skeleton.fillStatus?.status === PutStatus.INVALID) {
       const latestValidHash =
         this.chain.blocks.latest !== null
-          ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
+          ? await validHash(
+              this.config,
+              this.chain.blocks.latest.hash(),
+              this.chain,
+              this.chainCache
+            )
           : bytesToHex(zeros(32))
       const response = {
         payloadStatus: {
@@ -1039,7 +1068,7 @@ export class Engine {
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
     // is not yet connected.
     if (!headBlock.common.gteHardfork(Hardfork.Paris) && headBlock.header.difficulty > BIGINT_0) {
-      const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
+      const validTerminalBlock = await validateTerminalBlock(this.config, headBlock, this.chain)
       if (!validTerminalBlock) {
         const response = {
           payloadStatus: {
@@ -1069,6 +1098,7 @@ export class Engine {
         if (invalidBlock !== undefined) {
           // hard luck: block along canonical chain is invalid
           const latestValidHash = await validHash(
+            this.config,
             invalidBlock.header.parentHash,
             this.chain,
             this.chainCache
@@ -1127,6 +1157,7 @@ export class Engine {
       if (this.chain.headers.latest && this.chain.headers.latest.number < headBlock.header.number) {
         try {
           parentBlocks = await recursivelyFindParents(
+            this.config,
             vmHeadHash,
             headBlock.header.parentHash,
             this.chain
@@ -1146,7 +1177,12 @@ export class Engine {
       try {
         const completed = await this.execution.setHead(blocks, { safeBlock, finalizedBlock })
         if (!completed) {
-          const latestValidHash = await validHash(headBlock.hash(), this.chain, this.chainCache)
+          const latestValidHash = await validHash(
+            this.config,
+            headBlock.hash(),
+            this.chain,
+            this.chainCache
+          )
           const payloadStatus = {
             status: Status.SYNCING,
             latestValidHash,
@@ -1179,7 +1215,7 @@ export class Engine {
      * Synchronized and tx pool update
      */
     this.config.updateSynchronizedState(headBlock.header)
-    if (this.chain.config.synchronized) {
+    if (this.config.synchronized) {
       this.service.txPool.checkRunState()
     }
 
@@ -1215,11 +1251,21 @@ export class Engine {
         },
         withdrawals
       )
-      const latestValidHash = await validHash(headBlock.hash(), this.chain, this.chainCache)
+      const latestValidHash = await validHash(
+        this.config,
+        headBlock.hash(),
+        this.chain,
+        this.chainCache
+      )
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
       validResponse = { payloadStatus, payloadId: bytesToHex(payloadId), headBlock }
     } else {
-      const latestValidHash = await validHash(headBlock.hash(), this.chain, this.chainCache)
+      const latestValidHash = await validHash(
+        this.config,
+        headBlock.hash(),
+        this.chain,
+        this.chainCache
+      )
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
       validResponse = { payloadStatus, payloadId: null, headBlock }
     }
@@ -1227,8 +1273,8 @@ export class Engine {
     /**
      * Before returning response prune cached blocks based on finalized and vmHead
      */
-    if (this.chain.config.pruneEngineCache) {
-      pruneCachedBlocks(this.chain, this.chainCache)
+    if (this.config.pruneEngineCache) {
+      pruneCachedBlocks(this.config, this.chain, this.chainCache)
     }
     return validResponse
   }
@@ -1254,7 +1300,7 @@ export class Engine {
         }
       }
       validateHardforkRange(
-        this.chain.config.chainCommon,
+        this.config.chainCommon,
         1,
         null,
         Hardfork.Paris,
@@ -1290,14 +1336,14 @@ export class Engine {
       }
 
       validateHardforkRange(
-        this.chain.config.chainCommon,
+        this.config.chainCommon,
         2,
         null,
         Hardfork.Shanghai,
         BigInt(payloadAttributes.timestamp)
       )
 
-      const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
+      const shanghaiTimestamp = this.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
       const ts = BigInt(payloadAttributes.timestamp)
       const withdrawals = (payloadAttributes as PayloadAttributesV2).withdrawals
       if (withdrawals !== undefined && withdrawals !== null) {
@@ -1350,7 +1396,7 @@ export class Engine {
       }
 
       validateHardforkRange(
-        this.chain.config.chainCommon,
+        this.config.chainCommon,
         3,
         Hardfork.Cancun,
         // this could be valid post cancun as well, if not then update the valid till hf here
@@ -1428,7 +1474,7 @@ export class Engine {
       }
 
       validateHardforkRange(
-        this.chain.config.chainCommon,
+        this.config.chainCommon,
         payloadVersion,
         checkNotBeforeHf,
         checkNotAfterHf,
@@ -1495,7 +1541,7 @@ export class Engine {
     params: [TransitionConfigurationV1]
   ): Promise<TransitionConfigurationV1> {
     const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
-    const ttd = this.chain.config.chainCommon.hardforkTTD(Hardfork.Paris)
+    const ttd = this.config.chainCommon.hardforkTTD(Hardfork.Paris)
     if (ttd === undefined || ttd === null) {
       throw {
         code: INTERNAL_ERROR,

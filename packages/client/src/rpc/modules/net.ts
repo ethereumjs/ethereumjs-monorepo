@@ -4,7 +4,7 @@ import { callWithStackTrace } from '../helpers.js'
 import { middleware } from '../validation.js'
 
 import type { Chain } from '../../blockchain/index.js'
-import type { EthereumClient } from '../../index.js'
+import type { Config, EthereumClient } from '../../index.js'
 import type { PeerPool } from '../../net/peerpool.js'
 import type { Service } from '../../service/service.js'
 
@@ -14,6 +14,7 @@ import type { Service } from '../../service/service.js'
  */
 export class Net {
   private _chain: Chain
+  private _config: Config
   private _client: EthereumClient
   private _peerPool: PeerPool
   private _rpcDebug: boolean
@@ -25,6 +26,7 @@ export class Net {
   constructor(client: EthereumClient, rpcDebug: boolean) {
     const service = client.services.find((s) => s.name === 'eth') as Service
     this._chain = service.chain
+    this._config = service.config
     this._client = client
     this._peerPool = service.pool
     this._rpcDebug = rpcDebug
@@ -47,7 +49,7 @@ export class Net {
    * @param params An empty array
    */
   version(_params = []) {
-    return this._chain.config.chainCommon.chainId().toString()
+    return this._config.chainCommon.chainId().toString()
   }
 
   /**

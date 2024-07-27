@@ -1,3 +1,4 @@
+import { Skeleton } from '@ethereumjs/blockchain'
 import { Hardfork } from '@ethereumjs/common'
 import { TransactionType } from '@ethereumjs/tx'
 import { concatBytes, hexToBytes } from '@ethereumjs/util'
@@ -13,7 +14,6 @@ import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync/
 import { Event } from '../types.js'
 
 import { Service, type ServiceOptions } from './service.js'
-import { Skeleton } from './skeleton.js'
 import { TxPool } from './txpool.js'
 
 import type { Peer } from '../net/peer/peer.js'
@@ -57,10 +57,10 @@ export class FullEthereumService extends Service {
 
     const { metaDB } = options
     if (metaDB !== undefined) {
+      // directly passon chainCommon which Skeleton can set hardfork on
       this.skeleton = new Skeleton({
-        config: this.config,
         chain: this.chain,
-        metaDB,
+        logger: this.config.logger,
       })
     }
 

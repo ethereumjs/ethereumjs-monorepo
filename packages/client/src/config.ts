@@ -11,6 +11,7 @@ import { isBrowser, short } from './util/index.js'
 import type { Logger } from './logging.js'
 import type { EventBusType, MultiaddrLike, PrometheusMetrics } from './types.js'
 import type { BlockHeader } from '@ethereumjs/block'
+import type { ChainConfig } from '@ethereumjs/blockchain'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -346,7 +347,7 @@ export interface ConfigOptions {
   prometheusMetrics?: PrometheusMetrics
 }
 
-export class Config {
+export class Config implements ChainConfig {
   /**
    * Central event bus for events emitted by the different
    * components of the client

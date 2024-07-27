@@ -13,6 +13,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
  * Recursively finds parent blocks starting from the parentHash.
  */
 export const recursivelyFindParents = async (
+  config: { engineParentLookupMaxDepth: number },
   vmHeadHash: Uint8Array,
   parentHash: Uint8Array,
   chain: Chain
@@ -20,7 +21,7 @@ export const recursivelyFindParents = async (
   if (equalsBytes(parentHash, vmHeadHash) || equalsBytes(parentHash, new Uint8Array(32))) {
     return []
   }
-  const maxDepth = chain.config.engineParentLookupMaxDepth
+  const maxDepth = config.engineParentLookupMaxDepth
 
   const parentBlocks = []
   const block = await chain.getBlock(parentHash)
@@ -75,12 +76,13 @@ export const validExecutedChainBlock = async (
  * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
  */
 export const validHash = async (
+  config: { engineParentLookupMaxDepth: number },
   hash: Uint8Array,
   chain: Chain,
   chainCache: ChainCache
 ): Promise<PrefixedHexString | null> => {
   const { remoteBlocks, executedBlocks, invalidBlocks, skeleton } = chainCache
-  const maxDepth = chain.config.engineParentLookupMaxDepth
+  const maxDepth = config.engineParentLookupMaxDepth
 
   try {
     let validParent: Block | null = null
@@ -118,8 +120,12 @@ export const validHash = async (
 /**
  * Validates that the block satisfies post-merge conditions.
  */
-export const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
-  const ttd = chain.config.chainCommon.hardforkTTD(Hardfork.Paris)
+export const validateTerminalBlock = async (
+  config: { chainCommon: Common },
+  block: Block,
+  chain: Chain
+): Promise<boolean> => {
+  const ttd = config.chainCommon.hardforkTTD(Hardfork.Paris)
   if (ttd === null) return false
   const blockTd = await chain.getTd(block.hash(), block.header.number)
 
