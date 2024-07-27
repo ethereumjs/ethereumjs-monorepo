@@ -12,9 +12,10 @@ import {
   createBlockFromBlockData,
   createBlockFromRPC,
   createBlockFromValuesArray,
+  createHeader,
 } from '../src/constructors.js'
 import { genRequestsTrieRoot } from '../src/helpers.js'
-import { Block, BlockHeader } from '../src/index.js'
+import { Block } from '../src/index.js'
 
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 

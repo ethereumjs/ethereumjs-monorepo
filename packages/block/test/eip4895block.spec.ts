@@ -10,8 +10,11 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlockFromBlockData, createBlockFromRLPSerializedBlock } from '../src/constructors.js'
-import { BlockHeader } from '../src/header.js'
+import {
+  createBlockFromBlockData,
+  createBlockFromRLPSerializedBlock,
+  createHeader,
+} from '../src/constructors.js'
 import { genWithdrawalsTrieRoot } from '../src/helpers.js'
 
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'

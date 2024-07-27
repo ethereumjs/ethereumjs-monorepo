@@ -1,5 +1,6 @@
-import { BlockHeader } from './header.js'
 import { numberToHex } from './helpers.js'
+
+import { createHeader } from './index.js'
 
 import type { BlockOptions, JsonRpcBlock } from './types.js'
 

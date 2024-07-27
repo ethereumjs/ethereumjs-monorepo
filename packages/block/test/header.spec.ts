@@ -12,14 +12,20 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlockFromBlockData, createBlockFromRLPSerializedBlock } from '../src/constructors.js'
-import { BlockHeader } from '../src/header.js'
+import {
+  createBlockFromBlockData,
+  createBlockFromRLPSerializedBlock,
+  createHeader,
+  createHeaderFromRLPSerializedHeader,
+  createHeaderFromValuesArray,
+} from '../src/constructors.js'
 import { Block } from '../src/index.js'
 
 import * as testData from './testdata/bcBlockGasLimitTest.json'
 import * as blocksGoerli from './testdata/blocks_goerli.json'
 import * as blocksMainnet from './testdata/blocks_mainnet.json'
 
+import type { BlockHeader } from '../src/header.js'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 

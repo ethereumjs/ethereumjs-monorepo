@@ -10,8 +10,9 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import { Block } from '../src/block.js'
-import { createBlockFromBlockData } from '../src/constructors.js'
-import { BlockHeader } from '../src/header.js'
+import { createBlockFromBlockData, createHeader } from '../src/constructors.js'
+
+import type { BlockHeader } from '../src/header.js'
 
 const common = new Common({
   chain: Chain.Mainnet,

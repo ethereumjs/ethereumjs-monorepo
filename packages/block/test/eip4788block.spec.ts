@@ -2,8 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlockFromBlockData } from '../src/constructors.js'
-import { BlockHeader } from '../src/header.js'
+import { createBlockFromBlockData, createHeader } from '../src/constructors.js'
 
 describe('EIP4788 header tests', () => {
   it('should work', () => {
