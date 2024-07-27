@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { create4844BlobTx } from '@ethereumjs/tx'
 import { createAddressFromPrivateKey } from '@ethereumjs/util'
@@ -20,7 +20,7 @@ const main = async () => {
     { common },
   )
 
-  const block = createBlockFromBlockData(
+  const block = createBlock(
     {
       header: {
         excessBlobGas: 0n,

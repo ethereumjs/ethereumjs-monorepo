@@ -23,7 +23,7 @@ import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } 
 // (situation will eventually improve on Typescript and/or Eslint update)
 import type {
   createBlockFromBeaconPayloadJson,
-  createBlockFromBlockData,
+  createBlock,
   createBlockFromExecutionPayload,
   createBlockFromJsonRpcProvider,
   createBlockFromRLPSerializedBlock,
@@ -55,7 +55,7 @@ import type {
  * A block object can be created with one of the following constructor methods
  * (separate from the Block class to allow for tree shaking):
  *
- * - {@link createBlockFromBlockData }
+ * - {@link createBlock }
  * - {@link createBlockFromValuesArray }
  * - {@link createBlockFromRLPSerializedBlock }
  * - {@link createBlockFromRPC }

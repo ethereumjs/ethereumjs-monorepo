@@ -1,4 +1,4 @@
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { BlockHeader, createBlock } from '@ethereumjs/block'
 import {
   Common,
   Chain as CommonChain,
@@ -59,7 +59,7 @@ class FakeChain {
   }
   get blocks() {
     return {
-      latest: createBlockFromBlockData(),
+      latest: createBlock(),
       height: BigInt(0),
     }
   }
@@ -79,7 +79,7 @@ class FakeChain {
     },
     validateHeader: () => {},
     getIteratorHead: () => {
-      return createBlockFromBlockData({ header: { number: 1 } })
+      return createBlock({ header: { number: 1 } })
     },
     getTotalDifficulty: () => {
       return 1n
@@ -430,7 +430,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
     common,
   })
   const chain = new FakeChain() as any
-  const block = createBlockFromBlockData({}, { common })
+  const block = createBlock({}, { common })
   Object.defineProperty(chain, 'headers', {
     get() {
       return { latest: block.header, height: block.header.number }
@@ -478,10 +478,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
 describe("assembleBlocks() -> should stop assembling a block after it's full", async () => {
   const chain = new FakeChain() as any
   const gasLimit = 100000
-  const block = createBlockFromBlockData(
-    { header: { gasLimit } },
-    { common: customCommon, setHardfork: true },
-  )
+  const block = createBlock({ header: { gasLimit } }, { common: customCommon, setHardfork: true })
   Object.defineProperty(chain, 'headers', {
     get() {
       return { latest: block.header, height: BigInt(0) }

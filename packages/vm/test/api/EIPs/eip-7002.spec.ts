@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { createLegacyTx } from '@ethereumjs/tx'
@@ -71,7 +71,7 @@ function generateTx(nonce: bigint) {
 describe('EIP-7002 tests', () => {
   it('should correctly create requests', async () => {
     const vm = await setupVM({ common })
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           number: 1,
@@ -96,7 +96,7 @@ describe('EIP-7002 tests', () => {
     const tx = generateTx(BigInt(0))
 
     // Call withdrawals contract with a withdrawals request
-    const block2 = createBlockFromBlockData(
+    const block2 = createBlock(
       {
         header: {
           number: 2,
@@ -142,7 +142,7 @@ describe('EIP-7002 tests', () => {
     const tx2 = generateTx(BigInt(1))
     const tx3 = generateTx(BigInt(2))
 
-    const block3 = createBlockFromBlockData(
+    const block3 = createBlock(
       {
         header: {
           number: 3,
@@ -167,7 +167,7 @@ describe('EIP-7002 tests', () => {
 
   it('should throw when contract is not deployed', async () => {
     const vm = await setupVM({ common })
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           number: 1,

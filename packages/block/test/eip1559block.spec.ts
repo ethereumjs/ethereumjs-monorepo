@@ -3,7 +3,7 @@ import { create1559FeeMarketTx } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlockFromBlockData } from '../src/constructors.js'
+import { createBlock } from '../src/constructors.js'
 import { BlockHeader } from '../src/header.js'
 // Test data from Besu (retrieved via Discord)
 // Older version at https://github.com/abdelhamidbakhta/besu/blob/bf54b6c0b40d3015fc85ff9b078fbc26592d80c0/ethereum/core/src/test/resources/org/hyperledger/besu/ethereum/core/fees/basefee-test.json
@@ -18,7 +18,7 @@ const common = new Common({
   params: paramsBlock,
 })
 
-const genesis = createBlockFromBlockData({})
+const genesis = createBlock({})
 
 // Small hack to hack in the activation block number
 // (Otherwise there would be need for a custom chain only for testing purposes)
@@ -107,7 +107,7 @@ describe('EIP1559 tests', () => {
   })
 
   it('Header -> _genericFormValidation -> success case', async () => {
-    createBlockFromBlockData(
+    createBlock(
       {
         header: {
           number: BigInt(1),
@@ -148,7 +148,7 @@ describe('EIP1559 tests', () => {
   })
 
   it('Header -> validate() -> success cases', async () => {
-    const block1 = createBlockFromBlockData(
+    const block1 = createBlock(
       {
         header: {
           number: BigInt(1),
@@ -163,7 +163,7 @@ describe('EIP1559 tests', () => {
         common,
       },
     )
-    createBlockFromBlockData(
+    createBlock(
       {
         header: {
           number: BigInt(2),
@@ -224,7 +224,7 @@ describe('EIP1559 tests', () => {
     assert.ok(true, 'should not throw when elasticity is exactly matched')
   })
 
-  const block1 = createBlockFromBlockData(
+  const block1 = createBlock(
     {
       header: {
         number: BigInt(1),
@@ -416,7 +416,7 @@ describe('EIP1559 tests', () => {
       },
       { common },
     ).sign(hexToBytes(`0x${'46'.repeat(32)}`))
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           number: BigInt(1),

@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { createAddressFromString } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
@@ -33,7 +33,7 @@ describe(method, async () => {
     const signedTx = tx.sign(tx.getHashedMessageToSign())
 
     const parent = await chain.blockchain.getCanonicalHeadHeader()
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           parentHash: parent.hash(),

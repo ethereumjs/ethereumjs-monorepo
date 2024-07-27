@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
@@ -284,7 +284,7 @@ describe('EIP 2935: historical block hashes', () => {
 
       // validate the contract code cases
       // const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
-      const block = createBlockFromBlockData(
+      const block = createBlock(
         {
           header: {
             baseFeePerGas: BigInt(7),

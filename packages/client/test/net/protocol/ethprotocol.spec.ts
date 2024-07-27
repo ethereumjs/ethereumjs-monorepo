@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { TransactionType, create1559FeeMarketTx, createTxFromTxData } from '@ethereumjs/tx'
 import {
@@ -87,7 +87,7 @@ describe('[EthProtocol]', () => {
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     const td = BigInt(100)
-    const block = createBlockFromBlockData({}, { common: config.chainCommon })
+    const block = createBlock({}, { common: config.chainCommon })
     const res = p.decode(p.messages.filter((message) => message.name === 'NewBlock')[0], [
       block.raw(),
       bigIntToBytes(td),
@@ -104,7 +104,7 @@ describe('[EthProtocol]', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
-    const block = createBlockFromBlockData({})
+    const block = createBlock({})
     const res = p.decode(p.messages.filter((message) => message.name === 'GetReceipts')[0], [
       bigIntToBytes(1n),
       [block.hash()],
