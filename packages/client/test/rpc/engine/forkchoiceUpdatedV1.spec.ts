@@ -29,7 +29,7 @@ const validPayloadAttributes = {
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 
-function createBlock(parentBlock: Block) {
+function createBlockFromParent(parentBlock: Block) {
   const prevRandao = randomBytes(32)
   const block = createBlock(
     {
@@ -307,13 +307,13 @@ describe(method, () => {
     const canonical = [genesis]
 
     for (let i = 0; i < 2; i++) {
-      canonical.push(createBlock(canonical[canonical.length - 1]))
+      canonical.push(createBlockFromParent(canonical[canonical.length - 1]))
     }
 
     // Build an alternative payload
     const reorg = [genesis]
     for (let i = 0; i < 2; i++) {
-      reorg.push(createBlock(reorg[reorg.length - 1]))
+      reorg.push(createBlockFromParent(reorg[reorg.length - 1]))
     }
 
     const canonicalPayload = canonical.map(
@@ -347,13 +347,13 @@ describe(method, () => {
     const canonical = [genesis]
 
     for (let i = 0; i < 2; i++) {
-      canonical.push(createBlock(canonical[canonical.length - 1]))
+      canonical.push(createBlockFromParent(canonical[canonical.length - 1]))
     }
 
     // Build an alternative payload
     const reorg = [genesis]
     for (let i = 0; i < 2; i++) {
-      reorg.push(createBlock(reorg[reorg.length - 1]))
+      reorg.push(createBlockFromParent(reorg[reorg.length - 1]))
     }
 
     const canonicalPayload = canonical.map(
