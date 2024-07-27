@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { createHeader } from '@ethereumjs/block'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
@@ -7,6 +7,8 @@ import { Config } from '../../src/config.js'
 import { Peer } from '../../src/net/peer/peer.js'
 import { HeaderFetcher } from '../../src/sync/fetcher/headerfetcher.js'
 import { Event } from '../../src/types.js'
+
+import type { BlockHeader } from '@ethereumjs/block'
 
 class PeerPool {
   open() {}

@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { createHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, Hardfork, parseGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'

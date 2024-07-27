@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { createHeaderFromValuesArray } from '@ethereumjs/block'
 import {
   BIGINT_0,
   bigIntToUnpaddedBytes,
@@ -13,7 +13,7 @@ import { Protocol } from './protocol.js'
 import type { Chain } from '../../blockchain/index.js'
 import type { FlowControl } from './flowcontrol.js'
 import type { Message, ProtocolOptions } from './protocol.js'
-import type { BlockHeaderBytes } from '@ethereumjs/block'
+import type { BlockHeader, BlockHeaderBytes } from '@ethereumjs/block'
 
 export interface LesProtocolOptions extends ProtocolOptions {
   /* Blockchain */

@@ -1,4 +1,8 @@
-import { BlockHeader, createBlockFromValuesArray, valuesArrayToHeaderData } from '@ethereumjs/block'
+import {
+  createBlockFromValuesArray,
+  createHeaderFromValuesArray,
+  valuesArrayToHeaderData,
+} from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,

@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { type BlockHeader, createHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { BIGINT_0, BIGINT_1, BIGINT_2, bytesToHex, equalsBytes } from '@ethereumjs/util'

@@ -1,4 +1,4 @@
-import { Block, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { Block, createBlockFromBlockData, createHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -13,6 +13,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { createBlockchain } from '../src/index.js'
 
+import type { BlockHeader } from '@ethereumjs/block'
 import type { DB } from '@ethereumjs/util'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {

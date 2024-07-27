@@ -1,4 +1,4 @@
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { BlockHeader, createBlockFromBlockData, createHeader } from '@ethereumjs/block'
 import {
   Common,
   Chain as CommonChain,

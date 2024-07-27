@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { createHeader } from '@ethereumjs/block'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain/index.js'

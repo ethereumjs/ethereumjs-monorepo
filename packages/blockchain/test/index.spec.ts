@@ -1,7 +1,8 @@
 import {
-  BlockHeader,
   createBlockFromBlockData,
   createBlockFromRLPSerializedBlock,
+  createHeader,
+  createHeaderFromValuesArray,
 } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { MapDB, bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
