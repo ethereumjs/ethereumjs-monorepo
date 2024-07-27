@@ -22,7 +22,6 @@ import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } 
 // (situation will eventually improve on Typescript and/or Eslint update)
 import {
   BlockHeader,
-  createHeader,
   type createBlockFromBeaconPayloadJson,
   type createBlockFromBlockData,
   type createBlockFromExecutionPayload,
@@ -101,7 +100,7 @@ export class Block {
     requests?: CLRequest<CLRequestType>[],
     executionWitness?: VerkleExecutionWitness | null,
   ) {
-    this.header = header ?? createHeader({}, opts)
+    this.header = header ?? new BlockHeader({}, opts)
     this.common = this.header.common
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
 

@@ -1,6 +1,6 @@
 import { numberToHex } from './helpers.js'
 
-import { createHeader } from './index.js'
+import { BlockHeader } from './index.js'
 
 import type { BlockOptions, JsonRpcBlock } from './types.js'
 
@@ -35,7 +35,7 @@ export function blockHeaderFromRpc(blockParams: JsonRpcBlock, options?: BlockOpt
     requestsRoot,
   } = blockParams
 
-  const blockHeader = createHeader(
+  const blockHeader = new BlockHeader(
     {
       parentHash,
       uncleHash: sha3Uncles,
