@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { MapDB } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
