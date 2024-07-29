@@ -1,5 +1,5 @@
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { Common, ConsensusAlgorithm, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
 import { KECCAK256_RLP, bytesToHex, randomBytes } from '@ethereumjs/util'

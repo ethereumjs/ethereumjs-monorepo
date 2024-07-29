@@ -3,7 +3,7 @@ import {
   createBlockFromBlockData,
   createBlockFromRLPSerializedBlock,
 } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Goerli, Hardfork, Holesky, Mainnet, Sepolia } from '@ethereumjs/common'
 import { MapDB, bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -48,7 +48,7 @@ describe('blockchain test', () => {
   it('should initialize holesky correctly', async () => {
     // Taken from: https://github.com/eth-clients/holesky/blob/f1d14b9a80085c3f0cb9d729fea9172cde445588/README.md#hole%C5%A1ky-hole%C5%A1ovice-testnet
     const holeskyHash = '0xb5f7f912443c940f21fd611f12828d75b534364ed9e95ca4e307729a4661bde4'
-    const common = new Common({ chain: Chain.Holesky })
+    const common = new Common({ chain: Holesky })
     const blockchain = await createBlockchain({
       common,
     })
@@ -73,7 +73,7 @@ describe('blockchain test', () => {
     try {
       await createBlockchain({ common, validateConsensus: true })
       await createBlockchain({ common, validateBlocks: true })
-      common = new Common({ chain: Chain.Goerli })
+      common = new Common({ chain: Goerli })
       await createBlockchain({ common, validateConsensus: true })
       const chain = await createBlockchain({ common, validateBlocks: true })
       assert.ok(chain instanceof Blockchain, 'should not throw')
@@ -735,7 +735,7 @@ describe('blockchain test', () => {
         calcDifficultyFromHeader: genesisBlock.header,
       }),
       createBlockFromBlockData(blockData2, {
-        common: new Common({ chain: Chain.Sepolia, hardfork: Hardfork.Chainstart }),
+        common: new Common({ chain: Sepolia, hardfork: Hardfork.Chainstart }),
         calcDifficultyFromHeader: genesisBlock.header,
       }),
     ]

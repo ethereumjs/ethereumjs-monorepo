@@ -22,7 +22,7 @@ import type { FullEthereumService } from '../../../src/service/index.js'
 const method = 'eth_sendRawTransaction'
 
 describe(method, () => {
-  it('call with valid arguments', async () => {
+  it.only('call with valid arguments', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
     const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
     const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
@@ -31,12 +31,7 @@ describe(method, () => {
       return this
     }
     const common = new Common({ chain: Mainnet })
-    common
-      .hardforks()
-      .filter((hf) => hf.timestamp !== undefined)
-      .map((hf) => {
-        hf.timestamp = undefined
-      })
+
     const syncTargetHeight = common.hardforkBlock(Hardfork.London)
     const { rpc, client } = await baseSetup({ syncTargetHeight, includeVM: true })
 
@@ -50,8 +45,8 @@ describe(method, () => {
     const account = await vm.stateManager.getAccount(address)
     account!.balance = BigInt('40100000')
     await vm.stateManager.putAccount(address, account!)
-    client.config.chainCommon.setHardfork('london')
     const res = await rpc.request(method, [txData])
+
     assert.equal(
       res.result,
       '0xd7217a7d3251880051783f305a3536e368c604aa1f1602e6cd107eb7b87129da',

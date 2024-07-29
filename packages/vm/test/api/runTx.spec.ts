@@ -1,6 +1,6 @@
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Blockchain, createBlockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   BlobEIP4844Transaction,
   FeeMarketEIP1559Transaction,
@@ -77,7 +77,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     let vm = await VM.create({ common })
     await simpleRun(vm, 'mainnet (PoW), london HF, default SM - should run without errors')
 
-    common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
+    common = new Common({ chain: Goerli, hardfork: Hardfork.London })
     vm = await VM.create({
       common,
       blockchain: await createBlockchain({ validateConsensus: false, validateBlocks: false }),

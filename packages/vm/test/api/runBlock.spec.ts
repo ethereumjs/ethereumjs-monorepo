@@ -3,7 +3,7 @@ import {
   createBlockFromRLPSerializedBlock,
   createBlockFromValuesArray,
 } from '@ethereumjs/block'
-import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
+import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Capability,
@@ -47,7 +47,7 @@ import type {
   PostByzantiumTxReceipt,
   PreByzantiumTxReceipt,
   RunBlockOpts,
-} from '../../src/types'
+} from '../../src/types.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { AuthorizationListBytesItem, ChainConfig } from '@ethereumjs/common'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
@@ -356,7 +356,7 @@ describe('runBlock() -> runtime behavior', async () => {
   })
 
   it('should allocate to correct clique beneficiary', async () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.Istanbul })
     const vm = await setupVM({ common })
 
     const signer = {

@@ -1,11 +1,11 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Goerli, Hardfork } from '@ethereumjs/common'
 import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { BlockHeader } from '../src/header.js'
 
 describe('[Header]: Clique PoA Functionality', () => {
-  const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+  const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 
   it('Header Data', () => {
     let header = BlockHeader.fromHeaderData({ number: 1 })

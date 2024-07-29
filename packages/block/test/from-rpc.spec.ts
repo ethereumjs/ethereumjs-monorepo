@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Goerli, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -90,7 +90,7 @@ describe('[fromRPC]:', () => {
   })
 
   it('should create a block from london hardfork', () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.London })
     const block = createBlockFromRpc(testDataFromRpcGoerliLondon as JsonRpcBlock, [], { common })
     assert.equal(
       `0x${block.header.baseFeePerGas?.toString(16)}`,
@@ -167,7 +167,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
   })
 
   it('should correctly parse a cancun block over rpc', () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Cancun })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.Cancun })
     const block = blockHeaderFromRpc(infuraGoerliBlock10536893 as JsonRpcBlock, { common })
     const hash = hexToBytes(infuraGoerliBlock10536893.hash as PrefixedHexString)
     assert.ok(equalsBytes(block.hash(), hash))

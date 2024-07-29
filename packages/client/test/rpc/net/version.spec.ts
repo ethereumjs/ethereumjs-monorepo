@@ -28,7 +28,7 @@ describe(method, () => {
 
   it('call on holesky', async () => {
     const manager = createManager(
-      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Holesky }) }),
+      await createClient({ opened: true, commonChain: new Common({ chain: Holesky }) }),
     )
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
@@ -42,7 +42,7 @@ describe(method, () => {
 
   it('call on goerli', async () => {
     const manager = createManager(
-      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) }),
+      await createClient({ opened: true, commonChain: new Common({ chain: Goerli }) }),
     )
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 

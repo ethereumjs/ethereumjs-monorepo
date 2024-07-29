@@ -1,4 +1,11 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import {
+  Common,
+  Goerli,
+  Hardfork,
+  Mainnet,
+  createCommonFromGethGenesis,
+  createCustomCommon,
+} from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
@@ -26,7 +33,6 @@ import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
-import type { ChainConfig } from '@ethereumjs/common'
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
 describe('[Block]: block functions', () => {
@@ -93,12 +99,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('initialization -> setHardfork option', () => {
-    const customChains = [testnetMerge]
-    const common = new Common({
-      chain: 'testnetMerge',
-      hardfork: Hardfork.Istanbul,
-      customChains: customChains as ChainConfig[],
-    })
+    const common = createCommonFromGethGenesis(testnetMerge, { chain: 'testnetMerge' })
 
     let block = createBlockFromBlockData(
       {
@@ -148,7 +149,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('should initialize with null parameters without throwing', () => {
-    const common = new Common({ chain: Chain.Goerli })
+    const common = new Common({ chain: Goerli })
     const opts = { common }
     assert.doesNotThrow(function () {
       createBlockFromBlockData({}, opts)
@@ -178,7 +179,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('should test block validation on poa chain', async () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 
     try {
       createBlockFromRpc(testDataFromRpcGoerli as JsonRpcBlock, [], { common })

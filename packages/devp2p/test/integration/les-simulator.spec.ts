@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, Sepolia } from '@ethereumjs/common'
 import { hexToBytes, intToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -64,7 +64,7 @@ describe('LES simulator tests', () => {
       }
 
       const c1 = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-      const c2 = new Common({ chain: Chain.Sepolia, hardfork: Hardfork.London })
+      const c2 = new Common({ chain: Sepolia, hardfork: Hardfork.London })
       util.twoPeerMsgExchange(it, opts, capabilities, [c1, c2], 41599)
     })
   })

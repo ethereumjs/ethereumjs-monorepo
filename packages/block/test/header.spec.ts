@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Goerli, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   KECCAK256_RLP,
@@ -190,7 +190,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('Initialization -> Clique Blocks', () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
     const header = BlockHeader.fromHeaderData({ extraData: new Uint8Array(97) }, { common })
     assert.ok(bytesToHex(header.hash()), 'default block should initialize')
   })
@@ -241,7 +241,7 @@ describe('[Block]: Header functions', () => {
     }
 
     // PoA
-    common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+    common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
     genesis = createBlockFromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
 
     parentHash = genesis.hash()
@@ -298,7 +298,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('should skip consensusFormatValidation if flag is set to false', () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
     const extraData = concatBytes(new Uint8Array(1))
 
     try {
@@ -346,7 +346,7 @@ describe('[Block]: Header functions', () => {
   it('header validation -> poa checks', async () => {
     const headerData = testDataPreLondon.blocks[0].blockHeader
 
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
     const genesisRlp = toBytes(testDataPreLondon.genesisRLP)
@@ -489,7 +489,7 @@ describe('[Block]: Header functions', () => {
       'correct PoW hash (mainnet block 1)',
     )
 
-    common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+    common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
     header = BlockHeader.fromHeaderData((blocksGoerli as any).default[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
