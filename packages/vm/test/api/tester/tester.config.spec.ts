@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { getCommon } from '../../tester/config.js'
 
-describe('bloom', () => {
+describe('test runner config tests', () => {
   it('should initialize common with the right hardfork', () => {
     const common = getCommon('byzantium')
     assert.ok(common.hardfork() === Hardfork.Byzantium)

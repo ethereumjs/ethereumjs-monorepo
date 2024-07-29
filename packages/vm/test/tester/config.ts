@@ -1,8 +1,8 @@
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { type Kzg, intToHex } from '@ethereumjs/util'
 import * as path from 'path'
 
 import type { HardforkTransitionConfig } from '@ethereumjs/common'
-import type { Kzg } from '@ethereumjs/util'
 
 /**
  * Default tests path (git submodule: ethereum-tests)
@@ -254,7 +254,7 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
         testHardforks.push({
           name: hf.name,
           block: null,
-          ttd: BigInt(ttd),
+          ttd: intToHex(ttd),
         })
       }
       if (timestamp !== undefined && hf.name !== Hardfork.Dao) {

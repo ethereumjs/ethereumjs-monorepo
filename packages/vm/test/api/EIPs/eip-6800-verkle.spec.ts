@@ -18,8 +18,8 @@ const common = createCustomCommon(customChainParams, Mainnet, {
   hardfork: Hardfork.Cancun,
   eips: [2935, 4895, 6800],
 })
-const decodedTxs = verkleBlockJSON.transactions.map((tx) =>
-  createTxFromSerializedData(hexToBytes(tx as PrefixedHexString)),
+const decodedTxs = verkleBlockJSON.default.transactions.map((tx) =>
+  createTxFromSerializedData(hexToBytes(tx as PrefixedHexString), { common }),
 )
 
 const parentStateRoot = hexToBytes(
