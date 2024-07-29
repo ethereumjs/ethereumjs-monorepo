@@ -1,10 +1,5 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import {
-  Common,
-  Chain as CommonChain,
-  Hardfork,
-  createCommonFromGethGenesis,
-} from '@ethereumjs/common'
+import { Common, Goerli, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { create1559FeeMarketTx, create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
 import {
@@ -48,7 +43,7 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
   await vm.stateManager.commit()
 }
 
-const common = new Common({ chain: CommonChain.Goerli, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: Goerli, hardfork: Hardfork.Berlin })
 // Unschedule any timestamp since tests are not configured for timestamps
 common
   .hardforks()

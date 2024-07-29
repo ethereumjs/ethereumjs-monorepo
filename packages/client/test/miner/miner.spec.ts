@@ -1,7 +1,6 @@
 import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import {
   Common,
-  Chain as CommonChain,
   Goerli,
   Hardfork,
   createCommonFromGethGenesis,
