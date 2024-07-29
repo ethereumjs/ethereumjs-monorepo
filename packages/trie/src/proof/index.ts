@@ -1,11 +1,12 @@
+import { bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { createTrieFromProof } from '../constructors.js'
-import { verifyRangeProof } from '../index.js'
+import { Trie, verifyRangeProof } from '../index.js'
 import { bytesToNibbles } from '../util/nibbles.js'
 
-import { Proof, Trie, TrieOpts } from '../index.js'
-import { PutBatch, bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
+import type { Proof, TrieOpts } from '../index.js'
+import type { PutBatch } from '@ethereumjs/util'
 
 /**
  * Static version of verifyProof function with the same behavior. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes

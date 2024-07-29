@@ -1,8 +1,8 @@
 import { utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../../src/trie.js'
 import { createProof, fromProof, verifyProof } from '../../src/index.js'
+import { Trie } from '../../src/trie.js'
 
 describe('Run Trie script with DEBUG enabled', async () => {
   const trie_entries: [string, string | null][] = [
