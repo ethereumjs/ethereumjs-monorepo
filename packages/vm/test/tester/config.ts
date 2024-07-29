@@ -1,6 +1,7 @@
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import * as path from 'path'
 
+import type { HardforkTransitionConfig } from '@ethereumjs/common'
 import type { Kzg } from '@ethereumjs/util'
 
 /**
@@ -228,7 +229,7 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
   )
   const mainnetCommon = new Common({ chain: Mainnet, hardfork: hfName })
   const hardforks = mainnetCommon.hardforks()
-  const testHardforks = []
+  const testHardforks: HardforkTransitionConfig[] = []
   for (const hf of hardforks) {
     // check if we enable this hf
     // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
@@ -270,6 +271,7 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
       hardforks: testHardforks,
       defaultHardfork: hfName,
     },
+    Mainnet,
     { eips: [3607], customCrypto: { kzg } },
   )
   // Activate EIPs
@@ -353,8 +355,8 @@ export function getCommon(network: string, kzg?: Kzg): Common {
       {
         hardforks: testHardforks,
       },
+      Mainnet,
       {
-        baseChain: 'mainnet',
         hardfork: transitionForks.startFork,
         eips: [3607],
         customCrypto: { kzg },

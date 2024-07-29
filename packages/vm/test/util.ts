@@ -1,5 +1,5 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   create1559FeeMarketTx,
@@ -426,8 +426,8 @@ export function getDAOCommon(activationBlock: number) {
     {
       hardforks: editedForks,
     },
+    Mainnet,
     {
-      baseChain: 'mainnet',
       hardfork: Hardfork.Dao,
     },
   )

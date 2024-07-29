@@ -1,6 +1,6 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
   bytesToHex,
@@ -50,10 +50,10 @@ const genesisState: GenesisState = {
   [contractAddress]: accountState,
 }
 
-const common = new Common({
+// @ts-ignore PrefixedHesString type is too strict
+const common = createCustomCommon(testChain.default, Mainnet, {
   chain: 'testnet',
   hardfork: Hardfork.Chainstart,
-  customChains: [testChain] as ChainConfig[],
 })
 const block = createBlockFromBlockData(
   {

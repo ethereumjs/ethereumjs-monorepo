@@ -1,10 +1,10 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
-  Chain,
   Common,
   ConsensusAlgorithm,
   Hardfork,
+  Mainnet,
   createCommonFromGethGenesis,
 } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'

@@ -8,10 +8,10 @@ import { VM } from '../../src/index.js'
 describe('genesis', () => {
   it('should initialize with predefined genesis states', async () => {
     const f = async () => {
-      const genesisState = getGenesis(Mainnet)
+      const genesisState = getGenesis(Chain.Mainnet)
 
       const blockchain = await createBlockchain({ genesisState })
-      await VM.create({ blockchain, genesisState })
+      await VM.create({ blockchain })
     }
 
     assert.doesNotThrow(f, 'should allow for initialization with genesis from genesis package')

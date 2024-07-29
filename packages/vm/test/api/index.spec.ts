@@ -1,18 +1,14 @@
-import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { EVM, createEVM } from '@ethereumjs/evm'
 import { Account, KECCAK256_RLP, createAddressFromString, hexToBytes } from '@ethereumjs/util'
-import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { assert, describe, it } from 'vitest'
 
 import { type VMOpts, paramsVM } from '../../src/index.js'
 import { VM } from '../../src/vm.js'
 
-import * as testnet from './testdata/testnet.json'
-import * as testnet2 from './testdata/testnet2.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 import { setupVM } from './utils.js'
 
-import type { ChainConfig } from '@ethereumjs/common'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
 /**
@@ -184,14 +180,13 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
   })
 
   it('should only accept valid chain and fork', async () => {
-    // let common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
-    let common = createCustomCommon({ chainId: 3 })
+    let common = createCustomCommon({ chainId: 3 }, Mainnet)
     common.setHardfork(Hardfork.Byzantium)
     let vm = await VM.create({ common })
     assert.equal(vm.common.param('ecAddGas'), BigInt(500))
 
     try {
-      common = new Common({ chain: 'mainchain', hardfork: Hardfork.Homestead })
+      common = new Common({ chain: Mainnet, hardfork: 'extraCheese' })
       vm = await VM.create({ common })
       assert.fail('should have failed for invalid chain')
     } catch (e: any) {
@@ -200,33 +195,20 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
   })
 
   it('should accept a supported EIP', async () => {
-    const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-
-    if (isBrowser() === false) {
-      const common = new Common({ chain: Mainnet, eips: [2537] })
-      try {
-        await VM.create({ common })
-        assert.ok(true, 'did not throw')
-      } catch (error) {
-        assert.fail('should not have thrown')
-      }
+    const common = new Common({ chain: Mainnet, eips: [2537] })
+    try {
+      await VM.create({ common })
+      assert.ok(true, 'did not throw')
+    } catch (error) {
+      assert.fail('should not have thrown')
     }
   })
 
   it('should accept a custom chain config (createCustomCommon() static constructor)', async () => {
     const customChainParams = { name: 'custom', chainId: 123 }
-    const common = createCustomCommon(customChainParams, {
-      baseChain: 'mainnet',
+    const common = createCustomCommon(customChainParams, Mainnet, {
       hardfork: 'byzantium',
     })
-
-    const vm = await VM.create({ common })
-    assert.equal(vm.common, common)
-  })
-
-  it('should accept a custom chain config (Common customChains constructor option)', async () => {
-    const customChains = [testnet, testnet2] as ChainConfig[]
-    const common = new Common({ chain: 'testnet', hardfork: Hardfork.Berlin, customChains })
 
     const vm = await VM.create({ common })
     assert.equal(vm.common, common)
@@ -235,8 +217,11 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
 
 describe('VM -> setHardfork, state (deprecated), blockchain', () => {
   it('setHardfork', async () => {
-    const customChains = [testnetMerge] as ChainConfig[]
-    const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
+    // @ts-ignore PrefixedHexString type is too strict
+    const common = createCustomCommon(testnetMerge.default, Mainnet, {
+      name: 'testnetMerge',
+      hardfork: Hardfork.Istanbul,
+    })
 
     let vm = await VM.create({ common, setHardfork: true })
     assert.equal((vm as any)._setHardfork, true, 'should set setHardfork option')
