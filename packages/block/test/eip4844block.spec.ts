@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { create4844BlobTx } from '@ethereumjs/tx'
 import {
   blobsToCommitments,

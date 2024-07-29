@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
