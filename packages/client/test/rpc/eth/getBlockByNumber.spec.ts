@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { createCustomCommon } from '@ethereumjs/common'
+import { Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
 import { createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
@@ -10,7 +10,7 @@ import { createClient, createManager, dummy, getRpcClient, startRPC } from '../h
 
 const kzg = await loadKZG()
 
-const common = createCustomCommon({ chainId: 1 }, { customCrypto: { kzg } })
+const common = createCustomCommon({ chainId: 1 }, Mainnet, { customCrypto: { kzg } })
 
 common.setHardfork('cancun')
 const mockedTx1 = createLegacyTx({}).sign(dummy.privKey)

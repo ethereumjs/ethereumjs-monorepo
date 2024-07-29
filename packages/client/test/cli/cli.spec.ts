@@ -44,6 +44,20 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
+  it.only('should successfully start client with non-lower case network name', async () => {
+    const cliArgs = ['--network=Sepolia']
+    const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
+      if (message.includes('Initializing Ethereumjs client')) {
+        assert.ok(
+          message.includes('network=Sepolia'),
+          'client is using custom inputs for network and network ID',
+        )
+        child.kill(9)
+        resolve(undefined)
+      }
+    }
+    await clientRunHelper(cliArgs, onData)
+  })
   it('should successfully start client with custom inputs for PoA network', async () => {
     const cliArgs = [
       '--rpc',

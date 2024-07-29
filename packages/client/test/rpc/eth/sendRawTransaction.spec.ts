@@ -1,5 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { create1559FeeMarketTxFromRLP, create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
 import {
@@ -22,7 +22,7 @@ import type { FullEthereumService } from '../../../src/service/index.js'
 const method = 'eth_sendRawTransaction'
 
 describe(method, () => {
-  it('call with valid arguments', async () => {
+  it.only('call with valid arguments', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
     const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
     const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
@@ -46,13 +46,13 @@ describe(method, () => {
     const transaction = create1559FeeMarketTxFromRLP(hexToBytes(txData))
     const address = transaction.getSenderAddress()
     const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
-
     await vm.stateManager.putAccount(address, new Account())
     const account = await vm.stateManager.getAccount(address)
     account!.balance = BigInt('40100000')
     await vm.stateManager.putAccount(address, account!)
-
+    client.config.chainCommon.setHardfork('london')
     const res = await rpc.request(method, [txData])
+    console.log(res)
     assert.equal(
       res.result,
       '0xd7217a7d3251880051783f305a3536e368c604aa1f1602e6cd107eb7b87129da',

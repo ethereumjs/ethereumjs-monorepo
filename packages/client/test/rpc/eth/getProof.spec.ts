@@ -1,6 +1,6 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common } from '@ethereumjs/common'
+import { Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
@@ -87,7 +87,7 @@ const testnetData = {
   bootstrapNodes: [],
 }
 
-const common = new Common({ chain: 'testnet2', customChains: [testnetData] })
+const common = createCustomCommon({ ...testnetData }, Mainnet)
 
 describe(method, async () => {
   it('call with valid arguments', async () => {

@@ -8,7 +8,7 @@ import {
   ConsensusAlgorithm,
   Hardfork,
   createCommonFromGethGenesis,
-  getInitializedChains,
+  getPresetChainConfig,
 } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -72,7 +72,7 @@ import type { Server as RPCServer } from 'jayson/promise/index.js'
 
 type Account = [address: Address, privateKey: Uint8Array]
 
-const networks = Object.entries(getInitializedChains().names)
+const networks = Object.keys(Chain).map((network) => network.toLowerCase())
 
 let logger: Logger
 
@@ -83,7 +83,8 @@ const args: ClientOpts = yargs
   })
   .option('network', {
     describe: 'Network',
-    choices: networks.map((n) => n[1]).filter((el) => isNaN(parseInt(el))),
+    choices: networks,
+    coerce: (arg: string) => arg.toLowerCase(),
     default: 'mainnet',
   })
   .option('chainId', {
@@ -807,6 +808,8 @@ async function inputAccounts() {
   const accounts: Account[] = []
 
   const rl = readline.createInterface({
+    // @ts-ignore Looks like there is a type incompatibility in NodeJS ReadStream vs what this package expects
+    // TODO: See whether package needs to be updated or not
     input: process.stdin,
     output: process.stdout,
   })
@@ -843,7 +846,7 @@ async function inputAccounts() {
         ;(rl as any).history = (rl as any).history.slice(1)
         const privKey = hexToBytes(inputKey)
         const derivedAddress = createAddressFromPrivateKey(privKey)
-        if (address.equals(derivedAddress)) {
+        if (address.equals(derivedAddress) === true) {
           accounts.push([address, privKey])
         } else {
           console.error(
@@ -933,7 +936,8 @@ async function run() {
   // loaded and initialized on the sharding hardfork activation
   // Give chainId priority over networkId
   // Give networkId precedence over network name
-  const chain = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
+  const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
+  const chain = getPresetChainConfig(chainName)
   const cryptoFunctions: CustomCrypto = {}
   const kzg = await loadKZG()
 
@@ -1015,12 +1019,12 @@ async function run() {
 
   // Use custom chain parameters file if specified
   if (typeof args.customChain === 'string') {
+    // TODO: Fix this to use createCustomCommon
     try {
       const customChainParams = JSON.parse(readFileSync(args.customChain, 'utf-8'))
       customGenesisState = JSON.parse(readFileSync(args.customGenesisState!, 'utf-8'))
       common = new Common({
         chain: customChainParams.name,
-        customChains: [customChainParams],
         customCrypto: cryptoFunctions,
       })
     } catch (err: any) {

@@ -1162,6 +1162,7 @@ export class Eth {
     if (txTargetHeight <= chainHeight) {
       txTargetHeight = chainHeight + BIGINT_1
     }
+    console.log(common.hardfork())
     common.setHardforkBy({
       blockNumber: txTargetHeight,
       timestamp: Math.floor(Date.now() / 1000),
