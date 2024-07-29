@@ -124,10 +124,9 @@ describe('[VMExecution]', () => {
     assert.equal(newHead.header.number, BigInt(5), 'should run all blocks')
 
     // @ts-ignore PrefixedHexString type is too strict
-    const common = createCustomCommon(testnet.default, Mainnet, { hardfork: Hardfork.Chainstart })
+    const common = createCustomCommon(testnet.default, Mainnet)
     exec = await testSetup(blockchain, common)
     await exec.run()
-
     assert.equal(exec.hardfork, 'byzantium', 'should update HF on block run')
   })
 
