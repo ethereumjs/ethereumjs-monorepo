@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { assert } from 'vitest'
 
 import { DPT, ETH, RLPx, genPrivateKey } from '../../src/index.js'
@@ -44,7 +44,7 @@ export function getTestDPTsWithDns(numDPTs: number, basePort: number) {
       },
       timeout: 1000,
       refreshInterval: 400,
-      dnsNetworks: [testdata.dns.enrTree],
+      dnsNetworks: [testdata.default.dns.enrTree],
       shouldFindNeighbours: false,
       shouldGetDnsPeers: true,
     })
