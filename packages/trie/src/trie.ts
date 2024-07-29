@@ -135,38 +135,6 @@ export class Trie {
   }
 
   /**
-   * A range proof is a proof that includes the encoded trie nodes from the root node to leaf node for one or more branches of a trie,
-   * allowing an entire range of leaf nodes to be validated. This is useful in applications such as snap sync where contiguous ranges
-   * of state trie data is received and validated for constructing world state, locally. Also see {@link verifyRangeProof}. A static
-   * version of this function also exists.
-   * @param rootHash - root hash of state trie this proof is being verified against.
-   * @param firstKey - first key of range being proven.
-   * @param lastKey - last key of range being proven.
-   * @param keys - key list of leaf data being proven.
-   * @param values - value list of leaf data being proven, one-to-one correspondence with keys.
-   * @param proof - proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well
-   * @returns a flag to indicate whether there exists more trie node in the trie
-   */
-  verifyRangeProof(
-    rootHash: Uint8Array,
-    firstKey: Uint8Array | null,
-    lastKey: Uint8Array | null,
-    keys: Uint8Array[],
-    values: Uint8Array[],
-    proof: Uint8Array[] | null,
-  ): Promise<boolean> {
-    return verifyRangeProof(
-      rootHash,
-      firstKey && bytesToNibbles(this.appliedKey(firstKey)),
-      lastKey && bytesToNibbles(this.appliedKey(lastKey)),
-      keys.map((k) => this.appliedKey(k)).map(bytesToNibbles),
-      values,
-      proof,
-      this._opts.useKeyHashingFunction,
-    )
-  }
-
-  /**
    * Creates a proof from a trie and key that can be verified using {@link verifyTrieProof}. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains
    * the encoded trie nodes from the root node to the leaf node storing state data. The returned proof will be in the format of an array that contains Uint8Arrays of
    * serialized branch, extension, and/or leaf nodes.
