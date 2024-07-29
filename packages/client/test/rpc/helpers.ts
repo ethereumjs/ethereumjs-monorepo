@@ -211,8 +211,11 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
 export async function baseSetup(clientOpts: any = {}) {
   const client = await createClient(clientOpts)
   const manager = createManager(client)
-  const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
-  const server = startRPC({ ...manager.getMethods(), ...engineMethods })
+  const engineMethods = clientOpts.engine === true ? manager.getMethods(true, true) : {}
+  const server = startRPC({
+    ...manager.getMethods(false, true), // Add debug trace since this is for tests
+    ...engineMethods,
+  })
   const host = server.address() as AddressInfo
   const rpc = Client.http({ port: host.port })
   server.once('close', () => {
