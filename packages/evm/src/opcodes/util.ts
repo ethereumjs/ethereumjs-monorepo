@@ -7,8 +7,8 @@ import {
   BIGINT_32,
   BIGINT_64,
   BIGINT_NEG1,
-  bigIntToBytes,
   bytesToHex,
+  createAddressFromBigInt,
   equalsBytes,
   setLengthLeft,
   setLengthRight,
@@ -20,8 +20,19 @@ import { EvmError } from '../exceptions.js'
 import type { ERROR } from '../exceptions.js'
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 
 const MASK_160 = (BIGINT_1 << BIGINT_160) - BIGINT_1
+
+/**
+ * Create an address from a stack item (256 bit integer).
+ * This wrapper ensures that the value is masked to 160 bits.
+ * @param value 160-bit integer
+ */
+export function createAddressFromStackBigInt(value: bigint): Address {
+  const maskedValue = value & MASK_160
+  return createAddressFromBigInt(maskedValue)
+}
 
 /**
  * Proxy function for @ethereumjs/util's setLengthLeft, except it returns a zero
@@ -43,14 +54,6 @@ export function setLengthLeftStorage(value: Uint8Array) {
 export function trap(err: string) {
   // TODO: facilitate extra data along with errors
   throw new EvmError(err as ERROR)
-}
-
-/**
- * Converts bigint address (they're stored like this on the stack) to Uint8Array address
- */
-export function addresstoBytes(address: bigint | Uint8Array) {
-  if (address instanceof Uint8Array) return address
-  return setLengthLeft(bigIntToBytes(address & MASK_160), 20)
 }
 
 /**

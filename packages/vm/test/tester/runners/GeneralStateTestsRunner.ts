@@ -3,7 +3,13 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { type InterpreterStep } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
+import {
+  Account,
+  bytesToHex,
+  createAddressFromString,
+  equalsBytes,
+  toBytes,
+} from '@ethereumjs/util'
 
 import { VM, runTx } from '../../../src/index.js'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.js'
@@ -104,7 +110,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   }
 
   // Even if no txs are ran, coinbase should always be created
-  const coinbaseAddress = Address.fromString(testData.env.currentCoinbase)
+  const coinbaseAddress = createAddressFromString(testData.env.currentCoinbase)
   const account = await vm.stateManager.getAccount(coinbaseAddress)
   await vm.evm.journal.putAccount(coinbaseAddress, account ?? new Account())
 

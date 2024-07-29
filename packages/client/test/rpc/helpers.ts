@@ -6,6 +6,7 @@ import {
   Address,
   BIGINT_1,
   KECCAK256_RLP,
+  createAddressFromString,
   hexToBytes,
   parseGethGenesisState,
 } from '@ethereumjs/util'
@@ -93,7 +94,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const config = new Config({
     minerCoinbase:
       clientOpts.minerCoinbase !== undefined
-        ? Address.fromString(clientOpts.minerCoinbase)
+        ? createAddressFromString(clientOpts.minerCoinbase)
         : undefined,
     common,
     saveReceipts: clientOpts.enableMetaDB,

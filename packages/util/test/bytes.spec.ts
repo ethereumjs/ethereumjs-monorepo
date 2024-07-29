@@ -1,7 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
 import {
-  Address,
   addHexPrefix,
   bigIntToAddressBytes,
   bigIntToBytes,
@@ -10,6 +9,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
+  createAddressFromString,
   equalsBytes,
   fromSigned,
   hexToBytes,
@@ -262,7 +262,7 @@ describe('toBytes', () => {
 
   it('should convert a TransformabletoBytes like the Address class (i.e. provides a toBytes method)', () => {
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
-    const address = Address.fromString(str)
+    const address = createAddressFromString(str)
     const addressBytes = toBytes(address)
     assert.deepEqual(addressBytes, address.toBytes())
   })
@@ -423,10 +423,10 @@ describe('bigIntToAddressBytes', () => {
 
   for (const [addressHex, addressBigInt, isSafe] of testCases) {
     it('should correctly convert', () => {
-      const addressHexFromBigInt = bytesToHex(bigIntToAddressBytes(addressBigInt, false))
+      const addressHexFromBigInt = bytesToHex(bigIntToAddressBytes(addressBigInt as bigint, false))
       assert.equal(addressHex, addressHexFromBigInt, `should correctly convert ${addressBigInt}`)
       if (isSafe === false) {
-        assert.throw(() => bigIntToAddressBytes(addressBigInt))
+        assert.throw(() => bigIntToAddressBytes(addressBigInt as bigint))
       }
     })
   }

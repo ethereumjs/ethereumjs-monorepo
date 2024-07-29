@@ -1,5 +1,12 @@
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { Account, Address, bytesToHex, hexToBytes, unpadBytes } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bytesToHex,
+  createAddressFromString,
+  hexToBytes,
+  unpadBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createEVM } from '../src/index.js'
@@ -131,7 +138,7 @@ describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () =>
       }
       const res = await evm.runCall(runCallArgs)
 
-      const address = Address.fromString(bytesToHex(res.execResult.returnValue.slice(12)))
+      const address = createAddressFromString(bytesToHex(res.execResult.returnValue.slice(12)))
       const code = await evm.stateManager.getCode(address)
 
       assert.equal(

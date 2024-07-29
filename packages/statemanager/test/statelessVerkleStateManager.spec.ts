@@ -7,6 +7,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   createAccount,
+  createAddressFromString,
   getVerkleKey,
   getVerkleStem,
   hexToBytes,
@@ -54,7 +55,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const account = await stateManager.getAccount(
-      Address.fromString('0x6177843db3138ae69679a54b95cf345ed759450d'),
+      createAddressFromString('0x6177843db3138ae69679a54b95cf345ed759450d'),
     )
 
     assert.equal(account!.balance, 288610978528114322n, 'should have correct balance')
@@ -117,7 +118,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
-    const address = Address.fromString('0x6177843db3138ae69679a54b95cf345ed759450d')
+    const address = createAddressFromString('0x6177843db3138ae69679a54b95cf345ed759450d')
     const stem = getVerkleStem(stateManager.verkleCrypto, address, 0n)
 
     const balanceKey = getVerkleKey(stem, VerkleLeafType.Balance)
@@ -175,7 +176,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
-    const contractAddress = Address.fromString('0x4242424242424242424242424242424242424242')
+    const contractAddress = createAddressFromString('0x4242424242424242424242424242424242424242')
     const storageKey = '0x0000000000000000000000000000000000000000000000000000000000000022'
     const storageValue = '0xf5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b'
     await stateManager.putStorage(contractAddress, hexToBytes(storageKey), hexToBytes(storageValue))

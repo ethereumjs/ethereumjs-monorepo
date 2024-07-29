@@ -1,10 +1,10 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
 import { create4844BlobTx } from '@ethereumjs/tx'
 import {
-  Address,
   blobsToCommitments,
   bytesToHex,
   commitmentsToVersionedHashes,
+  createAddressFromPrivateKey,
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
@@ -24,7 +24,7 @@ const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1
 const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
 const pkey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
-const sender = Address.fromPrivateKey(pkey)
+const sender = createAddressFromPrivateKey(pkey)
 
 const kzg = await loadKZG()
 
@@ -100,7 +100,7 @@ async function run(data: any) {
   const commitments = blobsToCommitments(kzg, blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
-  const account = Address.fromPrivateKey(randomBytes(32))
+  const account = createAddressFromPrivateKey(randomBytes(32))
   const txData: TxData[TransactionType.BlobEIP4844] = {
     to: account.toString(),
     data: '0x',

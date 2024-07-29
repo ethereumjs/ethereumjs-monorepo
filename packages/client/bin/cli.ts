@@ -12,11 +12,12 @@ import {
 } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
-  Address,
   BIGINT_2,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
+  createAddressFromPrivateKey,
+  createAddressFromString,
   ecrecover,
   ecsign,
   hexToBytes,
@@ -65,7 +66,7 @@ import type { RPCArgs } from './startRpc.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { CustomCrypto } from '@ethereumjs/common'
-import type { GenesisState, PrefixedHexString } from '@ethereumjs/util'
+import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 import type { Server as RPCServer } from 'jayson/promise/index.js'
 
@@ -371,7 +372,7 @@ const args: ClientOpts = yargs
     describe:
       'Address for mining rewards (etherbase). If not provided, defaults to the primary account',
     string: true,
-    coerce: (coinbase) => Address.fromString(coinbase),
+    coerce: (coinbase) => createAddressFromString(coinbase),
   })
   .option('saveReceipts', {
     describe:
@@ -835,13 +836,13 @@ async function inputAccounts() {
     const isFile = existsSync(path.resolve(addresses[0]))
     if (!isFile) {
       for (const addressString of addresses) {
-        const address = Address.fromString(addressString)
+        const address = createAddressFromString(addressString)
         const inputKey = (await question(
           `Please enter the 0x-prefixed private key to unlock ${address}:\n`,
         )) as PrefixedHexString
         ;(rl as any).history = (rl as any).history.slice(1)
         const privKey = hexToBytes(inputKey)
-        const derivedAddress = Address.fromPrivateKey(privKey)
+        const derivedAddress = createAddressFromPrivateKey(privKey)
         if (address.equals(derivedAddress)) {
           accounts.push([address, privKey])
         } else {
@@ -854,7 +855,7 @@ async function inputAccounts() {
     } else {
       const acc = readFileSync(path.resolve(args.unlock!), 'utf-8').replace(/(\r\n|\n|\r)/gm, '')
       const privKey = hexToBytes(`0x${acc}`) // See docs: acc has to be non-zero prefixed in the file
-      const derivedAddress = Address.fromPrivateKey(privKey)
+      const derivedAddress = createAddressFromPrivateKey(privKey)
       accounts.push([derivedAddress, privKey])
     }
   } catch (e: any) {
@@ -870,7 +871,7 @@ async function inputAccounts() {
  */
 function generateAccount(): Account {
   const privKey = randomBytes(32)
-  const address = Address.fromPrivateKey(privKey)
+  const address = createAddressFromPrivateKey(privKey)
   console.log('='.repeat(50))
   console.log('Account generated for mining blocks:')
   console.log(`Address: ${address}`)

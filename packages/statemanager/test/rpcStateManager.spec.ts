@@ -8,6 +8,7 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   createAccountFromRLP,
+  createAddressFromString,
   equalsBytes,
   hexToBytes,
   setLengthLeft,
@@ -78,7 +79,7 @@ describe('RPC State Manager initialization tests', async () => {
 describe('RPC State Manager API tests', () => {
   it('should work', async () => {
     const state = new RPCStateManager({ provider, blockTag: 1n })
-    const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
+    const vitalikDotEth = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const account = await state.getAccount(vitalikDotEth)
 
     assert.ok(account!.nonce > 0n, 'Vitalik.eth returned a valid nonce')
@@ -91,13 +92,15 @@ describe('RPC State Manager API tests', () => {
 
     assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
     const doesThisAccountExist = await state.accountExists(
-      Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07'),
+      createAddressFromString('0xccAfdD642118E5536024675e776d32413728DD07'),
     )
     assert.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
 
     assert.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
 
-    const UNIerc20ContractAddress = Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
+    const UNIerc20ContractAddress = createAddressFromString(
+      '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
+    )
     const UNIContractCode = await state.getCode(UNIerc20ContractAddress)
     assert.ok(UNIContractCode.length > 0, 'was able to retrieve UNI contract code')
 
@@ -160,7 +163,7 @@ describe('RPC State Manager API tests', () => {
     )
 
     try {
-      await state.getAccount(Address.fromString('0x9Cef824A8f4b3Dc6B7389933E52e47F010488Fc8'))
+      await state.getAccount(createAddressFromString('0x9Cef824A8f4b3Dc6B7389933E52e47F010488Fc8'))
     } catch (err) {
       assert.ok(true, 'calls getAccountFromProvider for non-cached account')
     }
@@ -238,7 +241,7 @@ describe('runTx custom transaction test', () => {
     const state = new RPCStateManager({ provider, blockTag: 1n })
     const vm = await VM.create({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
 
-    const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
+    const vitalikDotEth = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const privateKey = hexToBytes(
       '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
@@ -323,7 +326,7 @@ describe('blockchain', () =>
     const code = '0x600143034060005260206000F3'
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
 
-    const caller = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
+    const caller = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     await evm.stateManager.setStateRoot(
       hexToBytes('0xf8506f559699a58a4724df4fcf2ad4fd242d20324db541823f128f5974feb6c7'),
     )

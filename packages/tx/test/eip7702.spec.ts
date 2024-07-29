@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
+import { createAddressFromPrivateKey, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { create7702EOACodeTx } from '../src/index.js'
@@ -8,8 +8,8 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 
-const pkey = hexToBytes('0x' + '20'.repeat(32))
-const addr = new Address(privateToAddress(pkey))
+const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
+const addr = createAddressFromPrivateKey(pkey)
 
 const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
 
@@ -24,7 +24,7 @@ describe('[EOACodeEIP7702Transaction]', () => {
         authorizationList: [],
         chainId: 1,
         gasLimit: 100000,
-        to: Address.zero(),
+        to: createZeroAddress(),
         data: new Uint8Array(1),
       },
       { common },
