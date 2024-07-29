@@ -1,4 +1,4 @@
-import { Common, Mainnet } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
 import * as difficultyMainNetwork from '../../ethereum-tests/BasicTests/difficultyMainNetwork.json'
@@ -89,7 +89,7 @@ describe('[Header]: difficulty tests', () => {
       const testData = chainTestData[chain]
       for (const testName in testData.default) {
         const test = testData[testName]
-        const common = new Common({ chain })
+        const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
         const blockOpts = { common, setHardfork: true }
         const uncleHash = test.parentUncles === '0x00' ? undefined : test.parentUncles
         const parentBlock = createBlockFromBlockData(
