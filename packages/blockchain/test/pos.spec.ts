@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -52,10 +52,11 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
   }
   const scenarios = [
     {
-      common: new Common({ chain: testnet, hardfork: Hardfork.Chainstart }),
+      // @ts-ignore prefixed string type is too strict here
+      common: createCustomCommon(testnet.default, Mainnet, { hardfork: Hardfork.Chainstart }),
     },
     {
-      common: new Common({ chain: testnetOnlyTD, hardfork: Hardfork.Chainstart }),
+      common: createCustomCommon(testnetOnlyTD.default, Mainnet, { hardfork: Hardfork.Chainstart }),
     },
   ]
 

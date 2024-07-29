@@ -1,9 +1,9 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
 import {
-  Chain,
   Common,
   ConsensusAlgorithm,
   ConsensusType,
+  Goerli,
   Hardfork,
   createCustomCommon,
 } from '@ethereumjs/common'
@@ -637,8 +637,8 @@ describe('Clique: Initialization', () => {
           },
         },
       },
+      Goerli,
       {
-        basechain: Goerli,
         hardfork: Hardfork.Chainstart,
       },
     )
@@ -693,8 +693,8 @@ describe('Clique: Initialization', () => {
           },
         },
       },
+      Goerli,
       {
-        basechain: Goerli,
         hardfork: Hardfork.Chainstart,
       },
     )
