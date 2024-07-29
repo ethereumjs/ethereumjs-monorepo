@@ -1,5 +1,6 @@
 import { intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
+import { Goerli, Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.js'
 import { Hardfork } from './enums.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -236,5 +237,31 @@ export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?
     return parseGethParams(finalJson, mergeForkIdPostMerge)
   } catch (e: any) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
+  }
+}
+
+/**
+ * Return the preset chain config for one of the predefined chain configurations
+ * @param chain the representing a network name (e.g. 'mainnet') or number representing the chain ID
+ * @returns a {@link ChainConfig}
+ */
+export const getPresetChainConfig = (chain: string | number) => {
+  switch (chain) {
+    case 'goerli':
+    case 5:
+      return Goerli
+    case 'holesky':
+    case 17000:
+      return Holesky
+    case 'kaustinen6':
+    case 69420:
+      return Kaustinen6
+    case 'sepolia':
+    case 11155111:
+      return Sepolia
+    case 'mainnet':
+    case 1:
+    default:
+      return Mainnet
   }
 }

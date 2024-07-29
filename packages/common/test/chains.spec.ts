@@ -7,6 +7,7 @@ import {
   Goerli,
   Hardfork,
   Mainnet,
+  getPresetChainConfig,
 } from '../src/index.js'
 
 describe('[Common/Chains]: Initialization / Chain params', () => {
@@ -22,16 +23,16 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     )
   })
 
-  it('Should initialize with chain provided by Chain enum', () => {
-    const c = new Common({ chain: Mainnet })
-    assert.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
-    assert.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
-    assert.equal(c.hardfork(), Hardfork.Shanghai, 'should set hardfork to current default hardfork')
-    assert.equal(
-      c.hardfork(),
-      c.DEFAULT_HARDFORK,
-      'should set hardfork to hardfork set as DEFAULT_HARDFORK',
-    )
+  it('Should initialize with chain provided by chain name or network Id', () => {
+    let chain = getPresetChainConfig('mainnet')
+    let c = new Common({ chain })
+    assert.equal(c.chainName(), 'mainnet')
+    chain = getPresetChainConfig(5)
+    c = new Common({ chain })
+    assert.equal(c.chainName(), 'goerli')
+    chain = getPresetChainConfig(123)
+    c = new Common({ chain })
+    assert.equal(c.chainName(), 'mainnet')
   })
 
   it('Should initialize with chain and hardfork provided', () => {
