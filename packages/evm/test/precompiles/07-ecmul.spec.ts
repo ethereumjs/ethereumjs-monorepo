@@ -5,7 +5,7 @@ import { createEVM, getActivePrecompiles } from '../../src/index.js'
 
 describe('Precompiles: ECMUL', () => {
   it('ECMUL', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Petersburg })
     const evm = await createEVM({
       common,
     })

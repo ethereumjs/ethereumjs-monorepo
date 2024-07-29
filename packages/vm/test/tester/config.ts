@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import * as path from 'path'
 
 import type { Kzg } from '@ethereumjs/util'
@@ -226,7 +226,7 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
   const hfName = normalHardforks.reduce((previousValue, currentValue) =>
     currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue,
   )
-  const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
+  const mainnetCommon = new Common({ chain: Mainnet, hardfork: hfName })
   const hardforks = mainnetCommon.hardforks()
   const testHardforks = []
   for (const hf of hardforks) {
@@ -325,7 +325,7 @@ export function getCommon(network: string, kzg?: Kzg): Common {
       throw new Error('network not supported: ' + network)
     }
     const mainnetCommon = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: transitionForks.finalSupportedFork,
     })
     const hardforks = mainnetCommon.hardforks()

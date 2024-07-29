@@ -1,5 +1,5 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { createEVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
@@ -78,7 +78,7 @@ export class VM {
 
     // Add common, SM, blockchain, EVM here
     if (opts.common === undefined) {
-      opts.common = new Common({ chain: Chain.Mainnet })
+      opts.common = new Common({ chain: Mainnet })
     }
 
     if (opts.stateManager === undefined) {

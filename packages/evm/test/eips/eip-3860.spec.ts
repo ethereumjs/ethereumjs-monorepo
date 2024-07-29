@@ -17,7 +17,7 @@ const sender = new Address(privateToAddress(pkey))
 describe('EIP 3860 tests', () => {
   it('code exceeds max initcode size', async () => {
     const common = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       eips: [3860],
     })
@@ -51,12 +51,12 @@ describe('EIP 3860 tests', () => {
   it('ensure EIP-3860 gas is applied on CREATE calls', async () => {
     // Transaction/Contract data taken from https://github.com/ethereum/tests/pull/990
     const commonWith3860 = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       eips: [3860],
     })
     const commonWithout3860 = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       eips: [],
     })
@@ -95,12 +95,12 @@ describe('EIP 3860 tests', () => {
   it('ensure EIP-3860 gas is applied on CREATE2 calls', async () => {
     // Transaction/Contract data taken from https://github.com/ethereum/tests/pull/990
     const commonWith3860 = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       eips: [3860],
     })
     const commonWithout3860 = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       eips: [],
     })
@@ -138,7 +138,7 @@ describe('EIP 3860 tests', () => {
 
   it('code exceeds max initcode size: allowUnlimitedInitCodeSize active', async () => {
     const common = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       eips: [3860],
     })
@@ -170,7 +170,7 @@ describe('EIP 3860 tests', () => {
 
   it('CREATE with MAX_INITCODE_SIZE+1, allowUnlimitedContractSize active', async () => {
     const commonWith3860 = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       eips: [3860],
     })

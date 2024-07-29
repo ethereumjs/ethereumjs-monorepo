@@ -18,7 +18,7 @@ describe(
   method,
   () => {
     it('ensure balance deducts after a tx', async () => {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+      const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
       const blockchain = await createBlockchain({ common })
 
       const client = await createClient({ blockchain, commonChain: common, includeVM: true })

@@ -250,7 +250,7 @@ describe(method, () => {
   it(`${method}: should return initial base fee if the block number is london hard fork`, async () => {
     const common = new Common({
       eips: [1559],
-      chain: CommonChain.Mainnet,
+      chain: CommonMainnet,
       hardfork: Hardfork.London,
       params: paramsBlock,
     })

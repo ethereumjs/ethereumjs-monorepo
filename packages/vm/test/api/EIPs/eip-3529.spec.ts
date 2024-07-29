@@ -111,7 +111,7 @@ const testCases = [
 ]
 
 describe('EIP-3529 tests', () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3529] })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [3529] })
 
   it('should verify EIP test cases', async () => {
     const vm = await VM.create({ common })

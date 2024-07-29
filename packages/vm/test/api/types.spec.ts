@@ -18,7 +18,7 @@ describe('[Types]', () => {
     > &
       Pick<TypeT, OptionalFieldsT>
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 
     // Block
     const block: Omit<

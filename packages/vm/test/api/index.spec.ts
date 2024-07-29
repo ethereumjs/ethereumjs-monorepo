@@ -78,7 +78,7 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
   })
 
   it('Default EVM should use VM common', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
     const vm = await VM.create({ common })
     assert.equal((vm.evm as EVM).common.hardfork(), 'byzantium', 'use modfied HF from VM common')
 
@@ -91,7 +91,7 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
   })
 
   it('Default EVM should prefer common from evmOpts if provided (same logic for blockchain, statemanager)', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
     const vm = await VM.create({ evmOpts: { common } })
     assert.equal((vm.evm as EVM).common.hardfork(), 'byzantium', 'use modfied HF from evmOpts')
 
@@ -106,7 +106,7 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
 
 describe('VM -> supportedHardforks', () => {
   it('should throw when common is set to an unsupported hardfork', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const prevSupported = EVM['supportedHardforks']
     EVM['supportedHardforks'] = [
       Hardfork.Chainstart,
@@ -137,7 +137,7 @@ describe('VM -> supportedHardforks', () => {
   })
 
   it('should succeed when common is set to a supported hardfork', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
     const vm = await VM.create({ common })
     assert.equal(vm.common.hardfork(), Hardfork.Byzantium)
   })
@@ -170,7 +170,7 @@ describe('VM -> supportedHardforks', () => {
 
 describe('VM -> common (chain, HFs, EIPs)', () => {
   it('should accept a common object as option', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
     let vm = await VM.create({ common })
     assert.equal(vm.common, common)
@@ -203,7 +203,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
     if (isBrowser() === false) {
-      const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
+      const common = new Common({ chain: Mainnet, eips: [2537] })
       try {
         await VM.create({ common })
         assert.ok(true, 'did not throw')
@@ -256,7 +256,7 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
 
   it('should pass the correct Common object when copying the VM', async () => {
     const vm = await setupVM({
-      common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium }),
+      common: new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium }),
     })
 
     assert.equal(vm.common.chainName(), 'mainnet')
@@ -309,7 +309,7 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
       const caller = createAddressFromString('0x00000000000000000000000000000000000000ee') // caller address
       const contractAddress = createAddressFromString('0x00000000000000000000000000000000000000ff') // contract address
       // setup the vm
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+      const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
       const vmNotActivated = await VM.create({ common })
       const vmActivated = await VM.create({ common, activatePrecompiles: true })
       const code = '0x6000808080347300000000000000000000000000000000000000045AF100'

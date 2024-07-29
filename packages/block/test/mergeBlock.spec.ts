@@ -14,7 +14,7 @@ import { createBlockFromBlockData } from '../src/constructors.js'
 import { BlockHeader } from '../src/header.js'
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.Paris,
 })
 

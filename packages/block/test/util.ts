@@ -20,7 +20,7 @@ function createBlock(
   common?: Common,
 ): Block {
   uncles = uncles ?? []
-  common = common ?? new Common({ chain: Chain.Mainnet })
+  common = common ?? new Common({ chain: Mainnet })
 
   if (extraData.length > 32) {
     throw new Error('extra data graffiti must be 32 bytes or less')

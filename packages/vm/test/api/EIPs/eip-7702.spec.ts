@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { create7702EOACodeTx } from '@ethereumjs/tx'
 import {
@@ -22,7 +22,7 @@ import { VM, runTx } from '../../../src/index.js'
 
 import type { AuthorizationListBytesItem } from '@ethereumjs/common'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 
 const defaultAuthPkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const defaultAuthAddr = new Address(privateToAddress(defaultAuthPkey))

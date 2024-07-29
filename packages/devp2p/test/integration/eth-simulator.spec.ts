@@ -49,7 +49,7 @@ describe('ETH simulator tests', () => {
         resolve(undefined)
       }
 
-      const c1 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      const c1 = new Common({ chain: Mainnet, hardfork: Hardfork.London })
       const c2 = new Common({ chain: Chain.Sepolia, hardfork: Hardfork.London })
       util.twoPeerMsgExchange(it, opts, capabilities, [c1, c2], 27126)
     })
@@ -128,7 +128,7 @@ describe('ETH simulator tests', () => {
     async () => {
       await new Promise((resolve) => {
         const cap = [devp2p.ETH.eth65]
-        const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+        const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
         const status0: any = Object.assign({}, status)
         status0['latestBlock'] = intToBytes(100000) // lower than Byzantium fork block 4370000
 
@@ -163,7 +163,7 @@ describe('ETH simulator tests', () => {
     await new Promise((resolve) => {
       const opts: any = {}
       const cap = [devp2p.ETH.eth64]
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+      const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
       const status0: any = Object.assign({}, status)
       // Take a latest block > next mainnet fork block (constantinople)
       // to trigger validation condition

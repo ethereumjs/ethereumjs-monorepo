@@ -48,7 +48,7 @@ const TRANSACTION_TYPES = [
   },
 ]
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 common.events.setMaxListeners(100)
 describe('runTx() -> successful API parameter usage', async () => {
   async function simpleRun(vm: VM, msg: string) {
@@ -73,7 +73,7 @@ describe('runTx() -> successful API parameter usage', async () => {
   }
 
   it('simple run (unmodified options)', async () => {
-    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    let common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     let vm = await VM.create({ common })
     await simpleRun(vm, 'mainnet (PoW), london HF, default SM - should run without errors')
 
@@ -86,7 +86,7 @@ describe('runTx() -> successful API parameter usage', async () => {
   })
 
   it('test successful hardfork matching', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const vm = await VM.create({
       common,
       blockchain: await createBlockchain({ validateConsensus: false, validateBlocks: false }),
@@ -101,7 +101,7 @@ describe('runTx() -> successful API parameter usage', async () => {
   })
 
   it('test hardfork mismatch', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const vm = await VM.create({
       common,
       blockchain: await createBlockchain({ validateConsensus: false, validateBlocks: false }),
@@ -144,7 +144,7 @@ describe('runTx() -> successful API parameter usage', async () => {
   })
 
   it('should ignore merge in hardfork mismatch', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Paris })
     const vm = await VM.create({
       common,
       blockchain: await createBlockchain({ validateConsensus: false, validateBlocks: false }),
@@ -166,7 +166,7 @@ describe('runTx() -> successful API parameter usage', async () => {
   })
 
   it('should use passed in blockGasUsed to generate tx receipt', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
 
     const tx = getTransaction(vm.common, 0, true)
@@ -185,7 +185,7 @@ describe('runTx() -> successful API parameter usage', async () => {
   })
 
   it('Legacy Transaction with HF set to pre-Berlin', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
 
     const tx = getTransaction(vm.common, 0, true)
@@ -281,14 +281,10 @@ describe('runTx() -> successful API parameter usage', async () => {
 
 describe('runTx() -> API parameter usage/data errors', () => {
   it('Typed Transaction with HF set to pre-Berlin', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
 
-    const tx = getTransaction(
-      new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
-      1,
-      true,
-    )
+    const tx = getTransaction(new Common({ chain: Mainnet, hardfork: Hardfork.Berlin }), 1, true)
 
     const caller = tx.getSenderAddress()
     const acc = createAccountWithDefaults()
@@ -458,7 +454,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
 describe('runTx() -> runtime behavior', () => {
   it('storage cache', async () => {
     for (const txType of TRANSACTION_TYPES) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+      const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
       const vm = await VM.create({ common })
       const privateKey = hexToBytes(
         '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
@@ -673,7 +669,7 @@ describe('runTx() -> consensus bugs', () => {
     const beforeBalance = BigInt(149123788000000000)
     const afterBalance = BigInt(129033829000000000)
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.SpuriousDragon })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.SpuriousDragon })
     common.setHardforkBy({ blockNumber: 2772981 })
     const vm = await VM.create({ common })
 
@@ -712,7 +708,7 @@ describe('runTx() -> consensus bugs', () => {
       ],
     }
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const vm = await VM.create({ common })
 
     const addr = createAddressFromPrivateKey(pkey)
@@ -763,7 +759,7 @@ describe('runTx() -> RunTxOptions', () => {
 })
 
 it('runTx() -> skipBalance behavior', async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
   const vm = await VM.create({ common })
   const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
   const sender = createAddressFromPrivateKey(senderKey)
@@ -791,7 +787,7 @@ it('runTx() -> skipBalance behavior', async () => {
 })
 
 it('Validate EXTCODEHASH puts KECCAK256_NULL on stack if calling account has no balance and zero nonce (but it did exist)', async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
   const vm = await VM.create({ common })
 
   const pkey = new Uint8Array(32).fill(1)
@@ -820,7 +816,7 @@ it('Validate EXTCODEHASH puts KECCAK256_NULL on stack if calling account has no 
 })
 
 it('Validate CALL does not charge new account gas when calling CALLER and caller is non-empty', async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
   const vm = await VM.create({ common })
 
   const pkey = new Uint8Array(32).fill(1)
@@ -855,7 +851,7 @@ it('Validate CALL does not charge new account gas when calling CALLER and caller
 })
 
 it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER and caller is non-empty', async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
   const vm = await VM.create({ common })
 
   const pkey = new Uint8Array(32).fill(1)

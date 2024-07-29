@@ -1,4 +1,4 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { verifyTrieProof } from '@ethereumjs/trie'
 import {
@@ -57,7 +57,7 @@ export class RPCStateManager implements StateManagerInterface {
     this._accountCache = new AccountCache({ size: 100000, type: CacheType.ORDERED_MAP })
 
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
-    this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
+    this.common = opts.common ?? new Common({ chain: Mainnet })
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
   }
 

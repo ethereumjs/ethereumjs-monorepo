@@ -1,4 +1,4 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { SimpleStateManager } from '@ethereumjs/statemanager'
 import { initRustBN } from 'rustbn-wasm'
 
@@ -23,7 +23,7 @@ export async function createEVM(createOpts?: EVMOpts) {
   initializedRustBN = bn128
 
   if (opts.common === undefined) {
-    opts.common = new Common({ chain: Chain.Mainnet })
+    opts.common = new Common({ chain: Mainnet })
   }
 
   if (opts.blockchain === undefined) {

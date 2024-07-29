@@ -10,7 +10,7 @@ const powTests = require('./ethash_tests.json')
 
 const ethash = new Ethash()
 const tests = Object.keys(powTests)
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
 describe('POW tests', () => {
   it('should work', async () => {

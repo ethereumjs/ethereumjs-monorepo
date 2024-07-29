@@ -54,10 +54,10 @@ import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 describe('runBlock() -> successful API parameter usage', async () => {
   async function simpleRun(vm: VM) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const genesisRlp = hexToBytes(testData.genesisRLP as PrefixedHexString)
     const genesis = createBlockFromRLPSerializedBlock(genesisRlp, { common })
 
@@ -91,7 +91,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
 
     await setupPreConditions(vm.stateManager, testData)
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const block1Rlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
     const block1 = createBlockFromRLPSerializedBlock(block1Rlp, { common })
     await runBlock(vm, {
@@ -161,13 +161,13 @@ describe('runBlock() -> successful API parameter usage', async () => {
 
   it('setHardfork option', async () => {
     const common1 = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.MuirGlacier,
     })
 
     // Have to use an unique common, otherwise the HF will be set to muirGlacier and then will not change back to chainstart.
     const common2 = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.Chainstart,
     })
 
@@ -225,7 +225,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   const vm = await VM.create({ common })
 
   it('should fail when runTx fails', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
     const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
 
@@ -443,7 +443,7 @@ it('should correctly reflect generated fields', async () => {
 })
 
 async function runWithHf(hardfork: string) {
-  const common = new Common({ chain: Chain.Mainnet, hardfork })
+  const common = new Common({ chain: Mainnet, hardfork })
   const vm = await setupVM({ common })
 
   const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
@@ -511,7 +511,7 @@ describe('runBlock() -> tx types', async () => {
   }
 
   it('legacy tx', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
     const vm = await setupVM({ common })
 
     const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -527,7 +527,7 @@ describe('runBlock() -> tx types', async () => {
   })
 
   it('access list tx', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
     const vm = await setupVM({ common })
 
     const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -546,7 +546,7 @@ describe('runBlock() -> tx types', async () => {
   })
 
   it('fee market tx', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const vm = await setupVM({ common })
 
     const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -612,7 +612,7 @@ describe('runBlock() -> tx types', async () => {
     }
 
     const common = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.Cancun,
       eips: [7702],
     })

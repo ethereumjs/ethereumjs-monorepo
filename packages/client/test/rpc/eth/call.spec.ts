@@ -17,7 +17,7 @@ const method = 'eth_call'
 
 describe(method, () => {
   it('call with valid arguments', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({
       common,
       validateBlocks: false,

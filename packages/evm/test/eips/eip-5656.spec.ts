@@ -80,7 +80,7 @@ describe('should test mcopy', () => {
       bytecode += MCOPY + STOP
 
       const common = new Common({
-        chain: Chain.Mainnet,
+        chain: Mainnet,
         hardfork: Hardfork.Shanghai,
         eips: [5656],
       })

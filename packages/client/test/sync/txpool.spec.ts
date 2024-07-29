@@ -100,7 +100,7 @@ const setup = () => {
   return { pool, metricsServer }
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
 
 const handleTxs = async (
@@ -563,7 +563,7 @@ describe('[TxPool]', async () => {
   })
 
   it('announcedTxHashes() -> reject txs with too much data', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Paris })
 
     const txs = []
     txs.push(

@@ -20,7 +20,7 @@ describe('Verify POW for valid and invalid blocks', () => {
   it('should work', async () => {
     const e = new Ethash(cacheDB as any)
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
     const genesis = createBlockFromBlockData({}, { common })
     const genesisResult = await e.verifyPOW(genesis)

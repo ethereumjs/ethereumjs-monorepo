@@ -15,7 +15,7 @@ import type { Block } from '@ethereumjs/block'
 
 const method = 'eth_getBlockTransactionCountByNumber'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
 
 describe(method, () => {
   it('call with valid arguments', async () => {

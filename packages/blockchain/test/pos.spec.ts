@@ -89,7 +89,7 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
         'should have calculated the correct post-Merge total difficulty',
       )
 
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
       const powBlock = createBlockFromBlockData(
         {
           header: {

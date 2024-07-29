@@ -1,4 +1,4 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
 import * as difficultyMainNetwork from '../../ethereum-tests/BasicTests/difficultyMainNetwork.json'
@@ -47,7 +47,7 @@ describe('[Header]: difficulty tests', () => {
       const testData = hardforkTestData[hardfork]
       for (const testName in testData) {
         const test = testData[testName]
-        const common = new Common({ chain: Chain.Mainnet, hardfork })
+        const common = new Common({ chain: Mainnet, hardfork })
         // Unschedule any timestamp since tests are not configured for timestamps
         common
           .hardforks()

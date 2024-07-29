@@ -7,8 +7,8 @@ import { BlockHeader } from '../src/header.js'
 
 describe('EIP4788 header tests', () => {
   it('should work', () => {
-    const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [4788] })
+    const earlyCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [4788] })
 
     assert.throws(
       () => {

@@ -13,7 +13,7 @@ import type { Block } from '@ethereumjs/block'
 
 describe('reorg tests', () => {
   it('should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
     const genesis = createBlockFromBlockData(
       {
         header: {

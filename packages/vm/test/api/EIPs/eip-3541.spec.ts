@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -11,8 +11,8 @@ import type { Address } from '@ethereumjs/util'
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 
 describe('EIP 3541 tests', () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3541] })
-  const commonNoEIP3541 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [] })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [3541] })
+  const commonNoEIP3541 = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [] })
 
   it('deposit 0xEF code if 3541 is active', async () => {
     // put 0xEF contract

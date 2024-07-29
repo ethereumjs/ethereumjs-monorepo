@@ -18,7 +18,7 @@ const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3d
 
 describe('EIP 1153: transient storage', () => {
   const initialGas = BigInt(0xffffffffff)
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [1153] })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [1153] })
 
   const runTest = async function (test: Test) {
     let i = 0

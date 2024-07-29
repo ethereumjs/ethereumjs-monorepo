@@ -51,7 +51,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('Initialization -> fromHeaderData()', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     let header = BlockHeader.fromHeaderData(undefined, { common })
     assert.ok(bytesToHex(header.hash()), 'genesis block should initialize')
     assert.equal(
@@ -83,7 +83,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('Initialization -> fromRLPSerializedHeader()', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     let header = BlockHeader.fromHeaderData({}, { common, freeze: false })
 
     const rlpHeader = header.serialize()
@@ -136,7 +136,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('Initialization -> fromValuesArray()', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const zero = new Uint8Array(0)
     const headerArray = []
     for (let item = 0; item < 15; item++) {
@@ -197,7 +197,7 @@ describe('[Block]: Header functions', () => {
 
   it('should validate extraData', async () => {
     // PoW
-    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     let genesis = createBlockFromBlockData({}, { common })
 
     const number = 1
@@ -454,7 +454,7 @@ describe('[Block]: Header functions', () => {
       })
 */
   it('should test validateGasLimit()', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const bcBlockGasLimitTestData = testData.default.tests.BlockGasLimit2p63m1
 
     for (const key of Object.keys(bcBlockGasLimitTestData)) {
@@ -481,7 +481,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('should test hash() function', () => {
-    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     let header = BlockHeader.fromHeaderData((blocksMainnet as any).default[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
@@ -499,7 +499,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('should be able to initialize shanghai header with correct hardfork defaults', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const header = BlockHeader.fromHeaderData({}, { common })
     assert.equal(header.common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
     assert.equal(header.baseFeePerGas, BigInt(7), 'baseFeePerGas should be set to minimum default')

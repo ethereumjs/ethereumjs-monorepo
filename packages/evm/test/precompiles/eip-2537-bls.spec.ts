@@ -34,7 +34,7 @@ const precompileMap: { [key: string]: string } = {
   'pairing_check_bls.json': '0000000000000000000000000000000000000011',
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2537] })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [2537] })
 
 // MCL Instantiation
 await mcl.init(mcl.BLS12_381)
@@ -103,7 +103,7 @@ for (let address = precompileAddressStart; address <= precompileAddressEnd; addr
 
 describe('EIP-2537 BLS precompile availability tests', () => {
   it('BLS precompiles should not be available if EIP not activated', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
     const evm = await createEVM({
       common,
     })

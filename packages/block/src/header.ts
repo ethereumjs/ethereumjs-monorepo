@@ -1,4 +1,4 @@
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { Common, ConsensusAlgorithm, ConsensusType, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
@@ -167,7 +167,7 @@ export class BlockHeader {
       this.common = opts.common.copy()
     } else {
       this.common = new Common({
-        chain: Chain.Mainnet, // default
+        chain: Mainnet, // default
       })
     }
     this.common.updateParams(opts.params ?? paramsBlock)

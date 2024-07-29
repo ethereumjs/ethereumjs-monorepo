@@ -10,7 +10,7 @@ import testData from '../testdata/eip-2565.json'
 
 describe('EIP-2565 ModExp gas cost tests', () => {
   it('Test return data, gas cost and execution status against testdata', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, eips: [2565] })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium, eips: [2565] })
     const vm = await VM.create({ common })
 
     for (const test of testData) {

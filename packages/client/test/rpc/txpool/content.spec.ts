@@ -16,7 +16,7 @@ const method = 'txpool_content'
 
 describe(method, () => {
   it('call with valid arguments', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
