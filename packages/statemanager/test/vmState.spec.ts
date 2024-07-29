@@ -24,7 +24,7 @@ describe('stateManager', () => {
     )
     const stateManager = new StateManager({})
 
-    await stateManager.generateCanonicalGenesis(getGenesis(Mainnet))
+    await stateManager.generateCanonicalGenesis(getGenesis(Chain.Mainnet))
     const stateRoot = await stateManager.getStateRoot()
 
     assert.deepEqual(

@@ -29,11 +29,11 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   beforeAll(async () => {
     verkleCrypto = await loadVerkleCrypto()
   })
-  const common = createCommonFromGethGenesis(testnetVerkleKaustinen, {
+  const common = createCommonFromGethGenesis(testnetVerkleKaustinen.default, {
     chain: 'customChain',
     eips: [2935, 4895, 6800],
   })
-  const decodedTxs = verkleBlockJSON.transactions.map((tx) =>
+  const decodedTxs = verkleBlockJSON.default.transactions.map((tx) =>
     createTxFromSerializedData(hexToBytes(tx as PrefixedHexString)),
   )
   const block = createBlockFromBlockData(

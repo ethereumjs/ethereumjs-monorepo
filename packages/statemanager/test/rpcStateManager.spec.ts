@@ -1,5 +1,5 @@
 import { createBlockFromJsonRpcProvider, createBlockFromRPC } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
 import { create1559FeeMarketTx, createTxFromRPC } from '@ethereumjs/tx'
 import {
@@ -298,7 +298,7 @@ describe('runBlock test', () => {
     common.setHardforkBy({ blockNumber: blockTag - 1n })
 
     const vm = await VM.create({ common, stateManager: state })
-    const block = createBlockFromRPC(blockData as JsonRpcBlock, [], { common })
+    const block = createBlockFromRPC(blockData.default as JsonRpcBlock, [], { common })
     try {
       const res = await runBlock(vm, {
         block,
