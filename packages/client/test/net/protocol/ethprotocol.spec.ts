@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Holesky } from '@ethereumjs/common'
 import { TransactionType, create1559FeeMarketTx, createTxFromTxData } from '@ethereumjs/tx'
 import {
   bigIntToBytes,
@@ -212,7 +212,7 @@ describe('[EthProtocol]', () => {
     const kzg = await loadKZG()
     const config = new Config({
       common: new Common({
-        chain: CommonChain.Holesky,
+        chain: Holesky,
         hardfork: Hardfork.Paris,
         eips: [4895, 4844],
         customCrypto: {

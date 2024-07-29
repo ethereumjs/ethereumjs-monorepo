@@ -1,4 +1,4 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Goerli, Holesky } from '@ethereumjs/common'
 import { assert, describe, it, vi } from 'vitest'
 
 import { baseSetup, createClient, createManager, getRpcClient, startRPC } from '../helpers.js'

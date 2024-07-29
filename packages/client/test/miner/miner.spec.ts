@@ -2,6 +2,7 @@ import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import {
   Common,
   Chain as CommonChain,
+  Goerli,
   Hardfork,
   createCommonFromGethGenesis,
   createCustomCommon,
@@ -150,7 +151,7 @@ const customConfig = new Config({
 })
 customConfig.events.setMaxListeners(50)
 
-const goerliCommon = new Common({ chain: CommonChain.Goerli, hardfork: Hardfork.Berlin })
+const goerliCommon = new Common({ chain: Goerli, hardfork: Hardfork.Berlin })
 goerliCommon.events.setMaxListeners(50)
 const goerliConfig = new Config({
   accountCache: 10000,
@@ -418,8 +419,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
       { name: 'london', block: 0 },
     ],
   }
-  const common = createCustomCommon(customChainParams, {
-    baseChain: CommonChain.Goerli,
+  const common = createCustomCommon(customChainParams, Goerli, {
     hardfork: Hardfork.London,
   })
   const config = new Config({

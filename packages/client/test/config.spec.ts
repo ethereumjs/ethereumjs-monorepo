@@ -1,4 +1,4 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Goerli, Mainnet } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
 import { Config, DataDirectory } from '../src/config.js'
@@ -37,29 +37,25 @@ describe('[Config]', () => {
   })
 
   it('--discDns=true/false', () => {
-    let common, config, chain
+    let common, config
 
-    chain = Mainnet
-    common = new Common({ chain })
+    common = new Common({ chain: Mainnet })
     config = new Config({ common, discDns: true })
     assert.equal(config.discDns, true, `default discDns setting can be overridden to true`)
 
-    chain = Chain.Goerli
-    common = new Common({ chain })
+    common = new Common({ chain: Goerli })
     config = new Config({ common, discDns: false })
     assert.equal(config.discDns, false, `default discDns setting can be overridden to false`)
   })
 
   it('--discV4=true/false', () => {
-    let common, config, chain
+    let common, config
 
-    chain = Mainnet
-    common = new Common({ chain })
+    common = new Common({ chain: Mainnet })
     config = new Config({ common, discV4: false })
     assert.equal(config.discV4, false, `default discV4 setting can be overridden to false`)
 
-    chain = Chain.Goerli
-    common = new Common({ chain })
+    common = new Common({ chain: Goerli })
     config = new Config({ common, discV4: true })
     assert.equal(config.discV4, true, `default discV4 setting can be overridden to true`)
   })
