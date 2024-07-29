@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, bytesToHex, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { readFileSync, readdirSync } from 'fs'
 import * as mcl from 'mcl-wasm'
