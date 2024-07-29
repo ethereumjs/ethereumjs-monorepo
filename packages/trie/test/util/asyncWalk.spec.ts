@@ -1,7 +1,13 @@
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { LeafNode, Trie, createTrieFromProof, verifyTrieProof } from '../../src/index.js'
+import {
+  LeafNode,
+  Trie,
+  createProof,
+  createTrieFromProof,
+  verifyTrieProof,
+} from '../../src/index.js'
 import { _walkTrie } from '../../src/util/asyncWalk.js'
 import { bytesToNibbles } from '../../src/util/nibbles.js'
 import trieTests from '../fixtures/trietest.json'
@@ -78,7 +84,7 @@ describe('walk a sparse trie', async () => {
   })
   // Generate a proof for inputs[0]
   const proofKey = inputs[0][0]
-  const proof = await trie.createProof(proofKey)
+  const proof = await createProof(trie, proofKey)
   assert.ok(await verifyTrieProof(proofKey, proof))
 
   // Build a sparse trie from the proof
