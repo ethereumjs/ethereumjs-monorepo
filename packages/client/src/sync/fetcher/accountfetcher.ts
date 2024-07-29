@@ -394,9 +394,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         this.fetcherDoneFlags.snapTargetHeight = latest.number
         this.fetcherDoneFlags.snapTargetRoot = latest.stateRoot
         this.fetcherDoneFlags.snapTargetHash = latest.hash()
-
-        // TODO do we need to set this one since it's a duplicate of snapTargetRoot?
-        this.fetcherDoneFlags.stateRoot = latest.stateRoot
       }
     }
 

@@ -158,9 +158,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         this.fetcherDoneFlags.snapTargetHeight = latest.number
         this.fetcherDoneFlags.snapTargetRoot = latest.stateRoot
         this.fetcherDoneFlags.snapTargetHash = latest.hash()
-
-        // TODO do we need to set this one since it's a duplicate of snapTargetRoot?
-        this.fetcherDoneFlags.stateRoot = latest.stateRoot
       }
     }
 
