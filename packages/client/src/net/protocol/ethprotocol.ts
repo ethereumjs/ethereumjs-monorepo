@@ -1,6 +1,6 @@
 import {
-  BlockHeader,
   createBlockFromValuesArray,
+  createHeaderFromValuesArray,
   getDifficulty,
   valuesArrayToHeaderData,
 } from '@ethereumjs/block'
@@ -34,7 +34,13 @@ import { Protocol } from './protocol.js'
 import type { Chain } from '../../blockchain/index.js'
 import type { TxReceiptWithType } from '../../execution/receipt.js'
 import type { Message, ProtocolOptions } from './protocol.js'
-import type { Block, BlockBodyBytes, BlockBytes, BlockHeaderBytes } from '@ethereumjs/block'
+import type {
+  Block,
+  BlockBodyBytes,
+  BlockBytes,
+  BlockHeader,
+  BlockHeaderBytes,
+} from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
@@ -173,7 +179,7 @@ export class EthProtocol extends Protocol {
           const common = this.config.chainCommon
           // If this is a post merge block, we can still send chainTTD since it would still lead
           // to correct hardfork choice
-          const header = BlockHeader.fromValuesArray(
+          const header = createHeaderFromValuesArray(
             h,
             difficulty > 0 ? { common, setHardfork: true } : { common, setHardfork: this.chainTTD },
           )
