@@ -390,10 +390,11 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // could be running independently of eachother in some cases
       const currentHeight = this.height
       const newestHeight = latest.number
-      if (newestHeight - currentHeight >= 1) {
+      if (newestHeight - currentHeight >= this.config.snapLookbackWindow) {
         this.fetcherDoneFlags.snapTargetHeight = latest.number
         this.fetcherDoneFlags.snapTargetRoot = latest.stateRoot
         this.fetcherDoneFlags.snapTargetHash = latest.hash()
+        this.height = newestHeight
       }
     }
 

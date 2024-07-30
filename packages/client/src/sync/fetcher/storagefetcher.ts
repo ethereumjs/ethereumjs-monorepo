@@ -26,7 +26,6 @@ import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { Debugger } from 'debug'
 
 const TOTAL_RANGE_END = BIGINT_2 ** BIGINT_256 - BIGINT_1
-const LOOKBACK_WINDOW = 1
 
 type StorageDataResponse = StorageData[][] & { completed?: boolean }
 
@@ -232,7 +231,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       // could be running independently of eachother in some cases
       const currentHeight = this.height
       const newestHeight = latest.number
-      if (newestHeight - currentHeight >= LOOKBACK_WINDOW) {
+      if (newestHeight - currentHeight >= this.config.snapLookbackWindow) {
         this.fetcherDoneFlags.snapTargetHeight = latest.number
         this.fetcherDoneFlags.snapTargetRoot = latest.stateRoot
         this.fetcherDoneFlags.snapTargetHash = latest.hash()
@@ -266,7 +265,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
 
     if (
       this.fetcherDoneFlags.snapTargetHeight! - (task.height ?? task.storageRequests[0].height) >=
-      LOOKBACK_WINDOW
+      this.config.snapLookbackWindow
     ) {
       // skip request if we are close to being outside of lookback range to avoid getting banned
       this.debug(`skipping request that is close to being outside of lookback range`)

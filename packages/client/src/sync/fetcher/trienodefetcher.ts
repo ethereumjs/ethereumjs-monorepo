@@ -120,7 +120,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     // will always start with root node as first set of node requests
     this.pathToNodeRequestData.setElement('', {
       requested: false,
-      nodeHash: bytesToHex(this.fetcherDoneFlags.snapTargetRoot!),
+      nodeHash: bytesToHex(this.fetcherDoneFlags.snapTargetRoot!), // TODO this target could change, have to update tfn to clear and recreate root request on targetRoot changing
       nodeParentHash: '', // root node does not have a parent
     } as NodeRequestData)
 
@@ -154,10 +154,25 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     if (latest !== undefined && latest.stateRoot !== undefined) {
       const currentHeight = this.height
       const newestHeight = latest.number
-      if (newestHeight - currentHeight >= 1) {
+      if (newestHeight - currentHeight >= this.config.snapLookbackWindow) {
+        this.debug('dbg810: updating roots')
+        // update latest height and root
         this.fetcherDoneFlags.snapTargetHeight = latest.number
         this.fetcherDoneFlags.snapTargetRoot = latest.stateRoot
         this.fetcherDoneFlags.snapTargetHash = latest.hash()
+        this.height = newestHeight
+
+        // clear any tasks or requests and create new request for newest root set to
+        this.clear()
+        this.pathToNodeRequestData = new OrderedMap<string, NodeRequestData>()
+        this.requestedNodeToPath = new Map<string, string>()
+        this.fetchedAccountNodes = new Map<string, FetchedNodeData>()
+        this.nodeCount = 0
+        this.pathToNodeRequestData.setElement('', {
+          requested: false,
+          nodeHash: bytesToHex(this.fetcherDoneFlags.snapTargetRoot!), // TODO this target could change, have to update tfn to clear and recreate root request on targetRoot changing
+          nodeParentHash: '', // root node does not have a parent
+        } as NodeRequestData)
       }
     }
 
@@ -168,6 +183,14 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       paths,
       bytes: BigInt(this.config.maxRangeBytes),
     })
+
+    this.debug(`dbg800: trienodefetcher.ts`)
+    this.debug(`root: ${bytesToHex(this.fetcherDoneFlags.snapTargetRoot!)}`)
+    this.debug(
+      `paths requested: ${paths.map((valArr, _) => {
+        return valArr.map((val, _) => bytesToHex(val))
+      })}`,
+    )
 
     // Response is valid, but check if peer is signalling that it does not have
     // the requested data. For trie node range queries that means the peer is not
@@ -236,6 +259,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         const childNodes = []
         let unknownChildNodeCount = 0
         let hasStorageComponent = false
+
+        this.debug(`dbg804: trienodefetcher.ts`)
+        this.debug(`nodeData: ${node}`)
 
         // get all children of received node
         if (node instanceof BranchNode) {
