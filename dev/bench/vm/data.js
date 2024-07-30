@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1722036875784,
+  "lastUpdate": 1722365372552,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "80434b7d46e4f6630756ee5f18acae9f306c478e",
-          "message": "Blockchain: replace static constructors (#3491)\n\n* blockchain: move static methods to external functions\r\n\r\n* monorepo: switch static Blockchain methods for functions\r\n\r\n* fix import\r\n\r\n* update in example\r\n\r\n* update block constructor\r\n\r\n* lint fix\r\n\r\n* blockchain: move constructor functions to 'constructors.ts'",
-          "timestamp": "2024-07-12T22:07:06+02:00",
-          "tree_id": "09ae83558c92e66806573ec1b6f386b2e37d0fb9",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/80434b7d46e4f6630756ee5f18acae9f306c478e"
-        },
-        "date": 1720814991256,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38566,
-            "range": "±2.09%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 35925,
-            "range": "±4.18%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37137,
-            "range": "±1.54%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36128,
-            "range": "±1.74%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35462,
-            "range": "±1.83%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.68%",
             "unit": "ops/sec",
             "extra": "90 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "def477a9df2f6f15fac9255804cc2ecfb529f291",
+          "message": "Block: extract static Header constructors (#3550)\n\n* Block: move BlockHeader statics to constructors.ts\n\n* Block: delete statics from Header class\n\n* update functions downstream\n\n* fix imports\n\n* fix imports\n\n* Block: simply RLP function name\n\n* fix error",
+          "timestamp": "2024-07-30T14:46:55-04:00",
+          "tree_id": "b9741357c636329998f986ddb7d3b6e8bef3a1b0",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/def477a9df2f6f15fac9255804cc2ecfb529f291"
+        },
+        "date": 1722365371904,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38067,
+            "range": "±2.14%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36532,
+            "range": "±3.45%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37252,
+            "range": "±1.53%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36348,
+            "range": "±1.74%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35641,
+            "range": "±1.91%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
