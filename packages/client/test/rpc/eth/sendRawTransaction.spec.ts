@@ -22,7 +22,7 @@ import type { FullEthereumService } from '../../../src/service/index.js'
 const method = 'eth_sendRawTransaction'
 
 describe(method, () => {
-  it.only('call with valid arguments', async () => {
+  it('call with valid arguments', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
     const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
     const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
