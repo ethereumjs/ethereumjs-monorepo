@@ -1,7 +1,7 @@
 import { utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createProof, fromProof, verifyProof } from '../../src/index.js'
+import { createProof, createTrieFromProof, fromProof, verifyProof } from '../../src/index.js'
 import { Trie } from '../../src/trie.js'
 
 describe('Run Trie script with DEBUG enabled', async () => {
@@ -33,9 +33,8 @@ describe('Run Trie script with DEBUG enabled', async () => {
   trie.checkpoint()
   await trie.revert()
   process.env.DEBUG = ''
-  const trie2 = new Trie({})
+  const trie2 = await createTrieFromProof(proof)
   trie2['DEBUG'] = true
-  await fromProof(trie2, proof)
   it('tries should share root', async () => {
     assert.deepEqual(trie.root(), trie2.root())
   })

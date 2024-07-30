@@ -165,24 +165,4 @@ export async function verifyProof(
   }
 }
 
-/**
- * Create a trie from a given (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof. An EIP-1186 proof contains the encoded trie nodes from the root
- * node to the leaf node storing state data. This function does not check if the proof has the same expected root.
- * with the same name.
- * @param proof an EIP-1186 proof to update the trie from
- * @deprecated Use `updateFromProof`
- */
-export async function fromProof(trie: Trie, proof: Proof): Promise<void> {
-  await updateFromProof(trie, proof, false)
-
-  if (equalsBytes(trie.root(), trie.EMPTY_TRIE_ROOT) && proof[0] !== undefined) {
-    let rootKey = Uint8Array.from(trie['hash'](proof[0]))
-    // TODO: what if we have keyPrefix and we set root? This should not work, right? (all trie nodes are non-reachable)
-    rootKey = trie['_opts'].keyPrefix ? concatBytes(trie['_opts'].keyPrefix, rootKey) : rootKey
-    trie.root(rootKey)
-    await trie.persistRoot()
-  }
-  return
-}
-
 export * from './range.js'
