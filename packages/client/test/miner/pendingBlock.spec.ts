@@ -1,5 +1,5 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { Common, Goerli, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { create1559FeeMarketTx, create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
 import {
@@ -78,7 +78,7 @@ const setup = () => {
         shallowCopy: () => service.execution.vm,
         setStateRoot: () => {},
         blockchain: mockBlockchain({}),
-        common: new Common({ chain: 'mainnet' }),
+        common: new Common({ chain: Mainnet }),
       },
     },
   }

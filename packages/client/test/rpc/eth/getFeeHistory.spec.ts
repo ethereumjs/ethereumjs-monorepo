@@ -1,5 +1,5 @@
 import { paramsBlock } from '@ethereumjs/block'
-import { Common, Chain as CommonChain, Hardfork, Mainnet } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
   BIGINT_0,

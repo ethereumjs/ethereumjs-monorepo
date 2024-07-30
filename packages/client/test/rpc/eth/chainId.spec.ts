@@ -1,4 +1,4 @@
-import { Chain, Common, Goerli } from '@ethereumjs/common'
+import { Common, Goerli } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
 import { baseSetup, createClient, createManager, getRpcClient, startRPC } from '../helpers.js'

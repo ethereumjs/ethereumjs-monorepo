@@ -255,7 +255,7 @@ export class Common {
           (acc: number, hf: HardforkTransitionConfig) => Math.max(Number(hf.timestamp ?? '0'), acc),
           0,
         )
-      if (minTimeStamp > timestamp) {
+      if (BigInt(minTimeStamp) > timestamp) {
         throw Error(`Maximum HF determined by timestamp is lower than the block number/ttd HF`)
       }
 
@@ -266,7 +266,8 @@ export class Common {
             Math.min(Number(hf.timestamp ?? timestamp), acc),
           Number(timestamp),
         )
-      if (maxTimeStamp < timestamp) {
+      console.log(minTimeStamp, maxTimeStamp, timestamp, blockNumber)
+      if (BigInt(maxTimeStamp) < timestamp) {
         throw Error(`Maximum HF determined by block number/ttd is lower than timestamp HF`)
       }
     }

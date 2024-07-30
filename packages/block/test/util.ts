@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { BIGINT_0, BIGINT_1, utf8ToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
