@@ -60,7 +60,7 @@ export class Common {
   constructor(opts: CommonOpts) {
     this.events = new EventEmitter()
 
-    this._chainParams = JSON.parse(JSON.stringify(opts.chain))
+    this._chainParams = opts.chain
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Shanghai
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
@@ -255,7 +255,7 @@ export class Common {
           (acc: number, hf: HardforkTransitionConfig) => Math.max(Number(hf.timestamp ?? '0'), acc),
           0,
         )
-      if (BigInt(minTimeStamp) > timestamp) {
+      if (minTimeStamp > timestamp) {
         throw Error(`Maximum HF determined by timestamp is lower than the block number/ttd HF`)
       }
 
@@ -267,7 +267,7 @@ export class Common {
           Number(timestamp),
         )
 
-      if (BigInt(maxTimeStamp) < timestamp) {
+      if (maxTimeStamp < timestamp) {
         throw Error(`Maximum HF determined by block number/ttd is lower than timestamp HF`)
       }
     }
@@ -710,7 +710,7 @@ export class Common {
   /**
    * Returns an eth/64 compliant fork hash (EIP-2124)
    * @param hardfork Hardfork name, optional if HF set
-   * @param genesisHash Genesis block hash of the Mainnet, optional if already defined and not needed to be calculated
+   * @param genesisHash Genesis block hash of the network, optional if already defined and not needed to be calculated
    */
   forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): PrefixedHexString {
     hardfork = hardfork ?? this._hardfork
