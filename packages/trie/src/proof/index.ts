@@ -35,8 +35,7 @@ export async function verifyTrieProof(
 // /**
 //  * A range proof is a proof that includes the encoded trie nodes from the root node to leaf node for one or more branches of a trie,
 //  * allowing an entire range of leaf nodes to be validated. This is useful in applications such as snap sync where contiguous ranges
-//  * of state trie data is received and validated for constructing world state, locally. Also see {@link verifyRangeProof}. A static
-//  * version of this function also exists.
+//  * of state trie data is received and validated for constructing world state, locally. Also see {@link verifyRangeProof}.
 //  * @param rootHash - root hash of state trie this proof is being verified against.
 //  * @param firstKey - first key of range being proven.
 //  * @param lastKey - last key of range being proven.
@@ -118,7 +117,7 @@ export async function updateFromProof(trie: Trie, proof: Proof, shouldVerifyRoot
 
 /**
  * Verifies a proof by putting all of its nodes into a trie and attempting to get the proven key. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof
- * contains the encoded trie nodes from the root node to the leaf node storing state data. A static version of this function exists with the same name.
+ * contains the encoded trie nodes from the root node to the leaf node storing state data.
  * @param rootHash Root hash of the trie that this proof was created from and is being verified for
  * @param key Key that is being verified and that the proof is created for
  * @param proof an EIP-1186 proof to verify the key against
@@ -168,7 +167,7 @@ export async function verifyProof(
 
 /**
  * Create a trie from a given (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof. An EIP-1186 proof contains the encoded trie nodes from the root
- * node to the leaf node storing state data. This function does not check if the proof has the same expected root. A static version of this function exists
+ * node to the leaf node storing state data. This function does not check if the proof has the same expected root.
  * with the same name.
  * @param proof an EIP-1186 proof to update the trie from
  * @deprecated Use `updateFromProof`
