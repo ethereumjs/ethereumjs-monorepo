@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader, createHeader } from '@ethereumjs/block'
 import {
   Common,
   Chain as CommonChain,
@@ -75,7 +75,7 @@ const setup = () => {
   const service: any = {
     chain: {
       headers: { height: BigInt(0) },
-      getCanonicalHeadHeader: () => BlockHeader.fromHeaderData({}, { common }),
+      getCanonicalHeadHeader: () => createHeader({}, { common }),
     },
     execution: {
       vm: {

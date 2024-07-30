@@ -3,8 +3,7 @@ import { loadKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import * as shardingJson from '../../client/test/sim/configs/4844-devnet.json'
-import { createBlockFromBeaconPayloadJson } from '../src/constructors.js'
-import { BlockHeader } from '../src/index.js'
+import { createBlockFromBeaconPayloadJson, createHeader } from '../src/constructors.js'
 
 import * as payloadKaustinen from './testdata/payload-kaustinen.json'
 import * as payload87335 from './testdata/payload-slot-87335.json'
@@ -35,7 +34,7 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
         const block = await createBlockFromBeaconPayloadJson(payload as BeaconPayloadJson, {
           common,
         })
-        const parentHeader = BlockHeader.fromHeaderData(
+        const parentHeader = createHeader(
           { excessBlobGas: BigInt(0), blobGasUsed: block.header.excessBlobGas! + BigInt(393216) },
           { common },
         )
@@ -74,7 +73,7 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
         } as BeaconPayloadJson,
         { common },
       )
-      const parentHeader = BlockHeader.fromHeaderData({ excessBlobGas: BigInt(0) }, { common })
+      const parentHeader = createHeader({ excessBlobGas: BigInt(0) }, { common })
       block.validateBlobTransactions(parentHeader)
       assert.fail(`should have failed constructing the block`)
     } catch (e) {

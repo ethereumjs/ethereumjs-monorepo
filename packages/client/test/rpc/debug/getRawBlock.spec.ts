@@ -1,4 +1,4 @@
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData, createHeader } from '@ethereumjs/block'
 import { createCustomCommon } from '@ethereumjs/common'
 import { create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex, createZeroAddress, hexToBytes } from '@ethereumjs/util'
@@ -28,7 +28,7 @@ const block = {
   header: {
     number: BigInt(1),
     hash: () => blockHash,
-    serialize: () => BlockHeader.fromHeaderData({ number: 1 }).serialize(),
+    serialize: () => createHeader({ number: 1 }).serialize(),
   },
   toJSON: () => ({
     ...createBlockFromBlockData({ header: { number: 1 } }).toJSON(),

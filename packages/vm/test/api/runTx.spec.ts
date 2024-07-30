@@ -1,4 +1,4 @@
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlockFromBlockData, createHeader } from '@ethereumjs/block'
 import { Blockchain, createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
@@ -903,7 +903,7 @@ describe('EIP 4844 transaction tests', () => {
     Blockchain.prototype.getBlock = async () => {
       return createBlockFromBlockData(
         {
-          header: BlockHeader.fromHeaderData(
+          header: createHeader(
             {
               excessBlobGas: 0n,
               number: 1,
@@ -931,7 +931,7 @@ describe('EIP 4844 transaction tests', () => {
 
     const block = createBlockFromBlockData(
       {
-        header: BlockHeader.fromHeaderData(
+        header: createHeader(
           {
             excessBlobGas: 1n,
             number: 2,
