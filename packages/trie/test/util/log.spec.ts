@@ -1,7 +1,7 @@
 import { utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createProof, createTrieFromProof, fromProof, verifyProof } from '../../src/index.js'
+import { createProof, createTrieFromProof, verifyProof } from '../../src/index.js'
 import { Trie } from '../../src/trie.js'
 
 describe('Run Trie script with DEBUG enabled', async () => {
