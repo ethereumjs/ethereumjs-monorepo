@@ -20,6 +20,7 @@
 - [Custom Network Mining (Beta)](#custom-network-mining-beta)
 - [API](#api)
 - [JSON RPC](#json-rpc)
+- [Verkle](#Verkle)
 - [Development](#development)
 - [EthereumJS](#ethereumjs)
 
@@ -325,6 +326,43 @@ Note: The Prometheus endpoint runs on port 8000 by default
 [API Reference](./docs/README.md)
 
 See also this [diagram](./diagram/client.svg) for an overview of the client structure with the initialization and message flow.
+
+## Verkle
+
+> Verkle trees are a cryptographic data structure proposed for use in Ethereum to optimize storage and transaction verification.
+
+This package is currently in early alpha and is a work in progress. It is not intended for use in production environments, but rather for research and development purposes.
+
+Let's see how to use verkle package quickly:
+
+### Installation
+
+To obtain the latest version, simply require the project using `npm`:
+
+```shell
+npm install @ethereumjs/verkle
+```
+
+### Initialization and Basic Usage
+
+```ts
+import { VerkleTree } from '@ethereumjs/verkle'
+import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
+
+const tree = new VerkleTree()
+
+async function test() {
+  await tree.put(utf8ToBytes('test'), utf8ToBytes('one'))
+  const value = await tree.get(utf8ToBytes('test'))
+  console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
+}
+
+test()
+```
+
+You can find a working example deployed on [Replit](https://replit.com/@foufrix/ethereum-merkle#index.ts)
+
+Read more about [Verkle package](../verkle/README.md)
 
 ## JSON-RPC
 

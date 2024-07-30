@@ -89,6 +89,7 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 ## EthereumJS
 
 See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
+Follow [here](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3417) the state of Verkle implementation in `ethereum-js`.
 
 ## License
 
