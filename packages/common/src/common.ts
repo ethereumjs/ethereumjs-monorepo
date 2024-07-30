@@ -266,7 +266,7 @@ export class Common {
             Math.min(Number(hf.timestamp ?? timestamp), acc),
           Number(timestamp),
         )
-      console.log(minTimeStamp, maxTimeStamp, timestamp, blockNumber)
+
       if (BigInt(maxTimeStamp) < timestamp) {
         throw Error(`Maximum HF determined by block number/ttd is lower than timestamp HF`)
       }
