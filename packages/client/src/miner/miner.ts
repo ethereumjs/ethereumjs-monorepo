@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { type BlockHeader, createHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { BIGINT_0, BIGINT_1, BIGINT_2, bytesToHex, equalsBytes } from '@ethereumjs/util'
@@ -209,10 +209,7 @@ export class Miner {
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
       // Abort if we have too recently signed
       const cliqueSigner = this.config.accounts[0][1]
-      const header = BlockHeader.fromHeaderData(
-        { number },
-        { common: this.config.chainCommon, cliqueSigner },
-      )
+      const header = createHeader({ number }, { common: this.config.chainCommon, cliqueSigner })
       if (
         (this.service.chain.blockchain as any).consensus.cliqueCheckRecentlySigned(header) === true
       ) {

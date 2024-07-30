@@ -2,8 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlock } from '../src/constructors.js'
-import { BlockHeader } from '../src/header.js'
+import { createBlock, createHeader } from '../src/constructors.js'
 
 describe('EIP4788 header tests', () => {
   it('should work', () => {
@@ -12,7 +11,7 @@ describe('EIP4788 header tests', () => {
 
     assert.throws(
       () => {
-        BlockHeader.fromHeaderData(
+        createHeader(
           {
             parentBeaconBlockRoot: zeros(32),
           },
@@ -28,7 +27,7 @@ describe('EIP4788 header tests', () => {
 
     assert.throws(
       () => {
-        BlockHeader.fromHeaderData(
+        createHeader(
           {
             blobGasUsed: 1n,
           },
@@ -42,7 +41,7 @@ describe('EIP4788 header tests', () => {
       'should throw when setting blobGasUsed with EIP4844 not being activated',
     )
     assert.doesNotThrow(() => {
-      BlockHeader.fromHeaderData(
+      createHeader(
         {
           excessBlobGas: 0n,
           blobGasUsed: 0n,
@@ -57,7 +56,7 @@ describe('EIP4788 header tests', () => {
 
     const block = createBlock(
       {
-        header: BlockHeader.fromHeaderData({}, { common }),
+        header: createHeader({}, { common }),
       },
       { common, skipConsensusFormatValidation: true },
     )

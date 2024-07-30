@@ -1,4 +1,4 @@
-import { Block, BlockHeader, createBlock } from '@ethereumjs/block'
+import { Block, createBlock, createHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -13,6 +13,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { createBlockchain } from '../src/index.js'
 
+import type { BlockHeader } from '@ethereumjs/block'
 import type { DB } from '@ethereumjs/util'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
@@ -82,14 +83,14 @@ export const generateConsecutiveBlock = (
     difficultyChangeFactor = 1
   }
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
-  const tmpHeader = BlockHeader.fromHeaderData(
+  const tmpHeader = createHeader(
     {
       number: parentBlock.header.number + BigInt(1),
       timestamp: parentBlock.header.timestamp + BigInt(10 + -difficultyChangeFactor * 9),
     },
     { common },
   )
-  const header = BlockHeader.fromHeaderData(
+  const header = createHeader(
     {
       number: parentBlock.header.number + BigInt(1),
       parentHash: parentBlock.hash(),
