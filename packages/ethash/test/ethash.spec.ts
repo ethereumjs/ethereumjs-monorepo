@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { createHeaderFromRLP } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -16,7 +16,7 @@ describe('POW tests', () => {
   it('should work', async () => {
     for (const key of tests) {
       const test = powTests[key]
-      const header = BlockHeader.fromRLPSerializedHeader(hexToBytes(`0x${test.header}`), { common })
+      const header = createHeaderFromRLP(hexToBytes(`0x${test.header}`), { common })
 
       const headerHash = ethash.headerHash(header.raw())
       assert.equal(bytesToHex(headerHash), '0x' + test.header_hash, 'generate header hash')
