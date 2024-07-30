@@ -9,7 +9,7 @@ import type { Proof, TrieOpts } from '../index.js'
 import type { PutBatch } from '@ethereumjs/util'
 
 /**
- * Static version of verifyProof function with the same behavior. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes
+ * An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes
  * from the root node to the leaf node storing state data.
  * @param rootHash Root hash of the trie that this proof was created from and is being verified for
  * @param key Key that is being verified and that the proof is created for
