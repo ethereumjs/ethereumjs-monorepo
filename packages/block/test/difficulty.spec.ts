@@ -23,17 +23,17 @@ function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: st
 type TestData = { [key: string]: any }
 
 const hardforkTestData: TestData = {
-  chainstart: difficultyFrontier.difficultyFrontier.Frontier,
-  homestead: difficultyHomestead.difficultyHomestead.Homestead,
-  byzantium: difficultyByzantium.difficultyByzantium.Byzantium,
-  constantinople: difficultyConstantinople.difficultyConstantinople.Constantinople,
+  chainstart: difficultyFrontier.default.difficultyFrontier.Frontier,
+  homestead: difficultyHomestead.default.difficultyHomestead.Homestead,
+  byzantium: difficultyByzantium.default.difficultyByzantium.Byzantium,
+  constantinople: difficultyConstantinople.default.difficultyConstantinople.Constantinople,
   muirGlacier: Object.assign(
-    difficultyEIP2384.difficultyEIP2384.Berlin,
-    difficultyEIP2384_random.difficultyEIP2384_random.Berlin,
-    difficultyEIP2384_random_to20M.difficultyEIP2384_random_to20M.Berlin,
+    difficultyEIP2384.default.difficultyEIP2384.Berlin,
+    difficultyEIP2384_random.default.difficultyEIP2384_random.Berlin,
+    difficultyEIP2384_random_to20M.default.difficultyEIP2384_random_to20M.Berlin,
   ),
-  arrowGlacier: difficultyArrowGlacier.difficultyArrowGlacier.ArrowGlacier,
-  grayGlacier: difficultyGrayGlacier.difficultyGrayGlacier.GrayGlacier,
+  arrowGlacier: difficultyArrowGlacier.default.difficultyArrowGlacier.ArrowGlacier,
+  grayGlacier: difficultyGrayGlacier.default.difficultyGrayGlacier.GrayGlacier,
 }
 
 const chainTestData: TestData = {
