@@ -12,6 +12,7 @@ import {
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
+import { paramsTx } from '../params.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, txTypeBytes, validateNotArray } from '../util.js'
 
@@ -24,7 +25,6 @@ import type {
 } from '../types.js'
 import type { TxData, TxValuesArray } from './tx.js'
 import type { Kzg } from '@ethereumjs/util'
-import { paramsTx } from '../params.js'
 
 const validateBlobTransactionNetworkWrapper = (
   blobVersionedHashes: Uint8Array[],
