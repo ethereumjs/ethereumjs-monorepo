@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createCustomCommon } from '@ethereumjs/common'
 import { create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
 import { createZeroAddress, hexToBytes } from '@ethereumjs/util'
@@ -25,14 +25,13 @@ const transactions2 = [mockedTx2]
 
 const block = {
   hash: () => blockHash,
-  serialize: () =>
-    createBlockFromBlockData({ header: { number: 1 }, transactions: transactions2 }).serialize(),
+  serialize: () => createBlock({ header: { number: 1 }, transactions: transactions2 }).serialize(),
   header: {
     number: BigInt(1),
     hash: () => blockHash,
   },
   toJSON: () => ({
-    ...createBlockFromBlockData({ header: { number: 1 } }).toJSON(),
+    ...createBlock({ header: { number: 1 } }).toJSON(),
     transactions: transactions2,
   }),
   transactions: transactions2,
@@ -45,12 +44,12 @@ function createChain(headBlock = block) {
   )
   const genesisBlock = {
     hash: () => genesisBlockHash,
-    serialize: () => createBlockFromBlockData({ header: { number: 0 }, transactions }).serialize(),
+    serialize: () => createBlock({ header: { number: 0 }, transactions }).serialize(),
     header: {
       number: BigInt(0),
     },
     toJSON: () => ({
-      ...createBlockFromBlockData({ header: { number: 0 } }).toJSON(),
+      ...createBlock({ header: { number: 0 } }).toJSON(),
       transactions,
     }),
     transactions,
@@ -166,8 +165,8 @@ describe(method, async () => {
 
   describe('call with block with blob txs', () => {
     it('retrieves a block with a blob tx in it', async () => {
-      const genesisBlock = createBlockFromBlockData({ header: { number: 0 } })
-      const block1 = createBlockFromBlockData(
+      const genesisBlock = createBlock({ header: { number: 0 } })
+      const block1 = createBlock(
         {
           header: { number: 1, parentHash: genesisBlock.header.hash() },
           transactions: [mockedBlobTx3],

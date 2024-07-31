@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import {
   Capability,
@@ -593,7 +593,7 @@ export class Eth {
       gasLimit: transaction.gas,
     }
 
-    const blockToRunOn = createBlockFromBlockData(
+    const blockToRunOn = createBlock(
       {
         header: {
           parentHash: block.hash(),

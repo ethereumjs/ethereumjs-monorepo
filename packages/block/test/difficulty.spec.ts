@@ -11,7 +11,7 @@ import * as difficultyEIP2384_random_to20M from '../../ethereum-tests/Difficulty
 import * as difficultyFrontier from '../../ethereum-tests/DifficultyTests/dfFrontier/difficultyFrontier.json'
 import * as difficultyGrayGlacier from '../../ethereum-tests/DifficultyTests/dfGrayGlacier/difficultyGrayGlacier.json'
 import * as difficultyHomestead from '../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json'
-import { createBlockFromBlockData } from '../src/constructors.js'
+import { createBlock } from '../src/constructors.js'
 
 import type { Block } from '../src/index.js'
 
@@ -57,7 +57,7 @@ describe('[Header]: difficulty tests', () => {
           })
         const blockOpts = { common }
         const uncleHash = test.parentUncles === '0x00' ? undefined : test.parentUncles
-        const parentBlock = createBlockFromBlockData(
+        const parentBlock = createBlock(
           {
             header: {
               timestamp: test.parentTimestamp,
@@ -68,7 +68,7 @@ describe('[Header]: difficulty tests', () => {
           blockOpts,
         )
 
-        const block = createBlockFromBlockData(
+        const block = createBlock(
           {
             header: {
               timestamp: test.currentTimestamp,
@@ -92,7 +92,7 @@ describe('[Header]: difficulty tests', () => {
         const common = new Common({ chain })
         const blockOpts = { common, setHardfork: true }
         const uncleHash = test.parentUncles === '0x00' ? undefined : test.parentUncles
-        const parentBlock = createBlockFromBlockData(
+        const parentBlock = createBlock(
           {
             header: {
               timestamp: test.parentTimestamp,
@@ -104,7 +104,7 @@ describe('[Header]: difficulty tests', () => {
           blockOpts,
         )
 
-        const block = createBlockFromBlockData(
+        const block = createBlock(
           {
             header: {
               timestamp: test.currentTimestamp,

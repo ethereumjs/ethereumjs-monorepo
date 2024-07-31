@@ -6,7 +6,7 @@
 // 4. Puts the blocks from ../utils/blockchain-mock-data "blocks" attribute into the Blockchain
 // 5. Runs the Blockchain on the VM.
 
-import { createBlockFromBlockData, createBlockFromRLPSerializedBlock } from '@ethereumjs/block'
+import { createBlock, createBlockFromRLPSerializedBlock } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { Common, ConsensusAlgorithm, ConsensusType } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
@@ -30,7 +30,7 @@ async function main() {
   const validatePow = common.consensusType() === ConsensusType.ProofOfWork
   const validateBlocks = true
 
-  const genesisBlock = createBlockFromBlockData({ header: testData.genesisBlockHeader }, { common })
+  const genesisBlock = createBlock({ header: testData.genesisBlockHeader }, { common })
 
   const consensusDict: ConsensusDict = {}
   consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())

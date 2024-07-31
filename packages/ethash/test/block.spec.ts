@@ -1,5 +1,5 @@
 import {
-  createBlockFromBlockData,
+  createBlock,
   createBlockFromRLPSerializedBlock,
   createBlockFromValuesArray,
 } from '@ethereumjs/block'
@@ -22,7 +22,7 @@ describe('Verify POW for valid and invalid blocks', () => {
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
-    const genesis = createBlockFromBlockData({}, { common })
+    const genesis = createBlock({}, { common })
     const genesisResult = await e.verifyPOW(genesis)
     assert.ok(genesisResult, 'genesis block should be valid')
 

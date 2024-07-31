@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { create2930AccessListTx, createLegacyTx } from '@ethereumjs/tx'
 import { assert, describe, it } from 'vitest'
@@ -21,10 +21,10 @@ describe('[Types]', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 
     // Block
-    const block: Omit<
-      Required<BlockData>,
-      'withdrawals' | 'executionWitness'
-    > = createBlockFromBlockData({}, { common })
+    const block: Omit<Required<BlockData>, 'withdrawals' | 'executionWitness'> = createBlock(
+      {},
+      { common },
+    )
     assert.ok(block, 'block')
 
     // Transactions

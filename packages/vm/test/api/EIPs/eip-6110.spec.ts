@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Chain, Common, Hardfork, getInitializedChains } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
@@ -56,7 +56,7 @@ describe('EIP-6110 runBlock tests', () => {
     await vm.stateManager.putAccount(beaconContractAddress, beaconContractAccount)
     await vm.stateManager.putCode(beaconContractAddress, depositContractByteCode)
     await vm.stateManager.putAccount(sender, createAccount({ balance: 540000000030064771065n }))
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         transactions: [depositTx],
       },
@@ -89,7 +89,7 @@ describe('EIP-7685 buildBlock tests', () => {
     await vm.stateManager.putAccount(beaconContractAddress, beaconContractAccount)
     await vm.stateManager.putCode(beaconContractAddress, depositContractByteCode)
     await vm.stateManager.putAccount(sender, createAccount({ balance: 540000000030064771065n }))
-    const block = createBlockFromBlockData({}, { common })
+    const block = createBlock({}, { common })
     ;(vm.blockchain as any)['dbManager']['getHeader'] = () => block.header
     const blockBuilder = await buildBlock(vm, { parentBlock: block })
     await blockBuilder.addTransaction(depositTx)

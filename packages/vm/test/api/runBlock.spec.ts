@@ -1,5 +1,5 @@
 import {
-  createBlockFromBlockData,
+  createBlock,
   createBlockFromRLPSerializedBlock,
   createBlockFromValuesArray,
 } from '@ethereumjs/block'
@@ -176,7 +176,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     )
 
     function getBlock(common: Common): Block {
-      return createBlockFromBlockData(
+      return createBlock(
         {
           header: {
             number: BigInt(10000000),
@@ -239,7 +239,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   it('should fail when block gas limit higher than 2^63-1', async () => {
     const vm = await VM.create({ common })
 
-    const block = createBlockFromBlockData({
+    const block = createBlock({
       header: {
         gasLimit: hexToBytes('0x8000000000000000'),
       },
@@ -383,7 +383,7 @@ describe('runBlock() -> runtime behavior', async () => {
     ).sign(otherUser.privateKey)
 
     // create block with the signer and txs
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       { header: { extraData: new Uint8Array(97) }, transactions: [tx, tx] },
       { common, cliqueSigner: signer.privateKey },
     )
@@ -427,7 +427,7 @@ it('should correctly reflect generated fields', async () => {
   // get a receipt trie root of for the empty receipts set,
   // which is a well known constant.
   const bytes32Zeros = new Uint8Array(32)
-  const block = createBlockFromBlockData({
+  const block = createBlock({
     header: { receiptTrie: bytes32Zeros, transactionsTrie: bytes32Zeros, gasUsed: BigInt(1) },
   })
 
@@ -661,7 +661,7 @@ describe('runBlock() -> tx types', async () => {
       },
       { common },
     ).sign(defaultSenderPkey)
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         transactions: [tx1, tx2],
       },

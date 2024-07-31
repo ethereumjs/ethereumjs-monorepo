@@ -1,4 +1,4 @@
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { BlockHeader, createBlock } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, randomBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
@@ -29,9 +29,9 @@ const validPayloadAttributes = {
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 
-function createBlock(parentBlock: Block) {
+function createBlockFromParent(parentBlock: Block) {
   const prevRandao = randomBytes(32)
-  const block = createBlockFromBlockData(
+  const block = createBlock(
     {
       header: {
         parentHash: parentBlock.hash(),
@@ -166,7 +166,7 @@ describe(method, () => {
       engine: true,
     })
     const rpc = getRpcClient(server)
-    const newBlock = createBlockFromBlockData(
+    const newBlock = createBlock(
       {
         header: {
           number: blocks[0].blockNumber,
@@ -307,13 +307,13 @@ describe(method, () => {
     const canonical = [genesis]
 
     for (let i = 0; i < 2; i++) {
-      canonical.push(createBlock(canonical[canonical.length - 1]))
+      canonical.push(createBlockFromParent(canonical[canonical.length - 1]))
     }
 
     // Build an alternative payload
     const reorg = [genesis]
     for (let i = 0; i < 2; i++) {
-      reorg.push(createBlock(reorg[reorg.length - 1]))
+      reorg.push(createBlockFromParent(reorg[reorg.length - 1]))
     }
 
     const canonicalPayload = canonical.map(
@@ -347,13 +347,13 @@ describe(method, () => {
     const canonical = [genesis]
 
     for (let i = 0; i < 2; i++) {
-      canonical.push(createBlock(canonical[canonical.length - 1]))
+      canonical.push(createBlockFromParent(canonical[canonical.length - 1]))
     }
 
     // Build an alternative payload
     const reorg = [genesis]
     for (let i = 0; i < 2; i++) {
-      reorg.push(createBlock(reorg[reorg.length - 1]))
+      reorg.push(createBlockFromParent(reorg[reorg.length - 1]))
     }
 
     const canonicalPayload = canonical.map(

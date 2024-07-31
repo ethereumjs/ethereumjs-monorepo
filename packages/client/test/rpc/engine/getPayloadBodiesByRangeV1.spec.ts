@@ -1,4 +1,4 @@
-import { createBlockFromBlockData, createHeader } from '@ethereumjs/block'
+import { createBlock, createHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { createTxFromTxData } from '@ethereumjs/tx'
@@ -68,7 +68,7 @@ describe(method, () => {
       },
       { common },
     ).sign(pkey)
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         transactions: [tx],
         header: createHeader(
@@ -78,7 +78,7 @@ describe(method, () => {
       },
       { common, skipConsensusFormatValidation: true },
     )
-    const block2 = createBlockFromBlockData(
+    const block2 = createBlock(
       {
         transactions: [tx2],
         header: createHeader(
@@ -150,7 +150,7 @@ describe(method, () => {
       },
       { common },
     ).sign(pkey)
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         transactions: [tx],
         header: createHeader(
@@ -160,7 +160,7 @@ describe(method, () => {
       },
       { common, skipConsensusFormatValidation: true },
     )
-    const block2 = createBlockFromBlockData(
+    const block2 = createBlock(
       {
         transactions: [tx2],
         header: createHeader(

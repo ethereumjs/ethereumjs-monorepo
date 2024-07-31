@@ -123,7 +123,7 @@ export function createHeaderFromRLP(serializedHeaderData: Uint8Array, opts: Bloc
  * @param blockData
  * @param opts
  */
-export function createBlockFromBlockData(blockData: BlockData = {}, opts?: BlockOptions) {
+export function createBlock(blockData: BlockData = {}, opts?: BlockOptions) {
   const {
     header: headerData,
     transactions: txsData,
@@ -475,7 +475,7 @@ export async function createBlockFromExecutionPayload(
   }
 
   // we are not setting setHardfork as common is already set to the correct hf
-  const block = createBlockFromBlockData(
+  const block = createBlock(
     { header, transactions: txs, withdrawals, executionWitness, requests },
     opts,
   )

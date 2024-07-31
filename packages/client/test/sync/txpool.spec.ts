@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { create1559FeeMarketTx, create2930AccessListTx } from '@ethereumjs/tx'
@@ -766,12 +766,12 @@ describe('[TxPool]', async () => {
     assert.equal(pool.pool.size, 1, 'pool size 1')
 
     // Craft block with tx not in pool
-    let block = createBlockFromBlockData({ transactions: [txA02] }, { common })
+    let block = createBlock({ transactions: [txA02] }, { common })
     pool.removeNewBlockTxs([block])
     assert.equal(pool.pool.size, 1, 'pool size 1')
 
     // Craft block with tx in pool
-    block = createBlockFromBlockData({ transactions: [txA01] }, { common })
+    block = createBlock({ transactions: [txA01] }, { common })
     pool.removeNewBlockTxs([block])
     assert.equal(pool.pool.size, 0, 'pool should be empty')
 
@@ -789,20 +789,20 @@ describe('[TxPool]', async () => {
     assert.equal(poolContent.length, 2, 'two txs')
 
     // Craft block with tx not in pool
-    block = createBlockFromBlockData({ transactions: [txA02] }, { common })
+    block = createBlock({ transactions: [txA02] }, { common })
     pool.removeNewBlockTxs([block])
     assert.equal(pool.pool.size, 1, 'pool size 1')
     poolContent = pool.pool.get(address)!
     assert.equal(poolContent.length, 2, 'two txs')
 
     // Craft block with tx in pool
-    block = createBlockFromBlockData({ transactions: [txB01] }, { common })
+    block = createBlock({ transactions: [txB01] }, { common })
     pool.removeNewBlockTxs([block])
     poolContent = pool.pool.get(address)!
     assert.equal(poolContent.length, 1, 'only one tx')
 
     // Craft block with tx in pool
-    block = createBlockFromBlockData({ transactions: [txB02] }, { common })
+    block = createBlock({ transactions: [txB02] }, { common })
     pool.removeNewBlockTxs([block])
     assert.equal(pool.pool.size, 0, 'pool size 0')
 
