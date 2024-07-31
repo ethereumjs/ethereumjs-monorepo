@@ -1,10 +1,11 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { CliqueConsensus, EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
-  Chain as ChainCommon,
   ConsensusAlgorithm,
   ConsensusType,
+  Goerli,
   Hardfork,
+  Mainnet,
   createCustomCommon,
 } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
@@ -43,7 +44,8 @@ const commonPoA = createCustomCommon(
       },
     ],
   },
-  { baseChain: ChainCommon.Goerli, hardfork: Hardfork.London },
+  Goerli,
+  { hardfork: Hardfork.London },
 )
 const commonPoW = createCustomCommon(
   {
@@ -64,7 +66,8 @@ const commonPoW = createCustomCommon(
       },
     ],
   },
-  { baseChain: ChainCommon.Mainnet, hardfork: Hardfork.London },
+  Mainnet,
+  { hardfork: Hardfork.London },
 )
 const accounts: [Address, Uint8Array][] = [
   [
