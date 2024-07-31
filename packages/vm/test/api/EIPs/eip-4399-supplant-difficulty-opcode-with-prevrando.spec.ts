@@ -19,10 +19,7 @@ describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
       timestamp: genesis.header.timestamp + BigInt(1),
       gasLimit: genesis.header.gasLimit,
     }
-    let block = createBlockFromBlockData(
-      { header },
-      { common, calcDifficultyFromHeader: genesis.header },
-    )
+    let block = createBlock({ header }, { common, calcDifficultyFromHeader: genesis.header })
 
     // Track stack
     let stack: any = []
@@ -41,7 +38,7 @@ describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
 
     common.setHardfork(Hardfork.Paris)
     const prevRandao = bytesToBigInt(new Uint8Array(32).fill(1))
-    block = createBlockFromBlockData(
+    block = createBlock(
       {
         header: {
           ...header,

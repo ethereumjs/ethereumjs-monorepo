@@ -21,10 +21,10 @@ describe('[Types]', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 
     // Block
-    const block: Omit<
-      Required<BlockData>,
-      'withdrawals' | 'executionWitness'
-    > = createBlockFromBlockData({}, { common })
+    const block: Omit<Required<BlockData>, 'withdrawals' | 'executionWitness'> = createBlock(
+      {},
+      { common },
+    )
     assert.ok(block, 'block')
 
     // Transactions

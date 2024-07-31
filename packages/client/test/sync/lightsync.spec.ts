@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { createHeader } from '@ethereumjs/block'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
@@ -7,6 +7,8 @@ import { Config } from '../../src/config.js'
 import { Peer } from '../../src/net/peer/peer.js'
 import { HeaderFetcher } from '../../src/sync/fetcher/headerfetcher.js'
 import { Event } from '../../src/types.js'
+
+import type { BlockHeader } from '@ethereumjs/block'
 
 class PeerPool {
   open() {}
@@ -180,7 +182,7 @@ describe('import headers', () => {
     } as any)
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(true)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
-      config.events.emit(Event.SYNC_FETCHED_HEADERS, [BlockHeader.fromHeaderData({})]),
+      config.events.emit(Event.SYNC_FETCHED_HEADERS, [createHeader({})]),
     )
     config.logger.on('data', async (data) => {
       if ((data.message as string).includes('Imported headers count=1')) {

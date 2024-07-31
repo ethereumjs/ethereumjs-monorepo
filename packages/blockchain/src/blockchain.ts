@@ -1282,7 +1282,7 @@ export class Blockchain implements BlockchainInterface {
         header.extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
       }
     }
-    return createBlockFromBlockData(
+    return createBlock(
       { header, withdrawals: common.isActivatedEIP(4895) ? [] : undefined },
       { common },
     )

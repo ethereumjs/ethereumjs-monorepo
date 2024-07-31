@@ -1,4 +1,4 @@
-import { Block, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { Block, BlockHeader, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -23,7 +23,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
   const opts = { common }
 
   if (blocks.length === 0) {
-    const genesis = createBlockFromBlockData({ header: { gasLimit } }, opts)
+    const genesis = createBlock({ header: { gasLimit } }, opts)
     blocks.push(genesis)
   }
 
@@ -37,7 +37,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
         timestamp: lastBlock.header.timestamp + BigInt(1),
       },
     }
-    const block = createBlockFromBlockData(blockData, {
+    const block = createBlock(blockData, {
       common,
       calcDifficultyFromHeader: lastBlock.header,
     })
@@ -89,7 +89,7 @@ export const generateConsecutiveBlock = (
     },
     { common },
   )
-  const header = BlockHeader.fromHeaderData(
+  const header = createHeader(
     {
       number: parentBlock.header.number + BigInt(1),
       parentHash: parentBlock.hash(),
@@ -183,7 +183,7 @@ export const createTestDB = async (): Promise<
  * @param extraData - Extra data graffiti in order to create equal blocks (like block number) but with different hashes
  * @param uncles - Optional, an array of uncle headers. Automatically calculates the uncleHash.
  */
-function createBlock(
+function generateBlock(
   parentBlock: Block,
   extraData: string,
   uncles?: BlockHeader[],
@@ -207,7 +207,7 @@ function createBlock(
       ? parentBlock.header.calcNextBaseFee()
       : undefined
 
-  return createBlockFromBlockData(
+  return createBlock(
     {
       header: {
         number,
@@ -227,4 +227,4 @@ function createBlock(
   )
 }
 
-export { createBlock }
+export { generateBlock }

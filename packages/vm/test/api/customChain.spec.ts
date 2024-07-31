@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
@@ -54,7 +54,7 @@ const common = createCustomCommon(testChain.default, Mainnet, {
   name: 'testnet',
   hardfork: Hardfork.Chainstart,
 })
-const block = createBlockFromBlockData(
+const block = createBlock(
   {
     header: {
       gasLimit: 21_000,

@@ -43,7 +43,7 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction) {
   const signed = transaction.sign(pkey)
   const json = signed.toJSON()
 
-  const block = createBlockFromBlockData(
+  const block = createBlock(
     {
       header: {
         number: BigInt(1),

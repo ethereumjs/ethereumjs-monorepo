@@ -1,5 +1,5 @@
 import {
-  createBlockFromBlockData,
+  createBlock,
   genRequestsTrieRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
@@ -257,7 +257,7 @@ export class BlockBuilder {
     }
 
     const blockData = { header, transactions: this.transactions }
-    const block = createBlockFromBlockData(blockData, this.blockOpts)
+    const block = createBlock(blockData, this.blockOpts)
 
     const result = await runTx(this.vm, { tx, block, skipHardForkValidation })
 
@@ -363,7 +363,7 @@ export class BlockBuilder {
       requests,
     }
 
-    const block = createBlockFromBlockData(blockData, blockOpts)
+    const block = createBlock(blockData, blockOpts)
 
     if (this.blockOpts.putBlockIntoBlockchain === true) {
       await this.vm.blockchain.putBlock(block)

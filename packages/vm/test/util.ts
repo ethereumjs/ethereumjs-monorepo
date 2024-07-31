@@ -326,7 +326,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   if (opts?.common && opts.common.gteHardfork('london')) {
     headerData['baseFeePerGas'] = currentBaseFee
     if (currentBaseFee === undefined) {
-      const parentBlockHeader = BlockHeader.fromHeaderData(
+      const parentBlockHeader = createHeader(
         {
           gasLimit: parentGasLimit,
           gasUsed: parentGasUsed,
@@ -344,7 +344,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   if (opts?.common && opts.common.gteHardfork('cancun')) {
     headerData['excessBlobGas'] = currentExcessBlobGas
   }
-  return BlockHeader.fromHeaderData(headerData, opts)
+  return createHeader(headerData, opts)
 }
 
 /**

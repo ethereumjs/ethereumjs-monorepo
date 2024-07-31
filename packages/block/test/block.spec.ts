@@ -12,7 +12,7 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import {
-  createBlockFromBlockData,
+  createBlock,
   createBlockFromRLPSerializedBlock,
   createBlockFromValuesArray,
 } from '../src/constructors.js'
@@ -36,7 +36,7 @@ describe('[Block]: block functions', () => {
 
     const params = JSON.parse(JSON.stringify(paramsBlock))
     params['1']['minGasLimit'] = 3000 // 5000
-    let block = createBlockFromBlockData({}, { params })
+    let block = createBlock({}, { params })
     assert.equal(
       block.common.param('minGasLimit'),
       BigInt(3000),
@@ -45,10 +45,10 @@ describe('[Block]: block functions', () => {
 
     // test default freeze values
     // also test if the options are carried over to the constructor
-    block = createBlockFromBlockData({})
+    block = createBlock({})
     assert.ok(Object.isFrozen(block), 'block should be frozen by default')
 
-    block = createBlockFromBlockData({}, { freeze: false })
+    block = createBlock({}, { freeze: false })
     assert.ok(
       !Object.isFrozen(block),
       'block should not be frozen when freeze deactivated in options',
@@ -97,7 +97,7 @@ describe('[Block]: block functions', () => {
       name: 'testnetMerge',
     })
 
-    let block = createBlockFromBlockData(
+    let block = createBlock(
       {
         header: {
           number: 12, // Berlin block
@@ -108,7 +108,7 @@ describe('[Block]: block functions', () => {
     )
     assert.equal(block.common.hardfork(), Hardfork.Berlin, 'should use setHardfork option')
 
-    block = createBlockFromBlockData(
+    block = createBlock(
       {
         header: {
           number: 20, // Future block
@@ -122,7 +122,7 @@ describe('[Block]: block functions', () => {
       'should use setHardfork option (td > threshold)',
     )
 
-    block = createBlockFromBlockData(
+    block = createBlock(
       {
         header: {
           number: 12, // Berlin block,
@@ -140,7 +140,7 @@ describe('[Block]: block functions', () => {
 
   it('should initialize with undefined parameters without throwing', () => {
     assert.doesNotThrow(function () {
-      createBlockFromBlockData()
+      createBlock()
     })
   })
 
@@ -148,7 +148,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Goerli })
     const opts = { common }
     assert.doesNotThrow(function () {
-      createBlockFromBlockData({}, opts)
+      createBlock({}, opts)
     })
   })
 
@@ -159,7 +159,7 @@ describe('[Block]: block functions', () => {
       { common },
     )
     assert.throws(function () {
-      createBlockFromBlockData({ uncleHeaders: [uncleBlock.header] }, { common })
+      createBlock({ uncleHeaders: [uncleBlock.header] }, { common })
     })
   })
 
@@ -209,9 +209,9 @@ describe('[Block]: block functions', () => {
       gasLimit: 53000,
       gasPrice: 7,
     })
-    const blockTest = createBlockFromBlockData({ transactions: [tx] })
+    const blockTest = createBlock({ transactions: [tx] })
     const txTrie = await blockTest.genTxTrie()
-    const block = createBlockFromBlockData({
+    const block = createBlock({
       header: {
         transactionsTrie: txTrie,
       },
@@ -226,7 +226,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('should test transaction validation with empty transaction list', async () => {
-    const block = createBlockFromBlockData({})
+    const block = createBlock({})
     await testTransactionValidation(block)
   })
 
@@ -261,7 +261,7 @@ describe('[Block]: block functions', () => {
     const unsignedTx = createLegacyTx({})
     const txRoot = await genTransactionsTrieRoot([unsignedTx])
 
-    let block = createBlockFromBlockData({
+    let block = createBlock({
       transactions: [unsignedTx],
       header: {
         transactionsTrie: txRoot,
@@ -283,7 +283,7 @@ describe('[Block]: block functions', () => {
     const zeroRoot = zeros(32)
 
     // Tx root
-    block = createBlockFromBlockData({
+    block = createBlock({
       transactions: [unsignedTx],
       header: {
         transactionsTrie: zeroRoot,
@@ -292,7 +292,7 @@ describe('[Block]: block functions', () => {
     await checkThrowsAsync(block.validateData(false, false), 'invalid transaction trie')
 
     // Withdrawals root
-    block = createBlockFromBlockData(
+    block = createBlock(
       {
         header: {
           withdrawalsRoot: zeroRoot,
@@ -304,7 +304,7 @@ describe('[Block]: block functions', () => {
     await checkThrowsAsync(block.validateData(false, false), 'invalid withdrawals trie')
 
     // Uncle root
-    block = createBlockFromBlockData(
+    block = createBlock(
       {
         header: {
           uncleHash: zeroRoot,
@@ -318,7 +318,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Mainnet, eips: [6800], hardfork: Hardfork.Cancun })
     // Note: `executionWitness: undefined` will still initialize an execution witness in the block
     // So, only testing for `null` here
-    block = createBlockFromBlockData({ executionWitness: null }, { common })
+    block = createBlock({ executionWitness: null }, { common })
     await checkThrowsAsync(
       block.validateData(false, false),
       'Invalid block: ethereumjs stateless client needs executionWitness',
@@ -326,9 +326,9 @@ describe('[Block]: block functions', () => {
   })
 
   it('should test isGenesis (mainnet default)', () => {
-    const block = createBlockFromBlockData({ header: { number: 1 } })
+    const block = createBlock({ header: { number: 1 } })
     assert.notEqual(block.isGenesis(), true)
-    const genesisBlock = createBlockFromBlockData({ header: { number: 0 } })
+    const genesisBlock = createBlock({ header: { number: 0 } })
     assert.equal(genesisBlock.isGenesis(), true)
   })
 
@@ -452,7 +452,7 @@ describe('[Block]: block functions', () => {
     )
 
     // test if we set difficulty if we have a "difficulty header" in options; also verify this is equal to reported canonical difficulty.
-    const blockWithDifficultyCalculation = createBlockFromBlockData(
+    const blockWithDifficultyCalculation = createBlock(
       {
         header: nextBlockHeaderData,
       },
@@ -478,7 +478,7 @@ describe('[Block]: block functions', () => {
       timestamp: genesis.header.timestamp + BigInt(10),
     }
 
-    const block_farAhead = createBlockFromBlockData(
+    const block_farAhead = createBlock(
       {
         header: noParentHeaderData,
       },

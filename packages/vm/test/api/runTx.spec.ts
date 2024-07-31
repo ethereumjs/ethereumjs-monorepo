@@ -1,4 +1,4 @@
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock, createHeader } from '@ethereumjs/block'
 import { Blockchain, createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
@@ -61,10 +61,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       let block
       if (vm.common.consensusType() === 'poa') {
         // Setup block with correct extraData for POA
-        block = createBlockFromBlockData(
-          { header: { extraData: new Uint8Array(97) } },
-          { common: vm.common },
-        )
+        block = createBlock({ header: { extraData: new Uint8Array(97) } }, { common: vm.common })
       }
 
       const res = await runTx(vm, { tx, block })
@@ -95,7 +92,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     const caller = tx.getSenderAddress()
     const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
-    const block = createBlockFromBlockData({}, { common: vm.common.copy() })
+    const block = createBlock({}, { common: vm.common.copy() })
     await runTx(vm, { tx, block })
     assert.ok(true, 'matched hardfork should run without throwing')
   })
@@ -110,7 +107,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     const caller = tx.getSenderAddress()
     const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
-    const block = createBlockFromBlockData({}, { common: vm.common.copy() })
+    const block = createBlock({}, { common: vm.common.copy() })
 
     block.common.setHardfork(Hardfork.Paris)
     try {
@@ -153,7 +150,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     const caller = tx.getSenderAddress()
     const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
-    const block = createBlockFromBlockData({}, { common: vm.common.copy() })
+    const block = createBlock({}, { common: vm.common.copy() })
 
     tx.common.setHardfork(Hardfork.GrayGlacier)
     block.common.setHardfork(Hardfork.GrayGlacier)
@@ -233,7 +230,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       const tx = unsignedTx.sign(privateKey)
 
       const coinbase = hexToBytes('0x00000000000000000000000000000000000000ff')
-      const block = createBlockFromBlockData(
+      const block = createBlock(
         {
           header: {
             gasLimit: transferCost - 1,
@@ -437,7 +434,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     for (const txType of TRANSACTION_TYPES) {
       const vm = await VM.create({ common })
       const tx = getTransaction(vm.common, txType.type, true)
-      const block = createBlockFromBlockData({ header: { baseFeePerGas: 100000 } }, { common })
+      const block = createBlock({ header: { baseFeePerGas: 100000 } }, { common })
       try {
         await runTx(vm, { tx, block })
         assert.fail('should fail')
@@ -719,7 +716,7 @@ describe('runTx() -> consensus bugs', () => {
 
     const tx = create1559FeeMarketTx(txData, { common }).sign(pkey)
 
-    const block = createBlockFromBlockData({ header: { baseFeePerGas: 0x0c } }, { common })
+    const block = createBlock({ header: { baseFeePerGas: 0x0c } }, { common })
     const result = await runTx(vm, { tx, block })
 
     assert.equal(
@@ -897,9 +894,9 @@ describe('EIP 4844 transaction tests', () => {
 
     // Stub getBlock to produce a valid parent header under EIP 4844
     Blockchain.prototype.getBlock = async () => {
-      return createBlockFromBlockData(
+      return createBlock(
         {
-          header: BlockHeader.fromHeaderData(
+          header: createHeader(
             {
               excessBlobGas: 0n,
               number: 1,
@@ -925,9 +922,9 @@ describe('EIP 4844 transaction tests', () => {
 
     const tx = getTransaction(common, 3, true) as BlobEIP4844Transaction
 
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
-        header: BlockHeader.fromHeaderData(
+        header: createHeader(
           {
             excessBlobGas: 1n,
             number: 2,

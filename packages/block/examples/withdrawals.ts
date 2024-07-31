@@ -13,7 +13,7 @@ const withdrawal = <WithdrawalData>{
   amount: BigInt(1000),
 }
 
-const block = createBlockFromBlockData(
+const block = createBlock(
   {
     header: {
       withdrawalsRoot: hexToBytes(

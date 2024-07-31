@@ -70,7 +70,7 @@ const setup = () => {
   const service: any = {
     chain: {
       headers: { height: BigInt(0) },
-      getCanonicalHeadHeader: () => BlockHeader.fromHeaderData({}, { common }),
+      getCanonicalHeadHeader: () => createHeader({}, { common }),
     },
     execution: {
       vm: {

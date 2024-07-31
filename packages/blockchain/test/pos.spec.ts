@@ -22,7 +22,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
     } else if (number > londonBlockNumber) {
       baseFeePerGas = blocks[number - 1].header.calcNextBaseFee()
     }
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           number,

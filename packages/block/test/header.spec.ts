@@ -12,7 +12,13 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlockFromBlockData, createBlockFromRLPSerializedBlock } from '../src/constructors.js'
+import {
+  createBlock,
+  createBlockFromRLPSerializedBlock,
+  createHeader,
+  createHeaderFromRLP,
+  createHeaderFromValuesArray,
+} from '../src/constructors.js'
 import { BlockHeader } from '../src/header.js'
 import { Block } from '../src/index.js'
 
@@ -43,7 +49,7 @@ describe('[Block]: Header functions', () => {
       assert.ok(equalsBytes(header.nonce, zeros(8)))
     }
 
-    const header = BlockHeader.fromHeaderData()
+    const header = createHeader()
     compareDefaultHeader(header)
 
     const block = new Block()
@@ -67,15 +73,15 @@ describe('[Block]: Header functions', () => {
       'should stay on correct HF if outer common HF changes',
     )
 
-    header = BlockHeader.fromHeaderData({}, { common })
+    header = createHeader({}, { common })
     assert.ok(bytesToHex(header.hash()), 'default block should initialize')
 
     // test default freeze values
     // also test if the options are carried over to the constructor
-    header = BlockHeader.fromHeaderData({})
+    header = createHeader({})
     assert.ok(Object.isFrozen(header), 'block should be frozen by default')
 
-    header = BlockHeader.fromHeaderData({}, { freeze: false })
+    header = createHeader({}, { freeze: false })
     assert.ok(
       !Object.isFrozen(header),
       'block should not be frozen when freeze deactivated in options',
@@ -87,12 +93,12 @@ describe('[Block]: Header functions', () => {
     let header = BlockHeader.fromHeaderData({}, { common, freeze: false })
 
     const rlpHeader = header.serialize()
-    header = BlockHeader.fromRLPSerializedHeader(rlpHeader, {
+    header = createHeaderFromRLP(rlpHeader, {
       common,
     })
     assert.ok(Object.isFrozen(header), 'block should be frozen by default')
 
-    header = BlockHeader.fromRLPSerializedHeader(rlpHeader, {
+    header = createHeaderFromRLP(rlpHeader, {
       common,
       freeze: false,
     })
@@ -103,7 +109,7 @@ describe('[Block]: Header functions', () => {
 
     assert.throws(
       () =>
-        BlockHeader.fromRLPSerializedHeader(rlpHeader, {
+        createHeaderFromRLP(rlpHeader, {
           common,
           freeze: false,
           setHardfork: 1n, // Added to bypass defaulting setHardfork to true in static constructor
@@ -113,7 +119,7 @@ describe('[Block]: Header functions', () => {
       'throws when RLP serialized block with no base fee on default hardfork (london) and setHardfork left undefined',
     )
 
-    header = BlockHeader.fromRLPSerializedHeader(
+    header = createHeaderFromRLP(
       hexToBytes(
         '0xf90214a00000000000000000000000000000000000000000000000000000000000000000a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a0d7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000850400000000808213888080a011bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82faa00000000000000000000000000000000000000000000000000000000000000000880000000000000042',
       ),
@@ -128,7 +134,7 @@ describe('[Block]: Header functions', () => {
 
   it('Initialization -> fromRLPSerializedHeader() -> error cases', () => {
     try {
-      BlockHeader.fromRLPSerializedHeader(RLP.encode('a'))
+      createHeaderFromRLP(RLP.encode('a'))
     } catch (e: any) {
       const expectedError = 'Invalid serialized header input. Must be array'
       assert.ok(e.message.includes(expectedError), 'should throw with header as rlp encoded string')
@@ -152,10 +158,10 @@ describe('[Block]: Header functions', () => {
     headerArray[13] = zeros(32) // mixHash
     headerArray[14] = zeros(8) // nonce
 
-    let header = BlockHeader.fromValuesArray(headerArray, { common })
+    let header = createHeaderFromValuesArray(headerArray, { common })
     assert.ok(Object.isFrozen(header), 'block should be frozen by default')
 
-    header = BlockHeader.fromValuesArray(headerArray, { common, freeze: false })
+    header = createHeaderFromValuesArray(headerArray, { common, freeze: false })
     assert.ok(
       !Object.isFrozen(header),
       'block should not be frozen when freeze deactivated in options',
@@ -175,14 +181,14 @@ describe('[Block]: Header functions', () => {
     headerArray[14] = zeros(8) // nonce
     headerArray[15] = zeros(4) // bad data
     try {
-      BlockHeader.fromValuesArray(headerArray)
+      createHeaderFromValuesArray(headerArray)
     } catch (e: any) {
       const expectedError = 'invalid header. More values than expected were received'
       assert.ok(e.message.includes(expectedError), 'should throw on more values than expected')
     }
 
     try {
-      BlockHeader.fromValuesArray(headerArray.slice(0, 5))
+      createHeaderFromValuesArray(headerArray.slice(0, 5))
     } catch (e: any) {
       const expectedError = 'invalid header. Less values than expected were received'
       assert.ok(e.message.includes(expectedError), 'should throw on less values than expected')
@@ -212,7 +218,7 @@ describe('[Block]: Header functions', () => {
     let extraData = new Uint8Array(32)
 
     try {
-      BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+      createHeader({ ...data, extraData }, opts)
       assert.ok(true, testCase)
     } catch (error: any) {
       assert.fail(testCase)
@@ -223,7 +229,7 @@ describe('[Block]: Header functions', () => {
     extraData = new Uint8Array(12)
 
     try {
-      BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+      createHeader({ ...data, extraData }, opts)
       assert.ok(testCase)
     } catch (error: any) {
       assert.fail(testCase)
@@ -234,7 +240,7 @@ describe('[Block]: Header functions', () => {
     extraData = new Uint8Array(42)
 
     try {
-      BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+      createHeader({ ...data, extraData }, opts)
       assert.fail(testCase)
     } catch (error: any) {
       assert.ok((error.message as string).includes('invalid amount of extra data'), testCase)
@@ -254,7 +260,7 @@ describe('[Block]: Header functions', () => {
       'clique block should validate with valid number of bytes in extraData: 32 byte vanity + 65 byte seal'
     extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
     try {
-      BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+      createHeader({ ...data, extraData }, opts)
       assert.ok(true, testCase)
     } catch (error: any) {
       assert.fail(testCase)
@@ -264,7 +270,7 @@ describe('[Block]: Header functions', () => {
     testCase = 'clique block should throw on invalid extraData length'
     extraData = new Uint8Array(32)
     try {
-      BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+      createHeader({ ...data, extraData }, opts)
       assert.fail(testCase)
     } catch (error: any) {
       assert.ok(
@@ -285,7 +291,7 @@ describe('[Block]: Header functions', () => {
     )
     const epoch = BigInt((common.consensusConfig() as CliqueConfig).epoch)
     try {
-      BlockHeader.fromHeaderData({ ...data, number: epoch, extraData }, opts)
+      createHeader({ ...data, number: epoch, extraData }, opts)
       assert.fail(testCase)
     } catch (error: any) {
       assert.ok(
@@ -302,7 +308,7 @@ describe('[Block]: Header functions', () => {
     const extraData = concatBytes(new Uint8Array(1))
 
     try {
-      BlockHeader.fromHeaderData({ extraData }, { common, skipConsensusFormatValidation: true })
+      createHeader({ extraData }, { common, skipConsensusFormatValidation: true })
       assert.ok(
         true,
         'should instantiate header with invalid extraData when skipConsensusFormatValidation === true',
@@ -316,26 +322,26 @@ describe('[Block]: Header functions', () => {
     const badHash = new Uint8Array(31)
 
     assert.throws(
-      () => BlockHeader.fromHeaderData({ parentHash: badHash }),
+      () => createHeader({ parentHash: badHash }),
       'parentHash must be 32 bytes',
       undefined,
       'throws on invalid parent hash length',
     )
     assert.throws(
-      () => BlockHeader.fromHeaderData({ stateRoot: badHash }),
+      () => createHeader({ stateRoot: badHash }),
       'stateRoot must be 32 bytes',
       undefined,
       'throws on invalid state root hash length',
     )
     assert.throws(
-      () => BlockHeader.fromHeaderData({ transactionsTrie: badHash }),
+      () => createHeader({ transactionsTrie: badHash }),
       'transactionsTrie must be 32 bytes',
       undefined,
       'throws on invalid transactionsTrie root hash length',
     )
 
     assert.throws(
-      () => BlockHeader.fromHeaderData({ nonce: new Uint8Array(5) }),
+      () => createHeader({ nonce: new Uint8Array(5) }),
       'nonce must be 8 bytes',
       undefined,
       'contains nonce length error message',
@@ -360,7 +366,7 @@ describe('[Block]: Header functions', () => {
     headerData.difficulty = BigInt(2)
 
     let testCase = 'should throw on lower than period timestamp diffs'
-    let header = BlockHeader.fromHeaderData(headerData, { common })
+    let header = createHeader(headerData, { common })
     try {
       await header.validate(blockchain)
       assert.fail(testCase)
@@ -370,7 +376,7 @@ describe('[Block]: Header functions', () => {
 
     testCase = 'should not throw on timestamp diff equal to period'
     headerData.timestamp = BigInt(1422494864)
-    header = BlockHeader.fromHeaderData(headerData, { common })
+    header = createHeader(headerData, { common })
     try {
       await header.validate(blockchain)
       assert.ok(true, testCase)
@@ -381,7 +387,7 @@ describe('[Block]: Header functions', () => {
     testCase = 'should throw on non-zero beneficiary (coinbase) for epoch transition block'
     headerData.number = common.consensusConfig().epoch
     headerData.coinbase = createAddressFromString('0x091dcd914fCEB1d47423e532955d1E62d1b2dAEf')
-    header = BlockHeader.fromHeaderData(headerData, { common })
+    header = createHeader(headerData, { common })
     try {
       await header.validate(blockchain)
       assert.fail('should throw')
@@ -397,7 +403,7 @@ describe('[Block]: Header functions', () => {
 
     testCase = 'should throw on non-zero mixHash'
     headerData.mixHash = new Uint8Array(32).fill(1)
-    header = BlockHeader.fromHeaderData(headerData, { common })
+    header = createHeader(headerData, { common })
     try {
       await header.validate(blockchain)
       assert.fail('should throw')
@@ -412,7 +418,7 @@ describe('[Block]: Header functions', () => {
 
     testCase = 'should throw on invalid clique difficulty'
     headerData.difficulty = BigInt(3)
-    header = BlockHeader.fromHeaderData(headerData, { common })
+    header = createHeader(headerData, { common })
     try {
       header.validateCliqueDifficulty(blockchain)
       assert.fail(testCase)
@@ -433,7 +439,7 @@ describe('[Block]: Header functions', () => {
     const poaBlock = createBlockFromRLPSerializedBlock(genesisRlp, { common, cliqueSigner })
     await poaBlockchain.putBlock(poaBlock)
 
-    header = BlockHeader.fromHeaderData(headerData, { common, cliqueSigner })
+    header = createHeader(headerData, { common, cliqueSigner })
     try {
       const res = header.validateCliqueDifficulty(poaBlockchain)
       assert.equal(res, true, testCase)
@@ -444,7 +450,7 @@ describe('[Block]: Header functions', () => {
     testCase =
       'validateCliqueDifficulty() should return false with INTURN difficulty and one signer'
     headerData.difficulty = BigInt(1)
-    header = BlockHeader.fromHeaderData(headerData, { common, cliqueSigner })
+    header = createHeader(headerData, { common, cliqueSigner })
     try {
       const res = header.validateCliqueDifficulty(poaBlockchain)
       assert.equal(res, false, testCase)
@@ -473,10 +479,10 @@ describe('[Block]: Header functions', () => {
   })
 
   it('should test isGenesis()', () => {
-    const header1 = BlockHeader.fromHeaderData({ number: 1 })
+    const header1 = createHeader({ number: 1 })
     assert.equal(header1.isGenesis(), false)
 
-    const header2 = BlockHeader.fromHeaderData()
+    const header2 = createHeader()
     assert.equal(header2.isGenesis(), true)
   })
 

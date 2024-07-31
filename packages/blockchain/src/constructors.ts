@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { BIGINT_0, equalsBytes } from '@ethereumjs/util'
 
 import {
@@ -91,7 +91,7 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
 
 /**
  * Creates a blockchain from a list of block objects,
- * objects must be readable by {@link createBlockFromBlockData}
+ * objects must be readable by {@link createBlock}
  *
  * @param blockData List of block objects
  * @param opts Constructor options, see {@link BlockchainOptions}
@@ -102,7 +102,7 @@ export async function createBlockchainFromBlocksData(
 ) {
   const blockchain = await createBlockchain(opts)
   for (const blockData of blocksData) {
-    const block = createBlockFromBlockData(blockData, {
+    const block = createBlock(blockData, {
       common: blockchain.common,
       setHardfork: true,
     })

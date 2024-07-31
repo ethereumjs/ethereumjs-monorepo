@@ -2,7 +2,7 @@ import { createBlockFromBlockData } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
-const block = createBlockFromBlockData(
+const block = createBlock(
   {
     header: {
       baseFeePerGas: BigInt(10),
@@ -19,7 +19,7 @@ console.log(Number(block.header.calcNextBaseFee())) // 11
 
 // So for creating a block with a matching base fee in a certain
 // chain context you can do:
-const blockWithMatchingBaseFee = createBlockFromBlockData(
+const blockWithMatchingBaseFee = createBlock(
   {
     header: {
       baseFeePerGas: block.header.calcNextBaseFee(),

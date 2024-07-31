@@ -1,4 +1,4 @@
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock, createHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { createTxFromTxData } from '@ethereumjs/tx'
@@ -68,20 +68,20 @@ describe(method, () => {
       },
       { common },
     ).sign(pkey)
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         transactions: [tx],
-        header: BlockHeader.fromHeaderData(
+        header: createHeader(
           { parentHash: chain.genesis.hash(), number: 1n },
           { common, skipConsensusFormatValidation: true },
         ),
       },
       { common, skipConsensusFormatValidation: true },
     )
-    const block2 = createBlockFromBlockData(
+    const block2 = createBlock(
       {
         transactions: [tx2],
-        header: BlockHeader.fromHeaderData(
+        header: createHeader(
           { parentHash: block.hash(), number: 2n },
           { common, skipConsensusFormatValidation: true },
         ),
@@ -150,20 +150,20 @@ describe(method, () => {
       },
       { common },
     ).sign(pkey)
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         transactions: [tx],
-        header: BlockHeader.fromHeaderData(
+        header: createHeader(
           { parentHash: chain.genesis.hash(), number: 1n },
           { common, skipConsensusFormatValidation: true },
         ),
       },
       { common, skipConsensusFormatValidation: true },
     )
-    const block2 = createBlockFromBlockData(
+    const block2 = createBlock(
       {
         transactions: [tx2],
-        header: BlockHeader.fromHeaderData(
+        header: createHeader(
           { parentHash: block.hash(), number: 2n },
           { common, skipConsensusFormatValidation: true },
         ),

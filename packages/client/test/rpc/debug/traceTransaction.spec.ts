@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -64,7 +64,7 @@ describe(method, () => {
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = createBlockFromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
@@ -93,7 +93,7 @@ describe(method, () => {
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = createBlockFromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
@@ -122,7 +122,7 @@ describe(method, () => {
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = createBlockFromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
@@ -155,7 +155,7 @@ describe(method, () => {
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = createBlockFromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 

@@ -8,7 +8,7 @@ const main = async () => {
   const common = new Common({ chain: Mainnet })
   const vm = await VM.create({ common })
 
-  const parentBlock = createBlockFromBlockData(
+  const parentBlock = createBlock(
     { header: { number: 1n } },
     { skipConsensusFormatValidation: true },
   )

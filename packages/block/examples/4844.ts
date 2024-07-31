@@ -20,7 +20,7 @@ const main = async () => {
     { common },
   )
 
-  const block = createBlockFromBlockData(
+  const block = createBlock(
     {
       header: {
         excessBlobGas: 0n,

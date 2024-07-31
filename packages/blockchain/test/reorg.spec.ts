@@ -92,7 +92,7 @@ describe('reorg tests', () => {
     const beneficiary1 = new Address(new Uint8Array(20).fill(1))
     const beneficiary2 = new Address(new Uint8Array(20).fill(2))
 
-    const block1_low = createBlockFromBlockData(
+    const block1_low = createBlock(
       {
         header: {
           ...base,
@@ -103,7 +103,7 @@ describe('reorg tests', () => {
       },
       { common },
     )
-    const block2_low = createBlockFromBlockData(
+    const block2_low = createBlock(
       {
         header: {
           ...base,
@@ -117,7 +117,7 @@ describe('reorg tests', () => {
       { common },
     )
 
-    const block1_high = createBlockFromBlockData(
+    const block1_high = createBlock(
       {
         header: {
           ...base,
@@ -128,7 +128,7 @@ describe('reorg tests', () => {
       },
       { common },
     )
-    const block2_high = createBlockFromBlockData(
+    const block2_high = createBlock(
       {
         header: {
           ...base,
@@ -139,7 +139,7 @@ describe('reorg tests', () => {
       },
       { common },
     )
-    const block3_high = createBlockFromBlockData(
+    const block3_high = createBlock(
       {
         header: {
           ...base,

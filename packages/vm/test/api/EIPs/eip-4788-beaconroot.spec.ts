@@ -56,14 +56,14 @@ function beaconrootBlock(
   }
 
   const root = setLengthLeft(bigIntToBytes(blockroot), 32)
-  const header = BlockHeader.fromHeaderData(
+  const header = createHeader(
     {
       parentBeaconBlockRoot: root,
       timestamp,
     },
     { common, freeze: false },
   )
-  const block = createBlockFromBlockData(
+  const block = createBlock(
     {
       header,
       transactions: newTxData,

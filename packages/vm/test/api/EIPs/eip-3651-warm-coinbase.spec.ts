@@ -17,7 +17,7 @@ const common = new Common({
   eips: [3651],
 })
 
-const block = createBlockFromBlockData(
+const block = createBlock(
   {
     header: {
       baseFeePerGas: 7,

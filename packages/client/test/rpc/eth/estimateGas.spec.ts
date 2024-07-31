@@ -1,4 +1,4 @@
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock, createHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
@@ -65,7 +65,7 @@ describe(
         return address
       }
       const parent = await blockchain.getCanonicalHeadHeader()
-      const block = createBlockFromBlockData(
+      const block = createBlock(
         {
           header: {
             parentHash: parent.hash(),
@@ -129,9 +129,9 @@ describe(
       service.execution.vm.common.setHardfork('london')
       service.chain.config.chainCommon.setHardfork('london')
       const headBlock = await service.chain.getCanonicalHeadBlock()
-      const londonBlock = createBlockFromBlockData(
+      const londonBlock = createBlock(
         {
-          header: BlockHeader.fromHeaderData(
+          header: createHeader(
             {
               baseFeePerGas: 1000000000n,
               number: 2n,

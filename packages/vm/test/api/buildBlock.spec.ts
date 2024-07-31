@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
   Common,
@@ -69,7 +69,7 @@ describe('BlockBuilder', () => {
   it('should throw if adding a transaction exceeds the block gas limit', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
-    const genesis = createBlockFromBlockData({}, { common })
+    const genesis = createBlock({}, { common })
 
     const blockBuilder = await buildBlock(vm, { parentBlock: genesis })
     const gasLimit = genesis.header.gasLimit + BigInt(1)
@@ -199,7 +199,7 @@ describe('BlockBuilder', () => {
     // extraData: [vanity, activeSigner, seal]
     const extraData = concatBytes(new Uint8Array(32), signer.address.toBytes(), new Uint8Array(65))
     const cliqueSigner = signer.privateKey
-    const genesisBlock = createBlockFromBlockData(
+    const genesisBlock = createBlock(
       { header: { gasLimit: 50000, extraData } },
       { common, cliqueSigner },
     )

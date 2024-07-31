@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { createHeader } from '@ethereumjs/block'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain/index.js'
@@ -72,12 +72,8 @@ describe('[SnapSynchronizer]', async () => {
       chain,
     } as any)
     ;(sync as any).chain = { blocks: { height: 1 } }
-    const getBlockHeaders1 = vi
-      .fn()
-      .mockReturnValue([BigInt(1), [BlockHeader.fromHeaderData({ number: 1 })]])
-    const getBlockHeaders2 = vi
-      .fn()
-      .mockReturnValue([BigInt(2), [BlockHeader.fromHeaderData({ number: 2 })]])
+    const getBlockHeaders1 = vi.fn().mockReturnValue([BigInt(1), [createHeader({ number: 1 })]])
+    const getBlockHeaders2 = vi.fn().mockReturnValue([BigInt(2), [createHeader({ number: 2 })]])
     const peers = [
       {
         snap: {},

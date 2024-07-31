@@ -1,4 +1,8 @@
-import { BlockHeader, createBlockFromValuesArray, valuesArrayToHeaderData } from '@ethereumjs/block'
+import {
+  createBlockFromValuesArray,
+  createHeaderFromValuesArray,
+  valuesArrayToHeaderData,
+} from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
@@ -176,7 +180,7 @@ export class DBManager {
       const parentHash = headerData.parentHash as Uint8Array
       opts.setHardfork = await this.getTotalDifficulty(parentHash, blockNumber - BIGINT_1)
     }
-    return BlockHeader.fromValuesArray(headerValues as Uint8Array[], opts)
+    return createHeaderFromValuesArray(headerValues as Uint8Array[], opts)
   }
 
   /**
