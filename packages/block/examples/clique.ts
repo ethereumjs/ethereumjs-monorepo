@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Common, Goerli, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })

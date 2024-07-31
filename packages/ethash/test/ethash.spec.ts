@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { createHeaderFromRLP } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'

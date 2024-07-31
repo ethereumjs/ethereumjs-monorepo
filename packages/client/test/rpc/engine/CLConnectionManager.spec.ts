@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createCommonFromGethGenesis, parseGethGenesis } from '@ethereumjs/common'
 import { assert, describe, expect, it, vi } from 'vitest'
 

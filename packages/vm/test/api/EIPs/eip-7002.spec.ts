@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { createLegacyTx } from '@ethereumjs/tx'

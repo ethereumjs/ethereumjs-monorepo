@@ -1,4 +1,4 @@
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock, createHeader } from '@ethereumjs/block'
 import { Common, ConsensusAlgorithm, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
@@ -348,7 +348,7 @@ describe('[Blockchain]: Block validation tests', () => {
     const uncleHeaderData = unclePreFork.header.toJSON()
 
     uncleHeaderData.extraData = '0xffff'
-    const uncleHeader = BlockHeader.fromHeaderData(uncleHeaderData, {
+    const uncleHeader = createHeader(uncleHeaderData, {
       common: new Common({ chain: Mainnet, hardfork: Hardfork.Berlin }),
     })
 

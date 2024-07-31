@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createEVM } from '@ethereumjs/evm'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'

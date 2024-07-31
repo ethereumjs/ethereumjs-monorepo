@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Holesky } from '@ethereumjs/common'
 import { TransactionType, create1559FeeMarketTx, createTxFromTxData } from '@ethereumjs/tx'
 import {

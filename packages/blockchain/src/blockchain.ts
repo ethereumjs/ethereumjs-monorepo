@@ -1,4 +1,4 @@
-import { Block, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { Block, BlockHeader, createBlock } from '@ethereumjs/block'
 import { Common, ConsensusAlgorithm, ConsensusType, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   AsyncEventEmitter,

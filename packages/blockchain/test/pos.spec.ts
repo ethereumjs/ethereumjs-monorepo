@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -91,7 +91,7 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
       )
 
       const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-      const powBlock = createBlockFromBlockData(
+      const powBlock = createBlock(
         {
           header: {
             number: 16,

@@ -31,7 +31,7 @@ import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 describe('[Block]: block functions', () => {
   it('should test block initialization', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    const genesis = createBlockFromBlockData({}, { common })
+    const genesis = createBlock({}, { common })
     assert.ok(bytesToHex(genesis.hash()), 'block should initialize')
 
     const params = JSON.parse(JSON.stringify(paramsBlock))
@@ -154,10 +154,7 @@ describe('[Block]: block functions', () => {
 
   it('should throw when trying to initialize with uncle headers on a PoA network', () => {
     const common = new Common({ chain: Mainnet })
-    const uncleBlock = createBlockFromBlockData(
-      { header: { extraData: new Uint8Array(117) } },
-      { common },
-    )
+    const uncleBlock = createBlock({ header: { extraData: new Uint8Array(117) } }, { common })
     assert.throws(function () {
       createBlock({ uncleHeaders: [uncleBlock.header] }, { common })
     })
@@ -429,7 +426,7 @@ describe('[Block]: block functions', () => {
 
   it('should set canonical difficulty if I provide a calcDifficultyFromHeader header', () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    const genesis = createBlockFromBlockData({}, { common })
+    const genesis = createBlock({}, { common })
 
     const nextBlockHeaderData = {
       number: genesis.header.number + BigInt(1),
@@ -437,7 +434,7 @@ describe('[Block]: block functions', () => {
     }
 
     common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-    const blockWithoutDifficultyCalculation = createBlockFromBlockData(
+    const blockWithoutDifficultyCalculation = createBlock(
       {
         header: nextBlockHeaderData,
       },
@@ -496,7 +493,7 @@ describe('[Block]: block functions', () => {
 
   it('should be able to initialize shanghai blocks with correct hardfork defaults', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
-    const block = createBlockFromBlockData({}, { common })
+    const block = createBlock({}, { common })
     assert.equal(block.common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
     assert.deepEqual(block.withdrawals, [], 'withdrawals should be set to default empty array')
   })

@@ -85,7 +85,7 @@ describe('blockchain test', () => {
 
   it('should add a genesis block without errors', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    const genesisBlock = createBlockFromBlockData({ header: { number: 0 } }, { common })
+    const genesisBlock = createBlock({ header: { number: 0 } }, { common })
     const blockchain = await createBlockchain({
       common,
       validateBlocks: true,
@@ -615,7 +615,7 @@ describe('blockchain test', () => {
     const gasLimit = 8000000
 
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisBlock = createBlockFromBlockData({ header: { gasLimit } }, { common })
+    const genesisBlock = createBlock({ header: { gasLimit } }, { common })
     let blockchain = await createBlockchain({
       db,
       validateBlocks: true,
@@ -735,7 +735,7 @@ describe('blockchain test', () => {
         common,
         calcDifficultyFromHeader: genesisBlock.header,
       }),
-      createBlockFromBlockData(blockData2, {
+      createBlock(blockData2, {
         common: new Common({ chain: Sepolia, hardfork: Hardfork.Chainstart }),
         calcDifficultyFromHeader: genesisBlock.header,
       }),
@@ -792,7 +792,7 @@ describe('initialization tests', () => {
 
   it('should allow to put a custom genesis block', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    const genesisBlock = createBlockFromBlockData(
+    const genesisBlock = createBlock(
       {
         header: {
           extraData: utf8ToBytes('custom extra data'),
@@ -820,7 +820,7 @@ describe('initialization tests', () => {
 
   it('should not allow to change the genesis block in the database', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    const genesisBlock = createBlockFromBlockData(
+    const genesisBlock = createBlock(
       {
         header: {
           extraData: utf8ToBytes('custom extra data'),

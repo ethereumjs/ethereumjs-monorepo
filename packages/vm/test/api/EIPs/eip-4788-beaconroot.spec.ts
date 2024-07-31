@@ -9,7 +9,7 @@
  *      - Input length < 32 bytes (reverts)
  */
 
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock, createHeader } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type TransactionType, type TxData, createTxFromTxData } from '@ethereumjs/tx'
 import {

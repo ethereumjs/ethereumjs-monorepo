@@ -1,4 +1,4 @@
-import { Block, BlockHeader, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { Block, createBlock, createHeader } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -13,6 +13,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { createBlockchain } from '../src/index.js'
 
+import type { BlockHeader } from '@ethereumjs/block'
 import type { DB } from '@ethereumjs/util'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
@@ -82,7 +83,7 @@ export const generateConsecutiveBlock = (
     difficultyChangeFactor = 1
   }
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
-  const tmpHeader = BlockHeader.fromHeaderData(
+  const tmpHeader = createHeader(
     {
       number: parentBlock.header.number + BigInt(1),
       timestamp: parentBlock.header.timestamp + BigInt(10 + -difficultyChangeFactor * 9),
@@ -123,7 +124,7 @@ export const createTestDB = async (): Promise<
   [DB<string | Uint8Array, string | Uint8Array>, Block]
 > => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-  const genesis = createBlockFromBlockData({ header: { number: 0 } }, { common })
+  const genesis = createBlock({ header: { number: 0 } }, { common })
   const db = new MapDB<any, any>()
 
   await db.batch([

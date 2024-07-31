@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, getPresetChainConfig } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {

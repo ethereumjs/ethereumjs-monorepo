@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader, createHeader } from '@ethereumjs/block'
 import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { create1559FeeMarketTx, create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'

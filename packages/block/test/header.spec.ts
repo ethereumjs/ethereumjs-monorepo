@@ -204,7 +204,7 @@ describe('[Block]: Header functions', () => {
   it('should validate extraData', async () => {
     // PoW
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    let genesis = createBlockFromBlockData({}, { common })
+    let genesis = createBlock({}, { common })
 
     const number = 1
     let parentHash = genesis.hash()
@@ -248,7 +248,7 @@ describe('[Block]: Header functions', () => {
 
     // PoA
     common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
-    genesis = createBlockFromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
+    genesis = createBlock({ header: { extraData: new Uint8Array(97) } }, { common })
 
     parentHash = genesis.hash()
     gasLimit = genesis.header.gasLimit

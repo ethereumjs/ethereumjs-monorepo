@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Common, ConsensusAlgorithm, Goerli, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -14,7 +14,7 @@ import type { Block } from '@ethereumjs/block'
 describe('reorg tests', () => {
   it('should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
-    const genesis = createBlockFromBlockData(
+    const genesis = createBlock(
       {
         header: {
           number: BigInt(0),
@@ -67,10 +67,7 @@ describe('reorg tests', () => {
 
   it('should correctly reorg a poa chain and remove blocks from clique snapshots', async () => {
     const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
-    const genesisBlock = createBlockFromBlockData(
-      { header: { extraData: new Uint8Array(97) } },
-      { common },
-    )
+    const genesisBlock = createBlock({ header: { extraData: new Uint8Array(97) } }, { common })
 
     const consensusDict: ConsensusDict = {}
     consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()

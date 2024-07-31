@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, createHeader } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
