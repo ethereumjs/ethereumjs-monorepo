@@ -24,6 +24,7 @@ import type {
 } from '../types.js'
 import type { TxData, TxValuesArray } from './tx.js'
 import type { Kzg } from '@ethereumjs/util'
+import { paramsTx } from '../params.js'
 
 const validateBlobTransactionNetworkWrapper = (
   blobVersionedHashes: Uint8Array[],
@@ -245,7 +246,10 @@ export function create4844BlobTxFromSerializedNetworkWrapper(
     throw Error('BlobEIP4844Transaction can not be send without a valid `to`')
   }
 
-  const version = Number(opts.common.param('blobCommitmentVersionKzg'))
+  const commonCopy = opts.common.copy()
+  commonCopy.updateParams(opts.params ?? paramsTx)
+
+  const version = Number(commonCopy.param('blobCommitmentVersionKzg'))
   validateBlobTransactionNetworkWrapper(
     decodedTx.blobVersionedHashes,
     blobs,
