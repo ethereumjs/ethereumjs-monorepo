@@ -44,7 +44,7 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
-  it.only('should successfully start client with non-lower case network name', async () => {
+  it('should successfully start client with non-lower case network name', async () => {
     const cliArgs = ['--network=Sepolia']
     const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
       if (message.includes('Initializing Ethereumjs client')) {
