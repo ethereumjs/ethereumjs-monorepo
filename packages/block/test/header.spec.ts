@@ -19,13 +19,13 @@ import {
   createHeaderFromRLP,
   createHeaderFromValuesArray,
 } from '../src/constructors.js'
-import { BlockHeader } from '../src/header.js'
 import { Block } from '../src/index.js'
 
 import * as testData from './testdata/bcBlockGasLimitTest.json'
 import * as blocksGoerli from './testdata/blocks_goerli.json'
 import * as blocksMainnet from './testdata/blocks_mainnet.json'
 
+import type { BlockHeader } from '../src/header.js'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -58,7 +58,7 @@ describe('[Block]: Header functions', () => {
 
   it('Initialization -> fromHeaderData()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    let header = BlockHeader.fromHeaderData(undefined, { common })
+    let header = createHeader(undefined, { common })
     assert.ok(bytesToHex(header.hash()), 'genesis block should initialize')
     assert.equal(
       header.common.hardfork(),
@@ -90,7 +90,7 @@ describe('[Block]: Header functions', () => {
 
   it('Initialization -> fromRLPSerializedHeader()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-    let header = BlockHeader.fromHeaderData({}, { common, freeze: false })
+    let header = createHeader({}, { common, freeze: false })
 
     const rlpHeader = header.serialize()
     header = createHeaderFromRLP(rlpHeader, {
@@ -197,7 +197,7 @@ describe('[Block]: Header functions', () => {
 
   it('Initialization -> Clique Blocks', () => {
     const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
-    const header = BlockHeader.fromHeaderData({ extraData: new Uint8Array(97) }, { common })
+    const header = createHeader({ extraData: new Uint8Array(97) }, { common })
     assert.ok(bytesToHex(header.hash()), 'default block should initialize')
   })
 
@@ -488,7 +488,7 @@ describe('[Block]: Header functions', () => {
 
   it('should test hash() function', () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    let header = BlockHeader.fromHeaderData((blocksMainnet as any).default[0]['header'], { common })
+    let header = createHeader((blocksMainnet as any).default[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
       '0x88e96d4537bea4d9c05d12549907b32561d3bf31f45aae734cdc119f13406cb6',
@@ -496,7 +496,7 @@ describe('[Block]: Header functions', () => {
     )
 
     common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
-    header = BlockHeader.fromHeaderData((blocksGoerli as any).default[0]['header'], { common })
+    header = createHeader((blocksGoerli as any).default[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
       '0x8f5bab218b6bb34476f51ca588e9f4553a3a7ce5e13a66c660a5283e97e9a85a',
@@ -506,7 +506,7 @@ describe('[Block]: Header functions', () => {
 
   it('should be able to initialize shanghai header with correct hardfork defaults', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
-    const header = BlockHeader.fromHeaderData({}, { common })
+    const header = createHeader({}, { common })
     assert.equal(header.common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
     assert.equal(header.baseFeePerGas, BigInt(7), 'baseFeePerGas should be set to minimum default')
     assert.deepEqual(
