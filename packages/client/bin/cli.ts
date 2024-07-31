@@ -7,7 +7,9 @@ import {
   Common,
   ConsensusAlgorithm,
   Hardfork,
+  Mainnet,
   createCommonFromGethGenesis,
+  createCustomCommon,
   getPresetChainConfig,
 } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
@@ -1023,15 +1025,14 @@ async function run() {
 
   // Use custom chain parameters file if specified
   if (typeof args.customChain === 'string') {
-    // TODO: Fix this to use createCustomCommon
     try {
       const customChainParams = JSON.parse(readFileSync(args.customChain, 'utf-8'))
       customGenesisState = JSON.parse(readFileSync(args.customGenesisState!, 'utf-8'))
-      common = new Common({
-        chain: customChainParams.name,
+      common = createCustomCommon(customChainParams, Mainnet, {
         customCrypto: cryptoFunctions,
       })
     } catch (err: any) {
+      console.error(err)
       console.error(`invalid chain parameters: ${err.message}`)
       process.exit()
     }
