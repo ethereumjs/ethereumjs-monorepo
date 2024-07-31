@@ -31,6 +31,12 @@ describe(method, () => {
       return this
     }
     const common = new Common({ chain: Mainnet })
+    common
+      .hardforks()
+      .filter((hf) => hf.timestamp !== undefined)
+      .map((hf) => {
+        hf.timestamp = undefined
+      })
 
     const syncTargetHeight = common.hardforkBlock(Hardfork.London)
     const { rpc, client } = await baseSetup({ syncTargetHeight, includeVM: true })
