@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../../src/index.js'
+import { Trie, createProof, verifyTrieRangeProof } from '../../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
 
@@ -88,13 +88,13 @@ async function verify(
   startKey = startKey ?? entries[start][0]
   endKey = endKey ?? entries[end][0]
   const targetRange = entries.slice(start, end + 1)
-  return trie.verifyRangeProof(
+  return verifyTrieRangeProof(
     trie.root(),
     startKey,
     endKey,
     keys ?? targetRange.map(([key]) => key),
     vals ?? targetRange.map(([, val]) => val),
-    [...(await trie.createProof(startKey)), ...(await trie.createProof(endKey))],
+    [...(await createProof(trie, startKey)), ...(await createProof(trie, endKey))],
   )
 }
 
@@ -211,7 +211,7 @@ describe('simple merkle range proofs generation and verification', () => {
     const { trie, entries } = await randomTrie(new MapDB())
 
     assert.equal(
-      await trie.verifyRangeProof(
+      await verifyTrieRangeProof(
         trie.root(),
         null,
         null,
@@ -474,7 +474,7 @@ describe('simple merkle range proofs generation and verification', () => {
 
     let bloatedProof: Uint8Array[] = []
     for (let i = 0; i < TRIE_SIZE; i++) {
-      bloatedProof = bloatedProof.concat(await trie.createProof(entries[i][0]))
+      bloatedProof = bloatedProof.concat(await createProof(trie, entries[i][0]))
     }
 
     assert.equal(await verify(trie, entries, 0, entries.length - 1), false)
