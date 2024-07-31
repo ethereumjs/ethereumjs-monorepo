@@ -38,12 +38,26 @@ describe('[CLI]', () => {
           message.includes('network=sepolia chainId=11155111'),
           'client is using custom inputs for network and network ID',
         )
-        child.kill(9)
+        child.kill()
         resolve(undefined)
       }
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
+  it('should successfully start client with non-lower case network name', async () => {
+    const cliArgs = ['--network=Kaustinen6']
+    const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
+      if (message.includes('Initializing Ethereumjs client')) {
+        assert.ok(
+          message.includes('network=kaustinen6'),
+          'client is using custom inputs for network and network ID',
+        )
+        child.kill()
+        resolve(undefined)
+      }
+    }
+    await clientRunHelper(cliArgs, onData)
+  }, 5000)
   it('should successfully start client with custom inputs for PoA network', async () => {
     const cliArgs = [
       '--rpc',
@@ -80,7 +94,7 @@ describe('[CLI]', () => {
         count -= 1
       }
       if (count === 0) {
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -99,7 +113,7 @@ describe('[CLI]', () => {
           'client correctly throws error when "dev" option is passed in without a value',
         )
       }
-      child.kill(15)
+      child.kill()
       resolve(undefined)
     }
     await clientRunHelper(cliArgs, onData, true)
@@ -114,7 +128,7 @@ describe('[CLI]', () => {
       if (message.includes('cannot reuse')) {
         assert.ok(true, 'cannot reuse ports between HTTP and WS RPCs')
       }
-      child.kill(15)
+      child.kill()
       resolve(undefined)
     }
     await clientRunHelper(cliArgs, onData, true)
@@ -140,7 +154,7 @@ describe('[CLI]', () => {
             'authentication failure shows that auth is defaulting to active',
           )
         }
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -169,7 +183,7 @@ describe('[CLI]', () => {
         const client = Client.http({ port: 8553 })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
         assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -200,7 +214,7 @@ describe('[CLI]', () => {
         const client = Client.http({ port: Number(customPort) })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
         assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -232,7 +246,7 @@ describe('[CLI]', () => {
         const client = Client.http({ hostname: '0.0.0.0', port: Number(customPort) })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
         assert.ok(res.result.length > 0, 'engine api is responsive on custom address')
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -265,7 +279,7 @@ describe('[CLI]', () => {
         ;(client as any).ws.on('open', async function () {
           const res = await client.request('engine_exchangeCapabilities', [], 2.0)
           assert.ok(res.result.length > 0, 'read from WS RPC on custom address and port')
-          child.kill(15)
+          child.kill()
           resolve(undefined)
         })
       }
@@ -295,7 +309,7 @@ describe('[CLI]', () => {
         ;(client as any).ws.on('open', async function () {
           const res = await client.request('web3_clientVersion', [], 2.0)
           assert.ok(res.result.includes('EthereumJS'), 'read from WS RPC')
-          child.kill(15)
+          child.kill()
           resolve(undefined)
         })
       }
@@ -335,7 +349,7 @@ describe('[CLI]', () => {
           assert.fail('should have thrown on invalid client address')
         } catch (e: any) {
           assert.ok(e !== undefined, 'failed to connect to RPC on invalid address')
-          child.kill(15)
+          child.kill()
           resolve(undefined)
         }
       }
@@ -349,11 +363,11 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('address=http://')) {
-        child.kill(15)
+        child.kill()
         assert.fail('http endpoint should not be enabled')
       }
       if (message.includes('address=ws://')) {
-        child.kill(15)
+        child.kill()
         assert.fail('ws endpoint should not be enabled')
       }
       if (message.includes('Miner: Assembling block')) {
@@ -373,7 +387,7 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('JSON-RPC: Supported Methods')) {
         assert.ok(message, 'logged out supported RPC methods')
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -401,7 +415,7 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('DEBUG')) {
         assert.ok(message, 'debug logging is enabled')
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -417,7 +431,7 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('account cache')) {
         assert.ok(message.includes('2000'), 'account cache option works')
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -432,7 +446,7 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('storage cache')) {
         assert.ok(message.includes('2000'), 'storage cache option works')
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -448,7 +462,7 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('code cache')) {
         assert.ok(message.includes('2000'), 'code cache option works')
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -463,7 +477,7 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('trie cache')) {
         assert.ok(message.includes('2000'), 'trie cache option works')
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -478,7 +492,7 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('Reading bootnodes')) {
         assert.ok(message.includes('num=2'), 'passing bootnode.txt URL for bootnodes option works')
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -497,7 +511,7 @@ describe('[CLI]', () => {
           message.includes('Client started successfully'),
           'Clients started with experimental feature options',
         )
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -527,7 +541,7 @@ describe('[CLI]', () => {
           message.includes('Client started successfully'),
           'Clients starts with client execution limits',
         )
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -563,7 +577,7 @@ describe('[CLI]', () => {
         const client = Client.http({ port: 8573 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -595,7 +609,7 @@ describe('[CLI]', () => {
         const client = Client.http({ port: 8593 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -636,7 +650,7 @@ describe('[CLI]', () => {
         const client = Client.http({ port: 8548 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-        child.kill(15)
+        child.kill()
         resolve(undefined)
       }
     }
@@ -757,7 +771,7 @@ describe('[CLI]', () => {
         const client = Client.http({ port: 8549 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-        child.kill(15)
+        child.kill()
         fs.rmSync(dir, { recursive: true, force: true })
         resolve(undefined)
       }
@@ -775,7 +789,7 @@ describe('[CLI]', () => {
       if (message.includes('Unknown argument: datadir')) {
         assert.ok(true, 'correctly errors on unknown arguments')
       }
-      child.kill(15)
+      child.kill()
       resolve(undefined)
     }
     await clientRunHelper(cliArgs, onData, true)
@@ -790,9 +804,9 @@ describe('[CLI]', () => {
       if (message.includes('Arguments chainId and gethGenesis are mutually exclusive')) {
         assert.ok(true, 'correctly errors on conflicting arguments')
       }
-      child.kill(15)
+      child.kill()
       resolve(undefined)
     }
     await clientRunHelper(cliArgs, onData, true)
   }, 5000)
-})
+}, 180000)

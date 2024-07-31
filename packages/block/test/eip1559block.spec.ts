@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { create1559FeeMarketTx } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -12,7 +12,7 @@ import * as eip1559BaseFee from './testdata/eip1559baseFee.json'
 
 const common = new Common({
   eips: [1559],
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.London,
   params: paramsBlock,
 })
@@ -33,7 +33,7 @@ common.hardforkBlock = function (hardfork: string | undefined) {
 
 describe('EIP1559 tests', () => {
   it('Header -> Initialization', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     assert.throws(
       () => {
         createHeader(

@@ -1,5 +1,5 @@
 import { createBlock } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -52,10 +52,11 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
   }
   const scenarios = [
     {
-      common: new Common({ chain: testnet, hardfork: Hardfork.Chainstart }),
+      // @ts-ignore prefixed string type is too strict here
+      common: createCustomCommon(testnet.default, Mainnet, { hardfork: Hardfork.Chainstart }),
     },
     {
-      common: new Common({ chain: testnetOnlyTD, hardfork: Hardfork.Chainstart }),
+      common: createCustomCommon(testnetOnlyTD.default, Mainnet, { hardfork: Hardfork.Chainstart }),
     },
   ]
 
@@ -89,7 +90,7 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
         'should have calculated the correct post-Merge total difficulty',
       )
 
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
       const powBlock = createBlock(
         {
           header: {

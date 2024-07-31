@@ -1,5 +1,5 @@
 import { BlockHeader, createBlockFromValuesArray } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import * as devp2p from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromBlockBodyData } from '@ethereumjs/tx'
@@ -21,7 +21,7 @@ import type { TypedTransaction } from '@ethereumjs/tx'
 
 const PRIVATE_KEY = randomBytes(32)
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 const bootstrapNodes = common.bootstrapNodes()
 const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {

@@ -1,5 +1,5 @@
 import { createBlock } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { EVMErrorMessage } from '@ethereumjs/evm'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
@@ -26,7 +26,7 @@ import type { InterpreterStep } from '@ethereumjs/evm'
 import type { ECDSASignature } from '@ethereumjs/util'
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.London,
   eips: [3074],
 })

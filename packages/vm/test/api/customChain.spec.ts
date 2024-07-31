@@ -1,6 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
   bytesToHex,
@@ -17,7 +17,6 @@ import { VM } from '../../src/vm.js'
 import * as testChain from './testdata/testnet.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
-import type { ChainConfig } from '@ethereumjs/common'
 import type { AccountState, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 
 const storage: Array<[PrefixedHexString, PrefixedHexString]> = [
@@ -50,10 +49,10 @@ const genesisState: GenesisState = {
   [contractAddress]: accountState,
 }
 
-const common = new Common({
-  chain: 'testnet',
+// @ts-ignore PrefixedHesString type is too strict
+const common = createCustomCommon(testChain.default, Mainnet, {
+  name: 'testnet',
   hardfork: Hardfork.Chainstart,
-  customChains: [testChain] as ChainConfig[],
 })
 const block = createBlock(
   {
@@ -118,8 +117,11 @@ describe('VM initialized with custom state', () => {
   })
 
   it('setHardfork', async () => {
-    const customChains = [testnetMerge] as ChainConfig[]
-    const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
+    // @ts-ignore PrefixedHexString type is too strict
+    const common = createCustomCommon(testnetMerge.default, Mainnet, {
+      name: 'testnetMerge',
+      hardfork: Hardfork.Istanbul,
+    })
 
     let vm = await VM.create({ common, setHardfork: true })
     assert.equal((vm as any)._setHardfork, true, 'should set setHardfork option')

@@ -1,9 +1,9 @@
 import { createBlock } from '@ethereumjs/block'
 import {
-  Chain,
   Common,
   ConsensusAlgorithm,
   ConsensusType,
+  Goerli,
   Hardfork,
   createCustomCommon,
 } from '@ethereumjs/common'
@@ -23,7 +23,7 @@ import type { Blockchain, ConsensusDict } from '../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 
-const COMMON = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+const COMMON = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 const EXTRA_DATA = new Uint8Array(97)
 const GAS_LIMIT = BigInt(8000000)
 
@@ -196,7 +196,7 @@ const addNextBlock = async (
 
 describe('Clique: Initialization', () => {
   it('should initialize a clique blockchain', async () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
     const consensusDict: ConsensusDict = {}
     consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
     const blockchain = await createBlockchain({ common, consensusDict })
@@ -634,8 +634,8 @@ describe('Clique: Initialization', () => {
           },
         },
       },
+      Goerli,
       {
-        baseChain: Chain.Goerli,
         hardfork: Hardfork.Chainstart,
       },
     )
@@ -690,8 +690,8 @@ describe('Clique: Initialization', () => {
           },
         },
       },
+      Goerli,
       {
-        baseChain: Chain.Goerli,
         hardfork: Hardfork.Chainstart,
       },
     )

@@ -1,4 +1,4 @@
-import { getInitializedChains } from '@ethereumjs/common'
+import { Mainnet } from '@ethereumjs/common'
 import {
   ConsolidationRequest,
   DepositRequest,
@@ -32,8 +32,7 @@ export const accumulateRequests = async (
 
   if (common.isActivatedEIP(6110)) {
     const depositContractAddress =
-      vm.common['_chainParams'].depositContractAddress ??
-      getInitializedChains().mainnet.depositContractAddress
+      vm.common['_chainParams'].depositContractAddress ?? Mainnet.depositContractAddress
     if (depositContractAddress === undefined)
       throw new Error('deposit contract address required with EIP 6110')
     await accumulateDeposits(depositContractAddress, txResults, requests)

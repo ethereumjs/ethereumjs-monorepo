@@ -8,7 +8,7 @@ const main = async () => {
   const genesisState = getGenesis(Chain.Mainnet)
 
   const blockchain = await createBlockchain({ genesisState })
-  const vm = await VM.create({ blockchain, genesisState })
+  const vm = await VM.create({ blockchain })
   const account = await vm.stateManager.getAccount(
     createAddressFromString('0x000d836201318ec6899a67540690382780743280'),
   )

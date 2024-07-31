@@ -1,5 +1,5 @@
 import { createBlockFromJsonRpcProvider, createBlockFromRPC } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
 import { create1559FeeMarketTx, createTxFromRPC } from '@ethereumjs/tx'
 import {
@@ -236,7 +236,7 @@ describe('RPC State Manager API tests', () => {
 
 describe('runTx custom transaction test', () => {
   it('should work', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
     const state = new RPCStateManager({ provider, blockTag: 1n })
     const vm = await VM.create({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
@@ -262,7 +262,7 @@ describe('runTx custom transaction test', () => {
 
 describe('runTx test: replay mainnet transactions', () => {
   it('should work', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
     const blockTag = 15496077n
     common.setHardforkBy({ blockNumber: blockTag })
@@ -284,7 +284,7 @@ describe('runTx test: replay mainnet transactions', () => {
 
 describe('runBlock test', () => {
   it('should work', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
 
     const blockTag = 500000n
     const state = new RPCStateManager({
@@ -298,7 +298,7 @@ describe('runBlock test', () => {
     common.setHardforkBy({ blockNumber: blockTag - 1n })
 
     const vm = await VM.create({ common, stateManager: state })
-    const block = createBlockFromRPC(blockData as JsonRpcBlock, [], { common })
+    const block = createBlockFromRPC(blockData.default as JsonRpcBlock, [], { common })
     try {
       const res = await runBlock(vm, {
         block,

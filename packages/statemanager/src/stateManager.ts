@@ -1,4 +1,4 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Trie,
@@ -111,7 +111,7 @@ export class DefaultStateManager implements StateManagerInterface {
 
     this._debug = debugDefault('statemanager:statemanager')
 
-    this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
+    this.common = opts.common ?? new Common({ chain: Mainnet })
 
     this._checkpointCount = 0
 

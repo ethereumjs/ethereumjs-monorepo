@@ -1,9 +1,8 @@
 import { intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
-import { chainsDict } from './chains.js'
-import { Chain, Hardfork } from './enums.js'
+import { Goerli, Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.js'
+import { Hardfork } from './enums.js'
 
-import type { ChainConfig, ChainName, ChainsConfig } from './index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 type ConfigHardfork =
@@ -241,52 +240,28 @@ export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?
   }
 }
 
-export function getInitializedChains(customChains?: ChainConfig[]): ChainsConfig {
-  const names: ChainName = {}
-  for (const [name, id] of Object.entries(Chain)) {
-    names[id] = name.toLowerCase()
-  }
-  const chains = { ...chainsDict } as ChainsConfig
-  if (customChains) {
-    for (const chain of customChains) {
-      const { name } = chain
-      names[chain.chainId.toString()] = name
-      chains[name] = chain
-    }
-  }
-  chains.names = names
-  return chains
-}
-
 /**
- * Determine if a {@link chainId} is supported as a standard chain
- * @param chainId bigint id (`1`) of a standard chain
- * @returns boolean
+ * Return the preset chain config for one of the predefined chain configurations
+ * @param chain the representing a network name (e.g. 'mainnet') or number representing the chain ID
+ * @returns a {@link ChainConfig}
  */
-export function isSupportedChainId(chainId: bigint): boolean {
-  const initializedChains = getInitializedChains()
-  return Boolean((initializedChains['names'] as ChainName)[chainId.toString()])
-}
-
-export function _getChainParams(
-  chain: string | number | Chain | bigint,
-  customChains?: ChainConfig[],
-): ChainConfig {
-  const initializedChains = getInitializedChains(customChains)
-  if (typeof chain === 'number' || typeof chain === 'bigint') {
-    chain = chain.toString()
-
-    if ((initializedChains['names'] as ChainName)[chain]) {
-      const name: string = (initializedChains['names'] as ChainName)[chain]
-      return initializedChains[name] as ChainConfig
-    }
-
-    throw new Error(`Chain with ID ${chain} not supported`)
+export const getPresetChainConfig = (chain: string | number) => {
+  switch (chain) {
+    case 'goerli':
+    case 5:
+      return Goerli
+    case 'holesky':
+    case 17000:
+      return Holesky
+    case 'kaustinen6':
+    case 69420:
+      return Kaustinen6
+    case 'sepolia':
+    case 11155111:
+      return Sepolia
+    case 'mainnet':
+    case 1:
+    default:
+      return Mainnet
   }
-
-  if (initializedChains[chain] !== undefined) {
-    return initializedChains[chain] as ChainConfig
-  }
-
-  throw new Error(`Chain with name ${chain} not supported`)
 }

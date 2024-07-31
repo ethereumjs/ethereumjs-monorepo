@@ -1,6 +1,6 @@
 import { createBlock, createHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import { randomBytes } from '@ethereumjs/util'
@@ -16,7 +16,7 @@ const method = 'txpool_content'
 
 describe(method, () => {
   it('call with valid arguments', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const blockchain = await createBlockchain({
       common,
       validateBlocks: false,

@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { create2930AccessListTx } from '@ethereumjs/tx'
 import {
   Address,
@@ -13,7 +13,7 @@ import { VM, runTx } from '../../../src/index.js'
 
 const common = new Common({
   eips: [2718, 2929, 2930],
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.Berlin,
 })
 

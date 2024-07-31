@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
   BIGINT_2,
@@ -41,13 +41,13 @@ describe('WASM crypto tests', () => {
 
     await waitReady()
     const commonWithCustomCrypto = new Common({
-      chain: 'mainnet',
+      chain: Mainnet,
       customCrypto: {
         ecrecover: wasmecrecover,
         keccak256,
       },
     })
-    const common = new Common({ chain: 'mainnet' })
+    const common = new Common({ chain: Mainnet })
 
     const pk = randomBytes(32)
     const tx = createLegacyTx({}, { common }).sign(pk)

@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Goerli, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -24,7 +24,7 @@ import type { LegacyTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('[fromRPC]: block #2924874', () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
   it('should create a block with transactions with valid signatures', () => {
     const block = createBlockFromRpc(blockData as JsonRpcBlock, [], { common })
@@ -41,7 +41,7 @@ describe('[fromRPC]: block #2924874', () => {
 
 describe('[fromRPC]:', () => {
   it('Should create a block with json data that includes a transaction with value parameter as integer string', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const valueAsIntegerString = '1'
     const blockDataTransactionValueAsInteger = blockData
     blockDataTransactionValueAsInteger.transactions[0].value = valueAsIntegerString
@@ -57,7 +57,7 @@ describe('[fromRPC]:', () => {
   })
 
   it('Should create a block with json data that includes a transaction with defaults with gasPrice parameter as integer string', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const gasPriceAsIntegerString = '1'
     const blockDataTransactionGasPriceAsInteger = blockData
     blockDataTransactionGasPriceAsInteger.transactions[0].gasPrice = gasPriceAsIntegerString
@@ -75,7 +75,7 @@ describe('[fromRPC]:', () => {
   })
 
   it('should create a block given json data that includes a difficulty parameter of type integer string', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const blockDifficultyAsInteger = createBlockFromRpc(
       blockDataDifficultyAsInteger as JsonRpcBlock,
       undefined,
@@ -90,7 +90,7 @@ describe('[fromRPC]:', () => {
   })
 
   it('should create a block from london hardfork', () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.London })
     const block = createBlockFromRpc(testDataFromRpcGoerliLondon as JsonRpcBlock, [], { common })
     assert.equal(
       `0x${block.header.baseFeePerGas?.toString(16)}`,
@@ -100,7 +100,7 @@ describe('[fromRPC]:', () => {
   })
 
   it('should create a block with uncles', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const block = createBlockFromRpc(blockDataWithUncles as JsonRpcBlock, [uncleBlockData], {
       common,
     })
@@ -108,13 +108,13 @@ describe('[fromRPC]:', () => {
   })
 
   it('should create a block with EIP-4896 withdrawals', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const block = createBlockFromRpc(blockDataWithWithdrawals as JsonRpcBlock, [], { common })
     assert.ok(block.withdrawalsTrieIsValid())
   })
 
   it('should create a block header with the correct hash when EIP-4896 withdrawals are present', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const block = blockHeaderFromRpc(blockDataWithWithdrawals as JsonRpcBlock, { common })
     const hash = blockDataWithWithdrawals.hash
     assert.equal(bytesToHex(block.hash()), hash)
@@ -123,13 +123,13 @@ describe('[fromRPC]:', () => {
 
 describe('[fromRPC] - Alchemy/Infura API block responses', () => {
   it('should create pre merge block from Alchemy API response to eth_getBlockByHash', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const block = createBlockFromRpc(alchemy14151203 as JsonRpcBlock, [], { common })
     assert.equal(bytesToHex(block.hash()), alchemy14151203.hash)
   })
 
   it('should create pre and post merge blocks from Infura API responses to eth_getBlockByHash and eth_getBlockByNumber', () => {
-    const common = new Common({ chain: Chain.Mainnet })
+    const common = new Common({ chain: Mainnet })
     let block = createBlockFromRpc(infura2000004woTxs as JsonRpcBlock, [], {
       common,
       setHardfork: true,
@@ -167,7 +167,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
   })
 
   it('should correctly parse a cancun block over rpc', () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Cancun })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.Cancun })
     const block = blockHeaderFromRpc(infuraGoerliBlock10536893 as JsonRpcBlock, { common })
     const hash = hexToBytes(infuraGoerliBlock10536893.hash as PrefixedHexString)
     assert.ok(equalsBytes(block.hash(), hash))
@@ -176,7 +176,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
 
 describe('[fromJsonRpcProvider]', () => {
   it('should work', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const provider = 'https://my.json.rpc.provider.com:8545'
 
     const realFetch = global.fetch

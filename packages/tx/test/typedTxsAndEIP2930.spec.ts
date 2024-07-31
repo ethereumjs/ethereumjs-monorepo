@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
+import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import {
   Address,
   MAX_INTEGER,
@@ -32,7 +32,7 @@ const pKey = hexToBytes('0x46464646464646464646464646464646464646464646464646464
 const address = privateToAddress(pKey)
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.London,
   params: paramsTx,
 })
@@ -60,7 +60,7 @@ const txTypes = [
 
 const validAddress = hexToBytes(`0x${'01'.repeat(20)}`)
 const validSlot = hexToBytes(`0x${'01'.repeat(32)}`)
-const chainId = BigInt(Chain.Mainnet)
+const chainId = 1
 
 describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-2930 Compatibility', () => {
   it('Initialization / Getter -> fromTxData()', () => {
@@ -68,23 +68,18 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
       let tx = txType.create.txData({}, { common })
       assert.ok(tx, `should initialize correctly (${txType.name})`)
 
-      tx = txType.create.txData({
-        chainId: Chain.Goerli,
-      })
+      tx = txType.create.txData(
+        {
+          chainId: 5,
+        },
+        { common: new Common({ chain: Goerli }) },
+      )
       assert.ok(
         tx.common.chainId() === BigInt(5),
         'should initialize Common with chain ID provided (supported chain ID)',
       )
 
-      tx = txType.create.txData({
-        chainId: 99999,
-      })
-      assert.ok(
-        tx.common.chainId() === BigInt(99999),
-        'should initialize Common with chain ID provided (unsupported chain ID)',
-      )
-
-      const nonEIP2930Common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+      const nonEIP2930Common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
       assert.throws(
         () => {
           txType.create.txData({}, { common: nonEIP2930Common })
@@ -98,7 +93,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
         () => {
           txType.create.txData(
             {
-              chainId: chainId + BigInt(1),
+              chainId: chainId + 1,
             },
             { common },
           )
@@ -209,7 +204,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
       const txn = txType.create.txData(
         {
           accessList: access,
-          chainId: Chain.Mainnet,
+          chainId: 1,
         },
         { common },
       )
@@ -229,7 +224,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
       const txnRaw = txType.create.txData(
         {
           accessList: bytes,
-          chainId: Chain.Mainnet,
+          chainId: 1,
         },
         { common },
       )
@@ -423,7 +418,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
       tx = txType.create.txData({}, { common, freeze: false })
       assert.equal(tx.getDataGas(), BigInt(0), 'Should return data fee when not frozen')
 
-      const mutableCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      const mutableCommon = new Common({ chain: Mainnet, hardfork: Hardfork.London })
       tx = txType.create.txData({}, { common: mutableCommon })
       tx.common.setHardfork(Hardfork.Istanbul)
       assert.equal(tx.getDataGas(), BigInt(0), 'Should invalidate cached value on hardfork change')
@@ -616,11 +611,10 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
 
     const customChainParams = {
       name: 'custom',
-      chainId: txData.chainId,
+      chainId: txData.chainId.toString(),
       eips: [2718, 2929, 2930],
     }
-    const usedCommon = createCustomCommon(customChainParams, {
-      baseChain: Chain.Mainnet,
+    const usedCommon = createCustomCommon(customChainParams, Mainnet, {
       hardfork: Hardfork.Berlin,
     })
     usedCommon.setEIPs([2718, 2929, 2930])
@@ -693,7 +687,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
 
   it('common propagates from the common of tx, not the common in TxOptions', () => {
     const txn = create2930AccessListTx({}, { common, freeze: false })
-    const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
+    const newCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Paris })
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
       get() {

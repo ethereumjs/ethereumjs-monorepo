@@ -14,9 +14,7 @@ import { eipsDict } from './eips.js'
 import { Hardfork } from './enums.js'
 import { hardforksDict } from './hardforks.js'
 
-import { _getChainParams } from './index.js'
-
-import type { Chain, ConsensusAlgorithm, ConsensusType } from './enums.js'
+import type { ConsensusAlgorithm, ConsensusType } from './enums.js'
 import type {
   BootstrapNodeConfig,
   CasperConfig,
@@ -40,7 +38,7 @@ import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
  *
  * Use the {@link Common.custom} static constructor for creating simple
  * custom chain {@link Common} objects (more complete custom chain setups
- * can be created via the main constructor and the {@link CommonOpts.customChains} parameter).
+ * can be created via the main constructor).
  */
 export class Common {
   readonly DEFAULT_HARDFORK: string | Hardfork
@@ -49,7 +47,6 @@ export class Common {
   protected _hardfork: string | Hardfork
   protected _eips: number[] = []
   protected _params: ParamsDict
-  protected _customChains: ChainConfig[]
 
   public readonly customCrypto: CustomCrypto
 
@@ -63,8 +60,7 @@ export class Common {
   constructor(opts: CommonOpts) {
     this.events = new EventEmitter()
 
-    this._customChains = opts.customChains ?? []
-    this._chainParams = this.setChain(opts.chain)
+    this._chainParams = opts.chain
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Shanghai
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
@@ -136,39 +132,6 @@ export class Common {
   resetParams(params: ParamsDict) {
     this._params = { ...params } // copy
     this._buildParamsCache()
-  }
-
-  /**
-   * Sets the chain
-   * @param chain String ('mainnet') or Number (1) chain representation.
-   *              Or, a Dictionary of chain parameters for a private network.
-   * @returns The dictionary with parameters set as chain
-   */
-  setChain(chain: string | number | Chain | bigint | object): ChainConfig {
-    if (typeof chain === 'number' || typeof chain === 'bigint' || typeof chain === 'string') {
-      this._chainParams = _getChainParams(chain, this._customChains)
-    } else if (typeof chain === 'object') {
-      if (this._customChains.length > 0) {
-        throw new Error(
-          'Chain must be a string, number, or bigint when initialized with customChains passed in',
-        )
-      }
-      const required = ['chainId', 'genesis', 'hardforks', 'bootstrapNodes']
-      for (const param of required) {
-        if (!(param in chain)) {
-          throw new Error(`Missing required chain parameter: ${param}`)
-        }
-      }
-      this._chainParams = chain as ChainConfig
-    } else {
-      throw new Error('Wrong input format')
-    }
-    for (const hf of this.hardforks()) {
-      if (hf.block === undefined) {
-        throw new Error(`Hardfork cannot have undefined block number`)
-      }
-    }
-    return this._chainParams
   }
 
   /**
@@ -303,6 +266,7 @@ export class Common {
             Math.min(Number(hf.timestamp ?? timestamp), acc),
           Number(timestamp),
         )
+
       if (maxTimeStamp < timestamp) {
         throw Error(`Maximum HF determined by block number/ttd is lower than timestamp HF`)
       }
@@ -746,7 +710,7 @@ export class Common {
   /**
    * Returns an eth/64 compliant fork hash (EIP-2124)
    * @param hardfork Hardfork name, optional if HF set
-   * @param genesisHash Genesis block hash of the chain, optional if already defined and not needed to be calculated
+   * @param genesisHash Genesis block hash of the network, optional if already defined and not needed to be calculated
    */
   forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): PrefixedHexString {
     hardfork = hardfork ?? this._hardfork

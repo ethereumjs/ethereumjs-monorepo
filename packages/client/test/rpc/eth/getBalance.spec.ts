@@ -1,6 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
@@ -18,7 +18,7 @@ describe(
   method,
   () => {
     it('ensure balance deducts after a tx', async () => {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+      const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
       const blockchain = await createBlockchain({ common })
 
       const client = await createClient({ blockchain, commonChain: common, includeVM: true })

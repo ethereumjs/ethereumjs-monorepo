@@ -89,7 +89,7 @@ describe('Istanbul: EIP-152', () => {
       // TODO: investigate why this test hangs in karma with firefox
       return     }
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
 
     for (const testCase of failingTestCases) {

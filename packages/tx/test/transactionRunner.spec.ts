@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import minimist from 'minimist'
 import { assert, describe, it } from 'vitest'
@@ -65,7 +65,7 @@ describe('TransactionTests', async () => {
           try {
             const rawTx = hexToBytes(testData.txbytes as PrefixedHexString)
             const hardfork = forkNameMap[forkName]
-            const common = new Common({ chain: 1, hardfork })
+            const common = new Common({ chain: Mainnet, hardfork })
             const activateEIPs = EIPs[forkName]
             if (activateEIPs !== undefined) {
               common.setEIPs(activateEIPs)

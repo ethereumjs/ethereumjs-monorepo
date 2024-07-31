@@ -1,9 +1,10 @@
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { Mainnet } from '../src/chains.js'
 import { createCommonFromGethGenesis } from '../src/constructors.js'
 import { Hardfork } from '../src/enums.js'
-import { getInitializedChains, parseGethGenesis } from '../src/utils.js'
+import { parseGethGenesis } from '../src/utils.js'
 
 import * as gethGenesisKilnJSON from './data/geth-genesis/geth-genesis-kiln.json'
 import * as invalidSpuriousDragonJSON from './data/geth-genesis/invalid-spurious-dragon.json'
@@ -179,12 +180,11 @@ describe('[Utils/Parse]', () => {
       chain: 'customChain',
     })
     const depositContractAddress =
-      common['_chainParams'].depositContractAddress ??
-      getInitializedChains().mainnet.depositContractAddress
+      common['_chainParams'].depositContractAddress ?? Mainnet.depositContractAddress
 
     assert.equal(
       depositContractAddress,
-      getInitializedChains().mainnet.depositContractAddress,
+      Mainnet.depositContractAddress,
       'should assign mainnet deposit contract',
     )
   })
@@ -200,8 +200,7 @@ describe('[Utils/Parse]', () => {
       chain: 'customChain',
     })
     const depositContractAddress =
-      common['_chainParams'].depositContractAddress ??
-      getInitializedChains().mainnet.depositContractAddress
+      common['_chainParams'].depositContractAddress ?? Mainnet.depositContractAddress
 
     assert.equal(
       depositContractAddress,

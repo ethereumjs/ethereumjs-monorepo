@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { EVMErrorMessage } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -8,9 +8,9 @@ import { VM } from '../../../src/index.js'
 import type { InterpreterStep } from '@ethereumjs/evm'
 
 describe('EIP 3855 tests', () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })
   const commonNoEIP3855 = new Common({
-    chain: Chain.Mainnet,
+    chain: Mainnet,
     hardfork: Hardfork.Chainstart,
     eips: [],
   })

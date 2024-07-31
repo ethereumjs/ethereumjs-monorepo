@@ -1,6 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { createAddressFromString } from '@ethereumjs/util'
@@ -15,7 +15,7 @@ import type { Block } from '@ethereumjs/block'
 
 const method = 'eth_getBlockTransactionCountByNumber'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
 
 describe(method, () => {
   it('call with valid arguments', async () => {

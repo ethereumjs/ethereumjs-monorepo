@@ -1,5 +1,5 @@
 import { createBlock } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
@@ -24,7 +24,7 @@ const GWEI = BigInt('1000000000')
 
 const common = new Common({
   eips: [1559, 2718, 2930],
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.London,
 })
 

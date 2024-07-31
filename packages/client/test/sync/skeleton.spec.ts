@@ -1,5 +1,5 @@
 import { BlockHeader, createBlock } from '@ethereumjs/block'
-import { Common, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it, vi } from 'vitest'
@@ -18,7 +18,7 @@ type Subchain = {
   tail: bigint
 }
 
-const common = new Common({ chain: 1 })
+const common = new Common({ chain: Mainnet })
 const block49 = createBlock({ header: { number: 49 } }, { common })
 const block49B = createBlock({ header: { number: 49, extraData: utf8ToBytes('B') } }, { common })
 const block50 = createBlock({ header: { number: 50, parentHash: block49.hash() } }, { common })

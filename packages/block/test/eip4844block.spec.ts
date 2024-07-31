@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { create4844BlobTx } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
@@ -32,7 +32,7 @@ describe('EIP4844 header tests', () => {
   })
 
   it('should work', () => {
-    const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const earlyCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
     assert.throws(
       () => {

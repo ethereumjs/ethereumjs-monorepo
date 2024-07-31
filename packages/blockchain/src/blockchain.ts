@@ -1,5 +1,5 @@
 import { Block, BlockHeader, createBlock } from '@ethereumjs/block'
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { Common, ConsensusAlgorithm, ConsensusType, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   AsyncEventEmitter,
   BIGINT_0,
@@ -102,7 +102,7 @@ export class Blockchain implements BlockchainInterface {
     if (opts.common) {
       this.common = opts.common
     } else {
-      const DEFAULT_CHAIN = Chain.Mainnet
+      const DEFAULT_CHAIN = Mainnet
       const DEFAULT_HARDFORK = Hardfork.Chainstart
       this.common = new Common({
         chain: DEFAULT_CHAIN,

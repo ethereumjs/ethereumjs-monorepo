@@ -1,12 +1,12 @@
 import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, Hardfork } from '../src/index.js'
+import { Common, Hardfork, Mainnet } from '../src/index.js'
 
 import { paramsTest } from './data/paramsTest.js'
 
 describe('[Common]: Parameter instantion / params option / Updates', () => {
   it('Param option', () => {
-    const c = new Common({ chain: Chain.Mainnet, params: paramsTest })
+    const c = new Common({ chain: Mainnet, params: paramsTest })
     let msg = 'Should also work with parameters passed with params option'
     assert.equal(c.param('ecAddGas'), BigInt(150), msg)
 
@@ -33,7 +33,7 @@ describe('[Common]: Parameter instantion / params option / Updates', () => {
 
 describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
   it('Basic usage', () => {
-    const c = new Common({ chain: Chain.Mainnet, params: paramsTest, eips: [2537] })
+    const c = new Common({ chain: Mainnet, params: paramsTest, eips: [2537] })
     let msg = 'Should return correct value when HF directly provided'
     assert.equal(c.paramByHardfork('ecAddGas', 'byzantium'), BigInt(500), msg)
 
@@ -60,7 +60,7 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
   })
 
   it('Error cases for param(), paramByHardfork()', () => {
-    const c = new Common({ chain: Chain.Mainnet, params: paramsTest })
+    const c = new Common({ chain: Mainnet, params: paramsTest })
 
     c.setHardfork(Hardfork.Byzantium)
     assert.equal(
@@ -71,7 +71,7 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
   })
 
   it('Parameter updates', () => {
-    const c = new Common({ chain: Chain.Mainnet, params: paramsTest })
+    const c = new Common({ chain: Mainnet, params: paramsTest })
 
     let msg = 'Should return correct value for chain start'
     assert.equal(c.paramByHardfork('minerReward', 'chainstart'), BigInt(5000000000000000000), msg)
@@ -87,7 +87,7 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
   })
 
   it('Access by block number, paramByBlock()', () => {
-    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, params: paramsTest })
+    const c = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium, params: paramsTest })
     let msg = 'Should correctly translate block numbers into HF states (updated value)'
     assert.equal(c.paramByBlock('minerReward', 4370000), BigInt(3000000000000000000), msg)
 
@@ -100,7 +100,7 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
   })
 
   it('Access on copied Common instances', () => {
-    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, params: paramsTest })
+    const c = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai, params: paramsTest })
     let msg = 'Should correctly access param with param() on original Common'
     assert.equal(c.param('minerReward'), BigInt(2000000000000000000), msg)
 
@@ -116,7 +116,7 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
   })
 
   it('EIP param access, paramByEIP()', () => {
-    const c = new Common({ chain: Chain.Mainnet, params: paramsTest })
+    const c = new Common({ chain: Mainnet, params: paramsTest })
 
     assert.throws(() => {
       c.paramByEIP('notexistingvalue', 1559)

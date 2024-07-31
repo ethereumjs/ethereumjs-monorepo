@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { bytesToHex, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -24,7 +24,7 @@ const txTypes = [
 
 describe('[fromJsonRpcProvider]', () => {
   it('should work', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const provider = 'https://my.json.rpc.provider.com:8545'
 
     const realFetch = global.fetch
@@ -103,7 +103,8 @@ describe('fromRPC: ensure `v="0x0"` is correctly decoded for signed txs', () => 
         continue
       }
       ;(v0Tx as any).type = txType
-      const tx = await createTxFromRPC(v0Tx as TypedTxData)
+      const common = createCustomCommon({ chainId: 0x10f2c }, Mainnet)
+      const tx = await createTxFromRPC(v0Tx as TypedTxData, { common })
       assert.ok(tx.isSigned())
     }
   })

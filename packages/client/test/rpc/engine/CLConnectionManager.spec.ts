@@ -1,5 +1,5 @@
 import { createBlock } from '@ethereumjs/block'
-import { Common, parseGethGenesis } from '@ethereumjs/common'
+import { createCommonFromGethGenesis, parseGethGenesis } from '@ethereumjs/common'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src/index.js'
@@ -59,10 +59,7 @@ describe('starts and stops connection manager', () => {
 describe('hardfork MergeForkBlock', () => {
   ;(genesisJSON.config as any).mergeForkBlock = 0
   const params = parseGethGenesis(genesisJSON, 'post-merge', false)
-  const common = new Common({
-    chain: params.name,
-    customChains: [params],
-  })
+  const common = createCommonFromGethGenesis(genesisJSON, { chain: params.name })
   common.setHardforkBy({ blockNumber: 0 })
   const config = new Config({ common })
   it('instantiates with config', () => {
@@ -76,9 +73,8 @@ describe('postmerge hardfork', () => {
     ;(genesisJSON.config as any).mergeForkBlock = 10
     const params = parseGethGenesis(genesisJSON, 'post-merge', false)
 
-    const common = new Common({
+    const common = createCommonFromGethGenesis(genesisJSON, {
       chain: params.name,
-      customChains: [params],
     })
     common.setHardforkBy({ blockNumber: 11 })
     const config = new Config({ common })

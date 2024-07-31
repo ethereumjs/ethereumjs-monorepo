@@ -1,10 +1,10 @@
 import { createBlock } from '@ethereumjs/block'
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
 
 import type { WithdrawalData } from '@ethereumjs/util'
 
-const common = new Common({ chain: Chain.Mainnet })
+const common = new Common({ chain: Mainnet })
 
 const withdrawal = <WithdrawalData>{
   index: BigInt(0),

@@ -1,5 +1,5 @@
 import { createBlock, createHeader } from '@ethereumjs/block'
-import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { Common, ConsensusAlgorithm, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
 import { KECCAK256_RLP, bytesToHex, randomBytes } from '@ethereumjs/util'
@@ -14,7 +14,7 @@ import type { ConsensusDict } from '../src/index.js'
 
 describe('[Blockchain]: Block validation tests', () => {
   it('should throw if an uncle is included before', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common })
 
     const genesis = blockchain.genesisBlock
@@ -41,7 +41,7 @@ describe('[Blockchain]: Block validation tests', () => {
   })
 
   it('should throw if the uncle parent block is not part of the canonical chain', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common })
 
     const genesis = blockchain.genesisBlock
@@ -68,7 +68,7 @@ describe('[Blockchain]: Block validation tests', () => {
   })
 
   it('should throw if the uncle is too old', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common })
 
     const genesis = blockchain.genesisBlock
@@ -101,7 +101,7 @@ describe('[Blockchain]: Block validation tests', () => {
   })
 
   it('should throw if uncle is too young', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common })
 
     const genesis = blockchain.genesisBlock
@@ -125,7 +125,7 @@ describe('[Blockchain]: Block validation tests', () => {
   it('should throw if the uncle header is invalid', async () => {
     const consensusDict: ConsensusDict = {}
     consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common, validateConsensus: false, consensusDict })
 
     const genesis = blockchain.genesisBlock
@@ -159,7 +159,7 @@ describe('[Blockchain]: Block validation tests', () => {
   })
 
   it('throws if uncle is a canonical block', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common })
 
     const genesis = blockchain.genesisBlock
@@ -182,7 +182,7 @@ describe('[Blockchain]: Block validation tests', () => {
   })
 
   it('successfully validates uncles', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common })
 
     const genesis = blockchain.genesisBlock
@@ -205,7 +205,7 @@ describe('[Blockchain]: Block validation tests', () => {
   it('EIP1559 base fee tests', async () => {
     const common = new Common({
       eips: [1559],
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
     })
 
@@ -292,7 +292,7 @@ describe('[Blockchain]: Block validation tests', () => {
      * It is tested that common does not change
      */
 
-    const common = new Common({ chain: Chain.Mainnet })
+    const common = new Common({ chain: Mainnet })
     common.hardforkBlock = function (hardfork: string | undefined) {
       if (hardfork === 'london') {
         return BigInt(4)
@@ -349,7 +349,7 @@ describe('[Blockchain]: Block validation tests', () => {
 
     uncleHeaderData.extraData = '0xffff'
     const uncleHeader = createHeader(uncleHeaderData, {
-      common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
+      common: new Common({ chain: Mainnet, hardfork: Hardfork.Berlin }),
     })
 
     forkBlockHeaderData.uncleHash = bytesToHex(keccak256(RLP.encode([uncleHeader.raw()])))
@@ -392,7 +392,7 @@ describe('[Blockchain]: Block validation tests', () => {
 describe('EIP 7685: requests field validation tests', () => {
   it('should throw when putting a block with an invalid requestsRoot', async () => {
     const common = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.Cancun,
       eips: [7685, 1559, 4895, 4844, 4788],
     })

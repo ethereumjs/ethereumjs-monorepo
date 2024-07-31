@@ -1,5 +1,5 @@
 import { BlockHeader, createBlock } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, randomBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
@@ -27,7 +27,7 @@ const validPayloadAttributes = {
   suggestedFeeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Paris })
 
 function createBlockFromParent(parentBlock: Block) {
   const prevRandao = randomBytes(32)

@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getActivePrecompiles } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
@@ -7,7 +7,7 @@ import { VM } from '../../../src/index.js'
 
 describe('Istanbul: EIP-1108 tests', () => {
   let vm: VM
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
   beforeAll(async () => {
     vm = await VM.create({ common })
   })

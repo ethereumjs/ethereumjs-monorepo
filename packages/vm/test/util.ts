@@ -1,5 +1,5 @@
 import { Block, createHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   create1559FeeMarketTx,
@@ -406,7 +406,7 @@ export async function setupPreConditions(state: StateManagerInterface, testData:
  */
 export function getDAOCommon(activationBlock: number) {
   // here: get the default fork list of mainnet and only edit the DAO fork block (thus copy the rest of the "default" hardfork settings)
-  const defaultDAOCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Dao })
+  const defaultDAOCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Dao })
   // retrieve the hard forks list from defaultCommon...
   const forks = defaultDAOCommon.hardforks()
   const editedForks = []
@@ -426,8 +426,8 @@ export function getDAOCommon(activationBlock: number) {
     {
       hardforks: editedForks,
     },
+    Mainnet,
     {
-      baseChain: 'mainnet',
       hardfork: Hardfork.Dao,
     },
   )

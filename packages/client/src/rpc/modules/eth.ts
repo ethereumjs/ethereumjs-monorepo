@@ -1174,8 +1174,8 @@ export class Eth {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
         tx = create4844BlobTxFromSerializedNetworkWrapper(txBuf, { common })
 
-        const blobGasLimit = common.param('maxblobGasPerBlock')
-        const blobGasPerBlob = common.param('blobGasPerBlob')
+        const blobGasLimit = tx.common.param('maxblobGasPerBlock')
+        const blobGasPerBlob = tx.common.param('blobGasPerBlob')
 
         if (BigInt((tx.blobs ?? []).length) * blobGasPerBlob > blobGasLimit) {
           throw Error(

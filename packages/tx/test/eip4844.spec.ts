@@ -23,6 +23,7 @@ import {
   create4844BlobTxFromSerializedNetworkWrapper,
   createMinimal4844TxFromNetworkWrapper,
   createTxFromTxData,
+  paramsTx,
 } from '../src/index.js'
 
 import blobTx from './json/serialized4844tx.json'
@@ -270,6 +271,7 @@ describe('Network wrapper tests', () => {
     common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      params: paramsTx,
       customCrypto: { kzg },
     })
   })
@@ -615,6 +617,7 @@ describe('Network wrapper deserialization test', () => {
     common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      params: paramsTx,
       customCrypto: {
         kzg,
       },

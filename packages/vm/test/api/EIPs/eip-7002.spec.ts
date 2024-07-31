@@ -1,5 +1,5 @@
 import { createBlock } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
@@ -25,7 +25,7 @@ import type { Block } from '@ethereumjs/block'
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const addr = createAddressFromPrivateKey(pkey)
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7685, 7002] })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7685, 7002] })
 
 // Note: this deployment tx data is the deployment tx in order to setup the EIP-7002 contract
 // It is taken from the EIP

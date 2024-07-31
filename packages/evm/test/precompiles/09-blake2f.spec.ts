@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
@@ -82,7 +82,7 @@ describe('Precompiles: BLAKE2F', () => {
   let addressStr: string
   let BLAKE2F: PrecompileFunc
   beforeAll(async () => {
-    common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     // Test references: https://github.com/ethereum/go-ethereum/blob/e206d3f8975bd98cc86d14055dca40f996bacc60/core/vm/testdata/precompiles/blake2F.json
     //                  https://github.com/ethereum/go-ethereum/blob/e206d3f8975bd98cc86d14055dca40f996bacc60/core/vm/contracts_test.go#L73
 

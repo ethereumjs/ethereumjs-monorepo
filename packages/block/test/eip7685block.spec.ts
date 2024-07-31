@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   DepositRequest,
   KECCAK256_RLP,
@@ -40,7 +40,7 @@ function getRandomWithdrawalRequest(): CLRequest<CLRequestType> {
 }
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.Cancun,
   eips: [7685, 4844, 4788],
 })

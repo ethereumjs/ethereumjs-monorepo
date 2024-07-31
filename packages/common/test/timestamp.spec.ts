@@ -2,9 +2,9 @@ import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
-  Chain,
   Common,
   Hardfork,
+  Mainnet,
   createCommonFromGethGenesis,
   createCustomCommon,
 } from '../src/index.js'
@@ -80,7 +80,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
   })
 
   it('forkHash', () => {
-    const mainnet = new Common({ chain: Chain.Mainnet })
+    const mainnet = new Common({ chain: Mainnet })
     const hfs = mainnet.hardforks()
     const mergeIndex = hfs.findIndex((hf) => hf.name === Hardfork.Paris)
     const hardforks = hfs.slice(0, mergeIndex + 1).concat([
@@ -99,7 +99,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       },
     ])
 
-    const c = createCustomCommon({ hardforks }, { baseChain: Chain.Mainnet })
+    const c = createCustomCommon({ hardforks }, Mainnet)
     const mainnetGenesisHash = hexToBytes(
       '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
     )
@@ -123,7 +123,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
   })
 
   it('setForkHashes', () => {
-    const mainnet = new Common({ chain: Chain.Mainnet })
+    const mainnet = new Common({ chain: Mainnet })
     const hfs = mainnet.hardforks()
     const mergeIndex = hfs.findIndex((hf) => hf.name === Hardfork.Paris)
     const hardforks = hfs.slice(0, mergeIndex + 1).concat([
@@ -140,7 +140,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       },
     ])
 
-    const c = createCustomCommon({ hardforks }, { baseChain: Chain.Mainnet })
+    const c = createCustomCommon({ hardforks }, Mainnet)
     const mainnetGenesisHash = hexToBytes(
       '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
     )

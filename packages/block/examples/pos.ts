@@ -1,7 +1,7 @@
 import { createBlock } from '@ethereumjs/block'
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 
-const common = new Common({ chain: Chain.Mainnet })
+const common = new Common({ chain: Mainnet })
 
 const block = createBlock(
   {

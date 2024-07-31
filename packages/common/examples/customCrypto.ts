@@ -1,12 +1,12 @@
 import { createBlock } from '@ethereumjs/block'
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { keccak256, waitReady } from '@polkadot/wasm-crypto'
 
 const main = async () => {
   // @polkadot/wasm-crypto specific initialization
   await waitReady()
 
-  const common = new Common({ chain: Chain.Mainnet, customCrypto: { keccak256 } })
+  const common = new Common({ chain: Mainnet, customCrypto: { keccak256 } })
   const block = createBlock({}, { common })
 
   // Method invocations within EthereumJS library instantiations where the common

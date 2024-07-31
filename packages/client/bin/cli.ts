@@ -7,8 +7,10 @@ import {
   Common,
   ConsensusAlgorithm,
   Hardfork,
+  Mainnet,
   createCommonFromGethGenesis,
-  getInitializedChains,
+  createCustomCommon,
+  getPresetChainConfig,
 } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -72,7 +74,7 @@ import type { Server as RPCServer } from 'jayson/promise/index.js'
 
 type Account = [address: Address, privateKey: Uint8Array]
 
-const networks = Object.entries(getInitializedChains().names)
+const networks = Object.keys(Chain).map((network) => network.toLowerCase())
 
 let logger: Logger
 
@@ -83,12 +85,15 @@ const args: ClientOpts = yargs
   })
   .option('network', {
     describe: 'Network',
-    choices: networks.map((n) => n[1]).filter((el) => isNaN(parseInt(el))),
+    choices: networks,
+    coerce: (arg: string) => arg.toLowerCase(),
     default: 'mainnet',
   })
   .option('chainId', {
     describe: 'Chain ID',
-    choices: networks.map((n) => parseInt(n[0])).filter((el) => !isNaN(el)),
+    choices: Object.entries(Chain)
+      .map((n) => parseInt(n[1] as string))
+      .filter((el) => !isNaN(el)),
     default: undefined,
     conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and chainId
   })
@@ -96,7 +101,9 @@ const args: ClientOpts = yargs
     describe: 'Network ID',
     deprecated: true,
     deprecate: 'use --chainId instead',
-    choices: networks.map((n) => parseInt(n[0])).filter((el) => !isNaN(el)),
+    choices: Object.entries(Chain)
+      .map((n) => parseInt(n[1] as string))
+      .filter((el) => !isNaN(el)),
     default: undefined,
     conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and networkId
   })
@@ -807,6 +814,8 @@ async function inputAccounts() {
   const accounts: Account[] = []
 
   const rl = readline.createInterface({
+    // @ts-ignore Looks like there is a type incompatibility in NodeJS ReadStream vs what this package expects
+    // TODO: See whether package needs to be updated or not
     input: process.stdin,
     output: process.stdout,
   })
@@ -843,7 +852,7 @@ async function inputAccounts() {
         ;(rl as any).history = (rl as any).history.slice(1)
         const privKey = hexToBytes(inputKey)
         const derivedAddress = createAddressFromPrivateKey(privKey)
-        if (address.equals(derivedAddress)) {
+        if (address.equals(derivedAddress) === true) {
           accounts.push([address, privKey])
         } else {
           console.error(
@@ -933,7 +942,8 @@ async function run() {
   // loaded and initialized on the sharding hardfork activation
   // Give chainId priority over networkId
   // Give networkId precedence over network name
-  const chain = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
+  const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
+  const chain = getPresetChainConfig(chainName)
   const cryptoFunctions: CustomCrypto = {}
   const kzg = await loadKZG()
 
@@ -1018,12 +1028,11 @@ async function run() {
     try {
       const customChainParams = JSON.parse(readFileSync(args.customChain, 'utf-8'))
       customGenesisState = JSON.parse(readFileSync(args.customGenesisState!, 'utf-8'))
-      common = new Common({
-        chain: customChainParams.name,
-        customChains: [customChainParams],
+      common = createCustomCommon(customChainParams, Mainnet, {
         customCrypto: cryptoFunctions,
       })
     } catch (err: any) {
+      console.error(err)
       console.error(`invalid chain parameters: ${err.message}`)
       process.exit()
     }
