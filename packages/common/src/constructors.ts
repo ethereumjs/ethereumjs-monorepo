@@ -3,29 +3,20 @@ import { Common, parseGethGenesis } from './index.js'
 import type { BaseOpts, ChainConfig, GethConfigOpts } from './index.js'
 
 /**
- * Creates a {@link Common} object for a custom Mainnet, based on a standard one.
+ * Creates a {@link Common} object for a custom chain, based on a standard one.
  *
  * It uses all the {@link Chain} parameters from the {@link baseChain} option except the ones overridden
  * in a provided {@link chainParamsOrName} dictionary. Some usage example:
  *
  * ```javascript
- * createCustomCommon({chainId: 123})
- * ```
+ * import { createCustomCommon, Mainnet } from '@ethereumjs/common'
  *
- * There are also selected supported custom chains which can be initialized by using one of the
- * {@link CustomChains} for {@link chainParamsOrName}, e.g.:
- *
- * ```javascript
- * createCustomCommon(CustomChains.MaticMumbai)
- * ```
- *
- * Note that these supported custom chains only provide some base parameters (usually the chain and
- * network ID and a name) and can only be used for selected use cases (e.g. sending a tx with
- * the `@ethereumjs/tx` library to a Layer-2 chain).
+ * createCustomCommon({chainId: 123}, Mainnet)
+ * ``
  *
  * @param partialConfig Custom parameter dict
  * @param baseChain `ChainConfig` chain configuration taken as a base chain, e.g. `Mainnet` (exported at root level)
- * @param opts Custom chain options to set the {@link CustomCommonOpts.baseChain}, selected {@link CustomCommonOpts.hardfork} and others
+ * @param opts Custom chain options to set various {@link BaseOpts}
  */
 export function createCustomCommon(
   partialConfig: Partial<ChainConfig>,
