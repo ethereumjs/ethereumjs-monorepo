@@ -89,7 +89,9 @@ const args: ClientOpts = yargs
   })
   .option('chainId', {
     describe: 'Chain ID',
-    choices: networks.map((n) => parseInt(n[0])).filter((el) => !isNaN(el)),
+    choices: Object.entries(Chain)
+      .map((n) => parseInt(n[1] as string))
+      .filter((el) => !isNaN(el)),
     default: undefined,
     conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and chainId
   })
@@ -97,7 +99,9 @@ const args: ClientOpts = yargs
     describe: 'Network ID',
     deprecated: true,
     deprecate: 'use --chainId instead',
-    choices: networks.map((n) => parseInt(n[0])).filter((el) => !isNaN(el)),
+    choices: Object.entries(Chain)
+      .map((n) => parseInt(n[1] as string))
+      .filter((el) => !isNaN(el)),
     default: undefined,
     conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and networkId
   })
