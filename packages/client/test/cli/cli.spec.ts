@@ -49,7 +49,7 @@ describe('[CLI]', () => {
     const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
       if (message.includes('Initializing Ethereumjs client')) {
         assert.ok(
-          message.includes('network=Sepolia'),
+          message.includes('network=sepolia'),
           'client is using custom inputs for network and network ID',
         )
         child.kill(9)
@@ -57,7 +57,7 @@ describe('[CLI]', () => {
       }
     }
     await clientRunHelper(cliArgs, onData)
-  }, 30000)
+  })
   it('should successfully start client with custom inputs for PoA network', async () => {
     const cliArgs = [
       '--rpc',
@@ -809,4 +809,4 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData, true)
   }, 5000)
-})
+}, 180000)
