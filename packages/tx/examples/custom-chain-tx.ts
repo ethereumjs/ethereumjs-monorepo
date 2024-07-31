@@ -1,4 +1,4 @@
-import { createCustomCommon } from '@ethereumjs/common'
+import { Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 
@@ -11,8 +11,8 @@ const customCommon = createCustomCommon(
     name: 'my-network',
     chainId: 2134,
   },
+  Mainnet,
   {
-    baseChain: 'mainnet',
     hardfork: 'petersburg',
   },
 )

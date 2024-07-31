@@ -1,10 +1,10 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { createZeroAddress } from '@ethereumjs/util'
 import { VM, runTx } from '@ethereumjs/vm'
 
 const main = async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
   const vm = await VM.create({ common })
 
   const tx = createLegacyTx({

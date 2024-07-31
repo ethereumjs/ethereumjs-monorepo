@@ -8,7 +8,7 @@
 
 import { createBlockFromBlockData, createBlockFromRLPSerializedBlock } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
-import { Common, ConsensusAlgorithm, ConsensusType } from '@ethereumjs/common'
+import { Common, ConsensusAlgorithm, ConsensusType, Mainnet } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import {
   Address,
@@ -26,7 +26,7 @@ import type { Block } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 
 async function main() {
-  const common = new Common({ chain: 1, hardfork: testData.network.toLowerCase() })
+  const common = new Common({ chain: Mainnet, hardfork: testData.network.toLowerCase() })
   const validatePow = common.consensusType() === ConsensusType.ProofOfWork
   const validateBlocks = true
 

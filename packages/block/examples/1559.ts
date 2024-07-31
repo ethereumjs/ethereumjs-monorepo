@@ -1,6 +1,6 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
 const block = createBlockFromBlockData(
   {

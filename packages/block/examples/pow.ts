@@ -1,7 +1,7 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
 
 console.log(common.consensusType()) // 'pow'
 console.log(common.consensusAlgorithm()) // 'ethash'

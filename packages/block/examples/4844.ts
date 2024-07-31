@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { create4844BlobTx } from '@ethereumjs/tx'
 import { createAddressFromPrivateKey } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
@@ -9,7 +9,7 @@ const main = async () => {
   const kzg = await loadKZG()
 
   const common = new Common({
-    chain: Chain.Mainnet,
+    chain: Mainnet,
     hardfork: Hardfork.Cancun,
     customCrypto: {
       kzg,

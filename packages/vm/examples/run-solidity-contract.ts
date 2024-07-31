@@ -1,5 +1,5 @@
 import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { VM, runTx } from '@ethereumjs/vm'
@@ -17,7 +17,7 @@ import type { Address } from '@ethereumjs/util'
 const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 const block = createBlockFromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
 
 const __filename = fileURLToPath(import.meta.url) // get the resolved path to the file
