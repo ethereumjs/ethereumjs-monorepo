@@ -16,6 +16,8 @@ import {
   createBlock,
   createBlockFromRLPSerializedBlock,
   createHeader,
+  createHeaderFromRLP,
+  createHeaderFromValuesArray,
 } from '../src/constructors.js'
 import { Block } from '../src/index.js'
 
