@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
@@ -18,7 +18,7 @@ const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-const block = createBlockFromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
+const block = createBlock({ header: { extraData: new Uint8Array(97) } }, { common })
 
 const __filename = fileURLToPath(import.meta.url) // get the resolved path to the file
 const __dirname = path.dirname(__filename) // get the name of the directory

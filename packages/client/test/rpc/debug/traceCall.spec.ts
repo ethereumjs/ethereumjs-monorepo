@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, expect, expectTypeOf, it } from 'vitest'
@@ -65,7 +65,7 @@ describe('trace a call', async () => {
   tx.getSenderAddress = () => {
     return dummy.addr
   }
-  const block = createBlockFromBlockData({}, { common })
+  const block = createBlock({}, { common })
   block.transactions[0] = tx
   await runBlockWithTxs(chain, execution, [tx], true)
 

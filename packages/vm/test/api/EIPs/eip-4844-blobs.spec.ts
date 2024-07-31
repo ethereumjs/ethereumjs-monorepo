@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { create4844BlobTx } from '@ethereumjs/tx'
@@ -32,7 +32,7 @@ describe('EIP4844 tests', () => {
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
     })
-    const genesisBlock = createBlockFromBlockData(
+    const genesisBlock = createBlock(
       { header: { gasLimit: 50000, parentBeaconBlockRoot: zeros(32) } },
       { common },
     )

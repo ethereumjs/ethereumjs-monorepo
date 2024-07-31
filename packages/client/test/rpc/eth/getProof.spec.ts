@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
@@ -132,7 +132,7 @@ describe(method, async () => {
       return address
     }
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           parentHash: parent.hash(),
@@ -164,7 +164,7 @@ describe(method, async () => {
     storeTx.getSenderAddress = () => {
       return address
     }
-    const block2 = createBlockFromBlockData(
+    const block2 = createBlock(
       {
         header: {
           parentHash: ranBlock!.hash(),

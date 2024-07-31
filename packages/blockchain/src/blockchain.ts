@@ -1,4 +1,4 @@
-import { Block, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { Block, BlockHeader, createBlock } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import {
   AsyncEventEmitter,
@@ -1282,7 +1282,7 @@ export class Blockchain implements BlockchainInterface {
         header.extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
       }
     }
-    return createBlockFromBlockData(
+    return createBlock(
       { header, withdrawals: common.isActivatedEIP(4895) ? [] : undefined },
       { common },
     )

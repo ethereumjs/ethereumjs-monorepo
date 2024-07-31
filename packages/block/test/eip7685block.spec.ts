@@ -9,7 +9,7 @@ import {
 import { assert, describe, expect, it } from 'vitest'
 
 import {
-  createBlockFromBlockData,
+  createBlock,
   createBlockFromRPC,
   createBlockFromValuesArray,
   createHeader,
@@ -46,7 +46,7 @@ const common = new Common({
 })
 describe('7685 tests', () => {
   it('should instantiate block with defaults', () => {
-    const block = createBlockFromBlockData({}, { common })
+    const block = createBlock({}, { common })
     assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
     const block2 = new Block(undefined, undefined, undefined, undefined, { common })
     assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
@@ -55,7 +55,7 @@ describe('7685 tests', () => {
   it('should instantiate a block with requests', async () => {
     const request = getRandomDepositRequest()
     const requestsRoot = await genRequestsTrieRoot([request])
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         requests: [request],
         header: { requestsRoot },
@@ -67,7 +67,7 @@ describe('7685 tests', () => {
   })
   it('RequestsRootIsValid should return false when requestsRoot is invalid', async () => {
     const request = getRandomDepositRequest()
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         requests: [request],
         header: { requestsRoot: randomBytes(32) },
@@ -86,7 +86,7 @@ describe('7685 tests', () => {
 
     // Construct block with requests in correct order
 
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         requests,
         header: { requestsRoot },
@@ -98,7 +98,7 @@ describe('7685 tests', () => {
 
     // Throws when requests are not ordered correctly
     await expect(async () =>
-      createBlockFromBlockData(
+      createBlock(
         {
           requests: [request1, request3, request2],
           header: { requestsRoot },

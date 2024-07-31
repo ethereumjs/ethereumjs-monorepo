@@ -1,4 +1,4 @@
-import { createBlockFromBlockData, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
@@ -34,7 +34,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eip
 describe('EIP-7685 runBlock tests', () => {
   it('should not error when a valid requestsRoot is provided', async () => {
     const vm = await setupVM({ common })
-    const emptyBlock = createBlockFromBlockData({}, { common })
+    const emptyBlock = createBlock({}, { common })
     const res = await runBlock(vm, {
       block: emptyBlock,
       generate: true,
@@ -44,10 +44,7 @@ describe('EIP-7685 runBlock tests', () => {
   it('should error when an invalid requestsRoot is provided', async () => {
     const vm = await setupVM({ common })
 
-    const emptyBlock = createBlockFromBlockData(
-      { header: { requestsRoot: invalidRequestsRoot } },
-      { common },
-    )
+    const emptyBlock = createBlock({ header: { requestsRoot: invalidRequestsRoot } }, { common })
     await expect(async () =>
       runBlock(vm, {
         block: emptyBlock,
@@ -58,7 +55,7 @@ describe('EIP-7685 runBlock tests', () => {
     const vm = await setupVM({ common })
     const request = getRandomDepositRequest()
     const requestsRoot = await genRequestsTrieRoot([request])
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         requests: [request],
         header: { requestsRoot },
@@ -70,7 +67,7 @@ describe('EIP-7685 runBlock tests', () => {
   it('should error when requestsRoot does not match requests provided', async () => {
     const vm = await setupVM({ common })
     const request = getRandomDepositRequest()
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         requests: [request],
         header: { requestsRoot: invalidRequestsRoot },
@@ -88,7 +85,7 @@ describe('EIP 7685 buildBlock tests', () => {
       hardfork: Hardfork.Cancun,
       eips: [7685, 1559, 4895, 4844, 4788],
     })
-    const genesisBlock = createBlockFromBlockData(
+    const genesisBlock = createBlock(
       { header: { gasLimit: 50000, baseFeePerGas: 100 } },
       { common },
     )

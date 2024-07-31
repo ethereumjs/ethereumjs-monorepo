@@ -1,10 +1,10 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Ethash } from '@ethereumjs/ethash'
 import { MapDB, bytesToHex } from '@ethereumjs/util'
 
 import type { DBObject } from '@ethereumjs/util'
 
-const block = createBlockFromBlockData(
+const block = createBlock(
   {
     header: {
       difficulty: BigInt(100),

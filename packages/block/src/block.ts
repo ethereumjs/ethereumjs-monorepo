@@ -23,7 +23,7 @@ import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } 
 import {
   BlockHeader,
   type createBlockFromBeaconPayloadJson,
-  type createBlockFromBlockData,
+  type createBlock,
   type createBlockFromExecutionPayload,
   type createBlockFromJsonRpcProvider,
   type createBlockFromRLPSerializedBlock,
@@ -55,7 +55,7 @@ import type {
  * A block object can be created with one of the following constructor methods
  * (separate from the Block class to allow for tree shaking):
  *
- * - {@link createBlockFromBlockData }
+ * - {@link createBlock }
  * - {@link createBlockFromValuesArray }
  * - {@link createBlockFromRLPSerializedBlock }
  * - {@link createBlockFromRPC }

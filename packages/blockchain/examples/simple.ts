@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
@@ -13,7 +13,7 @@ const main = async () => {
   })
 
   // We use minimal data to provide a sequence of blocks (increasing number, difficulty, and then setting parent hash to previous block)
-  const block = createBlockFromBlockData(
+  const block = createBlock(
     {
       header: {
         number: 1n,
@@ -23,7 +23,7 @@ const main = async () => {
     },
     { common, setHardfork: true },
   )
-  const block2 = createBlockFromBlockData(
+  const block2 = createBlock(
     {
       header: {
         number: 2n,
