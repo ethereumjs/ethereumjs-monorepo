@@ -26,12 +26,9 @@ function formatNonce(nonce: string): PrefixedHexString {
 /**
  * Converts Geth genesis parameters to an EthereumJS compatible `CommonOpts` object
  * @param json object representing the Geth genesis file
- * @param optional mergeForkIdPostMerge which clarifies the placement of MergeForkIdTransition
- * hardfork, which by default is post merge as with the merged eth networks but could also come
- * before merge like in kiln genesis
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
-function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
+function parseGethParams(json: any) {
   const {
     name,
     config,
@@ -134,7 +131,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     [Hardfork.MuirGlacier]: { name: 'muirGlacierBlock' },
     [Hardfork.Berlin]: { name: 'berlinBlock' },
     [Hardfork.London]: { name: 'londonBlock' },
-    [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: mergeForkIdPostMerge },
+    [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: true },
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
     [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
@@ -192,8 +189,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     //   necessary for e.g. withdrawals
     const mergeConfig = {
       name: Hardfork.Paris,
-      ttd: config.terminalTotalDifficulty,
-      block: null,
+      block: config.terminalTotalDifficultyPassed === true ? 0 : null,
     }
 
     // Merge hardfork has to be placed before first hardfork that is dependent on merge
@@ -220,7 +216,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
  * @param name optional chain name
  * @returns parsed params
  */
-export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?: boolean) {
+export function parseGethGenesis(json: any, name?: string) {
   try {
     const required = ['config', 'difficulty', 'gasLimit', 'nonce', 'alloc']
     if (required.some((field) => !(field in json))) {
@@ -234,7 +230,7 @@ export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?
     if (name !== undefined) {
       finalJson.name = name
     }
-    return parseGethParams(finalJson, mergeForkIdPostMerge)
+    return parseGethParams(finalJson)
   } catch (e: any) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }

@@ -55,6 +55,14 @@ describe('[Utils/Parse]', () => {
     assert.equal(params.genesis.timestamp, '0x10', 'timestamp parsed correctly')
   })
 
+  it('should set merge to block 0 when terminalTotalDifficultyPassed is true', () => {
+    const mergeAtGenesisJson = {} as any
+    Object.assign(mergeAtGenesisJson, postMergeJSON)
+    mergeAtGenesisJson.config.terminalTotalDifficultyPassed = true
+    const common = createCommonFromGethGenesis(mergeAtGenesisJson, {})
+    assert.equal(common.hardforks().slice(-1)[0].block, 0)
+  })
+
   it('should successfully assign mainnet deposit contract address when none provided', async () => {
     const common = createCommonFromGethGenesis(postMergeHardforkJSON, {
       chain: 'customChain',

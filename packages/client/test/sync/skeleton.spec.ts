@@ -809,6 +809,7 @@ describe('[Skeleton] / setHead', async () => {
       config: {
         ...genesisJSON.config,
         terminalTotalDifficulty: 200,
+        terminalTotalDifficultyPassed: false,
         clique: undefined,
         ethash: {},
       },
@@ -816,7 +817,7 @@ describe('[Skeleton] / setHead', async () => {
       difficulty: '0x1',
     }
     const common = createCommonFromGethGenesis(genesis, { chain: 'post-merge' })
-    common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
+    common.setHardforkBy({ blockNumber: BigInt(0) })
     const config = new Config({
       common,
       accountCache: 10000,
@@ -841,19 +842,19 @@ describe('[Skeleton] / setHead', async () => {
     )
     const block3PoS = createBlock(
       { header: { number: 3, parentHash: block2.hash(), difficulty: 0 } },
-      { common, setHardfork: BigInt(200) },
+      { common, setHardfork: true },
     )
     const block4InvalidPoS = createBlock(
       { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
-      { common, setHardfork: BigInt(200) },
+      { common, setHardfork: true },
     )
     const block4PoS = createBlock(
       { header: { number: 4, parentHash: block3PoS.hash(), difficulty: 0 } },
-      { common, setHardfork: BigInt(200) },
+      { common, setHardfork: true },
     )
     const block5 = createBlock(
       { header: { number: 5, parentHash: block4PoS.hash(), difficulty: 0 } },
-      { common, setHardfork: BigInt(200) },
+      { common, setHardfork: true },
     )
 
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -920,7 +921,7 @@ describe('[Skeleton] / setHead', async () => {
       difficulty: '0x1',
     }
     const common = createCommonFromGethGenesis(genesis, { chain: 'post-merge' })
-    common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
+    common.setHardforkBy({ blockNumber: BigInt(0) })
     const config = new Config({
       common,
       accountCache: 10000,
@@ -946,7 +947,7 @@ describe('[Skeleton] / setHead', async () => {
     )
     const block4InvalidPoS = createBlock(
       { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
-      { common, setHardfork: 200 },
+      { common, setHardfork: true },
     )
 
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -980,7 +981,7 @@ describe('[Skeleton] / setHead', async () => {
       difficulty: '0x1',
     }
     const common = createCommonFromGethGenesis(genesis, { chain: 'post-merge' })
-    common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
+    common.setHardforkBy({ blockNumber: BigInt(0) })
     const config = new Config({
       common,
       logger: getLogger({ logLevel: 'debug' }),

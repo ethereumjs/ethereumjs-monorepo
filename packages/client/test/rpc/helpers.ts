@@ -237,7 +237,6 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   })
   common.setHardforkBy({
     blockNumber: 0,
-    td: genesisParams.genesis.difficulty,
     timestamp: genesisParams.genesis.timestamp,
   })
 

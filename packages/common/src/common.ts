@@ -171,7 +171,6 @@ export class Common {
     const hfs = this.hardforks().filter((hf) => hf.block !== null || hf.timestamp !== undefined)
 
     // Find the first hardfork that has a block number greater than `blockNumber`
-    // (skips the merge hardfork since it cannot have a block number specified).
     // If timestamp is not provided, it also skips timestamps hardforks to continue
     // discovering/checking number hardforks.
     let hfIndex = hfs.findIndex(
