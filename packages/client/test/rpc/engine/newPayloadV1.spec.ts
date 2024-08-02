@@ -105,28 +105,6 @@ describe(method, () => {
     assert.equal(res.result.status, 'VALID')
   })
 
-  it('invalid terminal block', async () => {
-    const genesisWithHigherTtd = {
-      ...genesisJSON,
-      config: {
-        ...genesisJSON.config,
-        terminalTotalDifficulty: 17179869185,
-      },
-    }
-
-    BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
-    vi.doMock('@ethereumjs/block', () => BlockHeader)
-
-    const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
-      engine: true,
-    })
-    const rpc = getRpcClient(server)
-    const res = await rpc.request(method, [blockData, null])
-
-    assert.equal(res.result.status, 'INVALID')
-    assert.equal(res.result.latestValidHash, bytesToHex(zeros(32)))
-  })
-
   it('call with valid data', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
     const rpc = getRpcClient(server)

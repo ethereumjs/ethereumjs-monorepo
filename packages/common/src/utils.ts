@@ -195,6 +195,7 @@ function parseGethParams(json: any) {
     const mergeConfig = {
       name: Hardfork.Paris,
       block: 0,
+      timestamp: undefined,
     }
 
     // Merge hardfork has to be placed before first hardfork that is dependent on merge
