@@ -182,7 +182,7 @@ function parseGethParams(json: any) {
     return (a.timestamp ?? 0) - (b.timestamp ?? 0)
   })
 
-  // only set the genesis timestamp forks to zero post the above sort has happended
+  // only set the genesis timestamp forks to zero post the above sort has happened
   // to get the correct sorting
   for (const hf of params.hardforks) {
     if (hf.timestamp === genesisTimestamp) {
