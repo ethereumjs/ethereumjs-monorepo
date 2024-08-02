@@ -185,7 +185,7 @@ describe('[BlockFetcher]', async () => {
     await fetcher.request(job as any)
   })
 
-  it.only('should parse bodies correctly', async () => {
+  it('should parse bodies correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     config.chainCommon.getHardforkBy = vi.fn((input) => {
       if (input['blockNumber'] !== undefined && input['timestamp'] !== undefined)
