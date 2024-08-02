@@ -15,7 +15,8 @@
     "arrowGlacierBlock": 0,
     "grayGlacierBlock": 0,
     "shanghaiTime": 1668699476,
-    "terminalTotalDifficulty": 9
+    "terminalTotalDifficulty": 0,
+    "terminalTotalDifficultyPassed": true
   },
   "alloc": {
     "0x0000000000000000000000000000000000000000": {
