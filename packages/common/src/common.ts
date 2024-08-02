@@ -630,6 +630,7 @@ export class Common {
         typeof blockOrTime === 'number' &&
         blockOrTime !== 0 &&
         blockOrTime !== prevBlockOrTime &&
+        // TODO: Decide if we should remove this since we no longer support TTD merge switch
         name !== Hardfork.Paris
       ) {
         const hfBlockBytes = hexToBytes(`0x${blockOrTime.toString(16).padStart(16, '0')}`)
