@@ -661,7 +661,7 @@ export class Engine {
               const blockExecuted = await this.execution.runWithoutSetHead({
                 block,
                 root: blockParent.header.stateRoot,
-                setHardfork: this.chain.headers.td,
+                setHardfork: true,
                 parentBlock: blockParent,
               })
               return blockExecuted
