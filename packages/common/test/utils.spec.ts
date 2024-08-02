@@ -63,6 +63,18 @@ describe('[Utils/Parse]', () => {
     assert.equal(common.hardforks().slice(-1)[0].block, 0)
   })
 
+  it('should set merge to block 0 when terminalTotalDifficultyPassed is true', () => {
+    const mergeAtGenesisJson = {} as any
+    Object.assign(mergeAtGenesisJson, postMergeJSON)
+    mergeAtGenesisJson.config.terminalTotalDifficultyPassed = false
+    try {
+      createCommonFromGethGenesis(mergeAtGenesisJson, {})
+      assert.fail('should have thrown')
+    } catch (err: any) {
+      assert.ok(err.message.includes('nonzero terminal total difficulty'))
+    }
+  })
+
   it('should successfully assign mainnet deposit contract address when none provided', async () => {
     const common = createCommonFromGethGenesis(postMergeHardforkJSON, {
       chain: 'customChain',

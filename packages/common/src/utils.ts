@@ -81,6 +81,15 @@ function parseGethParams(json: any) {
     )
   }
 
+  // Terminal total difficulty logic is not supported any more as the merge has been completed
+  // so the Merge/Paris hardfork block must be 0
+  if (
+    config.terminalTotalDifficulty !== undefined &&
+    (config.terminalTotalDifficulty > 0 || config.terminalTotalDifficultyPassed === false)
+  ) {
+    throw new Error('nonzero terminal total difficulty is not supported')
+  }
+
   const params = {
     name,
     chainId,
@@ -182,14 +191,10 @@ function parseGethParams(json: any) {
   }
 
   if (config.terminalTotalDifficulty !== undefined) {
-    // Following points need to be considered for placement of merge hf
-    // - Merge hardfork can't be placed at genesis
-    // - Place merge hf before any hardforks that require CL participation for e.g. withdrawals
-    // - Merge hardfork has to be placed just after genesis if any of the genesis hardforks make CL
-    //   necessary for e.g. withdrawals
+    // Merge fork must be placed at 0 since ttd logic is no longer supported
     const mergeConfig = {
       name: Hardfork.Paris,
-      block: config.terminalTotalDifficultyPassed === true ? 0 : null,
+      block: 0,
     }
 
     // Merge hardfork has to be placed before first hardfork that is dependent on merge
