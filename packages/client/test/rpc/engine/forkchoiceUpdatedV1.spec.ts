@@ -1,6 +1,6 @@
 import { BlockHeader, createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { bytesToHex, randomBytes, zeros } from '@ethereumjs/util'
+import { bytesToHex, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -9,7 +9,7 @@ import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseSetup, batchBlocks, getRpcClient, setupChain } from '../helpers.js'
 
-import type { Block, BlockData } from '@ethereumjs/block'
+import type { Block } from '@ethereumjs/block'
 
 const method = 'engine_forkchoiceUpdatedV1'
 

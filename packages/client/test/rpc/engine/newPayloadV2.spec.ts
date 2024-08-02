@@ -1,13 +1,11 @@
-import { BlockHeader } from '@ethereumjs/block'
 import { create1559FeeMarketTx } from '@ethereumjs/tx'
 import {
   bytesToHex,
   createAddressFromPrivateKey,
   createAddressFromString,
   hexToBytes,
-  zeros,
 } from '@ethereumjs/util'
-import { assert, describe, it, vi } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import blocks from '../../testdata/blocks/beacon.json'
