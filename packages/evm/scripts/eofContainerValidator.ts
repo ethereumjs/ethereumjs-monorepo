@@ -1,6 +1,6 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { unprefixedHexToBytes } from '@ethereumjs/util'
-import * as readline from 'readline'
+import split from 'split'
 
 import { createEVM, validateEOF } from '../src/index.js'
 
@@ -11,21 +11,14 @@ import { createEVM, validateEOF } from '../src/index.js'
  * If the input is emtpy, the program will exit
  */
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  terminal: false,
-})
-
 const common = new Common({ chain: Mainnet })
 common.setHardfork(Hardfork.Prague)
 common.setEIPs([663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698])
 const evm = await createEVM({ common })
 
-rl.on('line', async (line) => {
+function processLine(line) {
   if (line.length === 0) {
-    rl.close()
-    return
+    process.exit()
   }
   let trimmed = line
   if (line.startsWith('0x')) {
@@ -38,4 +31,6 @@ rl.on('line', async (line) => {
   } catch (e: any) {
     console.log('err: ' + e.message)
   }
-})
+}
+
+process.stdin.pipe(split()).on('data', processLine)
