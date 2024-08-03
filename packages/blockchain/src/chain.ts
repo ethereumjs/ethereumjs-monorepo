@@ -25,6 +25,7 @@ export type ChainConfig = {
   skeletonFillCanonicalBackStep: number
   maxPerRequest: number
   chainCommon: Common
+  logger?: Logger
 }
 
 /**
@@ -34,7 +35,6 @@ export interface ChainOptions {
   /**
    * Client configuration instance
    */
-  logger?: Logger
   config: ChainConfig
 
   /**
@@ -140,7 +140,6 @@ type BlockCache = {
  */
 export class Chain {
   public config: ChainConfig
-  public logger?: Logger
   public chainDB: DB<string | Uint8Array, string | Uint8Array | DBObject>
   public blockchain: Blockchain
   public blockCache: BlockCache
@@ -207,7 +206,6 @@ export class Chain {
    */
   protected constructor(options: ChainOptions) {
     this.config = options.config
-    this.logger = options.logger
     this.blockchain = options.blockchain!
     this.blockCache = {
       remoteBlocks: new Map(),
@@ -229,11 +227,11 @@ export class Chain {
     for (const msg of msgs) {
       len = msg.length > len ? msg.length : len
     }
-    this.logger?.info('-'.repeat(len), meta)
+    this.config.logger?.info('-'.repeat(len), meta)
     for (const msg of msgs) {
-      this.logger?.info(msg, meta)
+      this.config.logger?.info(msg, meta)
     }
-    this.logger?.info('-'.repeat(len), meta)
+    this.config.logger?.info('-'.repeat(len), meta)
   }
 
   /**
@@ -384,24 +382,24 @@ export class Chain {
         td: headers.td,
       })
       if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Paris)) {
-        this.logger?.info('*'.repeat(85))
-        this.logger?.info(
+        this.config.logger?.info('*'.repeat(85))
+        this.config.logger?.info(
           `Paris (Merge) hardfork reached 🐼 👉 👈 🐼 ! block=${headers.height} td=${headers.td}`
         )
-        this.logger?.info('-'.repeat(85))
-        this.logger?.info(' ')
-        this.logger?.info('Consensus layer client (CL) needed for continued sync:')
-        this.logger?.info(
+        this.config.logger?.info('-'.repeat(85))
+        this.config.logger?.info(' ')
+        this.config.logger?.info('Consensus layer client (CL) needed for continued sync:')
+        this.config.logger?.info(
           'https://ethereum.org/en/developers/docs/nodes-and-clients/#consensus-clients'
         )
-        this.logger?.info(' ')
-        this.logger?.info(
+        this.config.logger?.info(' ')
+        this.config.logger?.info(
           'Make sure to have the JSON RPC (--rpc) and Engine API (--rpcEngine) endpoints exposed'
         )
-        this.logger?.info('and JWT authentication configured (see client README).')
-        this.logger?.info(' ')
-        this.logger?.info('*'.repeat(85))
-        this.logger?.info(
+        this.config.logger?.info('and JWT authentication configured (see client README).')
+        this.config.logger?.info(' ')
+        this.config.logger?.info('*'.repeat(85))
+        this.config.logger?.info(
           `Transitioning to PoS! First block for CL-framed execution: block=${
             headers.height + BIGINT_1
           }`
