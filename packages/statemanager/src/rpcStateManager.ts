@@ -19,8 +19,8 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { AccountCache, OriginalStorageCache, StorageCache } from './cache/index.js'
 import * as Capabilities from './capabilities.js'
 
-import type { Proof, RPCStateManagerOpts } from './index.js'
-import type { AccountFields, StateManagerInterface, StorageDump } from '@ethereumjs/common'
+import type { RPCStateManagerOpts } from './index.js'
+import type { AccountFields, Proof, StateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 

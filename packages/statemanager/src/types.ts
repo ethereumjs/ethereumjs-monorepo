@@ -136,19 +136,3 @@ export interface EncodedVerkleProof {
  * misbehaviour in the underlying trie library.
  */
 export const CODEHASH_PREFIX = utf8ToBytes('c')
-
-export type StorageProof = {
-  key: PrefixedHexString
-  proof: PrefixedHexString[]
-  value: PrefixedHexString
-}
-
-export type Proof = {
-  address: PrefixedHexString
-  balance: PrefixedHexString
-  codeHash: PrefixedHexString
-  nonce: PrefixedHexString
-  storageHash: PrefixedHexString
-  accountProof: PrefixedHexString[]
-  storageProof: StorageProof[]
-}

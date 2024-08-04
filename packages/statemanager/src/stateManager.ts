@@ -36,12 +36,12 @@ import * as Capabilities from './capabilities.js'
 import { CODEHASH_PREFIX, type CacheSettings, type DefaultStateManagerOpts } from './index.js'
 
 import type { AccountCache, CodeCache, OriginalStorageCache, StorageCache } from './cache/index.js'
-import type { StorageProof } from './index.js'
 import type {
   AccountFields,
   Proof,
   StateManagerInterface,
   StorageDump,
+  StorageProof,
   StorageRange,
 } from '@ethereumjs/common'
 import type { Address, DB, PrefixedHexString } from '@ethereumjs/util'
