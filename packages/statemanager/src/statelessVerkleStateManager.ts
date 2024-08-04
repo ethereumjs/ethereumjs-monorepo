@@ -32,6 +32,7 @@ import {
   OriginalStorageCache,
   StorageCache,
 } from './cache/index.js'
+import * as Capabilities from './capabilities.js'
 
 import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { CacheSettings, StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
@@ -571,16 +572,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
   }
 
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    let account = await this.getAccount(address)
-    if (!account) {
-      account = new Account()
-    }
-
-    account._nonce = accountFields.nonce ?? account._nonce
-    account._balance = accountFields.balance ?? account._balance
-    account._storageRoot = accountFields.storageRoot ?? account._storageRoot
-    account._codeHash = accountFields.codeHash ?? account._codeHash
-    await this.putAccount(address, account)
+    await Capabilities.modifyAccountFields(this, address, accountFields)
   }
 
   getProof(_: Address, __: Uint8Array[] = []): Promise<Proof> {

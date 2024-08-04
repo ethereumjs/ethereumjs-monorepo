@@ -38,6 +38,7 @@ import {
   OriginalStorageCache,
   StorageCache,
 } from './cache/index.js'
+import * as Capabilities from './capabilities.js'
 
 import { CODEHASH_PREFIX, type CacheSettings, type DefaultStateManagerOpts } from './index.js'
 
@@ -224,15 +225,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * @param accountFields - Object containing account fields and values to modify
    */
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    let account = await this.getAccount(address)
-    if (!account) {
-      account = new Account()
-    }
-    account.nonce = accountFields.nonce ?? account.nonce
-    account.balance = accountFields.balance ?? account.balance
-    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
-    account.codeHash = accountFields.codeHash ?? account.codeHash
-    await this.putAccount(address, account)
+    await Capabilities.modifyAccountFields(this, address, accountFields)
   }
 
   /**

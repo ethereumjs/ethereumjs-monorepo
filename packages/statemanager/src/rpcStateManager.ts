@@ -17,6 +17,7 @@ import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { AccountCache, CacheType, OriginalStorageCache, StorageCache } from './cache/index.js'
+import * as Capabilities from './capabilities.js'
 
 import type { Proof, RPCStateManagerOpts } from './index.js'
 import type { AccountFields, StateManagerInterface, StorageDump } from '@ethereumjs/common'
@@ -317,15 +318,7 @@ export class RPCStateManager implements StateManagerInterface {
         ),
       )
     }
-    let account = await this.getAccount(address)
-    if (!account) {
-      account = new Account()
-    }
-    account.nonce = accountFields.nonce ?? account.nonce
-    account.balance = accountFields.balance ?? account.balance
-    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
-    account.codeHash = accountFields.codeHash ?? account.codeHash
-    await this.putAccount(address, account)
+    await Capabilities.modifyAccountFields(this, address, accountFields)
   }
 
   /**
