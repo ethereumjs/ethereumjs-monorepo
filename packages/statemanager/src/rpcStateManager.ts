@@ -1,4 +1,4 @@
-import { Common, Mainnet } from '@ethereumjs/common'
+import { CacheType, Common, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { verifyTrieProof } from '@ethereumjs/trie'
 import {
@@ -16,7 +16,7 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { AccountCache, CacheType, OriginalStorageCache, StorageCache } from './cache/index.js'
+import { AccountCache, OriginalStorageCache, StorageCache } from './cache/index.js'
 import * as Capabilities from './capabilities.js'
 
 import type { Proof, RPCStateManagerOpts } from './index.js'
@@ -28,12 +28,14 @@ const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(
 
 export class RPCStateManager implements StateManagerInterface {
   protected _provider: string
-  protected _contractCache: Map<string, Uint8Array>
-  protected _storageCache: StorageCache
   protected _blockTag: string
-  protected _accountCache: AccountCache
+
+  _accountCache: AccountCache
+  _storageCache: StorageCache
+  _contractCache: Map<string, Uint8Array>
+
   originalStorageCache: OriginalStorageCache
-  protected _debug: Debugger
+  _debug: Debugger
   protected DEBUG: boolean
   private keccakFunction: Function
   public readonly common: Common

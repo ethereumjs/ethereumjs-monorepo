@@ -1,8 +1,7 @@
 import { type PrefixedHexString, utf8ToBytes } from '@ethereumjs/util'
 
-import type { CacheType } from './cache/index.js'
 import type { AccessWitness } from './index.js'
-import type { Common } from '@ethereumjs/common'
+import type { CacheType, Common } from '@ethereumjs/common'
 import type { Trie } from '@ethereumjs/trie'
 import type { VerkleCrypto } from '@ethereumjs/util'
 
@@ -62,7 +61,7 @@ interface BaseStateManagerOpts {
 /**
  * Cache state manager options (not to be used directly)
  */
-interface CacheStateManagerOpts {
+export interface CacheStateManagerOpts {
   accountCacheOpts?: CacheOptions
   storageCacheOpts?: CacheOptions
   codeCacheOpts?: CacheOptions

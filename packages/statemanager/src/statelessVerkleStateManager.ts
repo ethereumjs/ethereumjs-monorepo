@@ -25,17 +25,16 @@ import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { AccessWitness, AccessedStateType, decodeValue } from './accessWitness.js'
-import {
-  AccountCache,
-  CacheType,
-  CodeCache,
-  OriginalStorageCache,
-  StorageCache,
-} from './cache/index.js'
 import * as Capabilities from './capabilities.js'
 
+import {
+  type CacheSettings,
+  type StatelessVerkleStateManagerOpts,
+  type VerkleState,
+} from './index.js'
+
 import type { AccessedStateWithAddress } from './accessWitness.js'
-import type { CacheSettings, StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
+import type { AccountCache, CodeCache, OriginalStorageCache, StorageCache } from './cache/index.js'
 import type { DefaultStateManager } from './stateManager.js'
 import type { AccountFields, Proof, StateManagerInterface } from '@ethereumjs/common'
 import type {
@@ -73,12 +72,13 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
   _codeCache?: CodeCache
   _cachedStateRoot?: Uint8Array
 
-  originalStorageCache: OriginalStorageCache
-
   verkleCrypto: VerkleCrypto
-  protected readonly _accountCacheSettings: CacheSettings
-  protected readonly _storageCacheSettings: CacheSettings
-  protected readonly _codeCacheSettings: CacheSettings
+
+  // Non-null assertion necessary to inform TypeScript that these properties are set in the constructor through a helper function
+  originalStorageCache!: OriginalStorageCache
+  readonly _accountCacheSettings!: CacheSettings
+  readonly _storageCacheSettings!: CacheSettings
+  readonly _codeCacheSettings!: CacheSettings
 
   /**
    * StateManager is run in DEBUG mode (default: false)
@@ -113,47 +113,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    * Instantiate the StateManager interface.
    */
   constructor(opts: StatelessVerkleStateManagerOpts) {
-    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
-
-    this._accountCacheSettings = {
-      deactivate: opts.accountCacheOpts?.deactivate ?? false,
-      type: opts.accountCacheOpts?.type ?? CacheType.ORDERED_MAP,
-      size: opts.accountCacheOpts?.size ?? 100000,
-    }
-
-    if (!this._accountCacheSettings.deactivate) {
-      this._accountCache = new AccountCache({
-        size: this._accountCacheSettings.size,
-        type: this._accountCacheSettings.type,
-      })
-    }
-
-    this._storageCacheSettings = {
-      deactivate: opts.storageCacheOpts?.deactivate ?? false,
-      type: opts.storageCacheOpts?.type ?? CacheType.ORDERED_MAP,
-      size: opts.storageCacheOpts?.size ?? 20000,
-    }
-
-    if (!this._storageCacheSettings.deactivate) {
-      this._storageCache = new StorageCache({
-        size: this._storageCacheSettings.size,
-        type: this._storageCacheSettings.type,
-      })
-    }
-
-    this._codeCacheSettings = {
-      deactivate:
-        (opts.codeCacheOpts?.deactivate === true || opts.codeCacheOpts?.size === 0) ?? false,
-      type: opts.codeCacheOpts?.type ?? CacheType.ORDERED_MAP,
-      size: opts.codeCacheOpts?.size ?? 20000,
-    }
-
-    if (!this._codeCacheSettings.deactivate) {
-      this._codeCache = new CodeCache({
-        size: this._codeCacheSettings.size,
-        type: this._codeCacheSettings.type,
-      })
-    }
+    Capabilities.initializeCaches(this, opts)
 
     this._cachedStateRoot = opts.initialStateRoot
 
@@ -773,9 +733,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    */
   async checkpoint(): Promise<void> {
     this._checkpoints.push(this._state)
-    this._accountCache?.checkpoint()
-    this._storageCache?.checkpoint()
-    this._codeCache?.checkpoint()
+    Capabilities.checkpointCaches(this)
   }
 
   /**
@@ -784,9 +742,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    */
   async commit(): Promise<void> {
     this._checkpoints.pop()
-    this._accountCache!.commit()
-    this._storageCache?.commit()
-    this._codeCache?.commit()
+    Capabilities.commitCaches(this)
   }
 
   // TODO
@@ -801,9 +757,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
   async revert(): Promise<void> {
     // setup trie checkpointing
     this._checkpoints.pop()
-    this._accountCache?.revert()
-    this._storageCache?.revert()
-    this._codeCache?.revert()
+    Capabilities.revertCaches(this)
   }
 
   /**

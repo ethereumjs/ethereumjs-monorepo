@@ -209,4 +209,35 @@ export interface StateManagerInterface {
    */
   clearCaches(): void
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
+
+  /*
+   * Cache properties
+   */
+  _accountCache?: Cache
+  _storageCache?: Cache
+  _codeCache?: Cache
+
+  _accountCacheSettings?: CacheSettings
+  _storageCacheSettings?: CacheSettings
+  _codeCacheSettings?: CacheSettings
+}
+
+/**
+ * Cache related
+ */
+export enum CacheType {
+  LRU = 'lru',
+  ORDERED_MAP = 'ordered_map',
+}
+
+export type CacheSettings = {
+  deactivate: boolean
+  type: CacheType
+  size: number
+}
+
+interface Cache {
+  checkpoint(): void
+  commit(): void
+  revert(): void
 }
