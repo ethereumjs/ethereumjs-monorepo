@@ -60,7 +60,6 @@ export class FullEthereumService extends Service {
       // directly passon chainCommon which Skeleton can set hardfork on
       this.skeleton = new Skeleton({
         chain: this.chain,
-        logger: this.config.logger,
       })
     }
 
