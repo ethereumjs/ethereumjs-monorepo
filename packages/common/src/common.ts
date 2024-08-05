@@ -176,7 +176,7 @@ export class Common {
     let hfIndex = hfs.findIndex(
       (hf) =>
         (blockNumber !== undefined && hf.block !== null && BigInt(hf.block) > blockNumber) ||
-        (timestamp !== undefined && hf.timestamp !== undefined && BigInt(hf.timestamp) > timestamp),
+        (timestamp !== undefined && hf.timestamp !== undefined && BigInt(hf.timestamp) > timestamp)
     )
 
     if (hfIndex === -1) {
@@ -217,7 +217,7 @@ export class Common {
         .slice(0, hfStartIndex)
         .reduce(
           (acc: number, hf: HardforkTransitionConfig) => Math.max(Number(hf.timestamp ?? '0'), acc),
-          0,
+          0
         )
       if (minTimeStamp > timestamp) {
         throw Error(`Maximum HF determined by timestamp is lower than the block number HF`)
@@ -228,7 +228,7 @@ export class Common {
         .reduce(
           (acc: number, hf: HardforkTransitionConfig) =>
             Math.min(Number(hf.timestamp ?? timestamp), acc),
-          Number(timestamp),
+          Number(timestamp)
         )
 
       if (maxTimeStamp < timestamp) {
@@ -277,7 +277,7 @@ export class Common {
       const minHF = this.gteHardfork(eipsDict[eip]['minimumHardfork'])
       if (!minHF) {
         throw new Error(
-          `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`,
+          `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`
         )
       }
     }
@@ -630,7 +630,6 @@ export class Common {
         typeof blockOrTime === 'number' &&
         blockOrTime !== 0 &&
         blockOrTime !== prevBlockOrTime &&
-        // TODO: Decide if we should remove this since we no longer support TTD merge switch
         name !== Hardfork.Paris
       ) {
         const hfBlockBytes = hexToBytes(`0x${blockOrTime.toString(16).padStart(16, '0')}`)
