@@ -1,4 +1,4 @@
-import { Block, BlockHeader, createBlock, createHeader } from '@ethereumjs/block'
+import { Block, BlockHeader, createBlock, createBlockHeader } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
@@ -101,7 +101,7 @@ export class Miner {
         const data = <HeaderData>this.blockHeader.toJSON()
         data.mixHash = solution.mixHash
         data.nonce = solution.nonce
-        return createHeader(data, { common: this.blockHeader.common })
+        return createBlockHeader(data, { common: this.blockHeader.common })
       }
     }
   }

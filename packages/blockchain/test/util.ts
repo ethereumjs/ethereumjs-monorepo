@@ -1,4 +1,4 @@
-import { Block, createBlock, createHeader } from '@ethereumjs/block'
+import { Block, createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -83,14 +83,14 @@ export const generateConsecutiveBlock = (
     difficultyChangeFactor = 1
   }
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
-  const tmpHeader = createHeader(
+  const tmpHeader = createBlockHeader(
     {
       number: parentBlock.header.number + BigInt(1),
       timestamp: parentBlock.header.timestamp + BigInt(10 + -difficultyChangeFactor * 9),
     },
     { common },
   )
-  const header = createHeader(
+  const header = createBlockHeader(
     {
       number: parentBlock.header.number + BigInt(1),
       parentHash: parentBlock.hash(),

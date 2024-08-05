@@ -1,4 +1,4 @@
-import { createBlockFromValuesArray, createHeaderFromValuesArray } from '@ethereumjs/block'
+import { createBlockFromValuesArray, createBlockHeaderFromValuesArray } from '@ethereumjs/block'
 import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { BIGINT_0, equalsBytes } from '@ethereumjs/util'
@@ -468,7 +468,7 @@ export class Chain {
         }
         break
       }
-      const header = createHeaderFromValuesArray(h.raw(), {
+      const header = createBlockHeaderFromValuesArray(h.raw(), {
         common: this.config.chainCommon,
         setHardfork: true,
       })

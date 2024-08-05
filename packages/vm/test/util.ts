@@ -1,4 +1,4 @@
-import { Block, createHeader } from '@ethereumjs/block'
+import { Block, createBlockHeader } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -326,7 +326,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   if (opts?.common && opts.common.gteHardfork('london')) {
     headerData['baseFeePerGas'] = currentBaseFee
     if (currentBaseFee === undefined) {
-      const parentBlockHeader = createHeader(
+      const parentBlockHeader = createBlockHeader(
         {
           gasLimit: parentGasLimit,
           gasUsed: parentGasUsed,
@@ -344,7 +344,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   if (opts?.common && opts.common.gteHardfork('cancun')) {
     headerData['excessBlobGas'] = currentExcessBlobGas
   }
-  return createHeader(headerData, opts)
+  return createBlockHeader(headerData, opts)
 }
 
 /**

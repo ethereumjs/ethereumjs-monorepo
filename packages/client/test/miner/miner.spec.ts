@@ -1,4 +1,4 @@
-import { BlockHeader, createBlock, createHeader } from '@ethereumjs/block'
+import { BlockHeader, createBlock, createBlockHeader } from '@ethereumjs/block'
 import {
   Common,
   Goerli,
@@ -53,7 +53,7 @@ class FakeChain {
   update() {}
   get headers() {
     return {
-      latest: createHeader(),
+      latest: createBlockHeader(),
       height: BigInt(0),
     }
   }
@@ -64,10 +64,10 @@ class FakeChain {
     }
   }
   getBlock() {
-    return createHeader()
+    return createBlockHeader()
   }
   getCanonicalHeadHeader() {
-    return createHeader()
+    return createBlockHeader()
   }
   blockchain: any = {
     putBlock: async () => {},

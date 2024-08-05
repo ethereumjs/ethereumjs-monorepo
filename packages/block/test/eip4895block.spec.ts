@@ -13,7 +13,7 @@ import { assert, describe, it } from 'vitest'
 import {
   createBlock,
   createBlockFromRLPSerializedBlock,
-  createHeader,
+  createBlockHeader,
 } from '../src/constructors.js'
 import { genWithdrawalsTrieRoot } from '../src/helpers.js'
 
@@ -59,7 +59,7 @@ describe('EIP4895 tests', () => {
     const earlyCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     assert.throws(
       () => {
-        createHeader(
+        createBlockHeader(
           {
             withdrawalsRoot: zeros(32),
           },
@@ -73,7 +73,7 @@ describe('EIP4895 tests', () => {
       'should throw when setting withdrawalsRoot with EIP4895 not being activated',
     )
     assert.doesNotThrow(() => {
-      createHeader(
+      createBlockHeader(
         {},
         {
           common,
@@ -81,7 +81,7 @@ describe('EIP4895 tests', () => {
       )
     }, 'should not throw when withdrawalsRoot is undefined with EIP4895 being activated')
     assert.doesNotThrow(() => {
-      createHeader(
+      createBlockHeader(
         {
           withdrawalsRoot: zeros(32),
         },
@@ -144,7 +144,7 @@ describe('EIP4895 tests', () => {
       await block.withdrawalsTrieIsValid(),
       'should invalidate the empty withdrawals root',
     )
-    const validHeader = createHeader(
+    const validHeader = createBlockHeader(
       {
         withdrawalsRoot: KECCAK256_RLP,
       },

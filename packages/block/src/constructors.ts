@@ -62,7 +62,7 @@ import type {
  * @param headerData
  * @param opts
  */
-export function createHeader(headerData: HeaderData = {}, opts: BlockOptions = {}) {
+export function createBlockHeader(headerData: HeaderData = {}, opts: BlockOptions = {}) {
   return new BlockHeader(headerData, opts)
 }
 
@@ -72,11 +72,14 @@ export function createHeader(headerData: HeaderData = {}, opts: BlockOptions = {
  * @param values
  * @param opts
  */
-export function createHeaderFromValuesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
+export function createBlockHeaderFromValuesArray(
+  values: BlockHeaderBytes,
+  opts: BlockOptions = {},
+) {
   const headerData = valuesArrayToHeaderData(values)
   const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot, requestsRoot } =
     headerData
-  const header = createHeader(headerData, opts)
+  const header = createBlockHeader(headerData, opts)
   if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
     const eip1559ActivationBlock = bigIntToBytes(header.common.eipBlock(1559)!)
     if (
@@ -109,12 +112,15 @@ export function createHeaderFromValuesArray(values: BlockHeaderBytes, opts: Bloc
  * @param serializedHeaderData
  * @param opts
  */
-export function createHeaderFromRLP(serializedHeaderData: Uint8Array, opts: BlockOptions = {}) {
+export function createBlockHeaderFromRLP(
+  serializedHeaderData: Uint8Array,
+  opts: BlockOptions = {},
+) {
   const values = RLP.decode(serializedHeaderData)
   if (!Array.isArray(values)) {
     throw new Error('Invalid serialized header input. Must be array')
   }
-  return createHeaderFromValuesArray(values as Uint8Array[], opts)
+  return createBlockHeaderFromValuesArray(values as Uint8Array[], opts)
 }
 
 /**
@@ -133,7 +139,7 @@ export function createBlock(blockData: BlockData = {}, opts?: BlockOptions) {
     requests: clRequests,
   } = blockData
 
-  const header = createHeader(headerData, opts)
+  const header = createBlockHeader(headerData, opts)
 
   // parse transactions
   const transactions = []
@@ -160,7 +166,7 @@ export function createBlock(blockData: BlockData = {}, opts?: BlockOptions) {
     uncleOpts.setHardfork = true
   }
   for (const uhData of uhsData ?? []) {
-    const uh = createHeader(uhData, uncleOpts)
+    const uh = createBlockHeader(uhData, uncleOpts)
     uncleHeaders.push(uh)
   }
 
@@ -194,7 +200,7 @@ export function createBlockFromValuesArray(values: BlockBytes, opts?: BlockOptio
   // First try to load header so that we can use its common (in case of setHardfork being activated)
   // to correctly make checks on the hardforks
   const [headerData, txsData, uhsData, ...valuesTail] = values
-  const header = createHeaderFromValuesArray(headerData, opts)
+  const header = createBlockHeaderFromValuesArray(headerData, opts)
 
   // conditional assignment of rest of values and splicing them out from the valuesTail
   const withdrawalBytes = header.common.isActivatedEIP(4895)
@@ -259,7 +265,7 @@ export function createBlockFromValuesArray(values: BlockBytes, opts?: BlockOptio
     uncleOpts.setHardfork = true
   }
   for (const uncleHeaderData of uhsData ?? []) {
-    uncleHeaders.push(createHeaderFromValuesArray(uncleHeaderData, uncleOpts))
+    uncleHeaders.push(createBlockHeaderFromValuesArray(uncleHeaderData, uncleOpts))
   }
 
   const withdrawals = (withdrawalBytes as WithdrawalBytes[])

@@ -1,4 +1,4 @@
-import { Block, BlockHeader, createHeader } from '@ethereumjs/block'
+import { Block, BlockHeader, createBlockHeader } from '@ethereumjs/block'
 import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { create1559FeeMarketTx, create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
@@ -70,7 +70,7 @@ const setup = () => {
   const service: any = {
     chain: {
       headers: { height: BigInt(0) },
-      getCanonicalHeadHeader: () => createHeader({}, { common }),
+      getCanonicalHeadHeader: () => createBlockHeader({}, { common }),
     },
     execution: {
       vm: {
