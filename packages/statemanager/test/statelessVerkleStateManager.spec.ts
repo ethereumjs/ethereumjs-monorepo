@@ -1,5 +1,5 @@
 import { createBlock } from '@ethereumjs/block'
-import { createCommonFromGethGenesis } from '@ethereumjs/common'
+import { CacheType, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
   Address,
@@ -16,7 +16,7 @@ import {
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it, test } from 'vitest'
 
-import { CacheType, StatelessVerkleStateManager } from '../src/index.js'
+import { StatelessVerkleStateManager } from '../src/index.js'
 
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 import * as verkleBlockJSON from './testdata/verkleKaustinen6Block72.json'

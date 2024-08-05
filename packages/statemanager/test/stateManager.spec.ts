@@ -1,3 +1,4 @@
+import { CacheType } from '@ethereumjs/common'
 import { Trie, createTrie, createTrieFromProof } from '@ethereumjs/trie'
 import {
   Account,
@@ -14,7 +15,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CacheType, DefaultStateManager } from '../src/index.js'
+import { DefaultStateManager } from '../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

@@ -45,8 +45,8 @@ import type { EthProtocol } from '../../net/protocol/index.js'
 import type { FullEthereumService, Service } from '../../service/index.js'
 import type { RpcTx } from '../types.js'
 import type { Block, JsonRpcBlock } from '@ethereumjs/block'
+import type { Proof } from '@ethereumjs/common'
 import type { Log } from '@ethereumjs/evm'
-import type { Proof } from '@ethereumjs/statemanager'
 import type {
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
