@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1722885349339,
+  "lastUpdate": 1722887462604,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "80fcde6449b491772bb915a5341fce5f816c6345",
-          "message": "Common: allow overriding params (#3506)\n\n* common: expand custom chain type to support param overrides\r\n\r\n* vm: update 2935 test to override history address param\r\n\r\n* common: update types\r\n\r\n* common: correctly build params cache with all available topics\r\n\r\n* common: do not duplicate types\r\n\r\n* common: remove unused params\r\n\r\n* common: add override param test",
-          "timestamp": "2024-07-15T22:55:01+02:00",
-          "tree_id": "dbc3c33311b73f55a35b59c9191b9754a91ee4dd",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/80fcde6449b491772bb915a5341fce5f816c6345"
-        },
-        "date": 1721077056736,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 37836,
-            "range": "±1.58%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 35728,
-            "range": "±3.57%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 36525,
-            "range": "±1.50%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 35576,
-            "range": "±1.68%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34779,
-            "range": "±2.18%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.82%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "401d6505e46e508d008eaad07228e0ad6309d448",
+          "message": "Proof function renaming (#3557)\n\n* Rename createProof to createMerkleProof\r\n\r\n* Rename createProof for verkle to createVerkleProof\r\n\r\n* Rename createProof to createMerkleProof\r\n\r\n* Rename updateFromProof to updateTrieFromMerkleProof\r\n\r\n* Rename verifyProof to verifyMerkleProof\r\n\r\n* Rename verifyProof on verkle to verifyVerkleProof\r\n\r\n* Fix comment\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-08-05T12:48:27-07:00",
+          "tree_id": "3760b36e673c79522b43551eeb361118efba2afc",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/401d6505e46e508d008eaad07228e0ad6309d448"
+        },
+        "date": 1722887462015,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38671,
+            "range": "±1.67%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36468,
+            "range": "±4.77%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37754,
+            "range": "±1.47%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36664,
+            "range": "±1.71%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35804,
+            "range": "±1.72%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
           }
         ]
       }
