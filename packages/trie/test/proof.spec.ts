@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 
 import {
   Trie,
-  createProof as createMerkleProof,
+  createMerkleProof,
   createTrieFromProof,
   updateFromProof,
   verifyTrieProof,
