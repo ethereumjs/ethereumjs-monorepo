@@ -128,7 +128,7 @@ export async function updateTrieFromMerkleProof(
  * @throws If proof is found to be invalid.
  * @returns The value from the key, or null if valid proof of non-existence.
  */
-export async function verifyProof(
+export async function verifyMerkleProof(
   trie: Trie,
   rootHash: Uint8Array,
   key: Uint8Array,

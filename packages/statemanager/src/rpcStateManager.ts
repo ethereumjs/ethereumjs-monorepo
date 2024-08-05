@@ -231,7 +231,7 @@ export class RPCStateManager implements StateManagerInterface {
     const verified = await verifyTrieProof(address.bytes, proofBuf, {
       useKeyHashing: true,
     })
-    // if not verified (i.e. verifyProof returns null), account does not exist
+    // if not verified (i.e. verifyMerkleProof returns null), account does not exist
     return verified === null ? false : true
   }
 
