@@ -21,7 +21,7 @@ import type { BaseOpts, ChainConfig, GethConfigOpts } from './index.js'
 export function createCustomCommon(
   partialConfig: Partial<ChainConfig>,
   baseChain: ChainConfig,
-  opts: BaseOpts = {},
+  opts: BaseOpts = {}
 ): Common {
   return new Common({
     chain: {
@@ -35,12 +35,12 @@ export function createCustomCommon(
 /**
  * Static method to load and set common from a geth genesis json
  * @param genesisJson json of geth configuration
- * @param \{ Mainnet, eips, genesisHash, hardfork, mergeForkIdPostMerge } to further configure the common instance
+ * @param { Mainnet, eips, genesisHash, hardfork, mergeForkIdPostMerge } to further configure the common instance
  * @returns Common
  */
 export function createCommonFromGethGenesis(
   genesisJson: any,
-  { chain, eips, genesisHash, hardfork, params, customCrypto }: GethConfigOpts,
+  { chain, eips, genesisHash, hardfork, params, customCrypto }: GethConfigOpts
 ): Common {
   const genesisParams = parseGethGenesis(genesisJson, chain)
   const common = new Common({
