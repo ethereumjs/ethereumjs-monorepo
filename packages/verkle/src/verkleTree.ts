@@ -532,7 +532,7 @@ export class VerkleTree {
    * Creates a proof from a tree and key that can be verified using {@link VerkleTree.verifyProof}.
    * @param key
    */
-  async createProof(_key: Uint8Array): Promise<Proof> {
+  async createVerkleProof(_key: Uint8Array): Promise<Proof> {
     throw new Error('Not implemented')
   }
 
