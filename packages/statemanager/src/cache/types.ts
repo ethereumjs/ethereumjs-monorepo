@@ -1,7 +1,4 @@
-export enum CacheType {
-  LRU = 'lru',
-  ORDERED_MAP = 'ordered_map',
-}
+import type { CacheType } from '@ethereumjs/common'
 
 export interface CacheOpts {
   size: number

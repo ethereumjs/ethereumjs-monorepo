@@ -1,13 +1,11 @@
-import { BlockHeader } from '@ethereumjs/block'
 import { create1559FeeMarketTx } from '@ethereumjs/tx'
 import {
   bytesToHex,
   createAddressFromPrivateKey,
   createAddressFromString,
   hexToBytes,
-  zeros,
 } from '@ethereumjs/util'
-import { assert, describe, it, vi } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import blocks from '../../testdata/blocks/beacon.json'
@@ -102,28 +100,6 @@ describe(`${method}: call with executionPayloadV1`, () => {
     res = await rpc.request(method, [blocks[1]])
 
     assert.equal(res.result.status, 'VALID')
-  })
-
-  it('invalid terminal block', async () => {
-    const genesisWithHigherTtd = {
-      ...genesisJSON,
-      config: {
-        ...genesisJSON.config,
-        terminalTotalDifficulty: 17179869185,
-      },
-    }
-
-    ;(BlockHeader as any).prototype._consensusFormatValidation = vi.fn()
-    vi.doMock('@ethereumjs/block', () => BlockHeader)
-
-    const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
-      engine: true,
-    })
-    const rpc = getRpcClient(server)
-    const res = await rpc.request(method, [blockData, null])
-
-    assert.equal(res.result.status, 'INVALID')
-    assert.equal(res.result.latestValidHash, bytesToHex(zeros(32)))
   })
 
   it('call with valid data', async () => {

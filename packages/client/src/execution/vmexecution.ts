@@ -4,14 +4,10 @@ import {
   DBSetHashToNumber,
   DBSetTD,
 } from '@ethereumjs/blockchain'
-import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { CacheType, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MCLBLS } from '@ethereumjs/evm'
 import { getGenesis } from '@ethereumjs/genesis'
-import {
-  CacheType,
-  DefaultStateManager,
-  StatelessVerkleStateManager,
-} from '@ethereumjs/statemanager'
+import { DefaultStateManager, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { createTrie } from '@ethereumjs/trie'
 import {
   BIGINT_0,
@@ -272,8 +268,7 @@ export class VMExecution extends Execution {
       if (typeof blockchain.getTotalDifficulty !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
-      const td = await blockchain.getTotalDifficulty(headBlock.header.hash())
-      this.config.execCommon.setHardforkBy({ blockNumber: number, td, timestamp })
+      this.config.execCommon.setHardforkBy({ blockNumber: number, timestamp })
       this.hardfork = this.config.execCommon.hardfork()
 
       if (this.config.execCommon.gteHardfork(Hardfork.Osaka)) {
@@ -332,13 +327,8 @@ export class VMExecution extends Execution {
 
     // there could to be checks here that the resetted head is a parent of the chainStatus
     // but we can skip it for now trusting the chain reset has been correctly performed
-    const td =
-      headBlock.header.number === BIGINT_0
-        ? headBlock.header.difficulty
-        : await this.chain.blockchain.getTotalDifficulty(headBlock.header.parentHash)
     this.hardfork = this.config.execCommon.setHardforkBy({
       blockNumber: number,
-      td,
       timestamp,
     })
     if (this.config.execCommon.gteHardfork(Hardfork.Osaka)) {
@@ -391,21 +381,8 @@ export class VMExecution extends Execution {
           const parentState = root ?? prevVMStateRoot
           const clearCache = !equalsBytes(prevVMStateRoot, parentState)
 
-          // merge TTD might not give correct td, but its sufficient for purposes of determining HF and allows
-          // stateless execution where blockchain mightnot have all the blocks filling upto the block
-          let td
-          if (block.common.gteHardfork(Hardfork.Paris)) {
-            td = this.config.chainCommon.hardforkTTD(Hardfork.Paris)
-            if (td === null) {
-              throw Error(`Invalid null paris TTD for the chain`)
-            }
-          } else {
-            td = await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)
-          }
-
           const hardfork = this.config.execCommon.getHardforkBy({
             blockNumber: block.header.number,
-            td,
             timestamp: block.header.timestamp,
           })
 
@@ -417,10 +394,8 @@ export class VMExecution extends Execution {
             // see if this is a transition block
             const parentBlock =
               opts?.parentBlock ?? (await this.chain.getBlock(block.header.parentHash))
-            const parentTd = td - parentBlock.header.difficulty
             const parentHf = this.config.execCommon.getHardforkBy({
               blockNumber: parentBlock.header.number,
-              td: parentTd,
               timestamp: parentBlock.header.timestamp,
             })
 
@@ -561,13 +536,8 @@ export class VMExecution extends Execution {
         status: ExecStatus.VALID,
       }
 
-      const td = await this.chain.getTd(
-        vmHeadBlock.header.parentHash,
-        vmHeadBlock.header.number - BIGINT_1,
-      )
       const hardfork = this.config.execCommon.setHardforkBy({
         blockNumber: vmHeadBlock.header.number,
-        td,
         timestamp: vmHeadBlock.header.timestamp,
       })
       if (
@@ -691,11 +661,9 @@ export class VMExecution extends Execution {
                       'cannot get iterator head: blockchain has no getTotalDifficulty function',
                     )
                   }
-                  const td = await blockchain.getTotalDifficulty(block.header.parentHash)
 
                   const hardfork = this.config.execCommon.getHardforkBy({
                     blockNumber: number,
-                    td,
                     timestamp,
                   })
                   if (hardfork !== this.hardfork) {
@@ -706,7 +674,6 @@ export class VMExecution extends Execution {
                     )
                     this.hardfork = this.config.execCommon.setHardforkBy({
                       blockNumber: number,
-                      td,
                       timestamp,
                     })
                     const isPostOsaka = this.config.execCommon.gteHardfork(Hardfork.Osaka)
@@ -1010,12 +977,8 @@ export class VMExecution extends Execution {
     this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
 
     const block = await this.vm.blockchain.getBlock(first)
-    const parentBlock = await this.vm.blockchain.getBlock(block.header.parentHash)
-    const startExecutionParentTd = await this.chain.getTd(block.hash(), parentBlock.header.number)
-
     const startExecutionHardfork = this.config.execCommon.getHardforkBy({
       blockNumber: block.header.number,
-      td: startExecutionParentTd,
       timestamp: block.header.timestamp,
     })
 
@@ -1036,10 +999,8 @@ export class VMExecution extends Execution {
       if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
-      const td = await vm.blockchain.getTotalDifficulty(block.header.parentHash)
       vm.common.setHardforkBy({
         blockNumber,
-        td,
         timestamp: block.header.timestamp,
       })
 

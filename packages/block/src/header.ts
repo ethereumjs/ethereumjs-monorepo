@@ -34,7 +34,6 @@ import { paramsBlock } from './params.js'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
 import type { CliqueConfig } from '@ethereumjs/common'
-import type { BigIntLike } from '@ethereumjs/util'
 
 interface HeaderCache {
   hash: Uint8Array | undefined
@@ -152,12 +151,6 @@ export class BlockHeader {
     if (setHardfork === true) {
       this.common.setHardforkBy({
         blockNumber: number,
-        timestamp,
-      })
-    } else if (typeof setHardfork !== 'boolean') {
-      this.common.setHardforkBy({
-        blockNumber: number,
-        td: setHardfork as BigIntLike,
         timestamp,
       })
     }

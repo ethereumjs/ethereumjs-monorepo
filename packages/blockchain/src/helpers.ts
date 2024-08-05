@@ -24,7 +24,6 @@ export async function genGenesisStateRoot(
   const genCommon = common.copy()
   genCommon.setHardforkBy({
     blockNumber: 0,
-    td: BigInt(genCommon.genesis().difficulty),
     timestamp: genCommon.genesis().timestamp,
   })
   if (genCommon.isActivatedEIP(6800)) {

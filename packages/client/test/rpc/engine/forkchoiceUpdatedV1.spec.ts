@@ -1,6 +1,6 @@
 import { BlockHeader, createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { bytesToHex, randomBytes, zeros } from '@ethereumjs/util'
+import { bytesToHex, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -9,7 +9,7 @@ import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseSetup, batchBlocks, getRpcClient, setupChain } from '../helpers.js'
 
-import type { Block, BlockData } from '@ethereumjs/block'
+import type { Block } from '@ethereumjs/block'
 
 const method = 'engine_forkchoiceUpdatedV1'
 
@@ -131,66 +131,6 @@ describe(method, () => {
     assert.equal(res.result.payloadStatus.latestValidHash, validForkChoiceState.headBlockHash)
     assert.equal(res.result.payloadStatus.validationError, null)
     assert.equal(res.result.payloadId, null)
-  })
-
-  it('invalid terminal block with only genesis block', async () => {
-    const genesisWithHigherTtd = {
-      ...genesisJSON,
-      config: {
-        ...genesisJSON.config,
-        terminalTotalDifficulty: 17179869185,
-      },
-    }
-
-    const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
-      engine: true,
-    })
-    const rpc = getRpcClient(server)
-    const res = await rpc.request(method, [validForkChoiceState, null])
-    assert.equal(res.result.payloadStatus.status, 'INVALID')
-    assert.equal(res.result.payloadStatus.latestValidHash, bytesToHex(zeros(32)))
-  })
-
-  it('invalid terminal block with 1+ blocks', async () => {
-    const genesisWithHigherTtd = {
-      ...genesisJSON,
-      config: {
-        ...genesisJSON.config,
-        terminalTotalDifficulty: 17179869185,
-        clique: undefined,
-        ethash: {},
-      },
-    }
-
-    const { server, chain, common } = await setupChain(genesisWithHigherTtd, 'post-merge', {
-      engine: true,
-    })
-    const rpc = getRpcClient(server)
-    const newBlock = createBlock(
-      {
-        header: {
-          number: blocks[0].blockNumber,
-          parentHash: blocks[0].parentHash,
-          difficulty: 1,
-          extraData: new Uint8Array(97),
-        },
-      } as BlockData,
-      { common, skipConsensusFormatValidation: true },
-    )
-
-    await chain.putBlocks([newBlock])
-    const newBlockHashHex = bytesToHex(newBlock.hash())
-    const res = await rpc.request(method, [
-      {
-        safeBlockHash: newBlockHashHex,
-        finalizedBlockHash: newBlockHashHex,
-        headBlockHash: newBlockHashHex,
-      },
-      null,
-    ])
-
-    assert.equal(res.result.payloadStatus.status, 'INVALID')
-    assert.equal(res.result.payloadStatus.latestValidHash, bytesToHex(zeros(32)))
   })
 
   it('call with deep parent lookup', async () => {

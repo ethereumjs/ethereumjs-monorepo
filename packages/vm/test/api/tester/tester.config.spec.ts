@@ -42,7 +42,6 @@ describe('test runner config tests', () => {
       const str = testCase.hf + 'ToMergeAtDiff' + testCase.TTD.toString(16)
       const common = getCommon(str)
       assert.ok(common.hardfork() === testCase.hf)
-      assert.ok(common.hardforkTTD('paris') === BigInt(testCase.TTD))
     })
   })
   it('should throw on a non-existing fork', () => {

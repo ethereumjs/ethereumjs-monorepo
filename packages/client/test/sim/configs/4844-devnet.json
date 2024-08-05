@@ -20,7 +20,7 @@
       "period": 5,
       "epoch": 30000
     },
-    "terminalTotalDifficulty": 1,
+    "terminalTotalDifficulty": 0,
     "terminalTotalDifficultyPassed": true
   },
   "nonce": "0x42",

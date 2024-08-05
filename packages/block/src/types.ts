@@ -40,12 +40,9 @@ export interface BlockOptions {
    * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
    * for older Hfs.
    *
-   * Additionally it is possible to pass in a specific TD value to support live-Merge-HF
-   * transitions. Note that this should only be needed in very rare and specific scenarios.
-   *
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
-  setHardfork?: boolean | BigIntLike
+  setHardfork?: boolean
   /**
    * Block parameters sorted by EIP can be found in the exported `paramsBlock` dictionary,
    * which is internally passed to the associated `@ethereumjs/common` instance which

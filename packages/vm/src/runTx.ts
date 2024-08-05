@@ -62,31 +62,7 @@ const receiptsLabel = 'Receipts'
 const entireTxLabel = 'Entire tx'
 
 /**
- * Returns the hardfork excluding the merge hf which has
- * no effect on the vm execution capabilities.
- *
- * This is particularly useful in executing/evaluating the transaction
- * when chain td is not available at many places to correctly set the
- * hardfork in for e.g. vm or txs or when the chain is not fully synced yet.
- *
- * @returns Hardfork name
- */
-function execHardfork(
-  hardfork: Hardfork | string,
-  preMergeHf: Hardfork | string,
-): string | Hardfork {
-  return hardfork !== Hardfork.Paris ? hardfork : preMergeHf
-}
-
-/**
- * Process a transaction. Run the vm. Transfers eth. Checks balances.
- *
- * This method modifies the state. If an error is thrown, the modifications are reverted, except
- * when the error is thrown from an event handler. In the latter case the state may or may not be
- * reverted.
- *
- * @param {VM} vm
- * @param {RunTxOpts} opts
+ * @ignore
  */
 export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (vm['_opts'].profilerOpts?.reportAfterTx === true) {
@@ -107,23 +83,11 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   opts.block = opts.block ?? createBlock({}, { common: vm.common })
 
   if (opts.skipHardForkValidation !== true) {
-    // Find and set preMerge hf for easy access later
-    const hfs = vm.common.hardforks()
-    const preMergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined) - 1
-    // If no pre merge hf found, set it to first hf even if its merge
-    const preMergeHf = preMergeIndex >= 0 ? hfs[preMergeIndex].name : hfs[0].name
-
     // If block and tx don't have a same hardfork, set tx hardfork to block
-    if (
-      execHardfork(opts.tx.common.hardfork(), preMergeHf) !==
-      execHardfork(opts.block.common.hardfork(), preMergeHf)
-    ) {
+    if (opts.tx.common.hardfork() !== opts.block.common.hardfork()) {
       opts.tx.common.setHardfork(opts.block.common.hardfork())
     }
-    if (
-      execHardfork(opts.block.common.hardfork(), preMergeHf) !==
-      execHardfork(vm.common.hardfork(), preMergeHf)
-    ) {
+    if (opts.block.common.hardfork() !== vm.common.hardfork()) {
       // Block and VM's hardfork should match as well
       const msg = _errorMsg('block has a different hardfork than the vm', vm, opts.block, opts.tx)
       throw new Error(msg)

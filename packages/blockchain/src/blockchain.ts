@@ -318,14 +318,13 @@ export class Blockchain implements BlockchainInterface {
         throw new Error(`no block for ${canonicalHead} found in DB`)
       }
       const header = await this._getHeader(hash, canonicalHead)
-      const td = await this.getParentTD(header)
 
       const dbOps: DBOp[] = []
       await this._deleteCanonicalChainReferences(canonicalHead + BIGINT_1, hash, dbOps)
       const ops = dbOps.concat(this._saveHeadOps())
 
       await this.dbManager.batch(ops)
-      await this.checkAndTransitionHardForkByNumber(canonicalHead, td, header.timestamp)
+      await this.checkAndTransitionHardForkByNumber(canonicalHead, header.timestamp)
     })
     if (this._deletedBlocks.length > 0) {
       this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
@@ -429,7 +428,7 @@ export class Blockchain implements BlockchainInterface {
             this._headBlockHash = blockHash
           }
           if (this._hardforkByHeadBlockNumber) {
-            await this.checkAndTransitionHardForkByNumber(blockNumber, parentTd, header.timestamp)
+            await this.checkAndTransitionHardForkByNumber(blockNumber, header.timestamp)
           }
 
           // delete higher number assignments and overwrite stale canonical chain
@@ -1211,12 +1210,10 @@ export class Blockchain implements BlockchainInterface {
 
   async checkAndTransitionHardForkByNumber(
     number: BigIntLike,
-    td?: BigIntLike,
     timestamp?: BigIntLike,
   ): Promise<void> {
     this.common.setHardforkBy({
       blockNumber: number,
-      td,
       timestamp,
     })
 
@@ -1263,7 +1260,6 @@ export class Blockchain implements BlockchainInterface {
     const common = this.common.copy()
     common.setHardforkBy({
       blockNumber: 0,
-      td: BigInt(common.genesis().difficulty),
       timestamp: common.genesis().timestamp,
     })
 

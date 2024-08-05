@@ -14,8 +14,6 @@ import {
   createCustomCommon,
 } from '../src/index.js'
 
-import * as gethGenesisKilnJSON from './data/geth-genesis/geth-genesis-kiln.json'
-
 import type { ChainConfig } from '../src/index.js'
 
 describe('[Common]: Hardfork logic', () => {
@@ -383,7 +381,7 @@ describe('[Common]: Hardfork logic', () => {
 
   it('Should correctly apply hardfork changes', () => {
     // For sepolia MergeForkIdTransition happens AFTER merge
-    let c = new Common({ chain: Sepolia, hardfork: Hardfork.London })
+    const c = new Common({ chain: Sepolia, hardfork: Hardfork.London })
     assert.equal(
       c['HARDFORK_CHANGES'][11][0],
       Hardfork.Paris,
@@ -412,44 +410,6 @@ describe('[Common]: Hardfork logic', () => {
       c.consensusType(),
       ConsensusType.ProofOfStake,
       `should stay on ProofOfStake consensus post merge`,
-    )
-
-    // For kiln MergeForkIdTransition happens BEFORE Merge
-    c = createCommonFromGethGenesis(gethGenesisKilnJSON, {
-      chain: 'kiln',
-      mergeForkIdPostMerge: false,
-    })
-
-    // MergeForkIdTransition change should be before Merge
-    assert.equal(
-      c['HARDFORK_CHANGES'][10][0],
-      Hardfork.MergeForkIdTransition,
-      'should correctly apply hardfork changes',
-    )
-    assert.equal(
-      c['HARDFORK_CHANGES'][11][0],
-      Hardfork.Paris,
-      'should correctly apply hardfork changes',
-    )
-
-    // Should give correct ConsensusType pre and post merge
-    c.setHardfork(Hardfork.London)
-    assert.equal(
-      c.consensusType(),
-      ConsensusType.ProofOfWork,
-      'should provide the correct initial chain consensus type',
-    )
-    c.setHardfork(Hardfork.Paris)
-    assert.equal(
-      c.consensusType(),
-      ConsensusType.ProofOfStake,
-      `should switch to ProofOfStake consensus on merge`,
-    )
-    c.setHardfork(Hardfork.MergeForkIdTransition)
-    assert.equal(
-      c.consensusType(),
-      ConsensusType.ProofOfWork,
-      `should give pow consensus as MergeForkIdTransition is pre-merge`,
     )
   })
 })
