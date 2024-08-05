@@ -1,9 +1,15 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createLegacyTx, createTxFromTxData } from '@ethereumjs/tx'
-import { Account, Address, hexToBytes, randomBytes } from '@ethereumjs/util'
+import {
+  Account,
+  createAddressFromPrivateKey,
+  createAddressFromString,
+  hexToBytes,
+  randomBytes,
+} from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
@@ -14,7 +20,7 @@ import type { Block } from '@ethereumjs/block'
 
 const method = 'eth_getTransactionCount'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
 
 describe(method, () => {
   it('call with valid arguments', async () => {
@@ -34,10 +40,10 @@ describe(method, () => {
 
     // since synchronizer.run() is not executed in the mock setup,
     // manually run stateManager.generateCanonicalGenesis()
-    await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
+    await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))
 
     // a genesis address
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // verify nonce is 0
     let res = await rpc.request(method, [address.toString(), 'latest'])
@@ -49,7 +55,7 @@ describe(method, () => {
       return address
     }
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           parentHash: parent.hash(),
@@ -84,7 +90,7 @@ describe(method, () => {
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const pk = hexToBytes('0x266682876da8fd86410d001ec33c7c281515aeeb640d175693534062e2599238')
-    const address = Address.fromPrivateKey(pk)
+    const address = createAddressFromPrivateKey(pk)
     await service.execution.vm.stateManager.putAccount(address, new Account())
     const account = await service.execution.vm.stateManager.getAccount(address)
     account!.balance = 0xffffffffffffffn

@@ -1,14 +1,15 @@
 import { paramsBlock } from '@ethereumjs/block'
-import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
-  Address,
   BIGINT_0,
   BIGINT_256,
   bigIntToHex,
   blobsToCommitments,
   bytesToBigInt,
   commitmentsToVersionedHashes,
+  createAddressFromPrivateKey,
+  createZeroAddress,
   getBlobs,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
@@ -26,12 +27,12 @@ import type { VMExecution } from '../../../src/execution/index.js'
 const method = 'eth_feeHistory'
 
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
-const pKeyAddress = Address.fromPrivateKey(privateKey)
+const pKeyAddress = createAddressFromPrivateKey(privateKey)
 
 const privateKey4844 = hexToBytes(
   '0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8',
 )
-const p4844Address = Address.fromPrivateKey(privateKey4844)
+const p4844Address = createAddressFromPrivateKey(privateKey4844)
 
 const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gasUsed: bigint) => {
   const { vm } = execution
@@ -148,7 +149,7 @@ const produceBlockWith4844Tx = async (
     const blobVersionedHashes = []
     const blobs = []
     const kzgCommitments = []
-    const to = Address.zero()
+    const to = createZeroAddress()
     if (blobsCount[i] > 0) {
       for (let blob = 0; blob < blobsCount[i]; blob++) {
         blobVersionedHashes.push(...blobVersionedHash)
@@ -249,7 +250,7 @@ describe(method, () => {
   it(`${method}: should return initial base fee if the block number is london hard fork`, async () => {
     const common = new Common({
       eips: [1559],
-      chain: CommonChain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       params: paramsBlock,
     })

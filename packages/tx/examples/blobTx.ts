@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { create4844BlobTx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
@@ -7,7 +7,7 @@ const main = async () => {
   const kzg = await loadKZG()
 
   const common = new Common({
-    chain: Chain.Mainnet,
+    chain: Mainnet,
     hardfork: Hardfork.Shanghai,
     eips: [4844],
     customCrypto: { kzg },

@@ -1,3 +1,4 @@
+import { Common } from '@ethereumjs/common'
 import {
   BIGINT_0,
   BIGINT_27,
@@ -29,7 +30,6 @@ import type {
   JsonTx,
   TxOptions,
 } from '../types.js'
-import type { Common } from '@ethereumjs/common'
 
 export type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
 export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
@@ -65,7 +65,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     super({ ...txData, type: TransactionType.BlobEIP4844 }, opts)
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas, maxFeePerBlobGas } = txData
 
-    this.common = this._getCommon(opts.common, chainId)
+    this.common = opts.common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
+    if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
+      throw new Error(
+        `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
+      )
+    }
     this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 

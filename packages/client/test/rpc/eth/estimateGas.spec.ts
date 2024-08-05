@@ -1,9 +1,9 @@
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock, createHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address, bigIntToHex } from '@ethereumjs/util'
+import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
 import { runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
@@ -39,10 +39,10 @@ describe(
       const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
       assert.notEqual(execution, undefined, 'should have valid execution')
       const { vm } = execution
-      await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
+      await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))
 
       // genesis address with balance
-      const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+      const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
       // contract:
       /*
@@ -65,7 +65,7 @@ describe(
         return address
       }
       const parent = await blockchain.getCanonicalHeadHeader()
-      const block = createBlockFromBlockData(
+      const block = createBlock(
         {
           header: {
             parentHash: parent.hash(),
@@ -129,9 +129,9 @@ describe(
       service.execution.vm.common.setHardfork('london')
       service.chain.config.chainCommon.setHardfork('london')
       const headBlock = await service.chain.getCanonicalHeadBlock()
-      const londonBlock = createBlockFromBlockData(
+      const londonBlock = createBlock(
         {
-          header: BlockHeader.fromHeaderData(
+          header: createHeader(
             {
               baseFeePerGas: 1000000000n,
               number: 2n,
@@ -196,7 +196,7 @@ describe(
       const rpc = getRpcClient(startRPC(manager.getMethods()))
 
       // genesis address with balance
-      const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+      const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
       const funcHash = '26b85ee1' // borrowed from valid test above
       const estimateTxData = {

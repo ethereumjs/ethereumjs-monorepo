@@ -1,13 +1,13 @@
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
-  Address,
   BIGINT_1,
   BIGINT_2,
   TypeOutput,
   bigIntToUnpaddedBytes,
   bytesToHex,
   concatBytes,
+  createZeroAddress,
   equalsBytes,
   toBytes,
   toType,
@@ -107,10 +107,8 @@ export class PendingBlock {
     if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
       throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
     }
-    const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
     vm.common.setHardforkBy({
       blockNumber: number,
-      td,
       timestamp,
     })
 
@@ -140,7 +138,7 @@ export class PendingBlock {
         const validatorIndex = bigIntToUnpaddedBytes(
           toType(withdrawal.validatorIndex ?? 0, TypeOutput.BigInt),
         )
-        const address = toType(withdrawal.address ?? Address.zero(), TypeOutput.Uint8Array)
+        const address = toType(withdrawal.address ?? createZeroAddress(), TypeOutput.Uint8Array)
         const amount = bigIntToUnpaddedBytes(toType(withdrawal.amount ?? 0, TypeOutput.BigInt))
         withdrawalsBufTemp.push(concatBytes(indexBuf, validatorIndex, address, amount))
       }
@@ -189,7 +187,7 @@ export class PendingBlock {
       withdrawals,
       blockOpts: {
         putBlockIntoBlockchain: false,
-        setHardfork: td,
+        setHardfork: true,
       },
     })
 

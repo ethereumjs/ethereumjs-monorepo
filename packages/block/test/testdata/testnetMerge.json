@@ -53,8 +53,7 @@
     },
     {
       "name": "paris",
-      "block": null,
-      "ttd": "5000"
+      "block": 15
     },
     {
       "name": "shanghai",

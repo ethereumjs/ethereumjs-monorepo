@@ -1,9 +1,9 @@
 import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
-  Chain as ChainCommon,
   Common,
   ConsensusAlgorithm,
   ConsensusType,
+  Goerli,
   Hardfork,
   createCustomCommon,
 } from '@ethereumjs/common'
@@ -21,7 +21,7 @@ import { destroy, setup } from './util.js'
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 
 // Schedule london at 0 and also unset any past scheduled timestamp hardforks that might collide with test
-const hardforks = new Common({ chain: ChainCommon.Goerli })
+const hardforks = new Common({ chain: Goerli })
   .hardforks()
   .map((h) =>
     h.name === Hardfork.London
@@ -40,7 +40,8 @@ const common = createCustomCommon(
       },
     },
   },
-  { baseChain: ChainCommon.Goerli, hardfork: Hardfork.London },
+  Goerli,
+  { hardfork: Hardfork.London },
 )
 const accounts: [Address, Uint8Array][] = [
   [

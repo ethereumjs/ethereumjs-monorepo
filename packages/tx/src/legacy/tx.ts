@@ -1,3 +1,4 @@
+import { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_2,
@@ -25,7 +26,6 @@ import type {
   JsonTx,
   TxOptions,
 } from '../types.js'
-import type { Common } from '@ethereumjs/common'
 
 export type TxData = AllTypesTxData[TransactionType.Legacy]
 export type TxValuesArray = AllTypesTxValuesArray[TransactionType.Legacy]
@@ -55,7 +55,14 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   public constructor(txData: TxData, opts: TxOptions = {}) {
     super({ ...txData, type: TransactionType.Legacy }, opts)
 
-    this.common = this._validateTxV(this.v, opts.common)
+    this.common = opts.common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
+    const chainId = this._validateTxV(this.common, this.v)
+    if (chainId !== undefined && chainId !== this.common.chainId()) {
+      throw new Error(
+        `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
+      )
+    }
+
     this.common.updateParams(opts.params ?? paramsTx)
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
     this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice))
@@ -261,7 +268,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   /**
    * Validates tx's `v` value
    */
-  protected _validateTxV(_v?: bigint, common?: Common): Common {
+  protected _validateTxV(common: Common, _v?: bigint): BigInt | undefined {
     let chainIdBigInt
     const v = _v !== undefined ? Number(_v) : undefined
     // Check for valid v values in the scope of a signed legacy tx
@@ -279,29 +286,26 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     if (
       v !== undefined &&
       v !== 0 &&
-      (!common || common.gteHardfork('spuriousDragon')) &&
+      common.gteHardfork('spuriousDragon') &&
       v !== 27 &&
       v !== 28
     ) {
-      if (common) {
-        if (!meetsEIP155(BigInt(v), common.chainId())) {
-          throw new Error(
-            `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`,
-          )
-        }
-      } else {
-        // Derive the original chain ID
-        let numSub
-        if ((v - 35) % 2 === 0) {
-          numSub = 35
-        } else {
-          numSub = 36
-        }
-        // Use derived chain ID to create a proper Common
-        chainIdBigInt = BigInt(v - numSub) / BIGINT_2
+      if (!meetsEIP155(BigInt(v), common.chainId())) {
+        throw new Error(
+          `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`,
+        )
       }
+      // Derive the original chain ID
+      let numSub
+      if ((v - 35) % 2 === 0) {
+        numSub = 35
+      } else {
+        numSub = 36
+      }
+      // Use derived chain ID to create a proper Common
+      chainIdBigInt = BigInt(v - numSub) / BIGINT_2
     }
-    return this._getCommon(common, chainIdBigInt)
+    return chainIdBigInt
   }
 
   /**

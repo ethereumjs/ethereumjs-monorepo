@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { KeyEncoding, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -59,7 +59,7 @@ describe('[Chain]', () => {
       difficulty: BigInt(0xabcdffff),
       parentHash: chain.genesis.hash(),
     }
-    const block = createBlockFromBlockData({ header: headerData } as BlockData, {
+    const block = createBlock({ header: headerData } as BlockData, {
       common: config.chainCommon,
     })
 
@@ -133,7 +133,7 @@ describe('[Chain]', () => {
       difficulty: BigInt(0xabcdffff),
       parentHash: chain.genesis.hash(),
     }
-    const block = createBlockFromBlockData({ header: headerData } as BlockData, {
+    const block = createBlock({ header: headerData } as BlockData, {
       common: config.chainCommon,
     })
     await chain.putBlocks([block])

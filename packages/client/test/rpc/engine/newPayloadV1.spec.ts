@@ -1,7 +1,11 @@
-import { BlockHeader } from '@ethereumjs/block'
 import { create1559FeeMarketTx } from '@ethereumjs/tx'
-import { Address, bytesToHex, hexToBytes, zeros } from '@ethereumjs/util'
-import { assert, describe, it, vi } from 'vitest'
+import {
+  bytesToHex,
+  createAddressFromPrivateKey,
+  createAddressFromString,
+  hexToBytes,
+} from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import blocks from '../../testdata/blocks/beacon.json'
@@ -99,28 +103,6 @@ describe(method, () => {
     assert.equal(res.result.status, 'VALID')
   })
 
-  it('invalid terminal block', async () => {
-    const genesisWithHigherTtd = {
-      ...genesisJSON,
-      config: {
-        ...genesisJSON.config,
-        terminalTotalDifficulty: 17179869185,
-      },
-    }
-
-    BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
-    vi.doMock('@ethereumjs/block', () => BlockHeader)
-
-    const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
-      engine: true,
-    })
-    const rpc = getRpcClient(server)
-    const res = await rpc.request(method, [blockData, null])
-
-    assert.equal(res.result.status, 'INVALID')
-    assert.equal(res.result.latestValidHash, bytesToHex(zeros(32)))
-  })
-
   it('call with valid data', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
     const rpc = getRpcClient(server)
@@ -160,7 +142,7 @@ describe(method, () => {
         gasLimit: 21_000,
         maxFeePerGas: 10,
         value: 1,
-        to: Address.fromString('0x61FfE691821291D02E9Ba5D33098ADcee71a3a17'),
+        to: createAddressFromString('0x61FfE691821291D02E9Ba5D33098ADcee71a3a17'),
       },
       { common },
     )
@@ -182,7 +164,7 @@ describe(method, () => {
     const accountPk = hexToBytes(
       '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
-    const accountAddress = Address.fromPrivateKey(accountPk)
+    const accountAddress = createAddressFromPrivateKey(accountPk)
     const newGenesisJSON = {
       ...genesisJSON,
       alloc: {
@@ -222,7 +204,7 @@ describe(method, () => {
     const accountPk = hexToBytes(
       '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
-    const accountAddress = Address.fromPrivateKey(accountPk)
+    const accountAddress = createAddressFromPrivateKey(accountPk)
     const newGenesisJSON = {
       ...genesisJSON,
       alloc: {

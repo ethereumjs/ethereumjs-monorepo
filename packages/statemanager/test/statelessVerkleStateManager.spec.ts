@@ -1,5 +1,5 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
-import { createCommonFromGethGenesis } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { CacheType, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
   Address,
@@ -7,6 +7,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   createAccount,
+  createAddressFromString,
   getVerkleKey,
   getVerkleStem,
   hexToBytes,
@@ -15,7 +16,7 @@ import {
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it, test } from 'vitest'
 
-import { CacheType, StatelessVerkleStateManager } from '../src/index.js'
+import { StatelessVerkleStateManager } from '../src/index.js'
 
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 import * as verkleBlockJSON from './testdata/verkleKaustinen6Block72.json'
@@ -28,19 +29,17 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   beforeAll(async () => {
     verkleCrypto = await loadVerkleCrypto()
   })
-  const common = createCommonFromGethGenesis(testnetVerkleKaustinen, {
+  const common = createCommonFromGethGenesis(testnetVerkleKaustinen.default, {
     chain: 'customChain',
     eips: [2935, 4895, 6800],
   })
-  const decodedTxs = verkleBlockJSON.transactions.map((tx) =>
-    createTxFromSerializedData(hexToBytes(tx as PrefixedHexString)),
+
+  const decodedTxs = verkleBlockJSON.default.transactions.map((tx) =>
+    createTxFromSerializedData(hexToBytes(tx as PrefixedHexString), { common }),
   )
-  const block = createBlockFromBlockData(
-    { ...verkleBlockJSON, transactions: decodedTxs } as BlockData,
-    {
-      common,
-    },
-  )
+  const block = createBlock({ ...verkleBlockJSON, transactions: decodedTxs } as BlockData, {
+    common,
+  })
 
   it('initPreState()', async () => {
     const stateManager = new StatelessVerkleStateManager({ verkleCrypto })
@@ -54,7 +53,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const account = await stateManager.getAccount(
-      Address.fromString('0x6177843db3138ae69679a54b95cf345ed759450d'),
+      createAddressFromString('0x6177843db3138ae69679a54b95cf345ed759450d'),
     )
 
     assert.equal(account!.balance, 288610978528114322n, 'should have correct balance')
@@ -117,7 +116,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
-    const address = Address.fromString('0x6177843db3138ae69679a54b95cf345ed759450d')
+    const address = createAddressFromString('0x6177843db3138ae69679a54b95cf345ed759450d')
     const stem = getVerkleStem(stateManager.verkleCrypto, address, 0n)
 
     const balanceKey = getVerkleKey(stem, VerkleLeafType.Balance)
@@ -175,7 +174,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
-    const contractAddress = Address.fromString('0x4242424242424242424242424242424242424242')
+    const contractAddress = createAddressFromString('0x4242424242424242424242424242424242424242')
     const storageKey = '0x0000000000000000000000000000000000000000000000000000000000000022'
     const storageValue = '0xf5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b'
     await stateManager.putStorage(contractAddress, hexToBytes(storageKey), hexToBytes(storageValue))

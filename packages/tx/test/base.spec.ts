@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   MAX_INTEGER,
   MAX_UINT64,
@@ -39,7 +39,7 @@ import type { AccessListEIP2930TxData, FeeMarketEIP1559TxData, LegacyTxData } fr
 
 describe('[BaseTransaction]', () => {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
   const legacyTxs: BaseTransaction<TransactionType.Legacy>[] = []
   for (const tx of legacyFixtures.slice(0, 4)) {
@@ -125,7 +125,7 @@ describe('[BaseTransaction]', () => {
       assert.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
       const initCommon = new Common({
-        chain: Chain.Mainnet,
+        chain: Mainnet,
         hardfork: Hardfork.London,
       })
       tx = txType.create.txData({}, { common: initCommon })

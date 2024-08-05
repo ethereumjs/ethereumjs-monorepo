@@ -1,5 +1,5 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -12,12 +12,12 @@ const sender = new Address(privateToAddress(pkey))
 const coinbase = new Address(hexToBytes(`0x${'ff'.repeat(20)}`))
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.London,
   eips: [3651],
 })
 
-const block = createBlockFromBlockData(
+const block = createBlock(
   {
     header: {
       baseFeePerGas: 7,
@@ -61,7 +61,7 @@ describe('EIP 3651 tests', () => {
 
     const vm2 = await getVM(
       new Common({
-        chain: Chain.Mainnet,
+        chain: Mainnet,
         hardfork: Hardfork.London,
       }),
     )

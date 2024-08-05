@@ -1,5 +1,5 @@
-import { Block, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Block, createBlock, createHeader } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   MapDB,
@@ -13,17 +13,18 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { createBlockchain } from '../src/index.js'
 
+import type { BlockHeader } from '@ethereumjs/block'
 import type { DB } from '@ethereumjs/util'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
   const blocks = existingBlocks ? existingBlocks : []
 
   const gasLimit = 8000000
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
   const opts = { common }
 
   if (blocks.length === 0) {
-    const genesis = createBlockFromBlockData({ header: { gasLimit } }, opts)
+    const genesis = createBlock({ header: { gasLimit } }, opts)
     blocks.push(genesis)
   }
 
@@ -37,7 +38,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
         timestamp: lastBlock.header.timestamp + BigInt(1),
       },
     }
-    const block = createBlockFromBlockData(blockData, {
+    const block = createBlock(blockData, {
       common,
       calcDifficultyFromHeader: lastBlock.header,
     })
@@ -81,15 +82,15 @@ export const generateConsecutiveBlock = (
   if (difficultyChangeFactor > 1) {
     difficultyChangeFactor = 1
   }
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
-  const tmpHeader = BlockHeader.fromHeaderData(
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
+  const tmpHeader = createHeader(
     {
       number: parentBlock.header.number + BigInt(1),
       timestamp: parentBlock.header.timestamp + BigInt(10 + -difficultyChangeFactor * 9),
     },
     { common },
   )
-  const header = BlockHeader.fromHeaderData(
+  const header = createHeader(
     {
       number: parentBlock.header.number + BigInt(1),
       parentHash: parentBlock.hash(),
@@ -122,8 +123,8 @@ export const isConsecutive = (blocks: Block[]) => {
 export const createTestDB = async (): Promise<
   [DB<string | Uint8Array, string | Uint8Array>, Block]
 > => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-  const genesis = createBlockFromBlockData({ header: { number: 0 } }, { common })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
+  const genesis = createBlock({ header: { number: 0 } }, { common })
   const db = new MapDB<any, any>()
 
   await db.batch([
@@ -183,14 +184,14 @@ export const createTestDB = async (): Promise<
  * @param extraData - Extra data graffiti in order to create equal blocks (like block number) but with different hashes
  * @param uncles - Optional, an array of uncle headers. Automatically calculates the uncleHash.
  */
-function createBlock(
+function generateBlock(
   parentBlock: Block,
   extraData: string,
   uncles?: BlockHeader[],
   common?: Common,
 ): Block {
   uncles = uncles ?? []
-  common = common ?? new Common({ chain: Chain.Mainnet })
+  common = common ?? new Common({ chain: Mainnet })
 
   if (extraData.length > 32) {
     throw new Error('extra data graffiti must be 32 bytes or less')
@@ -207,7 +208,7 @@ function createBlock(
       ? parentBlock.header.calcNextBaseFee()
       : undefined
 
-  return createBlockFromBlockData(
+  return createBlock(
     {
       header: {
         number,
@@ -227,4 +228,4 @@ function createBlock(
   )
 }
 
-export { createBlock }
+export { generateBlock }

@@ -1,4 +1,4 @@
-import { Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { TransactionType, createTxFromTxData } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
@@ -9,7 +9,7 @@ import { RlpxServer } from '../../src/net/server/index.js'
 import { Event } from '../../src/types.js'
 import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
-import type { BeaconSynchronizer } from '../../src/sync'
+import type { BeaconSynchronizer } from '../../src/sync/index.js'
 import type { Log } from '@ethereumjs/evm'
 
 vi.mock('../../src/net/peerpool.js', () => {
@@ -211,7 +211,7 @@ describe('should call handleNewBlock on NewBlock and handleNewBlockHashes on New
 })
 
 describe('should ban peer for sending NewBlock/NewBlockHashes after merge', async () => {
-  const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Paris })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Paris })
   const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
   chain.config.chainCommon.setHardfork(Hardfork.Paris)

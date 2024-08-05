@@ -1,13 +1,14 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
-  Address,
   bigIntToBytes,
   bytesToHex,
   concatBytes,
+  createAddressFromPrivateKey,
+  createAddressFromString,
   equalsBytes,
   hexToBytes,
   setLengthLeft,
@@ -22,9 +23,9 @@ import { setupVM } from '../utils.js'
 import type { Block } from '@ethereumjs/block'
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
-const addr = Address.fromPrivateKey(pkey)
+const addr = createAddressFromPrivateKey(pkey)
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7685, 7002] })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7685, 7002] })
 
 // Note: this deployment tx data is the deployment tx in order to setup the EIP-7002 contract
 // It is taken from the EIP
@@ -55,7 +56,7 @@ function generateTx(nonce: bigint) {
     bigIntToBytes(common.param('withdrawalRequestPredeployAddress')),
     20,
   )
-  const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
+  const withdrawalsAddress = createAddressFromString(bytesToHex(addressBytes))
 
   return createLegacyTx({
     nonce,
@@ -70,7 +71,7 @@ function generateTx(nonce: bigint) {
 describe('EIP-7002 tests', () => {
   it('should correctly create requests', async () => {
     const vm = await setupVM({ common })
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           number: 1,
@@ -95,7 +96,7 @@ describe('EIP-7002 tests', () => {
     const tx = generateTx(BigInt(0))
 
     // Call withdrawals contract with a withdrawals request
-    const block2 = createBlockFromBlockData(
+    const block2 = createBlock(
       {
         header: {
           number: 2,
@@ -141,7 +142,7 @@ describe('EIP-7002 tests', () => {
     const tx2 = generateTx(BigInt(1))
     const tx3 = generateTx(BigInt(2))
 
-    const block3 = createBlockFromBlockData(
+    const block3 = createBlock(
       {
         header: {
           number: 3,
@@ -166,7 +167,7 @@ describe('EIP-7002 tests', () => {
 
   it('should throw when contract is not deployed', async () => {
     const vm = await setupVM({ common })
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           number: 1,

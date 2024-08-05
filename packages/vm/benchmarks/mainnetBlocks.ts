@@ -1,9 +1,9 @@
-import { readFileSync } from 'fs'
-import Benchmark from 'benchmark'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Block, createBlockFromRPC } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { runBlock as runBlockVM, VM } from '@ethereumjs/vm'
-import { getPreState, getBlockchain, verifyResult } from './util.js'
+import Benchmark from 'benchmark'
+import { readFileSync } from 'fs'
+import { getBlockchain, getPreState, verifyResult } from './util.js'
 
 const BLOCK_FIXTURE = 'benchmarks/fixture/blocks-prestate.json'
 
@@ -25,7 +25,7 @@ export async function mainnetBlocks(suite?: Benchmark.Suite, numSamples?: number
   console.log(`Number of blocks to sample: ${numSamples}`)
   data = data.slice(0, numSamples)
 
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
 
   for (const blockData of data) {
     const block = createBlockFromRPC(blockData.block, [], { common })

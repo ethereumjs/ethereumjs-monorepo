@@ -1,8 +1,13 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createTxFromTxData } from '@ethereumjs/tx'
-import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import {
+  bytesToHex,
+  createAddressFromPrivateKey,
+  createAddressFromString,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { Interface } from '@ethersproject/abi'
 import { assert, describe, it } from 'vitest'
 
@@ -12,7 +17,6 @@ import { VM } from '../../src/vm.js'
 import * as testChain from './testdata/testnet.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
-import type { ChainConfig } from '@ethereumjs/common'
 import type { AccountState, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 
 const storage: Array<[PrefixedHexString, PrefixedHexString]> = [
@@ -45,12 +49,12 @@ const genesisState: GenesisState = {
   [contractAddress]: accountState,
 }
 
-const common = new Common({
-  chain: 'testnet',
+// @ts-ignore PrefixedHesString type is too strict
+const common = createCustomCommon(testChain.default, Mainnet, {
+  name: 'testnet',
   hardfork: Hardfork.Chainstart,
-  customChains: [testChain] as ChainConfig[],
 })
-const block = createBlockFromBlockData(
+const block = createBlock(
   {
     header: {
       gasLimit: 21_000,
@@ -65,7 +69,8 @@ const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3
 describe('VM initialized with custom state', () => {
   it('should transfer eth from already existent account', async () => {
     const blockchain = await createBlockchain({ common, genesisState })
-    const vm = await VM.create({ blockchain, common, genesisState })
+    const vm = await VM.create({ blockchain, common })
+    await vm.stateManager.generateCanonicalGenesis!(genesisState)
 
     const to = '0x00000000000000000000000000000000000000ff'
     const tx = createTxFromTxData(
@@ -83,7 +88,7 @@ describe('VM initialized with custom state', () => {
       tx,
       block,
     })
-    const toAddress = Address.fromString(to)
+    const toAddress = createAddressFromString(to)
     const receiverAddress = await vm.stateManager.getAccount(toAddress)
 
     assert.equal(result.totalGasSpent.toString(), '21000')
@@ -93,15 +98,16 @@ describe('VM initialized with custom state', () => {
   it('should retrieve value from storage', async () => {
     const blockchain = await createBlockchain({ common, genesisState })
     common.setHardfork(Hardfork.London)
-    const vm = await VM.create({ blockchain, common, genesisState })
+    const vm = await VM.create({ blockchain, common })
+    await vm.stateManager.generateCanonicalGenesis!(genesisState)
     const sigHash = new Interface(['function retrieve()']).getSighash(
       'retrieve',
     ) as PrefixedHexString
 
     const callResult = await vm.evm.runCall({
-      to: Address.fromString(contractAddress),
+      to: createAddressFromString(contractAddress),
       data: hexToBytes(sigHash),
-      caller: Address.fromPrivateKey(privateKey),
+      caller: createAddressFromPrivateKey(privateKey),
     })
 
     const storage = genesisState[contractAddress][2]
@@ -111,13 +117,16 @@ describe('VM initialized with custom state', () => {
   })
 
   it('setHardfork', async () => {
-    const customChains = [testnetMerge] as ChainConfig[]
-    const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
+    // @ts-ignore PrefixedHexString type is too strict
+    const common = createCustomCommon(testnetMerge.default, Mainnet, {
+      name: 'testnetMerge',
+      hardfork: Hardfork.Istanbul,
+    })
 
-    let vm = await VM.create({ common, setHardfork: true, genesisState: {} })
+    let vm = await VM.create({ common, setHardfork: true })
     assert.equal((vm as any)._setHardfork, true, 'should set setHardfork option')
 
-    vm = await VM.create({ common, setHardfork: 5001, genesisState: {} })
+    vm = await VM.create({ common, setHardfork: 5001 })
     assert.equal((vm as any)._setHardfork, BigInt(5001), 'should set setHardfork option')
   })
 })

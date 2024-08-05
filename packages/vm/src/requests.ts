@@ -1,6 +1,5 @@
-import { getInitializedChains } from '@ethereumjs/common'
+import { Mainnet } from '@ethereumjs/common'
 import {
-  Address,
   ConsolidationRequest,
   DepositRequest,
   WithdrawalRequest,
@@ -9,6 +8,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
+  createAddressFromString,
   setLengthLeft,
   unpadBytes,
 } from '@ethereumjs/util'
@@ -32,8 +32,7 @@ export const accumulateRequests = async (
 
   if (common.isActivatedEIP(6110)) {
     const depositContractAddress =
-      vm.common['_chainParams'].depositContractAddress ??
-      getInitializedChains().mainnet.depositContractAddress
+      vm.common['_chainParams'].depositContractAddress ?? Mainnet.depositContractAddress
     if (depositContractAddress === undefined)
       throw new Error('deposit contract address required with EIP 6110')
     await accumulateDeposits(depositContractAddress, txResults, requests)
@@ -65,7 +64,7 @@ const accumulateEIP7002Requests = async (
     bigIntToBytes(vm.common.param('withdrawalRequestPredeployAddress')),
     20,
   )
-  const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
+  const withdrawalsAddress = createAddressFromString(bytesToHex(addressBytes))
 
   const code = await vm.stateManager.getCode(withdrawalsAddress)
 
@@ -76,7 +75,7 @@ const accumulateEIP7002Requests = async (
   }
 
   const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
-  const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
+  const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
 
   const originalAccount = await vm.stateManager.getAccount(systemAddress)
 
@@ -115,7 +114,7 @@ const accumulateEIP7251Requests = async (
     bigIntToBytes(vm.common.param('consolidationRequestPredeployAddress')),
     20,
   )
-  const consolidationsAddress = Address.fromString(bytesToHex(addressBytes))
+  const consolidationsAddress = createAddressFromString(bytesToHex(addressBytes))
 
   const code = await vm.stateManager.getCode(consolidationsAddress)
 
@@ -126,7 +125,7 @@ const accumulateEIP7251Requests = async (
   }
 
   const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
-  const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
+  const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
 
   const originalAccount = await vm.stateManager.getAccount(systemAddress)
 

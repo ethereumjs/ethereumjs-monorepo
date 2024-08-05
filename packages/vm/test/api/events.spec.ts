@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { create1559FeeMarketTx } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, toBytes } from '@ethereumjs/util'
+import { Account, bytesToHex, createAddressFromPrivateKey, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { runBlock, runTx } from '../../src/index.js'
@@ -69,7 +69,7 @@ describe('VM events', () => {
 
   it('should emit RunTxResult after running a tx', async () => {
     const vm = await VM.create()
-    const address = Address.fromPrivateKey(privKey)
+    const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.events.on('afterTx', (val: any) => {
@@ -90,7 +90,7 @@ describe('VM events', () => {
 
   it('should emit the Message before running it', async () => {
     const vm = await VM.create()
-    const address = Address.fromPrivateKey(privKey)
+    const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.evm.events!.on('beforeMessage', (val: any) => {
@@ -112,7 +112,7 @@ describe('VM events', () => {
 
   it('should emit EVMResult after running a message', async () => {
     const vm = await VM.create()
-    const address = Address.fromPrivateKey(privKey)
+    const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.evm.events!.on('afterMessage', (val: any) => {

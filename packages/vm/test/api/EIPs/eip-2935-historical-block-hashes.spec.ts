@@ -1,13 +1,16 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Hardfork, createCustomCommon } from '@ethereumjs/common'
+import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
   BIGINT_1,
   bigIntToBytes,
+  bigIntToHex,
   bytesToHex,
+  createAddressFromPublicKey,
+  createAddressFromString,
   equalsBytes,
   generateAddress,
   privateToAddress,
@@ -22,6 +25,7 @@ import { BIGINT_0 } from '../../../../util/src/constants.js'
 import { VM, buildBlock, paramsVM, runBlock, runTx } from '../../../src/index.js'
 
 import type { Block } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 function eip2935ActiveAtCommon(timestamp: number, address: bigint) {
   const hfs = [
@@ -56,28 +60,27 @@ function eip2935ActiveAtCommon(timestamp: number, address: bigint) {
     block: null,
     timestamp,
   })
-  const c = createCustomCommon({
-    customHardforks: {
-      testEIP2935Hardfork: {
-        name: 'testEIP2935Hardfork',
-        comment: 'Start of the Ethereum main chain',
-        url: '',
-        status: 'final',
-        eips: [2935, 7709],
-        vm: {
-          historyStorageAddress: address,
+  const c = createCustomCommon(
+    {
+      customHardforks: {
+        testEIP2935Hardfork: {
+          eips: [2935, 7709],
+          params: {
+            historyStorageAddress: bigIntToHex(address),
+          },
         },
       },
-    },
-    hardforks,
-    /*genesis: {
+      hardforks,
+      /*genesis: {
       gasLimit: 30_000_000,
       timestamp: "0x0",
       extraData: "0x",
       difficulty: "0x0",
       nonce: "0x0000000000000000"
     }*/
-  })
+    },
+    Mainnet,
+  )
 
   return c
 }
@@ -114,9 +117,9 @@ describe('EIP 2935: historical block hashes', () => {
       [deploymentSender, deploymentTxHash, deployedToAddress],
     ] = deploymentConfig
 
-    const historyAddress = Address.fromString(deployedToAddress)
+    const historyAddress = createAddressFromString(deployedToAddress)
     const historyAddressBigInt = bytesToBigInt(historyAddress.bytes)
-    const contract2935Code = hexToBytes(contract2935CodeHex)
+    const contract2935Code = hexToBytes(contract2935CodeHex as string)
 
     // eslint-disable-next-line no-inner-declarations
     async function testBlockhashContract(vm: VM, block: Block, i: bigint): Promise<Uint8Array> {
@@ -140,23 +143,22 @@ describe('EIP 2935: historical block hashes', () => {
 
     it(`should validate the deployment tx`, async () => {
       const deployContractTxData = {
-        type: '0x0',
-        nonce: '0x0',
-        to: null,
-        gasLimit: '0x3d090',
-        gasPrice: '0xe8d4a51000',
+        type: '0x0' as PrefixedHexString,
+        nonce: '0x0' as PrefixedHexString,
+        gasLimit: '0x3d090' as PrefixedHexString,
+        gasPrice: '0xe8d4a51000' as PrefixedHexString,
         maxPriorityFeePerGas: null,
         maxFeePerGas: null,
-        value: '0x0',
+        value: '0x0' as PrefixedHexString,
         // input from the EIP is data here
-        data: deploymentTxData,
-        v: deploymentV,
-        r: deploymentR,
-        s: deploymentS,
+        data: deploymentTxData as PrefixedHexString,
+        v: deploymentV as PrefixedHexString,
+        r: deploymentR as PrefixedHexString,
+        s: deploymentS as PrefixedHexString,
       }
 
       const deployTx = createLegacyTx(deployContractTxData)
-      const txSender = Address.fromPublicKey(deployTx.getSenderPublicKey()).toString()
+      const txSender = createAddressFromPublicKey(deployTx.getSenderPublicKey()).toString()
       assert.equal(txSender, deploymentSender, 'tx sender should match')
 
       const txHash = bytesToHex(deployTx.hash())
@@ -282,7 +284,7 @@ describe('EIP 2935: historical block hashes', () => {
 
       // validate the contract code cases
       // const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
-      const block = createBlockFromBlockData(
+      const block = createBlock(
         {
           header: {
             baseFeePerGas: BigInt(7),

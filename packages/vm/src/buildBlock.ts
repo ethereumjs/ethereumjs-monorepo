@@ -1,5 +1,5 @@
 import {
-  createBlockFromBlockData,
+  createBlock,
   genRequestsTrieRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
@@ -17,6 +17,7 @@ import {
   KECCAK256_RLP,
   TypeOutput,
   Withdrawal,
+  createZeroAddress,
   toBytes,
   toType,
   zeros,
@@ -181,7 +182,7 @@ export class BlockBuilder {
     const coinbase =
       this.headerData.coinbase !== undefined
         ? new Address(toBytes(this.headerData.coinbase))
-        : Address.zero()
+        : createZeroAddress()
     await rewardAccount(this.vm.evm, coinbase, reward, this.vm.common)
   }
 
@@ -256,7 +257,7 @@ export class BlockBuilder {
     }
 
     const blockData = { header, transactions: this.transactions }
-    const block = createBlockFromBlockData(blockData, this.blockOpts)
+    const block = createBlock(blockData, this.blockOpts)
 
     const result = await runTx(this.vm, { tx, block, skipHardForkValidation })
 
@@ -362,7 +363,7 @@ export class BlockBuilder {
       requests,
     }
 
-    const block = createBlockFromBlockData(blockData, blockOpts)
+    const block = createBlock(blockData, blockOpts)
 
     if (this.blockOpts.putBlockIntoBlockchain === true) {
       await this.vm.blockchain.putBlock(block)

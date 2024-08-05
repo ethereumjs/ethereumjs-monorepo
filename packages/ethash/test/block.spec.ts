@@ -1,9 +1,9 @@
 import {
-  createBlockFromBlockData,
+  createBlock,
   createBlockFromRLPSerializedBlock,
   createBlockFromValuesArray,
 } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { MapDB, hexToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -20,9 +20,9 @@ describe('Verify POW for valid and invalid blocks', () => {
   it('should work', async () => {
     const e = new Ethash(cacheDB as any)
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
-    const genesis = createBlockFromBlockData({}, { common })
+    const genesis = createBlock({}, { common })
     const genesisResult = await e.verifyPOW(genesis)
     assert.ok(genesisResult, 'genesis block should be valid')
 

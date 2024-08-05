@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, hexToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -111,7 +111,7 @@ const eip1559TxValues = {
 
 describe('[Transaction Input Values]', () => {
   it('Legacy Transaction Values', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Homestead })
     const options = { ...baseTxValues, ...legacyTxValues, type: '0' }
     const legacyTxData = generateCombinations({
       options,
@@ -124,7 +124,7 @@ describe('[Transaction Input Values]', () => {
   })
 
   it('EIP-1559 Transaction Values', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const options = {
       ...baseTxValues,
       ...accessListEip2930TxValues,

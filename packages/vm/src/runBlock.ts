@@ -1,4 +1,4 @@
-import { createBlockFromBlockData, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
@@ -16,6 +16,7 @@ import {
   bigIntToBytes,
   bytesToHex,
   concatBytes,
+  createAddressFromString,
   equalsBytes,
   getVerkleTreeIndexesForStorageSlot,
   hexToBytes,
@@ -50,7 +51,7 @@ import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/ut
 
 const debug = debugDefault('vm:block')
 
-const parentBeaconBlockRootAddress = Address.fromString(
+const parentBeaconBlockRootAddress = createAddressFromString(
   '0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02',
 )
 
@@ -110,12 +111,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     if (setHardforkUsed === true) {
       vm.common.setHardforkBy({
         blockNumber: block.header.number,
-        timestamp: block.header.timestamp,
-      })
-    } else if (typeof setHardforkUsed !== 'boolean') {
-      vm.common.setHardforkBy({
-        blockNumber: block.header.number,
-        td: setHardforkUsed,
         timestamp: block.header.timestamp,
       })
     }
@@ -254,7 +249,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       requests,
       header: { ...block.header, ...generatedFields },
     }
-    block = createBlockFromBlockData(blockData, { common: vm.common })
+    block = createBlock(blockData, { common: vm.common })
   } else {
     if (vm.common.isActivatedEIP(7685)) {
       const valid = await block.requestsTrieIsValid(requests)

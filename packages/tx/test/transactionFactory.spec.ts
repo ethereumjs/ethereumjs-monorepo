@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -16,7 +16,7 @@ import {
 } from '../src/index.js'
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.London,
 })
 
@@ -73,7 +73,7 @@ describe('[TransactionFactory]: Basic functions', () => {
   it('fromSerializedData() -> error cases', () => {
     for (const txType of txTypes) {
       if (txType.eip2718) {
-        const unsupportedCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+        const unsupportedCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
         assert.throws(
           () => {
             createTxFromSerializedData(txType.unsigned.serialize(), {
@@ -149,7 +149,7 @@ describe('[TransactionFactory]: Basic functions', () => {
   })
 
   it('fromTxData() -> error cases', () => {
-    const unsupportedCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const unsupportedCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     assert.throws(() => {
       createTxFromTxData({ type: 1 }, { common: unsupportedCommon })
     })

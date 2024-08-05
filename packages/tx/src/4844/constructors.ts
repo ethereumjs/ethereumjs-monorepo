@@ -12,6 +12,7 @@ import {
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
+import { paramsTx } from '../params.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, txTypeBytes, validateNotArray } from '../util.js'
 
@@ -245,7 +246,10 @@ export function create4844BlobTxFromSerializedNetworkWrapper(
     throw Error('BlobEIP4844Transaction can not be send without a valid `to`')
   }
 
-  const version = Number(opts.common.param('blobCommitmentVersionKzg'))
+  const commonCopy = opts.common.copy()
+  commonCopy.updateParams(opts.params ?? paramsTx)
+
+  const version = Number(commonCopy.param('blobCommitmentVersionKzg'))
   validateBlobTransactionNetworkWrapper(
     decodedTx.blobVersionedHashes,
     blobs,

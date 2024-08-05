@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { create1559FeeMarketTx } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -10,7 +10,7 @@ const sender = new Address(privateToAddress(pkey))
 
 describe('EIP 3860 tests', () => {
   const common = new Common({
-    chain: Chain.Mainnet,
+    chain: Mainnet,
     hardfork: Hardfork.London,
     eips: [3860],
   })
@@ -26,7 +26,7 @@ describe('EIP 3860 tests', () => {
     const bytes = new Uint8Array(1000000).fill(0x60)
     // We create a tx with a common which has eip not yet activated else tx creation will
     // throw error
-    const txCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const txCommon = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const tx = create1559FeeMarketTx(
       {
         data: `0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3${bytesToHex(

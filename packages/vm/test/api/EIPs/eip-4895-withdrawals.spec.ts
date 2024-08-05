@@ -1,6 +1,6 @@
-import { createBlockFromBlockData, genWithdrawalsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genWithdrawalsTrieRoot } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
 import { create1559FeeMarketTx } from '@ethereumjs/tx'
 import {
@@ -23,7 +23,7 @@ import type { Block } from '@ethereumjs/block'
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.Paris,
   eips: [4895],
 })
@@ -90,7 +90,7 @@ describe('EIP4895 tests', () => {
       })
       index++
     }
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           baseFeePerGas: BigInt(7),
@@ -130,7 +130,7 @@ describe('EIP4895 tests', () => {
   it('EIP4895: state updation should exclude 0 amount updates', async () => {
     const vm = await VM.create({ common })
 
-    await vm.stateManager.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
+    await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(genesisJSON))
     const preState = bytesToHex(await vm.stateManager.getStateRoot())
     assert.equal(
       preState,
@@ -147,7 +147,7 @@ describe('EIP4895 tests', () => {
     let postState: string
 
     // construct a block with just the 0th withdrawal should have no effect on state
-    block = createBlockFromBlockData(
+    block = createBlock(
       {
         header: {
           baseFeePerGas: BigInt(7),
@@ -169,7 +169,7 @@ describe('EIP4895 tests', () => {
     )
 
     // construct a block with all the withdrawals
-    block = createBlockFromBlockData(
+    block = createBlock(
       {
         header: {
           baseFeePerGas: BigInt(7),
@@ -208,7 +208,7 @@ describe('EIP4895 tests', () => {
       'correct state root should be generated',
     )
     const vm = await VM.create({ common, blockchain })
-    await vm.stateManager.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
+    await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(genesisJSON))
     const vmCopy = await vm.shallowCopy()
 
     const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp))

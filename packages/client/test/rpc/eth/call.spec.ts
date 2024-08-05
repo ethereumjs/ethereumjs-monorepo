@@ -1,8 +1,8 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address, bigIntToHex, bytesToHex } from '@ethereumjs/util'
+import { bigIntToHex, bytesToHex, createAddressFromString } from '@ethereumjs/util'
 import { runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
@@ -17,7 +17,7 @@ const method = 'eth_call'
 
 describe(method, () => {
   it('call with valid arguments', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
@@ -33,7 +33,7 @@ describe(method, () => {
     const { vm } = execution
 
     // genesis address with balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // contract:
     /*
@@ -56,7 +56,7 @@ describe(method, () => {
       return address
     }
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           parentHash: parent.hash(),
@@ -101,15 +101,17 @@ describe(method, () => {
       { ...estimateTxData, gas: estimateTxData.gasLimit },
       'latest',
     ])
+    assert.equal(res.error.code, 3, 'should return the correct error code')
     assert.equal(
-      res.result,
+      res.error.data,
       bytesToHex(execResult.returnValue),
       'should return the correct return value',
     )
 
     res = await rpc.request(method, [{ ...estimateTxData }, 'latest'])
+    assert.equal(res.error.code, 3, 'should return the correct error code')
     assert.equal(
-      res.result,
+      res.error.data,
       bytesToHex(execResult.returnValue),
       'should return the correct return value with no gas limit provided',
     )
@@ -130,7 +132,7 @@ describe(method, () => {
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     // genesis address with balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     const funcHash = '26b85ee1' // borrowed from valid test above
     const estimateTxData = {
@@ -156,7 +158,7 @@ describe(method, () => {
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     // genesis address with balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     const estimateTxData = {
       to: address.toString(),
       from: address.toString(),

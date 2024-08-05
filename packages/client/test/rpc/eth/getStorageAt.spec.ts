@@ -1,6 +1,6 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { createAddressFromString } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
@@ -14,7 +14,7 @@ const method = 'eth_getStorageAt'
 
 describe(method, async () => {
   it('call with valid arguments', async () => {
-    const address = Address.fromString(`0x${'11'.repeat(20)}`)
+    const address = createAddressFromString(`0x${'11'.repeat(20)}`)
     const emptySlotStr = `0x${'00'.repeat(32)}`
 
     const { execution, common, server, chain } = await setupChain(pow, 'pow')
@@ -33,7 +33,7 @@ describe(method, async () => {
     const signedTx = tx.sign(tx.getHashedMessageToSign())
 
     const parent = await chain.blockchain.getCanonicalHeadHeader()
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           parentHash: parent.hash(),

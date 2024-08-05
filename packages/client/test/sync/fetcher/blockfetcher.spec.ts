@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { createHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { KECCAK256_RLP } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
@@ -188,14 +188,10 @@ describe('[BlockFetcher]', async () => {
   it('should parse bodies correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     config.chainCommon.getHardforkBy = vi.fn((input) => {
-      if (
-        input['blockNumber'] !== undefined &&
-        input['td'] !== undefined &&
-        input['timestamp'] !== undefined
-      )
+      if (input['blockNumber'] !== undefined && input['timestamp'] !== undefined)
         return Hardfork.Shanghai
 
-      if (input['blockNumber'] !== undefined && input['td'] !== undefined) return Hardfork.Shanghai
+      if (input['blockNumber'] !== undefined) return Hardfork.Shanghai
 
       if (input['blockNumber'] !== undefined && input['timestamp'] !== undefined)
         return Hardfork.Shanghai
@@ -211,7 +207,7 @@ describe('[BlockFetcher]', async () => {
       count: BigInt(0),
     })
 
-    const shanghaiHeader = BlockHeader.fromHeaderData(
+    const shanghaiHeader = createHeader(
       { number: 1, withdrawalsRoot: KECCAK256_RLP },
       { common: config.chainCommon, setHardfork: true },
     )

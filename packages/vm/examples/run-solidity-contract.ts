@@ -1,7 +1,7 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { VM, runTx } from '@ethereumjs/vm'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { readFileSync } from 'fs'
@@ -12,11 +12,13 @@ import { fileURLToPath } from 'url'
 import { getAccountNonce, insertAccount } from './helpers/account-utils.js'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.js'
 
+import type { Address } from '@ethereumjs/util'
+
 const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-const block = createBlockFromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+const block = createBlock({ header: { extraData: new Uint8Array(97) } }, { common })
 
 const __filename = fileURLToPath(import.meta.url) // get the resolved path to the file
 const __dirname = path.dirname(__filename) // get the name of the directory
@@ -167,7 +169,7 @@ async function main() {
   const accountPk = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
   const vm = await VM.create({ common })
-  const accountAddress = Address.fromPrivateKey(accountPk)
+  const accountAddress = createAddressFromPrivateKey(accountPk)
 
   console.log('Account: ', accountAddress.toString())
   await insertAccount(vm, accountAddress)

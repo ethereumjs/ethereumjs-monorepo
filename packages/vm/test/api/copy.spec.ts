@@ -1,4 +1,4 @@
-import { Address, createAccount } from '@ethereumjs/util'
+import { createAccount, createAddressFromString } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { setupVM } from './utils.js'
@@ -10,7 +10,7 @@ describe('VM Copy Test', () => {
       balance: 100n,
       nonce: 5n,
     })
-    const address = Address.fromString(`0x` + '1234'.repeat(10))
+    const address = createAddressFromString(`0x` + '1234'.repeat(10))
     await vm.stateManager.putAccount(address, account)
 
     assert.ok(

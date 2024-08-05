@@ -1,4 +1,4 @@
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { Common, ConsensusAlgorithm, ConsensusType, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
@@ -17,6 +17,8 @@ import {
   bytesToHex,
   bytesToUtf8,
   concatBytes,
+  createAddressFromPublicKey,
+  createZeroAddress,
   ecrecover,
   ecsign,
   equalsBytes,
@@ -27,12 +29,11 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique.js'
-import { fakeExponential, valuesArrayToHeaderData } from './helpers.js'
+import { fakeExponential } from './helpers.js'
 import { paramsBlock } from './params.js'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
 import type { CliqueConfig } from '@ethereumjs/common'
-import type { BigIntLike } from '@ethereumjs/util'
 
 interface HeaderCache {
   hash: Uint8Array | undefined
@@ -88,76 +89,10 @@ export class BlockHeader {
   }
 
   /**
-   * Static constructor to create a block header from a header data dictionary
-   *
-   * @param headerData
-   * @param opts
-   */
-  public static fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {}) {
-    return new BlockHeader(headerData, opts)
-  }
-
-  /**
-   * Static constructor to create a block header from a RLP-serialized header
-   *
-   * @param serializedHeaderData
-   * @param opts
-   */
-  public static fromRLPSerializedHeader(serializedHeaderData: Uint8Array, opts: BlockOptions = {}) {
-    const values = RLP.decode(serializedHeaderData)
-    if (!Array.isArray(values)) {
-      throw new Error('Invalid serialized header input. Must be array')
-    }
-    return BlockHeader.fromValuesArray(values as Uint8Array[], opts)
-  }
-
-  /**
-   * Static constructor to create a block header from an array of Bytes values
-   *
-   * @param values
-   * @param opts
-   */
-  public static fromValuesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
-    const headerData = valuesArrayToHeaderData(values)
-    const {
-      number,
-      baseFeePerGas,
-      excessBlobGas,
-      blobGasUsed,
-      parentBeaconBlockRoot,
-      requestsRoot,
-    } = headerData
-    const header = BlockHeader.fromHeaderData(headerData, opts)
-    if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
-      const eip1559ActivationBlock = bigIntToBytes(header.common.eipBlock(1559)!)
-      if (
-        eip1559ActivationBlock !== undefined &&
-        equalsBytes(eip1559ActivationBlock, number as Uint8Array)
-      ) {
-        throw new Error('invalid header. baseFeePerGas should be provided')
-      }
-    }
-    if (header.common.isActivatedEIP(4844)) {
-      if (excessBlobGas === undefined) {
-        throw new Error('invalid header. excessBlobGas should be provided')
-      } else if (blobGasUsed === undefined) {
-        throw new Error('invalid header. blobGasUsed should be provided')
-      }
-    }
-    if (header.common.isActivatedEIP(4788) && parentBeaconBlockRoot === undefined) {
-      throw new Error('invalid header. parentBeaconBlockRoot should be provided')
-    }
-
-    if (header.common.isActivatedEIP(7685) && requestsRoot === undefined) {
-      throw new Error('invalid header. requestsRoot should be provided')
-    }
-    return header
-  }
-  /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
    * @deprecated Use the public static factory methods to assist in creating a Header object from
-   * varying data types. For a default empty header, use {@link BlockHeader.fromHeaderData}.
+   * varying data types. For a default empty header, use {@link createHeader}.
    *
    */
   constructor(headerData: HeaderData, opts: BlockOptions = {}) {
@@ -165,7 +100,7 @@ export class BlockHeader {
       this.common = opts.common.copy()
     } else {
       this.common = new Common({
-        chain: Chain.Mainnet, // default
+        chain: Mainnet, // default
       })
     }
     this.common.updateParams(opts.params ?? paramsBlock)
@@ -177,7 +112,7 @@ export class BlockHeader {
     const defaults = {
       parentHash: zeros(32),
       uncleHash: KECCAK256_RLP_ARRAY,
-      coinbase: Address.zero(),
+      coinbase: createZeroAddress(),
       stateRoot: zeros(32),
       transactionsTrie: KECCAK256_RLP,
       receiptTrie: KECCAK256_RLP,
@@ -216,12 +151,6 @@ export class BlockHeader {
     if (setHardfork === true) {
       this.common.setHardforkBy({
         blockNumber: number,
-        timestamp,
-      })
-    } else if (typeof setHardfork !== 'boolean') {
-      this.common.setHardforkBy({
-        blockNumber: number,
-        td: setHardfork as BigIntLike,
         timestamp,
       })
     }
@@ -932,13 +861,13 @@ export class BlockHeader {
     const extraSeal = this.cliqueExtraSeal()
     // Reasonable default for default blocks
     if (extraSeal.length === 0 || equalsBytes(extraSeal, new Uint8Array(65))) {
-      return Address.zero()
+      return createZeroAddress()
     }
     const r = extraSeal.subarray(0, 32)
     const s = extraSeal.subarray(32, 64)
     const v = bytesToBigInt(extraSeal.subarray(64, 65)) + BIGINT_27
     const pubKey = ecrecover(this.cliqueSigHash(), v, r, s)
-    return Address.fromPublicKey(pubKey)
+    return createAddressFromPublicKey(pubKey)
   }
 
   /**

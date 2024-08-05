@@ -1,4 +1,4 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereumjs/util'
 import { Level } from 'level'
@@ -353,7 +353,7 @@ export class Config {
    */
   public readonly events: EventBusType
 
-  public static readonly CHAIN_DEFAULT = 'mainnet'
+  public static readonly CHAIN_DEFAULT = Mainnet
   public static readonly SYNCMODE_DEFAULT = SyncMode.Full
   public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`

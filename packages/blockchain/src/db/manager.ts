@@ -1,8 +1,6 @@
-import { BlockHeader, createBlockFromValuesArray, valuesArrayToHeaderData } from '@ethereumjs/block'
+import { createBlockFromValuesArray, createHeaderFromValuesArray } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
-  BIGINT_0,
-  BIGINT_1,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   bytesToBigInt,
@@ -142,12 +140,7 @@ export class DBManager {
     }
 
     const blockData = [header.raw(), ...body] as BlockBytes
-    const opts: BlockOptions = { common: this.common }
-    if (number === BIGINT_0) {
-      opts.setHardfork = await this.getTotalDifficulty(hash, BIGINT_0)
-    } else {
-      opts.setHardfork = await this.getTotalDifficulty(header.parentHash, number - BIGINT_1)
-    }
+    const opts: BlockOptions = { common: this.common, setHardfork: true }
     return createBlockFromValuesArray(blockData, opts)
   }
 
@@ -166,17 +159,8 @@ export class DBManager {
     const encodedHeader = await this.get(DBTarget.Header, { blockHash, blockNumber })
     const headerValues = RLP.decode(encodedHeader)
 
-    const opts: BlockOptions = { common: this.common }
-    if (blockNumber === BIGINT_0) {
-      opts.setHardfork = await this.getTotalDifficulty(blockHash, BIGINT_0)
-    } else {
-      // Lets fetch the parent hash but not by number since this block might not
-      // be in canonical chain
-      const headerData = valuesArrayToHeaderData(headerValues as Uint8Array[])
-      const parentHash = headerData.parentHash as Uint8Array
-      opts.setHardfork = await this.getTotalDifficulty(parentHash, blockNumber - BIGINT_1)
-    }
-    return BlockHeader.fromValuesArray(headerValues as Uint8Array[], opts)
+    const opts: BlockOptions = { common: this.common, setHardfork: true }
+    return createHeaderFromValuesArray(headerValues as Uint8Array[], opts)
   }
 
   /**

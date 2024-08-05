@@ -1,13 +1,13 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { create4844BlobTx } from '@ethereumjs/tx'
 import {
-  Address,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
+  createAddressFromString,
   getBlobs,
   hexToBytes,
   privateToAddress,
@@ -32,7 +32,7 @@ describe('EIP4844 tests', () => {
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
     })
-    const genesisBlock = createBlockFromBlockData(
+    const genesisBlock = createBlock(
       { header: { gasLimit: 50000, parentBeaconBlockRoot: zeros(32) } },
       { common },
     )
@@ -44,7 +44,7 @@ describe('EIP4844 tests', () => {
     })
     const vm = await VM.create({ common, blockchain })
 
-    const address = Address.fromString(sender)
+    const address = createAddressFromString(sender)
     await setBalance(vm, address, 14680063125000000000n)
     const vmCopy = await vm.shallowCopy()
 

@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { MemoryLevel } from 'memory-level'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
@@ -218,7 +218,7 @@ describe('[BeaconSynchronizer]', async () => {
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
-    const head = createBlockFromBlockData({ header: { number: BigInt(15) } })
+    const head = createBlock({ header: { number: BigInt(15) } })
     await skeleton['putBlock'](head)
     ;(skeleton as any).status.progress.subchains = [
       {
@@ -227,14 +227,14 @@ describe('[BeaconSynchronizer]', async () => {
       },
     ]
     await sync.open()
-    const block = createBlockFromBlockData({
+    const block = createBlock({
       header: { number: BigInt(16), parentHash: head.hash() },
     })
     assert.ok(await sync.extendChain(block), 'should extend chain successfully')
     assert.ok(await sync.setHead(block), 'should set head successfully')
     assert.equal(skeleton.bounds().head, BigInt(16), 'head should be updated')
 
-    const gapBlock = createBlockFromBlockData({ header: { number: BigInt(18) } })
+    const gapBlock = createBlock({ header: { number: BigInt(18) } })
     assert.notOk(await sync.extendChain(gapBlock), 'should not extend chain with gapped block')
     assert.ok(
       await sync.setHead(gapBlock),

@@ -1,11 +1,11 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
 import { createEVM, getActivePrecompiles } from '../../src/index.js'
 
 describe('Precompiles: ECMUL', () => {
   it('ECMUL', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Petersburg })
     const evm = await createEVM({
       common,
     })

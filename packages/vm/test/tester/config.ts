@@ -1,7 +1,8 @@
-import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { type Kzg, intToHex } from '@ethereumjs/util'
 import * as path from 'path'
 
-import type { Kzg } from '@ethereumjs/util'
+import type { HardforkTransitionConfig } from '@ethereumjs/common'
 
 /**
  * Default tests path (git submodule: ethereum-tests)
@@ -226,9 +227,9 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
   const hfName = normalHardforks.reduce((previousValue, currentValue) =>
     currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue,
   )
-  const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
+  const mainnetCommon = new Common({ chain: Mainnet, hardfork: hfName })
   const hardforks = mainnetCommon.hardforks()
-  const testHardforks = []
+  const testHardforks: HardforkTransitionConfig[] = []
   for (const hf of hardforks) {
     // check if we enable this hf
     // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
@@ -253,7 +254,7 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
         testHardforks.push({
           name: hf.name,
           block: null,
-          ttd: BigInt(ttd),
+          ttd: intToHex(ttd),
         })
       }
       if (timestamp !== undefined && hf.name !== Hardfork.Dao) {
@@ -270,6 +271,7 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
       hardforks: testHardforks,
       defaultHardfork: hfName,
     },
+    Mainnet,
     { eips: [3607], customCrypto: { kzg } },
   )
   // Activate EIPs
@@ -325,7 +327,7 @@ export function getCommon(network: string, kzg?: Kzg): Common {
       throw new Error('network not supported: ' + network)
     }
     const mainnetCommon = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: transitionForks.finalSupportedFork,
     })
     const hardforks = mainnetCommon.hardforks()
@@ -353,8 +355,8 @@ export function getCommon(network: string, kzg?: Kzg): Common {
       {
         hardforks: testHardforks,
       },
+      Mainnet,
       {
-        baseChain: 'mainnet',
         hardfork: transitionForks.startFork,
         eips: [3607],
         customCrypto: { kzg },

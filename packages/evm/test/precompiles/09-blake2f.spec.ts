@@ -1,5 +1,5 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { bytesToHex, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { createEVM, getActivePrecompiles } from '../../src/index.js'
@@ -82,7 +82,7 @@ describe('Precompiles: BLAKE2F', () => {
   let addressStr: string
   let BLAKE2F: PrecompileFunc
   beforeAll(async () => {
-    common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     // Test references: https://github.com/ethereum/go-ethereum/blob/e206d3f8975bd98cc86d14055dca40f996bacc60/core/vm/testdata/precompiles/blake2F.json
     //                  https://github.com/ethereum/go-ethereum/blob/e206d3f8975bd98cc86d14055dca40f996bacc60/core/vm/contracts_test.go#L73
 
@@ -125,7 +125,7 @@ describe('Precompiles: BLAKE2F', () => {
   }
 
   it('should also work on non-zero aligned inputs', async () => {
-    const addr = Address.zero()
+    const addr = createZeroAddress()
     // Blake2f calldata from https://etherscan.io/tx/0x4f2e13a0a3f14033630ab2b8cdad09d316826375f761ded5b31253bb42e0a476
     // (This tx calls into Blake2f multiple times, but one of them is taken)
     const calldata =

@@ -12,6 +12,7 @@ import {
   DepositRequest,
   Withdrawal,
   WithdrawalRequest,
+  bigIntToBytes,
   bigIntToHex,
   bytesToHex,
   bytesToUtf8,
@@ -24,7 +25,12 @@ import {
 } from '@ethereumjs/util'
 
 import { createBlockFromRpc } from './from-rpc.js'
-import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } from './helpers.js'
+import {
+  genRequestsTrieRoot,
+  genTransactionsTrieRoot,
+  genWithdrawalsTrieRoot,
+  valuesArrayToHeaderData,
+} from './helpers.js'
 
 import { Block, BlockHeader, executionPayloadFromBeaconPayload } from './index.js'
 
@@ -32,6 +38,7 @@ import type { BeaconPayloadJson } from './from-beacon-payload.js'
 import type {
   BlockBytes,
   BlockData,
+  BlockHeaderBytes,
   BlockOptions,
   ExecutionPayload,
   ExecutionWitnessBytes,
@@ -50,12 +57,73 @@ import type {
 } from '@ethereumjs/util'
 
 /**
+ * Static constructor to create a block header from a header data dictionary
+ *
+ * @param headerData
+ * @param opts
+ */
+export function createHeader(headerData: HeaderData = {}, opts: BlockOptions = {}) {
+  return new BlockHeader(headerData, opts)
+}
+
+/**
+ * Static constructor to create a block header from an array of Bytes values
+ *
+ * @param values
+ * @param opts
+ */
+export function createHeaderFromValuesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
+  const headerData = valuesArrayToHeaderData(values)
+  const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot, requestsRoot } =
+    headerData
+  const header = createHeader(headerData, opts)
+  if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
+    const eip1559ActivationBlock = bigIntToBytes(header.common.eipBlock(1559)!)
+    if (
+      eip1559ActivationBlock !== undefined &&
+      equalsBytes(eip1559ActivationBlock, number as Uint8Array)
+    ) {
+      throw new Error('invalid header. baseFeePerGas should be provided')
+    }
+  }
+  if (header.common.isActivatedEIP(4844)) {
+    if (excessBlobGas === undefined) {
+      throw new Error('invalid header. excessBlobGas should be provided')
+    } else if (blobGasUsed === undefined) {
+      throw new Error('invalid header. blobGasUsed should be provided')
+    }
+  }
+  if (header.common.isActivatedEIP(4788) && parentBeaconBlockRoot === undefined) {
+    throw new Error('invalid header. parentBeaconBlockRoot should be provided')
+  }
+
+  if (header.common.isActivatedEIP(7685) && requestsRoot === undefined) {
+    throw new Error('invalid header. requestsRoot should be provided')
+  }
+  return header
+}
+
+/**
+ * Static constructor to create a block header from a RLP-serialized header
+ *
+ * @param serializedHeaderData
+ * @param opts
+ */
+export function createHeaderFromRLP(serializedHeaderData: Uint8Array, opts: BlockOptions = {}) {
+  const values = RLP.decode(serializedHeaderData)
+  if (!Array.isArray(values)) {
+    throw new Error('Invalid serialized header input. Must be array')
+  }
+  return createHeaderFromValuesArray(values as Uint8Array[], opts)
+}
+
+/**
  * Static constructor to create a block from a block data dictionary
  *
  * @param blockData
  * @param opts
  */
-export function createBlockFromBlockData(blockData: BlockData = {}, opts?: BlockOptions) {
+export function createBlock(blockData: BlockData = {}, opts?: BlockOptions) {
   const {
     header: headerData,
     transactions: txsData,
@@ -65,7 +133,7 @@ export function createBlockFromBlockData(blockData: BlockData = {}, opts?: Block
     requests: clRequests,
   } = blockData
 
-  const header = BlockHeader.fromHeaderData(headerData, opts)
+  const header = createHeader(headerData, opts)
 
   // parse transactions
   const transactions = []
@@ -92,7 +160,7 @@ export function createBlockFromBlockData(blockData: BlockData = {}, opts?: Block
     uncleOpts.setHardfork = true
   }
   for (const uhData of uhsData ?? []) {
-    const uh = BlockHeader.fromHeaderData(uhData, uncleOpts)
+    const uh = createHeader(uhData, uncleOpts)
     uncleHeaders.push(uh)
   }
 
@@ -126,7 +194,7 @@ export function createBlockFromValuesArray(values: BlockBytes, opts?: BlockOptio
   // First try to load header so that we can use its common (in case of setHardfork being activated)
   // to correctly make checks on the hardforks
   const [headerData, txsData, uhsData, ...valuesTail] = values
-  const header = BlockHeader.fromValuesArray(headerData, opts)
+  const header = createHeaderFromValuesArray(headerData, opts)
 
   // conditional assignment of rest of values and splicing them out from the valuesTail
   const withdrawalBytes = header.common.isActivatedEIP(4895)
@@ -191,7 +259,7 @@ export function createBlockFromValuesArray(values: BlockBytes, opts?: BlockOptio
     uncleOpts.setHardfork = true
   }
   for (const uncleHeaderData of uhsData ?? []) {
-    uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, uncleOpts))
+    uncleHeaders.push(createHeaderFromValuesArray(uncleHeaderData, uncleOpts))
   }
 
   const withdrawals = (withdrawalBytes as WithdrawalBytes[])
@@ -407,7 +475,7 @@ export async function createBlockFromExecutionPayload(
   }
 
   // we are not setting setHardfork as common is already set to the correct hf
-  const block = createBlockFromBlockData(
+  const block = createBlock(
     { header, transactions: txs, withdrawals, executionWitness, requests },
     opts,
   )

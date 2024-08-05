@@ -1,7 +1,7 @@
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
-import { createCustomCommon } from '@ethereumjs/common'
+import { createBlock, createHeader } from '@ethereumjs/block'
+import { Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
-import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { bytesToHex, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
@@ -10,13 +10,13 @@ import { createClient, createManager, dummy, getRpcClient, startRPC } from '../h
 
 const kzg = await loadKZG()
 
-const common = createCustomCommon({ chainId: 1 }, { customCrypto: { kzg } })
+const common = createCustomCommon({ chainId: 1 }, Mainnet, { customCrypto: { kzg } })
 
 common.setHardfork('cancun')
 const mockedTx1 = createLegacyTx({}).sign(dummy.privKey)
 const mockedTx2 = createLegacyTx({ nonce: 1 }).sign(dummy.privKey)
 const mockedBlobTx3 = create4844BlobTx(
-  { nonce: 2, blobsData: ['0x1234'], to: Address.zero() },
+  { nonce: 2, blobsData: ['0x1234'], to: createZeroAddress() },
   { common },
 ).sign(dummy.privKey)
 const blockHash = hexToBytes('0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5')
@@ -28,14 +28,13 @@ const block = {
   header: {
     number: BigInt(1),
     hash: () => blockHash,
-    serialize: () => BlockHeader.fromHeaderData({ number: 1 }).serialize(),
+    serialize: () => createHeader({ number: 1 }).serialize(),
   },
   toJSON: () => ({
-    ...createBlockFromBlockData({ header: { number: 1 } }).toJSON(),
+    ...createBlock({ header: { number: 1 } }).toJSON(),
     transactions: transactions2,
   }),
-  serialize: () =>
-    createBlockFromBlockData({ header: { number: 1 }, transactions: transactions2 }).serialize(),
+  serialize: () => createBlock({ header: { number: 1 }, transactions: transactions2 }).serialize(),
   transactions: transactions2,
   uncleHeaders: [],
 }
@@ -47,10 +46,10 @@ const genesisBlock = {
   hash: () => genesisBlockHash,
   header: {
     number: BigInt(0),
-    serialize: () => BlockHeader.fromHeaderData({ number: 0 }).serialize(),
+    serialize: () => createHeader({ number: 0 }).serialize(),
   },
-  toJSON: () => ({ ...createBlockFromBlockData({ header: { number: 0 } }).toJSON(), transactions }),
-  serialize: () => createBlockFromBlockData({ header: { number: 0 }, transactions }).serialize(),
+  toJSON: () => ({ ...createBlock({ header: { number: 0 } }).toJSON(), transactions }),
+  serialize: () => createBlock({ header: { number: 0 }, transactions }).serialize(),
   transactions,
   uncleHeaders: [],
 }
@@ -130,8 +129,8 @@ describe(method, async () => {
 })
 describe('call with block with blob txs', () => {
   it('retrieves a block with a blob tx in it', async () => {
-    const genesisBlock = createBlockFromBlockData({ header: { number: 0 } })
-    const block1 = createBlockFromBlockData(
+    const genesisBlock = createBlock({ header: { number: 0 } })
+    const block1 = createBlock(
       {
         header: { number: 1, parentHash: genesisBlock.header.hash() },
         transactions: [mockedBlobTx3],

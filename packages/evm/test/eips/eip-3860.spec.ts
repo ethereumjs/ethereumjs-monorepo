@@ -1,5 +1,12 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, concatBytes, equalsBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import {
+  Address,
+  concatBytes,
+  createAddressFromString,
+  equalsBytes,
+  hexToBytes,
+  privateToAddress,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createEVM } from '../../src/index.js'
@@ -10,7 +17,7 @@ const sender = new Address(privateToAddress(pkey))
 describe('EIP 3860 tests', () => {
   it('code exceeds max initcode size', async () => {
     const common = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       eips: [3860],
     })
@@ -44,23 +51,23 @@ describe('EIP 3860 tests', () => {
   it('ensure EIP-3860 gas is applied on CREATE calls', async () => {
     // Transaction/Contract data taken from https://github.com/ethereum/tests/pull/990
     const commonWith3860 = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       eips: [3860],
     })
     const commonWithout3860 = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       eips: [],
     })
-    const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    const caller = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const evm = await createEVM({
       common: commonWith3860,
     })
     const evmWithout3860 = await createEVM({
       common: commonWithout3860,
     })
-    const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    const contractFactory = createAddressFromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const contractAccount = await evm.stateManager.getAccount(contractFactory)
     await evm.stateManager.putAccount(contractFactory, contractAccount!)
     await evmWithout3860.stateManager.putAccount(contractFactory, contractAccount!)
@@ -88,23 +95,23 @@ describe('EIP 3860 tests', () => {
   it('ensure EIP-3860 gas is applied on CREATE2 calls', async () => {
     // Transaction/Contract data taken from https://github.com/ethereum/tests/pull/990
     const commonWith3860 = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       eips: [3860],
     })
     const commonWithout3860 = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       eips: [],
     })
-    const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    const caller = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const evm = await createEVM({
       common: commonWith3860,
     })
     const evmWithout3860 = await createEVM({
       common: commonWithout3860,
     })
-    const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    const contractFactory = createAddressFromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const contractAccount = await evm.stateManager.getAccount(contractFactory)
     await evm.stateManager.putAccount(contractFactory, contractAccount!)
     await evmWithout3860.stateManager.putAccount(contractFactory, contractAccount!)
@@ -131,7 +138,7 @@ describe('EIP 3860 tests', () => {
 
   it('code exceeds max initcode size: allowUnlimitedInitCodeSize active', async () => {
     const common = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       eips: [3860],
     })
@@ -163,11 +170,11 @@ describe('EIP 3860 tests', () => {
 
   it('CREATE with MAX_INITCODE_SIZE+1, allowUnlimitedContractSize active', async () => {
     const commonWith3860 = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
       eips: [3860],
     })
-    const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    const caller = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     for (const code of ['F0', 'F5']) {
       const evm = await createEVM({
         common: commonWith3860,
@@ -178,7 +185,7 @@ describe('EIP 3860 tests', () => {
         common: commonWith3860,
         allowUnlimitedInitCodeSize: false,
       })
-      const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+      const contractFactory = createAddressFromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
       const contractAccount = await evm.stateManager.getAccount(contractFactory)
       await evm.stateManager.putAccount(contractFactory, contractAccount!)
       await evmDisabled.stateManager.putAccount(contractFactory, contractAccount!)

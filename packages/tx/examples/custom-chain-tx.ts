@@ -1,6 +1,6 @@
-import { createCustomCommon } from '@ethereumjs/common'
+import { Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address, hexToBytes } from '@ethereumjs/util'
+import { createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 
 // In this example we create a transaction for a custom network.
 
@@ -11,8 +11,8 @@ const customCommon = createCustomCommon(
     name: 'my-network',
     chainId: 2134,
   },
+  Mainnet,
   {
-    baseChain: 'mainnet',
     hardfork: 'petersburg',
   },
 )
@@ -35,7 +35,7 @@ const tx = createLegacyTx(
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
 const signedTx = tx.sign(privateKey)
-const address = Address.fromPrivateKey(privateKey)
+const address = createAddressFromPrivateKey(privateKey)
 
 if (signedTx.isValid() && signedTx.getSenderAddress().equals(address)) {
   console.log('Valid signature')

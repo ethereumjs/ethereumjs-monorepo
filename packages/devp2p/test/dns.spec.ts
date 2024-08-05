@@ -6,7 +6,7 @@ import { DNS } from '../src/dns/index.js'
 import * as testdata from './testdata.json'
 
 describe('DNS', () => {
-  const mockData = testdata.dns
+  const mockData = testdata.default.dns
   const mockDns = td.replace<any>('dns')
 
   let dns: DNS

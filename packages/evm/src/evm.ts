@@ -10,6 +10,7 @@ import {
   MAX_INTEGER,
   bigIntToBytes,
   bytesToUnprefixedHex,
+  createZeroAddress,
   equalsBytes,
   generateAddress,
   generateAddress2,
@@ -50,7 +51,7 @@ import type {
   ExecResult,
   bn128,
 } from './types.js'
-import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
 
 const debug = debugDefault('evm:evm')
 const debugGas = debugDefault('evm:gas')
@@ -94,7 +95,7 @@ export class EVM implements EVMInterface {
   public readonly common: Common
   public readonly events: AsyncEventEmitter<EVMEvents>
 
-  public stateManager: EVMStateManagerInterface
+  public stateManager: StateManagerInterface
   public blockchain: Blockchain
   public journal: Journal
 
@@ -716,14 +717,14 @@ export class EVM implements EVMInterface {
     message: Message,
     opts: InterpreterOpts = {},
   ): Promise<ExecResult> {
-    let contract = await this.stateManager.getAccount(message.to ?? Address.zero())
+    let contract = await this.stateManager.getAccount(message.to ?? createZeroAddress())
     if (!contract) {
       contract = new Account()
     }
 
     const env = {
-      address: message.to ?? Address.zero(),
-      caller: message.caller ?? Address.zero(),
+      address: message.to ?? createZeroAddress(),
+      caller: message.caller ?? createZeroAddress(),
       callData: message.data ?? Uint8Array.from([0]),
       callValue: message.value ?? BIGINT_0,
       code: message.code as Uint8Array,
@@ -731,7 +732,7 @@ export class EVM implements EVMInterface {
       isCreate: message.isCreate ?? false,
       depth: message.depth ?? 0,
       gasPrice: this._tx!.gasPrice,
-      origin: this._tx!.origin ?? message.caller ?? Address.zero(),
+      origin: this._tx!.origin ?? message.caller ?? createZeroAddress(),
       block: this._block ?? defaultBlock(),
       contract,
       codeAddress: message.codeAddress,
@@ -814,9 +815,9 @@ export class EVM implements EVMInterface {
       this._block = opts.block ?? defaultBlock()
       this._tx = {
         gasPrice: opts.gasPrice ?? BIGINT_0,
-        origin: opts.origin ?? opts.caller ?? Address.zero(),
+        origin: opts.origin ?? opts.caller ?? createZeroAddress(),
       }
-      const caller = opts.caller ?? Address.zero()
+      const caller = opts.caller ?? createZeroAddress()
 
       const value = opts.value ?? BIGINT_0
       if (opts.skipBalance === true) {
@@ -952,14 +953,14 @@ export class EVM implements EVMInterface {
 
     this._tx = {
       gasPrice: opts.gasPrice ?? BIGINT_0,
-      origin: opts.origin ?? opts.caller ?? Address.zero(),
+      origin: opts.origin ?? opts.caller ?? createZeroAddress(),
     }
 
     const message = new Message({
       code: opts.code,
       data: opts.data,
       gasLimit: opts.gasLimit ?? BigInt(0xffffff),
-      to: opts.to ?? Address.zero(),
+      to: opts.to ?? createZeroAddress(),
       caller: opts.caller,
       value: opts.value,
       depth: opts.depth,
@@ -1148,8 +1149,8 @@ export function defaultBlock(): Block {
   return {
     header: {
       number: BIGINT_0,
-      cliqueSigner: () => Address.zero(),
-      coinbase: Address.zero(),
+      cliqueSigner: () => createZeroAddress(),
+      coinbase: createZeroAddress(),
       timestamp: BIGINT_0,
       difficulty: BIGINT_0,
       prevRandao: zeros(32),

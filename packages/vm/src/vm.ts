@@ -1,5 +1,5 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { createEVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
@@ -14,7 +14,7 @@ import { paramsVM } from './params.js'
 
 import type { VMEvents, VMOpts } from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
-import type { EVMStateManagerInterface } from '@ethereumjs/common'
+import type { StateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface } from '@ethereumjs/evm'
 import type { BigIntLike } from '@ethereumjs/util'
 
@@ -28,7 +28,7 @@ export class VM {
   /**
    * The StateManager used by the VM
    */
-  readonly stateManager: EVMStateManagerInterface
+  readonly stateManager: StateManagerInterface
 
   /**
    * The blockchain the VM operates on
@@ -78,7 +78,7 @@ export class VM {
 
     // Add common, SM, blockchain, EVM here
     if (opts.common === undefined) {
-      opts.common = new Common({ chain: Chain.Mainnet })
+      opts.common = new Common({ chain: Mainnet })
     }
 
     if (opts.stateManager === undefined) {
@@ -87,11 +87,6 @@ export class VM {
 
     if (opts.blockchain === undefined) {
       opts.blockchain = await createBlockchain({ common: opts.common })
-    }
-
-    const genesisState = opts.genesisState ?? {}
-    if (opts.genesisState !== undefined) {
-      await opts.stateManager.generateCanonicalGenesis(genesisState)
     }
 
     if (opts.profilerOpts !== undefined) {

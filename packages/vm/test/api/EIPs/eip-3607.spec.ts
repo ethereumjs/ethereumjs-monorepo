@@ -1,14 +1,14 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { createAddressFromString } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM, runTx } from '../../../src/index.js'
 
 describe('EIP-3607 tests', () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3607] })
-  const commonNoEIP3607 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [] })
-  const precompileAddr = Address.fromString('0x0000000000000000000000000000000000000001')
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [3607] })
+  const commonNoEIP3607 = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [] })
+  const precompileAddr = createAddressFromString('0x0000000000000000000000000000000000000001')
 
   it('should reject txs from senders with deployed code when EIP is enabled', async () => {
     const vm = await VM.create({ common })

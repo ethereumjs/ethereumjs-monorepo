@@ -1,5 +1,5 @@
-import { Block, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { Block, BlockHeader, createBlock } from '@ethereumjs/block'
+import { Common, ConsensusAlgorithm, ConsensusType, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   AsyncEventEmitter,
   BIGINT_0,
@@ -102,7 +102,7 @@ export class Blockchain implements BlockchainInterface {
     if (opts.common) {
       this.common = opts.common
     } else {
-      const DEFAULT_CHAIN = Chain.Mainnet
+      const DEFAULT_CHAIN = Mainnet
       const DEFAULT_HARDFORK = Hardfork.Chainstart
       this.common = new Common({
         chain: DEFAULT_CHAIN,
@@ -318,14 +318,13 @@ export class Blockchain implements BlockchainInterface {
         throw new Error(`no block for ${canonicalHead} found in DB`)
       }
       const header = await this._getHeader(hash, canonicalHead)
-      const td = await this.getParentTD(header)
 
       const dbOps: DBOp[] = []
       await this._deleteCanonicalChainReferences(canonicalHead + BIGINT_1, hash, dbOps)
       const ops = dbOps.concat(this._saveHeadOps())
 
       await this.dbManager.batch(ops)
-      await this.checkAndTransitionHardForkByNumber(canonicalHead, td, header.timestamp)
+      await this.checkAndTransitionHardForkByNumber(canonicalHead, header.timestamp)
     })
     if (this._deletedBlocks.length > 0) {
       this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
@@ -429,7 +428,7 @@ export class Blockchain implements BlockchainInterface {
             this._headBlockHash = blockHash
           }
           if (this._hardforkByHeadBlockNumber) {
-            await this.checkAndTransitionHardForkByNumber(blockNumber, parentTd, header.timestamp)
+            await this.checkAndTransitionHardForkByNumber(blockNumber, header.timestamp)
           }
 
           // delete higher number assignments and overwrite stale canonical chain
@@ -1211,12 +1210,10 @@ export class Blockchain implements BlockchainInterface {
 
   async checkAndTransitionHardForkByNumber(
     number: BigIntLike,
-    td?: BigIntLike,
     timestamp?: BigIntLike,
   ): Promise<void> {
     this.common.setHardforkBy({
       blockNumber: number,
-      td,
       timestamp,
     })
 
@@ -1263,7 +1260,6 @@ export class Blockchain implements BlockchainInterface {
     const common = this.common.copy()
     common.setHardforkBy({
       blockNumber: 0,
-      td: BigInt(common.genesis().difficulty),
       timestamp: common.genesis().timestamp,
     })
 
@@ -1282,7 +1278,7 @@ export class Blockchain implements BlockchainInterface {
         header.extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
       }
     }
-    return createBlockFromBlockData(
+    return createBlock(
       { header, withdrawals: common.isActivatedEIP(4895) ? [] : undefined },
       { common },
     )

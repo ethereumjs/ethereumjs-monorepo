@@ -1,14 +1,14 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, hexToBytes } from '@ethereumjs/util'
+import { Common, Goerli, Hardfork } from '@ethereumjs/common'
+import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { BlockHeader } from '../src/header.js'
+import { createHeader } from '../src/constructors.js'
 
 describe('[Header]: Clique PoA Functionality', () => {
-  const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+  const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 
   it('Header Data', () => {
-    let header = BlockHeader.fromHeaderData({ number: 1 })
+    let header = createHeader({ number: 1 })
     assert.throws(
       () => {
         header.cliqueIsEpochTransition()
@@ -18,13 +18,13 @@ describe('[Header]: Clique PoA Functionality', () => {
       'cliqueIsEpochTransition() -> should throw on PoW networks',
     )
 
-    header = BlockHeader.fromHeaderData({ extraData: new Uint8Array(97) }, { common })
+    header = createHeader({ extraData: new Uint8Array(97) }, { common })
     assert.ok(
       header.cliqueIsEpochTransition(),
       'cliqueIsEpochTransition() -> should indicate an epoch transition for the genesis block',
     )
 
-    header = BlockHeader.fromHeaderData({ number: 1, extraData: new Uint8Array(97) }, { common })
+    header = createHeader({ number: 1, extraData: new Uint8Array(97) }, { common })
     assert.notOk(
       header.cliqueIsEpochTransition(),
       'cliqueIsEpochTransition() -> should correctly identify a non-epoch block',
@@ -48,10 +48,7 @@ describe('[Header]: Clique PoA Functionality', () => {
       'cliqueEpochTransitionSigners() -> should throw on non-epch block',
     )
 
-    header = BlockHeader.fromHeaderData(
-      { number: 60000, extraData: new Uint8Array(137) },
-      { common },
-    )
+    header = createHeader({ number: 60000, extraData: new Uint8Array(137) }, { common })
     assert.ok(
       header.cliqueIsEpochTransition(),
       'cliqueIsEpochTransition() -> should correctly identify an epoch block',
@@ -68,7 +65,11 @@ describe('[Header]: Clique PoA Functionality', () => {
     )
     const msg =
       'cliqueEpochTransitionSigners() -> should return the correct epoch transition signer list on epoch block'
-    assert.deepEqual(header.cliqueEpochTransitionSigners(), [Address.zero(), Address.zero()], msg)
+    assert.deepEqual(
+      header.cliqueEpochTransitionSigners(),
+      [createZeroAddress(), createZeroAddress()],
+      msg,
+    )
   })
 
   type Signer = {
@@ -88,7 +89,7 @@ describe('[Header]: Clique PoA Functionality', () => {
   it('Signing', () => {
     const cliqueSigner = A.privateKey
 
-    let header = BlockHeader.fromHeaderData(
+    let header = createHeader(
       { number: 1, extraData: new Uint8Array(97) },
       { common, freeze: false, cliqueSigner },
     )
@@ -97,9 +98,9 @@ describe('[Header]: Clique PoA Functionality', () => {
     assert.ok(header.cliqueVerifySignature([A.address]), 'should verify signature')
     assert.ok(header.cliqueSigner().equals(A.address), 'should recover the correct signer address')
 
-    header = BlockHeader.fromHeaderData({ extraData: new Uint8Array(97) }, { common })
+    header = createHeader({ extraData: new Uint8Array(97) }, { common })
     assert.ok(
-      header.cliqueSigner().equals(Address.zero()),
+      header.cliqueSigner().equals(createZeroAddress()),
       'should return zero address on default block',
     )
   })

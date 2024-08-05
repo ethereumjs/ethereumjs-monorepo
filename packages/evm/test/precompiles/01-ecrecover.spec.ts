@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, bytesToUnprefixedHex, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
@@ -16,7 +16,7 @@ describe('Precompiles: ECRECOVER', () => {
   it('ECRECOVER', async () => {
     // Test reference: https://github.com/ethereum/go-ethereum/issues/3731#issuecomment-293866868
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Petersburg })
     const evm = await createEVM({
       common,
     })

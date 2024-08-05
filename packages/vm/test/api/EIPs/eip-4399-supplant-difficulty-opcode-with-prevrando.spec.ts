@@ -1,5 +1,5 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -9,7 +9,7 @@ import type { InterpreterStep } from '@ethereumjs/evm'
 
 describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
   it('should return the right values', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const vm = await VM.create({ common })
 
     const genesis = await vm.blockchain.getCanonicalHeadBlock!()
@@ -19,10 +19,7 @@ describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
       timestamp: genesis.header.timestamp + BigInt(1),
       gasLimit: genesis.header.gasLimit,
     }
-    let block = createBlockFromBlockData(
-      { header },
-      { common, calcDifficultyFromHeader: genesis.header },
-    )
+    let block = createBlock({ header }, { common, calcDifficultyFromHeader: genesis.header })
 
     // Track stack
     let stack: any = []
@@ -41,7 +38,7 @@ describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
 
     common.setHardfork(Hardfork.Paris)
     const prevRandao = bytesToBigInt(new Uint8Array(32).fill(1))
-    block = createBlockFromBlockData(
+    block = createBlock(
       {
         header: {
           ...header,

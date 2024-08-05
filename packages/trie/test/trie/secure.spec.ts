@@ -10,7 +10,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY, Trie, verifyTrieProof } from '../../src/index.js'
+import { ROOT_DB_KEY, Trie, createProof, verifyTrieProof } from '../../src/index.js'
 import secureTrieTests from '../fixtures/trietest_secureTrie.json'
 
 describe('SecureTrie', () => {
@@ -52,7 +52,7 @@ describe('SecureTrie proof', () => {
     const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
     await trie.put(utf8ToBytes('key1aa'), utf8ToBytes('01234'))
 
-    const proof = await trie.createProof(utf8ToBytes('key1aa'))
+    const proof = await createProof(trie, utf8ToBytes('key1aa'))
     const val = await verifyTrieProof(utf8ToBytes('key1aa'), proof, {
       useKeyHashing: true,
     })

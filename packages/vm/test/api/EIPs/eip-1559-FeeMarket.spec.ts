@@ -1,5 +1,5 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
@@ -9,6 +9,7 @@ import {
   Account,
   Address,
   bigIntToBytes,
+  createZeroAddress,
   hexToBytes,
   privateToAddress,
   setLengthLeft,
@@ -23,7 +24,7 @@ const GWEI = BigInt('1000000000')
 
 const common = new Common({
   eips: [1559, 2718, 2930],
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.London,
 })
 
@@ -53,7 +54,7 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: Trans
   const signed = transaction.sign(pkey)
   const json = <any>signed.toJSON()
   json.type = txType
-  const block = createBlockFromBlockData(
+  const block = createBlock(
     {
       header: {
         number: BigInt(1),
@@ -74,7 +75,7 @@ describe('EIP1559 tests', () => {
       {
         maxFeePerGas: GWEI * BigInt(5),
         maxPriorityFeePerGas: GWEI * BigInt(2),
-        to: Address.zero(),
+        to: createZeroAddress(),
         gasLimit: 21000,
       },
       {
@@ -114,7 +115,7 @@ describe('EIP1559 tests', () => {
       {
         gasLimit: 21000,
         gasPrice: GWEI * BigInt(5),
-        to: Address.zero(),
+        to: createZeroAddress(),
       },
       { common },
     )
@@ -142,7 +143,7 @@ describe('EIP1559 tests', () => {
       {
         gasLimit: 21000,
         gasPrice: GWEI * BigInt(5),
-        to: Address.zero(),
+        to: createZeroAddress(),
       },
       { common },
     )

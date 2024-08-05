@@ -1,6 +1,12 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Account, Address, equalsBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
+import {
+  Account,
+  createAddressFromPrivateKey,
+  createAddressFromString,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM, runTx } from '../../../src/index.js'
@@ -8,10 +14,10 @@ import { VM, runTx } from '../../../src/index.js'
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 
 const GWEI = BigInt(1000000000)
-const sender = new Address(privateToAddress(pkey))
+const sender = createAddressFromPrivateKey(pkey)
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.London,
   eips: [6780],
 })
@@ -60,7 +66,7 @@ describe('EIP 6780 tests', () => {
     // Account does not exist...
     assert.ok(!exists, 'account does not exist, so storage is cleared')
     assert.equal(
-      (await vm.stateManager.getAccount(Address.fromString('0x' + '00'.repeat(19) + '01')))!
+      (await vm.stateManager.getAccount(createAddressFromString('0x' + '00'.repeat(19) + '01')))!
         .balance,
       BigInt(value),
       'balance sent to target',
@@ -70,7 +76,7 @@ describe('EIP 6780 tests', () => {
   it('should not destroy contract if selfdestructed in a tx after creating the contract', async () => {
     const vm = await getVM(common)
 
-    const target = Address.fromString('0x' + 'ff'.repeat(20))
+    const target = createAddressFromString('0x' + 'ff'.repeat(20))
 
     await vm.stateManager.putCode(target, payload)
     const targetContract = await vm.stateManager.getAccount(target)
@@ -96,7 +102,7 @@ describe('EIP 6780 tests', () => {
 
     assert.ok(equalsBytes(storage, hexToBytes('0x01')), 'storage not cleared')
     assert.equal(
-      (await vm.stateManager.getAccount(Address.fromString('0x' + '00'.repeat(19) + '01')))!
+      (await vm.stateManager.getAccount(createAddressFromString('0x' + '00'.repeat(19) + '01')))!
         .balance,
       BigInt(value),
       'balance sent to target',

@@ -2,6 +2,7 @@ import {
   Address,
   bytesToHex,
   concatBytes,
+  createZeroAddress,
   equalsBytes,
   hexToBytes,
   unpadBytes,
@@ -72,7 +73,7 @@ describe('StateManager -> Storage', () => {
 
       it(`should throw on storage values larger than 32 bytes`, async () => {
         const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
-        const address = Address.zero()
+        const address = createZeroAddress()
         const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
 
@@ -88,7 +89,7 @@ describe('StateManager -> Storage', () => {
 
       it(`should strip zeros of storage values`, async () => {
         const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
-        const address = Address.zero()
+        const address = createZeroAddress()
         const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
 
@@ -109,7 +110,7 @@ describe('StateManager -> Storage', () => {
       })
 
       it(`should delete storage values which only consist of zero bytes`, async () => {
-        const address = Address.zero()
+        const address = createZeroAddress()
         const key = zeros(32)
 
         const startValue = hexToBytes('0x01')
@@ -138,7 +139,7 @@ describe('StateManager -> Storage', () => {
 
       it(`should not strip trailing zeros`, async () => {
         const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
-        const address = Address.zero()
+        const address = createZeroAddress()
         const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
 

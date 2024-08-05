@@ -1,13 +1,19 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import {
-  Chain,
   Common,
   ConsensusAlgorithm,
   ConsensusType,
+  Goerli,
   Hardfork,
   createCustomCommon,
 } from '@ethereumjs/common'
-import { Address, concatBytes, hexToBytes } from '@ethereumjs/util'
+import {
+  Address,
+  concatBytes,
+  createAddressFromString,
+  createZeroAddress,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP, CliqueConsensus } from '../src/consensus/clique.js'
@@ -17,7 +23,7 @@ import type { Blockchain, ConsensusDict } from '../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 
-const COMMON = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+const COMMON = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 const EXTRA_DATA = new Uint8Array(97)
 const GAS_LIMIT = BigInt(8000000)
 
@@ -84,10 +90,7 @@ const initWithSigners = async (signers: Signer[], common?: Common) => {
     ...signers.map((s) => s.address.toBytes()),
     new Uint8Array(65),
   )
-  const genesisBlock = createBlockFromBlockData(
-    { header: { gasLimit: GAS_LIMIT, extraData } },
-    { common },
-  )
+  const genesisBlock = createBlock({ header: { gasLimit: GAS_LIMIT, extraData } }, { common })
   blocks.push(genesisBlock)
 
   const consensusDict: ConsensusDict = {}
@@ -114,7 +117,7 @@ function getBlock(
   common = common ?? COMMON
   const number = lastBlock.header.number + BigInt(1)
 
-  let coinbase = Address.zero()
+  let coinbase = createZeroAddress()
   let nonce = CLIQUE_NONCE_DROP
   let extraData = EXTRA_DATA
   if (beneficiary) {
@@ -152,7 +155,7 @@ function getBlock(
   // set signer
   const cliqueSigner = signer.privateKey
 
-  return createBlockFromBlockData(blockData, { common, freeze: false, cliqueSigner })
+  return createBlock(blockData, { common, freeze: false, cliqueSigner })
 }
 
 const addNextBlockReorg = async (
@@ -193,7 +196,7 @@ const addNextBlock = async (
 
 describe('Clique: Initialization', () => {
   it('should initialize a clique blockchain', async () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
     const consensusDict: ConsensusDict = {}
     consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
     const blockchain = await createBlockchain({ common, consensusDict })
@@ -214,14 +217,14 @@ describe('Clique: Initialization', () => {
     // _validateConsensus needs to be true to trigger this test condition
     ;(blockchain as any)._validateConsensus = true
     const number = (COMMON.consensusConfig() as CliqueConfig).epoch
-    const unauthorizedSigner = Address.fromString('0x00a839de7922491683f547a67795204763ff8237')
+    const unauthorizedSigner = createAddressFromString('0x00a839de7922491683f547a67795204763ff8237')
     const extraData = concatBytes(
       new Uint8Array(32),
       A.address.toBytes(),
       unauthorizedSigner.toBytes(),
       new Uint8Array(65),
     )
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       { header: { number, extraData } },
       { common: COMMON, cliqueSigner: A.privateKey },
     )
@@ -243,7 +246,7 @@ describe('Clique: Initialization', () => {
     const number = BigInt(2)
     const extraData = new Uint8Array(97)
     let difficulty = BigInt(5)
-    let block = createBlockFromBlockData(
+    let block = createBlock(
       {
         header: {
           number,
@@ -268,7 +271,7 @@ describe('Clique: Initialization', () => {
 
     difficulty = BigInt(1)
     const cliqueSigner = A.privateKey
-    block = createBlockFromBlockData(
+    block = createBlock(
       {
         header: {
           number,
@@ -631,8 +634,8 @@ describe('Clique: Initialization', () => {
           },
         },
       },
+      Goerli,
       {
-        baseChain: Chain.Goerli,
         hardfork: Hardfork.Chainstart,
       },
     )
@@ -687,8 +690,8 @@ describe('Clique: Initialization', () => {
           },
         },
       },
+      Goerli,
       {
-        baseChain: Chain.Goerli,
         hardfork: Hardfork.Chainstart,
       },
     )

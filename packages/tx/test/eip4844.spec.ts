@@ -1,11 +1,11 @@
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
-  Address,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
   concatBytes,
+  createZeroAddress,
   ecsign,
   equalsBytes,
   getBlobs,
@@ -23,6 +23,7 @@ import {
   create4844BlobTxFromSerializedNetworkWrapper,
   createMinimal4844TxFromNetworkWrapper,
   createTxFromTxData,
+  paramsTx,
 } from '../src/index.js'
 
 import blobTx from './json/serialized4844tx.json'
@@ -46,7 +47,7 @@ describe('EIP4844 addSignature tests', () => {
     const privateKey = pk
     const tx = create4844BlobTx(
       {
-        to: Address.zero(),
+        to: createZeroAddress(),
         blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
       },
       { common },
@@ -61,7 +62,7 @@ describe('EIP4844 addSignature tests', () => {
     const privKey = pk
     const tx = create4844BlobTx(
       {
-        to: Address.zero(),
+        to: createZeroAddress(),
         blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
       },
       { common },
@@ -80,7 +81,7 @@ describe('EIP4844 addSignature tests', () => {
     const privKey = pk
     const tx = create4844BlobTx(
       {
-        to: Address.zero(),
+        to: createZeroAddress(),
         blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
       },
       { common },
@@ -111,7 +112,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
       type: 0x03,
       blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
       maxFeePerBlobGas: 1n,
-      to: Address.zero(),
+      to: createZeroAddress(),
     }
     const tx = create4844BlobTx(txData, { common })
     assert.equal(tx.type, 3, 'successfully instantiated a blob transaction from txData')
@@ -220,7 +221,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
     const baseTxData = {
       type: 0x03,
       maxFeePerBlobGas: 1n,
-      to: Address.zero(),
+      to: createZeroAddress(),
     }
     const shortVersionHash = {
       blobVersionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(3))],
@@ -270,6 +271,7 @@ describe('Network wrapper tests', () => {
     common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      params: paramsTx,
       customCrypto: { kzg },
     })
   })
@@ -560,7 +562,7 @@ describe('hash() and signature verification', () => {
             storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000000'],
           },
         ],
-        to: Address.zero(),
+        to: createZeroAddress(),
       },
       { common },
     )
@@ -593,7 +595,7 @@ it('getEffectivePriorityFee()', async () => {
     {
       maxFeePerGas: 10,
       maxPriorityFeePerGas: 8,
-      to: Address.zero(),
+      to: createZeroAddress(),
       blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
     },
     { common },
@@ -615,6 +617,7 @@ describe('Network wrapper deserialization test', () => {
     common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      params: paramsTx,
       customCrypto: {
         kzg,
       },

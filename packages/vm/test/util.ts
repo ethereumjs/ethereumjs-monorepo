@@ -1,5 +1,5 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
+import { Block, createHeader } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   create1559FeeMarketTx,
@@ -26,7 +26,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { BlockOptions } from '@ethereumjs/block'
-import type { EVMStateManagerInterface } from '@ethereumjs/common'
+import type { StateManagerInterface } from '@ethereumjs/common'
 import type {
   AccessListEIP2930Transaction,
   BlobEIP4844Transaction,
@@ -326,7 +326,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   if (opts?.common && opts.common.gteHardfork('london')) {
     headerData['baseFeePerGas'] = currentBaseFee
     if (currentBaseFee === undefined) {
-      const parentBlockHeader = BlockHeader.fromHeaderData(
+      const parentBlockHeader = createHeader(
         {
           gasLimit: parentGasLimit,
           gasUsed: parentGasUsed,
@@ -344,7 +344,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   if (opts?.common && opts.common.gteHardfork('cancun')) {
     headerData['excessBlobGas'] = currentExcessBlobGas
   }
-  return BlockHeader.fromHeaderData(headerData, opts)
+  return createHeader(headerData, opts)
 }
 
 /**
@@ -363,7 +363,7 @@ export function makeBlockFromEnv(env: any, opts?: BlockOptions): Block {
  * @param state - the state DB/trie
  * @param testData - JSON from tests repo
  */
-export async function setupPreConditions(state: EVMStateManagerInterface, testData: any) {
+export async function setupPreConditions(state: StateManagerInterface, testData: any) {
   await state.checkpoint()
   for (const addressStr of Object.keys(testData.pre)) {
     const { nonce, balance, code, storage } = testData.pre[addressStr]
@@ -406,7 +406,7 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
  */
 export function getDAOCommon(activationBlock: number) {
   // here: get the default fork list of mainnet and only edit the DAO fork block (thus copy the rest of the "default" hardfork settings)
-  const defaultDAOCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Dao })
+  const defaultDAOCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Dao })
   // retrieve the hard forks list from defaultCommon...
   const forks = defaultDAOCommon.hardforks()
   const editedForks = []
@@ -426,8 +426,8 @@ export function getDAOCommon(activationBlock: number) {
     {
       hardforks: editedForks,
     },
+    Mainnet,
     {
-      baseChain: 'mainnet',
       hardfork: Hardfork.Dao,
     },
   )

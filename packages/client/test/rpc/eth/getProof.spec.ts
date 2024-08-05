@@ -1,8 +1,8 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common } from '@ethereumjs/common'
+import { Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address, bigIntToHex } from '@ethereumjs/util'
+import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
@@ -87,7 +87,7 @@ const testnetData = {
   bootstrapNodes: [],
 }
 
-const common = new Common({ chain: 'testnet2', customChains: [testnetData] })
+const common = createCustomCommon({ ...testnetData }, Mainnet)
 
 describe(method, async () => {
   it('call with valid arguments', async () => {
@@ -106,7 +106,7 @@ describe(method, async () => {
     const { vm } = execution
 
     // genesis address with balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // contract inspired from https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_getstorageat/
     /*
@@ -132,7 +132,7 @@ describe(method, async () => {
       return address
     }
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           parentHash: parent.hash(),
@@ -164,7 +164,7 @@ describe(method, async () => {
     storeTx.getSenderAddress = () => {
       return address
     }
-    const block2 = createBlockFromBlockData(
+    const block2 = createBlock(
       {
         header: {
           parentHash: ranBlock!.hash(),

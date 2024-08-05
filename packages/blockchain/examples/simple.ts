@@ -1,10 +1,10 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 
 const main = async () => {
-  const common = new Common({ chain: 'mainnet', hardfork: Hardfork.London })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
   // Use the safe static constructor which awaits the init method
   const blockchain = await createBlockchain({
     validateBlocks: false, // Skipping validation so we can make a simple chain without having to provide complete blocks
@@ -13,7 +13,7 @@ const main = async () => {
   })
 
   // We use minimal data to provide a sequence of blocks (increasing number, difficulty, and then setting parent hash to previous block)
-  const block = createBlockFromBlockData(
+  const block = createBlock(
     {
       header: {
         number: 1n,
@@ -23,7 +23,7 @@ const main = async () => {
     },
     { common, setHardfork: true },
   )
-  const block2 = createBlockFromBlockData(
+  const block2 = createBlock(
     {
       header: {
         number: 2n,

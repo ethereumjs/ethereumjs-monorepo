@@ -1,7 +1,13 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Holesky } from '@ethereumjs/common'
 import { TransactionType, create1559FeeMarketTx, createTxFromTxData } from '@ethereumjs/tx'
-import { Address, bigIntToBytes, bytesToBigInt, hexToBytes, randomBytes } from '@ethereumjs/util'
+import {
+  bigIntToBytes,
+  bytesToBigInt,
+  createZeroAddress,
+  hexToBytes,
+  randomBytes,
+} from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
@@ -81,7 +87,7 @@ describe('[EthProtocol]', () => {
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     const td = BigInt(100)
-    const block = createBlockFromBlockData({}, { common: config.chainCommon })
+    const block = createBlock({}, { common: config.chainCommon })
     const res = p.decode(p.messages.filter((message) => message.name === 'NewBlock')[0], [
       block.raw(),
       bigIntToBytes(td),
@@ -98,7 +104,7 @@ describe('[EthProtocol]', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
-    const block = createBlockFromBlockData({})
+    const block = createBlock({})
     const res = p.decode(p.messages.filter((message) => message.name === 'GetReceipts')[0], [
       bigIntToBytes(1n),
       [block.hash()],
@@ -206,7 +212,7 @@ describe('[EthProtocol]', () => {
     const kzg = await loadKZG()
     const config = new Config({
       common: new Common({
-        chain: CommonChain.Holesky,
+        chain: Holesky,
         hardfork: Hardfork.Paris,
         eips: [4895, 4844],
         customCrypto: {
@@ -224,7 +230,11 @@ describe('[EthProtocol]', () => {
     const eip2929Tx = createTxFromTxData({ type: 1 }, { common: config.chainCommon })
     const eip1559Tx = createTxFromTxData({ type: 2 }, { common: config.chainCommon })
     const blobTx = createTxFromTxData(
-      { type: 3, to: Address.zero(), blobVersionedHashes: [hexToBytes(`0x01${'00'.repeat(31)}`)] },
+      {
+        type: 3,
+        to: createZeroAddress(),
+        blobVersionedHashes: [hexToBytes(`0x01${'00'.repeat(31)}`)],
+      },
       { common: config.chainCommon },
     )
     const res = p.encode(p.messages.filter((message) => message.name === 'Transactions')[0], [

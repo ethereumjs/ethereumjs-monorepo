@@ -1,11 +1,18 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { createHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Chain as ChainEnum, Common, Hardfork, parseGethGenesis } from '@ethereumjs/common'
+import {
+  Common,
+  Hardfork,
+  Mainnet,
+  createCommonFromGethGenesis,
+  parseGethGenesis,
+} from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import {
   Address,
   BIGINT_1,
   KECCAK256_RLP,
+  createAddressFromString,
   hexToBytes,
   parseGethGenesisState,
 } from '@ethereumjs/util'
@@ -88,12 +95,12 @@ export function createManager(client: EthereumClient) {
 }
 
 export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
-  const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
+  const common: Common = clientOpts.commonChain ?? new Common({ chain: Mainnet })
   const genesisState = clientOpts.genesisState ?? getGenesis(Number(common.chainId())) ?? {}
   const config = new Config({
     minerCoinbase:
       clientOpts.minerCoinbase !== undefined
-        ? Address.fromString(clientOpts.minerCoinbase)
+        ? createAddressFromString(clientOpts.minerCoinbase)
         : undefined,
     common,
     saveReceipts: clientOpts.enableMetaDB,
@@ -121,7 +128,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
 
   chain.getTd = async (_hash: Uint8Array, _num: bigint) => BigInt(1000)
   if ((chain as any)._headers !== undefined) {
-    ;(chain as any)._headers.latest = BlockHeader.fromHeaderData(
+    ;(chain as any)._headers.latest = createHeader(
       { withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined },
       { common },
     )
@@ -204,8 +211,11 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
 export async function baseSetup(clientOpts: any = {}) {
   const client = await createClient(clientOpts)
   const manager = createManager(client)
-  const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
-  const server = startRPC({ ...manager.getMethods(), ...engineMethods })
+  const engineMethods = clientOpts.engine === true ? manager.getMethods(true, true) : {}
+  const server = startRPC({
+    ...manager.getMethods(false, true), // Add debug trace since this is for tests
+    ...engineMethods,
+  })
   const host = server.address() as AddressInfo
   const rpc = Client.http({ port: host.port })
   server.once('close', () => {
@@ -221,15 +231,12 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   const genesisParams = parseGethGenesis(genesisFile, chainName)
   const genesisState = parseGethGenesisState(genesisFile)
   const genesisStateRoot = clientOpts.genesisStateRoot
-
-  const common = new Common({
+  const common = createCommonFromGethGenesis(genesisFile, {
     chain: chainName,
-    customChains: [genesisParams],
     customCrypto: clientOpts.customCrypto,
   })
   common.setHardforkBy({
     blockNumber: 0,
-    td: genesisParams.genesis.difficulty,
     timestamp: genesisParams.genesis.timestamp,
   })
 
