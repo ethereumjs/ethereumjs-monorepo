@@ -71,7 +71,7 @@ export function verifyTrieRangeProof(
  * serialized branch, extension, and/or leaf nodes.
  * @param key key to create a proof for
  */
-export async function createProof(trie: Trie, key: Uint8Array): Promise<Proof> {
+export async function createMerkleProof(trie: Trie, key: Uint8Array): Promise<Proof> {
   trie['DEBUG'] && trie['debug'](`Creating Proof for Key: ${bytesToHex(key)}`, ['CREATE_PROOF'])
   const { stack } = await trie.findPath(trie['appliedKey'](key))
   const p = stack.map((stackElem) => {
@@ -89,7 +89,11 @@ export async function createProof(trie: Trie, key: Uint8Array): Promise<Proof> {
  * @param shouldVerifyRoot - defaults to false. If `true`, verifies that the root key of the proof matches the trie root and throws if not (i.e invalid proof).
  * @returns The root of the proof
  */
-export async function updateFromProof(trie: Trie, proof: Proof, shouldVerifyRoot: boolean = false) {
+export async function updateTrieFromMerkleProof(
+  trie: Trie,
+  proof: Proof,
+  shouldVerifyRoot: boolean = false,
+) {
   trie['DEBUG'] && trie['debug'](`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
   const opStack = proof.map((nodeValue) => {
     let key = Uint8Array.from(trie['hash'](nodeValue))
@@ -124,7 +128,7 @@ export async function updateFromProof(trie: Trie, proof: Proof, shouldVerifyRoot
  * @throws If proof is found to be invalid.
  * @returns The value from the key, or null if valid proof of non-existence.
  */
-export async function verifyProof(
+export async function verifyMerkleProof(
   trie: Trie,
   rootHash: Uint8Array,
   key: Uint8Array,
@@ -144,7 +148,7 @@ export async function verifyProof(
     common: trie['_opts'].common,
   })
   try {
-    await updateFromProof(proofTrie, proof, true)
+    await updateTrieFromMerkleProof(proofTrie, proof, true)
   } catch (e: any) {
     throw new Error('Invalid proof nodes given')
   }

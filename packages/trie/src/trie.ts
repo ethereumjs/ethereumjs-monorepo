@@ -513,7 +513,7 @@ export class Trie {
     const value = (await this._db.get(key)) ?? null
 
     if (value === null) {
-      // Dev note: this error message text is used for error checking in `checkRoot`, `verifyProof`, and `findPath`
+      // Dev note: this error message text is used for error checking in `checkRoot`, `verifyMerkleProof`, and `findPath`
       throw new Error('Missing node in DB')
     }
 
