@@ -45,7 +45,7 @@ function readyPragueGenesis(genesisJSON: any) {
 
 describe(`${method}: call with executionPayloadV4`, () => {
   it('valid data', async () => {
-    // get the genesis json with late enougt date with respect to block data in batchBlocks
+    // get the genesis json with late enough date with respect to block data in batchBlocks
 
     const { pragueJson, pragueTime } = readyPragueGenesis(genesisJSON)
     const { service, server } = await setupChain(pragueJson, 'post-merge', { engine: true })

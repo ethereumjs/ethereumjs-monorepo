@@ -100,7 +100,7 @@ export class FullSynchronizer extends Synchronizer {
     const hash = this.chain.blocks.latest!.hash()
     this.startingBlock = number
     const timestamp = this.chain.blocks.latest?.header.timestamp
-    this.config.chainCommon.setHardforkBy({ blockNumber: number, td, timestamp })
+    this.config.chainCommon.setHardforkBy({ blockNumber: number, timestamp })
 
     this.config.logger.info(
       `Latest local block number=${Number(number)} td=${td} hash=${short(
@@ -239,18 +239,6 @@ export class FullSynchronizer extends Synchronizer {
         // TODO: Do something about super-ugly nextHardforkBlockOrTimestamp() method
         const nextHF = this.config.chainCommon.getHardforkBy({ blockNumber: nextHFBlockNum })
         attentionHF = `${nextHF} HF in ${remaining} blocks`
-      }
-    } else {
-      if (
-        this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition &&
-        !this.config.chainCommon.gteHardfork(Hardfork.Paris)
-      ) {
-        const mergeTTD = this.config.chainCommon.hardforkTTD(Hardfork.Paris)!
-        const td = this.chain.blocks.td
-        const remaining = mergeTTD - td
-        if (remaining <= mergeTTD / BigInt(10)) {
-          attentionHF = `Paris (Merge) HF in ${remaining} TD`
-        }
       }
     }
 

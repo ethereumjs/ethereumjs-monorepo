@@ -188,14 +188,10 @@ describe('[BlockFetcher]', async () => {
   it('should parse bodies correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     config.chainCommon.getHardforkBy = vi.fn((input) => {
-      if (
-        input['blockNumber'] !== undefined &&
-        input['td'] !== undefined &&
-        input['timestamp'] !== undefined
-      )
+      if (input['blockNumber'] !== undefined && input['timestamp'] !== undefined)
         return Hardfork.Shanghai
 
-      if (input['blockNumber'] !== undefined && input['td'] !== undefined) return Hardfork.Shanghai
+      if (input['blockNumber'] !== undefined) return Hardfork.Shanghai
 
       if (input['blockNumber'] !== undefined && input['timestamp'] !== undefined)
         return Hardfork.Shanghai

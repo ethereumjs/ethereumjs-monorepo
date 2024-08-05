@@ -26,12 +26,9 @@ function formatNonce(nonce: string): PrefixedHexString {
 /**
  * Converts Geth genesis parameters to an EthereumJS compatible `CommonOpts` object
  * @param json object representing the Geth genesis file
- * @param optional mergeForkIdPostMerge which clarifies the placement of MergeForkIdTransition
- * hardfork, which by default is post merge as with the merged eth networks but could also come
- * before merge like in kiln genesis
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
-function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
+function parseGethParams(json: any) {
   const {
     name,
     config,
@@ -84,6 +81,15 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     )
   }
 
+  // Terminal total difficulty logic is not supported any more as the merge has been completed
+  // so the Merge/Paris hardfork block must be 0
+  if (
+    config.terminalTotalDifficulty !== undefined &&
+    (config.terminalTotalDifficulty > 0 || config.terminalTotalDifficultyPassed === false)
+  ) {
+    throw new Error('nonzero terminal total difficulty is not supported')
+  }
+
   const params = {
     name,
     chainId,
@@ -134,7 +140,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     [Hardfork.MuirGlacier]: { name: 'muirGlacierBlock' },
     [Hardfork.Berlin]: { name: 'berlinBlock' },
     [Hardfork.London]: { name: 'londonBlock' },
-    [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: mergeForkIdPostMerge },
+    [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: true },
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
     [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
@@ -176,7 +182,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     return (a.timestamp ?? 0) - (b.timestamp ?? 0)
   })
 
-  // only set the genesis timestamp forks to zero post the above sort has happended
+  // only set the genesis timestamp forks to zero post the above sort has happened
   // to get the correct sorting
   for (const hf of params.hardforks) {
     if (hf.timestamp === genesisTimestamp) {
@@ -185,15 +191,11 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   }
 
   if (config.terminalTotalDifficulty !== undefined) {
-    // Following points need to be considered for placement of merge hf
-    // - Merge hardfork can't be placed at genesis
-    // - Place merge hf before any hardforks that require CL participation for e.g. withdrawals
-    // - Merge hardfork has to be placed just after genesis if any of the genesis hardforks make CL
-    //   necessary for e.g. withdrawals
+    // Merge fork must be placed at 0 since ttd logic is no longer supported
     const mergeConfig = {
       name: Hardfork.Paris,
-      ttd: config.terminalTotalDifficulty,
-      block: null,
+      block: 0,
+      timestamp: undefined,
     }
 
     // Merge hardfork has to be placed before first hardfork that is dependent on merge
@@ -220,7 +222,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
  * @param name optional chain name
  * @returns parsed params
  */
-export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?: boolean) {
+export function parseGethGenesis(json: any, name?: string) {
   try {
     const required = ['config', 'difficulty', 'gasLimit', 'nonce', 'alloc']
     if (required.some((field) => !(field in json))) {
@@ -234,7 +236,7 @@ export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?
     if (name !== undefined) {
       finalJson.name = name
     }
-    return parseGethParams(finalJson, mergeForkIdPostMerge)
+    return parseGethParams(finalJson)
   } catch (e: any) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }

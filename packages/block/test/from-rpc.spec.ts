@@ -147,7 +147,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
     )
     block = createBlockFromRpc(infura15571241woTxs as JsonRpcBlock, [], {
       common,
-      setHardfork: 58750000000000000000000n,
+      setHardfork: true,
     })
     assert.equal(
       bytesToHex(block.hash()),
@@ -157,7 +157,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
 
     block = createBlockFromRpc(infura15571241wTxs as JsonRpcBlock, [], {
       common,
-      setHardfork: 58750000000000000000000n,
+      setHardfork: true,
     })
     assert.equal(
       bytesToHex(block.hash()),
