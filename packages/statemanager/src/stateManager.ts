@@ -2,7 +2,7 @@ import { CacheType, Common, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Trie,
-  createProof,
+  createMerkleProof,
   createTrieFromProof,
   updateFromProof,
   verifyTrieProof,
@@ -579,19 +579,21 @@ export class DefaultStateManager implements StateManagerInterface {
         codeHash: KECCAK256_NULL_S,
         nonce: '0x0',
         storageHash: KECCAK256_RLP_S,
-        accountProof: (await createProof(this._trie, address.bytes)).map((p) => bytesToHex(p)),
+        accountProof: (await createMerkleProof(this._trie, address.bytes)).map((p) =>
+          bytesToHex(p),
+        ),
         storageProof: [],
       }
       return returnValue
     }
-    const accountProof: PrefixedHexString[] = (await createProof(this._trie, address.bytes)).map(
-      (p) => bytesToHex(p),
-    )
+    const accountProof: PrefixedHexString[] = (
+      await createMerkleProof(this._trie, address.bytes)
+    ).map((p) => bytesToHex(p))
     const storageProof: StorageProof[] = []
     const storageTrie = this._getStorageTrie(address, account)
 
     for (const storageKey of storageSlots) {
-      const proof = (await createProof(storageTrie, storageKey)).map((p) => bytesToHex(p))
+      const proof = (await createMerkleProof(storageTrie, storageKey)).map((p) => bytesToHex(p))
       const value = bytesToHex(await this.getStorage(address, storageKey))
       const proofItem: StorageProof = {
         key: bytesToHex(storageKey),

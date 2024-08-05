@@ -71,7 +71,7 @@ export function verifyTrieRangeProof(
  * serialized branch, extension, and/or leaf nodes.
  * @param key key to create a proof for
  */
-export async function createProof(trie: Trie, key: Uint8Array): Promise<Proof> {
+export async function createMerkleProof(trie: Trie, key: Uint8Array): Promise<Proof> {
   trie['DEBUG'] && trie['debug'](`Creating Proof for Key: ${bytesToHex(key)}`, ['CREATE_PROOF'])
   const { stack } = await trie.findPath(trie['appliedKey'](key))
   const p = stack.map((stackElem) => {

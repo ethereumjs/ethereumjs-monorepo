@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie, createProof, verifyTrieRangeProof } from '../../src/index.js'
+import { Trie, createMerkleProof, verifyTrieRangeProof } from '../../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
 
@@ -94,7 +94,7 @@ async function verify(
     endKey,
     keys ?? targetRange.map(([key]) => key),
     vals ?? targetRange.map(([, val]) => val),
-    [...(await createProof(trie, startKey)), ...(await createProof(trie, endKey))],
+    [...(await createMerkleProof(trie, startKey)), ...(await createMerkleProof(trie, endKey))],
   )
 }
 
@@ -474,7 +474,7 @@ describe('simple merkle range proofs generation and verification', () => {
 
     let bloatedProof: Uint8Array[] = []
     for (let i = 0; i < TRIE_SIZE; i++) {
-      bloatedProof = bloatedProof.concat(await createProof(trie, entries[i][0]))
+      bloatedProof = bloatedProof.concat(await createMerkleProof(trie, entries[i][0]))
     }
 
     assert.equal(await verify(trie, entries, 0, entries.length - 1), false)
