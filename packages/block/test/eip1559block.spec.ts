@@ -3,7 +3,7 @@ import { create1559FeeMarketTx } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlock, createHeader } from '../src/constructors.js'
+import { createBlock, createBlockHeader } from '../src/constructors.js'
 // Test data from Besu (retrieved via Discord)
 // Older version at https://github.com/abdelhamidbakhta/besu/blob/bf54b6c0b40d3015fc85ff9b078fbc26592d80c0/ethereum/core/src/test/resources/org/hyperledger/besu/ethereum/core/fees/basefee-test.json
 import { paramsBlock } from '../src/params.js'
@@ -36,7 +36,7 @@ describe('EIP1559 tests', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     assert.throws(
       () => {
-        createHeader(
+        createBlockHeader(
           {
             number: BigInt(1),
             parentHash: genesis.hash(),
@@ -57,7 +57,7 @@ describe('EIP1559 tests', () => {
 
   it('Header -> genericFormatValidation checks', async () => {
     try {
-      createHeader(
+      createBlockHeader(
         {
           number: BigInt(1),
           parentHash: genesis.hash(),
@@ -81,7 +81,7 @@ describe('EIP1559 tests', () => {
     }
 
     try {
-      const header = createHeader(
+      const header = createBlockHeader(
         {
           number: BigInt(1),
           parentHash: genesis.hash(),
@@ -127,7 +127,7 @@ describe('EIP1559 tests', () => {
 
   it('Header -> validate()', async () => {
     try {
-      createHeader(
+      createBlockHeader(
         {
           baseFeePerGas: BigInt(1000),
           number: BigInt(1),
@@ -182,7 +182,7 @@ describe('EIP1559 tests', () => {
 
   it('Header -> validate() -> gas usage', async () => {
     try {
-      createHeader(
+      createBlockHeader(
         {
           number: BigInt(1),
           parentHash: genesis.hash(),
@@ -205,7 +205,7 @@ describe('EIP1559 tests', () => {
   })
 
   it('Header -> validate() -> gas usage', async () => {
-    createHeader(
+    createBlockHeader(
       {
         number: BigInt(1),
         parentHash: genesis.hash(),
@@ -241,7 +241,7 @@ describe('EIP1559 tests', () => {
 
   it('Header -> validate() -> gasLimit -> success cases', async () => {
     let parentGasLimit = genesis.header.gasLimit * BigInt(2)
-    createHeader(
+    createBlockHeader(
       {
         number: BigInt(1),
         parentHash: genesis.hash(),
@@ -257,7 +257,7 @@ describe('EIP1559 tests', () => {
 
     assert.ok(true, 'should not throw if gas limit is between bounds (HF transition block)')
 
-    createHeader(
+    createBlockHeader(
       {
         number: BigInt(1),
         parentHash: genesis.hash(),
@@ -274,7 +274,7 @@ describe('EIP1559 tests', () => {
     assert.ok(true, 'should not throw if gas limit is between bounds (HF transition block)')
 
     parentGasLimit = block1.header.gasLimit
-    createHeader(
+    createBlockHeader(
       {
         number: BigInt(2),
         parentHash: block1.hash(),
@@ -290,7 +290,7 @@ describe('EIP1559 tests', () => {
 
     assert.ok(true, 'should not throw if gas limit is between bounds (post-HF transition block)')
 
-    createHeader(
+    createBlockHeader(
       {
         number: BigInt(2),
         parentHash: block1.hash(),
@@ -309,7 +309,7 @@ describe('EIP1559 tests', () => {
 
   it('Header -> validateGasLimit() -> error cases', async () => {
     let parentGasLimit = genesis.header.gasLimit * BigInt(2)
-    let header = createHeader(
+    let header = createBlockHeader(
       {
         number: BigInt(1),
         parentHash: genesis.hash(),
@@ -333,7 +333,7 @@ describe('EIP1559 tests', () => {
     }
 
     parentGasLimit = block1.header.gasLimit
-    header = createHeader(
+    header = createBlockHeader(
       {
         number: BigInt(2),
         parentHash: block1.hash(),
@@ -359,7 +359,7 @@ describe('EIP1559 tests', () => {
 
   it('Header -> validateGasLimit() -> error cases', async () => {
     let parentGasLimit = genesis.header.gasLimit * BigInt(2)
-    let header = createHeader(
+    let header = createBlockHeader(
       {
         number: BigInt(1),
         parentHash: genesis.hash(),
@@ -383,7 +383,7 @@ describe('EIP1559 tests', () => {
     }
 
     parentGasLimit = block1.header.gasLimit
-    header = createHeader(
+    header = createBlockHeader(
       {
         number: BigInt(2),
         parentHash: block1.hash(),
@@ -452,7 +452,7 @@ describe('EIP1559 tests', () => {
   it('Header -> calcNextBaseFee()', () => {
     for (let index = 0; index < eip1559BaseFee.length; index++) {
       const item = eip1559BaseFee[index]
-      const result = createHeader(
+      const result = createBlockHeader(
         {
           baseFeePerGas: BigInt(item.parentBaseFee),
           gasUsed: BigInt(item.parentGasUsed),
@@ -466,7 +466,7 @@ describe('EIP1559 tests', () => {
   })
 
   it('Header -> toJSON()', () => {
-    const header = createHeader(
+    const header = createBlockHeader(
       {
         number: BigInt(3),
         parentHash: genesis.hash(),
