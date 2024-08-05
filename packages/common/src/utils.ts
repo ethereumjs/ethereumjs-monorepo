@@ -85,7 +85,8 @@ function parseGethParams(json: any) {
   // so the Merge/Paris hardfork block must be 0
   if (
     config.terminalTotalDifficulty !== undefined &&
-    (config.terminalTotalDifficulty > 0 || config.terminalTotalDifficultyPassed === false)
+    (BigInt(difficulty) < BigInt(config.terminalTotalDifficulty) ||
+      config.terminalTotalDifficultyPassed === false)
   ) {
     throw new Error('nonzero terminal total difficulty is not supported')
   }
