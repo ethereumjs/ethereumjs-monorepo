@@ -603,14 +603,9 @@ async function startExecutionFrom(client: EthereumClient) {
 
   const startExecutionBlock = await client.chain.getBlock(startExecutionFrom)
   const startExecutionParent = await client.chain.getBlock(startExecutionBlock.header.parentHash)
-  const startExecutionParentTd = await client.chain.getTd(
-    startExecutionParent.hash(),
-    startExecutionParent.header.number,
-  )
 
   const startExecutionHardfork = client.config.execCommon.getHardforkBy({
     blockNumber: startExecutionBlock.header.number,
-    td: startExecutionParentTd,
     timestamp: startExecutionBlock.header.timestamp,
   })
 

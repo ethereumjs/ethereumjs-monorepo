@@ -13,7 +13,8 @@
     "londonBlock": 0,
     "mergeForkBlock": 0,
     "eofBlock": 0,
-    "terminalTotalDifficulty": 1
+    "terminalTotalDifficulty": 0,
+    "terminalTotalDifficultyPassed": true
   },
   "alloc": {
     "0x0000000000000000000000000000000000000000": {

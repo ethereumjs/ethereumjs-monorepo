@@ -140,28 +140,6 @@ describe('runTx() -> successful API parameter usage', async () => {
     assert.ok(true, 'runTx should not fail with mismatching hardforks if validation skipped')
   })
 
-  it('should ignore merge in hardfork mismatch', async () => {
-    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Paris })
-    const vm = await VM.create({
-      common,
-      blockchain: await createBlockchain({ validateConsensus: false, validateBlocks: false }),
-    })
-    const tx = getTransaction(vm.common, 0, true)
-    const caller = tx.getSenderAddress()
-    const acc = createAccountWithDefaults()
-    await vm.stateManager.putAccount(caller, acc)
-    const block = createBlock({}, { common: vm.common.copy() })
-
-    tx.common.setHardfork(Hardfork.GrayGlacier)
-    block.common.setHardfork(Hardfork.GrayGlacier)
-    try {
-      await runTx(vm, { tx, block })
-      assert.ok(true, 'successfully ignored merge hf while hf matching in runTx')
-    } catch (e) {
-      assert.fail('should have ignored merge hf while matching in runTx')
-    }
-  })
-
   it('should use passed in blockGasUsed to generate tx receipt', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })

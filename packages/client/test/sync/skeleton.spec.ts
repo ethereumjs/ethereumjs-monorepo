@@ -1,8 +1,13 @@
-import { BlockHeader, createBlock } from '@ethereumjs/block'
-import { Common, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import {
+  Common,
+  Mainnet,
+  createCommonFromGethGenesis,
+  createCustomCommon,
+} from '@ethereumjs/common'
 import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
-import { assert, describe, it, vi } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../src/blockchain/index.js'
 import { Config } from '../../src/config.js'
@@ -10,6 +15,7 @@ import { getLogger } from '../../src/logging.js'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.js'
 import { short } from '../../src/util/index.js'
 import { wait } from '../integration/util.js'
+import mergeGenesisParams from '../testdata/common/mergeTestnet.json'
 import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import type { Block } from '@ethereumjs/block'
@@ -804,19 +810,9 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should abort filling the canonical chain if the terminal block is invalid', async () => {
-    const genesis = {
-      ...genesisJSON,
-      config: {
-        ...genesisJSON.config,
-        terminalTotalDifficulty: 200,
-        clique: undefined,
-        ethash: {},
-      },
-      extraData: '0x00000000000000000',
-      difficulty: '0x1',
-    }
-    const common = createCommonFromGethGenesis(genesis, { chain: 'post-merge' })
-    common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
+    // @ts-ignore PrefixedHexString type is too strict
+    const common = createCustomCommon(mergeGenesisParams, Mainnet, { name: 'post-merge' })
+    common.setHardforkBy({ blockNumber: BigInt(0) })
     const config = new Config({
       common,
       accountCache: 10000,
@@ -841,19 +837,19 @@ describe('[Skeleton] / setHead', async () => {
     )
     const block3PoS = createBlock(
       { header: { number: 3, parentHash: block2.hash(), difficulty: 0 } },
-      { common, setHardfork: BigInt(200) },
+      { common, setHardfork: true },
     )
     const block4InvalidPoS = createBlock(
       { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
-      { common, setHardfork: BigInt(200) },
+      { common, setHardfork: true },
     )
     const block4PoS = createBlock(
       { header: { number: 4, parentHash: block3PoS.hash(), difficulty: 0 } },
-      { common, setHardfork: BigInt(200) },
+      { common, setHardfork: true },
     )
     const block5 = createBlock(
       { header: { number: 5, parentHash: block4PoS.hash(), difficulty: 0 } },
-      { common, setHardfork: BigInt(200) },
+      { common, setHardfork: true },
     )
 
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -905,158 +901,5 @@ describe('[Skeleton] / setHead', async () => {
     await skeleton.setHead(block5, true)
     await wait(200)
     assert.equal(skeleton.bounds().head, BigInt(5), 'should update to new height')
-  })
-
-  it('should abort filling the canonical chain and backstep if the terminal block is invalid', async () => {
-    const genesis = {
-      ...genesisJSON,
-      config: {
-        ...genesisJSON.config,
-        terminalTotalDifficulty: 200,
-        clique: undefined,
-        ethash: {},
-      },
-      extraData: '0x00000000000000000',
-      difficulty: '0x1',
-    }
-    const common = createCommonFromGethGenesis(genesis, { chain: 'post-merge' })
-    common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
-    const config = new Config({
-      common,
-      accountCache: 10000,
-      storageCache: 1000,
-    })
-    const chain = await Chain.create({ config })
-    ;(chain.blockchain as any)._validateBlocks = false
-    ;(chain.blockchain as any)._validateConsensus = false
-    await chain.open()
-    const genesisBlock = await chain.getBlock(BigInt(0))
-
-    const block1 = createBlock(
-      { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
-      { common },
-    )
-    const block2 = createBlock(
-      { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
-      { common },
-    )
-    const block3PoW = createBlock(
-      { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
-      { common },
-    )
-    const block4InvalidPoS = createBlock(
-      { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
-      { common, setHardfork: 200 },
-    )
-
-    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    await skeleton.open()
-
-    await skeleton.initSync(block4InvalidPoS)
-    await skeleton.putBlocks([block3PoW, block2])
-    assert.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
-    await skeleton.putBlocks([block1])
-    await wait(200)
-    assert.equal(
-      chain.blocks.height,
-      BigInt(2),
-      'canonical height should stop at block 2 (valid terminal block), since block 3 is invalid (past ttd)',
-    )
-    assert.equal(
-      skeleton['status'].progress.subchains[0].tail,
-      BigInt(1),
-      `Subchain should have been backstepped to 1`,
-    )
-  })
-
-  it('should abort filling the canonical chain if a PoS block comes too early without hitting ttd', async () => {
-    const genesis = {
-      ...genesisJSON,
-      config: {
-        ...genesisJSON.config,
-        terminalTotalDifficulty: 200,
-        skeletonFillCanonicalBackStep: 0,
-      },
-      difficulty: '0x1',
-    }
-    const common = createCommonFromGethGenesis(genesis, { chain: 'post-merge' })
-    common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
-    const config = new Config({
-      common,
-      logger: getLogger({ logLevel: 'debug' }),
-      accountCache: 10000,
-      storageCache: 1000,
-    })
-
-    const chain = await Chain.create({ config })
-    ;(chain.blockchain as any)._validateConsensus = false
-    // Only add td validations to the validateBlock
-    chain.blockchain.validateBlock = async (block: Block) => {
-      if (!(block.header.common.consensusType() === 'pos') && block.header.difficulty === 0n) {
-        throw Error(
-          `Invalid header difficulty=${
-            block.header.difficulty
-          } for consensus=${block.header.common.consensusType()}`,
-        )
-      }
-    }
-
-    const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
-    BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
-    vi.doMock('@ethereumjs/block', () => BlockHeader)
-    await chain.open()
-    const genesisBlock = await chain.getBlock(BigInt(0))
-
-    const block1 = createBlock(
-      { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
-      { common },
-    )
-    const block2 = createBlock(
-      { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
-      { common },
-    )
-    const block2PoS = createBlock(
-      { header: { number: 2, parentHash: block1.hash(), difficulty: 0 } },
-      { common },
-    )
-    const block3 = createBlock(
-      { header: { number: 3, parentHash: block2.hash(), difficulty: 0 } },
-      { common },
-    )
-
-    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    await skeleton.open()
-
-    await skeleton.initSync(block2PoS)
-    await skeleton.putBlocks([block1])
-
-    await wait(200)
-    assert.equal(
-      chain.blocks.height,
-      BigInt(1),
-      'canonical height should stop at block 1 (valid PoW block), since block 2 is invalid (invalid PoS, not past ttd)',
-    )
-    // Put correct chain
-    await skeleton.initSync(block3)
-    try {
-      await skeleton.putBlocks([block2])
-    } catch (error: any) {
-      if (error !== errSyncMerged) {
-        assert.fail(error)
-      }
-    }
-    await wait(200)
-    assert.equal(
-      chain.blocks.height,
-      BigInt(3),
-      'canonical height should now be at head with correct chain',
-    )
-    const latestHash = chain.headers.latest?.hash()
-    assert.ok(
-      latestHash !== undefined && equalsBytes(latestHash, block3.hash()),
-      'canonical height should now be at head with correct chain',
-    )
-
-    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
   })
 })

@@ -93,10 +93,6 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
 
     msg = 'Should correctly translate block numbers into HF states (original value)'
     assert.equal(c.paramByBlock('minerReward', 4369999), BigInt(5000000000000000000), msg)
-
-    msg = 'Should correctly translate total difficulty into HF states'
-    const td = BigInt('1196768507891266117779')
-    assert.equal(c.paramByBlock('minerReward', 4370000, td), BigInt(3000000000000000000), msg)
   })
 
   it('Access on copied Common instances', () => {
