@@ -89,7 +89,11 @@ export async function createMerkleProof(trie: Trie, key: Uint8Array): Promise<Pr
  * @param shouldVerifyRoot - defaults to false. If `true`, verifies that the root key of the proof matches the trie root and throws if not (i.e invalid proof).
  * @returns The root of the proof
  */
-export async function updateFromProof(trie: Trie, proof: Proof, shouldVerifyRoot: boolean = false) {
+export async function updateTrieFromMerkleProof(
+  trie: Trie,
+  proof: Proof,
+  shouldVerifyRoot: boolean = false,
+) {
   trie['DEBUG'] && trie['debug'](`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
   const opStack = proof.map((nodeValue) => {
     let key = Uint8Array.from(trie['hash'](nodeValue))
@@ -144,7 +148,7 @@ export async function verifyProof(
     common: trie['_opts'].common,
   })
   try {
-    await updateFromProof(proofTrie, proof, true)
+    await updateTrieFromMerkleProof(proofTrie, proof, true)
   } catch (e: any) {
     throw new Error('Invalid proof nodes given')
   }

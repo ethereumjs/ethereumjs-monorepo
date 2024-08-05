@@ -6,7 +6,7 @@ import {
   Trie,
   createMerkleProof,
   createTrieFromProof,
-  updateFromProof,
+  updateTrieFromMerkleProof,
   verifyTrieProof,
 } from '../src/index.js'
 
@@ -174,7 +174,7 @@ describe('simple merkle proofs generation and verification', () => {
     assert.ok(equalsBytes(trie.root(), newTrie.root()), 'root set correctly')
 
     const proof2 = await createMerkleProof(trie, key2)
-    await updateFromProof(newTrie, proof2)
+    await updateTrieFromMerkleProof(newTrie, proof2)
     const trieValue2 = await newTrie.get(key2)
 
     assert.ok(equalsBytes(trieValue2!, encodedValue2), 'trie value succesfully updated')
@@ -191,13 +191,13 @@ describe('simple merkle proofs generation and verification', () => {
     const safeProof = await createMerkleProof(safeTrie, safeKey)
 
     try {
-      await updateFromProof(newTrie, safeProof, true)
+      await updateTrieFromMerkleProof(newTrie, safeProof, true)
       assert.fail('cannot reach this')
     } catch (e) {
       assert.ok(true, 'throws on unmatching proof')
     }
 
-    await updateFromProof(newTrie, safeProof)
+    await updateTrieFromMerkleProof(newTrie, safeProof)
     assert.ok(equalsBytes(trie.root(), newTrie.root()), 'root set correctly')
 
     const newSafeValue = await newTrie.get(safeKey)

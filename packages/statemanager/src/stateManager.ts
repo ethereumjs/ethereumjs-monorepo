@@ -4,7 +4,7 @@ import {
   Trie,
   createMerkleProof,
   createTrieFromProof,
-  updateFromProof,
+  updateTrieFromMerkleProof,
   verifyTrieProof,
 } from '@ethereumjs/trie'
 import {
@@ -669,7 +669,7 @@ export class DefaultStateManager implements StateManagerInterface {
     const trie = this._getStorageTrie(address)
     trie.root(hexToBytes(storageHash))
     for (let i = 0; i < storageProof.length; i++) {
-      await updateFromProof(
+      await updateTrieFromMerkleProof(
         trie,
         storageProof[i].proof.map((e) => hexToBytes(e)),
         safe,
@@ -686,7 +686,7 @@ export class DefaultStateManager implements StateManagerInterface {
   async addProofData(proof: Proof | Proof[], safe: boolean = false) {
     if (Array.isArray(proof)) {
       for (let i = 0; i < proof.length; i++) {
-        await updateFromProof(
+        await updateTrieFromMerkleProof(
           this._trie,
           proof[i].accountProof.map((e) => hexToBytes(e)),
           safe,

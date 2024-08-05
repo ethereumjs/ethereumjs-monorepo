@@ -1,4 +1,9 @@
-import { Trie, createMerkleProof, createTrieFromProof, updateFromProof } from '@ethereumjs/trie'
+import {
+  Trie,
+  createMerkleProof,
+  createTrieFromProof,
+  updateTrieFromMerkleProof,
+} from '@ethereumjs/trie'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 
 async function main() {
@@ -13,8 +18,8 @@ async function main() {
   const trie = await createTrieFromProof(proof, { useKeyHashing: true })
   const otherProof = await createMerkleProof(someOtherTrie, k2)
 
-  // To add more proofs to the trie, use `updateFromProof`
-  await updateFromProof(trie, otherProof)
+  // To add more proofs to the trie, use `updateTrieFromMerkleProof`
+  await updateTrieFromMerkleProof(trie, otherProof)
 
   const value = await trie.get(k1)
   console.log(bytesToUtf8(value!)) // valueOne
