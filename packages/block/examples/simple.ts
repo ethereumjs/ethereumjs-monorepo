@@ -1,4 +1,4 @@
-import { createHeader } from '@ethereumjs/block'
+import { createBlockHeader } from '@ethereumjs/block'
 import { bytesToHex } from '@ethereumjs/util'
 
 import type { HeaderData } from '@ethereumjs/block'
@@ -9,5 +9,5 @@ const headerData: HeaderData = {
   gasLimit: 8000000,
   timestamp: 1562422144,
 }
-const header = createHeader(headerData)
+const header = createBlockHeader(headerData)
 console.log(`Created block header with hash=${bytesToHex(header.hash())}`)

@@ -1,8 +1,8 @@
 import {
   createBlock,
   createBlockFromRLPSerializedBlock,
-  createHeader,
-  createHeaderFromValuesArray,
+  createBlockHeader,
+  createBlockHeaderFromValuesArray,
 } from '@ethereumjs/block'
 import { Common, Goerli, Hardfork, Holesky, Mainnet, Sepolia } from '@ethereumjs/common'
 import { MapDB, bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
@@ -439,7 +439,7 @@ describe('blockchain test', () => {
       gasLimit: 8000000,
       timestamp: BigInt(blocks[14].header.timestamp) + BigInt(1),
     }
-    const forkHeader = createHeader(headerData, {
+    const forkHeader = createBlockHeader(headerData, {
       common,
       calcDifficultyFromHeader: blocks[14].header,
     })
@@ -464,7 +464,7 @@ describe('blockchain test', () => {
       //eslint-disable-next-line
       timestamp: BigInt(blocks[14].header.timestamp) + BigInt(1),
     }
-    const forkHeader = createHeader(headerData, {
+    const forkHeader = createBlockHeader(headerData, {
       common,
       calcDifficultyFromHeader: blocks[14].header,
     })
@@ -531,7 +531,7 @@ describe('blockchain test', () => {
     const block2HeaderValuesArray = blocks[2].header.raw()
 
     block2HeaderValuesArray[1] = new Uint8Array(32)
-    const block2Header = createHeaderFromValuesArray(block2HeaderValuesArray, {
+    const block2Header = createBlockHeaderFromValuesArray(block2HeaderValuesArray, {
       common: blocks[2].common,
     })
     await blockchain.putHeader(block2Header)
@@ -629,7 +629,7 @@ describe('blockchain test', () => {
       gasLimit,
       timestamp: genesisBlock.header.timestamp + BigInt(1),
     }
-    const header = createHeader(headerData, {
+    const header = createBlockHeader(headerData, {
       calcDifficultyFromHeader: genesisBlock.header,
       common,
     })
@@ -679,7 +679,7 @@ describe('blockchain test', () => {
       gasLimit,
     }
     opts.calcDifficultyFromHeader = genesisBlock.header
-    const header1 = createHeader(headerData1, opts)
+    const header1 = createBlockHeader(headerData1, opts)
     const headers = [header1]
 
     const headerData2 = {
@@ -689,7 +689,7 @@ describe('blockchain test', () => {
       gasLimit,
     }
     opts.calcDifficultyFromHeader = block.header
-    const header2 = createHeader(headerData2, opts)
+    const header2 = createBlockHeader(headerData2, opts)
     headers.push(header2)
 
     await blockchain.putHeaders(headers)

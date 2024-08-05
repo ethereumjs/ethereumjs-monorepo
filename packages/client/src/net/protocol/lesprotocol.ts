@@ -1,4 +1,4 @@
-import { createHeaderFromValuesArray } from '@ethereumjs/block'
+import { createBlockHeaderFromValuesArray } from '@ethereumjs/block'
 import {
   BIGINT_0,
   bigIntToUnpaddedBytes,
@@ -109,7 +109,7 @@ export class LesProtocol extends Protocol {
         reqId: bytesToBigInt(reqId),
         bv: bytesToBigInt(bv),
         headers: headers.map((h: BlockHeaderBytes) =>
-          createHeaderFromValuesArray(h, {
+          createBlockHeaderFromValuesArray(h, {
             setHardfork: true,
             common: this.config.chainCommon, // eslint-disable-line no-invalid-this
           }),
