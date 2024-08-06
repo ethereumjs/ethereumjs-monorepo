@@ -11,6 +11,7 @@ import {
 
 import type { InterpreterStep } from './interpreter.js'
 import type {
+  EVMBN254Interface,
   EVMInterface,
   EVMOpts,
   EVMResult,
@@ -18,12 +19,11 @@ import type {
   EVMRunCodeOpts,
   ExecResult,
   Log,
-  bn128,
 } from './types.js'
 export * from './logger.js'
 
 export type {
-  bn128,
+  EVMBN254Interface,
   EVMInterface,
   EVMOpts,
   EVMResult,

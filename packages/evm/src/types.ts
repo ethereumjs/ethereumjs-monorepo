@@ -382,6 +382,10 @@ export interface ExecResult {
   blobGasUsed?: bigint
 }
 
+/**
+ * High level wrapper for BLS libraries used
+ * for the BLS precompiles
+ */
 export type EVMBLSInterface = {
   init?(): void
   addG1(input: Uint8Array): Uint8Array
@@ -393,6 +397,16 @@ export type EVMBLSInterface = {
   msmG1(input: Uint8Array): Uint8Array
   msmG2(input: Uint8Array): Uint8Array
   pairingCheck(input: Uint8Array): Uint8Array
+}
+
+/**
+ * High level wrapper for BN254 (alt_BN128) libraries
+ * used for the BN254 (alt_BN128) EC precompiles
+ */
+export type EVMBN254Interface = {
+  ec_pairing: (input_str: string) => PrefixedHexString
+  ec_add: (input_str: string) => PrefixedHexString
+  ec_mul: (input_hex: string) => PrefixedHexString
 }
 
 /**
@@ -444,15 +458,6 @@ export class DefaultBlockchain implements Blockchain {
   shallowCopy() {
     return this
   }
-}
-
-/**
- * The BN128 curve package (`rustbn-wasm`)
- */
-export interface bn128 {
-  ec_pairing: (input_str: string) => PrefixedHexString
-  ec_add: (input_str: string) => PrefixedHexString
-  ec_mul: (input_hex: string) => PrefixedHexString
 }
 
 // EOF type which holds the execution-related data for EOF

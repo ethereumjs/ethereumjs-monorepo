@@ -6,9 +6,9 @@ import { DefaultBlockchain } from './types.js'
 
 import { EVM } from './index.js'
 
-import type { EVMOpts, bn128 } from './index.js'
+import type { EVMBN254Interface, EVMOpts } from './index.js'
 
-let initializedRustBN: bn128 | undefined = undefined
+let initializedRustBN: EVMBN254Interface | undefined = undefined
 
 /**
  * Use this async static constructor for the initialization
@@ -19,8 +19,8 @@ let initializedRustBN: bn128 | undefined = undefined
  */
 export async function createEVM(createOpts?: EVMOpts) {
   const opts = createOpts ?? ({} as EVMOpts)
-  const bn128 = initializedRustBN ?? ((await initRustBN()) as bn128)
-  initializedRustBN = bn128
+  const bn254 = initializedRustBN ?? ((await initRustBN()) as EVMBN254Interface)
+  initializedRustBN = bn254
 
   if (opts.common === undefined) {
     opts.common = new Common({ chain: Mainnet })
@@ -34,5 +34,5 @@ export async function createEVM(createOpts?: EVMOpts) {
     opts.stateManager = new SimpleStateManager()
   }
 
-  return new EVM(opts, bn128)
+  return new EVM(opts, bn254)
 }

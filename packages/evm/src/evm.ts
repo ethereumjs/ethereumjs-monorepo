@@ -42,6 +42,7 @@ import type {
   Blockchain,
   CustomOpcode,
   EVMBLSInterface,
+  EVMBN254Interface,
   EVMEvents,
   EVMInterface,
   EVMOpts,
@@ -49,7 +50,6 @@ import type {
   EVMRunCallOpts,
   EVMRunCodeOpts,
   ExecResult,
-  bn128,
 } from './types.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 
@@ -143,7 +143,7 @@ export class EVM implements EVMInterface {
 
   protected readonly _emit: (topic: string, data: any) => Promise<void>
 
-  private _bn128: bn128
+  private _bn128: EVMBN254Interface
 
   /**
    *
@@ -156,7 +156,7 @@ export class EVM implements EVMInterface {
    * @param opts The EVM options
    * @param bn128 Initialized bn128 WASM object for precompile usage (internal)
    */
-  constructor(opts: EVMOpts, bn128: bn128) {
+  constructor(opts: EVMOpts, bn128: EVMBN254Interface) {
     this.common = opts.common!
     this.blockchain = opts.blockchain!
     this.stateManager = opts.stateManager!
