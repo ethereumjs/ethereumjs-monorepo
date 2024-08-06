@@ -2,7 +2,7 @@ import { Common, Mainnet } from '@ethereumjs/common'
 import { SimpleStateManager } from '@ethereumjs/statemanager'
 import { initRustBN } from 'rustbn-wasm'
 
-import { RustBN254 } from './precompiles/index.js'
+import { NobleBN254 } from './precompiles/index.js'
 import { DefaultBlockchain } from './types.js'
 
 import { EVM } from './index.js'
@@ -23,7 +23,7 @@ let initializedRustBN: any | undefined = undefined
 export async function createEVM(createOpts?: EVMOpts) {
   const opts = createOpts ?? ({} as EVMOpts)
   initializedRustBN = initializedRustBN ?? (await initRustBN())
-  opts.bn254 = new RustBN254(initializedRustBN)
+  opts.bn254 = new NobleBN254(initializedRustBN)
 
   if (opts.common === undefined) {
     opts.common = new Common({ chain: Mainnet })
