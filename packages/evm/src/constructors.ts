@@ -9,6 +9,10 @@ import { EVM } from './index.js'
 
 import type { EVMOpts } from './index.js'
 
+// Hack to ensure one-time instantiation from rustbn.js since
+// otherwise "unreachable" error occurs during WASM access
+let initializedRustBN: any | undefined = undefined
+
 /**
  * Use this async static constructor for the initialization
  * of an EVM object
@@ -18,8 +22,8 @@ import type { EVMOpts } from './index.js'
  */
 export async function createEVM(createOpts?: EVMOpts) {
   const opts = createOpts ?? ({} as EVMOpts)
-  const rustbn = await initRustBN()
-  opts.bn254 = new RustBN254(rustbn)
+  initializedRustBN = initializedRustBN ?? (await initRustBN())
+  opts.bn254 = new RustBN254(initializedRustBN)
 
   if (opts.common === undefined) {
     opts.common = new Common({ chain: Mainnet })
