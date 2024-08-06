@@ -63,7 +63,7 @@
     "@types/debug": "^4.1.9",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.2.1",
-    "@noble/curves": "^1.4.2",
+    "@noble/curves": "git://github.com/holgerd77/noble-curves.git#build-3ed792f ",
     "rustbn-wasm": "^0.4.0"
   },
   "devDependencies": {
