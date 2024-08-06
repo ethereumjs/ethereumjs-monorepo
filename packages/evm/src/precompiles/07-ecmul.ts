@@ -34,7 +34,15 @@ export function precompile07(opts: PrecompileInput): ExecResult {
     return EvmErrorResult(new EvmError(ERROR.INVALID_INPUT_LENGTH), gasUsed)
   }
 
-  const returnData = (opts._EVM as EVM)['_bn254'].mul(opts.data.subarray(0, 128))
+  let returnData
+  try {
+    returnData = (opts._EVM as EVM)['_bn254'].mul(opts.data.subarray(0, 128))
+  } catch (e: any) {
+    if (opts._debug !== undefined) {
+      opts._debug(`ECMUL (0x07) failed: ${e.message}`)
+    }
+    return EvmErrorResult(e, opts.gasLimit)
+  }
 
   // check ecmul success or failure by comparing the output length
   if (returnData.length !== 64) {

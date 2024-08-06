@@ -1,4 +1,5 @@
 import {
+  BIGINT_0,
   bigIntToBytes,
   bytesToBigInt,
   bytesToUnprefixedHex,
@@ -74,6 +75,11 @@ export class NobleBN254 implements EVMBN254Interface {
   mul(input: Uint8Array): Uint8Array {
     const G1 = toG1Point(input.slice(0, 64))
     const scalar = toFrPoint(input.slice(64, 96))
+
+    if (scalar === BIGINT_0) {
+      return BN254_G1_INFINITY_POINT_BYTES
+    }
+
     const result = fromG1Point(G1.multiply(scalar))
     //console.log(bytesToHex(result))
     return result
