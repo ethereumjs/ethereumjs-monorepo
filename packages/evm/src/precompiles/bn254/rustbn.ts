@@ -15,14 +15,14 @@ export class RustBN254 implements EVMBN254Interface {
     this._rustbn = rustbn
   }
 
-  ec_add(input_str: string): PrefixedHexString {
-    return this._rustbn.ec_add(input_str)
+  add(inputStr: string): PrefixedHexString {
+    return this._rustbn.ec_add(inputStr)
   }
 
-  ec_mul(input_hex: string): PrefixedHexString {
-    return this._rustbn.ec_mul(input_hex)
+  mul(inputHex: string): PrefixedHexString {
+    return this._rustbn.ec_mul(inputHex)
   }
-  ec_pairing(input_str: string): PrefixedHexString {
-    return this._rustbn.ec_pairing(input_str)
+  pairing(inputStr: string): PrefixedHexString {
+    return this._rustbn.ec_pairing(inputStr)
   }
 }
