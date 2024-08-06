@@ -7,7 +7,6 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { bytesToHex } from '@noble/curves/abstract/utils'
 import { bn254 } from '@noble/curves/bn254'
 
 import type { EVMBN254Interface } from '../../types.js'
