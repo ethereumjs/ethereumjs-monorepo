@@ -1,4 +1,4 @@
-import { bytesToHex, bytesToUnprefixedHex, hexToBytes, short } from '@ethereumjs/util'
+import { bytesToHex, short } from '@ethereumjs/util'
 
 import { OOGResult } from '../evm.js'
 
@@ -7,7 +7,6 @@ import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export function precompile07(opts: PrecompileInput): ExecResult {
-  const inputData = bytesToUnprefixedHex(opts.data.subarray(0, 128))
   const gasUsed = opts.common.param('ecMulGas')
   if (opts._debug !== undefined) {
     opts._debug(
@@ -24,7 +23,7 @@ export function precompile07(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = hexToBytes((opts._EVM as EVM)['_bn254'].mul(inputData))
+  const returnData = (opts._EVM as EVM)['_bn254'].mul(opts.data.subarray(0, 128))
 
   // check ecmul success or failure by comparing the output length
   if (returnData.length !== 64) {

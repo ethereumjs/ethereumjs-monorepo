@@ -427,9 +427,9 @@ export type EVMBLSInterface = {
  * used for the BN254 (alt_BN128) EC precompiles
  */
 export type EVMBN254Interface = {
-  add: (input_str: string) => PrefixedHexString
-  mul: (input_hex: string) => PrefixedHexString
-  pairing: (input_str: string) => PrefixedHexString
+  add: (input: Uint8Array) => Uint8Array
+  mul: (input: Uint8Array) => Uint8Array
+  pairing: (input: Uint8Array) => Uint8Array
 }
 
 /**

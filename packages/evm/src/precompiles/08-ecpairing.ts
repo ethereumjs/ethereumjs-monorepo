@@ -1,4 +1,4 @@
-import { bytesToHex, bytesToUnprefixedHex, hexToBytes, short } from '@ethereumjs/util'
+import { bytesToHex, short } from '@ethereumjs/util'
 
 import { OOGResult } from '../evm.js'
 
@@ -7,9 +7,8 @@ import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export function precompile08(opts: PrecompileInput): ExecResult {
-  const inputData = opts.data
   // no need to care about non-divisible-by-192, because bn128.pairing will properly fail in that case
-  const inputDataSize = BigInt(Math.floor(inputData.length / 192))
+  const inputDataSize = BigInt(Math.floor(opts.data.length / 192))
   const gasUsed =
     opts.common.param('ecPairingGas') + inputDataSize * opts.common.param('ecPairingWordGas')
   if (opts._debug !== undefined) {
@@ -27,9 +26,7 @@ export function precompile08(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = hexToBytes(
-    (opts._EVM as EVM)['_bn254'].pairing(bytesToUnprefixedHex(inputData)),
-  )
+  const returnData = (opts._EVM as EVM)['_bn254'].pairing(opts.data)
 
   // check ecpairing success or failure by comparing the output length
   if (returnData.length !== 32) {

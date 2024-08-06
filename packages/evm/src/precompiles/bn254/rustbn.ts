@@ -1,5 +1,6 @@
+import { bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
+
 import type { EVMBN254Interface } from '../../types.js'
-import type { PrefixedHexString } from '@ethereumjs/util'
 
 /**
  * Implementation of the `EVMBN254Interface` using a WASM wrapper https://github.com/ethereumjs/rustbn.js
@@ -15,14 +16,17 @@ export class RustBN254 implements EVMBN254Interface {
     this._rustbn = rustbn
   }
 
-  add(inputStr: string): PrefixedHexString {
-    return this._rustbn.ec_add(inputStr)
+  add(input: Uint8Array): Uint8Array {
+    const inputStr = bytesToUnprefixedHex(input)
+    return hexToBytes(this._rustbn.ec_add(inputStr))
   }
 
-  mul(inputHex: string): PrefixedHexString {
-    return this._rustbn.ec_mul(inputHex)
+  mul(input: Uint8Array): Uint8Array {
+    const inputHex = bytesToUnprefixedHex(input)
+    return hexToBytes(this._rustbn.ec_mul(inputHex))
   }
-  pairing(inputStr: string): PrefixedHexString {
-    return this._rustbn.ec_pairing(inputStr)
+  pairing(input: Uint8Array): Uint8Array {
+    const inputStr = bytesToUnprefixedHex(input)
+    return hexToBytes(this._rustbn.ec_pairing(inputStr))
   }
 }
