@@ -87,9 +87,9 @@ describe('[Common]: Custom chains', () => {
       },
       Mainnet,
     )
-    // Note: default HF of Common is currently Shanghai
+    // Note: default HF of Common is currently Cancun
     // Did not pass any "hardfork" param
-    assert.equal(c.hardfork(), Hardfork.Shanghai)
+    assert.equal(c.hardfork(), Hardfork.Cancun)
     c.setHardforkBy({
       blockNumber: 0,
     })
