@@ -2,6 +2,7 @@ import { Account, bytesToHex } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
+import { modifyAccountFields } from './util.js'
 
 import type { SimpleStateManagerOpts } from './index.js'
 import type { AccountFields, Common, StateManagerInterface } from '@ethereumjs/common'
@@ -78,15 +79,7 @@ export class SimpleStateManager implements StateManagerInterface {
   }
 
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    let account = await this.getAccount(address)
-    if (!account) {
-      account = new Account()
-    }
-    account.nonce = accountFields.nonce ?? account.nonce
-    account.balance = accountFields.balance ?? account.balance
-    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
-    account.codeHash = accountFields.codeHash ?? account.codeHash
-    await this.putAccount(address, account)
+    return modifyAccountFields(this, address, accountFields)
   }
 
   async getCode(address: Address): Promise<Uint8Array> {
