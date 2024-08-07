@@ -1,9 +1,6 @@
-import { bytesToHex, short } from '@ethereumjs/util'
+import { bytesToHex, setLengthRight, short } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
-import { ERROR, EvmError } from '../exceptions.js'
-
-import { equalityLengthCheck } from './util.js'
 
 import type { EVM } from '../evm.js'
 import type { ExecResult } from '../types.js'
@@ -26,17 +23,13 @@ export function precompile07(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  if (!equalityLengthCheck(opts, 128, 'ECMUL (0x07)')) {
-    // TODO: I changed opts.gasLimit (as being used for BLS) to gasUsed
-    // This passes the local npx vitest run test/precompiles/07-ecmul.spec.ts test,
-    // getting to the expected 40000 (instead of 65535), a bit spooky though.
-    // Should be analyzed if both cases (BLS and BN254) are correctly applied.
-    return EvmErrorResult(new EvmError(ERROR.INVALID_INPUT_LENGTH), gasUsed)
-  }
+  // > 128 bytes: chop off extra bytes
+  // < 128 bytes: right-pad with 0-s
+  const input = setLengthRight(opts.data.subarray(0, 128), 128)
 
   let returnData
   try {
-    returnData = (opts._EVM as EVM)['_bn254'].mul(opts.data.subarray(0, 128))
+    returnData = (opts._EVM as EVM)['_bn254'].mul(input)
   } catch (e: any) {
     if (opts._debug !== undefined) {
       opts._debug(`ECMUL (0x07) failed: ${e.message}`)
