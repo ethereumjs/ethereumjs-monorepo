@@ -13,10 +13,10 @@ import * as difficultyGrayGlacier from '../../ethereum-tests/DifficultyTests/dfG
 import * as difficultyHomestead from '../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json'
 import { createBlock } from '../src/constructors.js'
 
-import type { Block } from '../src/index.js'
+import { ethashCanonicalDifficulty, type Block } from '../src/index.js'
 
 function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: string) {
-  const dif = block.ethashCanonicalDifficulty(parentBlock)
+  const dif = ethashCanonicalDifficulty(block, parentBlock)
   assert.equal(dif, BigInt(test.currentDifficulty), `test ethashCanonicalDifficulty: ${msg}`)
 }
 
