@@ -3,7 +3,7 @@ import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createBlockHeader } from '../src/constructors.js'
-import { cliqueExtraVanity, cliqueIsEpochTransition } from '../src/index.js'
+import { cliqueExtraSeal, cliqueExtraVanity, cliqueIsEpochTransition } from '../src/index.js'
 
 describe('[Header]: Clique PoA Functionality', () => {
   const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
@@ -36,7 +36,7 @@ describe('[Header]: Clique PoA Functionality', () => {
       'cliqueExtraVanity() -> should return correct extra vanity value',
     )
     assert.deepEqual(
-      header.cliqueExtraSeal(),
+      cliqueExtraSeal(header),
       new Uint8Array(65),
       'cliqueExtraSeal() -> should return correct extra seal value',
     )
@@ -60,7 +60,7 @@ describe('[Header]: Clique PoA Functionality', () => {
       'cliqueExtraVanity() -> should return correct extra vanity value',
     )
     assert.deepEqual(
-      header.cliqueExtraSeal(),
+      cliqueExtraSeal(header),
       new Uint8Array(65),
       'cliqueExtraSeal() -> should return correct extra seal value',
     )

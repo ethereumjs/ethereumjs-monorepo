@@ -48,3 +48,12 @@ export function cliqueExtraVanity(header: BlockHeader): Uint8Array {
   _requireClique(header, 'cliqueExtraVanity')
   return header.extraData.subarray(0, CLIQUE_EXTRA_VANITY)
 }
+
+/**
+ * Returns extra seal data
+ * (only clique PoA, throws otherwise)
+ */
+export function cliqueExtraSeal(header: BlockHeader): Uint8Array {
+  _requireClique(header, 'cliqueExtraSeal')
+  return header.extraData.subarray(-CLIQUE_EXTRA_SEAL)
+}

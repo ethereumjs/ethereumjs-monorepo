@@ -34,6 +34,7 @@ import {
   CLIQUE_EXTRA_VANITY,
   cliqueSigHash,
   cliqueIsEpochTransition,
+  cliqueExtraSeal,
 } from './index.js'
 import { fakeExponential } from './helpers.js'
 import { paramsBlock } from './params.js'
@@ -748,15 +749,6 @@ export class BlockHeader {
   }
 
   /**
-   * Returns extra seal data
-   * (only clique PoA, throws otherwise)
-   */
-  cliqueExtraSeal(): Uint8Array {
-    _requireClique(this, 'cliqueExtraSeal')
-    return this.extraData.subarray(-CLIQUE_EXTRA_SEAL)
-  }
-
-  /**
    * Seal block with the provided signer.
    * Returns the final extraData field to be assigned to `this.extraData`.
    * @hidden
@@ -823,7 +815,7 @@ export class BlockHeader {
    */
   cliqueSigner(): Address {
     _requireClique(this, 'cliqueSigner')
-    const extraSeal = this.cliqueExtraSeal()
+    const extraSeal = cliqueExtraSeal(this)
     // Reasonable default for default blocks
     if (extraSeal.length === 0 || equalsBytes(extraSeal, new Uint8Array(65))) {
       return createZeroAddress()

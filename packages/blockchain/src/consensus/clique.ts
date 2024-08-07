@@ -1,3 +1,4 @@
+import { cliqueIsEpochTransition } from '@ethereumjs/block'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -16,7 +17,7 @@ import debugDefault from 'debug'
 
 import type { Blockchain } from '../index.js'
 import type { Consensus, ConsensusOptions } from '../types.js'
-import type { Block, BlockHeader, cliqueIsEpochTransition } from '@ethereumjs/block'
+import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 
 const debug = debugDefault('blockchain:clique')
