@@ -111,7 +111,10 @@ describe('blob gas tests', () => {
     blobGasPerBlob = common.param('blobGasPerBlob')
   })
   it('should work', () => {
-    const preShardingHeader = createBlockHeader({})
+    const preShardingHeader = createBlockHeader(
+      {},
+      { common: new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai }) },
+    )
 
     let excessBlobGas = preShardingHeader.calcNextExcessBlobGas()
     assert.equal(
