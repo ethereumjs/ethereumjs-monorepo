@@ -13,7 +13,7 @@ import { bn254 } from '@noble/curves/bn254'
 import type { EVMBN254Interface } from '../../types.js'
 import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
 
-const BN254_G1_INFINITY_POINT_BYTES = new Uint8Array(32)
+const BN254_G1_INFINITY_POINT_BYTES = new Uint8Array(64)
 
 /**
  * Converts an Uint8Array to a Noble G1 point.
@@ -41,7 +41,7 @@ function toG1Point(input: Uint8Array) {
 
 function toFrPoint(input: Uint8Array): bigint {
   const Fr = bn254.fields.Fr.fromBytes(input)
-  if (Fr > bn254.fields.Fr.ORDER) {
+  if (Fr >= bn254.fields.Fr.ORDER) {
     return Fr % bn254.fields.Fr.ORDER
   }
   return Fr
