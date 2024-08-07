@@ -1,4 +1,4 @@
-import { CacheType, Common, Mainnet } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Trie,
@@ -31,17 +31,22 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import * as Capabilities from './capabilities.js'
+import {
+  AccountCache,
+  CacheType,
+  CodeCache,
+  OriginalStorageCache,
+  StorageCache,
+} from './cache/index.js'
 
 import { CODEHASH_PREFIX, type CacheSettings, type DefaultStateManagerOpts } from './index.js'
 
-import type { AccountCache, CodeCache, OriginalStorageCache, StorageCache } from './cache/index.js'
+import type { StorageProof } from './index.js'
 import type {
   AccountFields,
   Proof,
   StateManagerInterface,
   StorageDump,
-  StorageProof,
   StorageRange,
 } from '@ethereumjs/common'
 import type { Address, DB, PrefixedHexString } from '@ethereumjs/util'
@@ -64,21 +69,20 @@ import type { Debugger } from 'debug'
  */
 export class DefaultStateManager implements StateManagerInterface {
   protected _debug: Debugger
-  _accountCache?: AccountCache
-  _storageCache?: StorageCache
-  _codeCache?: CodeCache
+  protected _accountCache?: AccountCache
+  protected _storageCache?: StorageCache
+  protected _codeCache?: CodeCache
+
+  originalStorageCache: OriginalStorageCache
 
   protected _trie: Trie
   protected _storageTries: { [key: string]: Trie }
 
   protected readonly _prefixCodeHashes: boolean
   protected readonly _prefixStorageTrieKeys: boolean
-
-  // Non-null assertion necessary to inform TypeScript that these properties are set in the constructor through a helper function
-  originalStorageCache!: OriginalStorageCache
-  readonly _accountCacheSettings!: CacheSettings
-  readonly _storageCacheSettings!: CacheSettings
-  readonly _codeCacheSettings!: CacheSettings
+  protected readonly _accountCacheSettings: CacheSettings
+  protected readonly _storageCacheSettings: CacheSettings
+  protected readonly _codeCacheSettings: CacheSettings
 
   public readonly common: Common
 
@@ -116,10 +120,48 @@ export class DefaultStateManager implements StateManagerInterface {
 
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
+    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
+
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
     this._prefixStorageTrieKeys = opts.prefixStorageTrieKeys ?? false
+    this._accountCacheSettings = {
+      deactivate:
+        (opts.accountCacheOpts?.deactivate === true || opts.accountCacheOpts?.size === 0) ?? false,
+      type: opts.accountCacheOpts?.type ?? CacheType.ORDERED_MAP,
+      size: opts.accountCacheOpts?.size ?? 100000,
+    }
+    if (!this._accountCacheSettings.deactivate) {
+      this._accountCache = new AccountCache({
+        size: this._accountCacheSettings.size,
+        type: this._accountCacheSettings.type,
+      })
+    }
 
-    Capabilities.initializeCaches(this, opts)
+    this._storageCacheSettings = {
+      deactivate:
+        (opts.storageCacheOpts?.deactivate === true || opts.storageCacheOpts?.size === 0) ?? false,
+      type: opts.storageCacheOpts?.type ?? CacheType.ORDERED_MAP,
+      size: opts.storageCacheOpts?.size ?? 20000,
+    }
+    if (!this._storageCacheSettings.deactivate) {
+      this._storageCache = new StorageCache({
+        size: this._storageCacheSettings.size,
+        type: this._storageCacheSettings.type,
+      })
+    }
+
+    this._codeCacheSettings = {
+      deactivate:
+        (opts.codeCacheOpts?.deactivate === true || opts.codeCacheOpts?.size === 0) ?? false,
+      type: opts.codeCacheOpts?.type ?? CacheType.ORDERED_MAP,
+      size: opts.codeCacheOpts?.size ?? 20000,
+    }
+    if (!this._codeCacheSettings.deactivate) {
+      this._codeCache = new CodeCache({
+        size: this._codeCacheSettings.size,
+        type: this._codeCacheSettings.type,
+      })
+    }
   }
 
   /**
@@ -182,7 +224,15 @@ export class DefaultStateManager implements StateManagerInterface {
    * @param accountFields - Object containing account fields and values to modify
    */
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    await Capabilities.modifyAccountFields(this, address, accountFields)
+    let account = await this.getAccount(address)
+    if (!account) {
+      account = new Account()
+    }
+    account.nonce = accountFields.nonce ?? account.nonce
+    account.balance = accountFields.balance ?? account.balance
+    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
+    account.codeHash = accountFields.codeHash ?? account.codeHash
+    await this.putAccount(address, account)
   }
 
   /**
@@ -462,7 +512,9 @@ export class DefaultStateManager implements StateManagerInterface {
    */
   async checkpoint(): Promise<void> {
     this._trie.checkpoint()
-    Capabilities.checkpointCaches(this)
+    this._storageCache?.checkpoint()
+    this._accountCache?.checkpoint()
+    this._codeCache?.checkpoint()
     this._checkpointCount++
   }
 
@@ -473,7 +525,9 @@ export class DefaultStateManager implements StateManagerInterface {
   async commit(): Promise<void> {
     // setup trie checkpointing
     await this._trie.commit()
-    Capabilities.commitCaches(this)
+    this._storageCache?.commit()
+    this._accountCache?.commit()
+    this._codeCache?.commit()
     this._checkpointCount--
 
     if (this._checkpointCount === 0) {
@@ -493,7 +547,9 @@ export class DefaultStateManager implements StateManagerInterface {
   async revert(): Promise<void> {
     // setup trie checkpointing
     await this._trie.revert()
-    Capabilities.revertCaches(this)
+    this._storageCache?.revert()
+    this._accountCache?.revert()
+    this._codeCache?.revert()
 
     this._storageTries = {}
 

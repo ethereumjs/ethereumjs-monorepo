@@ -1,4 +1,4 @@
-import { CacheType, Common, Mainnet } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { verifyTrieProof } from '@ethereumjs/trie'
 import {
@@ -16,11 +16,10 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { AccountCache, OriginalStorageCache, StorageCache } from './cache/index.js'
-import * as Capabilities from './capabilities.js'
+import { AccountCache, CacheType, OriginalStorageCache, StorageCache } from './cache/index.js'
 
-import type { RPCStateManagerOpts } from './index.js'
-import type { AccountFields, Proof, StateManagerInterface, StorageDump } from '@ethereumjs/common'
+import type { Proof, RPCStateManagerOpts } from './index.js'
+import type { AccountFields, StateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -28,14 +27,12 @@ const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(
 
 export class RPCStateManager implements StateManagerInterface {
   protected _provider: string
+  protected _contractCache: Map<string, Uint8Array>
+  protected _storageCache: StorageCache
   protected _blockTag: string
-
-  _accountCache: AccountCache
-  _storageCache: StorageCache
-  _contractCache: Map<string, Uint8Array>
-
+  protected _accountCache: AccountCache
   originalStorageCache: OriginalStorageCache
-  _debug: Debugger
+  protected _debug: Debugger
   protected DEBUG: boolean
   private keccakFunction: Function
   public readonly common: Common
@@ -320,7 +317,15 @@ export class RPCStateManager implements StateManagerInterface {
         ),
       )
     }
-    await Capabilities.modifyAccountFields(this, address, accountFields)
+    let account = await this.getAccount(address)
+    if (!account) {
+      account = new Account()
+    }
+    account.nonce = accountFields.nonce ?? account.nonce
+    account.balance = accountFields.balance ?? account.balance
+    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
+    account.codeHash = accountFields.codeHash ?? account.codeHash
+    await this.putAccount(address, account)
   }
 
   /**
