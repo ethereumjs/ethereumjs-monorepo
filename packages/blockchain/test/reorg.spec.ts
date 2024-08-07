@@ -1,4 +1,4 @@
-import { createBlock, cliqueSigner } from '@ethereumjs/block'
+import { cliqueSigner, createBlock } from '@ethereumjs/block'
 import { Common, ConsensusAlgorithm, Goerli, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'

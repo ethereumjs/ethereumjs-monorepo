@@ -1,4 +1,5 @@
 export { Block } from './block.js'
+export * from './consensus/index.js'
 export * from './constructors.js'
 export { type BeaconPayloadJson, executionPayloadFromBeaconPayload } from './from-beacon-payload.js'
 export { BlockHeader } from './header.js'
@@ -11,4 +12,3 @@ export {
 } from './helpers.js'
 export * from './params.js'
 export * from './types.js'
-export * from './consensus/index.js'

@@ -1,4 +1,4 @@
-import { createBlock, cliqueEpochTransitionSigners } from '@ethereumjs/block'
+import { cliqueEpochTransitionSigners, createBlock } from '@ethereumjs/block'
 import {
   Common,
   ConsensusAlgorithm,

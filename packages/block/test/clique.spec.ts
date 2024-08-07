@@ -1,4 +1,3 @@
-import { cliqueSigner } from '../src/index.js'
 import { Common, Goerli, Hardfork } from '@ethereumjs/common'
 import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -9,6 +8,7 @@ import {
   cliqueExtraSeal,
   cliqueExtraVanity,
   cliqueIsEpochTransition,
+  cliqueSigner,
   cliqueVerifySignature,
 } from '../src/index.js'
 

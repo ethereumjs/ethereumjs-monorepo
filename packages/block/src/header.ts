@@ -13,13 +13,10 @@ import {
   bigIntToBytes,
   bigIntToHex,
   bigIntToUnpaddedBytes,
-  bytesToBigInt,
   bytesToHex,
   bytesToUtf8,
   concatBytes,
-  createAddressFromPublicKey,
   createZeroAddress,
-  ecrecover,
   ecsign,
   equalsBytes,
   hexToBytes,
@@ -29,15 +26,15 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { _requireClique } from './consensus/clique.js'
+import { fakeExponential } from './helpers.js'
+import { paramsBlock } from './params.js'
+
 import {
   CLIQUE_EXTRA_SEAL,
   CLIQUE_EXTRA_VANITY,
-  cliqueSigHash,
   cliqueIsEpochTransition,
-  cliqueExtraSeal,
+  cliqueSigHash,
 } from './index.js'
-import { fakeExponential } from './helpers.js'
-import { paramsBlock } from './params.js'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
 

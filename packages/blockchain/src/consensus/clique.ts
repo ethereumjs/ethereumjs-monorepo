@@ -1,8 +1,8 @@
 import {
-  cliqueIsEpochTransition,
   cliqueEpochTransitionSigners,
-  cliqueVerifySignature,
+  cliqueIsEpochTransition,
   cliqueSigner,
+  cliqueVerifySignature,
 } from '@ethereumjs/block'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'

@@ -1,14 +1,18 @@
-import { CliqueConfig, ConsensusAlgorithm } from '@ethereumjs/common'
-import { BlockHeader } from '../index.js'
+import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { BIGINT_0 } from '@ethereumjs/util'
-import { Address } from '@ethereumjs/util'
-import { equalsBytes } from '@ethereumjs/util'
-import { createZeroAddress } from '@ethereumjs/util'
-import { bytesToBigInt } from '@ethereumjs/util'
-import { ecrecover } from '@ethereumjs/util'
-import { BIGINT_27 } from '@ethereumjs/util'
-import { createAddressFromPublicKey } from '@ethereumjs/util'
+import {
+  Address,
+  BIGINT_0,
+  BIGINT_27,
+  bytesToBigInt,
+  createAddressFromPublicKey,
+  createZeroAddress,
+  ecrecover,
+  equalsBytes,
+} from '@ethereumjs/util'
+
+import type { BlockHeader } from '../index.js'
+import type { CliqueConfig } from '@ethereumjs/common'
 
 // Fixed number of extra-data prefix bytes reserved for signer vanity
 export const CLIQUE_EXTRA_VANITY = 32
@@ -93,21 +97,6 @@ export function cliqueEpochTransitionSigners(header: BlockHeader): Address[] {
 }
 
 /**
- * Verifies the signature of the block (last 65 bytes of extraData field)
- * (only clique PoA, throws otherwise)
- *
- *  Method throws if signature is invalid
- */
-export function cliqueVerifySignature(header: BlockHeader, signerList: Address[]): boolean {
-  _requireClique(header, 'cliqueVerifySignature')
-  const signerAddress = cliqueSigner(header)
-  const signerFound = signerList.find((signer) => {
-    return signer.equals(signerAddress)
-  })
-  return !!signerFound
-}
-
-/**
  * Returns the signer address
  */
 export function cliqueSigner(header: BlockHeader): Address {
@@ -122,4 +111,19 @@ export function cliqueSigner(header: BlockHeader): Address {
   const v = bytesToBigInt(extraSeal.subarray(64, 65)) + BIGINT_27
   const pubKey = ecrecover(cliqueSigHash(header), v, r, s)
   return createAddressFromPublicKey(pubKey)
+}
+
+/**
+ * Verifies the signature of the block (last 65 bytes of extraData field)
+ * (only clique PoA, throws otherwise)
+ *
+ *  Method throws if signature is invalid
+ */
+export function cliqueVerifySignature(header: BlockHeader, signerList: Address[]): boolean {
+  _requireClique(header, 'cliqueVerifySignature')
+  const signerAddress = cliqueSigner(header)
+  const signerFound = signerList.find((signer) => {
+    return signer.equals(signerAddress)
+  })
+  return !!signerFound
 }
