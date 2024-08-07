@@ -32,7 +32,7 @@ function toG1Point(input: Uint8Array) {
     x,
     y,
   })
-
+  G1.assertValidity()
   return G1
 }
 
