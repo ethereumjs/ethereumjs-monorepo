@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1722928761700,
+  "lastUpdate": 1723025569720,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "03fa9124d59eed777ee7c57448d0593e088a9e46",
-          "message": "Blockchain: More Modern and Flexible Consensus Layout / Tree Shaking Optimization (#3504)\n\n* Switch to a more flexible Blockchain consensusDict options structure allowing to pass in different consensus objects\r\n\r\n* Remove misplaced (non consensus checkand useless (already checked in block header) difficulty equals 0 check from CasperConsensus\r\n\r\n* Shift to a new consensus semantics adhering to the fact that *consensus* and *consensus validation* is basically the same, allowing for more flexible instantiation and optional consensus object usage\r\n\r\n* Remove redundant validateConsensus flag, fix block validation, clique and custom consensus tests\r\n\r\n* Readd validateConsensus flag (default: true) to allow for more fine-grained settings to use the mechanism (e.g. Clique) but skip the respective validation\r\n\r\n* Find a middle ground between convenience (allow mainnet default blockchain without need for ethash passing in) and consensus availability validation (now in the validate() call)\r\n\r\n* Add clique example\r\n\r\n* Client fixes\r\n\r\n* Fix VM test\r\n\r\n* Minor\r\n\r\n* Remove Ethash dependency from Blockchain, adjust EthashConsensus ethash object integration\r\n\r\n* Re-add CasperConsensus exports\r\n\r\n* Rebuild package-lock.json\r\n\r\n* EtashConsensus fix\r\n\r\n* Fixes\r\n\r\n* Fix client CLI tests\r\n\r\n* Cleaner consensus check on validate call\r\n\r\n* More consistent check for consensus object, re-add test for custom consensus transition\r\n\r\n* Re-add difficulty check for PoS, re-activate removed test",
-          "timestamp": "2024-07-17T11:15:00+02:00",
-          "tree_id": "e3552fa971ce5f51cf15720f0718d4d18a3a5c84",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/03fa9124d59eed777ee7c57448d0593e088a9e46"
-        },
-        "date": 1721207854153,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 37669,
-            "range": "±2.90%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 37387,
-            "range": "±1.24%",
-            "unit": "ops/sec",
-            "extra": "92 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37213,
-            "range": "±1.38%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 34446,
-            "range": "±4.23%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35618,
-            "range": "±1.75%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.72%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d2cef57c90277af2173c0961c4b293fa6ca4c63f",
+          "message": "Add EOF container validation script (#3553)\n\n* evm: export EOFContainer / validateEOF\n\n* evm: add eof container validator script\n\n* validator: terminal: false\n\n* evm: read from pipe (?)\n\n* Merge branch 'master' into eof-fuzz\n\n* Merge branch 'master' into eof-fuzz\n\n* Merge remote-tracking branch 'origin/master' into eof-fuzz",
+          "timestamp": "2024-08-07T06:10:10-04:00",
+          "tree_id": "5aedd7a15285e196c1ec1e0e81bcb622c6ff5857",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d2cef57c90277af2173c0961c4b293fa6ca4c63f"
+        },
+        "date": 1723025568560,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38262,
+            "range": "±1.65%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36317,
+            "range": "±3.15%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37117,
+            "range": "±1.45%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36525,
+            "range": "±1.63%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35830,
+            "range": "±1.66%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
           }
         ]
       }
