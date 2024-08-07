@@ -32,7 +32,15 @@ export function precompile08(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = (opts._EVM as EVM)['_bn254'].pairing(opts.data)
+  let returnData
+  try {
+    returnData = (opts._EVM as EVM)['_bn254'].pairing(opts.data)
+  } catch (e: any) {
+    if (opts._debug !== undefined) {
+      opts._debug(`ECPAIRING (0x08) failed: ${e.message}`)
+    }
+    return EvmErrorResult(e, opts.gasLimit)
+  }
 
   // check ecpairing success or failure by comparing the output length
   if (returnData.length !== 32) {
