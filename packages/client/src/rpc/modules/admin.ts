@@ -87,9 +87,14 @@ export class Admin {
             head: peer.eth?.updatedBestHeader
               ? bytesToHex(peer.eth.updatedBestHeader?.hash())
               : bytesToHex(peer.eth?.status.bestHash),
+            difficulty: peer.eth?.status.td.toString(10),
+            version: peer.eth?.['versions'][-1] ?? null,
           },
         },
         caps: peer.eth?.['versions'].map((ver) => 'eth/' + ver),
+        network: {
+          remoteAddress: peer.address,
+        },
       }
     })
   }
