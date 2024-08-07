@@ -28,7 +28,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique.js'
+import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './index.js'
 import { fakeExponential } from './helpers.js'
 import { paramsBlock } from './params.js'
 
