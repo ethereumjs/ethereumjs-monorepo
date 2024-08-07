@@ -1,4 +1,4 @@
-import { createBlock, cliqueVerifySignature, cliqueSigner } from '@ethereumjs/block'
+import { cliqueSigner, cliqueVerifySignature, createBlock } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
   Common,

@@ -1,4 +1,4 @@
-import { createBlock, cliqueSigner } from '@ethereumjs/block'
+import { cliqueSigner, createBlock } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
