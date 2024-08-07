@@ -1,4 +1,4 @@
-import { createBlock } from '@ethereumjs/block'
+import { createBlock, cliqueEpochTransitionSigners } from '@ethereumjs/block'
 import {
   Common,
   ConsensusAlgorithm,
@@ -206,7 +206,7 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(head.header.number + BigInt(1)),
-      head.header.cliqueEpochTransitionSigners(),
+      cliqueEpochTransitionSigners(head.header),
       'correct genesis signers',
     )
   })

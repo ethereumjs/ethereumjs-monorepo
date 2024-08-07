@@ -769,33 +769,6 @@ export class BlockHeader {
   }
 
   /**
-   * Returns a list of signers
-   * (only clique PoA, throws otherwise)
-   *
-   * This function throws if not called on an epoch
-   * transition block and should therefore be used
-   * in conjunction with {@link BlockHeader.cliqueIsEpochTransition}
-   */
-  cliqueEpochTransitionSigners(): Address[] {
-    _requireClique(this, 'cliqueEpochTransitionSigners')
-    if (!cliqueIsEpochTransition(this)) {
-      const msg = this._errorMsg('Signers are only included in epoch transition blocks (clique)')
-      throw new Error(msg)
-    }
-
-    const start = CLIQUE_EXTRA_VANITY
-    const end = this.extraData.length - CLIQUE_EXTRA_SEAL
-    const signerBytes = this.extraData.subarray(start, end)
-
-    const signerList: Uint8Array[] = []
-    const signerLength = 20
-    for (let start = 0; start <= signerBytes.length - signerLength; start += signerLength) {
-      signerList.push(signerBytes.subarray(start, start + signerLength))
-    }
-    return signerList.map((buf) => new Address(buf))
-  }
-
-  /**
    * Verifies the signature of the block (last 65 bytes of extraData field)
    * (only clique PoA, throws otherwise)
    *

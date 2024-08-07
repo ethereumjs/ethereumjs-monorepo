@@ -2,6 +2,7 @@ import { CliqueConfig, ConsensusAlgorithm } from '@ethereumjs/common'
 import { BlockHeader } from '../index.js'
 import { RLP } from '@ethereumjs/rlp'
 import { BIGINT_0 } from '@ethereumjs/util'
+import { Address } from '@ethereumjs/util'
 
 // Fixed number of extra-data prefix bytes reserved for signer vanity
 export const CLIQUE_EXTRA_VANITY = 32
@@ -56,4 +57,31 @@ export function cliqueExtraVanity(header: BlockHeader): Uint8Array {
 export function cliqueExtraSeal(header: BlockHeader): Uint8Array {
   _requireClique(header, 'cliqueExtraSeal')
   return header.extraData.subarray(-CLIQUE_EXTRA_SEAL)
+}
+
+/**
+ * Returns a list of signers
+ * (only clique PoA, throws otherwise)
+ *
+ * This function throws if not called on an epoch
+ * transition block and should therefore be used
+ * in conjunction with {@link BlockHeader.cliqueIsEpochTransition}
+ */
+export function cliqueEpochTransitionSigners(header: BlockHeader): Address[] {
+  _requireClique(header, 'cliqueEpochTransitionSigners')
+  if (!cliqueIsEpochTransition(header)) {
+    const msg = header['_errorMsg']('Signers are only included in epoch transition blocks (clique)')
+    throw new Error(msg)
+  }
+
+  const start = CLIQUE_EXTRA_VANITY
+  const end = header.extraData.length - CLIQUE_EXTRA_SEAL
+  const signerBytes = header.extraData.subarray(start, end)
+
+  const signerList: Uint8Array[] = []
+  const signerLength = 20
+  for (let start = 0; start <= signerBytes.length - signerLength; start += signerLength) {
+    signerList.push(signerBytes.subarray(start, start + signerLength))
+  }
+  return signerList.map((buf) => new Address(buf))
 }

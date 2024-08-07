@@ -1,4 +1,4 @@
-import { cliqueIsEpochTransition } from '@ethereumjs/block'
+import { cliqueIsEpochTransition, cliqueEpochTransitionSigners } from '@ethereumjs/block'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -150,7 +150,7 @@ export class CliqueConsensus implements Consensus {
       // note: keep votes on epoch transition blocks in case of reorgs.
       // only active (non-stale) votes will counted (if vote.blockNumber >= lastEpochBlockNumber
 
-      const checkpointSigners = header.cliqueEpochTransitionSigners()
+      const checkpointSigners = cliqueEpochTransitionSigners(header)
       const activeSigners = this.cliqueActiveSigners(header.number)
       for (const [i, cSigner] of checkpointSigners.entries()) {
         if (activeSigners[i]?.equals(cSigner) !== true) {
@@ -212,7 +212,7 @@ export class CliqueConsensus implements Consensus {
   private async cliqueSaveGenesisSigners(genesisBlock: Block) {
     const genesisSignerState: CliqueSignerState = [
       BIGINT_0,
-      genesisBlock.header.cliqueEpochTransitionSigners(),
+      cliqueEpochTransitionSigners(genesisBlock.header),
     ]
     await this.cliqueUpdateSignerStates(genesisSignerState)
     debug(`[Block 0] Genesis block -> update signer states`)

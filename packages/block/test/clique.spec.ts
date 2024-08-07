@@ -3,7 +3,12 @@ import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createBlockHeader } from '../src/constructors.js'
-import { cliqueExtraSeal, cliqueExtraVanity, cliqueIsEpochTransition } from '../src/index.js'
+import {
+  cliqueEpochTransitionSigners,
+  cliqueExtraSeal,
+  cliqueExtraVanity,
+  cliqueIsEpochTransition,
+} from '../src/index.js'
 
 describe('[Header]: Clique PoA Functionality', () => {
   const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
@@ -42,7 +47,7 @@ describe('[Header]: Clique PoA Functionality', () => {
     )
     assert.throws(
       () => {
-        header.cliqueEpochTransitionSigners()
+        cliqueEpochTransitionSigners(header)
       },
       undefined,
       undefined,
@@ -67,7 +72,7 @@ describe('[Header]: Clique PoA Functionality', () => {
     const msg =
       'cliqueEpochTransitionSigners() -> should return the correct epoch transition signer list on epoch block'
     assert.deepEqual(
-      header.cliqueEpochTransitionSigners(),
+      cliqueEpochTransitionSigners(header),
       [createZeroAddress(), createZeroAddress()],
       msg,
     )
