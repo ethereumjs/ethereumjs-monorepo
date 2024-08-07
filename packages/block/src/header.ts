@@ -39,7 +39,6 @@ import { fakeExponential } from './helpers.js'
 import { paramsBlock } from './params.js'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
-import type { CliqueConfig } from '@ethereumjs/common'
 
 interface HeaderCache {
   hash: Uint8Array | undefined
