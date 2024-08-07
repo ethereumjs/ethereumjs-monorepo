@@ -197,7 +197,9 @@ describe('[VMExecution]', () => {
       engine: true,
     })
 
-    const block = await createBlockFromExecutionPayload(shanghaiPayload as ExecutionPayload)
+    const block = await createBlockFromExecutionPayload(shanghaiPayload as ExecutionPayload, {
+      common: new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai }),
+    })
     const oldHead = await blockchain.getIteratorHead()
 
     const parentStateRoot = oldHead.header.stateRoot
