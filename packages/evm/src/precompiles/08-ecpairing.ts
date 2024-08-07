@@ -1,13 +1,19 @@
 import { bytesToHex, short } from '@ethereumjs/util'
 
-import { OOGResult } from '../evm.js'
+import { EvmErrorResult, OOGResult } from '../evm.js'
+import { ERROR, EvmError } from '../exceptions.js'
+
+import { moduloLengthCheck } from './util.js'
 
 import type { EVM } from '../evm.js'
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export function precompile08(opts: PrecompileInput): ExecResult {
-  // no need to care about non-divisible-by-192, because bn128.pairing will properly fail in that case
+  if (!moduloLengthCheck(opts, 192, 'ECPAIRING (0x08)')) {
+    return EvmErrorResult(new EvmError(ERROR.INVALID_INPUT_LENGTH), opts.gasLimit)
+  }
+
   const inputDataSize = BigInt(Math.floor(opts.data.length / 192))
   const gasUsed =
     opts.common.param('ecPairingGas') + inputDataSize * opts.common.param('ecPairingWordGas')
