@@ -28,7 +28,13 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY, _requireClique, cliqueSigHash } from './index.js'
+import { _requireClique } from './consensus/clique.js'
+import {
+  CLIQUE_EXTRA_SEAL,
+  CLIQUE_EXTRA_VANITY,
+  cliqueSigHash,
+  cliqueIsEpochTransition,
+} from './index.js'
 import { fakeExponential } from './helpers.js'
 import { paramsBlock } from './params.js'
 
@@ -387,7 +393,7 @@ export class BlockHeader {
     if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       // PoA/Clique
       const minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
-      if (!this.cliqueIsEpochTransition()) {
+      if (!cliqueIsEpochTransition(this)) {
         // ExtraData length on epoch transition
         if (this.extraData.length !== minLength) {
           const msg = this._errorMsg(
@@ -743,18 +749,6 @@ export class BlockHeader {
   }
 
   /**
-   * Checks if the block header is an epoch transition
-   * header (only clique PoA, throws otherwise)
-   */
-  cliqueIsEpochTransition(): boolean {
-    _requireClique(this, 'cliqueIsEpochTransition')
-    const epoch = BigInt((this.common.consensusConfig() as CliqueConfig).epoch)
-    // Epoch transition block if the block number has no
-    // remainder on the division by the epoch length
-    return this.number % epoch === BIGINT_0
-  }
-
-  /**
    * Returns extra vanity data
    * (only clique PoA, throws otherwise)
    */
@@ -802,7 +796,7 @@ export class BlockHeader {
    */
   cliqueEpochTransitionSigners(): Address[] {
     _requireClique(this, 'cliqueEpochTransitionSigners')
-    if (!this.cliqueIsEpochTransition()) {
+    if (!cliqueIsEpochTransition(this)) {
       const msg = this._errorMsg('Signers are only included in epoch transition blocks (clique)')
       throw new Error(msg)
     }
