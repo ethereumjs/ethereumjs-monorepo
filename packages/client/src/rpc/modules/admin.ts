@@ -88,7 +88,7 @@ export class Admin {
               ? bytesToHex(peer.eth.updatedBestHeader?.hash())
               : bytesToHex(peer.eth?.status.bestHash),
             difficulty: peer.eth?.status.td.toString(10),
-            version: peer.eth?.['versions'][-1] ?? null,
+            version: peer.eth?.['versions'].slice(-1)[0] ?? null,
           },
         },
         caps: peer.eth?.['versions'].map((ver) => 'eth/' + ver),
