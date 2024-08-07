@@ -1,3 +1,4 @@
+import { cliqueSigner } from '../src/index.js'
 import { Common, Goerli, Hardfork } from '@ethereumjs/common'
 import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -8,6 +9,7 @@ import {
   cliqueExtraSeal,
   cliqueExtraVanity,
   cliqueIsEpochTransition,
+  cliqueVerifySignature,
 } from '../src/index.js'
 
 describe('[Header]: Clique PoA Functionality', () => {
@@ -93,20 +95,20 @@ describe('[Header]: Clique PoA Functionality', () => {
   }
 
   it('Signing', () => {
-    const cliqueSigner = A.privateKey
+    const cliqueSignerKey = A.privateKey
 
     let header = createBlockHeader(
       { number: 1, extraData: new Uint8Array(97) },
-      { common, freeze: false, cliqueSigner },
+      { common, freeze: false, cliqueSigner: cliqueSignerKey },
     )
 
     assert.equal(header.extraData.length, 97)
-    assert.ok(header.cliqueVerifySignature([A.address]), 'should verify signature')
-    assert.ok(header.cliqueSigner().equals(A.address), 'should recover the correct signer address')
+    assert.ok(cliqueVerifySignature(header, [A.address]), 'should verify signature')
+    assert.ok(cliqueSigner(header).equals(A.address), 'should recover the correct signer address')
 
     header = createBlockHeader({ extraData: new Uint8Array(97) }, { common })
     assert.ok(
-      header.cliqueSigner().equals(createZeroAddress()),
+      cliqueSigner(header).equals(createZeroAddress()),
       'should return zero address on default block',
     )
   })

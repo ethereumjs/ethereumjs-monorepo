@@ -1,4 +1,9 @@
-import { cliqueIsEpochTransition, cliqueEpochTransitionSigners } from '@ethereumjs/block'
+import {
+  cliqueIsEpochTransition,
+  cliqueEpochTransitionSigners,
+  cliqueVerifySignature,
+  cliqueSigner,
+} from '@ethereumjs/block'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -137,7 +142,7 @@ export class CliqueConsensus implements Consensus {
     }
 
     const { header } = block
-    const valid = header.cliqueVerifySignature(this.cliqueActiveSigners(header.number))
+    const valid = cliqueVerifySignature(header, this.cliqueActiveSigners(header.number))
     if (!valid) {
       throw new Error('invalid PoA block signature (clique)')
     }
@@ -179,7 +184,7 @@ export class CliqueConsensus implements Consensus {
       throw new Error(`${msg} ${header.errorStr()}`)
     }
     const signerIndex = signers.findIndex((address: Address) =>
-      address.equals(header.cliqueSigner()),
+      address.equals(cliqueSigner(header)),
     )
     const inTurn = header.number % BigInt(signers.length) === BigInt(signerIndex)
     if (
@@ -281,7 +286,7 @@ export class CliqueConsensus implements Consensus {
   private async cliqueUpdateVotes(header?: BlockHeader) {
     // Block contains a vote on a new signer
     if (header && !header.coinbase.isZero()) {
-      const signer = header.cliqueSigner()
+      const signer = cliqueSigner(header)
       const beneficiary = header.coinbase
       const nonce = header.nonce
       const latestVote: CliqueVote = [header.number, [signer, beneficiary, nonce]]
@@ -470,8 +475,8 @@ export class CliqueConsensus implements Consensus {
       // we do not have a complete picture of the state to verify if too recently signed
       return false
     }
-    signers.push([header.number, header.cliqueSigner()])
-    const seen = signers.filter((s) => s[1].equals(header.cliqueSigner())).length
+    signers.push([header.number, cliqueSigner(header)])
+    const seen = signers.filter((s) => s[1].equals(cliqueSigner(header))).length
     return seen > 1
   }
 
@@ -510,7 +515,7 @@ export class CliqueConsensus implements Consensus {
         return
       }
       // add this block's signer
-      const signer: CliqueBlockSigner = [header.number, header.cliqueSigner()]
+      const signer: CliqueBlockSigner = [header.number, cliqueSigner(header)]
       this._cliqueLatestBlockSigners.push(signer)
 
       // trim length to `this.cliqueSignerLimit()`

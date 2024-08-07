@@ -3,6 +3,12 @@ import { BlockHeader } from '../index.js'
 import { RLP } from '@ethereumjs/rlp'
 import { BIGINT_0 } from '@ethereumjs/util'
 import { Address } from '@ethereumjs/util'
+import { equalsBytes } from '@ethereumjs/util'
+import { createZeroAddress } from '@ethereumjs/util'
+import { bytesToBigInt } from '@ethereumjs/util'
+import { ecrecover } from '@ethereumjs/util'
+import { BIGINT_27 } from '@ethereumjs/util'
+import { createAddressFromPublicKey } from '@ethereumjs/util'
 
 // Fixed number of extra-data prefix bytes reserved for signer vanity
 export const CLIQUE_EXTRA_VANITY = 32
@@ -84,4 +90,36 @@ export function cliqueEpochTransitionSigners(header: BlockHeader): Address[] {
     signerList.push(signerBytes.subarray(start, start + signerLength))
   }
   return signerList.map((buf) => new Address(buf))
+}
+
+/**
+ * Verifies the signature of the block (last 65 bytes of extraData field)
+ * (only clique PoA, throws otherwise)
+ *
+ *  Method throws if signature is invalid
+ */
+export function cliqueVerifySignature(header: BlockHeader, signerList: Address[]): boolean {
+  _requireClique(header, 'cliqueVerifySignature')
+  const signerAddress = cliqueSigner(header)
+  const signerFound = signerList.find((signer) => {
+    return signer.equals(signerAddress)
+  })
+  return !!signerFound
+}
+
+/**
+ * Returns the signer address
+ */
+export function cliqueSigner(header: BlockHeader): Address {
+  _requireClique(header, 'cliqueSigner')
+  const extraSeal = cliqueExtraSeal(header)
+  // Reasonable default for default blocks
+  if (extraSeal.length === 0 || equalsBytes(extraSeal, new Uint8Array(65))) {
+    return createZeroAddress()
+  }
+  const r = extraSeal.subarray(0, 32)
+  const s = extraSeal.subarray(32, 64)
+  const v = bytesToBigInt(extraSeal.subarray(64, 65)) + BIGINT_27
+  const pubKey = ecrecover(cliqueSigHash(header), v, r, s)
+  return createAddressFromPublicKey(pubKey)
 }

@@ -769,38 +769,6 @@ export class BlockHeader {
   }
 
   /**
-   * Verifies the signature of the block (last 65 bytes of extraData field)
-   * (only clique PoA, throws otherwise)
-   *
-   *  Method throws if signature is invalid
-   */
-  cliqueVerifySignature(signerList: Address[]): boolean {
-    _requireClique(this, 'cliqueVerifySignature')
-    const signerAddress = this.cliqueSigner()
-    const signerFound = signerList.find((signer) => {
-      return signer.equals(signerAddress)
-    })
-    return !!signerFound
-  }
-
-  /**
-   * Returns the signer address
-   */
-  cliqueSigner(): Address {
-    _requireClique(this, 'cliqueSigner')
-    const extraSeal = cliqueExtraSeal(this)
-    // Reasonable default for default blocks
-    if (extraSeal.length === 0 || equalsBytes(extraSeal, new Uint8Array(65))) {
-      return createZeroAddress()
-    }
-    const r = extraSeal.subarray(0, 32)
-    const s = extraSeal.subarray(32, 64)
-    const v = bytesToBigInt(extraSeal.subarray(64, 65)) + BIGINT_27
-    const pubKey = ecrecover(cliqueSigHash(this), v, r, s)
-    return createAddressFromPublicKey(pubKey)
-  }
-
-  /**
    * Returns the rlp encoding of the block header.
    */
   serialize(): Uint8Array {

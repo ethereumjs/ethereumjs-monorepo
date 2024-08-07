@@ -1,4 +1,4 @@
-import { createBlock } from '@ethereumjs/block'
+import { createBlock, cliqueVerifySignature, cliqueSigner } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
   Common,
@@ -198,10 +198,10 @@ describe('BlockBuilder', () => {
 
     // extraData: [vanity, activeSigner, seal]
     const extraData = concatBytes(new Uint8Array(32), signer.address.toBytes(), new Uint8Array(65))
-    const cliqueSigner = signer.privateKey
+    const cliqueSignerKey = signer.privateKey
     const genesisBlock = createBlock(
       { header: { gasLimit: 50000, extraData } },
-      { common, cliqueSigner },
+      { common, cliqueSigner: cliqueSignerKey },
     )
     const blockchain = await createBlockchain({ genesisBlock, common })
     const vm = await VM.create({ common, blockchain })
@@ -212,7 +212,7 @@ describe('BlockBuilder', () => {
     const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       headerData: { difficulty: 2, extraData: new Uint8Array(97) },
-      blockOpts: { cliqueSigner, freeze: false },
+      blockOpts: { cliqueSigner: cliqueSignerKey, freeze: false },
     })
 
     // Set up tx
@@ -225,9 +225,9 @@ describe('BlockBuilder', () => {
 
     const block = await blockBuilder.build()
 
-    assert.ok(block.header.cliqueVerifySignature([signer.address]), 'should verify signature')
+    assert.ok(cliqueVerifySignature(block.header, [signer.address]), 'should verify signature')
     assert.deepEqual(
-      block.header.cliqueSigner(),
+      cliqueSigner(block.header),
       signer.address,
       'should recover the correct signer address',
     )

@@ -6,5 +6,7 @@ export {
   cliqueExtraVanity,
   cliqueExtraSeal,
   cliqueEpochTransitionSigners,
+  cliqueVerifySignature,
+  cliqueSigner,
 } from './clique.js'
 export * from './ethash.js'
