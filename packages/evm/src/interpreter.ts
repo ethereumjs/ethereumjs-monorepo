@@ -1,4 +1,4 @@
-import { cliqueSigner, BlockHeader } from '@ethereumjs/block'
+import { cliqueSigner } from '@ethereumjs/block'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import {
   Account,
@@ -28,7 +28,6 @@ import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
 import type { Block, Blockchain, EOFEnv, EVMProfilerOpts, EVMResult, Log } from './types.js'
-// import type { BlockHeader } from '@etherumjs/block'
 import type { AccessWitnessInterface, Common, StateManagerInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
