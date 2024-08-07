@@ -86,6 +86,13 @@ function toG2Point(input: Uint8Array): any {
   const p_y_2 = input.subarray(start2, start2 + G1_ELEMENT_BYTE_LENGTH)
   const p_y_1 = input.subarray(start2 + G1_ELEMENT_BYTE_LENGTH, start2 + G1_ELEMENT_BYTE_LENGTH * 2)
 
+  for (const p of [p_x_1, p_x_2, p_y_1, p_y_2]) {
+    const pB = bytesToBigInt(p)
+    if (bn254.fields.Fp.create(pB) !== pB) {
+      throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
+    }
+  }
+
   const Fp2X = toFp2Point(p_x_1, p_x_2)
   const Fp2Y = toFp2Point(p_y_1, p_y_2)
 
@@ -99,14 +106,12 @@ function toG2Point(input: Uint8Array): any {
   return pG2
 }
 
-function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array): any {
-  // TODO: remove any type, temporary fix due to conflicing @noble/curves versions
-  // check if the coordinates are in the field
+function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
   if (bytesToBigInt(fpXCoordinate) >= bn254.fields.Fp2.ORDER) {
     throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
   }
   if (bytesToBigInt(fpYCoordinate) >= bn254.fields.Fp2.ORDER) {
-    throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
+    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
   }
 
   const fpBytes = concatBytes(fpXCoordinate, fpYCoordinate)
@@ -158,9 +163,8 @@ export class NobleBN254 implements EVMBN254Interface {
       const g2start = pairStart + G1_POINT_BYTE_LENGTH
       const G2 = toG2Point(input.subarray(g2start, g2start + G2_POINT_BYTE_LENGTH))
 
-      // EIP: "If any input is the infinity point, pairing result will be 1"
       if (G1 === bn254.G1.ProjectivePoint.ZERO || G2 === bn254.G2.ProjectivePoint.ZERO) {
-        return ONE_BUFFER
+        continue
       }
 
       pairs.push({ g1: G1, g2: G2 })
