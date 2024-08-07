@@ -1,4 +1,4 @@
-import { createBlock, createHeader } from '@ethereumjs/block'
+import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Common, ConsensusAlgorithm, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
@@ -224,7 +224,7 @@ describe('[Blockchain]: Block validation tests', () => {
       return BigInt(0)
     }
 
-    const header = createHeader(
+    const header = createBlockHeader(
       {
         number: BigInt(1),
         parentHash: genesis.hash(),
@@ -242,7 +242,7 @@ describe('[Blockchain]: Block validation tests', () => {
     const block = createBlock({ header }, { common })
     await blockchain.putBlock(block)
     try {
-      const header = createHeader(
+      const header = createBlockHeader(
         {
           number: BigInt(2),
           parentHash: block.hash(),
@@ -348,7 +348,7 @@ describe('[Blockchain]: Block validation tests', () => {
     const uncleHeaderData = unclePreFork.header.toJSON()
 
     uncleHeaderData.extraData = '0xffff'
-    const uncleHeader = createHeader(uncleHeaderData, {
+    const uncleHeader = createBlockHeader(uncleHeaderData, {
       common: new Common({ chain: Mainnet, hardfork: Hardfork.Berlin }),
     })
 

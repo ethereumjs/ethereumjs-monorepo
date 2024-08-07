@@ -4,14 +4,10 @@ import {
   DBSetHashToNumber,
   DBSetTD,
 } from '@ethereumjs/blockchain'
-import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { CacheType, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MCLBLS } from '@ethereumjs/evm'
 import { getGenesis } from '@ethereumjs/genesis'
-import {
-  CacheType,
-  DefaultStateManager,
-  StatelessVerkleStateManager,
-} from '@ethereumjs/statemanager'
+import { DefaultStateManager, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { createTrie } from '@ethereumjs/trie'
 import {
   BIGINT_0,

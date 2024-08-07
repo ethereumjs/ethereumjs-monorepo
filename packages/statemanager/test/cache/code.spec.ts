@@ -1,7 +1,8 @@
+import { CacheType } from '@ethereumjs/common'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CacheType, CodeCache } from '../../src/cache/index.js'
+import { CodeCache } from '../../src/cache/index.js'
 
 describe('Code Cache: initialization', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {

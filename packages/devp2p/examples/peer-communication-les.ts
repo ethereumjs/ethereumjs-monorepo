@@ -1,4 +1,4 @@
-import { createBlockFromValuesArray, createHeaderFromValuesArray } from '@ethereumjs/block'
+import { createBlockFromValuesArray, createBlockHeaderFromValuesArray } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import * as devp2p from '@ethereumjs/devp2p'
 import { bytesToHex, bytesToInt, hexToBytes, intToBytes, randomBytes } from '@ethereumjs/util'
@@ -109,7 +109,7 @@ rlpx.events.on('peer:added', (peer) => {
           )
           break
         }
-        const header = createHeaderFromValuesArray(payload[2][0], { common })
+        const header = createBlockHeaderFromValuesArray(payload[2][0], { common })
 
         setTimeout(() => {
           les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_BODIES, [

@@ -7,7 +7,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { concatBytes } from 'ethereum-cryptography/utils'
 
-import { ROOT_DB_KEY, Trie, updateFromProof } from './index.js'
+import { ROOT_DB_KEY, Trie, updateTrieFromMerkleProof } from './index.js'
 
 import type { Proof, TrieOpts } from './index.js'
 
@@ -63,7 +63,7 @@ export async function createTrie(opts?: TrieOpts) {
 export async function createTrieFromProof(proof: Proof, trieOpts?: TrieOpts) {
   const shouldVerifyRoot = trieOpts?.root !== undefined
   const trie = new Trie(trieOpts)
-  const root = await updateFromProof(trie, proof, shouldVerifyRoot)
+  const root = await updateTrieFromMerkleProof(trie, proof, shouldVerifyRoot)
   trie.root(root)
   await trie.persistRoot()
   return trie

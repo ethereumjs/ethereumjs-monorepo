@@ -1,4 +1,4 @@
-import { createHeader } from '@ethereumjs/block'
+import { createBlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { KECCAK256_RLP } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
@@ -207,7 +207,7 @@ describe('[BlockFetcher]', async () => {
       count: BigInt(0),
     })
 
-    const shanghaiHeader = createHeader(
+    const shanghaiHeader = createBlockHeader(
       { number: 1, withdrawalsRoot: KECCAK256_RLP },
       { common: config.chainCommon, setHardfork: true },
     )

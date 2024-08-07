@@ -3,7 +3,7 @@ import type { ChainConfig } from './types.js'
 export const Mainnet: ChainConfig = {
   name: 'mainnet',
   chainId: 1,
-  defaultHardfork: 'shanghai',
+  defaultHardfork: 'cancun',
   consensus: {
     type: 'pow',
     algorithm: 'ethash',
@@ -156,7 +156,7 @@ export const Mainnet: ChainConfig = {
 export const Goerli: ChainConfig = {
   name: 'goerli',
   chainId: 5,
-  defaultHardfork: 'shanghai',
+  defaultHardfork: 'cancun',
   consensus: {
     type: 'poa',
     algorithm: 'clique',
@@ -317,7 +317,7 @@ export const Goerli: ChainConfig = {
 export const Sepolia: ChainConfig = {
   name: 'sepolia',
   chainId: 11155111,
-  defaultHardfork: 'shanghai',
+  defaultHardfork: 'cancun',
   consensus: {
     type: 'pow',
     algorithm: 'ethash',

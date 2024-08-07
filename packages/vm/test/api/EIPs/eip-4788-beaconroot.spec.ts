@@ -9,7 +9,7 @@
  *      - Input length < 32 bytes (reverts)
  */
 
-import { createBlock, createHeader } from '@ethereumjs/block'
+import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type TransactionType, type TxData, createTxFromTxData } from '@ethereumjs/tx'
 import {
@@ -56,7 +56,7 @@ function beaconrootBlock(
   }
 
   const root = setLengthLeft(bigIntToBytes(blockroot), 32)
-  const header = createHeader(
+  const header = createBlockHeader(
     {
       parentBeaconBlockRoot: root,
       timestamp,
