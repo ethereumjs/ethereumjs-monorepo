@@ -68,26 +68,23 @@ export class NobleBN254 implements EVMBN254Interface {
   }
 
   add(input: Uint8Array): Uint8Array {
-    const inputStr = bytesToUnprefixedHex(input)
-    return hexToBytes(this._rustbn.ec_add(inputStr))
+    const p1 = toG1Point(input.slice(0, 64))
+    const p2 = toG1Point(input.slice(64, 128))
+
+    const result = fromG1Point(p1.add(p2))
+    return result
   }
 
   mul(input: Uint8Array): Uint8Array {
-    const G1 = toG1Point(input.slice(0, 64))
+    const p1 = toG1Point(input.slice(0, 64))
     const scalar = toFrPoint(input.slice(64, 96))
 
     if (scalar === BIGINT_0) {
       return BN254_G1_INFINITY_POINT_BYTES
     }
 
-    const result = fromG1Point(G1.multiply(scalar))
-    //console.log(bytesToHex(result))
+    const result = fromG1Point(p1.multiply(scalar))
     return result
-
-    /*const inputHex = bytesToUnprefixedHex(input)
-    const resultRBN = this._rustbn.ec_mul(inputHex)
-    console.log(resultRBN)
-    return hexToBytes(resultRBN)*/
   }
   pairing(input: Uint8Array): Uint8Array {
     const inputStr = bytesToUnprefixedHex(input)
