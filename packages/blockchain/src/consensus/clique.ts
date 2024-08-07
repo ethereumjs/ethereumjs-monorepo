@@ -16,7 +16,7 @@ import debugDefault from 'debug'
 
 import type { Blockchain } from '../index.js'
 import type { Consensus, ConsensusOptions } from '../types.js'
-import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Block, BlockHeader, cliqueIsEpochTransition } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 
 const debug = debugDefault('blockchain:clique')
@@ -145,7 +145,7 @@ export class CliqueConsensus implements Consensus {
     }
 
     // validate checkpoint signers towards active signers on epoch transition blocks
-    if (header.cliqueIsEpochTransition()) {
+    if (cliqueIsEpochTransition(header)) {
       // note: keep votes on epoch transition blocks in case of reorgs.
       // only active (non-stale) votes will counted (if vote.blockNumber >= lastEpochBlockNumber
 
@@ -587,7 +587,7 @@ export class CliqueConsensus implements Consensus {
    * @hidden
    */
   private async _cliqueBuildSnapshots(header: BlockHeader) {
-    if (!header.cliqueIsEpochTransition()) {
+    if (!cliqueIsEpochTransition(header)) {
       await this.cliqueUpdateVotes(header)
     }
     await this.cliqueUpdateLatestBlockSigners(header)

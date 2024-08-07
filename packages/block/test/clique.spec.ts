@@ -3,6 +3,7 @@ import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createBlockHeader } from '../src/constructors.js'
+import { cliqueExtraVanity, cliqueIsEpochTransition } from '../src/index.js'
 
 describe('[Header]: Clique PoA Functionality', () => {
   const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
@@ -11,7 +12,7 @@ describe('[Header]: Clique PoA Functionality', () => {
     let header = createBlockHeader({ number: 1 })
     assert.throws(
       () => {
-        header.cliqueIsEpochTransition()
+        cliqueIsEpochTransition(header)
       },
       undefined,
       undefined,
@@ -20,17 +21,17 @@ describe('[Header]: Clique PoA Functionality', () => {
 
     header = createBlockHeader({ extraData: new Uint8Array(97) }, { common })
     assert.ok(
-      header.cliqueIsEpochTransition(),
+      cliqueIsEpochTransition(header),
       'cliqueIsEpochTransition() -> should indicate an epoch transition for the genesis block',
     )
 
     header = createBlockHeader({ number: 1, extraData: new Uint8Array(97) }, { common })
     assert.notOk(
-      header.cliqueIsEpochTransition(),
+      cliqueIsEpochTransition(header),
       'cliqueIsEpochTransition() -> should correctly identify a non-epoch block',
     )
     assert.deepEqual(
-      header.cliqueExtraVanity(),
+      cliqueExtraVanity(header),
       new Uint8Array(32),
       'cliqueExtraVanity() -> should return correct extra vanity value',
     )
@@ -50,11 +51,11 @@ describe('[Header]: Clique PoA Functionality', () => {
 
     header = createBlockHeader({ number: 60000, extraData: new Uint8Array(137) }, { common })
     assert.ok(
-      header.cliqueIsEpochTransition(),
+      cliqueIsEpochTransition(header),
       'cliqueIsEpochTransition() -> should correctly identify an epoch block',
     )
     assert.deepEqual(
-      header.cliqueExtraVanity(),
+      cliqueExtraVanity(header),
       new Uint8Array(32),
       'cliqueExtraVanity() -> should return correct extra vanity value',
     )

@@ -748,15 +748,6 @@ export class BlockHeader {
   }
 
   /**
-   * Returns extra vanity data
-   * (only clique PoA, throws otherwise)
-   */
-  cliqueExtraVanity(): Uint8Array {
-    _requireClique(this, 'cliqueExtraVanity')
-    return this.extraData.subarray(0, CLIQUE_EXTRA_VANITY)
-  }
-
-  /**
    * Returns extra seal data
    * (only clique PoA, throws otherwise)
    */

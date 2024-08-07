@@ -8,6 +8,7 @@ export const CLIQUE_EXTRA_VANITY = 32
 // Fixed number of extra-data suffix bytes reserved for signer seal
 export const CLIQUE_EXTRA_SEAL = 65
 
+// This function is not exported in the index file to keep it internal
 export function _requireClique(header: BlockHeader, name: string) {
   if (header.common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
     const msg = header['_errorMsg'](
@@ -37,4 +38,13 @@ export function cliqueIsEpochTransition(header: BlockHeader): boolean {
   // Epoch transition block if the block number has no
   // remainder on the division by the epoch length
   return header.number % epoch === BIGINT_0
+}
+
+/**
+ * Returns extra vanity data
+ * (only clique PoA, throws otherwise)
+ */
+export function cliqueExtraVanity(header: BlockHeader): Uint8Array {
+  _requireClique(header, 'cliqueExtraVanity')
+  return header.extraData.subarray(0, CLIQUE_EXTRA_VANITY)
 }
