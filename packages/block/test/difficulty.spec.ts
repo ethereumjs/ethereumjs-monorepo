@@ -12,8 +12,7 @@ import * as difficultyFrontier from '../../ethereum-tests/DifficultyTests/dfFron
 import * as difficultyGrayGlacier from '../../ethereum-tests/DifficultyTests/dfGrayGlacier/difficultyGrayGlacier.json'
 import * as difficultyHomestead from '../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json'
 import { createBlock } from '../src/constructors.js'
-
-import { ethashCanonicalDifficulty, type Block } from '../src/index.js'
+import { type Block, ethashCanonicalDifficulty } from '../src/index.js'
 
 function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: string) {
   const dif = ethashCanonicalDifficulty(block, parentBlock)
