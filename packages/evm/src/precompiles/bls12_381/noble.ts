@@ -293,6 +293,7 @@ export class NobleBLS implements EVMBLSInterface {
   }
 
   pairingCheck(input: Uint8Array): Uint8Array {
+    // Extract the pairs from the input
     const pairLength = 384
     const pairs = []
     for (let k = 0; k < input.length / pairLength; k++) {
