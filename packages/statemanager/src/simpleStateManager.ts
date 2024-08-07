@@ -79,7 +79,7 @@ export class SimpleStateManager implements StateManagerInterface {
   }
 
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    return modifyAccountFields(this, address, accountFields)
+    await modifyAccountFields(this, address, accountFields)
   }
 
   async getCode(address: Address): Promise<Uint8Array> {

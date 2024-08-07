@@ -572,7 +572,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
   }
 
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    return modifyAccountFields(this, address, accountFields)
+    await modifyAccountFields(this, address, accountFields)
   }
 
   getProof(_: Address, __: Uint8Array[] = []): Promise<Proof> {

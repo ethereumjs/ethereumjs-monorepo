@@ -318,7 +318,7 @@ export class RPCStateManager implements StateManagerInterface {
         ),
       )
     }
-    return modifyAccountFields(this, address, accountFields)
+    await modifyAccountFields(this, address, accountFields)
   }
 
   /**

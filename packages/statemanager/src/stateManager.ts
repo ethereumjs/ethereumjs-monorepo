@@ -225,7 +225,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * @param accountFields - Object containing account fields and values to modify
    */
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    return modifyAccountFields(this, address, accountFields)
+    await modifyAccountFields(this, address, accountFields)
   }
 
   /**
