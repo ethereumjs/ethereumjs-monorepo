@@ -28,7 +28,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './index.js'
+import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY, _requireClique, cliqueSigHash } from './index.js'
 import { fakeExponential } from './helpers.js'
 import { paramsBlock } from './params.js'
 
@@ -669,15 +669,6 @@ export class BlockHeader {
     return this.number === BIGINT_0
   }
 
-  protected _requireClique(name: string) {
-    if (this.common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
-      const msg = this._errorMsg(
-        `BlockHeader.${name}() call only supported for clique PoA networks`,
-      )
-      throw new Error(msg)
-    }
-  }
-
   /**
    * Returns the canonical difficulty for this block.
    *
@@ -752,21 +743,11 @@ export class BlockHeader {
   }
 
   /**
-   * PoA clique signature hash without the seal.
-   */
-  cliqueSigHash() {
-    this._requireClique('cliqueSigHash')
-    const raw = this.raw()
-    raw[12] = this.extraData.subarray(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
-    return this.keccakFunction(RLP.encode(raw))
-  }
-
-  /**
    * Checks if the block header is an epoch transition
    * header (only clique PoA, throws otherwise)
    */
   cliqueIsEpochTransition(): boolean {
-    this._requireClique('cliqueIsEpochTransition')
+    _requireClique(this, 'cliqueIsEpochTransition')
     const epoch = BigInt((this.common.consensusConfig() as CliqueConfig).epoch)
     // Epoch transition block if the block number has no
     // remainder on the division by the epoch length
@@ -778,7 +759,7 @@ export class BlockHeader {
    * (only clique PoA, throws otherwise)
    */
   cliqueExtraVanity(): Uint8Array {
-    this._requireClique('cliqueExtraVanity')
+    _requireClique(this, 'cliqueExtraVanity')
     return this.extraData.subarray(0, CLIQUE_EXTRA_VANITY)
   }
 
@@ -787,7 +768,7 @@ export class BlockHeader {
    * (only clique PoA, throws otherwise)
    */
   cliqueExtraSeal(): Uint8Array {
-    this._requireClique('cliqueExtraSeal')
+    _requireClique(this, 'cliqueExtraSeal')
     return this.extraData.subarray(-CLIQUE_EXTRA_SEAL)
   }
 
@@ -797,10 +778,10 @@ export class BlockHeader {
    * @hidden
    */
   private cliqueSealBlock(privateKey: Uint8Array) {
-    this._requireClique('cliqueSealBlock')
+    _requireClique(this, 'cliqueSealBlock')
 
     const ecSignFunction = this.common.customCrypto?.ecsign ?? ecsign
-    const signature = ecSignFunction(this.cliqueSigHash(), privateKey)
+    const signature = ecSignFunction(cliqueSigHash(this), privateKey)
     const signatureB = concatBytes(signature.r, signature.s, bigIntToBytes(signature.v - BIGINT_27))
 
     const extraDataWithoutSeal = this.extraData.subarray(
@@ -820,7 +801,7 @@ export class BlockHeader {
    * in conjunction with {@link BlockHeader.cliqueIsEpochTransition}
    */
   cliqueEpochTransitionSigners(): Address[] {
-    this._requireClique('cliqueEpochTransitionSigners')
+    _requireClique(this, 'cliqueEpochTransitionSigners')
     if (!this.cliqueIsEpochTransition()) {
       const msg = this._errorMsg('Signers are only included in epoch transition blocks (clique)')
       throw new Error(msg)
@@ -845,7 +826,7 @@ export class BlockHeader {
    *  Method throws if signature is invalid
    */
   cliqueVerifySignature(signerList: Address[]): boolean {
-    this._requireClique('cliqueVerifySignature')
+    _requireClique(this, 'cliqueVerifySignature')
     const signerAddress = this.cliqueSigner()
     const signerFound = signerList.find((signer) => {
       return signer.equals(signerAddress)
@@ -857,7 +838,7 @@ export class BlockHeader {
    * Returns the signer address
    */
   cliqueSigner(): Address {
-    this._requireClique('cliqueSigner')
+    _requireClique(this, 'cliqueSigner')
     const extraSeal = this.cliqueExtraSeal()
     // Reasonable default for default blocks
     if (extraSeal.length === 0 || equalsBytes(extraSeal, new Uint8Array(65))) {
@@ -866,7 +847,7 @@ export class BlockHeader {
     const r = extraSeal.subarray(0, 32)
     const s = extraSeal.subarray(32, 64)
     const v = bytesToBigInt(extraSeal.subarray(64, 65)) + BIGINT_27
-    const pubKey = ecrecover(this.cliqueSigHash(), v, r, s)
+    const pubKey = ecrecover(cliqueSigHash(this), v, r, s)
     return createAddressFromPublicKey(pubKey)
   }
 

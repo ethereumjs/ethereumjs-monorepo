@@ -508,15 +508,6 @@ export class Block {
   }
 
   /**
-   * Returns the canonical difficulty for this block.
-   *
-   * @param parentBlock - the parent of this `Block`
-   */
-  ethashCanonicalDifficulty(parentBlock: Block): bigint {
-    return this.header.ethashCanonicalDifficulty(parentBlock.header)
-  }
-
-  /**
    * Validates if the block gasLimit remains in the boundaries set by the protocol.
    * Throws if invalid
    *

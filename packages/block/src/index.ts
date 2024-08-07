@@ -11,3 +11,4 @@ export {
 } from './helpers.js'
 export * from './params.js'
 export * from './types.js'
+export * from './consensus/index.js'
