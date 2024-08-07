@@ -6,6 +6,7 @@ import { middleware } from '../validation.js'
 
 import type { Chain } from '../../blockchain/index.js'
 import type { EthereumClient } from '../../client.js'
+import type { RlpxPeer } from '../../net/peer/rlpxpeer.js'
 import type { Service } from '../../service/index.js'
 
 /**
@@ -28,14 +29,14 @@ export class Admin {
     this._rpcDebug = rpcDebug
 
     this.nodeInfo = middleware(callWithStackTrace(this.nodeInfo.bind(this), this._rpcDebug), 0, [])
+    this.peers = middleware(callWithStackTrace(this.peers.bind(this), this._rpcDebug), 0, [])
   }
 
   /**
    * Returns information about the currently running node.
-   * see for reference: https://geth.ethereum.org/docs/rpc/ns-admin#admin_nodeinfo
-   * @param params An empty array
+   * see for reference: https://geth.ethereum.org/docs/interacting-with-geth/rpc/ns-admin#admin_peers
    */
-  async nodeInfo(_params: []) {
+  async nodeInfo() {
     const rlpxInfo = this._client.config.server!.getRlpxInfo()
     const { enode, id, ip, listenAddr, ports } = rlpxInfo
     const { discovery, listener } = ports
@@ -67,5 +68,29 @@ export class Admin {
       },
     }
     return nodeInfo
+  }
+
+  /**
+   * Returns information about currently connected peers
+   * @returns an array of objects containing information about peers (including id, eth protocol versions supported, client name, etc.)
+   */
+  async peers() {
+    const peers = this._client.service('eth')?.pool.peers as RlpxPeer[]
+
+    return peers?.map((peer) => {
+      return {
+        id: peer.id,
+        // Typescript complains about the typing of `_hello` if we make rlpxPeer possibly null
+        name: (peer.rlpxPeer as any)['_hello'].clientId ?? null,
+        protocols: {
+          eth: {
+            head: peer.eth?.updatedBestHeader
+              ? bytesToHex(peer.eth.updatedBestHeader?.hash())
+              : bytesToHex(peer.eth?.status.bestHash),
+          },
+        },
+        caps: peer.eth?.['versions'].map((ver) => 'eth/' + ver),
+      }
+    })
   }
 }
