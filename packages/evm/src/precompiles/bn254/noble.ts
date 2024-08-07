@@ -80,11 +80,11 @@ function toG2Point(input: Uint8Array): any {
     return bn254.G2.ProjectivePoint.ZERO
   }
 
-  const p_x_1 = input.subarray(0, G1_ELEMENT_BYTE_LENGTH)
-  const p_x_2 = input.subarray(G1_ELEMENT_BYTE_LENGTH, G1_ELEMENT_BYTE_LENGTH * 2)
+  const p_x_2 = input.subarray(0, G1_ELEMENT_BYTE_LENGTH)
+  const p_x_1 = input.subarray(G1_ELEMENT_BYTE_LENGTH, G1_ELEMENT_BYTE_LENGTH * 2)
   const start2 = G1_ELEMENT_BYTE_LENGTH * 2
-  const p_y_1 = input.subarray(start2, start2 + G1_ELEMENT_BYTE_LENGTH)
-  const p_y_2 = input.subarray(start2 + G1_ELEMENT_BYTE_LENGTH, start2 + G1_ELEMENT_BYTE_LENGTH * 2)
+  const p_y_2 = input.subarray(start2, start2 + G1_ELEMENT_BYTE_LENGTH)
+  const p_y_1 = input.subarray(start2 + G1_ELEMENT_BYTE_LENGTH, start2 + G1_ELEMENT_BYTE_LENGTH * 2)
 
   const Fp2X = toFp2Point(p_x_1, p_x_2)
   const Fp2Y = toFp2Point(p_y_1, p_y_2)
@@ -93,6 +93,7 @@ function toG2Point(input: Uint8Array): any {
     x: Fp2X,
     y: Fp2Y,
   })
+
   pG2.assertValidity()
 
   return pG2
@@ -165,33 +166,11 @@ export class NobleBN254 implements EVMBN254Interface {
       pairs.push({ g1: G1, g2: G2 })
     }
 
-    bn254.pairingBatch(pairs)
-    return ZERO_BUFFER
-
-    // run the pairing check
-    // reference (Nethermind): https://github.com/NethermindEth/nethermind/blob/374b036414722b9c8ad27e93d64840b8f63931b9/src/Nethermind/Nethermind.Evm/Precompiles/Bls/Mcl/PairingPrecompile.cs#L93
-    /*let GT: any // Fp12 type not exported, eventually too complex
-    for (let index = 0; index < pairs.length; index++) {
-      const pair = pairs[index]
-      const G1 = pair[0] as ProjPointType<bigint>
-      const G2 = pair[1] as ProjPointType<Fp2>
-
-      if (index === 0) {
-        GT = bn254.pairing(G1, G2)
-      } else {
-        GT = bn254.fields.Fp12.mul(GT!, bn254.pairing(G1, G2))
-      }
-    }
-
-    const FP12 = bn254.fields.Fp12.finalExponentiate(GT!)
-    if (bn254.fields.Fp12.eql(FP12, bn254.fields.Fp12.ONE)) {
-      console.log(bytesToHex(ONE_BUFFER))
+    const res = bn254.pairingBatch(pairs)
+    if (bn254.fields.Fp12.eql(res, bn254.fields.Fp12.ONE) === true) {
       return ONE_BUFFER
     } else {
       return ZERO_BUFFER
-    }*/
-
-    /*const inputStr = bytesToUnprefixedHex(input)
-    return hexToBytes(this._rustbn.ec_pairing(inputStr))*/
+    }
   }
 }
