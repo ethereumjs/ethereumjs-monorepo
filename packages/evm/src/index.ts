@@ -1,3 +1,4 @@
+import { EOFContainer, validateEOF } from './eof/container.js'
 import { EVM } from './evm.js'
 import { ERROR as EVMErrorMessage, EvmError } from './exceptions.js'
 import { Message } from './message.js'
@@ -36,6 +37,7 @@ export type {
 }
 
 export {
+  EOFContainer,
   EVM,
   EvmError,
   EVMErrorMessage,
@@ -44,6 +46,7 @@ export {
   MCLBLS,
   Message,
   NobleBLS,
+  validateEOF,
 }
 
 export * from './constructors.js'
