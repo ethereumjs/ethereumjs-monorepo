@@ -12,7 +12,7 @@ import {
   createBlock,
   createBlockFromRPC,
   createBlockFromValuesArray,
-  createHeader,
+  createBlockHeader,
 } from '../src/constructors.js'
 import { genRequestsTrieRoot } from '../src/helpers.js'
 import { Block } from '../src/index.js'
@@ -111,9 +111,12 @@ describe('7685 tests', () => {
 
 describe('fromValuesArray tests', () => {
   it('should construct a block with empty requests root', () => {
-    const block = createBlockFromValuesArray([createHeader({}, { common }).raw(), [], [], [], []], {
-      common,
-    })
+    const block = createBlockFromValuesArray(
+      [createBlockHeader({}, { common }).raw(), [], [], [], []],
+      {
+        common,
+      },
+    )
     assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
   })
   it('should construct a block with a valid requests array', async () => {
@@ -125,7 +128,7 @@ describe('fromValuesArray tests', () => {
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
 
     const block = createBlockFromValuesArray(
-      [createHeader({ requestsRoot }, { common }).raw(), [], [], [], serializedRequests],
+      [createBlockHeader({ requestsRoot }, { common }).raw(), [], [], [], serializedRequests],
       {
         common,
       },
@@ -145,7 +148,7 @@ describe('fromRPC tests', () => {
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
 
     const block = createBlockFromValuesArray(
-      [createHeader({ requestsRoot }, { common }).raw(), [], [], [], serializedRequests],
+      [createBlockHeader({ requestsRoot }, { common }).raw(), [], [], [], serializedRequests],
       {
         common,
       },

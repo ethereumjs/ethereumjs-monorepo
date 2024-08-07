@@ -200,7 +200,7 @@ export class Peer {
     if (this._closed) return false
 
     const msg = concatBytes(RLP.encode(code), data)
-    const header = this._eciesSession.createHeader(msg.length)
+    const header = this._eciesSession.createBlockHeader(msg.length)
     if (!header || this._socket.destroyed) return
     this._socket.write(header)
 
