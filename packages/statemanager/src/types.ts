@@ -1,7 +1,8 @@
 import { type PrefixedHexString, utf8ToBytes } from '@ethereumjs/util'
 
+import type { CacheType } from './cache/index.js'
 import type { AccessWitness } from './index.js'
-import type { CacheType, Common } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import type { Trie } from '@ethereumjs/trie'
 import type { VerkleCrypto } from '@ethereumjs/util'
 
@@ -61,7 +62,7 @@ interface BaseStateManagerOpts {
 /**
  * Cache state manager options (not to be used directly)
  */
-export interface CacheStateManagerOpts {
+interface CacheStateManagerOpts {
   accountCacheOpts?: CacheOptions
   storageCacheOpts?: CacheOptions
   codeCacheOpts?: CacheOptions
@@ -136,3 +137,19 @@ export interface EncodedVerkleProof {
  * misbehaviour in the underlying trie library.
  */
 export const CODEHASH_PREFIX = utf8ToBytes('c')
+
+export type StorageProof = {
+  key: PrefixedHexString
+  proof: PrefixedHexString[]
+  value: PrefixedHexString
+}
+
+export type Proof = {
+  address: PrefixedHexString
+  balance: PrefixedHexString
+  codeHash: PrefixedHexString
+  nonce: PrefixedHexString
+  storageHash: PrefixedHexString
+  accountProof: PrefixedHexString[]
+  storageProof: StorageProof[]
+}
