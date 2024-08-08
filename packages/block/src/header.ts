@@ -5,19 +5,15 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
-  BIGINT_27,
   BIGINT_7,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   TypeOutput,
-  bigIntToBytes,
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToHex,
   bytesToUtf8,
-  concatBytes,
   createZeroAddress,
-  ecsign,
   equalsBytes,
   hexToBytes,
   toType,
@@ -33,7 +29,7 @@ import {
   CLIQUE_EXTRA_SEAL,
   CLIQUE_EXTRA_VANITY,
   cliqueIsEpochTransition,
-  cliqueSigHash,
+  createSealedCliqueBlock,
 } from './index.js'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
@@ -251,16 +247,7 @@ export class BlockHeader {
     }
 
     // If cliqueSigner is provided, seal block with provided privateKey.
-    if (opts.cliqueSigner) {
-      // Ensure extraData is at least length CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
-      const minExtraDataLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
-      if (this.extraData.length < minExtraDataLength) {
-        const remainingLength = minExtraDataLength - this.extraData.length
-        this.extraData = concatBytes(this.extraData, new Uint8Array(remainingLength))
-      }
-
-      this.extraData = this.cliqueSealBlock(opts.cliqueSigner)
-    }
+    if (opts.cliqueSigner) this.extraData = createSealedCliqueBlock(this, opts.cliqueSigner)
 
     // Validate consensus format after block is sealed (if applicable) so extraData checks will pass
     if (skipValidateConsensusFormat === false) this._consensusFormatValidation()
@@ -743,26 +730,6 @@ export class BlockHeader {
     }
 
     return dif
-  }
-
-  /**
-   * Seal block with the provided signer.
-   * Returns the final extraData field to be assigned to `this.extraData`.
-   * @hidden
-   */
-  private cliqueSealBlock(privateKey: Uint8Array) {
-    _requireClique(this, 'cliqueSealBlock')
-
-    const ecSignFunction = this.common.customCrypto?.ecsign ?? ecsign
-    const signature = ecSignFunction(cliqueSigHash(this), privateKey)
-    const signatureB = concatBytes(signature.r, signature.s, bigIntToBytes(signature.v - BIGINT_27))
-
-    const extraDataWithoutSeal = this.extraData.subarray(
-      0,
-      this.extraData.length - CLIQUE_EXTRA_SEAL,
-    )
-    const extraData = concatBytes(extraDataWithoutSeal, signatureB)
-    return extraData
   }
 
   /**
