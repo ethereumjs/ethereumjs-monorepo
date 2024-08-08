@@ -14,12 +14,6 @@ import { ERROR, EvmError } from '../../exceptions.js'
 import type { EVMBN254Interface } from '../../types.js'
 import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
 
-// Copied from @noble/curves (only local declaration)
-/*type Fp2 = {
-  c0: bigint
-  c1: bigint
-}*/
-
 const G1_INFINITY_POINT_BYTES = new Uint8Array(64)
 const G2_INFINITY_POINT_BYTES = new Uint8Array(128)
 const G1_POINT_BYTE_LENGTH = 64
@@ -127,12 +121,6 @@ function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
  * This is the EVM default implementation.
  */
 export class NobleBN254 implements EVMBN254Interface {
-  protected readonly _rustbn: any
-
-  constructor(rustbn: any) {
-    this._rustbn = rustbn
-  }
-
   add(input: Uint8Array): Uint8Array {
     const p1 = toG1Point(input.slice(0, G1_POINT_BYTE_LENGTH))
     const p2 = toG1Point(input.slice(G1_POINT_BYTE_LENGTH, G1_POINT_BYTE_LENGTH * 2))

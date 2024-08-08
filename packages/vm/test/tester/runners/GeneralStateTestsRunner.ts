@@ -87,6 +87,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   const evmOpts = {
     bls: options.bls,
+    bn254: options.bn254,
   }
   const vm = await VM.create({
     stateManager,
