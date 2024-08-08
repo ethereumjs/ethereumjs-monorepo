@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1723106355736,
+  "lastUpdate": 1723128321663,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a9d4f0df86e9f49d87230371360a7fb1fa5a6cf1",
-          "message": "Tx: remove static TransactionFactory methods (#3514)\n\n* tx: remove TransactionFactory\r\n\r\n* tx: explicitly export methods\r\n\r\n* block: fix build\r\n\r\n* vm: fix tests\r\n\r\n* client: fix build / tests\r\n\r\n* apply changes to tests / examples\r\n\r\n* lint block package\r\n\r\n---------\r\n\r\nCo-authored-by: ScottyPoi <scott.simpson@ethereum.org>",
-          "timestamp": "2024-07-18T09:07:19+02:00",
-          "tree_id": "f3bc7d850233424a59adcb6a5c2e711562c834d3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a9d4f0df86e9f49d87230371360a7fb1fa5a6cf1"
-        },
-        "date": 1721286602492,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 37606,
-            "range": "±2.80%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 37098,
-            "range": "±1.33%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 36993,
-            "range": "±1.42%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36195,
-            "range": "±1.79%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 33164,
-            "range": "±4.92%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.72%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "60212036cd253de5c9a7cfd2168845f533c13d92",
+          "message": "EVM: Generic BN254 (alt_BN128) Interface for Precompiles / Use @noble/curves By Default (#3564)\n\n* Rename BN254 (alt_BN128) interface to match the more generic naming scheme started with BLS\n\n* Add bn254 EVM constructor option, use option for existing rustbn.js passing instead of separate constructor parameter\n\n* Add a thin wrapper interface around pure rustbn, use interface within createEVM() method\n\n* Naming adjustments\n\n* Switch over to use Uint8Array as input and output values for the interface, encapsule string conversions for rustbn\n\n* One-time WASM initialization fix\n\n* Add dummy Noble interface\n\n* Add custom (temporary) @noble/curves build to EVM package.json\n\n* Rebuild package-lock.json\n\n* Temporary fix for conflicting @noble/curves versions\n\n* Integrate Noble usage for multiplication\n\n* Add generic equalityLengthCheck, moduloLengthCheck methods from BLS utils to precompile utils\n\n* Fix test\n\n* Minor\n\n* Fixes\n\n* Add validity assertion for G1 point\n\n* Replace equality length check with byte length correction (chop off or right-pad) as stated in EIP\n\n* Fixes\n\n* Add BN254 add implementation\n\n* Add additional pairing modulo length check since not safe to rely on implementation\n\n* Some basic alignment\n\n* First try on pairing (not working yet)\n\n* First pairing tests passing\n\n* Fixes\n\n* Merge branch 'master' into evm-bn254-precompile-native-js\n\n* Update @noble/curves to final v1.5.0 release\n\n* Rebuild package-lock.json\n\n* Merge branch 'master' into evm-bn254-precompile-native-js\n\n* Use plain Noble BN254 by default, clean-up, interface type exports, new --bn254 option for VM test runners (default: rustbn.js)\n\n* Move rustbn-wasm dependency over to EVM dev dependencies, add to client dependencies\n\n* Rebuild package-lock.json\n\n* Integrate in client",
+          "timestamp": "2024-08-08T10:42:31-04:00",
+          "tree_id": "133b0aa4b2754beb8278790c910d92b4cfc0c054",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/60212036cd253de5c9a7cfd2168845f533c13d92"
+        },
+        "date": 1723128320219,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38719,
+            "range": "±1.55%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36481,
+            "range": "±3.51%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37428,
+            "range": "±1.44%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36962,
+            "range": "±1.54%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36183,
+            "range": "±1.72%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
