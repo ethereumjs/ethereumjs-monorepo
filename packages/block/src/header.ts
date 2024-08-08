@@ -21,16 +21,15 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { _requireClique } from './consensus/clique.js'
-import { fakeExponential } from './helpers.js'
-import { paramsBlock } from './params.js'
-
 import {
   CLIQUE_EXTRA_SEAL,
   CLIQUE_EXTRA_VANITY,
+  _requireClique,
   cliqueIsEpochTransition,
-  createSealedCliqueBlock,
-} from './index.js'
+} from './consensus/clique.js'
+import { createSealedCliqueBlock } from './constructors.js'
+import { fakeExponential } from './helpers.js'
+import { paramsBlock } from './params.js'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
 
