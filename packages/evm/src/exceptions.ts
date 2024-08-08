@@ -31,6 +31,9 @@ export enum ERROR {
   BLS_12_381_INPUT_EMPTY = 'input is empty',
   BLS_12_381_FP_NOT_IN_FIELD = 'fp point not in field',
 
+  // BN254 errors
+  BN254_FP_NOT_IN_FIELD = 'fp point not in field',
+
   // Point Evaluation Errors
   INVALID_COMMITMENT = 'kzg commitment does not match versioned hash',
   INVALID_INPUTS = 'kzg inputs invalid',

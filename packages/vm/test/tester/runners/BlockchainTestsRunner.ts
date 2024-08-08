@@ -92,6 +92,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   const evmOpts = {
     bls: options.bls,
+    bn254: options.bn254,
   }
   let vm = await VM.create({
     stateManager,
@@ -147,17 +148,14 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     try {
       const blockRlp = hexToBytes(raw.rlp as PrefixedHexString)
       // Update common HF
-      let TD: bigint | undefined = undefined
       let timestamp: bigint | undefined = undefined
       try {
         const decoded: any = RLP.decode(blockRlp)
-        const parentHash = decoded[0][0]
-        TD = await blockchain.getTotalDifficulty(parentHash)
         timestamp = bytesToBigInt(decoded[0][11])
         // eslint-disable-next-line no-empty
       } catch (e) {}
 
-      common.setHardforkBy({ blockNumber: currentBlock, td: TD, timestamp })
+      common.setHardforkBy({ blockNumber: currentBlock, timestamp })
 
       // transactionSequence is provided when txs are expected to be rejected.
       // To run this field we try to import them on the current state.
@@ -191,7 +189,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      const block = createBlockFromRLPSerializedBlock(blockRlp, { common, setHardfork: TD })
+      const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
@@ -206,7 +204,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await runBlock(vm, { block, root: parentState, setHardfork: TD })
+            await runBlock(vm, { block, root: parentState })
             // set as new head block
           } catch (error: any) {
             // remove invalid block

@@ -66,7 +66,8 @@ function BLS12_381_FromG1Point(input: AffinePoint<bigint>): Uint8Array {
  * @param input Input Uint8Array. Should be 256 bytes
  * @returns Noble G2 point
  */
-function BLS12_381_ToG2Point(input: Uint8Array) {
+function BLS12_381_ToG2Point(input: Uint8Array): any {
+  // TODO: remove any type, temporary fix due to conflicing @noble/curves versions
   if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES)) {
     return bls12_381.G2.ProjectivePoint.ZERO
   }
@@ -141,7 +142,8 @@ function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array) {
   return FP
 }
 
-function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
+function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array): any {
+  // TODO: remove any type, temporary fix due to conflicing @noble/curves versions
   // check if the coordinates are in the field
   if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
     throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
@@ -291,6 +293,7 @@ export class NobleBLS implements EVMBLSInterface {
   }
 
   pairingCheck(input: Uint8Array): Uint8Array {
+    // Extract the pairs from the input
     const pairLength = 384
     const pairs = []
     for (let k = 0; k < input.length / pairLength; k++) {
