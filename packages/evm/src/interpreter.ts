@@ -1,4 +1,3 @@
-import { cliqueSigner } from '@ethereumjs/block'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import {
   Account,
@@ -159,6 +158,15 @@ export class Interpreter {
     this._evm = evm
     this._stateManager = stateManager
     this.common = this._evm.common
+
+    if (
+      this.common.consensusType() === 'poa' &&
+      this._evm['_optsCached'].cliqueSigner === undefined
+    )
+      throw new Error(
+        'Must include cliqueSigner function if clique/poa is being used for consensus type',
+      )
+
     this._runState = {
       programCounter: 0,
       opCode: 0xfe, // INVALID opcode
@@ -782,7 +790,7 @@ export class Interpreter {
   getBlockCoinbase(): bigint {
     let coinbase: Address
     if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
-      coinbase = cliqueSigner(this._env.block.header as any)
+      coinbase = this._evm['_optsCached'].cliqueSigner!(this._env.block.header as any)
     } else {
       coinbase = this._env.block.header.coinbase
     }

@@ -346,6 +346,11 @@ export interface EVMOpts {
    *
    */
   profiler?: EVMProfilerOpts
+
+  /**
+   * Must be present if consensus type is clique/poa, else error will be thrown
+   */
+  cliqueSigner?: Function
 }
 
 /**
