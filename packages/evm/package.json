@@ -60,7 +60,7 @@
     "@ethereumjs/statemanager": "^2.3.0",
     "@ethereumjs/tx": "^5.3.0",
     "@ethereumjs/util": "^9.0.3",
-    "@noble/curves": "git://github.com/holgerd77/noble-curves.git#build-3ed792f",
+    "@noble/curves": "^1.5.0",
     "@types/debug": "^4.1.9",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.2.1",
