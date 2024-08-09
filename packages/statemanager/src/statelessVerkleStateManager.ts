@@ -536,7 +536,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     // switch to false if postVerify fails
     let postFailures = 0
 
-    for (const accessedState of this.accessWitness!.accesses()) {
+    for (const accessedState of this.accessWitness?.accesses() ?? []) {
       const { address, type } = accessedState
       let extraMeta = ''
       if (accessedState.type === AccessedStateType.Code) {
