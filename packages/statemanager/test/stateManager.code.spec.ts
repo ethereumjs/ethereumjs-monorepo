@@ -7,7 +7,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { DefaultStateManager } from '../src/index.js'
+import { Caches, DefaultStateManager } from '../src/index.js'
 
 import { createAccountWithDefaults } from './util.js'
 
@@ -31,8 +31,8 @@ describe('StateManager -> Code', () => {
       */
 
       // Setup
-      const stateManager = new DefaultStateManager({ cachesOpts: { accountCacheOpts } })
-      const codeStateManager = new DefaultStateManager({ cachesOpts: { accountCacheOpts } })
+      const stateManager = new DefaultStateManager({ caches: new Caches({ accountCacheOpts }) })
+      const codeStateManager = new DefaultStateManager({ caches: new Caches({ accountCacheOpts }) })
       const address1 = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const account = createAccountWithDefaults()
       const key1 = hexToBytes(`0x${'00'.repeat(32)}`)
@@ -87,7 +87,7 @@ describe('StateManager -> Code', () => {
     })
 
     it(`should set and get code`, async () => {
-      const stateManager = new DefaultStateManager({ cachesOpts: { accountCacheOpts } })
+      const stateManager = new DefaultStateManager({ caches: new Caches({ accountCacheOpts }) })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const code = hexToBytes(
         '0x73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157',
@@ -105,7 +105,7 @@ describe('StateManager -> Code', () => {
     })
 
     it(`should not get code if is not contract`, async () => {
-      const stateManager = new DefaultStateManager({ cachesOpts: { accountCacheOpts } })
+      const stateManager = new DefaultStateManager({ caches: new Caches({ accountCacheOpts }) })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const raw: AccountData = {
         nonce: '0x0',
@@ -118,7 +118,7 @@ describe('StateManager -> Code', () => {
     })
 
     it(`should set empty code`, async () => {
-      const stateManager = new DefaultStateManager({ cachesOpts: { accountCacheOpts } })
+      const stateManager = new DefaultStateManager({ caches: new Caches({ accountCacheOpts }) })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const raw: AccountData = {
         nonce: '0x0',
@@ -133,7 +133,7 @@ describe('StateManager -> Code', () => {
     })
 
     it(`should prefix codehashes by default`, async () => {
-      const stateManager = new DefaultStateManager({ cachesOpts: { accountCacheOpts } })
+      const stateManager = new DefaultStateManager({ caches: new Caches({ accountCacheOpts }) })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const code = hexToBytes('0x80')
       await stateManager.putCode(address, code)
