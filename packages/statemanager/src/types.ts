@@ -31,7 +31,7 @@ export interface RPCStateManagerOpts extends BaseStateManagerOpts {
 /**
  * Options for constructing a {@link StateManager}.
  */
-export interface DefaultStateManagerOpts extends BaseStateManagerOpts, CachesStateManagerOpts {
+export interface DefaultStateManagerOpts extends BaseStateManagerOpts {
   /**
    * A {@link Trie} instance
    */

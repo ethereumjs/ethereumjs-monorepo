@@ -4,7 +4,7 @@ import {
   DBSetHashToNumber,
   DBSetTD,
 } from '@ethereumjs/blockchain'
-import { CacheType, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MCLBLS, RustBN254 } from '@ethereumjs/evm'
 import { getGenesis } from '@ethereumjs/genesis'
 import {
