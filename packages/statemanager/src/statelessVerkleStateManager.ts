@@ -249,11 +249,9 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       debug(`getCode address=${address.toString()}`)
     }
 
-    if (this._caches !== undefined && !this._caches.settings.code.deactivate) {
-      const elem = this._caches.code?.get(address)
-      if (elem !== undefined) {
-        return elem.code ?? new Uint8Array(0)
-      }
+    const elem = this._caches?.code?.get(address)
+    if (elem !== undefined) {
+      return elem.code ?? new Uint8Array(0)
     }
 
     const account = await this.getAccount(address)
@@ -296,26 +294,22 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
 
     // Return accessedCode where only accessed code has been copied
     const contactCode = accessedCode.slice(0, codeSize)
-    if (this._caches !== undefined && !this._caches.settings.code.deactivate) {
-      this._caches.code?.put(address, contactCode)
-    }
+    this._caches?.code?.put(address, contactCode)
 
     return contactCode
   }
 
   async getCodeSize(address: Address): Promise<number> {
-    if (this._caches !== undefined && !this._caches.settings.account.deactivate) {
-      const elem = this._caches.account!.get(address)
-      if (elem !== undefined) {
-        const account =
-          elem.accountRLP !== undefined ? createPartialAccountFromRLP(elem.accountRLP) : undefined
-        if (account === undefined) {
-          const errorMsg = `account=${account} in cache`
-          debug(errorMsg)
-          throw Error(errorMsg)
-        }
-        return account.codeSize
+    const elem = this._caches?.account?.get(address)
+    if (elem !== undefined) {
+      const account =
+        elem.accountRLP !== undefined ? createPartialAccountFromRLP(elem.accountRLP) : undefined
+      if (account === undefined) {
+        const errorMsg = `account=${account} in cache`
+        debug(errorMsg)
+        throw Error(errorMsg)
       }
+      return account.codeSize
     }
 
     // load the account basic fields and codeSize should be in it
@@ -336,11 +330,9 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    * If this does not exist an empty `Uint8Array` is returned.
    */
   async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
-    if (this._caches !== undefined && !this._caches.settings.storage.deactivate) {
-      const value = this._caches.storage!.get(address, key)
-      if (value !== undefined) {
-        return value
-      }
+    const value = this._caches?.storage?.get(address, key)
+    if (value !== undefined) {
+      return value
     }
 
     const storageKey = await getVerkleTreeKeyForStorageSlot(
@@ -350,9 +342,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     )
     const storageValue = toBytes(this._state[bytesToHex(storageKey)])
 
-    if (this._caches !== undefined && !this._caches.settings.storage.deactivate) {
-      this._caches.storage?.put(address, key, storageValue ?? hexToBytes('0x80'))
-    }
+    this._caches?.storage?.put(address, key, storageValue ?? hexToBytes('0x80'))
 
     return storageValue
   }
@@ -365,8 +355,8 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
    */
   async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
-    if (this._caches !== undefined && !this._caches.settings.storage.deactivate) {
-      this._caches.storage!.put(address, key, value)
+    if (this._caches?.storage !== undefined) {
+      this._caches.storage.put(address, key, value)
     } else {
       // TODO: Consider refactoring this in a writeContractStorage function? Like in stateManager.ts
       const storageKey = await getVerkleTreeKeyForStorageSlot(
@@ -393,13 +383,11 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
   }
 
   async getAccount(address: Address): Promise<Account | undefined> {
-    if (this._caches !== undefined && !this._caches.settings.account.deactivate) {
-      const elem = this._caches.account!.get(address)
-      if (elem !== undefined) {
-        return elem.accountRLP !== undefined
-          ? createPartialAccountFromRLP(elem.accountRLP)
-          : undefined
-      }
+    const elem = this._caches?.account?.get(address)
+    if (elem !== undefined) {
+      return elem.accountRLP !== undefined
+        ? createPartialAccountFromRLP(elem.accountRLP)
+        : undefined
     }
 
     const stem = getVerkleStem(this.verkleCrypto, address, 0)
@@ -476,9 +464,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       debug(`getAccount address=${address.toString()} stem=${short(stem)}`)
     }
 
-    if (this._caches !== undefined && !this._caches.settings.account.deactivate) {
-      this._caches.account?.put(address, account, true)
-    }
+    this._caches?.account?.put(address, account, true)
 
     return account
   }
@@ -488,7 +474,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       debug(`putAccount address=${address.toString()}`)
     }
 
-    if (this._caches !== undefined && this._caches.settings.account.deactivate) {
+    if (this._caches?.account === undefined) {
       const stem = getVerkleStem(this.verkleCrypto, address, 0)
       const balanceKey = getVerkleKey(stem, VerkleLeafType.Balance)
       const nonceKey = getVerkleKey(stem, VerkleLeafType.Nonce)

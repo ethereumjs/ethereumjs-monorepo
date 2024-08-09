@@ -123,11 +123,9 @@ export class DefaultStateManager implements StateManagerInterface {
    * @param address - Address of the `account` to get
    */
   async getAccount(address: Address): Promise<Account | undefined> {
-    if (this._caches !== undefined && !this._caches.settings.account.deactivate) {
-      const elem = this._caches.account!.get(address)
-      if (elem !== undefined) {
-        return elem.accountRLP !== undefined ? createAccountFromRLP(elem.accountRLP) : undefined
-      }
+    const elem = this._caches?.account?.get(address)
+    if (elem !== undefined) {
+      return elem.accountRLP !== undefined ? createAccountFromRLP(elem.accountRLP) : undefined
     }
 
     const rlp = await this._trie.get(address.bytes)
@@ -154,7 +152,7 @@ export class DefaultStateManager implements StateManagerInterface {
         }`,
       )
     }
-    if (this._caches === undefined || this._caches.settings.account.deactivate) {
+    if (this._caches?.account === undefined) {
       const trie = this._trie
       if (account !== undefined) {
         await trie.put(address.bytes, account.serialize())
@@ -163,9 +161,9 @@ export class DefaultStateManager implements StateManagerInterface {
       }
     } else {
       if (account !== undefined) {
-        this._caches.account!.put(address, account)
+        this._caches.account?.put(address, account)
       } else {
-        this._caches.account!.del(address)
+        this._caches.account?.del(address)
       }
     }
   }
@@ -192,7 +190,7 @@ export class DefaultStateManager implements StateManagerInterface {
 
     this._caches?.deleteAccount(address)
 
-    if (this._caches === undefined || this._caches.settings.account.deactivate === true) {
+    if (this._caches?.account === undefined) {
       await this._trie.del(address.bytes)
     }
   }
@@ -224,11 +222,9 @@ export class DefaultStateManager implements StateManagerInterface {
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
   async getCode(address: Address): Promise<Uint8Array> {
-    if (this._caches !== undefined && !this._caches.settings.code.deactivate) {
-      const elem = this._caches.code?.get(address)
-      if (elem !== undefined) {
-        return elem.code ?? new Uint8Array(0)
-      }
+    const elem = this._caches?.code?.get(address)
+    if (elem !== undefined) {
+      return elem.code ?? new Uint8Array(0)
     }
     const account = await this.getAccount(address)
     if (!account) {
@@ -242,9 +238,7 @@ export class DefaultStateManager implements StateManagerInterface {
       : account.codeHash
     const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
 
-    if (this._caches !== undefined && !this._caches.settings.code.deactivate) {
-      this._caches.code!.put(address, code)
-    }
+    this._caches?.code?.put(address, code)
     return code
   }
 
@@ -324,12 +318,10 @@ export class DefaultStateManager implements StateManagerInterface {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
-    if (this._caches !== undefined && !this._caches.settings.storage.deactivate) {
-      const value = this._caches.storage!.get(address, key)
-      if (value !== undefined) {
-        const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
-        return decoded
-      }
+    const cachedValue = this._caches?.storage?.get(address, key)
+    if (cachedValue !== undefined) {
+      const decoded = RLP.decode(cachedValue ?? new Uint8Array(0)) as Uint8Array
+      return decoded
     }
 
     const account = await this.getAccount(address)
@@ -338,9 +330,7 @@ export class DefaultStateManager implements StateManagerInterface {
     }
     const trie = this._getStorageTrie(address, account)
     const value = await trie.get(key)
-    if (this._caches !== undefined && !this._caches.settings.storage.deactivate) {
-      this._caches.storage?.put(address, key, value ?? hexToBytes('0x80'))
-    }
+    this._caches?.storage?.put(address, key, value ?? hexToBytes('0x80'))
     const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
     return decoded
   }
@@ -422,12 +412,8 @@ export class DefaultStateManager implements StateManagerInterface {
     }
 
     value = unpadBytes(value)
-    if (this._caches !== undefined && !this._caches.settings.storage.deactivate) {
-      const encodedValue = RLP.encode(value)
-      this._caches.storage!.put(address, key, encodedValue)
-    } else {
-      await this._writeContractStorage(address, account, key, value)
-    }
+    this._caches?.storage?.put(address, key, RLP.encode(value)) ??
+      (await this._writeContractStorage(address, account, key, value))
   }
 
   /**
@@ -500,56 +486,51 @@ export class DefaultStateManager implements StateManagerInterface {
    * Writes all cache items to the trie
    */
   async flush(): Promise<void> {
-    if (this._caches !== undefined && !this._caches.settings.code.deactivate) {
-      const items = this._caches.code!.flush()
-      for (const item of items) {
-        const addr = createAddressFromString(`0x${item[0]}`)
+    const codeItems = this._caches?.code?.flush() ?? []
+    for (const item of codeItems) {
+      const addr = createAddressFromString(`0x${item[0]}`)
 
-        const code = item[1].code
-        if (code === undefined) {
-          continue
-        }
+      const code = item[1].code
+      if (code === undefined) {
+        continue
+      }
 
-        // update code in database
-        const codeHash = this.keccakFunction(code)
-        const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
-        await this._getCodeDB().put(key, code)
+      // update code in database
+      const codeHash = this.keccakFunction(code)
+      const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
+      await this._getCodeDB().put(key, code)
 
-        // update code root of associated account
-        if ((await this.getAccount(addr)) === undefined) {
-          await this.putAccount(addr, new Account())
-        }
-        await this.modifyAccountFields(addr, { codeHash })
+      // update code root of associated account
+      if ((await this.getAccount(addr)) === undefined) {
+        await this.putAccount(addr, new Account())
+      }
+      await this.modifyAccountFields(addr, { codeHash })
+    }
+    const storageItems = this._caches?.storage?.flush() ?? []
+    for (const item of storageItems) {
+      const address = createAddressFromString(`0x${item[0]}`)
+      const keyHex = item[1]
+      const keyBytes = unprefixedHexToBytes(keyHex)
+      const value = item[2]
+
+      const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
+      const account = await this.getAccount(address)
+      if (account) {
+        await this._writeContractStorage(address, account, keyBytes, decoded)
       }
     }
-    if (this._caches !== undefined && !this._caches.settings.storage.deactivate) {
-      const items = this._caches.storage!.flush()
-      for (const item of items) {
-        const address = createAddressFromString(`0x${item[0]}`)
-        const keyHex = item[1]
-        const keyBytes = unprefixedHexToBytes(keyHex)
-        const value = item[2]
 
-        const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
-        const account = await this.getAccount(address)
-        if (account) {
-          await this._writeContractStorage(address, account, keyBytes, decoded)
-        }
-      }
-    }
-    if (this._caches !== undefined && !this._caches.settings.account.deactivate) {
-      const items = this._caches.account!.flush()
-      for (const item of items) {
-        const addressHex = item[0]
-        const addressBytes = unprefixedHexToBytes(addressHex)
-        const elem = item[1]
-        if (elem.accountRLP === undefined) {
-          const trie = this._trie
-          await trie.del(addressBytes)
-        } else {
-          const trie = this._trie
-          await trie.put(addressBytes, elem.accountRLP)
-        }
+    const accountItems = this._caches?.account?.flush() ?? []
+    for (const item of accountItems) {
+      const addressHex = item[0]
+      const addressBytes = unprefixedHexToBytes(addressHex)
+      const elem = item[1]
+      if (elem.accountRLP === undefined) {
+        const trie = this._trie
+        await trie.del(addressBytes)
+      } else {
+        const trie = this._trie
+        await trie.put(addressBytes, elem.accountRLP)
       }
     }
   }
