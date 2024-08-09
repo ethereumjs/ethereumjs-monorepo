@@ -350,7 +350,7 @@ export interface EVMOpts {
   /**
    * Must be present if consensus type is clique/poa, else error will be thrown
    */
-  cliqueSigner?: (header: any) => Address
+  cliqueSigner?: (header: Block['header']) => Address
 }
 
 /**
