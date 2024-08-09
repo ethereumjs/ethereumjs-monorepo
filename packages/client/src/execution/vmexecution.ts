@@ -164,20 +164,22 @@ export class VMExecution extends Execution {
     const stateManager = new DefaultStateManager({
       trie,
       prefixStorageTrieKeys: this.config.prefixStorageTrieKeys,
-      accountCacheOpts: {
-        deactivate: false,
-        type: CacheType.LRU,
-        size: this.config.accountCache,
-      },
-      storageCacheOpts: {
-        deactivate: false,
-        type: CacheType.LRU,
-        size: this.config.storageCache,
-      },
-      codeCacheOpts: {
-        deactivate: false,
-        type: CacheType.LRU,
-        size: this.config.codeCache,
+      cachesOpts: {
+        accountCacheOpts: {
+          deactivate: false,
+          type: CacheType.LRU,
+          size: this.config.accountCache,
+        },
+        storageCacheOpts: {
+          deactivate: false,
+          type: CacheType.LRU,
+          size: this.config.storageCache,
+        },
+        codeCacheOpts: {
+          deactivate: false,
+          type: CacheType.LRU,
+          size: this.config.codeCache,
+        },
       },
       common: this.config.chainCommon,
     })
