@@ -922,23 +922,15 @@ export class DefaultStateManager implements StateManagerInterface {
     const prefixCodeHashes = this._prefixCodeHashes
     const prefixStorageTrieKeys = this._prefixStorageTrieKeys
     let accountCacheOpts = { ...this._caches?.settings.account }
-    if (
-      downlevelCaches &&
-      this._caches !== undefined &&
-      !this._caches.settings.account.deactivate
-    ) {
+    if (downlevelCaches && this._caches?.settings.account.deactivate === false) {
       accountCacheOpts = { ...accountCacheOpts, type: CacheType.ORDERED_MAP }
     }
     let storageCacheOpts = { ...this._caches?.settings.storage }
-    if (
-      downlevelCaches &&
-      this._caches !== undefined &&
-      !this._caches.settings.storage.deactivate
-    ) {
+    if (downlevelCaches && this._caches?.settings.storage.deactivate === false) {
       storageCacheOpts = { ...storageCacheOpts, type: CacheType.ORDERED_MAP }
     }
     let codeCacheOpts = { ...this._caches?.settings.code }
-    if (this._caches !== undefined && !this._caches.settings.code.deactivate) {
+    if (this._caches?.settings.code.deactivate === false) {
       codeCacheOpts = { ...codeCacheOpts, type: CacheType.ORDERED_MAP }
     }
 
@@ -947,7 +939,7 @@ export class DefaultStateManager implements StateManagerInterface {
       trie,
       prefixStorageTrieKeys,
       prefixCodeHashes,
-      caches: new Caches({ accountCacheOpts, storageCacheOpts, codeCacheOpts }),
+      caches: new Caches({ accountCacheOpts, codeCacheOpts, storageCacheOpts }),
     })
   }
 
