@@ -284,7 +284,7 @@ export interface EVMOpts {
   /**
    * For the EIP-2935 BLS precompiles, the native JS `@noble/curves`
    * https://github.com/paulmillr/noble-curves BLS12-381 curve implementation
-   * is used (see `noble.ts` file in the `precompiles` folder).
+   * is used (see `noble.ts` file in the `precompiles/bls12_381/` folder).
    *
    * To use an alternative implementation this option can be used by passing
    * in a wrapper implementation integrating the desired library and adhering
@@ -302,6 +302,29 @@ export interface EVMOpts {
    * ```
    */
   bls?: EVMBLSInterface
+
+  /**
+   * For the EIP-196/EIP-197 BN254 (alt_BN128) EC precompiles, the native JS `@noble/curves`
+   * https://github.com/paulmillr/noble-curves BN254 curve implementation
+   * is used (see `noble.ts` file in the `precompiles/bn254/` folder).
+   *
+   * To use an alternative implementation this option can be used by passing
+   * in a wrapper implementation integrating the desired library and adhering
+   * to the `EVMBN254Interface` specification.
+   *
+   * An interface for a WASM wrapper https://github.com/ethereumjs/rustbn.js around the
+   * Parity fork of the Zcash bn pairing cryptography library is shipped with this library
+   * which can be used as follows (with `rustbn.js` being explicitly added to the set of
+   * dependencies):
+   *
+   * ```ts
+   * import { initRustBN } from 'rustbn-wasm'
+   *
+   * const bn254 = await initRustBN()
+   * const evm = await createEVM({ bn254: new RustBN254(bn254) })
+   * ```
+   */
+  bn254?: EVMBN254Interface
 
   /*
    * The EVM comes with a basic dependency-minimized `SimpleStateManager` implementation
@@ -382,6 +405,10 @@ export interface ExecResult {
   blobGasUsed?: bigint
 }
 
+/**
+ * High level wrapper for BLS libraries used
+ * for the BLS precompiles
+ */
 export type EVMBLSInterface = {
   init?(): void
   addG1(input: Uint8Array): Uint8Array
@@ -393,6 +420,16 @@ export type EVMBLSInterface = {
   msmG1(input: Uint8Array): Uint8Array
   msmG2(input: Uint8Array): Uint8Array
   pairingCheck(input: Uint8Array): Uint8Array
+}
+
+/**
+ * High level wrapper for BN254 (alt_BN128) libraries
+ * used for the BN254 (alt_BN128) EC precompiles
+ */
+export type EVMBN254Interface = {
+  add: (input: Uint8Array) => Uint8Array
+  mul: (input: Uint8Array) => Uint8Array
+  pairing: (input: Uint8Array) => Uint8Array
 }
 
 /**
@@ -444,15 +481,6 @@ export class DefaultBlockchain implements Blockchain {
   shallowCopy() {
     return this
   }
-}
-
-/**
- * The BN128 curve package (`rustbn-wasm`)
- */
-export interface bn128 {
-  ec_pairing: (input_str: string) => PrefixedHexString
-  ec_add: (input_str: string) => PrefixedHexString
-  ec_mul: (input_hex: string) => PrefixedHexString
 }
 
 // EOF type which holds the execution-related data for EOF

@@ -42,6 +42,7 @@ import type {
   Blockchain,
   CustomOpcode,
   EVMBLSInterface,
+  EVMBN254Interface,
   EVMEvents,
   EVMInterface,
   EVMOpts,
@@ -49,7 +50,6 @@ import type {
   EVMRunCallOpts,
   EVMRunCodeOpts,
   ExecResult,
-  bn128,
 } from './types.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 
@@ -143,7 +143,7 @@ export class EVM implements EVMInterface {
 
   protected readonly _emit: (topic: string, data: any) => Promise<void>
 
-  private _bn128: bn128
+  private _bn254: EVMBN254Interface
 
   /**
    *
@@ -156,7 +156,7 @@ export class EVM implements EVMInterface {
    * @param opts The EVM options
    * @param bn128 Initialized bn128 WASM object for precompile usage (internal)
    */
-  constructor(opts: EVMOpts, bn128: bn128) {
+  constructor(opts: EVMOpts) {
     this.common = opts.common!
     this.blockchain = opts.blockchain!
     this.stateManager = opts.stateManager!
@@ -172,7 +172,6 @@ export class EVM implements EVMInterface {
       }
     }
 
-    this._bn128 = bn128
     this.events = new AsyncEventEmitter()
     this._optsCached = opts
 
@@ -215,10 +214,12 @@ export class EVM implements EVMInterface {
     this.getActiveOpcodes()
     this._precompiles = getActivePrecompiles(this.common, this._customPrecompiles)
 
+    // Precompile crypto libraries
     if (this.common.isActivatedEIP(2537)) {
       this._bls = opts.bls ?? new NobleBLS()
       this._bls.init?.()
     }
+    this._bn254 = opts.bn254!
 
     this._emit = async (topic: string, data: any): Promise<void> => {
       return new Promise((resolve) => this.events.emit(topic as keyof EVMEvents, data, resolve))
@@ -1085,7 +1086,7 @@ export class EVM implements EVMInterface {
       stateManager: this.stateManager.shallowCopy(),
     }
     ;(opts.stateManager as any).common = common
-    return new EVM(opts, this._bn128)
+    return new EVM(opts)
   }
 
   public getPerformanceLogs() {

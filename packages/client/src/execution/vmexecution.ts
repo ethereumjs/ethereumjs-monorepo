@@ -4,8 +4,8 @@ import {
   DBSetHashToNumber,
   DBSetTD,
 } from '@ethereumjs/blockchain'
-import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { MCLBLS } from '@ethereumjs/evm'
+import { CacheType, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { MCLBLS, RustBN254 } from '@ethereumjs/evm'
 import { getGenesis } from '@ethereumjs/genesis'
 import {
   CacheType,
@@ -25,6 +25,7 @@ import {
 import { VM, runBlock, runTx } from '@ethereumjs/vm'
 import { writeFileSync } from 'fs'
 import * as mcl from 'mcl-wasm'
+import { initRustBN } from 'rustbn-wasm'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import { Event } from '../types.js'
@@ -182,12 +183,14 @@ export class VMExecution extends Execution {
     })
 
     await mcl.init(mcl.BLS12_381)
+    const rustBN = await initRustBN()
     this.merkleVM = await VM.create({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
       stateManager,
       evmOpts: {
         bls: new MCLBLS(mcl),
+        bn254: new RustBN254(rustBN),
       },
       profilerOpts: this.config.vmProfilerOpts,
     })
@@ -205,12 +208,14 @@ export class VMExecution extends Execution {
       verkleCrypto,
     })
     await mcl.init(mcl.BLS12_381)
+    const rustBN = await initRustBN()
     this.verkleVM = await VM.create({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
       stateManager,
       evmOpts: {
         bls: new MCLBLS(mcl),
+        bn254: new RustBN254(rustBN),
       },
       profilerOpts: this.config.vmProfilerOpts,
     })
