@@ -68,14 +68,14 @@ export class AccountCache extends Cache {
   put(
     address: Address,
     account: Account | undefined,
-    couldBeParitalAccount: boolean = false,
+    couldBePartialAccount: boolean = false,
   ): void {
     const addressHex = bytesToUnprefixedHex(address.bytes)
     this._saveCachePreState(addressHex)
     const elem = {
       accountRLP:
         account !== undefined
-          ? couldBeParitalAccount
+          ? couldBePartialAccount
             ? account.serializeWithPartialInfo()
             : account.serialize()
           : undefined,
