@@ -190,15 +190,10 @@ export class DefaultStateManager implements StateManagerInterface {
       this._debug(`Delete account ${address}`)
     }
 
-    this._caches.code?.del(address)
+    this._caches.deleteAccount(address)
 
-    if (this._caches.settings.account.deactivate) {
+    if (this._caches.settings.account.deactivate === true) {
       await this._trie.del(address.bytes)
-    } else {
-      this._caches.account!.del(address)
-    }
-    if (!this._caches.settings.storage.deactivate) {
-      this._caches.storage?.clearStorage(address)
     }
   }
 
@@ -458,9 +453,7 @@ export class DefaultStateManager implements StateManagerInterface {
    */
   async checkpoint(): Promise<void> {
     this._trie.checkpoint()
-    this._caches.storage?.checkpoint()
-    this._caches.account?.checkpoint()
-    this._caches.code?.checkpoint()
+    this._caches.checkpoint()
     this._checkpointCount++
   }
 
@@ -471,9 +464,7 @@ export class DefaultStateManager implements StateManagerInterface {
   async commit(): Promise<void> {
     // setup trie checkpointing
     await this._trie.commit()
-    this._caches.storage?.commit()
-    this._caches.account?.commit()
-    this._caches.code?.commit()
+    this._caches.commit()
     this._checkpointCount--
 
     if (this._checkpointCount === 0) {
@@ -493,9 +484,7 @@ export class DefaultStateManager implements StateManagerInterface {
   async revert(): Promise<void> {
     // setup trie checkpointing
     await this._trie.revert()
-    this._caches.storage?.revert()
-    this._caches.account?.revert()
-    this._caches.code?.revert()
+    this._caches.revert()
 
     this._storageTries = {}
 
@@ -810,14 +799,8 @@ export class DefaultStateManager implements StateManagerInterface {
     }
 
     this._trie.root(stateRoot)
-    if (this._caches.account !== undefined && clearCache) {
-      this._caches.account.clear()
-    }
-    if (this._caches.storage !== undefined && clearCache) {
-      this._caches.storage.clear()
-    }
-    if (this._caches.code !== undefined && clearCache) {
-      this._caches.code!.clear()
+    if (clearCache) {
+      this._caches.clear()
     }
     this._storageTries = {}
   }
@@ -983,9 +966,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * Clears all underlying caches
    */
   clearCaches() {
-    this._caches.account?.clear()
-    this._caches.storage?.clear()
-    this._caches.code?.clear()
+    this._caches.clear()
   }
 
   /**

@@ -3,6 +3,8 @@ import { CodeCache } from './code.js'
 import { StorageCache } from './storage.js'
 import { type CacheSettings, CacheType, type CachesStateManagerOpts } from './types.js'
 
+import type { Address } from '@ethereumjs/util'
+
 export class Caches {
   account?: AccountCache
   code?: CodeCache
@@ -57,5 +59,35 @@ export class Caches {
         type: this.settings.code.type,
       })
     }
+  }
+
+  checkpoint() {
+    this.account?.checkpoint()
+    this.storage?.checkpoint()
+    this.code?.checkpoint()
+  }
+
+  clear() {
+    this.account?.clear()
+    this.storage?.clear()
+    this.code?.clear()
+  }
+
+  commit() {
+    this.account?.commit()
+    this.storage?.commit()
+    this.code?.commit()
+  }
+
+  deleteAccount(address: Address) {
+    this.code?.del(address)
+    this.account?.del(address)
+    this.storage?.clearStorage(address)
+  }
+
+  revert() {
+    this.account?.revert()
+    this.storage?.revert()
+    this.code?.revert()
   }
 }

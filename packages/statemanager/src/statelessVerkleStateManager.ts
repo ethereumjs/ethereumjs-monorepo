@@ -725,9 +725,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    */
   async checkpoint(): Promise<void> {
     this._checkpoints.push(this._state)
-    this._caches.account?.checkpoint()
-    this._caches.storage?.checkpoint()
-    this._caches.code?.checkpoint()
+    this._caches.checkpoint()
   }
 
   /**
@@ -736,9 +734,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    */
   async commit(): Promise<void> {
     this._checkpoints.pop()
-    this._caches.account!.commit()
-    this._caches.storage?.commit()
-    this._caches.code?.commit()
+    this._caches.commit()
   }
 
   // TODO
@@ -753,9 +749,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
   async revert(): Promise<void> {
     // setup trie checkpointing
     this._checkpoints.pop()
-    this._caches.account?.revert()
-    this._caches.storage?.revert()
-    this._caches.code?.revert()
+    this._caches.revert()
   }
 
   /**
