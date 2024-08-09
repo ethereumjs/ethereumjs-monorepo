@@ -64,7 +64,7 @@ import type { Debugger } from 'debug'
  */
 export class DefaultStateManager implements StateManagerInterface {
   protected _debug: Debugger
-  protected _caches: Caches
+  protected _caches?: Caches
 
   originalStorageCache: OriginalStorageCache
 
@@ -115,7 +115,7 @@ export class DefaultStateManager implements StateManagerInterface {
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
     this._prefixStorageTrieKeys = opts.prefixStorageTrieKeys ?? false
 
-    this._caches = new Caches(opts.cachesOpts)
+    this._caches = opts.caches
   }
 
   /**
@@ -123,7 +123,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * @param address - Address of the `account` to get
    */
   async getAccount(address: Address): Promise<Account | undefined> {
-    if (!this._caches.settings.account.deactivate) {
+    if (this._caches !== undefined && !this._caches.settings.account.deactivate) {
       const elem = this._caches.account!.get(address)
       if (elem !== undefined) {
         return elem.accountRLP !== undefined ? createAccountFromRLP(elem.accountRLP) : undefined
@@ -135,7 +135,7 @@ export class DefaultStateManager implements StateManagerInterface {
     if (this.DEBUG) {
       this._debug(`Get account ${address} from DB (${account ? 'exists' : 'non-existent'})`)
     }
-    this._caches.account?.put(address, account)
+    this._caches?.account?.put(address, account)
     return account
   }
 
@@ -154,7 +154,7 @@ export class DefaultStateManager implements StateManagerInterface {
         }`,
       )
     }
-    if (this._caches.settings.account.deactivate) {
+    if (this._caches === undefined || this._caches.settings.account.deactivate) {
       const trie = this._trie
       if (account !== undefined) {
         await trie.put(address.bytes, account.serialize())
@@ -190,9 +190,9 @@ export class DefaultStateManager implements StateManagerInterface {
       this._debug(`Delete account ${address}`)
     }
 
-    this._caches.deleteAccount(address)
+    this._caches?.deleteAccount(address)
 
-    if (this._caches.settings.account.deactivate === true) {
+    if (this._caches === undefined || this._caches.settings.account.deactivate === true) {
       await this._trie.del(address.bytes)
     }
   }
@@ -204,7 +204,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * @param value - The value of the `code`
    */
   async putCode(address: Address, value: Uint8Array): Promise<void> {
-    this._caches.code?.put(address, value)
+    this._caches?.code?.put(address, value)
     const codeHash = this.keccakFunction(value)
 
     if (this.DEBUG) {
@@ -224,7 +224,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
   async getCode(address: Address): Promise<Uint8Array> {
-    if (!this._caches.settings.code.deactivate) {
+    if (this._caches !== undefined && !this._caches.settings.code.deactivate) {
       const elem = this._caches.code?.get(address)
       if (elem !== undefined) {
         return elem.code ?? new Uint8Array(0)
@@ -242,7 +242,7 @@ export class DefaultStateManager implements StateManagerInterface {
       : account.codeHash
     const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
 
-    if (!this._caches.settings.code.deactivate) {
+    if (this._caches !== undefined && !this._caches.settings.code.deactivate) {
       this._caches.code!.put(address, code)
     }
     return code
@@ -324,7 +324,7 @@ export class DefaultStateManager implements StateManagerInterface {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
-    if (!this._caches.settings.storage.deactivate) {
+    if (this._caches !== undefined && !this._caches.settings.storage.deactivate) {
       const value = this._caches.storage!.get(address, key)
       if (value !== undefined) {
         const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
@@ -338,7 +338,7 @@ export class DefaultStateManager implements StateManagerInterface {
     }
     const trie = this._getStorageTrie(address, account)
     const value = await trie.get(key)
-    if (!this._caches.settings.storage.deactivate) {
+    if (this._caches !== undefined && !this._caches.settings.storage.deactivate) {
       this._caches.storage?.put(address, key, value ?? hexToBytes('0x80'))
     }
     const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
@@ -422,7 +422,7 @@ export class DefaultStateManager implements StateManagerInterface {
     }
 
     value = unpadBytes(value)
-    if (!this._caches.settings.storage.deactivate) {
+    if (this._caches !== undefined && !this._caches.settings.storage.deactivate) {
       const encodedValue = RLP.encode(value)
       this._caches.storage!.put(address, key, encodedValue)
     } else {
@@ -439,7 +439,7 @@ export class DefaultStateManager implements StateManagerInterface {
     if (!account) {
       account = new Account()
     }
-    this._caches.storage?.clearStorage(address)
+    this._caches?.storage?.clearStorage(address)
     await this._modifyContractStorage(address, account, (storageTrie, done) => {
       storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
       done()
@@ -453,7 +453,7 @@ export class DefaultStateManager implements StateManagerInterface {
    */
   async checkpoint(): Promise<void> {
     this._trie.checkpoint()
-    this._caches.checkpoint()
+    this._caches?.checkpoint()
     this._checkpointCount++
   }
 
@@ -464,7 +464,7 @@ export class DefaultStateManager implements StateManagerInterface {
   async commit(): Promise<void> {
     // setup trie checkpointing
     await this._trie.commit()
-    this._caches.commit()
+    this._caches?.commit()
     this._checkpointCount--
 
     if (this._checkpointCount === 0) {
@@ -484,7 +484,7 @@ export class DefaultStateManager implements StateManagerInterface {
   async revert(): Promise<void> {
     // setup trie checkpointing
     await this._trie.revert()
-    this._caches.revert()
+    this._caches?.revert()
 
     this._storageTries = {}
 
@@ -500,7 +500,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * Writes all cache items to the trie
    */
   async flush(): Promise<void> {
-    if (!this._caches.settings.code.deactivate) {
+    if (this._caches !== undefined && !this._caches.settings.code.deactivate) {
       const items = this._caches.code!.flush()
       for (const item of items) {
         const addr = createAddressFromString(`0x${item[0]}`)
@@ -522,7 +522,7 @@ export class DefaultStateManager implements StateManagerInterface {
         await this.modifyAccountFields(addr, { codeHash })
       }
     }
-    if (!this._caches.settings.storage.deactivate) {
+    if (this._caches !== undefined && !this._caches.settings.storage.deactivate) {
       const items = this._caches.storage!.flush()
       for (const item of items) {
         const address = createAddressFromString(`0x${item[0]}`)
@@ -537,7 +537,7 @@ export class DefaultStateManager implements StateManagerInterface {
         }
       }
     }
-    if (!this._caches.settings.account.deactivate) {
+    if (this._caches !== undefined && !this._caches.settings.account.deactivate) {
       const items = this._caches.account!.flush()
       for (const item of items) {
         const addressHex = item[0]
@@ -800,7 +800,7 @@ export class DefaultStateManager implements StateManagerInterface {
 
     this._trie.root(stateRoot)
     if (clearCache) {
-      this._caches.clear()
+      this._caches?.clear()
     }
     this._storageTries = {}
   }
@@ -940,16 +940,24 @@ export class DefaultStateManager implements StateManagerInterface {
     const trie = this._trie.shallowCopy(false, { cacheSize })
     const prefixCodeHashes = this._prefixCodeHashes
     const prefixStorageTrieKeys = this._prefixStorageTrieKeys
-    let accountCacheOpts = { ...this._caches.settings.account }
-    if (downlevelCaches && !this._caches.settings.account.deactivate) {
+    let accountCacheOpts = { ...this._caches?.settings.account }
+    if (
+      downlevelCaches &&
+      this._caches !== undefined &&
+      !this._caches.settings.account.deactivate
+    ) {
       accountCacheOpts = { ...accountCacheOpts, type: CacheType.ORDERED_MAP }
     }
-    let storageCacheOpts = { ...this._caches.settings.storage }
-    if (downlevelCaches && !this._caches.settings.storage.deactivate) {
+    let storageCacheOpts = { ...this._caches?.settings.storage }
+    if (
+      downlevelCaches &&
+      this._caches !== undefined &&
+      !this._caches.settings.storage.deactivate
+    ) {
       storageCacheOpts = { ...storageCacheOpts, type: CacheType.ORDERED_MAP }
     }
-    let codeCacheOpts = { ...this._caches.settings.code }
-    if (!this._caches.settings.code.deactivate) {
+    let codeCacheOpts = { ...this._caches?.settings.code }
+    if (this._caches !== undefined && !this._caches.settings.code.deactivate) {
       codeCacheOpts = { ...codeCacheOpts, type: CacheType.ORDERED_MAP }
     }
 
@@ -958,7 +966,7 @@ export class DefaultStateManager implements StateManagerInterface {
       trie,
       prefixStorageTrieKeys,
       prefixCodeHashes,
-      cachesOpts: { accountCacheOpts, storageCacheOpts, codeCacheOpts },
+      caches: new Caches({ accountCacheOpts, storageCacheOpts, codeCacheOpts }),
     })
   }
 
@@ -966,7 +974,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * Clears all underlying caches
    */
   clearCaches() {
-    this._caches.clear()
+    this._caches?.clear()
   }
 
   /**

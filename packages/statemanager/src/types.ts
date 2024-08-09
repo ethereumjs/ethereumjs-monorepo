@@ -1,7 +1,6 @@
 import { type PrefixedHexString, utf8ToBytes } from '@ethereumjs/util'
 
-import type { CachesStateManagerOpts } from './cache/types.js'
-import type { AccessWitness } from './index.js'
+import type { AccessWitness, Caches } from './index.js'
 import type { Common } from '@ethereumjs/common'
 import type { Trie } from '@ethereumjs/trie'
 import type { VerkleCrypto } from '@ethereumjs/util'
@@ -63,7 +62,7 @@ export interface DefaultStateManagerOpts extends BaseStateManagerOpts {
    *
    * Default: false
    */
-  cachesOpts?: CachesStateManagerOpts
+  caches?: Caches
 }
 
 /**
@@ -73,7 +72,7 @@ export interface StatelessVerkleStateManagerOpts extends BaseStateManagerOpts {
   accesses?: AccessWitness
   verkleCrypto: VerkleCrypto
   initialStateRoot?: Uint8Array
-  cachesOpts?: CachesStateManagerOpts
+  caches?: Caches
 }
 
 export interface VerkleState {
