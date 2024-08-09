@@ -1,3 +1,9 @@
+import {
+  cliqueEpochTransitionSigners,
+  cliqueIsEpochTransition,
+  cliqueSigner,
+  cliqueVerifySignature,
+} from '@ethereumjs/block'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -136,7 +142,7 @@ export class CliqueConsensus implements Consensus {
     }
 
     const { header } = block
-    const valid = header.cliqueVerifySignature(this.cliqueActiveSigners(header.number))
+    const valid = cliqueVerifySignature(header, this.cliqueActiveSigners(header.number))
     if (!valid) {
       throw new Error('invalid PoA block signature (clique)')
     }
@@ -145,11 +151,11 @@ export class CliqueConsensus implements Consensus {
     }
 
     // validate checkpoint signers towards active signers on epoch transition blocks
-    if (header.cliqueIsEpochTransition()) {
+    if (cliqueIsEpochTransition(header)) {
       // note: keep votes on epoch transition blocks in case of reorgs.
       // only active (non-stale) votes will counted (if vote.blockNumber >= lastEpochBlockNumber
 
-      const checkpointSigners = header.cliqueEpochTransitionSigners()
+      const checkpointSigners = cliqueEpochTransitionSigners(header)
       const activeSigners = this.cliqueActiveSigners(header.number)
       for (const [i, cSigner] of checkpointSigners.entries()) {
         if (activeSigners[i]?.equals(cSigner) !== true) {
@@ -178,7 +184,7 @@ export class CliqueConsensus implements Consensus {
       throw new Error(`${msg} ${header.errorStr()}`)
     }
     const signerIndex = signers.findIndex((address: Address) =>
-      address.equals(header.cliqueSigner()),
+      address.equals(cliqueSigner(header)),
     )
     const inTurn = header.number % BigInt(signers.length) === BigInt(signerIndex)
     if (
@@ -211,7 +217,7 @@ export class CliqueConsensus implements Consensus {
   private async cliqueSaveGenesisSigners(genesisBlock: Block) {
     const genesisSignerState: CliqueSignerState = [
       BIGINT_0,
-      genesisBlock.header.cliqueEpochTransitionSigners(),
+      cliqueEpochTransitionSigners(genesisBlock.header),
     ]
     await this.cliqueUpdateSignerStates(genesisSignerState)
     debug(`[Block 0] Genesis block -> update signer states`)
@@ -280,7 +286,7 @@ export class CliqueConsensus implements Consensus {
   private async cliqueUpdateVotes(header?: BlockHeader) {
     // Block contains a vote on a new signer
     if (header && !header.coinbase.isZero()) {
-      const signer = header.cliqueSigner()
+      const signer = cliqueSigner(header)
       const beneficiary = header.coinbase
       const nonce = header.nonce
       const latestVote: CliqueVote = [header.number, [signer, beneficiary, nonce]]
@@ -469,8 +475,8 @@ export class CliqueConsensus implements Consensus {
       // we do not have a complete picture of the state to verify if too recently signed
       return false
     }
-    signers.push([header.number, header.cliqueSigner()])
-    const seen = signers.filter((s) => s[1].equals(header.cliqueSigner())).length
+    signers.push([header.number, cliqueSigner(header)])
+    const seen = signers.filter((s) => s[1].equals(cliqueSigner(header))).length
     return seen > 1
   }
 
@@ -509,7 +515,7 @@ export class CliqueConsensus implements Consensus {
         return
       }
       // add this block's signer
-      const signer: CliqueBlockSigner = [header.number, header.cliqueSigner()]
+      const signer: CliqueBlockSigner = [header.number, cliqueSigner(header)]
       this._cliqueLatestBlockSigners.push(signer)
 
       // trim length to `this.cliqueSignerLimit()`
@@ -587,7 +593,7 @@ export class CliqueConsensus implements Consensus {
    * @hidden
    */
   private async _cliqueBuildSnapshots(header: BlockHeader) {
-    if (!header.cliqueIsEpochTransition()) {
+    if (!cliqueIsEpochTransition(header)) {
       await this.cliqueUpdateVotes(header)
     }
     await this.cliqueUpdateLatestBlockSigners(header)

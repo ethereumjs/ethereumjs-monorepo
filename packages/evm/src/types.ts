@@ -346,6 +346,11 @@ export interface EVMOpts {
    *
    */
   profiler?: EVMProfilerOpts
+
+  /**
+   * Must be present if consensus type is clique/poa, else error will be thrown
+   */
+  cliqueSigner?: (header: Block['header']) => Address
 }
 
 /**
@@ -440,7 +445,6 @@ export type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 export type Block = {
   header: {
     number: bigint
-    cliqueSigner(): Address
     coinbase: Address
     timestamp: bigint
     difficulty: bigint

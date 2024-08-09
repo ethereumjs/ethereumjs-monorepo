@@ -1150,7 +1150,6 @@ export function defaultBlock(): Block {
   return {
     header: {
       number: BIGINT_0,
-      cliqueSigner: () => createZeroAddress(),
       coinbase: createZeroAddress(),
       timestamp: BIGINT_0,
       difficulty: BIGINT_0,
