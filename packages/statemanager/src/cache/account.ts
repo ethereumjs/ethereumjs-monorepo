@@ -1,10 +1,10 @@
-import { CacheType } from '@ethereumjs/common'
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
 import debugDefault from 'debug'
 import { LRUCache } from 'lru-cache'
 
 import { Cache } from './cache.js'
+import { CacheType } from './types.js'
 
 import type { CacheOpts } from './types.js'
 import type { Account, Address } from '@ethereumjs/util'
@@ -68,14 +68,14 @@ export class AccountCache extends Cache {
   put(
     address: Address,
     account: Account | undefined,
-    couldBeParitalAccount: boolean = false,
+    couldBePartialAccount: boolean = false,
   ): void {
     const addressHex = bytesToUnprefixedHex(address.bytes)
     this._saveCachePreState(addressHex)
     const elem = {
       accountRLP:
         account !== undefined
-          ? couldBeParitalAccount
+          ? couldBePartialAccount
             ? account.serializeWithPartialInfo()
             : account.serialize()
           : undefined,

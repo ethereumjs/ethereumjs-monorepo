@@ -4,10 +4,14 @@ import {
   DBSetHashToNumber,
   DBSetTD,
 } from '@ethereumjs/blockchain'
-import { CacheType, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MCLBLS, RustBN254 } from '@ethereumjs/evm'
 import { getGenesis } from '@ethereumjs/genesis'
-import { DefaultStateManager, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
+import {
+  CacheType,
+  DefaultStateManager,
+  StatelessVerkleStateManager,
+} from '@ethereumjs/statemanager'
 import { createTrie } from '@ethereumjs/trie'
 import {
   BIGINT_0,
@@ -160,20 +164,22 @@ export class VMExecution extends Execution {
     const stateManager = new DefaultStateManager({
       trie,
       prefixStorageTrieKeys: this.config.prefixStorageTrieKeys,
-      accountCacheOpts: {
-        deactivate: false,
-        type: CacheType.LRU,
-        size: this.config.accountCache,
-      },
-      storageCacheOpts: {
-        deactivate: false,
-        type: CacheType.LRU,
-        size: this.config.storageCache,
-      },
-      codeCacheOpts: {
-        deactivate: false,
-        type: CacheType.LRU,
-        size: this.config.codeCache,
+      cachesOpts: {
+        accountCacheOpts: {
+          deactivate: false,
+          type: CacheType.LRU,
+          size: this.config.accountCache,
+        },
+        storageCacheOpts: {
+          deactivate: false,
+          type: CacheType.LRU,
+          size: this.config.storageCache,
+        },
+        codeCacheOpts: {
+          deactivate: false,
+          type: CacheType.LRU,
+          size: this.config.codeCache,
+        },
       },
       common: this.config.chainCommon,
     })

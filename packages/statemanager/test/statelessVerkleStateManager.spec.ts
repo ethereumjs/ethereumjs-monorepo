@@ -1,5 +1,5 @@
 import { createBlock } from '@ethereumjs/block'
-import { CacheType, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
   Address,
@@ -16,7 +16,7 @@ import {
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it, test } from 'vitest'
 
-import { StatelessVerkleStateManager } from '../src/index.js'
+import { CacheType, StatelessVerkleStateManager } from '../src/index.js'
 
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 import * as verkleBlockJSON from './testdata/verkleKaustinen6Block72.json'
@@ -144,11 +144,13 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
   it(`copy()`, async () => {
     const stateManager = new StatelessVerkleStateManager({
-      accountCacheOpts: {
-        type: CacheType.ORDERED_MAP,
-      },
-      storageCacheOpts: {
-        type: CacheType.ORDERED_MAP,
+      cachesOpts: {
+        accountCacheOpts: {
+          type: CacheType.ORDERED_MAP,
+        },
+        storageCacheOpts: {
+          type: CacheType.ORDERED_MAP,
+        },
       },
       common,
       verkleCrypto,
@@ -158,12 +160,12 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const stateManagerCopy = stateManager.shallowCopy() as StatelessVerkleStateManager
 
     assert.equal(
-      (stateManagerCopy as any)['_accountCacheSettings'].type,
+      stateManagerCopy['_caches'].settings.account.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP account cache on copy()',
     )
     assert.equal(
-      (stateManagerCopy as any)['_storageCacheSettings'].type,
+      stateManagerCopy['_caches'].settings.storage.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP storage cache on copy()',
     )
