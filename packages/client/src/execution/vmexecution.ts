@@ -9,6 +9,7 @@ import { MCLBLS, RustBN254 } from '@ethereumjs/evm'
 import { getGenesis } from '@ethereumjs/genesis'
 import {
   CacheType,
+  Caches,
   DefaultStateManager,
   StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
@@ -164,7 +165,7 @@ export class VMExecution extends Execution {
     const stateManager = new DefaultStateManager({
       trie,
       prefixStorageTrieKeys: this.config.prefixStorageTrieKeys,
-      cachesOpts: {
+      caches: new Caches({
         accountCacheOpts: {
           deactivate: false,
           type: CacheType.LRU,
@@ -180,7 +181,7 @@ export class VMExecution extends Execution {
           type: CacheType.LRU,
           size: this.config.codeCache,
         },
-      },
+      }),
       common: this.config.chainCommon,
     })
 
