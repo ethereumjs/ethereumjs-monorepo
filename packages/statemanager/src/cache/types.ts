@@ -52,7 +52,7 @@ export interface CacheStateManagerOpts {
 }
 
 export interface CachesStateManagerOpts {
-  accountCacheOpts?: CacheStateManagerOpts
-  codeCacheOpts?: CacheStateManagerOpts
-  storageCacheOpts?: CacheStateManagerOpts
+  account?: CacheStateManagerOpts
+  code?: CacheStateManagerOpts
+  storage?: CacheStateManagerOpts
 }

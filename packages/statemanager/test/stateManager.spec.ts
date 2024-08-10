@@ -83,10 +83,10 @@ describe('StateManager -> General', () => {
     sm = new DefaultStateManager({
       trie,
       caches: new Caches({
-        accountCacheOpts: {
+        account: {
           type: CacheType.LRU,
         },
-        storageCacheOpts: {
+        storage: {
           type: CacheType.LRU,
         },
       }),

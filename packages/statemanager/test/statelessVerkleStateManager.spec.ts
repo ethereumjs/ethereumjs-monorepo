@@ -149,10 +149,10 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   it(`copy()`, async () => {
     const stateManager = new StatelessVerkleStateManager({
       caches: new Caches({
-        accountCacheOpts: {
+        account: {
           type: CacheType.ORDERED_MAP,
         },
-        storageCacheOpts: {
+        storage: {
           type: CacheType.ORDERED_MAP,
         },
       }),

@@ -939,7 +939,11 @@ export class DefaultStateManager implements StateManagerInterface {
       trie,
       prefixStorageTrieKeys,
       prefixCodeHashes,
-      caches: new Caches({ accountCacheOpts, codeCacheOpts, storageCacheOpts }),
+      caches: new Caches({
+        account: accountCacheOpts,
+        code: codeCacheOpts,
+        storage: storageCacheOpts,
+      }),
     })
   }
 

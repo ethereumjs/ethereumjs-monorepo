@@ -14,23 +14,20 @@ export class Caches {
 
   constructor(opts: CachesStateManagerOpts = {}) {
     const accountSettings = {
-      deactivate:
-        (opts.accountCacheOpts?.deactivate === true || opts.accountCacheOpts?.size === 0) ?? false,
-      type: opts.accountCacheOpts?.type ?? CacheType.ORDERED_MAP,
-      size: opts.accountCacheOpts?.size ?? 100000,
+      deactivate: (opts.account?.deactivate === true || opts.account?.size === 0) ?? false,
+      type: opts.account?.type ?? CacheType.ORDERED_MAP,
+      size: opts.account?.size ?? 100000,
     }
     const storageSettings = {
-      deactivate:
-        (opts.storageCacheOpts?.deactivate === true || opts.storageCacheOpts?.size === 0) ?? false,
-      type: opts.storageCacheOpts?.type ?? CacheType.ORDERED_MAP,
-      size: opts.storageCacheOpts?.size ?? 20000,
+      deactivate: (opts.storage?.deactivate === true || opts.storage?.size === 0) ?? false,
+      type: opts.storage?.type ?? CacheType.ORDERED_MAP,
+      size: opts.storage?.size ?? 20000,
     }
 
     const codeSettings = {
-      deactivate:
-        (opts.codeCacheOpts?.deactivate === true || opts.codeCacheOpts?.size === 0) ?? false,
-      type: opts.codeCacheOpts?.type ?? CacheType.ORDERED_MAP,
-      size: opts.codeCacheOpts?.size ?? 20000,
+      deactivate: (opts.code?.deactivate === true || opts.code?.size === 0) ?? false,
+      type: opts.code?.type ?? CacheType.ORDERED_MAP,
+      size: opts.code?.size ?? 20000,
     }
 
     this.settings = {
