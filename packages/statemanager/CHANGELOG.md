@@ -11,10 +11,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Verkle Updates
 
 - Various fixes for Kaustinen4 support (partial account integration, `getContractCodeSize()`, other), PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- Kaustinen5 related fixes, PR [#3343](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3343)
+- Kaustinen6 adjustments, `verkle-cryptography-wasm` migration, PRs [#3355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3355) and [#3356](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3356)
 
 ### Other Features
 
 - Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Other Changes
+
+- Modify RPCStateManager `getAccount()`, PR [#3345](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3345)
 
 ## 2.3.0 - 2024-03-18
 

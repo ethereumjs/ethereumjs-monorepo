@@ -39,6 +39,10 @@ These request types are mainly used within the [@ethereumjs/block](https://githu
 
 - Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
 
+### Other Changes
+
+- Adjust `Account.isContract()` (in Verkle context work), PR [#3343](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3343)
+
 ## 9.0.3 - 2024-03-18
 
 - Allow optional `trustedSetupPath` for the `initKZG()` method, PR [#3296](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3296)
