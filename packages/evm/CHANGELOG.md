@@ -8,9 +8,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 3.1.0 - 2024-07-23
 
-### EIP-2935 BLS Precompiles
+### EIP-2537 BLS Precompiles
 
-Starting with this release the EVM support the BLS precompiles introduced with [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537). These precompiles run natively using the [@noble/curves](https://github.com/paulmillr/noble-curves) library (❤️ to `@paulmillr`!), see PRs [#3350](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3350) and [#3471](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3350).
+Starting with this release the EVM support the BLS precompiles introduced with [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537). These precompiles run natively using the [@noble/curves](https://github.com/paulmillr/noble-curves) library (❤️ to `@paulmillr`!), see PRs [#3350](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3350) and [#3471](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3471).
 
 An alternative WASM implementation (using [bls-wasm](https://github.com/herumi/bls-wasm)) can be optionally used like this if needed for performance reasons:
 
@@ -32,6 +32,10 @@ const evm = await EVM.create({ common, bls })
 ### Other Features
 
 - Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Other Changes
+
+- Removes support for [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) simple subroutines for EVM (deprecated with an alternative version integrated into EOF), PR [#3342](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3342)
 
 ## 3.0.0 - 2024-03-18
 

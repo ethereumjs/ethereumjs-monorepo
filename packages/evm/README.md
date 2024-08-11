@@ -135,7 +135,7 @@ const main = async () => {
 main()
 ```
 
-### EIP-2935 BLS Precompiles
+### EIP-2537 BLS Precompiles
 
 Starting with `v3.1.0` the EVM support the BLS precompiles introduced with [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537). These precompiles run natively using the [@noble/curves](https://github.com/paulmillr/noble-curves) library (❤️ to `@paulmillr`!).
 

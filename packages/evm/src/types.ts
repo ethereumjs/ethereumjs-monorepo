@@ -261,7 +261,7 @@ export interface EVMOpts {
   customPrecompiles?: CustomPrecompile[]
 
   /**
-   * For the EIP-2935 BLS precompiles, the native JS `@noble/curves`
+   * For the EIP-2537 BLS Precompiles, the native JS `@noble/curves`
    * https://github.com/paulmillr/noble-curves BLS12-381 curve implementation
    * is used (see `noble.ts` file in the `precompiles` folder).
    *
