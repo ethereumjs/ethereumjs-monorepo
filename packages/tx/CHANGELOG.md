@@ -6,9 +6,46 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## - 2024-07-23
+## 5.4.0 - 2024-07-23
 
-## 5.3.0 - 2024-03-18
+#### EOA Code Transaction (EIP-7702) (experimental)
+
+This release introduces support for an experimental version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions. This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
+
+The following is a simple example how to use an `EOACodeEIP7702Transaction` with one autorization list item:
+
+```ts
+// ./examples/EOACodeTx.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EOACodeEIP7702Transaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
+
+const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const tx = EOACodeEIP7702Transaction.fromTxData(
+  {
+    authorizationList: [
+      {
+        chainId: '0x1',
+        address: `0x${'20'.repeat(20)}`,
+        nonce: ['0x1'],
+        yParity: '0x1',
+        r: ones32,
+        s: ones32,
+      },
+    ],
+  },
+  { common }
+)
+
+console.log(
+  `EIP-7702 EOA code tx created with ${tx.authorizationList.length} authorization list item(s).`
+)
+```
+
+Note that the specification of this EIP is not yet stable and the API of this tx type might still change at any time.
 
 ### Verkle Updates
 
@@ -17,6 +54,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Other Features
 
 - Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+## 5.3.0 - 2024-03-18
 
 ### Full 4844 Browser Readiness
 
