@@ -327,6 +327,10 @@ EIP-4844 comes with a new opcode `BLOBHASH` (Attention! Renamed from `DATAHASH`)
 
 **Note:** Usage of the point evaluation precompile needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
+### EIP-7702 EAO Code Transactions Support (experimental)
+
+This library support the execution of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions (see tx library for full documentation) with `runTx()` or the wrapping `runBlock()` execution methods starting with `v3.1.0`, see [this test setup](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/EIPs/eip-7702.spec.ts) for a more complete example setup on how to run code from an EOA.
+
 ### Tracing Events
 
 The EVM has a public property `events` which instantiates an [AsyncEventEmitter](https://github.com/ahultgren/async-eventemitter) and events are submitted along major execution steps which you can listen to.

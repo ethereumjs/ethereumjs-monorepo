@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Other Changes
 
+- Integrates support for [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions (see tx library for full documentation), see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470)
 - Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348)
 
 ## 0.10.1 - 2024-03-18
