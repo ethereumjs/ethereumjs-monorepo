@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Bugfixes
 
 - Fixes an issue where under certain deployment conditions wrong storage values could be provided, PR [#3434](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3434)
+- Fixes statemanager empty code bug, PR [#3483](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3483)
 
 ## 2.3.0 - 2024-03-18
 

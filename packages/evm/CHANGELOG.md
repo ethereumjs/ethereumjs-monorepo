@@ -55,6 +55,7 @@ An update to this release is therefore strongly recommended even if other fixes 
 ### Bugfixes
 
 - BLS precompile fixes, PR [#3400](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3400)
+- Ignore precompile addresses for some target access events, PR [#3366](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3366)
 
 ## 3.0.0 - 2024-03-18
 
