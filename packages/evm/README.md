@@ -150,12 +150,6 @@ const mclbls = new MCLBLS(mcl)
 const evm = await EVM.create({ common, bls })
 ```
 
-### EIP-2935 Serve Historical Block Hashes from State (Prague)
-
-Starting with `v3.1.0` the EVM supports [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) which replaces the assumption of block hashes being present (to be served in the `BLOCKHASH` opcode) in a client by a sync process with relying on a system contract where historical block hashes are stored, see PR [#3475](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3475) as the major integrational PR (while work on this has already been done in previous PRs).
-
-The window of 256 historical block hashes which can be served by the `BLOCKHASH` opcode remains unchanged. See [this associated test setup](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/EIPs/eip-2935-historical-block-hashes.spec.ts) for inspiration on code setting up a respective environment.
-
 ## Examples
 
 This projects contain the following examples:
@@ -307,6 +301,7 @@ Currently supported EIPs:
 - [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable withdrawals (Prague)
 - [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Execution layer triggerable validator consolidations (Prague)
 - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - EOA code transactions (Prague)
+- [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Osaka)
 - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
 - [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)
 

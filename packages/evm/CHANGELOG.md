@@ -23,12 +23,6 @@ const mclbls = new MCLBLS(mcl)
 const evm = await EVM.create({ common, bls })
 ```
 
-### EIP-2935 Serve Historical Block Hashes from State (Prague)
-
-Starting with this release the EVM supports [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) which replaces the assumption of block hashes being present (to be served in the `BLOCKHASH` opcode) in a client by a sync process with relying on a system contract where historical block hashes are stored, see PR [#3475](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3475) as the major integrational PR (while work on this has already been done in previous PRs).
-
-The window of 256 historical block hashes which can be served by the `BLOCKHASH` opcode remains unchanged. See [this associated test setup](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/EIPs/eip-2935-historical-block-hashes.spec.ts) for inspiration on code setting up a respective environment.
-
 ### Verkle Dependency Decoupling
 
 We have relatively light-heartedly added a new `@ethereumjs/verkle` main dependency to the VM/EVM stack in the `v7.2.1` release, which added an additional burden to the bundle size by several 100 KB and additionally draw in non-neceesary WASM code. Coupling with Verkle has been refactored in PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462) and the directly dependency has been removed again.
@@ -49,6 +43,7 @@ An update to this release is therefore strongly recommended even if other fixes 
 
 ### Other Features
 
+- Add support for retroactive [EIP-7610](https://eips.ethereum.org/EIPS/eip-7610), PR [#3480](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3480)
 - Adds bundle visualizer (to be used with `npm run visualize:bundle`), PR [#3463](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3463)
 - Stricter prefixe hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
 
