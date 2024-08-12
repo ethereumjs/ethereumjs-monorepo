@@ -166,17 +166,14 @@ export class VMExecution extends Execution {
       prefixStorageTrieKeys: this.config.prefixStorageTrieKeys,
       caches: new Caches({
         account: {
-          deactivate: false,
           type: CacheType.LRU,
           size: this.config.accountCache,
         },
         storage: {
-          deactivate: false,
           type: CacheType.LRU,
           size: this.config.storageCache,
         },
         code: {
-          deactivate: false,
           type: CacheType.LRU,
           size: this.config.codeCache,
         },
