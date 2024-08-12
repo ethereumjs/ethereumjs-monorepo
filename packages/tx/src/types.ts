@@ -600,7 +600,7 @@ export type AccessList = AccessListItem[]
 export type AuthorizationListItem = {
   chainId: PrefixedHexString
   address: PrefixedHexString
-  nonce: PrefixedHexString[]
+  nonce: PrefixedHexString
   yParity: PrefixedHexString
   r: PrefixedHexString
   s: PrefixedHexString
@@ -610,7 +610,7 @@ export type AuthorizationListItem = {
 export type AuthorizationListBytesItem = [
   Uint8Array,
   Uint8Array,
-  Uint8Array[],
+  Uint8Array,
   Uint8Array,
   Uint8Array,
   Uint8Array,
