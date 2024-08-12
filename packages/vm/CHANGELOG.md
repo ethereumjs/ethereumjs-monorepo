@@ -14,6 +14,12 @@ This library now supports `EIP-6110` deposit requests, see PR [#3390](https://gi
 
 These new request types will be activated with the `Prague` hardfork, see [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) README for detailed documentation.
 
+### EIP-2935 Serve Historical Block Hashes from State (Prague)
+
+Starting with this release the EVM supports [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) which replaces the assumption of block hashes being present (to be served in the `BLOCKHASH` opcode) in a client by a sync process with relying on a system contract where historical block hashes are stored, see PR [#3475](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3475) as the major integrational PR (while work on this has already been done in previous PRs).
+
+The window of 256 historical block hashes which can be served by the `BLOCKHASH` opcode remains unchanged. See [this associated test setup](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/EIPs/eip-2935-historical-block-hashes.spec.ts) for inspiration on code setting up a respective environment.
+
 ### Verkle Dependency Decoupling
 
 We have relatively light-heartedly added a new `@ethereumjs/verkle` main dependency to the VM/EVM stack in the `v7.2.1` release, which added an additional burden to the bundle size by several 100 KB and additionally draw in non-neceesary WASM code. Coupling with Verkle has been refactored in PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462) and the directly dependency has been removed again.

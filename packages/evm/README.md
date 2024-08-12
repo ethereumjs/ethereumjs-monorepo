@@ -135,7 +135,7 @@ const main = async () => {
 main()
 ```
 
-### EIP-2537 BLS Precompiles
+### EIP-2537 BLS Precompiles (Prague)
 
 Starting with `v3.1.0` the EVM support the BLS precompiles introduced with [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537). These precompiles run natively using the [@noble/curves](https://github.com/paulmillr/noble-curves) library (❤️ to `@paulmillr`!).
 
@@ -149,6 +149,12 @@ await mcl.init(mcl.BLS12_381)
 const mclbls = new MCLBLS(mcl)
 const evm = await EVM.create({ common, bls })
 ```
+
+### EIP-2935 Serve Historical Block Hashes from State (Prague)
+
+Starting with `v3.1.0` the EVM supports [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) which replaces the assumption of block hashes being present (to be served in the `BLOCKHASH` opcode) in a client by a sync process with relying on a system contract where historical block hashes are stored, see PR [#3475](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3475) as the major integrational PR (while work on this has already been done in previous PRs).
+
+The window of 256 historical block hashes which can be served by the `BLOCKHASH` opcode remains unchanged. See [this associated test setup](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/EIPs/eip-2935-historical-block-hashes.spec.ts) for inspiration on code setting up a respective environment.
 
 ## Examples
 
@@ -274,7 +280,7 @@ Currently supported EIPs:
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (removed in v4.0.0, see latest v3 release)
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
-- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Save historical block hashes in state (`experimental`)
+- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes from state (Prague)
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
 - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes
