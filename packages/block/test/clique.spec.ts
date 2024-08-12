@@ -2,7 +2,7 @@ import { Common, Goerli, Hardfork } from '@ethereumjs/common'
 import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlockHeader } from '../src/constructors.js'
+import { createBlockHeader, createSealedCliqueBlockHeader } from '../src/constructors.js'
 import {
   cliqueEpochTransitionSigners,
   cliqueExtraSeal,
@@ -97,9 +97,10 @@ describe('[Header]: Clique PoA Functionality', () => {
   it('Signing', () => {
     const cliqueSignerKey = A.privateKey
 
-    let header = createBlockHeader(
+    let header = createSealedCliqueBlockHeader(
       { number: 1, extraData: new Uint8Array(97) },
-      { common, freeze: false, cliqueSigner: cliqueSignerKey },
+      cliqueSignerKey,
+      { common, freeze: false },
     )
 
     assert.equal(header.extraData.length, 97)
