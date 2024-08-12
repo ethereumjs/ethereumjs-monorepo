@@ -53,10 +53,6 @@ export class RPCStateManager implements StateManagerInterface {
 
     this._caches = new Caches({ storage: { size: 100000 }, code: { size: 100000 } })
 
-    // this._contractCache = new Map()
-    // this._storageCache = new StorageCache({ size: 100000, type: CacheType.ORDERED_MAP })
-    // this._accountCache = new AccountCache({ size: 100000, type: CacheType.ORDERED_MAP })
-
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this.common = opts.common ?? new Common({ chain: Mainnet })
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
