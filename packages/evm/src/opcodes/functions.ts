@@ -33,6 +33,7 @@ import {
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
+import { equalBytes } from '@noble/curves/abstract/utils'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { EOFContainer, EOFContainerMode } from '../eof/container.js'
@@ -67,6 +68,15 @@ export interface AsyncOpHandler {
 }
 
 export type OpHandler = SyncOpHandler | AsyncOpHandler
+
+async function eip7702CodeCheck(runState: RunState, code: Uint8Array) {
+  if (equalBytes(code, new Uint8Array([0xef, 0x01, 0x00]))) {
+    const address = new Address(code.slice(3, 24))
+    return runState.stateManager.getCode(address)
+  }
+
+  return code
+}
 
 // the opcode functions
 export const handlers: Map<number, OpHandler> = new Map([
@@ -520,15 +530,17 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3b: EXTCODESIZE
   [
     0x3b,
-    async function (runState) {
+    async function (runState, common) {
       const addressBigInt = runState.stack.pop()
       const address = createAddressFromStackBigInt(addressBigInt)
       // EOF check
-      const code = await runState.stateManager.getCode(address)
+      let code = await runState.stateManager.getCode(address)
       if (isEOF(code)) {
         // In legacy code, the target code is treated as to be "EOFBYTES" code
         runState.stack.push(BigInt(EOFBYTES.length))
         return
+      } else if (common.isActivatedEIP(7702)) {
+        code = await eip7702CodeCheck(runState, code)
       }
 
       const size = BigInt(
@@ -541,15 +553,18 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3c: EXTCODECOPY
   [
     0x3c,
-    async function (runState) {
+    async function (runState, common) {
       const [addressBigInt, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
 
       if (dataLength !== BIGINT_0) {
-        let code = await runState.stateManager.getCode(createAddressFromStackBigInt(addressBigInt))
+        const address = createAddressFromStackBigInt(addressBigInt)
+        let code = await runState.stateManager.getCode(address)
 
         if (isEOF(code)) {
           // In legacy code, the target code is treated as to be "EOFBYTES" code
           code = EOFBYTES
+        } else if (common.isActivatedEIP(7702)) {
+          code = await eip7702CodeCheck(runState, code)
         }
 
         const data = getDataSlice(code, codeOffset, dataLength)
@@ -562,17 +577,19 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3f: EXTCODEHASH
   [
     0x3f,
-    async function (runState) {
+    async function (runState, common) {
       const addressBigInt = runState.stack.pop()
       const address = createAddressFromStackBigInt(addressBigInt)
 
       // EOF check
-      const code = await runState.stateManager.getCode(address)
+      let code = await runState.stateManager.getCode(address)
       if (isEOF(code)) {
         // In legacy code, the target code is treated as to be "EOFBYTES" code
         // Therefore, push the hash of EOFBYTES to the stack
         runState.stack.push(bytesToBigInt(EOFHASH))
         return
+      } else if (common.isActivatedEIP(7702)) {
+        code = await eip7702CodeCheck(runState, code)
       }
 
       const account = await runState.stateManager.getAccount(address)

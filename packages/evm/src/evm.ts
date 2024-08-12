@@ -1013,6 +1013,16 @@ export class EVM implements EVMInterface {
         message.isCompiled = true
       } else {
         message.code = await this.stateManager.getCode(message.codeAddress)
+
+        // EIP-7702 delegation check
+        if (
+          this.common.isActivatedEIP(7702) &&
+          equalsBytes(message.code.slice(0, 3), new Uint8Array([0xef, 0x01, 0x00]))
+        ) {
+          const address = new Address(message.code.slice(3, 24))
+          message.code = await this.stateManager.getCode(address)
+        }
+
         message.isCompiled = false
         message.chargeCodeAccesses = true
       }

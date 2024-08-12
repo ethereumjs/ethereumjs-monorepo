@@ -12,6 +12,7 @@ import {
   VERKLE_CODE_SIZE_LEAF_KEY,
   VERKLE_VERSION_LEAF_KEY,
   bigIntToBytes,
+  equalsBytes,
   getVerkleTreeIndexesForStorageSlot,
   setLengthLeft,
 } from '@ethereumjs/util'
@@ -34,8 +35,17 @@ import {
 
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 
 const EXTCALL_TARGET_MAX = BigInt(2) ** BigInt(8 * 20) - BigInt(1)
+
+async function eip7702GasCost(runState: RunState, common: Common, address: Address) {
+  const code = await runState.stateManager.getCode(address)
+  if (equalsBytes(code, new Uint8Array([0xef, 0x01, 0x00]))) {
+    return accessAddressEIP2929(runState, code.slice(3, 24), common)
+  }
+  return BIGINT_0
+}
 
 /**
  * This file returns the dynamic parts of opcodes which have dynamic gas
@@ -183,6 +193,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
         }
 
+        if (common.isActivatedEIP(7702)) {
+          gas += await eip7702GasCost(runState, common, address)
+        }
+
         return gas
       },
     ],
@@ -219,6 +233,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(2929)) {
           gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
+        }
+
+        if (common.isActivatedEIP(7702)) {
+          gas += await eip7702GasCost(runState, common, address)
         }
 
         if (dataLength !== BIGINT_0) {
@@ -284,6 +302,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(2929)) {
           gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
+        }
+
+        if (common.isActivatedEIP(7702)) {
+          gas += await eip7702GasCost(runState, common, address)
         }
 
         return gas
@@ -586,6 +608,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessAddressEIP2929(runState, toAddress.bytes, common, charge2929Gas)
         }
 
+        if (common.isActivatedEIP(7702)) {
+          gas += await eip7702GasCost(runState, common, toAddress)
+        }
+
         if (value !== BIGINT_0 && !common.isActivatedEIP(6800)) {
           gas += common.param('callValueTransferGas')
         }
@@ -660,6 +686,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
         }
 
+        if (common.isActivatedEIP(7702)) {
+          gas += await eip7702GasCost(runState, common, toAddress)
+        }
+
         if (value !== BIGINT_0) {
           gas += common.param('callValueTransferGas')
         }
@@ -719,6 +749,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             common,
             charge2929Gas,
           )
+        }
+
+        if (common.isActivatedEIP(7702)) {
+          gas += await eip7702GasCost(runState, common, toAddress)
         }
 
         const gasLimit = maxCallGas(
@@ -990,6 +1024,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             common,
             charge2929Gas,
           )
+        }
+
+        if (common.isActivatedEIP(7702)) {
+          gas += await eip7702GasCost(runState, common, createAddressFromStackBigInt(toAddr))
         }
 
         const gasLimit = maxCallGas(
