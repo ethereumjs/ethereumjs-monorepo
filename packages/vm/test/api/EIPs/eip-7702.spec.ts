@@ -6,7 +6,7 @@ import {
   Address,
   BIGINT_1,
   KECCAK256_NULL,
-  bigIntToBytes,
+  bigIntToUnpaddedBytes,
   concatBytes,
   createAddressFromString,
   ecsign,
@@ -49,14 +49,22 @@ function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytes
   const { chainId, nonce, address, pkey } = actualOpts
 
   const chainIdBytes = unpadBytes(hexToBytes(`0x${chainId.toString(16)}`))
-  const nonceBytes = nonce !== undefined ? [unpadBytes(hexToBytes(`0x${nonce.toString(16)}`))] : []
+  const nonceBytes =
+    nonce !== undefined ? unpadBytes(hexToBytes(`0x${nonce.toString(16)}`)) : new Uint8Array()
   const addressBytes = address.toBytes()
 
   const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
   const msgToSign = keccak256(concatBytes(new Uint8Array([5]), rlpdMsg))
   const signed = ecsign(msgToSign, pkey)
 
-  return [chainIdBytes, addressBytes, nonceBytes, bigIntToBytes(signed.v), signed.r, signed.s]
+  return [
+    chainIdBytes,
+    addressBytes,
+    nonceBytes,
+    bigIntToUnpaddedBytes(signed.v - BigInt(27)),
+    signed.r,
+    signed.s,
+  ]
 }
 
 async function runTest(
