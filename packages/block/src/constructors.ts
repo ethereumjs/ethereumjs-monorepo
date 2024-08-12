@@ -561,7 +561,7 @@ export function createSealedCliqueBlockExtraData(
 export function createSealedCliqueBlock(
   blockData: BlockData = {},
   cliqueSigner: Uint8Array,
-  opts?: BlockOptions,
+  opts: BlockOptions = {},
 ): Block {
   const sealedCliqueBlock = createBlock(blockData, opts)
   ;(sealedCliqueBlock.header.extraData as any) = createSealedCliqueBlockExtraData(
