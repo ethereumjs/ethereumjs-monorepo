@@ -47,18 +47,10 @@ describe('RPC State Manager initialization tests', async () => {
   it('should work', () => {
     let state = new RPCStateManager({ provider, blockTag: 1n })
     assert.ok(state instanceof RPCStateManager, 'was able to instantiate state manager')
-    assert.equal(
-      (state as any)._blockTag,
-      '0x1',
-      'State manager starts with default block tag of 1',
-    )
+    assert.equal(state['_blockTag'], '0x1', 'State manager starts with default block tag of 1')
 
     state = new RPCStateManager({ provider, blockTag: 1n })
-    assert.equal(
-      (state as any)._blockTag,
-      '0x1',
-      'State Manager instantiated with predefined blocktag',
-    )
+    assert.equal(state['_blockTag'], '0x1', 'State Manager instantiated with predefined blocktag')
 
     state = new RPCStateManager({ provider: 'https://google.com', blockTag: 1n })
     assert.ok(
@@ -87,7 +79,7 @@ describe('RPC State Manager API tests', () => {
     await state.putAccount(vitalikDotEth, account!)
 
     const retrievedVitalikAccount = createAccountFromRLP(
-      (state as any)._accountCache.get(vitalikDotEth)!.accountRLP,
+      state['_caches'].account?.get(vitalikDotEth)?.accountRLP!,
     )
 
     assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
@@ -106,7 +98,7 @@ describe('RPC State Manager API tests', () => {
 
     await state.putCode(UNIerc20ContractAddress, UNIContractCode)
     assert.ok(
-      typeof (state as any)._contractCache.get(UNIerc20ContractAddress.toString()) !== 'undefined',
+      state['_caches'].code?.get(UNIerc20ContractAddress) !== undefined,
       'UNI ERC20 contract code was found in cache',
     )
 
@@ -219,16 +211,16 @@ describe('RPC State Manager API tests', () => {
     }
 
     assert.equal(
-      (state as any)._contractCache.get(UNIerc20ContractAddress),
+      state['_caches'].account?.get(UNIerc20ContractAddress),
       undefined,
       'should not have any code for contract after cache is reverted',
     )
 
-    assert.equal((state as any)._blockTag, '0x1', 'blockTag defaults to 1')
+    assert.equal(state['_blockTag'], '0x1', 'blockTag defaults to 1')
     state.setBlockTag(5n)
-    assert.equal((state as any)._blockTag, '0x5', 'blockTag set to 0x5')
+    assert.equal(state['_blockTag'], '0x5', 'blockTag set to 0x5')
     state.setBlockTag('earliest')
-    assert.equal((state as any)._blockTag, 'earliest', 'blockTag set to earliest')
+    assert.equal(state['_blockTag'], 'earliest', 'blockTag set to earliest')
 
     await state.checkpoint()
   })
