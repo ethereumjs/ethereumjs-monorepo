@@ -1,6 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
 import {
-  Account,
   BIGINT_0,
   BIGINT_1,
   BIGINT_3,
@@ -766,78 +765,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         let gasLimit = runState.interpreter.getGasLeft() - gas
         gasLimit = maxCallGas(gasLimit, gasLimit, runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
         runState.messageGasLimit = gasLimit
-        return gas
-      },
-    ],
-    [
-      /* AUTH */
-      0xf6,
-      async function (runState, gas, common): Promise<bigint> {
-        const [address, memOffset, memLength] = runState.stack.peek(3)
-        // Note: 2929 is always active if AUTH can be reached,
-        // since it needs London as minimum hardfork
-        gas += accessAddressEIP2929(runState, bigIntToBytes(address), common)
-        gas += subMemUsage(runState, memOffset, memLength, common)
-        return gas
-      },
-    ],
-    [
-      /* AUTHCALL */
-      0xf7,
-      async function (runState, gas, common): Promise<bigint> {
-        if (runState.auth === undefined) {
-          trap(ERROR.AUTHCALL_UNSET)
-        }
-
-        const [currentGasLimit, addr, value, argsOffset, argsLength, retOffset, retLength] =
-          runState.stack.peek(7)
-
-        const toAddress = createAddressFromStackBigInt(addr)
-
-        gas += common.param('warmstoragereadGas')
-
-        gas += accessAddressEIP2929(runState, toAddress.bytes, common, true, true)
-
-        gas += subMemUsage(runState, argsOffset, argsLength, common)
-        gas += subMemUsage(runState, retOffset, retLength, common)
-
-        if (value > BIGINT_0) {
-          gas += common.param('authcallValueTransferGas')
-          const account = await runState.stateManager.getAccount(toAddress)
-          if (!account) {
-            gas += common.param('callNewAccountGas')
-          }
-        }
-
-        let gasLimit = maxCallGas(
-          runState.interpreter.getGasLeft() - gas,
-          runState.interpreter.getGasLeft() - gas,
-          runState,
-          common,
-        )
-        if (currentGasLimit !== BIGINT_0) {
-          if (currentGasLimit > gasLimit) {
-            trap(ERROR.OUT_OF_GAS)
-          }
-          gasLimit = currentGasLimit
-        }
-
-        runState.messageGasLimit = gasLimit
-
-        if (value > BIGINT_0) {
-          const account = (await runState.stateManager.getAccount(runState.auth!)) ?? new Account()
-          if (account.balance < value) {
-            trap(ERROR.OUT_OF_GAS)
-          }
-          account.balance -= value
-
-          const toAddr = createAddressFromStackBigInt(addr)
-          const target = (await runState.stateManager.getAccount(toAddr)) ?? new Account()
-          target.balance += value
-
-          await runState.stateManager.putAccount(toAddr, target)
-        }
-
         return gas
       },
     ],

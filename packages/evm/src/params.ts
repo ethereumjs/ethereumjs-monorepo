@@ -278,15 +278,6 @@ export const paramsEVM: ParamsDict = {
     historyServeWindow: 8192, // The amount of blocks to be served by the historical blockhash contract
   },
   /**
-.  * AUTH and AUTHCALL opcodes
-.  */
-  3074: {
-    // gasPrices
-    authGas: 3100, // Gas cost of the AUTH opcode
-    authcallGas: 0, // Gas cost of the AUTHCALL opcode
-    authcallValueTransferGas: 6700, // Paid for CALL when the value transfer is non-zero
-  },
-  /**
 .  * BASEFEE opcode
 .  */
   3198: {
