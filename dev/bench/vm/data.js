@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1723473340568,
+  "lastUpdate": 1723479169105,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "3bd1847c0900d765419a4ab3dd9a7774a52783d2",
-          "message": "Common/Monorepo: Remove NetworkId (#3513)\n\n* Remove networkId in Common\r\n\r\n* Killing off networkId in everything except client and devp2p\r\n\r\n* Fully remove from devp2p and client\r\n\r\n* docs: adjust readme\r\n\r\n* Update packages/client/bin/cli.ts\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Update packages/client/bin/cli.ts\r\n\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>",
-          "timestamp": "2024-07-18T10:37:30+02:00",
-          "tree_id": "a799350e869ccc1e186ad846b6f2968c1cc52244",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3bd1847c0900d765419a4ab3dd9a7774a52783d2"
-        },
-        "date": 1721292006597,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 37556,
-            "range": "±2.23%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 36128,
-            "range": "±3.21%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 36565,
-            "range": "±1.53%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 35848,
-            "range": "±1.65%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35162,
-            "range": "±1.82%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.67%",
             "unit": "ops/sec",
             "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "45e0a6d621011fc1b28315bac80e3bd939d0cc37",
+          "message": "statemanager: cache and other refactors (#3569)\n\n* Revert \"statemanager: refactor logic into capabilities (#3554)\"\r\n\r\nThis reverts commit d7d1dabd98c8a4ebe1bd8702d179e1b980cf37b6.\r\n\r\n* statemanager: refactor modifyAccountFields\r\n\r\n* statemanager: adjust return statements\r\n\r\n* statemanager: refactor separate caches into caches class\r\n\r\n* statemanager: fix shallow copy logic\r\n\r\n* client: fix vmexecution statemanager cache opts\r\n\r\n* statemanager: refactor some capabilities to caches methods\r\n\r\n* statemanager: fix tests\r\n\r\n* statemanager: refactor caches into optional opt passed in directly to the sm\r\n\r\n* statemanager: adjust tests with refactored caches\r\n\r\n* client: adjust vm execution with update cache\r\n\r\n* vm: fix vm tests\r\n\r\n* vm: adjust test runners with non-default caches\r\n\r\n* statemanager: simplify handling of deactivate\r\n\r\n* statemanager: remove redundant checks\r\n\r\n* statemanager: remove non null asesertion\r\n\r\n* statemanager: remove cache opt from key naming\r\n\r\n* statemanager: refactor rpc state manager to use caches\r\n\r\n* statemanager: fix rpc state manager tests\r\n\r\n* client: vmexecution cache stats refactor\r\n\r\n* statemanageR: updategetproof json-rpc call format\r\n\r\n* statemanager: remove deactivate from caches\r\n\r\n* client: remove deactivate from vm execution instantiation\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-08-12T12:07:15-04:00",
+          "tree_id": "25c8c5f791c52a91a86a2cf752743a73afd25984",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/45e0a6d621011fc1b28315bac80e3bd939d0cc37"
+        },
+        "date": 1723479168321,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38117,
+            "range": "±2.20%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36351,
+            "range": "±3.19%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37116,
+            "range": "±1.61%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36249,
+            "range": "±1.61%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35556,
+            "range": "±1.95%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
