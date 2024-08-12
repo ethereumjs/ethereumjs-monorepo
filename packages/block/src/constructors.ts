@@ -27,7 +27,7 @@ import {
   isHexString,
 } from '@ethereumjs/util'
 
-import { _requireClique } from './consensus/clique.js'
+import { requireClique } from './consensus/clique.js'
 import { createBlockFromRpc } from './from-rpc.js'
 import {
   genRequestsTrieRoot,
@@ -544,7 +544,7 @@ export function createSealedCliqueBlockExtraData(
     ;(header.extraData as any) = concatBytes(header.extraData, new Uint8Array(remainingLength))
   }
 
-  _requireClique(header, 'cliqueSealBlock')
+  requireClique(header, 'cliqueSealBlock')
 
   const ecSignFunction = header.common.customCrypto?.ecsign ?? ecsign
   const signature = ecSignFunction(cliqueSigHash(header), cliqueSigner)

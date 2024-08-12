@@ -1,6 +1,6 @@
 type rpcParams = {
   method: string
-  params: (string | boolean | number)[]
+  params: (string | string[] | boolean | number)[]
 }
 
 /**

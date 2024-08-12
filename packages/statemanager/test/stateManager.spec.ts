@@ -1,4 +1,3 @@
-import { CacheType } from '@ethereumjs/common'
 import { Trie, createTrie, createTrieFromProof } from '@ethereumjs/trie'
 import {
   Account,
@@ -15,7 +14,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { DefaultStateManager } from '../src/index.js'
+import { CacheType, Caches, DefaultStateManager } from '../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -83,22 +82,24 @@ describe('StateManager -> General', () => {
 
     sm = new DefaultStateManager({
       trie,
-      accountCacheOpts: {
-        type: CacheType.LRU,
-      },
-      storageCacheOpts: {
-        type: CacheType.LRU,
-      },
+      caches: new Caches({
+        account: {
+          type: CacheType.LRU,
+        },
+        storage: {
+          type: CacheType.LRU,
+        },
+      }),
     })
 
     smCopy = sm.shallowCopy()
     assert.equal(
-      smCopy['_accountCacheSettings'].type,
+      smCopy['_caches']?.settings.account.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP account cache on copy()',
     )
     assert.equal(
-      smCopy['_storageCacheSettings'].type,
+      smCopy['_caches']?.settings.storage.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP storage cache on copy()',
     )
@@ -106,12 +107,12 @@ describe('StateManager -> General', () => {
 
     smCopy = sm.shallowCopy(false)
     assert.equal(
-      smCopy['_accountCacheSettings'].type,
+      smCopy['_caches']?.settings.account.type,
       CacheType.LRU,
       'should retain account cache type when deactivate cache downleveling',
     )
     assert.equal(
-      smCopy['_storageCacheSettings'].type,
+      smCopy['_caches']?.settings.storage.type,
       CacheType.LRU,
       'should retain storage cache type when deactivate cache downleveling',
     )

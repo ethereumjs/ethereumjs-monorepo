@@ -1,8 +1,7 @@
-import { CacheType } from '@ethereumjs/common'
 import { Account, Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { AccountCache } from '../../src/cache/index.js'
+import { AccountCache, CacheType } from '../../src/cache/index.js'
 import { createAccountWithDefaults } from '../util.js'
 
 describe('Account Cache: initialization', () => {
