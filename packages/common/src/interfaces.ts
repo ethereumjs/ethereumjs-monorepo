@@ -49,46 +49,6 @@ export type Proof = {
   storageProof: StorageProof[]
 }
 
-/*
- * Access List types
- */
-
-export type AccessListItem = {
-  address: PrefixedHexString
-  storageKeys: PrefixedHexString[]
-}
-
-/*
- * An Access List as a tuple of [address: Uint8Array, storageKeys: Uint8Array[]]
- */
-export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
-export type AccessListBytes = AccessListBytesItem[]
-export type AccessList = AccessListItem[]
-
-/**
- * Authorization list types
- */
-export type AuthorizationListItem = {
-  chainId: PrefixedHexString
-  address: PrefixedHexString
-  nonce: PrefixedHexString[]
-  yParity: PrefixedHexString
-  r: PrefixedHexString
-  s: PrefixedHexString
-}
-
-// Tuple of [chain_id, address, [nonce], y_parity, r, s]
-export type AuthorizationListBytesItem = [
-  Uint8Array,
-  Uint8Array,
-  Uint8Array[],
-  Uint8Array,
-  Uint8Array,
-  Uint8Array,
-]
-export type AuthorizationListBytes = AuthorizationListBytesItem[]
-export type AuthorizationList = AuthorizationListItem[]
-
 /**
  * Verkle related
  *

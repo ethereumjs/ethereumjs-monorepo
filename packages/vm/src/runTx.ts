@@ -37,10 +37,12 @@ import type {
 } from './types.js'
 import type { VM } from './vm.js'
 import type { Block } from '@ethereumjs/block'
-import type { AccessList, AccessListItem, Common } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import type { EVM } from '@ethereumjs/evm'
 import type {
+  AccessList,
   AccessListEIP2930Transaction,
+  AccessListItem,
   EIP7702CompatibleTx,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
