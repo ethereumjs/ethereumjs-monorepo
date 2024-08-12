@@ -439,33 +439,45 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
       // Address to take code from
       const address = data[1]
-      const nonceList = data[2]
+      const nonce = data[2]
       const yParity = bytesToBigInt(data[3])
       const r = data[4]
       const s = data[5]
 
-      const rlpdSignedMessage = RLP.encode([chainId, address, nonceList])
+      const rlpdSignedMessage = RLP.encode([chainId, address, nonce])
       const toSign = keccak256(concatBytes(MAGIC, rlpdSignedMessage))
       const pubKey = ecrecover(toSign, yParity, r, s)
       // Address to set code to
       const authority = new Address(publicToAddress(pubKey))
-      const account = (await vm.stateManager.getAccount(authority)) ?? new Account()
+      const accountMaybeUndefined = await vm.stateManager.getAccount(authority)
+      const accountExists = accountMaybeUndefined !== undefined
+      const account = accountMaybeUndefined ?? new Account()
 
+      // Add authority address to warm addresses
+      vm.evm.journal.addAlwaysWarmAddress(authority.toString())
       if (account.isContract()) {
-        // Note: vm also checks if the code has already been set once by a previous tuple
-        // So, if there are multiply entires for the same address, then vm is fine
-        continue
+        const code = await vm.stateManager.getCode(authority)
+        if (!equalsBytes(code.slice(0, 3), new Uint8Array([0xef, 0x01, 0x00]))) {
+          // Account is a "normal" contract
+          continue
+        }
       }
-      if (nonceList.length !== 0 && account.nonce !== bytesToBigInt(nonceList[0])) {
+      if (account.nonce !== bytesToBigInt(nonce)) {
         continue
       }
 
-      const addressConverted = new Address(address)
-      const addressCode = await vm.stateManager.getCode(addressConverted)
+      if (accountExists) {
+        const refund = vm.common.param('perEmptyAccountCost') - vm.common.param('perAuthBaseGas')
+        fromAccount.balance += refund
+      }
+
+      fromAccount.nonce++
+      await vm.evm.journal.putAccount(caller, fromAccount)
+
+      const addressCode = concatBytes(new Uint8Array([0xef, 0x01, 0x00]), address)
       await vm.stateManager.putCode(authority, addressCode)
 
       writtenAddresses.add(authority.toString())
-      vm.evm.journal.addAlwaysWarmAddress(authority.toString())
     }
   }
 
