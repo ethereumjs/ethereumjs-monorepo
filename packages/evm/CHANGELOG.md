@@ -23,6 +23,12 @@ const mclbls = new MCLBLS(mcl)
 const evm = await EVM.create({ common, bls })
 ```
 
+### Verkle Dependency Decoupling
+
+We have relatively light-heartedly added a new `@ethereumjs/verkle` main dependency to the VM/EVM stack in the `v7.2.1` release, which added an additional burden to the bundle size by several 100 KB and additionally draw in non-neceesary WASM code. Coupling with Verkle has been refactored in PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462) and the directly dependency has been removed again.
+
+An update to this release is therefore strongly recommended even if other fixes or features are not that relevant for you right now.
+
 ### Verkle Updates
 
 - Adds ability to run [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions (see tx library for full documentation), see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470)
@@ -32,14 +38,18 @@ const evm = await EVM.create({ common, bls })
 - Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
 - Shift Verkle to `osaka` hardfork, PR [#3371](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3371)
 - Fix `accessWitness` passing, PR [#3405](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3405)
+- Remove the hacks to prevent account cleanups of system contracts, PR [#3418](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3418)
+- Fix EIP-2935 address conversion issues, PR [#3447](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3447)
 
 ### Other Features
 
+- Adds bundle visualizer (to be used with `npm run visualize:bundle`), PR [#3463](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3463)
 - Stricter prefixe hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
 
 ### Other Changes
 
 - Removes support for [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) simple subroutines for EVM (deprecated with an alternative version integrated into EOF), PR [#3342](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3342)
+- Update `mcl-wasm` Dependency (Esbuild Issue), PR [#3461](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3461)
 
 ### Bugfixes
 

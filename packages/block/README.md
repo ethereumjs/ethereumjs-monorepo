@@ -321,6 +321,59 @@ main()
 
 Have a look at the EIP for some guidance on how to use and fill in the various withdrawal request parameters.
 
+#### EIP-7251 Consolidation Requests
+
+[EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) introduces consolidation requests allowing staked ETH from more than one validator on the beacon chain to be consolidated into one validator, triggered from the execution layer. Starting with v5.3.0 this library supports consolidation requests and a containing block can be instantiated as follows:
+
+```ts
+// ./examples/7251Requests.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Block } from '@ethereumjs/block'
+import {
+  bytesToBigInt,
+  ConsolidationRequest,
+  randomBytes,
+  type CLRequest,
+  type CLRequestType,
+} from '@ethereumjs/util'
+
+const main = async () => {
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Prague,
+  })
+
+  const consolidationRequestData = {
+    sourceAddress: randomBytes(20),
+    sourcePubkey: randomBytes(48),
+    targetPubkey: randomBytes(48),
+  }
+  const request = ConsolidationRequest.fromRequestData(
+    consolidationRequestData
+  ) as CLRequest<CLRequestType>
+  const requests = [request]
+  const requestsRoot = await Block.genRequestsTrieRoot(requests)
+
+  const block = Block.fromBlockData(
+    {
+      requests,
+      header: { requestsRoot },
+    },
+    { common }
+  )
+  console.log(
+    `Instantiated block with ${
+      block.requests?.length
+    } consolidation request, requestTrieValid=${await block.requestsTrieIsValid()}`
+  )
+}
+
+main()
+```
+
+Have a look at the EIP for some guidance on how to use and fill in the various deposit request parameters.
+
 ### Consensus Types
 
 The block library supports the creation as well as consensus format validation of PoW `ethash` and PoA `clique` blocks (so e.g. do specific `extraData` checks on Clique/PoA blocks).

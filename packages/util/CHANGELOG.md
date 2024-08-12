@@ -24,10 +24,11 @@ console.log(`Partial account with nonce=${account.nonce} and balance=${account.b
 
 ### New `requests` Module
 
-This release introduces a new `requests` module (see PRs [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372), [#3393](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3393) and [#3398](, PR [#3398](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3398))) with various type and an abstract base class for [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) general purpose execution layer requests to the CL (Prague hardfork) as well as concrete implementations for the currently supported request types:
+This release introduces a new `requests` module (see PRs [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372), [#3393](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3393), [#3398](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3398) and [#3477](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3477)) with various type and an abstract base class for [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) general purpose execution layer requests to the CL (Prague hardfork) as well as concrete implementations for the currently supported request types:
 
 - [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110): `DepositRequest` (Prague Harfork)
 - [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002): `WithdrawawlRequest` (Prague Hardfork)
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251): `ConsolidationRequest` (Prague Hardfork)
 
 These request types are mainly used within the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library where applied usage instructions are provided in the README.
 
@@ -35,6 +36,8 @@ These request types are mainly used within the [@ethereumjs/block](https://githu
 
 - Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
 - Shift Verkle to `osaka` hardfork, PR [#3371](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3371)
+- New `verkle` module with utility methods and interfaces, PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462)
+- Rename verkle utils and refactor, PR [#3468](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3468)
 
 ### Other Features
 
@@ -46,6 +49,7 @@ These request types are mainly used within the [@ethereumjs/block](https://githu
 - Rename deposit receipt to deposit request, PR [#3408](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3408)
 - Adjust `Account.isEmpty()` to also work for partial accounts, PR [#3405](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3405)
 - Enhances typing of CL requests, PR [#3398](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3398)
+- Rename withdrawal request's `validatorPublicKey` to `validatorPubkey`, PR [#3474](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3474)
 
 ## 9.0.3 - 2024-03-18
 

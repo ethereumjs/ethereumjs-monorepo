@@ -95,6 +95,7 @@ Use a Common instance for EVM instantiation.
 - [EIP-6110](https://eips.ethereum.org/EIPS/eip-5656) - Supply validator deposits on chain (Prague)
 - [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
 - [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable withdrawals (Prague)
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Execution layer triggerable validator consolidations (Prague)
 - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - EOA code transactions (Prague)
 - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
 - [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)

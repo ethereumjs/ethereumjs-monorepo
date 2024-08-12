@@ -18,12 +18,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Shift Verkle to `osaka` hardfork, PR [#3371](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3371)
 - Simplify `--ignoreStatelessInvalidExecs` to just a boolean flag, PR [#3395](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3395)
 - Add verkle execution support to `executeBlocks()`, PR [#3406](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3406)
+- Verkle decoupling in underlying libraries, PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462)
 
 ### Other Features
 
 - Integrates support for [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions (see tx library for full documentation), see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470)
 - New `--startExectionFrom` and `--startExecution` CLI options, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- Add `eth_blobBaseFee` RPC endpoint, PR [#3436](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3436)
 - Add support for `pending` in `eth_getTransactionCount` RPC method, PR [#3415](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3415)
+- Add support for multiple sources of rlp blocks when loading with `--loadBlocksFromRlp`, PR [#3442](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3442)
 - Basic Prometheus metrics support (not many metrics yet), PR [#3287](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3287)
 
 ### Other Changes
@@ -33,6 +36,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - New mechanism to keep latest block from peers updated, PR [#3354](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3354)
 - Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348)
 - Update `multiaddress` dependency, PR [#3384](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3384)
+- Internalize `QHeap` dependency, PR [#3451](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3451)
+- Internalize `jwt-simple` dependency, PR [#3458](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3458)
 
 ### Bugfixes
 

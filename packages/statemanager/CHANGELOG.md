@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Kaustinen5 related fixes, PR [#3343](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3343)
 - Kaustinen6 adjustments, `verkle-cryptography-wasm` migration, PRs [#3355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3355) and [#3356](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3356)
 - Missing beaconroot account verkle fix, PR [#3421](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3421)
+- Verkle decoupling, PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462)
 
 ### Other Features
 
@@ -22,6 +23,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Other Changes
 
 - Modify RPCStateManager `getAccount()`, PR [#3345](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3345)
+
+### Bugfixes
+
+- Fixes an issue where under certain deployment conditions wrong storage values could be provided, PR [#3434](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3434)
 
 ## 2.3.0 - 2024-03-18
 

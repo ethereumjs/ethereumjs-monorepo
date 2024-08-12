@@ -8,9 +8,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 4.4.0 - 2024-07-23
 
-### EIP-6110 (Deposit Requests) / EIP-7002 (Withdrawal Requests) Support
+### EIP-6110 (Deposit Requests) / EIP-7002 (Withdrawal Requests) / EIP-7251 (Consolidation Requests) Support
 
-This library now supports `EIP-6110` deposit requests, see PR [#3390](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3390) and `EIP-7002` withdrawal requests, see PR [#3385](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3385) as well as the underlying generic execution layer request logic introduced with `EIP-7685` (PR [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372)).
+This library now supports `EIP-6110` deposit requests, see PR [#3390](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3390), `EIP-7002` withdrawal requests, see PR [#3385](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3385) and `EIP-7251` consolidation requests, see PR [#3477](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3477) as well as the underlying generic execution layer request logic introduced with `EIP-7685` (PR [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372)).
 
 These new request types will be activated with the `Prague` hardfork, see [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) README for detailed documentation.
 
@@ -19,6 +19,7 @@ These new request types will be activated with the `Prague` hardfork, see [@ethe
 - Fixes for Kaustinen4 support, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
 - Kaustinen5 related fixes, PR [#3343](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3343)
 - Kaustinen6 adjustments, `verkle-cryptography-wasm` migration, PRs [#3355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3355) and [#3356](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3356)
+- Verkle decoupling, PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462)
 
 ### Other Features
 

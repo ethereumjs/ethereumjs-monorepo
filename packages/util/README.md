@@ -147,6 +147,7 @@ Module with various type and an abstract base class for [EIP-7685](https://eips.
 
 - [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110): `DepositRequest` (Prague Harfork)
 - [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002): `WithdrawawlRequest` (Prague Hardfork)
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251): `ConsolidationRequest` (Prague Hardfork)
 
 These request types are mainly used within the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library where applied usage instructions are provided in the README.
 

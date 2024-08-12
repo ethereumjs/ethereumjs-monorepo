@@ -114,12 +114,66 @@ main()
 
 Have a look at the EIP for some guidance on how to use and fill in the various withdrawal request parameters.
 
+#### EIP-7251 Consolidation Requests
+
+[EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) introduces consolidation requests allowing staked ETH from more than one validator on the beacon chain to be consolidated into one validator, triggered from the execution layer, see PR [#3477](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3477). Starting with this release this library supports consolidation requests and a containing block can be instantiated as follows:
+
+```ts
+// ./examples/7251Requests.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Block } from '@ethereumjs/block'
+import {
+  bytesToBigInt,
+  ConsolidationRequest,
+  randomBytes,
+  type CLRequest,
+  type CLRequestType,
+} from '@ethereumjs/util'
+
+const main = async () => {
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Prague,
+  })
+
+  const consolidationRequestData = {
+    sourceAddress: randomBytes(20),
+    sourcePubkey: randomBytes(48),
+    targetPubkey: randomBytes(48),
+  }
+  const request = ConsolidationRequest.fromRequestData(
+    consolidationRequestData
+  ) as CLRequest<CLRequestType>
+  const requests = [request]
+  const requestsRoot = await Block.genRequestsTrieRoot(requests)
+
+  const block = Block.fromBlockData(
+    {
+      requests,
+      header: { requestsRoot },
+    },
+    { common }
+  )
+  console.log(
+    `Instantiated block with ${
+      block.requests?.length
+    } consolidation request, requestTrieValid=${await block.requestsTrieIsValid()}`
+  )
+}
+
+main()
+```
+
+Have a look at the EIP for some guidance on how to use and fill in the various deposit request parameters.
+
 ### Verkle Updates
 
 - Fixes for Kaustinen4 support, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
 - Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
 - Shift Verkle to `osaka` hardfork, PR [#3371](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3371)
 - Fix the block body parsing as well as save/load from blockchain, PR [#3392](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3392)
+- Verkle type/interface refactoring (moved to Common package), PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462)
 
 ### Other Features
 
@@ -131,6 +185,7 @@ Have a look at the EIP for some guidance on how to use and fill in the various w
 - Make EIP-4895 withdrawals trie check consistent with tx trie, PR [#3338](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3338)
 - Rename deposit receipt to deposit request, PR [#3408](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3408)
 - Enhances typing of CL requests, PR [#3398](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3398)
+- Rename withdrawal request's `validatorPublicKey` to `validatorPubkey`, PR [#3474](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3474)
 
 ## 5.2.0 - 2024-03-18
 

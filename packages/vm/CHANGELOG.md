@@ -8,11 +8,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 8.1.0 - 2024-07-23
 
-### EIP-6110 (Deposit Requests) / EIP-7002 (Withdrawal Requests) Support
+### EIP-6110 (Deposit Requests) / EIP-7002 (Withdrawal Requests) / EIP-7251 (Consolidation Requests) Support
 
-This library now supports both the execution as well as the building of blocks including `EIP-6110` deposit requests, see PR [#3390](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3390) and `EIP-7002` withdrawal requests, see PR [#3385](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3385).
+This library now supports `EIP-6110` deposit requests, see PR [#3390](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3390), `EIP-7002` withdrawal requests, see PR [#3385](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3385) and `EIP-7251` consolidation requests, see PR [#3477](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3477) as well as the underlying generic execution layer request logic introduced with `EIP-7685` (PR [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372)).
 
 These new request types will be activated with the `Prague` hardfork, see [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) README for detailed documentation.
+
+### Verkle Dependency Decoupling
+
+We have relatively light-heartedly added a new `@ethereumjs/verkle` main dependency to the VM/EVM stack in the `v7.2.1` release, which added an additional burden to the bundle size by several 100 KB and additionally draw in non-neceesary WASM code. Coupling with Verkle has been refactored in PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462) and the directly dependency has been removed again.
+
+An update to this release is therefore strongly recommended even if other fixes or features are not that relevant for you right now.
 
 ### Verkle Updates
 
@@ -20,6 +26,10 @@ These new request types will be activated with the `Prague` hardfork, see [@ethe
 - Kaustinen5 related fixes, PR [#3343](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3343)
 - Kaustinen6 adjustments, `verkle-cryptography-wasm` migration, PRs [#3355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3355) and [#3356](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3356)
 - Missing beaconroot account verkle fix, PR [#3421](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3421)
+- Remove the hacks to prevent account cleanups of system contracts, PR [#3418](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3418)
+- Updates EIP-2935 tests with the new proposed bytecode and corresponding config, PR [#3438](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3438)
+- Fix EIP-2935 address conversion issues, PR [#3447](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3447)
+- Remove backfill of block hashes on EIP-2935 activation, PR [#3478](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3478)
 
 ### Other Features
 
@@ -29,6 +39,7 @@ These new request types will be activated with the `Prague` hardfork, see [@ethe
 
 - Removes support for [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) simple subroutines for EVM (deprecated with an alternative version integrated into EOF), PR [#3342](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3342)
 - Small clean-up to `VM_emit()`, PR [#3396](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3396)
+- Update `mcl-wasm` Dependency (Esbuild Issue), PR [#3461](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3461)
 
 ### Bugfixes
 
