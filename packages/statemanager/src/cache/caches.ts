@@ -1,8 +1,9 @@
 import { AccountCache } from './account.js'
 import { CodeCache } from './code.js'
 import { StorageCache } from './storage.js'
-import { type CacheSettings, CacheType, type CachesStateManagerOpts } from './types.js'
+import { CacheType, type CachesStateManagerOpts } from './types.js'
 
+import type { CacheOpts } from './types.js'
 import type { Address } from '@ethereumjs/util'
 
 export class Caches {
@@ -10,24 +11,22 @@ export class Caches {
   code?: CodeCache
   storage?: StorageCache
 
-  settings: Record<'account' | 'code' | 'storage', CacheSettings>
+  settings: Record<'account' | 'code' | 'storage', CacheOpts>
 
   constructor(opts: CachesStateManagerOpts = {}) {
     const accountSettings = {
-      deactivate: (opts.account?.deactivate === true || opts.account?.size === 0) ?? false,
       type: opts.account?.type ?? CacheType.ORDERED_MAP,
       size: opts.account?.size ?? 100000,
     }
-    const storageSettings = {
-      deactivate: (opts.storage?.deactivate === true || opts.storage?.size === 0) ?? false,
-      type: opts.storage?.type ?? CacheType.ORDERED_MAP,
-      size: opts.storage?.size ?? 20000,
-    }
 
     const codeSettings = {
-      deactivate: (opts.code?.deactivate === true || opts.code?.size === 0) ?? false,
       type: opts.code?.type ?? CacheType.ORDERED_MAP,
       size: opts.code?.size ?? 20000,
+    }
+
+    const storageSettings = {
+      type: opts.storage?.type ?? CacheType.ORDERED_MAP,
+      size: opts.storage?.size ?? 20000,
     }
 
     this.settings = {
@@ -36,24 +35,24 @@ export class Caches {
       storage: storageSettings,
     }
 
-    if (this.settings.account.deactivate === false) {
+    if (this.settings.account.size !== 0) {
       this.account = new AccountCache({
         size: this.settings.account.size,
         type: this.settings.account.type,
       })
     }
 
-    if (this.settings.storage.deactivate === false) {
-      this.storage = new StorageCache({
-        size: this.settings.storage.size,
-        type: this.settings.storage.type,
-      })
-    }
-
-    if (this.settings.code.deactivate === false) {
+    if (this.settings.code.size !== 0) {
       this.code = new CodeCache({
         size: this.settings.code.size,
         type: this.settings.code.type,
+      })
+    }
+
+    if (this.settings.storage.size !== 0) {
+      this.storage = new StorageCache({
+        size: this.settings.storage.size,
+        type: this.settings.storage.type,
       })
     }
   }

@@ -922,15 +922,15 @@ export class DefaultStateManager implements StateManagerInterface {
     const prefixCodeHashes = this._prefixCodeHashes
     const prefixStorageTrieKeys = this._prefixStorageTrieKeys
     let accountCacheOpts = { ...this._caches?.settings.account }
-    if (downlevelCaches && this._caches?.settings.account.deactivate === false) {
+    if (downlevelCaches && this._caches?.settings.account.size !== 0) {
       accountCacheOpts = { ...accountCacheOpts, type: CacheType.ORDERED_MAP }
     }
     let storageCacheOpts = { ...this._caches?.settings.storage }
-    if (downlevelCaches && this._caches?.settings.storage.deactivate === false) {
+    if (downlevelCaches && this._caches?.settings.storage.size !== 0) {
       storageCacheOpts = { ...storageCacheOpts, type: CacheType.ORDERED_MAP }
     }
     let codeCacheOpts = { ...this._caches?.settings.code }
-    if (this._caches?.settings.code.deactivate === false) {
+    if (this._caches?.settings.code.size !== 0) {
       codeCacheOpts = { ...codeCacheOpts, type: CacheType.ORDERED_MAP }
     }
 

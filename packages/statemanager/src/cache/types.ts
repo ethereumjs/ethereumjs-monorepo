@@ -4,27 +4,17 @@ export enum CacheType {
 }
 
 export interface CacheOpts {
-  size: number
-  type: CacheType
-}
-
-export type CacheSettings = {
-  deactivate: boolean
-  type: CacheType
-  size: number
-}
-
-export interface CacheStateManagerOpts {
   /**
-   * Allows for cache deactivation
+   * Size of the cache (only for LRU cache)
    *
-   * Depending on the use case and underlying datastore (and eventual concurrent cache
-   * mechanisms there), usage with or without cache can be faster
+   * Default: 100000 (account cache) / 20000 (storage cache) / 20000 (code cache)
    *
-   * Default: false
+   * Note: the cache/trie interplay mechanism is designed in a way that
+   * the theoretical number of max modified accounts between two flush operations
+   * should be smaller than the cache size, otherwise the cache will "forget" the
+   * old modifications resulting in an incomplete set of trie-flushed accounts.
    */
-  deactivate?: boolean
-
+  size: number
   /**
    * Cache type to use.
    *
@@ -36,23 +26,11 @@ export interface CacheStateManagerOpts {
    * LRU: LRU cache with pre-allocation of memory and a fixed size.
    * Use for larger and more persistent caches.
    */
-  type?: CacheType
-
-  /**
-   * Size of the cache (only for LRU cache)
-   *
-   * Default: 100000 (account cache) / 20000 (storage cache) / 20000 (code cache)
-   *
-   * Note: the cache/trie interplay mechanism is designed in a way that
-   * the theoretical number of max modified accounts between two flush operations
-   * should be smaller than the cache size, otherwise the cache will "forget" the
-   * old modifications resulting in an incomplete set of trie-flushed accounts.
-   */
-  size?: number
+  type: CacheType
 }
 
 export interface CachesStateManagerOpts {
-  account?: CacheStateManagerOpts
-  code?: CacheStateManagerOpts
-  storage?: CacheStateManagerOpts
+  account?: Partial<CacheOpts>
+  code?: Partial<CacheOpts>
+  storage?: Partial<CacheOpts>
 }

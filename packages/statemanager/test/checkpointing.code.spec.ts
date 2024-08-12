@@ -100,7 +100,6 @@ describe('StateManager -> Code Checkpointing', () => {
           sm = new SM()
         }
 
-        //      let sm: DefaultStateManager | SimpleStateManager
         if (SM === DefaultStateManager) {
           sm = new SM({ caches: new Caches() })
         } else {

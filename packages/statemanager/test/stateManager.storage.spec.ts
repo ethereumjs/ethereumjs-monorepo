@@ -17,11 +17,7 @@ import { createAccountWithDefaults } from './util.js'
 
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 describe('StateManager -> Storage', () => {
-  for (const storageCacheOpts of [
-    { deactivate: false },
-    { deactivate: true },
-    { deactivate: false, size: 0 },
-  ]) {
+  for (const storageCacheOpts of [{ size: 1000 }, { size: 0 }]) {
     for (const prefixStorageTrieKeys of [false, true]) {
       it.skipIf(isBrowser() === true)(`should dump storage`, async () => {
         const stateManager = new DefaultStateManager({

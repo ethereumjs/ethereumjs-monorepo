@@ -6,11 +6,7 @@ import { Caches, DefaultStateManager } from '../src/index.js'
 import { createAccountWithDefaults } from './util.js'
 
 describe('StateManager -> General/Account', () => {
-  for (const accountCacheOpts of [
-    { deactivate: false },
-    { deactivate: true },
-    { deactivate: false, size: 0 },
-  ]) {
+  for (const accountCacheOpts of [{ size: 1000 }, { size: 0 }]) {
     it(`should set the state root to empty`, async () => {
       const stateManager = new DefaultStateManager({
         caches: new Caches({ account: accountCacheOpts }),

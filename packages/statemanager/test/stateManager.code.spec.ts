@@ -14,11 +14,7 @@ import { createAccountWithDefaults } from './util.js'
 import type { AccountData } from '@ethereumjs/util'
 
 describe('StateManager -> Code', () => {
-  for (const accountCacheOpts of [
-    { deactivate: false },
-    { deactivate: true },
-    { deactivate: false, size: 0 },
-  ]) {
+  for (const accountCacheOpts of [{ size: 1000 }, { size: 0 }]) {
     it(`should store codehashes using a prefix`, async () => {
       /*
         This test is mostly an example of why a code prefix is necessary
