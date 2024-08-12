@@ -210,6 +210,7 @@ export class Miner {
       const cliqueSigner = this.config.accounts[0][1]
       const header = createSealedCliqueBlockHeader({ number }, cliqueSigner, {
         common: this.config.chainCommon,
+        freeze: false,
       })
       if (
         (this.service.chain.blockchain as any).consensus.cliqueCheckRecentlySigned(header) === true
