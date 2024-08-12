@@ -19,14 +19,21 @@ These new request types will be activated with the `Prague` hardfork, see [@ethe
 - Fixes for Kaustinen4 support, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
 - Kaustinen5 related fixes, PR [#3343](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3343)
 - Kaustinen6 adjustments, `verkle-cryptography-wasm` migration, PRs [#3355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3355) and [#3356](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3356)
+- Missing beaconroot account verkle fix, PR [#3421](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3421)
 
 ### Other Features
 
-- Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+- Stricter prefixe hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
 
 ### Other Changes
 
 - Removes support for [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) simple subroutines for EVM (deprecated with an alternative version integrated into EOF), PR [#3342](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3342)
+- Small clean-up to `VM_emit()`, PR [#3396](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3396)
+
+### Bugfixes
+
+- Fix block building with blocks including CL requests, PR [#3413](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3413)
+- Ensure system address is not created if it is empty, PR [#3400](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3400)
 
 ## 8.0.0 - 2024-03-18
 

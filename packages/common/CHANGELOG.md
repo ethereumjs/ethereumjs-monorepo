@@ -23,11 +23,18 @@ These new request types will be activated with the `Prague` hardfork, see [@ethe
 ### Other Features
 
 - Adds support for [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions (see tx library for full documentation), see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470)
-- Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+- Stricter prefixe hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
 
 ### Other Changes
 
 - Removes support for [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) simple subroutines for EVM (deprecated with an alternative version integrated into EOF), PR [#3342](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3342)
+- Clean up access to deposit address, PR [#3411](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3411)
+- Add spec test for 2935 contract code and update history storage address, PR [#3373](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3373)
+- Parse deposit contract address from geth genesis for chain config, PR [#3422](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3422)
+
+### Bugfixes
+
+- BLS gas prices fixes, PR [#3400](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3400)
 
 ## 4.3.0 - 2024-03-18
 

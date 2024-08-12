@@ -24,7 +24,7 @@ console.log(`Partial account with nonce=${account.nonce} and balance=${account.b
 
 ### New `requests` Module
 
-This release introduces a new `requests` module (see PR [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372)) with various type and an abstract base class for [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) general purpose execution layer requests to the CL (Prague hardfork) as well as concrete implementations for the currently supported request types:
+This release introduces a new `requests` module (see PRs [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372), [#3393](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3393) and [#3398](, PR [#3398](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3398))) with various type and an abstract base class for [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) general purpose execution layer requests to the CL (Prague hardfork) as well as concrete implementations for the currently supported request types:
 
 - [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110): `DepositRequest` (Prague Harfork)
 - [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002): `WithdrawawlRequest` (Prague Hardfork)
@@ -34,14 +34,18 @@ These request types are mainly used within the [@ethereumjs/block](https://githu
 ### Verkle Updates
 
 - Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
+- Shift Verkle to `osaka` hardfork, PR [#3371](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3371)
 
 ### Other Features
 
-- Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+- Stricter prefixe hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
 
 ### Other Changes
 
 - Adjust `Account.isContract()` (in Verkle context work), PR [#3343](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3343)
+- Rename deposit receipt to deposit request, PR [#3408](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3408)
+- Adjust `Account.isEmpty()` to also work for partial accounts, PR [#3405](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3405)
+- Enhances typing of CL requests, PR [#3398](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3398)
 
 ## 9.0.3 - 2024-03-18
 

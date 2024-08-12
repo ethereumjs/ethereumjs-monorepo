@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## 0.0.3 - 2024-07-23
 
 - Kaustinen6 adjustments, `verkle-cryptography-wasm` migration, PRs [#3355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3355) and [#3356](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3356)
+- Move tree key computation to verkle and simplify, PR [#3420](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3420)
+- Rename code keccak, PR [#3426](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3426)
 
 ## 0.0.2 - 2024-03-18
 

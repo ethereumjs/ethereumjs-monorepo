@@ -9,7 +9,7 @@ const tx = EOACodeEIP7702Transaction.fromTxData(
   {
     authorizationList: [
       {
-        chainId: '0x1',
+        chainId: '0x2',
         address: `0x${'20'.repeat(20)}`,
         nonce: ['0x1'],
         yParity: '0x1',

@@ -10,11 +10,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Blocks with EIP-7685 Consensus Layer Requests
 
-Starting with this release this library supports requests to the consensus layer (see PR [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372)) which have been introduce with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) and will come into play for deposit and withdrawal requests along the upcoming [Prague](https://eips.ethereum.org/EIPS/eip-7600) hardfork.
+Starting with this release this library supports requests to the consensus layer (see PRs [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372) and [#3393](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3393)) which have been introduce with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) and will come into play for deposit and withdrawal requests along the upcoming [Prague](https://eips.ethereum.org/EIPS/eip-7600) hardfork.
 
 #### EIP-6110 Deposit Requests
 
-[EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) introduces deposit requests allowing beacon chain deposits being triggered from the execution layer, see PR [#3390](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3390). Starting with this release this library supports deposit requests and a containing block can be instantiated as follows:
+[EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) introduces deposit requests allowing beacon chain deposits being triggered from the execution layer, see PRs [#3390](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3390) and [#3397](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3397). Starting with this release this library supports deposit requests and a containing block can be instantiated as follows:
 
 ```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
@@ -118,15 +118,19 @@ Have a look at the EIP for some guidance on how to use and fill in the various w
 
 - Fixes for Kaustinen4 support, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
 - Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
+- Shift Verkle to `osaka` hardfork, PR [#3371](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3371)
+- Fix the block body parsing as well as save/load from blockchain, PR [#3392](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3392)
 
 ### Other Features
 
 - New `Block.toExecutionPayload()` method to map to the execution payload structore from the beacon chain, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
-- Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+- Stricter prefixe hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
 
 ### Other Changes
 
 - Make EIP-4895 withdrawals trie check consistent with tx trie, PR [#3338](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3338)
+- Rename deposit receipt to deposit request, PR [#3408](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3408)
+- Enhances typing of CL requests, PR [#3398](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3398)
 
 ## 5.2.0 - 2024-03-18
 

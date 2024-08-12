@@ -50,10 +50,16 @@ Note that the specification of this EIP is not yet stable and the API of this tx
 ### Verkle Updates
 
 - Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
+- Shift Verkle to `osaka` hardfork, PR [#3371](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3371)
 
 ### Other Features
 
-- Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+- Extend `BlobEIP4844Transaction.networkWrapperToJson()` to also include the 4844 fields, PR [#3365](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3365)
+- Stricter prefixe hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Bugfixes
+
+- Fix bug in generic error message regarding chain ID reporting, PR [#3386](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3386)
 
 ## 5.3.0 - 2024-03-18
 

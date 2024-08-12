@@ -14,10 +14,15 @@ This library now supports running blocks including `EIP-6110` deposit requests, 
 
 These new request types will be activated with the `Prague` hardfork, see [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) README for detailed documentation.
 
+### Verkle Updates
+
+- Fix the block body parsing as well as save/load from blockchain, PR [#3392](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3392)
+- Handle nil block bodies for backwards compatibility, PR [#3394](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3394)
+
 ### Other Features
 
 - Support for EIP-7685 blocks containing withdrawal and/or deposit requests (see @ethereumjs/block for main documentation), PR [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372)
-- Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+- Stricter prefixe hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
 
 ## 7.2.0 - 2024-03-18
 
