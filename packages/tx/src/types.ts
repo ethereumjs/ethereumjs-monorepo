@@ -5,15 +5,7 @@ import type { AccessListEIP2930Transaction } from './2930/tx.js'
 import type { BlobEIP4844Transaction } from './4844/tx.js'
 import type { EOACodeEIP7702Transaction } from './7702/tx.js'
 import type { LegacyTransaction } from './legacy/tx.js'
-import type {
-  AccessList,
-  AccessListBytes,
-  AuthorizationList,
-  AuthorizationListBytes,
-  Common,
-  Hardfork,
-  ParamsDict,
-} from '@ethereumjs/common'
+import type { Common, Hardfork, ParamsDict } from '@ethereumjs/common'
 import type {
   Address,
   AddressLike,
@@ -21,17 +13,6 @@ import type {
   BytesLike,
   PrefixedHexString,
 } from '@ethereumjs/util'
-export type {
-  AccessList,
-  AccessListBytes,
-  AccessListBytesItem,
-  AccessListItem,
-  AuthorizationList,
-  AuthorizationListBytes,
-  AuthorizationListBytesItem,
-  AuthorizationListItem,
-} from '@ethereumjs/common'
-
 /**
  * Can be used in conjunction with {@link Transaction[TransactionType].supports}
  * to query on tx capabilities
@@ -596,3 +577,43 @@ export interface JsonRpcTx {
   blobVersionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
   yParity?: string // DATA - parity of the y-coordinate of the public key
 }
+
+/*
+ * Access List types
+ */
+
+export type AccessListItem = {
+  address: PrefixedHexString
+  storageKeys: PrefixedHexString[]
+}
+
+/*
+ * An Access List as a tuple of [address: Uint8Array, storageKeys: Uint8Array[]]
+ */
+export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
+export type AccessListBytes = AccessListBytesItem[]
+export type AccessList = AccessListItem[]
+
+/**
+ * Authorization list types
+ */
+export type AuthorizationListItem = {
+  chainId: PrefixedHexString
+  address: PrefixedHexString
+  nonce: PrefixedHexString[]
+  yParity: PrefixedHexString
+  r: PrefixedHexString
+  s: PrefixedHexString
+}
+
+// Tuple of [chain_id, address, [nonce], y_parity, r, s]
+export type AuthorizationListBytesItem = [
+  Uint8Array,
+  Uint8Array,
+  Uint8Array[],
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+]
+export type AuthorizationListBytes = AuthorizationListBytesItem[]
+export type AuthorizationList = AuthorizationListItem[]

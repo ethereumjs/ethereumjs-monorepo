@@ -3,7 +3,7 @@ import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { Caches, DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
@@ -49,6 +49,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   let cacheDB = new MapDB()
   let state = new Trie({ useKeyHashing: true, common })
   let stateManager = new DefaultStateManager({
+    caches: new Caches(),
     trie: state,
     common,
   })
