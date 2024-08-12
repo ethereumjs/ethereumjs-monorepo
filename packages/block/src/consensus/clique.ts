@@ -20,7 +20,7 @@ export const CLIQUE_EXTRA_VANITY = 32
 export const CLIQUE_EXTRA_SEAL = 65
 
 // This function is not exported in the index file to keep it internal
-export function _requireClique(header: BlockHeader, name: string) {
+export function requireClique(header: BlockHeader, name: string) {
   if (header.common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
     const msg = header['_errorMsg'](
       `BlockHeader.${name}() call only supported for clique PoA networks`,
@@ -33,7 +33,7 @@ export function _requireClique(header: BlockHeader, name: string) {
  * PoA clique signature hash without the seal.
  */
 export function cliqueSigHash(header: BlockHeader) {
-  _requireClique(header, 'cliqueSigHash')
+  requireClique(header, 'cliqueSigHash')
   const raw = header.raw()
   raw[12] = header.extraData.subarray(0, header.extraData.length - CLIQUE_EXTRA_SEAL)
   return header['keccakFunction'](RLP.encode(raw))
@@ -44,7 +44,7 @@ export function cliqueSigHash(header: BlockHeader) {
  * header (only clique PoA, throws otherwise)
  */
 export function cliqueIsEpochTransition(header: BlockHeader): boolean {
-  _requireClique(header, 'cliqueIsEpochTransition')
+  requireClique(header, 'cliqueIsEpochTransition')
   const epoch = BigInt((header.common.consensusConfig() as CliqueConfig).epoch)
   // Epoch transition block if the block number has no
   // remainder on the division by the epoch length
@@ -56,7 +56,7 @@ export function cliqueIsEpochTransition(header: BlockHeader): boolean {
  * (only clique PoA, throws otherwise)
  */
 export function cliqueExtraVanity(header: BlockHeader): Uint8Array {
-  _requireClique(header, 'cliqueExtraVanity')
+  requireClique(header, 'cliqueExtraVanity')
   return header.extraData.subarray(0, CLIQUE_EXTRA_VANITY)
 }
 
@@ -65,7 +65,7 @@ export function cliqueExtraVanity(header: BlockHeader): Uint8Array {
  * (only clique PoA, throws otherwise)
  */
 export function cliqueExtraSeal(header: BlockHeader): Uint8Array {
-  _requireClique(header, 'cliqueExtraSeal')
+  requireClique(header, 'cliqueExtraSeal')
   return header.extraData.subarray(-CLIQUE_EXTRA_SEAL)
 }
 
@@ -78,7 +78,7 @@ export function cliqueExtraSeal(header: BlockHeader): Uint8Array {
  * in conjunction with {@link BlockHeader.cliqueIsEpochTransition}
  */
 export function cliqueEpochTransitionSigners(header: BlockHeader): Address[] {
-  _requireClique(header, 'cliqueEpochTransitionSigners')
+  requireClique(header, 'cliqueEpochTransitionSigners')
   if (!cliqueIsEpochTransition(header)) {
     const msg = header['_errorMsg']('Signers are only included in epoch transition blocks (clique)')
     throw new Error(msg)
@@ -100,7 +100,7 @@ export function cliqueEpochTransitionSigners(header: BlockHeader): Address[] {
  * Returns the signer address
  */
 export function cliqueSigner(header: BlockHeader): Address {
-  _requireClique(header, 'cliqueSigner')
+  requireClique(header, 'cliqueSigner')
   const extraSeal = cliqueExtraSeal(header)
   // Reasonable default for default blocks
   if (extraSeal.length === 0 || equalsBytes(extraSeal, new Uint8Array(65))) {
@@ -120,7 +120,7 @@ export function cliqueSigner(header: BlockHeader): Address {
  *  Method throws if signature is invalid
  */
 export function cliqueVerifySignature(header: BlockHeader, signerList: Address[]): boolean {
-  _requireClique(header, 'cliqueVerifySignature')
+  requireClique(header, 'cliqueVerifySignature')
   const signerAddress = cliqueSigner(header)
   const signerFound = signerList.find((signer) => {
     return signer.equals(signerAddress)
