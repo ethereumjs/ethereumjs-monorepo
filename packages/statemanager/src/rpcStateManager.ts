@@ -333,12 +333,7 @@ export class RPCStateManager implements StateManagerInterface {
     if (this.DEBUG) this._debug(`retrieving proof from provider for ${address.toString()}`)
     const proof = await fetchFromProvider(this._provider, {
       method: 'eth_getProof',
-      params: [
-        address.toString(),
-        // TODO: Investigate why this works (either the type should be adjusted, or this is broken)
-        [storageSlots.map((slot) => bytesToHex(slot))] as any,
-        this._blockTag,
-      ],
+      params: [address.toString(), storageSlots.map(bytesToHex).join(','), this._blockTag],
     })
 
     return proof
