@@ -4,10 +4,15 @@ import {
   DBSetHashToNumber,
   DBSetTD,
 } from '@ethereumjs/blockchain'
-import { CacheType, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MCLBLS, RustBN254 } from '@ethereumjs/evm'
 import { getGenesis } from '@ethereumjs/genesis'
-import { DefaultStateManager, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
+import {
+  CacheType,
+  Caches,
+  DefaultStateManager,
+  StatelessVerkleStateManager,
+} from '@ethereumjs/statemanager'
 import { createTrie } from '@ethereumjs/trie'
 import {
   BIGINT_0,
@@ -35,7 +40,6 @@ import { ReceiptsManager } from './receipt.js'
 
 import type { ExecutionOptions } from './execution.js'
 import type { Block } from '@ethereumjs/block'
-import type { Trie } from '@ethereumjs/trie'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
@@ -160,21 +164,20 @@ export class VMExecution extends Execution {
     const stateManager = new DefaultStateManager({
       trie,
       prefixStorageTrieKeys: this.config.prefixStorageTrieKeys,
-      accountCacheOpts: {
-        deactivate: false,
-        type: CacheType.LRU,
-        size: this.config.accountCache,
-      },
-      storageCacheOpts: {
-        deactivate: false,
-        type: CacheType.LRU,
-        size: this.config.storageCache,
-      },
-      codeCacheOpts: {
-        deactivate: false,
-        type: CacheType.LRU,
-        size: this.config.codeCache,
-      },
+      caches: new Caches({
+        account: {
+          type: CacheType.LRU,
+          size: this.config.accountCache,
+        },
+        storage: {
+          type: CacheType.LRU,
+          size: this.config.storageCache,
+        },
+        code: {
+          type: CacheType.LRU,
+          size: this.config.codeCache,
+        },
+      }),
       common: this.config.chainCommon,
     })
 
@@ -1059,25 +1062,22 @@ export class VMExecution extends Execution {
 
   stats() {
     if (this._statsVM instanceof DefaultStateManager) {
-      const sm = this._statsVM.stateManager as any
-      const disactivatedStats = { size: 0, reads: 0, hits: 0, writes: 0 }
+      const sm = this._statsVM.stateManager as DefaultStateManager
+      const deactivatedStats = { size: 0, reads: 0, hits: 0, writes: 0 }
       let stats
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      stats = !sm._accountCacheSettings.deactivate ? sm._accountCache.stats() : disactivatedStats
+      stats = sm['_caches']?.account?.stats() ?? deactivatedStats
       this.config.logger.info(
         `Account cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`,
       )
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      stats = !sm._storageCacheSettings.deactivate ? sm._storageCache.stats() : disactivatedStats
+      stats = sm['_caches']?.storage?.stats() ?? deactivatedStats
       this.config.logger.info(
         `Storage cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`,
       )
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      stats = !sm._codeCacheSettings.deactivate ? sm._codeCache.stats() : disactivatedStats
+      stats = sm['_caches']?.code?.stats() ?? deactivatedStats
       this.config.logger.info(
         `Code cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`,
       )
-      const tStats = (sm._trie as Trie).database().stats()
+      const tStats = sm['_trie'].database().stats()
       this.config.logger.info(
         `Trie cache stats size=${tStats.size} reads=${tStats.cache.reads} hits=${tStats.cache.hits} ` +
           `writes=${tStats.cache.writes} readsDB=${tStats.db.reads} hitsDB=${tStats.db.hits} writesDB=${tStats.db.writes}`,

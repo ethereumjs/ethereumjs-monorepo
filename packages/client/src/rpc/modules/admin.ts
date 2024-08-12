@@ -81,8 +81,7 @@ export class Admin {
     return peers?.map((peer) => {
       return {
         id: peer.id,
-        // Typescript complains about the typing of `_hello` if we make rlpxPeer possibly null
-        name: (peer.rlpxPeer as any)['_hello'].clientId ?? null,
+        name: peer.rlpxPeer?.['_hello']?.clientId ?? null,
         protocols: {
           eth: {
             head: peer.eth?.updatedBestHeader

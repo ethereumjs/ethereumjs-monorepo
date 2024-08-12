@@ -1,18 +1,16 @@
 import { Address, KECCAK256_RLP, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { DefaultStateManager } from '../src/index.js'
+import { Caches, DefaultStateManager } from '../src/index.js'
 
 import { createAccountWithDefaults } from './util.js'
 
 describe('StateManager -> General/Account', () => {
-  for (const accountCacheOpts of [
-    { deactivate: false },
-    { deactivate: true },
-    { deactivate: false, size: 0 },
-  ]) {
+  for (const accountCacheOpts of [{ size: 1000 }, { size: 0 }]) {
     it(`should set the state root to empty`, async () => {
-      const stateManager = new DefaultStateManager({ accountCacheOpts })
+      const stateManager = new DefaultStateManager({
+        caches: new Caches({ account: accountCacheOpts }),
+      })
       assert.ok(equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has default root')
 
       // commit some data to the trie
@@ -32,7 +30,9 @@ describe('StateManager -> General/Account', () => {
     })
 
     it(`should clear the cache when the state root is set`, async () => {
-      const stateManager = new DefaultStateManager({ accountCacheOpts })
+      const stateManager = new DefaultStateManager({
+        caches: new Caches({ account: accountCacheOpts }),
+      })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const account = createAccountWithDefaults()
 
@@ -75,7 +75,9 @@ describe('StateManager -> General/Account', () => {
     })
 
     it('should put and get account, and add to the underlying cache if the account is not found', async () => {
-      const stateManager = new DefaultStateManager({ accountCacheOpts })
+      const stateManager = new DefaultStateManager({
+        caches: new Caches({ account: accountCacheOpts }),
+      })
       const account = createAccountWithDefaults()
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
@@ -86,7 +88,7 @@ describe('StateManager -> General/Account', () => {
       assert.equal(res1!.balance, BigInt(0xfff384))
 
       await stateManager.flush()
-      stateManager['_accountCache']?.clear()
+      stateManager['_caches']?.account?.clear()
 
       const res2 = await stateManager.getAccount(address)
 
@@ -94,7 +96,9 @@ describe('StateManager -> General/Account', () => {
     })
 
     it(`should return undefined for a non-existent account`, async () => {
-      const stateManager = new DefaultStateManager({ accountCacheOpts })
+      const stateManager = new DefaultStateManager({
+        caches: new Caches({ account: accountCacheOpts }),
+      })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
       const res = (await stateManager.getAccount(address)) === undefined
@@ -103,7 +107,9 @@ describe('StateManager -> General/Account', () => {
     })
 
     it(`should return undefined for an existent account`, async () => {
-      const stateManager = new DefaultStateManager({ accountCacheOpts })
+      const stateManager = new DefaultStateManager({
+        caches: new Caches({ account: accountCacheOpts }),
+      })
       const account = createAccountWithDefaults(BigInt(0x1), BigInt(0x1))
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
@@ -115,7 +121,9 @@ describe('StateManager -> General/Account', () => {
     })
 
     it(`should modify account fields correctly`, async () => {
-      const stateManager = new DefaultStateManager({ accountCacheOpts })
+      const stateManager = new DefaultStateManager({
+        caches: new Caches({ account: accountCacheOpts }),
+      })
       const account = createAccountWithDefaults()
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       await stateManager.putAccount(address, account)
