@@ -245,9 +245,6 @@ export class BlockHeader {
       this.difficulty = this.ethashCanonicalDifficulty(opts.calcDifficultyFromHeader)
     }
 
-    // If cliqueSigner is provided, seal block with provided privateKey.
-    if (opts.cliqueSigner) this.extraData = createSealedCliqueBlock(this, opts.cliqueSigner)
-
     // Validate consensus format after block is sealed (if applicable) so extraData checks will pass
     if (skipValidateConsensusFormat === false) this._consensusFormatValidation()
 

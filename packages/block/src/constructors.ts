@@ -533,7 +533,10 @@ export async function createBlockFromBeaconPayloadJson(
  * @param cliqueSigner clique signer key to be used for creating sealed block
  * @returns the block constructed block
  */
-export function createSealedCliqueBlock(header: BlockHeader, cliqueSigner: Uint8Array): Uint8Array {
+export function createSealedCliqueBlockExtraData(
+  header: BlockHeader,
+  cliqueSigner: Uint8Array,
+): Uint8Array {
   // Ensure extraData is at least length CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
   const minExtraDataLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
   if (header.extraData.length < minExtraDataLength) {
@@ -553,4 +556,32 @@ export function createSealedCliqueBlock(header: BlockHeader, cliqueSigner: Uint8
   )
   const extraData = concatBytes(extraDataWithoutSeal, signatureB)
   return extraData
+}
+
+export function createSealedCliqueBlock(
+  blockData: BlockData = {},
+  cliqueSigner: Uint8Array,
+  opts?: BlockOptions,
+): Block {
+  const sealedCliqueBlock = createBlock(blockData, opts)
+  ;(sealedCliqueBlock.header.extraData as any) = createSealedCliqueBlockExtraData(
+    sealedCliqueBlock.header,
+    cliqueSigner,
+  )
+
+  return sealedCliqueBlock
+}
+
+export function createSealedCliqueBlockHeader(
+  headerData: HeaderData = {},
+  cliqueSigner: Uint8Array,
+  opts: BlockOptions = {},
+): BlockHeader {
+  const sealedCliqueBlockHeader = new BlockHeader(headerData, opts)
+  ;(sealedCliqueBlockHeader.extraData as any) = createSealedCliqueBlockExtraData(
+    sealedCliqueBlockHeader,
+    cliqueSigner,
+  )
+
+  return sealedCliqueBlockHeader
 }

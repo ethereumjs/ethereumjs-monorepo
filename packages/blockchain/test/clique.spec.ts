@@ -1,4 +1,8 @@
-import { cliqueEpochTransitionSigners, createBlock } from '@ethereumjs/block'
+import {
+  cliqueEpochTransitionSigners,
+  createBlock,
+  createSealedCliqueBlock,
+} from '@ethereumjs/block'
 import {
   Common,
   ConsensusAlgorithm,
@@ -155,7 +159,7 @@ function getBlock(
   // set signer
   const cliqueSigner = signer.privateKey
 
-  return createBlock(blockData, { common, freeze: false, cliqueSigner })
+  return createSealedCliqueBlock(blockData, cliqueSigner, { common, freeze: false })
 }
 
 const addNextBlockReorg = async (
