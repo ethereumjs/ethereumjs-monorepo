@@ -1,8 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
 import { Mainnet } from '../src/chains.js'
-import { createCommonFromGethGenesis } from '../src/index.js'
 import { Hardfork } from '../src/enums.js'
+import { createCommonFromGethGenesis } from '../src/index.js'
 import { parseGethGenesis } from '../src/utils.js'
 
 import * as invalidSpuriousDragonJSON from './data/geth-genesis/invalid-spurious-dragon.json'

@@ -8,14 +8,14 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
+import { genRequestsTrieRoot } from '../src/helpers.js'
 import {
+  Block,
   createBlock,
   createBlockFromRPC,
   createBlockFromValuesArray,
   createBlockHeader,
 } from '../src/index.js'
-import { genRequestsTrieRoot } from '../src/helpers.js'
-import { Block } from '../src/index.js'
 
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 
