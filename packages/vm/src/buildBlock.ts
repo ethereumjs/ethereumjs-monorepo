@@ -5,7 +5,7 @@ import {
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
-import { ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
