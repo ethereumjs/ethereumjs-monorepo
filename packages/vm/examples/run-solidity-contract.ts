@@ -227,4 +227,4 @@ async function main() {
   console.log('Everything ran correctly!')
 }
 
-main()
+void main()

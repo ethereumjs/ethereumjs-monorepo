@@ -93,4 +93,4 @@ async function putBlocks(blockchain: Blockchain, common: Common, data: typeof te
   }
 }
 
-main()
+void main()
