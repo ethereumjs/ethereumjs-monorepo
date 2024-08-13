@@ -8,10 +8,11 @@ import {
   toType,
 } from '@ethereumjs/util'
 
-import { createBlock } from './constructors.js'
-import { blockHeaderFromRpc } from './header-from-rpc.js'
+import { blockHeaderFromRpc } from '../header/header-from-rpc.js'
 
-import type { BlockOptions, JsonRpcBlock } from './index.js'
+import { createBlock } from './constructors.js'
+
+import type { BlockOptions, JsonRpcBlock } from '../index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 function normalizeTxParams(_txParams: any) {

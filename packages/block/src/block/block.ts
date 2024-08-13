@@ -12,8 +12,6 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } from './helpers.js'
-
 /* eslint-disable */
 // This is to allow for a proper and linked collection of constructors for the class header.
 // For tree shaking/code size this should be no problem since types go away on transpilation.
@@ -21,6 +19,9 @@ import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } 
 // See: https://github.com/microsoft/TypeScript/issues/47558
 // (situation will eventually improve on Typescript and/or Eslint update)
 import {
+  genRequestsTrieRoot,
+  genTransactionsTrieRoot,
+  genWithdrawalsTrieRoot,
   BlockHeader,
   type createBlockFromBeaconPayloadJson,
   type createBlock,
@@ -29,9 +30,9 @@ import {
   type createBlockFromRLPSerializedBlock,
   type createBlockFromRPC,
   type createBlockFromValuesArray,
-} from './index.js'
+} from '../index.js'
 /* eslint-enable */
-import type { BlockBytes, BlockOptions, ExecutionPayload, JsonBlock } from './types.js'
+import type { BlockBytes, BlockOptions, ExecutionPayload, JsonBlock } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,

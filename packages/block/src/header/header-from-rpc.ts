@@ -1,8 +1,7 @@
-import { numberToHex } from './helpers.js'
+import { numberToHex } from '../helpers.js'
+import { BlockHeader } from '../index.js'
 
-import { BlockHeader } from './index.js'
-
-import type { BlockOptions, JsonRpcBlock } from './types.js'
+import type { BlockOptions, JsonRpcBlock } from '../types.js'
 
 /**
  * Creates a new block header object from Ethereum JSON RPC.
