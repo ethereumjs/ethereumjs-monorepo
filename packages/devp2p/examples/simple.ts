@@ -43,5 +43,7 @@ for (const bootnode of BOOTNODES) {
 }
 
 setTimeout(() => {
-  throw new Error('Test timed out')
+  // After the timeout, destroy dpt
+  dpt.destroy() // NOTE: this does not seem to stop listening to peers, how to quit/exit?
+  // (client also calls `dpt.destroy()` in `rlpxserver` on `stop()`)
 }, TIMEOUT)
