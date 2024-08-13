@@ -18,7 +18,7 @@ import {
   createBlockHeader,
   createBlockHeaderFromRLP,
   createBlockHeaderFromValuesArray,
-} from '../src/constructors.js'
+} from '../src/index.js'
 import { Block } from '../src/index.js'
 
 import * as testData from './testdata/bcBlockGasLimitTest.json'

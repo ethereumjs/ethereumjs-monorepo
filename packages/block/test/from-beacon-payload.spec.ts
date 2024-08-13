@@ -3,7 +3,7 @@ import { loadKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import * as shardingJson from '../../client/test/sim/configs/4844-devnet.json'
-import { createBlockFromBeaconPayloadJson, createBlockHeader } from '../src/constructors.js'
+import { createBlockFromBeaconPayloadJson, createBlockHeader } from '../src/index.js'
 
 import * as payloadKaustinen from './testdata/payload-kaustinen.json'
 import * as payload87335 from './testdata/payload-slot-87335.json'

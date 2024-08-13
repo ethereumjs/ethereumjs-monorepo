@@ -13,7 +13,7 @@ import {
   createBlockFromRPC,
   createBlockFromValuesArray,
   createBlockHeader,
-} from '../src/constructors.js'
+} from '../src/index.js'
 import { genRequestsTrieRoot } from '../src/helpers.js'
 import { Block } from '../src/index.js'
 

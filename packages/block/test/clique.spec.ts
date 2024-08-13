@@ -2,7 +2,7 @@ import { Common, Goerli, Hardfork } from '@ethereumjs/common'
 import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlockHeader, createSealedCliqueBlockHeader } from '../src/constructors.js'
+import { createBlockHeader, createSealedCliqueBlockHeader } from '../src/index.js'
 import {
   cliqueEpochTransitionSigners,
   cliqueExtraSeal,

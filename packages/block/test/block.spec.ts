@@ -11,14 +11,17 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { genTransactionsTrieRoot } from '../src/helpers.js'
 import {
+  type Block,
+  type BlockBytes,
+  type JsonRpcBlock,
   createBlock,
   createBlockFromRLPSerializedBlock,
+  createBlockFromRPC,
   createBlockFromValuesArray,
-} from '../src/constructors.js'
-import { createBlockFromRpc } from '../src/from-rpc.js'
-import { genTransactionsTrieRoot } from '../src/helpers.js'
-import { type Block, type BlockBytes, type JsonRpcBlock, paramsBlock } from '../src/index.js'
+  paramsBlock,
+} from '../src/index.js'
 
 import * as testDataGenesis from './testdata/genesishashestest.json'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
@@ -160,7 +163,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 
     try {
-      createBlockFromRpc(testDataFromRpcGoerli.default as JsonRpcBlock, [], { common })
+      createBlockFromRPC(testDataFromRpcGoerli.default as JsonRpcBlock, [], { common })
       assert.ok(true, 'does not throw')
     } catch (error: any) {
       assert.fail('error thrown')

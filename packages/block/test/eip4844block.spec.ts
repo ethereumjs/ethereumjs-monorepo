@@ -9,7 +9,7 @@ import {
 import { loadKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { createBlock, createBlockHeader } from '../src/constructors.js'
+import { createBlock, createBlockHeader } from '../src/index.js'
 import { fakeExponential, getNumBlobs } from '../src/helpers.js'
 import { paramsBlock } from '../src/params.js'
 
