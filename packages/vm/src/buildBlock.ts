@@ -5,7 +5,7 @@ import {
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
-import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
@@ -366,7 +366,9 @@ export class BlockBuilder {
 
     let block
     const cs = this.blockOpts.cliqueSigner
-    if (cs !== undefined) {
+    if (this.blockOpts.common?.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+      if (cs === undefined)
+        throw new Error('cliqueSigner required for building blocks under PoA consensus')
       block = createSealedCliqueBlock(blockData, cs, this.blockOpts)
     } else {
       block = createBlock(blockData, blockOpts)

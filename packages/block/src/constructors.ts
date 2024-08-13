@@ -522,7 +522,10 @@ export function createSealedCliqueBlock(
   cliqueSigner: Uint8Array,
   opts: BlockOptions = {},
 ): Block {
-  const sealedCliqueBlock = createBlock(blockData, { ...opts, ...{ freeze: false } })
+  const sealedCliqueBlock = createBlock(blockData, {
+    ...opts,
+    ...{ freeze: false, skipConsensusFormatValidation: true },
+  })
   ;(sealedCliqueBlock.header.extraData as any) = retrieveCliqueBlockExtraData(
     sealedCliqueBlock.header,
     cliqueSigner,
@@ -530,6 +533,10 @@ export function createSealedCliqueBlock(
   if (opts?.freeze === true) {
     // We have to freeze here since we can't freeze the block when constructing it since we are overwriting `extraData`
     Object.freeze(sealedCliqueBlock)
+  }
+  if (opts?.skipConsensusFormatValidation === false) {
+    // We need to validate the consensus format here since we skipped it when constructing the block
+    sealedCliqueBlock.header['_consensusFormatValidation']()
   }
   return sealedCliqueBlock
 }
@@ -539,11 +546,16 @@ export function createSealedCliqueBlockHeader(
   cliqueSigner: Uint8Array,
   opts: BlockOptions = {},
 ): BlockHeader {
-  const sealedCliqueBlockHeader = new BlockHeader(headerData, opts)
+  const sealedCliqueBlockHeader = new BlockHeader(headerData, {
+    ...opts,
+    ...{ skipConsensusFormatValidation: true },
+  })
   ;(sealedCliqueBlockHeader.extraData as any) = retrieveCliqueBlockExtraData(
     sealedCliqueBlockHeader,
     cliqueSigner,
   )
-
+  if (opts.skipConsensusFormatValidation === false)
+    // We need to validate the consensus format here since we skipped it when constructing the block header
+    sealedCliqueBlockHeader['_consensusFormatValidation']()
   return sealedCliqueBlockHeader
 }
