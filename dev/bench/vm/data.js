@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1723535289983,
+  "lastUpdate": 1723573217287,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "fb506280ff40b11d526f9429356609de16554d19",
-          "message": " VM: runTx(), runBlock(), buildBlock() Standalone Methods (#3530)\n\n* Move over runTx()\r\n\r\n* runTx() test and upstream usage fixes\r\n\r\n* client/test: fix import\r\n\r\n* vm: add original runTx docs to runTx\r\n\r\n* vm: unbind runBlock\r\n\r\n* vm: export runBlock\r\n\r\n* unbind runBlock in tests and client\r\n\r\n* vm/client: unbind buildBlock\r\n\r\n* vm: standalone emitEVMProfile\r\n\r\n* vm: fix tests\r\n\r\n* client: fix tests\r\n\r\n* client: fix docker build\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2024-07-23T09:54:17+02:00",
-          "tree_id": "7f9cd3dee1943e50eca014641dc82cca2a3ba30f",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fb506280ff40b11d526f9429356609de16554d19"
-        },
-        "date": 1721721534169,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38883,
-            "range": "±1.54%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 36623,
-            "range": "±3.44%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37845,
-            "range": "±1.43%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37142,
-            "range": "±1.54%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36031,
-            "range": "±1.93%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.81%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0686310b2391ad2bd6e65e0a65e5fb1d312923c2",
+          "message": "Remove EIP-3074 (#3582)\n\n* Remove EIP-3074\r\n\r\n* Fix EVM example\r\n\r\n* vm/evm: remove more auth(call) references\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2024-08-13T14:17:31-04:00",
+          "tree_id": "368615bc350d119eb030b2b82a7808c750fe636c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0686310b2391ad2bd6e65e0a65e5fb1d312923c2"
+        },
+        "date": 1723573215813,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38085,
+            "range": "±2.07%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36170,
+            "range": "±3.73%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37163,
+            "range": "±1.57%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36145,
+            "range": "±1.69%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35391,
+            "range": "±1.82%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
