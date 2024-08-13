@@ -9,7 +9,7 @@ if (!pkg) {
 const examplesPath = `../packages/${pkg}/examples/`
 const path = join(__dirname, examplesPath)
 
-const getTsFiles = (fileName: string): Promise<NodeModule> | undefined => {
+const getExample = (fileName: string): Promise<NodeModule> | undefined => {
   if (extname(fileName) === '.cts' || extname(fileName) === '.ts') {
     return import(examplesPath + fileName)
   }
@@ -17,8 +17,13 @@ const getTsFiles = (fileName: string): Promise<NodeModule> | undefined => {
 
 const main = async () => {
   const files = readdirSync(path)
-  const importedFiles = files.map(getTsFiles).filter((file) => file)
-  await Promise.all(importedFiles)
+  for (const file of files) {
+    const runner = getExample(file)
+    if (runner !== undefined) {
+      console.log(` ---- Run example: ${file} ----`)
+      await runner
+    }
+  }
 }
 
 main()
