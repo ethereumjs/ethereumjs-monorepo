@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1723484524185,
+  "lastUpdate": 1723535289983,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b543d2fefa97c70fc0b5b3b9ead29734346a2503",
-          "message": "Switch `js-sdsl` to `js-sdsl/orderedMap` sub package (#3528)\n\n* Switch js-sdsl to isolated package\r\n\r\n* lint",
-          "timestamp": "2024-07-22T14:38:04+02:00",
-          "tree_id": "febf269542f44854d30c5ff7c182a7f6ab175297",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b543d2fefa97c70fc0b5b3b9ead29734346a2503"
-        },
-        "date": 1721652335277,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38699,
-            "range": "±1.67%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 37062,
-            "range": "±2.77%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 36820,
-            "range": "±2.69%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36655,
-            "range": "±1.61%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36052,
-            "range": "±1.83%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.76%",
             "unit": "ops/sec",
             "extra": "90 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "699cde206ea9e92b55f771498ea0319455a3dbbd",
+          "message": "Prometheus cleanup (#3583)\n\n* Update prometheus metrics documentation\r\n\r\n* Return 404 as default case for prometheus server\r\n\r\n* Fix lint error",
+          "timestamp": "2024-08-13T09:45:05+02:00",
+          "tree_id": "99920dd4da5522d2c7eb568bd9d4f44adf02dd20",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/699cde206ea9e92b55f771498ea0319455a3dbbd"
+        },
+        "date": 1723535288361,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37190,
+            "range": "±1.75%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 35417,
+            "range": "±3.15%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 36060,
+            "range": "±1.55%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35344,
+            "range": "±1.64%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 34694,
+            "range": "±1.81%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
