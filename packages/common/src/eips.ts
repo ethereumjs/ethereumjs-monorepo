@@ -134,14 +134,6 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
   },
   /**
-   * Description : AUTH and AUTHCALL opcodes
-   * URL         : https://github.com/ethereum/EIPs/commit/eca4416ff3c025fcb6ec8cd4eac481e74e108481
-   * Status      : Review
-   */
-  3074: {
-    minimumHardfork: Hardfork.London,
-  },
-  /**
    * Description : BASEFEE opcode
    * URL         : https://eips.ethereum.org/EIPS/eip-3198
    * Status      : Final

@@ -93,7 +93,6 @@ export interface RunState {
   interpreter: Interpreter
   gasRefund: bigint // Tracks the current refund
   gasLeft: bigint // Current gas left
-  auth?: Address /** EIP-3074 AUTH parameter */
   returnBytes: Uint8Array /* Current bytes in the return Uint8Array. Cleared each time a CALL/CREATE is made in the current frame. */
 }
 
@@ -158,6 +157,15 @@ export class Interpreter {
     this._evm = evm
     this._stateManager = stateManager
     this.common = this._evm.common
+
+    if (
+      this.common.consensusType() === 'poa' &&
+      this._evm['_optsCached'].cliqueSigner === undefined
+    )
+      throw new Error(
+        'Must include cliqueSigner function if clique/poa is being used for consensus type',
+      )
+
     this._runState = {
       programCounter: 0,
       opCode: 0xfe, // INVALID opcode
@@ -781,7 +789,7 @@ export class Interpreter {
   getBlockCoinbase(): bigint {
     let coinbase: Address
     if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
-      coinbase = this._env.block.header.cliqueSigner()
+      coinbase = this._evm['_optsCached'].cliqueSigner!(this._env.block.header)
     } else {
       coinbase = this._env.block.header.coinbase
     }
@@ -860,31 +868,6 @@ export class Interpreter {
       data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
-      blobVersionedHashes: this._env.blobVersionedHashes,
-      accessWitness: this._env.accessWitness,
-    })
-
-    return this._baseCall(msg)
-  }
-
-  /**
-   * Sends a message with arbitrary data to a given address path.
-   */
-  async authcall(
-    gasLimit: bigint,
-    address: Address,
-    value: bigint,
-    data: Uint8Array,
-  ): Promise<bigint> {
-    const msg = new Message({
-      caller: this._runState.auth,
-      gasLimit,
-      to: address,
-      value,
-      data,
-      isStatic: this._env.isStatic,
-      depth: this._env.depth + 1,
-      authcallOrigin: this._env.address,
       blobVersionedHashes: this._env.blobVersionedHashes,
       accessWitness: this._env.accessWitness,
     })

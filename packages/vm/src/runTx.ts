@@ -1,4 +1,4 @@
-import { createBlock } from '@ethereumjs/block'
+import { cliqueSigner, createBlock } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
@@ -601,7 +601,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Update miner's balance
   let miner
   if (vm.common.consensusType() === ConsensusType.ProofOfAuthority) {
-    miner = block.header.cliqueSigner()
+    miner = cliqueSigner(block.header)
   } else {
     miner = block.header.coinbase
   }

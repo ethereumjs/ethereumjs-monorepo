@@ -28,7 +28,7 @@ const common = new Common({
 // Remove 7002 so won't trigger error
 common['_activatedEIPsCache'] = [
   2565, 2929, 2718, 2930, 1559, 3198, 3529, 3541, 4345, 5133, 3675, 4399, 3651, 3855, 3860, 4895,
-  1153, 4844, 4788, 5656, 6780, 7516, 2537, 3074, 6110, 7685,
+  1153, 4844, 4788, 5656, 6780, 7516, 2537, 6110, 7685,
 ]
 const DEPOSIT_CONTRACT_ADDRESS = getPresetChainConfig('mainnet')
   .depositContractAddress! as PrefixedHexString

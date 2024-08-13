@@ -2,6 +2,7 @@ import {
   createBlock,
   createBlockFromRLPSerializedBlock,
   createBlockFromValuesArray,
+  createSealedCliqueBlock,
 } from '@ethereumjs/block'
 import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
@@ -387,9 +388,10 @@ describe('runBlock() -> runtime behavior', async () => {
     ).sign(otherUser.privateKey)
 
     // create block with the signer and txs
-    const block = createBlock(
+    const block = createSealedCliqueBlock(
       { header: { extraData: new Uint8Array(97) }, transactions: [tx, tx] },
-      { common, cliqueSigner: signer.privateKey },
+      signer.privateKey,
+      { common },
     )
 
     await runBlock(vm, { block, skipNonce: true, skipBlockValidation: true, generate: true })
