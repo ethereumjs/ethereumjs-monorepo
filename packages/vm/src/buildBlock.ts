@@ -366,9 +366,7 @@ export class BlockBuilder {
 
     let block
     const cs = this.blockOpts.cliqueSigner
-    if (this.blockOpts.common?.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
-      if (cs === undefined)
-        throw new Error('cliqueSigner required for building blocks under PoA consensus')
+    if (cs !== undefined) {
       block = createSealedCliqueBlock(blockData, cs, this.blockOpts)
     } else {
       block = createBlock(blockData, blockOpts)
