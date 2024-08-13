@@ -1,4 +1,9 @@
-import { cliqueSigner, cliqueVerifySignature, createBlock } from '@ethereumjs/block'
+import {
+  cliqueSigner,
+  cliqueVerifySignature,
+  createBlock,
+  createSealedCliqueBlock,
+} from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
   Common,
@@ -199,9 +204,10 @@ describe('BlockBuilder', () => {
     // extraData: [vanity, activeSigner, seal]
     const extraData = concatBytes(new Uint8Array(32), signer.address.toBytes(), new Uint8Array(65))
     const cliqueSignerKey = signer.privateKey
-    const genesisBlock = createBlock(
+    const genesisBlock = createSealedCliqueBlock(
       { header: { gasLimit: 50000, extraData } },
-      { common, cliqueSigner: cliqueSignerKey },
+      cliqueSignerKey,
+      { common },
     )
     const blockchain = await createBlockchain({ genesisBlock, common })
     const vm = await VM.create({ common, blockchain })
