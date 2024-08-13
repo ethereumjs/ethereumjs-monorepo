@@ -522,12 +522,15 @@ export function createSealedCliqueBlock(
   cliqueSigner: Uint8Array,
   opts: BlockOptions = {},
 ): Block {
-  const sealedCliqueBlock = createBlock(blockData, opts)
+  const sealedCliqueBlock = createBlock(blockData, { ...opts, ...{ freeze: false } })
   ;(sealedCliqueBlock.header.extraData as any) = retrieveCliqueBlockExtraData(
     sealedCliqueBlock.header,
     cliqueSigner,
   )
-
+  if (opts?.freeze === true) {
+    // We have to freeze here since we can't freeze the block when constructing it since we are overwriting `extraData`
+    Object.freeze(sealedCliqueBlock)
+  }
   return sealedCliqueBlock
 }
 

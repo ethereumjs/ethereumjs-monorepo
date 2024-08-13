@@ -159,7 +159,7 @@ function getBlock(
   // set signer
   const cliqueSigner = signer.privateKey
 
-  return createSealedCliqueBlock(blockData, cliqueSigner, { common, freeze: false })
+  return createSealedCliqueBlock(blockData, cliqueSigner, { common })
 }
 
 const addNextBlockReorg = async (
@@ -230,6 +230,7 @@ describe('Clique: Initialization', () => {
     )
     const block = createSealedCliqueBlock({ header: { number, extraData } }, A.privateKey, {
       common: COMMON,
+      freeze: false,
     })
     try {
       await blockchain.putBlock(block)
