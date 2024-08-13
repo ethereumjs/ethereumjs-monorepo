@@ -135,7 +135,7 @@ export function cliqueVerifySignature(header: BlockHeader, signerList: Address[]
  * Retrieves the extraData from a sealed block header
  * @param header block header from which to retrieve extraData
  * @param cliqueSigner clique signer key used for creating sealed block
- * @returns the extradata from the block
+ * @returns extradata from the block
  */
 export function retrieveCliqueBlockExtraData(
   header: BlockHeader,
