@@ -4,10 +4,13 @@ import {
   Address,
   BIGINT_0,
   BIGINT_27,
+  bigIntToBytes,
   bytesToBigInt,
+  concatBytes,
   createAddressFromPublicKey,
   createZeroAddress,
   ecrecover,
+  ecsign,
   equalsBytes,
 } from '@ethereumjs/util'
 
@@ -126,4 +129,35 @@ export function cliqueVerifySignature(header: BlockHeader, signerList: Address[]
     return signer.equals(signerAddress)
   })
   return !!signerFound
+}
+
+/**
+ * Retrieves the extraData from a sealed block header
+ * @param header block header from which to retrieve extraData
+ * @param cliqueSigner clique signer key used for creating sealed block
+ * @returns the extradata from the block
+ */
+export function retrieveCliqueBlockExtraData(
+  header: BlockHeader,
+  cliqueSigner: Uint8Array,
+): Uint8Array {
+  // Ensure extraData is at least length CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
+  const minExtraDataLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
+  if (header.extraData.length < minExtraDataLength) {
+    const remainingLength = minExtraDataLength - header.extraData.length
+    ;(header.extraData as any) = concatBytes(header.extraData, new Uint8Array(remainingLength))
+  }
+
+  requireClique(header, 'cliqueSealBlock')
+
+  const ecSignFunction = header.common.customCrypto?.ecsign ?? ecsign
+  const signature = ecSignFunction(cliqueSigHash(header), cliqueSigner)
+  const signatureB = concatBytes(signature.r, signature.s, bigIntToBytes(signature.v - BIGINT_27))
+
+  const extraDataWithoutSeal = header.extraData.subarray(
+    0,
+    header.extraData.length - CLIQUE_EXTRA_SEAL,
+  )
+  const extraData = concatBytes(extraDataWithoutSeal, signatureB)
+  return extraData
 }

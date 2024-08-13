@@ -7,7 +7,6 @@ import {
   createTxFromTxData,
 } from '@ethereumjs/tx'
 import {
-  BIGINT_27,
   CLRequestFactory,
   ConsolidationRequest,
   DepositRequest,
@@ -17,8 +16,6 @@ import {
   bigIntToHex,
   bytesToHex,
   bytesToUtf8,
-  concatBytes,
-  ecsign,
   equalsBytes,
   fetchFromProvider,
   getProvider,
@@ -27,7 +24,7 @@ import {
   isHexString,
 } from '@ethereumjs/util'
 
-import { requireClique } from './consensus/clique.js'
+import { retrieveCliqueBlockExtraData } from './consensus/clique.js'
 import { createBlockFromRpc } from './from-rpc.js'
 import {
   genRequestsTrieRoot,
@@ -36,14 +33,7 @@ import {
   valuesArrayToHeaderData,
 } from './helpers.js'
 
-import {
-  Block,
-  BlockHeader,
-  CLIQUE_EXTRA_SEAL,
-  CLIQUE_EXTRA_VANITY,
-  cliqueSigHash,
-  executionPayloadFromBeaconPayload,
-} from './index.js'
+import { Block, BlockHeader, executionPayloadFromBeaconPayload } from './index.js'
 
 import type { BeaconPayloadJson } from './from-beacon-payload.js'
 import type {
@@ -527,44 +517,13 @@ export async function createBlockFromBeaconPayloadJson(
   return createBlockFromExecutionPayload(executionPayload, opts)
 }
 
-/**
- *  Method to retrieve a sealed block from the header and clique signer key
- * @param header block header to be used for creating sealed block
- * @param cliqueSigner clique signer key to be used for creating sealed block
- * @returns the block constructed block
- */
-export function createSealedCliqueBlockExtraData(
-  header: BlockHeader,
-  cliqueSigner: Uint8Array,
-): Uint8Array {
-  // Ensure extraData is at least length CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
-  const minExtraDataLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
-  if (header.extraData.length < minExtraDataLength) {
-    const remainingLength = minExtraDataLength - header.extraData.length
-    ;(header.extraData as any) = concatBytes(header.extraData, new Uint8Array(remainingLength))
-  }
-
-  requireClique(header, 'cliqueSealBlock')
-
-  const ecSignFunction = header.common.customCrypto?.ecsign ?? ecsign
-  const signature = ecSignFunction(cliqueSigHash(header), cliqueSigner)
-  const signatureB = concatBytes(signature.r, signature.s, bigIntToBytes(signature.v - BIGINT_27))
-
-  const extraDataWithoutSeal = header.extraData.subarray(
-    0,
-    header.extraData.length - CLIQUE_EXTRA_SEAL,
-  )
-  const extraData = concatBytes(extraDataWithoutSeal, signatureB)
-  return extraData
-}
-
 export function createSealedCliqueBlock(
   blockData: BlockData = {},
   cliqueSigner: Uint8Array,
   opts: BlockOptions = {},
 ): Block {
   const sealedCliqueBlock = createBlock(blockData, opts)
-  ;(sealedCliqueBlock.header.extraData as any) = createSealedCliqueBlockExtraData(
+  ;(sealedCliqueBlock.header.extraData as any) = retrieveCliqueBlockExtraData(
     sealedCliqueBlock.header,
     cliqueSigner,
   )
@@ -578,7 +537,7 @@ export function createSealedCliqueBlockHeader(
   opts: BlockOptions = {},
 ): BlockHeader {
   const sealedCliqueBlockHeader = new BlockHeader(headerData, opts)
-  ;(sealedCliqueBlockHeader.extraData as any) = createSealedCliqueBlockExtraData(
+  ;(sealedCliqueBlockHeader.extraData as any) = retrieveCliqueBlockExtraData(
     sealedCliqueBlockHeader,
     cliqueSigner,
   )
