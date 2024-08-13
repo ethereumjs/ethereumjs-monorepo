@@ -365,12 +365,9 @@ export class BlockBuilder {
     }
 
     let block
-    if (consensusType === ConsensusType.ProofOfAuthority) {
-      const cs = this.blockOpts.cliqueSigner
-      if (cs === undefined) {
-        throw new Error('cliqueSigner must be included if consensus type being used is PoA')
-      }
-      block = createSealedCliqueBlock(blockData, this.blockOpts.cliqueSigner!, this.blockOpts)
+    const cs = this.blockOpts.cliqueSigner
+    if (cs !== undefined) {
+      block = createSealedCliqueBlock(blockData, cs, this.blockOpts)
     } else {
       block = createBlock(blockData, blockOpts)
     }
