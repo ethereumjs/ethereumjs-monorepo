@@ -10,6 +10,7 @@ import {
   CLRequestFactory,
   ConsolidationRequest,
   DepositRequest,
+  TypeOutput,
   Withdrawal,
   WithdrawalRequest,
   bigIntToHex,
@@ -21,18 +22,20 @@ import {
   hexToBytes,
   intToHex,
   isHexString,
+  setLengthLeft,
+  toBytes,
+  toType,
 } from '@ethereumjs/util'
 
 import { generateCliqueBlockExtraData } from '../consensus/clique.js'
 import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } from '../helpers.js'
 import {
   Block,
+  blockHeaderFromRpc,
   createBlockHeader,
   createBlockHeaderFromValuesArray,
   executionPayloadFromBeaconPayload,
 } from '../index.js'
-
-import { createBlockFromRpc } from './from-rpc.js'
 
 import type { BeaconPayloadJson } from '../from-beacon-payload.js'
 import type {
@@ -46,6 +49,7 @@ import type {
   RequestsBytes,
   WithdrawalsBytes,
 } from '../types.js'
+import type { TypedTransaction } from '@ethereumjs/tx'
 import type {
   CLRequest,
   CLRequestType,
@@ -54,6 +58,27 @@ import type {
   RequestBytes,
   WithdrawalBytes,
 } from '@ethereumjs/util'
+
+export function normalizeTxParams(_txParams: any) {
+  const txParams = Object.assign({}, _txParams)
+
+  txParams.gasLimit = toType(txParams.gasLimit ?? txParams.gas, TypeOutput.BigInt)
+  txParams.data = txParams.data === undefined ? txParams.input : txParams.data
+
+  // check and convert gasPrice and value params
+  txParams.gasPrice = txParams.gasPrice !== undefined ? BigInt(txParams.gasPrice) : undefined
+  txParams.value = txParams.value !== undefined ? BigInt(txParams.value) : undefined
+
+  // strict byte length checking
+  txParams.to =
+    txParams.to !== null && txParams.to !== undefined
+      ? setLengthLeft(toBytes(txParams.to), 20)
+      : null
+
+  txParams.v = toType(txParams.v, TypeOutput.BigInt)
+
+  return txParams
+}
 
 /**
  * Static constructor to create a block from a block data dictionary
@@ -264,8 +289,31 @@ export function createBlockFromRLPSerializedBlock(serialized: Uint8Array, opts?:
  * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
  * @param opts - An object describing the blockchain
  */
-export function createBlockFromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions) {
-  return createBlockFromRpc(blockData, uncles, opts)
+export function createBlockFromRPC(
+  blockParams: JsonRpcBlock,
+  uncles: any[] = [],
+  options?: BlockOptions,
+) {
+  const header = blockHeaderFromRpc(blockParams, options)
+
+  const transactions: TypedTransaction[] = []
+  const opts = { common: header.common }
+  for (const _txParams of blockParams.transactions ?? []) {
+    const txParams = normalizeTxParams(_txParams)
+    const tx = createTxFromTxData(txParams, opts)
+    transactions.push(tx)
+  }
+
+  const uncleHeaders = uncles.map((uh) => blockHeaderFromRpc(uh, options))
+
+  const requests = blockParams.requests?.map((req) => {
+    const bytes = hexToBytes(req as PrefixedHexString)
+    return CLRequestFactory.fromSerializedRequest(bytes)
+  })
+  return createBlock(
+    { header, transactions, uncleHeaders, withdrawals: blockParams.withdrawals, requests },
+    options,
+  )
 }
 
 /**
@@ -326,7 +374,7 @@ export const createBlockFromJsonRpcProvider = async (
     }
   }
 
-  return createBlockFromRpc(blockData, uncleHeaders, opts)
+  return createBlockFromRPC(blockData, uncleHeaders, opts)
 }
 
 /**

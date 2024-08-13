@@ -2,10 +2,10 @@ import { RLP } from '@ethereumjs/rlp'
 import { bigIntToBytes, equalsBytes } from '@ethereumjs/util'
 
 import { generateCliqueBlockExtraData } from '../consensus/clique.js'
-import { valuesArrayToHeaderData } from '../helpers.js'
+import { numberToHex, valuesArrayToHeaderData } from '../helpers.js'
 import { BlockHeader } from '../index.js'
 
-import type { BlockHeaderBytes, BlockOptions, HeaderData } from '../types.js'
+import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonRpcBlock } from '../types.js'
 
 /**
  * Static constructor to create a block header from a header data dictionary
@@ -91,4 +91,65 @@ export function createSealedCliqueBlockHeader(
     // We need to validate the consensus format here since we skipped it when constructing the block header
     sealedCliqueBlockHeader['_consensusFormatValidation']()
   return sealedCliqueBlockHeader
+}
+
+/**
+ * Creates a new block header object from Ethereum JSON RPC.
+ *
+ * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
+ * @param options - An object describing the blockchain
+ */
+export function blockHeaderFromRpc(blockParams: JsonRpcBlock, options?: BlockOptions) {
+  const {
+    parentHash,
+    sha3Uncles,
+    miner,
+    stateRoot,
+    transactionsRoot,
+    receiptsRoot,
+    logsBloom,
+    difficulty,
+    number,
+    gasLimit,
+    gasUsed,
+    timestamp,
+    extraData,
+    mixHash,
+    nonce,
+    baseFeePerGas,
+    withdrawalsRoot,
+    blobGasUsed,
+    excessBlobGas,
+    parentBeaconBlockRoot,
+    requestsRoot,
+  } = blockParams
+
+  const blockHeader = new BlockHeader(
+    {
+      parentHash,
+      uncleHash: sha3Uncles,
+      coinbase: miner,
+      stateRoot,
+      transactionsTrie: transactionsRoot,
+      receiptTrie: receiptsRoot,
+      logsBloom,
+      difficulty: numberToHex(difficulty),
+      number,
+      gasLimit,
+      gasUsed,
+      timestamp,
+      extraData,
+      mixHash,
+      nonce,
+      baseFeePerGas,
+      withdrawalsRoot,
+      blobGasUsed,
+      excessBlobGas,
+      parentBeaconBlockRoot,
+      requestsRoot,
+    },
+    options,
+  )
+
+  return blockHeader
 }
