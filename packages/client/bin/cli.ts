@@ -1122,10 +1122,16 @@ async function run() {
       const reqUrl = new url.URL(req.url, `http://${req.headers.host}`)
       const route = reqUrl.pathname
 
-      if (route === '/metrics') {
-        // Return all metrics in the Prometheus exposition format
-        res.setHeader('Content-Type', register.contentType)
-        res.end(await register.metrics())
+      switch (route) {
+        case '/metrics':
+          // Return all metrics in the Prometheus exposition format
+          res.setHeader('Content-Type', register.contentType)
+          res.end(await register.metrics())
+          break
+        default:
+          res.statusCode = 404
+          res.end('Not found')
+          return
       }
     })
     // Start the HTTP server which exposes the metrics on http://localhost:${args.prometheusPort}/metrics
