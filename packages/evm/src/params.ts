@@ -97,8 +97,6 @@ export const paramsEVM: ParamsDict = {
     invalidGas: 0, // Base fee of the INVALID opcode
     selfdestructGas: 0, // Base fee of the SELFDESTRUCT opcode
     prevrandaoGas: 0, // TODO: these below 0-gas additons might also point to non-clean implementations in the code base
-    authGas: 0, // ...allowing access to non-existing gas parameters. Might be worth to fix at some point.
-    authcallGas: 0,
     // evm
     stackLimit: 1024, // Maximum size of VM stack allowed
     callCreateDepth: 1024, // Maximum depth of call/create stack

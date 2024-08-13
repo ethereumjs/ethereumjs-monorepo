@@ -247,7 +247,7 @@ export class EVM implements EVMInterface {
 
   protected async _executeCall(message: MessageWithTo): Promise<EVMResult> {
     let gasLimit = message.gasLimit
-    const fromAddress = message.authcallOrigin ?? message.caller
+    const fromAddress = message.caller
 
     if (this.common.isActivatedEIP(6800)) {
       const sendsValue = message.value !== BIGINT_0
@@ -393,7 +393,7 @@ export class EVM implements EVMInterface {
 
   protected async _executeCreate(message: Message): Promise<EVMResult> {
     let gasLimit = message.gasLimit
-    const fromAddress = message.authcallOrigin ?? message.caller
+    const fromAddress = message.caller
 
     if (this.common.isActivatedEIP(6800)) {
       if (message.depth === 0) {
@@ -1038,7 +1038,7 @@ export class EVM implements EVMInterface {
     if (account.balance < BIGINT_0) {
       throw new EvmError(ERROR.INSUFFICIENT_BALANCE)
     }
-    const result = this.journal.putAccount(message.authcallOrigin ?? message.caller, account)
+    const result = this.journal.putAccount(message.caller, account)
     if (this.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
     }
