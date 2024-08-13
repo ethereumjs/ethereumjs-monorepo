@@ -1,5 +1,6 @@
 import {
   createBlock,
+  createSealedCliqueBlock,
   genRequestsTrieRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
@@ -363,7 +364,16 @@ export class BlockBuilder {
       requests,
     }
 
-    const block = createBlock(blockData, blockOpts)
+    let block
+    if (consensusType === ConsensusType.ProofOfAuthority) {
+      const cs = this.blockOpts.cliqueSigner
+      if (cs === undefined) {
+        throw new Error('cliqueSigner must be included if consensus type being used is PoA')
+      }
+      block = createSealedCliqueBlock(blockData, this.blockOpts.cliqueSigner!, this.blockOpts)
+    } else {
+      block = createBlock(blockData, blockOpts)
+    }
 
     if (this.blockOpts.putBlockIntoBlockchain === true) {
       await this.vm.blockchain.putBlock(block)
