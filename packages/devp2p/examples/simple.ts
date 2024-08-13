@@ -43,5 +43,5 @@ for (const bootnode of BOOTNODES) {
 }
 
 setTimeout(() => {
-  process.exit()
+  throw new Error('Test timed out')
 }, TIMEOUT)

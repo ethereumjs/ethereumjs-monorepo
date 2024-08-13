@@ -12,6 +12,7 @@ const main = async () => {
   const account = await vm.stateManager.getAccount(
     createAddressFromString('0x000d836201318ec6899a67540690382780743280'),
   )
+  console.log(account)
   console.log(
     `This balance for account 0x000d836201318ec6899a67540690382780743280 in this chain's genesis state is ${Number(
       account?.balance,
