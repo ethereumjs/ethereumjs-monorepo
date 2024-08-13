@@ -82,39 +82,40 @@ async function minerSetup(): Promise<[MockServer, FullEthereumService]> {
   return [server, service]
 }
 
-describe(
-  'should mine blocks while a peer stays connected to tip of chain',
-  async () => {
-    const [server, service] = await minerSetup()
-    const [remoteServer, remoteService] = await setup({
-      location: '127.0.0.2',
-      height: 0,
-      common,
-    })
-    ;(remoteService.chain.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [
-      accounts[0][0],
-    ] // stub
-    ;(remoteService as FullEthereumService).execution.run = async () => 1 // stub
-    await server.discover('remotePeer1', '127.0.0.2')
-    const targetHeight = BigInt(5)
-    await new Promise((resolve) => {
-      remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async (chainHeight) => {
-        if (chainHeight === targetHeight) {
-          it('should sync blocks', () => {
+describe('should mine blocks while a peer stays connected to tip of chain', () => {
+  it(
+    'should work',
+    async () => {
+      const [server, service] = await minerSetup()
+      const [remoteServer, remoteService] = await setup({
+        location: '127.0.0.2',
+        height: 0,
+        common,
+      })
+      ;(remoteService.chain.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [
+        accounts[0][0],
+      ] // stub
+      ;(remoteService as FullEthereumService).execution.run = async () => 1 // stub
+      await server.discover('remotePeer1', '127.0.0.2')
+      const targetHeight = BigInt(5)
+      await new Promise((resolve) => {
+        remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async (chainHeight) => {
+          if (chainHeight === targetHeight) {
             assert.equal(
               remoteService.chain.blocks.height,
               targetHeight,
               'synced blocks successfully',
             )
-          })
-          await destroy(server, service)
-          await destroy(remoteServer, remoteService)
-          resolve(undefined)
 
-          void remoteService.synchronizer!.start()
-        }
+            await destroy(server, service)
+            await destroy(remoteServer, remoteService)
+            resolve(undefined)
+
+            void remoteService.synchronizer!.start()
+          }
+        })
       })
-    })
-  },
-  { timeout: 25000 },
-)
+    },
+    { timeout: 25000 },
+  )
+})

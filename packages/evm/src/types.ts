@@ -345,6 +345,13 @@ export interface EVMOpts {
    *
    */
   profiler?: EVMProfilerOpts
+
+  /**
+   * When running the EVM with PoA consensus, the `cliqueSigner` function from the `@ethereumjs/block` class
+   * must be provided along with a `BlockHeader` so that the coinbase can be correctly retrieved when the
+   * `Interpreter.getBlockCoinbase` method is called.
+   */
+  cliqueSigner?: (header: Block['header']) => Address
 }
 
 /**
@@ -439,7 +446,6 @@ export type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 export type Block = {
   header: {
     number: bigint
-    cliqueSigner(): Address
     coinbase: Address
     timestamp: bigint
     difficulty: bigint

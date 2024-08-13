@@ -5,22 +5,15 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
-  BIGINT_27,
   BIGINT_7,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   TypeOutput,
-  bigIntToBytes,
   bigIntToHex,
   bigIntToUnpaddedBytes,
-  bytesToBigInt,
   bytesToHex,
   bytesToUtf8,
-  concatBytes,
-  createAddressFromPublicKey,
   createZeroAddress,
-  ecrecover,
-  ecsign,
   equalsBytes,
   hexToBytes,
   toType,
@@ -28,12 +21,15 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique.js'
+import {
+  CLIQUE_EXTRA_SEAL,
+  CLIQUE_EXTRA_VANITY,
+  cliqueIsEpochTransition,
+} from './consensus/clique.js'
 import { fakeExponential } from './helpers.js'
 import { paramsBlock } from './params.js'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
-import type { CliqueConfig } from '@ethereumjs/common'
 
 interface HeaderCache {
   hash: Uint8Array | undefined
@@ -247,18 +243,6 @@ export class BlockHeader {
       this.difficulty = this.ethashCanonicalDifficulty(opts.calcDifficultyFromHeader)
     }
 
-    // If cliqueSigner is provided, seal block with provided privateKey.
-    if (opts.cliqueSigner) {
-      // Ensure extraData is at least length CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
-      const minExtraDataLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
-      if (this.extraData.length < minExtraDataLength) {
-        const remainingLength = minExtraDataLength - this.extraData.length
-        this.extraData = concatBytes(this.extraData, new Uint8Array(remainingLength))
-      }
-
-      this.extraData = this.cliqueSealBlock(opts.cliqueSigner)
-    }
-
     // Validate consensus format after block is sealed (if applicable) so extraData checks will pass
     if (skipValidateConsensusFormat === false) this._consensusFormatValidation()
 
@@ -387,7 +371,7 @@ export class BlockHeader {
     if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       // PoA/Clique
       const minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
-      if (!this.cliqueIsEpochTransition()) {
+      if (!cliqueIsEpochTransition(this)) {
         // ExtraData length on epoch transition
         if (this.extraData.length !== minLength) {
           const msg = this._errorMsg(
@@ -669,15 +653,6 @@ export class BlockHeader {
     return this.number === BIGINT_0
   }
 
-  protected _requireClique(name: string) {
-    if (this.common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
-      const msg = this._errorMsg(
-        `BlockHeader.${name}() call only supported for clique PoA networks`,
-      )
-      throw new Error(msg)
-    }
-  }
-
   /**
    * Returns the canonical difficulty for this block.
    *
@@ -749,125 +724,6 @@ export class BlockHeader {
     }
 
     return dif
-  }
-
-  /**
-   * PoA clique signature hash without the seal.
-   */
-  cliqueSigHash() {
-    this._requireClique('cliqueSigHash')
-    const raw = this.raw()
-    raw[12] = this.extraData.subarray(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
-    return this.keccakFunction(RLP.encode(raw))
-  }
-
-  /**
-   * Checks if the block header is an epoch transition
-   * header (only clique PoA, throws otherwise)
-   */
-  cliqueIsEpochTransition(): boolean {
-    this._requireClique('cliqueIsEpochTransition')
-    const epoch = BigInt((this.common.consensusConfig() as CliqueConfig).epoch)
-    // Epoch transition block if the block number has no
-    // remainder on the division by the epoch length
-    return this.number % epoch === BIGINT_0
-  }
-
-  /**
-   * Returns extra vanity data
-   * (only clique PoA, throws otherwise)
-   */
-  cliqueExtraVanity(): Uint8Array {
-    this._requireClique('cliqueExtraVanity')
-    return this.extraData.subarray(0, CLIQUE_EXTRA_VANITY)
-  }
-
-  /**
-   * Returns extra seal data
-   * (only clique PoA, throws otherwise)
-   */
-  cliqueExtraSeal(): Uint8Array {
-    this._requireClique('cliqueExtraSeal')
-    return this.extraData.subarray(-CLIQUE_EXTRA_SEAL)
-  }
-
-  /**
-   * Seal block with the provided signer.
-   * Returns the final extraData field to be assigned to `this.extraData`.
-   * @hidden
-   */
-  private cliqueSealBlock(privateKey: Uint8Array) {
-    this._requireClique('cliqueSealBlock')
-
-    const ecSignFunction = this.common.customCrypto?.ecsign ?? ecsign
-    const signature = ecSignFunction(this.cliqueSigHash(), privateKey)
-    const signatureB = concatBytes(signature.r, signature.s, bigIntToBytes(signature.v - BIGINT_27))
-
-    const extraDataWithoutSeal = this.extraData.subarray(
-      0,
-      this.extraData.length - CLIQUE_EXTRA_SEAL,
-    )
-    const extraData = concatBytes(extraDataWithoutSeal, signatureB)
-    return extraData
-  }
-
-  /**
-   * Returns a list of signers
-   * (only clique PoA, throws otherwise)
-   *
-   * This function throws if not called on an epoch
-   * transition block and should therefore be used
-   * in conjunction with {@link BlockHeader.cliqueIsEpochTransition}
-   */
-  cliqueEpochTransitionSigners(): Address[] {
-    this._requireClique('cliqueEpochTransitionSigners')
-    if (!this.cliqueIsEpochTransition()) {
-      const msg = this._errorMsg('Signers are only included in epoch transition blocks (clique)')
-      throw new Error(msg)
-    }
-
-    const start = CLIQUE_EXTRA_VANITY
-    const end = this.extraData.length - CLIQUE_EXTRA_SEAL
-    const signerBytes = this.extraData.subarray(start, end)
-
-    const signerList: Uint8Array[] = []
-    const signerLength = 20
-    for (let start = 0; start <= signerBytes.length - signerLength; start += signerLength) {
-      signerList.push(signerBytes.subarray(start, start + signerLength))
-    }
-    return signerList.map((buf) => new Address(buf))
-  }
-
-  /**
-   * Verifies the signature of the block (last 65 bytes of extraData field)
-   * (only clique PoA, throws otherwise)
-   *
-   *  Method throws if signature is invalid
-   */
-  cliqueVerifySignature(signerList: Address[]): boolean {
-    this._requireClique('cliqueVerifySignature')
-    const signerAddress = this.cliqueSigner()
-    const signerFound = signerList.find((signer) => {
-      return signer.equals(signerAddress)
-    })
-    return !!signerFound
-  }
-
-  /**
-   * Returns the signer address
-   */
-  cliqueSigner(): Address {
-    this._requireClique('cliqueSigner')
-    const extraSeal = this.cliqueExtraSeal()
-    // Reasonable default for default blocks
-    if (extraSeal.length === 0 || equalsBytes(extraSeal, new Uint8Array(65))) {
-      return createZeroAddress()
-    }
-    const r = extraSeal.subarray(0, 32)
-    const s = extraSeal.subarray(32, 64)
-    const v = bytesToBigInt(extraSeal.subarray(64, 65)) + BIGINT_27
-    const pubKey = ecrecover(this.cliqueSigHash(), v, r, s)
-    return createAddressFromPublicKey(pubKey)
   }
 
   /**

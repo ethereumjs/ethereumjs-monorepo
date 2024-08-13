@@ -24,6 +24,7 @@ import {
   isHexString,
 } from '@ethereumjs/util'
 
+import { generateCliqueBlockExtraData } from './consensus/clique.js'
 import { createBlockFromRpc } from './from-rpc.js'
 import {
   genRequestsTrieRoot,
@@ -514,4 +515,47 @@ export async function createBlockFromBeaconPayloadJson(
 ): Promise<Block> {
   const executionPayload = executionPayloadFromBeaconPayload(payload)
   return createBlockFromExecutionPayload(executionPayload, opts)
+}
+
+export function createSealedCliqueBlock(
+  blockData: BlockData = {},
+  cliqueSigner: Uint8Array,
+  opts: BlockOptions = {},
+): Block {
+  const sealedCliqueBlock = createBlock(blockData, {
+    ...opts,
+    ...{ freeze: false, skipConsensusFormatValidation: true },
+  })
+  ;(sealedCliqueBlock.header.extraData as any) = generateCliqueBlockExtraData(
+    sealedCliqueBlock.header,
+    cliqueSigner,
+  )
+  if (opts?.freeze === true) {
+    // We have to freeze here since we can't freeze the block when constructing it since we are overwriting `extraData`
+    Object.freeze(sealedCliqueBlock)
+  }
+  if (opts?.skipConsensusFormatValidation === false) {
+    // We need to validate the consensus format here since we skipped it when constructing the block
+    sealedCliqueBlock.header['_consensusFormatValidation']()
+  }
+  return sealedCliqueBlock
+}
+
+export function createSealedCliqueBlockHeader(
+  headerData: HeaderData = {},
+  cliqueSigner: Uint8Array,
+  opts: BlockOptions = {},
+): BlockHeader {
+  const sealedCliqueBlockHeader = new BlockHeader(headerData, {
+    ...opts,
+    ...{ skipConsensusFormatValidation: true },
+  })
+  ;(sealedCliqueBlockHeader.extraData as any) = generateCliqueBlockExtraData(
+    sealedCliqueBlockHeader,
+    cliqueSigner,
+  )
+  if (opts.skipConsensusFormatValidation === false)
+    // We need to validate the consensus format here since we skipped it when constructing the block header
+    sealedCliqueBlockHeader['_consensusFormatValidation']()
+  return sealedCliqueBlockHeader
 }
