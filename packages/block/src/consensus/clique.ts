@@ -132,12 +132,12 @@ export function cliqueVerifySignature(header: BlockHeader, signerList: Address[]
 }
 
 /**
- * Retrieves the extraData from a sealed block header
+ * Generates the extraData from a sealed block header
  * @param header block header from which to retrieve extraData
  * @param cliqueSigner clique signer key used for creating sealed block
- * @returns extradata from the block
+ * @returns clique seal (i.e. extradata) for the block
  */
-export function retrieveCliqueBlockExtraData(
+export function generateCliqueBlockExtraData(
   header: BlockHeader,
   cliqueSigner: Uint8Array,
 ): Uint8Array {
@@ -148,7 +148,7 @@ export function retrieveCliqueBlockExtraData(
     ;(header.extraData as any) = concatBytes(header.extraData, new Uint8Array(remainingLength))
   }
 
-  requireClique(header, 'cliqueSealBlock')
+  requireClique(header, 'generateCliqueBlockExtraData')
 
   const ecSignFunction = header.common.customCrypto?.ecsign ?? ecsign
   const signature = ecSignFunction(cliqueSigHash(header), cliqueSigner)

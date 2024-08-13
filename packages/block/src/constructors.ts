@@ -24,7 +24,7 @@ import {
   isHexString,
 } from '@ethereumjs/util'
 
-import { retrieveCliqueBlockExtraData } from './consensus/clique.js'
+import { generateCliqueBlockExtraData } from './consensus/clique.js'
 import { createBlockFromRpc } from './from-rpc.js'
 import {
   genRequestsTrieRoot,
@@ -526,7 +526,7 @@ export function createSealedCliqueBlock(
     ...opts,
     ...{ freeze: false, skipConsensusFormatValidation: true },
   })
-  ;(sealedCliqueBlock.header.extraData as any) = retrieveCliqueBlockExtraData(
+  ;(sealedCliqueBlock.header.extraData as any) = generateCliqueBlockExtraData(
     sealedCliqueBlock.header,
     cliqueSigner,
   )
@@ -550,7 +550,7 @@ export function createSealedCliqueBlockHeader(
     ...opts,
     ...{ skipConsensusFormatValidation: true },
   })
-  ;(sealedCliqueBlockHeader.extraData as any) = retrieveCliqueBlockExtraData(
+  ;(sealedCliqueBlockHeader.extraData as any) = generateCliqueBlockExtraData(
     sealedCliqueBlockHeader,
     cliqueSigner,
   )
