@@ -97,8 +97,6 @@ export const paramsEVM: ParamsDict = {
     invalidGas: 0, // Base fee of the INVALID opcode
     selfdestructGas: 0, // Base fee of the SELFDESTRUCT opcode
     prevrandaoGas: 0, // TODO: these below 0-gas additons might also point to non-clean implementations in the code base
-    authGas: 0, // ...allowing access to non-existing gas parameters. Might be worth to fix at some point.
-    authcallGas: 0,
     // evm
     stackLimit: 1024, // Maximum size of VM stack allowed
     callCreateDepth: 1024, // Maximum depth of call/create stack
@@ -276,15 +274,6 @@ export const paramsEVM: ParamsDict = {
     // evm
     historyStorageAddress: '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e', // The address where the historical blockhashes are stored
     historyServeWindow: 8192, // The amount of blocks to be served by the historical blockhash contract
-  },
-  /**
-.  * AUTH and AUTHCALL opcodes
-.  */
-  3074: {
-    // gasPrices
-    authGas: 3100, // Gas cost of the AUTH opcode
-    authcallGas: 0, // Gas cost of the AUTHCALL opcode
-    authcallValueTransferGas: 6700, // Paid for CALL when the value transfer is non-zero
   },
   /**
 .  * BASEFEE opcode
