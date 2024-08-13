@@ -1127,6 +1127,7 @@ async function run() {
           // Return all metrics in the Prometheus exposition format
           res.setHeader('Content-Type', register.contentType)
           res.end(await register.metrics())
+          break
         default:
           res.statusCode = 404
           res.end('Not found')
