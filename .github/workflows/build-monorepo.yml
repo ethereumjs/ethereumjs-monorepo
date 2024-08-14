@@ -35,5 +35,3 @@ jobs:
           path: '.'
           key: '${{ runner.os }}-node-18-${{ git rev-parse HEAD }}'
           restore-keys: '${{ runner.os }}-node-18'
-
-      - run: npm i
