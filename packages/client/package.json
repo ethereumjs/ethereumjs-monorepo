@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/client",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "EthereumJS Execution Layer (EL) Client Implementation",
   "keywords": [
     "ethereum",
@@ -68,7 +68,7 @@
     "@ethereumjs/tx": "5.4.0",
     "@ethereumjs/util": "9.1.0",
     "@ethereumjs/verkle": "^0.1.0",
-    "@ethereumjs/vm": "8.0.0",
+    "@ethereumjs/vm": "8.1.0",
     "@multiformats/multiaddr": "^12.2.1",
     "@polkadot/util": "^12.6.2",
     "@polkadot/wasm-crypto": "^7.3.2",
