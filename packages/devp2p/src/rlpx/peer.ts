@@ -270,6 +270,7 @@ export class Peer {
     this._disconnectWe = true
     this._closed = true
     setTimeout(() => this._socket.end(), 2000) // 2 sec * 1000
+    if (this._pingIntervalId !== null) clearInterval(this._pingIntervalId)
   }
 
   /**
