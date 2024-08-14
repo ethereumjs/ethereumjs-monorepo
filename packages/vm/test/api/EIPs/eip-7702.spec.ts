@@ -20,7 +20,7 @@ import { assert, describe, it } from 'vitest'
 
 import { VM, runTx } from '../../../src/index.js'
 
-import type { AuthorizationListBytesItem } from '@ethereumjs/common'
+import type { AuthorizationListBytesItem } from '@ethereumjs/tx'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 
@@ -122,7 +122,8 @@ describe('EIP 7702: set code to EOA accounts', () => {
     )
 
     // Try to set code to two different addresses
-    // Only the first is valid
+    // Only the first is valid: the second tuple will have the nonce value 0, but the
+    // nonce of the account is already set to 1 (by the first tuple)
     await runTest(
       [
         {

@@ -472,7 +472,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
 
       fromAccount.nonce++
-      await vm.evm.journal.putAccount(caller, fromAccount)
+      await vm.evm.journal.putAccount(authority, fromAccount)
 
       const addressCode = concatBytes(new Uint8Array([0xef, 0x01, 0x00]), address)
       await vm.stateManager.putCode(authority, addressCode)
