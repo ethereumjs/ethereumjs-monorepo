@@ -11,7 +11,6 @@ import {
   CLRequestFactory,
   ConsolidationRequest,
   DepositRequest,
-  TypeOutput,
   Withdrawal,
   WithdrawalRequest,
   bigIntToHex,
@@ -23,9 +22,6 @@ import {
   hexToBytes,
   intToHex,
   isHexString,
-  setLengthLeft,
-  toBytes,
-  toType,
 } from '@ethereumjs/util'
 
 import { generateCliqueBlockExtraData } from '../consensus/clique.js'
