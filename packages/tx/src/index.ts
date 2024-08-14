@@ -18,3 +18,6 @@ export {
 
 // Types
 export * from './types.js'
+
+// Utils
+export * from './util.js'
