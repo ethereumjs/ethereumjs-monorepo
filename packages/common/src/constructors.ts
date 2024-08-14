@@ -35,7 +35,7 @@ export function createCustomCommon(
 /**
  * Static method to load and set common from a geth genesis json
  * @param genesisJson json of geth configuration
- * @param { Mainnet, eips, genesisHash, hardfork, mergeForkIdPostMerge } to further configure the common instance
+ * @param  opts additional {@link GethConfigOpts} for configuring common
  * @returns Common
  */
 export function createCommonFromGethGenesis(

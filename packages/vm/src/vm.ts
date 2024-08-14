@@ -1,7 +1,7 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Mainnet } from '@ethereumjs/common'
 import { createEVM, getActivePrecompiles } from '@ethereumjs/evm'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { Caches, DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
   Address,
@@ -82,7 +82,10 @@ export class VM {
     }
 
     if (opts.stateManager === undefined) {
-      opts.stateManager = new DefaultStateManager({ common: opts.common })
+      opts.stateManager = new DefaultStateManager({
+        caches: new Caches(),
+        common: opts.common,
+      })
     }
 
     if (opts.blockchain === undefined) {

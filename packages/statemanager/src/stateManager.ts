@@ -1,10 +1,10 @@
-import { CacheType, Common, Mainnet } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Trie,
-  createProof,
+  createMerkleProof,
   createTrieFromProof,
-  updateFromProof,
+  updateTrieFromMerkleProof,
   verifyTrieProof,
 } from '@ethereumjs/trie'
 import {
@@ -31,17 +31,17 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import * as Capabilities from './capabilities.js'
+import { CacheType, OriginalStorageCache } from './cache/index.js'
+import { modifyAccountFields } from './util.js'
 
-import { CODEHASH_PREFIX, type CacheSettings, type DefaultStateManagerOpts } from './index.js'
+import { CODEHASH_PREFIX, Caches, type DefaultStateManagerOpts } from './index.js'
 
-import type { AccountCache, CodeCache, OriginalStorageCache, StorageCache } from './cache/index.js'
+import type { StorageProof } from './index.js'
 import type {
   AccountFields,
   Proof,
   StateManagerInterface,
   StorageDump,
-  StorageProof,
   StorageRange,
 } from '@ethereumjs/common'
 import type { Address, DB, PrefixedHexString } from '@ethereumjs/util'
@@ -64,21 +64,15 @@ import type { Debugger } from 'debug'
  */
 export class DefaultStateManager implements StateManagerInterface {
   protected _debug: Debugger
-  _accountCache?: AccountCache
-  _storageCache?: StorageCache
-  _codeCache?: CodeCache
+  protected _caches?: Caches
+
+  originalStorageCache: OriginalStorageCache
 
   protected _trie: Trie
   protected _storageTries: { [key: string]: Trie }
 
   protected readonly _prefixCodeHashes: boolean
   protected readonly _prefixStorageTrieKeys: boolean
-
-  // Non-null assertion necessary to inform TypeScript that these properties are set in the constructor through a helper function
-  originalStorageCache!: OriginalStorageCache
-  readonly _accountCacheSettings!: CacheSettings
-  readonly _storageCacheSettings!: CacheSettings
-  readonly _codeCacheSettings!: CacheSettings
 
   public readonly common: Common
 
@@ -116,10 +110,12 @@ export class DefaultStateManager implements StateManagerInterface {
 
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
+    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
+
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
     this._prefixStorageTrieKeys = opts.prefixStorageTrieKeys ?? false
 
-    Capabilities.initializeCaches(this, opts)
+    this._caches = opts.caches
   }
 
   /**
@@ -127,11 +123,9 @@ export class DefaultStateManager implements StateManagerInterface {
    * @param address - Address of the `account` to get
    */
   async getAccount(address: Address): Promise<Account | undefined> {
-    if (!this._accountCacheSettings.deactivate) {
-      const elem = this._accountCache!.get(address)
-      if (elem !== undefined) {
-        return elem.accountRLP !== undefined ? createAccountFromRLP(elem.accountRLP) : undefined
-      }
+    const elem = this._caches?.account?.get(address)
+    if (elem !== undefined) {
+      return elem.accountRLP !== undefined ? createAccountFromRLP(elem.accountRLP) : undefined
     }
 
     const rlp = await this._trie.get(address.bytes)
@@ -139,7 +133,7 @@ export class DefaultStateManager implements StateManagerInterface {
     if (this.DEBUG) {
       this._debug(`Get account ${address} from DB (${account ? 'exists' : 'non-existent'})`)
     }
-    this._accountCache?.put(address, account)
+    this._caches?.account?.put(address, account)
     return account
   }
 
@@ -158,7 +152,7 @@ export class DefaultStateManager implements StateManagerInterface {
         }`,
       )
     }
-    if (this._accountCacheSettings.deactivate) {
+    if (this._caches?.account === undefined) {
       const trie = this._trie
       if (account !== undefined) {
         await trie.put(address.bytes, account.serialize())
@@ -167,9 +161,9 @@ export class DefaultStateManager implements StateManagerInterface {
       }
     } else {
       if (account !== undefined) {
-        this._accountCache!.put(address, account)
+        this._caches.account?.put(address, account)
       } else {
-        this._accountCache!.del(address)
+        this._caches.account?.del(address)
       }
     }
   }
@@ -182,7 +176,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * @param accountFields - Object containing account fields and values to modify
    */
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    await Capabilities.modifyAccountFields(this, address, accountFields)
+    await modifyAccountFields(this, address, accountFields)
   }
 
   /**
@@ -194,15 +188,10 @@ export class DefaultStateManager implements StateManagerInterface {
       this._debug(`Delete account ${address}`)
     }
 
-    this._codeCache?.del(address)
+    this._caches?.deleteAccount(address)
 
-    if (this._accountCacheSettings.deactivate) {
+    if (this._caches?.account === undefined) {
       await this._trie.del(address.bytes)
-    } else {
-      this._accountCache!.del(address)
-    }
-    if (!this._storageCacheSettings.deactivate) {
-      this._storageCache?.clearStorage(address)
     }
   }
 
@@ -213,7 +202,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * @param value - The value of the `code`
    */
   async putCode(address: Address, value: Uint8Array): Promise<void> {
-    this._codeCache?.put(address, value)
+    this._caches?.code?.put(address, value)
     const codeHash = this.keccakFunction(value)
 
     if (this.DEBUG) {
@@ -233,11 +222,9 @@ export class DefaultStateManager implements StateManagerInterface {
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
   async getCode(address: Address): Promise<Uint8Array> {
-    if (!this._codeCacheSettings.deactivate) {
-      const elem = this._codeCache?.get(address)
-      if (elem !== undefined) {
-        return elem.code ?? new Uint8Array(0)
-      }
+    const elem = this._caches?.code?.get(address)
+    if (elem !== undefined) {
+      return elem.code ?? new Uint8Array(0)
     }
     const account = await this.getAccount(address)
     if (!account) {
@@ -251,9 +238,7 @@ export class DefaultStateManager implements StateManagerInterface {
       : account.codeHash
     const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
 
-    if (!this._codeCacheSettings.deactivate) {
-      this._codeCache!.put(address, code)
-    }
+    this._caches?.code?.put(address, code)
     return code
   }
 
@@ -333,12 +318,10 @@ export class DefaultStateManager implements StateManagerInterface {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
-    if (!this._storageCacheSettings.deactivate) {
-      const value = this._storageCache!.get(address, key)
-      if (value !== undefined) {
-        const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
-        return decoded
-      }
+    const cachedValue = this._caches?.storage?.get(address, key)
+    if (cachedValue !== undefined) {
+      const decoded = RLP.decode(cachedValue ?? new Uint8Array(0)) as Uint8Array
+      return decoded
     }
 
     const account = await this.getAccount(address)
@@ -347,9 +330,7 @@ export class DefaultStateManager implements StateManagerInterface {
     }
     const trie = this._getStorageTrie(address, account)
     const value = await trie.get(key)
-    if (!this._storageCacheSettings.deactivate) {
-      this._storageCache?.put(address, key, value ?? hexToBytes('0x80'))
-    }
+    this._caches?.storage?.put(address, key, value ?? hexToBytes('0x80'))
     const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
     return decoded
   }
@@ -431,12 +412,8 @@ export class DefaultStateManager implements StateManagerInterface {
     }
 
     value = unpadBytes(value)
-    if (!this._storageCacheSettings.deactivate) {
-      const encodedValue = RLP.encode(value)
-      this._storageCache!.put(address, key, encodedValue)
-    } else {
-      await this._writeContractStorage(address, account, key, value)
-    }
+    this._caches?.storage?.put(address, key, RLP.encode(value)) ??
+      (await this._writeContractStorage(address, account, key, value))
   }
 
   /**
@@ -448,7 +425,7 @@ export class DefaultStateManager implements StateManagerInterface {
     if (!account) {
       account = new Account()
     }
-    this._storageCache?.clearStorage(address)
+    this._caches?.storage?.clearStorage(address)
     await this._modifyContractStorage(address, account, (storageTrie, done) => {
       storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
       done()
@@ -462,7 +439,7 @@ export class DefaultStateManager implements StateManagerInterface {
    */
   async checkpoint(): Promise<void> {
     this._trie.checkpoint()
-    Capabilities.checkpointCaches(this)
+    this._caches?.checkpoint()
     this._checkpointCount++
   }
 
@@ -473,7 +450,7 @@ export class DefaultStateManager implements StateManagerInterface {
   async commit(): Promise<void> {
     // setup trie checkpointing
     await this._trie.commit()
-    Capabilities.commitCaches(this)
+    this._caches?.commit()
     this._checkpointCount--
 
     if (this._checkpointCount === 0) {
@@ -493,7 +470,7 @@ export class DefaultStateManager implements StateManagerInterface {
   async revert(): Promise<void> {
     // setup trie checkpointing
     await this._trie.revert()
-    Capabilities.revertCaches(this)
+    this._caches?.revert()
 
     this._storageTries = {}
 
@@ -509,56 +486,51 @@ export class DefaultStateManager implements StateManagerInterface {
    * Writes all cache items to the trie
    */
   async flush(): Promise<void> {
-    if (!this._codeCacheSettings.deactivate) {
-      const items = this._codeCache!.flush()
-      for (const item of items) {
-        const addr = createAddressFromString(`0x${item[0]}`)
+    const codeItems = this._caches?.code?.flush() ?? []
+    for (const item of codeItems) {
+      const addr = createAddressFromString(`0x${item[0]}`)
 
-        const code = item[1].code
-        if (code === undefined) {
-          continue
-        }
+      const code = item[1].code
+      if (code === undefined) {
+        continue
+      }
 
-        // update code in database
-        const codeHash = this.keccakFunction(code)
-        const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
-        await this._getCodeDB().put(key, code)
+      // update code in database
+      const codeHash = this.keccakFunction(code)
+      const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
+      await this._getCodeDB().put(key, code)
 
-        // update code root of associated account
-        if ((await this.getAccount(addr)) === undefined) {
-          await this.putAccount(addr, new Account())
-        }
-        await this.modifyAccountFields(addr, { codeHash })
+      // update code root of associated account
+      if ((await this.getAccount(addr)) === undefined) {
+        await this.putAccount(addr, new Account())
+      }
+      await this.modifyAccountFields(addr, { codeHash })
+    }
+    const storageItems = this._caches?.storage?.flush() ?? []
+    for (const item of storageItems) {
+      const address = createAddressFromString(`0x${item[0]}`)
+      const keyHex = item[1]
+      const keyBytes = unprefixedHexToBytes(keyHex)
+      const value = item[2]
+
+      const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
+      const account = await this.getAccount(address)
+      if (account) {
+        await this._writeContractStorage(address, account, keyBytes, decoded)
       }
     }
-    if (!this._storageCacheSettings.deactivate) {
-      const items = this._storageCache!.flush()
-      for (const item of items) {
-        const address = createAddressFromString(`0x${item[0]}`)
-        const keyHex = item[1]
-        const keyBytes = unprefixedHexToBytes(keyHex)
-        const value = item[2]
 
-        const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
-        const account = await this.getAccount(address)
-        if (account) {
-          await this._writeContractStorage(address, account, keyBytes, decoded)
-        }
-      }
-    }
-    if (!this._accountCacheSettings.deactivate) {
-      const items = this._accountCache!.flush()
-      for (const item of items) {
-        const addressHex = item[0]
-        const addressBytes = unprefixedHexToBytes(addressHex)
-        const elem = item[1]
-        if (elem.accountRLP === undefined) {
-          const trie = this._trie
-          await trie.del(addressBytes)
-        } else {
-          const trie = this._trie
-          await trie.put(addressBytes, elem.accountRLP)
-        }
+    const accountItems = this._caches?.account?.flush() ?? []
+    for (const item of accountItems) {
+      const addressHex = item[0]
+      const addressBytes = unprefixedHexToBytes(addressHex)
+      const elem = item[1]
+      if (elem.accountRLP === undefined) {
+        const trie = this._trie
+        await trie.del(addressBytes)
+      } else {
+        const trie = this._trie
+        await trie.put(addressBytes, elem.accountRLP)
       }
     }
   }
@@ -578,19 +550,21 @@ export class DefaultStateManager implements StateManagerInterface {
         codeHash: KECCAK256_NULL_S,
         nonce: '0x0',
         storageHash: KECCAK256_RLP_S,
-        accountProof: (await createProof(this._trie, address.bytes)).map((p) => bytesToHex(p)),
+        accountProof: (await createMerkleProof(this._trie, address.bytes)).map((p) =>
+          bytesToHex(p),
+        ),
         storageProof: [],
       }
       return returnValue
     }
-    const accountProof: PrefixedHexString[] = (await createProof(this._trie, address.bytes)).map(
-      (p) => bytesToHex(p),
-    )
+    const accountProof: PrefixedHexString[] = (
+      await createMerkleProof(this._trie, address.bytes)
+    ).map((p) => bytesToHex(p))
     const storageProof: StorageProof[] = []
     const storageTrie = this._getStorageTrie(address, account)
 
     for (const storageKey of storageSlots) {
-      const proof = (await createProof(storageTrie, storageKey)).map((p) => bytesToHex(p))
+      const proof = (await createMerkleProof(storageTrie, storageKey)).map((p) => bytesToHex(p))
       const value = bytesToHex(await this.getStorage(address, storageKey))
       const proofItem: StorageProof = {
         key: bytesToHex(storageKey),
@@ -666,7 +640,7 @@ export class DefaultStateManager implements StateManagerInterface {
     const trie = this._getStorageTrie(address)
     trie.root(hexToBytes(storageHash))
     for (let i = 0; i < storageProof.length; i++) {
-      await updateFromProof(
+      await updateTrieFromMerkleProof(
         trie,
         storageProof[i].proof.map((e) => hexToBytes(e)),
         safe,
@@ -683,7 +657,7 @@ export class DefaultStateManager implements StateManagerInterface {
   async addProofData(proof: Proof | Proof[], safe: boolean = false) {
     if (Array.isArray(proof)) {
       for (let i = 0; i < proof.length; i++) {
-        await updateFromProof(
+        await updateTrieFromMerkleProof(
           this._trie,
           proof[i].accountProof.map((e) => hexToBytes(e)),
           safe,
@@ -805,14 +779,8 @@ export class DefaultStateManager implements StateManagerInterface {
     }
 
     this._trie.root(stateRoot)
-    if (this._accountCache !== undefined && clearCache) {
-      this._accountCache.clear()
-    }
-    if (this._storageCache !== undefined && clearCache) {
-      this._storageCache.clear()
-    }
-    if (this._codeCache !== undefined && clearCache) {
-      this._codeCache!.clear()
+    if (clearCache) {
+      this._caches?.clear()
     }
     this._storageTries = {}
   }
@@ -952,16 +920,16 @@ export class DefaultStateManager implements StateManagerInterface {
     const trie = this._trie.shallowCopy(false, { cacheSize })
     const prefixCodeHashes = this._prefixCodeHashes
     const prefixStorageTrieKeys = this._prefixStorageTrieKeys
-    let accountCacheOpts = { ...this._accountCacheSettings }
-    if (downlevelCaches && !this._accountCacheSettings.deactivate) {
+    let accountCacheOpts = { ...this._caches?.settings.account }
+    if (downlevelCaches && this._caches?.settings.account.size !== 0) {
       accountCacheOpts = { ...accountCacheOpts, type: CacheType.ORDERED_MAP }
     }
-    let storageCacheOpts = { ...this._storageCacheSettings }
-    if (downlevelCaches && !this._storageCacheSettings.deactivate) {
+    let storageCacheOpts = { ...this._caches?.settings.storage }
+    if (downlevelCaches && this._caches?.settings.storage.size !== 0) {
       storageCacheOpts = { ...storageCacheOpts, type: CacheType.ORDERED_MAP }
     }
-    let codeCacheOpts = { ...this._codeCacheSettings }
-    if (!this._codeCacheSettings.deactivate) {
+    let codeCacheOpts = { ...this._caches?.settings.code }
+    if (this._caches?.settings.code.size !== 0) {
       codeCacheOpts = { ...codeCacheOpts, type: CacheType.ORDERED_MAP }
     }
 
@@ -970,9 +938,11 @@ export class DefaultStateManager implements StateManagerInterface {
       trie,
       prefixStorageTrieKeys,
       prefixCodeHashes,
-      accountCacheOpts,
-      storageCacheOpts,
-      codeCacheOpts,
+      caches: new Caches({
+        account: accountCacheOpts,
+        code: codeCacheOpts,
+        storage: storageCacheOpts,
+      }),
     })
   }
 
@@ -980,9 +950,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * Clears all underlying caches
    */
   clearCaches() {
-    this._accountCache?.clear()
-    this._storageCache?.clear()
-    this._codeCache?.clear()
+    this._caches?.clear()
   }
 
   /**

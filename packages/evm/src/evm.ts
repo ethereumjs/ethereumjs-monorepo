@@ -42,6 +42,7 @@ import type {
   Blockchain,
   CustomOpcode,
   EVMBLSInterface,
+  EVMBN254Interface,
   EVMEvents,
   EVMInterface,
   EVMOpts,
@@ -49,7 +50,6 @@ import type {
   EVMRunCallOpts,
   EVMRunCodeOpts,
   ExecResult,
-  bn128,
 } from './types.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 
@@ -143,7 +143,7 @@ export class EVM implements EVMInterface {
 
   protected readonly _emit: (topic: string, data: any) => Promise<void>
 
-  private _bn128: bn128
+  private _bn254: EVMBN254Interface
 
   /**
    *
@@ -156,7 +156,7 @@ export class EVM implements EVMInterface {
    * @param opts The EVM options
    * @param bn128 Initialized bn128 WASM object for precompile usage (internal)
    */
-  constructor(opts: EVMOpts, bn128: bn128) {
+  constructor(opts: EVMOpts) {
     this.common = opts.common!
     this.blockchain = opts.blockchain!
     this.stateManager = opts.stateManager!
@@ -172,18 +172,16 @@ export class EVM implements EVMInterface {
       }
     }
 
-    this._bn128 = bn128
     this.events = new AsyncEventEmitter()
     this._optsCached = opts
 
     // Supported EIPs
     const supportedEIPs = [
-      663, 1153, 1153, 1559, 1559, 2537, 2537, 2565, 2565, 2718, 2718, 2929, 2929, 2930, 2930, 2935,
-      2935, 3074, 3074, 3198, 3198, 3529, 3529, 3540, 3540, 3541, 3541, 3607, 3607, 3651, 3651,
-      3670, 3670, 3855, 3855, 3860, 3860, 4200, 4399, 4399, 4750, 4788, 4788, 4844, 4844, 4895,
-      4895, 5133, 5133, 5450, 5656, 5656, 6110, 6110, 6206, 6780, 6780, 6800, 6800, 7002, 7002,
-      7069, 7251, 7251, 7480, 7516, 7516, 7620, 7685, 7685, 7692, 7698, 7702, 7702, 7709, 7709,
+      663, 1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
+      3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780, 6800,
+      7002, 7069, 7251, 7480, 7516, 7620, 7685, 7692, 7698, 7702, 7709,
     ]
+
     for (const eip of this.common.eips()) {
       if (!supportedEIPs.includes(eip)) {
         throw new Error(`EIP-${eip} is not supported by the EVM`)
@@ -215,10 +213,12 @@ export class EVM implements EVMInterface {
     this.getActiveOpcodes()
     this._precompiles = getActivePrecompiles(this.common, this._customPrecompiles)
 
+    // Precompile crypto libraries
     if (this.common.isActivatedEIP(2537)) {
       this._bls = opts.bls ?? new NobleBLS()
       this._bls.init?.()
     }
+    this._bn254 = opts.bn254!
 
     this._emit = async (topic: string, data: any): Promise<void> => {
       return new Promise((resolve) => this.events.emit(topic as keyof EVMEvents, data, resolve))
@@ -247,7 +247,7 @@ export class EVM implements EVMInterface {
 
   protected async _executeCall(message: MessageWithTo): Promise<EVMResult> {
     let gasLimit = message.gasLimit
-    const fromAddress = message.authcallOrigin ?? message.caller
+    const fromAddress = message.caller
 
     if (this.common.isActivatedEIP(6800)) {
       const sendsValue = message.value !== BIGINT_0
@@ -393,7 +393,7 @@ export class EVM implements EVMInterface {
 
   protected async _executeCreate(message: Message): Promise<EVMResult> {
     let gasLimit = message.gasLimit
-    const fromAddress = message.authcallOrigin ?? message.caller
+    const fromAddress = message.caller
 
     if (this.common.isActivatedEIP(6800)) {
       if (message.depth === 0) {
@@ -1038,7 +1038,7 @@ export class EVM implements EVMInterface {
     if (account.balance < BIGINT_0) {
       throw new EvmError(ERROR.INSUFFICIENT_BALANCE)
     }
-    const result = this.journal.putAccount(message.authcallOrigin ?? message.caller, account)
+    const result = this.journal.putAccount(message.caller, account)
     if (this.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
     }
@@ -1085,7 +1085,7 @@ export class EVM implements EVMInterface {
       stateManager: this.stateManager.shallowCopy(),
     }
     ;(opts.stateManager as any).common = common
-    return new EVM(opts, this._bn128)
+    return new EVM(opts)
   }
 
   public getPerformanceLogs() {
@@ -1149,7 +1149,6 @@ export function defaultBlock(): Block {
   return {
     header: {
       number: BIGINT_0,
-      cliqueSigner: () => createZeroAddress(),
       coinbase: createZeroAddress(),
       timestamp: BIGINT_0,
       difficulty: BIGINT_0,

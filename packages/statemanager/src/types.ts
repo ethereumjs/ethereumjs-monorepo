@@ -1,52 +1,9 @@
 import { type PrefixedHexString, utf8ToBytes } from '@ethereumjs/util'
 
-import type { AccessWitness } from './index.js'
-import type { CacheType, Common } from '@ethereumjs/common'
+import type { AccessWitness, Caches } from './index.js'
+import type { Common } from '@ethereumjs/common'
 import type { Trie } from '@ethereumjs/trie'
 import type { VerkleCrypto } from '@ethereumjs/util'
-
-type CacheOptions = {
-  /**
-   * Allows for cache deactivation
-   *
-   * Depending on the use case and underlying datastore (and eventual concurrent cache
-   * mechanisms there), usage with or without cache can be faster
-   *
-   * Default: false
-   */
-  deactivate?: boolean
-
-  /**
-   * Cache type to use.
-   *
-   * Available options:
-   *
-   * ORDERED_MAP: Cache with no fixed upper bound and dynamic allocation,
-   * use for dynamic setups like testing or similar.
-   *
-   * LRU: LRU cache with pre-allocation of memory and a fixed size.
-   * Use for larger and more persistent caches.
-   */
-  type?: CacheType
-
-  /**
-   * Size of the cache (only for LRU cache)
-   *
-   * Default: 100000 (account cache) / 20000 (storage cache) / 20000 (code cache)
-   *
-   * Note: the cache/trie interplay mechanism is designed in a way that
-   * the theoretical number of max modified accounts between two flush operations
-   * should be smaller than the cache size, otherwise the cache will "forget" the
-   * old modifications resulting in an incomplete set of trie-flushed accounts.
-   */
-  size?: number
-}
-
-export type CacheSettings = {
-  deactivate: boolean
-  type: CacheType
-  size: number
-}
 
 /**
  * Basic state manager options (not to be used directly)
@@ -56,15 +13,6 @@ interface BaseStateManagerOpts {
    * The common to use
    */
   common?: Common
-}
-
-/**
- * Cache state manager options (not to be used directly)
- */
-export interface CacheStateManagerOpts {
-  accountCacheOpts?: CacheOptions
-  storageCacheOpts?: CacheOptions
-  codeCacheOpts?: CacheOptions
 }
 
 /**
@@ -82,7 +30,7 @@ export interface RPCStateManagerOpts extends BaseStateManagerOpts {
 /**
  * Options for constructing a {@link StateManager}.
  */
-export interface DefaultStateManagerOpts extends BaseStateManagerOpts, CacheStateManagerOpts {
+export interface DefaultStateManagerOpts extends BaseStateManagerOpts {
   /**
    * A {@link Trie} instance
    */
@@ -106,17 +54,25 @@ export interface DefaultStateManagerOpts extends BaseStateManagerOpts, CacheStat
    * Default: false (for backwards compatibility reasons)
    */
   prefixStorageTrieKeys?: boolean
+
+  /**
+   * Options to enable and configure the use of a cache account, code and storage
+   * This can be useful for speeding up reads, especially when the trie is large.
+   * The cache is only used for reading from the trie and is not used for writing to the trie.
+   *
+   * Default: false
+   */
+  caches?: Caches
 }
 
 /**
  * Options dictionary.
  */
-export interface StatelessVerkleStateManagerOpts
-  extends BaseStateManagerOpts,
-    CacheStateManagerOpts {
+export interface StatelessVerkleStateManagerOpts extends BaseStateManagerOpts {
   accesses?: AccessWitness
   verkleCrypto: VerkleCrypto
   initialStateRoot?: Uint8Array
+  caches?: Caches
 }
 
 export interface VerkleState {
@@ -136,3 +92,19 @@ export interface EncodedVerkleProof {
  * misbehaviour in the underlying trie library.
  */
 export const CODEHASH_PREFIX = utf8ToBytes('c')
+
+export type StorageProof = {
+  key: PrefixedHexString
+  proof: PrefixedHexString[]
+  value: PrefixedHexString
+}
+
+export type Proof = {
+  address: PrefixedHexString
+  balance: PrefixedHexString
+  codeHash: PrefixedHexString
+  nonce: PrefixedHexString
+  storageHash: PrefixedHexString
+  accountProof: PrefixedHexString[]
+  storageProof: StorageProof[]
+}

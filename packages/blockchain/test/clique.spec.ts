@@ -1,4 +1,8 @@
-import { createBlock } from '@ethereumjs/block'
+import {
+  cliqueEpochTransitionSigners,
+  createBlock,
+  createSealedCliqueBlock,
+} from '@ethereumjs/block'
 import {
   Common,
   ConsensusAlgorithm,
@@ -155,7 +159,7 @@ function getBlock(
   // set signer
   const cliqueSigner = signer.privateKey
 
-  return createBlock(blockData, { common, freeze: false, cliqueSigner })
+  return createSealedCliqueBlock(blockData, cliqueSigner, { common })
 }
 
 const addNextBlockReorg = async (
@@ -206,7 +210,7 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(head.header.number + BigInt(1)),
-      head.header.cliqueEpochTransitionSigners(),
+      cliqueEpochTransitionSigners(head.header),
       'correct genesis signers',
     )
   })
@@ -224,10 +228,10 @@ describe('Clique: Initialization', () => {
       unauthorizedSigner.toBytes(),
       new Uint8Array(65),
     )
-    const block = createBlock(
-      { header: { number, extraData } },
-      { common: COMMON, cliqueSigner: A.privateKey },
-    )
+    const block = createSealedCliqueBlock({ header: { number, extraData } }, A.privateKey, {
+      common: COMMON,
+      freeze: false,
+    })
     try {
       await blockchain.putBlock(block)
       assert.fail('should fail')
@@ -271,7 +275,7 @@ describe('Clique: Initialization', () => {
 
     difficulty = BigInt(1)
     const cliqueSigner = A.privateKey
-    block = createBlock(
+    block = createSealedCliqueBlock(
       {
         header: {
           number,
@@ -281,7 +285,8 @@ describe('Clique: Initialization', () => {
           timestamp: parentHeader.timestamp + BigInt(10000),
         },
       },
-      { common: COMMON, cliqueSigner },
+      cliqueSigner,
+      { common: COMMON },
     )
 
     try {

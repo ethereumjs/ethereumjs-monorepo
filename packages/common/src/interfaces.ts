@@ -49,46 +49,6 @@ export type Proof = {
   storageProof: StorageProof[]
 }
 
-/*
- * Access List types
- */
-
-export type AccessListItem = {
-  address: PrefixedHexString
-  storageKeys: PrefixedHexString[]
-}
-
-/*
- * An Access List as a tuple of [address: Uint8Array, storageKeys: Uint8Array[]]
- */
-export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
-export type AccessListBytes = AccessListBytesItem[]
-export type AccessList = AccessListItem[]
-
-/**
- * Authorization list types
- */
-export type AuthorizationListItem = {
-  chainId: PrefixedHexString
-  address: PrefixedHexString
-  nonce: PrefixedHexString[]
-  yParity: PrefixedHexString
-  r: PrefixedHexString
-  s: PrefixedHexString
-}
-
-// Tuple of [chain_id, address, [nonce], y_parity, r, s]
-export type AuthorizationListBytesItem = [
-  Uint8Array,
-  Uint8Array,
-  Uint8Array[],
-  Uint8Array,
-  Uint8Array,
-  Uint8Array,
-]
-export type AuthorizationListBytes = AuthorizationListBytesItem[]
-export type AuthorizationList = AuthorizationListItem[]
-
 /**
  * Verkle related
  *
@@ -209,35 +169,4 @@ export interface StateManagerInterface {
    */
   clearCaches(): void
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
-
-  /*
-   * Cache properties
-   */
-  _accountCache?: Cache
-  _storageCache?: Cache
-  _codeCache?: Cache
-
-  _accountCacheSettings?: CacheSettings
-  _storageCacheSettings?: CacheSettings
-  _codeCacheSettings?: CacheSettings
-}
-
-/**
- * Cache related
- */
-export enum CacheType {
-  LRU = 'lru',
-  ORDERED_MAP = 'ordered_map',
-}
-
-export type CacheSettings = {
-  deactivate: boolean
-  type: CacheType
-  size: number
-}
-
-interface Cache {
-  checkpoint(): void
-  commit(): void
-  revert(): void
 }

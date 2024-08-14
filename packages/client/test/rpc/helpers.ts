@@ -1,4 +1,4 @@
-import { createHeader } from '@ethereumjs/block'
+import { createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import {
   Common,
@@ -128,7 +128,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
 
   chain.getTd = async (_hash: Uint8Array, _num: bigint) => BigInt(1000)
   if ((chain as any)._headers !== undefined) {
-    ;(chain as any)._headers.latest = createHeader(
+    ;(chain as any)._headers.latest = createBlockHeader(
       { withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined },
       { common },
     )

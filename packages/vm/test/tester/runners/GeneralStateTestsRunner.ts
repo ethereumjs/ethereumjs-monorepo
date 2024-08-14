@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { type InterpreterStep } from '@ethereumjs/evm'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { Caches, DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
@@ -81,12 +81,14 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const blockchain = await createBlockchain({ genesisBlock, common })
   const state = new Trie({ useKeyHashing: true, common })
   const stateManager = new DefaultStateManager({
+    caches: new Caches(),
     trie: state,
     common,
   })
 
   const evmOpts = {
     bls: options.bls,
+    bn254: options.bn254,
   }
   const vm = await VM.create({
     stateManager,

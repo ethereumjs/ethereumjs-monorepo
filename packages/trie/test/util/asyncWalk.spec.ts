@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 import {
   LeafNode,
   Trie,
-  createProof,
+  createMerkleProof,
   createTrieFromProof,
   verifyTrieProof,
 } from '../../src/index.js'
@@ -84,7 +84,7 @@ describe('walk a sparse trie', async () => {
   })
   // Generate a proof for inputs[0]
   const proofKey = inputs[0][0]
-  const proof = await createProof(trie, proofKey)
+  const proof = await createMerkleProof(trie, proofKey)
   assert.ok(await verifyTrieProof(proofKey, proof))
 
   // Build a sparse trie from the proof

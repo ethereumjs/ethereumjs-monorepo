@@ -356,7 +356,7 @@ export class ECIES {
     this.parseAckPlain(data.subarray(2), data.subarray(0, 2))
   }
 
-  createHeader(size: number): Uint8Array | undefined {
+  createBlockHeader(size: number): Uint8Array | undefined {
     const bufSize = zfill(intToBytes(size), 3)
     const headerData = RLP.encode([0, 0]) // [capability-id, context-id] (currently unused in spec)
     let header = concatBytes(bufSize, headerData)

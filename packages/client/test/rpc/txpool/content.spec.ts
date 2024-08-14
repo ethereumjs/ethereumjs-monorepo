@@ -1,4 +1,4 @@
-import { createBlock, createHeader } from '@ethereumjs/block'
+import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
@@ -53,7 +53,7 @@ describe(method, () => {
     const headBlock = await service.chain.getCanonicalHeadBlock()
     const londonBlock = createBlock(
       {
-        header: createHeader(
+        header: createBlockHeader(
           {
             baseFeePerGas: 1000000000n,
             number: 2n,

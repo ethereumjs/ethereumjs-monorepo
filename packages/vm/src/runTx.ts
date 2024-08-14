@@ -1,4 +1,4 @@
-import { createBlock } from '@ethereumjs/block'
+import { cliqueSigner, createBlock } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
@@ -37,10 +37,12 @@ import type {
 } from './types.js'
 import type { VM } from './vm.js'
 import type { Block } from '@ethereumjs/block'
-import type { AccessList, AccessListItem, Common } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import type { EVM } from '@ethereumjs/evm'
 import type {
+  AccessList,
   AccessListEIP2930Transaction,
+  AccessListItem,
   EIP7702CompatibleTx,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
@@ -587,7 +589,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Update miner's balance
   let miner
   if (vm.common.consensusType() === ConsensusType.ProofOfAuthority) {
-    miner = block.header.cliqueSigner()
+    miner = cliqueSigner(block.header)
   } else {
     miner = block.header.coinbase
   }

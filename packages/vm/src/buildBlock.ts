@@ -1,5 +1,6 @@
 import {
   createBlock,
+  createSealedCliqueBlock,
   genRequestsTrieRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
@@ -363,7 +364,13 @@ export class BlockBuilder {
       requests,
     }
 
-    const block = createBlock(blockData, blockOpts)
+    let block
+    const cs = this.blockOpts.cliqueSigner
+    if (cs !== undefined) {
+      block = createSealedCliqueBlock(blockData, cs, this.blockOpts)
+    } else {
+      block = createBlock(blockData, blockOpts)
+    }
 
     if (this.blockOpts.putBlockIntoBlockchain === true) {
       await this.vm.blockchain.putBlock(block)

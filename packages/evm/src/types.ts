@@ -191,7 +191,6 @@ export interface EVMOpts {
    * - [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Save historical block hashes in state (`experimental`)
    * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
    * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
-   * - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes
    * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - Base fee Opcode
    * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
    * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`outdated`)
@@ -284,7 +283,7 @@ export interface EVMOpts {
   /**
    * For the EIP-2935 BLS precompiles, the native JS `@noble/curves`
    * https://github.com/paulmillr/noble-curves BLS12-381 curve implementation
-   * is used (see `noble.ts` file in the `precompiles` folder).
+   * is used (see `noble.ts` file in the `precompiles/bls12_381/` folder).
    *
    * To use an alternative implementation this option can be used by passing
    * in a wrapper implementation integrating the desired library and adhering
@@ -302,6 +301,29 @@ export interface EVMOpts {
    * ```
    */
   bls?: EVMBLSInterface
+
+  /**
+   * For the EIP-196/EIP-197 BN254 (alt_BN128) EC precompiles, the native JS `@noble/curves`
+   * https://github.com/paulmillr/noble-curves BN254 curve implementation
+   * is used (see `noble.ts` file in the `precompiles/bn254/` folder).
+   *
+   * To use an alternative implementation this option can be used by passing
+   * in a wrapper implementation integrating the desired library and adhering
+   * to the `EVMBN254Interface` specification.
+   *
+   * An interface for a WASM wrapper https://github.com/ethereumjs/rustbn.js around the
+   * Parity fork of the Zcash bn pairing cryptography library is shipped with this library
+   * which can be used as follows (with `rustbn.js` being explicitly added to the set of
+   * dependencies):
+   *
+   * ```ts
+   * import { initRustBN } from 'rustbn-wasm'
+   *
+   * const bn254 = await initRustBN()
+   * const evm = await createEVM({ bn254: new RustBN254(bn254) })
+   * ```
+   */
+  bn254?: EVMBN254Interface
 
   /*
    * The EVM comes with a basic dependency-minimized `SimpleStateManager` implementation
@@ -323,6 +345,13 @@ export interface EVMOpts {
    *
    */
   profiler?: EVMProfilerOpts
+
+  /**
+   * When running the EVM with PoA consensus, the `cliqueSigner` function from the `@ethereumjs/block` class
+   * must be provided along with a `BlockHeader` so that the coinbase can be correctly retrieved when the
+   * `Interpreter.getBlockCoinbase` method is called.
+   */
+  cliqueSigner?: (header: Block['header']) => Address
 }
 
 /**
@@ -382,6 +411,10 @@ export interface ExecResult {
   blobGasUsed?: bigint
 }
 
+/**
+ * High level wrapper for BLS libraries used
+ * for the BLS precompiles
+ */
 export type EVMBLSInterface = {
   init?(): void
   addG1(input: Uint8Array): Uint8Array
@@ -396,6 +429,16 @@ export type EVMBLSInterface = {
 }
 
 /**
+ * High level wrapper for BN254 (alt_BN128) libraries
+ * used for the BN254 (alt_BN128) EC precompiles
+ */
+export type EVMBN254Interface = {
+  add: (input: Uint8Array) => Uint8Array
+  mul: (input: Uint8Array) => Uint8Array
+  pairing: (input: Uint8Array) => Uint8Array
+}
+
+/**
  * Log that the contract emits.
  */
 export type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
@@ -403,7 +446,6 @@ export type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 export type Block = {
   header: {
     number: bigint
-    cliqueSigner(): Address
     coinbase: Address
     timestamp: bigint
     difficulty: bigint
@@ -444,15 +486,6 @@ export class DefaultBlockchain implements Blockchain {
   shallowCopy() {
     return this
   }
-}
-
-/**
- * The BN128 curve package (`rustbn-wasm`)
- */
-export interface bn128 {
-  ec_pairing: (input_str: string) => PrefixedHexString
-  ec_add: (input_str: string) => PrefixedHexString
-  ec_mul: (input_hex: string) => PrefixedHexString
 }
 
 // EOF type which holds the execution-related data for EOF
