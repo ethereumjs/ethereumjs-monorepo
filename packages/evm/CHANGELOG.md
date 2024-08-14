@@ -25,7 +25,7 @@ const evm = await EVM.create({ common, bls })
 
 ### Verkle Dependency Decoupling
 
-We have relatively light-heartedly added a new `@ethereumjs/verkle` main dependency to the VM/EVM stack in the `v7.2.1` release, which added an additional burden to the bundle size by several 100 KB and additionally draw in non-necessary WASM code. Coupling with Verkle has been refactored in PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462) and the direct dependency has been removed again.
+We have relatively light-heartedly added a new `@ethereumjs/verkle` main dependency to the VM/EVM stack in the `v7.2.1` release, which added an additional burden to the bundle size by several hundred KB and additionally draws in unnecessary WASM code. Coupling with Verkle has been refactored in PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462) and the direct dependency has been removed again.
 
 An update to this release is therefore strongly recommended even if other fixes or features are not that relevant for you right now.
 
@@ -2066,7 +2066,7 @@ vm.runTx(
       // Handle errors appropriately
     }
     // Do something with the result
-  }
+  },
 )
 ```
 
