@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { RLP } from '@ethereumjs/rlp'
 import { concatBytes } from 'ethereum-cryptography/utils'
 
@@ -101,22 +102,6 @@ export class DepositRequest extends CLRequest<CLRequestType.Deposit> {
     super(CLRequestType.Deposit)
   }
 
-  public static fromRequestData(depositData: DepositRequestData): DepositRequest {
-    const { pubkey, withdrawalCredentials, amount, signature, index } = depositData
-    return new DepositRequest(pubkey, withdrawalCredentials, amount, signature, index)
-  }
-
-  public static fromJSON(jsonData: DepositRequestV1): DepositRequest {
-    const { pubkey, withdrawalCredentials, amount, signature, index } = jsonData
-    return this.fromRequestData({
-      pubkey: hexToBytes(pubkey),
-      withdrawalCredentials: hexToBytes(withdrawalCredentials),
-      amount: hexToBigInt(amount),
-      signature: hexToBytes(signature),
-      index: hexToBigInt(index),
-    })
-  }
-
   serialize() {
     const indexBytes = this.index === BIGINT_0 ? new Uint8Array() : bigIntToBytes(this.index)
 
@@ -148,7 +133,7 @@ export class DepositRequest extends CLRequest<CLRequestType.Deposit> {
     const [pubkey, withdrawalCredentials, amount, signature, index] = RLP.decode(
       bytes.slice(1),
     ) as [Uint8Array, Uint8Array, Uint8Array, Uint8Array, Uint8Array]
-    return this.fromRequestData({
+    return createDepositRequest({
       pubkey,
       withdrawalCredentials,
       amount: bytesToBigInt(amount),
@@ -277,4 +262,37 @@ export class CLRequestFactory {
         throw Error(`Invalid request type=${bytes[0]}`)
     }
   }
+}
+
+export function createDepositRequest(depositData: DepositRequestData): DepositRequest {
+  const { pubkey, withdrawalCredentials, amount, signature, index } = depositData
+  return new DepositRequest(pubkey, withdrawalCredentials, amount, signature, index)
+}
+
+export function createDepositRequestFromJSON(jsonData: DepositRequestV1): DepositRequest {
+  const { pubkey, withdrawalCredentials, amount, signature, index } = jsonData
+  return createDepositRequest({
+    pubkey: hexToBytes(pubkey),
+    withdrawalCredentials: hexToBytes(withdrawalCredentials),
+    amount: hexToBigInt(amount),
+    signature: hexToBytes(signature),
+    index: hexToBigInt(index),
+  })
+}
+
+export function createDepositRequestFromBytes(bytes: Uint8Array): DepositRequest {
+  const [pubkey, withdrawalCredentials, amount, signature, index] = RLP.decode(bytes.slice(1)) as [
+    Uint8Array,
+    Uint8Array,
+    Uint8Array,
+    Uint8Array,
+    Uint8Array,
+  ]
+  return createDepositRequest({
+    pubkey,
+    withdrawalCredentials,
+    amount: bytesToBigInt(amount),
+    signature,
+    index: bytesToBigInt(index),
+  })
 }
