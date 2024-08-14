@@ -8,6 +8,7 @@ import {
   hashToNumberKey,
   headerKey,
   numberToHashKey,
+  optimisticNumberToHashKey,
   tdKey,
 } from './constants.js'
 
@@ -25,6 +26,7 @@ export enum DBTarget {
   CliqueSignerStates,
   CliqueVotes,
   CliqueBlockSigners,
+  OptimisticNumberToHash,
 }
 
 /**
@@ -86,6 +88,11 @@ export class DBOp {
       case DBTarget.NumberToHash: {
         this.baseDBOp.key = numberToHashKey(key!.blockNumber!)
         this.cacheString = 'numberToHash'
+        break
+      }
+      case DBTarget.OptimisticNumberToHash: {
+        this.baseDBOp.key = optimisticNumberToHashKey(key!.blockNumber!)
+        this.cacheString = 'optimisticNumberToHash'
         break
       }
       case DBTarget.TotalDifficulty: {

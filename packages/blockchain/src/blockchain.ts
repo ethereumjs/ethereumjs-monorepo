@@ -362,13 +362,13 @@ export class Blockchain implements BlockchainInterface {
         if (isGenesis) {
           if (equalsBytes(this.genesisBlock.hash(), block.hash())) {
             // Try to re-put the existing genesis block, accept this
+            optimistic = false
             return
           }
           throw new Error(
             'Cannot put a different genesis block than current blockchain genesis: create a new Blockchain',
           )
           // genesis block is not optimistic
-          optimistic = false
         }
 
         if (block.common.chainId() !== this.common.chainId()) {
@@ -410,10 +410,10 @@ export class Blockchain implements BlockchainInterface {
         if (optimistic) {
           dbOps = dbOps.concat(DBSetBlockOrHeader(item))
           dbOps.push(DBSetHashToNumber(blockHash, blockNumber))
+          dbOps.push(DBOp.set(DBTarget.OptimisticNumberToHash, blockHash, { blockNumber }))
           await this.dbManager.batch(dbOps)
         } else {
           const currentTd = { header: BIGINT_0, block: BIGINT_0 }
-
           // set total difficulty in the current context scope
           if (this._headHeaderHash) {
             currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)

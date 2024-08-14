@@ -84,7 +84,10 @@ export class DBManager {
    * Fetches a block (header and body) given a block id,
    * which can be either its hash or its number.
    */
-  async getBlock(blockId: Uint8Array | bigint | number): Promise<Block | undefined> {
+  async getBlock(
+    blockId: Uint8Array | bigint | number,
+    optimistic: boolean = false,
+  ): Promise<Block | undefined> {
     if (typeof blockId === 'number' && Number.isInteger(blockId)) {
       blockId = BigInt(blockId)
     }
@@ -97,7 +100,13 @@ export class DBManager {
       number = await this.hashToNumber(blockId)
     } else if (typeof blockId === 'bigint') {
       number = blockId
-      hash = await this.numberToHash(blockId)
+      if (optimistic) {
+        hash = await this.optimisticNumberToHash(blockId)
+      }
+      // hash will be undefined if it no optimistic lookup was done or if that was not successful
+      if (hash === undefined) {
+        hash = await this.numberToHash(blockId)
+      }
     } else {
       throw new Error('Unknown blockId type')
     }
@@ -187,6 +196,11 @@ export class DBManager {
    */
   async numberToHash(blockNumber: bigint): Promise<Uint8Array | undefined> {
     const value = await this.get(DBTarget.NumberToHash, { blockNumber })
+    return value
+  }
+
+  async optimisticNumberToHash(blockNumber: bigint): Promise<Uint8Array | undefined> {
+    const value = await this.get(DBTarget.OptimisticNumberToHash, { blockNumber })
     return value
   }
 
