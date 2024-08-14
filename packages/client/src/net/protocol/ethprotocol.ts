@@ -1,4 +1,4 @@
-import { createBlockFromValuesArray, createBlockHeaderFromValuesArray } from '@ethereumjs/block'
+import { createBlockFromBytesArray, createBlockHeaderFromValuesArray } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BlobEIP4844Transaction,
@@ -200,7 +200,7 @@ export class EthProtocol extends Protocol {
       code: 0x07,
       encode: ([block, td]: [Block, bigint]) => [block.raw(), bigIntToUnpaddedBytes(td)],
       decode: ([block, td]: [BlockBytes, Uint8Array]) => [
-        createBlockFromValuesArray(block, {
+        createBlockFromBytesArray(block, {
           common: this.config.chainCommon,
           setHardfork: true,
         }),

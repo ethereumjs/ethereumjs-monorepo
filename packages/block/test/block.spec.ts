@@ -19,7 +19,7 @@ import {
   createBlock,
   createBlockFromRLPSerializedBlock,
   createBlockFromRPC,
-  createBlockFromValuesArray,
+  createBlockFromBytesArray,
   paramsBlock,
 } from '../src/index.js'
 
@@ -84,10 +84,10 @@ describe('[Block]: block functions', () => {
 
     const valuesArray = <BlockBytes>[headerArray, [], []]
 
-    block = createBlockFromValuesArray(valuesArray, { common })
+    block = createBlockFromBytesArray(valuesArray, { common })
     assert.ok(Object.isFrozen(block), 'block should be frozen by default')
 
-    block = createBlockFromValuesArray(valuesArray, { common, freeze: false })
+    block = createBlockFromBytesArray(valuesArray, { common, freeze: false })
     assert.ok(
       !Object.isFrozen(block),
       'block should not be frozen when freeze deactivated in options',
@@ -356,7 +356,7 @@ describe('[Block]: block functions', () => {
     )
     assert.throws(
       () => {
-        createBlockFromValuesArray([1, 2, 3, 4] as any)
+        createBlockFromBytesArray([1, 2, 3, 4] as any)
       },
       undefined,
       undefined,
@@ -372,7 +372,7 @@ describe('[Block]: block functions', () => {
         common,
       },
     )
-    const createBlockFromRaw = createBlockFromValuesArray(block.raw(), { common })
+    const createBlockFromRaw = createBlockFromBytesArray(block.raw(), { common })
     assert.ok(equalsBytes(block.hash(), createBlockFromRaw.hash()))
   })
 
@@ -397,7 +397,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Dao })
     assert.throws(
       function () {
-        createBlockFromValuesArray(blockData as BlockBytes, { common })
+        createBlockFromBytesArray(blockData as BlockBytes, { common })
       },
       /extraData should be 'dao-hard-fork/,
       undefined,
@@ -408,7 +408,7 @@ describe('[Block]: block functions', () => {
     blockData[0][12] = hexToBytes('0x64616f2d686172642d666f726b')
 
     assert.doesNotThrow(function () {
-      createBlockFromValuesArray(blockData as BlockBytes, { common })
+      createBlockFromBytesArray(blockData as BlockBytes, { common })
     }, 'should not throw on DAO HF block with correct extra data')
   })
 

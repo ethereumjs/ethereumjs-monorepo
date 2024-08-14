@@ -1,4 +1,4 @@
-import { createBlockFromValuesArray, createBlockHeaderFromValuesArray } from '@ethereumjs/block'
+import { createBlockFromBytesArray, createBlockHeaderFromValuesArray } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import * as devp2p from '@ethereumjs/devp2p'
 import { bytesToHex, bytesToInt, hexToBytes, intToBytes, randomBytes } from '@ethereumjs/util'
@@ -132,7 +132,7 @@ rlpx.events.on('peer:added', (peer) => {
         const header2 = requests.bodies.shift()
         const txs = payload[2][0][0]
         const uncleHeaders = payload[2][0][1]
-        const block = createBlockFromValuesArray([header2.raw(), txs, uncleHeaders], { common })
+        const block = createBlockFromBytesArray([header2.raw(), txs, uncleHeaders], { common })
         const isValid = await isValidBlock(block)
         let isValidPayload = false
         if (isValid) {

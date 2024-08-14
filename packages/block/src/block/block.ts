@@ -29,7 +29,7 @@ import {
   type createBlockFromJsonRpcProvider,
   type createBlockFromRLPSerializedBlock,
   type createBlockFromRPC,
-  type createBlockFromValuesArray,
+  type createBlockFromBytesArray,
 } from '../index.js'
 /* eslint-enable */
 import type { BlockBytes, BlockOptions, ExecutionPayload, JsonBlock } from '../types.js'
@@ -57,7 +57,7 @@ import type {
  * (separate from the Block class to allow for tree shaking):
  *
  * - {@link createBlock }
- * - {@link createBlockFromValuesArray }
+ * - {@link createBlockFromBytesArray }
  * - {@link createBlockFromRLPSerializedBlock }
  * - {@link createBlockFromRPC }
  * - {@link createBlockFromJsonRpcProvider }

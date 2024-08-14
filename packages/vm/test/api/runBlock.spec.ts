@@ -1,7 +1,7 @@
 import {
   createBlock,
   createBlockFromRLPSerializedBlock,
-  createBlockFromValuesArray,
+  createBlockFromBytesArray,
   createSealedCliqueBlock,
 } from '@ethereumjs/block'
 import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
@@ -317,7 +317,7 @@ describe('runBlock() -> runtime behavior', async () => {
     ) as NestedUint8Array
     // edit extra data of this block to "dao-hard-fork"
     block1[0][12] = utf8ToBytes('dao-hard-fork')
-    const block = createBlockFromValuesArray(block1 as BlockBytes, { common })
+    const block = createBlockFromBytesArray(block1 as BlockBytes, { common })
     await setupPreConditions(vm.stateManager, testData)
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly

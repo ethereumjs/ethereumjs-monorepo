@@ -149,7 +149,7 @@ export function createBlock(blockData: BlockData = {}, opts?: BlockOptions) {
  * @param values
  * @param opts
  */
-export function createBlockFromValuesArray(values: BlockBytes, opts?: BlockOptions) {
+export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOptions) {
   if (values.length > 5) {
     throw new Error(`invalid  More values=${values.length} than expected were received (at most 5)`)
   }
@@ -279,7 +279,7 @@ export function createBlockFromRLPSerializedBlock(serialized: Uint8Array, opts?:
     throw new Error('Invalid serialized block input. Must be array')
   }
 
-  return createBlockFromValuesArray(values, opts)
+  return createBlockFromBytesArray(values, opts)
 }
 
 /**
