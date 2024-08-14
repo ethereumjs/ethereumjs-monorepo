@@ -1,4 +1,4 @@
-name: Block
+name: Build
 on:
   push:
     branches: [master, develop]
@@ -7,28 +7,33 @@ on:
     types: [opened, reopened, synchronize]
   workflow_dispatch:
 
-env:
-  cwd: ${{github.workspace}}/packages/block
-
-defaults:
-  run:
-    working-directory: packages/block
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-  test-block:
+  build-monorepo:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [18]
-    needs: build-monorepo
     steps:
+      - name: Checkout monorepo
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup node
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
       - name: 'Cache build'
       - uses: 'actions/cache@v3'
         with:
           path: '.'
           key: '${{ runner.os }}-node-18-${{ git rev-parse HEAD }}'
           restore-keys: '${{ runner.os }}-node-18'
+
+      - run: npm i
