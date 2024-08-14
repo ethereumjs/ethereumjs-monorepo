@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "5.3.0",
+  "version": "5.4.0",
   "description": "Implementation of the various Ethereum Transaction Types",
   "keywords": [
     "ethereum",
@@ -20,11 +20,7 @@
     {
       "name": "Alex Beregszaszi",
       "email": "alex@rtfs.hu",
-      "url": "https://github.com/axic",
-      "additions": 27562,
-      "contributions": 22,
-      "deletions": 42613,
-      "hireable": true
+      "url": "https://github.com/axic"
     }
   ],
   "type": "commonjs",
