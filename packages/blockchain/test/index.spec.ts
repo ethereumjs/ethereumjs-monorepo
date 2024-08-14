@@ -2,7 +2,7 @@ import {
   createBlock,
   createBlockFromRLPSerializedBlock,
   createBlockHeader,
-  createBlockHeaderFromValuesArray,
+  createBlockHeaderFromBytesArray,
 } from '@ethereumjs/block'
 import { Common, Goerli, Hardfork, Holesky, Mainnet, Sepolia } from '@ethereumjs/common'
 import { MapDB, bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
@@ -531,7 +531,7 @@ describe('blockchain test', () => {
     const block2HeaderValuesArray = blocks[2].header.raw()
 
     block2HeaderValuesArray[1] = new Uint8Array(32)
-    const block2Header = createBlockHeaderFromValuesArray(block2HeaderValuesArray, {
+    const block2Header = createBlockHeaderFromBytesArray(block2HeaderValuesArray, {
       common: blocks[2].common,
     })
     await blockchain.putHeader(block2Header)

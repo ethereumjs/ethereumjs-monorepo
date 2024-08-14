@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { createBlockFromValuesArray } from '@ethereumjs/block'
+import { createBlockFromBytesArray } from '@ethereumjs/block'
 import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
   Chain,
@@ -685,7 +685,7 @@ async function startClient(
       let buf = RLP.decode(blockRlp, true)
       while (buf.data?.length > 0 || buf.remainder?.length > 0) {
         try {
-          const block = createBlockFromValuesArray(buf.data as BlockBytes, {
+          const block = createBlockFromBytesArray(buf.data as BlockBytes, {
             common: config.chainCommon,
             setHardfork: true,
           })

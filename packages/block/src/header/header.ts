@@ -25,11 +25,11 @@ import {
   CLIQUE_EXTRA_SEAL,
   CLIQUE_EXTRA_VANITY,
   cliqueIsEpochTransition,
-} from './consensus/clique.js'
-import { fakeExponential } from './helpers.js'
-import { paramsBlock } from './params.js'
+} from '../consensus/clique.js'
+import { fakeExponential } from '../helpers.js'
+import { paramsBlock } from '../params.js'
 
-import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
+import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from '../types.js'
 
 interface HeaderCache {
   hash: Uint8Array | undefined

@@ -124,7 +124,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * signatureYParity (v), signatureR (r), signatureS (s)]`
    *
    * Use {@link AccessListEIP2930Transaction.serialize} to add a transaction to a block
-   * with {@link createBlockFromValuesArray}.
+   * with {@link createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
