@@ -18,7 +18,7 @@ export function createBlockHeader(headerData: HeaderData = {}, opts: BlockOption
 }
 
 /**
- * Static constructor to create a block header from an array of Bytes values
+ * Static constructor to create a block header from an array of bytes values
  *
  * @param values
  * @param opts
