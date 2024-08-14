@@ -304,6 +304,10 @@
     "accountprivate",
     "accountimport",
     "echash",
-    "pubkey"
+    "pubkey",
+    "unpublish",
+    "poap",
+    "nycrc",
+    "gitpkg"
   ]
 }
