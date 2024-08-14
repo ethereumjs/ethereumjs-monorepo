@@ -14,9 +14,6 @@ concurrency:
 jobs:
   build-monorepo:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18]
     steps:
       - name: Checkout monorepo
         uses: actions/checkout@v4
@@ -32,6 +29,6 @@ jobs:
       - name: 'Cache build'
         uses: 'actions/cache@v3'
         with:
-          path: '.'
-          key: '${{ runner.os }}-node-18-${{ git rev-parse HEAD }}'
-          restore-keys: '${{ runner.os }}-node-18'
+          path: .
+          key: ${{ runner.os }}-node-18-${{ git rev-parse HEAD }}
+          restore-keys: ${{ runner.os }}-node-18-
