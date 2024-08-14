@@ -7,8 +7,9 @@
   "scripts": {
     "checkNpmVersion": "./scripts/check-npm-version.sh",
     "clean": "./config/cli/clean-root.sh",
-    "cspell": "npx cspell --gitignore -e ./packages/ethereum-tests \"./packages/**/*.ts\" \"./packages/**/*.md\"",
-    "cspell:dump-unknown-words": "npm run cspell -- -u --words-only --no-progress",
+    "cspell": "npm run cspell:ts && npm run cspell:md",
+    "cspell:ts": "npx cspell --gitignore -e ./packages/ethereum-tests -c ./config/cspell-ts.json \"./packages/**/*.ts\"",
+    "cspell:md": "npx cspell --gitignore -e ./packages/ethereum-tests -c ./config/cspell-md.json \"./packages/**/*.md\"",
     "docs:build": "npm run docs:build --workspaces --if-present",
     "e2e:inject": "node ./scripts/e2e-inject-resolutions.js",
     "e2e:publish": "./scripts/e2e-publish.sh",
