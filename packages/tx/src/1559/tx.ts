@@ -141,7 +141,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * accessList, signatureYParity, signatureR, signatureS]`
    *
    * Use {@link FeeMarketEIP1559Transaction.serialize} to add a transaction to a block
-   * with {@link createBlockFromValuesArray}.
+   * with {@link createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant

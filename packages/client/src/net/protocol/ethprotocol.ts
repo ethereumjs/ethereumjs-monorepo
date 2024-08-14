@@ -1,4 +1,4 @@
-import { createBlockFromValuesArray, createBlockHeaderFromValuesArray } from '@ethereumjs/block'
+import { createBlockFromBytesArray, createBlockHeaderFromBytesArray } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BlobEIP4844Transaction,
@@ -168,7 +168,7 @@ export class EthProtocol extends Protocol {
         bytesToBigInt(reqId),
         headers.map((h) => {
           const common = this.config.chainCommon
-          const header = createBlockHeaderFromValuesArray(h, { common, setHardfork: true })
+          const header = createBlockHeaderFromBytesArray(h, { common, setHardfork: true })
           return header
         }),
       ],
@@ -200,7 +200,7 @@ export class EthProtocol extends Protocol {
       code: 0x07,
       encode: ([block, td]: [Block, bigint]) => [block.raw(), bigIntToUnpaddedBytes(td)],
       decode: ([block, td]: [BlockBytes, Uint8Array]) => [
-        createBlockFromValuesArray(block, {
+        createBlockFromBytesArray(block, {
           common: this.config.chainCommon,
           setHardfork: true,
         }),

@@ -11,14 +11,17 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import {
-  createBlock,
-  createBlockFromRLPSerializedBlock,
-  createBlockFromValuesArray,
-} from '../src/constructors.js'
-import { createBlockFromRpc } from '../src/from-rpc.js'
 import { genTransactionsTrieRoot } from '../src/helpers.js'
-import { type Block, type BlockBytes, type JsonRpcBlock, paramsBlock } from '../src/index.js'
+import {
+  type Block,
+  type BlockBytes,
+  type JsonRpcBlock,
+  createBlock,
+  createBlockFromBytesArray,
+  createBlockFromRLPSerializedBlock,
+  createBlockFromRPC,
+  paramsBlock,
+} from '../src/index.js'
 
 import * as testDataGenesis from './testdata/genesishashestest.json'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
@@ -81,10 +84,10 @@ describe('[Block]: block functions', () => {
 
     const valuesArray = <BlockBytes>[headerArray, [], []]
 
-    block = createBlockFromValuesArray(valuesArray, { common })
+    block = createBlockFromBytesArray(valuesArray, { common })
     assert.ok(Object.isFrozen(block), 'block should be frozen by default')
 
-    block = createBlockFromValuesArray(valuesArray, { common, freeze: false })
+    block = createBlockFromBytesArray(valuesArray, { common, freeze: false })
     assert.ok(
       !Object.isFrozen(block),
       'block should not be frozen when freeze deactivated in options',
@@ -160,7 +163,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 
     try {
-      createBlockFromRpc(testDataFromRpcGoerli.default as JsonRpcBlock, [], { common })
+      createBlockFromRPC(testDataFromRpcGoerli.default as JsonRpcBlock, [], { common })
       assert.ok(true, 'does not throw')
     } catch (error: any) {
       assert.fail('error thrown')
@@ -353,7 +356,7 @@ describe('[Block]: block functions', () => {
     )
     assert.throws(
       () => {
-        createBlockFromValuesArray([1, 2, 3, 4] as any)
+        createBlockFromBytesArray([1, 2, 3, 4] as any)
       },
       undefined,
       undefined,
@@ -369,7 +372,7 @@ describe('[Block]: block functions', () => {
         common,
       },
     )
-    const createBlockFromRaw = createBlockFromValuesArray(block.raw(), { common })
+    const createBlockFromRaw = createBlockFromBytesArray(block.raw(), { common })
     assert.ok(equalsBytes(block.hash(), createBlockFromRaw.hash()))
   })
 
@@ -394,7 +397,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Dao })
     assert.throws(
       function () {
-        createBlockFromValuesArray(blockData as BlockBytes, { common })
+        createBlockFromBytesArray(blockData as BlockBytes, { common })
       },
       /extraData should be 'dao-hard-fork/,
       undefined,
@@ -405,7 +408,7 @@ describe('[Block]: block functions', () => {
     blockData[0][12] = hexToBytes('0x64616f2d686172642d666f726b')
 
     assert.doesNotThrow(function () {
-      createBlockFromValuesArray(blockData as BlockBytes, { common })
+      createBlockFromBytesArray(blockData as BlockBytes, { common })
     }, 'should not throw on DAO HF block with correct extra data')
   })
 
