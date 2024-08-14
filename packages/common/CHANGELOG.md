@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 4.4.0 - 2024-07-23
+## 4.4.0 - 2024-08-15
 
 ### EIP-6110 (Deposit Requests) / EIP-7002 (Withdrawal Requests) / EIP-7251 (Consolidation Requests) Support
 

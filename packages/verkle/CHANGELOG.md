@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 0.1.0 - 2024-07-23
+## 0.1.0 - 2024-08-15
 
 This is the first (still experimental) Verkle library release with some basic `put()` and `get()` functionality working! 🎉 Still highly moving and evolving parts, but early experiments and feedback welcome!
 
