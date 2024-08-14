@@ -1,7 +1,6 @@
 import { Mainnet } from '@ethereumjs/common'
 import {
   ConsolidationRequest,
-  DepositRequest,
   WithdrawalRequest,
   bigIntToAddressBytes,
   bigIntToBytes,
@@ -9,6 +8,7 @@ import {
   bytesToHex,
   bytesToInt,
   createAddressFromString,
+  createDepositRequest,
   setLengthLeft,
   unpadBytes,
 } from '@ethereumjs/util'
@@ -221,7 +221,7 @@ const accumulateDeposits = async (
         ])
         const index = bytesToBigInt(indexBytesBigEndian)
         requests.push(
-          DepositRequest.fromRequestData({
+          createDepositRequest({
             pubkey,
             withdrawalCredentials,
             amount,

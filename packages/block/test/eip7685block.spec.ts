@@ -1,9 +1,9 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
-  DepositRequest,
   KECCAK256_RLP,
   WithdrawalRequest,
   bytesToBigInt,
+  createDepositRequest,
   randomBytes,
 } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
@@ -27,7 +27,7 @@ function getRandomDepositRequest(): CLRequest<CLRequestType> {
     signature: randomBytes(96),
     index: bytesToBigInt(randomBytes(8)),
   }
-  return DepositRequest.fromRequestData(depositRequestData) as CLRequest<CLRequestType>
+  return createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
 }
 
 function getRandomWithdrawalRequest(): CLRequest<CLRequestType> {

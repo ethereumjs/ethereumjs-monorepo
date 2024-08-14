@@ -7,9 +7,9 @@ import {
   ConsolidationRequest,
   DepositRequest,
   WithdrawalRequest,
-} from '../src/requests.js'
+} from '../src/request.js'
 
-import type { CLRequest } from '../src/requests.js'
+import type { CLRequest } from '../src/request.js'
 
 describe('Requests', () => {
   const testCases = [

@@ -2,9 +2,9 @@ import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
-  DepositRequest,
   KECCAK256_RLP,
   bytesToBigInt,
+  createDepositRequest,
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
@@ -26,7 +26,7 @@ function getRandomDepositRequest(): CLRequest<CLRequestType> {
     signature: randomBytes(96),
     index: bytesToBigInt(randomBytes(8)),
   }
-  return DepositRequest.fromRequestData(depositRequestData) as CLRequest<CLRequestType>
+  return createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
 }
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7685] })

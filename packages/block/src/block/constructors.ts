@@ -10,11 +10,11 @@ import {
 import {
   CLRequestFactory,
   ConsolidationRequest,
-  DepositRequest,
   WithdrawalRequest,
   bigIntToHex,
   bytesToHex,
   bytesToUtf8,
+  createDepositRequestFromJSON,
   createWithdrawal,
   equalsBytes,
   fetchFromProvider,
@@ -419,7 +419,7 @@ export async function createBlockFromExecutionPayload(
 
   if (depositRequests !== undefined && depositRequests !== null) {
     for (const dJson of depositRequests) {
-      requests!.push(DepositRequest.fromJSON(dJson))
+      requests!.push(createDepositRequestFromJSON(dJson))
     }
   }
   if (withdrawalRequests !== undefined && withdrawalRequests !== null) {
