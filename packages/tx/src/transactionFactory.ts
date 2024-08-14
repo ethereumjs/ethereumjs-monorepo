@@ -4,7 +4,6 @@ import { create1559FeeMarketTx, create1559FeeMarketTxFromRLP } from './1559/cons
 import { create2930AccessListTx, create2930AccessListTxFromRLP } from './2930/constructors.js'
 import { create4844BlobTx, create4844BlobTxFromRLP } from './4844/constructors.js'
 import { create7702EOACodeTx, create7702EOACodeTxFromRLP } from './7702/constructors.js'
-import { normalizeTxParams } from './fromRpc.js'
 import {
   createLegacyTx,
   createLegacyTxFromBytesArray,
@@ -18,6 +17,7 @@ import {
   isFeeMarketEIP1559TxData,
   isLegacyTxData,
 } from './types.js'
+import { normalizeTxParams } from './util.js'
 
 import type { Transaction, TxData, TxOptions, TypedTxData } from './types.js'
 import type { EthersProvider } from '@ethereumjs/util'
