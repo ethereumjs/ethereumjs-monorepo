@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Blocks with EIP-7685 Consensus Layer Requests
 
-Starting with this release this library supports requests to the consensus layer (see PRs [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372) and [#3393](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3393)) which have been introduce with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) and will come into play for deposit and withdrawal requests along the upcoming [Prague](https://eips.ethereum.org/EIPS/eip-7600) hardfork.
+Starting with this release this library supports requests to the consensus layer (see PRs [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372) and [#3393](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3393)) which have been introduced with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) and will come into play for deposit and withdrawal requests along the upcoming [Prague](https://eips.ethereum.org/EIPS/eip-7600) hardfork.
 
 #### EIP-6110 Deposit Requests
 
