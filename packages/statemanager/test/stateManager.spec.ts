@@ -48,7 +48,7 @@ describe('StateManager -> General', () => {
     const sm = new DefaultStateManager()
 
     try {
-      const storage = await sm.getContractStorage(Address.zero(), zeros(32))
+      const storage = await sm.getStorage(createZeroAddress(), zeros(32))
       assert.ok(equalsBytes(storage, new Uint8Array()))
     } catch {
       assert.fail('should not throw')
