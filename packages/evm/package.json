@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@ethereumjs/common": "^4.4.0",
-    "@ethereumjs/statemanager": "^2.3.0",
+    "@ethereumjs/statemanager": "^2.4.0",
     "@ethereumjs/tx": "^5.4.0",
     "@ethereumjs/util": "^9.1.0",
     "@types/debug": "^4.1.9",
