@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1723573217287,
+  "lastUpdate": 1723599159678,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0e18cb29cf3f72d192c4a3b2502aa392d7ff58a4",
-          "message": "util: Replace account static constructors (#3524)\n\n* Account: move static constructors to functions\r\n\r\n* update downstream\r\n\r\n* update examples\r\n\r\n* util: account constructors: use naming conventions\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2024-07-23T10:43:28+02:00",
-          "tree_id": "cc327975349bcc91c90504b49a01ac98bae0ea30",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0e18cb29cf3f72d192c4a3b2502aa392d7ff58a4"
-        },
-        "date": 1721724373953,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38230,
-            "range": "±2.10%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 35986,
-            "range": "±4.37%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 36762,
-            "range": "±1.67%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 35818,
-            "range": "±1.69%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34435,
-            "range": "±2.43%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.82%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9cb2ca8b63152195f0e1fb889ae401f8b758ec72",
+          "message": "Example test runner: make script more readable / ensure examples do not `process.exit` (#3585)\n\n* devp2p/vm: ensure examples do not process.exit\n\n* vm: fix genesis state example + make linter happy\n\n* Update examples-runner: run per-file\n\n* devp2p: try to exit dpt\n\n* revert change in devp2p\n\n* Merge remote-tracking branch 'origin/master' into fix-examples-test-runner",
+          "timestamp": "2024-08-13T21:29:55-04:00",
+          "tree_id": "26e93e44cc3c85a07dbc77c391237bf87c64368e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9cb2ca8b63152195f0e1fb889ae401f8b758ec72"
+        },
+        "date": 1723599158852,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38143,
+            "range": "±1.70%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36172,
+            "range": "±3.14%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37060,
+            "range": "±1.51%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36348,
+            "range": "±1.69%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35685,
+            "range": "±1.68%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
