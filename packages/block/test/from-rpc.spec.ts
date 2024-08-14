@@ -1,3 +1,4 @@
+// cspell:ignore wtxns wtxs wotxns
 import { Common, Goerli, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'

@@ -4,7 +4,7 @@ import { Event } from '../types.js'
 import { short } from '../util/index.js'
 
 import { AccountFetcher } from './fetcher/index.js'
-import { getInitFecherDoneFlags } from './fetcher/types.js'
+import { getInitFetcherDoneFlags } from './fetcher/types.js'
 import { Synchronizer } from './sync.js'
 
 import type { VMExecution } from '../execution/index.js'
@@ -26,7 +26,7 @@ export class SnapSynchronizer extends Synchronizer {
   public running = false
   skeleton?: Skeleton
   private execution: VMExecution
-  readonly fetcherDoneFlags: SnapFetcherDoneFlags = getInitFecherDoneFlags()
+  readonly fetcherDoneFlags: SnapFetcherDoneFlags = getInitFetcherDoneFlags()
 
   constructor(options: SnapSynchronizerOptions) {
     super(options)

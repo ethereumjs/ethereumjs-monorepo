@@ -1,3 +1,4 @@
+// cspell:ignore Andras Radics
 /**
  * nodejs heap, classic array implementation
  *

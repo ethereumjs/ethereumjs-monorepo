@@ -1,6 +1,16 @@
 {
   "language": "en-US",
-  "ignoreRegExpList": ["/0x[0-9A-Fa-f]+/"],
+  "ignoreRegExpList": ["/0x[0-9A-Fa-f]+/", "@scure"],
+  "overrides": [
+    {
+      "filename": "**/packages/devp2p/**",
+      "ignoreWords": ["pirl", "ubiq", "gwhale", "prichain", "zfill"]
+    },
+    {
+      "filename": "**/packages/ethash/**",
+      "ignoreWords": ["epoc", "cmix"]
+    }
+  ],
   "words": [
     "Hardfork",
     "hardfork",
@@ -563,6 +573,15 @@
     "fixturehd",
     "hdnode",
     "testpassword",
-    "wrongtestpassword"
+    "wrongtestpassword",
+    "keybyte",
+    "unstub",
+    "unmock",
+    "unjustifiedly",
+    "uncompression",
+    "dedicatedly",
+    "EVMBLS",
+    "EVMBN",
+    "EVMONEs"
   ]
 }

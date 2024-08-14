@@ -127,7 +127,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       case VerkleLeafNodeValue.Untouched:
         return undefined
       case VerkleLeafNodeValue.Deleted:
-        // Return zeroes if a value is "deleted" (i.e. overwitten with zeroes)
+        // Return zeroes if a value is "deleted" (i.e. overwritten with zeroes)
         return new Uint8Array(32)
       default:
         return value

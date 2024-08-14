@@ -269,7 +269,7 @@ describe('transaction validation tests', () => {
         .getTransactionsValidationErrors()
         .join(' ')
         .includes('exceed maximum blob gas per block'),
-      'tx erros includes correct error message when too many blobs in a block',
+      'tx errors includes correct error message when too many blobs in a block',
     )
   })
 })

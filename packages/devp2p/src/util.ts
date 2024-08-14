@@ -1,3 +1,4 @@
+// cspell:ignore Fedor Indutny
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex, bytesToUnprefixedHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 import debug from 'debug'

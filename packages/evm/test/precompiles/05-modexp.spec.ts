@@ -35,8 +35,8 @@ describe('Precompiles: MODEXP', () => {
         common,
         _EVM: evm,
       })
-      const oput = bytesToHex(result.returnValue)
-      assert.equal(oput, expect)
+      const output = bytesToHex(result.returnValue)
+      assert.equal(output, expect)
     })
   }
 

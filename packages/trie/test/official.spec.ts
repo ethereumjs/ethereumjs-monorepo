@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { Trie } from '../src/index.js'
 
-import trieAnyOrderTests from './fixtures/trieanyorder.json'
+import trieAnyOrderTests from './fixtures/trieanyorder.json' // cspell:disable-line
 import trieTests from './fixtures/trietest.json'
 
 describe('official tests', () => {

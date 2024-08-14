@@ -1,3 +1,4 @@
+// cspell:ignore patarapolw
 /**
  * Ported to Typescript from original implementation below:
  * https://github.com/ahultgren/async-eventemitter -- MIT licensed

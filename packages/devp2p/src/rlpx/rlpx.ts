@@ -112,8 +112,8 @@ export class RLPx {
     this._peers = new Map()
     this._peersQueue = []
     this._peersLRU = new LRUCache({ max: 25000 })
-    const REFILL_INTERVALL = 10000 // 10 sec * 1000
-    const refillIntervalSubdivided = Math.floor(REFILL_INTERVALL / 10)
+    const REFILL_INTERVAL = 10000 // 10 sec * 1000
+    const refillIntervalSubdivided = Math.floor(REFILL_INTERVAL / 10)
     this._refillIntervalId = setInterval(() => this._refillConnections(), refillIntervalSubdivided)
 
     this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak256

@@ -54,7 +54,7 @@ describe('[Header]: Clique PoA Functionality', () => {
       },
       undefined,
       undefined,
-      'cliqueEpochTransitionSigners() -> should throw on non-epch block',
+      'cliqueEpochTransitionSigners() -> should throw on non-epoch block',
     )
 
     header = createBlockHeader({ number: 60000, extraData: new Uint8Array(137) }, { common })

@@ -36,7 +36,7 @@ console.log({ sender, rpcUrl, chainId, numTxs })
 const network = 'sharding'
 const shardingJson = require(`./configs/${network}.json`)
 
-// safely change chainId without modifying undelying json
+// safely change chainId without modifying underlying json
 const commonJson = { ...shardingJson }
 commonJson.config = { ...commonJson.config, chainId }
 const common = createCommonFromGethGenesis(commonJson, { chain: network })

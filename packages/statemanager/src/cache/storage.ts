@@ -1,3 +1,4 @@
+// cspell:ignore dels
 import { bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
 import debugDefault from 'debug'
@@ -274,7 +275,7 @@ export class StorageCache extends Cache {
     // Go through diffMap from the pre-commit checkpoint height.
     // 1. Iterate through all state pre states
     // 2. If state pre-state is not in the new (lower) height diff map, take pre commit pre state value
-    // 3. If state is in new map, take this one, since this superseeds subsequent changes
+    // 3. If state is in new map, take this one, since this supersedes subsequent changes
     for (const entry of higherHeightDiffMap.entries()) {
       const addressHex = entry[0]
       const higherHeightStorageDiff = entry[1]

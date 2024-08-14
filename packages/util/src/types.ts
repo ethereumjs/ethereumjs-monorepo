@@ -17,7 +17,7 @@ export type BytesLike =
   | number[]
   | number
   | bigint
-  | TransformabletoBytes
+  | TransformableToBytes
   | PrefixedHexString
 
 /*
@@ -30,7 +30,7 @@ export type PrefixedHexString = `0x${string}`
  */
 export type AddressLike = Address | Uint8Array | PrefixedHexString
 
-export interface TransformabletoBytes {
+export interface TransformableToBytes {
   toBytes?(): Uint8Array
 }
 

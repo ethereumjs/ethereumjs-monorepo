@@ -1,3 +1,4 @@
+// cspell:ignore pkill
 import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { create1559FeeMarketTx, create4844BlobTx } from '@ethereumjs/tx'
@@ -608,7 +609,7 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
   }
 }
 
-// To minimise noise on the spec run, selective filteration is applied to let the important events
+// To minimize noise on the spec run, selective filtering is applied to let the important events
 // of the testnet log to show up in the spec log
 export const filterKeywords = [
   'warn',

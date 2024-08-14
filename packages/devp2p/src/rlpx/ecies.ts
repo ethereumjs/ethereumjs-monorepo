@@ -1,3 +1,4 @@
+// cspell:ignore mkey
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToInt, concatBytes, hexToBytes, intToBytes } from '@ethereumjs/util'
 import * as crypto from 'crypto'
@@ -237,7 +238,7 @@ export class ECIES {
 
     let signature = null
     let recoveryId = null
-    let heid = null
+    let heId = null
     let remotePublicKey = null
     let nonce = null
 
@@ -246,7 +247,7 @@ export class ECIES {
 
       signature = decrypted.subarray(0, 64)
       recoveryId = decrypted[64]
-      heid = decrypted.subarray(65, 97) // 32 bytes
+      heId = decrypted.subarray(65, 97) // 32 bytes
       remotePublicKey = id2pk(decrypted.subarray(97, 161))
       nonce = decrypted.subarray(161, 193)
     } else {
@@ -277,10 +278,10 @@ export class ECIES {
 
     if (this._remoteEphemeralPublicKey === null) return
     this._ephemeralSharedSecret = ecdhX(this._remoteEphemeralPublicKey, this._ephemeralPrivateKey)
-    if (heid !== null && this._remoteEphemeralPublicKey !== null) {
+    if (heId !== null && this._remoteEphemeralPublicKey !== null) {
       assertEq(
         this._keccakFunction(pk2id(this._remoteEphemeralPublicKey)),
-        heid,
+        heId,
         'the hash of the ephemeral key should match',
         debug,
       )

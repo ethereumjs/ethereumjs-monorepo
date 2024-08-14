@@ -26,7 +26,7 @@ import { ByteCodeFetcher } from './bytecodefetcher.js'
 import { Fetcher } from './fetcher.js'
 import { StorageFetcher } from './storagefetcher.js'
 import { TrieNodeFetcher } from './trienodefetcher.js'
-import { getInitFecherDoneFlags } from './types.js'
+import { getInitFetcherDoneFlags } from './types.js'
 
 import type { Peer } from '../../net/peer/index.js'
 import type { AccountData } from '../../net/protocol/snapprotocol.js'
@@ -90,7 +90,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    */
   constructor(options: AccountFetcherOptions) {
     super(options)
-    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
+    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFetcherDoneFlags()
 
     this.root = options.root
     this.first = options.first
@@ -546,7 +546,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    * remaining items apart from the tasks it pushes in the queue
    *
    * Divides the full 256-bit range of hashes into ranges of @maxAccountRange
-   * size and turnes each range into a task for the fetcher
+   * size and turns each range into a task for the fetcher
    */
 
   tasks(first = this.first, count = this.count, maxTasks = this.config.maxFetcherJobs): JobTask[] {

@@ -1,3 +1,4 @@
+// cspell:ignore breq
 import { bigIntToHex } from '@ethereumjs/util'
 
 import type { ExecutionPayload } from './types.js'

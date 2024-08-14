@@ -1,3 +1,4 @@
+// cspell:ignore nickdodson
 /*
 The MIT License
 

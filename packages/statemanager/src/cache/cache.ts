@@ -1,3 +1,4 @@
+// cspell:ignore dels
 import debugDefault from 'debug'
 
 import type { Debugger } from 'debug'

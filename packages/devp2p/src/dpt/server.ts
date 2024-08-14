@@ -1,3 +1,4 @@
+// cspell:ignore rckey rkey
 import { bytesToHex, bytesToUnprefixedHex } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import * as dgram from 'dgram'

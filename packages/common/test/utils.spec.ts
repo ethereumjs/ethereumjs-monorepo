@@ -89,7 +89,7 @@ describe('[Utils/Parse]', () => {
     )
   })
 
-  it('should correctly parse deposit contract adddress', async () => {
+  it('should correctly parse deposit contract address', async () => {
     // clone json out to not have side effects
     const customJson = JSON.parse(JSON.stringify(postMergeHardforkJSON))
     Object.assign(customJson.config, {

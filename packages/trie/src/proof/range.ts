@@ -277,7 +277,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
 
     return false
   } else if (node instanceof BranchNode) {
-    // Unset all internal nodes in the forkpoint
+    // Unset all internal nodes in the forkPoint
     for (let i = left[pos] + 1; i < right[pos]; i++) {
       node.setBranch(i, null)
     }

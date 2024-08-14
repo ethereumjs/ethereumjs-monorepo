@@ -1,3 +1,4 @@
+// cspell:ignore Kintsugi
 import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Blockchain, createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'

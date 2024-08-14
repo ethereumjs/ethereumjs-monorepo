@@ -1,3 +1,4 @@
+// cspell:ignore bkey
 import { concatBytes, hexToBytes, toBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import { nibblesTypeToPackedBytes } from './nibbles.js'
@@ -164,13 +165,13 @@ export const mergeAndFormatKeyPaths = (pathStrings: string[]) => {
   let paths: string[] = []
   let i = 0
   while (i < pathStrings.length) {
-    const outterPathString = pathStrings[i]!.split('/')
-    const outterAccountPath = outterPathString[0]
-    const outterStoragePath = outterPathString[1]
+    const outerPathString = pathStrings[i]!.split('/')
+    const outerAccountPath = outerPathString[0]
+    const outerStoragePath = outerPathString[1]
 
-    paths.push(outterAccountPath)
-    if (outterStoragePath !== undefined) {
-      paths.push(outterStoragePath)
+    paths.push(outerAccountPath)
+    if (outerStoragePath !== undefined) {
+      paths.push(outerStoragePath)
     }
 
     let j = ++i
@@ -179,7 +180,7 @@ export const mergeAndFormatKeyPaths = (pathStrings: string[]) => {
       const innerAccountPath = innerPathString[0]
       const innerStoragePath = innerPathString[1]
 
-      if (innerAccountPath === outterAccountPath) {
+      if (innerAccountPath === outerAccountPath) {
         paths.push(innerStoragePath)
       } else {
         ret.push(paths)

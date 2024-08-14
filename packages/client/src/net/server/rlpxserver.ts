@@ -1,3 +1,4 @@
+// cspell:ignore pirl ubiq gwhale prichain
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
 import { bytesToUnprefixedHex, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 

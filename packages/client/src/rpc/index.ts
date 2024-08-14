@@ -42,8 +42,8 @@ export class RPCManager {
         if (!this._config.saveReceipts && saveReceiptsMethods.includes(methodName)) {
           continue
         }
-        const concatedMethodName = `${modName.toLowerCase()}_${methodName}`
-        methods[concatedMethodName] = mod[methodName].bind((...params: any[]) => {
+        const concatenatedMethodName = `${modName.toLowerCase()}_${methodName}`
+        methods[concatenatedMethodName] = mod[methodName].bind((...params: any[]) => {
           try {
             mod(...params)
           } catch (error: any) {

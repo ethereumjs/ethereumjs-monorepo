@@ -1,3 +1,4 @@
+// cspell:ignore staletest
 import {
   createBlock,
   createBlockFromRLPSerializedBlock,
@@ -537,7 +538,7 @@ describe('blockchain test', () => {
     await blockchain.putHeader(block2Header)
     try {
       await blockchain.getBlock(BigInt(2))
-      assert.fail('block should not be constucted')
+      assert.fail('block should not be constructed')
     } catch (e: any) {
       assert.equal(
         e.message,

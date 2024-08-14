@@ -1,3 +1,4 @@
+// cspell:ignore Vitaliks
 export type ForkName =
   | 'London+3860'
   | 'London'
@@ -52,8 +53,8 @@ export type ForksData = {
 export type OfficialTransactionTestData = {
   _info: {
     comment: string
-    filledwith: string
-    lllcversion: string
+    filledwith: string // cspell:disable-line
+    lllcversion: string // cspell:disable-line
     source: string
     sourceHash: string
   }

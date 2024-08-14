@@ -4,7 +4,7 @@ import { Common, Hardfork, Mainnet } from '../src/index.js'
 
 import { paramsTest } from './data/paramsTest.js'
 
-describe('[Common]: Parameter instantion / params option / Updates', () => {
+describe('[Common]: Parameter instantiation / params option / Updates', () => {
   it('Param option', () => {
     const c = new Common({ chain: Mainnet, params: paramsTest })
     let msg = 'Should also work with parameters passed with params option'
@@ -46,7 +46,7 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     assert.equal(c.param('ecAddGas'), BigInt(150), msg)
 
     assert.throws(() => {
-      c.paramByHardfork('notexistingvalue', 'byzantium')
+      c.paramByHardfork('notExistingValue', 'byzantium')
     })
 
     /*
@@ -115,10 +115,10 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     const c = new Common({ chain: Mainnet, params: paramsTest })
 
     assert.throws(() => {
-      c.paramByEIP('notexistingvalue', 1559)
+      c.paramByEIP('notExistingValue', 1559)
     })
     assert.throws(() => {
-      c.paramByEIP('notexistingvalue', 2537)
+      c.paramByEIP('notExistingValue', 2537)
     })
 
     const UNSUPPORTED_EIP = 1000000

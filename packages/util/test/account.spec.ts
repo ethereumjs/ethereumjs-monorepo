@@ -1,3 +1,4 @@
+// cspell:ignore testh sant testize
 import { RLP } from '@ethereumjs/rlp'
 import { assert, describe, it } from 'vitest'
 
@@ -602,7 +603,7 @@ describe('Utility Functions', () => {
     '0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb',
   ]
 
-  const eip1191ChecksummAddresses = {
+  const eip1191ChecksumAddresses = {
     1: [
       '0x88021160c5C792225E4E5452585947470010289d',
       '0x27b1FdB04752bBc536007a920D24ACB045561c26',
@@ -651,7 +652,7 @@ describe('Utility Functions', () => {
 
     describe('EIP1191', () => {
       it('Should encode the example addresses correctly', () => {
-        for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
+        for (const [chainId, addresses] of Object.entries(eip1191ChecksumAddresses)) {
           for (const addr of addresses) {
             assert.equal(toChecksumAddress(addr.toLowerCase(), Number(chainId)), addr)
             assert.equal(
@@ -712,7 +713,7 @@ describe('Utility Functions', () => {
 
     describe('EIP1191', () => {
       it('Should return true for the example addresses', () => {
-        for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
+        for (const [chainId, addresses] of Object.entries(eip1191ChecksumAddresses)) {
           for (const addr of addresses) {
             assert.ok(isValidChecksumAddress(addr, Number(chainId)))
             assert.ok(isValidChecksumAddress(addr, intToBytes(parseInt(chainId))))
@@ -734,7 +735,7 @@ describe('Utility Functions', () => {
       })
 
       it('Should return false if the wrong chain id is used', () => {
-        for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
+        for (const [chainId, addresses] of Object.entries(eip1191ChecksumAddresses)) {
           for (const addr of addresses) {
             assert.notOk(isValidChecksumAddress(addr, Number(chainId) + 1))
           }

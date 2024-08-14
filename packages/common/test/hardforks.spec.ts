@@ -1,3 +1,4 @@
+// cspell:ignore yolov
 import { hexToBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -318,7 +319,7 @@ describe('[Common]: Hardfork logic', () => {
     const zeroCommonShanghaiFork = zeroCommon.forkHash(Hardfork.Shanghai, genesisHash)
     const zeroCommonCancunFork = zeroCommon.forkHash(Hardfork.Shanghai, genesisHash)
 
-    // Ensure that Shangai fork + Cancun fork have equal forkhash
+    // Ensure that Shanghai fork + Cancun fork have equal forkhash
     assert.equal(zeroCommonShanghaiFork, zeroCommonCancunFork)
 
     // Set the cancun time to the genesis block time (this should not change the forkHash)

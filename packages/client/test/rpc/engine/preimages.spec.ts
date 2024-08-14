@@ -137,7 +137,7 @@ describe(`valid verkle network setup`, async () => {
   // and for block1 are coded to return no withdrawals
   //
   // third consideration is for feerecipient which are added here as random
-  // coinbase addrs
+  // coinbase addresses
   const testCases = [
     {
       name: 'block 1 no txs',

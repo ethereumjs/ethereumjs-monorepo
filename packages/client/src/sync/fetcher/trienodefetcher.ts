@@ -21,7 +21,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { Fetcher } from './fetcher.js'
-import { getInitFecherDoneFlags } from './types.js'
+import { getInitFetcherDoneFlags } from './types.js'
 
 import type { Peer } from '../../net/peer/index.js'
 import type { FetcherOptions } from './fetcher.js'
@@ -100,7 +100,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   constructor(options: TrieNodeFetcherOptions) {
     super(options)
     this.root = options.root
-    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
+    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFetcherDoneFlags()
     this.pathToNodeRequestData = new OrderedMap<string, NodeRequestData>()
     this.requestedNodeToPath = new Map<string, string>()
     this.fetchedAccountNodes = new Map<string, FetchedNodeData>()
@@ -169,7 +169,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     try {
       // While results are in the same order as requested hashes but there could be gaps/misses in the results
       // if the node doesn't has all of the requested trie nodes. We need an index to move forward through the hashes which are
-      // absent in the receieved responses
+      // absent in the received responses
       const receivedNodes: Uint8Array[] = []
       for (let i = 0; i < rangeResult.nodes.length; i++) {
         const receivedNode = rangeResult.nodes[i]
@@ -331,7 +331,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         this.pathToNodeRequestData.eraseElementByKey(pathString)
       }
 
-      // for an initial implementation, just put nodes into trie and see if root maches stateRoot
+      // for an initial implementation, just put nodes into trie and see if root matches stateRoot
       if (this.pathToNodeRequestData.length === 0) {
         this.debug('All requests for current heal phase have been filled')
         const ops: BatchDBOp[] = []

@@ -1,3 +1,4 @@
+// cspell:ignore AACC AAAB
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   Account,

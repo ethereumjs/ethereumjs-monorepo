@@ -1,3 +1,4 @@
+// cspell:ignore blockperiodseconds
 import { intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
 import { Goerli, Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.js'

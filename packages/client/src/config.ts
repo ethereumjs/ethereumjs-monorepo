@@ -1,3 +1,4 @@
+// cspell:ignore PARENTLOOKUP refeed
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereumjs/util'
@@ -454,7 +455,7 @@ export class Config {
   public readonly initialVerkleStateRoot: Uint8Array
 
   public synchronized: boolean
-  public lastsyncronized?: boolean
+  public lastSynchronized?: boolean
   /** lastSyncDate in ms */
   public lastSyncDate: number
   /** Best known block height */
@@ -628,7 +629,7 @@ export class Config {
       }
     }
 
-    if (this.synchronized !== this.lastsyncronized) {
+    if (this.synchronized !== this.lastSynchronized) {
       this.logger.debug(
         `Client synchronized=${this.synchronized}${
           latest !== null && latest !== undefined ? ' height=' + latest.number : ''
@@ -636,7 +637,7 @@ export class Config {
           (Date.now() - this.lastSyncDate) / 1000
         } secs ago`,
       )
-      this.lastsyncronized = this.synchronized
+      this.lastSynchronized = this.synchronized
     }
   }
 

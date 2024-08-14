@@ -1,3 +1,4 @@
+// cspell:ignore dels
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
 import debugDefault from 'debug'

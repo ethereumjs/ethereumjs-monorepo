@@ -127,7 +127,7 @@ describe('EIP4895 tests', () => {
     assert.deepEqual(zeros(0), slotValue, 'withdrawals do not invoke code')
   })
 
-  it('EIP4895: state updation should exclude 0 amount updates', async () => {
+  it('EIP4895: state update should exclude 0 amount updates', async () => {
     const vm = await VM.create({ common })
 
     await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(genesisJSON))

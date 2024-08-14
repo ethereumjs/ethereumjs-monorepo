@@ -425,7 +425,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   const writtenAddresses = new Set<string>()
   if (tx.supports(Capability.EIP7702EOACode)) {
-    // Add contract code for authroity tuples provided by EIP 7702 tx
+    // Add contract code for authority tuples provided by EIP 7702 tx
     const authorizationList = (<EIP7702CompatibleTx>tx).authorizationList
     const MAGIC = new Uint8Array([5])
     for (let i = 0; i < authorizationList.length; i++) {

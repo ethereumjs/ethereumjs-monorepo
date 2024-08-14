@@ -585,7 +585,7 @@ export class VMExecution extends Execution {
    * @param loop Whether to continue iterating until vm head equals chain head (default: true)
    * @returns number of blocks executed
    */
-  async run(loop = true, runOnlybatched = false): Promise<number> {
+  async run(loop = true, runOnlyBatched = false): Promise<number> {
     if (this.running || !this.started || !this.config.execution || this.config.shutdown) return 0
 
     return this.runWithLock<number>(async () => {
@@ -625,8 +625,8 @@ export class VMExecution extends Execution {
         while (
           this.started &&
           !this.config.shutdown &&
-          (!runOnlybatched ||
-            (runOnlybatched &&
+          (!runOnlyBatched ||
+            (runOnlyBatched &&
               canonicalHead.header.number - startHeadBlock.header.number >=
                 BigInt(this.config.numBlocksPerIteration))) &&
           (numExecuted === undefined ||
@@ -751,7 +751,7 @@ export class VMExecution extends Execution {
                   parentState = block.header.stateRoot
                 } catch (error: any) {
                   // only marked the block as invalid if it was an actual execution error
-                  // for e.g. absense of executionWitness doesn't make a block invalid
+                  // for e.g. absence of executionWitness doesn't make a block invalid
                   if (!`${error.message}`.includes('Invalid executionWitness=null')) {
                     errorBlock = block
                   }

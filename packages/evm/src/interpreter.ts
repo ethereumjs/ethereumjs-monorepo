@@ -1,3 +1,4 @@
+// cspell:ignore dests
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import {
   Account,
@@ -287,7 +288,7 @@ export class Interpreter {
       }
 
       // if its an invalid opcode with verkle activated, then check if its because of a missing code
-      // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcod
+      // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcode
       if (
         opCode === 0xfe &&
         this.common.isActivatedEIP(6800) &&
@@ -527,13 +528,13 @@ export class Interpreter {
   useGas(amount: bigint, context?: string | Opcode): void {
     this._runState.gasLeft -= amount
     if (this._evm.DEBUG) {
-      let tstr = ''
+      let tempString = ''
       if (typeof context === 'string') {
-        tstr = context + ': '
+        tempString = context + ': '
       } else if (context !== undefined) {
-        tstr = `${context.name} fee: `
+        tempString = `${context.name} fee: `
       }
-      debugGas(`${tstr}used ${amount} gas (-> ${this._runState.gasLeft})`)
+      debugGas(`${tempString}used ${amount} gas (-> ${this._runState.gasLeft})`)
     }
     if (this._runState.gasLeft < BIGINT_0) {
       this._runState.gasLeft = BIGINT_0

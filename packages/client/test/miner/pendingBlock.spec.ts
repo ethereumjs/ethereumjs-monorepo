@@ -215,7 +215,7 @@ describe('[PendingBlock]', async () => {
   it('should stop adding txs when block is full', async () => {
     const { txPool } = setup()
 
-    // set gas limit low so that can accomodate 2 txs
+    // set gas limit low so that can accommodate, 2 txs
     const prevGasLimit = common['_chainParams'].genesis.gasLimit
     common['_chainParams'].genesis.gasLimit = 50000
 

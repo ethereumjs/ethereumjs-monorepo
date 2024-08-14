@@ -145,7 +145,7 @@ export interface StateManagerInterface {
    * Extra Functionality
    *
    * Optional non-essential methods, these methods should always be guarded
-   * on usage (check for existance)
+   * on usage (check for existence)
    */
   // Client RPC
   getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>

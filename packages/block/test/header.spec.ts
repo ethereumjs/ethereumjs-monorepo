@@ -1,3 +1,4 @@
+// cspell:ignore NOTURN
 import { Common, Goerli, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {

@@ -1,3 +1,4 @@
+// cspell:ignore MPLEX Muxer
 /**
  * Libp2p Bundle
  * @memberof module:net/peer

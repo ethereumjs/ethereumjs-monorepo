@@ -173,9 +173,9 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
 
   const words = newMemoryWordCount
   const fee = common.param('memoryGas')
-  const quadCoeff = common.param('quadCoeffDivGas')
+  const quadCoefficient = common.param('quadCoeffDivGas') // cspell:disable-line
   // words * 3 + words ^2 / 512
-  let cost = words * fee + (words * words) / quadCoeff
+  let cost = words * fee + (words * words) / quadCoefficient
 
   if (cost > runState.highestMemCost) {
     const currentHighestMemCost = runState.highestMemCost

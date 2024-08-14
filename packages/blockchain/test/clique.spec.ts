@@ -1,3 +1,4 @@
+// cspell:ignore NOTURN deauth unforked
 import {
   cliqueEpochTransitionSigners,
   createBlock,

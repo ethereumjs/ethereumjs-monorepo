@@ -1,3 +1,4 @@
+// cspell:ignore Vals
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import { base32, base64url } from '@scure/base'
@@ -100,7 +101,7 @@ export class ENR {
     if (!root.startsWith(this.ROOT_PREFIX))
       throw new Error(`ENR root entry must start with '${this.ROOT_PREFIX}'`)
 
-    const rootVals = sscanf(
+    const rootValues = sscanf(
       root,
       `${this.ROOT_PREFIX}v1 e=%s l=%s seq=%d sig=%s`,
       'eRoot',
@@ -109,10 +110,10 @@ export class ENR {
       'signature',
     ) as ENRRootValues
 
-    if (!rootVals.eRoot) throw new Error("Could not parse 'e' value from ENR root entry")
-    if (!rootVals.lRoot) throw new Error("Could not parse 'l' value from ENR root entry")
-    if (!rootVals.seq) throw new Error("Could not parse 'seq' value from ENR root entry")
-    if (!rootVals.signature) throw new Error("Could not parse 'sig' value from ENR root entry")
+    if (!rootValues.eRoot) throw new Error("Could not parse 'e' value from ENR root entry")
+    if (!rootValues.lRoot) throw new Error("Could not parse 'l' value from ENR root entry")
+    if (!rootValues.seq) throw new Error("Could not parse 'seq' value from ENR root entry")
+    if (!rootValues.signature) throw new Error("Could not parse 'sig' value from ENR root entry")
 
     const decodedPublicKey = [...base32.decode(publicKey + '===').values()]
 
@@ -122,7 +123,7 @@ export class ENR {
     const signedComponent = root.split(' sig')[0]
     const signedComponentBytes = utf8ToBytes(signedComponent)
     const signatureBytes = Uint8Array.from(
-      [...base64url.decode(rootVals.signature + '=').values()].slice(0, 64),
+      [...base64url.decode(rootValues.signature + '=').values()].slice(0, 64),
     )
 
     const keyBytes = Uint8Array.from(decodedPublicKey)
@@ -135,7 +136,7 @@ export class ENR {
 
     if (!isVerified) throw new Error('Unable to verify ENR root signature')
 
-    return rootVals.eRoot
+    return rootValues.eRoot
   }
 
   /**

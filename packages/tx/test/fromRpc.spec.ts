@@ -76,11 +76,15 @@ describe('[normalizeTxParams]', () => {
     const normedTx = normalizeTxParams(rpcTx)
     const tx = createTxFromTxData(normedTx)
     assert.equal(normedTx.gasLimit, 21000n, 'correctly converted "gas" to "gasLimit"')
-    assert.equal(bytesToHex(tx.hash()), rpcTx.hash, 'converted normed tx data to transaction objec')
+    assert.equal(
+      bytesToHex(tx.hash()),
+      rpcTx.hash,
+      'converted normed tx data to transaction object',
+    )
   })
 })
 
-describe('fromRPC: interpret v/r/s vals of 0x0 as undefined for Optimism system txs', () => {
+describe('fromRPC: interpret v/r/s values of 0x0 as undefined for Optimism system txs', () => {
   it('should work', async () => {
     for (const txType of txTypes) {
       ;(optimismTx as any).type = txType

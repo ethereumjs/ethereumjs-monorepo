@@ -1,3 +1,4 @@
+// cspell:ignore Ierc
 import { createBlockFromJsonRpcProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
@@ -131,7 +132,7 @@ describe('RPC State Manager API tests', () => {
 
     const spy = vi.spyOn(state, 'getAccountFromProvider')
     spy.mockImplementation(() => {
-      throw new Error('shouldnt call me')
+      throw new Error("shouldn't call me")
     })
 
     await state.checkpoint()

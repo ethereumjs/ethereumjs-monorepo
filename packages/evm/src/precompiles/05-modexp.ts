@@ -1,3 +1,4 @@
+// cspell:ignore mult expmod
 import {
   BIGINT_0,
   BIGINT_1,

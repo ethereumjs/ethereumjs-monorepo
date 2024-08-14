@@ -1,3 +1,4 @@
+// cspell:ignore WHATWG
 import { hexToBytes } from '@ethereumjs/util'
 import { isMultiaddr, multiaddr } from '@multiformats/multiaddr'
 import { URL } from 'url'

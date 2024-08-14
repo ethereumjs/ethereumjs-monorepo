@@ -37,16 +37,16 @@ common.hardforkBlock = function (hardfork: string | undefined) {
 
 describe('EIP4895 tests', () => {
   it('should correctly generate withdrawalsRoot', async () => {
-    // get withdwalsArray
+    // get withdrawalsArray
     const gethBlockBytesArray = RLP.decode(hexToBytes(`0x${gethWithdrawals8BlockRlp}`))
     const withdrawals = (gethBlockBytesArray[3] as WithdrawalBytes[]).map((wa) =>
       Withdrawal.fromValuesArray(wa),
     )
     assert.equal(withdrawals.length, 8, '8 withdrawals should have been found')
-    const gethWitdrawalsRoot = (gethBlockBytesArray[0] as Uint8Array[])[16] as Uint8Array
+    const gethWithdrawalsRoot = (gethBlockBytesArray[0] as Uint8Array[])[16] as Uint8Array
     assert.deepEqual(
       await genWithdrawalsTrieRoot(withdrawals),
-      gethWitdrawalsRoot,
+      gethWithdrawalsRoot,
       'withdrawalsRoot should be valid',
     )
   })

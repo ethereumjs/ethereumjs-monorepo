@@ -1,3 +1,4 @@
+// cspell:ignore gethk vecs
 import {
   BlockHeader,
   createBlockFromExecutionPayload,

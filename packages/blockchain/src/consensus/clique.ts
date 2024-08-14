@@ -1,3 +1,4 @@
+// cspell:ignore NOTURN addrs
 import {
   cliqueEpochTransitionSigners,
   cliqueIsEpochTransition,
@@ -120,7 +121,7 @@ export class CliqueConsensus implements Consensus {
 
   /**
    *
-   * @param param dictionary containin a {@link Blockchain} object
+   * @param param dictionary containing a {@link Blockchain} object
    *
    * Note: this method must be called before consensus checks are used or type errors will occur
    */

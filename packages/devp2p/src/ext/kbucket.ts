@@ -1,3 +1,4 @@
+// cspell:ignore Kademlia Slominski tomonari dont
 /*
 index.js - Kademlia DHT K-bucket implementation as a binary tree.
 
@@ -154,7 +155,7 @@ export class KBucket {
       // we need to ping the first this._numberOfNodesToPing
       // in order to determine if they are alive
       // only if one of the pinged nodes does not respond, can the new contact
-      // be added (this prevents DoS flodding with new invalid contacts)
+      // be added (this prevents DoS flooding with new invalid contacts)
       this.events.emit('ping', node.contacts.slice(0, this._numberOfNodesToPing), contact)
       return this
     }
