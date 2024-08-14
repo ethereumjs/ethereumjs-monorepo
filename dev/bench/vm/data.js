@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1723623545279,
+  "lastUpdate": 1723660018655,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "5d4b2b2f881852a8c1c28392c5c85aa82c69fd09",
-          "message": "Tx: move and rename constructors (#3533)\n\n* tx: move files into dirs\r\n\r\n* tx: remove static constructors\r\n\r\n* tx: export new constructors\r\n\r\n* monorepo: rename all tx constructors\r\n\r\n* tx: fix tests\r\n\r\n* fix examples\r\n\r\n* fix tx examples\r\n\r\n* add 4844 docs\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* tx: update dev docs\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-07-23T21:41:33+02:00",
-          "tree_id": "a8604de648ed2c3689ff42f7a1b971874f52814a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5d4b2b2f881852a8c1c28392c5c85aa82c69fd09"
-        },
-        "date": 1721763852019,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38756,
-            "range": "±1.65%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 36175,
-            "range": "±3.21%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37355,
-            "range": "±1.46%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36749,
-            "range": "±1.63%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35650,
-            "range": "±1.83%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.60%",
             "unit": "ops/sec",
             "extra": "91 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "08c1062d24d98230121b0ee6ba9e77383fcc922e",
+          "message": "Consolidate `normalizeTxParams` method usage (#3588)\n\n* consolidate normalizeTxParams in `tx`\r\n\r\n* lint",
+          "timestamp": "2024-08-14T20:20:47+02:00",
+          "tree_id": "4e75b6d2cedc685de0749a219cc9e08cb63589e6",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/08c1062d24d98230121b0ee6ba9e77383fcc922e"
+        },
+        "date": 1723660018142,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38157,
+            "range": "±1.63%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36277,
+            "range": "±3.28%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 36937,
+            "range": "±1.71%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36014,
+            "range": "±1.70%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35571,
+            "range": "±1.82%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
           }
         ]
       }
