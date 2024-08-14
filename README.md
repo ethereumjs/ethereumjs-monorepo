@@ -14,7 +14,7 @@ All libraries are bound together by the core [Common][common-package] library ke
 
 Finally, the [EthereumJS Execution Client][client-package] (EthereumJS) has been in active development for some time now. It already serves a variety of purposes like testing, research (e.g. EIPs) and developer tooling to engage with the protocol.
 
-Also to note: on the Ethereum Consensus side, the ChainSafe [Lodestar](https://github.com/ChainSafe/lodestar) repository complements this repository with an Ethereum Consensus Client implementation as well as various protocol implementations (like an SSZ library) developed in the context of Ethereum Consensus layer evolution.
+Also to note: on the Ethereum Consensus side, the ChainSafe [Lodestar](https://github.com/ChainSafe/lodestar) repository complements this repository with an Ethereum Consensus Client implementation as well as various protocol implementations (like an SSZ library) developed in the context of Ethereum Consensus layer evolution. thisisnotwawroejjsdald
 
 ## Packages
 
