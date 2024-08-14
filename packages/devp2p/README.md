@@ -172,7 +172,7 @@ import { hexToBytes } from '@ethereumjs/util'
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet })
   const PRIVATE_KEY = hexToBytes(
-    '0xed6df2d4b7e82d105538e4a1279925a16a84e772243e80a561e1b201f2e78220'
+    '0xed6df2d4b7e82d105538e4a1279925a16a84e772243e80a561e1b201f2e78220',
   )
   const rlpx = new RLPx(PRIVATE_KEY, {
     maxPeers: 25,
@@ -541,7 +541,7 @@ The following is a list of major implementations of the `devp2p` stack in other 
 
 - Python: [pydevp2p](https://github.com/ethereum/pydevp2p)
 - Go: [Go Ethereum](https://github.com/ethereum/go-ethereum/tree/master/p2p)
-- Elixir: [Exthereum](https://github.com/exthereum/exth_crypto)
+- Elixir: [Exthereum](https://github.com/exthereum/exth_crypto) <!-- cspell:disable-line --->
 
 ### Links
 

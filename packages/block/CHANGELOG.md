@@ -131,7 +131,7 @@ While you could use our libraries in the browser libraries before, there had bee
 
 WE HAVE ELIMINATED ALL OF THEM.
 
-The largest two undertakings: First: we have rewritten all (half) of our API and elimited the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went throuh our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
+The largest two undertakings: First: we have rewritten all (half) of our API and eliminated the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went through our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
 
 Together with some few other modifications this now allows to run each (maybe adding an asterisk for client and devp2p) of our libraries directly in the browser - more or less without any modifications - see the `examples/browser.html` file in each package folder for an easy to set up example.
 
@@ -417,14 +417,14 @@ const block = Block.fromBlockData(
     header: {
       withdrawalsRoot: Buffer.from(
         '69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357',
-        'hex'
+        'hex',
       ),
     },
     withdrawals: [withdrawal],
   },
   {
     common,
-  }
+  },
 )
 ```
 
@@ -455,11 +455,11 @@ common.setForkHashes(genesisHash)
 
 ### New RPC and Ethers Static Constructors
 
-Two new static constructos have been added to the library, see PR [#2315](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2315) `Block.fromEthersProvider()` allows for an easy instantiation of a `Block` object using an [Ethers](https://ethers.io) provider connecting e.g. to a local node or a service provider like Infura. The `Block.fromRPC()` static constructor can be used for a straight-forward block instantiation if the block data is coming from an RPC request. This static constructor replaces the old standalong `blockFromRPC()` method which is now marked as `deprecated`.
+Two new static constructors have been added to the library, see PR [#2315](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2315) `Block.fromEthersProvider()` allows for an easy instantiation of a `Block` object using an [Ethers](https://ethers.io) provider connecting e.g. to a local node or a service provider like Infura. The `Block.fromRPC()` static constructor can be used for a straight-forward block instantiation if the block data is coming from an RPC request. This static constructor replaces the old standalone `blockFromRPC()` method which is now marked as `deprecated`.
 
 ### Other Changes and Fixes
 
-- Adressed several typing issues in the `blockFromRPC()` method, PR [#2302](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2302)
+- Addressed several typing issues in the `blockFromRPC()` method, PR [#2302](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2302)
 
 ## 4.0.0 - 2022-09-06
 
@@ -511,7 +511,7 @@ const block = Block.fromBlockData(
   {
     // Provide your block data here or use default values
   },
-  { common }
+  { common },
 )
 ```
 
@@ -526,7 +526,7 @@ Beta 2 release for the upcoming breaking release round on the [EthereumJS monore
 
 ### Removed Default Exports
 
-The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely dissalows using.
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all across the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
 
 Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
 
@@ -534,7 +534,7 @@ Now every import is a named import and we think the long term benefits will very
 
 #### Common Library Import Updates
 
-Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all accross our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
+Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all across our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
 
 So Common import and usage is changing from:
 
@@ -590,7 +590,7 @@ const block = Block.fromBlockData(
   {
     // Provide your block data here or use default values
   },
-  { common }
+  { common },
 )
 ```
 
@@ -720,7 +720,7 @@ const block = Block.fromBlockData(
   {
     // Provide your block data here or use default values
   },
-  { common }
+  { common },
 )
 ```
 
@@ -742,7 +742,7 @@ invalid transaction trie (block number=1 hash=0xe074b7b8d725c4000f278ae55cedbc76
 
 The extended errors give substantial more object and chain context and should ease debugging.
 
-**Potentially breaking**: Attention! If you do react on errors in your code and do exact errror matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisions and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
+**Potentially breaking**: Attention! If you do react on errors in your code and do exact error matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisons and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
 
 ### Other Changes
 
@@ -763,7 +763,7 @@ This release comes with experimental support for the Merge HF as defined in [EIP
 
 #### PoS Block Instantiation
 
-Proof-of-Stake compatible execution blocks come with its own set of header field simplifications and associated validation rules. The difficuly is set to `0` since not relevant any more, just to name an example. For a full list of changes see `EIP-3675`.
+Proof-of-Stake compatible execution blocks come with its own set of header field simplifications and associated validation rules. The difficulty is set to `0` since not relevant any more, just to name an example. For a full list of changes see `EIP-3675`.
 
 You can instantiate a Merge/PoS block like this:
 
@@ -775,7 +775,7 @@ const block = Block.fromBlockData(
   {
     // Provide your block data here or use default values
   },
-  { common }
+  { common },
 )
 ```
 
@@ -826,7 +826,7 @@ const block = Block.fromBlockData(
       gasUsed: new BN(60),
     },
   },
-  { common }
+  { common },
 )
 
 // Base fee will increase for next block since the
@@ -983,7 +983,7 @@ const header = BlockHeader.fromHeaderData(headerData)
 ```ts
 const serialized = Buffer.from(
   'f901f7a06bfee7294bf44572b7266358e627f3c35105e1c3851f3de09e6d646f955725a7a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000830200000f837a120080845d20ab8080a00000000000000000000000000000000000000000000000000000000000000000880000000000000000',
-  'hex'
+  'hex',
 )
 const header = BlockHeader.fromRLPSerializedHeader(serialized)
 ```
@@ -995,7 +995,7 @@ const valuesArray = header.raw()
 BlockHeader.fromValuesArray(valuesArray)
 ```
 
-Generally internal types representing block header values are now closer to their domain representation (number, difficulty, gasLimit) instead of having everthing represented as a `Buffer`.
+Generally internal types representing block header values are now closer to their domain representation (number, difficulty, gasLimit) instead of having everything represented as a `Buffer`.
 
 **Block Class**
 
@@ -1009,9 +1009,9 @@ Learn more about the full API in the [docs](./docs/README.md).
 
 #### Immutability
 
-The returned block is now frozen and immutable. To work with a maliable block, copy it with `const fakeBlock = Object.create(block)`.
+The returned block is now frozen and immutable. To work with a mutable block, copy it with `const fakeBlock = Object.create(block)`.
 
-If you need `Block` mutability - e.g. because you want to subclass `Block` and modifiy its behavior - there is a `freeze` option to prevent the `Object.freeze()` call on initialization, see PR [#941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/941).
+If you need `Block` mutability - e.g. because you want to subclass `Block` and modify its behavior - there is a `freeze` option to prevent the `Object.freeze()` call on initialization, see PR [#941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/941).
 
 #### Promise-based API
 
@@ -1058,13 +1058,13 @@ On the `Block` library new corresponding methods have been added which both oper
 
 **Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
 
-The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`, see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
+The HF setting is now automatically taken from the HF set for `Common.DEFAULT_HARDFORK`, see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
 
 ### Dual ES5 and ES2017 Builds
 
 We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
 
-Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 ### Other Changes
 
@@ -1191,7 +1191,7 @@ const header = BlockHeader.fromHeaderData(headerData)
 ```ts
 const serialized = Buffer.from(
   'f901f7a06bfee7294bf44572b7266358e627f3c35105e1c3851f3de09e6d646f955725a7a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000830200000f837a120080845d20ab8080a00000000000000000000000000000000000000000000000000000000000000000880000000000000000',
-  'hex'
+  'hex',
 )
 const header = BlockHeader.fromRLPSerializedHeader(serialized)
 ```
@@ -1204,7 +1204,7 @@ BlockHeader.fromValuesArray(valuesArray)
 ```
 
 Generally internal types representing block header values are now closer to their domain representation
-(number, difficulty, gasLimit) instead of having everthing represented as a `Buffer`.
+(number, difficulty, gasLimit) instead of having everything represented as a `Buffer`.
 
 **Block Class**
 
@@ -1218,7 +1218,7 @@ Learn more about the full API in the [docs](./docs/README.md).
 
 #### Immutability
 
-The returned block is now frozen and immutable. To work with a maliable block, copy it with `const fakeBlock = Object.create(block)`.
+The returned block is now frozen and immutable. To work with a mutable block, copy it with `const fakeBlock = Object.create(block)`.
 
 #### Promise-based API
 
@@ -1264,7 +1264,7 @@ as an input parameter.
 ### New Default Hardfork
 
 **Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
-The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
+The HF setting is now automatically taken from the HF set for `Common.DEFAULT_HARDFORK`,
 see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
 
 ### Dual ES5 and ES2017 Builds
@@ -1276,7 +1276,7 @@ for code linting and formatting and the introduction of a new build setup.
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
 a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
 PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result
-in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 ### Other Changes
 

@@ -23,7 +23,7 @@ Common linting configuration utilizing:
 
 - [ESLint](https://eslint.org/)
 - [TypeScript ESLint](https://github.com/typescript-eslint/typescript-eslint)
-- [TypeStrict](https://github.com/krzkaczor/TypeStrict)
+- [Type-strict](https://github.com/krzkaczor/Type-strict)
 - [Prettier](https://prettier.io/docs/en/integrating-with-linters.html)
 
 Exposed CLI commands:

@@ -85,7 +85,7 @@ const main = async () => {
 
   const parentBlock = Block.fromBlockData(
     { header: { number: 1n } },
-    { skipConsensusFormatValidation: true }
+    { skipConsensusFormatValidation: true },
   )
   const headerData = {
     number: 2n,
@@ -223,7 +223,7 @@ const main = async () => {
   const vm = await VM.create({ common, setHardfork: true })
 
   const block = Block.fromRPC(goerliBlock2, undefined, { common })
-  const result = await vm.runBlock({ block, generate: true, skipHeaderValidation: true }) // we skip header validaiton since we are running a block without the full Ethereum history available
+  const result = await vm.runBlock({ block, generate: true, skipHeaderValidation: true }) // we skip header validation since we are running a block without the full Ethereum history available
   console.log(`The state root for Goerli block 2 is ${bytesToHex(result.stateRoot)}`)
 }
 
@@ -274,12 +274,12 @@ const main = async () => {
   const blockchain = await Blockchain.create({ genesisState })
   const vm = await VM.create({ blockchain, genesisState })
   const account = await vm.stateManager.getAccount(
-    Address.fromString('0x000d836201318ec6899a67540690382780743280')
+    Address.fromString('0x000d836201318ec6899a67540690382780743280'),
   )
   console.log(
     `This balance for account 0x000d836201318ec6899a67540690382780743280 in this chain's genesis state is ${Number(
-      account?.balance
-    )}`
+      account?.balance,
+    )}`,
   )
 }
 main()

@@ -284,7 +284,7 @@ const tx = LegacyTransaction.fromTxData(txParams, { common })
 
 const privateKey = Buffer.from(
   'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-  'hex'
+  'hex',
 )
 
 const signedTx = tx.sign(privateKey)
@@ -305,12 +305,12 @@ import { Capability, EIP1559CompatibleTx, TransactionFactory } from '@ethereumjs
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
-const txData = { type: 2, maxFeePerGas: BigInt(20) } // Creates an EIP-1559 compatible transac
+const txData = { type: 2, maxFeePerGas: BigInt(20) } // Creates an EIP-1559 compatible transaction
 const tx = TransactionFactory.fromTxData(txData, { common })
 
 if (tx.supports(Capability.EIP1559FeeMarket)) {
   console.log(
-    `The max fee per gas for this transaction is ${(tx as EIP1559CompatibleTx).maxFeePerGas}`
+    `The max fee per gas for this transaction is ${(tx as EIP1559CompatibleTx).maxFeePerGas}`,
   )
 }
 ```

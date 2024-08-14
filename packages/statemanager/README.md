@@ -56,7 +56,7 @@ const main = async () => {
   console.log(
     `Account at address ${address.toString()} has balance ${
       (await stateManager.getAccount(address))?.balance
-    }`
+    }`,
   )
 }
 main()
@@ -116,10 +116,10 @@ const main = async () => {
   const contractAddress = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
   const byteCode = hexToBytes('0x67ffffffffffffffff600160006000fb')
   const storageKey1 = hexToBytes(
-    '0x0000000000000000000000000000000000000000000000000000000000000001'
+    '0x0000000000000000000000000000000000000000000000000000000000000001',
   )
   const storageKey2 = hexToBytes(
-    '0x0000000000000000000000000000000000000000000000000000000000000002'
+    '0x0000000000000000000000000000000000000000000000000000000000000002',
   )
   const storageValue1 = hexToBytes('0x01')
   const storageValue2 = hexToBytes('0x02')
@@ -137,11 +137,11 @@ const main = async () => {
   console.log(await partialStateManager.getContractCode(contractAddress)) // contract bytecode is not included in proof
   console.log(
     await partialStateManager.getContractStorage(contractAddress, storageKey1),
-    storageValue1
+    storageValue1,
   ) // should match
   console.log(
     await partialStateManager.getContractStorage(contractAddress, storageKey2),
-    storageValue2
+    storageValue2,
   ) // should match
 
   const accountFromNewSM = await partialStateManager.getAccount(contractAddress)
@@ -188,7 +188,7 @@ main()
 
 ##### Instantiating the EVM
 
-In order to have an EVM instance that supports the BLOCKHASH opcode (which requires access to block history), you must instantiate both the `RPCStateManager` and the `RpcBlockChain` and use that when initalizing your EVM instance as below:
+In order to have an EVM instance that supports the BLOCKHASH opcode (which requires access to block history), you must instantiate both the `RPCStateManager` and the `RpcBlockChain` and use that when initializing your EVM instance as below:
 
 ```ts
 // ./examples/evm.ts
