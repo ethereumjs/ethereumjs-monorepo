@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1723599159678,
+  "lastUpdate": 1723623545279,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f66a5e0d0ae405323eb06c95b657314085c87d0c",
-          "message": "Common Refactor (#3532)\n\n* Align gas price names\n\n* Throw for parameter accesses on non-existing values instead of implicitly 0-lifying\n\n* Gas price fixes\n\n* Some fixes\n\n* Fixes\n\n* Fix client eth_gasPrice RPC call test\n\n* Switch to a consistent EIP based structure (remove hybrid HF/EIP parameter structure)\n\n* Code simplifications, locally remove topic from param* API in Common, fix tests\n\n* Monorepo-wide topic removal\n\n* Fixes\n\n* Minor\n\n* Fix client test",
-          "timestamp": "2024-07-23T13:20:52-04:00",
-          "tree_id": "49722e28063b6ea18b4a533193f53aec2f01e853",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f66a5e0d0ae405323eb06c95b657314085c87d0c"
-        },
-        "date": 1721755535529,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38185,
-            "range": "±1.69%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 37076,
-            "range": "±2.20%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 35969,
-            "range": "±3.56%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36162,
-            "range": "±1.63%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35731,
-            "range": "±1.68%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.68%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1054c4ae436a13e3ca4627f477a90919e7a11c9e",
+          "message": "Block: treeshaking tasks (#3586)\n\n* Block: move block and header into directories\r\n\r\n* Block: move \"fromRPC\" functions into constructors\r\n\r\n* Block: update imports in tests\r\n\r\n* fix linting errors\r\n\r\n* Block: rename createBlockFromValuesArray\r\n\r\n* Block: rename BlockHeaderFromValuesArray\r\n\r\n* lint fix\r\n\r\n* Mini-change to re-trigger CI\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2024-08-14T10:13:34+02:00",
+          "tree_id": "558b0eda7bc2a14da34250920b5cb613d1f64778",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1054c4ae436a13e3ca4627f477a90919e7a11c9e"
+        },
+        "date": 1723623544750,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38085,
+            "range": "±2.05%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36152,
+            "range": "±3.00%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37015,
+            "range": "±1.47%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36439,
+            "range": "±1.52%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35940,
+            "range": "±1.60%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
           }
         ]
       }
