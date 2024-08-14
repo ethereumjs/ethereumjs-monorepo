@@ -57,7 +57,7 @@
     "verkle-cryptography-wasm": "^0.4.5",
     "@ethereumjs/block": "^5.2.0",
     "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/util": "^9.0.3"
+    "@ethereumjs/util": "^9.1.0"
   },
   "engines": {
     "node": ">=18"
