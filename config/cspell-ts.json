@@ -1,5 +1,6 @@
 {
   "language": "en-US",
+  "ignoreRegExpList": ["/0x[0-9A-Fa-f]+/"],
   "words": [
     "Hardfork",
     "hardfork",
