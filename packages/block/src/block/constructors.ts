@@ -33,7 +33,7 @@ import {
   Block,
   blockHeaderFromRpc,
   createBlockHeader,
-  createBlockHeaderFromValuesArray,
+  createBlockHeaderFromBytesArray,
   executionPayloadFromBeaconPayload,
 } from '../index.js'
 
@@ -157,7 +157,7 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
   // First try to load header so that we can use its common (in case of setHardfork being activated)
   // to correctly make checks on the hardforks
   const [headerData, txsData, uhsData, ...valuesTail] = values
-  const header = createBlockHeaderFromValuesArray(headerData, opts)
+  const header = createBlockHeaderFromBytesArray(headerData, opts)
 
   // conditional assignment of rest of values and splicing them out from the valuesTail
   const withdrawalBytes = header.common.isActivatedEIP(4895)
@@ -222,7 +222,7 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
     uncleOpts.setHardfork = true
   }
   for (const uncleHeaderData of uhsData ?? []) {
-    uncleHeaders.push(createBlockHeaderFromValuesArray(uncleHeaderData, uncleOpts))
+    uncleHeaders.push(createBlockHeaderFromBytesArray(uncleHeaderData, uncleOpts))
   }
 
   const withdrawals = (withdrawalBytes as WithdrawalBytes[])

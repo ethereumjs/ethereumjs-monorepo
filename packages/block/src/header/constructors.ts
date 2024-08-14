@@ -23,10 +23,7 @@ export function createBlockHeader(headerData: HeaderData = {}, opts: BlockOption
  * @param values
  * @param opts
  */
-export function createBlockHeaderFromValuesArray(
-  values: BlockHeaderBytes,
-  opts: BlockOptions = {},
-) {
+export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
   const headerData = valuesArrayToHeaderData(values)
   const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot, requestsRoot } =
     headerData
@@ -71,7 +68,7 @@ export function createBlockHeaderFromRLP(
   if (!Array.isArray(values)) {
     throw new Error('Invalid serialized header input. Must be array')
   }
-  return createBlockHeaderFromValuesArray(values as Uint8Array[], opts)
+  return createBlockHeaderFromBytesArray(values as Uint8Array[], opts)
 }
 
 export function createSealedCliqueBlockHeader(

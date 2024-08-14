@@ -18,7 +18,7 @@ import {
   createBlockFromRLPSerializedBlock,
   createBlockHeader,
   createBlockHeaderFromRLP,
-  createBlockHeaderFromValuesArray,
+  createBlockHeaderFromBytesArray,
 } from '../src/index.js'
 
 import * as testData from './testdata/bcBlockGasLimitTest.json'
@@ -146,10 +146,10 @@ describe('[Block]: Header functions', () => {
     headerArray[13] = zeros(32) // mixHash
     headerArray[14] = zeros(8) // nonce
 
-    let header = createBlockHeaderFromValuesArray(headerArray, { common })
+    let header = createBlockHeaderFromBytesArray(headerArray, { common })
     assert.ok(Object.isFrozen(header), 'block should be frozen by default')
 
-    header = createBlockHeaderFromValuesArray(headerArray, { common, freeze: false })
+    header = createBlockHeaderFromBytesArray(headerArray, { common, freeze: false })
     assert.ok(
       !Object.isFrozen(header),
       'block should not be frozen when freeze deactivated in options',
@@ -169,14 +169,14 @@ describe('[Block]: Header functions', () => {
     headerArray[14] = zeros(8) // nonce
     headerArray[15] = zeros(4) // bad data
     try {
-      createBlockHeaderFromValuesArray(headerArray)
+      createBlockHeaderFromBytesArray(headerArray)
     } catch (e: any) {
       const expectedError = 'invalid header. More values than expected were received'
       assert.ok(e.message.includes(expectedError), 'should throw on more values than expected')
     }
 
     try {
-      createBlockHeaderFromValuesArray(headerArray.slice(0, 5))
+      createBlockHeaderFromBytesArray(headerArray.slice(0, 5))
     } catch (e: any) {
       const expectedError = 'invalid header. Less values than expected were received'
       assert.ok(e.message.includes(expectedError), 'should throw on less values than expected')
