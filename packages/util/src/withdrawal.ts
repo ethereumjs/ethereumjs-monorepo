@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { Address } from './address.js'
 import { bigIntToHex, bytesToHex, toBytes } from './bytes.js'
 import { BIGINT_0 } from './constants.js'
@@ -48,57 +49,8 @@ export class Withdrawal {
     public readonly amount: bigint,
   ) {}
 
-  public static fromWithdrawalData(withdrawalData: WithdrawalData) {
-    const {
-      index: indexData,
-      validatorIndex: validatorIndexData,
-      address: addressData,
-      amount: amountData,
-    } = withdrawalData
-    const index = toType(indexData, TypeOutput.BigInt)
-    const validatorIndex = toType(validatorIndexData, TypeOutput.BigInt)
-    const address = addressData instanceof Address ? addressData : new Address(toBytes(addressData))
-    const amount = toType(amountData, TypeOutput.BigInt)
-
-    return new Withdrawal(index, validatorIndex, address, amount)
-  }
-
-  public static fromValuesArray(withdrawalArray: WithdrawalBytes) {
-    if (withdrawalArray.length !== 4) {
-      throw Error(`Invalid withdrawalArray length expected=4 actual=${withdrawalArray.length}`)
-    }
-    const [index, validatorIndex, address, amount] = withdrawalArray
-    return Withdrawal.fromWithdrawalData({ index, validatorIndex, address, amount })
-  }
-
-  /**
-   * Convert a withdrawal to a buffer array
-   * @param withdrawal the withdrawal to convert
-   * @returns buffer array of the withdrawal
-   */
-  public static toBytesArray(withdrawal: Withdrawal | WithdrawalData): WithdrawalBytes {
-    const { index, validatorIndex, address, amount } = withdrawal
-    const indexBytes =
-      toType(index, TypeOutput.BigInt) === BIGINT_0
-        ? new Uint8Array()
-        : toType(index, TypeOutput.Uint8Array)
-    const validatorIndexBytes =
-      toType(validatorIndex, TypeOutput.BigInt) === BIGINT_0
-        ? new Uint8Array()
-        : toType(validatorIndex, TypeOutput.Uint8Array)
-    const addressBytes =
-      address instanceof Address ? (<Address>address).bytes : toType(address, TypeOutput.Uint8Array)
-
-    const amountBytes =
-      toType(amount, TypeOutput.BigInt) === BIGINT_0
-        ? new Uint8Array()
-        : toType(amount, TypeOutput.Uint8Array)
-
-    return [indexBytes, validatorIndexBytes, addressBytes, amountBytes]
-  }
-
   raw() {
-    return Withdrawal.toBytesArray(this)
+    return toBytesArray(this)
   }
 
   toValue() {
@@ -118,4 +70,53 @@ export class Withdrawal {
       amount: bigIntToHex(this.amount),
     }
   }
+}
+
+export function fromValuesArray(withdrawalArray: WithdrawalBytes) {
+  if (withdrawalArray.length !== 4) {
+    throw Error(`Invalid withdrawalArray length expected=4 actual=${withdrawalArray.length}`)
+  }
+  const [index, validatorIndex, address, amount] = withdrawalArray
+  return fromWithdrawalData({ index, validatorIndex, address, amount })
+}
+
+/**
+ * Convert a withdrawal to a buffer array
+ * @param withdrawal the withdrawal to convert
+ * @returns buffer array of the withdrawal
+ */
+export function toBytesArray(withdrawal: Withdrawal | WithdrawalData): WithdrawalBytes {
+  const { index, validatorIndex, address, amount } = withdrawal
+  const indexBytes =
+    toType(index, TypeOutput.BigInt) === BIGINT_0
+      ? new Uint8Array()
+      : toType(index, TypeOutput.Uint8Array)
+  const validatorIndexBytes =
+    toType(validatorIndex, TypeOutput.BigInt) === BIGINT_0
+      ? new Uint8Array()
+      : toType(validatorIndex, TypeOutput.Uint8Array)
+  const addressBytes =
+    address instanceof Address ? (<Address>address).bytes : toType(address, TypeOutput.Uint8Array)
+
+  const amountBytes =
+    toType(amount, TypeOutput.BigInt) === BIGINT_0
+      ? new Uint8Array()
+      : toType(amount, TypeOutput.Uint8Array)
+
+  return [indexBytes, validatorIndexBytes, addressBytes, amountBytes]
+}
+
+export function fromWithdrawalData(withdrawalData: WithdrawalData) {
+  const {
+    index: indexData,
+    validatorIndex: validatorIndexData,
+    address: addressData,
+    amount: amountData,
+  } = withdrawalData
+  const index = toType(indexData, TypeOutput.BigInt)
+  const validatorIndex = toType(validatorIndexData, TypeOutput.BigInt)
+  const address = addressData instanceof Address ? addressData : new Address(toBytes(addressData))
+  const amount = toType(amountData, TypeOutput.BigInt)
+
+  return new Withdrawal(index, validatorIndex, address, amount)
 }
