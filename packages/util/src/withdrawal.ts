@@ -50,7 +50,7 @@ export class Withdrawal {
   ) {}
 
   raw() {
-    return toBytesArray(this)
+    return withdrawalToBytesArray(this)
   }
 
   toValue() {
@@ -72,12 +72,12 @@ export class Withdrawal {
   }
 }
 
-export function fromValuesArray(withdrawalArray: WithdrawalBytes) {
+export function createWithdrawalFromValuesArray(withdrawalArray: WithdrawalBytes) {
   if (withdrawalArray.length !== 4) {
     throw Error(`Invalid withdrawalArray length expected=4 actual=${withdrawalArray.length}`)
   }
   const [index, validatorIndex, address, amount] = withdrawalArray
-  return fromWithdrawalData({ index, validatorIndex, address, amount })
+  return createWithdrawal({ index, validatorIndex, address, amount })
 }
 
 /**
@@ -85,7 +85,7 @@ export function fromValuesArray(withdrawalArray: WithdrawalBytes) {
  * @param withdrawal the withdrawal to convert
  * @returns buffer array of the withdrawal
  */
-export function toBytesArray(withdrawal: Withdrawal | WithdrawalData): WithdrawalBytes {
+export function withdrawalToBytesArray(withdrawal: Withdrawal | WithdrawalData): WithdrawalBytes {
   const { index, validatorIndex, address, amount } = withdrawal
   const indexBytes =
     toType(index, TypeOutput.BigInt) === BIGINT_0
@@ -106,7 +106,7 @@ export function toBytesArray(withdrawal: Withdrawal | WithdrawalData): Withdrawa
   return [indexBytes, validatorIndexBytes, addressBytes, amountBytes]
 }
 
-export function fromWithdrawalData(withdrawalData: WithdrawalData) {
+export function createWithdrawal(withdrawalData: WithdrawalData) {
   const {
     index: indexData,
     validatorIndex: validatorIndexData,
