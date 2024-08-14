@@ -166,20 +166,6 @@ export class ConsolidationRequest extends CLRequest<CLRequestType.Consolidation>
     super(CLRequestType.Consolidation)
   }
 
-  public static fromRequestData(consolidationData: ConsolidationRequestData): ConsolidationRequest {
-    const { sourceAddress, sourcePubkey, targetPubkey } = consolidationData
-    return new ConsolidationRequest(sourceAddress, sourcePubkey, targetPubkey)
-  }
-
-  public static fromJSON(jsonData: ConsolidationRequestV1): ConsolidationRequest {
-    const { sourceAddress, sourcePubkey, targetPubkey } = jsonData
-    return this.fromRequestData({
-      sourceAddress: hexToBytes(sourceAddress),
-      sourcePubkey: hexToBytes(sourcePubkey),
-      targetPubkey: hexToBytes(targetPubkey),
-    })
-  }
-
   serialize() {
     return concatBytes(
       Uint8Array.from([this.type]),
@@ -194,19 +180,6 @@ export class ConsolidationRequest extends CLRequest<CLRequestType.Consolidation>
       targetPubkey: bytesToHex(this.targetPubkey),
     }
   }
-
-  public static deserialize(bytes: Uint8Array): ConsolidationRequest {
-    const [sourceAddress, sourcePubkey, targetPubkey] = RLP.decode(bytes.slice(1)) as [
-      Uint8Array,
-      Uint8Array,
-      Uint8Array,
-    ]
-    return this.fromRequestData({
-      sourceAddress,
-      sourcePubkey,
-      targetPubkey,
-    })
-  }
 }
 
 export class CLRequestFactory {
@@ -217,7 +190,7 @@ export class CLRequestFactory {
       case CLRequestType.Withdrawal:
         return createWithDrawalRequestFromBytes(bytes)
       case CLRequestType.Consolidation:
-        return ConsolidationRequest.deserialize(bytes)
+        return createConsolidationRequestFromBytes(bytes)
       default:
         throw Error(`Invalid request type=${bytes[0]}`)
     }
@@ -281,5 +254,36 @@ export function createWithDrawalRequestFromBytes(bytes: Uint8Array): WithdrawalR
     sourceAddress,
     validatorPubkey,
     amount: bytesToBigInt(amount),
+  })
+}
+
+export function createConsolidationRequest(
+  consolidationData: ConsolidationRequestData,
+): ConsolidationRequest {
+  const { sourceAddress, sourcePubkey, targetPubkey } = consolidationData
+  return new ConsolidationRequest(sourceAddress, sourcePubkey, targetPubkey)
+}
+
+export function createConsolidationRequestFromJSON(
+  jsonData: ConsolidationRequestV1,
+): ConsolidationRequest {
+  const { sourceAddress, sourcePubkey, targetPubkey } = jsonData
+  return createConsolidationRequest({
+    sourceAddress: hexToBytes(sourceAddress),
+    sourcePubkey: hexToBytes(sourcePubkey),
+    targetPubkey: hexToBytes(targetPubkey),
+  })
+}
+
+export function createConsolidationRequestFromBytes(bytes: Uint8Array): ConsolidationRequest {
+  const [sourceAddress, sourcePubkey, targetPubkey] = RLP.decode(bytes.slice(1)) as [
+    Uint8Array,
+    Uint8Array,
+    Uint8Array,
+  ]
+  return createConsolidationRequest({
+    sourceAddress,
+    sourcePubkey,
+    targetPubkey,
   })
 }

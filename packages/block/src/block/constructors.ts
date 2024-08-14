@@ -9,13 +9,13 @@ import {
 } from '@ethereumjs/tx'
 import {
   CLRequestFactory,
-  ConsolidationRequest,
-  WithdrawalRequest,
   bigIntToHex,
   bytesToHex,
   bytesToUtf8,
+  createConsolidationRequestFromJSON,
   createDepositRequestFromJSON,
   createWithdrawal,
+  createWithdrawalRequestFromJSON,
   equalsBytes,
   fetchFromProvider,
   getProvider,
@@ -424,12 +424,12 @@ export async function createBlockFromExecutionPayload(
   }
   if (withdrawalRequests !== undefined && withdrawalRequests !== null) {
     for (const wJson of withdrawalRequests) {
-      requests!.push(WithdrawalRequest.fromJSON(wJson))
+      requests!.push(createWithdrawalRequestFromJSON(wJson))
     }
   }
   if (consolidationRequests !== undefined && consolidationRequests !== null) {
     for (const cJson of consolidationRequests) {
-      requests!.push(ConsolidationRequest.fromJSON(cJson))
+      requests!.push(createConsolidationRequestFromJSON(cJson))
     }
   }
 

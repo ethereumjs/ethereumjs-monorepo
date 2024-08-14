@@ -1,9 +1,9 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   KECCAK256_RLP,
-  WithdrawalRequest,
   bytesToBigInt,
   createDepositRequest,
+  createWithdrawalRequest,
   randomBytes,
 } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
@@ -36,7 +36,7 @@ function getRandomWithdrawalRequest(): CLRequest<CLRequestType> {
     validatorPubkey: randomBytes(48),
     amount: bytesToBigInt(randomBytes(8)),
   }
-  return WithdrawalRequest.fromRequestData(withdrawalRequestData) as CLRequest<CLRequestType>
+  return createWithdrawalRequest(withdrawalRequestData) as CLRequest<CLRequestType>
 }
 
 const common = new Common({
