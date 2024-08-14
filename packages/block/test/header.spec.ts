@@ -129,7 +129,7 @@ describe('[Block]: Header functions', () => {
     }
   })
 
-  it('Initialization -> fromValuesArray()', () => {
+  it('Initialization -> createWithdrawalFromValuesArray()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const zero = new Uint8Array(0)
     const headerArray = []
@@ -156,7 +156,7 @@ describe('[Block]: Header functions', () => {
     )
   })
 
-  it('Initialization -> fromValuesArray() -> error cases', () => {
+  it('Initialization -> createWithdrawalFromValuesArray() -> error cases', () => {
     const headerArray = Array(22).fill(new Uint8Array(0))
 
     // mock header data (if set to zeros(0) header throws)

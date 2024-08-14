@@ -11,11 +11,11 @@ import {
   CLRequestFactory,
   ConsolidationRequest,
   DepositRequest,
-  Withdrawal,
   WithdrawalRequest,
   bigIntToHex,
   bytesToHex,
   bytesToUtf8,
+  createWithdrawal,
   equalsBytes,
   fetchFromProvider,
   getProvider,
@@ -103,7 +103,7 @@ export function createBlock(blockData: BlockData = {}, opts?: BlockOptions) {
     uncleHeaders.push(uh)
   }
 
-  const withdrawals = withdrawalsData?.map(Withdrawal.fromWithdrawalData)
+  const withdrawals = withdrawalsData?.map(createWithdrawal)
   // The witness data is planned to come in rlp serialized bytes so leave this
   // stub till that time
   const executionWitness = executionWitnessData
@@ -220,7 +220,7 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
       address,
       amount,
     }))
-    ?.map(Withdrawal.fromWithdrawalData)
+    ?.map(createWithdrawal)
 
   let requests
   if (header.common.isActivatedEIP(7685)) {
@@ -402,7 +402,7 @@ export async function createBlockFromExecutionPayload(
   }
 
   const transactionsTrie = await genTransactionsTrieRoot(txs, new Trie({ common: opts?.common }))
-  const withdrawals = withdrawalsData?.map((wData) => Withdrawal.fromWithdrawalData(wData))
+  const withdrawals = withdrawalsData?.map((wData) => createWithdrawal(wData))
   const withdrawalsRoot = withdrawals
     ? await genWithdrawalsTrieRoot(withdrawals, new Trie({ common: opts?.common }))
     : undefined

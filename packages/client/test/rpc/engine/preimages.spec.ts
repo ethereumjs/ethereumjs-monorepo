@@ -6,8 +6,8 @@ import {
 } from '@ethereumjs/block'
 import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
-  Withdrawal,
   bytesToHex,
+  createWithdrawal,
   equalsBytes,
   hexToBytes,
   intToBytes,
@@ -50,7 +50,7 @@ async function genBlockWithdrawals(blockNumber: number) {
           }
         })
   const withdrawalsRoot = bytesToHex(
-    await genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData)),
+    await genWithdrawalsTrieRoot(withdrawals.map(createWithdrawal)),
   )
 
   return { withdrawals, withdrawalsRoot }
