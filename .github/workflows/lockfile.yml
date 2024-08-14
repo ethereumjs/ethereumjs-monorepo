@@ -1,8 +1,8 @@
 name: lockfile-lint
 
 on:
-  pull_request:
-    types: [opened, reopened, synchronize]
+  #pull_request:
+  #  types: [opened, reopened, synchronize]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
