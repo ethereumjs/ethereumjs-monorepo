@@ -1,7 +1,7 @@
 import {
   createBlock,
-  createBlockFromRLPSerializedBlock,
   createBlockFromBytesArray,
+  createBlockFromRLPSerializedBlock,
 } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'

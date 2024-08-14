@@ -1,7 +1,7 @@
 import {
   createBlock,
-  createBlockFromRLPSerializedBlock,
   createBlockFromBytesArray,
+  createBlockFromRLPSerializedBlock,
   createSealedCliqueBlock,
 } from '@ethereumjs/block'
 import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'

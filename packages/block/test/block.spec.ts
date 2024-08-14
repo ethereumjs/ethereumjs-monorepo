@@ -17,9 +17,9 @@ import {
   type BlockBytes,
   type JsonRpcBlock,
   createBlock,
+  createBlockFromBytesArray,
   createBlockFromRLPSerializedBlock,
   createBlockFromRPC,
-  createBlockFromBytesArray,
   paramsBlock,
 } from '../src/index.js'
 

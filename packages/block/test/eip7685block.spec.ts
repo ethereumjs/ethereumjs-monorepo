@@ -12,8 +12,8 @@ import { genRequestsTrieRoot } from '../src/helpers.js'
 import {
   Block,
   createBlock,
-  createBlockFromRPC,
   createBlockFromBytesArray,
+  createBlockFromRPC,
   createBlockHeader,
 } from '../src/index.js'
 

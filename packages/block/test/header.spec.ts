@@ -17,8 +17,8 @@ import {
   createBlock,
   createBlockFromRLPSerializedBlock,
   createBlockHeader,
-  createBlockHeaderFromRLP,
   createBlockHeaderFromBytesArray,
+  createBlockHeaderFromRLP,
 } from '../src/index.js'
 
 import * as testData from './testdata/bcBlockGasLimitTest.json'
