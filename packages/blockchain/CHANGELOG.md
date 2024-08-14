@@ -22,7 +22,7 @@ These new request types will be activated with the `Prague` hardfork, see [@ethe
 ### Other Features
 
 - Support for EIP-7685 blocks containing withdrawal and/or deposit requests (see @ethereumjs/block for main documentation), PR [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372)
-- Stricter prefixe hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
 
 ## 7.2.0 - 2024-03-18
 

@@ -37,7 +37,7 @@ This releases comes with some RPC improvements as well as various updates to cat
 - Add execution api v4 handling to engine, PR [#3399](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3399)
 - New mechanism to keep latest block from peers updated, PR [#3354](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3354)
 - Better `--execution` flag guard, PR [#3363](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3363)
-- Stricter prefixe hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348)
+- Stricter prefixed hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348)
 - Update `multiaddress` dependency, PR [#3384](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3384)
 - Internalize `QHeap` dependency, PR [#3451](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3451)
 - Internalize `jwt-simple` dependency, PR [#3458](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3458)
@@ -46,8 +46,8 @@ This releases comes with some RPC improvements as well as various updates to cat
 
 - Fixes for the `eth_estimateGas` RPC endpoint, PR [#3416](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3416)
 - Fixes tx status in `eth_getTransactionReceipt` RPC method, PR [#3435](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3435)
-- Fixes the "block to payload" serialization for getpayload V4, PR [#3409](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3409)
-- Fix the getpayloadv4 with a deposit tx and expected deposit requests, PR [#3410](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3410)
+- Fixes the "block to payload" serialization for `getPayloadV4`, PR [#3409](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3409)
+- Fix the `getPayloadV4` with a deposit tx and expected deposit requests, PR [#3410](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3410)
 
 ## 0.10.1 - 2024-03-18
 
