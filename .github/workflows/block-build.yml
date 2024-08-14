@@ -20,6 +20,7 @@ concurrency:
 
 jobs:
   test-block:
+    needs: 'build-monorepo'
     runs-on: ubuntu-latest
     strategy:
       matrix:
