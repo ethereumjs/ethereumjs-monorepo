@@ -51,7 +51,7 @@
   "dependencies": {
     "@ethereumjs/common": "^4.4.0",
     "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/trie": "^6.2.0",
+    "@ethereumjs/trie": "^6.2.1",
     "@ethereumjs/util": "^9.1.0",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.2.1",
