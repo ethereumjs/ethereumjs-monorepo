@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-examples:
+  run-spellcheck-cspell:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
