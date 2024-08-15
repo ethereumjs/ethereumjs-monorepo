@@ -1,11 +1,15 @@
 name: Verkle
 on:
-  push:
-    branches: [master, develop]
-    tags: ['*']
-  pull_request:
-    types: [opened, reopened, synchronize]
+  workflow_call:
+    inputs:
+      cache-key:
+        required: false
+        type: string
   workflow_dispatch:
+    inputs:
+      cache-key:
+        required: false
+        type: string
 
 env:
   cwd: ${{github.workspace}}/packages/verkle
@@ -35,8 +39,14 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - run: npm ci --omit=peer
-        working-directory: ${{github.workspace}}
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{github.workspace}}
+          key: ${{ inputs.cache-key }}
+
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci --omit=peer
 
       - run: npm run lint
-      - run: npm run test:node # Only run node tests for now until vitest browser test issues are sorted out
+      - run: npm run test
