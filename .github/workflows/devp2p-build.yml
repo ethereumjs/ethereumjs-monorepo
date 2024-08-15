@@ -34,6 +34,10 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ inputs.cache-key }}
 
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci    
+              
       - uses: nick-fields/retry@v2
         with:
           timeout_minutes: 2

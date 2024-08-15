@@ -6,14 +6,13 @@ on:
         required: false
         type: string
   workflow_dispatch:
-    inputs:
-      cache-key:
-        required: false
-        type: string
-
 
 env:
-  cwd: ${{github.workspace}}
+  cwd: ${{github.workspace}}/packages/block
+
+defaults:
+  run:
+    working-directory: packages/blockc
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-block
@@ -21,9 +20,6 @@ concurrency:
 
 jobs:
   test-block:
-    defaults:
-      run:
-        working-directory: ${{github.workspace}}/packages/block
     runs-on: ubuntu-latest
     strategy:
       matrix:

@@ -35,6 +35,14 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{github.workspace}}
+          key: ${{ inputs.cache-key }}
+
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci
 
       - run: npm run coverage
       - uses: codecov/codecov-action@v3
@@ -80,14 +88,16 @@ jobs:
           node-version: 18
           cache: 'npm'
 
-      - run: npm ci
-        working-directory: ${{github.workspace}}
-
-      - run: cd ${{github.workspace}}/packages/client && npx vitest run test/cli/cli
       - uses: actions/cache/restore@v3
         with:
           path: ${{github.workspace}}
           key: ${{ inputs.cache-key }}
+
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - run: cd ${{github.workspace}}/packages/client && npx vitest run test/cli/cli
 
       - run: npm i wtfnode
 
