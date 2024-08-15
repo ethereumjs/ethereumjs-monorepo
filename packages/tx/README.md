@@ -208,13 +208,13 @@ const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
 console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced321887937c95b03779358ec8a
 ```
 
-#### EOA Code Transaction (EIP-7702) (experimental)
+#### EOA Code Transaction (EIP-7702) (outdated)
 
 - Class: `EOACodeEIP7702Transaction`
 - Activation: `prague` (or per EIP setting)
 - Type: `4`
 
-This library suppports an experimental version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) starting with `v5.4.0`. This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
+This library suppports a non-final version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) starting with `v5.4.0`. This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
 
 The following is a simple example how to use an `EOACodeEIP7702Transaction` with one autorization list item:
 
@@ -248,6 +248,8 @@ console.log(
   `EIP-7702 EOA code tx created with ${tx.authorizationList.length} authorization list item(s).`
 )
 ```
+
+Note: Things move fast with `EIP-7702` and the currently released implementation is based on [this](https://github.com/ethereum/EIPs/blob/14400434e1199c57d912082127b1d22643788d11/EIPS/eip-7702.md) commit and therefore already outdated. An up-to-date version will be released along our breaking release round planned for early September 2024.
 
 #### Access List Transactions (EIP-2930)
 

@@ -8,9 +8,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 5.4.0 - 2024-08-15
 
-#### EOA Code Transaction (EIP-7702) (experimental)
+#### EOA Code Transaction (EIP-7702) (outdated)
 
-This release introduces support for an experimental version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions, see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470). This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
+This release introduces support for a non-final version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions, see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470). This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
 
 The following is a simple example how to use an `EOACodeEIP7702Transaction` with one autorization list item:
 
@@ -45,7 +45,7 @@ console.log(
 )
 ```
 
-Note that the specification of this EIP is not yet stable and the API of this tx type might still change at any time.
+Note: Things move fast with `EIP-7702` and the released implementation is based on [this](https://github.com/ethereum/EIPs/blob/14400434e1199c57d912082127b1d22643788d11/EIPS/eip-7702.md) commit and therefore already outdated. An up-to-date version will be released along our breaking release round planned for early September 2024.
 
 ### Verkle Updates
 
