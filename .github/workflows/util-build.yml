@@ -27,17 +27,17 @@ jobs:
     steps:
       # - uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
       - uses: actions/cache/restore@v3
         id: cache
         with:
           path: ${{github.workspace}}
           key: ${{ inputs.cache-key }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
