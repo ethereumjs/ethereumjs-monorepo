@@ -31,7 +31,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - run: npm ci
+      - run: npm ci --ignore scripts
         working-directory: ${{github.workspace}}
 
       - uses: actions/cache@v4
@@ -39,6 +39,7 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
+          # Just echoing for now so we can see the cache key
       - run: echo ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
       
   block:
