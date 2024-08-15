@@ -36,6 +36,7 @@ jobs:
           cache: 'npm'
 
       - uses: actions/cache/restore@v4
+        id: cache
         with:
           path: ${{github.workspace}}
           key: ${{ inputs.cache-key }}
@@ -51,7 +52,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm run postinstall
         working-directory: ${{github.workspace}}
-        
+
       - run: npm run lint      
       - run: npm run coverage
       - uses: codecov/codecov-action@v3
