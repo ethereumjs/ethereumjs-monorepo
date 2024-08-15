@@ -6,7 +6,58 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 3.0.0 - 2024-03-05
+## 3.1.0 - 2024-08-15
+
+### EIP-2537 BLS Precompiles (Prague)
+
+Starting with this release the EVM support the BLS precompiles introduced with [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537). These precompiles run natively using the [@noble/curves](https://github.com/paulmillr/noble-curves) library (❤️ to `@paulmillr`!), see PRs [#3350](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3350) and [#3471](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3471).
+
+An alternative WASM implementation (using [bls-wasm](https://github.com/herumi/bls-wasm)) can be optionally used like this if needed for performance reasons:
+
+```ts
+import { EVM, MCLBLS } from '@ethereumjs/evm'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Prague })
+await mcl.init(mcl.BLS12_381)
+const mclbls = new MCLBLS(mcl)
+const evm = await EVM.create({ common, bls })
+```
+
+### Verkle Dependency Decoupling
+
+We have relatively light-heartedly added a new `@ethereumjs/verkle` main dependency to the VM/EVM stack in the `v7.2.1` release, which added an additional burden to the bundle size by several hundred KB and additionally draws in unnecessary WASM code. Coupling with Verkle has been refactored in PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462) and the direct dependency has been removed again.
+
+An update to this release is therefore strongly recommended even if other fixes or features are not that relevant for you right now.
+
+### Verkle Updates
+
+- Adds ability to run [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions (see tx library for full documentation), see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470)
+- Fixes for Kaustinen4 support, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- Kaustinen5 related fixes, PR [#3343](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3343)
+- Kaustinen6 adjustments, `verkle-cryptography-wasm` migration, PRs [#3355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3355) and [#3356](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3356)
+- Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
+- Shift Verkle to `osaka` hardfork, PR [#3371](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3371)
+- Fix `accessWitness` passing, PR [#3405](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3405)
+- Remove the hacks to prevent account cleanups of system contracts, PR [#3418](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3418)
+- Fix EIP-2935 address conversion issues, PR [#3447](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3447)
+
+### Other Features
+
+- Add support for retroactive [EIP-7610](https://eips.ethereum.org/EIPS/eip-7610), PR [#3480](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3480)
+- Adds bundle visualizer (to be used with `npm run visualize:bundle`), PR [#3463](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3463)
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Other Changes
+
+- Removes support for [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) simple subroutines for EVM (deprecated with an alternative version integrated into EOF), PR [#3342](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3342)
+- Update `mcl-wasm` Dependency (Esbuild Issue), PR [#3461](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3461)
+
+### Bugfixes
+
+- BLS precompile fixes, PR [#3400](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3400)
+- Ignore precompile addresses for some target access events, PR [#3366](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3366)
+
+## 3.0.0 - 2024-03-18
 
 ### New EVM.create() Async Static Constructor
 

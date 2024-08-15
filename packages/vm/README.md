@@ -318,6 +318,26 @@ For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethe
 
 This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
 
+### EIP-7702 EAO Code Transactions Support (outdated)
+
+This library support the execution of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions (see tx library for full documentation) with `runTx()` or the wrapping `runBlock()` execution methods starting with `v3.1.0`, see [this test setup](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/EIPs/eip-7702.spec.ts) for a more complete example setup on how to run code from an EOA.
+
+Note: Things move fast with `EIP-7702` and the currently released implementation is based on [this](https://github.com/ethereum/EIPs/blob/14400434e1199c57d912082127b1d22643788d11/EIPS/eip-7702.md) commit and therefore already outdated. An up-to-date version will be released along our breaking release round planned for early September 2024.
+
+### EIP-7685 Requests Support
+
+This libary supports blocks including the following [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) requests:
+
+- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Deposit Requests (`v7.3.0`+)
+- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Withdrawal Requests (`v7.3.0`+)
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Consolidation Requests (`v7.3.0`+)
+
+### EIP-2935 Serve Historical Block Hashes from State (Prague)
+
+Starting with `v8.1.0` the VM supports [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) which stores the latest 8192 block hashes in the storage of a system contract, see PR [#3475](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3475) as the major integrational PR (while work on this has already been done in previous PRs).
+
+This EIP will be activated along the Prague hardfork. Note that this EIP has no effect on the resolution of the `BLOCKHASH` opcode, which will be a separate activation taking place by the integration of [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) in the following Osaka hardfork.
+
 #### Initialization
 
 To run VM/EVM related EIP-4844 functionality you have to activate the EIP in the associated `@ethereumjs/common` library:

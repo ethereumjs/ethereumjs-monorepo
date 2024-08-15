@@ -307,7 +307,7 @@ dist/bin/cli.js --d
 
 ## Metrics
 
-The client can optionally collect metrics using the Prometheus metrics platform and expose them via an HTTP endpoint with the following CLI flags.  
+The client can optionally collect metrics using the [Prometheus](https://github.com/prometheus/prometheus) metrics platform and expose them via an HTTP endpoint with the following CLI flags.  
 The current metrics that are reported by the client can be found [here](./src/util//metrics.ts).
 
 ```sh

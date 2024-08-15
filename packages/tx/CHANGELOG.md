@@ -6,7 +6,62 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 5.3.0 - 2024-03-05
+## 5.4.0 - 2024-08-15
+
+#### EOA Code Transaction (EIP-7702) (outdated)
+
+This release introduces support for a non-final version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions, see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470). This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
+
+The following is a simple example how to use an `EOACodeEIP7702Transaction` with one autorization list item:
+
+```ts
+// ./examples/EOACodeTx.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EOACodeEIP7702Transaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
+
+const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const tx = EOACodeEIP7702Transaction.fromTxData(
+  {
+    authorizationList: [
+      {
+        chainId: '0x1',
+        address: `0x${'20'.repeat(20)}`,
+        nonce: ['0x1'],
+        yParity: '0x1',
+        r: ones32,
+        s: ones32,
+      },
+    ],
+  },
+  { common }
+)
+
+console.log(
+  `EIP-7702 EOA code tx created with ${tx.authorizationList.length} authorization list item(s).`
+)
+```
+
+Note: Things move fast with `EIP-7702` and the released implementation is based on [this](https://github.com/ethereum/EIPs/blob/14400434e1199c57d912082127b1d22643788d11/EIPS/eip-7702.md) commit and therefore already outdated. An up-to-date version will be released along our breaking release round planned for early September 2024.
+
+### Verkle Updates
+
+- Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
+- Shift Verkle to `osaka` hardfork, PR [#3371](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3371)
+
+### Other Features
+
+- Extend `BlobEIP4844Transaction.networkWrapperToJson()` to also include the 4844 fields, PR [#3365](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3365)
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Bugfixes
+
+- Fix bug in generic error message regarding chain ID reporting, PR [#3386](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3386)
+
+## 5.3.0 - 2024-03-18
 
 ### Full 4844 Browser Readiness
 
