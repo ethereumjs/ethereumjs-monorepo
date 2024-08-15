@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1723660018655,
+  "lastUpdate": 1723731503116,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "da22a3881cab3baa9c655ffd48273ae9bbd3b028",
-          "message": "Refactor trie util helpers (#3534)\n\n* Rename nibblestoBytes to nibblesTypeToPackedBytes\r\n\r\n* Rename function\r\n\r\n* Fix function name\r\n\r\n* Make nibblesToBytes return a byte array to conform to how bytesToNibbles returns one\r\n\r\n* Fix lint issues\r\n\r\n* Fix function name\r\n\r\n* Fix lint issue\r\n\r\n* update import\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-07-24T07:39:29-04:00",
-          "tree_id": "87c80d02717fd67648f3e1257e7c78c6bc094843",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/da22a3881cab3baa9c655ffd48273ae9bbd3b028"
-        },
-        "date": 1721821326999,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 37812,
-            "range": "±2.10%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 35518,
-            "range": "±3.29%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 36960,
-            "range": "±1.46%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 35937,
-            "range": "±1.68%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35314,
-            "range": "±1.65%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.82%",
             "unit": "ops/sec",
             "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7b4e98dc5143ef2125c117ccb2d7138e2732ada3",
+          "message": "update polkadot/util dep (#3595)",
+          "timestamp": "2024-08-15T16:13:36+02:00",
+          "tree_id": "460d3eceecfde120766c8859e35ad655a74e680a",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7b4e98dc5143ef2125c117ccb2d7138e2732ada3"
+        },
+        "date": 1723731502606,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 38080,
+            "range": "±1.70%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 36051,
+            "range": "±3.41%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 36449,
+            "range": "±1.49%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36158,
+            "range": "±1.67%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35324,
+            "range": "±1.81%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
