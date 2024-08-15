@@ -136,7 +136,7 @@ jobs:
 
   util:
     needs: build
-    uses: ./.github/workflows/block-build.yml
+    uses: ./.github/workflows/util-build.yml
     with:
       cache-key: ${{ needs.build.outputs.cache-key }}
 
