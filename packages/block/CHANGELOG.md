@@ -177,7 +177,7 @@ Have a look at the EIP for some guidance on how to use and fill in the various d
 
 ### Other Features
 
-- New `Block.toExecutionPayload()` method to map to the execution payload structore from the beacon chain, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- New `Block.toExecutionPayload()` method to map to the execution payload structure from the beacon chain, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
 - Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
 
 ### Other Changes

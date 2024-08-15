@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 0.10.2 - 2024-08-15
 
-This releases comes with some RPC improvements as well as various updates to catch up for testnets preparing for the Prague hardfork as well as the Verkle tree integration. Note that for running/participating in the latest Prague and Verkle testnets it is still needed to join with a build from `master` since testnets are evolving so quickly that it is not practical to catch up with official client releases!
+This release comes with some RPC improvements as well as various updates to catch up for testnets preparing for the Prague hardfork as well as the Verkle tree integration. Note that for running/participating in the latest Prague and Verkle testnets it is still needed to join with a build from `master` since testnets are evolving so quickly that it is not practical to catch up with official client releases!
 
 ### Verkle Updates
 
