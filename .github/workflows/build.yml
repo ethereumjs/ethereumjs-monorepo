@@ -53,21 +53,21 @@ jobs:
     outputs: 
       cache-key: ${{ steps.cache.outputs.cache-primary-key }}
 
-  block:
-    needs: build
-    uses: ./.github/workflows/block-build.yml
-    with:
-      cache-key: ${{ needs.build.outputs.cache-key }}
+  # block:
+  #   needs: build
+  #   uses: ./.github/workflows/block-build.yml
+  #   with:
+  #     cache-key: ${{ needs.build.outputs.cache-key }}
   
   # blockchain:
   #   needs: build
-  #   uses: ./.github/workflows/browser.yml
+  #   uses: ./.github/workflows/blockchain-build.yml
   #   with:
   #     cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
   # browser:
   #   needs: build
-  #   uses: ./.github/workflows/blockchain-build.yml
+  #   uses: ./.github/workflows/browser.yml
   #   with:
   #     cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
@@ -137,11 +137,11 @@ jobs:
   #   with:
   #     cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
-  # util:
-  #   needs: build
-  #   uses: ./.github/workflows/block-build.yml
-  #   with:
-  #     cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+  util:
+    needs: build
+    uses: ./.github/workflows/block-build.yml
+    with:
+      cache-key: ${{ needs.build.outputs.cache-key }}
 
   # verkle:
   #   needs: build
