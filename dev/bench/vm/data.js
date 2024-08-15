@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1723734089152,
+  "lastUpdate": 1723735595873,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "23d796d9223958af937aa2039f45f7cd5f323ab9",
-          "message": "Update linting (#3539)",
-          "timestamp": "2024-07-25T10:48:35-04:00",
-          "tree_id": "8475c15a05085bd9c8a609ab42a74d233806cd2f",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/23d796d9223958af937aa2039f45f7cd5f323ab9"
-        },
-        "date": 1721919075068,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 37936,
-            "range": "±2.08%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 35827,
-            "range": "±3.26%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 36390,
-            "range": "±1.76%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 35759,
-            "range": "±1.78%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35129,
-            "range": "±1.99%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.75%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "81ef4957082c9ccb5434a4096fd78bbdb55e2168",
+          "message": "Minor Release PR master Branch Port (#3594)\n\n* New Minor Releases (Prague Outlook, Bundle Fixes, Bugfixes) (#3527)\r\n\r\n* Update to the correct release date for the old releases\r\n\r\n* Add new release date in CHANGELOG files\r\n\r\n* CHANGELOG entries for Kaustinen5 PR, Util partial account CHANGELOG, docs and example\r\n\r\n* PrefixedHexString PR CHANGELOG integration\r\n\r\n* Add EIP-6110/EIP-7002/EIP-7685 related release notes, documentation updates and examples\r\n\r\n* Additional EIP-6110/EIP-7002 README inclusions, EIP table updates\r\n\r\n* Add EIP-2935 BLS precompile release notes and a new EVM precompile doc setion and example\r\n\r\n* Add EOACodeEIP7702Tx example, README section and CHANGELOG entry\r\n\r\n* Additional EIP-7702 CHANGELOG and README additions\r\n\r\n* More 7702\r\n\r\n* Small additions and some fixes for BLS CHANGELOG entries\r\n\r\n* Verkle related CHANGELOG additions\r\n\r\n* Various CHANGELOG additions\r\n\r\n* Add EIP-7251 consoldiation requests block example and extensive README section, Util CHANGELOG/README for the new class and other CHANGELOG/README additions\r\n\r\n* Add proper EIP-2935 (Serve historical block hashes from state) release notes\r\n\r\n* Adjust EIP-2935/7709 release notes, add EIP-7610 (state-related retroactive EIP) release notes\r\n\r\n* Additional release notes\r\n\r\n* Version bumps (Util)\r\n\r\n* Version bumps (Common)\r\n\r\n* Version bumps (Trie)\r\n\r\n* Version bumps (Verkle)\r\n\r\n* Version bumps (Tx)\r\n\r\n* Version bumps (Wallet)\r\n\r\n* Version bumps (Genesis)\r\n\r\n* Version bumps (Devp2p)\r\n\r\n* Version bumps (Ethash)\r\n\r\n* Version bumps (Block)\r\n\r\n* Version bumps (Blockchain)\r\n\r\n* Version bumps (StateManager)\r\n\r\n* Version bumps (EVM)\r\n\r\n* Version bumps (VM, client)\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Update release dates in CHANGELOG files\r\n\r\n* Fix typos and URLs\r\n\r\n* Minor nits\r\n\r\n* Update packages/block/CHANGELOG.md\r\n\r\n* Update packages/block/CHANGELOG.md\r\n\r\n* More consistent and improved EIP-7685 Requests docs/CHANGELOGs\r\n\r\n* Ensure EthJS and Grandine talk (#3511)\r\n\r\n* jwt-simple: ensure unpadded payloads are accepted\r\n\r\n* jwt-simple: ensure encoded jwts are also unpadded\r\n\r\n* Make 7702 outdated status more clear\r\n\r\n* 2935 fix\r\n\r\n* Small fixes\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Lint fix\r\n\r\n* Add generic examples:build script in root package.json\r\n\r\n* Fixes\r\n\r\n* EVM example fix\r\n\r\n* shorten stupid decode-opcodes example\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
+          "timestamp": "2024-08-15T17:23:42+02:00",
+          "tree_id": "6112a1df7c0feb093b285d2fd36b08c0c0ca068e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/81ef4957082c9ccb5434a4096fd78bbdb55e2168"
+        },
+        "date": 1723735595344,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37760,
+            "range": "±1.88%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 35781,
+            "range": "±3.98%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 36228,
+            "range": "±1.68%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35747,
+            "range": "±1.81%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35527,
+            "range": "±1.91%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
           }
         ]
       }
