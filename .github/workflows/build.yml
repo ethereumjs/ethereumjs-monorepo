@@ -60,7 +60,7 @@ jobs:
         uses: actions/cache@v4
         with: 
           path: ${{github.workspace}}/packages
-          key: build-${{ hashFiles('./packages/*')}}
+          key: build-${{ hashFiles('./packages/**/src/**')}}
 
     outputs: 
       dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}
