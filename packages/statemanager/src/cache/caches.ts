@@ -81,6 +81,43 @@ export class Caches {
     this.storage?.clearStorage(address)
   }
 
+  shallowCopy(downlevelCaches: boolean) {
+    let cacheOptions: CachesStateManagerOpts | undefined
+
+    // Account cache options
+    if (this.settings.account.size !== 0) {
+      cacheOptions = {
+        account: downlevelCaches
+          ? { size: this.settings.account.size, type: CacheType.ORDERED_MAP }
+          : this.settings.account,
+      }
+    }
+
+    // Storage cache options
+    if (this.settings.storage.size !== 0) {
+      cacheOptions = {
+        ...cacheOptions,
+        storage: downlevelCaches
+          ? { size: this.settings.storage.size, type: CacheType.ORDERED_MAP }
+          : this.settings.storage,
+      }
+    }
+
+    // Code cache options
+    if (this.settings.code.size !== 0) {
+      cacheOptions = {
+        ...cacheOptions,
+        code: downlevelCaches
+          ? { size: this.settings.code.size, type: CacheType.ORDERED_MAP }
+          : this.settings.code,
+      }
+    }
+
+    if (cacheOptions !== undefined) {
+      return new Caches(cacheOptions)
+    } else return undefined
+  }
+
   revert() {
     this.account?.revert()
     this.storage?.revert()
