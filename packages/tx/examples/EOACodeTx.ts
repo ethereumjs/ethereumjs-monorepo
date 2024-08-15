@@ -1,11 +1,12 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EOACodeEIP7702Transaction } from '@ethereumjs/tx'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { create7702EOACodeTx } from '@ethereumjs/tx'
+
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
-const tx = EOACodeEIP7702Transaction.fromTxData(
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const tx = create7702EOACodeTx(
   {
     authorizationList: [
       {

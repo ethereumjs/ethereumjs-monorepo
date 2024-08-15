@@ -1,6 +1,6 @@
-import { Account } from '@ethereumjs/util'
+import { createPartialAccount } from '@ethereumjs/util'
 
-const account = Account.fromPartialAccountData({
+const account = createPartialAccount({
   nonce: '0x02',
   balance: '0x0384',
 })

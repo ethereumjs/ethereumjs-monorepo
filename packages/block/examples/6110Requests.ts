@@ -1,16 +1,16 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Block } from '@ethereumjs/block'
+import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
-  bytesToBigInt,
-  DepositRequest,
-  randomBytes,
   type CLRequest,
   type CLRequestType,
+  DepositRequest,
+  bytesToBigInt,
+  randomBytes,
 } from '@ethereumjs/util'
 
 const main = async () => {
   const common = new Common({
-    chain: Chain.Mainnet,
+    chain: Mainnet,
     hardfork: Hardfork.Prague,
   })
 
@@ -23,9 +23,9 @@ const main = async () => {
   }
   const request = DepositRequest.fromRequestData(depositRequestData) as CLRequest<CLRequestType>
   const requests = [request]
-  const requestsRoot = await Block.genRequestsTrieRoot(requests)
+  const requestsRoot = await genRequestsTrieRoot(requests)
 
-  const block = Block.fromBlockData(
+  const block = createBlock(
     {
       requests,
       header: { requestsRoot },
@@ -39,4 +39,4 @@ const main = async () => {
   )
 }
 
-main()
+void main()
