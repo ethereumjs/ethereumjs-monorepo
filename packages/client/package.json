@@ -71,7 +71,7 @@
     "@ethereumjs/vm": "8.0.0",
     "@js-sdsl/ordered-map": "^4.4.2",
     "@multiformats/multiaddr": "^12.2.1",
-    "@polkadot/util": "^12.6.2",
+    "@polkadot/util": "^13.0.2",
     "@polkadot/wasm-crypto": "^7.3.2",
     "@scure/base": "^1.1.7",
     "abstract-level": "^1.0.3",
