@@ -318,9 +318,13 @@ For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethe
 
 This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
 
-### EIP-6110/EIP-7002 Requests Support
+### EIP-7685 Requests Support
 
-This libary supports executing and building blocks including `EIP-6110` deposit requests as well as `EIP-7002` withdrawal requests starting with `v8.1.0`.
+This libary supports blocks including the following [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) requests:
+
+- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Deposit Requests (`v7.3.0`+)
+- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Withdrawal Requests (`v7.3.0`+)
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Consolidation Requests (`v7.3.0`+)
 
 ### EIP-2935 Serve Historical Block Hashes from State (Prague)
 

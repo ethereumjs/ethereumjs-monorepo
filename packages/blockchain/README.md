@@ -180,9 +180,13 @@ The blockchain library now allows for blob transactions to be validated and incl
 
 **Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
-### EIP-6110/EIP-7002 Requests Support
+### EIP-7685 Requests Support
 
-This libary supports blocks including `EIP-6110` deposit requests as well as `EIP-7002` withdrawal requests starting with `v7.3.0`.
+This libary supports blocks including the following [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) requests:
+
+- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Deposit Requests (`v7.3.0`+)
+- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Withdrawal Requests (`v7.3.0`+)
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Consolidation Requests (`v7.3.0`+)
 
 ## Browser
 
