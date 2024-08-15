@@ -6,7 +6,50 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 0.10.1 - 2024-03-05
+## 0.10.2 - 2024-08-15
+
+This release comes with some RPC improvements as well as various updates to catch up for testnets preparing for the Prague hardfork as well as the Verkle tree integration. Note that for running/participating in the latest Prague and Verkle testnets it is still needed to join with a build from `master` since testnets are evolving so quickly that it is not practical to catch up with official client releases!
+
+### Verkle Updates
+
+- Fixes for Kaustinen4 support, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- Kaustinen5 related fixes, PR [#3343](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3343)
+- CLI option `--ignoreStatelessInvalidExecs` for Verkle debugging, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- Kaustinen6 adjustments, `verkle-cryptography-wasm` migration, PRs [#3355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3355) and [#3356](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3356)
+- Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
+- Shift Verkle to `osaka` hardfork, PR [#3371](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3371)
+- Simplify `--ignoreStatelessInvalidExecs` to just a boolean flag, PR [#3395](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3395)
+- Add verkle execution support to `executeBlocks()`, PR [#3406](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3406)
+- Verkle decoupling in underlying libraries, PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462)
+
+### Other Features
+
+- Integrates support for [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions (outdated) (see tx library for full documentation), see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470)
+- New `--startExectionFrom` and `--startExecution` CLI options, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- Add `eth_blobBaseFee` RPC endpoint, PR [#3436](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3436)
+- Add support for `pending` in `eth_getTransactionCount` RPC method, PR [#3415](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3415)
+- Add support for multiple sources of rlp blocks when loading with `--loadBlocksFromRlp`, PR [#3442](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3442)
+- Basic Prometheus metrics support (not many metrics yet), PR [#3287](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3287)
+
+### Other Changes
+
+- ESM-only client build, PRs [#3359](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3359) and [#3414](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3414)
+- Add execution api v4 handling to engine, PR [#3399](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3399)
+- New mechanism to keep latest block from peers updated, PR [#3354](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3354)
+- Better `--execution` flag guard, PR [#3363](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3363)
+- Stricter prefixed hex typing, PR [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348)
+- Update `multiaddress` dependency, PR [#3384](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3384)
+- Internalize `QHeap` dependency, PR [#3451](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3451)
+- Internalize `jwt-simple` dependency, PR [#3458](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3458)
+
+### Bugfixes
+
+- Fixes for the `eth_estimateGas` RPC endpoint, PR [#3416](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3416)
+- Fixes tx status in `eth_getTransactionReceipt` RPC method, PR [#3435](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3435)
+- Fixes the "block to payload" serialization for `getPayloadV4`, PR [#3409](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3409)
+- Fix the `getPayloadV4` with a deposit tx and expected deposit requests, PR [#3410](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3410)
+
+## 0.10.1 - 2024-03-18
 
 This is mainly a maintenance release coming with a few internal changes and minor bug fixes, single user-focused addition is the support for the `eth_feeHistory` RPC call.
 

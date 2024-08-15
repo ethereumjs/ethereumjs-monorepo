@@ -89,7 +89,7 @@ const block = Block.fromBlockData(
       gasUsed: BigInt(60),
     },
   },
-  { common }
+  { common },
 )
 
 // Base fee will increase for next block since the
@@ -106,7 +106,7 @@ const blockWithMatchingBaseFee = Block.fromBlockData(
       gasUsed: BigInt(60),
     },
   },
-  { common }
+  { common },
 )
 
 console.log(Number(blockWithMatchingBaseFee.header.baseFeePerGas)) // 11
@@ -139,14 +139,14 @@ const block = Block.fromBlockData(
   {
     header: {
       withdrawalsRoot: hexToBytes(
-        '0x69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357'
+        '0x69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357',
       ),
     },
     withdrawals: [withdrawal],
   },
   {
     common,
-  }
+  },
 )
 
 console.log(`Block with ${block.withdrawals!.length} withdrawal(s) created`)
@@ -184,7 +184,7 @@ const main = async () => {
   })
   const blobTx = BlobEIP4844Transaction.fromTxData(
     { blobsData: ['myFirstBlob'], to: Address.fromPrivateKey(randomBytes(32)) },
-    { common }
+    { common },
   )
 
   const block = Block.fromBlockData(
@@ -197,13 +197,13 @@ const main = async () => {
     {
       common,
       skipConsensusFormatValidation: true,
-    }
+    },
   )
 
   console.log(
     `4844 block header with excessBlobGas=${block.header.excessBlobGas} created and ${
       block.transactions.filter((tx) => tx.type === 3).length
-    } blob transactions`
+    } blob transactions`,
   )
 }
 
@@ -211,6 +211,168 @@ main()
 ```
 
 **Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+
+### Blocks with EIP-7685 Consensus Layer Requests
+
+Starting with v5.3.0 this library supports requests to the consensus layer which have been introduced with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) and will come into play for deposit and withdrawal requests along the upcoming [Prague](https://eips.ethereum.org/EIPS/eip-7600) hardfork.
+
+#### EIP-6110 Deposit Requests
+
+[EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) introduces deposit requests allowing beacon chain deposits being triggered from the execution layer. Starting with v5.3.0 this library supports deposit requests and a containing block can be instantiated as follows:
+
+```ts
+// ./examples/6110Requests.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Block } from '@ethereumjs/block'
+import {
+  bytesToBigInt,
+  DepositRequest,
+  randomBytes,
+  type CLRequest,
+  type CLRequestType,
+} from '@ethereumjs/util'
+
+const main = async () => {
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Cancun,
+    eips: [7685, 4788],
+  })
+
+  const depositRequestData = {
+    pubkey: randomBytes(48),
+    withdrawalCredentials: randomBytes(32),
+    amount: bytesToBigInt(randomBytes(8)),
+    signature: randomBytes(96),
+    index: bytesToBigInt(randomBytes(8)),
+  }
+  const request = DepositRequest.fromRequestData(depositRequestData) as CLRequest<CLRequestType>
+  const requests = [request]
+  const requestsRoot = await Block.genRequestsTrieRoot(requests)
+
+  const block = Block.fromBlockData(
+    {
+      requests,
+      header: { requestsRoot },
+    },
+    { common },
+  )
+  console.log(
+    `Instantiated block with ${
+      block.requests?.length
+    } request, requestTrieValid=${await block.requestsTrieIsValid()}`,
+  )
+}
+
+main()
+```
+
+Have a look at the EIP for some guidance on how to use and fill in the various deposit request parameters.
+
+#### EIP-7002 Withdrawal Requests
+
+[EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) introduces the possibility for validators to trigger exits and partial withdrawals via the execution layer. Starting with v5.3.0 this library supports withdrawal requests and a containing block can be instantiated as follows:
+
+```ts
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Block } from '@ethereumjs/block'
+import {
+  bytesToBigInt,
+  randomBytes,
+  WithdrawalRequest,
+  type CLRequest,
+  type CLRequestType,
+} from '@ethereumjs/util'
+
+const main = async () => {
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Prague,
+  })
+
+  const withdrawalRequestData = {
+    sourceAddress: randomBytes(20),
+    validatorPubkey: randomBytes(48),
+    amount: bytesToBigInt(randomBytes(8)),
+  }
+  const request = WithdrawalRequest.fromRequestData(
+    withdrawalRequestData,
+  ) as CLRequest<CLRequestType>
+  const requests = [request]
+  const requestsRoot = await Block.genRequestsTrieRoot(requests)
+
+  const block = Block.fromBlockData(
+    {
+      requests,
+      header: { requestsRoot },
+    },
+    { common },
+  )
+  console.log(
+    `Instantiated block with ${
+      block.requests?.length
+    } withdrawal request, requestTrieValid=${await block.requestsTrieIsValid()}`,
+  )
+}
+
+main()
+```
+
+Have a look at the EIP for some guidance on how to use and fill in the various withdrawal request parameters.
+
+#### EIP-7251 Consolidation Requests
+
+[EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) introduces consolidation requests allowing staked ETH from more than one validator on the beacon chain to be consolidated into one validator, triggered from the execution layer. Starting with v5.3.0 this library supports consolidation requests and a containing block can be instantiated as follows:
+
+```ts
+// ./examples/7251Requests.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Block } from '@ethereumjs/block'
+import {
+  bytesToBigInt,
+  ConsolidationRequest,
+  randomBytes,
+  type CLRequest,
+  type CLRequestType,
+} from '@ethereumjs/util'
+
+const main = async () => {
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Prague,
+  })
+
+  const consolidationRequestData = {
+    sourceAddress: randomBytes(20),
+    sourcePubkey: randomBytes(48),
+    targetPubkey: randomBytes(48),
+  }
+  const request = ConsolidationRequest.fromRequestData(
+    consolidationRequestData,
+  ) as CLRequest<CLRequestType>
+  const requests = [request]
+  const requestsRoot = await Block.genRequestsTrieRoot(requests)
+
+  const block = Block.fromBlockData(
+    {
+      requests,
+      header: { requestsRoot },
+    },
+    { common },
+  )
+  console.log(
+    `Instantiated block with ${
+      block.requests?.length
+    } consolidation request, requestTrieValid=${await block.requestsTrieIsValid()}`,
+  )
+}
+
+main()
+```
+
+Have a look at the EIP for some guidance on how to use and fill in the various deposit request parameters.
 
 ### Consensus Types
 
@@ -297,7 +459,7 @@ const block = Block.fromBlockData(
   {
     // Provide your block data here or use default values
   },
-  { common }
+  { common },
 )
 
 console.log(`Proof-of-Stake (default) block created with hardfork=${block.common.hardfork()}`)

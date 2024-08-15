@@ -6,7 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 6.2.0 - 2024-03-05
+## 6.2.1 - 2024-08-15
+
+### Other Features
+
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Bugfixes
+
+- Fixes an issue in the delete operation used for unhashed tries and pruning activated which resulted in a wrong state root (bad!), PR [#3333](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3333)
+
+## 6.2.0 - 2024-03-18
 
 In the hope that you do not have yet integrated: we needed to remove the new more modern async trie iteration with web streams functionality (new `createAsyncReadStream()` method) introduced with the `v6.1.0` release - see PR [#3231](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3231) for context - since the related Node.js web streams API import caused relatively severe problems for all upstream libraries when being used in the browser.
 
