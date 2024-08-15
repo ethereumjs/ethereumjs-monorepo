@@ -10,10 +10,6 @@ on:
 env:
   cwd: ${{github.workspace}}/packages/block
 
-defaults:
-  run:
-    working-directory: packages/blockc
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-block
   cancel-in-progress: true
