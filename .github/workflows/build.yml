@@ -50,12 +50,14 @@ jobs:
           # Just echoing for now so we can see the cache key
       - run: echo npm-${{ hashFiles('package-lock.json') }}
       - run: echo ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
-      
+    outputs: 
+      cache-key: steps.restore-cache.outputs.key  
+
   block:
     needs: build
     uses: ./.github/workflows/block-build.yml
     with:
-      cache-key: npm-${{ hashFiles('package-lock.json') }}
+      cache-key: jobs.build.outputs.cache-key
   
   # blockchain:
   #   needs: build
