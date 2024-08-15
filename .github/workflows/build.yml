@@ -25,17 +25,17 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
       - uses: actions/cache/restore@v4
         id: cache
         with:
           path: ${{github.workspace}}
           key: npm-${{ hashFiles('package-lock.json') }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
 
       - if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
