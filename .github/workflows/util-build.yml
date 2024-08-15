@@ -2,7 +2,7 @@ name: Util
 on:
   workflow_call:
     inputs:
-      cache-key:
+      dep-cache-key:
         required: true
         type: string
       build-cache-key:
@@ -31,15 +31,15 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/cache/restore@v4
-        id: cache
+        id: dep-cache
         with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.cache-key }}
+          path: ${{github.workspace}}/node_modules
+          key: ${{ inputs.dep-cache-key }}
 
       - uses: actions/cache/restore@v4
         id: build-cache
         with:
-          path: ${{github.workspace}}
+          path: ${{github.workspace}}/packages
           key: ${{ inputs.build-cache-key }}
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -48,15 +48,15 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: npm ci      
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts     
         working-directory: ${{ github.workspace }}
             
       - name: Build packages
         if: steps.build-cache.outputs.cache-hit != 'true'
         run: npm run postinstall 
         working-directory: ${{ github.workspace }}   
-        
+
       - run: npm run coverage
       - uses: codecov/codecov-action@v3
         with:

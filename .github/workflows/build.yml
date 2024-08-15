@@ -26,9 +26,9 @@ jobs:
           submodules: recursive
 
       - uses: actions/cache/restore@v4
-        id: cache
+        id: dep-cache
         with:
-          path: ${{github.workspace}}
+          path: ${{github.workspace}}/node_modules
           key: npm-${{ hashFiles('package-lock.json') }}
 
       - uses: actions/cache/restore@v4
@@ -43,11 +43,11 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - if: steps.cache.outputs.cache-hit != 'true'
+      - if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
         working-directory: ${{github.workspace}}
 
-      - if: steps.cache.outputs.cache-hit != 'true'
+      - if: steps.dep-cache.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: ${{github.workspace}}
@@ -63,7 +63,8 @@ jobs:
           key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
     outputs: 
-      cache-key: ${{ steps.cache.outputs.cache-primary-key }}
+      dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}
+      build-cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
   # block:
   #   needs: build
@@ -153,8 +154,8 @@ jobs:
     needs: build
     uses: ./.github/workflows/util-build.yml
     with:
-      cache-key: ${{ needs.build.outputs.cache-key }}
-      build-cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      build-cache-key: ${{ needs.build.outputs.build-cache-key }}
 
   # verkle:
   #   needs: build
