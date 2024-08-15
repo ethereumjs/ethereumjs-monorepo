@@ -51,13 +51,13 @@ jobs:
       - run: echo npm-${{ hashFiles('package-lock.json') }}
       - run: echo ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
     outputs: 
-      cache-key: steps.restore-cache.outputs.key  
+      cache-key: ${{ steps.cache.outputs.cache-primary-key }}
 
   block:
     needs: build
     uses: ./.github/workflows/block-build.yml
     with:
-      cache-key: jobs.build.outputs.cache-key
+      cache-key: ${{ needs.build.outputs.cache-key }}
   
   # blockchain:
   #   needs: build
