@@ -1,9 +1,9 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Prague })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
 
   // Taken from test/eips/precompiles/bls/add_G1_bls.json
   const data = hexToBytes(
@@ -11,7 +11,7 @@ const main = async () => {
   )
   const gasLimit = BigInt(5000000)
 
-  const evm = await EVM.create({ common })
+  const evm = await createEVM({ common })
   const precompile = getActivePrecompiles(common).get('000000000000000000000000000000000000000b')!
 
   const callData = {
