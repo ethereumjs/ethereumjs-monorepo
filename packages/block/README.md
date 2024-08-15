@@ -214,7 +214,7 @@ main()
 
 ### Blocks with EIP-7685 Consensus Layer Requests
 
-Starting with v5.3.0 this library supports requests to the consensus layer which have been introduce with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) and will come into play for deposit and withdrawal requests along the upcoming [Prague](https://eips.ethereum.org/EIPS/eip-7600) hardfork.
+Starting with v5.3.0 this library supports requests to the consensus layer which have been introduced with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) and will come into play for deposit and withdrawal requests along the upcoming [Prague](https://eips.ethereum.org/EIPS/eip-7600) hardfork.
 
 #### EIP-6110 Deposit Requests
 

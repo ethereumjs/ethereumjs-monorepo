@@ -989,7 +989,7 @@ export class Block {
   }
 
   /**
-   * Maps the block properties to the execution payload structore from the beacon chain,
+   * Maps the block properties to the execution payload structure from the beacon chain,
    * see https://github.com/ethereum/consensus-specs/blob/dev/specs/bellatrix/beacon-chain.md#ExecutionPayload
    *
    * @returns dict with the execution payload parameters with camel case naming

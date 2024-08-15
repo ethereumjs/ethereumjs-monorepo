@@ -25,7 +25,7 @@ const evm = await EVM.create({ common, bls })
 
 ### Verkle Dependency Decoupling
 
-We have relatively light-heartedly added a new `@ethereumjs/verkle` main dependency to the VM/EVM stack in the `v7.2.1` release, which added an additional burden to the bundle size by several 100 KB and additionally draw in non-neceesary WASM code. Coupling with Verkle has been refactored in PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462) and the directly dependency has been removed again.
+We have relatively light-heartedly added a new `@ethereumjs/verkle` main dependency to the VM/EVM stack in the `v7.2.1` release, which added an additional burden to the bundle size by several hundred KB and additionally draws in unnecessary WASM code. Coupling with Verkle has been refactored in PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462) and the direct dependency has been removed again.
 
 An update to this release is therefore strongly recommended even if other fixes or features are not that relevant for you right now.
 
@@ -45,7 +45,7 @@ An update to this release is therefore strongly recommended even if other fixes 
 
 - Add support for retroactive [EIP-7610](https://eips.ethereum.org/EIPS/eip-7610), PR [#3480](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3480)
 - Adds bundle visualizer (to be used with `npm run visualize:bundle`), PR [#3463](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3463)
-- Stricter prefixe hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes take back in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
 
 ### Other Changes
 
