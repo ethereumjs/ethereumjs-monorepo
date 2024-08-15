@@ -47,9 +47,6 @@ jobs:
           path: ${{github.workspace}}
           key: npm-${{ hashFiles('package-lock.json') }}
 
-          # Just echoing for now so we can see the cache key
-      - run: echo npm-${{ hashFiles('package-lock.json') }}
-      - run: echo ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
     outputs: 
       cache-key: ${{ steps.cache.outputs.cache-primary-key }}
 
