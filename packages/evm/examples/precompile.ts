@@ -24,4 +24,4 @@ const main = async () => {
   console.log(`Precompile result:${bytesToHex(result.returnValue)}`)
 }
 
-main()
+void main()
