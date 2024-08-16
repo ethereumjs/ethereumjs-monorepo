@@ -44,13 +44,13 @@ jobs:
           cache: 'npm'
 
       - if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm ci --ignore-scripts
         working-directory: ${{github.workspace}}
 
       - if: steps.dep-cache.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
-          path: ${{github.workspace}}/node_modules
+          path: ${{github.workspace}}
           key: npm-${{ hashFiles('package-lock.json') }}
 
       - if: steps.build-cache.outputs.cache-hit != 'true'

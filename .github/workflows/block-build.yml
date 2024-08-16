@@ -35,7 +35,7 @@ jobs:
       - uses: actions/cache/restore@v4
         id: dep-cache
         with:
-          path: ${{github.workspace}}/node_modules
+          path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
   
       # - uses: actions/cache/restore@v4
