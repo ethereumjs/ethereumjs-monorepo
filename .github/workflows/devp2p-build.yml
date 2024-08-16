@@ -40,6 +40,7 @@ jobs:
 
               
       - run: npm run coverage
+        working-directory: ${{ github.workspace }}/packages/devp2p
       - uses: codecov/codecov-action@v3
         with:
           files: ${{ github.workspace }}/packages/devp2p/coverage/lcov.info
