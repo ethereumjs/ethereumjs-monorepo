@@ -8,10 +8,10 @@ import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereum
 import { RLP } from '@ethereumjs/rlp'
 import {
   Capability,
-  LegacyTransaction,
-  create1559FeeMarketTx,
-  create2930AccessListTx,
-  create7702EOACodeTx,
+  LegacyTx,
+  createAccessList2930Tx,
+  createEOACode7702Tx,
+  createFeeMarket1559Tx,
   createLegacyTx,
 } from '@ethereumjs/tx'
 import {
@@ -294,7 +294,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
 
     const gasLimit = BigInt('0x3fefba')
     const opts = { common: block.common }
-    block.transactions[0] = new LegacyTransaction(
+    block.transactions[0] = new LegacyTx(
       { nonce, gasPrice, gasLimit, to, value, data, v, r, s },
       opts,
     )
@@ -539,7 +539,7 @@ describe('runBlock() -> tx types', async () => {
     const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const tx = create2930AccessListTx(
+    const tx = createAccessList2930Tx(
       { gasLimit: 53000, value: 1, v: 1, r: 1, s: 1 },
       { common, freeze: false },
     )
@@ -558,7 +558,7 @@ describe('runBlock() -> tx types', async () => {
     const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const tx = create1559FeeMarketTx(
+    const tx = createFeeMarket1559Tx(
       { maxFeePerGas: 10, maxPriorityFeePerGas: 4, gasLimit: 100000, value: 6 },
       { common, freeze: false },
     )
@@ -644,7 +644,7 @@ describe('runBlock() -> tx types', async () => {
 
     const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
     const authList2 = authorizationListOpts2.map((opt) => getAuthorizationListItem(opt))
-    const tx1 = create7702EOACodeTx(
+    const tx1 = createEOACode7702Tx(
       {
         gasLimit: 1000000000,
         maxFeePerGas: 100000,
@@ -655,7 +655,7 @@ describe('runBlock() -> tx types', async () => {
       },
       { common },
     ).sign(defaultSenderPkey)
-    const tx2 = create7702EOACodeTx(
+    const tx2 = createEOACode7702Tx(
       {
         gasLimit: 1000000000,
         maxFeePerGas: 100000,

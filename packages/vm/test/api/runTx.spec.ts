@@ -2,10 +2,10 @@ import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Blockchain, createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
+  Blob4844Tx,
+  FeeMarket1559Tx,
   TransactionType,
-  create1559FeeMarketTx,
+  createFeeMarket1559Tx,
   createLegacyTx,
   createTxFromTxData,
 } from '@ethereumjs/tx'
@@ -31,7 +31,7 @@ import { VM } from '../../src/vm.js'
 
 import { createAccountWithDefaults, getTransaction, setBalance } from './utils.js'
 
-import type { FeeMarketEIP1559TxData, LegacyTransaction, TypedTxData } from '@ethereumjs/tx'
+import type { FeeMarketEIP1559TxData, LegacyTx, TypedTxData } from '@ethereumjs/tx'
 
 const TRANSACTION_TYPES = [
   {
@@ -230,7 +230,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       // calculate expected coinbase balance
       const baseFee = block.header.baseFeePerGas!
       const inclusionFeePerGas =
-        tx instanceof FeeMarketEIP1559Transaction || tx instanceof BlobEIP4844Transaction
+        tx instanceof FeeMarket1559Tx || tx instanceof Blob4844Tx
           ? tx.maxPriorityFeePerGas < tx.maxFeePerGas - baseFee
             ? tx.maxPriorityFeePerGas
             : tx.maxFeePerGas - baseFee
@@ -346,7 +346,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     // EIP-1559
     // Fail if signer.balance < gas_limit * max_fee_per_gas
     const vm = await VM.create({ common })
-    let tx = getTransaction(vm.common, 2, true) as FeeMarketEIP1559Transaction
+    let tx = getTransaction(vm.common, 2, true) as FeeMarket1559Tx
     const address = tx.getSenderAddress()
     tx = Object.create(tx)
     const maxCost: bigint = tx.gasLimit * tx.maxFeePerGas
@@ -578,7 +578,7 @@ describe('runTx() -> API return values', () => {
         tx.getIntrinsicGas(),
         `runTx result -> gasUsed -> tx.getIntrinsicGas() (${txType.name})`,
       )
-      if (tx instanceof FeeMarketEIP1559Transaction) {
+      if (tx instanceof FeeMarket1559Tx) {
         const baseFee = BigInt(7)
         const inclusionFeePerGas =
           tx.maxPriorityFeePerGas < tx.maxFeePerGas - baseFee
@@ -593,7 +593,7 @@ describe('runTx() -> API return values', () => {
       } else {
         assert.equal(
           res.amountSpent,
-          res.totalGasSpent * (<LegacyTransaction>tx).gasPrice,
+          res.totalGasSpent * (<LegacyTx>tx).gasPrice,
           `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`,
         )
       }
@@ -692,7 +692,7 @@ describe('runTx() -> consensus bugs', () => {
     acc!.balance = BigInt(10000000000000)
     await vm.stateManager.putAccount(addr, acc!)
 
-    const tx = create1559FeeMarketTx(txData, { common }).sign(pkey)
+    const tx = createFeeMarket1559Tx(txData, { common }).sign(pkey)
 
     const block = createBlock({ header: { baseFeePerGas: 0x0c } }, { common })
     const result = await runTx(vm, { tx, block })
@@ -898,7 +898,7 @@ describe('EIP 4844 transaction tests', () => {
     })
     const vm = await VM.create({ common, blockchain })
 
-    const tx = getTransaction(common, 3, true) as BlobEIP4844Transaction
+    const tx = getTransaction(common, 3, true) as Blob4844Tx
 
     const block = createBlock(
       {

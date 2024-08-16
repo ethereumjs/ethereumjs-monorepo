@@ -22,7 +22,7 @@ import * as blockDataWithWithdrawals from './testdata/testdata-from-rpc-with-wit
 import * as blockData from './testdata/testdata-from-rpc.json'
 
 import type { JsonRpcBlock } from '../src/index.js'
-import type { LegacyTransaction } from '@ethereumjs/tx'
+import type { LegacyTx } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('[fromRPC]: block #2924874', () => {
@@ -69,9 +69,7 @@ describe('[fromRPC]:', () => {
       { common },
     )
     assert.equal(
-      (
-        createBlockFromTransactionGasPriceAsInteger.transactions[0] as LegacyTransaction
-      ).gasPrice.toString(),
+      (createBlockFromTransactionGasPriceAsInteger.transactions[0] as LegacyTx).gasPrice.toString(),
       gasPriceAsIntegerString,
     )
   })

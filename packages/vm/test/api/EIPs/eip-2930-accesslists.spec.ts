@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { create2930AccessListTx } from '@ethereumjs/tx'
+import { createAccessList2930Tx } from '@ethereumjs/tx'
 import {
   Address,
   bytesToHex,
@@ -32,7 +32,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
         storageKeys: [bytesToHex(validSlot)],
       },
     ]
-    const txnWithAccessList = create2930AccessListTx(
+    const txnWithAccessList = createAccessList2930Tx(
       {
         accessList: access,
         chainId: BigInt(1),
@@ -41,7 +41,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
       },
       { common },
     ).sign(privateKey)
-    const txnWithoutAccessList = create2930AccessListTx(
+    const txnWithoutAccessList = createAccessList2930Tx(
       {
         accessList: [],
         chainId: BigInt(1),

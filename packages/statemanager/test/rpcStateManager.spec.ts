@@ -1,7 +1,7 @@
 import { createBlockFromJsonRpcProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
-import { create1559FeeMarketTx, createTxFromRPC } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx, createTxFromRPC } from '@ethereumjs/tx'
 import {
   Address,
   bigIntToBytes,
@@ -237,7 +237,7 @@ describe('runTx custom transaction test', () => {
     const privateKey = hexToBytes(
       '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
-    const tx = create1559FeeMarketTx(
+    const tx = createFeeMarket1559Tx(
       { to: vitalikDotEth, value: '0x100', gasLimit: 500000n, maxFeePerGas: 7 },
       { common },
     ).sign(privateKey)

@@ -16,7 +16,7 @@ import { paramsTx } from '../index.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, validateNotArray } from '../util.js'
 
-import { create2930AccessListTx } from './constructors.js'
+import { createAccessList2930Tx } from './constructors.js'
 
 import type {
   AccessList,
@@ -36,7 +36,7 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2
  * - TransactionType: 1
  * - EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
  */
-export class AccessListEIP2930Transaction extends BaseTransaction<TransactionType.AccessListEIP2930> {
+export class AccessList2930Transaction extends BaseTransaction<TransactionType.AccessListEIP2930> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
@@ -123,12 +123,12 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
    * signatureYParity (v), signatureR (r), signatureS (s)]`
    *
-   * Use {@link AccessListEIP2930Transaction.serialize} to add a transaction to a block
+   * Use {@link AccessList2930Transaction.serialize} to add a transaction to a block
    * with {@link createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-   * representation for external signing use {@link AccessListEIP2930Transaction.getMessageToSign}.
+   * representation for external signing use {@link AccessList2930Transaction.getMessageToSign}.
    */
   raw(): TxValuesArray {
     return [
@@ -190,7 +190,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use {@link AccessListEIP2930Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * Use {@link AccessList2930Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
     return Legacy.hash(this)
@@ -215,12 +215,12 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
     convertV: boolean = false,
-  ): AccessListEIP2930Transaction {
+  ): AccessList2930Transaction {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
 
-    return create2930AccessListTx(
+    return createAccessList2930Tx(
       {
         chainId: this.chainId,
         nonce: this.nonce,

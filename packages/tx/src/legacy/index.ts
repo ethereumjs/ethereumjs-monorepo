@@ -1,2 +1,2 @@
 export * from './constructors.js'
-export { LegacyTransaction } from './tx.js'
+export { LegacyTx } from './tx.js'

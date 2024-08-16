@@ -4,8 +4,8 @@ import { assert, describe, it } from 'vitest'
 
 import {
   TransactionType,
-  create2930AccessListTxFromBytesArray,
-  createEIP1559FeeMarketTxFromBytesArray,
+  create1559FeeMarketTxFromBytesArray,
+  createAccessList2930TxFromBytesArray,
   createLegacyTx,
   createLegacyTxFromBytesArray,
   createTxFromTxData,
@@ -167,14 +167,14 @@ describe('[Invalid Array Input values]', () => {
               break
             case TransactionType.AccessListEIP2930:
               assert.throws(() =>
-                create2930AccessListTxFromBytesArray(
+                createAccessList2930TxFromBytesArray(
                   rawValues as TxValuesArray[TransactionType.AccessListEIP2930],
                 ),
               )
               break
             case TransactionType.FeeMarketEIP1559:
               assert.throws(() =>
-                createEIP1559FeeMarketTxFromBytesArray(
+                create1559FeeMarketTxFromBytesArray(
                   rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559],
                 ),
               )
@@ -242,14 +242,14 @@ describe('[Invalid Access Lists]', () => {
           switch (txType) {
             case TransactionType.AccessListEIP2930:
               assert.throws(() =>
-                create2930AccessListTxFromBytesArray(
+                createAccessList2930TxFromBytesArray(
                   rawValues as TxValuesArray[TransactionType.AccessListEIP2930],
                 ),
               )
               break
             case TransactionType.FeeMarketEIP1559:
               assert.throws(() =>
-                createEIP1559FeeMarketTxFromBytesArray(
+                create1559FeeMarketTxFromBytesArray(
                   rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559],
                 ),
               )
