@@ -2,7 +2,7 @@ name: Packages examples
 on:
   workflow_call:
     inputs:
-      cache-key:
+      dep-cache-key:
         required: true
         type: string
   workflow_dispatch:
@@ -22,7 +22,22 @@ jobs:
           node-version: 18
           cache: 'npm'
 
-      - uses: actions/cache/restore@v3
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache/restore@v4
+        id: dep-cache
         with:
           path: ${{github.workspace}}
-          key: ${{ inputs.cache-key }}
+          key: ${{ inputs.dep-cache-key }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci     
+        working-directory: ${{ github.workspace }}
+    

@@ -2,7 +2,7 @@ name: VM
 on:
   workflow_call:
     inputs:
-      cache-key:
+      dep-cache-key:
         required: true
         type: string
   workflow_dispatch:
@@ -26,23 +26,28 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'npm'
+      - uses: actions/checkout@v4
 
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
+        id: dep-cache
         with:
           path: ${{github.workspace}}
-          key: ${{ inputs.cache-key }}
+          key: ${{ inputs.dep-cache-key }}
 
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: npm ci          
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci     
+        working-directory: ${{ github.workspace }}
+    
 
       - run: npm run lint
       - run: npm run coverage
-      #     - run: npm run test:API:browser -- disabled until we fix browser tests for vitest
 
       - uses: codecov/codecov-action@v3
         with:
@@ -60,13 +65,25 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache/restore@v4
+        id: dep-cache
         with:
-          node-version: 18
+          path: ${{github.workspace}}
+          key: ${{ inputs.dep-cache-key }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - run: npm ci
-        working-directory: ${{github.workspace}}
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci     
+        working-directory: ${{ github.workspace }}
+    
 
       - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
 

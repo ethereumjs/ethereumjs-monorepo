@@ -5,9 +5,6 @@ on:
       dep-cache-key:
         required: true
         type: string
-      # build-cache-key:
-      #   required: true
-      #   type: string
   workflow_dispatch:
 
 env:
@@ -36,27 +33,16 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
 
-      # - uses: actions/cache/restore@v4
-      #   id: build-cache
-      #   with:
-      #     path: ${{github.workspace}}/packages
-      #     key: ${{ inputs.build-cache-key }}
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: Install Dependencies
+      - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci  
         working-directory: ${{ github.workspace }}
-            
-      # - name: Build packages
-      #   # if: steps.build-cache.outputs.cache-hit != 'true'
-      #   run: npm run postinstall 
-      #   working-directory: ${{ github.workspace }}   
 
       - run: npm run coverage
       - uses: codecov/codecov-action@v3
