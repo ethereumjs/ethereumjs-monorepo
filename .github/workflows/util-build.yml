@@ -48,4 +48,4 @@ jobs:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: util
 
-      - run: npm run lint
+

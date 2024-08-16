@@ -7,9 +7,6 @@ on:
         type: string
   workflow_dispatch:
 
-env:
-  cwd: ${{github.workspace}}/packages/devp2p
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-devp2p
   cancel-in-progress: true
@@ -46,4 +43,4 @@ jobs:
           files: ${{ github.workspace }}/packages/devp2p/coverage/lcov.info
           flags: devp2p
 
-      - run: npm run lint
+

@@ -54,8 +54,6 @@ jobs:
           max_attempts: 3
           command: cd ${{github.workspace}}/packages/client && npm run test:integration
 
-      - run: npm run lint
-
   test-client-dockerfile:
     name: test client docker file
     runs-on: ubuntu-latest

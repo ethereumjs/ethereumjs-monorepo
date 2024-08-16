@@ -158,3 +158,10 @@ jobs:
     uses: ./.github/workflows/wallet-build.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+  
+  lint:
+    needs: build
+    uses: ./.github/workflows/lint.yml
+    with:
+      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      
