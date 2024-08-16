@@ -23,8 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - uses: actions/cache/restore@v4
         id: dep-cache
@@ -60,8 +58,6 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - uses: actions/cache/restore@v4
         id: dep-cache
@@ -108,8 +104,6 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - uses: actions/cache/restore@v4
         id: dep-cache
@@ -150,8 +144,6 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - uses: actions/cache/restore@v4
         id: dep-cache
@@ -205,9 +197,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
+      
       - uses: actions/cache/restore@v4
         id: dep-cache
         with:
