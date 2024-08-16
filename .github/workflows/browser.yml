@@ -17,8 +17,6 @@ jobs:
   test-all-browser:
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        node-version: [20]
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -31,19 +29,17 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
   
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20
           cache: 'npm'
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci     
         working-directory: ${{ github.workspace }}
-              
-            
-      - run: npm ci
+
       - run: npm run install-browser-deps
 
       - run: npm run test:browser --workspaces --if-present

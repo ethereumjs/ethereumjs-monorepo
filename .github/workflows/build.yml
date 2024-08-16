@@ -17,9 +17,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20]
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,10 +29,10 @@ jobs:
           path: ${{github.workspace}}/node_modules
           key: npm-${{ hashFiles('package-lock.json') }}
           
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20
           cache: 'npm'
 
       - run: npm ci
