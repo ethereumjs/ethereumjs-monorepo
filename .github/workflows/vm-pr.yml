@@ -26,18 +26,16 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: actions/checkout@v4
-
       - uses: actions/cache/restore@v4
         id: dep-cache
         with:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20
           cache: 'npm'
 
       - name: Install Dependencies (if not restored from cache)
