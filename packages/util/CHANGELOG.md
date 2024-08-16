@@ -77,7 +77,7 @@ This release contains various fixes and spec updates related to the Dencun (Dene
 
 ### Other Changes
 
-- Performance: New reoccurring used BigInt constants (`BIGINT_0`, `BIGINT_32`, `BIGINT_2EXP96`,...) in the `bytes` module for re-usage along performance optimizations, PR [#3050](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3050)
+- Performance: New BigInt constants (`BIGINT_0`, `BIGINT_32`, `BIGINT_2EXP96`,...) in the `bytes` module for re-usage along performance optimizations, PR [#3050](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3050)
 - Performance: `bytesToBigInt()` performance optimization for 1-byte bytes, PR [#3054](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3054)
 - Fix a bug in `fromUtf8()`, PR [#3112](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3112)
 
