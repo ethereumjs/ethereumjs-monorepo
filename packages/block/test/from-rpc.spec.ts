@@ -1,4 +1,3 @@
-// cspell:ignore wtxns wtxs wotxns
 import { Common, Goerli, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -12,9 +11,9 @@ import {
 import * as alchemy14151203 from './testdata/alchemy14151203.json'
 import * as infuraGoerliBlock10536893 from './testdata/infura-goerli-block-10536893.json'
 import * as infura15571241woTxs from './testdata/infura15571241.json'
-import * as infura15571241wTxs from './testdata/infura15571241wtxns.json'
-import * as infura2000004woTxs from './testdata/infura2000004wotxns.json'
-import * as infura2000004wTxs from './testdata/infura2000004wtxs.json'
+import * as infura15571241wTxs from './testdata/infura15571241wtxns.json' // cspell:disable-line
+import * as infura2000004woTxs from './testdata/infura2000004wotxns.json' // cspell:disable-line
+import * as infura2000004wTxs from './testdata/infura2000004wtxs.json' // cspell:disable-line
 import * as blockDataDifficultyAsInteger from './testdata/testdata-from-rpc-difficulty-as-integer.json'
 import * as testDataFromRpcGoerliLondon from './testdata/testdata-from-rpc-goerli-london.json'
 import * as blockDataWithUncles from './testdata/testdata-from-rpc-with-uncles.json'
@@ -134,6 +133,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
   it('should create pre and post merge blocks from Infura API responses to eth_getBlockByHash and eth_getBlockByNumber', () => {
     const common = new Common({ chain: Mainnet })
     let block = createBlockFromRPC(infura2000004woTxs as JsonRpcBlock, [], {
+      // cspell:disable-line
       common,
       setHardfork: true,
     })
@@ -142,13 +142,14 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
       infura2000004woTxs.hash,
       'created premerge block w/o txns',
     )
-    block = createBlockFromRPC(infura2000004wTxs as JsonRpcBlock, [], { common, setHardfork: true })
+    block = createBlockFromRPC(infura2000004wTxs as JsonRpcBlock, [], { common, setHardfork: true }) // cspell:disable-line
     assert.equal(
       bytesToHex(block.hash()),
       infura2000004wTxs.hash,
       'created premerge block with txns',
     )
     block = createBlockFromRPC(infura15571241woTxs as JsonRpcBlock, [], {
+      // cspell:disable-line
       common,
       setHardfork: true,
     })
@@ -159,6 +160,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
     )
 
     block = createBlockFromRPC(infura15571241wTxs as JsonRpcBlock, [], {
+      // cspell:disable-line
       common,
       setHardfork: true,
     })
@@ -171,7 +173,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
 
   it('should correctly parse a cancun block over rpc', () => {
     const common = new Common({ chain: Goerli, hardfork: Hardfork.Cancun })
-    const block = blockHeaderFromRpc(infuraGoerliBlock10536893 as JsonRpcBlock, { common })
+    const block = blockHeaderFromRpc(infuraGoerliBlock10536893 as JsonRpcBlock, { common }) // cspell:disable-line
     const hash = hexToBytes(infuraGoerliBlock10536893.hash as PrefixedHexString)
     assert.ok(equalsBytes(block.hash(), hash))
   })
@@ -187,7 +189,7 @@ describe('[fromJsonRpcProvider]', () => {
     global.fetch = async (_url: string, req: any) => {
       const json = JSON.parse(req.body)
       if (json.params[0] === '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24') {
-        const txData = await import(`./testdata/infura15571241wtxns.json`)
+        const txData = await import(`./testdata/infura15571241wtxns.json`) // cspell:disable-line
         return {
           ok: true,
           status: 200,

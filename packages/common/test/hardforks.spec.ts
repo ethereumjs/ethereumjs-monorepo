@@ -1,4 +1,3 @@
-// cspell:ignore yolov
 import { hexToBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -294,8 +293,8 @@ describe('[Common]: Hardfork logic', () => {
         istanbulBlock: 0,
         muirGlacierBlock: 0,
         berlinBlock: 0,
-        yolov2Block: 0,
-        yolov3Block: 0,
+        yolov2Block: 0, // cspell:disable-line
+        yolov3Block: 0, // cspell:disable-line
         londonBlock: 0,
         mergeForkBlock: 0,
         terminalTotalDifficulty: 0,

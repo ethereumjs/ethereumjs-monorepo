@@ -1,4 +1,3 @@
-// cspell:ignore mult expmod
 import {
   BIGINT_0,
   BIGINT_1,
@@ -32,7 +31,7 @@ const BIGINT_199680 = BigInt(199680)
 const maxInt = BigInt(Number.MAX_SAFE_INTEGER)
 const maxSize = BigInt(2147483647) // @ethereumjs/util setLengthRight limitation
 
-function multComplexity(x: bigint): bigint {
+function multiplicationComplexity(x: bigint): bigint {
   let fac1
   let fac2
   if (x <= BIGINT_64) {
@@ -50,7 +49,7 @@ function multComplexity(x: bigint): bigint {
   }
 }
 
-function multComplexityEIP2565(x: bigint): bigint {
+function multiplicationComplexityEIP2565(x: bigint): bigint {
   const words = (x + BIGINT_7) / BIGINT_8
   return words * words
 }
@@ -90,7 +89,7 @@ function getAdjustedExponentLength(data: Uint8Array): bigint {
   return adjustedExpLen
 }
 
-export function expmod(a: bigint, power: bigint, modulo: bigint) {
+export function expMod(a: bigint, power: bigint, modulo: bigint) {
   if (power === BIGINT_0) {
     return BIGINT_1 % modulo
   }
@@ -130,9 +129,9 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const mEnd = mStart + mLen
 
   if (!opts.common.isActivatedEIP(2565)) {
-    gasUsed = (adjustedELen * multComplexity(maxLen)) / Gquaddivisor
+    gasUsed = (adjustedELen * multiplicationComplexity(maxLen)) / Gquaddivisor
   } else {
-    gasUsed = (adjustedELen * multComplexityEIP2565(maxLen)) / Gquaddivisor
+    gasUsed = (adjustedELen * multiplicationComplexityEIP2565(maxLen)) / Gquaddivisor
     if (gasUsed < BIGINT_200) {
       gasUsed = BIGINT_200
     }
@@ -181,7 +180,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   if (M === BIGINT_0) {
     R = new Uint8Array()
   } else {
-    R = expmod(B, E, M)
+    R = expMod(B, E, M)
     if (R === BIGINT_0) {
       R = new Uint8Array()
     } else {

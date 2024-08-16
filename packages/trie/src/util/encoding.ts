@@ -1,4 +1,3 @@
-// cspell:ignore bkey
 import { concatBytes, hexToBytes, toBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import { nibblesTypeToPackedBytes } from './nibbles.js'
@@ -130,12 +129,12 @@ export const nibbleTypeToByteType = (arr: Nibbles): Uint8Array => {
  * @returns Nibble typed nibble array
  */
 export const byteTypeToNibbleType = (key: Uint8Array): Nibbles => {
-  const bkey = toBytes(key)
+  const bKey = toBytes(key)
   const nibbles = [] as Nibbles
 
-  for (let i = 0; i < bkey.length; i++) {
+  for (let i = 0; i < bKey.length; i++) {
     const q = i
-    nibbles[q] = bkey[i] % 16
+    nibbles[q] = bKey[i] % 16
   }
 
   return nibbles

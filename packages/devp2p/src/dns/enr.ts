@@ -1,4 +1,3 @@
-// cspell:ignore Vals
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import { base32, base64url } from '@scure/base'
@@ -151,17 +150,17 @@ export class ENR {
     if (!tree.startsWith(this.TREE_PREFIX))
       throw new Error(`ENR tree entry must start with '${this.TREE_PREFIX}'`)
 
-    const treeVals = sscanf(
+    const treeValues = sscanf(
       tree,
       `${this.TREE_PREFIX}//%s@%s`,
       'publicKey',
       'domain',
     ) as ENRTreeValues
 
-    if (!treeVals.publicKey) throw new Error('Could not parse public key from ENR tree entry')
-    if (!treeVals.domain) throw new Error('Could not parse domain from ENR tree entry')
+    if (!treeValues.publicKey) throw new Error('Could not parse public key from ENR tree entry')
+    if (!treeValues.domain) throw new Error('Could not parse domain from ENR tree entry')
 
-    return treeVals
+    return treeValues
   }
 
   /**

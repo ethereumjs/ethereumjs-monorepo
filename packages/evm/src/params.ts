@@ -1,4 +1,3 @@
-// cspell:ignore coeff
 import type { ParamsDict } from '@ethereumjs/common'
 
 export const paramsEVM: ParamsDict = {
@@ -29,7 +28,7 @@ export const paramsEVM: ParamsDict = {
     callNewAccountGas: 25000, // Paid for CALL when the destination address didn't exist prior
     selfdestructRefundGas: 24000, // Refunded following a selfdestruct operation
     memoryGas: 3, // Times the address of the (highest referenced byte in memory + 1). NOTE: referencing happens on read, write and in instructions such as RETURN and CALL
-    quadCoeffDivGas: 512, // Divisor for the quadratic particle of the memory cost equation
+    quadCoefficientDivGas: 512, // Divisor for the quadratic particle of the memory cost equation
     createDataGas: 200, //
     copyGas: 3, // Multiplied by the number of 32-byte words that are copied (round up) for any *COPY operation and added
     ecRecoverGas: 3000,

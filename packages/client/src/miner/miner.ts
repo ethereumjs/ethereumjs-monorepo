@@ -1,4 +1,3 @@
-// cspell:ignore NOTURN
 import { type BlockHeader, createSealedCliqueBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'

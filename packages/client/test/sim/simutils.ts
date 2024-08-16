@@ -1,4 +1,3 @@
-// cspell:ignore pkill
 import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { create1559FeeMarketTx, create4844BlobTx } from '@ethereumjs/tx'
@@ -241,10 +240,10 @@ export function runNetwork(
       throw Error('network is killed before end of test')
     }
     console.log('Killing network process', runProc.pid)
-    execSync(`pkill -15 -P ${runProc.pid}`)
+    execSync(`pkill -15 -P ${runProc.pid}`) // cspell:disable-line pkill
     if (peerRunProc !== undefined) {
       console.log('Killing peer network process', peerRunProc.pid)
-      execSync(`pkill -15 -P ${peerRunProc.pid}`)
+      execSync(`pkill -15 -P ${peerRunProc.pid}`) // cspell:disable-line pkill
     }
     // Wait for the P2P to be offline
     await waitForELOffline()
