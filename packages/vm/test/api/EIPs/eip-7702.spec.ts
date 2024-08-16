@@ -14,6 +14,7 @@ import {
   ecsign,
   hexToBytes,
   privateToAddress,
+  setLengthRight,
   unpadBytes,
   zeros,
 } from '@ethereumjs/util'
@@ -290,7 +291,37 @@ describe.only('test EIP-7702 opcodes', () => {
     const randomCodeAddress = createAddressFromString('0x' + 'aa'.repeat(20))
 
     const opcodes = ['3b', '3f']
-    const expected = [BigInt(randomCode.length), bytesToBigInt(keccak256(randomCode))]
+    const expected = [bigIntToUnpaddedBytes(BigInt(randomCode.length)), keccak256(randomCode)]
+
+    const tests: {
+      code: PrefixedHexString
+      expectedStorage: Uint8Array
+      name: string
+    }[] = [
+      // EXTCODESIZE
+      {
+        // PUSH20 <defaultAuthAddr> EXTCODESIZE PUSH0 SSTORE STOP
+        code: <PrefixedHexString>('0x73' + defaultAuthAddr.toString().slice(2) + '3b' + '5f5500'),
+        expectedStorage: bigIntToUnpaddedBytes(BigInt(randomCode.length)),
+        name: 'EXTCODESIZE',
+      },
+      // EXTCODEHASH
+      {
+        // PUSH20 <defaultAuthAddr> EXTCODEHASH PUSH0 SSTORE STOP
+        code: <PrefixedHexString>('0x73' + defaultAuthAddr.toString().slice(2) + '3f' + '5f5500'),
+        expectedStorage: keccak256(randomCode),
+        name: 'EXTCODEHASH',
+      },
+      // EXTCODECOPY
+      {
+        // PUSH1 32 PUSH0 PUSH0 PUSH20 <defaultAuthAddr> EXTCODEHASH PUSH0 SSTORE STOP
+        code: <PrefixedHexString>(
+          ('0x60205f5f73' + defaultAuthAddr.toString().slice(2) + '3c' + '5f5500')
+        ),
+        expectedStorage: setLengthRight(randomCode, 32),
+        name: 'EXTCODECOPY',
+      },
+    ]
 
     const authTx = create7702EOACodeTx(
       {
@@ -307,13 +338,7 @@ describe.only('test EIP-7702 opcodes', () => {
       { common },
     ).sign(defaultSenderPkey)
 
-    // TODO make this more elegant
-    let i = -1
-    for (const opcode of opcodes) {
-      i++
-      const actualCode = hexToBytes(
-        <PrefixedHexString>('0x73' + defaultAuthAddr.toString().slice(2) + opcode + '5f5500'),
-      )
+    async function runOpcodeTest(code: Uint8Array, expectedOutput: Uint8Array, name: string) {
       const vm = await VM.create({ common })
 
       const acc = (await vm.stateManager.getAccount(defaultSenderAddr)) ?? new Account()
@@ -321,7 +346,7 @@ describe.only('test EIP-7702 opcodes', () => {
       await vm.stateManager.putAccount(defaultSenderAddr, acc)
 
       // The code to either store extcodehash / extcodesize in slot 0
-      await vm.stateManager.putCode(deploymentAddress, actualCode)
+      await vm.stateManager.putCode(deploymentAddress, code)
       // The code the authority points to (and should thus be loaded by above script)
       await vm.stateManager.putCode(randomCodeAddress, randomCode)
 
@@ -329,7 +354,12 @@ describe.only('test EIP-7702 opcodes', () => {
       await runTx(vm, { tx: authTx })
 
       const result = await vm.stateManager.getStorage(deploymentAddress, zeros(32))
-      assert.equal(bytesToBigInt(result), expected[i])
+      console.log(result, expectedOutput)
+      assert.ok(equalsBytes(result, expectedOutput), `FAIL test: ${name}`)
+    }
+
+    for (const test of tests) {
+      await runOpcodeTest(hexToBytes(test.code), test.expectedStorage, test.name)
     }
   })
 })
