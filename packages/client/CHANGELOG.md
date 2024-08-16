@@ -25,7 +25,7 @@ This release comes with some RPC improvements as well as various updates to catc
 ### Other Features
 
 - Integrates support for [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions (outdated) (see tx library for full documentation), see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470)
-- New `--startExectionFrom` and `--startExecution` CLI options, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- New `--startExecutionFrom` and `--startExecution` CLI options, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
 - Add `eth_blobBaseFee` RPC endpoint, PR [#3436](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3436)
 - Add support for `pending` in `eth_getTransactionCount` RPC method, PR [#3415](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3415)
 - Add support for multiple sources of rlp blocks when loading with `--loadBlocksFromRlp`, PR [#3442](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3442)

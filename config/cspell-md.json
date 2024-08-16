@@ -308,6 +308,11 @@
     "unpublish",
     "poap",
     "nycrc",
-    "gitpkg"
+    "gitpkg",
+    "multiaddress",
+    "triggerable",
+    "MCLBLS",
+    "heartedly",
+    "beaconroot"
   ]
 }

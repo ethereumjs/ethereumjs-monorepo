@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 This release introduces support for a non-final version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions, see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470). This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
 
-The following is a simple example how to use an `EOACodeEIP7702Transaction` with one autorization list item:
+The following is a simple example how to use an `EOACodeEIP7702Transaction` with one authorization list item:
 
 ```ts
 // ./examples/EOACodeTx.ts
