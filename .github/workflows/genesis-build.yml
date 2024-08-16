@@ -19,7 +19,7 @@ defaults:
     working-directory: packages/genesis
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-genesis
   cancel-in-progress: true
 
 jobs:

@@ -15,7 +15,7 @@ defaults:
     working-directory: packages/evm
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-evm
   cancel-in-progress: true
 
 jobs:

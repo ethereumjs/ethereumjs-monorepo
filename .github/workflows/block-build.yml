@@ -15,7 +15,7 @@ defaults:
     working-directory: packages/block
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-block
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
   cancel-in-progress: true
 
 jobs:

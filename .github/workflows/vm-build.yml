@@ -14,7 +14,7 @@ defaults:
     working-directory: packages/vm
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-vm-build
   cancel-in-progress: true
 
 jobs:
@@ -24,8 +24,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - uses: actions/checkout@v4
 
       - uses: actions/cache/restore@v4
         id: dep-cache
