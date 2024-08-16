@@ -7,12 +7,15 @@ import {
   BIGINT_1,
   KECCAK256_NULL,
   bigIntToUnpaddedBytes,
+  bytesToBigInt,
   concatBytes,
   createAddressFromString,
+  createZeroAddress,
   ecsign,
   hexToBytes,
   privateToAddress,
   unpadBytes,
+  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { equalsBytes } from 'ethereum-cryptography/utils'
@@ -21,6 +24,7 @@ import { assert, describe, it } from 'vitest'
 import { VM, runTx } from '../../../src/index.js'
 
 import type { AuthorizationListBytesItem } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 
@@ -275,5 +279,57 @@ describe('EIP 7702: set code to EOA accounts', () => {
     // Note: due to EIP-161, defaultAuthAddr is now deleted
     const account = await vm.stateManager.getAccount(defaultAuthAddr)
     assert.ok(account === undefined)
+  })
+})
+
+describe.only('test EIP-7702 opcodes', () => {
+  it('should correctly report EXTCODE* opcodes', async () => {
+    // extcodesize and extcodehash
+    const deploymentAddress = createZeroAddress()
+    const randomCode = hexToBytes('0x010203040506')
+    const randomCodeAddress = createAddressFromString('0x' + 'aa'.repeat(20))
+
+    const opcodes = ['3b', '3f']
+    const expected = [BigInt(randomCode.length), bytesToBigInt(keccak256(randomCode))]
+
+    const authTx = create7702EOACodeTx(
+      {
+        gasLimit: 100000,
+        maxFeePerGas: 1000,
+        authorizationList: [
+          getAuthorizationListItem({
+            address: randomCodeAddress,
+          }),
+        ],
+        to: deploymentAddress,
+        value: BIGINT_1,
+      },
+      { common },
+    ).sign(defaultSenderPkey)
+
+    // TODO make this more elegant
+    let i = -1
+    for (const opcode of opcodes) {
+      i++
+      const actualCode = hexToBytes(
+        <PrefixedHexString>('0x73' + defaultAuthAddr.toString().slice(2) + opcode + '5f5500'),
+      )
+      const vm = await VM.create({ common })
+
+      const acc = (await vm.stateManager.getAccount(defaultSenderAddr)) ?? new Account()
+      acc.balance = BigInt(1_000_000_000)
+      await vm.stateManager.putAccount(defaultSenderAddr, acc)
+
+      // The code to either store extcodehash / extcodesize in slot 0
+      await vm.stateManager.putCode(deploymentAddress, actualCode)
+      // The code the authority points to (and should thus be loaded by above script)
+      await vm.stateManager.putCode(randomCodeAddress, randomCode)
+
+      // Set authority and immediately call into the contract to get the extcodehash / extcodesize
+      await runTx(vm, { tx: authTx })
+
+      const result = await vm.stateManager.getStorage(deploymentAddress, zeros(32))
+      assert.equal(bytesToBigInt(result), expected[i])
+    }
   })
 })

@@ -61,7 +61,7 @@ export interface AsyncOpHandler {
 export type OpHandler = SyncOpHandler | AsyncOpHandler
 
 async function eip7702CodeCheck(runState: RunState, code: Uint8Array) {
-  if (equalBytes(code, new Uint8Array([0xef, 0x01, 0x00]))) {
+  if (equalBytes(code.slice(0, 3), new Uint8Array([0xef, 0x01, 0x00]))) {
     const address = new Address(code.slice(3, 24))
     return runState.stateManager.getCode(address)
   }
@@ -534,9 +534,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         code = await eip7702CodeCheck(runState, code)
       }
 
-      const size = BigInt(
-        await runState.stateManager.getCodeSize(createAddressFromStackBigInt(addressBigInt)),
-      )
+      const size = BigInt(code.length)
 
       runState.stack.push(size)
     },
@@ -581,6 +579,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       } else if (common.isActivatedEIP(7702)) {
         code = await eip7702CodeCheck(runState, code)
+        return keccak256(code)
       }
 
       const account = await runState.stateManager.getAccount(address)
