@@ -44,6 +44,7 @@ jobs:
           timeout_minutes: 2
           max_attempts: 3
           command: npm run test
+          working-directory: ${{ github.workspace }}/packages/devp2p
 
       - uses: codecov/codecov-action@v3
         with:
