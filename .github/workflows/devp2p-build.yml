@@ -39,13 +39,7 @@ jobs:
         working-directory: ${{ github.workspace }}
 
               
-      - uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 2
-          max_attempts: 3
-          command: npm run test
-          working-directory: ${{ github.workspace }}/packages/devp2p
-
+      - run: npm run coverage
       - uses: codecov/codecov-action@v3
         with:
           files: ${{ github.workspace }}/packages/devp2p/coverage/lcov.info
