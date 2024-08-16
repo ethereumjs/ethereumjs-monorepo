@@ -66,11 +66,12 @@ jobs:
       dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}
       build-cache-key:  ${{ steps.build-cache.outputs.cache-primary-key }}
 
-  # block:
-  #   needs: build
-  #   uses: ./.github/workflows/block-build.yml
-  #   with:
-  #     cache-key: ${{ needs.build.outputs.cache-key }}
+  block:
+    needs: build
+    uses: ./.github/workflows/block-build.yml
+    with:
+      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      build-cache-key: ${{ needs.build.outputs.build-cache-key }}
   
   # blockchain:
   #   needs: build
