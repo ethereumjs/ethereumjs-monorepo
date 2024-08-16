@@ -6,7 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.3.0 - 2024-03-05
+## 2.4.0 - 2024-08-15
+
+### Verkle Updates
+
+- Various fixes for Kaustinen4 support (partial account integration, `getContractCodeSize()`, other), PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- Kaustinen5 related fixes, PR [#3343](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3343)
+- Kaustinen6 adjustments, `verkle-cryptography-wasm` migration, PRs [#3355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3355) and [#3356](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3356)
+- Missing beaconroot account verkle fix, PR [#3421](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3421)
+- Verkle decoupling, PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462)
+
+### Other Features
+
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Other Changes
+
+- Modify RPCStateManager `getAccount()`, PR [#3345](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3345)
+
+### Bugfixes
+
+- Fixes an issue where under certain deployment conditions wrong storage values could be provided, PR [#3434](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3434)
+- Fixes statemanager empty code bug, PR [#3483](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3483)
+
+## 2.3.0 - 2024-03-18
 
 ### Full 4844 Browser Readiness
 
