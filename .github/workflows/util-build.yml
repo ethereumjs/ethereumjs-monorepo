@@ -36,11 +36,12 @@ jobs:
           path: ${{github.workspace}}/node_modules
           key: ${{ inputs.dep-cache-key }}
 
-      - uses: actions/cache/restore@v4
-        id: build-cache
-        with:
-          path: ${{github.workspace}}/packages
-          key: ${{ inputs.build-cache-key }}
+      # - uses: actions/cache/restore@v4
+      #   id: build-cache
+      #   with:
+      #     path: ${{github.workspace}}/packages
+      #     key: ${{ inputs.build-cache-key }}
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -53,7 +54,7 @@ jobs:
         working-directory: ${{ github.workspace }}
             
       - name: Build packages
-        if: steps.build-cache.outputs.cache-hit != 'true'
+        # if: steps.build-cache.outputs.cache-hit != 'true'
         run: npm run postinstall 
         working-directory: ${{ github.workspace }}   
 
