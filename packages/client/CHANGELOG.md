@@ -170,7 +170,7 @@ A new more fine-tuned discovery `discV4` mechanism has been integrated along PR 
 - Decouple skeleton from beacon sync, PR [#3028](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3028)
 - Fix canonical reset of the chain by the skeleton, PR [#3078](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3078)
 - Skeleton reorg head fixes, PR [#3085](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3085)
-- Fixes regarding beacon sync, vmexecution and further log improves, PR [#3094](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3094)
+- Fixes regarding beacon sync, vmexecution and further log improvements, PR [#3094](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3094)
 - Various rebase and sync related improvements along PR [#3031](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3031)
 
 ### Other Features
