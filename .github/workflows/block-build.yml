@@ -2,8 +2,11 @@ name: Block
 on:
   workflow_call:
     inputs:
-      cache-key:
-        required: false
+      dep-cache-key:
+        required: true
+        type: string
+      build-cache-key:
+        required: true
         type: string
   workflow_dispatch:
 
