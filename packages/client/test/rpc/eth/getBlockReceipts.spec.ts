@@ -1,5 +1,5 @@
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { create1559FeeMarketTx, create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
+import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   bigIntToHex,
   blobsToCommitments,
@@ -59,7 +59,7 @@ describe(method, () => {
     )
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = create1559FeeMarketTx(
+    const tx = createFeeMarket1559Tx(
       {
         gasLimit: 2000000,
         maxFeePerGas: 975000000,
@@ -68,7 +68,7 @@ describe(method, () => {
       },
       { common },
     ).sign(dummy.privKey)
-    const tx1 = create1559FeeMarketTx(
+    const tx1 = createFeeMarket1559Tx(
       {
         gasLimit: 2000000,
         maxFeePerGas: 975000000,
@@ -124,7 +124,7 @@ describe(method, () => {
       const commitments = blobsToCommitments(kzg, blobs)
       const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
       const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
-      const tx = create4844BlobTx(
+      const tx = createBlob4844Tx(
         {
           blobVersionedHashes,
           blobs,

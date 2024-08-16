@@ -18,7 +18,7 @@ import { paramsTx } from '../index.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, AuthorizationLists, validateNotArray } from '../util.js'
 
-import { create7702EOACodeTx } from './constructors.js'
+import { createEOACode7702Tx } from './constructors.js'
 
 import type {
   AccessList,
@@ -40,7 +40,7 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702
  * - TransactionType: 4
  * - EIP: [EIP-7702](https://github.com/ethereum/EIPs/blob/62419ca3f45375db00b04a368ea37c0bfb05386a/EIPS/eip-7702.md)
  */
-export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.EOACodeEIP7702> {
+export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOACodeEIP7702> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
@@ -152,12 +152,12 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, authorizationList, signatureYParity, signatureR, signatureS]`
    *
-   * Use {@link EOACodeEIP7702Transaction.serialize} to add a transaction to a block
+   * Use {@link EOACode7702Transaction.serialize} to add a transaction to a block
    * with {@link createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-   * representation for external signing use {@link EOACodeEIP7702Transaction.getMessageToSign}.
+   * representation for external signing use {@link EOACode7702Transaction.getMessageToSign}.
    */
   raw(): TxValuesArray {
     return [
@@ -221,7 +221,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use {@link EOACodeEIP7702Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * Use {@link EOACode7702Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
     return Legacy.hash(this)
@@ -246,12 +246,12 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
     convertV: boolean = false,
-  ): EOACodeEIP7702Transaction {
+  ): EOACode7702Transaction {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
 
-    return create7702EOACodeTx(
+    return createEOACode7702Tx(
       {
         chainId: this.chainId,
         nonce: this.nonce,

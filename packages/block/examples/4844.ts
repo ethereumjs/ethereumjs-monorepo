@@ -1,6 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { create4844BlobTx } from '@ethereumjs/tx'
+import { createBlob4844Tx } from '@ethereumjs/tx'
 import { createAddressFromPrivateKey } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
 import { loadKZG } from 'kzg-wasm'
@@ -15,7 +15,7 @@ const main = async () => {
       kzg,
     },
   })
-  const blobTx = create4844BlobTx(
+  const blobTx = createBlob4844Tx(
     { blobsData: ['myFirstBlob'], to: createAddressFromPrivateKey(randomBytes(32)) },
     { common },
   )

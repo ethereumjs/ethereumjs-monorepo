@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { create1559FeeMarketTx } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -408,7 +408,7 @@ describe('EIP1559 tests', () => {
   })
 
   it('Header -> validateTransactions() -> tx', async () => {
-    const transaction = create1559FeeMarketTx(
+    const transaction = createFeeMarket1559Tx(
       {
         maxFeePerGas: BigInt(0),
         maxPriorityFeePerGas: BigInt(0),
