@@ -35,7 +35,7 @@ jobs:
         id: build-cache
         with:
           path: ${{github.workspace}}/packages
-          key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+          key: build-${{ hashFiles('./packages/**/src/**')}}
           
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -64,7 +64,7 @@ jobs:
 
     outputs: 
       dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}
-      build-cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+      build-cache-key:  ${{ steps.build-cache.outputs.cache-primary-key }}
 
   # block:
   #   needs: build
