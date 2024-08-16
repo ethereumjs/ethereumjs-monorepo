@@ -30,28 +30,27 @@ jobs:
         with:
           path: ${{github.workspace}}/node_modules
           key: npm-${{ hashFiles('package-lock.json') }}
+      - if: steps.dep-cache.outputs.cache-hit != 'true'
+          - name: Use Node.js ${{ matrix.node-version }}
+            uses: actions/setup-node@v4
+            with:
+              node-version: ${{ matrix.node-version }}
+              cache: 'npm'
+
+          - name: Install dependencies
+            run: ./config/cli/setup-dependencies.sh 
+          
+          - name: Cache dependencies
+            uses: actions/cache@v4
+            with:
+              path: ${{github.workspace}}/node_modules
+              key: npm-${{ hashFiles('package-lock.json') }}
 
       - uses: actions/cache/restore@v4
         id: build-cache
         with:
           path: ${{github.workspace}}/packages
           key: build-${{ hashFiles('./packages/**/src/**')}}
-          
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
-      - if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci --ignore-scripts
-        working-directory: ${{github.workspace}}
-
-      - if: steps.dep-cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v4
-        with:
-          path: ${{github.workspace}}/node_modules
-          key: npm-${{ hashFiles('package-lock.json') }}
 
       - if: steps.build-cache.outputs.cache-hit != 'true'
         run: npm run postinstall
