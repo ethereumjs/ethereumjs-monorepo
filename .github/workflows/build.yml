@@ -31,11 +31,11 @@ jobs:
           path: ${{github.workspace}}/node_modules
           key: npm-${{ hashFiles('package-lock.json') }}
 
-      - uses: actions/cache/restore@v4
-        id: build-cache
-        with:
-          path: ${{github.workspace}}/packages
-          key: build-${{ hashFiles('./packages/**/src/**')}}
+      # - uses: actions/cache/restore@v4
+      #   id: build-cache
+      #   with:
+      #     path: ${{github.workspace}}/packages
+      #     key: build-${{ hashFiles('./packages/**/src/**')}}
           
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -47,17 +47,21 @@ jobs:
         run: npm ci --ignore-scripts
         working-directory: ${{github.workspace}}
 
-      - if: steps.dep-cache.outputs.cache-hit != 'true'
+      - name: Build packages
+        run: npm run postinstall
+        working-directory: ${{github.workspace}}
+        
+      - name: Cache build
         uses: actions/cache@v4
         with:
           path: ${{github.workspace}}
           key: npm-${{ hashFiles('package-lock.json') }}
 
-      - if: steps.build-cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v4
-        with: 
-          path: ${{github.workspace}}/packages
-          key: build-${{ hashFiles('./packages/**/src/**')}}
+      # - if: steps.build-cache.outputs.cache-hit != 'true'
+      #   uses: actions/cache@v4
+      #   with: 
+      #     path: ${{github.workspace}}/packages
+      #     key: build-${{ hashFiles('./packages/**/src/**')}}
 
     outputs: 
       dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}
