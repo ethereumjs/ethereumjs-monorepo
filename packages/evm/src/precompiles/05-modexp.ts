@@ -12,10 +12,11 @@ import {
   bytesToHex,
   setLengthLeft,
   setLengthRight,
-  short,
 } from '@ethereumjs/util'
 
 import { OOGResult } from '../evm.js'
+
+import { gasLimitCheck } from './util.js'
 
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
@@ -136,18 +137,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
       gasUsed = BIGINT_200
     }
   }
-  if (opts._debug !== undefined) {
-    opts._debug(
-      `Run MODEXP (0x05) precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
-        opts.gasLimit
-      } gasUsed=${gasUsed}`,
-    )
-  }
-
-  if (opts.gasLimit < gasUsed) {
-    if (opts._debug !== undefined) {
-      opts._debug(`MODEXP (0x05) failed: OOG`)
-    }
+  if (!gasLimitCheck(opts, gasUsed, 'MODEXP (0x05)')) {
     return OOGResult(opts.gasLimit)
   }
 

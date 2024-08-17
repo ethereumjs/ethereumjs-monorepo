@@ -1,6 +1,8 @@
-import { bytesToHex, setLengthRight, short } from '@ethereumjs/util'
+import { bytesToHex, setLengthRight } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
+
+import { gasLimitCheck } from './util.js'
 
 import type { EVM } from '../evm.js'
 import type { ExecResult } from '../types.js'
@@ -8,18 +10,7 @@ import type { PrecompileInput } from './types.js'
 
 export function precompile07(opts: PrecompileInput): ExecResult {
   const gasUsed = opts.common.param('ecMulGas')
-  if (opts._debug !== undefined) {
-    opts._debug(
-      `Run ECMUL (0x07) precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
-        opts.gasLimit
-      } gasUsed=${gasUsed}`,
-    )
-  }
-
-  if (opts.gasLimit < gasUsed) {
-    if (opts._debug !== undefined) {
-      opts._debug(`ECMUL (0x07) failed: OOG`)
-    }
+  if (!gasLimitCheck(opts, gasUsed, 'ECMUL (0x07)')) {
     return OOGResult(opts.gasLimit)
   }
 

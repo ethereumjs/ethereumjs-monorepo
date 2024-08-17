@@ -4,11 +4,12 @@ import {
   computeVersionedHash,
   concatBytes,
   setLengthLeft,
-  short,
 } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
+
+import { gasLimitCheck } from './util.js'
 
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
@@ -24,18 +25,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     throw new Error('kzg not initialized')
   }
   const gasUsed = opts.common.param('kzgPointEvaluationPrecompileGas')
-  if (opts._debug !== undefined) {
-    opts._debug(
-      `Run KZG_POINT_EVALUATION (0x14) precompile data=${short(opts.data)} length=${
-        opts.data.length
-      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`,
-    )
-  }
-
-  if (opts.gasLimit < gasUsed) {
-    if (opts._debug !== undefined) {
-      opts._debug(`KZG_POINT_EVALUATION (0x14) failed: OOG`)
-    }
+  if (!gasLimitCheck(opts, gasUsed, 'KZG_POINT_EVALUATION (0x14)')) {
     return OOGResult(opts.gasLimit)
   }
 
