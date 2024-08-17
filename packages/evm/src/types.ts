@@ -482,6 +482,7 @@ export type EVMMockBlock = {
 
 export interface EVMMockBlockchainInterface {
   getBlock(blockId: number): Promise<EVMMockBlock>
+  putBlock(block: EVMMockBlock): Promise<void>
   shallowCopy(): EVMMockBlockchainInterface
 }
 
@@ -493,6 +494,7 @@ export class EVMMockBlockchain implements EVMMockBlockchainInterface {
       },
     }
   }
+  async putBlock() {}
   shallowCopy() {
     return this
   }

@@ -34,7 +34,8 @@ const gethWithdrawals8BlockRlp =
 
 describe('EIP4895 tests', () => {
   it('EIP4895: withdrawals execute as expected', async () => {
-    const vm = await VM.create({ common })
+    const blockchain = await createBlockchain()
+    const vm = await VM.create({ common, blockchain })
     const withdrawals = <WithdrawalData[]>[]
     const addresses = ['20'.repeat(20), '30'.repeat(20), '40'.repeat(20)]
     const amounts = [BigInt(1000), BigInt(3000), BigInt(5000)]
@@ -128,7 +129,8 @@ describe('EIP4895 tests', () => {
   })
 
   it('EIP4895: state updation should exclude 0 amount updates', async () => {
-    const vm = await VM.create({ common })
+    const blockchain = await createBlockchain()
+    const vm = await VM.create({ common, blockchain })
 
     await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(genesisJSON))
     const preState = bytesToHex(await vm.stateManager.getStateRoot())

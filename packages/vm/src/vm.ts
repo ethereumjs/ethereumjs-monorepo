@@ -1,6 +1,5 @@
-import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Mainnet } from '@ethereumjs/common'
-import { createEVM, getActivePrecompiles } from '@ethereumjs/evm'
+import { EVMMockBlockchain, createEVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
@@ -13,9 +12,8 @@ import {
 import { paramsVM } from './params.js'
 
 import type { VMEvents, VMOpts } from './types.js'
-import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { StateManagerInterface } from '@ethereumjs/common'
-import type { EVMInterface } from '@ethereumjs/evm'
+import type { EVMInterface, EVMMockBlockchainInterface } from '@ethereumjs/evm'
 import type { BigIntLike } from '@ethereumjs/util'
 
 /**
@@ -33,7 +31,7 @@ export class VM {
   /**
    * The blockchain the VM operates on
    */
-  readonly blockchain: BlockchainInterface
+  readonly blockchain: EVMMockBlockchainInterface
 
   readonly common: Common
 
@@ -88,7 +86,7 @@ export class VM {
     }
 
     if (opts.blockchain === undefined) {
-      opts.blockchain = await createBlockchain({ common: opts.common })
+      opts.blockchain = new EVMMockBlockchain()
     }
 
     if (opts.profilerOpts !== undefined) {
