@@ -1,4 +1,3 @@
-// cspell:ignore Vitaliks
 export type ForkName =
   | 'London+3860'
   | 'London'
@@ -27,8 +26,10 @@ export interface TxData {
   s: string
 }
 
-// The type of each entry from ./ttTransactionTestEip155VitaliksTests.json
+// The type of each entry from ./ttTransactionTestEip155VitaliksTests.json // cspell:disable-line
+// cspell:disable
 export interface VitaliksTestsDataEntry {
+  // cspell:enable
   blocknumber: string
   hash: string
   rlp: string

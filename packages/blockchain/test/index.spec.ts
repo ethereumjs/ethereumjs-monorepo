@@ -1,4 +1,3 @@
-// cspell:ignore staletest
 import {
   createBlock,
   createBlockFromRLPSerializedBlock,
@@ -445,11 +444,11 @@ describe('blockchain test', () => {
       calcDifficultyFromHeader: blocks[14].header,
     })
 
-    blockchain._heads['staletest'] = blockchain._headHeaderHash
+    blockchain._heads['staleTest'] = blockchain._headHeaderHash
 
     await blockchain.putHeader(forkHeader)
 
-    assert.deepEqual(blockchain._heads['staletest'], blocks[14].hash(), 'should update stale head')
+    assert.deepEqual(blockchain._heads['staleTest'], blocks[14].hash(), 'should update stale head')
     assert.deepEqual(blockchain._headBlockHash, blocks[14].hash(), 'should update stale headBlock')
   })
 
@@ -470,11 +469,11 @@ describe('blockchain test', () => {
       calcDifficultyFromHeader: blocks[14].header,
     })
 
-    blockchain._heads['staletest'] = blockchain._headHeaderHash
+    blockchain._heads['staleTest'] = blockchain._headHeaderHash
 
     await blockchain.putHeader(forkHeader)
 
-    assert.deepEqual(blockchain._heads['staletest'], blocks[14].hash(), 'should update stale head')
+    assert.deepEqual(blockchain._heads['staleTest'], blocks[14].hash(), 'should update stale head')
     assert.deepEqual(blockchain._headBlockHash, blocks[14].hash(), 'should update stale headBlock')
 
     await blockchain.delBlock(forkHeader.hash())

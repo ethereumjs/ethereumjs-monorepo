@@ -1,4 +1,3 @@
-// cspell:ignore dests
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import {
   Account,
@@ -275,7 +274,9 @@ export class Interpreter {
         opCode = this._runState.code[programCounter]
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
         if (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e) {
-          const { jumps, pushes, opcodesCached } = this._getValidJumpDests(this._runState.code)
+          const { jumps, pushes, opcodesCached } = this._getValidJumpDestinations(
+            this._runState.code,
+          )
           this._runState.validJumps = jumps
           this._runState.cachedPushes = pushes
           this._runState.shouldDoJumpAnalysis = false
@@ -494,7 +495,7 @@ export class Interpreter {
   }
 
   // Returns all valid jump and jumpsub destinations.
-  _getValidJumpDests(code: Uint8Array) {
+  _getValidJumpDestinations(code: Uint8Array) {
     const jumps = new Uint8Array(code.length).fill(0)
     const pushes: { [pc: number]: bigint } = {}
 

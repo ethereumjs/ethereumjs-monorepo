@@ -1,4 +1,3 @@
-// cspell:ignore mkey
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToInt, concatBytes, hexToBytes, intToBytes } from '@ethereumjs/util'
 import * as crypto from 'crypto'
@@ -109,7 +108,7 @@ export class ECIES {
     const x = ecdhX(this._remotePublicKey, privateKey)
     const key = concatKDF(x, 32)
     const ekey = key.subarray(0, 16) // encryption key
-    const mkey = crypto.createHash('sha256').update(key.subarray(16, 32)).digest() // MAC key
+    const mKey = crypto.createHash('sha256').update(key.subarray(16, 32)).digest() // MAC key
 
     // encrypt
     const IV = getRandomBytesSync(16)
@@ -122,7 +121,7 @@ export class ECIES {
       sharedMacData = Uint8Array.from([])
     }
     const tag = Uint8Array.from(
-      crypto.createHmac('sha256', mkey).update(concatBytes(dataIV, sharedMacData)).digest(),
+      crypto.createHmac('sha256', mKey).update(concatBytes(dataIV, sharedMacData)).digest(),
     )
 
     const publicKey = secp256k1.getPublicKey(privateKey, false)
@@ -145,14 +144,14 @@ export class ECIES {
     const x = ecdhX(publicKey, this._privateKey)
     const key = concatKDF(x, 32)
     const ekey = key.subarray(0, 16) // encryption key
-    const mkey = Uint8Array.from(crypto.createHash('sha256').update(key.subarray(16, 32)).digest()) // MAC key
+    const mKey = Uint8Array.from(crypto.createHash('sha256').update(key.subarray(16, 32)).digest()) // MAC key
 
     // check the tag
     if (!sharedMacData) {
       sharedMacData = Uint8Array.from([])
     }
     const _tag = crypto
-      .createHmac('sha256', mkey)
+      .createHmac('sha256', mKey)
       .update(concatBytes(dataIV, sharedMacData))
       .digest()
     assertEq(_tag, tag, 'should have valid tag', debug)

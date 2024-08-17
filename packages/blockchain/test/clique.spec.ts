@@ -1,4 +1,3 @@
-// cspell:ignore NOTURN deauth unforked
 import {
   cliqueEpochTransitionSigners,
   createBlock,
@@ -536,7 +535,7 @@ describe('Clique: Initialization', () => {
         blocks[blocks.length - 1].header.number + BigInt(1),
       ),
       [A.address, B.address],
-      'deauth votes',
+      'deauthorized votes',
     )
   })
 
@@ -556,7 +555,7 @@ describe('Clique: Initialization', () => {
     )
   })
 
-  it('Clique Voting: Changes reaching consensus out of bounds (via a deauth) execute on touch', async () => {
+  it('Clique Voting: Changes reaching consensus out of bounds (via a deauthorization) execute on touch', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B, C, D])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B)
@@ -578,7 +577,7 @@ describe('Clique: Initialization', () => {
     )
   })
 
-  it('Clique Voting: Changes reaching consensus out of bounds (via a deauth) may go out of consensus on first touch', async () => {
+  it('Clique Voting: Changes reaching consensus out of bounds (via a deauthorization) may go out of consensus on first touch', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B, C, D])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B)
@@ -803,7 +802,7 @@ describe('clique: reorgs', () => {
     const { blocks, blockchain } = await initWithSigners([A, B])
     const genesis = blocks[0]
     await addNextBlock(blockchain, blocks, A, [C, true])
-    const headBlockUnforked = await addNextBlock(blockchain, blocks, B, [C, true])
+    const headBlockNotForked = await addNextBlock(blockchain, blocks, B, [C, true])
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         blocks[blocks.length - 1].header.number + BigInt(1),
@@ -811,7 +810,7 @@ describe('clique: reorgs', () => {
       [A.address, B.address, C.address],
       'address C added to signers',
     )
-    assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
+    assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlockNotForked.hash())
     await addNextBlockReorg(blockchain, blocks, genesis, B)
     const headBlock = await addNextBlock(blockchain, blocks, A)
     assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlock.hash())
@@ -853,7 +852,7 @@ describe('clique: reorgs', () => {
       await addNextBlock(blockchain, blocks, A, [C, true], undefined, common)
       await addNextBlock(blockchain, blocks, B, [C, true], undefined, common)
       await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
-      const headBlockUnforked = await addNextBlock(
+      const headBlockNotForked = await addNextBlock(
         blockchain,
         blocks,
         B,
@@ -868,7 +867,7 @@ describe('clique: reorgs', () => {
         [A.address, B.address, C.address],
         'address C added to signers'
       )
-     assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
+     assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlockNotForked.hash())
       await addNextBlockReorg(blockchain, blocks, genesis, B, undefined, undefined, common)
       await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
 
