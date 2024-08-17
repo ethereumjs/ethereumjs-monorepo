@@ -520,7 +520,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    * @param {Uint8Array} stateRoot - The stateRoot to verify the executionWitness against
    * @returns {boolean} - Returns true if the executionWitness matches the provided stateRoot, otherwise false
    */
-  verifyProof(stateRoot: Uint8Array): boolean {
+  verifyVerkleProof(stateRoot: Uint8Array): boolean {
     if (this._executionWitness === undefined) {
       debug('Missing executionWitness')
       return false

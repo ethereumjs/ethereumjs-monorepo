@@ -1,7 +1,6 @@
 import { cliqueSigner, createBlock } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { Blob4844Tx, Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
@@ -190,10 +189,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   let stateAccesses
   if (vm.common.isActivatedEIP(6800)) {
-    if (!(vm.stateManager instanceof StatelessVerkleStateManager)) {
+    if (typeof vm.stateManager.initVerkleExecutionWitness !== 'function') {
       throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
     }
-    stateAccesses = (vm.stateManager as StatelessVerkleStateManager).accessWitness
+    stateAccesses = vm.stateManager.accessWitness!
   }
   const txAccesses = stateAccesses?.shallowCopy()
 
@@ -597,7 +596,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let minerAccount = await state.getAccount(miner)
   if (minerAccount === undefined) {
     if (vm.common.isActivatedEIP(6800)) {
-      ;(state as StatelessVerkleStateManager).accessWitness!.touchAndChargeProofOfAbsence(miner)
+      state.accessWitness!.touchAndChargeProofOfAbsence(miner)
     }
     minerAccount = new Account()
   }
@@ -609,7 +608,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (vm.common.isActivatedEIP(6800)) {
     // use vm utility to build access but the computed gas is not charged and hence free
-    ;(state as StatelessVerkleStateManager).accessWitness!.touchTxTargetAndComputeGas(miner, {
+    state.accessWitness!.touchTxTargetAndComputeGas(miner, {
       sendsValue: true,
     })
   }
