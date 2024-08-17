@@ -40,10 +40,10 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{github.workspace}}
-          key: npm-${{ hashFiles('package-lock.json') }}
+          key: npm-${{ hashFiles('package-lock.json') }}-${{ github.run_number }}
 
     outputs: 
-      dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}-${{ github.run_id }}
+      dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}
 
   block:
     needs: build
