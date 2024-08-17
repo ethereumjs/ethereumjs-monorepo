@@ -115,10 +115,10 @@ function parseGethParams(json: any) {
             type: 'poa',
             algorithm: 'clique',
             clique: {
-              // The recent geth genesis seems to be using blockperiodseconds
+              // The recent geth genesis seems to be using blockperiodseconds // cspell:disable-line
               // and epochlength for clique specification
               // see: https://hackmd.io/PqZgMpnkSWCWv5joJoFymQ
-              period: config.clique.period ?? config.clique.blockperiodseconds,
+              period: config.clique.period ?? config.clique.blockperiodseconds, // cspell:disable-line
               epoch: config.clique.epoch ?? config.clique.epochlength,
             },
           }

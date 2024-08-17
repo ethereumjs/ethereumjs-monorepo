@@ -176,9 +176,9 @@ const accumulateDeposits = async (
         // 5. Repeat steps 3-4 for each field
         const pubKeyIdx = bytesToInt(log[2].slice(0, 32))
         const pubKeySize = bytesToInt(log[2].slice(pubKeyIdx, pubKeyIdx + 32))
-        const withdrawalCredsIdx = bytesToInt(log[2].slice(32, 64))
-        const withdrawalCredsSize = bytesToInt(
-          log[2].slice(withdrawalCredsIdx, withdrawalCredsIdx + 32),
+        const withdrawalCreditsIdx = bytesToInt(log[2].slice(32, 64))
+        const withdrawalCreditsSize = bytesToInt(
+          log[2].slice(withdrawalCreditsIdx, withdrawalCreditsIdx + 32),
         )
         const amountIdx = bytesToInt(log[2].slice(64, 96))
         const amountSize = bytesToInt(log[2].slice(amountIdx, amountIdx + 32))
@@ -188,8 +188,8 @@ const accumulateDeposits = async (
         const indexSize = bytesToInt(log[2].slice(indexIdx, indexIdx + 32))
         const pubkey = log[2].slice(pubKeyIdx + 32, pubKeyIdx + 32 + pubKeySize)
         const withdrawalCredentials = log[2].slice(
-          withdrawalCredsIdx + 32,
-          withdrawalCredsIdx + 32 + withdrawalCredsSize,
+          withdrawalCreditsIdx + 32,
+          withdrawalCreditsIdx + 32 + withdrawalCreditsSize,
         )
         const amountBytes = log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize)
         const amountBytesBigEndian = new Uint8Array([

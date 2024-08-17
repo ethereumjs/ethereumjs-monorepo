@@ -135,7 +135,7 @@ export class AccountCache extends Cache {
       })
     }
 
-    this._stats.dels += 1
+    this._stats.deletions += 1
   }
 
   /**
@@ -252,7 +252,7 @@ export class AccountCache extends Cache {
         reads: 0,
         hits: 0,
         writes: 0,
-        dels: 0,
+        deletions: 0,
       }
     }
     return stats

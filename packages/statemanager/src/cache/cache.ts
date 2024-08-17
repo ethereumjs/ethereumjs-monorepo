@@ -12,7 +12,7 @@ export class Cache {
     reads: 0,
     hits: 0,
     writes: 0,
-    dels: 0,
+    deletions: 0,
   }
 
   /**

@@ -137,8 +137,8 @@ describe('EIP 2935: historical block hashes', () => {
       await vm.stateManager.putCode(historyAddress, contract2935Code)
 
       const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
-      const blockHashi = result.execResult.returnValue
-      return blockHashi
+      const blockHash = result.execResult.returnValue
+      return blockHash
     }
 
     it(`should validate the deployment tx`, async () => {
@@ -264,7 +264,7 @@ describe('EIP 2935: historical block hashes', () => {
           block: lastBlock,
         })
 
-        // contract will only have hashes between blocksActivation -1 and blocksToBuild -1 thresholded by
+        // contract will only have hashes between blocksActivation -1 and blocksToBuild -1 threshold by
         // historyServeWindow window
         if (
           i >= blocksActivation - 1 &&
@@ -296,15 +296,15 @@ describe('EIP 2935: historical block hashes', () => {
 
       // should be able to resolve blockhash via contract code but from the blocksActivation -1 onwards
       for (const i of [blocksActivation - 1, blocksActivation, blocksToBuild - 1]) {
-        const blockHashi = await testBlockhashContract(vm, block, BigInt(i))
-        const blocki = await blockchain.getBlock(i)
-        assert.ok(equalsBytes(blockHashi, blocki.hash()))
+        const blockHashI = await testBlockhashContract(vm, block, BigInt(i))
+        const blockI = await blockchain.getBlock(i)
+        assert.ok(equalsBytes(blockHashI, blockI.hash()))
       }
 
       // should be able to return 0 if input >= current block
       for (const i of [blocksToBuild, blocksToBuild + 100]) {
-        const blockHashi = await testBlockhashContract(vm, block, BigInt(i))
-        assert.ok(equalsBytes(blockHashi, setLengthLeft(bigIntToBytes(BigInt(0)), 32)))
+        const blockHashI = await testBlockhashContract(vm, block, BigInt(i))
+        assert.ok(equalsBytes(blockHashI, setLengthLeft(bigIntToBytes(BigInt(0)), 32)))
       }
     })
   }

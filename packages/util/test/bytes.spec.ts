@@ -261,7 +261,7 @@ describe('toBytes', () => {
     assert.throws(() => toBytes('0xR'), '0xR')
   })
 
-  it('should convert a TransformabletoBytes like the Address class (i.e. provides a toBytes method)', () => {
+  it('should convert a TransformableToBytes like the Address class (i.e. provides a toBytes method)', () => {
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const address = createAddressFromString(str)
     const addressBytes = toBytes(address)
@@ -330,7 +330,7 @@ describe('validateNoLeadingZeroes', () => {
   const noLeadingZeroes = {
     a: toBytes('0x123'),
   }
-  const noleadingZeroBytes = {
+  const noLeadingZeroBytes = {
     a: toBytes('0x01'),
   }
   const leadingZeroBytes = {
@@ -361,7 +361,7 @@ describe('validateNoLeadingZeroes', () => {
       'does not throw when undefined passed in',
     )
     assert.doesNotThrow(
-      () => validateNoLeadingZeroes(noleadingZeroBytes),
+      () => validateNoLeadingZeroes(noLeadingZeroBytes),
       'does not throw when value has leading zero bytes',
     )
   })
@@ -455,7 +455,7 @@ describe('hexToBytes', () => {
 
   it('should throw on invalid hex', () => {
     assert.throws(() => {
-      hexToBytes('0xinvalidhexstring')
+      hexToBytes('0xInvalidHexString')
     })
     assert.throws(() => {
       hexToBytes('0xfz')

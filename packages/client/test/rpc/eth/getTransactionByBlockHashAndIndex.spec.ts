@@ -88,7 +88,7 @@ describe(method, async () => {
     const { rpc } = await baseSetup()
 
     const mockBlockHash = '0x572856aae9a653012a7df7aeb56bfb7fe77f5bcb4b69fd971c04e989f6ccf9b1'
-    const mockTxIndex = 'INVALIDA_TXINDEX'
+    const mockTxIndex = 'INVALID_TXINDEX'
     const res = await rpc.request(method, [mockBlockHash, mockTxIndex])
 
     assert.equal(res.error.code, INVALID_PARAMS)

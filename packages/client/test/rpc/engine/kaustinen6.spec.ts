@@ -32,7 +32,7 @@ const genesisVerkleBlockHash = '0x3fe165c03e7a77d1e3759362ebeeb16fd964cb411ce11f
  *   a. On the saved blocks, comma separated (were produced for kaustinen4 )
  *      `TEST_SAVED_NUMBERS=353,368,374,467 npx vitest run test/rpc/engine/kaustinen5.spec.ts`
  *   b. Geth produced testvectors (were produced for kaustinen5)
- *     `TEST_GETH_VEC_DIR=test/testdata/gethk5vecs DEBUG=ethjs,vm:*,evm:*,statemanager:verkle* npx vitest run test/rpc/engine/kaustinen6.spec.ts`
+ *     `TEST_GETH_VEC_DIR=test/testdata/gethk5vecs DEBUG=ethjs,vm:*,evm:*,statemanager:verkle* npx vitest run test/rpc/engine/kaustinen6.spec.ts` // cspell:disable-line
  */
 
 const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
@@ -146,10 +146,10 @@ describe(`valid verkle network setup`, async () => {
 
   if (process.env.TEST_GETH_VEC_DIR !== undefined) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const gethVecs = await loadGethVectors(process.env.TEST_GETH_VEC_DIR, { common })
-    let parent = gethVecs[0]
-    for (let i = 1; i < gethVecs.length; i++) {
-      const execute = gethVecs[i]
+    const gethVectors = await loadGethVectors(process.env.TEST_GETH_VEC_DIR, { common })
+    let parent = gethVectors[0]
+    for (let i = 1; i < gethVectors.length; i++) {
+      const execute = gethVectors[i]
       it(`run geth vector: ${execute.blockNumber}`, async (context) => {
         await runBlock({ common, chain, rpc }, { parent, execute }, false, context)
         parent = execute

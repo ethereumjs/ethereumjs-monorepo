@@ -131,9 +131,9 @@ export class Skeleton extends MetaDBManager {
   public safeBlock?: Block
   public finalizedBlock?: Block
 
-  // to track if we have cl FCUs close to the clockhead
+  // to track if we have cl FCUs close to the clock head
   synchronized = false
-  private lastsyncronized = false
+  private lastSynchronized = false
   private lastSyncDate = 0
 
   constructor(opts: MetaDBManagerOptions) {
@@ -233,7 +233,7 @@ export class Skeleton extends MetaDBManager {
     return this.started > 0
   }
 
-  async isLastAnnoucement(): Promise<boolean> {
+  async isLastAnnouncement(): Promise<boolean> {
     const subchain0 = this.status.progress.subchains[0]
     if (subchain0 !== undefined) {
       return this.getBlock(subchain0.head + BIGINT_1) !== undefined
@@ -392,12 +392,12 @@ export class Skeleton extends MetaDBManager {
    * @params head - The block being attempted as a new head
    * @params force - Flag to indicate if this is just a check of worthiness or a actually new head
    * @params init - Flag this is the first time since the beacon sync start to perform additional tasks
-   * @params reorgthrow - Flag to indicate if we would actually like to throw if there is a reorg
+   * @params reorgThrow - Flag to indicate if we would actually like to throw if there is a reorg
    *         instead of just returning the boolean
    *
    * @returns True if the head (will) cause a reorg in the canonical skeleton subchain
    */
-  async setHead(head: Block, force = true, init = false, reorgthrow = false): Promise<boolean> {
+  async setHead(head: Block, force = true, init = false, reorgThrow = false): Promise<boolean> {
     if (
       this.config.syncTargetHeight === undefined ||
       this.config.syncTargetHeight < head.header.number
@@ -455,21 +455,21 @@ export class Skeleton extends MetaDBManager {
           parent.header.number < subchain.tail
         ) {
           // truncate subchain 0 before inserting a new chain so that this chain can be merged into new
-          // one without issues if the opportunity arrises
+          // one without issues if the opportunity arises
           if (
             subchain !== undefined &&
             this.status.linked &&
             this.status.canonicalHeadReset === false &&
             this.chain.blocks.height >= subchain.tail
           ) {
-            const trucateTailToNumber = this.chain.blocks.height + BIGINT_1
-            const trucateTailTo =
-              trucateTailToNumber <= subchain.head
-                ? await this.getBlock(trucateTailToNumber, true)
+            const truncateTailToNumber = this.chain.blocks.height + BIGINT_1
+            const truncateTailTo =
+              truncateTailToNumber <= subchain.head
+                ? await this.getBlock(truncateTailToNumber, true)
                 : undefined
-            if (trucateTailTo !== undefined) {
-              subchain.tail = trucateTailTo.header.number
-              subchain.next = trucateTailTo.header.parentHash
+            if (truncateTailTo !== undefined) {
+              subchain.tail = truncateTailTo.header.number
+              subchain.next = truncateTailTo.header.parentHash
               this.config.logger.info(
                 `Truncated subchain0 with head=${subchain.head} to a new tail=${
                   subchain.tail
@@ -478,7 +478,7 @@ export class Skeleton extends MetaDBManager {
             } else {
               // clear out this subchain
               this.config.logger.info(
-                `Dropping subchain0 with head=${subchain.head} before overlaying a new subchain as trucateTailToNumber=${trucateTailToNumber} block not available `,
+                `Dropping subchain0 with head=${subchain.head} before overlaying a new subchain as truncateTailToNumber=${truncateTailToNumber} block not available `,
               )
               this.status.progress.subchains.splice(0, 1)
             }
@@ -514,13 +514,13 @@ export class Skeleton extends MetaDBManager {
             !this.status.canonicalHeadReset &&
             this.chain.blocks.height >= subchain.tail
           ) {
-            let trucateTailTo
-            const trucateTailToNumber = this.chain.blocks.height + BIGINT_1
-            if (trucateTailToNumber < head.header.number) {
-              trucateTailTo = await this.getBlock(trucateTailToNumber, true)
+            let truncateTailTo
+            const truncateTailToNumber = this.chain.blocks.height + BIGINT_1
+            if (truncateTailToNumber < head.header.number) {
+              truncateTailTo = await this.getBlock(truncateTailToNumber, true)
             }
 
-            if (trucateTailTo === undefined) {
+            if (truncateTailTo === undefined) {
               subchain.tail = head.header.number
               subchain.next = head.header.parentHash
               // reset canonical head, don't change linked status because parent was
@@ -534,8 +534,8 @@ export class Skeleton extends MetaDBManager {
                 }`,
               )
             } else {
-              subchain.tail = trucateTailTo.header.number
-              subchain.next = trucateTailTo.header.parentHash
+              subchain.tail = truncateTailTo.header.number
+              subchain.next = truncateTailTo.header.parentHash
               // just reset tail and no need to modify linked status
               this.config.logger.info(
                 `Truncated subchain with head=${subchain.head} to a new tail=${
@@ -577,7 +577,7 @@ export class Skeleton extends MetaDBManager {
 
       // Earlier we were throwing on reorg, essentially for the purposes for killing the reverse fetcher
       // but it can be handled properly in the calling fn without erroring
-      if (reorg && reorgthrow) {
+      if (reorg && reorgThrow) {
         if (force) {
           throw errSyncReorged
         } else {
@@ -636,7 +636,7 @@ export class Skeleton extends MetaDBManager {
       }
     }
 
-    if (this.synchronized !== this.lastsyncronized) {
+    if (this.synchronized !== this.lastSynchronized) {
       this.config.logger.debug(
         `Cl (skeleton) synchronized=${this.synchronized}${
           latest !== null && latest !== undefined ? ' height=' + latest.number : ''
@@ -644,7 +644,7 @@ export class Skeleton extends MetaDBManager {
           (Date.now() - this.lastSyncDate) / 1000
         } secs ago`,
       )
-      this.lastsyncronized = this.synchronized
+      this.lastSynchronized = this.synchronized
     }
   }
 
@@ -804,7 +804,7 @@ export class Skeleton extends MetaDBManager {
     // blocks if there are executed blocks to fill with. This blocking causes it to not interfere
     // with the setHead mechanism. This is however a hack and a better solution needs to be devised
     // to handle it blockchain level as because of async nature of new payloads and fcUs and the skeleton
-    // there is always a chance for uncordinated put blocks unless they are all cordinated through skeleton
+    // there is always a chance for uncoordinated put blocks unless they are all coordinated through skeleton
     // which might also be a valid
     await this.blockingFillWithCutoff(this.chain.config.engineParentLookupMaxDepth)
 
@@ -840,13 +840,13 @@ export class Skeleton extends MetaDBManager {
   /**
    * Setup the skeleton to init sync with head
    * @params head - The block with which we want to init the skeleton head
-   * @params reorgthrow - If we would like the function to throw instead of silently
+   * @params reorgThrow - If we would like the function to throw instead of silently
    *         return if there is reorg of the skeleton head
    *
    * @returns True if the skeleton was reorged trying to init else false
    */
-  async initSync(head: Block, reorgthrow = false): Promise<boolean> {
-    return this.setHead(head, true, true, reorgthrow)
+  async initSync(head: Block, reorgThrow = false): Promise<boolean> {
+    return this.setHead(head, true, true, reorgThrow)
   }
 
   /**
@@ -1183,7 +1183,7 @@ export class Skeleton extends MetaDBManager {
         canonicalHead = newHead
         await this.chain.resetCanonicalHead(canonicalHead)
       }
-      // update in lock so as to not conflict/overwrite sethead/putblock updates
+      // update in lock so as to not conflict/overwrite setHead/putBlock updates
       await this.runWithLock<void>(async () => {
         this.status.canonicalHeadReset = false
       })
@@ -1231,7 +1231,7 @@ export class Skeleton extends MetaDBManager {
       // chain height has to be <= block number as we will skip putting this block as it might currently
       // cause chain reset. This can happen if any other async process added a batch of blocks like
       // execution's setHead. If that caused this chain to be not canonical anymore than the next
-      // putblocks should fail causing the fill to exit with skeleton stepback
+      // putBlocks should fail causing the fill to exit with skeleton stepback
       if (this.chain.blocks.height <= block.header.number) {
         try {
           numBlocksInserted = await this.chain.putBlocks([block], true)
@@ -1823,7 +1823,7 @@ export class Skeleton extends MetaDBManager {
       subchains,
       // linked
       intToBytes(this.status.linked ? 1 : 0),
-      // canonocalHeadReset
+      // canonicalHeadReset
       intToBytes(this.status.canonicalHeadReset ? 1 : 0),
       // safe and finalized
       bigIntToBytes(this.status.safe),

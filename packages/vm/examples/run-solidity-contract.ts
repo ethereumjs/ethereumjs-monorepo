@@ -3,7 +3,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { VM, runTx } from '@ethereumjs/vm'
-import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
+import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi' // cspell:disable-line
 import { readFileSync } from 'fs'
 import path from 'path'
 import solc from 'solc'
@@ -15,7 +15,7 @@ import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx
 import type { Address } from '@ethereumjs/util'
 
 const INITIAL_GREETING = 'Hello, World!'
-const SECOND_GREETING = 'Hola, Mundo!'
+const SECOND_GREETING = 'Hola, Mundo!' // cspell:disable-line
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 const block = createBlock({ header: { extraData: new Uint8Array(97) } }, { common })

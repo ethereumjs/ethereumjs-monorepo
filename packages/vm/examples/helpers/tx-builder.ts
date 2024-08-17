@@ -1,4 +1,4 @@
-import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
+import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi' // cspell:disable-line
 
 import type { LegacyTxData } from '@ethereumjs/tx'
 

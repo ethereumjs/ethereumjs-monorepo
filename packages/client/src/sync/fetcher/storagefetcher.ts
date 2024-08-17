@@ -17,7 +17,7 @@ import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Fetcher } from './fetcher.js'
-import { getInitFecherDoneFlags } from './types.js'
+import { getInitFetcherDoneFlags } from './types.js'
 
 import type { Peer } from '../../net/peer/index.js'
 import type { StorageData } from '../../net/protocol/snapprotocol.js'
@@ -89,7 +89,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
 
     this.root = options.root
     this.stateManager = options.stateManager ?? new DefaultStateManager()
-    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
+    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFetcherDoneFlags()
     this.storageRequests = options.storageRequests ?? []
     this.fetcherDoneFlags.storageFetcher.count = BigInt(this.storageRequests.length)
 
@@ -534,7 +534,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
   ): JobTask[] {
     const tasks: JobTask[] = []
     let storageRequest = undefined
-    let whereFirstwas = first
+    let whereFirstWas = first
     let startedWith = first
     let myFirst = first
     let myCount = count
@@ -546,12 +546,12 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         storageRequests: this.storageRequests, // TODO limit max number of accounts per single fetch request
         multi: true,
       })
-      this.storageRequests = [] // greedilly request as many account slots by requesting all known ones
+      this.storageRequests = [] // greedily request as many account slots by requesting all known ones
       return tasks
     } else if (this.fragmentedRequests.length > 0) {
       this.debug('Single account request is being initiated')
       storageRequest = this.fragmentedRequests.shift()
-      whereFirstwas = storageRequest!.first
+      whereFirstWas = storageRequest!.first
       startedWith = storageRequest!.first
       myFirst = storageRequest!.first
       myCount = storageRequest!.count
@@ -602,7 +602,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
 
     // If we started with where this.first was, i.e. there are no gaps and hence
     // we can move this.first to where its now, and reduce count by pushedCount
-    if (myCount !== BIGINT_0 && startedWith === whereFirstwas) {
+    if (myCount !== BIGINT_0 && startedWith === whereFirstWas) {
       // create new fragmented request to keep track of where to start building the next set of tasks for fetching the same account
       this.fragmentedRequests.unshift({
         accountHash: storageRequest!.accountHash,

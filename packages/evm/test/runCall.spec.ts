@@ -695,7 +695,7 @@ describe('RunCall tests', () => {
       ['f1', 36600 + 7 * 3, '0x01'], // 36600 is CALL fee + 7 * 3 gas for 7 PUSH opcodes
       ['f2', 11600 + 7 * 3, '0x01'], // 11600 is CALLCODE fee + 7 * 3 gas for 7 PUSH opcodes
     ]) {
-      // Code to either CALL or CALLCODE into AACC empty contract, with value 1
+      // Code to either CALL or CALLCODE into AACC empty contract, with value 1 // cspell:disable-line
       // If enough gas is provided, then since nonzero value is sent, the gas limit
       // in the call(coded) contract will get the "bonus gas" stipend of 2300
       // Previously, we added this gas stipend to the current gas available (which is wrong)
@@ -717,7 +717,7 @@ describe('RunCall tests', () => {
       const gasLimit = gas.toString(16).padStart(4, '0')
 
       /***
-       * Bytecode for AAAB contract (used to call contract AAAA and stores result of call execution)
+       * Bytecode for AAAB contract (used to call contract AAAA and stores result of call execution) // cspell:disable-line
        * PUSH1 0x00
        * DUP1
        * DUP1

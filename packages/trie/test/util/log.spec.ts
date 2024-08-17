@@ -7,7 +7,7 @@ import { Trie } from '../../src/trie.js'
 describe('Run Trie script with DEBUG enabled', async () => {
   const trie_entries: [string, string | null][] = [
     ['do', 'verb'],
-    ['ether', 'wookiedoo'],
+    ['ether', 'wookiedoo'], // cspell:disable-line
     ['doge', 'coin'],
     ['ether', null],
     ['dog', 'puppy'],

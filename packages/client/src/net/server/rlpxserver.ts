@@ -72,11 +72,11 @@ export class RlpxServer extends Server {
       'go1.6',
       'go1.7',
       'quorum',
-      'pirl',
-      'ubiq',
-      'gmc',
-      'gwhale',
-      'prichain',
+      'pirl', // cspell:disable-line
+      'ubiq', // cspell:disable-line
+      'gmc', // cspell:disable-line
+      'gwhale', // cspell:disable-line
+      'prichain', // cspell:disable-line
     ]
   }
 

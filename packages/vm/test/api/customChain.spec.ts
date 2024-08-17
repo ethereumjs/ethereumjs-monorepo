@@ -8,7 +8,7 @@ import {
   createAddressFromString,
   hexToBytes,
 } from '@ethereumjs/util'
-import { Interface } from '@ethersproject/abi'
+import { Interface } from '@ethersproject/abi' // cspell:disable-line
 import { assert, describe, it } from 'vitest'
 
 import { runTx } from '../../src/index.js'

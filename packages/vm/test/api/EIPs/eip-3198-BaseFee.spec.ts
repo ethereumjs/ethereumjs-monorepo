@@ -81,9 +81,9 @@ describe('EIP3198 tests', () => {
     // Track stack
 
     let stack: any = []
-    vm.evm.events!.on('step', (istep: InterpreterStep) => {
-      if (istep.opcode.name === 'STOP') {
-        stack = istep.stack
+    vm.evm.events!.on('step', (iStep: InterpreterStep) => {
+      if (iStep.opcode.name === 'STOP') {
+        stack = iStep.stack
       }
     })
 

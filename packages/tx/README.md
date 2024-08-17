@@ -214,9 +214,9 @@ console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced3
 - Activation: `prague` (or per EIP setting)
 - Type: `4`
 
-This library suppports a non-final version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) starting with `v5.4.0`. This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
+This library supports a non-final version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) starting with `v5.4.0`. This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
 
-The following is a simple example how to use an `EOACodeEIP7702Transaction` with one autorization list item:
+The following is a simple example how to use an `EOACodeEIP7702Transaction` with one authorization list item:
 
 ```ts
 // ./examples/EOACodeTx.ts
@@ -349,7 +349,7 @@ import { Capability, EIP1559CompatibleTx, TransactionFactory } from '@ethereumjs
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
-const txData = { type: 2, maxFeePerGas: BigInt(20) } // Creates an EIP-1559 compatible transac
+const txData = { type: 2, maxFeePerGas: BigInt(20) } // Creates an EIP-1559 compatible transaction
 const tx = TransactionFactory.fromTxData(txData, { common })
 
 if (tx.supports(Capability.EIP1559FeeMarket)) {

@@ -71,7 +71,7 @@ A Docker image is built nightly from the current master branch and can be retrie
 docker pull ethpandaops/ethereumjs:master
 ```
 
-Alternatively, an image from the most recent stable releast can be accessed via:
+Alternatively, an image from the most recent stable release can be accessed via:
 
 ```sh
 docker pull ethpandaops/ethereumjs:stable

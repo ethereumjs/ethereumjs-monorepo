@@ -209,7 +209,7 @@ describe('EIP 2929: gas cost tests', () => {
   })
 
   // Calls the `identity`-precompile (cheap), then calls an account (expensive)
-  // and `staticcall`s the sameaccount (cheap)
+  // and `staticcall`s the same account (cheap)
   it('should charge for pre-compiles and staticcalls correctly', async () => {
     const test = {
       code: '0x60008080808060046000f15060008080808060ff6000f15060008080808060ff6000fa5000',

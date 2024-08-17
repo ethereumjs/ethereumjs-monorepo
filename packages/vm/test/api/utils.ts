@@ -94,7 +94,7 @@ export function getTransaction(
     txParams['maxPriorityFeePerGas'] = BigInt(10)
   } else if (txType === TransactionType.BlobEIP4844) {
     if (common.customCrypto?.kzg === undefined) {
-      throw new Error('kzg instance required to instantiate blobg txs')
+      throw new Error('kzg instance required to instantiate blob txs')
     }
     txParams['gasPrice'] = undefined
     txParams['maxFeePerGas'] = BigInt(1000000000)

@@ -24,11 +24,11 @@ export const paramsEVM: ParamsDict = {
     createGas: 32000, // Base fee of the CREATE opcode
     callGas: 40, // Base fee of the CALL opcode
     callStipendGas: 2300, // Free gas given at beginning of call
-    callValueTransferGas: 9000, // Paid for CALL when the value transfor is non-zero
+    callValueTransferGas: 9000, // Paid for CALL when the value transfer is non-zero
     callNewAccountGas: 25000, // Paid for CALL when the destination address didn't exist prior
     selfdestructRefundGas: 24000, // Refunded following a selfdestruct operation
     memoryGas: 3, // Times the address of the (highest referenced byte in memory + 1). NOTE: referencing happens on read, write and in instructions such as RETURN and CALL
-    quadCoeffDivGas: 512, // Divisor for the quadratic particle of the memory cost equation
+    quadCoefficientDivGas: 512, // Divisor for the quadratic particle of the memory cost equation
     createDataGas: 200, //
     copyGas: 3, // Multiplied by the number of 32-byte words that are copied (round up) for any *COPY operation and added
     ecRecoverGas: 3000,
@@ -96,7 +96,7 @@ export const paramsEVM: ParamsDict = {
     returnGas: 0, // Base fee of the RETURN opcode
     invalidGas: 0, // Base fee of the INVALID opcode
     selfdestructGas: 0, // Base fee of the SELFDESTRUCT opcode
-    prevrandaoGas: 0, // TODO: these below 0-gas additons might also point to non-clean implementations in the code base
+    prevrandaoGas: 0, // TODO: these below 0-gas additions might also point to non-clean implementations in the code base
     // evm
     stackLimit: 1024, // Maximum size of VM stack allowed
     callCreateDepth: 1024, // Maximum depth of call/create stack
@@ -147,7 +147,7 @@ export const paramsEVM: ParamsDict = {
     returndatacopyGas: 3, // Base fee of the RETURNDATACOPY opcode
   },
   /**
-.  * Constantinope HF Meta EIP
+.  * Constantinople HF Meta EIP
 .  */
   1013: {
     // gasPrices

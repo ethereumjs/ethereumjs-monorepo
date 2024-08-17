@@ -76,26 +76,26 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
   it('Default EVM should use VM common', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
     const vm = await VM.create({ common })
-    assert.equal((vm.evm as EVM).common.hardfork(), 'byzantium', 'use modfied HF from VM common')
+    assert.equal((vm.evm as EVM).common.hardfork(), 'byzantium', 'use modified HF from VM common')
 
     const copiedVM = await vm.shallowCopy()
     assert.equal(
       (copiedVM.evm as EVM).common.hardfork(),
       'byzantium',
-      'use modfied HF from VM common (for shallowCopied VM)',
+      'use modified HF from VM common (for shallowCopied VM)',
     )
   })
 
   it('Default EVM should prefer common from evmOpts if provided (same logic for blockchain, statemanager)', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
     const vm = await VM.create({ evmOpts: { common } })
-    assert.equal((vm.evm as EVM).common.hardfork(), 'byzantium', 'use modfied HF from evmOpts')
+    assert.equal((vm.evm as EVM).common.hardfork(), 'byzantium', 'use modified HF from evmOpts')
 
     const copiedVM = await vm.shallowCopy()
     assert.equal(
       (copiedVM.evm as EVM).common.hardfork(),
       'byzantium',
-      'use modfied HF from evmOpts (for shallowCopied VM)',
+      'use modified HF from evmOpts (for shallowCopied VM)',
     )
   })
 })

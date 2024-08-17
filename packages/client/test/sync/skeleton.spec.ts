@@ -736,7 +736,7 @@ describe('[Skeleton] / setHead', async () => {
       { common, setHardfork: true },
     )
 
-    // lets jump ahead and add the block 81 and 71 with annoucements and trigger tryTailBackfill
+    // lets jump ahead and add the block 81 and 71 with announcements and trigger tryTailBackfill
     await skeleton.forkchoiceUpdate(block91)
     assert.equal(skeleton['status'].progress.subchains.length, 1, '1 subchain with older dropped')
     assert.equal(

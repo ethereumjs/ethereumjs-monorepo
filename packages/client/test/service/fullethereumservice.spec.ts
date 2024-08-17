@@ -96,7 +96,7 @@ describe('should open', async () => {
   expect(service.synchronizer!.open).toBeCalled()
   expect(server.addProtocols).toBeCalled()
   service.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
-    it('should syncronize', () => {
+    it('should synchronize', () => {
       assert.ok('synchronized')
     })
   })
@@ -217,7 +217,7 @@ describe('should ban peer for sending NewBlock/NewBlockHashes after merge', asyn
   chain.config.chainCommon.setHardfork(Hardfork.Paris)
   const service = new FullEthereumService({ config, chain })
   service.pool.ban = () => {
-    it('should ban peeer', () => {
+    it('should ban peer', () => {
       assert.ok(true, 'banned peer when NewBlock/NewBlockHashes announced after Merge')
     })
   }
@@ -292,7 +292,7 @@ describe('should handle NewPooledTransactionHashes', async () => {
   const service = new FullEthereumService({ config, chain })
   service.txPool.handleAnnouncedTxHashes = async (msg, _peer, _pool) => {
     it('should handle NewPooledTransactionHashes', () => {
-      assert.deepEqual(msg[0], hexToBytes('0xabcd'), 'handled NewPooledTransactionhashes')
+      assert.deepEqual(msg[0], hexToBytes('0xabcd'), 'handled NewPooledTransactionHashes')
     })
   }
 

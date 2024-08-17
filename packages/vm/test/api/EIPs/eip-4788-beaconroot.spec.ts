@@ -135,7 +135,7 @@ async function runBlockTest(input: {
   timestampBlock: bigint // Timestamp of the block (this is saved in the precompile)
   blockRoot: bigint // Blockroot of the block (also saved in the precompile)
   extLeft?: number // Extend length left of the input (defaults to 32)
-  extRight?: number // Extend lenght right of the input (defaults to 32) - happens after extendLeft
+  extRight?: number // Extend length right of the input (defaults to 32) - happens after extendLeft
   expRet: bigint // Expected return value
   expCallStatus: bigint // Expected call status (either 0 or 1)
 }) {
