@@ -27,8 +27,9 @@ export interface TxData {
 }
 
 // The type of each entry from ./ttTransactionTestEip155VitaliksTests.json // cspell:disable-line
+// cspell:disable
 export interface VitaliksTestsDataEntry {
-  // cspell:disable-line
+  // cspell:enable
   blocknumber: string
   hash: string
   rlp: string

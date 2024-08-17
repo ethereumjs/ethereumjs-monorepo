@@ -498,8 +498,9 @@ describe('Utility Functions', () => {
     )
   })
 
+  // cspell:disable
   it('generateAddress wt.testh nonce 0 (special case)', () => {
-    // cspell:disable-line
+    // cspell:enable
     const addr = generateAddress(toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'), toBytes(0))
     assert.equal(
       bytesToHex(addr),
@@ -508,8 +509,9 @@ describe('Utility Functions', () => {
     )
   })
 
+  // cspell:disable
   it('generateAddress wt.testh non-buffer inputs', () => {
-    // cspell:disable-line
+    // cspell:enable
     assert.throws(
       function () {
         generateAddress(
