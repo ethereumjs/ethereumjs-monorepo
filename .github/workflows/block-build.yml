@@ -20,7 +20,7 @@ defaults:
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-block
   cancel-in-progress: true
-> tsc --build ./tsconfig.prod.esm.json
+
 jobs:
   test-block:
     runs-on: ubuntu-latest
@@ -50,11 +50,8 @@ jobs:
         with:
           path: ${{github.workspace}}/packages/ethereum-tests
           key: ${{ inputs.submodule-cache-key}}
+          fail-on-cache-miss: true
 
-      - name: Check if ethereum-tests is present (if not, fail)
-        if: steps.submodules-cache.outputs.cache-hit != 'true'
-        run: exit 1
-            
       - run: npm run coverage
       - uses: codecov/codecov-action@v3
         with:
