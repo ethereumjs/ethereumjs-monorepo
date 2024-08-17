@@ -650,7 +650,7 @@ export class BlockHeader {
    * Checks if the block header is a genesis header.
    */
   isGenesis(): boolean {
-    return this.number === BIGINT_0
+    return false
   }
 
   /**
