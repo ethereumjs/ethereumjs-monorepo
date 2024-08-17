@@ -131,7 +131,7 @@ describe('EIP-7002 tests', () => {
     // Ensure the requests are correct
     assert.ok(equalsBytes(sourceAddressRequest, tx.getSenderAddress().bytes))
     assert.ok(equalsBytes(validatorPubkey, validatorPubkeyRequest))
-    // the direct byte comparision fails because leading zeros have been stripped
+    // the direct byte comparison fails because leading zeros have been stripped
     // off the amountBytes because it was serialized in request from bigint
     assert.equal(bytesToBigInt(amountBytes), bytesToBigInt(amountRequest))
 

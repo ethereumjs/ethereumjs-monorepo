@@ -80,13 +80,13 @@ console.log(`EIP 4844 is active -- ${c.isActivatedEIP(4844)}`)
 ### Custom Cryptography Primitives (WASM)
 
 All EthereumJS packages use cryptographic primitives from the audited `ethereum-cryptography` library by default.
-These primitves, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native
+These primitives, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native
 Javascript and therefore have the potential downside of being less performant than alternative cryptography modules
 written in other languages and then compiled to WASM. If cryptography performance is a bottleneck in your usage of
 the EthereumJS libraries, you can provide your own primitives to the `Common` constructor and they will be used in
 place of the defaults. Depending on how your preferred primitives are implemented, you may need to write wrapper
 methods around them so they conform to the interface exposed by the [`common.customCrypto` property](./src/types.ts).
-See the implementation of this in the [`@etheruemjs/client`](../client/bin/cli.ts#L810) using `@polkadot/wasm-crypto`
+See the implementation of this in the [`@ethereumjs/client`](../client/bin/cli.ts#L810) using `@polkadot/wasm-crypto`
 for an example of how this is done for each available cryptographic primitive.
 
 Note: replacing native JS crypto primitives with WASM based libraries comes with new security assumptions (additional external dependencies, unauditability of WASM code). It is therefore recommended to evaluate your usage context before applying!
@@ -121,7 +121,7 @@ main()
 
 The KZG library used for EIP-4844 Blob Transactions is initialized by `common` under the `common.customCrypto` property
 and is then used throughout the `Ethereumjs` stack wherever KZG cryptography is required. Below is an example of how
-to initalize (assuming you are using the `c-kzg` package as your KZG cryptography library).
+to initialize (assuming you are using the `c-kzg` package as your KZG cryptography library).
 
 ```ts
 // ./examples/initKzg.ts
@@ -362,7 +362,7 @@ library supported:
 - `byzantium` (`Hardfork.Byzantium`)
 - `constantinople` (`Hardfork.Constantinople`)
 - `petersburg` (`Hardfork.Petersburg`) (aka `constantinopleFix`, apply together with `constantinople`)
-- `istanbul` (`Hardfork.Instanbul`)
+- `istanbul` (`Hardfork.Istanbul`)
 - `muirGlacier` (`Hardfork.MuirGlacier`)
 - `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
 - `london` (`Hardfork.London`) (since `v2.4.0`)

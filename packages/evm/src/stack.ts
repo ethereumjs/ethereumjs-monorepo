@@ -38,7 +38,7 @@ export class Stack {
     // Length is checked above, so pop shouldn't return undefined
     // First decrease current length, then read the item and return it
     // Note: this does thus not delete the item from the internal array
-    // However, the length is decreased, so it is not accessible to external observors
+    // However, the length is decreased, so it is not accessible to external observers
     return this._store[--this._len]
   }
 

@@ -29,12 +29,12 @@ const sender = createAddressFromPrivateKey(pkey)
 const kzg = await loadKZG()
 
 function get_padded(data: any, blobs_len: number) {
-  const pdata = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
-  const datalen = (data as Uint8Array).byteLength
-  pdata.fill(data, 0, datalen)
+  const pData = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
+  const dataLen = (data as Uint8Array).byteLength
+  pData.fill(data, 0, dataLen)
   // TODO: if data already fits in a pad, then ka-boom
-  pdata[datalen] = 0x80
-  return pdata
+  pData[dataLen] = 0x80
+  return pData
 }
 
 function get_blob(data: any) {
@@ -61,11 +61,11 @@ function get_blobs(data: any) {
 
   const blobs_len = Math.ceil(len / USEFUL_BYTES_PER_BLOB)
 
-  const pdata = get_padded(data, blobs_len)
+  const pData = get_padded(data, blobs_len)
 
   const blobs: Uint8Array[] = []
   for (let i = 0; i < blobs_len; i++) {
-    const chunk = pdata.subarray(i * USEFUL_BYTES_PER_BLOB, (i + 1) * USEFUL_BYTES_PER_BLOB)
+    const chunk = pData.subarray(i * USEFUL_BYTES_PER_BLOB, (i + 1) * USEFUL_BYTES_PER_BLOB)
     const blob = get_blob(chunk)
     blobs.push(blob)
   }

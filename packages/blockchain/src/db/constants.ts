@@ -32,7 +32,7 @@ const NUM_SUFFIX = utf8ToBytes('n')
 /**
  * blockHashPrefix + hash -> number
  */
-const BLOCK_HASH_PEFIX = utf8ToBytes('H')
+const BLOCK_HASH_PREFIX = utf8ToBytes('H')
 
 /**
  * bodyPrefix + number + hash -> block body
@@ -55,7 +55,7 @@ const bodyKey = (n: bigint, hash: Uint8Array) => concatBytes(BODY_PREFIX, bytesB
 
 const numberToHashKey = (n: bigint) => concatBytes(HEADER_PREFIX, bytesBE8(n), NUM_SUFFIX)
 
-const hashToNumberKey = (hash: Uint8Array) => concatBytes(BLOCK_HASH_PEFIX, hash)
+const hashToNumberKey = (hash: Uint8Array) => concatBytes(BLOCK_HASH_PREFIX, hash)
 
 /**
  * @hidden

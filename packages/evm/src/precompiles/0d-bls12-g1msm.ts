@@ -18,7 +18,7 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`BLS12G1MSM (0x0d) failed: Empty input`)
     }
-    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geths implementation
+    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geth's implementation
   }
 
   // TODO: Double-check respectively confirm that this order is really correct that the gas check

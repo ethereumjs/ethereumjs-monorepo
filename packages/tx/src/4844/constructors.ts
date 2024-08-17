@@ -68,8 +68,8 @@ const validateBlobTransactionNetworkWrapper = (
  * Notes:
  * - `chainId` will be set automatically if not provided
  * - All parameters are optional and have some basic default values
- * - `blobs` cannot be supplied as well as `kzgCommittments`, `blobVersionedHashes`, `kzgProofs`
- * - If `blobs` is passed in,  `kzgCommittments`, `blobVersionedHashes`, `kzgProofs` will be derived by the constructor
+ * - `blobs` cannot be supplied as well as `kzgCommitments`, `blobVersionedHashes`, `kzgProofs`
+ * - If `blobs` is passed in,  `kzgCommitments`, `blobVersionedHashes`, `kzgProofs` will be derived by the constructor
  */
 export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
   if (opts?.common?.customCrypto?.kzg === undefined) {

@@ -61,7 +61,7 @@ describe('SecureTrie proof', () => {
 
   it('read back data written with hashed key', async () => {
     const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
-    // skip key transformation if the key is already hashed like data recieved in snapsync
+    // skip key transformation if the key is already hashed like data received in snapsync
     await trie.put(keccak256(utf8ToBytes('key1aa')), utf8ToBytes('01234'), true)
 
     const val = await trie.get(utf8ToBytes('key1aa'))

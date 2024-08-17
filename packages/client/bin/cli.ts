@@ -430,7 +430,7 @@ const args: ClientOpts = yargs
   })
   .option('isSingleNode', {
     describe:
-      'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automically activated in the "dev" mode',
+      'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automatically activated in the "dev" mode',
     boolean: true,
   })
   .option('vmProfileBlocks', {
@@ -460,7 +460,7 @@ const args: ClientOpts = yargs
   })
   .option('engineNewpayloadMaxExecute', {
     describe:
-      'Number of unexecuted blocks (including ancestors) that can be blockingly executed in engine`s new payload (if required and possible) to determine the validity of the block',
+      'Number of unexecuted blocks (including ancestors) that can be executed per-block in engine`s new payload (if required and possible) to determine the validity of the block',
     number: true,
   })
   .option('skipEngineExec', {
@@ -470,7 +470,7 @@ const args: ClientOpts = yargs
   })
   .option('ignoreStatelessInvalidExecs', {
     describe:
-      'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution faliures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
+      'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution failures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
     boolean: true,
     hidden: true,
   })

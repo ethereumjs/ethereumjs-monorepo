@@ -145,7 +145,7 @@ describe('EVM -> custom precompiles', () => {
       'restored sha precompile - gas correct',
     )
   })
-  it('shold copy custom precompiles', async () => {
+  it('should copy custom precompiles', async () => {
     const evm = await createEVM({
       customPrecompiles: [
         {

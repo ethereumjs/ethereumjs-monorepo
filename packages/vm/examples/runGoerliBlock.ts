@@ -12,7 +12,7 @@ const main = async () => {
   const vm = await VM.create({ common, setHardfork: true })
 
   const block = createBlockFromRPC(goerliBlock2, undefined, { common })
-  const result = await runBlock(vm, { block, generate: true, skipHeaderValidation: true }) // we skip header validaiton since we are running a block without the full Ethereum history available
+  const result = await runBlock(vm, { block, generate: true, skipHeaderValidation: true }) // we skip header validation since we are running a block without the full Ethereum history available
   console.log(`The state root for Goerli block 2 is ${bytesToHex(result.stateRoot)}`)
 }
 

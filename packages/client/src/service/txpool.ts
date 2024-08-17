@@ -884,7 +884,7 @@ export class TxPool {
       broadcasterrors += sendobjects.filter((sendobject) => sendobject.error !== undefined).length
       knownpeers++
     }
-    // Get avergae
+    // Get average
     if (knownpeers > 0) {
       broadcasts = broadcasts / knownpeers
       broadcasterrors = broadcasterrors / knownpeers

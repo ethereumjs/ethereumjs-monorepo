@@ -64,7 +64,7 @@ describe('Optional consensus parameter in blockchain constructor', () => {
 })
 
 describe('Custom consensus validation rules', () => {
-  it('should validat custom consensus rules', async () => {
+  it('should validate custom consensus rules', async () => {
     const common = new Common({ chain: testnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common, validateConsensus: true, consensusDict })
     const block = createBlock(

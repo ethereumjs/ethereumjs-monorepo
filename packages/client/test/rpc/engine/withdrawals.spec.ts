@@ -110,7 +110,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
     assert.equal(
       withdrawalsRoot,
       computedWithdrawalsRoot,
-      'withdrawalsRoot compuation should match',
+      'withdrawalsRoot computation should match',
     )
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
     const rpc = getRpcClient(server)

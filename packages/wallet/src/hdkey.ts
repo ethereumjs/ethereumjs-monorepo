@@ -1,3 +1,4 @@
+// cspell:ignore xprv xpub
 import { mnemonicToSeedSync } from 'ethereum-cryptography/bip39/index.js'
 import { HDKey } from 'ethereum-cryptography/hdkey.js'
 

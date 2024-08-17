@@ -129,12 +129,12 @@ export const nibbleTypeToByteType = (arr: Nibbles): Uint8Array => {
  * @returns Nibble typed nibble array
  */
 export const byteTypeToNibbleType = (key: Uint8Array): Nibbles => {
-  const bkey = toBytes(key)
+  const bKey = toBytes(key)
   const nibbles = [] as Nibbles
 
-  for (let i = 0; i < bkey.length; i++) {
+  for (let i = 0; i < bKey.length; i++) {
     const q = i
-    nibbles[q] = bkey[i] % 16
+    nibbles[q] = bKey[i] % 16
   }
 
   return nibbles
@@ -164,13 +164,13 @@ export const mergeAndFormatKeyPaths = (pathStrings: string[]) => {
   let paths: string[] = []
   let i = 0
   while (i < pathStrings.length) {
-    const outterPathString = pathStrings[i]!.split('/')
-    const outterAccountPath = outterPathString[0]
-    const outterStoragePath = outterPathString[1]
+    const outerPathString = pathStrings[i]!.split('/')
+    const outerAccountPath = outerPathString[0]
+    const outerStoragePath = outerPathString[1]
 
-    paths.push(outterAccountPath)
-    if (outterStoragePath !== undefined) {
-      paths.push(outterStoragePath)
+    paths.push(outerAccountPath)
+    if (outerStoragePath !== undefined) {
+      paths.push(outerStoragePath)
     }
 
     let j = ++i
@@ -179,7 +179,7 @@ export const mergeAndFormatKeyPaths = (pathStrings: string[]) => {
       const innerAccountPath = innerPathString[0]
       const innerStoragePath = innerPathString[1]
 
-      if (innerAccountPath === outterAccountPath) {
+      if (innerAccountPath === outerAccountPath) {
         paths.push(innerStoragePath)
       } else {
         ret.push(paths)

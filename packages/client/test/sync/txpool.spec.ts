@@ -450,7 +450,7 @@ describe('[TxPool]', async () => {
     const poolContent = pool.pool.get(address)!
     assert.equal(poolContent.length, 1, 'only one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
-    // Another attempt to add tx which should not be broadcased to peer2
+    // Another attempt to add tx which should not be broadcasted to peer2
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
     assert.equal(sentToPeer2, 1, 'no new broadcast attempt to the peer')
     // Just to enhance logging coverage, assign peerPool for stats collection

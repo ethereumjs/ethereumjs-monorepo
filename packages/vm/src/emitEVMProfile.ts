@@ -56,7 +56,7 @@ export function emitEVMProfile(logs: EVMPerformanceLogOutput[], profileTitle: st
     return padStr(str, 0).length - 2
   }
 
-  // Step one: calculate the length of each colum
+  // Step one: calculate the length of each column
   const colLength: number[] = []
 
   for (const entry of logs) {
