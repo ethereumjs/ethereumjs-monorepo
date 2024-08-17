@@ -1,5 +1,5 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
-import { create4844BlobTx } from '@ethereumjs/tx'
+import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   bytesToHex,
@@ -121,7 +121,7 @@ async function run(data: any) {
   txData.gasLimit = BigInt(28000000)
   const nonce = await getNonce(client, sender.toString())
   txData.nonce = BigInt(nonce)
-  const blobTx = create4844BlobTx(txData).sign(pkey)
+  const blobTx = createBlob4844Tx(txData).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 

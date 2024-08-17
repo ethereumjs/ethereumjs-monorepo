@@ -1,4 +1,4 @@
-import { create1559FeeMarketTx, createLegacyTx } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { bigIntToHex, intToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -11,7 +11,7 @@ import {
   setupChain,
 } from '../helpers.js'
 
-import type { LegacyTransaction } from '@ethereumjs/tx'
+import type { LegacyTx } from '@ethereumjs/tx'
 
 const method = 'eth_gasPrice'
 
@@ -92,7 +92,7 @@ describe(method, () => {
       'powLondon',
     )
     const rpc = getRpcClient(server)
-    const tx = create1559FeeMarketTx(
+    const tx = createFeeMarket1559Tx(
       {
         gasLimit: 21000,
         maxPriorityFeePerGas: 10,
@@ -122,7 +122,7 @@ describe(method, () => {
     const rpc = getRpcClient(server)
     const maxPriority1 = 10
     const maxPriority2 = 1231231
-    const tx1 = create1559FeeMarketTx(
+    const tx1 = createFeeMarket1559Tx(
       {
         gasLimit: 21000,
         maxPriorityFeePerGas: maxPriority1,
@@ -131,7 +131,7 @@ describe(method, () => {
       },
       { common },
     ).sign(dummy.privKey)
-    const tx2 = create1559FeeMarketTx(
+    const tx2 = createFeeMarket1559Tx(
       {
         nonce: 1,
         gasLimit: 21000,
@@ -161,7 +161,7 @@ describe(method, () => {
     const iterations = BigInt(21)
     const gasPrice = BigInt(20)
     const firstBlockGasPrice = BigInt(11111111111111)
-    let tx: LegacyTransaction
+    let tx: LegacyTx
     for (let i = 0; i < iterations; i++) {
       if (i === 0) {
         tx = createLegacyTx(

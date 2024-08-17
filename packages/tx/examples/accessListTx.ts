@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { create2930AccessListTx } from '@ethereumjs/tx'
+import { createAccessList2930Tx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
@@ -27,5 +27,5 @@ const txData = {
   type: '0x01',
 }
 
-const tx = create2930AccessListTx(txData, { common })
+const tx = createAccessList2930Tx(txData, { common })
 console.log(bytesToHex(tx.hash())) // 0x9150cdebad74e88b038e6c6b964d99af705f9c0883d7f0bbc0f3e072358f5b1d

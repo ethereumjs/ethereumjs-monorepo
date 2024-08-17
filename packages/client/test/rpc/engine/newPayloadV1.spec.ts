@@ -1,4 +1,4 @@
-import { create1559FeeMarketTx } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   bytesToHex,
   createAddressFromPrivateKey,
@@ -137,7 +137,7 @@ describe(method, () => {
     chain.config.logger.silent = true
 
     // Let's mock a non-signed transaction so execution fails
-    const tx = create1559FeeMarketTx(
+    const tx = createFeeMarket1559Tx(
       {
         gasLimit: 21_000,
         maxFeePerGas: 10,
@@ -177,7 +177,7 @@ describe(method, () => {
 
     const { server, common } = await setupChain(newGenesisJSON, 'post-merge', { engine: true })
     const rpc = getRpcClient(server)
-    const tx = create1559FeeMarketTx(
+    const tx = createFeeMarket1559Tx(
       {
         maxFeePerGas: '0x7',
         value: 6,
@@ -220,7 +220,7 @@ describe(method, () => {
     })
     const rpc = getRpcClient(server)
     const transactions = Array.from({ length: 101 }, (_v, i) => {
-      const tx = create1559FeeMarketTx(
+      const tx = createFeeMarket1559Tx(
         {
           nonce: i,
           maxFeePerGas: '0x7',

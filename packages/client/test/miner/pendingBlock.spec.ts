@@ -1,7 +1,7 @@
 import { Block, BlockHeader, createBlockHeader } from '@ethereumjs/block'
 import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { create1559FeeMarketTx, create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
+import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -369,7 +369,7 @@ describe('[PendingBlock]', async () => {
 
     // Create 3 txs with 2 blobs each so that only 2 of them can be included in a build
     for (let x = 0; x <= 2; x++) {
-      const txA01 = create4844BlobTx(
+      const txA01 = createBlob4844Tx(
         {
           blobVersionedHashes: [
             ...blobVersionedHashes,
@@ -392,7 +392,7 @@ describe('[PendingBlock]', async () => {
     }
 
     // Add one other normal tx for nonce 3 which should also be not included in the build
-    const txNorm = create1559FeeMarketTx(
+    const txNorm = createFeeMarket1559Tx(
       {
         gasLimit: 0xffffffn,
         maxFeePerGas: 1000000000n,
@@ -447,7 +447,7 @@ describe('[PendingBlock]', async () => {
     const proofs = blobsToProofs(kzg, blobs, commitments)
 
     // create a tx with missing blob data which should be excluded from the build
-    const missingBlobTx = create4844BlobTx(
+    const missingBlobTx = createBlob4844Tx(
       {
         blobVersionedHashes,
         kzgCommitments: commitments,

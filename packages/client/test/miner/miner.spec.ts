@@ -7,7 +7,7 @@ import {
   createCustomCommon,
 } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { create1559FeeMarketTx, createLegacyTx } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
 // import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -453,7 +453,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
 
   // the default block baseFee will be 7
   // add tx with maxFeePerGas of 6
-  const tx = create1559FeeMarketTx({ to: B.address, maxFeePerGas: 6 }, { common }).sign(
+  const tx = createFeeMarket1559Tx({ to: B.address, maxFeePerGas: 6 }, { common }).sign(
     A.privateKey,
   )
   try {

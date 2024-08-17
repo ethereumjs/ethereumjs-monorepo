@@ -1,7 +1,7 @@
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
+import { Blob4844Tx, Capability } from '@ethereumjs/tx'
 import {
   BIGINT_0,
   CLRequestType,
@@ -34,11 +34,7 @@ import {
 /* eslint-enable */
 import type { BlockBytes, BlockOptions, ExecutionPayload, JsonBlock } from '../types.js'
 import type { Common } from '@ethereumjs/common'
-import type {
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-  TypedTransaction,
-} from '@ethereumjs/tx'
+import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
 import type {
   CLRequest,
   ConsolidationRequest,
@@ -284,12 +280,12 @@ export class Block {
       const errs = tx.getValidationErrors()
       if (this.common.isActivatedEIP(1559)) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
-          tx = tx as FeeMarketEIP1559Transaction
+          tx = tx as FeeMarket1559Tx
           if (tx.maxFeePerGas < this.header.baseFeePerGas!) {
             errs.push('tx unable to pay base fee (EIP-1559 tx)')
           }
         } else {
-          tx = tx as LegacyTransaction
+          tx = tx as LegacyTx
           if (tx.gasPrice < this.header.baseFeePerGas!) {
             errs.push('tx unable to pay base fee (non EIP-1559 tx)')
           }
@@ -298,7 +294,7 @@ export class Block {
       if (this.common.isActivatedEIP(4844)) {
         const blobGasLimit = this.common.param('maxblobGasPerBlock')
         const blobGasPerBlob = this.common.param('blobGasPerBlob')
-        if (tx instanceof BlobEIP4844Transaction) {
+        if (tx instanceof Blob4844Tx) {
           blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
           if (blobGasUsed > blobGasLimit) {
             errs.push(
@@ -414,7 +410,7 @@ export class Block {
       let blobGasPrice
 
       for (const tx of this.transactions) {
-        if (tx instanceof BlobEIP4844Transaction) {
+        if (tx instanceof Blob4844Tx) {
           blobGasPrice = blobGasPrice ?? this.header.getBlobGasPrice()
           if (tx.maxFeePerBlobGas < blobGasPrice) {
             throw new Error(

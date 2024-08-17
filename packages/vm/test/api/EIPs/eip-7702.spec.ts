@@ -1,6 +1,6 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { create7702EOACodeTx } from '@ethereumjs/tx'
+import { createEOACode7702Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -67,7 +67,7 @@ async function runTest(
 ) {
   vm = vm ?? (await VM.create({ common }))
   const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
-  const tx = create7702EOACodeTx(
+  const tx = createEOACode7702Tx(
     {
       gasLimit: 100000,
       maxFeePerGas: 1000,
@@ -208,7 +208,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
 
     await vm.stateManager.putCode(checkAddressWarm, checkAddressWarmCode)
 
-    const tx = create7702EOACodeTx(
+    const tx = createEOACode7702Tx(
       {
         gasLimit: 100000,
         maxFeePerGas: 1000,
@@ -240,7 +240,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
         address: code1Addr,
       }),
     ]
-    const tx = create7702EOACodeTx(
+    const tx = createEOACode7702Tx(
       {
         gasLimit: 100000,
         maxFeePerGas: 1000,

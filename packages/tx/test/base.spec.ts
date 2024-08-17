@@ -13,17 +13,17 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import {
-  AccessListEIP2930Transaction,
+  AccessList2930Transaction,
   Capability,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
+  FeeMarket1559Tx,
+  LegacyTx,
   TransactionType,
-  create1559FeeMarketTx,
-  create1559FeeMarketTxFromRLP,
-  create2930AccessListTx,
-  create2930AccessListTxFromBytesArray,
-  create2930AccessListTxFromRLP,
-  createEIP1559FeeMarketTxFromBytesArray,
+  create1559FeeMarketTxFromBytesArray,
+  createAccessList2930Tx,
+  createAccessList2930TxFromBytesArray,
+  createAccessList2930TxFromRLP,
+  createFeeMarket1559Tx,
+  createFeeMarket1559TxFromRLP,
   createLegacyTx,
   createLegacyTxFromBytesArray,
   createLegacyTxFromRLP,
@@ -35,7 +35,7 @@ import eip2930Fixtures from './json/eip2930txs.json'
 import legacyFixtures from './json/txs.json'
 
 import type { BaseTransaction } from '../src/baseTransaction.js'
-import type { AccessListEIP2930TxData, FeeMarketEIP1559TxData, LegacyTxData } from '../src/index.js'
+import type { AccessList2930TxData, FeeMarketEIP1559TxData, LegacyTxData } from '../src/index.js'
 
 describe('[BaseTransaction]', () => {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
@@ -48,19 +48,19 @@ describe('[BaseTransaction]', () => {
 
   const eip2930Txs: BaseTransaction<TransactionType.AccessListEIP2930>[] = []
   for (const tx of eip2930Fixtures) {
-    eip2930Txs.push(create2930AccessListTx(tx.data as AccessListEIP2930TxData, { common }))
+    eip2930Txs.push(createAccessList2930Tx(tx.data as AccessList2930TxData, { common }))
   }
 
   const eip1559Txs: BaseTransaction<TransactionType.FeeMarketEIP1559>[] = []
   for (const tx of eip1559Fixtures) {
-    eip1559Txs.push(create1559FeeMarketTx(tx.data as FeeMarketEIP1559TxData, { common }))
+    eip1559Txs.push(createFeeMarket1559Tx(tx.data as FeeMarketEIP1559TxData, { common }))
   }
 
   const zero = new Uint8Array(0)
   const txTypes = [
     {
-      class: LegacyTransaction,
-      name: 'LegacyTransaction',
+      class: LegacyTx,
+      name: 'LegacyTx',
       type: TransactionType.Legacy,
       values: Array(6).fill(zero),
       txs: legacyTxs,
@@ -79,23 +79,23 @@ describe('[BaseTransaction]', () => {
       ],
     },
     {
-      class: AccessListEIP2930Transaction,
-      name: 'AccessListEIP2930Transaction',
+      class: AccessList2930Transaction,
+      name: 'AccessList2930Transaction',
       type: TransactionType.AccessListEIP2930,
       values: [new Uint8Array([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,
       activeCapabilities: [Capability.EIP2718TypedTransaction, Capability.EIP2930AccessLists],
       create: {
-        txData: create2930AccessListTx,
-        rlp: create2930AccessListTxFromRLP,
-        bytesArray: create2930AccessListTxFromBytesArray,
+        txData: createAccessList2930Tx,
+        rlp: createAccessList2930TxFromRLP,
+        bytesArray: createAccessList2930TxFromBytesArray,
       },
       notActiveCapabilities: [Capability.EIP1559FeeMarket, 9999],
     },
     {
-      class: FeeMarketEIP1559Transaction,
-      name: 'FeeMarketEIP1559Transaction',
+      class: FeeMarket1559Tx,
+      name: 'FeeMarket1559Tx',
       type: TransactionType.FeeMarketEIP1559,
       values: [new Uint8Array([1])].concat(Array(8).fill(zero)),
       txs: eip1559Txs,
@@ -106,9 +106,9 @@ describe('[BaseTransaction]', () => {
         Capability.EIP2930AccessLists,
       ],
       create: {
-        txData: create1559FeeMarketTx,
-        rlp: create1559FeeMarketTxFromRLP,
-        bytesArray: createEIP1559FeeMarketTxFromBytesArray,
+        txData: createFeeMarket1559Tx,
+        rlp: createFeeMarket1559TxFromRLP,
+        bytesArray: create1559FeeMarketTxFromBytesArray,
       },
       notActiveCapabilities: [9999],
     },
@@ -210,7 +210,7 @@ describe('[BaseTransaction]', () => {
     rlpData = eip2930Txs[0].raw()
     rlpData[3] = toBytes('0x0')
     try {
-      create2930AccessListTxFromBytesArray(rlpData)
+      createAccessList2930TxFromBytesArray(rlpData)
       assert.fail('should have thrown when gasLimit has leading zeroes')
     } catch (err: any) {
       assert.ok(
@@ -221,7 +221,7 @@ describe('[BaseTransaction]', () => {
     rlpData = eip1559Txs[0].raw()
     rlpData[2] = toBytes('0x0')
     try {
-      createEIP1559FeeMarketTxFromBytesArray(rlpData)
+      create1559FeeMarketTxFromBytesArray(rlpData)
       assert.fail('should have thrown when maxPriorityFeePerGas has leading zeroes')
     } catch (err: any) {
       assert.ok(
@@ -435,7 +435,7 @@ describe('[BaseTransaction]', () => {
   })
 
   it('_validateCannotExceedMaxInteger()', () => {
-    const tx = create1559FeeMarketTx(eip1559Txs[0])
+    const tx = createFeeMarket1559Tx(eip1559Txs[0])
     try {
       ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER }, 256, true)
     } catch (err: any) {

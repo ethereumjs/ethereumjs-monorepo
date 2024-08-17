@@ -39,7 +39,7 @@ function meetsEIP155(_v: bigint, chainId: bigint) {
 /**
  * An Ethereum non-typed (legacy) transaction
  */
-export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
+export class LegacyTx extends BaseTransaction<TransactionType.Legacy> {
   public readonly gasPrice: bigint
 
   public readonly common: Common
@@ -229,7 +229,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
     convertV: boolean = false,
-  ): LegacyTransaction {
+  ): LegacyTx {
     r = toBytes(r)
     s = toBytes(s)
     if (convertV && this.supports(Capability.EIP155ReplayProtection)) {

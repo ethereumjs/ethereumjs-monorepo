@@ -356,7 +356,7 @@ describe('[Transaction]', () => {
 
     // Note that Vitalik's example has a very similar value denoted "signing data".
     // It's not the output of `serialize()`, but the pre-image of the hash returned by `tx.hash(false)`.
-    // We don't have a getter for such a value in LegacyTransaction.
+    // We don't have a getter for such a value in LegacyTx.
     assert.equal(
       bytesToHex(pt.serialize()),
       '0xec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080',

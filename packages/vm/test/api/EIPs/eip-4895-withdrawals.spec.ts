@@ -2,7 +2,7 @@ import { createBlock, genWithdrawalsTrieRoot } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
-import { create1559FeeMarketTx } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -67,7 +67,7 @@ describe('EIP4895 tests', () => {
       hexToBytes(`0x73${addresses[0]}3160005260206000F3`),
     )
 
-    const transaction = create1559FeeMarketTx({
+    const transaction = createFeeMarket1559Tx({
       to: contractAddress,
       maxFeePerGas: BigInt(7),
       maxPriorityFeePerGas: BigInt(0),
