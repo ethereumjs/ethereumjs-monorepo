@@ -43,7 +43,7 @@ jobs:
           key: npm-${{ hashFiles('package-lock.json') }}
 
     outputs: 
-      dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}
+      dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}-${{ github.run_id }}
 
   block:
     needs: build
