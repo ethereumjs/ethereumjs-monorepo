@@ -22,7 +22,7 @@ import { wait } from '../integration/util.js'
 
 import type { FullSynchronizer } from '../../src/sync/index.js'
 import type { Block } from '@ethereumjs/block'
-import type { CliqueConsensus } from '@ethereumjs/blockchain'
+import type { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
 
 const A = {
@@ -242,7 +242,9 @@ describe('assembleBlocks() -> with a single tx', async () => {
   await txPool.add(txA01)
 
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
+  ;((vm.blockchain as Blockchain).consensus as CliqueConsensus).cliqueActiveSigners = () => [
+    A.address,
+  ] // stub
 
   chain.putBlocks = (blocks: Block[]) => {
     it('should include tx in new block', () => {
@@ -280,7 +282,9 @@ describe('assembleBlocks() -> with a hardfork mismatching tx', async () => {
   })
 
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
+  ;((vm.blockchain as Blockchain).consensus as CliqueConsensus).cliqueActiveSigners = () => [
+    A.address,
+  ] // stub
 
   chain.putBlocks = (blocks: Block[]) => {
     it('should not include tx', () => {
