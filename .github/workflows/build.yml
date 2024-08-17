@@ -23,9 +23,11 @@ jobs:
 
       - id: create-cache-key
         run: echo "submodule-cache-key=$(git submodule)" >> $GITHUB_OUTPUT
+        shell: bash
       
       - run: echo $GITHUB_OUTPUT
-      
+        shell: bash
+
       - uses: actions/cache/restore@v4
         id: submodules-cache-restore
         with:
