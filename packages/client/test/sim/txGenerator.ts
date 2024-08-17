@@ -30,10 +30,10 @@ const kzg = await loadKZG()
 
 function get_padded(data: any, blobs_len: number) {
   const pData = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
-  const datalen = (data as Uint8Array).byteLength
-  pData.fill(data, 0, datalen)
+  const dataLen = (data as Uint8Array).byteLength
+  pData.fill(data, 0, dataLen)
   // TODO: if data already fits in a pad, then ka-boom
-  pData[datalen] = 0x80
+  pData[dataLen] = 0x80
   return pData
 }
 

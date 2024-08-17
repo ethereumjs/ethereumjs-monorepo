@@ -802,7 +802,7 @@ describe('clique: reorgs', () => {
     const { blocks, blockchain } = await initWithSigners([A, B])
     const genesis = blocks[0]
     await addNextBlock(blockchain, blocks, A, [C, true])
-    const headBlockNotForked = await addNextBlock(blockchain, blocks, B, [C, true]) // cspell:disable-line
+    const headBlockNotForked = await addNextBlock(blockchain, blocks, B, [C, true])
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         blocks[blocks.length - 1].header.number + BigInt(1),

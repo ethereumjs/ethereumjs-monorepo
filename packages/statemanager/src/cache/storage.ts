@@ -1,4 +1,3 @@
-// cspell:ignore dels
 import { bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
 import debugDefault from 'debug'
@@ -166,7 +165,7 @@ export class StorageCache extends Cache {
       this._orderedMapCache!.setElement(addressHex, storageMap)
     }
 
-    this._stats.dels += 1
+    this._stats.deletions += 1
   }
 
   /**
@@ -330,7 +329,7 @@ export class StorageCache extends Cache {
         reads: 0,
         hits: 0,
         writes: 0,
-        dels: 0,
+        deletions: 0,
       }
     }
     return stats

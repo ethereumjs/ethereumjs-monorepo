@@ -133,7 +133,6 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
   it('should create pre and post merge blocks from Infura API responses to eth_getBlockByHash and eth_getBlockByNumber', () => {
     const common = new Common({ chain: Mainnet })
     let block = createBlockFromRPC(infura2000004woTxs as JsonRpcBlock, [], {
-      // cspell:disable-line
       common,
       setHardfork: true,
     })
@@ -142,14 +141,13 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
       infura2000004woTxs.hash,
       'created premerge block w/o txns',
     )
-    block = createBlockFromRPC(infura2000004wTxs as JsonRpcBlock, [], { common, setHardfork: true }) // cspell:disable-line
+    block = createBlockFromRPC(infura2000004wTxs as JsonRpcBlock, [], { common, setHardfork: true })
     assert.equal(
       bytesToHex(block.hash()),
       infura2000004wTxs.hash,
       'created premerge block with txns',
     )
     block = createBlockFromRPC(infura15571241woTxs as JsonRpcBlock, [], {
-      // cspell:disable-line
       common,
       setHardfork: true,
     })
@@ -160,7 +158,6 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
     )
 
     block = createBlockFromRPC(infura15571241wTxs as JsonRpcBlock, [], {
-      // cspell:disable-line
       common,
       setHardfork: true,
     })

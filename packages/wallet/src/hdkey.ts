@@ -1,3 +1,4 @@
+// cspell:ignore xprv xpub
 import { mnemonicToSeedSync } from 'ethereum-cryptography/bip39/index.js'
 import { HDKey } from 'ethereum-cryptography/hdkey.js'
 
@@ -28,7 +29,7 @@ export class EthereumHDKey {
   constructor(private readonly _hdkey: HDKey) {}
 
   /**
-   * Returns a BIP32 extended private key (xprv) // cspell:disable-line
+   * Returns a BIP32 extended private key (xprv)
    */
   public privateExtendedKey(): string {
     if (!this._hdkey.privateExtendedKey) {
@@ -38,7 +39,7 @@ export class EthereumHDKey {
   }
 
   /**
-   * Return a BIP32 extended public key (xpub) // cspell:disable-line
+   * Return a BIP32 extended public key (xpub)
    */
   public publicExtendedKey(): string {
     return this._hdkey.publicExtendedKey
