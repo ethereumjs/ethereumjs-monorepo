@@ -86,6 +86,13 @@ jobs:
         if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci     
         working-directory: ${{ github.workspace }}
+        
+      - uses: actions/cache/restore@v4
+        name: Initialize ethereum-tests
+        id: submodules-cache
+        with:
+          path: ${{github.workspace}}/packages/ethereum-tests
+          key: ${{ inputs.submodule-cache-key}}
 
       - run: npm run test:state:selectedForks
 
