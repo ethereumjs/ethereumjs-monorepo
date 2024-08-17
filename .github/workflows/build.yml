@@ -25,13 +25,13 @@ jobs:
         run: echo "submodule-cache-key=$(git submodule)" >> $GITHUB_OUTPUT
         shell: bash
       
-      - run: echo $GITHUB_OUTPUT
+      - run: echo ${{ steps.create-cache-key.outputs }}
         shell: bash
 
       - uses: actions/cache/restore@v4
         id: submodules-cache-restore
         with:
-          key: ${{ steps.create-cache-key.outputs.submodule-cache-key}}
+          key: ${{ steps.create-cache-key.outputs.submodule-cache-key }}
           path: ${{github.workspace}}/packages/ethereum-tests
 
       - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
