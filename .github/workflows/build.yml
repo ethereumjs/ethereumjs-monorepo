@@ -27,7 +27,7 @@ jobs:
         id: submodules-cache
         with:
           path: ${{github.workspace}}/packages/ethereum-tests
-          key: ethereum-tests-${{ github.run_id }}
+          key: ethereum-tests-${{ github.run_id }}-TEST
 
   build:
     runs-on: ubuntu-latest
