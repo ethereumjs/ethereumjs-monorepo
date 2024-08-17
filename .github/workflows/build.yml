@@ -28,7 +28,7 @@ jobs:
       - uses: actions/cache/restore@v4
         id: submodules-cache-restore
         with:
-          key: "${{ steps.create-cache-key.outputs.submodule-cache-key }}"
+          key: key-${{ steps.create-cache-key.outputs.submodule-cache-key }}
           path: ${{github.workspace}}/packages/ethereum-tests
 
       - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
