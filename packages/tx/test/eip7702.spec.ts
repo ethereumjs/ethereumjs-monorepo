@@ -102,7 +102,7 @@ describe('[EOACode7702Transaction]', () => {
         createEOACode7702Tx(txData, { common }), testName
       })
     }
-    create7702EOACodeTx(getTxData(), { common })
+
     assert.doesNotThrow(() => {
       createEOACode7702Tx(getTxData(), { common })
     })

@@ -7,7 +7,6 @@ import {
   BIGINT_1,
   KECCAK256_NULL,
   bigIntToUnpaddedBytes,
-  bytesToBigInt,
   concatBytes,
   createAddressFromString,
   createZeroAddress,
@@ -290,9 +289,6 @@ describe.only('test EIP-7702 opcodes', () => {
     const randomCode = hexToBytes('0x010203040506')
     const randomCodeAddress = createAddressFromString('0x' + 'aa'.repeat(20))
 
-    const opcodes = ['3b', '3f']
-    const expected = [bigIntToUnpaddedBytes(BigInt(randomCode.length)), keccak256(randomCode)]
-
     const tests: {
       code: PrefixedHexString
       expectedStorage: Uint8Array
@@ -323,7 +319,7 @@ describe.only('test EIP-7702 opcodes', () => {
       },
     ]
 
-    const authTx = create7702EOACodeTx(
+    const authTx = createEOACode7702Tx(
       {
         gasLimit: 100000,
         maxFeePerGas: 1000,
@@ -354,7 +350,6 @@ describe.only('test EIP-7702 opcodes', () => {
       await runTx(vm, { tx: authTx })
 
       const result = await vm.stateManager.getStorage(deploymentAddress, zeros(32))
-      console.log(result, expectedOutput)
       assert.ok(equalsBytes(result, expectedOutput), `FAIL test: ${name}`)
     }
 
