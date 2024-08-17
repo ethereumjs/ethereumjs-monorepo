@@ -1,7 +1,7 @@
 import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Blob4844Tx, Capability, isBlob4844Tx } from '@ethereumjs/tx'
+import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -324,7 +324,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     maxCost += tx.gasLimit * (tx as FeeMarket1559Tx).maxFeePerGas
   }
 
-  if (tx instanceof Blob4844Tx) {
+  if (isBlob4844Tx(tx)) {
     if (!vm.common.isActivatedEIP(4844)) {
       const msg = _errorMsg('blob transactions are only valid with EIP4844 active', vm, block, tx)
       throw new Error(msg)
@@ -332,15 +332,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // EIP-4844 spec
     // the signer must be able to afford the transaction
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
-    const castTx = tx as Blob4844Tx
-    totalblobGas = vm.common.param('blobGasPerBlob') * BigInt(castTx.numBlobs())
-    maxCost += totalblobGas * castTx.maxFeePerBlobGas
+    totalblobGas = vm.common.param('blobGasPerBlob') * BigInt(tx.numBlobs())
+    maxCost += totalblobGas * tx.maxFeePerBlobGas
 
     // 4844 minimum blobGas price check
     blobGasPrice = opts.block?.header.getBlobGasPrice() ?? DEFAULT_HEADER.getBlobGasPrice()
-    if (castTx.maxFeePerBlobGas < blobGasPrice) {
+    if (tx.maxFeePerBlobGas < blobGasPrice) {
       const msg = _errorMsg(
-        `Transaction's maxFeePerBlobGas ${castTx.maxFeePerBlobGas}) is less than block blobGasPrice (${blobGasPrice}).`,
+        `Transaction's maxFeePerBlobGas ${tx.maxFeePerBlobGas}) is less than block blobGasPrice (${blobGasPrice}).`,
         vm,
         block,
         tx,
@@ -397,8 +396,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // EIP-4844 tx
   let blobVersionedHashes
-  if (tx instanceof Blob4844Tx) {
-    blobVersionedHashes = (tx as Blob4844Tx).blobVersionedHashes
+  if (isBlob4844Tx(tx)) {
+    blobVersionedHashes = tx.blobVersionedHashes
   }
 
   // Update from account's balance
