@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1723814318989,
+  "lastUpdate": 1723893230709,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "1b881bcb8e888b4fcd14d7699feab58c506458b6",
-          "message": "Common: Remove Parameters (#3537)\n\n* Separate params from EIP configs\r\n\r\n* Make requiredEIPs optional\r\n\r\n* Add internal params dict using params option, add updateParams() and resetParams() methods, add tests\r\n\r\n* Minor\r\n\r\n* Move EVM param to EVM parms dict\r\n\r\n* Fix local Common tests, add params test config\r\n\r\n* Fix tests and example\r\n\r\n* Add dedicated params config for Block\r\n\r\n* Add dedicated params dict for Tx\r\n\r\n* Add dedicated VM params config\r\n\r\n* Minor\r\n\r\n* Remove last params from Common, test fixes\r\n\r\n* Fully remove params dict from Common\r\n\r\n* Fixes\r\n\r\n* Add a consistent params option for tx, block, evm and vm to allow to override the default parameter set\r\n\r\n* Disallow BigInt in parameter files (simply use string) to avoid deep cloning/serialization problems\r\n\r\n* Add additional deep copy notes on params option code docs, use deep copy in tests\r\n\r\n* Lint fixes\r\n\r\n* Address review comments",
-          "timestamp": "2024-07-26T09:29:36+02:00",
-          "tree_id": "621db0e06a0d48db6e670e302a5c2d286f84bed1",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1b881bcb8e888b4fcd14d7699feab58c506458b6"
-        },
-        "date": 1721979267288,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38438,
-            "range": "±1.91%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 36522,
-            "range": "±3.32%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37336,
-            "range": "±1.63%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36390,
-            "range": "±1.68%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35864,
-            "range": "±1.74%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.64%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0aa744599aeb682a2a234d58f044955569f89dec",
+          "message": "utils: refactor trie and verkle utils (#3600)\n\n* verkle: remove bytes utils\r\n\r\n* util: add matching bytes length util from verkle\r\n\r\n* util: refactor PrioritizedTaskExecutor\r\n\r\n* verkle: remove extra import",
+          "timestamp": "2024-08-17T13:11:09+02:00",
+          "tree_id": "63065d771367b7d3de7724d9ed49054498300996",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0aa744599aeb682a2a234d58f044955569f89dec"
+        },
+        "date": 1723893229905,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37918,
+            "range": "±1.98%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 37018,
+            "range": "±2.29%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 36031,
+            "range": "±3.47%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36084,
+            "range": "±1.67%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 34738,
+            "range": "±1.87%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
