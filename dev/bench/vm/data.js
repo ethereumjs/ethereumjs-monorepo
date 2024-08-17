@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1723893230709,
+  "lastUpdate": 1723918757509,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "91270f538fb25f49aa7137b6b2bba637fa311c58",
-          "message": "StateManager: Interface Reworking & Partial Refactor (Options, Name Simplifications)  (#3541)\n\n* Sort StateManagerInterface methods with comments, make getContractCodeSize() mandatory, clear legacy code\r\n\r\n* Move all types to a dedicated types.ts file (as we always do)\r\n\r\n* Option interface simplifications\r\n\r\n* Add explicit check for Verkle methods in EVM, associated clean-up\r\n\r\n* Rename putContractCode\r\n\r\n* Rename getContractCode, getContractCodeSize\r\n\r\n* Rename getContractStorage\r\n\r\n* Rename putContractStorage\r\n\r\n* Rename clearContractStorage",
-          "timestamp": "2024-07-26T13:05:27+02:00",
-          "tree_id": "938156f7962846694e01ffc9b757fb8091835019",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/91270f538fb25f49aa7137b6b2bba637fa311c58"
-        },
-        "date": 1721992308005,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 37995,
-            "range": "±2.22%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 36008,
-            "range": "±3.53%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37005,
-            "range": "±1.46%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36170,
-            "range": "±1.61%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35526,
-            "range": "±1.74%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.87%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4a8761a89f01492763edde27824c4718d6a8bf34",
+          "message": "Add CSpell checker to CI and fix typos (#3590)\n\n* monorepo: add cspell, add ALL unknown words to valid words\r\n\r\n* cspell: split unknown words in ts/md\r\n\r\n* filter out wrong words in cspell-ts.json\r\n\r\n* cspell ignore hex values\r\n\r\n* fix typos in all packages\r\n\r\n* cspell: use cache\r\n\r\n* cspell: update commands\r\n\r\n* cspell: update md/ts words\r\n\r\n* Typo fixes for README/CHANGELOG files\r\n\r\n* cspell: ensure all relevant monorepo md files are checked\r\n\r\n* ci: add cspell job\r\n\r\n* cspell: update command\r\n\r\n* temp add bogus to markdown\r\n\r\n* remove bogus spell\r\n\r\n* update ci name\r\n\r\n* fix remaining typos + add words to cspell dict\r\n\r\n* Update packages/client/CHANGELOG.md\r\n\r\n* Update packages/util/CHANGELOG.md\r\n\r\n* address review\r\n\r\n* Remove almost all `cspell:ignore` (#3599)\r\n\r\n* remove almost all cspell:ignore\r\n\r\n* more spell changes\r\n\r\n* cspell: fix problems\r\n\r\n* evm: fix quadCoefficient\r\n\r\n* cspell: fixes\r\n\r\n* remove disable line\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
+          "timestamp": "2024-08-17T20:16:25+02:00",
+          "tree_id": "4e573304dfd37aa2536270051b9a53f76b5ba410",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4a8761a89f01492763edde27824c4718d6a8bf34"
+        },
+        "date": 1723918756301,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37677,
+            "range": "±1.89%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 35559,
+            "range": "±3.65%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37249,
+            "range": "±1.51%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36416,
+            "range": "±1.65%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35473,
+            "range": "±1.81%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
