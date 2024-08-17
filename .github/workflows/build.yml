@@ -38,12 +38,13 @@ jobs:
         
       - name: Cache build
         uses: actions/cache/save@v4
+        id: build-cache
         with:
           path: ${{github.workspace}}
           key: npm-${{ hashFiles('package-lock.json') }}-${{ github.run_number }}
 
     outputs: 
-      dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}
+      dep-cache-key: ${{ steps.build-cache.outputs.cache-primary-key }}
 
   block:
     needs: build
