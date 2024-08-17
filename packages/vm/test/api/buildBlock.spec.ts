@@ -268,7 +268,7 @@ describe('BlockBuilder', () => {
         'block should be in reverted status',
       )
     } catch (error: any) {
-      assert.fail('shoud not throw')
+      assert.fail('should not throw')
     }
 
     blockBuilder = await buildBlock(vm, { parentBlock: genesisBlock })
@@ -289,7 +289,7 @@ describe('BlockBuilder', () => {
         'block should be in reverted status',
       )
     } catch (error: any) {
-      assert.fail('shoud not throw')
+      assert.fail('should not throw')
     }
   })
 

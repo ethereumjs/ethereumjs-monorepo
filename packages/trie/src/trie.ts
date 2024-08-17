@@ -236,7 +236,7 @@ export class Trie {
         if (val === null || equalsBytes(val, value) === false) {
           // All items of the stack are going to change.
           // (This is the path from the root node to wherever it needs to insert nodes)
-          // The items change, because the leaf value is updated, thus all keyhashes in the
+          // The items change, because the leaf value is updated, thus all keyHashes in the
           // stack should be updated as well, so that it points to the right key/value pairs of the path
           const deleteHashes = stack.map((e) => this.hash(e.serialize()))
           ops = deleteHashes.map((deletedHash) => {
@@ -257,7 +257,7 @@ export class Trie {
       // then update
       await this._updateNode(appliedKey, value, remaining, stack)
       if (this._opts.useNodePruning) {
-        // Only after updating the node we can delete the keyhashes
+        // Only after updating the node we can delete the keyHashes
         await this._db.batch(ops)
       }
     }
@@ -281,7 +281,7 @@ export class Trie {
     // Only delete if the `key` currently has any value
     if (this._opts.useNodePruning && node !== null) {
       const deleteHashes = stack.map((e) => this.hash(e.serialize()))
-      // Just as with `put`, the stack items all will have their keyhashes updated
+      // Just as with `put`, the stack items all will have their keyHashes updated
       // So after deleting the node, one can safely delete these from the DB
 
       ops = deleteHashes.map((deletedHash) => {
@@ -301,7 +301,7 @@ export class Trie {
       await this._deleteNode(appliedKey, stack)
     }
     if (this._opts.useNodePruning) {
-      // Only after deleting the node it is possible to delete the keyhashes
+      // Only after deleting the node it is possible to delete the keyHashes
       await this._db.batch(ops)
     }
     await this.persistRoot()
@@ -736,7 +736,7 @@ export class Trie {
       // However, this violates the trie spec; this should be converted in either an ExtensionNode
       // Or a LeafNode
       // Since this branch is deleted, one can thus also delete this branch from the DB
-      // So add this to the `opStack` and mark the keyhash to be deleted
+      // So add this to the `opStack` and mark the keyHash to be deleted
       if (this._opts.useNodePruning) {
         // If the branchNode has length < 32, it will be a RawNode (Uint8Array[]) instead of a Uint8Array
         // In that case, we need to serialize and hash it into a Uint8Array, otherwise the operation will throw
@@ -848,9 +848,9 @@ export class Trie {
    * @example
    * const ops = [
    *    { type: 'del', key: Uint8Array.from('father') }
-   *  , { type: 'put', key: Uint8Array.from('name'), value: Uint8Array.from('Yuri Irsenovich Kim') }
+   *  , { type: 'put', key: Uint8Array.from('name'), value: Uint8Array.from('Yuri Irsenovich Kim') } // cspell:disable-line
    *  , { type: 'put', key: Uint8Array.from('dob'), value: Uint8Array.from('16 February 1941') }
-   *  , { type: 'put', key: Uint8Array.from('spouse'), value: Uint8Array.from('Kim Young-sook') }
+   *  , { type: 'put', key: Uint8Array.from('spouse'), value: Uint8Array.from('Kim Young-sook') } // cspell:disable-line
    *  , { type: 'put', key: Uint8Array.from('occupation'), value: Uint8Array.from('Clown') }
    * ]
    * await trie.batch(ops)

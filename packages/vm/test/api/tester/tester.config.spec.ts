@@ -8,7 +8,7 @@ describe('test runner config tests', () => {
     const common = getCommon('byzantium')
     assert.ok(common.hardfork() === Hardfork.Byzantium)
   })
-  it('should initialize common with the right hardfork uppercased', () => {
+  it('should initialize common with the right hardfork upper-cased', () => {
     let common = getCommon('Byzantium')
     assert.ok(common.hardfork() === Hardfork.Byzantium)
     common = getCommon('BYZANTIUM')

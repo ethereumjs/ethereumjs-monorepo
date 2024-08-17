@@ -156,27 +156,29 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
 
   // requests
   if (payload.deposit_requests !== undefined && payload.deposit_requests !== null) {
-    executionPayload.depositRequests = payload.deposit_requests.map((breq) => ({
-      pubkey: breq.pubkey,
-      withdrawalCredentials: breq.withdrawal_credentials,
-      amount: breq.amount,
-      signature: breq.signature,
-      index: breq.index,
+    executionPayload.depositRequests = payload.deposit_requests.map((beaconRequest) => ({
+      pubkey: beaconRequest.pubkey,
+      withdrawalCredentials: beaconRequest.withdrawal_credentials,
+      amount: beaconRequest.amount,
+      signature: beaconRequest.signature,
+      index: beaconRequest.index,
     }))
   }
   if (payload.withdrawal_requests !== undefined && payload.withdrawal_requests !== null) {
-    executionPayload.withdrawalRequests = payload.withdrawal_requests.map((breq) => ({
-      sourceAddress: breq.source_address,
-      validatorPubkey: breq.validator_pubkey,
-      amount: breq.amount,
+    executionPayload.withdrawalRequests = payload.withdrawal_requests.map((beaconRequest) => ({
+      sourceAddress: beaconRequest.source_address,
+      validatorPubkey: beaconRequest.validator_pubkey,
+      amount: beaconRequest.amount,
     }))
   }
   if (payload.consolidation_requests !== undefined && payload.consolidation_requests !== null) {
-    executionPayload.consolidationRequests = payload.consolidation_requests.map((breq) => ({
-      sourceAddress: breq.source_address,
-      sourcePubkey: breq.source_pubkey,
-      targetPubkey: breq.target_pubkey,
-    }))
+    executionPayload.consolidationRequests = payload.consolidation_requests.map(
+      (beaconRequest) => ({
+        sourceAddress: beaconRequest.source_address,
+        sourcePubkey: beaconRequest.source_pubkey,
+        targetPubkey: beaconRequest.target_pubkey,
+      }),
+    )
   }
 
   if (payload.execution_witness !== undefined && payload.execution_witness !== null) {

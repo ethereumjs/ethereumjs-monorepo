@@ -23,7 +23,7 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
     commonJson.config = { ...commonJson.config, chainId: 4844001005 }
     const network = 'sharding'
     common = createCommonFromGethGenesis(commonJson, { chain: network, customCrypto: { kzg } })
-    // safely change chainId without modifying undelying json
+    // safely change chainId without modifying underlying json
 
     common.setHardfork(Hardfork.Cancun)
   })
@@ -86,7 +86,7 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
 describe('[fromExecutionPayloadJson]: kaustinen', () => {
   const network = 'kaustinen'
 
-  // safely change chainId without modifying undelying json
+  // safely change chainId without modifying underlying json
   const common = createCommonFromGethGenesis(testnetVerkleKaustinen, {
     chain: network,
     eips: [6800],

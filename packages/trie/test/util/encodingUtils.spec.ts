@@ -69,7 +69,7 @@ describe('encoding', () => {
   })
 
   it('should return the correct hex-encoded key in "hex" encoding', () => {
-    const path = 'aabbcc'
+    const path = 'aabbcc' // cspell:disable-line
     const extension: Nibbles = [10, 11, 12]
     const result = pathToHexKey(path, extension, 'hex')
 

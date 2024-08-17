@@ -293,8 +293,8 @@ describe('[Common]: Hardfork logic', () => {
         istanbulBlock: 0,
         muirGlacierBlock: 0,
         berlinBlock: 0,
-        yolov2Block: 0,
-        yolov3Block: 0,
+        yolov2Block: 0, // cspell:disable-line
+        yolov3Block: 0, // cspell:disable-line
         londonBlock: 0,
         mergeForkBlock: 0,
         terminalTotalDifficulty: 0,
@@ -318,7 +318,7 @@ describe('[Common]: Hardfork logic', () => {
     const zeroCommonShanghaiFork = zeroCommon.forkHash(Hardfork.Shanghai, genesisHash)
     const zeroCommonCancunFork = zeroCommon.forkHash(Hardfork.Shanghai, genesisHash)
 
-    // Ensure that Shangai fork + Cancun fork have equal forkhash
+    // Ensure that Shanghai fork + Cancun fork have equal forkhash
     assert.equal(zeroCommonShanghaiFork, zeroCommonCancunFork)
 
     // Set the cancun time to the genesis block time (this should not change the forkHash)

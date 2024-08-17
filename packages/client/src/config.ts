@@ -276,7 +276,7 @@ export interface ConfigOptions {
 
   /**
    * If there is a reorg, this is a safe distance from which
-   * to try to refetch and refeed the blocks.
+   * to try to refetch and re-feed the blocks.
    */
   safeReorgDistance?: number
 
@@ -386,7 +386,7 @@ export class Config {
 
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
   // engine new payload calls can come in batch of 64, keeping 128 as the lookup factor
-  public static readonly ENGINE_PARENTLOOKUP_MAX_DEPTH = 128
+  public static readonly ENGINE_PARENT_LOOKUP_MAX_DEPTH = 128
   public static readonly ENGINE_NEWPAYLOAD_MAX_EXECUTE = 2
   public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 200
   public static readonly SNAP_AVAILABILITY_DEPTH = BigInt(128)
@@ -454,7 +454,7 @@ export class Config {
   public readonly initialVerkleStateRoot: Uint8Array
 
   public synchronized: boolean
-  public lastsyncronized?: boolean
+  public lastSynchronized?: boolean
   /** lastSyncDate in ms */
   public lastSyncDate: number
   /** Best known block height */
@@ -527,7 +527,7 @@ export class Config {
     this.syncedStateRemovalPeriod =
       options.syncedStateRemovalPeriod ?? Config.SYNCED_STATE_REMOVAL_PERIOD
     this.engineParentLookupMaxDepth =
-      options.engineParentLookupMaxDepth ?? Config.ENGINE_PARENTLOOKUP_MAX_DEPTH
+      options.engineParentLookupMaxDepth ?? Config.ENGINE_PARENT_LOOKUP_MAX_DEPTH
     this.engineNewpayloadMaxExecute =
       options.engineNewpayloadMaxExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_EXECUTE
     this.engineNewpayloadMaxTxsExecute =
@@ -628,7 +628,7 @@ export class Config {
       }
     }
 
-    if (this.synchronized !== this.lastsyncronized) {
+    if (this.synchronized !== this.lastSynchronized) {
       this.logger.debug(
         `Client synchronized=${this.synchronized}${
           latest !== null && latest !== undefined ? ' height=' + latest.number : ''
@@ -636,7 +636,7 @@ export class Config {
           (Date.now() - this.lastSyncDate) / 1000
         } secs ago`,
       )
-      this.lastsyncronized = this.synchronized
+      this.lastSynchronized = this.synchronized
     }
   }
 

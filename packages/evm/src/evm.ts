@@ -303,13 +303,13 @@ export class EVM implements EVMInterface {
         if (gasLimit < BIGINT_0) {
           if (this.DEBUG) {
             debugGas(
-              `Proof of absense access charged(${absenceProofAccessGas}) caused OOG (-> ${gasLimit})`,
+              `Proof of absence access charged(${absenceProofAccessGas}) caused OOG (-> ${gasLimit})`,
             )
           }
           return { execResult: OOGResult(message.gasLimit) }
         } else {
           if (this.DEBUG) {
-            debugGas(`Proof of absense access used (${absenceProofAccessGas} gas (-> ${gasLimit}))`)
+            debugGas(`Proof of absence access used (${absenceProofAccessGas} gas (-> ${gasLimit}))`)
           }
         }
       }

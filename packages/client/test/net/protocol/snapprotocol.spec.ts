@@ -153,7 +153,7 @@ describe('[SnapProtocol]', () => {
     assert.ok(equalsBytes(accountFull[3], KECCAK256_NULL), 'codeHash should be KECCAK256_NULL')
 
     // Lets encode fullData as it should be encoded in slim format and upon decoding
-    // we shpuld get slim format
+    // we should get slim format
     const slimPayload = pFull.encode(
       pFull.messages.filter((message) => message.name === 'AccountRange')[0],
       fullData,

@@ -107,7 +107,7 @@ export class DBManager {
     let body = await this.getBody(hash, number)
 
     // be backward compatible where we didn't use to store a body with no txs, uncles, withdrawals
-    // otherwise the body is never partially stored and if we have some body, its in entirity
+    // otherwise the body is never partially stored and if we have some body, its in entirety
     if (body === undefined) {
       body = [[], []] as BlockBodyBytes
       // Do extra validations on the header since we are assuming empty transactions and uncles

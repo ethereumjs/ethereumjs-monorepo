@@ -75,7 +75,7 @@ export class Admin {
    * @returns an array of objects containing information about peers (including id, eth protocol versions supported, client name, etc.)
    */
   async peers() {
-    const peers = this._client.services.filter((serv) => serv.name === 'eth')[0]?.pool
+    const peers = this._client.services.filter((service) => service.name === 'eth')[0]?.pool
       .peers as RlpxPeer[]
 
     return peers?.map((peer) => {

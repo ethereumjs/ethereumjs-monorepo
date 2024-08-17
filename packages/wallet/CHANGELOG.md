@@ -52,7 +52,7 @@ The wallet library has now also been integrated into the EthereumJS monorepo, se
 
 ### Removed default Exports
 
-All default exports for the libraries have been removed since these cause reoccuring import problems under certain build and usage conditions.
+All default exports for the libraries have been removed since these cause reoccurring import problems under certain build and usage conditions.
 
 So imports needs to be updated as follows:
 
@@ -231,7 +231,7 @@ See also: PR [#117](https://github.com/ethereumjs/ethereumjs-wallet/pull/117)
 - Updated `ethereumjs-util` dependency from `v6` to
   [v7.0.2](https://github.com/ethereumjs/ethereumjs-util/releases/tag/v7.0.2 (stricter types),
   PR [#126](https://github.com/ethereumjs/ethereumjs-wallet/pull/126)
-- Refactored `Wallet.deciperBuffer()`,
+- Refactored `Wallet.deciperBuffer()`, <!-- cspell:disable-line -->
   PR [#82](https://github.com/ethereumjs/ethereumjs-wallet/pull/82)
 
 #### Development & CI
@@ -313,7 +313,7 @@ Change Summary:
 
 - Support HD keys using `cryptocoinjs/hdkey`
 - Ensure private keys are valid according to the curve
-- Support instantation with public keys
+- Support instantiation with public keys
 - Support importing BIP32 xpub/xpriv
 - Only support Ethereum keys internally, non-strict mode for importing compressed ones
 - Thirdparty API doc improvements

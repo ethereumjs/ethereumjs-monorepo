@@ -449,7 +449,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       balance: typeof balanceRaw === 'string' ? bytesToBigInt(hexToBytes(balanceRaw), true) : null,
       nonce: typeof nonceRaw === 'string' ? bytesToBigInt(hexToBytes(nonceRaw), true) : null,
       codeHash: typeof codeHashRaw === 'string' ? hexToBytes(codeHashRaw) : null,
-      // if codeSizeRaw is null, it means account didnt exist or it was EOA either way codeSize is 0
+      // if codeSizeRaw is null, it means account didn't exist or it was EOA either way codeSize is 0
       // if codeSizeRaw is undefined, then we pass in null which in our context of partial account means
       // not specified
       codeSize:

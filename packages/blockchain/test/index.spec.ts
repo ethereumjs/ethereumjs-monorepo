@@ -444,11 +444,11 @@ describe('blockchain test', () => {
       calcDifficultyFromHeader: blocks[14].header,
     })
 
-    blockchain._heads['staletest'] = blockchain._headHeaderHash
+    blockchain._heads['staleTest'] = blockchain._headHeaderHash
 
     await blockchain.putHeader(forkHeader)
 
-    assert.deepEqual(blockchain._heads['staletest'], blocks[14].hash(), 'should update stale head')
+    assert.deepEqual(blockchain._heads['staleTest'], blocks[14].hash(), 'should update stale head')
     assert.deepEqual(blockchain._headBlockHash, blocks[14].hash(), 'should update stale headBlock')
   })
 
@@ -469,11 +469,11 @@ describe('blockchain test', () => {
       calcDifficultyFromHeader: blocks[14].header,
     })
 
-    blockchain._heads['staletest'] = blockchain._headHeaderHash
+    blockchain._heads['staleTest'] = blockchain._headHeaderHash
 
     await blockchain.putHeader(forkHeader)
 
-    assert.deepEqual(blockchain._heads['staletest'], blocks[14].hash(), 'should update stale head')
+    assert.deepEqual(blockchain._heads['staleTest'], blocks[14].hash(), 'should update stale head')
     assert.deepEqual(blockchain._headBlockHash, blocks[14].hash(), 'should update stale headBlock')
 
     await blockchain.delBlock(forkHeader.hash())
@@ -537,7 +537,7 @@ describe('blockchain test', () => {
     await blockchain.putHeader(block2Header)
     try {
       await blockchain.getBlock(BigInt(2))
-      assert.fail('block should not be constucted')
+      assert.fail('block should not be constructed')
     } catch (e: any) {
       assert.equal(
         e.message,

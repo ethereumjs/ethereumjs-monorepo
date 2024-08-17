@@ -62,7 +62,7 @@ export class BlockBuilder {
   blobGasUsed = BIGINT_0
   /**
    * Value of the block, represented by the final transaction fees
-   * acruing to the miner.
+   * accruing to the miner.
    */
   private _minerValue = BIGINT_0
 

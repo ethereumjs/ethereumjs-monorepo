@@ -17,7 +17,7 @@ import {
   createLegacyTxFromRLP,
 } from '../src/index.js'
 
-import txFixturesEip155 from './json/ttTransactionTestEip155VitaliksTests.json'
+import txFixturesEip155 from './json/ttTransactionTestEip155VitaliksTests.json' // cspell:disable-line
 import txFixtures from './json/txs.json'
 
 import type { TransactionType, TxData, TypedTransaction } from '../src/index.js'
@@ -62,7 +62,7 @@ describe('[Transaction]', () => {
     const nonEIP2930Common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     assert.ok(
       createLegacyTx({}, { common: nonEIP2930Common }),
-      'should initialize on a pre-Berlin Harfork (EIP-2930 not activated)',
+      'should initialize on a pre-Berlin Hardfork (EIP-2930 not activated)',
     )
     let common = new Common({ chain: Goerli })
     const txData = txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))

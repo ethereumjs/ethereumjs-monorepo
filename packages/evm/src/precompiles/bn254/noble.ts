@@ -69,7 +69,7 @@ function toFrPoint(input: Uint8Array): bigint {
  * @returns Noble G2 point
  */
 function toG2Point(input: Uint8Array): any {
-  // TODO: remove any type, temporary fix due to conflicing @noble/curves versions
+  // TODO: remove any type, temporary fix due to conflicting @noble/curves versions
   if (equalsBytes(input, G2_INFINITY_POINT_BYTES)) {
     return bn254.G2.ProjectivePoint.ZERO
   }

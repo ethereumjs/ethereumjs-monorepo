@@ -8,7 +8,7 @@ import { createEVM, validateEOF } from '../src/index.js'
  * This script reads hex strings (either prefixed or non-prefixed with 0x) from stdin
  * It tries to validate the EOF container, if it is valid, it will print "OK"
  * If there is a validation error, it will print "err: <REASON>"
- * If the input is emtpy, the program will exit
+ * If the input is empty, the program will exit
  */
 
 const common = new Common({ chain: Mainnet })

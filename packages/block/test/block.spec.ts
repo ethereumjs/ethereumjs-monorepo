@@ -24,7 +24,7 @@ import {
   paramsBlock,
 } from '../src/index.js'
 
-import * as testDataGenesis from './testdata/genesishashestest.json'
+import * as testDataGenesis from './testdata/genesisHashesTest.json'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
 import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
@@ -303,7 +303,7 @@ describe('[Block]: block functions', () => {
     )
     await checkThrowsAsync(block.validateData(false, false), 'invalid uncle hash')
 
-    // Verkle withness
+    // Verkle witness
     const common = new Common({ chain: Mainnet, eips: [6800], hardfork: Hardfork.Cancun })
     // Note: `executionWitness: undefined` will still initialize an execution witness in the block
     // So, only testing for `null` here

@@ -529,7 +529,7 @@ describe('Network wrapper tests', () => {
         }),
       'commitment for blob at index 0 does not match versionedHash',
       undefined,
-      'throws when versioned hashes dont match kzg commitments',
+      "throws when versioned hashes don't match kzg commitments",
     )
   })
 })

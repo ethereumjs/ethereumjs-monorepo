@@ -496,7 +496,7 @@ export async function accumulateParentBlockHash(
   const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('historyStorageAddress')))
   const historyServeWindow = vm.common.param('historyServeWindow')
 
-  // getAccount with historyAddress will throw error as witnesses are not bundeled
+  // getAccount with historyAddress will throw error as witnesses are not bundled
   // but we need to put account so as to query later for slot
   try {
     if ((await vm.stateManager.getAccount(historyAddress)) === undefined) {
@@ -542,7 +542,7 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
 
   /**
    * Note: (by Jochem)
-   * If we don't do vm (put account if undefined / non-existant), block runner crashes because the beacon root address does not exist
+   * If we don't do vm (put account if undefined / non-existent), block runner crashes because the beacon root address does not exist
    * vm is hence (for me) again a reason why it should /not/ throw if the address does not exist
    * All ethereum accounts have empty storage by default
    */

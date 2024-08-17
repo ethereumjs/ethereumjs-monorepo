@@ -208,7 +208,7 @@ describe('testing checkpoints', () => {
     const KEY = utf8ToBytes('last_block_height')
     const KEY_ROOT = keccak256(ROOT_DB_KEY)
 
-    // Initialise State
+    // Initialize State
     const CommittedState = await createTrie({
       useKeyHashing: true,
       useNodePruning: true,

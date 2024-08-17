@@ -240,10 +240,10 @@ export function runNetwork(
       throw Error('network is killed before end of test')
     }
     console.log('Killing network process', runProc.pid)
-    execSync(`pkill -15 -P ${runProc.pid}`)
+    execSync(`pkill -15 -P ${runProc.pid}`) // cspell:disable-line pkill
     if (peerRunProc !== undefined) {
       console.log('Killing peer network process', peerRunProc.pid)
-      execSync(`pkill -15 -P ${peerRunProc.pid}`)
+      execSync(`pkill -15 -P ${peerRunProc.pid}`) // cspell:disable-line pkill
     }
     // Wait for the P2P to be offline
     await waitForELOffline()
@@ -608,7 +608,7 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
   }
 }
 
-// To minimise noise on the spec run, selective filteration is applied to let the important events
+// To minimize noise on the spec run, selective filtering is applied to let the important events
 // of the testnet log to show up in the spec log
 export const filterKeywords = [
   'warn',

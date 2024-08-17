@@ -281,7 +281,9 @@ export class Interpreter {
         opCode = this._runState.code[programCounter]
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
         if (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e) {
-          const { jumps, pushes, opcodesCached } = this._getValidJumpDests(this._runState.code)
+          const { jumps, pushes, opcodesCached } = this._getValidJumpDestinations(
+            this._runState.code,
+          )
           this._runState.validJumps = jumps
           this._runState.cachedPushes = pushes
           this._runState.shouldDoJumpAnalysis = false
@@ -294,7 +296,7 @@ export class Interpreter {
       }
 
       // if its an invalid opcode with verkle activated, then check if its because of a missing code
-      // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcod
+      // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcode
       if (
         opCode === 0xfe &&
         this.common.isActivatedEIP(6800) &&
@@ -500,7 +502,7 @@ export class Interpreter {
   }
 
   // Returns all valid jump and jumpsub destinations.
-  _getValidJumpDests(code: Uint8Array) {
+  _getValidJumpDestinations(code: Uint8Array) {
     const jumps = new Uint8Array(code.length).fill(0)
     const pushes: { [pc: number]: bigint } = {}
 
@@ -534,13 +536,13 @@ export class Interpreter {
   useGas(amount: bigint, context?: string | Opcode): void {
     this._runState.gasLeft -= amount
     if (this._evm.DEBUG) {
-      let tstr = ''
+      let tempString = ''
       if (typeof context === 'string') {
-        tstr = context + ': '
+        tempString = context + ': '
       } else if (context !== undefined) {
-        tstr = `${context.name} fee: `
+        tempString = `${context.name} fee: `
       }
-      debugGas(`${tstr}used ${amount} gas (-> ${this._runState.gasLeft})`)
+      debugGas(`${tempString}used ${amount} gas (-> ${this._runState.gasLeft})`)
     }
     if (this._runState.gasLeft < BIGINT_0) {
       this._runState.gasLeft = BIGINT_0
