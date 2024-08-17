@@ -1,3 +1,4 @@
+import type { OptimisticOpts } from './db/operation.js'
 import type { Blockchain } from './index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Common, ConsensusAlgorithm } from '@ethereumjs/common'
@@ -16,7 +17,7 @@ export interface BlockchainInterface {
    *
    * @param block - The block to be added to the blockchain.
    */
-  putBlock(block: Block): Promise<void>
+  putBlock(block: Block, optimisticOpts?: OptimisticOpts): Promise<void>
 
   /**
    * Deletes a block from the blockchain. All child blocks in the chain are
@@ -29,7 +30,7 @@ export interface BlockchainInterface {
   /**
    * Returns a block by its hash or number.
    */
-  getBlock(blockId: Uint8Array | number | bigint): Promise<Block>
+  getBlock(blockId: Uint8Array | number | bigint, optimisticOpts?: OptimisticOpts): Promise<Block>
 
   /**
    * Iterates through blocks starting at the specified iterator head and calls

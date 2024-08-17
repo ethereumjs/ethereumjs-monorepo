@@ -12,7 +12,7 @@ import {
 import { Cache } from './cache.js'
 import { DBOp, DBTarget } from './operation.js'
 
-import type { DatabaseKey } from './operation.js'
+import type { DatabaseKey, OptimisticOpts } from './operation.js'
 import type { Block, BlockBodyBytes, BlockBytes, BlockOptions } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { BatchDBOp, DB, DBObject, DelBatch, PutBatch } from '@ethereumjs/util'
@@ -47,6 +47,7 @@ export class DBManager {
       body: new Cache({ max: 256 }),
       numberToHash: new Cache({ max: 2048 }),
       hashToNumber: new Cache({ max: 2048 }),
+      optimisticNumberToHash: new Cache({ max: 2048 }),
     }
   }
 
@@ -86,7 +87,7 @@ export class DBManager {
    */
   async getBlock(
     blockId: Uint8Array | bigint | number,
-    optimistic: boolean = false,
+    optimisticOpts?: OptimisticOpts,
   ): Promise<Block | undefined> {
     if (typeof blockId === 'number' && Number.isInteger(blockId)) {
       blockId = BigInt(blockId)
@@ -98,13 +99,30 @@ export class DBManager {
     if (blockId instanceof Uint8Array) {
       hash = blockId
       number = await this.hashToNumber(blockId)
+      if (number === undefined) {
+        return undefined
+      }
+
+      if (optimisticOpts?.fcUed === true) {
+        let optimisticHash = await this.optimisticNumberToHash(number)
+        if (optimisticHash === undefined && optimisticOpts.linked === true) {
+          optimisticHash = await this.numberToHash(number)
+        }
+        if (optimisticHash === undefined || !equalsBytes(optimisticHash, hash)) {
+          return undefined
+        }
+      }
     } else if (typeof blockId === 'bigint') {
       number = blockId
-      if (optimistic) {
+      if (optimisticOpts !== undefined) {
+        if (!optimisticOpts.fcUed) {
+          throw Error(`Invalid fcUed optimistic block by number lookup`)
+        }
         hash = await this.optimisticNumberToHash(blockId)
-      }
-      // hash will be undefined if it no optimistic lookup was done or if that was not successful
-      if (hash === undefined) {
+        if (hash === undefined && optimisticOpts.linked === true) {
+          hash = await this.numberToHash(blockId)
+        }
+      } else {
         hash = await this.numberToHash(blockId)
       }
     } else {

@@ -14,6 +14,8 @@ import {
 
 import type { CacheMap } from './manager.js'
 
+export type OptimisticOpts = { fcUed: boolean; linked?: boolean }
+
 export enum DBTarget {
   Heads,
   HeadHeader,

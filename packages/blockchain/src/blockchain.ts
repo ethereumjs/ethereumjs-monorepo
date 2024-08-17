@@ -25,6 +25,7 @@ import {
 import { DBManager } from './db/manager.js'
 import { DBTarget } from './db/operation.js'
 
+import type { OptimisticOpts } from './db/operation.js'
 import type {
   BlockchainEvents,
   BlockchainInterface,
@@ -272,8 +273,8 @@ export class Blockchain implements BlockchainInterface {
    * heads/hashes are overwritten.
    * @param block - The block to be added to the blockchain
    */
-  async putBlock(block: Block, optimistic: boolean = false) {
-    await this._putBlockOrHeader(block, optimistic)
+  async putBlock(block: Block, opts?: OptimisticOpts) {
+    await this._putBlockOrHeader(block, opts)
   }
 
   /**
@@ -344,7 +345,7 @@ export class Blockchain implements BlockchainInterface {
    * header using the iterator method.
    * @hidden
    */
-  private async _putBlockOrHeader(item: Block | BlockHeader, optimistic: boolean = false) {
+  private async _putBlockOrHeader(item: Block | BlockHeader, optimisticOpts?: OptimisticOpts) {
     await this.runWithLock<void>(async () => {
       // Save the current sane state incase _putBlockOrHeader midway with some
       // dirty changes in head trackers
@@ -362,13 +363,13 @@ export class Blockchain implements BlockchainInterface {
         if (isGenesis) {
           if (equalsBytes(this.genesisBlock.hash(), block.hash())) {
             // Try to re-put the existing genesis block, accept this
-            optimistic = false
+            // genesis block is not optimistic
+            optimisticOpts = undefined
             return
           }
           throw new Error(
             'Cannot put a different genesis block than current blockchain genesis: create a new Blockchain',
           )
-          // genesis block is not optimistic
         }
 
         if (block.common.chainId() !== this.common.chainId()) {
@@ -377,12 +378,12 @@ export class Blockchain implements BlockchainInterface {
           )
         }
 
-        if (this._validateBlocks && !isGenesis && item instanceof Block) {
+        if (this._validateBlocks && !isGenesis && item instanceof Block && optimisticOpts === undefined) {
           // this calls into `getBlock`, which is why we cannot lock yet
           await this.validateBlock(block)
         }
 
-        if (this._validateConsensus) {
+        if (this._validateConsensus && optimisticOpts === undefined) {
           await this.consensus!.validateConsensus(block)
         }
 
@@ -397,20 +398,20 @@ export class Blockchain implements BlockchainInterface {
           if (!block.isGenesis()) {
             td += parentTd
           }
-          // since its linked its no more optimistic
-          optimistic = false
         } catch (e) {
           // opimistic insertion does care about td
-          if (!optimistic) {
+          if (optimisticOpts === undefined) {
             throw e
           }
         }
 
         let dbOps: DBOp[] = []
-        if (optimistic) {
+        if (optimisticOpts !== undefined) {
           dbOps = dbOps.concat(DBSetBlockOrHeader(item))
           dbOps.push(DBSetHashToNumber(blockHash, blockNumber))
-          dbOps.push(DBOp.set(DBTarget.OptimisticNumberToHash, blockHash, { blockNumber }))
+          if (optimisticOpts.fcUed) {
+            dbOps.push(DBOp.set(DBTarget.OptimisticNumberToHash, blockHash, { blockNumber }))
+          }
           await this.dbManager.batch(dbOps)
         } else {
           const currentTd = { header: BIGINT_0, block: BIGINT_0 }
@@ -676,13 +677,16 @@ export class Blockchain implements BlockchainInterface {
    * this will be immediately looked up, otherwise it will wait until we have
    * unlocked the DB
    */
-  async getBlock(blockId: Uint8Array | number | bigint): Promise<Block> {
+  async getBlock(
+    blockId: Uint8Array | number | bigint,
+    optimisticOpts?: OptimisticOpts,
+  ): Promise<Block> {
     // cannot wait for a lock here: it is used both in `validate` of `Block`
     // (calls `getBlock` to get `parentHash`) it is also called from `runBlock`
     // in the `VM` if we encounter a `BLOCKHASH` opcode: then a bigint is used we
     // need to then read the block from the canonical chain Q: is this safe? We
     // know it is OK if we call it from the iterator... (runBlock)
-    const block = await this.dbManager.getBlock(blockId)
+    const block = await this.dbManager.getBlock(blockId, optimisticOpts)
 
     if (block === undefined) {
       if (typeof blockId === 'object') {
