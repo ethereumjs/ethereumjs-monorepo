@@ -22,14 +22,6 @@ jobs:
   test-block:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-          
-      - uses: actions/cache/restore@v4
-        id: dep-cache
-        with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
-      
       - uses: actions/cache/restore@v4
         id: submodules-cache
         with:
@@ -43,6 +35,14 @@ jobs:
           submodules: recursive
           fetch-depth: 0          # Fetch all history for submodules
           path: '/dev/null'       # Discard the main repository checkout
+      
+      - uses: actions/checkout@v4
+          
+      - uses: actions/cache/restore@v4
+        id: dep-cache
+        with:
+          path: ${{github.workspace}}
+          key: ${{ inputs.dep-cache-key }}
   
       - name: Use Node.js 20
         uses: actions/setup-node@v4
