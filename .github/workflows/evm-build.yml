@@ -5,6 +5,9 @@ on:
       dep-cache-key:
         required: true
         type: string
+      submodule-cache-key:
+        required: true
+        type: string
   workflow_dispatch:
 
 env:
@@ -46,7 +49,7 @@ jobs:
         id: submodules-cache
         with:
           path: ${{github.workspace}}/packages/ethereum-tests
-          key: ethereum-tests-${{ github.run_id }}
+          key: ${{ inputs.submodule-cache-key }}
 
       - name: Check if ethereum-tests is present (if not, fail)
         if: steps.submodules-cache.outputs.cache-hit != 'true'

@@ -20,14 +20,25 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
-      - uses: actions/cache/save@v4
-        id: submodules-cache
+      - id: create-cache-key
+        run: echo "submodule-cache-key=$(git submodule)" >> $GITHUB_OUTPUT
+        
+      - uses: actions/cache/restore@v4
+        id: submodules-cache-restore
+        with:
+          key: ${{ steps.create-cache-key.outputs.submodule-cache-key}}
+          path: ${{github.workspace}}/packages/ethereum-tests
+
+      - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        id: submodule-cache-save
         with:
           path: ${{github.workspace}}/packages/ethereum-tests
-          key: ethereum-tests-${{ github.run_id }}
+          key: ${{ steps.create-cache-key.outputs.submodule-cache-key}}
+      
+    outputs: 
+      submodule-cache-key: ${{ steps.create-cache-key.outputs.submodule-cache-key}}
 
   build:
     runs-on: ubuntu-latest
@@ -70,6 +81,7 @@ jobs:
     uses: ./.github/workflows/block-build.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
   
   blockchain:
     needs: build
@@ -82,6 +94,7 @@ jobs:
     uses: ./.github/workflows/browser.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
 
   client:
     needs: build
@@ -112,6 +125,7 @@ jobs:
     uses: ./.github/workflows/evm-build.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
 
   examples:
     needs: build
@@ -148,6 +162,7 @@ jobs:
     uses: ./.github/workflows/tx-build.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
 
   util:
     needs: build
@@ -166,12 +181,14 @@ jobs:
     uses: ./.github/workflows/vm-build.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
 
   vm-pr:
     needs: [build, checkout-submodules]
     uses: ./.github/workflows/vm-pr.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
 
   wallet:
     needs: build
