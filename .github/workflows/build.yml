@@ -20,6 +20,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - id: create-cache-key
         run: echo "submodule-cache-key=$(git submodule)" >> $GITHUB_OUTPUT
