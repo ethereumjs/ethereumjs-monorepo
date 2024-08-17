@@ -283,7 +283,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
 })
 
 describe.only('test EIP-7702 opcodes', () => {
-  it('should correctly report EXTCODE* opcodes', async () => {
+  it('should correctly report EXTCODESIZE/EXTCODEHASH/EXTCODECOPY opcodes', async () => {
     // extcodesize and extcodehash
     const deploymentAddress = createZeroAddress()
     const randomCode = hexToBytes('0x010203040506')
