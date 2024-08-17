@@ -41,6 +41,8 @@ jobs:
         uses: actions/checkout@v4
         with: 
           submodules: recursive
+          fetch-depth: 0          # Fetch all history for submodules
+          path: '/dev/null'       # Discard the main repository checkout
   
       - name: Use Node.js 20
         uses: actions/setup-node@v4
