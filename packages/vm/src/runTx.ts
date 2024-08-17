@@ -1,4 +1,4 @@
-import { cliqueSigner, createBlock } from '@ethereumjs/block'
+import { cliqueSigner, createEmptyBlock } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Blob4844Tx, Capability, isBlob4844Tx } from '@ethereumjs/tx'
@@ -81,7 +81,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // create a reasonable default if no block is given
-  opts.block = opts.block ?? createBlock({}, { common: vm.common })
+  opts.block = opts.block ?? createEmptyBlock({}, { common: vm.common })
 
   if (opts.skipHardForkValidation !== true) {
     // If block and tx don't have a same hardfork, set tx hardfork to block

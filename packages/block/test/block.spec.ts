@@ -20,6 +20,7 @@ import {
   createBlockFromBytesArray,
   createBlockFromRLPSerializedBlock,
   createBlockFromRPC,
+  createEmptyBlock,
   paramsBlock,
 } from '../src/index.js'
 
@@ -45,6 +46,9 @@ describe('[Block]: block functions', () => {
       BigInt(3000),
       'should use custom parameters provided',
     )
+
+    const emptyBlock = createEmptyBlock({}, { common })
+    assert.ok(bytesToHex(emptyBlock.hash()), 'block should initialize')
 
     // test default freeze values
     // also test if the options are carried over to the constructor
