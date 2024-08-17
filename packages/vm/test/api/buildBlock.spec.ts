@@ -13,7 +13,7 @@ import {
   createCommonFromGethGenesis,
 } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
-import { create1559FeeMarketTx, createLegacyTx } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   Address,
   concatBytes,
@@ -340,7 +340,7 @@ describe('BlockBuilder', () => {
       { common, freeze: false },
     ).sign(privateKey)
 
-    const tx2 = create1559FeeMarketTx(
+    const tx2 = createFeeMarket1559Tx(
       { to: createZeroAddress(), value: 1000, gasLimit: 21000, maxFeePerGas: 10 },
       { common, freeze: false },
     ).sign(privateKey)
@@ -363,7 +363,7 @@ describe('BlockBuilder', () => {
       { common, freeze: false },
     ).sign(privateKey)
 
-    const tx4 = create1559FeeMarketTx(
+    const tx4 = createFeeMarket1559Tx(
       { to: createZeroAddress(), value: 1000, gasLimit: 21000, maxFeePerGas: 101, nonce: 1 },
       { common, freeze: false },
     ).sign(privateKey)

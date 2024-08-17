@@ -1,7 +1,7 @@
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
+import { Blob4844Tx, Capability } from '@ethereumjs/tx'
 import {
   BIGINT_0,
   CLRequestType,
@@ -12,8 +12,6 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } from './helpers.js'
-
 /* eslint-disable */
 // This is to allow for a proper and linked collection of constructors for the class header.
 // For tree shaking/code size this should be no problem since types go away on transpilation.
@@ -21,6 +19,9 @@ import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } 
 // See: https://github.com/microsoft/TypeScript/issues/47558
 // (situation will eventually improve on Typescript and/or Eslint update)
 import {
+  genRequestsTrieRoot,
+  genTransactionsTrieRoot,
+  genWithdrawalsTrieRoot,
   BlockHeader,
   type createBlockFromBeaconPayloadJson,
   type createBlock,
@@ -28,16 +29,12 @@ import {
   type createBlockFromJsonRpcProvider,
   type createBlockFromRLPSerializedBlock,
   type createBlockFromRPC,
-  type createBlockFromValuesArray,
-} from './index.js'
+  type createBlockFromBytesArray,
+} from '../index.js'
 /* eslint-enable */
-import type { BlockBytes, BlockOptions, ExecutionPayload, JsonBlock } from './types.js'
+import type { BlockBytes, BlockOptions, ExecutionPayload, JsonBlock } from '../types.js'
 import type { Common } from '@ethereumjs/common'
-import type {
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-  TypedTransaction,
-} from '@ethereumjs/tx'
+import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
 import type {
   CLRequest,
   ConsolidationRequest,
@@ -56,7 +53,7 @@ import type {
  * (separate from the Block class to allow for tree shaking):
  *
  * - {@link createBlock }
- * - {@link createBlockFromValuesArray }
+ * - {@link createBlockFromBytesArray }
  * - {@link createBlockFromRLPSerializedBlock }
  * - {@link createBlockFromRPC }
  * - {@link createBlockFromJsonRpcProvider }
@@ -283,12 +280,12 @@ export class Block {
       const errs = tx.getValidationErrors()
       if (this.common.isActivatedEIP(1559)) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
-          tx = tx as FeeMarketEIP1559Transaction
+          tx = tx as FeeMarket1559Tx
           if (tx.maxFeePerGas < this.header.baseFeePerGas!) {
             errs.push('tx unable to pay base fee (EIP-1559 tx)')
           }
         } else {
-          tx = tx as LegacyTransaction
+          tx = tx as LegacyTx
           if (tx.gasPrice < this.header.baseFeePerGas!) {
             errs.push('tx unable to pay base fee (non EIP-1559 tx)')
           }
@@ -297,7 +294,7 @@ export class Block {
       if (this.common.isActivatedEIP(4844)) {
         const blobGasLimit = this.common.param('maxblobGasPerBlock')
         const blobGasPerBlob = this.common.param('blobGasPerBlob')
-        if (tx instanceof BlobEIP4844Transaction) {
+        if (tx instanceof Blob4844Tx) {
           blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
           if (blobGasUsed > blobGasLimit) {
             errs.push(
@@ -413,7 +410,7 @@ export class Block {
       let blobGasPrice
 
       for (const tx of this.transactions) {
-        if (tx instanceof BlobEIP4844Transaction) {
+        if (tx instanceof Blob4844Tx) {
           blobGasPrice = blobGasPrice ?? this.header.getBlobGasPrice()
           if (tx.maxFeePerBlobGas < blobGasPrice) {
             throw new Error(
@@ -535,6 +532,12 @@ export class Block {
     }
   }
 
+  /**
+   * Maps the block properties to the execution payload structure from the beacon chain,
+   * see https://github.com/ethereum/consensus-specs/blob/dev/specs/bellatrix/beacon-chain.md#ExecutionPayload
+   *
+   * @returns dict with the execution payload parameters with camel case naming
+   */
   toExecutionPayload(): ExecutionPayload {
     const blockJson = this.toJSON()
     const header = blockJson.header!

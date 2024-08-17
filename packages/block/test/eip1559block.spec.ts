@@ -1,9 +1,9 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { create1559FeeMarketTx } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlock, createBlockHeader } from '../src/constructors.js'
+import { createBlock, createBlockHeader } from '../src/index.js'
 // Test data from Besu (retrieved via Discord)
 // Older version at https://github.com/abdelhamidbakhta/besu/blob/bf54b6c0b40d3015fc85ff9b078fbc26592d80c0/ethereum/core/src/test/resources/org/hyperledger/besu/ethereum/core/fees/basefee-test.json
 import { paramsBlock } from '../src/params.js'
@@ -408,7 +408,7 @@ describe('EIP1559 tests', () => {
   })
 
   it('Header -> validateTransactions() -> tx', async () => {
-    const transaction = create1559FeeMarketTx(
+    const transaction = createFeeMarket1559Tx(
       {
         maxFeePerGas: BigInt(0),
         maxPriorityFeePerGas: BigInt(0),

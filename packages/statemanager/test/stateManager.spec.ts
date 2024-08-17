@@ -11,6 +11,7 @@ import {
   intToBytes,
   setLengthLeft,
   utf8ToBytes,
+  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -41,6 +42,17 @@ describe('StateManager -> General', () => {
     assert.deepEqual(sm['_trie'].root(), KECCAK256_RLP, 'it has default root')
     const res = await sm.getStateRoot()
     assert.deepEqual(res, KECCAK256_RLP, 'it has default root')
+  })
+
+  it('should not throw on getContractStorage() on non-existing accounts', async () => {
+    const sm = new DefaultStateManager()
+
+    try {
+      const storage = await sm.getStorage(createZeroAddress(), zeros(32))
+      assert.ok(equalsBytes(storage, new Uint8Array()))
+    } catch {
+      assert.fail('should not throw')
+    }
   })
 
   it(`should clear contract storage`, async () => {

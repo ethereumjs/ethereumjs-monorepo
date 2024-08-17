@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { create4844BlobTx } from '@ethereumjs/tx'
+import { createBlob4844Tx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
 
@@ -31,7 +31,7 @@ const main = async () => {
     blobsData: ['abcd'],
   }
 
-  const tx = create4844BlobTx(txData, { common })
+  const tx = createBlob4844Tx(txData, { common })
 
   console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
 }

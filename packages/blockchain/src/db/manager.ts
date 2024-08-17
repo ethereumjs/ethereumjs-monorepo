@@ -1,4 +1,4 @@
-import { createBlockFromValuesArray, createBlockHeaderFromValuesArray } from '@ethereumjs/block'
+import { createBlockFromBytesArray, createBlockHeaderFromBytesArray } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   KECCAK256_RLP,
@@ -141,7 +141,7 @@ export class DBManager {
 
     const blockData = [header.raw(), ...body] as BlockBytes
     const opts: BlockOptions = { common: this.common, setHardfork: true }
-    return createBlockFromValuesArray(blockData, opts)
+    return createBlockFromBytesArray(blockData, opts)
   }
 
   /**
@@ -160,7 +160,7 @@ export class DBManager {
     const headerValues = RLP.decode(encodedHeader)
 
     const opts: BlockOptions = { common: this.common, setHardfork: true }
-    return createBlockHeaderFromValuesArray(headerValues as Uint8Array[], opts)
+    return createBlockHeaderFromBytesArray(headerValues as Uint8Array[], opts)
   }
 
   /**

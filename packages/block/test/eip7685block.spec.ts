@@ -8,14 +8,14 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
-import {
-  createBlock,
-  createBlockFromRPC,
-  createBlockFromValuesArray,
-  createBlockHeader,
-} from '../src/constructors.js'
 import { genRequestsTrieRoot } from '../src/helpers.js'
-import { Block } from '../src/index.js'
+import {
+  Block,
+  createBlock,
+  createBlockFromBytesArray,
+  createBlockFromRPC,
+  createBlockHeader,
+} from '../src/index.js'
 
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 
@@ -111,7 +111,7 @@ describe('7685 tests', () => {
 
 describe('fromValuesArray tests', () => {
   it('should construct a block with empty requests root', () => {
-    const block = createBlockFromValuesArray(
+    const block = createBlockFromBytesArray(
       [createBlockHeader({}, { common }).raw(), [], [], [], []],
       {
         common,
@@ -127,7 +127,7 @@ describe('fromValuesArray tests', () => {
     const requestsRoot = await genRequestsTrieRoot(requests)
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
 
-    const block = createBlockFromValuesArray(
+    const block = createBlockFromBytesArray(
       [createBlockHeader({ requestsRoot }, { common }).raw(), [], [], [], serializedRequests],
       {
         common,
@@ -147,7 +147,7 @@ describe('fromRPC tests', () => {
     const requestsRoot = await genRequestsTrieRoot(requests)
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
 
-    const block = createBlockFromValuesArray(
+    const block = createBlockFromBytesArray(
       [createBlockHeader({ requestsRoot }, { common }).raw(), [], [], [], serializedRequests],
       {
         common,

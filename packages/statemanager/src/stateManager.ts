@@ -31,12 +31,12 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { CacheType, OriginalStorageCache } from './cache/index.js'
+import { OriginalStorageCache } from './cache/index.js'
 import { modifyAccountFields } from './util.js'
 
-import { CODEHASH_PREFIX, Caches, type DefaultStateManagerOpts } from './index.js'
+import { CODEHASH_PREFIX, type DefaultStateManagerOpts } from './index.js'
 
-import type { StorageProof } from './index.js'
+import type { Caches, StorageProof } from './index.js'
 import type {
   AccountFields,
   Proof,
@@ -326,7 +326,7 @@ export class DefaultStateManager implements StateManagerInterface {
 
     const account = await this.getAccount(address)
     if (!account) {
-      throw new Error('getStorage() called on non-existing account')
+      return new Uint8Array()
     }
     const trie = this._getStorageTrie(address, account)
     const value = await trie.get(key)
@@ -544,7 +544,6 @@ export class DefaultStateManager implements StateManagerInterface {
     await this.flush()
     const account = await this.getAccount(address)
     if (!account) {
-      // throw new Error(`getProof() can only be called for an existing account`)
       const returnValue: Proof = {
         address: address.toString(),
         balance: '0x0',
@@ -902,8 +901,8 @@ export class DefaultStateManager implements StateManagerInterface {
    * This means in particular:
    * 1. For caches instantiated as an LRU cache type
    * the copy() method will instantiate with an ORDERED_MAP cache
-   * instead, since copied instantances are mostly used in
-   * short-term usage contexts and LRU cache instantation would create
+   * instead, since copied instances are mostly used in
+   * short-term usage contexts and LRU cache instantiation would create
    * a large overhead here.
    * 2. The underlying trie object is initialized with 0 cache size
    *
@@ -921,29 +920,13 @@ export class DefaultStateManager implements StateManagerInterface {
     const trie = this._trie.shallowCopy(false, { cacheSize })
     const prefixCodeHashes = this._prefixCodeHashes
     const prefixStorageTrieKeys = this._prefixStorageTrieKeys
-    let accountCacheOpts = { ...this._caches?.settings.account }
-    if (downlevelCaches && this._caches?.settings.account.size !== 0) {
-      accountCacheOpts = { ...accountCacheOpts, type: CacheType.ORDERED_MAP }
-    }
-    let storageCacheOpts = { ...this._caches?.settings.storage }
-    if (downlevelCaches && this._caches?.settings.storage.size !== 0) {
-      storageCacheOpts = { ...storageCacheOpts, type: CacheType.ORDERED_MAP }
-    }
-    let codeCacheOpts = { ...this._caches?.settings.code }
-    if (this._caches?.settings.code.size !== 0) {
-      codeCacheOpts = { ...codeCacheOpts, type: CacheType.ORDERED_MAP }
-    }
 
     return new DefaultStateManager({
       common,
       trie,
       prefixStorageTrieKeys,
       prefixCodeHashes,
-      caches: new Caches({
-        account: accountCacheOpts,
-        code: codeCacheOpts,
-        storage: storageCacheOpts,
-      }),
+      caches: this._caches?.shallowCopy(downlevelCaches),
     })
   }
 

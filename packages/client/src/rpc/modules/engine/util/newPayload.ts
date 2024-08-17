@@ -1,5 +1,5 @@
 import { createBlockFromExecutionPayload } from '@ethereumjs/block'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { Blob4844Tx } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 
 import { short } from '../../../../util/index.js'
@@ -59,7 +59,7 @@ export const validate4844BlobVersionedHashes = (
   // Collect versioned hashes in the flat array `txVersionedHashes` to match with received
   const txVersionedHashes = []
   for (const tx of headBlock.transactions) {
-    if (tx instanceof BlobEIP4844Transaction) {
+    if (tx instanceof Blob4844Tx) {
       for (const vHash of tx.blobVersionedHashes) {
         txVersionedHashes.push(vHash)
       }

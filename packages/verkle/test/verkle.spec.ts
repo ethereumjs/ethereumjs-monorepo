@@ -1,4 +1,4 @@
-import { MapDB, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { MapDB, equalsBytes, hexToBytes, matchingBytesLength } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
@@ -8,7 +8,6 @@ import {
   VerkleLeafNodeValue,
   VerkleNodeType,
   decodeNode,
-  matchingBytesLength,
 } from '../src/index.js'
 import { VerkleTree } from '../src/verkleTree.js'
 

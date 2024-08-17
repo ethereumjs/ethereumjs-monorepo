@@ -93,9 +93,4 @@ async function putBlocks(blockchain: Blockchain, common: Common, data: typeof te
   }
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((err) => {
-    console.error(err)
-    process.exit(1)
-  })
+void main()

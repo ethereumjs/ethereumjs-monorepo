@@ -19,7 +19,7 @@ import { TxPool } from './txpool.js'
 import type { Peer } from '../net/peer/peer.js'
 import type { Protocol } from '../net/protocol/index.js'
 import type { Block } from '@ethereumjs/block'
-import type { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import type { Blob4844Tx } from '@ethereumjs/tx'
 
 interface FullEthereumServiceOptions extends ServiceOptions {
   /** Serve LES requests (default: false) */
@@ -175,7 +175,7 @@ export class FullEthereumService extends Service {
           if (rawTx.type !== TransactionType.BlobEIP4844) {
             txs[1].push(rawTx.serialize().byteLength)
           } else {
-            txs[1].push((rawTx as BlobEIP4844Transaction).serializeNetworkWrapper().byteLength)
+            txs[1].push((rawTx as Blob4844Tx).serializeNetworkWrapper().byteLength)
           }
           txs[2].push(hexToBytes(`0x${tx.hash}`))
         }

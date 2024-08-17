@@ -2,13 +2,13 @@ import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/commo
 import { bytesToHex, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { normalizeTxParams } from '../src/fromRpc.js'
 import {
   TransactionType,
   createTxFromJsonRpcProvider,
   createTxFromRPC,
   createTxFromTxData,
 } from '../src/index.js'
+import { normalizeTxParams } from '../src/util.js'
 
 import optimismTx from './json/optimismTx.json'
 import rpcTx from './json/rpcTx.json'

@@ -1,14 +1,14 @@
-import { createBlockFromValuesArray, createBlockHeaderFromValuesArray } from '@ethereumjs/block'
+import { createBlockFromBytesArray, createBlockHeaderFromBytesArray } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
-  BlobEIP4844Transaction,
-  create4844BlobTxFromSerializedNetworkWrapper,
+  Blob4844Tx,
+  createBlob4844TxFromSerializedNetworkWrapper,
   createTxFromBlockBodyData,
   createTxFromSerializedData,
-  isAccessListEIP2930Tx,
-  isBlobEIP4844Tx,
-  isEOACodeEIP7702Tx,
-  isFeeMarketEIP1559Tx,
+  isAccessList2930Tx,
+  isBlob4844Tx,
+  isEOACode7702Tx,
+  isFeeMarket1559Tx,
   isLegacyTx,
 } from '@ethereumjs/tx'
 import {
@@ -117,7 +117,7 @@ export class EthProtocol extends Protocol {
         const serializedTxs = []
         for (const tx of txs) {
           // Don't automatically broadcast blob transactions - they should only be announced using NewPooledTransactionHashes
-          if (tx instanceof BlobEIP4844Transaction) continue
+          if (tx instanceof Blob4844Tx) continue
           serializedTxs.push(tx.serialize())
         }
         return serializedTxs
@@ -168,7 +168,7 @@ export class EthProtocol extends Protocol {
         bytesToBigInt(reqId),
         headers.map((h) => {
           const common = this.config.chainCommon
-          const header = createBlockHeaderFromValuesArray(h, { common, setHardfork: true })
+          const header = createBlockHeaderFromBytesArray(h, { common, setHardfork: true })
           return header
         }),
       ],
@@ -200,7 +200,7 @@ export class EthProtocol extends Protocol {
       code: 0x07,
       encode: ([block, td]: [Block, bigint]) => [block.raw(), bigIntToUnpaddedBytes(td)],
       decode: ([block, td]: [BlockBytes, Uint8Array]) => [
-        createBlockFromValuesArray(block, {
+        createBlockFromBytesArray(block, {
           common: this.config.chainCommon,
           setHardfork: true,
         }),
@@ -253,13 +253,9 @@ export class EthProtocol extends Protocol {
         const serializedTxs = []
         for (const tx of txs) {
           // serialize txs as per type
-          if (isBlobEIP4844Tx(tx)) {
+          if (isBlob4844Tx(tx)) {
             serializedTxs.push(tx.serializeNetworkWrapper())
-          } else if (
-            isFeeMarketEIP1559Tx(tx) ||
-            isAccessListEIP2930Tx(tx) ||
-            isEOACodeEIP7702Tx(tx)
-          ) {
+          } else if (isFeeMarket1559Tx(tx) || isAccessList2930Tx(tx) || isEOACode7702Tx(tx)) {
             serializedTxs.push(tx.serialize())
           } else if (isLegacyTx(tx)) {
             serializedTxs.push(tx.raw())
@@ -288,7 +284,7 @@ export class EthProtocol extends Protocol {
           txs.map((txData) => {
             // Blob transactions are deserialized with network wrapper
             if (txData[0] === 3) {
-              return create4844BlobTxFromSerializedNetworkWrapper(txData, { common })
+              return createBlob4844TxFromSerializedNetworkWrapper(txData, { common })
             } else {
               return createTxFromBlockBodyData(txData, { common })
             }

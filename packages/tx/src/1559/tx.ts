@@ -18,7 +18,7 @@ import { paramsTx } from '../params.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, validateNotArray } from '../util.js'
 
-import { create1559FeeMarketTx } from './constructors.js'
+import { createFeeMarket1559Tx } from './constructors.js'
 
 import type {
   AccessList,
@@ -38,7 +38,7 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP15
  * - TransactionType: 2
  * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
  */
-export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType.FeeMarketEIP1559> {
+export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEIP1559> {
   // implements EIP1559CompatibleTx<TransactionType.FeeMarketEIP1559>
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
@@ -140,12 +140,12 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, signatureYParity, signatureR, signatureS]`
    *
-   * Use {@link FeeMarketEIP1559Transaction.serialize} to add a transaction to a block
-   * with {@link createBlockFromValuesArray}.
+   * Use {@link FeeMarket1559Tx.serialize} to add a transaction to a block
+   * with {@link createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-   * representation for external signing use {@link FeeMarketEIP1559Transaction.getMessageToSign}.
+   * representation for external signing use {@link FeeMarket1559Tx.getMessageToSign}.
    */
   raw(): TxValuesArray {
     return [
@@ -208,7 +208,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use {@link FeeMarketEIP1559Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * Use {@link FeeMarket1559Tx.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
     return Legacy.hash(this)
@@ -233,12 +233,12 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
     convertV: boolean = false,
-  ): FeeMarketEIP1559Transaction {
+  ): FeeMarket1559Tx {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
 
-    return create1559FeeMarketTx(
+    return createFeeMarket1559Tx(
       {
         chainId: this.chainId,
         nonce: this.nonce,

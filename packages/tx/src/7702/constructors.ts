@@ -4,7 +4,7 @@ import { bytesToBigInt, bytesToHex, equalsBytes, validateNoLeadingZeroes } from 
 import { TransactionType } from '../types.js'
 import { txTypeBytes, validateNotArray } from '../util.js'
 
-import { EOACodeEIP7702Transaction } from './tx.js'
+import { EOACode7702Transaction } from './tx.js'
 
 import type { TxOptions } from '../types.js'
 import type { TxData, TxValuesArray } from './tx.js'
@@ -19,8 +19,8 @@ import type { TxData, TxValuesArray } from './tx.js'
  * - `chainId` will be set automatically if not provided
  * - All parameters are optional and have some basic default values
  */
-export function create7702EOACodeTx(txData: TxData, opts: TxOptions = {}) {
-  return new EOACodeEIP7702Transaction(txData, opts)
+export function createEOACode7702Tx(txData: TxData, opts: TxOptions = {}) {
+  return new EOACode7702Transaction(txData, opts)
 }
 
 /**
@@ -29,7 +29,7 @@ export function create7702EOACodeTx(txData: TxData, opts: TxOptions = {}) {
  * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
  * accessList, signatureYParity, signatureR, signatureS]`
  */
-export function create7702EOACodeTxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
+export function createEOACode7702TxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
   if (values.length !== 10 && values.length !== 13) {
     throw new Error(
       'Invalid EIP-7702 transaction. Only expecting 10 values (for unsigned tx) or 13 values (for signed tx).',
@@ -55,7 +55,7 @@ export function create7702EOACodeTxFromBytesArray(values: TxValuesArray, opts: T
   validateNotArray({ chainId, v })
   validateNoLeadingZeroes({ nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, value, v, r, s })
 
-  return new EOACodeEIP7702Transaction(
+  return new EOACode7702Transaction(
     {
       chainId: bytesToBigInt(chainId),
       nonce,
@@ -81,7 +81,7 @@ export function create7702EOACodeTxFromBytesArray(values: TxValuesArray, opts: T
  * Format: `0x04 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
  * accessList, signatureYParity, signatureR, signatureS])`
  */
-export function create7702EOACodeTxFromRLP(serialized: Uint8Array, opts: TxOptions = {}) {
+export function createEOACode7702TxFromRLP(serialized: Uint8Array, opts: TxOptions = {}) {
   if (
     equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.EOACodeEIP7702)) === false
   ) {
@@ -98,5 +98,5 @@ export function create7702EOACodeTxFromRLP(serialized: Uint8Array, opts: TxOptio
     throw new Error('Invalid serialized tx input: must be array')
   }
 
-  return create7702EOACodeTxFromBytesArray(values as TxValuesArray, opts)
+  return createEOACode7702TxFromBytesArray(values as TxValuesArray, opts)
 }

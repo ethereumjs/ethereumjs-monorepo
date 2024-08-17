@@ -62,7 +62,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   /**
    * List of tx type defining EIPs,
    * e.g. 1559 (fee market) and 2930 (access lists)
-   * for FeeMarketEIP1559Transaction objects
+   * for FeeMarket1559Tx objects
    */
   protected activeCapabilities: number[] = []
 
@@ -240,7 +240,7 @@ export abstract class BaseTransaction<T extends TransactionType>
    * Returns a Uint8Array Array of the raw Bytes of this transaction, in order.
    *
    * Use {@link BaseTransaction.serialize} to add a transaction to a block
-   * with {@link createBlockFromValuesArray}.
+   * with {@link createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant

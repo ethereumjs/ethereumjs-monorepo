@@ -1,7 +1,7 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { create4844BlobTx } from '@ethereumjs/tx'
+import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   blobsToProofs,
@@ -65,7 +65,7 @@ describe('EIP4844 tests', () => {
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
     const proofs = blobsToProofs(kzg, blobs, commitments)
-    const unsignedTx = create4844BlobTx(
+    const unsignedTx = createBlob4844Tx(
       {
         blobVersionedHashes,
         blobs,

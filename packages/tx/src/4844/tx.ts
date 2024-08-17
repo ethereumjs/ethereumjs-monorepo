@@ -20,7 +20,7 @@ import { paramsTx } from '../index.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, validateNotArray } from '../util.js'
 
-import { create4844BlobTx } from './constructors.js'
+import { createBlob4844Tx } from './constructors.js'
 
 import type {
   AccessList,
@@ -40,7 +40,7 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
  * - TransactionType: 3
  * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
  */
-export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.BlobEIP4844> {
+export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
@@ -182,12 +182,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * Format: [chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, to, value, data,
    * access_list, max_fee_per_data_gas, blob_versioned_hashes, y_parity, r, s]`.
    *
-   * Use {@link BlobEIP4844Transaction.serialize} to add a transaction to a block
-   * with {@link createBlockFromValuesArray}.
+   * Use {@link Blob4844Tx.serialize} to add a transaction to a block
+   * with {@link createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-   * representation for external signing use {@link BlobEIP4844Transaction.getMessageToSign}.
+   * representation for external signing use {@link Blob4844Tx.getMessageToSign}.
    */
   raw(): TxValuesArray {
     return [
@@ -269,7 +269,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use {@link BlobEIP4844Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * Use {@link Blob4844Tx.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
     return Legacy.hash(this)
@@ -306,12 +306,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
     convertV: boolean = false,
-  ): BlobEIP4844Transaction {
+  ): Blob4844Tx {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
 
-    return create4844BlobTx(
+    return createBlob4844Tx(
       {
         chainId: this.chainId,
         nonce: this.nonce,

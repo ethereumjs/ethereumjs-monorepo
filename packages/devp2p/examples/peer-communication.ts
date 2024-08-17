@@ -1,4 +1,4 @@
-import { BlockHeader, createBlockFromValuesArray } from '@ethereumjs/block'
+import { BlockHeader, createBlockFromBytesArray } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import * as devp2p from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
@@ -174,7 +174,7 @@ rlpx.events.on('peer:added', (peer) => {
           }
 
           const expectedHash = CHECK_BLOCK
-          const header = createBlockHeaderFromValuesArray(payload[1][0], { common })
+          const header = createBlockHeaderFromBytesArray(payload[1][0], { common })
           if (bytesToUnprefixedHex(header.hash()) === expectedHash) {
             console.log(`${addr} verified to be on the same side of the ${CHECK_BLOCK_TITLE}`)
             clearTimeout(forkDrop)
@@ -189,7 +189,7 @@ rlpx.events.on('peer:added', (peer) => {
           }
 
           let isValidPayload = false
-          const header = createBlockHeaderFromValuesArray(payload[1][0], { common })
+          const header = createBlockHeaderFromBytesArray(payload[1][0], { common })
           while (requests.headers.length > 0) {
             const blockHash = requests.headers.shift()
             if (equalsBytes(header.hash(), blockHash)) {
@@ -238,7 +238,7 @@ rlpx.events.on('peer:added', (peer) => {
           const header = requests.bodies.shift()
           const txs = payload[1][0][0]
           const uncleHeaders = payload[1][0][1]
-          const block = createBlockFromValuesArray([header.raw(), txs, uncleHeaders], { common })
+          const block = createBlockFromBytesArray([header.raw(), txs, uncleHeaders], { common })
           const isValid = await isValidBlock(block)
           if (isValid) {
             isValidPayload = true
@@ -257,7 +257,7 @@ rlpx.events.on('peer:added', (peer) => {
       case devp2p.ETH.MESSAGE_CODES.NEW_BLOCK: {
         if (!forkVerified) break
 
-        const newBlock = createBlockFromValuesArray(payload[0], { common })
+        const newBlock = createBlockFromBytesArray(payload[0], { common })
         const isValidNewBlock = await isValidBlock(newBlock)
         if (isValidNewBlock) onNewBlock(newBlock, peer)
 

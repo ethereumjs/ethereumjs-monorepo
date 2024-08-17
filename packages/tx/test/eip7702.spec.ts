@@ -11,7 +11,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { create7702EOACodeTx } from '../src/index.js'
+import { createEOACode7702Tx } from '../src/index.js'
 
 import type { TxData } from '../src/7702/tx.js'
 import type { AuthorizationListItem } from '../src/index.js'
@@ -44,9 +44,9 @@ function getTxData(override: Partial<AuthorizationListItem> = {}): TxData {
   }
 }
 
-describe('[EOACodeEIP7702Transaction]', () => {
+describe('[EOACode7702Transaction]', () => {
   it('sign()', () => {
-    const txn = create7702EOACodeTx(
+    const txn = createEOACode7702Tx(
       {
         value: 1,
         maxFeePerGas: 1,
@@ -99,12 +99,12 @@ describe('[EOACodeEIP7702Transaction]', () => {
       const txData = getTxData(test[0])
       const testName = test[1]
       assert.throws(() => {
-        create7702EOACodeTx(txData, { common }), testName
+        createEOACode7702Tx(txData, { common }), testName
       })
     }
     create7702EOACodeTx(getTxData(), { common })
     assert.doesNotThrow(() => {
-      create7702EOACodeTx(getTxData(), { common })
+      createEOACode7702Tx(getTxData(), { common })
     })
   })
 })

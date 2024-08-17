@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { create4844BlobTx } from '@ethereumjs/tx'
+import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
@@ -9,8 +9,8 @@ import {
 import { loadKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { createBlock, createBlockHeader } from '../src/constructors.js'
 import { fakeExponential, getNumBlobs } from '../src/helpers.js'
+import { createBlock, createBlockHeader } from '../src/index.js'
 import { paramsBlock } from '../src/params.js'
 
 import gethGenesis from './testdata/4844-hardfork.json'
@@ -176,7 +176,7 @@ describe('transaction validation tests', () => {
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
 
-    const tx1 = create4844BlobTx(
+    const tx1 = createBlob4844Tx(
       {
         blobVersionedHashes,
         blobs,
@@ -187,7 +187,7 @@ describe('transaction validation tests', () => {
       },
       { common },
     ).sign(randomBytes(32))
-    const tx2 = create4844BlobTx(
+    const tx2 = createBlob4844Tx(
       {
         blobVersionedHashes,
         blobs,

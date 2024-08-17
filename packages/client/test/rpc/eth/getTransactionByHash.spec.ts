@@ -1,4 +1,4 @@
-import { create1559FeeMarketTx, createLegacyTx } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -43,7 +43,7 @@ describe(method, () => {
     )
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = create1559FeeMarketTx(
+    const tx = createFeeMarket1559Tx(
       {
         gasLimit: 2000000,
         maxFeePerGas: 975000000,

@@ -2,7 +2,7 @@ import { cliqueSigner, createBlock } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
-import { BlobEIP4844Transaction, Capability, isBlobEIP4844Tx } from '@ethereumjs/tx'
+import { Blob4844Tx, Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -41,11 +41,11 @@ import type { Common } from '@ethereumjs/common'
 import type { EVM } from '@ethereumjs/evm'
 import type {
   AccessList,
-  AccessListEIP2930Transaction,
+  AccessList2930Transaction,
   AccessListItem,
   EIP7702CompatibleTx,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
+  FeeMarket1559Tx,
+  LegacyTx,
   TypedTransaction,
 } from '@ethereumjs/tx'
 
@@ -142,7 +142,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw new Error(msg)
     }
 
-    const castedTx = <AccessListEIP2930Transaction>opts.tx
+    const castedTx = <AccessList2930Transaction>opts.tx
 
     for (const accessListItem of castedTx.AccessListJSON) {
       vm.evm.journal.addAlwaysWarmAddress(accessListItem.address, true)
@@ -324,10 +324,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // EIP-1559 spec:
     // The signer must be able to afford the transaction
     // `assert balance >= gas_limit * max_fee_per_gas`
-    maxCost += tx.gasLimit * (tx as FeeMarketEIP1559Transaction).maxFeePerGas
+    maxCost += tx.gasLimit * (tx as FeeMarket1559Tx).maxFeePerGas
   }
 
-  if (tx instanceof BlobEIP4844Transaction) {
+  if (tx instanceof Blob4844Tx) {
     if (!vm.common.isActivatedEIP(4844)) {
       const msg = _errorMsg('blob transactions are only valid with EIP4844 active', vm, block, tx)
       throw new Error(msg)
@@ -335,7 +335,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // EIP-4844 spec
     // the signer must be able to afford the transaction
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
-    const castTx = tx as BlobEIP4844Transaction
+    const castTx = tx as Blob4844Tx
     totalblobGas = vm.common.param('blobGasPerBlob') * BigInt(castTx.numBlobs())
     maxCost += totalblobGas * castTx.maxFeePerBlobGas
 
@@ -400,17 +400,17 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     gasPrice = inclusionFeePerGas + baseFee
   } else {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
-    gasPrice = (<LegacyTransaction>tx).gasPrice
+    gasPrice = (<LegacyTx>tx).gasPrice
     if (vm.common.isActivatedEIP(1559)) {
       const baseFee = block.header.baseFeePerGas!
-      inclusionFeePerGas = (<LegacyTransaction>tx).gasPrice - baseFee
+      inclusionFeePerGas = (<LegacyTx>tx).gasPrice - baseFee
     }
   }
 
   // EIP-4844 tx
   let blobVersionedHashes
-  if (tx instanceof BlobEIP4844Transaction) {
-    blobVersionedHashes = (tx as BlobEIP4844Transaction).blobVersionedHashes
+  if (tx instanceof Blob4844Tx) {
+    blobVersionedHashes = (tx as Blob4844Tx).blobVersionedHashes
   }
 
   // Update from account's balance
@@ -561,7 +561,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Add blob gas used to result
-  if (isBlobEIP4844Tx(tx)) {
+  if (isBlob4844Tx(tx)) {
     results.blobGasUsed = totalblobGas
   }
 
@@ -824,7 +824,7 @@ export async function generateTxReceipt(
     }
   } else {
     // Typed EIP-2718 Transaction
-    if (isBlobEIP4844Tx(tx)) {
+    if (isBlob4844Tx(tx)) {
       receipt = {
         blobGasUsed,
         blobGasPrice,
