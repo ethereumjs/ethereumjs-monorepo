@@ -221,7 +221,7 @@ export class VMExecution extends Execution {
   }
 
   async transitionToVerkle(merkleStateRoot: Uint8Array, assignToVM: boolean = true): Promise<void> {
-    if (this.vm.stateManager instanceof StatelessVerkleStateManager) {
+    if (typeof this.vm.stateManager.initVerkleExecutionWitness === 'function') {
       return
     }
 
@@ -230,15 +230,19 @@ export class VMExecution extends Execution {
         await this.setupMerkleVM()
       }
       const merkleVM = this.merkleVM!
-      const merkleStateManager = merkleVM.stateManager as DefaultStateManager
+      const merkleStateManager = merkleVM.stateManager
 
       if (this.verkleVM === undefined) {
         await this.setupVerkleVM()
       }
       const verkleVM = this.verkleVM!
-      const verkleStateManager = verkleVM.stateManager as StatelessVerkleStateManager
+      const verkleStateManager = verkleVM.stateManager
 
-      const verkleStateRoot = await verkleStateManager.getTransitionStateRoot(
+      // TODO: can we please implement this in a different way and not introduce a method
+      // *inside* one state manager which takes another state manager?
+      // That bloats the interface too much, this should be minimally a separate util method
+      // or fully move to client
+      const verkleStateRoot = await (verkleStateManager as any).getTransitionStateRoot(
         merkleStateManager,
         merkleStateRoot,
       )
@@ -416,7 +420,8 @@ export class VMExecution extends Execution {
             vm = this.verkleVM
           }
 
-          const needsStatelessExecution = vm.stateManager instanceof StatelessVerkleStateManager
+          const needsStatelessExecution =
+            typeof this.vm.stateManager.initVerkleExecutionWitness === 'function'
           if (needsStatelessExecution && block.executionWitness === undefined) {
             throw Error(`Verkle blocks need executionWitness for stateless execution`)
           } else {
@@ -677,7 +682,7 @@ export class VMExecution extends Execution {
                   }
                   if (
                     (!this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
-                      this.vm.stateManager instanceof StatelessVerkleStateManager) ||
+                      typeof this.vm.stateManager.initVerkleExecutionWitness === 'function') ||
                     (this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
                       this.vm.stateManager instanceof DefaultStateManager)
                   ) {
