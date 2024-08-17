@@ -83,7 +83,7 @@ async function verify(
   startKey?: Uint8Array,
   endKey?: Uint8Array,
   keys?: Uint8Array[],
-  vals?: Uint8Array[],
+  values?: Uint8Array[],
 ) {
   startKey = startKey ?? entries[start][0]
   endKey = endKey ?? entries[end][0]
@@ -93,7 +93,7 @@ async function verify(
     startKey,
     endKey,
     keys ?? targetRange.map(([key]) => key),
-    vals ?? targetRange.map(([, val]) => val),
+    values ?? targetRange.map(([, val]) => val),
     [...(await createMerkleProof(trie, startKey)), ...(await createMerkleProof(trie, endKey))],
   )
 }

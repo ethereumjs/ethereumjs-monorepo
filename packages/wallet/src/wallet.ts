@@ -1,3 +1,4 @@
+// cspell:ignore uuidv kdfparams dklen xprv xpub
 import {
   bytesToHex,
   bytesToUnprefixedHex,
@@ -565,7 +566,7 @@ export class Wallet {
   }
 
   /**
-   * Returns an Etherem Version 3 Keystore Format object representing the wallet
+   * Returns an Ethereum Version 3 Keystore Format object representing the wallet
    *
    * @param password The password used to encrypt the Keystore.
    * @param opts The options for the keystore. See [its spec](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition) for more info.
@@ -633,7 +634,7 @@ export class Wallet {
   public getV3Filename(timestamp?: number): string {
     /*
      * We want a timestamp like 2016-03-15T17-11-33.007598288Z. Date formatting
-     * is a pain in Javascript, everbody knows that. We could use moment.js,
+     * is a pain in Javascript, everybody knows that. We could use moment.js,
      * but decide to do it manually in order to save space.
      *
      * toJSON() returns a pretty close version, so let's use it. It is not UTC though,

@@ -87,7 +87,7 @@ export class Common {
 
   /**
    * Update the internal Common EIP params set. Existing values
-   * will get preserved unless there is a new value for a paramter
+   * will get preserved unless there is a new value for a parameter
    * provided with params.
    *
    * Example Format:
@@ -157,7 +157,7 @@ export class Common {
   }
 
   /**
-   * Returns the hardfork either based on block numer (older HFs) or
+   * Returns the hardfork either based on block number (older HFs) or
    * timestamp (Shanghai upwards).
    *
    * @param Opts Block number or timestamp
@@ -240,7 +240,7 @@ export class Common {
   }
 
   /**
-   * Sets a new hardfork either based on block numer (older HFs) or
+   * Sets a new hardfork either based on block number (older HFs) or
    * timestamp (Shanghai upwards).
    *
    * @param Opts Block number or timestamp

@@ -70,7 +70,7 @@ describe(method, () => {
 
     const invalidForkChoiceState = {
       ...validForkChoiceState,
-      finalizedBlockHash: '0xinvalid',
+      finalizedBlockHash: '0xinvalid', // cspell:disable-line
     }
     const res = await rpc.request(method, [invalidForkChoiceState, validPayloadAttributes])
     assert.equal(res.error.code, INVALID_PARAMS)

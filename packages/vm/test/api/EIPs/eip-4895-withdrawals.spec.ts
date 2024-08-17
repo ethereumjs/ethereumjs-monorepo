@@ -2,7 +2,7 @@ import { createBlock, genWithdrawalsTrieRoot } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
-import { create1559FeeMarketTx } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -67,7 +67,7 @@ describe('EIP4895 tests', () => {
       hexToBytes(`0x73${addresses[0]}3160005260206000F3`),
     )
 
-    const transaction = create1559FeeMarketTx({
+    const transaction = createFeeMarket1559Tx({
       to: contractAddress,
       maxFeePerGas: BigInt(7),
       maxPriorityFeePerGas: BigInt(0),
@@ -127,7 +127,7 @@ describe('EIP4895 tests', () => {
     assert.deepEqual(zeros(0), slotValue, 'withdrawals do not invoke code')
   })
 
-  it('EIP4895: state updation should exclude 0 amount updates', async () => {
+  it('EIP4895: state update should exclude 0 amount updates', async () => {
     const vm = await VM.create({ common })
 
     await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(genesisJSON))

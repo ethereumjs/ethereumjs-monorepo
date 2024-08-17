@@ -1,6 +1,6 @@
-import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
+import { PrioritizedTaskExecutor } from '@ethereumjs/util'
 
-import { PrioritizedTaskExecutor } from './tasks.js'
+import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
 
 import type { Trie } from '../trie.js'
 import type { FoundNodeFunction, Nibbles, TrieNode } from '../types.js'

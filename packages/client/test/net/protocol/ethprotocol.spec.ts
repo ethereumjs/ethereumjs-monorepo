@@ -1,6 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Holesky } from '@ethereumjs/common'
-import { TransactionType, create1559FeeMarketTx, createTxFromTxData } from '@ethereumjs/tx'
+import { TransactionType, createFeeMarket1559Tx, createTxFromTxData } from '@ethereumjs/tx'
 import {
   bigIntToBytes,
   bytesToBigInt,
@@ -128,7 +128,7 @@ describe('[EthProtocol]', () => {
     const p = new EthProtocol({ config, chain })
 
     chain.config.chainCommon.setHardfork(Hardfork.London)
-    const tx = create1559FeeMarketTx(
+    const tx = createFeeMarket1559Tx(
       {
         maxFeePerGas: 10,
         maxPriorityFeePerGas: 8,

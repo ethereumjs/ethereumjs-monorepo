@@ -2,7 +2,7 @@ import { createBlock } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import {
   Capability,
-  create4844BlobTxFromSerializedNetworkWrapper,
+  createBlob4844TxFromSerializedNetworkWrapper,
   createTxFromSerializedData,
   createTxFromTxData,
 } from '@ethereumjs/tx'
@@ -47,11 +47,7 @@ import type { RpcTx } from '../types.js'
 import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
-import type {
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-  TypedTransaction,
-} from '@ethereumjs/tx'
+import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const EMPTY_SLOT = `0x${'00'.repeat(32)}`
@@ -965,13 +961,13 @@ export class Eth {
         const { blobGasPrice, blobGasUsed } = runBlockResult.receipts[i] as EIP4844BlobTxReceipt
         const effectiveGasPrice =
           tx.supports(Capability.EIP1559FeeMarket) === true
-            ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
-              (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block.header.baseFeePerGas!
-              ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
-              : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
+            ? (tx as FeeMarket1559Tx).maxPriorityFeePerGas <
+              (tx as FeeMarket1559Tx).maxFeePerGas - block.header.baseFeePerGas!
+              ? (tx as FeeMarket1559Tx).maxPriorityFeePerGas
+              : (tx as FeeMarket1559Tx).maxFeePerGas -
                 block.header.baseFeePerGas! +
                 block.header.baseFeePerGas!
-            : (tx as LegacyTransaction).gasPrice
+            : (tx as LegacyTx).gasPrice
 
         return jsonRpcReceipt(
           r,
@@ -1016,13 +1012,13 @@ export class Eth {
     const parentBlock = await this._chain.getBlock(block.header.parentHash)
     const tx = block.transactions[txIndex]
     const effectiveGasPrice = tx.supports(Capability.EIP1559FeeMarket)
-      ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
-        (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block.header.baseFeePerGas!
-        ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
-        : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
+      ? (tx as FeeMarket1559Tx).maxPriorityFeePerGas <
+        (tx as FeeMarket1559Tx).maxFeePerGas - block.header.baseFeePerGas!
+        ? (tx as FeeMarket1559Tx).maxPriorityFeePerGas
+        : (tx as FeeMarket1559Tx).maxFeePerGas -
           block.header.baseFeePerGas! +
           block.header.baseFeePerGas!
-      : (tx as LegacyTransaction).gasPrice
+      : (tx as LegacyTx).gasPrice
 
     const vmCopy = await this._vm!.shallowCopy()
     vmCopy.common.setHardfork(tx.common.hardfork())
@@ -1172,7 +1168,7 @@ export class Eth {
       const txBuf = hexToBytes(serializedTx)
       if (txBuf[0] === 0x03) {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
-        tx = create4844BlobTxFromSerializedNetworkWrapper(txBuf, { common })
+        tx = createBlob4844TxFromSerializedNetworkWrapper(txBuf, { common })
 
         const blobGasLimit = tx.common.param('maxblobGasPerBlock')
         const blobGasPerBlob = tx.common.param('blobGasPerBlob')
@@ -1341,7 +1337,7 @@ export class Eth {
       let priorityFee = BIGINT_0
       const block = await this._chain.getBlock(latest.number)
       for (const tx of block.transactions) {
-        const maxPriorityFeePerGas = (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+        const maxPriorityFeePerGas = (tx as FeeMarket1559Tx).maxPriorityFeePerGas
         priorityFee += maxPriorityFeePerGas
       }
 
@@ -1360,7 +1356,7 @@ export class Eth {
         }
 
         for (const tx of block.transactions) {
-          const txGasPrice = (tx as LegacyTransaction).gasPrice
+          const txGasPrice = (tx as LegacyTx).gasPrice
           gasPrice += txGasPrice
           txCount++
         }

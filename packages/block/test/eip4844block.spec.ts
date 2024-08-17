@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { create4844BlobTx } from '@ethereumjs/tx'
+import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
@@ -176,7 +176,7 @@ describe('transaction validation tests', () => {
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
 
-    const tx1 = create4844BlobTx(
+    const tx1 = createBlob4844Tx(
       {
         blobVersionedHashes,
         blobs,
@@ -187,7 +187,7 @@ describe('transaction validation tests', () => {
       },
       { common },
     ).sign(randomBytes(32))
-    const tx2 = create4844BlobTx(
+    const tx2 = createBlob4844Tx(
       {
         blobVersionedHashes,
         blobs,
@@ -269,7 +269,7 @@ describe('transaction validation tests', () => {
         .getTransactionsValidationErrors()
         .join(' ')
         .includes('exceed maximum blob gas per block'),
-      'tx erros includes correct error message when too many blobs in a block',
+      'tx errors includes correct error message when too many blobs in a block',
     )
   })
 })

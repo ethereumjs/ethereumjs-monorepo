@@ -119,7 +119,7 @@ describe(method, () => {
       '0x8c71ad199a3dda94de6a1c31cc50a26b1f03a8a4924e9ea3fd7420c6411cac42',
       'built expected block',
     )
-    assert.equal(executionPayload.excessBlobGas, '0x0', 'correct execess blob gas')
+    assert.equal(executionPayload.excessBlobGas, '0x0', 'correct excess blob gas')
     assert.equal(executionPayload.blobGasUsed, '0x20000', 'correct blob gas used')
     const { commitments, proofs, blobs } = blobsBundle
     assert.ok(

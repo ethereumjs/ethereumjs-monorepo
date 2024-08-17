@@ -15,10 +15,10 @@ const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1
 const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
 function get_padded(data: Uint8Array, blobs_len: number): Uint8Array {
-  const pdata = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB).fill(0)
-  pdata.set(data)
-  pdata[data.byteLength] = 0x80
-  return pdata
+  const pData = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB).fill(0)
+  pData.set(data)
+  pData[data.byteLength] = 0x80
+  return pData
 }
 
 function get_blob(data: Uint8Array): Uint8Array {
@@ -44,11 +44,11 @@ export const getBlobs = (input: string) => {
 
   const blobs_len = Math.ceil(len / USEFUL_BYTES_PER_BLOB)
 
-  const pdata = get_padded(data, blobs_len)
+  const pData = get_padded(data, blobs_len)
 
   const blobs: Uint8Array[] = []
   for (let i = 0; i < blobs_len; i++) {
-    const chunk = pdata.subarray(i * USEFUL_BYTES_PER_BLOB, (i + 1) * USEFUL_BYTES_PER_BLOB)
+    const chunk = pData.subarray(i * USEFUL_BYTES_PER_BLOB, (i + 1) * USEFUL_BYTES_PER_BLOB)
     const blob = get_blob(chunk)
     blobs.push(blob)
   }

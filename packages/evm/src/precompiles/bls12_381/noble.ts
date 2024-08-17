@@ -67,7 +67,7 @@ function BLS12_381_FromG1Point(input: AffinePoint<bigint>): Uint8Array {
  * @returns Noble G2 point
  */
 function BLS12_381_ToG2Point(input: Uint8Array): any {
-  // TODO: remove any type, temporary fix due to conflicing @noble/curves versions
+  // TODO: remove any type, temporary fix due to conflicting @noble/curves versions
   if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES)) {
     return bls12_381.G2.ProjectivePoint.ZERO
   }
@@ -111,10 +111,10 @@ function BLS12_381_ToFrPoint(input: Uint8Array): bigint {
   // It should be nevertheless validated if this is (fully) correct,
   // especially if ">" or ">=" should be applied.
   //
-  // Unfortunately the skalar in both test vectors is significantly
+  // Unfortunately the scalar in both test vectors is significantly
   // greater than the ORDER threshold, here are th values from both tests:
   //
-  // Skalar / Order
+  // Scalar / Order
   // 69732848789442042582239751384143889712113271203482973843852656394296700715236n
   // 52435875175126190479447740508185965837690552500527637822603658699938581184513n
   //
@@ -143,7 +143,7 @@ function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array) {
 }
 
 function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array): any {
-  // TODO: remove any type, temporary fix due to conflicing @noble/curves versions
+  // TODO: remove any type, temporary fix due to conflicting @noble/curves versions
   // check if the coordinates are in the field
   if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
     throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
@@ -180,12 +180,12 @@ export class NobleBLS implements EVMBLSInterface {
   mulG1(input: Uint8Array): Uint8Array {
     // convert input to G1 points, add them, and convert the output to a Uint8Array.
     const p = BLS12_381_ToG1Point(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH))
-    const skalar = BLS12_381_ToFrPoint(input.subarray(BLS_G1_POINT_BYTE_LENGTH, 160))
+    const scalar = BLS12_381_ToFrPoint(input.subarray(BLS_G1_POINT_BYTE_LENGTH, 160))
 
-    if (skalar === BIGINT_0) {
+    if (scalar === BIGINT_0) {
       return BLS_G1_INFINITY_POINT_BYTES
     }
-    const result = p.multiply(skalar)
+    const result = p.multiply(scalar)
     return BLS12_381_FromG1Point(result)
   }
 
@@ -203,12 +203,12 @@ export class NobleBLS implements EVMBLSInterface {
   mulG2(input: Uint8Array): Uint8Array {
     // convert input to G2 point/Fr point, add them, and convert the output to a Uint8Array.
     const p = BLS12_381_ToG2Point(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH))
-    const skalar = BLS12_381_ToFrPoint(input.subarray(BLS_G2_POINT_BYTE_LENGTH, 288))
+    const scalar = BLS12_381_ToFrPoint(input.subarray(BLS_G2_POINT_BYTE_LENGTH, 288))
 
-    if (skalar === BIGINT_0) {
+    if (scalar === BIGINT_0) {
       return BLS_G2_INFINITY_POINT_BYTES
     }
-    const result = p.multiply(skalar)
+    const result = p.multiply(scalar)
     return BLS12_381_FromG2Point(result)
   }
 

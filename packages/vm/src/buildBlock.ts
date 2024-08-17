@@ -8,7 +8,7 @@ import {
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { BlobEIP4844Transaction, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
+import { Blob4844Tx, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
 import {
   Address,
   BIGINT_0,
@@ -62,7 +62,7 @@ export class BlockBuilder {
   blobGasUsed = BIGINT_0
   /**
    * Value of the block, represented by the final transaction fees
-   * acruing to the miner.
+   * accruing to the miner.
    */
   private _minerValue = BIGINT_0
 
@@ -233,11 +233,11 @@ export class BlockBuilder {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
     let blobGasUsed = undefined
-    if (tx instanceof BlobEIP4844Transaction) {
+    if (tx instanceof Blob4844Tx) {
       if (this.blockOpts.common?.isActivatedEIP(4844) === false) {
         throw Error('eip4844 not activated yet for adding a blob transaction')
       }
-      const blobTx = tx as BlobEIP4844Transaction
+      const blobTx = tx as Blob4844Tx
 
       // Guard against the case if a tx came into the pool without blobs i.e. network wrapper payload
       if (blobTx.blobs === undefined) {
@@ -263,8 +263,8 @@ export class BlockBuilder {
     const result = await runTx(this.vm, { tx, block, skipHardForkValidation })
 
     // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
-    if (tx instanceof BlobEIP4844Transaction) {
-      const txData = tx as BlobEIP4844Transaction
+    if (tx instanceof Blob4844Tx) {
+      const txData = tx as Blob4844Tx
       this.blobGasUsed += BigInt(txData.blobVersionedHashes.length) * blobGasPerBlob
       tx = createMinimal4844TxFromNetworkWrapper(txData, {
         common: this.blockOpts.common,

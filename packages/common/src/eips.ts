@@ -35,7 +35,7 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.SpuriousDragon,
   },
   /**
-   * Constantinope HF Meta EIP
+   * Constantinople HF Meta EIP
    */
   1013: {
     minimumHardfork: Hardfork.Constantinople,

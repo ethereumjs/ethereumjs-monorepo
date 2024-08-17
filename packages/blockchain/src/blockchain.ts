@@ -42,9 +42,9 @@ import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
  * of block headers or blocks with support for reorgs and the ability to provide
  * custom DB backends.
  *
- * By default consensus validation is not provided since with the swith to
+ * By default consensus validation is not provided since with the switch to
  * Proof-of-Stake consensus is validated by the Ethereum consensus layer.
- * If consensus validation is desired for Etash or Clique blockchains the
+ * If consensus validation is desired for Ethash or Clique blockchains the
  * optional `consensusDict` option can be used to pass in validation objects.
  */
 export class Blockchain implements BlockchainInterface {
@@ -453,7 +453,7 @@ export class Blockchain implements BlockchainInterface {
 
         await this.consensus?.newBlock(block, commonAncestor, ancestorHeaders)
       } catch (e) {
-        // restore head to the previouly sane state
+        // restore head to the previously sane state
         this._heads = oldHeads
         this._headHeaderHash = oldHeadHeaderHash
         this._headBlockHash = oldHeadBlockHash
@@ -940,7 +940,7 @@ export class Blockchain implements BlockchainInterface {
             } finally {
               if (releaseLockOnCallback === true) {
                 await this._lock.acquire()
-                // If lock was released check if reorg occured
+                // If lock was released check if reorg occurred
                 const nextBlockMayBeReorged = await this.getBlock(nextBlockNumber).catch(
                   (_e) => null,
                 )
@@ -1271,7 +1271,7 @@ export class Blockchain implements BlockchainInterface {
     }
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {
-        // Ensure exta data is populated from genesis data if provided
+        // Ensure extra data is populated from genesis data if provided
         header.extraData = common.genesis().extraData
       } else {
         // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes

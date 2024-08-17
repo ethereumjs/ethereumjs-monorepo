@@ -5,7 +5,7 @@ import { assert, describe, it } from 'vitest'
 import { VM } from '../../../src/index.js'
 
 describe('General MuirGlacier VM tests', () => {
-  it('should accept muirGlacier harfork option for supported chains', async () => {
+  it('should accept muirGlacier hardfork option for supported chains', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
     const vm = await VM.create({ common })
     assert.ok(vm.stateManager)

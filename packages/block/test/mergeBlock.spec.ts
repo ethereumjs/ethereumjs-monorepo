@@ -112,7 +112,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
     }
   })
 
-  it('EIP-4399: prevRando should return mixHash value', () => {
+  it('EIP-4399: prevRandao should return mixHash value', () => {
     const mixHash = new Uint8Array(32).fill(3)
     let block = createBlock({ header: { mixHash } }, { common })
     assert.ok(

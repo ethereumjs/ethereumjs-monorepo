@@ -120,7 +120,7 @@ export class CliqueConsensus implements Consensus {
 
   /**
    *
-   * @param param dictionary containin a {@link Blockchain} object
+   * @param param dictionary containing a {@link Blockchain} object
    *
    * Note: this method must be called before consensus checks are used or type errors will occur
    */
@@ -547,8 +547,8 @@ export class CliqueConsensus implements Consensus {
     const states = RLP.decode(signerStates as Uint8Array) as [Uint8Array, Uint8Array[]]
     return states.map((state) => {
       const blockNum = bytesToBigInt(state[0] as Uint8Array)
-      const addrs = (<any>state[1]).map((bytes: Uint8Array) => new Address(bytes))
-      return [blockNum, addrs]
+      const addresses = (<any>state[1]).map((bytes: Uint8Array) => new Address(bytes))
+      return [blockNum, addresses]
     }) as CliqueLatestSignerStates
   }
 

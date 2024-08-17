@@ -182,7 +182,7 @@ export class VM {
    *
    * Associated caches will be deleted and caches will be re-initialized for a more short-term focused
    * usage, being less memory intense (the statemanager caches will switch to using an ORDERED_MAP cache
-   * datastructure more suitable for short-term usage, the trie node LRU cache will not be activated at all).
+   * data structure more suitable for short-term usage, the trie node LRU cache will not be activated at all).
    * To fine-tune this behavior (if the shallow-copy-returned object has a longer life span e.g.) you can set
    * the `downlevelCaches` option to `false`.
    *

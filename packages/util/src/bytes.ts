@@ -5,7 +5,7 @@ import { bytesToHex as _bytesToUnprefixedHex } from 'ethereum-cryptography/utils
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexString, padToEven, stripHexPrefix } from './internal.js'
 
-import type { PrefixedHexString, TransformabletoBytes } from './types.js'
+import type { PrefixedHexString, TransformableToBytes } from './types.js'
 
 const BIGINT_0 = BigInt(0)
 
@@ -272,7 +272,7 @@ export type ToBytesInputTypes =
   | bigint
   | Uint8Array
   | number[]
-  | TransformabletoBytes
+  | TransformableToBytes
   | null
   | undefined
 
@@ -473,7 +473,7 @@ export const randomBytes = (length: number): Uint8Array => {
 
 /**
  * This mirrors the functionality of the `ethereum-cryptography` export except
- * it skips the check to validate that every element of `arrays` is indead a `uint8Array`
+ * it skips the check to validate that every element of `arrays` is indeed a `uint8Array`
  * Can give small performance gains on large arrays
  * @param {Uint8Array[]} arrays an array of Uint8Arrays
  * @returns {Uint8Array} one Uint8Array with all the elements of the original set
@@ -550,4 +550,27 @@ export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/uti
 
 export function hexToBigInt(input: PrefixedHexString): bigint {
   return bytesToBigInt(hexToBytes(isHexString(input) ? input : `0x${input}`))
+}
+
+/**
+ * Compares two byte arrays and returns the count of consecutively matching items from the start.
+ *
+ * @function
+ * @param {Uint8Array} bytes1 - The first Uint8Array to compare.
+ * @param {Uint8Array} bytes2 - The second Uint8Array to compare.
+ * @returns {number} The count of consecutively matching items from the start.
+ */
+export function matchingBytesLength(bytes1: Uint8Array, bytes2: Uint8Array): number {
+  let count = 0
+  const minLength = Math.min(bytes1.length, bytes2.length)
+
+  for (let i = 0; i < minLength; i++) {
+    if (bytes1[i] === bytes2[i]) {
+      count++
+    } else {
+      // Break early if a mismatch is found
+      break
+    }
+  }
+  return count
 }

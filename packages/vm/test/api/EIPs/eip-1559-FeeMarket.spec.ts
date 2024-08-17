@@ -1,10 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import {
-  AccessListEIP2930Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-} from '@ethereumjs/tx'
+import { AccessList2930Transaction, FeeMarket1559Tx, LegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -71,7 +67,7 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: Trans
 
 describe('EIP1559 tests', () => {
   it('test EIP1559 with all transaction types', async () => {
-    const tx = new FeeMarketEIP1559Transaction(
+    const tx = new FeeMarket1559Tx(
       {
         maxFeePerGas: GWEI * BigInt(5),
         maxPriorityFeePerGas: GWEI * BigInt(2),
@@ -111,7 +107,7 @@ describe('EIP1559 tests', () => {
     assert.equal(account!.balance, expectedAccountBalance, 'account balance correct')
     assert.equal(results.amountSpent, expectedCost, 'reported cost correct')
 
-    const tx2 = new AccessListEIP2930Transaction(
+    const tx2 = new AccessList2930Transaction(
       {
         gasLimit: 21000,
         gasPrice: GWEI * BigInt(5),
@@ -139,7 +135,7 @@ describe('EIP1559 tests', () => {
     assert.equal(account!.balance, expectedAccountBalance, 'account balance correct')
     assert.equal(results2.amountSpent, expectedCost, 'reported cost correct')
 
-    const tx3 = new LegacyTransaction(
+    const tx3 = new LegacyTx(
       {
         gasLimit: 21000,
         gasPrice: GWEI * BigInt(5),
@@ -170,7 +166,7 @@ describe('EIP1559 tests', () => {
 
   it('gasPrice uses the effective gas price', async () => {
     const contractAddress = new Address(hexToBytes(`0x${'20'.repeat(20)}`))
-    const tx = new FeeMarketEIP1559Transaction(
+    const tx = new FeeMarket1559Tx(
       {
         maxFeePerGas: GWEI * BigInt(5),
         maxPriorityFeePerGas: GWEI * BigInt(2),

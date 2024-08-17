@@ -12,7 +12,7 @@ describe('bloom', () => {
     assert.deepEqual(b.bitvector, utils.zeros(byteSize), 'should be empty')
   })
 
-  it('shouldnt initialize with invalid bitvector', () => {
+  it("shouldn't initialize with invalid bitvector", () => {
     assert.throws(
       () => new Bloom(utils.zeros(byteSize / 2)),
       /bitvectors must be 2048 bits long/,
@@ -31,7 +31,7 @@ describe('bloom', () => {
     assert.isTrue(b.check(utf8ToBytes('value 2')), 'should contain string "value 2"')
   })
 
-  it('check shouldnt be tautology', () => {
+  it("check shouldn't be tautology", () => {
     const b = new Bloom()
     assert.isFalse(b.check(utf8ToBytes('random value')), 'should not contain string "random value"')
   })

@@ -26,8 +26,10 @@ export interface TxData {
   s: string
 }
 
-// The type of each entry from ./ttTransactionTestEip155VitaliksTests.json
+// The type of each entry from ./ttTransactionTestEip155VitaliksTests.json // cspell:disable-line
+// cspell:disable
 export interface VitaliksTestsDataEntry {
+  // cspell:enable
   blocknumber: string
   hash: string
   rlp: string
@@ -52,8 +54,8 @@ export type ForksData = {
 export type OfficialTransactionTestData = {
   _info: {
     comment: string
-    filledwith: string
-    lllcversion: string
+    filledwith: string // cspell:disable-line
+    lllcversion: string // cspell:disable-line
     source: string
     sourceHash: string
   }

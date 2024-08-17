@@ -18,7 +18,7 @@ export const paramsTest: ParamsDict = {
     minerReward: '3000000000000000000', // the amount a miner get rewarded for mining a block
   },
   /**
-.  * Constantinope HF Meta EIP
+.  * Constantinople HF Meta EIP
 .  */
   1013: {
     // gasPrices

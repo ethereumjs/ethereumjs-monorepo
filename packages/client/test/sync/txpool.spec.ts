@@ -1,7 +1,7 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { create1559FeeMarketTx, create2930AccessListTx } from '@ethereumjs/tx'
+import { createAccessList2930Tx, createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   Account,
   bytesToHex,
@@ -176,7 +176,7 @@ describe('[TxPool]', async () => {
     }
     txData.maxFeePerGas += (txData.maxFeePerGas * feeBump) / 100
     txData.maxPriorityFeePerGas += (txData.maxPriorityFeePerGas * feeBump) / 100
-    const tx = create1559FeeMarketTx(txData, { common })
+    const tx = createFeeMarket1559Tx(txData, { common })
     const signedTx = tx.sign(from.privateKey)
     return signedTx
   }
@@ -450,7 +450,7 @@ describe('[TxPool]', async () => {
     const poolContent = pool.pool.get(address)!
     assert.equal(poolContent.length, 1, 'only one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
-    // Another attempt to add tx which should not be broadcased to peer2
+    // Another attempt to add tx which should not be broadcasted to peer2
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
     assert.equal(sentToPeer2, 1, 'no new broadcast attempt to the peer')
     // Just to enhance logging coverage, assign peerPool for stats collection
@@ -531,7 +531,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      create1559FeeMarketTx({
+      createFeeMarket1559Tx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
       }),
@@ -547,7 +547,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      create1559FeeMarketTx({
+      createFeeMarket1559Tx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         nonce: 0,
@@ -567,7 +567,7 @@ describe('[TxPool]', async () => {
 
     const txs = []
     txs.push(
-      create1559FeeMarketTx(
+      createFeeMarket1559Tx(
         {
           maxFeePerGas: 1000000000,
           maxPriorityFeePerGas: 1000000000,
@@ -590,7 +590,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      create1559FeeMarketTx({
+      createFeeMarket1559Tx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         gasLimit: 21000,
@@ -610,7 +610,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      create1559FeeMarketTx({
+      createFeeMarket1559Tx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         nonce: 0,
@@ -633,7 +633,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      create1559FeeMarketTx({
+      createFeeMarket1559Tx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         nonce: 0,
@@ -657,7 +657,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      create1559FeeMarketTx({
+      createFeeMarket1559Tx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
       }).sign(A.privateKey),
@@ -677,7 +677,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      create1559FeeMarketTx({
+      createFeeMarket1559Tx({
         maxFeePerGas: 10000000,
         maxPriorityFeePerGas: 10000000,
         nonce: 0,
@@ -694,7 +694,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      create2930AccessListTx({
+      createAccessList2930Tx({
         gasPrice: 10000000,
         nonce: 0,
       }).sign(A.privateKey),
@@ -709,7 +709,7 @@ describe('[TxPool]', async () => {
   it('announcedTxHashes() -> reject txs with too low gas price (invalid tx type)', async () => {
     const txs = []
 
-    const tx = create2930AccessListTx(
+    const tx = createAccessList2930Tx(
       {
         gasPrice: 1000000000 - 1,
         nonce: 0,

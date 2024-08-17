@@ -62,7 +62,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   /**
    * List of tx type defining EIPs,
    * e.g. 1559 (fee market) and 2930 (access lists)
-   * for FeeMarketEIP1559Transaction objects
+   * for FeeMarket1559Tx objects
    */
   protected activeCapabilities: number[] = []
 

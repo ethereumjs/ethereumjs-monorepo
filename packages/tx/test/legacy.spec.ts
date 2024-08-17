@@ -17,7 +17,7 @@ import {
   createLegacyTxFromRLP,
 } from '../src/index.js'
 
-import txFixturesEip155 from './json/ttTransactionTestEip155VitaliksTests.json'
+import txFixturesEip155 from './json/ttTransactionTestEip155VitaliksTests.json' // cspell:disable-line
 import txFixtures from './json/txs.json'
 
 import type { TransactionType, TxData, TypedTransaction } from '../src/index.js'
@@ -62,7 +62,7 @@ describe('[Transaction]', () => {
     const nonEIP2930Common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     assert.ok(
       createLegacyTx({}, { common: nonEIP2930Common }),
-      'should initialize on a pre-Berlin Harfork (EIP-2930 not activated)',
+      'should initialize on a pre-Berlin Hardfork (EIP-2930 not activated)',
     )
     let common = new Common({ chain: Goerli })
     const txData = txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
@@ -356,7 +356,7 @@ describe('[Transaction]', () => {
 
     // Note that Vitalik's example has a very similar value denoted "signing data".
     // It's not the output of `serialize()`, but the pre-image of the hash returned by `tx.hash(false)`.
-    // We don't have a getter for such a value in LegacyTransaction.
+    // We don't have a getter for such a value in LegacyTx.
     assert.equal(
       bytesToHex(pt.serialize()),
       '0xec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080',

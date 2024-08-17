@@ -16,7 +16,7 @@ import { paramsTx } from '../params.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, txTypeBytes, validateNotArray } from '../util.js'
 
-import { BlobEIP4844Transaction } from './tx.js'
+import { Blob4844Tx } from './tx.js'
 
 import type {
   BlobEIP4844NetworkValuesArray,
@@ -68,10 +68,10 @@ const validateBlobTransactionNetworkWrapper = (
  * Notes:
  * - `chainId` will be set automatically if not provided
  * - All parameters are optional and have some basic default values
- * - `blobs` cannot be supplied as well as `kzgCommittments`, `blobVersionedHashes`, `kzgProofs`
- * - If `blobs` is passed in,  `kzgCommittments`, `blobVersionedHashes`, `kzgProofs` will be derived by the constructor
+ * - `blobs` cannot be supplied as well as `kzgCommitments`, `blobVersionedHashes`, `kzgProofs`
+ * - If `blobs` is passed in,  `kzgCommitments`, `blobVersionedHashes`, `kzgProofs` will be derived by the constructor
  */
-export function create4844BlobTx(txData: TxData, opts?: TxOptions) {
+export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
   if (opts?.common?.customCrypto?.kzg === undefined) {
     throw new Error(
       'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
@@ -101,7 +101,7 @@ export function create4844BlobTx(txData: TxData, opts?: TxOptions) {
     )
   }
 
-  return new BlobEIP4844Transaction(txData, opts)
+  return new Blob4844Tx(txData, opts)
 }
 
 /**
@@ -110,7 +110,7 @@ export function create4844BlobTx(txData: TxData, opts?: TxOptions) {
  * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
  * accessList, signatureYParity, signatureR, signatureS]`
  */
-export function create4844BlobTxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
+export function createBlob4844TxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
   if (opts.common?.customCrypto?.kzg === undefined) {
     throw new Error(
       'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
@@ -153,7 +153,7 @@ export function create4844BlobTxFromBytesArray(values: TxValuesArray, opts: TxOp
     s,
   })
 
-  return new BlobEIP4844Transaction(
+  return new Blob4844Tx(
     {
       chainId: bytesToBigInt(chainId),
       nonce,
@@ -180,7 +180,7 @@ export function create4844BlobTxFromBytesArray(values: TxValuesArray, opts: TxOp
  * Format: `0x03 || rlp([chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, to, value, data,
  * access_list, max_fee_per_data_gas, blob_versioned_hashes, y_parity, r, s])`
  */
-export function create4844BlobTxFromRLP(serialized: Uint8Array, opts: TxOptions = {}) {
+export function createBlob4844TxFromRLP(serialized: Uint8Array, opts: TxOptions = {}) {
   if (opts.common?.customCrypto?.kzg === undefined) {
     throw new Error(
       'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
@@ -201,19 +201,19 @@ export function create4844BlobTxFromRLP(serialized: Uint8Array, opts: TxOptions 
     throw new Error('Invalid serialized tx input: must be array')
   }
 
-  return create4844BlobTxFromBytesArray(values as TxValuesArray, opts)
+  return createBlob4844TxFromBytesArray(values as TxValuesArray, opts)
 }
 
 /**
  * Creates a transaction from the network encoding of a blob transaction (with blobs/commitments/proof)
  * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
  * @param opts any TxOptions defined
- * @returns a BlobEIP4844Transaction
+ * @returns a Blob4844Tx
  */
-export function create4844BlobTxFromSerializedNetworkWrapper(
+export function createBlob4844TxFromSerializedNetworkWrapper(
   serialized: Uint8Array,
   opts?: TxOptions,
-): BlobEIP4844Transaction {
+): Blob4844Tx {
   if (!opts || !opts.common) {
     throw new Error('common instance required to validate versioned hashes')
   }
@@ -241,9 +241,9 @@ export function create4844BlobTxFromSerializedNetworkWrapper(
     networkTxValues as BlobEIP4844NetworkValuesArray
 
   // Construct the tx but don't freeze yet, we will assign blobs etc once validated
-  const decodedTx = create4844BlobTxFromBytesArray(txValues, { ...opts, freeze: false })
+  const decodedTx = createBlob4844TxFromBytesArray(txValues, { ...opts, freeze: false })
   if (decodedTx.to === undefined) {
-    throw Error('BlobEIP4844Transaction can not be send without a valid `to`')
+    throw Error('Blob4844Tx can not be send without a valid `to`')
   }
 
   const commonCopy = opts.common.copy()
@@ -276,21 +276,21 @@ export function create4844BlobTxFromSerializedNetworkWrapper(
 /**
  * Creates the minimal representation of a blob transaction from the network wrapper version.
  * The minimal representation is used when adding transactions to an execution payload/block
- * @param txData a {@link BlobEIP4844Transaction} containing optional blobs/kzg commitments
+ * @param txData a {@link Blob4844Tx} containing optional blobs/kzg commitments
  * @param opts - dictionary of {@link TxOptions}
- * @returns the "minimal" representation of a BlobEIP4844Transaction (i.e. transaction object minus blobs and kzg commitments)
+ * @returns the "minimal" representation of a Blob4844Tx (i.e. transaction object minus blobs and kzg commitments)
  */
 export function createMinimal4844TxFromNetworkWrapper(
-  txData: BlobEIP4844Transaction,
+  txData: Blob4844Tx,
   opts?: TxOptions,
-): BlobEIP4844Transaction {
+): Blob4844Tx {
   if (opts?.common?.customCrypto?.kzg === undefined) {
     throw new Error(
       'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
     )
   }
 
-  const tx = create4844BlobTx(
+  const tx = createBlob4844Tx(
     {
       ...txData,
       ...{ blobs: undefined, kzgCommitments: undefined, kzgProofs: undefined },
@@ -311,7 +311,7 @@ export function blobTxNetworkWrapperToJSON(
   serialized: Uint8Array,
   opts?: TxOptions,
 ): JsonBlobTxNetworkWrapper {
-  const tx = create4844BlobTxFromSerializedNetworkWrapper(serialized, opts)
+  const tx = createBlob4844TxFromSerializedNetworkWrapper(serialized, opts)
 
   const accessListJSON = AccessLists.getAccessListJSON(tx.accessList)
   const baseJson = tx.toJSON()

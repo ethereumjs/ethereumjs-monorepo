@@ -20,7 +20,7 @@ export const paramsVM: ParamsDict = {
     minerReward: '3000000000000000000', // the amount a miner get rewarded for mining a block
   },
   /**
-.  * Constantinope HF Meta EIP
+.  * Constantinople HF Meta EIP
 .  */
   1013: {
     // pow
@@ -61,7 +61,7 @@ export const paramsVM: ParamsDict = {
 .  */
   4788: {
     // config
-    historicalRootsLength: 8191, // The modulo parameter of the beaconroot ring buffer in the beaconroot statefull precompile
+    historicalRootsLength: 8191, // The modulo parameter of the beaconroot ring buffer in the beaconroot stateful precompile
   },
   /**
    * Ethereum state using a unified verkle tree (experimental)

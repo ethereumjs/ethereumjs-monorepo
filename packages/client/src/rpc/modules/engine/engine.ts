@@ -678,7 +678,7 @@ export class Engine {
                 this.chain.config.engineNewpayloadMaxTxsExecute
               }) executionBusy=${this.execution.running}`,
             )
-            // determind status to be returned depending on if block could extend chain or not
+            // determined status to be returned depending on if block could extend chain or not
             const status = optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
             const response = { status, latestValidHash: null, validationError: null }
             return response

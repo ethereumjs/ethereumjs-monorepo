@@ -78,10 +78,10 @@ describe('Withdrawal', () => {
   })
 
   it('toBytesArray from withdrawalData', () => {
-    const withdrawalsDatatoBytesArr = withdrawalsGethVector.map((withdrawal) =>
+    const withdrawalsDataToBytesArr = withdrawalsGethVector.map((withdrawal) =>
       Withdrawal.toBytesArray(withdrawal as WithdrawalData),
     )
-    const withdrawalsDataToRlp = bytesToHex(encode(withdrawalsDatatoBytesArr))
+    const withdrawalsDataToRlp = bytesToHex(encode(withdrawalsDataToBytesArr))
     assert.equal(gethWithdrawalsRlp, withdrawalsDataToRlp, 'The withdrawals to buffer should match')
   })
 

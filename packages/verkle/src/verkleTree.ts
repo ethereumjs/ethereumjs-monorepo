@@ -6,6 +6,7 @@ import {
   bytesToHex,
   equalsBytes,
   intToHex,
+  matchingBytesLength,
   zeros,
 } from '@ethereumjs/util'
 import debug from 'debug'
@@ -22,7 +23,6 @@ import {
   type VerkleTreeOpts,
   type VerkleTreeOptsWithDefaults,
 } from './types.js'
-import { matchingBytesLength } from './util/index.js'
 
 import type { DB, PutBatch, VerkleCrypto } from '@ethereumjs/util'
 import type { Debugger } from 'debug'

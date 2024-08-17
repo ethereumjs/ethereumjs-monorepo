@@ -91,12 +91,12 @@ describe('[EIP3860 tests]', () => {
           { data, type: txType },
           { common, allowUnlimitedInitCodeSize: true },
         )
-        const eip3860DeactivedTx = createTxFromTxData(
+        const eip3860DeactivatedTx = createTxFromTxData(
           { data, type: txType },
           { common, allowUnlimitedInitCodeSize: false },
         )
         assert.ok(
-          eip3860ActiveTx.getDataGas() === eip3860DeactivedTx.getDataGas(),
+          eip3860ActiveTx.getDataGas() === eip3860DeactivatedTx.getDataGas(),
           'charged initcode analysis gas',
         )
       }

@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { Blob4844Tx } from '@ethereumjs/tx'
 import { BIGINT_0, BIGINT_1, TypeOutput, isHexString, toType } from '@ethereumjs/util'
 
 import type { BlockHeaderBytes, HeaderData } from './types.js'
@@ -96,7 +96,7 @@ export function getDifficulty(headerData: HeaderData): bigint | null {
 export const getNumBlobs = (transactions: TypedTransaction[]) => {
   let numBlobs = 0
   for (const tx of transactions) {
-    if (tx instanceof BlobEIP4844Transaction) {
+    if (tx instanceof Blob4844Tx) {
       numBlobs += tx.blobVersionedHashes.length
     }
   }
@@ -109,10 +109,10 @@ export const getNumBlobs = (transactions: TypedTransaction[]) => {
 export const fakeExponential = (factor: bigint, numerator: bigint, denominator: bigint) => {
   let i = BIGINT_1
   let output = BIGINT_0
-  let numerator_accum = factor * denominator
-  while (numerator_accum > BIGINT_0) {
-    output += numerator_accum
-    numerator_accum = (numerator_accum * numerator) / (denominator * i)
+  let numerator_accumulator = factor * denominator
+  while (numerator_accumulator > BIGINT_0) {
+    output += numerator_accumulator
+    numerator_accumulator = (numerator_accumulator * numerator) / (denominator * i)
     i++
   }
 

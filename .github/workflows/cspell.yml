@@ -1,0 +1,25 @@
+name: Spell check (cspell)
+on:
+  push:
+    branches: [master, develop]
+    tags: ['*']
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  run-spellcheck-cspell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - run: npm run cspell

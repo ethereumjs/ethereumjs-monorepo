@@ -9,8 +9,8 @@ import { _walkTrie } from './asyncWalk.js'
 import type { TrieNode } from '../types.js'
 import type { Debugger } from 'debug'
 
-const debug = _debug('trieview')
-const delimeters = {
+const debug = _debug('trieview') // cspell:disable-line
+const delimiters = {
   0: debug.extend(''),
   1: debug.extend('::'),
   2: debug.extend('::::'),
@@ -18,12 +18,12 @@ const delimeters = {
   4: debug.extend('::::::::'),
   5: debug.extend('::::::::::'),
 } as const
-type Delimeter = keyof typeof delimeters
-const delimiter = (level: Delimeter): void => {
-  delimeters[level]('-'.repeat(50 - level * 2))
+type Delimiter = keyof typeof delimiters
+const delimiter = (level: Delimiter): void => {
+  delimiters[level]('-'.repeat(50 - level * 2))
 }
 const tNode = ['br', 'lf', 'ex', 'rt', 'nl', 'pf', 'vl'] as const
-type TNode = typeof tNode[number]
+type TNode = (typeof tNode)[number]
 const debugN = (type: TNode, d?: Debugger) => {
   d = d ?? debug
   const nodeDebuggers = {
@@ -43,10 +43,10 @@ function getNodeType(node: TrieNode): TNode {
   return node instanceof BranchNode
     ? 'br'
     : node instanceof ExtensionNode
-    ? 'ex'
-    : node instanceof LeafNode
-    ? 'lf'
-    : 'nl'
+      ? 'ex'
+      : node instanceof LeafNode
+        ? 'lf'
+        : 'nl'
 }
 
 function logNode(trie: Trie, node: TrieNode, currentKey: number[]): void {
@@ -56,8 +56,8 @@ function logNode(trie: Trie, node: TrieNode, currentKey: number[]): void {
     debugN('rt').extend(type)(
       `{ 0x${bytesToHex((trie as any).hash(node.serialize())).slice(
         0,
-        12
-      )}... } ---- \uD83D\uDCA5  \u211B \u2134 \u2134 \u0164  \u0147 \u2134 \u0221 \u2211  \u2737`
+        12,
+      )}... } ---- \uD83D\uDCA5  \u211B \u2134 \u2134 \u0164  \u0147 \u2134 \u0221 \u2211  \u2737`,
     )
   } else {
     debugN(type)(`{ 0x${bytesToHex((trie as any).hash(node.serialize())).slice(0, 12)}... } ----`)
