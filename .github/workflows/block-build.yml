@@ -29,6 +29,18 @@ jobs:
         with:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
+      
+      - uses: actions/cache/restore@v4
+        id: submodules-cache
+        with:
+          path: ${{github.workspace}}/packages/ethereum-tests
+          key: ethereum-tests-${{ github.run_id }}
+
+      - name: Install ethereum-tests (if not restored from cache)
+        if: steps.submodules-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with: 
+          submodules: recursive
   
       - name: Use Node.js 20
         uses: actions/setup-node@v4

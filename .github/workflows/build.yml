@@ -15,6 +15,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  checkout-submodules:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/cache/save@v4
+        id: submodules-cache
+        with:
+          path: ${{github.workspace}}/packages/ethereum-tests
+          key: ethereum-tests-${{ github.run_id }}
+
   build:
     runs-on: ubuntu-latest
 
