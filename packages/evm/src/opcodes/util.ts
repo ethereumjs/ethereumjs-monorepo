@@ -173,7 +173,7 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
 
   const words = newMemoryWordCount
   const fee = common.param('memoryGas')
-  const quadCoefficient = common.param('quadCoefficientDivGas') // cspell:disable-line
+  const quadCoefficient = common.param('quadCoefficientDivGas')
   // words * 3 + words ^2 / 512
   let cost = words * fee + (words * words) / quadCoefficient
 
