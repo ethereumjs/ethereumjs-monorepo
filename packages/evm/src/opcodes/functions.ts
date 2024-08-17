@@ -579,7 +579,8 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       } else if (common.isActivatedEIP(7702)) {
         code = await eip7702CodeCheck(runState, code)
-        return keccak256(code)
+        runState.stack.push(bytesToBigInt(keccak256(code)))
+        return
       }
 
       const account = await runState.stateManager.getAccount(address)

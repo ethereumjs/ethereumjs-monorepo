@@ -310,9 +310,9 @@ describe.only('test EIP-7702 opcodes', () => {
       },
       // EXTCODECOPY
       {
-        // PUSH1 32 PUSH0 PUSH0 PUSH20 <defaultAuthAddr> EXTCODEHASH PUSH0 SSTORE STOP
+        // PUSH1 32 PUSH0 PUSH0 PUSH20 <defaultAuthAddr> EXTCODEHASH PUSH0 MLOAD PUSH0 SSTORE STOP
         code: <PrefixedHexString>(
-          ('0x60205f5f73' + defaultAuthAddr.toString().slice(2) + '3c' + '5f5500')
+          ('0x60205f5f73' + defaultAuthAddr.toString().slice(2) + '3c' + '5f515f5500')
         ),
         expectedStorage: setLengthRight(randomCode, 32),
         name: 'EXTCODECOPY',
