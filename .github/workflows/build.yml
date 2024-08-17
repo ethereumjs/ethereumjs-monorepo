@@ -36,15 +36,20 @@ jobs:
       - run: npm ci
         working-directory: ${{github.workspace}}
         
+      - name: Cache dependencies
+        uses: actions/cache/save@v4
+        with:
+          path: ${{github.workspace}}
+          key: npm-${{ hashFiles('package-lock.json') }}
+
       - name: Cache build
         uses: actions/cache/save@v4
-        id: build-cache
         with:
           path: ${{github.workspace}}
           key: npm-${{ hashFiles('package-lock.json') }}-${{ github.run_number }}
 
     outputs: 
-      dep-cache-key: ${{ steps.build-cache.outputs.cache-primary-key }}
+      dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}-${{ github.run_number }}
 
   block:
     needs: build
