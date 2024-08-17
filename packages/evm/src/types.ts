@@ -343,9 +343,13 @@ export interface EVMOpts {
   stateManager?: StateManagerInterface
 
   /**
+   * The EVM comes with a basic mock blockchain interface and implementation for
+   * non-block containing use cases.
    *
+   * For block-containing setups use the full blockchain implementation from the
+   * `@ethereumjs/blockchain package.
    */
-  blockchain?: Blockchain
+  blockchain?: EVMMockBlockchainInterface
 
   /**
    *
@@ -472,16 +476,16 @@ export interface TransientStorageInterface {
   clear(): void
 }
 
-type MockBlock = {
+export type EVMMockBlock = {
   hash(): Uint8Array
 }
 
-export interface Blockchain {
-  getBlock(blockId: number): Promise<MockBlock>
-  shallowCopy(): Blockchain
+export interface EVMMockBlockchainInterface {
+  getBlock(blockId: number): Promise<EVMMockBlock>
+  shallowCopy(): EVMMockBlockchainInterface
 }
 
-export class DefaultBlockchain implements Blockchain {
+export class EVMMockBlockchain implements EVMMockBlockchainInterface {
   async getBlock() {
     return {
       hash() {
