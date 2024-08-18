@@ -1,0 +1,9 @@
+{
+  "params": {
+    "fork": "Berlin",
+    "constantinopleForkBlock": "0x00",
+    "byzantiumForkBlock": "0x00",
+    "homesteadForkBlock": "0x00"
+  },
+  "accounts": {}
+}
