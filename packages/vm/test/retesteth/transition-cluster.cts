@@ -40,6 +40,8 @@ function runTest(message: any) {
     childObject.active = true
     const child = childObject.child
 
+    console.log(message)
+
     child.send(message)
 
     child.on('message', (_childMessage: any) => {
