@@ -2,7 +2,7 @@ import { fork } from 'child_process'
 import { createServer } from 'http'
 import { resolve } from 'path'
 
-const program = resolve('test/retesteth/transition-child.cts')
+const program = resolve('test/t8n/transition-child.cts')
 const parameters: any = []
 const options = {
   //stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
@@ -50,9 +50,11 @@ function runTest(message: any) {
 }
 
 const server = createServer((request: any, result: any) => {
+  console.log("IN", request.method)
   if (request.method === 'POST') {
     let message = ''
     request.on('data', (data: any) => {
+      console.log("DATA", data.toString(), data.toString().length)
       message += data.toString()
     })
     request.on('end', async () => {

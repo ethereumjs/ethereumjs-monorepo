@@ -21,6 +21,8 @@ import {
   isHexString,
   setLengthLeft,
   toBytes,
+  toType,
+  TypeOutput,
   unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -333,7 +335,10 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     }
   }
   if (opts?.common && opts.common.gteHardfork('paris')) {
-    headerData['mixHash'] = currentRandom
+    headerData['mixHash'] = setLengthLeft(
+      <Uint8Array>toType(currentRandom, TypeOutput.Uint8Array)!,
+      32,
+    )
     headerData['difficulty'] = 0
   }
   if (opts?.common && opts.common.gteHardfork('cancun')) {
