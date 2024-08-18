@@ -5,7 +5,16 @@ import {
   createTxFromSerializedData,
   createTxFromTxData,
 } from '@ethereumjs/tx'
-import { Account, bigIntToHex, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import {
+  Account,
+  bigIntToHex,
+  bytesToHex,
+  createAddressFromString,
+  hexToBytes,
+  setLengthLeft,
+  unpadBytes,
+  unprefixedHexToBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
@@ -19,7 +28,7 @@ import { makeBlockFromEnv, setupPreConditions } from '../util.js'
 
 import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
 import type { TypedTransaction, TypedTxData } from '@ethereumjs/tx'
-import type { NestedUint8Array } from '@ethereumjs/util'
+import type { Address, NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
 function normalizeNumbers(input: any) {
   const keys = [
@@ -124,7 +133,6 @@ vm.events.on('afterTx', async (afterTx, continueFn: any) => {
     status: receipt.status === 0 ? '0x' : '0x1',
     cumulativeGasUsed: '0x' + receipt.cumulativeBlockGasUsed.toString(16),
     logsBloom: bytesToHex(receipt.bitvector),
-    logs: null,
     transactionHash: bytesToHex(afterTx.transaction.hash()),
     contractAddress: '0x0000000000000000000000000000000000000000',
     gasUsed: '0x' + afterTx.totalGasSpent.toString(16),
@@ -135,6 +143,61 @@ vm.events.on('afterTx', async (afterTx, continueFn: any) => {
   txCounter++
   continueFn!(undefined)
 })
+
+console.log(alloc)
+
+// Track the allocation to ensure the output.alloc is correct
+const allocTracker: {
+  [address: string]: {
+    storage: string[]
+  }
+} = {}
+
+function addAddress(address: string) {
+  if (allocTracker[address] === undefined) {
+    allocTracker[address] = { storage: [] }
+  }
+  return allocTracker[address]
+}
+
+function addStorage(address: string, storage: string) {
+  const storageList = addAddress(address).storage
+  if (!storageList.includes(storage)) {
+    storageList.push(storage)
+  }
+}
+
+const originalPutAccount = vm.stateManager.putAccount
+const originalPutCode = vm.stateManager.putCode
+const originalPutStorage = vm.stateManager.putStorage
+
+vm.stateManager.putAccount = async function (...args: any) {
+  const address = <Address>args[0]
+  addAddress(address.toString())
+  await originalPutAccount.apply(this, args)
+}
+
+vm.stateManager.putAccount = async function (...args: any) {
+  const address = <Address>args[0]
+  console.log('PUTACCOUNT', address.toString())
+  addAddress(address.toString())
+  return await originalPutAccount.apply(this, args)
+}
+
+vm.stateManager.putCode = async function (...args: any) {
+  const address = <Address>args[0]
+  console.log('PUTCODE', address.toString())
+  addAddress(address.toString())
+  return await originalPutCode.apply(this, args)
+}
+
+vm.stateManager.putStorage = async function (...args: any) {
+  const address = <Address>args[0]
+  const key = <Uint8Array>args[1]
+  console.log('PUTSTORAGE', address.toString(), bytesToHex(key))
+  addStorage(address.toString(), bytesToHex(key))
+  return await originalPutStorage.apply(this, args)
+}
 
 const rejected: any = []
 
@@ -159,7 +222,6 @@ for (const txData of txsData) {
     if (txData.input !== undefined) {
       txData.data = txData.input
     }
-    console.log('TXDATA', txData)
     const tx = createTxFromTxData(txData, { common })
     await builder.addTransaction(tx)
   } catch (e: any) {
@@ -171,28 +233,71 @@ for (const txData of txsData) {
   index++
 }
 
-const logsBloom = builder.logsBloom()
-const logsHash = keccak256(logsBloom)
-
 await vm.evm.journal.cleanup()
 
+const result = await builder.build()
+
 const output = {
-  stateRoot: bytesToHex(await vm.stateManager.getStateRoot()),
-  txRoot: bytesToHex(await builder.transactionsTrie()),
-  receiptsRoot: bytesToHex(await builder.receiptTrie()),
-  logsHash: bytesToHex(logsHash),
-  logsBloom: bytesToHex(logsBloom),
-  receipts, // TODO fixme
+  stateRoot: bytesToHex(result.header.stateRoot),
+  txRoot: bytesToHex(result.header.transactionsTrie),
+  receiptsRoot: bytesToHex(result.header.receiptTrie),
+  logsHash: bytesToHex(keccak256(result.header.logsBloom)),
+  logsBloom: bytesToHex(result.header.logsBloom),
+  receipts,
   gasUsed: bigIntToHex(builder.gasUsed),
+}
+
+if (result.header.baseFeePerGas !== undefined) {
+  ;(output as any).currentBaseFee = bigIntToHex(result.header.baseFeePerGas)
+}
+
+if (result.header.withdrawalsRoot !== undefined) {
+  ;(output as any).withdrawalsRoot = bytesToHex(result.header.withdrawalsRoot)
 }
 
 if (rejected.length > 0) {
   ;(output as any).rejected = rejected
 }
 
+// Build output alloc
+
+for (const addressString in allocTracker) {
+  const address = createAddressFromString(addressString)
+  const account = await vm.stateManager.getAccount(address)
+  if (account === undefined) {
+    delete alloc[addressString]
+    continue
+  }
+  if (alloc[addressString] === undefined) {
+    alloc[addressString] = {}
+  }
+  alloc[addressString].nonce = bigIntToHex(account.nonce)
+  alloc[addressString].balance = bigIntToHex(account.balance)
+  alloc[addressString].code = bytesToHex(await vm.stateManager.getCode(address))
+
+  const storage = allocTracker[addressString].storage ?? {}
+  allocTracker[addressString].storage = storage
+
+  for (const key of storage) {
+    const keyBytes = hexToBytes(<PrefixedHexString>key)
+    let storageKeyTrimmed = bytesToHex(unpadBytes(keyBytes))
+    if (storageKeyTrimmed === '0x') {
+      storageKeyTrimmed = '0x00'
+    }
+    const value = await vm.stateManager.getStorage(address, setLengthLeft(keyBytes, 32))
+    if (value.length === 0) {
+      delete alloc[addressString].storage[storageKeyTrimmed]
+      // To be sure, also delete any keys which are left-padded to 32 bytes
+      delete alloc[addressString].storage[key]
+      continue
+    }
+    alloc[addressString].storage[storageKeyTrimmed] = bytesToHex(value)
+  }
+}
+
 const outputAlloc = alloc
 
-console.log(output)
+console.log('WRITE', outputAlloc)
 
 const outputResultFilePath = join(args.output.basedir, args.output.result)
 const outputAllocFilePath = join(args.output.basedir, args.output.alloc)
