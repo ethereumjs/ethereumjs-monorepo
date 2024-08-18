@@ -233,15 +233,6 @@ export class Skeleton extends MetaDBManager {
     return this.started > 0
   }
 
-  async isLastAnnouncement(): Promise<boolean> {
-    const subchain0 = this.status.progress.subchains[0]
-    if (subchain0 !== undefined) {
-      return this.getBlock(subchain0.head + BIGINT_1) !== undefined
-    } else {
-      return true
-    }
-  }
-
   /**
    * Try fast forwarding the chain head to the number
    */
@@ -316,7 +307,7 @@ export class Skeleton extends MetaDBManager {
     } else if (lastchain.head >= number) {
       // Check if its duplicate announcement, if not trim the head and let the match run
       // post this if block
-      const mayBeDupBlock = await this.getBlock(number)
+      const mayBeDupBlock = await this.getBlock(number, true)
       if (mayBeDupBlock !== undefined && equalsBytes(mayBeDupBlock.header.hash(), head.hash())) {
         this.config.logger.debug(
           `Skeleton duplicate ${force ? 'setHead' : 'announcement'} tail=${lastchain.tail} head=${
@@ -359,7 +350,7 @@ export class Skeleton extends MetaDBManager {
         return true
       }
     }
-    const parent = await this.getBlock(number - BIGINT_1)
+    const parent = await this.getBlock(number - BIGINT_1, true)
     if (parent === undefined || !equalsBytes(parent.hash(), head.header.parentHash)) {
       if (force) {
         this.config.logger.warn(
@@ -818,7 +809,7 @@ export class Skeleton extends MetaDBManager {
       const syncedBlock = await this.getBlock(
         syncedHeight,
         // need to debug why this flag causes to return undefined when chain gets synced
-        //, true
+        true,
       )
       if (
         syncedBlock !== undefined &&
@@ -859,7 +850,7 @@ export class Skeleton extends MetaDBManager {
   async headHash(): Promise<Uint8Array | undefined> {
     const subchain = this.bounds()
     if (subchain !== undefined) {
-      const headBlock = await this.getBlock(subchain.head)
+      const headBlock = await this.getBlock(subchain.head, true)
       if (headBlock) {
         return headBlock.hash()
       }
@@ -998,7 +989,7 @@ export class Skeleton extends MetaDBManager {
         } else {
           // Critical error, we expect new incoming blocks to extend the canonical
           // subchain which is the [0]'th
-          const tailBlock = await this.getBlock(this.status.progress.subchains[0].tail)
+          const tailBlock = await this.getBlock(this.status.progress.subchains[0].tail, true)
           this.config.logger.warn(
             `Blocks don't extend canonical subchain tail=${
               this.status.progress.subchains[0].tail
@@ -1112,7 +1103,7 @@ export class Skeleton extends MetaDBManager {
       for (let i = 0; i < maxItems; i++) {
         const tailBlock = await this.getBlockByHash(next)
 
-        if (tailBlock === undefined) {
+        if (tailBlock === undefined || tailBlock.header.number <= BIGINT_1) {
           break
         } else {
           blocks.push(tailBlock)
@@ -1202,7 +1193,7 @@ export class Skeleton extends MetaDBManager {
     while (!this.status.canonicalHeadReset && canonicalHead < subchain.head) {
       // Get next block
       const number = canonicalHead + BIGINT_1
-      const block = await this.getBlock(number)
+      const block = await this.getBlock(number, true)
 
       if (block === undefined) {
         // This can happen
@@ -1381,10 +1372,12 @@ export class Skeleton extends MetaDBManager {
    * Gets a block from the skeleton or canonical db by number.
    */
   async getBlock(number: bigint, onlyCanonical = false): Promise<Block | undefined> {
-    return this.chain.blockchain.dbManager.getBlock(number, {
-      fcUed: onlyCanonical,
-      linked: this.status.linked,
-    })
+    return this.chain.blockchain.dbManager
+      .getBlock(number, {
+        fcUed: onlyCanonical,
+        linked: this.status.linked,
+      })
+      .catch((_e) => undefined)
   }
 
   /**
@@ -1395,7 +1388,7 @@ export class Skeleton extends MetaDBManager {
     onlyCanonical: boolean = false,
   ): Promise<Block | undefined> {
     return this.chain.blockchain.dbManager.getBlock(hash, {
-      fcUed: !onlyCanonical,
+      fcUed: onlyCanonical,
       linked: this.status.linked,
     })
   }

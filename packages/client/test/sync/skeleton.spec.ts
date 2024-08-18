@@ -25,14 +25,23 @@ type Subchain = {
 }
 
 const common = new Common({ chain: Mainnet })
-const block49 = createBlock({ header: { number: 49 } }, { common })
-const block49B = createBlock({ header: { number: 49, extraData: utf8ToBytes('B') } }, { common })
-const block50 = createBlock({ header: { number: 50, parentHash: block49.hash() } }, { common })
+const block49 = createBlock({ header: { number: 49 } }, { common, setHardfork: true })
+const block49B = createBlock(
+  { header: { number: 49, extraData: utf8ToBytes('B') } },
+  { common, setHardfork: true },
+)
+const block50 = createBlock(
+  { header: { number: 50, parentHash: block49.hash() } },
+  { common, setHardfork: true },
+)
 const block50B = createBlock(
   { header: { number: 50, parentHash: block49.hash(), gasLimit: 999 } },
-  { common },
+  { common, setHardfork: true },
 )
-const block51 = createBlock({ header: { number: 51, parentHash: block50.hash() } }, { common })
+const block51 = createBlock(
+  { header: { number: 51, parentHash: block50.hash() } },
+  { common, setHardfork: true },
+)
 
 describe('[Skeleton]/ startup scenarios ', () => {
   it('starts the chain when starting the skeleton', async () => {
@@ -594,20 +603,20 @@ describe('[Skeleton] / setHead', async () => {
       'canonical height should change when setHead is set with force=true',
     )
 
-    // unlink the skeleton for the below check to check all blocks cleared
+    // unlink the skeleton for the below check and still find the blocks in blokchain
     skeleton['status'].linked = false
     for (const block of [block1, block2, block3, block4, block5]) {
       assert.equal(
-        (await skeleton.getBlock(block.header.number, true))?.hash(),
-        undefined,
-        `skeleton block number=${block.header.number} should be cleaned up after filling canonical chain`,
+        (await skeleton.getBlock(block.header.number, true))?.hash() !== undefined,
+        true,
+        `skeleton block number=${block.header.number} should be available even afer filling canonical chain`,
       )
       assert.equal(
-        (await skeleton.getBlockByHash(block.hash(), true))?.hash(),
-        undefined,
+        (await skeleton.getBlockByHash(block.hash(), true))?.hash() !== undefined,
+        true,
         `skeleton block hash=${short(
           block.hash(),
-        )} should be cleaned up after filling canonical chain`,
+        )} should be available even after filling canonical chain`,
       )
     }
   })
@@ -677,16 +686,16 @@ describe('[Skeleton] / setHead', async () => {
     skeleton['status'].linked = false
     for (const block of [block3, block4, block5]) {
       assert.equal(
-        (await skeleton.getBlock(block.header.number, true))?.hash(),
-        undefined,
-        `skeleton block number=${block.header.number} should be cleaned up after filling canonical chain`,
+        (await skeleton.getBlock(block.header.number, true))?.hash() !== undefined,
+        true,
+        `skeleton block number=${block.header.number} should still be available after filling canonical chain`,
       )
       assert.equal(
-        (await skeleton.getBlockByHash(block.hash(), true))?.hash(),
-        undefined,
+        (await skeleton.getBlockByHash(block.hash(), true))?.hash() !== undefined,
+        true,
         `skeleton block hash=${short(
           block.hash(),
-        )} should be cleaned up after filling canonical chain`,
+        )} should still be available after filling canonical chain`,
       )
     }
     // restore linkedStatus
@@ -707,9 +716,9 @@ describe('[Skeleton] / setHead', async () => {
 
     await skeleton.setHead(block41, false)
     await skeleton.setHead(block51, false)
-
     // should link the chains including the 41, 51 block backfilled from the unfinalized
     await skeleton.forkchoiceUpdate(block61)
+
     assert.equal(
       skeleton['status'].progress.subchains[0]?.head,
       BigInt(6),
@@ -856,7 +865,9 @@ describe('[Skeleton] / setHead', async () => {
     await skeleton.open()
 
     await skeleton.initSync(block4InvalidPoS)
+    // the following putBlocks will fail ad block3 is pow block
     await skeleton.putBlocks([block3PoW, block2])
+
     assert.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
     await skeleton.putBlocks([block1])
     await wait(200)
