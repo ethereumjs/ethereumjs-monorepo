@@ -87,8 +87,6 @@ const args = yargs(hideBin(process.argv))
     type: 'string',
   }).argv as any
 
-console.log('ARGS', args)
-
 const alloc = JSON.parse(readFileSync(args.input.alloc).toString())
 const txsData = JSON.parse(readFileSync(args.input.txs).toString())
 const inputEnv = normalizeNumbers(JSON.parse(readFileSync(args.input.env).toString()))
@@ -108,7 +106,6 @@ if (args.state.fork === 'Merged') {
 }
 const vm = blockchain ? await VM.create({ common, blockchain }) : await VM.create({ common })
 
-console.log('ALLOC', alloc)
 await setupPreConditions(vm.stateManager, { pre: alloc })
 
 const block = makeBlockFromEnv(inputEnv, { common })
@@ -144,8 +141,6 @@ vm.events.on('afterTx', async (afterTx, continueFn: any) => {
   continueFn!(undefined)
 })
 
-console.log(alloc)
-
 // Track the allocation to ensure the output.alloc is correct
 const allocTracker: {
   [address: string]: {
@@ -179,14 +174,12 @@ vm.stateManager.putAccount = async function (...args: any) {
 
 vm.stateManager.putAccount = async function (...args: any) {
   const address = <Address>args[0]
-  console.log('PUTACCOUNT', address.toString())
   addAddress(address.toString())
   return await originalPutAccount.apply(this, args)
 }
 
 vm.stateManager.putCode = async function (...args: any) {
   const address = <Address>args[0]
-  console.log('PUTCODE', address.toString())
   addAddress(address.toString())
   return await originalPutCode.apply(this, args)
 }
@@ -194,7 +187,6 @@ vm.stateManager.putCode = async function (...args: any) {
 vm.stateManager.putStorage = async function (...args: any) {
   const address = <Address>args[0]
   const key = <Uint8Array>args[1]
-  console.log('PUTSTORAGE', address.toString(), bytesToHex(key))
   addStorage(address.toString(), bytesToHex(key))
   return await originalPutStorage.apply(this, args)
 }
@@ -296,8 +288,6 @@ for (const addressString in allocTracker) {
 }
 
 const outputAlloc = alloc
-
-console.log('WRITE', outputAlloc)
 
 const outputResultFilePath = join(args.output.basedir, args.output.result)
 const outputAllocFilePath = join(args.output.basedir, args.output.alloc)
