@@ -141,13 +141,18 @@ export class SimpleStateManager implements StateManagerInterface {
     return copy
   }
 
-  // State root functionality not implemented
-  getStateRoot(): Promise<Uint8Array> {
-    throw new Error('Method not implemented.')
+  /**
+   * @deprecated This method is not used by the RPC State Manager and is a stub required by the State Manager interface
+   */
+  getStateRoot = async () => {
+    return new Uint8Array(32)
   }
-  setStateRoot(): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
+
+  /**
+   * @deprecated This method is not used by the RPC State Manager and is a stub required by the State Manager interface
+   */
+  setStateRoot = async (_root: Uint8Array) => {}
+
   hasStateRoot(): Promise<boolean> {
     throw new Error('Method not implemented.')
   }
