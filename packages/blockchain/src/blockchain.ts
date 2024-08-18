@@ -378,7 +378,12 @@ export class Blockchain implements BlockchainInterface {
           )
         }
 
-        if (this._validateBlocks && !isGenesis && item instanceof Block && optimisticOpts === undefined) {
+        if (
+          this._validateBlocks &&
+          !isGenesis &&
+          item instanceof Block &&
+          optimisticOpts === undefined
+        ) {
           // this calls into `getBlock`, which is why we cannot lock yet
           await this.validateBlock(block)
         }

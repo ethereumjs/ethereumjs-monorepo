@@ -242,6 +242,7 @@ describe('[Skeleton] / initSync', async () => {
         storageCache: 1000,
       })
       const chain = await Chain.create({ config })
+      ;(chain.blockchain as any)._validateBlocks = false
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
 
@@ -359,6 +360,7 @@ describe('[Skeleton] / setHead', async () => {
         storageCache: 1000,
       })
       const chain = await Chain.create({ config })
+      ;(chain.blockchain as any)._validateBlocks = false
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
       for (const block of testCase.blocks ?? []) {
