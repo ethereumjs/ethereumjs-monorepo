@@ -1,5 +1,6 @@
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import { bigIntToHex, bytesToBigInt, bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
+import { buildBlock } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, beforeEach, describe, it } from 'vitest'
 
@@ -88,7 +89,7 @@ describe(method, () => {
       txLookupLimit: 0,
     })
     const rpc = getRpcClient(server)
-    const firstTx = TransactionFactory.fromTxData(
+    const firstTx = createTxFromTxData(
       {
         type: 0x2,
         gasLimit: 10000000,
@@ -97,12 +98,12 @@ describe(method, () => {
         value: 0,
         data: storageBytecode,
       },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(dummy.privKey)
 
     const vmCopy = await execution.vm.shallowCopy()
     const parentBlock = await chain.getCanonicalHeadBlock()
-    const blockBuilder = await vmCopy.buildBlock({
+    const blockBuilder = await buildBlock(vmCopy, {
       parentBlock,
       headerData: {
         timestamp: parentBlock.header.timestamp + BigInt(1),
@@ -115,7 +116,7 @@ describe(method, () => {
 
     const result = await blockBuilder.addTransaction(firstTx, { skipHardForkValidation: true })
 
-    const secondTx = TransactionFactory.fromTxData(
+    const secondTx = createTxFromTxData(
       {
         to: result.createdAddress,
         type: 0x2,
@@ -126,12 +127,12 @@ describe(method, () => {
         nonce: 1,
         data: updateBytecode,
       },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(dummy.privKey)
 
     await blockBuilder.addTransaction(secondTx, { skipHardForkValidation: true })
 
-    const thirdTx = TransactionFactory.fromTxData(
+    const thirdTx = createTxFromTxData(
       {
         type: 0x2,
         gasLimit: 10000000,
@@ -141,7 +142,7 @@ describe(method, () => {
         nonce: 2,
         data: noStorageBytecode,
       },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(dummy.privKey)
 
     const thirdResult = await blockBuilder.addTransaction(thirdTx, { skipHardForkValidation: true })
@@ -174,27 +175,27 @@ describe(method, () => {
     assert.equal(
       storageRange.storage[bytesToHex(firstVariableHash)].value,
       '0x43',
-      'First variable correctly included.'
+      'First variable correctly included.',
     )
 
     const secondVariableHash = keccak256(setLengthLeft(hexToBytes('0x01'), 32))
     assert.equal(
       storageRange.storage[bytesToHex(secondVariableHash)].value,
       '0x01',
-      'Second variable correctly included.'
+      'Second variable correctly included.',
     )
 
     const thirdVariableHash = keccak256(setLengthLeft(hexToBytes('0x02'), 32))
     assert.equal(
       storageRange.storage[bytesToHex(thirdVariableHash)].value,
       '0x02',
-      'Third variable correctly included.'
+      'Third variable correctly included.',
     )
 
     assert.equal(
       Object.keys(storageRange.storage).length,
       3,
-      'Call returned the correct number of key value pairs.'
+      'Call returned the correct number of key value pairs.',
     )
   })
 
@@ -218,7 +219,7 @@ describe(method, () => {
     assert.equal(
       storageRange.storage[bytesToHex(hashedKey)].value,
       '0x42',
-      'Old value was correctly reported.'
+      'Old value was correctly reported.',
     )
   })
 
@@ -240,7 +241,7 @@ describe(method, () => {
     assert.equal(
       Object.keys(storageRange.storage).length,
       2,
-      'Call returned the correct number of key value pairs.'
+      'Call returned the correct number of key value pairs.',
     )
   })
 
@@ -262,7 +263,7 @@ describe(method, () => {
     assert.equal(
       Object.keys(storageRange.storage).length,
       0,
-      'Call returned the correct number of key value pairs.'
+      'Call returned the correct number of key value pairs.',
     )
 
     assert.isNull(storageRange.nextKey, 'nextKey was correctly set to null.')
@@ -290,12 +291,12 @@ describe(method, () => {
     assert.equal(
       Object.keys(storageRange.storage).length,
       2,
-      'Call returned the correct number of key value pairs.'
+      'Call returned the correct number of key value pairs.',
     )
 
     assert.isUndefined(
       storageRange.storage[bytesToHex(smallestHashedKey)],
-      'Smallest hashed key was correctly excluded from result.'
+      'Smallest hashed key was correctly excluded from result.',
     )
   })
 
@@ -398,8 +399,8 @@ describe(method, () => {
     assert.equal(res.error.code, INTERNAL_ERROR)
     assert.ok(
       res.error.message.includes(
-        'txIndex cannot be larger than the number of transactions in the block.'
-      )
+        'txIndex cannot be larger than the number of transactions in the block.',
+      ),
     )
   })
 

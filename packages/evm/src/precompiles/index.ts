@@ -21,6 +21,7 @@ import { precompile11 } from './11-bls12-pairing.js'
 import { precompile12 } from './12-bls12-map-fp-to-g1.js'
 import { precompile13 } from './13-bls12-map-fp2-to-g2.js'
 import { MCLBLS, NobleBLS } from './bls12_381/index.js'
+import { NobleBN254, RustBN254 } from './bn254/index.js'
 
 import type { PrecompileFunc, PrecompileInput } from './types.js'
 import type { Common } from '@ethereumjs/common'
@@ -266,14 +267,14 @@ type CustomPrecompile = AddPrecompile | DeletePrecompile
 
 function getActivePrecompiles(
   common: Common,
-  customPrecompiles?: CustomPrecompile[]
+  customPrecompiles?: CustomPrecompile[],
 ): Map<string, PrecompileFunc> {
   const precompileMap = new Map()
   if (customPrecompiles) {
     for (const precompile of customPrecompiles) {
       precompileMap.set(
         bytesToUnprefixedHex(precompile.address.bytes),
-        'function' in precompile ? precompile.function : undefined
+        'function' in precompile ? precompile.function : undefined,
       )
     }
   }
@@ -307,9 +308,11 @@ export {
   getPrecompileName,
   MCLBLS,
   NobleBLS,
+  NobleBN254,
   precompileEntries,
   precompiles,
   ripemdPrecompileAddress,
+  RustBN254,
 }
 
 export type { AddPrecompile, CustomPrecompile, DeletePrecompile, PrecompileFunc, PrecompileInput }

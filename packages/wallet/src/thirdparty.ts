@@ -1,3 +1,4 @@
+// cspell:ignore ivsize cryptojs
 import { bytesToUtf8, concatBytes, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { base64 } from '@scure/base'
 import { decrypt } from 'ethereum-cryptography/aes.js'
@@ -44,12 +45,12 @@ function mergeEvpKdfOptsWithDefaults(opts?: Partial<EvpKdfOpts>): EvpKdfOpts {
  *
  * Algorithm form https://www.openssl.org/docs/manmaster/crypto/EVP_BytesToKey.html
  *
- * FIXME: not optimised at all
+ * FIXME: not optimized at all
  */
 function evp_kdf(data: Uint8Array, salt: Uint8Array, opts?: Partial<EvpKdfOpts>) {
   const params = mergeEvpKdfOptsWithDefaults(opts)
 
-  // A single EVP iteration, returns `D_i`, where block equlas to `D_(i-1)`
+  // A single EVP iteration, returns `D_i`, where block equals to `D_(i-1)`
   function iter(block: Uint8Array) {
     if (params.digest !== 'md5') throw new Error('Only md5 is supported in evp_kdf')
     let hash = md5.create()
@@ -117,7 +118,7 @@ export interface EtherWalletOptions {
  */
 export async function fromEtherWallet(
   input: string | EtherWalletOptions,
-  password: string
+  password: string,
 ): Promise<Wallet> {
   const json: EtherWalletOptions = typeof input === 'object' ? input : JSON.parse(input)
 

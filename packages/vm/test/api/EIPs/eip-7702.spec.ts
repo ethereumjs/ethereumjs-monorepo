@@ -1,6 +1,6 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { EOACodeEIP7702Transaction } from '@ethereumjs/tx'
+import { createEOACode7702Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -8,6 +8,7 @@ import {
   KECCAK256_NULL,
   bigIntToBytes,
   concatBytes,
+  createAddressFromString,
   ecsign,
   hexToBytes,
   privateToAddress,
@@ -17,11 +18,11 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { equalsBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { AuthorizationListBytesItem } from '@ethereumjs/common'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 
 const defaultAuthPkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const defaultAuthAddr = new Address(privateToAddress(defaultAuthPkey))
@@ -29,8 +30,8 @@ const defaultAuthAddr = new Address(privateToAddress(defaultAuthPkey))
 const defaultSenderPkey = hexToBytes(`0x${'40'.repeat(32)}`)
 const defaultSenderAddr = new Address(privateToAddress(defaultSenderPkey))
 
-const code1Addr = Address.fromString(`0x${'01'.repeat(20)}`)
-const code2Addr = Address.fromString(`0x${'02'.repeat(20)}`)
+const code1Addr = createAddressFromString(`0x${'01'.repeat(20)}`)
+const code2Addr = createAddressFromString(`0x${'02'.repeat(20)}`)
 
 type GetAuthListOpts = {
   chainId?: number
@@ -62,11 +63,11 @@ async function runTest(
   authorizationListOpts: GetAuthListOpts[],
   expect: Uint8Array,
   vm?: VM,
-  skipEmptyCode?: boolean
+  skipEmptyCode?: boolean,
 ) {
   vm = vm ?? (await VM.create({ common }))
   const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
-  const tx = EOACodeEIP7702Transaction.fromTxData(
+  const tx = createEOACode7702Tx(
     {
       gasLimit: 100000,
       maxFeePerGas: 1000,
@@ -74,23 +75,23 @@ async function runTest(
       to: defaultAuthAddr,
       value: BIGINT_1,
     },
-    { common }
+    { common },
   ).sign(defaultSenderPkey)
 
   const code1 = hexToBytes('0x600160015500')
-  await vm.stateManager.putContractCode(code1Addr, code1)
+  await vm.stateManager.putCode(code1Addr, code1)
 
   const code2 = hexToBytes('0x600260015500')
-  await vm.stateManager.putContractCode(code2Addr, code2)
+  await vm.stateManager.putCode(code2Addr, code2)
 
   const acc = (await vm.stateManager.getAccount(defaultSenderAddr)) ?? new Account()
   acc.balance = BigInt(1_000_000_000)
   await vm.stateManager.putAccount(defaultSenderAddr, acc)
 
-  await vm.runTx({ tx })
+  await runTx(vm, { tx })
 
-  const slot = hexToBytes('0x' + '00'.repeat(31) + '01')
-  const value = await vm.stateManager.getContractStorage(defaultAuthAddr, slot)
+  const slot = hexToBytes(`0x${'00'.repeat(31)}01`)
+  const value = await vm.stateManager.getStorage(defaultAuthAddr, slot)
   assert.ok(equalsBytes(unpadBytes(expect), value))
 
   if (skipEmptyCode === undefined) {
@@ -109,7 +110,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
           address: code1Addr,
         },
       ],
-      new Uint8Array([1])
+      new Uint8Array([1]),
     )
 
     // Try to set code to two different addresses
@@ -123,7 +124,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
           address: code2Addr,
         },
       ],
-      new Uint8Array([1])
+      new Uint8Array([1]),
     )
 
     // Chain id check: is chain id 1 also valid?
@@ -138,7 +139,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
           address: code2Addr,
         },
       ],
-      new Uint8Array([2])
+      new Uint8Array([2]),
     )
 
     // Check if chain id 2 is ignored
@@ -152,7 +153,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
           address: code2Addr,
         },
       ],
-      new Uint8Array([2])
+      new Uint8Array([2]),
     )
 
     // Check if nonce is ignored in case the nonce is incorrect
@@ -166,13 +167,13 @@ describe('EIP 7702: set code to EOA accounts', () => {
           address: code2Addr,
         },
       ],
-      new Uint8Array([2])
+      new Uint8Array([2]),
     )
   })
 
   it('Code is already present in account', async () => {
     const vm = await VM.create({ common })
-    await vm.stateManager.putContractCode(defaultAuthAddr, new Uint8Array([1]))
+    await vm.stateManager.putCode(defaultAuthAddr, new Uint8Array([1]))
     await runTest(
       [
         {
@@ -181,7 +182,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
       ],
       new Uint8Array(),
       vm,
-      true
+      true,
     )
   })
 
@@ -201,13 +202,13 @@ describe('EIP 7702: set code to EOA accounts', () => {
     // 1x warm call: 100
     // Total: 115
     const checkAddressWarmCode = hexToBytes(
-      `0x5F5F5F5F5F73${defaultAuthAddr.toString().slice(2)}5AF1`
+      `0x5F5F5F5F5F73${defaultAuthAddr.toString().slice(2)}5AF1`,
     )
-    const checkAddressWarm = Address.fromString(`0x${'FA'.repeat(20)}`)
+    const checkAddressWarm = createAddressFromString(`0x${'FA'.repeat(20)}`)
 
-    await vm.stateManager.putContractCode(checkAddressWarm, checkAddressWarmCode)
+    await vm.stateManager.putCode(checkAddressWarm, checkAddressWarmCode)
 
-    const tx = EOACodeEIP7702Transaction.fromTxData(
+    const tx = createEOACode7702Tx(
       {
         gasLimit: 100000,
         maxFeePerGas: 1000,
@@ -215,17 +216,17 @@ describe('EIP 7702: set code to EOA accounts', () => {
         to: checkAddressWarm,
         value: BIGINT_1,
       },
-      { common }
+      { common },
     ).sign(defaultSenderPkey)
 
     const code1 = hexToBytes('0x')
-    await vm.stateManager.putContractCode(code1Addr, code1)
+    await vm.stateManager.putCode(code1Addr, code1)
 
     const acc = (await vm.stateManager.getAccount(defaultSenderAddr)) ?? new Account()
     acc.balance = BigInt(1_000_000_000)
     await vm.stateManager.putAccount(defaultSenderAddr, acc)
 
-    const res = await vm.runTx({ tx })
+    const res = await runTx(vm, { tx })
     assert.ok(res.execResult.executionGasUsed === BigInt(115))
   })
 
@@ -239,7 +240,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
         address: code1Addr,
       }),
     ]
-    const tx = EOACodeEIP7702Transaction.fromTxData(
+    const tx = createEOACode7702Tx(
       {
         gasLimit: 100000,
         maxFeePerGas: 1000,
@@ -248,19 +249,19 @@ describe('EIP 7702: set code to EOA accounts', () => {
         // value: BIGINT_1 // Note, by enabling this line, the account will not get deleted
         // Therefore, this test will pass
       },
-      { common }
+      { common },
     ).sign(defaultSenderPkey)
 
     // Store value 1 in storage slot 1
     // PUSH1 PUSH1 SSTORE STOP
     const code = hexToBytes('0x600160015500')
-    await vm.stateManager.putContractCode(code1Addr, code)
+    await vm.stateManager.putCode(code1Addr, code)
 
     const acc = (await vm.stateManager.getAccount(defaultSenderAddr)) ?? new Account()
     acc.balance = BigInt(1_000_000_000)
     await vm.stateManager.putAccount(defaultSenderAddr, acc)
 
-    await vm.runTx({ tx })
+    await runTx(vm, { tx })
 
     // Note: due to EIP-161, defaultAuthAddr is now deleted
     const account = await vm.stateManager.getAccount(defaultAuthAddr)

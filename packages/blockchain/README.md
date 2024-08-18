@@ -61,7 +61,7 @@ const main = async () => {
         difficulty: blockchain.genesisBlock.header.difficulty + 1n,
       },
     },
-    { common, setHardfork: true }
+    { common, setHardfork: true },
   )
   const block2 = Block.fromBlockData(
     {
@@ -71,7 +71,7 @@ const main = async () => {
         difficulty: block.header.difficulty + 1n,
       },
     },
-    { common, setHardfork: true }
+    { common, setHardfork: true },
   )
   // See @ethereumjs/block for more details on how to create a block
   await blockchain.putBlock(block)
@@ -157,7 +157,7 @@ const main = async () => {
   const genesisBlockHash = blockchain.genesisBlock.hash()
   common.setForkHashes(genesisBlockHash)
   console.log(
-    `Genesis hash from geth genesis parameters - ${bytesToHex(blockchain.genesisBlock.hash())}`
+    `Genesis hash from geth genesis parameters - ${bytesToHex(blockchain.genesisBlock.hash())}`,
   )
 }
 
@@ -179,6 +179,14 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 The blockchain library now allows for blob transactions to be validated and included in a chain where EIP-4844 activated either by hardfork or standalone EIP.
 
 **Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+
+### EIP-7685 Requests Support
+
+This library supports blocks including the following [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) requests:
+
+- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Deposit Requests (`v7.3.0`+)
+- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Withdrawal Requests (`v7.3.0`+)
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Consolidation Requests (`v7.3.0`+)
 
 ## Browser
 

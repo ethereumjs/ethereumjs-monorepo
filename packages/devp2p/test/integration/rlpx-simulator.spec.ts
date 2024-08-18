@@ -14,7 +14,7 @@ describe('RLPx simulator tests', () => {
       assert.equal(
         peer._port,
         basePort + 1,
-        'should have added peer on peer:added after successful handshake'
+        'should have added peer on peer:added after successful handshake',
       )
       assert.equal(rlpxs[0].getPeers().length, 1, 'peer list length should be 1')
       assert.equal(rlpxs[0]._getOpenSlots(), 9, 'should have maxPeers - 1 open slots left')
@@ -35,12 +35,12 @@ describe('RLPx simulator tests', () => {
       }
       assert.notOk(
         rlpxs[0]['_dpt']!['_banlist'].has(peer),
-        'should not be in ban list before bad peer discovered'
+        'should not be in ban list before bad peer discovered',
       )
       rlpxs[0]['_dpt']!.events.emit('peer:new', peer)
       assert.ok(
         rlpxs[0]['_dpt']!['_banlist'].has(peer),
-        'should be in ban list after bad peer discovered'
+        'should be in ban list after bad peer discovered',
       )
       await util.delay(500)
       util.destroyRLPXs(rlpxs)
@@ -58,7 +58,7 @@ describe('RLPx simulator tests', () => {
         assert.equal(
           reason,
           DISCONNECT_REASON.CLIENT_QUITTING,
-          'should close with CLIENT_QUITTING disconnect reason'
+          'should close with CLIENT_QUITTING disconnect reason',
         )
         assert.equal(rlpxs[0]._getOpenSlots(), 10, 'should have maxPeers open slots left')
         await util.delay(500)

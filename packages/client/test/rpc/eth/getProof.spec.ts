@@ -1,8 +1,9 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { Address, bigIntToHex } from '@ethereumjs/util'
+import { Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
+import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
@@ -42,7 +43,6 @@ const expectedProof = {
 const testnetData = {
   name: 'testnet2',
   chainId: 12345,
-  networkId: 12345,
   defaultHardfork: 'istanbul',
   consensus: {
     type: 'pow',
@@ -87,7 +87,7 @@ const testnetData = {
   bootstrapNodes: [],
 }
 
-const common = new Common({ chain: 'testnet2', customChains: [testnetData] })
+const common = createCustomCommon({ ...testnetData }, Mainnet)
 
 describe(method, async () => {
   it('call with valid arguments', async () => {
@@ -106,7 +106,7 @@ describe(method, async () => {
     const { vm } = execution
 
     // genesis address with balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // contract inspired from https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_getstorageat/
     /*
@@ -127,12 +127,12 @@ describe(method, async () => {
 
     // construct block with tx
     const gasLimit = 2000000
-    const tx = LegacyTransaction.fromTxData({ gasLimit, data }, { common, freeze: false })
+    const tx = createLegacyTx({ gasLimit, data }, { common, freeze: false })
     tx.getSenderAddress = () => {
       return address
     }
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           parentHash: parent.hash(),
@@ -140,14 +140,14 @@ describe(method, async () => {
           gasLimit,
         },
       },
-      { common, calcDifficultyFromHeader: parent }
+      { common, calcDifficultyFromHeader: parent },
     )
     block.transactions[0] = tx
 
     // deploy contract
     let ranBlock: Block | undefined = undefined
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-    const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     const { createdAddress } = result.results[0]
     await vm.blockchain.putBlock(ranBlock!)
 
@@ -160,11 +160,11 @@ describe(method, async () => {
       gasLimit: bigIntToHex(BigInt(530000)),
       nonce: 1,
     }
-    const storeTx = LegacyTransaction.fromTxData(storeTxData, { common, freeze: false })
+    const storeTx = createLegacyTx(storeTxData, { common, freeze: false })
     storeTx.getSenderAddress = () => {
       return address
     }
-    const block2 = createBlockFromBlockData(
+    const block2 = createBlock(
       {
         header: {
           parentHash: ranBlock!.hash(),
@@ -172,14 +172,14 @@ describe(method, async () => {
           gasLimit,
         },
       },
-      { common, calcDifficultyFromHeader: block.header }
+      { common, calcDifficultyFromHeader: block.header },
     )
     block2.transactions[0] = storeTx
 
     // run block
     let ranBlock2: Block | undefined = undefined
     vm.events.once('afterBlock', (result: any) => (ranBlock2 = result.block))
-    await vm.runBlock({ block: block2, generate: true, skipBlockValidation: true })
+    await runBlock(vm, { block: block2, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock2!)
 
     // verify proof is accurate

@@ -6,7 +6,39 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 4.3.0 - 2024-03-05
+## 4.4.0 - 2024-08-15
+
+### EIP-7685 Requests: EIP-6110 (Deposits) / EIP-7002 (Withdrawals) / EIP-7251 (Consolidations)
+
+This library now supports `EIP-6110` deposit requests, see PR [#3390](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3390), `EIP-7002` withdrawal requests, see PR [#3385](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3385) and `EIP-7251` consolidation requests, see PR [#3477](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3477) as well as the underlying generic execution layer request logic introduced with `EIP-7685` (PR [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372)).
+
+These new request types will be activated with the `Prague` hardfork, see [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) README for detailed documentation.
+
+### Verkle Updates
+
+- Fixes for Kaustinen4 support, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- Kaustinen5 related fixes, PR [#3343](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3343)
+- Kaustinen6 adjustments, `verkle-cryptography-wasm` migration, PRs [#3355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3355) and [#3356](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3356)
+- Verkle decoupling, PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462)
+
+### Other Features
+
+- Adds support for [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions (outdated) (see tx library for full documentation), see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470)
+- Adds support for [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) Serve Historical Block Hashes from State (Prague) (see EVM for full docs) as well as the related [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709), PR [#3475](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3475)
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Other Changes
+
+- Removes support for [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) simple subroutines for EVM (deprecated with an alternative version integrated into EOF), PR [#3342](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3342)
+- Clean up access to deposit address, PR [#3411](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3411)
+- Add spec test for 2935 contract code and update history storage address, PR [#3373](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3373)
+- Parse deposit contract address from geth genesis for chain config, PR [#3422](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3422)
+
+### Bugfixes
+
+- BLS gas prices fixes, PR [#3400](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3400)
+
+## 4.3.0 - 2024-03-18
 
 ### Full 4844 Browser Readiness
 
@@ -188,7 +220,7 @@ While you could use our libraries in the browser libraries before, there had bee
 
 WE HAVE ELIMINATED ALL OF THEM.
 
-The largest two undertakings: First: we have rewritten all (half) of our API and elimited the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went throuh our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
+The largest two undertakings: First: we have rewritten all (half) of our API and eliminated the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went through our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
 
 Together with some few other modifications this now allows to run each (maybe adding an asterisk for client and devp2p) of our libraries directly in the browser - more or less without any modifications - see the `examples/browser.html` file in each package folder for an easy to set up example.
 
@@ -458,7 +490,7 @@ Beta 2 release for the upcoming breaking release round on the [EthereumJS monore
 
 ### Removed Default Exports
 
-The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all across the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
 
 Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
 
@@ -466,7 +498,7 @@ Now every import is a named import and we think the long term benefits will very
 
 #### Import Updates
 
-Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all accross our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
+Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all across our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
 
 So Common import and usage is changing from:
 
@@ -589,9 +621,9 @@ Following methods have been removed accordingly:
 
 #### Type Changes
 
-There are a few new types e.g. for configuration files (e.g. `CliqueConfig`) to get rid of some last `any` types in the package, see PR [#1906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1906). Eventually related problems should be seen early on in your TypeScript setup though and it should also be possile to easily attribute and fix.
+There are a few new types e.g. for configuration files (e.g. `CliqueConfig`) to get rid of some last `any` types in the package, see PR [#1906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1906). Eventually related problems should be seen early on in your TypeScript setup though and it should also be possible to easily attribute and fix.
 
-#### New File Structue
+#### New File Structure
 
 The file structure of the package has been aligned with other libraries and there is now a dedicated `common.ts` file for the main source code with `index.ts` re-exporting functionality and types, see PR [#1915](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1915). Some misplaced types have been moved to `types.ts` and enums (like `Chain` or `Hardfork`) have been (internally) moved to an `enum.ts` file. You should generally use the root import from `index.ts`, if you are not doing and some imports broke this should be easily fixable though.
 
@@ -601,7 +633,7 @@ We have completely refactored all our genesis (block) handling and moved the cod
 
 The most imminent benefit from this is a **dramatically reduced bundle size for the library, going down from a packed ~9 MB to something about 50 KB (!)**.
 
-**Breaking:** See if you use `Common` genesis state functionality, e.g. by accessing pre-defined state with the `genesisState()` function (now removed) or by adding custom state with the `customChain` constructor (genesis-extended data format removed) and see description for `Block` and `Blockchain` breaking releases for context and how to replace the functionality. There are now also no `stateRoot` and `hash` configuration paramters in the `JSON` chain files any more, inclusion was a blocker for a clean refactor and this also wasn't compatible with the Geth genesis file format (these values can be calculated on an upper-library level). So you should remove these from your (custom) chain config files as well.
+**Breaking:** See if you use `Common` genesis state functionality, e.g. by accessing pre-defined state with the `genesisState()` function (now removed) or by adding custom state with the `customChain` constructor (genesis-extended data format removed) and see description for `Block` and `Blockchain` breaking releases for context and how to replace the functionality. There are now also no `stateRoot` and `hash` configuration parameters in the `JSON` chain files any more, inclusion was a blocker for a clean refactor and this also wasn't compatible with the Geth genesis file format (these values can be calculated on an upper-library level). So you should remove these from your (custom) chain config files as well.
 
 ### Other Changes
 
@@ -737,7 +769,7 @@ To allow a HF switch by total difficulty (TD) - which is planned for the Merge -
 
 There is a new `hardforkTD(hardfork?: string | Hardfork): BN | null` function to get the TD value for a HF switch (so primarily: for the `merge` HF) if a total difficulty HF switch is configured.
 
-### Improved Typing for Hardfork, Chain and Genesis releated API Calls
+### Improved Typing for Hardfork, Chain and Genesis related API Calls
 
 In the Common library all functionality returning hardfork, chain or genesis parameters has previously been under-typed respectively just returned `any` in most cases. This has been improved along PR [#1480](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1480) and is now finding its way into a release.
 
@@ -777,7 +809,7 @@ If you have got left over type 1. `dao` HF inclusions in your custom chain files
 
 This release integrates the `london` HF blocks for all networks including `mainnet` and is therefore the first release with finalized London HF support.
 
-### Reworked Custom Chain Instantation / Supported Custom Chains (Polygon / Arbitrum / xDaiChain)
+### Reworked Custom Chain Instantiation / Supported Custom Chains (Polygon / Arbitrum / xDaiChain)
 
 This release introduces a new `Common.custom()` static constructor which replaces the now deprecated `Common.forCustomChain()` constructor and allows for an easier instantiation of a Common instance with somewhat adopted chain parameters, with the main use case to adopt on instantiating with a deviating chain ID. Instantiating a custom common instance with its own chain ID and inheriting all other parameters from `mainnet` can now be as easily done as:
 
@@ -840,7 +872,7 @@ Common now supports settings for the following additional EIPs:
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contracts starting with the 0xEF byte, PR [#1240](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1240)
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554): Difficulty Bomb Delay to December 2021 (only PoW networks), PR [#1245](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1245)
 
-All new EIPs have their dedicated EIP configuration file and can also be activated spearately with the `eips` parameter (and the so-created `common` instance can then e.g. be used within the VM):
+All new EIPs have their dedicated EIP configuration file and can also be activated separately with the `eips` parameter (and the so-created `common` instance can then e.g. be used within the VM):
 
 ```ts
 import Common from '@ethereumjs/common'
@@ -1033,7 +1065,7 @@ Gas fees for all hardforks up to `MuirGlacier` are now completely present within
 
 There is a new `Common.forkHash()` method returning pre-calculated Forkhash values or alternatively use the internal `Common._calcForkHash()` implementation to calculate a forkhash on the fly.
 
-Forkhashes are used to uniquely identify a set of hardforks passed to be able to better differentiate between different dedicated chains. This is used for the `Eth/64` devp2p protocol update and specificed in [EIP-2124](https://eips.ethereum.org/EIPS/eip-2124) to help improve the devp2p networking stack.
+Forkhashes are used to uniquely identify a set of hardforks passed to be able to better differentiate between different dedicated chains. This is used for the `Eth/64` devp2p protocol update and specified in [EIP-2124](https://eips.ethereum.org/EIPS/eip-2124) to help improve the devp2p networking stack.
 
 ### New Block/Hardfork related Utility Functions
 
@@ -1054,7 +1086,7 @@ Current default hardfork is set to `istanbul`, PR [#906](https://github.com/ethe
 
 We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
 
-Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 ### Other Changes
 
@@ -1139,7 +1171,7 @@ Gas fees for all hardforks up to `MuirGlacier` are now completely present within
 
 There is a new `Common.forkHash()` method returning pre-calculated Forkhash values or alternatively use the internal `Common._calcForkHash()` implementation to calculate a forkhash on the fly.
 
-Forkhashes are used to uniquely identify a set of hardforks passed to be able to better differentiate between different dedicated chains. This is used for the `Eth/64` devp2p protocol update and specificed in [EIP-2124](https://eips.ethereum.org/EIPS/eip-2124) to help improve the devp2p networking stack.
+Forkhashes are used to uniquely identify a set of hardforks passed to be able to better differentiate between different dedicated chains. This is used for the `Eth/64` devp2p protocol update and specified in [EIP-2124](https://eips.ethereum.org/EIPS/eip-2124) to help improve the devp2p networking stack.
 
 ### New Block/Hardfork related Utility Functions
 
@@ -1165,7 +1197,7 @@ for code linting and formatting and the introduction of a new build setup.
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
 a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
 PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result
-in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 ### Other Changes
 

@@ -6,7 +6,7 @@ import { DNS } from '../src/dns/index.js'
 import * as testdata from './testdata.json'
 
 describe('DNS', () => {
-  const mockData = testdata.dns
+  const mockData = testdata.default.dns
   const mockDns = td.replace<any>('dns')
 
   let dns: DNS
@@ -20,6 +20,7 @@ describe('DNS', () => {
   }
 
   const host = 'nodes.example.org'
+  // cspell:disable
   const rootDomain = 'JORXBYVVM7AEKETX5DGXW44EAY'
   const branchDomainA = 'D2SNLTAGWNQ34NTQTPHNZDECFU'
   const branchDomainB = 'D3SNLTAGWNQ34NTQTPHNZDECFU'
@@ -27,6 +28,7 @@ describe('DNS', () => {
   const branchDomainD = 'D5SNLTAGWNQ34NTQTPHNZDECFU'
   const partialBranchA = 'AAAA'
   const partialBranchB = 'BBBB'
+  // cspell:enable
   const singleBranch = `enrtree-branch:${branchDomainA}`
   const doubleBranch = `enrtree-branch:${branchDomainA},${branchDomainB}`
   const multiComponentBranch = [
@@ -153,7 +155,7 @@ describe('DNS', () => {
 })
 
 describe('DNS: (integration)', () => {
-  const publicKey = 'AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE'
+  const publicKey = 'AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE' // cspell:disable-line
   const goerliDNS = 'all.goerli.ethdisco.net'
   const enrTree = `enrtree://${publicKey}@${goerliDNS}`
   const ipTestRegex = /^\d+\.\d+\.\d+\.\d+$/ // e.g 123.44.55.77
@@ -174,6 +176,6 @@ describe('DNS: (integration)', () => {
         seen.push(peer!.address as string)
       }
     },
-    { timeout: 10000 }
+    { timeout: 10000 },
   )
 })

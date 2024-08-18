@@ -1,4 +1,4 @@
-import { MapDB, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { MapDB, equalsBytes, hexToBytes, matchingBytesLength } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
@@ -8,7 +8,6 @@ import {
   VerkleLeafNodeValue,
   VerkleNodeType,
   decodeNode,
-  matchingBytesLength,
 } from '../src/index.js'
 import { VerkleTree } from '../src/verkleTree.js'
 
@@ -97,7 +96,7 @@ describe('Verkle tree', () => {
     assert.deepEqual(
       verkleCrypto.serializeCommitment(pathToNonExistentNode.stack[0][0].commitment),
       tree.root(),
-      'contains the root node in the stack'
+      'contains the root node in the stack',
     )
   })
 
@@ -264,7 +263,7 @@ describe('Verkle tree', () => {
     assert.ok(res.node !== null)
     assert.deepEqual(
       (res.node as LeafNode).values[hexToBytes(keys[0])[31]],
-      VerkleLeafNodeValue.Deleted
+      VerkleLeafNodeValue.Deleted,
     )
   })
 })

@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   DepositRequest,
   KECCAK256_RLP,
@@ -8,13 +8,14 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
-import {
-  createBlockFromBlockData,
-  createBlockFromRPC,
-  createBlockFromValuesArray,
-} from '../src/constructors.js'
 import { genRequestsTrieRoot } from '../src/helpers.js'
-import { Block, BlockHeader } from '../src/index.js'
+import {
+  Block,
+  createBlock,
+  createBlockFromBytesArray,
+  createBlockFromRPC,
+  createBlockHeader,
+} from '../src/index.js'
 
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 
@@ -39,13 +40,13 @@ function getRandomWithdrawalRequest(): CLRequest<CLRequestType> {
 }
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.Cancun,
   eips: [7685, 4844, 4788],
 })
 describe('7685 tests', () => {
   it('should instantiate block with defaults', () => {
-    const block = createBlockFromBlockData({}, { common })
+    const block = createBlock({}, { common })
     assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
     const block2 = new Block(undefined, undefined, undefined, undefined, { common })
     assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
@@ -54,24 +55,24 @@ describe('7685 tests', () => {
   it('should instantiate a block with requests', async () => {
     const request = getRandomDepositRequest()
     const requestsRoot = await genRequestsTrieRoot([request])
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         requests: [request],
         header: { requestsRoot },
       },
-      { common }
+      { common },
     )
     assert.equal(block.requests?.length, 1)
     assert.deepEqual(block.header.requestsRoot, requestsRoot)
   })
   it('RequestsRootIsValid should return false when requestsRoot is invalid', async () => {
     const request = getRandomDepositRequest()
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         requests: [request],
         header: { requestsRoot: randomBytes(32) },
       },
-      { common }
+      { common },
     )
 
     assert.equal(await block.requestsTrieIsValid(), false)
@@ -85,36 +86,36 @@ describe('7685 tests', () => {
 
     // Construct block with requests in correct order
 
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         requests,
         header: { requestsRoot },
       },
-      { common }
+      { common },
     )
 
     assert.ok(await block.requestsTrieIsValid())
 
     // Throws when requests are not ordered correctly
     await expect(async () =>
-      createBlockFromBlockData(
+      createBlock(
         {
           requests: [request1, request3, request2],
           header: { requestsRoot },
         },
-        { common }
-      )
+        { common },
+      ),
     ).rejects.toThrow('ascending order')
   })
 })
 
 describe('fromValuesArray tests', () => {
   it('should construct a block with empty requests root', () => {
-    const block = createBlockFromValuesArray(
-      [BlockHeader.fromHeaderData({}, { common }).raw(), [], [], [], []],
+    const block = createBlockFromBytesArray(
+      [createBlockHeader({}, { common }).raw(), [], [], [], []],
       {
         common,
-      }
+      },
     )
     assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
   })
@@ -126,17 +127,11 @@ describe('fromValuesArray tests', () => {
     const requestsRoot = await genRequestsTrieRoot(requests)
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
 
-    const block = createBlockFromValuesArray(
-      [
-        BlockHeader.fromHeaderData({ requestsRoot }, { common }).raw(),
-        [],
-        [],
-        [],
-        serializedRequests,
-      ],
+    const block = createBlockFromBytesArray(
+      [createBlockHeader({ requestsRoot }, { common }).raw(), [], [], [], serializedRequests],
       {
         common,
-      }
+      },
     )
     assert.deepEqual(block.header.requestsRoot, requestsRoot)
     assert.equal(block.requests?.length, 3)
@@ -152,17 +147,11 @@ describe('fromRPC tests', () => {
     const requestsRoot = await genRequestsTrieRoot(requests)
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
 
-    const block = createBlockFromValuesArray(
-      [
-        BlockHeader.fromHeaderData({ requestsRoot }, { common }).raw(),
-        [],
-        [],
-        [],
-        serializedRequests,
-      ],
+    const block = createBlockFromBytesArray(
+      [createBlockHeader({ requestsRoot }, { common }).raw(), [], [], [], serializedRequests],
       {
         common,
-      }
+      },
     )
     const jsonBlock = block.toJSON()
     const rpcBlock: any = { ...jsonBlock.header, requests: jsonBlock.requests }

@@ -8,7 +8,7 @@ import { F, precompile09 } from '@ethereumjs/evm/dist/precompiles/09-blake2f'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM } from '../../../src/index.js'
 
 // Test cases from:
 // https://github.com/keep-network/go-ethereum/blob/1bccafe5ef54ba849e414ce7c90f7b7130634a9a/core/vm/contracts_test.go
@@ -89,7 +89,7 @@ describe('Istanbul: EIP-152', () => {
       // TODO: investigate why this test hangs in karma with firefox
       return     }
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
 
     for (const testCase of failingTestCases) {

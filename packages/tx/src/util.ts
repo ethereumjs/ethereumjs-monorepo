@@ -1,8 +1,11 @@
 import {
   type PrefixedHexString,
+  TypeOutput,
   bytesToHex,
   hexToBytes,
   setLengthLeft,
+  toBytes,
+  toType,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
@@ -14,18 +17,19 @@ import type {
   AccessListItem,
   AuthorizationList,
   AuthorizationListBytes,
+  AuthorizationListItem,
   TransactionType,
+  TypedTxData,
 } from './types.js'
-import type { AuthorizationListItem, Common } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {
-  const maxInitCodeSize = common.param('vm', 'maxInitCodeSize')
+  const maxInitCodeSize = common.param('maxInitCodeSize')
   if (maxInitCodeSize && BigInt(length) > maxInitCodeSize) {
     throw new Error(
       `the initcode size of this transaction is too large: it is ${length} while the max is ${common.param(
-        'vm',
-        'maxInitCodeSize'
-      )}`
+        'maxInitCodeSize',
+      )}`,
     )
   }
 }
@@ -81,7 +85,7 @@ export class AccessLists {
       const storageSlots = accessListItem[1]
       if ((<any>accessListItem)[2] !== undefined) {
         throw new Error(
-          'Access list item cannot have 3 elements. It can only have an address, and an array of storage slots.'
+          'Access list item cannot have 3 elements. It can only have an address, and an array of storage slots.',
         )
       }
       if (address.length !== 20) {
@@ -113,9 +117,9 @@ export class AccessLists {
     return accessListJSON
   }
 
-  public static getDataFeeEIP2930(accessList: AccessListBytes, common: Common): number {
-    const accessListStorageKeyCost = common.param('gasPrices', 'accessListStorageKeyCost')
-    const accessListAddressCost = common.param('gasPrices', 'accessListAddressCost')
+  public static getDataGasEIP2930(accessList: AccessListBytes, common: Common): number {
+    const accessListStorageKeyCost = common.param('accessListStorageKeyGas')
+    const accessListAddressCost = common.param('accessListAddressGas')
 
     let slots = 0
     for (let index = 0; index < accessList.length; index++) {
@@ -131,7 +135,7 @@ export class AccessLists {
 
 export class AuthorizationLists {
   public static getAuthorizationListData(
-    authorizationList: AuthorizationListBytes | AuthorizationList
+    authorizationList: AuthorizationListBytes | AuthorizationList,
   ) {
     let AuthorizationListJSON
     let bufferAuthorizationList
@@ -215,12 +219,76 @@ export class AuthorizationLists {
     }
   }
 
-  public static getDataFeeEIP7702(authorityList: AuthorizationListBytes, common: Common): number {
-    const perAuthBaseCost = common.param('gasPrices', 'perAuthBaseCost')
+  public static getDataGasEIP7702(authorityList: AuthorizationListBytes, common: Common): number {
+    const perAuthBaseCost = common.param('perAuthBaseGas')
     return authorityList.length * Number(perAuthBaseCost)
   }
 }
 
 export function txTypeBytes(txType: TransactionType): Uint8Array {
   return hexToBytes(`0x${txType.toString(16).padStart(2, '0')}`)
+}
+
+export function validateNotArray(values: { [key: string]: any }) {
+  const txDataKeys = [
+    'nonce',
+    'gasPrice',
+    'gasLimit',
+    'to',
+    'value',
+    'data',
+    'v',
+    'r',
+    's',
+    'type',
+    'baseFee',
+    'maxFeePerGas',
+    'chainId',
+  ]
+  for (const [key, value] of Object.entries(values)) {
+    if (txDataKeys.includes(key)) {
+      if (Array.isArray(value)) {
+        throw new Error(`${key} cannot be an array`)
+      }
+    }
+  }
+}
+
+/**
+ * Normalizes values for transactions that are received from an RPC provider to be properly usable within
+ * the ethereumjs context
+ * @param txParamsFromRPC a transaction in the standard JSON-RPC format
+ * @returns a normalized {@link TypedTxData} object with valid values
+ */
+export const normalizeTxParams = (txParamsFromRPC: any): TypedTxData => {
+  const txParams = Object.assign({}, txParamsFromRPC)
+
+  txParams.gasLimit = toType(txParams.gasLimit ?? txParams.gas, TypeOutput.BigInt)
+  txParams.data = txParams.data === undefined ? txParams.input : txParams.data
+
+  // check and convert gasPrice and value params
+  txParams.gasPrice = txParams.gasPrice !== undefined ? BigInt(txParams.gasPrice) : undefined
+  txParams.value = txParams.value !== undefined ? BigInt(txParams.value) : undefined
+
+  // strict byte length checking
+  txParams.to =
+    txParams.to !== null && txParams.to !== undefined
+      ? setLengthLeft(toBytes(txParams.to), 20)
+      : null
+
+  // Normalize the v/r/s values. If RPC returns '0x0', ensure v/r/s are set to `undefined` in the tx.
+  // If this is not done, then the transaction creation will throw, because `v` is `0`.
+  // Note: this still means that `isSigned` will return `false`.
+  // v/r/s values are `0x0` on networks like Optimism, where the tx is a system tx.
+  // For instance: https://optimistic.etherscan.io/tx/0xf4304cb09b3f58a8e5d20fec5f393c96ccffe0269aaf632cb2be7a8a0f0c91cc
+
+  txParams.v = txParams.v === '0x0' ? '0x' : txParams.v
+  txParams.r = txParams.r === '0x0' ? '0x' : txParams.r
+  txParams.s = txParams.s === '0x0' ? '0x' : txParams.s
+
+  if (txParams.v !== '0x' || txParams.r !== '0x' || txParams.s !== '0x') {
+    txParams.v = toType(txParams.v, TypeOutput.BigInt)
+  }
+
+  return txParams
 }

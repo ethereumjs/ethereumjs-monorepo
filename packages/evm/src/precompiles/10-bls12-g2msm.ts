@@ -3,12 +3,8 @@ import { bytesToHex } from '@ethereumjs/util'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import {
-  gasCheck,
-  leading16ZeroBytesCheck,
-  moduloLengthCheck,
-  msmGasUsed,
-} from './bls12_381/index.js'
+import { gasCheck, leading16ZeroBytesCheck, msmGasUsed } from './bls12_381/index.js'
+import { moduloLengthCheck } from './util.js'
 
 import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
@@ -20,11 +16,11 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`BLS12G2MSM (0x10) failed: Empty input`)
     }
-    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geths implementation
+    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geth's implementation
   }
 
   const numPairs = Math.floor(opts.data.length / 288)
-  const gasUsedPerPair = opts.common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 2537) ?? BigInt(0)
+  const gasUsedPerPair = opts.common.paramByEIP('Bls12381G2MulGas', 2537) ?? BigInt(0)
   const gasUsed = msmGasUsed(numPairs, gasUsedPerPair)
 
   if (!gasCheck(opts, gasUsed, 'BLS12G2MSM (0x10)')) {

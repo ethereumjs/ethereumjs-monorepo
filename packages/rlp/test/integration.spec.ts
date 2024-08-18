@@ -44,7 +44,7 @@ describe.skipIf(isBrowser)('CLI command', () => {
         assert.deepEqual(encodeResultTrimmed, out.toLowerCase(), `should pass encoding ${testName}`)
       }
     },
-    { timeout: 10000 }
+    { timeout: 10000 },
   )
 })
 
@@ -54,9 +54,9 @@ describe.skipIf(isBrowser)('Cross-frame', () => {
     assert.deepEqual(
       vm.runInNewContext(
         "Array.from(RLP.encode(['dog', 'god', 'cat'])).map(n => n.toString(16).padStart(2, '0')).join('')",
-        { RLP }
+        { RLP },
       ),
-      'cc83646f6783676f6483636174'
+      'cc83646f6783676f6483636174',
     )
   })
 })

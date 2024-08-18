@@ -1,4 +1,4 @@
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import { bigIntToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -45,7 +45,7 @@ function readyPragueGenesis(genesisJSON: any) {
 
 describe(`${method}: call with executionPayloadV4`, () => {
   it('valid data', async () => {
-    // get the genesis json with late enougt date with respect to block data in batchBlocks
+    // get the genesis json with late enough date with respect to block data in batchBlocks
 
     const { pragueJson, pragueTime } = readyPragueGenesis(genesisJSON)
     const { service, server } = await setupChain(pragueJson, 'post-merge', { engine: true })
@@ -93,7 +93,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
 
     // address 0x610adc49ecd66cbf176a8247ebd59096c031bd9f has been sufficiently funded in genesis
     const pk = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
-    const depositTx = TransactionFactory.fromTxData({
+    const depositTx = createTxFromTxData({
       data: '0x22895118000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001208cd4e5a69709cf8ee5b1b73d6efbf3f33bcac92fb7e4ce62b2467542fb50a72d0000000000000000000000000000000000000000000000000000000000000030ac842878bb70009552a4cfcad801d6e659c50bd50d7d03306790cb455ce7363c5b6972f0159d170f625a99b2064dbefc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020010000000000000000000000818ccb1c4eda80270b04d6df822b1e72dd83c3030000000000000000000000000000000000000000000000000000000000000060a747f75c72d0cf0d2b52504c7385b516f0523e2f0842416399f42b4aee5c6384a5674f6426b1cc3d0827886fa9b909e616f5c9f61f986013ed2b9bf37071cbae951136265b549f44e3c8e26233c0433e9124b7fd0dc86e82f9fedfc0a179d769',
       value: 32000000000000000000n,
       gasLimit: 30000000n,
@@ -107,15 +107,15 @@ describe(`${method}: call with executionPayloadV4`, () => {
     const { executionPayload } = res.result
     assert.ok(
       executionPayload.depositRequests?.length === 1,
-      'depositRequests should have 1 deposit request'
+      'depositRequests should have 1 deposit request',
     )
     assert.ok(
       executionPayload.withdrawalRequests !== undefined,
-      'depositRequests field should be received'
+      'depositRequests field should be received',
     )
     assert.ok(
       executionPayload.consolidationRequests !== undefined,
-      'consolidationRequests field should be received'
+      'consolidationRequests field should be received',
     )
 
     res = await rpc.request(method, [executionPayload, [], parentBeaconBlockRoot])

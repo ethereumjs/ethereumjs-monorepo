@@ -1,9 +1,5 @@
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import {
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-} from '@ethereumjs/tx'
+import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   bigIntToHex,
   blobsToCommitments,
@@ -36,13 +32,13 @@ describe(method, () => {
     const { chain, common, execution, server } = await setupChain(pow, 'pow')
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = LegacyTransaction.fromTxData(
+    const tx = createLegacyTx(
       {
         gasLimit: 2000000,
         gasPrice: 100,
         to: '0x0000000000000000000000000000000000000000',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
     const block = await runBlockWithTxs(chain, execution, [tx])
     const res0 = await rpc.request(method, [bytesToHex(tx.hash())])
@@ -60,18 +56,18 @@ describe(method, () => {
   it('call with 1559 tx', async () => {
     const { chain, common, execution, server } = await setupChain(
       gethGenesisStartLondon(pow),
-      'powLondon'
+      'powLondon',
     )
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = createFeeMarket1559Tx(
       {
         gasLimit: 2000000,
         maxFeePerGas: 975000000,
         maxPriorityFeePerGas: 10,
         to: '0x1230000000000000000000000000000000000321',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     const block = await runBlockWithTxs(chain, execution, [tx])
@@ -125,7 +121,7 @@ describe(method, () => {
       const commitments = blobsToCommitments(kzg, blobs)
       const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
       const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
-      const tx = BlobEIP4844Transaction.fromTxData(
+      const tx = createBlob4844Tx(
         {
           blobVersionedHashes,
           blobs,
@@ -138,7 +134,7 @@ describe(method, () => {
           to: randomBytes(20),
           nonce: 0n,
         },
-        { common }
+        { common },
       ).sign(dummy.privKey)
 
       const block = await runBlockWithTxs(chain, execution, [tx], true)

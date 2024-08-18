@@ -1,4 +1,4 @@
-import { MCLBLS, NobleBLS, type bn128 } from '@ethereumjs/evm'
+import { MCLBLS, NobleBLS, NobleBN254, RustBN254 } from '@ethereumjs/evm'
 import { loadKZG } from 'kzg-wasm'
 import * as mcl from 'mcl-wasm'
 import * as minimist from 'minimist'
@@ -15,13 +15,13 @@ import {
   getRequiredForkConfigAlias,
   getSkipTests,
   getTestDirs,
-} from './config'
-import { runBlockchainTest } from './runners/BlockchainTestsRunner'
-import { runStateTest } from './runners/GeneralStateTestsRunner'
-import { getTestFromSource, getTestsFromArgs } from './testLoader'
+} from './config.js'
+import { runBlockchainTest } from './runners/BlockchainTestsRunner.js'
+import { runStateTest } from './runners/GeneralStateTestsRunner.js'
+import { getTestFromSource, getTestsFromArgs } from './testLoader.js'
 
 import type { Common } from '@ethereumjs/common'
-import type { EVMBLSInterface } from '@ethereumjs/evm/dist/cjs/types'
+import type { EVMBLSInterface, EVMBN254Interface } from '@ethereumjs/evm'
 
 /**
  * Test runner
@@ -48,6 +48,7 @@ import type { EVMBLSInterface } from '@ethereumjs/evm/dist/cjs/types'
  * --verify-test-amount-alltests: number. If passed, get the expected amount from tests and verify afterwards if this is the count of tests (expects tests are ran with default settings)
  * --reps: number.                        If passed, each test case will be run the number of times indicated
  * --bls: string.                         BLS library being used, choices: Noble, MCL (default: MCL)
+ * --bn254: string.                       BN254 (alt_BN128) library being used, choices: Noble, RustBN (default: RustBN)
  * --profile                              If this flag is passed, the state/blockchain tests will profile
  */
 
@@ -112,11 +113,20 @@ async function runTests() {
     console.log('BLS library used: MCL (WASM)')
   }
 
+  let bn254: EVMBN254Interface
+  if (argv.bn254 !== undefined && argv.bn254.toLowerCase() === 'noble') {
+    console.log('BN254 (alt_BN128) library used: Noble (JavaScript)')
+    bn254 = new NobleBN254()
+  } else {
+    const rustBN = await initRustBN()
+    bn254 = new RustBN254(rustBN)
+    console.log('BN254 (alt_BN128) library used: rustbn.js (WASM)')
+  }
+
   /**
    * Run-time configuration
    */
   const kzg = await loadKZG()
-  const bn128 = (await initRustBN()) as bn128
   const runnerArgs: {
     forkConfigVM: string
     forkConfigTestSuite: string
@@ -130,7 +140,7 @@ async function runTests() {
     reps?: number
     profile: boolean
     bls: EVMBLSInterface
-    bn128: bn128
+    bn254: EVMBN254Interface
   } = {
     forkConfigVM: FORK_CONFIG_VM,
     forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
@@ -144,7 +154,7 @@ async function runTests() {
     reps: argv.reps, // test repetitions
     bls,
     profile: RUN_PROFILER,
-    bn128,
+    bn254,
   }
 
   /**
@@ -169,8 +179,8 @@ async function runTests() {
     argv['verify-test-amount-alltests'] > 0
       ? getExpectedTests(FORK_CONFIG_VM, name)
       : argv['expected-test-amount'] !== undefined && argv['expected-test-amount'] > 0
-      ? argv['expected-test-amount']
-      : undefined
+        ? argv['expected-test-amount']
+        : undefined
 
   /**
    * Initialization output to console
@@ -186,7 +196,7 @@ async function runTests() {
         .filter(([_k, v]) => typeof v === 'string' || (Array.isArray(v) && v.length !== 0))
         .map(([k, v]) => ({
           [k]: Array.isArray(v) && v.length > 0 ? v.length : v,
-        }))
+        })),
     )
   }
   const formattedGetterArgs = formatArgs(testGetterArgs)
@@ -268,7 +278,7 @@ async function runTests() {
                 await runner(runnerArgs, test, t)
               }
             },
-            testGetterArgs
+            testGetterArgs,
           )
             .then(() => {
               resolve()

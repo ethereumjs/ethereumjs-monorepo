@@ -1,4 +1,6 @@
-import { hexToBytes, toBytes, unprefixedHexToBytes } from '@ethereumjs/util'
+import { concatBytes, hexToBytes, toBytes, unprefixedHexToBytes } from '@ethereumjs/util'
+
+import { nibblesTypeToPackedBytes } from './nibbles.js'
 
 import type { Nibbles } from '../types.js'
 
@@ -32,10 +34,13 @@ export const hasTerminator = (nibbles: Uint8Array) => {
   return nibbles.length > 0 && nibbles[nibbles.length - 1] === 16
 }
 
-export const nibblesToBytes = (nibbles: Uint8Array, bytes: Uint8Array) => {
+export const nibblesToBytes = (nibbles: Uint8Array) => {
+  const bytes = new Uint8Array(nibbles.length / 2)
   for (let bi = 0, ni = 0; ni < nibbles.length; bi += 1, ni += 2) {
     bytes[bi] = (nibbles[ni] << 4) | nibbles[ni + 1]
   }
+
+  return bytes
 }
 
 export const hexToKeybytes = (hex: Uint8Array) => {
@@ -45,10 +50,8 @@ export const hexToKeybytes = (hex: Uint8Array) => {
   if (hex.length % 2 === 1) {
     throw Error("Can't convert hex key of odd length")
   }
-  const key = new Uint8Array(hex.length / 2)
-  nibblesToBytes(hex, key)
 
-  return key
+  return nibblesToBytes(hex)
 }
 
 // hex to compact
@@ -69,9 +72,9 @@ export const nibblesToCompactBytes = (nibbles: Uint8Array) => {
     buf[0] |= nibbles[0]
     nibbles = nibbles.subarray(1)
   }
+
   // create bytes out of the rest even nibbles
-  nibblesToBytes(nibbles, buf.subarray(1))
-  return buf
+  return concatBytes(buf.subarray(0, 1), nibblesToBytes(nibbles))
 }
 
 export const bytesToNibbles = (str: Uint8Array) => {
@@ -104,22 +107,6 @@ export const compactBytesToNibbles = (compact: Uint8Array) => {
 }
 
 /**
- * Packs every two nibbles into a single byte
- *
- * @param arr Nibble typed nibble array
- * @returns Uint8Array typed byte array
- */
-export const nibbleTypeToPackedBytes = (arr: Nibbles): Uint8Array => {
-  const buf = new Uint8Array(arr.length / 2)
-  for (let i = 0; i < buf.length; i++) {
-    let q = i * 2
-    buf[i] = (arr[q] << 4) + arr[++q]
-  }
-
-  return buf
-}
-
-/**
  * Converts each nibble into a single byte
  *
  * @param arr Nibble typed nibble array
@@ -142,12 +129,12 @@ export const nibbleTypeToByteType = (arr: Nibbles): Uint8Array => {
  * @returns Nibble typed nibble array
  */
 export const byteTypeToNibbleType = (key: Uint8Array): Nibbles => {
-  const bkey = toBytes(key)
+  const bKey = toBytes(key)
   const nibbles = [] as Nibbles
 
-  for (let i = 0; i < bkey.length; i++) {
+  for (let i = 0; i < bKey.length; i++) {
     const q = i
-    nibbles[q] = bkey[i] % 16
+    nibbles[q] = bKey[i] % 16
   }
 
   return nibbles
@@ -167,7 +154,7 @@ export const pathToHexKey = (path: string, extension: Nibbles, retType: string):
   if (retType === 'hex') {
     return nibbleTypeToByteType(n.concat(extension))
   } else if (retType === 'keybyte') {
-    return nibbleTypeToPackedBytes(n.concat(extension))
+    return nibblesTypeToPackedBytes(n.concat(extension))
   }
   throw Error('retType must be either "keybyte" or "hex"')
 }
@@ -177,13 +164,13 @@ export const mergeAndFormatKeyPaths = (pathStrings: string[]) => {
   let paths: string[] = []
   let i = 0
   while (i < pathStrings.length) {
-    const outterPathString = pathStrings[i]!.split('/')
-    const outterAccountPath = outterPathString[0]
-    const outterStoragePath = outterPathString[1]
+    const outerPathString = pathStrings[i]!.split('/')
+    const outerAccountPath = outerPathString[0]
+    const outerStoragePath = outerPathString[1]
 
-    paths.push(outterAccountPath)
-    if (outterStoragePath !== undefined) {
-      paths.push(outterStoragePath)
+    paths.push(outerAccountPath)
+    if (outerStoragePath !== undefined) {
+      paths.push(outerStoragePath)
     }
 
     let j = ++i
@@ -192,7 +179,7 @@ export const mergeAndFormatKeyPaths = (pathStrings: string[]) => {
       const innerAccountPath = innerPathString[0]
       const innerStoragePath = innerPathString[1]
 
-      if (innerAccountPath === outterAccountPath) {
+      if (innerAccountPath === outerAccountPath) {
         paths.push(innerStoragePath)
       } else {
         ret.push(paths)
@@ -218,6 +205,6 @@ export const mergeAndFormatKeyPaths = (pathStrings: string[]) => {
         // full path is keybyte encoded
         return hexToKeybytes(unprefixedHexToBytes(s))
       }
-    })
+    }),
   )
 }

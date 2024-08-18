@@ -1,14 +1,14 @@
-import { BlockHeader, createBlockFromValuesArray } from '@ethereumjs/block'
-import { createBlockchain } from '@ethereumjs/blockchain'
+import { createBlockFromBytesArray, createBlockHeaderFromBytesArray } from '@ethereumjs/block'
+import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
-import { BIGINT_0, BIGINT_1, equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, equalsBytes } from '@ethereumjs/util'
 
 import { LevelDB } from '../execution/level.js'
 import { Event } from '../types.js'
 
 import type { Config } from '../config.js'
-import type { Block } from '@ethereumjs/block'
-import type { Blockchain } from '@ethereumjs/blockchain'
+import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
@@ -158,7 +158,9 @@ export class Chain {
    */
   public static async create(options: ChainOptions) {
     let validateConsensus = false
+    const consensusDict: ConsensusDict = {}
     if (options.config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+      consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
       validateConsensus = true
     }
 
@@ -170,6 +172,7 @@ export class Chain {
         hardforkByHeadBlockNumber: true,
         validateBlocks: true,
         validateConsensus,
+        consensusDict,
         genesisState: options.genesisState,
         genesisStateRoot: options.genesisStateRoot,
       }))
@@ -223,10 +226,10 @@ export class Chain {
   }
 
   /**
-   * Network ID
+   * Chain ID
    */
-  get networkId(): bigint {
-    return this.config.chainCommon.networkId()
+  get chainId(): bigint {
+    return this.config.chainCommon.chainId()
   }
 
   /**
@@ -263,7 +266,7 @@ export class Chain {
     this.config.chainCommon.events.on('hardforkChanged', async (hardfork: string) => {
       const block = this.config.chainCommon.hardforkBlock()
       this.config.superMsg(
-        `New hardfork reached 🪢 ! hardfork=${hardfork} ${block !== null ? `block=${block}` : ''}`
+        `New hardfork reached 🪢 ! hardfork=${hardfork} ${block !== null ? `block=${block}` : ''}`,
       )
     })
   }
@@ -334,44 +337,10 @@ export class Chain {
     this._headers = headers
     this._blocks = blocks
 
-    const parentTd = await this.blockchain.getParentTD(headers.latest)
     this.config.chainCommon.setHardforkBy({
       blockNumber: headers.latest.number,
-      td: parentTd,
       timestamp: headers.latest.timestamp,
     })
-
-    // Check and log if this is a terminal block and next block could be merge
-    if (!this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
-      const nextBlockHf = this.config.chainCommon.getHardforkBy({
-        blockNumber: headers.height + BIGINT_1,
-        td: headers.td,
-      })
-      if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Paris)) {
-        this.config.logger.info('*'.repeat(85))
-        this.config.logger.info(
-          `Paris (Merge) hardfork reached 🐼 👉 👈 🐼 ! block=${headers.height} td=${headers.td}`
-        )
-        this.config.logger.info('-'.repeat(85))
-        this.config.logger.info(' ')
-        this.config.logger.info('Consensus layer client (CL) needed for continued sync:')
-        this.config.logger.info(
-          'https://ethereum.org/en/developers/docs/nodes-and-clients/#consensus-clients'
-        )
-        this.config.logger.info(' ')
-        this.config.logger.info(
-          'Make sure to have the JSON RPC (--rpc) and Engine API (--rpcEngine) endpoints exposed'
-        )
-        this.config.logger.info('and JWT authentication configured (see client README).')
-        this.config.logger.info(' ')
-        this.config.logger.info('*'.repeat(85))
-        this.config.logger.info(
-          `Transitioning to PoS! First block for CL-framed execution: block=${
-            headers.height + BIGINT_1
-          }`
-        )
-      }
-    }
 
     if (emit) {
       this.config.events.emit(Event.CHAIN_UPDATED)
@@ -390,7 +359,7 @@ export class Chain {
     block: Uint8Array | bigint,
     max = 1,
     skip = 0,
-    reverse = false
+    reverse = false,
   ): Promise<Block[]> {
     if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getBlocks(block, max, skip, reverse)
@@ -424,7 +393,7 @@ export class Chain {
         const canonicalBlock = await this.getBlock(block.header.number)
         if (!equalsBytes(canonicalBlock.hash(), block.hash())) {
           throw Error(
-            `Invalid putBlock for block=${block.header.number} before finalized=${this.headers.finalized.number}`
+            `Invalid putBlock for block=${block.header.number} before finalized=${this.headers.finalized.number}`,
           )
         }
       } else {
@@ -441,19 +410,17 @@ export class Chain {
         break
       }
 
-      const td = await this.blockchain.getParentTD(b.header)
       if (b.header.number <= this.headers.height) {
         await this.blockchain.checkAndTransitionHardForkByNumber(
           b.header.number,
-          td,
-          b.header.timestamp
+          b.header.timestamp,
         )
-        await this.blockchain.consensus.setup({ blockchain: this.blockchain })
+        await this.blockchain.consensus?.setup({ blockchain: this.blockchain })
       }
 
-      const block = createBlockFromValuesArray(b.raw(), {
+      const block = createBlockFromBytesArray(b.raw(), {
         common: this.config.chainCommon,
-        setHardfork: td,
+        setHardfork: true,
       })
 
       await this.blockchain.putBlock(block)
@@ -476,7 +443,7 @@ export class Chain {
     block: Uint8Array | bigint,
     max: number,
     skip: number,
-    reverse: boolean
+    reverse: boolean,
   ): Promise<BlockHeader[]> {
     const blocks = await this.getBlocks(block, max, skip, reverse)
     return blocks.map((b) => b.header)
@@ -501,9 +468,9 @@ export class Chain {
         }
         break
       }
-      const header = BlockHeader.fromValuesArray(h.raw(), {
+      const header = createBlockHeaderFromBytesArray(h.raw(), {
         common: this.config.chainCommon,
-        setHardfork: this.headers.td,
+        setHardfork: true,
       })
       await this.blockchain.putHeader(header)
       numAdded++

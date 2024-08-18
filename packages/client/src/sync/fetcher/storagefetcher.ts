@@ -1,5 +1,5 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
+import { verifyTrieRangeProof } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -17,7 +17,7 @@ import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Fetcher } from './fetcher.js'
-import { getInitFecherDoneFlags } from './types.js'
+import { getInitFetcherDoneFlags } from './types.js'
 
 import type { Peer } from '../../net/peer/index.js'
 import type { StorageData } from '../../net/protocol/snapprotocol.js'
@@ -89,7 +89,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
 
     this.root = options.root
     this.stateManager = options.stateManager ?? new DefaultStateManager()
-    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
+    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFetcherDoneFlags()
     this.storageRequests = options.storageRequests ?? []
     this.fetcherDoneFlags.storageFetcher.count = BigInt(this.storageRequests.length)
 
@@ -105,8 +105,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         `Storage fetcher instantiated with ${
           fullJob.task.storageRequests.length
         } accounts requested and root=${short(this.root)} origin=${short(origin)} limit=${short(
-          limit
-        )} destroyWhenDone=${this.destroyWhenDone}`
+          limit,
+        )} destroyWhenDone=${this.destroyWhenDone}`,
       )
     } else if (this.storageRequests.length === 0) {
       this.debug('Idle storage fetcher has been instantiated')
@@ -116,17 +116,17 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
   private async verifyRangeProof(
     stateRoot: Uint8Array,
     origin: Uint8Array,
-    { slots, proof }: { slots: StorageData[]; proof: Uint8Array[] | undefined }
+    { slots, proof }: { slots: StorageData[]; proof: Uint8Array[] | undefined },
   ): Promise<boolean> {
     try {
       this.debug(
         `verifyRangeProof slots:${slots.length} first=${short(slots[0].hash)} last=${short(
-          slots[slots.length - 1].hash
-        )}`
+          slots[slots.length - 1].hash,
+        )}`,
       )
       const keys = slots.map((slot: any) => slot.hash)
       const values = slots.map((slot: any) => slot.body)
-      return await Trie.verifyRangeProof(
+      return await verifyTrieRangeProof(
         stateRoot,
         origin,
         keys[keys.length - 1],
@@ -136,7 +136,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         {
           common: this.config.chainCommon,
           useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
-        }
+        },
       )
     } catch (err) {
       this.debug(`verifyRangeProof failure: ${(err as Error).stack}`)
@@ -189,7 +189,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
 
   private isMissingRightRange(
     limit: Uint8Array,
-    { slots, proof: _proof }: { slots: StorageData[][]; proof: Uint8Array[] }
+    { slots, proof: _proof }: { slots: StorageData[][]; proof: Uint8Array[] },
   ): boolean {
     if (
       slots.length > 0 &&
@@ -214,7 +214,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
    * @param peer
    */
   async request(
-    job: Job<JobTask, StorageData[][], StorageData[]>
+    job: Job<JobTask, StorageData[][], StorageData[]>,
   ): Promise<StorageDataResponse | undefined> {
     const { task, peer } = job
     // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
@@ -230,7 +230,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this.debug(`requested origin: ${bytesToHex(origin)}`)
     this.debug(`requested limit: ${bytesToHex(limit)}`)
     this.debug(
-      `requested account hashes: ${task.storageRequests.map((req) => bytesToHex(req.accountHash))}`
+      `requested account hashes: ${task.storageRequests.map((req) => bytesToHex(req.accountHash))}`,
     )
     this.debug(`request is multi: ${job.task.multi}`)
 
@@ -239,7 +239,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     // fragmented request
     if (task.multi === false) {
       const highestKnownHash = this.accountToHighestKnownHash.get(
-        bytesToHex(task.storageRequests[0].accountHash)
+        bytesToHex(task.storageRequests[0].accountHash),
       )
       if (highestKnownHash && compareBytes(limit, highestKnownHash) < 0) {
         // skip this job and don't rerequest it if it's limit is lower than the highest known key hash
@@ -263,7 +263,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
           rangeResult?.slots !== undefined ? rangeResult.slots.length : 0
         } hashset ${task.storageRequests.length} proofset ${
           rangeResult?.proof !== undefined ? rangeResult.proof.length : 0
-        } `
+        } `,
       )
       return undefined
     }
@@ -276,14 +276,14 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       // zero-element proof
       if (rangeResult.proof.length > 0) {
         try {
-          const isMissingRightRange = await Trie.verifyRangeProof(
+          const isMissingRightRange = await verifyTrieRangeProof(
             task.storageRequests[0].storageRoot,
             origin,
             null,
             [],
             [],
             <any>rangeResult.proof,
-            { useKeyHashingFunction: keccak256 }
+            { useKeyHashingFunction: keccak256 },
           )
 
           // if proof is false, reject corrupt peer
@@ -324,7 +324,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
             throw Error(
               `Account hashes not monotonically increasing: ${i} ${accountSlots[i].hash} vs ${
                 i + 1
-              } ${accountSlots[i + 1].hash}`
+              } ${accountSlots[i + 1].hash}`,
             )
           }
         }
@@ -333,7 +333,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         const proof = i === rangeResult.slots.length - 1 ? rangeResult.proof : undefined
         if (proof === undefined || proof.length === 0) {
           // all-elements proof verification
-          await Trie.verifyRangeProof(
+          await verifyTrieRangeProof(
             root,
             null,
             null,
@@ -343,7 +343,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
             {
               common: this.config.chainCommon,
               useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
-            }
+            },
           )
 
           if (proof?.length === 0)
@@ -366,8 +366,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
               if (this.isMissingRightRange(limit, rangeResult)) {
                 this.debug(
                   `Peer ${peerInfo} returned missing right range Slot=${bytesToHex(
-                    rangeResult.slots[0][rangeResult.slots.length - 1].hash
-                  )} limit=${bytesToHex(limit)}`
+                    rangeResult.slots[0][rangeResult.slots.length - 1].hash,
+                  )} limit=${bytesToHex(limit)}`,
                 )
                 completed = false
               } else {
@@ -379,8 +379,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
           if (hasRightElement) {
             this.debug(
               `Account fragmented at ${bytesToHex(
-                highestReceivedhash
-              )} as part of multiaccount fetch`
+                highestReceivedhash,
+              )} as part of multiaccount fetch`,
             )
             this.fragmentedRequests.unshift({
               ...task.storageRequests[i],
@@ -394,7 +394,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
           const ignoredRequests = task.storageRequests.slice(i + 1)
           if (ignoredRequests.length > 0) {
             this.debug(
-              `Number of ignored account requests due to fragmentation: ${ignoredRequests.length}`
+              `Number of ignored account requests due to fragmentation: ${ignoredRequests.length}`,
             )
             this.storageRequests.push(...ignoredRequests)
           }
@@ -415,7 +415,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
    */
   process(
     job: Job<JobTask, StorageData[][], StorageData[]>,
-    result: StorageDataResponse
+    result: StorageDataResponse,
   ): StorageData[][] | undefined {
     const accountSlots = (result[0] as any)[0]
     const highestReceivedhash = accountSlots[accountSlots.length - 1].hash
@@ -442,7 +442,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         [],
         fullResult,
         { requests: job.task.storageRequests },
-        { multi: job.task.multi }
+        { multi: job.task.multi },
       )
     } else {
       if (updateHighestReceivedHash && highestReceivedhash !== undefined) {
@@ -459,7 +459,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
    * @param result fetch result
    */
   async store(
-    result: StorageData[][] & { requests: StorageRequest[] } & { multi: boolean }
+    result: StorageData[][] & { requests: StorageRequest[] } & { multi: boolean },
   ): Promise<void> {
     try {
       if (JSON.stringify(result[0]) === JSON.stringify({ skipped: true })) {
@@ -468,7 +468,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       }
       if (JSON.stringify(result[0]) === JSON.stringify(Object.create(null))) {
         this.debug(
-          'Empty result detected - Associated range requested was empty with no elements remaining to the right'
+          'Empty result detected - Associated range requested was empty with no elements remaining to the right',
         )
         return
       }
@@ -515,7 +515,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this.fetcherDoneFlags.storageFetcher.count =
       this.fetcherDoneFlags.storageFetcher.first + BigInt(this.storageRequests.length)
     this.debug(
-      `Number of storage fetch requests added to fetcher queue: ${storageRequestList.length}`
+      `Number of storage fetch requests added to fetcher queue: ${storageRequestList.length}`,
     )
     this.nextTasks()
   }
@@ -530,28 +530,28 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
   tasks(
     first = BIGINT_0,
     count = TOTAL_RANGE_END,
-    maxTasks = this.config.maxFetcherJobs
+    maxTasks = this.config.maxFetcherJobs,
   ): JobTask[] {
     const tasks: JobTask[] = []
     let storageRequest = undefined
-    let whereFirstwas = first
+    let whereFirstWas = first
     let startedWith = first
     let myFirst = first
     let myCount = count
     if (this.storageRequests.length > 0) {
       this.debug(
-        `Number of accounts requested as a part of a multi-account request: ${this.storageRequests.length}`
+        `Number of accounts requested as a part of a multi-account request: ${this.storageRequests.length}`,
       )
       tasks.unshift({
         storageRequests: this.storageRequests, // TODO limit max number of accounts per single fetch request
         multi: true,
       })
-      this.storageRequests = [] // greedilly request as many account slots by requesting all known ones
+      this.storageRequests = [] // greedily request as many account slots by requesting all known ones
       return tasks
     } else if (this.fragmentedRequests.length > 0) {
       this.debug('Single account request is being initiated')
       storageRequest = this.fragmentedRequests.shift()
-      whereFirstwas = storageRequest!.first
+      whereFirstWas = storageRequest!.first
       startedWith = storageRequest!.first
       myFirst = storageRequest!.first
       myCount = storageRequest!.count
@@ -602,7 +602,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
 
     // If we started with where this.first was, i.e. there are no gaps and hence
     // we can move this.first to where its now, and reduce count by pushedCount
-    if (myCount !== BIGINT_0 && startedWith === whereFirstwas) {
+    if (myCount !== BIGINT_0 && startedWith === whereFirstWas) {
       // create new fragmented request to keep track of where to start building the next set of tasks for fetching the same account
       this.fragmentedRequests.unshift({
         accountHash: storageRequest!.accountHash,
@@ -618,7 +618,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
 
   nextTasks(): void {
     this.debug(
-      `Entering nextTasks with primary queue length of ${this.storageRequests.length} and secondary queue length of ${this.fragmentedRequests.length}`
+      `Entering nextTasks with primary queue length of ${this.storageRequests.length} and secondary queue length of ${this.fragmentedRequests.length}`,
     )
     this.debug('Storage requests in primary queue:')
     for (const r of this.storageRequests) {
@@ -663,7 +663,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         this.debug(
           `Fetcher pending with ${
             fullJob!.task.storageRequests.length
-          } accounts requested and origin=${short(origin)} limit=${short(limit)}`
+          } accounts requested and origin=${short(origin)} limit=${short(limit)}`,
         )
       }
     } catch (err) {
@@ -680,7 +680,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
 
   processStoreError(
     error: Error,
-    _task: JobTask
+    _task: JobTask,
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
     const stepBack = BIGINT_0
     const destroyFetcher =

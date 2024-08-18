@@ -1,14 +1,22 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Chain as ChainEnum, Common, Hardfork, parseGethGenesis } from '@ethereumjs/common'
+import {
+  Common,
+  Hardfork,
+  Mainnet,
+  createCommonFromGethGenesis,
+  parseGethGenesis,
+} from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import {
   Address,
   BIGINT_1,
   KECCAK256_RLP,
+  createAddressFromString,
   hexToBytes,
   parseGethGenesisState,
 } from '@ethereumjs/util'
+import { buildBlock } from '@ethereumjs/vm'
 import { Client, Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 import { assert } from 'vitest'
@@ -59,7 +67,7 @@ type createClientArgs = {
 export function startRPC(
   methods: any,
   opts: StartRPCOpts = { port: 0 },
-  withEngineMiddleware?: WithEngineMiddleware
+  withEngineMiddleware?: WithEngineMiddleware,
 ) {
   const { port, wsServer } = opts
   const server = new RPCServer(methods)
@@ -87,12 +95,12 @@ export function createManager(client: EthereumClient) {
 }
 
 export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
-  const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
+  const common: Common = clientOpts.commonChain ?? new Common({ chain: Mainnet })
   const genesisState = clientOpts.genesisState ?? getGenesis(Number(common.chainId())) ?? {}
   const config = new Config({
     minerCoinbase:
       clientOpts.minerCoinbase !== undefined
-        ? Address.fromString(clientOpts.minerCoinbase)
+        ? createAddressFromString(clientOpts.minerCoinbase)
         : undefined,
     common,
     saveReceipts: clientOpts.enableMetaDB,
@@ -120,9 +128,9 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
 
   chain.getTd = async (_hash: Uint8Array, _num: bigint) => BigInt(1000)
   if ((chain as any)._headers !== undefined) {
-    ;(chain as any)._headers.latest = BlockHeader.fromHeaderData(
+    ;(chain as any)._headers.latest = createBlockHeader(
       { withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined },
-      { common }
+      { common },
     )
   }
 
@@ -203,8 +211,11 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
 export async function baseSetup(clientOpts: any = {}) {
   const client = await createClient(clientOpts)
   const manager = createManager(client)
-  const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
-  const server = startRPC({ ...manager.getMethods(), ...engineMethods })
+  const engineMethods = clientOpts.engine === true ? manager.getMethods(true, true) : {}
+  const server = startRPC({
+    ...manager.getMethods(false, true), // Add debug trace since this is for tests
+    ...engineMethods,
+  })
   const host = server.address() as AddressInfo
   const rpc = Client.http({ port: host.port })
   server.once('close', () => {
@@ -220,15 +231,12 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   const genesisParams = parseGethGenesis(genesisFile, chainName)
   const genesisState = parseGethGenesisState(genesisFile)
   const genesisStateRoot = clientOpts.genesisStateRoot
-
-  const common = new Common({
+  const common = createCommonFromGethGenesis(genesisFile, {
     chain: chainName,
-    customChains: [genesisParams],
     customCrypto: clientOpts.customCrypto,
   })
   common.setHardforkBy({
     blockNumber: 0,
-    td: genesisParams.genesis.difficulty,
     timestamp: genesisParams.genesis.timestamp,
   })
 
@@ -279,13 +287,13 @@ export async function runBlockWithTxs(
   chain: Chain,
   execution: VMExecution,
   txs: TypedTransaction[],
-  fromEngine = false
+  fromEngine = false,
 ) {
   const { vm } = execution
   // build block with tx
   const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.shallowCopy()
-  const blockBuilder = await vmCopy.buildBlock({
+  const blockBuilder = await buildBlock(vmCopy, {
     parentBlock,
     headerData: {
       timestamp: parentBlock.header.timestamp + BIGINT_1,

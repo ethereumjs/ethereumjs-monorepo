@@ -1,27 +1,27 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createBlock } from '@ethereumjs/block'
+import { createLegacyTx } from '@ethereumjs/tx'
 import { equalsBytes, toBytes } from '@ethereumjs/util'
 
 import { dummy } from './helpers.js'
+
+import type { LegacyTx } from '@ethereumjs/tx'
 
 export function mockBlockchain(options: any = {}) {
   const number = options.number ?? '0x444444'
   const blockHash =
     options.hash ?? '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf'
-  const transactions = options.transactions ?? [
-    LegacyTransaction.fromTxData({}).sign(dummy.privKey),
-  ]
+  const transactions = options.transactions ?? [createLegacyTx({}).sign(dummy.privKey)]
   const block = {
     hash: () => toBytes(blockHash),
-    serialize: () => createBlockFromBlockData({ header: { number }, transactions }).serialize(),
+    serialize: () => createBlock({ header: { number }, transactions }).serialize(),
     header: {
       number: BigInt(number),
       hash: () => toBytes(blockHash),
     },
     toJSON: () => ({
-      ...createBlockFromBlockData({ header: { number } }).toJSON(),
+      ...createBlock({ header: { number } }).toJSON(),
       hash: options.hash ?? blockHash,
-      transactions: transactions.map((t: LegacyTransaction) => t.toJSON()),
+      transactions: transactions.map((t: LegacyTx) => t.toJSON()),
     }),
     transactions,
     uncleHeaders: [],
@@ -35,7 +35,7 @@ export function mockBlockchain(options: any = {}) {
       return block
     },
     getCanonicalHeadHeader: () => {
-      return createBlockFromBlockData().header
+      return createBlock().header
     },
     getIteratorHead: () => {
       return block

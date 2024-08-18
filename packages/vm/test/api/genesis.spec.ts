@@ -11,7 +11,7 @@ describe('genesis', () => {
       const genesisState = getGenesis(Chain.Mainnet)
 
       const blockchain = await createBlockchain({ genesisState })
-      await VM.create({ blockchain, genesisState })
+      await VM.create({ blockchain })
     }
 
     assert.doesNotThrow(f, 'should allow for initialization with genesis from genesis package')

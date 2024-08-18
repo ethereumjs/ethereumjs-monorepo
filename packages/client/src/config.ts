@@ -1,4 +1,4 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereumjs/util'
 import { Level } from 'level'
@@ -276,7 +276,7 @@ export interface ConfigOptions {
 
   /**
    * If there is a reorg, this is a safe distance from which
-   * to try to refetch and refeed the blocks.
+   * to try to refetch and re-feed the blocks.
    */
   safeReorgDistance?: number
 
@@ -352,7 +352,7 @@ export class Config {
    */
   public readonly events: EventBusType
 
-  public static readonly CHAIN_DEFAULT = 'mainnet'
+  public static readonly CHAIN_DEFAULT = Mainnet
   public static readonly SYNCMODE_DEFAULT = SyncMode.Full
   public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`
@@ -385,10 +385,9 @@ export class Config {
 
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
   // engine new payload calls can come in batch of 64, keeping 128 as the lookup factor
-  public static readonly ENGINE_PARENTLOOKUP_MAX_DEPTH = 128
+  public static readonly ENGINE_PARENT_LOOKUP_MAX_DEPTH = 128
   public static readonly ENGINE_NEWPAYLOAD_MAX_EXECUTE = 2
-  // currently ethereumjs can execute 200 txs in 12 second window so keeping 1/2 target for blocking response
-  public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 100
+  public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 200
   public static readonly SNAP_AVAILABILITY_DEPTH = BigInt(128)
   // distance from head at which we can safely transition from a synced snapstate to vmexecution
   // randomly kept it at 5 for fast testing purposes but ideally should be >=32 slots
@@ -453,7 +452,7 @@ export class Config {
   public readonly ignoreStatelessInvalidExecs: boolean
 
   public synchronized: boolean
-  public lastsyncronized?: boolean
+  public lastSynchronized?: boolean
   /** lastSyncDate in ms */
   public lastSyncDate: number
   /** Best known block height */
@@ -526,7 +525,7 @@ export class Config {
     this.syncedStateRemovalPeriod =
       options.syncedStateRemovalPeriod ?? Config.SYNCED_STATE_REMOVAL_PERIOD
     this.engineParentLookupMaxDepth =
-      options.engineParentLookupMaxDepth ?? Config.ENGINE_PARENTLOOKUP_MAX_DEPTH
+      options.engineParentLookupMaxDepth ?? Config.ENGINE_PARENT_LOOKUP_MAX_DEPTH
     this.engineNewpayloadMaxExecute =
       options.engineNewpayloadMaxExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_EXECUTE
     this.engineNewpayloadMaxTxsExecute =
@@ -605,7 +604,7 @@ export class Config {
             this.synchronized = true
             // Log to console the sync status
             this.superMsg(
-              `Synchronized blockchain at height=${height} hash=${short(latest.hash())} 🎉`
+              `Synchronized blockchain at height=${height} hash=${short(latest.hash())} 🎉`,
             )
           }
 
@@ -620,21 +619,21 @@ export class Config {
         if (diff >= this.syncedStateRemovalPeriod) {
           this.synchronized = false
           this.logger.info(
-            `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`
+            `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`,
           )
         }
       }
     }
 
-    if (this.synchronized !== this.lastsyncronized) {
+    if (this.synchronized !== this.lastSynchronized) {
       this.logger.debug(
         `Client synchronized=${this.synchronized}${
           latest !== null && latest !== undefined ? ' height=' + latest.number : ''
         } syncTargetHeight=${this.syncTargetHeight} lastSyncDate=${
           (Date.now() - this.lastSyncDate) / 1000
-        } secs ago`
+        } secs ago`,
       )
-      this.lastsyncronized = this.synchronized
+      this.lastSynchronized = this.synchronized
     }
   }
 

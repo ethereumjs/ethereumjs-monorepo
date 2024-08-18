@@ -1,19 +1,19 @@
 import { Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { Blob4844Tx } from '@ethereumjs/tx'
 import {
-  Address,
   BIGINT_1,
   BIGINT_2,
   TypeOutput,
   bigIntToUnpaddedBytes,
   bytesToHex,
   concatBytes,
+  createZeroAddress,
   equalsBytes,
   toBytes,
   toType,
   zeros,
 } from '@ethereumjs/util'
-import { BuildStatus } from '@ethereumjs/vm'
+import { BuildStatus, buildBlock } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { Config } from '../config.js'
@@ -98,7 +98,7 @@ export class PendingBlock {
     vm: VM,
     parentBlock: Block,
     headerData: Partial<HeaderData> = {},
-    withdrawals?: WithdrawalData[]
+    withdrawals?: WithdrawalData[],
   ) {
     const number = parentBlock.header.number + BIGINT_1
     const { timestamp, mixHash, parentBeaconBlockRoot, coinbase } = headerData
@@ -107,10 +107,8 @@ export class PendingBlock {
     if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
       throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
     }
-    const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
     vm.common.setHardforkBy({
       blockNumber: number,
-      td,
       timestamp,
     })
 
@@ -138,9 +136,9 @@ export class PendingBlock {
       for (const withdrawal of withdrawals) {
         const indexBuf = bigIntToUnpaddedBytes(toType(withdrawal.index ?? 0, TypeOutput.BigInt))
         const validatorIndex = bigIntToUnpaddedBytes(
-          toType(withdrawal.validatorIndex ?? 0, TypeOutput.BigInt)
+          toType(withdrawal.validatorIndex ?? 0, TypeOutput.BigInt),
         )
-        const address = toType(withdrawal.address ?? Address.zero(), TypeOutput.Uint8Array)
+        const address = toType(withdrawal.address ?? createZeroAddress(), TypeOutput.Uint8Array)
         const amount = bigIntToUnpaddedBytes(toType(withdrawal.amount ?? 0, TypeOutput.BigInt))
         withdrawalsBufTemp.push(concatBytes(indexBuf, validatorIndex, address, amount))
       }
@@ -158,9 +156,9 @@ export class PendingBlock {
           gasLimitBuf,
           parentBeaconBlockRootBuf,
           coinbaseBuf,
-          withdrawalsBuf
-        )
-      ).subarray(0, 8)
+          withdrawalsBuf,
+        ),
+      ).subarray(0, 8),
     )
     const payloadId = bytesToHex(payloadIdBytes)
 
@@ -176,7 +174,7 @@ export class PendingBlock {
     // is based on the parent block's state
     await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
 
-    const builder = await vm.buildBlock({
+    const builder = await buildBlock(vm, {
       parentBlock,
       // excessBlobGas will be correctly calculated and set in buildBlock constructor,
       // unless already explicity provided in headerData
@@ -189,7 +187,7 @@ export class PendingBlock {
       withdrawals,
       blockOpts: {
         putBlockIntoBlockchain: false,
-        setHardfork: td,
+        setHardfork: true,
       },
     })
 
@@ -198,8 +196,8 @@ export class PendingBlock {
     // Get if and how many blobs are allowed in the tx
     let allowedBlobs
     if (vm.common.isActivatedEIP(4844)) {
-      const blobGasLimit = vm.common.param('gasConfig', 'maxblobGasPerBlock')
-      const blobGasPerBlob = vm.common.param('gasConfig', 'blobGasPerBlob')
+      const blobGasLimit = vm.common.param('maxblobGasPerBlock')
+      const blobGasPerBlob = vm.common.param('blobGasPerBlob')
       allowedBlobs = Number(blobGasLimit / blobGasPerBlob)
     } else {
       allowedBlobs = 0
@@ -210,12 +208,12 @@ export class PendingBlock {
       allowedBlobs,
     })
     this.config.logger.info(
-      `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
+      `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`,
     )
 
     const { addedTxs, skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
     this.config.logger.info(
-      `Pending: Added txs=${addedTxs} skippedByAddErrors=${skippedByAddErrors} from total=${txs.length} tx candidates`
+      `Pending: Added txs=${addedTxs} skippedByAddErrors=${skippedByAddErrors} from total=${txs.length} tx candidates`,
     )
 
     // Construct initial blobs bundle when payload is constructed
@@ -244,7 +242,7 @@ export class PendingBlock {
    * Returns the completed block
    */
   async build(
-    payloadIdBytes: Uint8Array | string
+    payloadIdBytes: Uint8Array | string,
   ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint, blobs?: BlobsBundle]> {
     const payloadId =
       typeof payloadIdBytes !== 'string' ? bytesToHex(payloadIdBytes) : payloadIdBytes
@@ -267,8 +265,8 @@ export class PendingBlock {
     let allowedBlobs
     if (vm.common.isActivatedEIP(4844)) {
       const bundle = this.blobsBundles.get(payloadId) ?? { blobs: [], commitments: [], proofs: [] }
-      const blobGasLimit = vm.common.param('gasConfig', 'maxblobGasPerBlock')
-      const blobGasPerBlob = vm.common.param('gasConfig', 'blobGasPerBlob')
+      const blobGasLimit = vm.common.param('maxblobGasPerBlock')
+      const blobGasPerBlob = vm.common.param('blobGasPerBlob')
       allowedBlobs = Number(blobGasLimit / blobGasPerBlob) - bundle.blobs.length
     } else {
       allowedBlobs = 0
@@ -283,8 +281,8 @@ export class PendingBlock {
     ).filter(
       (tx) =>
         (builder as any).transactions.some((t: TypedTransaction) =>
-          equalsBytes(t.hash(), tx.hash())
-        ) === false
+          equalsBytes(t.hash(), tx.hash()),
+        ) === false,
     )
 
     const { skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
@@ -303,8 +301,8 @@ export class PendingBlock {
       `Pending: Built block number=${block.header.number} txs=${
         block.transactions.length
       }${withdrawalsStr}${blobsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${bytesToHex(
-        block.hash()
-      )}`
+        block.hash(),
+      )}`,
     )
 
     return [block, builder.transactionReceipts, builder.minerValue, blobs]
@@ -324,7 +322,7 @@ export class PendingBlock {
       switch (addTxResult) {
         case AddTxResult.Success:
           // Push the tx in blobTxs only after successful addTransaction
-          if (tx instanceof BlobEIP4844Transaction) blobTxs.push(tx)
+          if (tx instanceof Blob4844Tx) blobTxs.push(tx)
           break
 
         case AddTxResult.BlockFull:
@@ -365,15 +363,15 @@ export class PendingBlock {
         // Remove the blob tx which doesn't has blobs bundled
         this.txPool.removeByHash(bytesToHex(tx.hash()), tx)
         this.config.logger.error(
-          `Pending: Removed from txPool a blob tx ${bytesToHex(tx.hash())} with missing blobs`
+          `Pending: Removed from txPool a blob tx ${bytesToHex(tx.hash())} with missing blobs`,
         )
         addTxResult = AddTxResult.RemovedByErrors
       } else {
         // If there is an error adding a tx, it will be skipped
         this.config.logger.debug(
           `Pending: Skipping tx ${bytesToHex(
-            tx.hash()
-          )}, error encountered when trying to add tx:\n${error}`
+            tx.hash(),
+          )}, error encountered when trying to add tx:\n${error}`,
         )
         addTxResult = AddTxResult.SkippedByErrors
       }
@@ -384,10 +382,10 @@ export class PendingBlock {
   /**
    * An internal helper for storing the blob bundle associated with each transaction in an EIP4844 world
    * @param payloadId the payload Id of the pending block
-   * @param txs an array of {@BlobEIP4844Transaction } transactions
+   * @param txs an array of {@Blob4844Tx } transactions
    * @param blockHash the blockhash of the pending block (computed from the header data provided)
    */
-  private constructBlobsBundle = (payloadId: string, txs: BlobEIP4844Transaction[]) => {
+  private constructBlobsBundle = (payloadId: string, txs: Blob4844Tx[]) => {
     let blobs: Uint8Array[] = []
     let commitments: Uint8Array[] = []
     let proofs: Uint8Array[] = []
@@ -399,7 +397,7 @@ export class PendingBlock {
     }
 
     for (let tx of txs) {
-      tx = tx as BlobEIP4844Transaction
+      tx = tx as Blob4844Tx
       if (tx.blobs !== undefined && tx.blobs.length > 0) {
         blobs = blobs.concat(tx.blobs)
         commitments = commitments.concat(tx.kzgCommitments!)

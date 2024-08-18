@@ -52,15 +52,15 @@ describe(prefix, () => {
     // valid
     // zero address
     assert.ok(
-      validatorResult(validators.address(['0x0000000000000000000000000000000000000000'], 0))
+      validatorResult(validators.address(['0x0000000000000000000000000000000000000000'], 0)),
     )
     // lowercase address
     assert.ok(
-      validatorResult(validators.address(['0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270'], 0))
+      validatorResult(validators.address(['0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270'], 0)),
     )
     // checksummed address
     assert.ok(
-      validatorResult(validators.address(['0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270'], 0))
+      validatorResult(validators.address(['0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270'], 0)),
     )
 
     // invalid
@@ -70,23 +70,23 @@ describe(prefix, () => {
     assert.notOk(validatorResult(validators.address(['0x1'], 0)))
     // invalid length: 38 chars
     assert.notOk(
-      validatorResult(validators.address(['0x00000000000000000000000000000000000000'], 0))
+      validatorResult(validators.address(['0x00000000000000000000000000000000000000'], 0)),
     )
     // invalidlength: 39 chars
     assert.notOk(
-      validatorResult(validators.address(['0x000000000000000000000000000000000000000'], 0))
+      validatorResult(validators.address(['0x000000000000000000000000000000000000000'], 0)),
     )
     // invalidlength: 41 chars
     assert.notOk(
-      validatorResult(validators.address(['0x00000000000000000000000000000000000000000'], 0))
+      validatorResult(validators.address(['0x00000000000000000000000000000000000000000'], 0)),
     )
     // invalid length: 42 chars
     assert.notOk(
-      validatorResult(validators.address(['0x00000000000000000000000000000000000000000'], 0))
+      validatorResult(validators.address(['0x00000000000000000000000000000000000000000'], 0)),
     )
     // invalid character
     assert.notOk(
-      validatorResult(validators.address(['0x62223651d6a33d58be70eb9876c3caf7096169ez'], 0))
+      validatorResult(validators.address(['0x62223651d6a33d58be70eb9876c3caf7096169ez'], 0)),
     )
     assert.ok(validatorResult(validators.bytes8([bytesToHex(randomBytes(8))], 0)))
     assert.ok(validatorResult(validators.bytes8([bytes(8)], 0)))
@@ -228,59 +228,59 @@ describe(prefix, () => {
       validatorResult(
         validators.blockHash(
           ['0x573155e65afb5cc55035aa9113d29d4ca3625454b33d32b2dff7b6673c66a249'],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
     assert.ok(
       validatorResult(
         validators.blockHash(
           ['0xf79d019c58d58a4efcfdf100c9596dd38014dcec6cf6f52000d4fae4e139b703'],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
     // invalid length
     assert.notOk(
       validatorResult(
         validators.blockHash(
           ['0x573155e65afb5cc55035aa9113d29d4ca3625454b33d32b2dff7b6673c66a2'],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
     assert.notOk(
       validatorResult(
         validators.blockHash(
           ['0x573155e65afb5cc55035aa9113d29d4ca3625454b33d32b2dff7b6673c66a24'],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
     assert.notOk(
       validatorResult(
         validators.blockHash(
           ['0x573155e65afb5cc55035aa9113d29d4ca3625454b33d32b2dff7b6673c66a2499'],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
     assert.notOk(
       validatorResult(
         validators.blockHash(
           ['0x573155e65afb5cc55035aa9113d29d4ca3625454b33d32b2dff7b6673c66a24999'],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
     // invalid character
     assert.notOk(
       validatorResult(
         validators.blockHash(
           ['0x573155e65afb5cc55035aa9113d29d4ca3625454b33d32b2dff7b6673c66z249'],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
   })
 
@@ -293,17 +293,17 @@ describe(prefix, () => {
       validatorResult(
         validators.blockOption(
           ['0x573155e65afb5cc55035aa9113d29d4ca3625454b33d32b2dff7b6673c66a249'],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
     assert.ok(validatorResult(validators.blockOption(['0x1'], 0)))
     assert.ok(validatorResult(validators.blockOption(['0x01'], 0)))
 
     // invalid
-    assert.notOk(validatorResult(validators.blockOption(['lates'], 0)))
-    assert.notOk(validatorResult(validators.blockOption(['arliest'], 0)))
-    assert.notOk(validatorResult(validators.blockOption(['pendin'], 0)))
+    assert.notOk(validatorResult(validators.blockOption(['lates'], 0))) // cspell:disable-line
+    assert.notOk(validatorResult(validators.blockOption(['arliest'], 0))) // cspell:disable-line
+    assert.notOk(validatorResult(validators.blockOption(['pendin'], 0))) // cspell:disable-line
     assert.notOk(validatorResult(validators.blockOption(['0'], 0)))
     assert.notOk(validatorResult(validators.blockOption(['00'], 0)))
     assert.notOk(validatorResult(validators.blockOption(['1'], 0)))
@@ -312,9 +312,9 @@ describe(prefix, () => {
       validatorResult(
         validators.blockOption(
           ['573155e65afb5cc55035aa9113d29d4ca3625454b33d32b2dff7b6673c66a249'],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
   })
 
@@ -327,7 +327,7 @@ describe(prefix, () => {
     assert.notOk(validatorResult(validators.bool(['true'], 0)))
     assert.notOk(validatorResult(validators.bool(['false'], 0)))
     assert.notOk(validatorResult(validators.bool(['tru'], 0)))
-    assert.notOk(validatorResult(validators.bool(['fals'], 0)))
+    assert.notOk(validatorResult(validators.bool(['fals'], 0))) // cspell:disable-line
   })
 
   it('hex', () => {
@@ -463,14 +463,14 @@ describe(prefix, () => {
               gas: '0xcf08',
             },
           ],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
     assert.ok(
       validatorResult(
-        validators.transaction(['to'])([{ to: '0x0000000000000000000000000000000000000000' }], 0)
-      )
+        validators.transaction(['to'])([{ to: '0x0000000000000000000000000000000000000000' }], 0),
+      ),
     )
 
     // invalid
@@ -489,17 +489,17 @@ describe(prefix, () => {
               from: '0x573155e65afb5cc55035aa9113d29d4ca3625454b33d32b2dff7b6673c66a249',
             },
           ],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
     assert.notOk(
       validatorResult(
         validators.transaction(['to'])(
           [{ from: '0x573155e65afb5cc55035aa9113d29d4ca3625454b33d32b2dff7b6673c66a249' }],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
     assert.notOk(validatorResult(validators.transaction([])([{ gas: '12' }], 0)))
     assert.notOk(validatorResult(validators.transaction([])([{ gasPrice: '12' }], 0)))
@@ -525,22 +525,22 @@ describe(prefix, () => {
               hex: '0x1',
             },
           ],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
 
     // invalid
     assert.notOk(
-      validatorResult(validators.object({ address: validators.address })([{ address: '0x0' }], 0))
+      validatorResult(validators.object({ address: validators.address })([{ address: '0x0' }], 0)),
     )
     assert.notOk(
       validatorResult(
-        validators.object({ blockHash: validators.blockHash })([{ blockHash: '0x0' }], 0)
-      )
+        validators.object({ blockHash: validators.blockHash })([{ blockHash: '0x0' }], 0),
+      ),
     )
     assert.notOk(
-      validatorResult(validators.object({ bool: validators.bool })([{ bool: '0x0' }], 0))
+      validatorResult(validators.object({ bool: validators.bool })([{ bool: '0x0' }], 0)),
     )
     assert.notOk(validatorResult(validators.object({ hex: validators.hex })([{ hex: '1' }], 0)))
   })
@@ -557,37 +557,37 @@ describe(prefix, () => {
               '0xda4a22ad0d0e9aff0846ca54225637ada5bf7a14',
             ],
           ],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
     assert.ok(
       validatorResult(
         validators.array(validators.blockHash)(
           [['0xb6dbbc1c702583de187e1284a00a23f9d322bf96f70fd4968b6339d0ace066b3']],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
     assert.ok(validatorResult(validators.array(validators.bool)([[true, false]], 0)))
 
     // invalid
     assert.notOk(
-      validatorResult(validators.array(validators.hex)([['0x0', '0x1', '0x2', 'true']], 0))
+      validatorResult(validators.array(validators.hex)([['0x0', '0x1', '0x2', 'true']], 0)),
     )
     assert.notOk(
       validatorResult(
         validators.array(validators.address)(
           [['0xb7e390864a90b7b923c9f9310c6f98aafe43f707', '0x0']],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
     assert.notOk(
-      validatorResult(validators.array(validators.blockHash)([['0xb6dbbc1cd0ace066b3']], 0))
+      validatorResult(validators.array(validators.blockHash)([['0xb6dbbc1cd0ace066b3']], 0)),
     )
     assert.notOk(
-      validatorResult(validators.array(validators.bool)([['0x123', '0x456', '0x789']], 0))
+      validatorResult(validators.array(validators.bool)([['0x123', '0x456', '0x789']], 0)),
     )
     assert.notOk(validatorResult(validators.array(validators.bool)([[true, 'true']], 0)))
   })
@@ -667,15 +667,15 @@ describe(prefix, () => {
       validatorResult(
         validators.optional(validators.blockHash)(
           ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
     assert.ok(
-      validatorResult(validators.optional(validators.values(['VALID', 'INVALID']))(['INVALID'], 0))
+      validatorResult(validators.optional(validators.values(['VALID', 'INVALID']))(['INVALID'], 0)),
     )
     assert.ok(
-      validatorResult(validators.optional(validators.values(['VALID', 'INVALID']))([''], 0))
+      validatorResult(validators.optional(validators.values(['VALID', 'INVALID']))([''], 0)),
     )
     assert.ok(validatorResult(validators.optional(validators.values(['VALID', 'INVALID']))([], 0)))
 
@@ -683,7 +683,7 @@ describe(prefix, () => {
     assert.notOk(validatorResult(validators.optional(validators.bool)(['hey'], 0)))
     assert.notOk(validatorResult(validators.optional(validators.blockHash)(['0x0'], 0)))
     assert.notOk(
-      validatorResult(validators.optional(validators.values(['VALID', 'INVALID']))(['ANOTHER'], 0))
+      validatorResult(validators.optional(validators.values(['VALID', 'INVALID']))(['ANOTHER'], 0)),
     )
   })
 
@@ -696,35 +696,35 @@ describe(prefix, () => {
         validators.either(
           validators.bool,
           validators.hex,
-          validators.array(validators.hex)
-        )([['0xaaa']], 0)
-      )
+          validators.array(validators.hex),
+        )([['0xaaa']], 0),
+      ),
     )
     assert.ok(
       validatorResult(
         validators.either(validators.bool, validators.blockHash)(
           ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          0
-        )
-      )
+          0,
+        ),
+      ),
     )
 
     // invalid
     assert.notOk(
-      validatorResult(validators.either(validators.bool, validators.blockHash)(['0xabc'], 0))
+      validatorResult(validators.either(validators.bool, validators.blockHash)(['0xabc'], 0)),
     )
     assert.notOk(validatorResult(validators.either(validators.bool, validators.hex)(['abc'], 0)))
     assert.notOk(
-      validatorResult(validators.either(validators.hex, validators.blockHash)([true], 0))
+      validatorResult(validators.either(validators.hex, validators.blockHash)([true], 0)),
     )
     assert.notOk(
       validatorResult(
         validators.either(
           validators.hex,
           validators.blockHash,
-          validators.array(validators.hex)
-        )([[false]], 0)
-      )
+          validators.array(validators.hex),
+        )([[false]], 0),
+      ),
     )
   })
 })

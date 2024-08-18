@@ -7,8 +7,8 @@ import {
   BIGINT_32,
   BIGINT_64,
   BIGINT_NEG1,
-  bigIntToBytes,
   bytesToHex,
+  createAddressFromBigInt,
   equalsBytes,
   setLengthLeft,
   setLengthRight,
@@ -20,8 +20,19 @@ import { EvmError } from '../exceptions.js'
 import type { ERROR } from '../exceptions.js'
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 
 const MASK_160 = (BIGINT_1 << BIGINT_160) - BIGINT_1
+
+/**
+ * Create an address from a stack item (256 bit integer).
+ * This wrapper ensures that the value is masked to 160 bits.
+ * @param value 160-bit integer
+ */
+export function createAddressFromStackBigInt(value: bigint): Address {
+  const maskedValue = value & MASK_160
+  return createAddressFromBigInt(maskedValue)
+}
 
 /**
  * Proxy function for @ethereumjs/util's setLengthLeft, except it returns a zero
@@ -43,14 +54,6 @@ export function setLengthLeftStorage(value: Uint8Array) {
 export function trap(err: string) {
   // TODO: facilitate extra data along with errors
   throw new EvmError(err as ERROR)
-}
-
-/**
- * Converts bigint address (they're stored like this on the stack) to Uint8Array address
- */
-export function addresstoBytes(address: bigint | Uint8Array) {
-  if (address instanceof Uint8Array) return address
-  return setLengthLeft(bigIntToBytes(address & MASK_160), 20)
 }
 
 /**
@@ -148,7 +151,7 @@ export function maxCallGas(
   gasLimit: bigint,
   gasLeft: bigint,
   runState: RunState,
-  common: Common
+  common: Common,
 ): bigint {
   if (common.gteHardfork(Hardfork.TangerineWhistle)) {
     const gasAllowed = gasLeft - gasLeft / BIGINT_64
@@ -169,10 +172,10 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
   if (newMemoryWordCount <= runState.memoryWordCount) return BIGINT_0
 
   const words = newMemoryWordCount
-  const fee = common.param('gasPrices', 'memory')
-  const quadCoeff = common.param('gasPrices', 'quadCoeffDiv')
+  const fee = common.param('memoryGas')
+  const quadCoefficient = common.param('quadCoefficientDivGas')
   // words * 3 + words ^2 / 512
-  let cost = words * fee + (words * words) / quadCoeff
+  let cost = words * fee + (words * words) / quadCoefficient
 
   if (cost > runState.highestMemCost) {
     const currentHighestMemCost = runState.highestMemCost
@@ -209,17 +212,17 @@ export function updateSstoreGas(
   runState: RunState,
   currentStorage: Uint8Array,
   value: Uint8Array,
-  common: Common
+  common: Common,
 ): bigint {
   if (
     (value.length === 0 && currentStorage.length === 0) ||
     (value.length > 0 && currentStorage.length > 0)
   ) {
-    const gas = common.param('gasPrices', 'sstoreReset')
+    const gas = common.param('sstoreResetGas')
     return gas
   } else if (value.length === 0 && currentStorage.length > 0) {
-    const gas = common.param('gasPrices', 'sstoreReset')
-    runState.interpreter.refundGas(common.param('gasPrices', 'sstoreRefund'), 'updateSstoreGas')
+    const gas = common.param('sstoreResetGas')
+    runState.interpreter.refundGas(common.param('sstoreRefundGas'), 'updateSstoreGas')
     return gas
   } else {
     /*
@@ -229,7 +232,7 @@ export function updateSstoreGas(
       -> Value is zero, but slot is nonzero
       Thus, the remaining case is where value is nonzero, but slot is zero, which is this clause
     */
-    return common.param('gasPrices', 'sstoreSet')
+    return common.param('sstoreSetGas')
   }
 }
 

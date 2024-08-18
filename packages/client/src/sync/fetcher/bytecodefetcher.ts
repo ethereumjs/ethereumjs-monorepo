@@ -10,7 +10,7 @@ import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Fetcher } from './fetcher.js'
-import { getInitFecherDoneFlags } from './types.js'
+import { getInitFetcherDoneFlags } from './types.js'
 
 import type { Peer } from '../../net/peer/index.js'
 import type { FetcherOptions } from './fetcher.js'
@@ -55,7 +55,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     super(options)
     this.hashes = options.hashes ?? []
     this.stateManager = options.stateManager ?? new DefaultStateManager()
-    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
+    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFetcherDoneFlags()
     this.fetcherDoneFlags.byteCodeFetcher.count = BigInt(this.hashes.length)
     this.codeDB = this.stateManager['_getCodeDB']()
 
@@ -65,7 +65,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     if (this.hashes.length > 0) {
       const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Uint8Array[], Uint8Array>
       this.debug(
-        `Bytecode fetcher instantiated ${fullJob.task.hashes.length} hash requests destroyWhenDone=${this.destroyWhenDone}`
+        `Bytecode fetcher instantiated ${fullJob.task.hashes.length} hash requests destroyWhenDone=${this.destroyWhenDone}`,
       )
     }
   }
@@ -82,7 +82,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    * @param peer
    */
   async request(
-    job: Job<JobTask, Uint8Array[], Uint8Array>
+    job: Job<JobTask, Uint8Array[], Uint8Array>,
   ): Promise<ByteCodeDataResponse | undefined> {
     const { task, peer } = job
     // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
@@ -113,7 +113,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     // While results are in the same order as requested hashes but there could be gaps/misses in the results
     // if the node doesn't has the bytecode. We need an index to move forward through the hashes which are
-    // absent in the receieved responses
+    // absent in the received responses
     let requestedHashIndex = 0
     for (let i = 0; i < rangeResult.codes.length; i++) {
       const receivedCode = rangeResult.codes[i]
@@ -155,7 +155,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    */
   process(
     job: Job<JobTask, Uint8Array[], Uint8Array>,
-    result: ByteCodeDataResponse
+    result: ByteCodeDataResponse,
   ): Uint8Array[] | undefined {
     const fullResult = (job.partialResult ?? []).concat(result)
     job.partialResult = undefined
@@ -187,7 +187,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     }
     await this.codeDB.batch(ops as BatchDBOp[])
     this.fetcherDoneFlags.byteCodeFetcher.first += BigInt(codeHashToByteCode.size)
-    // no idea why first starts exceeding count, may be because of missed hashesh thing, so resort to this
+    // no idea why first starts exceeding count, may be because of missed hashes thing, so resort to this
     // weird method of tracking the count
     this.fetcherDoneFlags.byteCodeFetcher.count =
       this.fetcherDoneFlags.byteCodeFetcher.first + BigInt(this.hashes.length)
@@ -208,12 +208,12 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    */
   enqueueByByteCodeRequestList(byteCodeRequestList: Uint8Array[]) {
     this.hashes.push(...byteCodeRequestList)
-    // no idea why first starts exceeding count, may be because of missed hashesh thing, so resort to this
+    // no idea why first starts exceeding count, may be because of missed hashes thing, so resort to this
     // weird method of tracking the count
     this.fetcherDoneFlags.byteCodeFetcher.count =
       this.fetcherDoneFlags.byteCodeFetcher.first + BigInt(this.hashes.length)
     this.debug(
-      `Number of bytecode fetch requests added to fetcher queue: ${byteCodeRequestList.length}`
+      `Number of bytecode fetch requests added to fetcher queue: ${byteCodeRequestList.length}`,
     )
     this.nextTasks()
   }
@@ -269,7 +269,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
   processStoreError(
     error: Error,
-    _task: JobTask
+    _task: JobTask,
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
     const stepBack = BIGINT_0
     const destroyFetcher =

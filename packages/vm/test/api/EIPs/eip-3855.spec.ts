@@ -1,16 +1,16 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { EVMErrorMessage } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 
 describe('EIP 3855 tests', () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })
   const commonNoEIP3855 = new Common({
-    chain: Chain.Mainnet,
+    chain: Mainnet,
     hardfork: Hardfork.Chainstart,
     eips: [],
   })
@@ -29,7 +29,7 @@ describe('EIP 3855 tests', () => {
 
     assert.ok(stack!.length === 1)
     assert.equal(stack![0], BigInt(0))
-    assert.equal(result.executionGasUsed, common.param('gasPrices', 'push0'))
+    assert.equal(result.executionGasUsed, common.param('push0Gas'))
   })
 
   it('should correctly use push0 to create a stack with stack limit length', async () => {
@@ -39,7 +39,7 @@ describe('EIP 3855 tests', () => {
       stack = e.stack
     })
 
-    const depth = Number(common.param('vm', 'stackLimit'))
+    const depth = Number(common.param('stackLimit'))
 
     const result = await vm.evm.runCode!({
       code: hexToBytes(`0x${'5F'.repeat(depth)}00`),
@@ -52,13 +52,13 @@ describe('EIP 3855 tests', () => {
         assert.fail('stack element is not 0')
       }
     }
-    assert.equal(result.executionGasUsed, common.param('gasPrices', 'push0')! * BigInt(depth))
+    assert.equal(result.executionGasUsed, common.param('push0Gas')! * BigInt(depth))
   })
 
   it('should correctly use push0 to create a stack with stack limit + 1 length', async () => {
     const vm = await VM.create({ common })
 
-    const depth = Number(common.param('vm', 'stackLimit')!) + 1
+    const depth = Number(common.param('stackLimit')!) + 1
 
     const result = await vm.evm.runCode!({
       code: hexToBytes(`0x${'5F'.repeat(depth)}`),

@@ -2,9 +2,9 @@ import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
-  Chain,
   Common,
   Hardfork,
+  Mainnet,
   createCommonFromGethGenesis,
   createCustomCommon,
 } from '../src/index.js'
@@ -19,17 +19,17 @@ describe('[Common]: Timestamp Hardfork logic', () => {
     assert.equal(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
       Hardfork.MergeForkIdTransition,
-      'should match the HF'
+      'should match the HF',
     )
     assert.equal(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 1668699476n }),
       Hardfork.Shanghai,
-      'should match the HF'
+      'should match the HF',
     )
     assert.equal(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 1668699576n }),
       Hardfork.Shanghai,
-      'should match the HF'
+      'should match the HF',
     )
   })
 
@@ -44,12 +44,12 @@ describe('[Common]: Timestamp Hardfork logic', () => {
     assert.equal(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
       Hardfork.MergeForkIdTransition,
-      'should match the HF'
+      'should match the HF',
     )
     assert.equal(
       c.nextHardforkBlockOrTimestamp(Hardfork.Shanghai),
       null,
-      'should give null on next Hardfork block'
+      'should give null on next Hardfork block',
     )
   })
 
@@ -64,23 +64,23 @@ describe('[Common]: Timestamp Hardfork logic', () => {
     assert.equal(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
       Hardfork.MergeForkIdTransition,
-      'should match the HF'
+      'should match the HF',
     )
     // Should give the shanghai as sharding is schedule a bit post shanghai
     assert.equal(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 1668699476n }),
       Hardfork.Shanghai,
-      'should match the HF'
+      'should match the HF',
     )
     assert.equal(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 1668699576n }),
       Hardfork.Shanghai,
-      'should match the HF'
+      'should match the HF',
     )
   })
 
   it('forkHash', () => {
-    const mainnet = new Common({ chain: Chain.Mainnet })
+    const mainnet = new Common({ chain: Mainnet })
     const hfs = mainnet.hardforks()
     const mergeIndex = hfs.findIndex((hf) => hf.name === Hardfork.Paris)
     const hardforks = hfs.slice(0, mergeIndex + 1).concat([
@@ -99,9 +99,9 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       },
     ])
 
-    const c = createCustomCommon({ hardforks }, { baseChain: Chain.Mainnet })
+    const c = createCustomCommon({ hardforks }, Mainnet)
     const mainnetGenesisHash = hexToBytes(
-      '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+      '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
     )
     for (const hf of c.hardforks()) {
       if (typeof hf.forkHash === 'string') {
@@ -118,12 +118,12 @@ describe('[Common]: Timestamp Hardfork logic', () => {
     assert.equal(
       c.hardforkForForkHash('0xc1fdf181')?.name,
       Hardfork.Shanghai,
-      'Should be able to get Shanghai from forkHash'
+      'Should be able to get Shanghai from forkHash',
     )
   })
 
   it('setForkHashes', () => {
-    const mainnet = new Common({ chain: Chain.Mainnet })
+    const mainnet = new Common({ chain: Mainnet })
     const hfs = mainnet.hardforks()
     const mergeIndex = hfs.findIndex((hf) => hf.name === Hardfork.Paris)
     const hardforks = hfs.slice(0, mergeIndex + 1).concat([
@@ -140,9 +140,9 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       },
     ])
 
-    const c = createCustomCommon({ hardforks }, { baseChain: Chain.Mainnet })
+    const c = createCustomCommon({ hardforks }, Mainnet)
     const mainnetGenesisHash = hexToBytes(
-      '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+      '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
     )
 
     let noForkHashes = c.hardforks().reduce((acc, hf) => {

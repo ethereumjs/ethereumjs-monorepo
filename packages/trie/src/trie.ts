@@ -3,17 +3,18 @@
 
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_0,
   KeyEncoding,
   Lock,
   MapDB,
   RLP_EMPTY_STRING,
   ValueEncoding,
+  bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
   bytesToUtf8,
   concatBytes,
   equalsBytes,
-  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -27,11 +28,9 @@ import {
   decodeRawNode,
   isRawNode,
 } from './node/index.js'
-import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
-import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
-import { TrieReadStream as ReadStream } from './util/readStream.js'
+import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from './util/nibbles.js'
 import { WalkController } from './util/walkController.js'
 
 import type {
@@ -39,14 +38,13 @@ import type {
   FoundNodeFunction,
   Nibbles,
   Path,
-  Proof,
   TrieNode,
   TrieOpts,
   TrieOptsWithDefaults,
   TrieShallowCopyOpts,
 } from './types.js'
 import type { OnFound } from './util/asyncWalk.js'
-import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
+import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 /**
@@ -81,7 +79,7 @@ export class Trie {
    * Creates a new trie.
    * @param opts Options for instantiating the trie
    *
-   * Note: in most cases, the static {@link Trie.create} constructor should be used.  It uses the same API but provides sensible defaults
+   * Note: in most cases, {@link createTrie} constructor should be used.  It uses the same API but provides sensible defaults
    */
   constructor(opts?: TrieOpts) {
     let valueEncoding: ValueEncoding
@@ -96,7 +94,7 @@ export class Trie {
         opts.common?.customCrypto.keccak256 ?? opts.useKeyHashingFunction ?? keccak256
 
       valueEncoding =
-        opts.db !== undefined ? opts.valueEncoding ?? ValueEncoding.String : ValueEncoding.Bytes
+        opts.db !== undefined ? (opts.valueEncoding ?? ValueEncoding.String) : ValueEncoding.Bytes
     } else {
       // No opts are given, so create a MapDB later on
       // Use `Bytes` for ValueEncoding
@@ -104,7 +102,7 @@ export class Trie {
     }
 
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
     this.debug = this.DEBUG
       ? (message: string, namespaces: string[] = []) => {
           let log = this._debug
@@ -134,293 +132,6 @@ export class Trie {
     || ----------------`)
   }
 
-  /**
-   * Create a trie from a given (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof. A proof contains the encoded trie nodes
-   * from the root node to the leaf node storing state data.
-   * @param proof an EIP-1186 proof to create trie from
-   * @param shouldVerifyRoot If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
-   * @param trieOpts trie opts to be applied to returned trie
-   * @returns new trie created from given proof
-   */
-  static async createFromProof(
-    proof: Proof,
-    trieOpts?: TrieOpts,
-    shouldVerifyRoot: boolean = false
-  ) {
-    const trie = new Trie(trieOpts)
-    const root = await trie.updateFromProof(proof, shouldVerifyRoot)
-    trie.root(root)
-    await trie.persistRoot()
-    return trie
-  }
-
-  /**
-   * Static version of verifyProof function with the same behavior. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes
-   * from the root node to the leaf node storing state data.
-   * @param rootHash Root hash of the trie that this proof was created from and is being verified for
-   * @param key Key that is being verified and that the proof is created for
-   * @param proof An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
-   * @param opts optional, the opts may include a custom hashing function to use with the trie for proof verification
-   * @throws If proof is found to be invalid.
-   * @returns The value from the key, or null if valid proof of non-existence.
-   */
-  static async verifyProof(
-    key: Uint8Array,
-    proof: Proof,
-    opts?: TrieOpts
-  ): Promise<Uint8Array | null> {
-    try {
-      const proofTrie = await Trie.createFromProof(proof, opts)
-      const value = await proofTrie.get(key, true)
-      return value
-    } catch (err: any) {
-      throw new Error('Invalid proof provided')
-    }
-  }
-
-  /**
-   * A range proof is a proof that includes the encoded trie nodes from the root node to leaf node for one or more branches of a trie,
-   * allowing an entire range of leaf nodes to be validated. This is useful in applications such as snap sync where contiguous ranges
-   * of state trie data is received and validated for constructing world state, locally. Also see {@link verifyRangeProof}. A static
-   * version of this function also exists.
-   * @param rootHash - root hash of state trie this proof is being verified against.
-   * @param firstKey - first key of range being proven.
-   * @param lastKey - last key of range being proven.
-   * @param keys - key list of leaf data being proven.
-   * @param values - value list of leaf data being proven, one-to-one correspondence with keys.
-   * @param proof - proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well
-   * @param opts - optional, the opts may include a custom hashing function to use with the trie for proof verification
-   * @returns a flag to indicate whether there exists more trie node in the trie
-   */
-  static verifyRangeProof(
-    rootHash: Uint8Array,
-    firstKey: Uint8Array | null,
-    lastKey: Uint8Array | null,
-    keys: Uint8Array[],
-    values: Uint8Array[],
-    proof: Uint8Array[] | null,
-    opts?: TrieOpts
-  ): Promise<boolean> {
-    return verifyRangeProof(
-      rootHash,
-      firstKey && bytesToNibbles(firstKey),
-      lastKey && bytesToNibbles(lastKey),
-      keys.map((k) => k).map(bytesToNibbles),
-      values,
-      proof,
-      opts?.useKeyHashingFunction ?? keccak256
-    )
-  }
-
-  /**
-   * Static version of fromProof function. If a root is provided in the opts param, the proof will be checked to have the same expected root. An
-   * (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
-   * @param proof An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
-   * @deprecated Use `createFromProof`
-   */
-  static async fromProof(proof: Proof, opts?: TrieOpts): Promise<Trie> {
-    const trie = await Trie.create(opts)
-    if (opts?.root && !equalsBytes(opts.root, trie.hash(proof[0]))) {
-      throw new Error('Invalid proof provided')
-    }
-    const root = await trie.updateFromProof(proof)
-    trie.root(root)
-    await trie.persistRoot()
-    return trie
-  }
-
-  /**
-   * A range proof is a proof that includes the encoded trie nodes from the root node to leaf node for one or more branches of a trie,
-   * allowing an entire range of leaf nodes to be validated. This is useful in applications such as snap sync where contiguous ranges
-   * of state trie data is received and validated for constructing world state, locally. Also see {@link verifyRangeProof}. A static
-   * version of this function also exists.
-   * @param rootHash - root hash of state trie this proof is being verified against.
-   * @param firstKey - first key of range being proven.
-   * @param lastKey - last key of range being proven.
-   * @param keys - key list of leaf data being proven.
-   * @param values - value list of leaf data being proven, one-to-one correspondence with keys.
-   * @param proof - proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well
-   * @returns a flag to indicate whether there exists more trie node in the trie
-   */
-  verifyRangeProof(
-    rootHash: Uint8Array,
-    firstKey: Uint8Array | null,
-    lastKey: Uint8Array | null,
-    keys: Uint8Array[],
-    values: Uint8Array[],
-    proof: Uint8Array[] | null
-  ): Promise<boolean> {
-    return verifyRangeProof(
-      rootHash,
-      firstKey && bytesToNibbles(this.appliedKey(firstKey)),
-      lastKey && bytesToNibbles(this.appliedKey(lastKey)),
-      keys.map((k) => this.appliedKey(k)).map(bytesToNibbles),
-      values,
-      proof,
-      this._opts.useKeyHashingFunction
-    )
-  }
-
-  /**
-   * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains
-   * the encoded trie nodes from the root node to the leaf node storing state data. The returned proof will be in the format of an array that contains Uint8Arrays of
-   * serialized branch, extension, and/or leaf nodes.
-   * @param key key to create a proof for
-   */
-  async createProof(key: Uint8Array): Promise<Proof> {
-    this.DEBUG && this.debug(`Creating Proof for Key: ${bytesToHex(key)}`, ['CREATE_PROOF'])
-    const { stack } = await this.findPath(this.appliedKey(key))
-    const p = stack.map((stackElem) => {
-      return stackElem.serialize()
-    })
-    this.DEBUG && this.debug(`Proof created with (${stack.length}) nodes`, ['CREATE_PROOF'])
-    return p
-  }
-
-  /**
-   * Updates a trie from a proof by putting all the nodes in the proof into the trie. If a trie is being updated with multiple proofs, {@param shouldVerifyRoot} can
-   * be passed as false in order to not immediately throw on an unexpected root, so that root verification can happen after all proofs and their nodes have been added.
-   * An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
-   * @param proof An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof to update the trie from.
-   * @param shouldVerifyRoot If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
-   * @returns The root of the proof
-   */
-  async updateFromProof(proof: Proof, shouldVerifyRoot: boolean = false) {
-    this.DEBUG && this.debug(`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
-    const opStack = proof.map((nodeValue) => {
-      let key = Uint8Array.from(this.hash(nodeValue))
-      key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, key) : key
-      return {
-        type: 'put',
-        key,
-        value: nodeValue,
-      } as PutBatch
-    })
-
-    if (shouldVerifyRoot) {
-      if (opStack[0] !== undefined && opStack[0] !== null) {
-        if (!equalsBytes(this.root(), opStack[0].key)) {
-          throw new Error('The provided proof does not have the expected trie root')
-        }
-      }
-    }
-
-    await this._db.batch(opStack)
-    if (opStack[0] !== undefined) {
-      return opStack[0].key
-    }
-  }
-
-  /**
-   * Verifies a proof by putting all of its nodes into a trie and attempting to get the proven key. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof
-   * contains the encoded trie nodes from the root node to the leaf node storing state data. A static version of this function exists with the same name.
-   * @param rootHash Root hash of the trie that this proof was created from and is being verified for
-   * @param key Key that is being verified and that the proof is created for
-   * @param proof an EIP-1186 proof to verify the key against
-   * @throws If proof is found to be invalid.
-   * @returns The value from the key, or null if valid proof of non-existence.
-   */
-  async verifyProof(
-    rootHash: Uint8Array,
-    key: Uint8Array,
-    proof: Proof
-  ): Promise<Uint8Array | null> {
-    this.DEBUG &&
-      this.debug(
-        `Verifying Proof:\n|| Key: ${bytesToHex(key)}\n|| Root: ${bytesToHex(
-          rootHash
-        )}\n|| Proof: (${proof.length}) nodes
-    `,
-        ['VERIFY_PROOF']
-      )
-    const proofTrie = new Trie({
-      root: rootHash,
-      useKeyHashingFunction: this._opts.useKeyHashingFunction,
-      common: this._opts.common,
-    })
-    try {
-      await proofTrie.updateFromProof(proof, true)
-    } catch (e: any) {
-      throw new Error('Invalid proof nodes given')
-    }
-    try {
-      this.DEBUG &&
-        this.debug(`Verifying proof by retrieving key: ${bytesToHex(key)} from proof trie`, [
-          'VERIFY_PROOF',
-        ])
-      const value = await proofTrie.get(this.appliedKey(key), true)
-      this.DEBUG && this.debug(`PROOF VERIFIED`, ['VERIFY_PROOF'])
-      return value
-    } catch (err: any) {
-      if (err.message === 'Missing node in DB') {
-        throw new Error('Invalid proof provided')
-      } else {
-        throw err
-      }
-    }
-  }
-
-  /**
-   * Create a trie from a given (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof. An EIP-1186 proof contains the encoded trie nodes from the root
-   * node to the leaf node storing state data. This function does not check if the proof has the same expected root. A static version of this function exists
-   * with the same name.
-   * @param proof an EIP-1186 proof to update the trie from
-   * @deprecated Use `updateFromProof`
-   */
-  async fromProof(proof: Proof): Promise<void> {
-    await this.updateFromProof(proof, false)
-
-    if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) && proof[0] !== undefined) {
-      let rootKey = Uint8Array.from(this.hash(proof[0]))
-      // TODO: what if we have keyPrefix and we set root? This should not work, right? (all trie nodes are non-reachable)
-      rootKey = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, rootKey) : rootKey
-      this.root(rootKey)
-      await this.persistRoot()
-    }
-    return
-  }
-
-  static async create(opts?: TrieOpts) {
-    const keccakFunction =
-      opts?.common?.customCrypto.keccak256 ?? opts?.useKeyHashingFunction ?? keccak256
-    let key = ROOT_DB_KEY
-
-    const encoding =
-      opts?.valueEncoding === ValueEncoding.Bytes ? ValueEncoding.Bytes : ValueEncoding.String
-
-    if (opts?.useKeyHashing === true) {
-      key = keccakFunction.call(undefined, ROOT_DB_KEY) as Uint8Array
-    }
-    if (opts?.keyPrefix !== undefined) {
-      key = concatBytes(opts.keyPrefix, key)
-    }
-
-    if (opts?.db !== undefined && opts?.useRootPersistence === true) {
-      if (opts?.root === undefined) {
-        const root = await opts?.db.get(bytesToUnprefixedHex(key), {
-          keyEncoding: KeyEncoding.String,
-          valueEncoding: encoding,
-        })
-        if (typeof root === 'string') {
-          opts.root = unprefixedHexToBytes(root)
-        } else {
-          opts.root = root
-        }
-      } else {
-        await opts?.db.put(
-          bytesToUnprefixedHex(key),
-          <any>(encoding === ValueEncoding.Bytes ? opts.root : bytesToUnprefixedHex(opts.root)),
-          {
-            keyEncoding: KeyEncoding.String,
-            valueEncoding: encoding,
-          }
-        )
-      }
-    }
-
-    return new Trie(opts)
-  }
-
   database(db?: DB<string, string | Uint8Array>, valueEncoding?: ValueEncoding) {
     if (db !== undefined) {
       if (db instanceof CheckpointDB) {
@@ -444,7 +155,7 @@ export class Trie {
       this.DEBUG && this.debug(`Setting root to ${bytesToHex(value)}`)
       if (value.length !== this._hashLen) {
         throw new Error(
-          `Invalid root length. Roots are ${this._hashLen} bytes, got ${value.length} bytes`
+          `Invalid root length. Roots are ${this._hashLen} bytes, got ${value.length} bytes`,
         )
       }
 
@@ -496,7 +207,7 @@ export class Trie {
   async put(
     key: Uint8Array,
     value: Uint8Array | null,
-    skipKeyTransform: boolean = false
+    skipKeyTransform: boolean = false,
   ): Promise<void> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['PUT'])
     this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(key)}`, ['PUT'])
@@ -525,7 +236,7 @@ export class Trie {
         if (val === null || equalsBytes(val, value) === false) {
           // All items of the stack are going to change.
           // (This is the path from the root node to wherever it needs to insert nodes)
-          // The items change, because the leaf value is updated, thus all keyhashes in the
+          // The items change, because the leaf value is updated, thus all keyHashes in the
           // stack should be updated as well, so that it points to the right key/value pairs of the path
           const deleteHashes = stack.map((e) => this.hash(e.serialize()))
           ops = deleteHashes.map((deletedHash) => {
@@ -546,7 +257,7 @@ export class Trie {
       // then update
       await this._updateNode(appliedKey, value, remaining, stack)
       if (this._opts.useNodePruning) {
-        // Only after updating the node we can delete the keyhashes
+        // Only after updating the node we can delete the keyHashes
         await this._db.batch(ops)
       }
     }
@@ -570,7 +281,7 @@ export class Trie {
     // Only delete if the `key` currently has any value
     if (this._opts.useNodePruning && node !== null) {
       const deleteHashes = stack.map((e) => this.hash(e.serialize()))
-      // Just as with `put`, the stack items all will have their keyhashes updated
+      // Just as with `put`, the stack items all will have their keyHashes updated
       // So after deleting the node, one can safely delete these from the DB
 
       ops = deleteHashes.map((deletedHash) => {
@@ -590,7 +301,7 @@ export class Trie {
       await this._deleteNode(appliedKey, stack)
     }
     if (this._opts.useNodePruning) {
-      // Only after deleting the node it is possible to delete the keyhashes
+      // Only after deleting the node it is possible to delete the keyHashes
       await this._db.batch(ops)
     }
     await this.persistRoot()
@@ -610,7 +321,7 @@ export class Trie {
       stack: TrieNode[]
     } = {
       stack: [],
-    }
+    },
   ): Promise<Path> {
     const targetKey = bytesToNibbles(key)
     const keyLen = targetKey.length
@@ -641,9 +352,9 @@ export class Trie {
               branchNode === null
                 ? 'NULL'
                 : branchNode instanceof Uint8Array
-                ? `NodeHash: ${bytesToHex(branchNode)}`
-                : `Raw_Node: ${branchNode.toString()}`,
-              ['FIND_PATH', 'BranchNode', branchIndex.toString()]
+                  ? `NodeHash: ${bytesToHex(branchNode)}`
+                  : `Raw_Node: ${branchNode.toString()}`,
+              ['FIND_PATH', 'BranchNode', branchIndex.toString()],
             )
           if (!branchNode) {
             result = { node: null, remaining: targetKey.slice(progress), stack }
@@ -671,13 +382,13 @@ export class Trie {
           this.debug(
             `Comparing node key to expected\n|| Node_Key: [${node.key()}]\n|| Expected: [${targetKey.slice(
               progress,
-              progress + node.key().length
+              progress + node.key().length,
             )}]\n|| Matching: [${
               targetKey.slice(progress, progress + node.key().length).toString() ===
               node.key().toString()
             }]
             `,
-            ['FIND_PATH', 'ExtensionNode']
+            ['FIND_PATH', 'ExtensionNode'],
           )
         const _progress = progress
         for (const k of node.key()) {
@@ -697,9 +408,9 @@ export class Trie {
       this.DEBUG &&
         this.debug(
           `Walking trie from ${startingNode === undefined ? 'ROOT' : 'NODE'}: ${bytesToHex(
-            start as Uint8Array
+            start as Uint8Array,
           )}`,
-          ['FIND_PATH']
+          ['FIND_PATH'],
         )
       await this.walkTrie(start, onFound)
     } catch (error: any) {
@@ -716,7 +427,7 @@ export class Trie {
         result.node !== null
           ? `Target Node FOUND for ${bytesToNibbles(key)}`
           : `Target Node NOT FOUND`,
-        ['FIND_PATH']
+        ['FIND_PATH'],
       )
 
     result.stack = result.stack.filter((e) => e !== undefined)
@@ -727,7 +438,7 @@ export class Trie {
         || Remaining: [${result.remaining}]\n|| Stack: ${result.stack
           .map((e) => e.constructor.name)
           .join(', ')}`,
-        ['FIND_PATH']
+        ['FIND_PATH'],
       )
     return result
   }
@@ -767,7 +478,7 @@ export class Trie {
       undefined,
       async (node) => {
         return node instanceof LeafNode || (node instanceof BranchNode && node.value() !== null)
-      }
+      },
     )) {
       await onFound(node, currentKey)
     }
@@ -802,7 +513,7 @@ export class Trie {
     const value = (await this._db.get(key)) ?? null
 
     if (value === null) {
-      // Dev note: this error message text is used for error checking in `checkRoot`, `verifyProof`, and `findPath`
+      // Dev note: this error message text is used for error checking in `checkRoot`, `verifyMerkleProof`, and `findPath`
       throw new Error('Missing node in DB')
     }
 
@@ -823,7 +534,7 @@ export class Trie {
     k: Uint8Array,
     value: Uint8Array,
     keyRemainder: Nibbles,
-    stack: TrieNode[]
+    stack: TrieNode[],
   ): Promise<void> {
     const toSave: BatchDBOp[] = []
     const lastNode = stack.pop()
@@ -928,7 +639,7 @@ export class Trie {
       branchKey: number,
       branchNode: TrieNode,
       parentNode: TrieNode,
-      stack: TrieNode[]
+      stack: TrieNode[],
     ) => {
       // branchNode is the node ON the branch node not THE branch node
       if (parentNode === null || parentNode === undefined || parentNode instanceof BranchNode) {
@@ -1025,7 +736,7 @@ export class Trie {
       // However, this violates the trie spec; this should be converted in either an ExtensionNode
       // Or a LeafNode
       // Since this branch is deleted, one can thus also delete this branch from the DB
-      // So add this to the `opStack` and mark the keyhash to be deleted
+      // So add this to the `opStack` and mark the keyHash to be deleted
       if (this._opts.useNodePruning) {
         // If the branchNode has length < 32, it will be a RawNode (Uint8Array[]) instead of a Uint8Array
         // In that case, we need to serialize and hash it into a Uint8Array, otherwise the operation will throw
@@ -1102,7 +813,7 @@ export class Trie {
     node: TrieNode,
     topLevel: boolean,
     opStack: BatchDBOp[],
-    remove: boolean = false
+    remove: boolean = false,
   ): Uint8Array | (EmbeddedNode | null)[] {
     const encoded = node.serialize()
 
@@ -1137,9 +848,9 @@ export class Trie {
    * @example
    * const ops = [
    *    { type: 'del', key: Uint8Array.from('father') }
-   *  , { type: 'put', key: Uint8Array.from('name'), value: Uint8Array.from('Yuri Irsenovich Kim') }
+   *  , { type: 'put', key: Uint8Array.from('name'), value: Uint8Array.from('Yuri Irsenovich Kim') } // cspell:disable-line
    *  , { type: 'put', key: Uint8Array.from('dob'), value: Uint8Array.from('16 February 1941') }
-   *  , { type: 'put', key: Uint8Array.from('spouse'), value: Uint8Array.from('Kim Young-sook') }
+   *  , { type: 'put', key: Uint8Array.from('spouse'), value: Uint8Array.from('Kim Young-sook') } // cspell:disable-line
    *  , { type: 'put', key: Uint8Array.from('occupation'), value: Uint8Array.from('Clown') }
    * ]
    * await trie.batch(ops)
@@ -1189,7 +900,7 @@ export class Trie {
               if (
                 item !== null &&
                 bytesToUnprefixedHex(
-                  isRawNode(item) ? controller.trie.appliedKey(RLP.encode(item)) : item
+                  isRawNode(item) ? controller.trie.appliedKey(RLP.encode(item)) : item,
                 ) === dbkey
               ) {
                 found = true
@@ -1216,14 +927,6 @@ export class Trie {
       }
     }
     return true
-  }
-
-  /**
-   * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Uint8Arrays.
-   * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
-   */
-  createReadStream(): ReadStream {
-    return new ReadStream(this)
   }
 
   /**
@@ -1261,9 +964,9 @@ export class Trie {
       this.DEBUG &&
         this.debug(
           `Persisting root: \n|| RootHash: ${bytesToHex(this.root())}\n|| RootKey: ${bytesToHex(
-            this.appliedKey(ROOT_DB_KEY)
+            this.appliedKey(ROOT_DB_KEY),
           )}`,
-          ['PERSIST_ROOT']
+          ['PERSIST_ROOT'],
         )
       let key = this.appliedKey(ROOT_DB_KEY)
       key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, key) : key
@@ -1363,5 +1066,46 @@ export class Trie {
     this.DEBUG &&
       this.debug(`Deleting ${this._db.checkpoints.length} checkpoints.`, ['FLUSH_CHECKPOINTS'])
     this._db.checkpoints = []
+  }
+
+  /**
+   * Returns a list of values stored in the trie
+   * @param startKey first unhashed key in the range to be returned (defaults to 0)
+   * @param limit - the number of keys to be returned (undefined means all keys)
+   * @returns an object with two properties (a map of all key/value pairs in the trie - or in the specified range) and then a `nextKey` reference if a range is specified
+   */
+  async getValueMap(
+    startKey = BIGINT_0,
+    limit?: number,
+  ): Promise<{ values: { [key: string]: string }; nextKey: null | string }> {
+    // If limit is undefined, all keys are inRange
+    let inRange = limit !== undefined ? false : true
+    let i = 0
+    const values: { [key: string]: string } = {}
+    let nextKey: string | null = null
+    await this.walkAllValueNodes(async (node: TrieNode, currentKey: number[]) => {
+      if (node instanceof LeafNode) {
+        const keyBytes = nibblesTypeToPackedBytes(currentKey.concat(node.key()))
+        if (!inRange) {
+          // Check if the key is already in the correct range.
+          if (bytesToBigInt(keyBytes) >= startKey) {
+            inRange = true
+          } else {
+            return
+          }
+        }
+
+        if (limit === undefined || i < limit) {
+          values[bytesToHex(keyBytes)] = bytesToHex(node._value)
+          i++
+        } else if (i === limit) {
+          nextKey = bytesToHex(keyBytes)
+        }
+      }
+    })
+    return {
+      values,
+      nextKey,
+    }
   }
 }

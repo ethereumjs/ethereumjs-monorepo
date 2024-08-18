@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../../src/index.js'
+import { Trie, createMerkleProof, verifyTrieRangeProof } from '../../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
 
@@ -83,18 +83,18 @@ async function verify(
   startKey?: Uint8Array,
   endKey?: Uint8Array,
   keys?: Uint8Array[],
-  vals?: Uint8Array[]
+  values?: Uint8Array[],
 ) {
   startKey = startKey ?? entries[start][0]
   endKey = endKey ?? entries[end][0]
   const targetRange = entries.slice(start, end + 1)
-  return trie.verifyRangeProof(
+  return verifyTrieRangeProof(
     trie.root(),
     startKey,
     endKey,
     keys ?? targetRange.map(([key]) => key),
-    vals ?? targetRange.map(([, val]) => val),
-    [...(await trie.createProof(startKey)), ...(await trie.createProof(endKey))]
+    values ?? targetRange.map(([, val]) => val),
+    [...(await createMerkleProof(trie, startKey)), ...(await createMerkleProof(trie, endKey))],
   )
 }
 
@@ -136,7 +136,7 @@ describe('simple merkle range proofs generation and verification', () => {
 
       assert.equal(
         await verify(trie, entries, start, end, startKey, endKey),
-        end !== entries.length - 1
+        end !== entries.length - 1,
       )
     }
 
@@ -195,7 +195,7 @@ describe('simple merkle range proofs generation and verification', () => {
     // One element with two non-existent edge proofs
     assert.equal(
       await verify(trie, entries, start, start, decreasedStartKey, increasedEndKey),
-      true
+      true,
     )
 
     // Test the mini trie with only a single element.
@@ -211,15 +211,15 @@ describe('simple merkle range proofs generation and verification', () => {
     const { trie, entries } = await randomTrie(new MapDB())
 
     assert.equal(
-      await trie.verifyRangeProof(
+      await verifyTrieRangeProof(
         trie.root(),
         null,
         null,
         entries.map(([key]) => key),
         entries.map(([, val]) => val),
-        null
+        null,
       ),
-      false
+      false,
     )
 
     // With edge proofs, it should still work.
@@ -233,9 +233,9 @@ describe('simple merkle range proofs generation and verification', () => {
         0,
         entries.length - 1,
         hexToBytes(`0x${'00'.repeat(32)}`),
-        hexToBytes(`0x${'ff'.repeat(32)}`)
+        hexToBytes(`0x${'ff'.repeat(32)}`),
       ),
-      false
+      false,
     )
   })
 
@@ -261,7 +261,7 @@ describe('simple merkle range proofs generation and verification', () => {
 
   it('create a bad range proof and verify it', async () => {
     const runTest = async (
-      cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>
+      cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>,
     ) => {
       const { trie, entries } = await randomTrie(new MapDB(), false)
 
@@ -349,7 +349,7 @@ describe('simple merkle range proofs generation and verification', () => {
         undefined,
         undefined,
         targetRange.map(([key]) => key),
-        targetRange.map(([, val]) => val)
+        targetRange.map(([, val]) => val),
       )
       result = true
     } catch (err) {
@@ -474,7 +474,7 @@ describe('simple merkle range proofs generation and verification', () => {
 
     let bloatedProof: Uint8Array[] = []
     for (let i = 0; i < TRIE_SIZE; i++) {
-      bloatedProof = bloatedProof.concat(await trie.createProof(entries[i][0]))
+      bloatedProof = bloatedProof.concat(await createMerkleProof(trie, entries[i][0]))
     }
 
     assert.equal(await verify(trie, entries, 0, entries.length - 1), false)

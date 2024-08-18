@@ -3,7 +3,7 @@ export type DBObject = {
 }
 export type BatchDBOp<
   TKey extends Uint8Array | string | number = Uint8Array,
-  TValue extends Uint8Array | string | DBObject = Uint8Array
+  TValue extends Uint8Array | string | DBObject = Uint8Array,
 > = PutBatch<TKey, TValue> | DelBatch<TKey>
 
 export enum KeyEncoding {
@@ -24,7 +24,7 @@ export type EncodingOpts = {
 }
 export interface PutBatch<
   TKey extends Uint8Array | string | number = Uint8Array,
-  TValue extends Uint8Array | string | DBObject = Uint8Array
+  TValue extends Uint8Array | string | DBObject = Uint8Array,
 > {
   type: 'put'
   key: TKey
@@ -40,7 +40,7 @@ export interface DelBatch<TKey extends Uint8Array | string | number = Uint8Array
 
 export interface DB<
   TKey extends Uint8Array | string | number = Uint8Array,
-  TValue extends Uint8Array | string | DBObject = Uint8Array
+  TValue extends Uint8Array | string | DBObject = Uint8Array,
 > {
   /**
    * Retrieves a raw value from db.

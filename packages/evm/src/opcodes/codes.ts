@@ -268,6 +268,14 @@ const hardforkOpcodes: { hardfork: Hardfork; opcodes: OpcodeEntry }[] = [
 
 const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
   {
+    eip: 663,
+    opcodes: {
+      0xe6: { name: 'DUPN', isAsync: false, dynamicGas: false },
+      0xe7: { name: 'SWAPN', isAsync: false, dynamicGas: false },
+      0xe8: { name: 'EXCHANGE', isAsync: false, dynamicGas: false },
+    },
+  },
+  {
     eip: 1153,
     opcodes: {
       0x5c: { name: 'TLOAD', isAsync: false, dynamicGas: false },
@@ -287,10 +295,18 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
     },
   },
   {
-    eip: 3074,
+    eip: 4200,
     opcodes: {
-      0xf6: { name: 'AUTH', isAsync: true, dynamicGas: true },
-      0xf7: { name: 'AUTHCALL', isAsync: true, dynamicGas: true },
+      0xe0: { name: 'RJUMP', isAsync: false, dynamicGas: false },
+      0xe1: { name: 'RJUMPI', isAsync: false, dynamicGas: false },
+      0xe2: { name: 'RJUMPV', isAsync: false, dynamicGas: false },
+    },
+  },
+  {
+    eip: 4750,
+    opcodes: {
+      0xe3: { name: 'CALLF', isAsync: false, dynamicGas: false },
+      0xe4: { name: 'RETF', isAsync: false, dynamicGas: false },
     },
   },
   {
@@ -306,9 +322,40 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
     },
   },
   {
+    eip: 6206,
+    opcodes: {
+      0xe5: { name: 'JUMPF', isAsync: false, dynamicGas: false },
+    },
+  },
+  {
+    eip: 7069,
+    opcodes: {
+      0xf7: { name: 'RETURNDATALOAD', isAsync: false, dynamicGas: false },
+      0xf8: { name: 'EXTCALL', isAsync: true, dynamicGas: true },
+      0xf9: { name: 'EXTDELEGATECALL', isAsync: true, dynamicGas: true },
+      0xfb: { name: 'EXTSTATICCALL', isAsync: true, dynamicGas: true },
+    },
+  },
+  {
+    eip: 7480,
+    opcodes: {
+      0xd0: { name: 'DATALOAD', isAsync: false, dynamicGas: false },
+      0xd1: { name: 'DATALOADN', isAsync: false, dynamicGas: false },
+      0xd2: { name: 'DATASIZE', isAsync: false, dynamicGas: false },
+      0xd3: { name: 'DATACOPY', isAsync: false, dynamicGas: true },
+    },
+  },
+  {
     eip: 7516,
     opcodes: {
       0x4a: { name: 'BLOBBASEFEE', isAsync: false, dynamicGas: false },
+    },
+  },
+  {
+    eip: 7620,
+    opcodes: {
+      0xec: { name: 'EOFCREATE', isAsync: true, dynamicGas: true },
+      0xee: { name: 'RETURNCONTRACT', isAsync: true, dynamicGas: true },
     },
   },
 ]
@@ -330,7 +377,7 @@ function createOpcodes(opcodes: OpcodeEntryFee): OpcodeList {
         code,
         fullName: getFullname(code, value.name),
         ...value,
-      })
+      }),
     )
   }
   return result
@@ -375,7 +422,7 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
   }
 
   for (const key in opcodeBuilder) {
-    const baseFee = Number(common.param('gasPrices', opcodeBuilder[key].name.toLowerCase()))
+    const baseFee = Number(common.param(`${opcodeBuilder[key].name.toLowerCase()}Gas`))
     // explicitly verify that we have defined a base fee
     if (baseFee === undefined) {
       throw new Error(`base fee not defined for: ${opcodeBuilder[key].name}`)
@@ -394,7 +441,7 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
       // Sanity checks
       if (code.opcodeName === undefined || code.baseFee === undefined) {
         throw new Error(
-          `Custom opcode ${code.opcode} does not have the required values: opcodeName and baseFee are required`
+          `Custom opcode ${code.opcode} does not have the required values: opcodeName and baseFee are required`,
         )
       }
       const entry = {

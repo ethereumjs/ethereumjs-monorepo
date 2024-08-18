@@ -19,12 +19,11 @@ import type { GenesisState } from '@ethereumjs/util'
  */
 export async function genGenesisStateRoot(
   genesisState: GenesisState,
-  common: Common
+  common: Common,
 ): Promise<Uint8Array> {
   const genCommon = common.copy()
   genCommon.setHardforkBy({
     blockNumber: 0,
-    td: BigInt(genCommon.genesis().difficulty),
     timestamp: genCommon.genesis().timestamp,
   })
   if (genCommon.isActivatedEIP(6800)) {

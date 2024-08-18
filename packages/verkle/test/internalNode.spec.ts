@@ -22,7 +22,7 @@ describe('verkle node - internal', () => {
     assert.equal(node.children.length, NODE_WIDTH, 'number of children should equal verkle width')
     assert.ok(
       node.children.every((child) => child === null),
-      'every children should be null'
+      'every children should be null',
     )
   })
 
@@ -33,14 +33,14 @@ describe('verkle node - internal', () => {
     assert.deepEqual(
       node.commitment,
       verkleCrypto.zeroCommitment,
-      'commitment should be set to point identity'
+      'commitment should be set to point identity',
     )
 
     // Children nodes should all default to null.
     assert.equal(node.children.length, NODE_WIDTH, 'number of children should equal verkle width')
     assert.ok(
       node.children.every((child) => child === null),
-      'every children should be null'
+      'every children should be null',
     )
   })
   it('should serialize and deserialize a node', async () => {

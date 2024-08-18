@@ -27,7 +27,7 @@ export interface VerkleCrypto {
     commitment: Uint8Array,
     commitmentIndex: number,
     oldScalarValue: Uint8Array,
-    newScalarValue: Uint8Array
+    newScalarValue: Uint8Array,
   ) => Uint8Array // Commitment
   zeroCommitment: Uint8Array
   verifyExecutionWitnessPreState: (prestateRoot: string, execution_witness_json: string) => boolean
@@ -38,7 +38,7 @@ export interface VerkleCrypto {
 /**
  * @dev Returns the 31-bytes verkle tree stem for a given address and tree index.
  * @dev Assumes that the verkle node width = 256
- * @param ffi The verkle ffi object from verkle-crypotography-wasm.
+ * @param ffi The verkle ffi object from verkle-cryptography-wasm.
  * @param address The address to generate the tree key for.
  * @param treeIndex The index of the tree to generate the key for. Defaults to 0.
  * @return The 31-bytes verkle tree stem as a Uint8Array.
@@ -46,7 +46,7 @@ export interface VerkleCrypto {
 export function getVerkleStem(
   ffi: VerkleCrypto,
   address: Address,
-  treeIndex: number | bigint = 0
+  treeIndex: number | bigint = 0,
 ): Uint8Array {
   const address32 = setLengthLeft(address.toBytes(), 32)
 
@@ -64,13 +64,13 @@ export function getVerkleStem(
 
 /**
  * Verifies that the executionWitness is valid for the given prestateRoot.
- * @param ffi The verkle ffi object from verkle-crypotography-wasm.
+ * @param ffi The verkle ffi object from verkle-cryptography-wasm.
  * @param executionWitness The verkle execution witness.
  * @returns {boolean} Whether or not the executionWitness belongs to the prestateRoot.
  */
 export function verifyVerkleProof(
   ffi: VerkleCrypto,
-  executionWitness: VerkleExecutionWitness
+  executionWitness: VerkleExecutionWitness,
 ): boolean {
   const { parentStateRoot, ...parsedExecutionWitness } = executionWitness
   return ffi.verifyExecutionWitnessPreState(parentStateRoot, JSON.stringify(parsedExecutionWitness))
@@ -197,7 +197,7 @@ export function getVerkleTreeIndicesForCodeChunk(chunkId: number) {
 export const getVerkleTreeKeyForCodeChunk = async (
   address: Address,
   chunkId: number,
-  verkleCrypto: VerkleCrypto
+  verkleCrypto: VerkleCrypto,
 ) => {
   const { treeIndex, subIndex } = getVerkleTreeIndicesForCodeChunk(chunkId)
   return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
@@ -216,7 +216,7 @@ export const chunkifyCode = (code: Uint8Array) => {
 export const getVerkleTreeKeyForStorageSlot = async (
   address: Address,
   storageKey: bigint,
-  verkleCrypto: VerkleCrypto
+  verkleCrypto: VerkleCrypto,
 ) => {
   const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(storageKey)
 
@@ -227,15 +227,15 @@ export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleL
   const versionBytes = encodedBasicData.slice(0, VERKLE_VERSION_BYTES_LENGTH)
   const nonceBytes = encodedBasicData.slice(
     VERKLE_NONCE_OFFSET,
-    VERKLE_NONCE_OFFSET + VERKLE_NONCE_BYTES_LENGTH
+    VERKLE_NONCE_OFFSET + VERKLE_NONCE_BYTES_LENGTH,
   )
   const codeSizeBytes = encodedBasicData.slice(
     VERKLE_CODE_SIZE_OFFSET,
-    VERKLE_CODE_SIZE_OFFSET + VERKLE_CODE_SIZE_BYTES_LENGTH
+    VERKLE_CODE_SIZE_OFFSET + VERKLE_CODE_SIZE_BYTES_LENGTH,
   )
   const balanceBytes = encodedBasicData.slice(
     VERKLE_BALANCE_OFFSET,
-    VERKLE_BALANCE_OFFSET + VERKLE_BALANCE_BYTES_LENGTH
+    VERKLE_BALANCE_OFFSET + VERKLE_BALANCE_BYTES_LENGTH,
   )
 
   const version = bytesToInt32(versionBytes, true)
@@ -249,19 +249,19 @@ export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleL
 export function encodeVerkleLeafBasicData(basicData: VerkleLeafBasicData): Uint8Array {
   const encodedVersion = setLengthRight(
     int32ToBytes(basicData.version, true),
-    VERKLE_VERSION_BYTES_LENGTH
+    VERKLE_VERSION_BYTES_LENGTH,
   )
   const encodedNonce = setLengthRight(
     bigIntToBytes(basicData.nonce, true),
-    VERKLE_NONCE_BYTES_LENGTH
+    VERKLE_NONCE_BYTES_LENGTH,
   )
   const encodedCodeSize = setLengthRight(
     int32ToBytes(basicData.codeSize, true),
-    VERKLE_CODE_SIZE_BYTES_LENGTH
+    VERKLE_CODE_SIZE_BYTES_LENGTH,
   )
   const encodedBalance = setLengthRight(
     bigIntToBytes(basicData.balance, true),
-    VERKLE_BALANCE_BYTES_LENGTH
+    VERKLE_BALANCE_BYTES_LENGTH,
   )
   return concatBytes(encodedVersion, encodedNonce, encodedCodeSize, encodedBalance)
 }

@@ -1,18 +1,21 @@
-import { Trie } from '@ethereumjs/trie'
+import { Trie, createTrie, createTrieFromProof } from '@ethereumjs/trie'
 import {
   Account,
-  Address,
   KECCAK256_RLP,
   bigIntToBytes,
+  createAddressFromPrivateKey,
+  createAddressFromString,
+  createZeroAddress,
   equalsBytes,
   hexToBytes,
   intToBytes,
   setLengthLeft,
   utf8ToBytes,
+  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CacheType, DefaultStateManager } from '../src/index.js'
+import { CacheType, Caches, DefaultStateManager } from '../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -24,7 +27,7 @@ function verifyAccount(
     codeHash: Uint8Array
     nonce: BigInt
     storageRoot: Uint8Array
-  }
+  },
 ) {
   assert.equal(account.balance, state.balance)
   assert.equal(account.nonce, state.nonce)
@@ -41,26 +44,37 @@ describe('StateManager -> General', () => {
     assert.deepEqual(res, KECCAK256_RLP, 'it has default root')
   })
 
+  it('should not throw on getContractStorage() on non-existing accounts', async () => {
+    const sm = new DefaultStateManager()
+
+    try {
+      const storage = await sm.getStorage(createZeroAddress(), zeros(32))
+      assert.ok(equalsBytes(storage, new Uint8Array()))
+    } catch {
+      assert.fail('should not throw')
+    }
+  })
+
   it(`should clear contract storage`, async () => {
     const sm = new DefaultStateManager()
 
-    const contractAddress = Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
+    const contractAddress = createAddressFromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
     const contractCode = Uint8Array.from([0, 1, 2, 3])
     const storageKey = setLengthLeft(bigIntToBytes(2n), 32)
     const storedData = utf8ToBytes('abcd')
 
-    await sm.putContractCode(contractAddress, contractCode)
-    await sm.putContractStorage(contractAddress, storageKey, storedData)
+    await sm.putCode(contractAddress, contractCode)
+    await sm.putStorage(contractAddress, storageKey, storedData)
 
-    let storage = await sm.getContractStorage(contractAddress, storageKey)
+    let storage = await sm.getStorage(contractAddress, storageKey)
     assert.equal(JSON.stringify(storage), JSON.stringify(storedData), 'contract storage updated')
 
-    await sm.clearContractStorage(contractAddress)
-    storage = await sm.getContractStorage(contractAddress, storageKey)
+    await sm.clearStorage(contractAddress)
+    storage = await sm.getStorage(contractAddress, storageKey)
     assert.equal(
       JSON.stringify(storage),
       JSON.stringify(new Uint8Array()),
-      'clears contract storage'
+      'clears contract storage',
     )
   })
 
@@ -75,47 +89,49 @@ describe('StateManager -> General', () => {
     assert.equal(
       smCopy['_prefixCodeHashes'],
       sm['_prefixCodeHashes'],
-      'should retain non-default values'
+      'should retain non-default values',
     )
 
     sm = new DefaultStateManager({
       trie,
-      accountCacheOpts: {
-        type: CacheType.LRU,
-      },
-      storageCacheOpts: {
-        type: CacheType.LRU,
-      },
+      caches: new Caches({
+        account: {
+          type: CacheType.LRU,
+        },
+        storage: {
+          type: CacheType.LRU,
+        },
+      }),
     })
 
     smCopy = sm.shallowCopy()
     assert.equal(
-      smCopy['_accountCacheSettings'].type,
+      smCopy['_caches']?.settings.account.type,
       CacheType.ORDERED_MAP,
-      'should switch to ORDERED_MAP account cache on copy()'
+      'should switch to ORDERED_MAP account cache on copy()',
     )
     assert.equal(
-      smCopy['_storageCacheSettings'].type,
+      smCopy['_caches']?.settings.storage.type,
       CacheType.ORDERED_MAP,
-      'should switch to ORDERED_MAP storage cache on copy()'
+      'should switch to ORDERED_MAP storage cache on copy()',
     )
     assert.equal(smCopy['_trie']['_opts'].cacheSize, 0, 'should set trie cache size to 0')
 
     smCopy = sm.shallowCopy(false)
     assert.equal(
-      smCopy['_accountCacheSettings'].type,
+      smCopy['_caches']?.settings.account.type,
       CacheType.LRU,
-      'should retain account cache type when deactivate cache downleveling'
+      'should retain account cache type when deactivate cache downleveling',
     )
     assert.equal(
-      smCopy['_storageCacheSettings'].type,
+      smCopy['_caches']?.settings.storage.type,
       CacheType.LRU,
-      'should retain storage cache type when deactivate cache downleveling'
+      'should retain storage cache type when deactivate cache downleveling',
     )
     assert.equal(
       smCopy['_trie']['_opts'].cacheSize,
       1000,
-      'should retain trie cache size when deactivate cache downleveling'
+      'should retain trie cache size when deactivate cache downleveling',
     )
   })
 
@@ -142,9 +158,9 @@ describe('StateManager -> General', () => {
     const address2Str = '0x2'.padEnd(42, '0')
     const address3Str = '0x3'.padEnd(42, '0')
 
-    const address1 = Address.fromString(address1Str)
-    const address2 = Address.fromString(address2Str)
-    const address3 = Address.fromString(address3Str)
+    const address1 = createAddressFromString(address1Str)
+    const address2 = createAddressFromString(address2Str)
+    const address3 = createAddressFromString(address3Str)
 
     const key1 = setLengthLeft(new Uint8Array([1]), 32)
     const key2 = setLengthLeft(new Uint8Array([2]), 32)
@@ -184,14 +200,14 @@ describe('StateManager -> General', () => {
     const stateManager = new DefaultStateManager()
 
     for (const [addressStr, entry] of Object.entries(stateSetup)) {
-      const address = Address.fromString(addressStr)
+      const address = createAddressFromString(addressStr)
       const account = new Account(entry.nonce, entry.balance)
       await stateManager.putAccount(address, account)
-      await stateManager.putContractCode(address, entry.code)
+      await stateManager.putCode(address, entry.code)
       for (let i = 0; i < entry.keys.length; i++) {
         const key = entry.keys[i]
         const value = entry.values[i]
-        await stateManager.putContractStorage(address, key, value)
+        await stateManager.putStorage(address, key, value)
       }
       await stateManager.flush()
       stateSetup[addressStr].codeHash = (await stateManager.getAccount(address)!)?.codeHash
@@ -218,13 +234,13 @@ describe('StateManager -> General', () => {
     const stProof = await stateManager.getProof(address1, [state1.keys[0], state1.keys[1]])
     await partialStateManager.addProofData(stProof)
 
-    let stSlot1_0 = await partialStateManager.getContractStorage(address1, state1.keys[0])
+    let stSlot1_0 = await partialStateManager.getStorage(address1, state1.keys[0])
     assert.ok(equalsBytes(stSlot1_0, state1.values[0]))
 
-    let stSlot1_1 = await partialStateManager.getContractStorage(address1, state1.keys[1])
+    let stSlot1_1 = await partialStateManager.getStorage(address1, state1.keys[1])
     assert.ok(equalsBytes(stSlot1_1, state1.values[1]))
 
-    let stSlot1_2 = await partialStateManager.getContractStorage(address1, state1.keys[2])
+    let stSlot1_2 = await partialStateManager.getStorage(address1, state1.keys[2])
     assert.ok(equalsBytes(stSlot1_2, new Uint8Array()))
 
     // Check Array support as input
@@ -240,13 +256,13 @@ describe('StateManager -> General', () => {
       account3 = await sm.getAccount(address3)
       assert.ok(account3 === undefined)
 
-      stSlot1_0 = await sm.getContractStorage(address1, state1.keys[0])
+      stSlot1_0 = await sm.getStorage(address1, state1.keys[0])
       assert.ok(equalsBytes(stSlot1_0, state1.values[0]))
 
-      stSlot1_1 = await sm.getContractStorage(address1, state1.keys[1])
+      stSlot1_1 = await sm.getStorage(address1, state1.keys[1])
       assert.ok(equalsBytes(stSlot1_1, state1.values[1]))
 
-      stSlot1_2 = await sm.getContractStorage(address1, state1.keys[2])
+      stSlot1_2 = await sm.getStorage(address1, state1.keys[2])
       assert.ok(equalsBytes(stSlot1_2, new Uint8Array()))
     }
 
@@ -267,8 +283,8 @@ describe('StateManager -> General', () => {
     await postVerify(newPartialStateManager2)
 
     const zeroAddressNonce = BigInt(100)
-    await stateManager.putAccount(Address.zero(), new Account(zeroAddressNonce))
-    const zeroAddressProof = await stateManager.getProof(Address.zero())
+    await stateManager.putAccount(createZeroAddress(), new Account(zeroAddressNonce))
+    const zeroAddressProof = await stateManager.getProof(createZeroAddress())
 
     try {
       await DefaultStateManager.fromProof([proof1, zeroAddressProof], true)
@@ -279,37 +295,37 @@ describe('StateManager -> General', () => {
 
     await newPartialStateManager2.addProofData(zeroAddressProof)
 
-    let zeroAccount = await newPartialStateManager2.getAccount(Address.zero())
+    let zeroAccount = await newPartialStateManager2.getAccount(createZeroAddress())
     assert.ok(zeroAccount === undefined)
 
     await newPartialStateManager2.setStateRoot(await stateManager.getStateRoot())
-    zeroAccount = await newPartialStateManager2.getAccount(Address.zero())
+    zeroAccount = await newPartialStateManager2.getAccount(createZeroAddress())
     assert.ok(zeroAccount!.nonce === zeroAddressNonce)
   })
   it.skipIf(isBrowser() === true)(
     'should create a statemanager fromProof with opts preserved',
     async () => {
-      const trie = await Trie.create({ useKeyHashing: false })
+      const trie = await createTrie({ useKeyHashing: false })
       const sm = new DefaultStateManager({ trie })
       const pk = hexToBytes('0x9f12aab647a25a81f821a5a0beec3330cd057b2346af4fb09d7a807e896701ea')
       const pk2 = hexToBytes('0x8724f27e2ce3714af01af3220478849db68a03c0f84edf1721d73d9a6139ad1c')
-      const address = Address.fromPrivateKey(pk)
-      const address2 = Address.fromPrivateKey(pk2)
+      const address = createAddressFromPrivateKey(pk)
+      const address2 = createAddressFromPrivateKey(pk2)
       const account = new Account()
       const account2 = new Account(undefined, 100n)
       await sm.putAccount(address, account)
       await sm.putAccount(address2, account2)
-      await sm.putContractStorage(address, setLengthLeft(intToBytes(0), 32), intToBytes(32))
+      await sm.putStorage(address, setLengthLeft(intToBytes(0), 32), intToBytes(32))
       const storage = await sm.dumpStorage(address)
       const keys = Object.keys(storage) as PrefixedHexString[]
       const proof = await sm.getProof(
         address,
-        keys.map((key) => hexToBytes(key))
+        keys.map((key) => hexToBytes(key)),
       )
       const proof2 = await sm.getProof(address2)
-      const newTrie = await Trie.createFromProof(
+      const newTrie = await createTrieFromProof(
         proof.accountProof.map((e) => hexToBytes(e)),
-        { useKeyHashing: false }
+        { useKeyHashing: false },
       )
       const partialSM = await DefaultStateManager.fromProof([proof, proof2], true, {
         trie: newTrie,
@@ -317,12 +333,9 @@ describe('StateManager -> General', () => {
       assert.equal(
         partialSM['_trie']['_opts'].useKeyHashing,
         false,
-        'trie opts are preserved in new sm'
+        'trie opts are preserved in new sm',
       )
-      assert.deepEqual(
-        intToBytes(32),
-        await partialSM.getContractStorage(address, hexToBytes(keys[0]))
-      )
+      assert.deepEqual(intToBytes(32), await partialSM.getStorage(address, hexToBytes(keys[0])))
       assert.equal((await partialSM.getAccount(address2))?.balance, 100n)
       const partialSM2 = await DefaultStateManager.fromProof(proof, true, {
         trie: newTrie,
@@ -331,13 +344,10 @@ describe('StateManager -> General', () => {
       assert.equal(
         partialSM2['_trie']['_opts'].useKeyHashing,
         false,
-        'trie opts are preserved in new sm'
+        'trie opts are preserved in new sm',
       )
-      assert.deepEqual(
-        intToBytes(32),
-        await partialSM2.getContractStorage(address, hexToBytes(keys[0]))
-      )
+      assert.deepEqual(intToBytes(32), await partialSM2.getStorage(address, hexToBytes(keys[0])))
       assert.equal((await partialSM2.getAccount(address2))?.balance, 100n)
-    }
+    },
   )
 })

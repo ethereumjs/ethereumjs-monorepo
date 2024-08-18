@@ -17,7 +17,7 @@ export type BytesLike =
   | number[]
   | number
   | bigint
-  | TransformabletoBytes
+  | TransformableToBytes
   | PrefixedHexString
 
 /*
@@ -30,7 +30,7 @@ export type PrefixedHexString = `0x${string}`
  */
 export type AddressLike = Address | Uint8Array | PrefixedHexString
 
-export interface TransformabletoBytes {
+export interface TransformableToBytes {
   toBytes?(): Uint8Array
 }
 
@@ -79,11 +79,11 @@ export function toType<T extends TypeOutput>(input: null, outputType: T): null
 export function toType<T extends TypeOutput>(input: undefined, outputType: T): undefined
 export function toType<T extends TypeOutput>(
   input: ToBytesInputTypes,
-  outputType: T
+  outputType: T,
 ): TypeOutputReturnType[T]
 export function toType<T extends TypeOutput>(
   input: ToBytesInputTypes,
-  outputType: T
+  outputType: T,
 ): TypeOutputReturnType[T] | undefined | null {
   if (input === null) {
     return null
@@ -96,7 +96,7 @@ export function toType<T extends TypeOutput>(
     throw new Error(`A string must be provided with a 0x-prefix, given: ${input}`)
   } else if (typeof input === 'number' && !Number.isSafeInteger(input)) {
     throw new Error(
-      'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
+      'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative input type)',
     )
   }
 
@@ -111,7 +111,7 @@ export function toType<T extends TypeOutput>(
       const bigInt = bytesToBigInt(output)
       if (bigInt > BigInt(Number.MAX_SAFE_INTEGER)) {
         throw new Error(
-          'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative output type)'
+          'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative output type)',
         )
       }
       return Number(bigInt) as TypeOutputReturnType[T]

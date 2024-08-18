@@ -1,5 +1,7 @@
-import { VM } from '@ethereumjs/vm'
-import { Account, Address } from '@ethereumjs/util'
+import { createAccount, createAddressFromPrivateKey } from '@ethereumjs/util'
+
+import type { Address } from '@ethereumjs/util'
+import type { VM } from '@ethereumjs/vm'
 
 export const keyPair = {
   secretKey: '0x3cd7232cd6f3fc66a57a6bedc1a8ed6c228fff0a327e169c2bcc5e869ed49511',
@@ -12,13 +14,13 @@ export const insertAccount = async (vm: VM, address: Address) => {
     nonce: 0,
     balance: BigInt(10) ** BigInt(18), // 1 eth
   }
-  const account = Account.fromAccountData(acctData)
+  const account = createAccount(acctData)
 
   await vm.stateManager.putAccount(address, account)
 }
 
 export const getAccountNonce = async (vm: VM, accountPrivateKey: Uint8Array) => {
-  const address = Address.fromPrivateKey(accountPrivateKey)
+  const address = createAddressFromPrivateKey(accountPrivateKey)
   const account = await vm.stateManager.getAccount(address)
   if (account) {
     return account.nonce

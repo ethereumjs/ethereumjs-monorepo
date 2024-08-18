@@ -1,23 +1,23 @@
-import { Hardfork, createCustomCommon } from '@ethereumjs/common'
+import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { TWO_POW256, ecsign, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { FeeMarketEIP1559Transaction } from '../src/index.js'
+import { createFeeMarket1559Tx } from '../src/index.js'
 
 import testdata from './json/eip1559.json' // Source: Besu
 
 import type { FeeMarketEIP1559TxData, JsonTx } from '../src/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
-const common = createCustomCommon({ chainId: 4 })
+const common = createCustomCommon({ chainId: 4 }, Mainnet)
 common.setHardfork(Hardfork.London)
 
 const validAddress = hexToBytes(`0x${'01'.repeat(20)}`)
 const validSlot = hexToBytes(`0x${'01'.repeat(32)}`)
 const chainId = BigInt(4)
 
-describe('[FeeMarketEIP1559Transaction]', () => {
+describe('[FeeMarket1559Tx]', () => {
   it(`cannot input decimal or negative values`, () => {
     const values = [
       'maxFeePerGas',
@@ -60,7 +60,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
         ) {
           txData[value] = testCase
           assert.throws(() => {
-            FeeMarketEIP1559Transaction.fromTxData(txData)
+            createFeeMarket1559Tx(txData)
           })
         }
       }
@@ -68,14 +68,14 @@ describe('[FeeMarketEIP1559Transaction]', () => {
   })
 
   it('getUpfrontCost()', () => {
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = createFeeMarket1559Tx(
       {
         maxFeePerGas: 10,
         maxPriorityFeePerGas: 8,
         gasLimit: 100,
         value: 6,
       },
-      { common }
+      { common },
     )
     assert.equal(tx.getUpfrontCost(), BigInt(806), 'correct upfront cost with default base fee')
     let baseFee = BigInt(0)
@@ -84,17 +84,17 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     assert.equal(
       tx.getUpfrontCost(baseFee),
       BigInt(1006),
-      'correct upfront cost with cost-changing base fee value'
+      'correct upfront cost with cost-changing base fee value',
     )
   })
 
   it('getEffectivePriorityFee()', () => {
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = createFeeMarket1559Tx(
       {
         maxFeePerGas: 10,
         maxPriorityFeePerGas: 8,
       },
-      { common }
+      { common },
     )
     assert.equal(tx.getEffectivePriorityFee(BigInt(10)), BigInt(0))
     assert.equal(tx.getEffectivePriorityFee(BigInt(9)), BigInt(1))
@@ -109,19 +109,19 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     for (let index = 0; index < testdata.length; index++) {
       const data = testdata[index]
       const pkey = hexToBytes(data.privateKey as PrefixedHexString)
-      const txn = FeeMarketEIP1559Transaction.fromTxData(data as FeeMarketEIP1559TxData, { common })
+      const txn = createFeeMarket1559Tx(data as FeeMarketEIP1559TxData, { common })
       const signed = txn.sign(pkey)
       const rlpSerialized = RLP.encode(Uint8Array.from(signed.serialize()))
       assert.ok(
         equalsBytes(rlpSerialized, hexToBytes(data.signedTransactionRLP as PrefixedHexString)),
-        'Should sign txs correctly'
+        'Should sign txs correctly',
       )
     }
   })
 
   it('addSignature() -> correctly adds correct signature values', () => {
     const privKey = hexToBytes(testdata[0].privateKey as PrefixedHexString)
-    const tx = FeeMarketEIP1559Transaction.fromTxData({})
+    const tx = createFeeMarket1559Tx({})
     const signedTx = tx.sign(privKey)
     const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
 
@@ -130,7 +130,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
 
   it('addSignature() -> correctly converts raw ecrecover values', () => {
     const privKey = hexToBytes(testdata[0].privateKey as PrefixedHexString)
-    const tx = FeeMarketEIP1559Transaction.fromTxData({})
+    const tx = createFeeMarket1559Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
     const { v, r, s } = ecsign(msgHash, privKey)
@@ -143,7 +143,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
 
   it('addSignature() -> throws when adding the wrong v value', () => {
     const privKey = hexToBytes(testdata[0].privateKey as PrefixedHexString)
-    const tx = FeeMarketEIP1559Transaction.fromTxData({})
+    const tx = createFeeMarket1559Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
     const { v, r, s } = ecsign(msgHash, privKey)
@@ -157,30 +157,30 @@ describe('[FeeMarketEIP1559Transaction]', () => {
   it('hash()', () => {
     const data = testdata[0]
     const pkey = hexToBytes(data.privateKey as PrefixedHexString)
-    let txn = FeeMarketEIP1559Transaction.fromTxData(data as FeeMarketEIP1559TxData, { common })
+    let txn = createFeeMarket1559Tx(data as FeeMarketEIP1559TxData, { common })
     let signed = txn.sign(pkey)
     const expectedHash = hexToBytes(
-      '0x2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446'
+      '0x2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446',
     )
     assert.ok(
       equalsBytes(signed.hash(), expectedHash),
-      'Should provide the correct hash when frozen'
+      'Should provide the correct hash when frozen',
     )
-    txn = FeeMarketEIP1559Transaction.fromTxData(data as FeeMarketEIP1559TxData, {
+    txn = createFeeMarket1559Tx(data as FeeMarketEIP1559TxData, {
       common,
       freeze: false,
     })
     signed = txn.sign(pkey)
     assert.ok(
       equalsBytes(signed.hash(), expectedHash),
-      'Should provide the correct hash when not frozen'
+      'Should provide the correct hash when not frozen',
     )
   })
 
   it('freeze property propagates from unsigned tx to signed tx', () => {
     const data = testdata[0]
     const pkey = hexToBytes(data.privateKey as PrefixedHexString)
-    const txn = FeeMarketEIP1559Transaction.fromTxData(data as FeeMarketEIP1559TxData, {
+    const txn = createFeeMarket1559Tx(data as FeeMarketEIP1559TxData, {
       common,
       freeze: false,
     })
@@ -192,12 +192,12 @@ describe('[FeeMarketEIP1559Transaction]', () => {
   it('common propagates from the common of tx, not the common in TxOptions', () => {
     const data = testdata[0]
     const pkey = hexToBytes(data.privateKey as PrefixedHexString)
-    const txn = FeeMarketEIP1559Transaction.fromTxData(data as FeeMarketEIP1559TxData, {
+    const txn = createFeeMarket1559Tx(data as FeeMarketEIP1559TxData, {
       common,
       freeze: false,
     })
 
-    const newCommon = createCustomCommon({ chainId: 4 })
+    const newCommon = createCustomCommon({ chainId: 4 }, Mainnet)
     newCommon.setHardfork(Hardfork.Paris)
 
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
@@ -209,39 +209,39 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     const signedTxn = txn.sign(pkey)
     assert.ok(
       signedTxn.common.hardfork() === Hardfork.Paris,
-      'signed tx common is taken from tx.common'
+      'signed tx common is taken from tx.common',
     )
   })
 
   it('unsigned tx -> getMessageToSign()/getHashedMessageToSign()', () => {
-    const unsignedTx = FeeMarketEIP1559Transaction.fromTxData(
+    const unsignedTx = createFeeMarket1559Tx(
       {
         data: hexToBytes('0x010200'),
         to: validAddress,
         accessList: [[validAddress, [validSlot]]],
         chainId,
       },
-      { common }
+      { common },
     )
     const expectedHash = hexToBytes(
-      '0xfa81814f7dd57bad435657a05eabdba2815f41e3f15ddd6139027e7db56b0dea'
+      '0xfa81814f7dd57bad435657a05eabdba2815f41e3f15ddd6139027e7db56b0dea',
     )
     assert.deepEqual(unsignedTx.getHashedMessageToSign(), expectedHash), 'correct hashed version'
 
     const expectedSerialization = hexToBytes(
-      '0x02f85904808080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101'
+      '0x02f85904808080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101',
     )
     assert.deepEqual(
       unsignedTx.getMessageToSign(),
       expectedSerialization,
-      'correct serialized unhashed version'
+      'correct serialized unhashed version',
     )
   })
 
   it('toJSON()', () => {
     const data = testdata[0]
     const pkey = hexToBytes(data.privateKey as PrefixedHexString)
-    const txn = FeeMarketEIP1559Transaction.fromTxData(data as FeeMarketEIP1559TxData, { common })
+    const txn = createFeeMarket1559Tx(data as FeeMarketEIP1559TxData, { common })
     const signed = txn.sign(pkey)
 
     const json = signed.toJSON()
@@ -266,47 +266,47 @@ describe('[FeeMarketEIP1559Transaction]', () => {
 
   it('Fee validation', () => {
     assert.doesNotThrow(() => {
-      FeeMarketEIP1559Transaction.fromTxData(
+      createFeeMarket1559Tx(
         {
           maxFeePerGas: TWO_POW256 - BigInt(1),
           maxPriorityFeePerGas: 100,
           gasLimit: 1,
           value: 6,
         },
-        { common }
+        { common },
       )
     }, 'fee can be 2^256 - 1')
     assert.throws(
       () => {
-        FeeMarketEIP1559Transaction.fromTxData(
+        createFeeMarket1559Tx(
           {
             maxFeePerGas: TWO_POW256 - BigInt(1),
             maxPriorityFeePerGas: 100,
             gasLimit: 100,
             value: 6,
           },
-          { common }
+          { common },
         )
       },
       undefined,
       undefined,
-      'fee must be less than 2^256'
+      'fee must be less than 2^256',
     )
     assert.throws(
       () => {
-        FeeMarketEIP1559Transaction.fromTxData(
+        createFeeMarket1559Tx(
           {
             maxFeePerGas: 1,
             maxPriorityFeePerGas: 2,
             gasLimit: 100,
             value: 6,
           },
-          { common }
+          { common },
         )
       },
       undefined,
       undefined,
-      'total fee must be the larger of the two'
+      'total fee must be the larger of the two',
     )
   })
 })

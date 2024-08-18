@@ -129,11 +129,11 @@ export class EthereumClient {
     const packageJson = JSON.parse(
       readFileSync(
         '/' + import.meta.url.split('client')[0].split('file:///')[1] + 'client/package.json',
-        'utf-8'
-      )
+        'utf-8',
+      ),
     )
     this.config.logger.info(
-      `Initializing Ethereumjs client version=v${packageJson.version} network=${name} chainId=${chainId}`
+      `Initializing Ethereumjs client version=v${packageJson.version} network=${name} chainId=${chainId}`,
     )
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {
@@ -141,7 +141,7 @@ export class EthereumClient {
     })
     this.config.events.on(Event.SERVER_LISTENING, (details) => {
       this.config.logger.info(
-        `Server listener up transport=${details.transport} url=${details.url}`
+        `Server listener up transport=${details.transport} url=${details.url}`,
       )
     })
 

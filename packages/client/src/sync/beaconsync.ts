@@ -77,12 +77,12 @@ export class BeaconSynchronizer extends Synchronizer {
     const hash = this.chain.blocks.latest!.hash()
     this.startingBlock = number
     const timestamp = this.chain.blocks.latest?.header.timestamp
-    this.config.chainCommon.setHardforkBy({ blockNumber: number, td, timestamp })
+    this.config.chainCommon.setHardforkBy({ blockNumber: number, timestamp })
 
     this.config.logger.info(
       `Latest local block number=${Number(number)} td=${td} hash=${bytesToHex(
-        hash
-      )} hardfork=${this.config.chainCommon.hardfork()}`
+        hash,
+      )} hardfork=${this.config.chainCommon.hardfork()}`,
     )
 
     const subchain = this.skeleton.bounds()
@@ -165,8 +165,8 @@ export class BeaconSynchronizer extends Synchronizer {
     await this.stop()
     this.config.logger.debug(
       `Beacon sync reorged, new head number=${block.header.number} hash=${short(
-        block.header.hash()
-      )}`
+        block.header.hash(),
+      )}`,
     )
     void this.start()
   }
@@ -251,7 +251,7 @@ export class BeaconSynchronizer extends Synchronizer {
           this.fetcher === null
             ? ''
             : 'previous fetcher errored=' + this.fetcher.syncErrored?.message
-        }`
+        }`,
       )
       this.fetcher = new ReverseBlockFetcher({
         config: this.config,
@@ -281,7 +281,7 @@ export class BeaconSynchronizer extends Synchronizer {
     const hash = short(blocks[0].hash())
 
     this.config.logger.debug(
-      `Imported skeleton blocks count=${blocks.length} first=${first} last=${last} hash=${hash} peers=${this.pool.size}`
+      `Imported skeleton blocks count=${blocks.length} first=${first} last=${last} hash=${hash} peers=${this.pool.size}`,
     )
   }
 

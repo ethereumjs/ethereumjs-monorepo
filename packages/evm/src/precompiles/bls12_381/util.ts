@@ -19,7 +19,7 @@ export const gasCheck = (opts: PrecompileInput, gasUsed: bigint, pName: string) 
     opts._debug(
       `Run ${pName} precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
         opts.gasLimit
-      } gasUsed=${gasUsed}`
+      } gasUsed=${gasUsed}`,
     )
   }
   if (opts.gasLimit < gasUsed) {
@@ -57,47 +57,6 @@ export const msmGasUsed = (numPairs: number, gasUsedPerPair: bigint) => {
 }
 
 /**
- * Checks that the length of the provided data is equal to `length`.
- *
- * @param opts
- * @param length
- * @param pName
- * @returns
- */
-export const equalityLengthCheck = (opts: PrecompileInput, length: number, pName: string) => {
-  if (opts.data.length !== length) {
-    if (opts._debug !== undefined) {
-      opts._debug(
-        `${pName} failed: Invalid input length length=${opts.data.length} (expected: ${length})`
-      )
-    }
-    return false
-  }
-  return true
-}
-
-/**
- * Checks that the total length of the provided data input can be subdivided into k equal parts
- * with `length` (without leaving some remainder bytes).
- *
- * @param opts
- * @param length
- * @param pName
- * @returns
- */
-export const moduloLengthCheck = (opts: PrecompileInput, length: number, pName: string) => {
-  if (opts.data.length % length !== 0) {
-    if (opts._debug !== undefined) {
-      opts._debug(
-        `${pName} failed: Invalid input length length=${opts.data.length} (expected: ${length}*k bytes)`
-      )
-    }
-    return false
-  }
-  return true
-}
-
-/**
  * BLS-specific zero check to check that the top 16 bytes of a 64 byte field element provided
  * are always zero (see EIP notes on field element encoding).
  *
@@ -123,12 +82,12 @@ export const leading16ZeroBytesCheck = (
   opts: PrecompileInput,
   zeroByteRanges: number[][],
   pName: string,
-  pairStart = 0
+  pairStart = 0,
 ) => {
   for (const index in zeroByteRanges) {
     const slicedBuffer = opts.data.subarray(
       zeroByteRanges[index][0] + pairStart,
-      zeroByteRanges[index][1] + pairStart
+      zeroByteRanges[index][1] + pairStart,
     )
     if (!(equalsBytes(slicedBuffer, ZERO_BYTES_16) === true)) {
       if (opts._debug !== undefined) {

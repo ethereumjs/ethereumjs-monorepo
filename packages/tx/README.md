@@ -102,6 +102,7 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 
 - `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), proto-danksharding)
 - `FeeMarketEIP1559Transaction` ([EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), gas fee market)
+- `EOACodeEIP7702Transaction` (experimental) ([EIP-7702](https://eips.ethereum.org/EIPS/eip-7702), EOA code delegation)
 - `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
 - `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), blob transactions)
 - `LegacyTransaction`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
@@ -207,6 +208,49 @@ const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
 console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced321887937c95b03779358ec8a
 ```
 
+#### EOA Code Transaction (EIP-7702) (outdated)
+
+- Class: `EOACodeEIP7702Transaction`
+- Activation: `prague` (or per EIP setting)
+- Type: `4`
+
+This library supports a non-final version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) starting with `v5.4.0`. This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
+
+The following is a simple example how to use an `EOACodeEIP7702Transaction` with one authorization list item:
+
+```ts
+// ./examples/EOACodeTx.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EOACodeEIP7702Transaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
+
+const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const tx = EOACodeEIP7702Transaction.fromTxData(
+  {
+    authorizationList: [
+      {
+        chainId: '0x1',
+        address: `0x${'20'.repeat(20)}`,
+        nonce: ['0x1'],
+        yParity: '0x1',
+        r: ones32,
+        s: ones32,
+      },
+    ],
+  },
+  { common },
+)
+
+console.log(
+  `EIP-7702 EOA code tx created with ${tx.authorizationList.length} authorization list item(s).`,
+)
+```
+
+Note: Things move fast with `EIP-7702` and the currently released implementation is based on [this](https://github.com/ethereum/EIPs/blob/14400434e1199c57d912082127b1d22643788d11/EIPS/eip-7702.md) commit and therefore already outdated. An up-to-date version will be released along our breaking release round planned for early September 2024.
+
 #### Access List Transactions (EIP-2930)
 
 - Class: `AccessListEIP2930Transaction`
@@ -284,7 +328,7 @@ const tx = LegacyTransaction.fromTxData(txParams, { common })
 
 const privateKey = Buffer.from(
   'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-  'hex'
+  'hex',
 )
 
 const signedTx = tx.sign(privateKey)
@@ -305,12 +349,12 @@ import { Capability, EIP1559CompatibleTx, TransactionFactory } from '@ethereumjs
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
-const txData = { type: 2, maxFeePerGas: BigInt(20) } // Creates an EIP-1559 compatible transac
+const txData = { type: 2, maxFeePerGas: BigInt(20) } // Creates an EIP-1559 compatible transaction
 const tx = TransactionFactory.fromTxData(txData, { common })
 
 if (tx.supports(Capability.EIP1559FeeMarket)) {
   console.log(
-    `The max fee per gas for this transaction is ${(tx as EIP1559CompatibleTx).maxFeePerGas}`
+    `The max fee per gas for this transaction is ${(tx as EIP1559CompatibleTx).maxFeePerGas}`,
   )
 }
 ```

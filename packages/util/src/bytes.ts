@@ -5,7 +5,7 @@ import { bytesToHex as _bytesToUnprefixedHex } from 'ethereum-cryptography/utils
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexString, padToEven, stripHexPrefix } from './internal.js'
 
-import type { PrefixedHexString, TransformabletoBytes } from './types.js'
+import type { PrefixedHexString, TransformableToBytes } from './types.js'
 
 const BIGINT_0 = BigInt(0)
 
@@ -107,14 +107,13 @@ export const bytesToInt = (bytes: Uint8Array): number => {
   return res
 }
 
-// TODO: Restrict the input type to only PrefixedHexString
 /**
  * Converts a {@link PrefixedHexString} to a {@link Uint8Array}
- * @param {PrefixedHexString | string} hex The 0x-prefixed hex string to convert
+ * @param {PrefixedHexString} hex The 0x-prefixed hex string to convert
  * @returns {Uint8Array} The converted bytes
  * @throws If the input is not a valid 0x-prefixed hex string
  */
-export const hexToBytes = (hex: PrefixedHexString | string): Uint8Array => {
+export const hexToBytes = (hex: PrefixedHexString): Uint8Array => {
   if (typeof hex !== 'string') {
     throw new Error(`hex argument type ${typeof hex} must be of type string`)
   }
@@ -126,7 +125,7 @@ export const hexToBytes = (hex: PrefixedHexString | string): Uint8Array => {
   const unprefixedHex = hex.slice(2)
 
   return _unprefixedHexToBytes(
-    unprefixedHex.length % 2 === 0 ? unprefixedHex : padToEven(unprefixedHex)
+    unprefixedHex.length % 2 === 0 ? unprefixedHex : padToEven(unprefixedHex),
   )
 }
 
@@ -227,7 +226,7 @@ export const setLengthRight = (msg: Uint8Array, length: number): Uint8Array => {
  * @return {Uint8Array|number[]|string}
  */
 const stripZeros = <T extends Uint8Array | number[] | string = Uint8Array | number[] | string>(
-  a: T
+  a: T,
 ): T => {
   let first = a[0]
   while (a.length > 0 && first.toString() === '0') {
@@ -257,26 +256,23 @@ export const unpadArray = (a: number[]): number[] => {
   return stripZeros(a)
 }
 
-// TODO: Restrict the input type to only PrefixedHexString
 /**
  * Trims leading zeros from a `PrefixedHexString`.
- * @param {PrefixedHexString | string} a
+ * @param {PrefixedHexString} a
  * @return {PrefixedHexString}
  */
-export const unpadHex = (a: PrefixedHexString | string): PrefixedHexString => {
+export const unpadHex = (a: PrefixedHexString): PrefixedHexString => {
   assertIsHexString(a)
   return `0x${stripZeros(stripHexPrefix(a))}`
 }
 
-// TODO: remove the string type from this function (only keep PrefixedHexString)
 export type ToBytesInputTypes =
   | PrefixedHexString
-  | string
   | number
   | bigint
   | Uint8Array
   | number[]
-  | TransformabletoBytes
+  | TransformableToBytes
   | null
   | undefined
 
@@ -300,7 +296,7 @@ export const toBytes = (v: ToBytesInputTypes): Uint8Array => {
   if (typeof v === 'string') {
     if (!isHexString(v)) {
       throw new Error(
-        `Cannot convert string to Uint8Array. toBytes only supports 0x-prefixed hex strings and this string was given: ${v}`
+        `Cannot convert string to Uint8Array. toBytes only supports 0x-prefixed hex strings and this string was given: ${v}`,
       )
     }
     return hexToBytes(v)
@@ -477,7 +473,7 @@ export const randomBytes = (length: number): Uint8Array => {
 
 /**
  * This mirrors the functionality of the `ethereum-cryptography` export except
- * it skips the check to validate that every element of `arrays` is indead a `uint8Array`
+ * it skips the check to validate that every element of `arrays` is indeed a `uint8Array`
  * Can give small performance gains on large arrays
  * @param {Uint8Array[]} arrays an array of Uint8Arrays
  * @returns {Uint8Array} one Uint8Array with all the elements of the original set
@@ -552,7 +548,29 @@ export function bigInt64ToBytes(value: bigint, littleEndian: boolean = false): U
 // eslint-disable-next-line no-restricted-imports
 export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 
-// TODO: Restrict the input type to only PrefixedHexString
-export function hexToBigInt(input: PrefixedHexString | string): bigint {
+export function hexToBigInt(input: PrefixedHexString): bigint {
   return bytesToBigInt(hexToBytes(isHexString(input) ? input : `0x${input}`))
+}
+
+/**
+ * Compares two byte arrays and returns the count of consecutively matching items from the start.
+ *
+ * @function
+ * @param {Uint8Array} bytes1 - The first Uint8Array to compare.
+ * @param {Uint8Array} bytes2 - The second Uint8Array to compare.
+ * @returns {number} The count of consecutively matching items from the start.
+ */
+export function matchingBytesLength(bytes1: Uint8Array, bytes2: Uint8Array): number {
+  let count = 0
+  const minLength = Math.min(bytes1.length, bytes2.length)
+
+  for (let i = 0; i < minLength; i++) {
+    if (bytes1[i] === bytes2[i]) {
+      count++
+    } else {
+      // Break early if a mismatch is found
+      break
+    }
+  }
+  return count
 }

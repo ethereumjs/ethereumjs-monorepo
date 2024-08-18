@@ -1,9 +1,12 @@
-import { Trie } from '@ethereumjs/trie'
+import { Trie, createTrie } from '@ethereumjs/trie'
 import {
   Account,
   Address,
   bytesToHex,
   bytesToUnprefixedHex,
+  createAddressFromPrivateKey,
+  createAddressFromString,
+  createZeroAddress,
   equalsBytes,
   hexToBytes,
   randomBytes,
@@ -23,7 +26,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('ProofStateManager', () => {
   it(`should return quantity-encoded RPC representation`, async () => {
-    const address = Address.zero()
+    const address = createZeroAddress()
     const key = zeros(32)
     const stateManager = new DefaultStateManager()
 
@@ -33,21 +36,21 @@ describe('ProofStateManager', () => {
   })
 
   it(`should correctly return the right storage root / account root`, async () => {
-    const address = Address.zero()
+    const address = createZeroAddress()
     const key = zeros(32)
     const stateManager = new DefaultStateManager()
 
     await stateManager.putAccount(address, new Account(BigInt(100), BigInt(200)))
     const storageRoot = (await stateManager.getAccount(address))!.storageRoot
 
-    await stateManager.putContractStorage(address, key, new Uint8Array([10]))
+    await stateManager.putStorage(address, key, new Uint8Array([10]))
 
     const proof = await stateManager.getProof(address, [key])
     assert.ok(!equalsBytes(hexToBytes(proof.storageHash), storageRoot))
   })
 
   it(`should return quantity-encoded RPC representation for existing accounts`, async () => {
-    const address = Address.zero()
+    const address = createZeroAddress()
     const key = zeros(32)
     const stateManager = new DefaultStateManager()
 
@@ -75,15 +78,15 @@ describe('ProofStateManager', () => {
   })
 
   it(`should get and verify EIP 1178 proofs`, async () => {
-    const address = Address.zero()
+    const address = createZeroAddress()
     const key = zeros(32)
     const value = hexToBytes('0x0000aabb00')
     const code = hexToBytes('0x6000')
     const stateManager = new DefaultStateManager()
     await stateManager.checkpoint()
     await stateManager.putAccount(address, new Account())
-    await stateManager.putContractStorage(address, key, value)
-    await stateManager.putContractCode(address, code)
+    await stateManager.putStorage(address, key, value)
+    await stateManager.putCode(address, code)
     const account = await stateManager.getAccount(address)
     account!.balance = BigInt(1)
     account!.nonce = BigInt(2)
@@ -97,11 +100,13 @@ describe('ProofStateManager', () => {
 
     const proof = await stateManager.getProof(address, [key])
     assert.ok(await stateManager.verifyProof(proof))
-    const nonExistenceProof = await stateManager.getProof(Address.fromPrivateKey(randomBytes(32)))
+    const nonExistenceProof = await stateManager.getProof(
+      createAddressFromPrivateKey(randomBytes(32)),
+    )
     assert.equal(
       await stateManager.verifyProof(nonExistenceProof),
       true,
-      'verified proof of non-existence of account'
+      'verified proof of non-existence of account',
     )
   })
 
@@ -110,8 +115,8 @@ describe('ProofStateManager', () => {
     // Block: 11098094 (hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146)
     // Account: 0xc626553e7c821d0f8308c28d56c60e3c15f8d55a
     // Storage slots: empty list
-    const address = Address.fromString('0xc626553e7c821d0f8308c28d56c60e3c15f8d55a')
-    const trie = await Trie.create({ useKeyHashing: true })
+    const address = createAddressFromString('0xc626553e7c821d0f8308c28d56c60e3c15f8d55a')
+    const trie = await createTrie({ useKeyHashing: true })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -134,7 +139,7 @@ describe('ProofStateManager', () => {
     // Block: 11098094 (hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146)
     // Account: 0x68268f12253f69f66b188c95b8106b2f847859fc (this account does not exist)
     // Storage slots: empty list
-    const address = Address.fromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
+    const address = createAddressFromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
     const trie = new Trie({ useKeyHashing: true })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
@@ -158,7 +163,7 @@ describe('ProofStateManager', () => {
     // eth.getProof("0x2D80502854FC7304c3E3457084DE549f5016B73f", ["0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1ca", "0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1cb"], 11098094)
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
-    const address = Address.fromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
+    const address = createAddressFromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
     const trie = new Trie({ useKeyHashing: true })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
@@ -196,7 +201,7 @@ describe('ProofStateManager', () => {
     // eth.getProof("0x2D80502854FC7304c3E3457084DE549f5016B73f", ["0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1ca", "0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1cb"], 11098094)
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
-    const address = Address.fromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
+    const address = createAddressFromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
     const trie = new Trie({ useKeyHashing: true })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
@@ -262,7 +267,7 @@ describe('ProofStateManager', () => {
     // eth.getProof("0x2D80502854FC7304c3E3457084DE549f5016B73f", ["0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1ca", "0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1cb"], 11098094)
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
-    const address = Address.fromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
+    const address = createAddressFromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
     const trie = new Trie({ useKeyHashing: true })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB

@@ -1,21 +1,43 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createAddressFromPrivateKey, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EOACodeEIP7702Transaction } from '../src/index.js'
+import { createEOACode7702Tx } from '../src/index.js'
 
+import type { TxData } from '../src/7702/tx.js'
+import type { AuthorizationListItem } from '../src/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 
-const pkey = hexToBytes('0x' + '20'.repeat(32))
-const addr = new Address(privateToAddress(pkey))
+const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
+const addr = createAddressFromPrivateKey(pkey)
 
 const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
 
-describe('[EOACodeEIP7702Transaction]', () => {
+function getTxData(override: Partial<AuthorizationListItem> = {}): TxData {
+  const validAuthorizationList: AuthorizationListItem = {
+    chainId: '0x',
+    address: `0x${'20'.repeat(20)}`,
+    nonce: ['0x1'],
+    yParity: '0x1',
+    r: ones32,
+    s: ones32,
+  }
+
+  return {
+    authorizationList: [
+      {
+        ...validAuthorizationList,
+        ...override,
+      },
+    ],
+  }
+}
+
+describe('[EOACode7702Transaction]', () => {
   it('sign()', () => {
-    const txn = EOACodeEIP7702Transaction.fromTxData(
+    const txn = createEOACode7702Tx(
       {
         value: 1,
         maxFeePerGas: 1,
@@ -24,10 +46,10 @@ describe('[EOACodeEIP7702Transaction]', () => {
         authorizationList: [],
         chainId: 1,
         gasLimit: 100000,
-        to: Address.zero(),
+        to: createZeroAddress(),
         data: new Uint8Array(1),
       },
-      { common }
+      { common },
     )
     const signed = txn.sign(pkey)
     assert.ok(signed.getSenderAddress().equals(addr))
@@ -36,166 +58,37 @@ describe('[EOACodeEIP7702Transaction]', () => {
   })
 
   it('valid and invalid authorizationList values', () => {
-    assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
+    const tests: [Partial<AuthorizationListItem>, string][] = [
+      [
         {
-          authorizationList: [
-            {
-              chainId: '0x',
-              address: `0x${'20'.repeat(21)}`,
-              nonce: [],
-              yParity: '0x1',
-              r: ones32,
-              s: ones32,
-            },
-          ],
+          address: `0x${'20'.repeat(21)}`,
         },
-        { common }
-      )
-    }, 'address length should be 20 bytes')
+        'address length should be 20 bytes',
+      ],
+      [
+        {
+          nonce: ['0x1', '0x2'],
+        },
+        'nonce list should consist of at most 1 item',
+      ],
+      [{ s: undefined as never }, 's is not defined'],
+      [{ r: undefined as never }, 'r is not defined'],
+      [{ yParity: undefined as never }, 'yParity is not defined'],
+      [{ nonce: undefined as never }, 'nonce is not defined'],
+      [{ address: undefined as never }, 'address is not defined'],
+      [{ chainId: undefined as never }, 'chainId is not defined'],
+    ]
 
-    assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
-        {
-          authorizationList: [
-            {
-              chainId: '0x',
-              address: `0x${'20'.repeat(20)}`,
-              nonce: ['0x1', '0x2'],
-              yParity: '0x1',
-              r: ones32,
-              s: ones32,
-            },
-          ],
-        },
-        { common }
-      )
-    }, 'nonce list should consist of at most 1 item')
-
-    assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
-        {
-          authorizationList: [
-            {
-              chainId: '0x',
-              address: `0x${'20'.repeat(20)}`,
-              nonce: ['0x1'],
-              yParity: '0x1',
-              r: ones32,
-              s: undefined as never,
-            },
-          ],
-        },
-        { common }
-      )
-    }, 's is not defined')
-
-    assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
-        {
-          authorizationList: [
-            {
-              chainId: '0x',
-              address: `0x${'20'.repeat(20)}`,
-              nonce: ['0x1'],
-              yParity: '0x1',
-              r: undefined as never,
-              s: ones32,
-            },
-          ],
-        },
-        { common }
-      )
-    }, 'r is not defined')
-
-    assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
-        {
-          authorizationList: [
-            {
-              chainId: '0x',
-              address: `0x${'20'.repeat(20)}`,
-              nonce: ['0x1'],
-              yParity: undefined as never,
-              r: ones32,
-              s: ones32,
-            },
-          ],
-        },
-        { common }
-      )
-    }, 'yParity is not defined')
-
-    assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
-        {
-          authorizationList: [
-            {
-              chainId: '0x',
-              address: `0x${'20'.repeat(20)}`,
-              nonce: undefined as never,
-              yParity: '0x1',
-              r: ones32,
-              s: ones32,
-            },
-          ],
-        },
-        { common }
-      )
-    }, 'nonce is not defined')
-
-    assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
-        {
-          authorizationList: [
-            {
-              chainId: '0x',
-              address: undefined as never,
-              nonce: ['0x1'],
-              yParity: '0x1',
-              r: ones32,
-              s: ones32,
-            },
-          ],
-        },
-        { common }
-      )
-    }, 'address is not defined')
-
-    assert.throws(() => {
-      EOACodeEIP7702Transaction.fromTxData(
-        {
-          authorizationList: [
-            {
-              chainId: undefined as never,
-              address: `0x${'20'.repeat(20)}`,
-              nonce: ['0x1'],
-              yParity: '0x1',
-              r: ones32,
-              s: ones32,
-            },
-          ],
-        },
-        { common }
-      )
-    }, 'chainId is not defined')
+    for (const test of tests) {
+      const txData = getTxData(test[0])
+      const testName = test[1]
+      assert.throws(() => {
+        createEOACode7702Tx(txData, { common }), testName
+      })
+    }
 
     assert.doesNotThrow(() => {
-      EOACodeEIP7702Transaction.fromTxData(
-        {
-          authorizationList: [
-            {
-              chainId: '0x',
-              address: `0x${'20'.repeat(20)}`,
-              nonce: ['0x1'],
-              yParity: '0x1',
-              r: ones32,
-              s: ones32,
-            },
-          ],
-        },
-        { common }
-      )
+      createEOACode7702Tx(getTxData(), { common })
     })
   })
 })

@@ -1,8 +1,15 @@
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { Account, Address, bytesToHex, hexToBytes, unpadBytes } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bytesToHex,
+  createAddressFromString,
+  hexToBytes,
+  unpadBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/index.js'
+import { createEVM } from '../src/index.js'
 
 import type { EVMRunCallOpts } from '../src/types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -15,7 +22,7 @@ describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
-    const evm = await EVM.create({
+    const evm = await createEVM({
       common,
     })
 
@@ -32,7 +39,7 @@ describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
     assert.equal(
       bytesToHex(unpadBytes(res.execResult.returnValue)),
       '0xab',
-      'retrieved correct versionedHash from runState'
+      'retrieved correct versionedHash from runState',
     )
   })
 })
@@ -45,13 +52,13 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
-    const evm = await EVM.create({
+    const evm = await createEVM({
       common,
     })
 
     const getBlobHasIndexCode = '0x60004960005260206000F3'
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff')) // contract address
-    await evm.stateManager.putContractCode(contractAddress, hexToBytes(getBlobHasIndexCode)) // setup the contract code
+    await evm.stateManager.putCode(contractAddress, hexToBytes(getBlobHasIndexCode)) // setup the contract code
 
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee')) // caller address
     await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111))) // give the calling account a big balance so we don't run out of funds
@@ -81,7 +88,7 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
       assert.equal(
         bytesToHex(unpadBytes(res.execResult.returnValue)),
         '0xab',
-        `retrieved correct versionedHash from runState through callCode=${callCode}`
+        `retrieved correct versionedHash from runState through callCode=${callCode}`,
       )
     }
   })
@@ -95,7 +102,7 @@ describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () =>
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
-    const evm = await EVM.create({
+    const evm = await createEVM({
       common,
     })
 
@@ -131,13 +138,13 @@ describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () =>
       }
       const res = await evm.runCall(runCallArgs)
 
-      const address = Address.fromString(bytesToHex(res.execResult.returnValue.slice(12)))
-      const code = await evm.stateManager.getContractCode(address)
+      const address = createAddressFromString(bytesToHex(res.execResult.returnValue.slice(12)))
+      const code = await evm.stateManager.getCode(address)
 
       assert.equal(
         bytesToHex(code),
         '0x' + 'ab'.padStart(64, '0'), // have to padStart here, since `BLOBHASH` will push 32 bytes on stack
-        `retrieved correct versionedHash from runState through createOP=${createOP}`
+        `retrieved correct versionedHash from runState through createOP=${createOP}`,
       )
     }
   })

@@ -43,9 +43,9 @@ export class Withdrawal {
     public readonly validatorIndex: bigint,
     public readonly address: Address,
     /**
-     * withdrawal amount in Gwei to match the CL repesentation and eventually ssz withdrawalsRoot
+     * withdrawal amount in Gwei to match the CL representation and eventually ssz withdrawalsRoot
      */
-    public readonly amount: bigint
+    public readonly amount: bigint,
   ) {}
 
   public static fromWithdrawalData(withdrawalData: WithdrawalData) {

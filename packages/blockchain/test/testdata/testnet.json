@@ -1,7 +1,6 @@
 {
   "name": "mainnet",
   "chainId": 1,
-  "networkId": 1,
   "defaultHardfork": "london",
   "consensus": {
     "type": "pow",

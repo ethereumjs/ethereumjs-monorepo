@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { BIGINT_0, equalsBytes } from '@ethereumjs/util'
 
 import {
@@ -17,7 +17,7 @@ import type { Chain } from '@ethereumjs/common'
 export async function createBlockchain(opts: BlockchainOptions = {}) {
   const blockchain = new Blockchain(opts)
 
-  await blockchain.consensus.setup({ blockchain })
+  await blockchain.consensus?.setup({ blockchain })
 
   let stateRoot = opts.genesisBlock?.header.stateRoot ?? opts.genesisStateRoot
   if (stateRoot === undefined) {
@@ -26,7 +26,7 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
     } else {
       stateRoot = await getGenesisStateRoot(
         Number(blockchain.common.chainId()) as Chain,
-        blockchain.common
+        blockchain.common,
       )
     }
   }
@@ -42,7 +42,7 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
   // DB is indeed the Genesis block generated or assigned.
   if (dbGenesisBlock !== undefined && !equalsBytes(genesisBlock.hash(), dbGenesisBlock.hash())) {
     throw new Error(
-      'The genesis block in the DB has a different hash than the provided genesis block.'
+      'The genesis block in the DB has a different hash than the provided genesis block.',
     )
   }
 
@@ -56,7 +56,7 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
     DBSetBlockOrHeader(genesisBlock).map((op) => dbOps.push(op))
     DBSaveLookups(genesisHash, BIGINT_0).map((op) => dbOps.push(op))
     await blockchain.dbManager.batch(dbOps)
-    await blockchain.consensus.genesisInit(genesisBlock)
+    await blockchain.consensus?.genesisInit(genesisBlock)
   }
 
   // At this point, we can safely set the genesis:
@@ -78,12 +78,7 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
 
   if (blockchain['_hardforkByHeadBlockNumber']) {
     const latestHeader = await blockchain['_getHeader'](blockchain['_headHeaderHash'])
-    const td = await blockchain.getParentTD(latestHeader)
-    await blockchain.checkAndTransitionHardForkByNumber(
-      latestHeader.number,
-      td,
-      latestHeader.timestamp
-    )
+    await blockchain.checkAndTransitionHardForkByNumber(latestHeader.number, latestHeader.timestamp)
   }
 
   return blockchain
@@ -91,18 +86,18 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
 
 /**
  * Creates a blockchain from a list of block objects,
- * objects must be readable by {@link Block.fromBlockData}
+ * objects must be readable by {@link createBlock}
  *
  * @param blockData List of block objects
  * @param opts Constructor options, see {@link BlockchainOptions}
  */
 export async function createBlockchainFromBlocksData(
   blocksData: BlockData[],
-  opts: BlockchainOptions = {}
+  opts: BlockchainOptions = {},
 ) {
   const blockchain = await createBlockchain(opts)
   for (const blockData of blocksData) {
-    const block = createBlockFromBlockData(blockData, {
+    const block = createBlock(blockData, {
       common: blockchain.common,
       setHardfork: true,
     })

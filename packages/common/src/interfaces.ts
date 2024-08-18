@@ -49,46 +49,6 @@ export type Proof = {
   storageProof: StorageProof[]
 }
 
-/*
- * Access List types
- */
-
-export type AccessListItem = {
-  address: PrefixedHexString
-  storageKeys: PrefixedHexString[]
-}
-
-/*
- * An Access List as a tuple of [address: Uint8Array, storageKeys: Uint8Array[]]
- */
-export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
-export type AccessListBytes = AccessListBytesItem[]
-export type AccessList = AccessListItem[]
-
-/**
- * Authorization list types
- */
-export type AuthorizationListItem = {
-  chainId: PrefixedHexString
-  address: PrefixedHexString
-  nonce: PrefixedHexString[]
-  yParity: PrefixedHexString
-  r: PrefixedHexString
-  s: PrefixedHexString
-}
-
-// Tuple of [chain_id, address, [nonce], y_parity, r, s]
-export type AuthorizationListBytesItem = [
-  Uint8Array,
-  Uint8Array,
-  Uint8Array[],
-  Uint8Array,
-  Uint8Array,
-  Uint8Array
-]
-export type AuthorizationListBytes = AuthorizationListBytesItem[]
-export type AuthorizationList = AuthorizationListItem[]
-
 /**
  * Verkle related
  *
@@ -120,24 +80,24 @@ export interface AccessWitnessInterface {
   touchAddressOnWriteAndComputeGas(
     address: Address,
     treeIndex: number | bigint,
-    subIndex: number | Uint8Array
+    subIndex: number | Uint8Array,
   ): bigint
   touchAddressOnReadAndComputeGas(
     address: Address,
     treeIndex: number | bigint,
-    subIndex: number | Uint8Array
+    subIndex: number | Uint8Array,
   ): bigint
   touchAddressAndChargeGas(
     address: Address,
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
-    { isWrite }: { isWrite?: boolean }
+    { isWrite }: { isWrite?: boolean },
   ): bigint
   touchAddress(
     address: Address,
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
-    { isWrite }: { isWrite?: boolean }
+    { isWrite }: { isWrite?: boolean },
   ): AccessEventFlags
   shallowCopy(): AccessWitnessInterface
   merge(accessWitness: AccessWitnessInterface): void
@@ -148,44 +108,65 @@ export interface AccessWitnessInterface {
  *
  */
 export interface StateManagerInterface {
+  /*
+   * Core Access Functionality
+   */
+  // Account methods
   getAccount(address: Address): Promise<Account | undefined>
   putAccount(address: Address, account?: Account): Promise<void>
   deleteAccount(address: Address): Promise<void>
   modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
-  putContractCode(address: Address, value: Uint8Array): Promise<void>
-  getContractCode(address: Address): Promise<Uint8Array>
-  getContractCodeSize?(address: Address): Promise<number>
-  getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
-  putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
-  clearContractStorage(address: Address): Promise<void>
+
+  // Code methods
+  putCode(address: Address, value: Uint8Array): Promise<void>
+  getCode(address: Address): Promise<Uint8Array>
+  getCodeSize(address: Address): Promise<number>
+
+  // Storage methods
+  getStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
+  putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
+  clearStorage(address: Address): Promise<void>
+
+  /*
+   * Checkpointing Functionality
+   */
   checkpoint(): Promise<void>
   commit(): Promise<void>
   revert(): Promise<void>
-  getStateRoot(): Promise<Uint8Array>
-  setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
-  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
-  hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
-  shallowCopy(downlevelCaches?: boolean): StateManagerInterface
-  getAppliedKey?(address: Uint8Array): Uint8Array
 
   /*
-   * The following optional methods are Verkle related
-   *
-   * Experimental (do not implement)
+   * State Root Functionality
    */
-  checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
-}
+  getStateRoot(): Promise<Uint8Array>
+  setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
+  hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
 
-export interface EVMStateManagerInterface extends StateManagerInterface {
+  /*
+   * Extra Functionality
+   *
+   * Optional non-essential methods, these methods should always be guarded
+   * on usage (check for existence)
+   */
+  // Client RPC
+  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
+  dumpStorage?(address: Address): Promise<StorageDump>
+  dumpStorageRange?(address: Address, startKey: bigint, limit: number): Promise<StorageRange>
+
+  /*
+   * EVM/VM Specific Functionality
+   */
   originalStorageCache: {
     get(address: Address, key: Uint8Array): Promise<Uint8Array>
     clear(): void
   }
+  generateCanonicalGenesis?(initState: any): Promise<void> // TODO make input more typesafe
+  // only Verkle/EIP-6800 (experimental)
+  checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
+  getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 
-  dumpStorage(address: Address): Promise<StorageDump> // only used in client
-  dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> // only used in client
-  generateCanonicalGenesis(initState: any): Promise<void> // TODO make input more typesafe
-  getProof(address: Address, storageSlots?: Uint8Array[]): Promise<Proof>
-
-  shallowCopy(downlevelCaches?: boolean): EVMStateManagerInterface
+  /*
+   * Utility
+   */
+  clearCaches(): void
+  shallowCopy(downlevelCaches?: boolean): StateManagerInterface
 }

@@ -10,7 +10,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY, Trie } from '../../src/index.js'
+import { ROOT_DB_KEY, Trie, createMerkleProof, verifyTrieProof } from '../../src/index.js'
 import secureTrieTests from '../fixtures/trietest_secureTrie.json'
 
 describe('SecureTrie', () => {
@@ -52,8 +52,8 @@ describe('SecureTrie proof', () => {
     const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
     await trie.put(utf8ToBytes('key1aa'), utf8ToBytes('01234'))
 
-    const proof = await trie.createProof(utf8ToBytes('key1aa'))
-    const val = await Trie.verifyProof(utf8ToBytes('key1aa'), proof, {
+    const proof = await createMerkleProof(trie, utf8ToBytes('key1aa'))
+    const val = await verifyTrieProof(utf8ToBytes('key1aa'), proof, {
       useKeyHashing: true,
     })
     assert.deepEqual(val, utf8ToBytes('01234'))
@@ -61,7 +61,7 @@ describe('SecureTrie proof', () => {
 
   it('read back data written with hashed key', async () => {
     const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
-    // skip key transformation if the key is already hashed like data recieved in snapsync
+    // skip key transformation if the key is already hashed like data received in snapsync
     await trie.put(keccak256(utf8ToBytes('key1aa')), utf8ToBytes('01234'), true)
 
     const val = await trie.get(utf8ToBytes('key1aa'))
@@ -128,35 +128,35 @@ describe('secure tests', () => {
 
 const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
 const a = hexToBytes(
-  '0xf8448080a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf'
+  '0xf8448080a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf',
 )
 const ak = hexToBytes('0x095e7baea6a6c7c4c2dfeb977efac326af552d87')
 const b = hexToBytes(
-  '0xf844802ea056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0db94dc4aab9b6a1a11956906ea34f3252f394576aece12199b23b269bb2738ab'
+  '0xf844802ea056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0db94dc4aab9b6a1a11956906ea34f3252f394576aece12199b23b269bb2738ab',
 )
 const bk = hexToBytes('0x945304eb96065b2a98b57a48a06ae28d285a71b5')
 const c = hexToBytes(
-  '0xf84c80880de0b6b3a7640000a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+  '0xf84c80880de0b6b3a7640000a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
 )
 const ck = hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
 // checkpoint
 // checkpoint
 // commit
 const d = hexToBytes(
-  '0xf8488084535500b1a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf'
+  '0xf8488084535500b1a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf',
 )
 const dk = hexToBytes('0x095e7baea6a6c7c4c2dfeb977efac326af552d87')
 const e = hexToBytes(
-  '0xf8478083010851a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0db94dc4aab9b6a1a11956906ea34f3252f394576aece12199b23b269bb2738ab'
+  '0xf8478083010851a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0db94dc4aab9b6a1a11956906ea34f3252f394576aece12199b23b269bb2738ab',
 )
 const ek = hexToBytes('0x945304eb96065b2a98b57a48a06ae28d285a71b5')
 const f = hexToBytes(
-  '0xf84c01880de0b6b3540df72ca056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+  '0xf84c01880de0b6b3540df72ca056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
 )
 const fk = hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
 // commit
 const g = hexToBytes(
-  '0xf8488084535500b1a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf'
+  '0xf8488084535500b1a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf',
 )
 const gk = hexToBytes('0x095e7baea6a6c7c4c2dfeb977efac326af552d87')
 

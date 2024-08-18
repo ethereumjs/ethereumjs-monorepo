@@ -12,7 +12,7 @@ export class Cache {
     reads: 0,
     hits: 0,
     writes: 0,
-    dels: 0,
+    deletions: 0,
   }
 
   /**
@@ -29,7 +29,7 @@ export class Cache {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
     this._debug = debugDefault('statemanager:cache')
   }

@@ -1,12 +1,13 @@
-import { Interface, defaultAbiCoder as AbiCoder } from '@ethersproject/abi'
-import { LegacyTxData } from '@ethereumjs/tx'
+import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi' // cspell:disable-line
+
+import type { LegacyTxData } from '@ethereumjs/tx'
 
 export const encodeFunction = (
   method: string,
   params?: {
     types: any[]
     values: unknown[]
-  }
+  },
 ): string => {
   const parameters = params?.types ?? []
   const methodWithParameters = `function ${method}(${parameters.join(',')})`
@@ -21,7 +22,7 @@ export const encodeDeployment = (
   params?: {
     types: any[]
     values: unknown[]
-  }
+  },
 ) => {
   const deploymentData = '0x' + bytecode
   if (params) {

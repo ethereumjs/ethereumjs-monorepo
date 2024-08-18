@@ -1,7 +1,23 @@
-export { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
-export { AccessListEIP2930Transaction } from './eip2930Transaction.js'
-export { BlobEIP4844Transaction } from './eip4844Transaction.js'
-export { EOACodeEIP7702Transaction } from './eip7702Transaction.js'
-export { LegacyTransaction } from './legacyTransaction.js'
-export { TransactionFactory } from './transactionFactory.js'
+// Tx constructors
+export * from './1559/index.js'
+export * from './2930/index.js'
+export * from './4844/index.js'
+export * from './7702/index.js'
+export * from './legacy/index.js'
+// Parameters
+export * from './params.js'
+
+// Transaction factory
+export {
+  createTxFromBlockBodyData,
+  createTxFromJsonRpcProvider,
+  createTxFromRPC,
+  createTxFromSerializedData,
+  createTxFromTxData,
+} from './transactionFactory.js'
+
+// Types
 export * from './types.js'
+
+// Utils
+export * from './util.js'

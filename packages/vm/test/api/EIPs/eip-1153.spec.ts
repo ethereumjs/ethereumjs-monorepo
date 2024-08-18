@@ -1,9 +1,9 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, bytesToInt, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -18,7 +18,7 @@ const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3d
 
 describe('EIP 1153: transient storage', () => {
   const initialGas = BigInt(0xffffffffff)
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [1153] })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [1153] })
 
   const runTest = async function (test: Test) {
     let i = 0
@@ -32,13 +32,13 @@ describe('EIP 1153: transient storage', () => {
       assert.equal(
         step.opcode.name,
         test.steps[i].expectedOpcode,
-        `Expected Opcode: ${test.steps[i].expectedOpcode}`
+        `Expected Opcode: ${test.steps[i].expectedOpcode}`,
       )
 
       assert.deepEqual(
         step.stack.map((e: bigint) => e.toString()),
         test.steps[i].expectedStack.map((e: bigint) => e.toString()),
-        `Expected stack: ${step.stack}`
+        `Expected stack: ${step.stack}`,
       )
 
       if (i > 0) {
@@ -47,21 +47,21 @@ describe('EIP 1153: transient storage', () => {
           gasUsed === expectedGasUsed,
           `Opcode: ${
             test.steps[i - 1].expectedOpcode
-          }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`
+          }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`,
         )
       }
       i++
     })
 
     for (const { code, address } of test.contracts) {
-      await vm.stateManager.putContractCode(address, hexToBytes(code as PrefixedHexString))
+      await vm.stateManager.putCode(address, hexToBytes(code as PrefixedHexString))
     }
 
     const fromAddress = new Address(privateToAddress(senderKey))
     await vm.stateManager.putAccount(fromAddress, new Account(BigInt(0), BigInt(0xfffffffff)))
     const results = []
     for (const tx of test.transactions) {
-      const result = await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+      const result = await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
       results.push(result)
     }
 
@@ -74,7 +74,7 @@ describe('EIP 1153: transient storage', () => {
     returndata[31] = 0x02
 
     const address = new Address(hexToBytes('0x00000000000000000000000636F6E7472616374'))
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       gasLimit: BigInt(21000 + 9000),
       to: address,
       value: BigInt(1),
@@ -117,12 +117,12 @@ describe('EIP 1153: transient storage', () => {
     const test = {
       contracts: [{ address, code }],
       transactions: [
-        LegacyTransaction.fromTxData({
+        createLegacyTx({
           gasLimit: BigInt(15000000),
           to: address,
           data: new Uint8Array(32),
         }).sign(senderKey),
-        LegacyTransaction.fromTxData({
+        createLegacyTx({
           nonce: 1,
           gasLimit: BigInt(15000000),
           to: address,
@@ -186,7 +186,7 @@ describe('EIP 1153: transient storage', () => {
     const callingCode =
       '0x6362fdb9be600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff163afc874d2600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff16343ac1c39600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff1366000803760206000f3'
 
-    const unsignedTx = LegacyTransaction.fromTxData({
+    const unsignedTx = createLegacyTx({
       gasLimit: BigInt(15000000),
       to: callingAddress,
     })

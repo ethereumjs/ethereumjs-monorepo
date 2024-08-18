@@ -105,12 +105,12 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
   it(name, async () => {
     // check withdrawals root computation
     const computedWithdrawalsRoot = bytesToHex(
-      await genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData), new Trie())
+      await genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData), new Trie()),
     )
     assert.equal(
       withdrawalsRoot,
       computedWithdrawalsRoot,
-      'withdrawalsRoot compuation should match'
+      'withdrawalsRoot computation should match',
     )
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
     const rpc = getRpcClient(server)
@@ -120,7 +120,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
-      res.error.message.includes('PayloadAttributesV2 MUST be used after Shanghai is activated')
+      res.error.message.includes('PayloadAttributesV2 MUST be used after Shanghai is activated'),
     )
 
     res = await rpc.request('engine_forkchoiceUpdatedV2', [
@@ -139,7 +139,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
     assert.equal(
       executionPayload!.withdrawals!.length,
       withdrawals.length,
-      'withdrawals should match'
+      'withdrawals should match',
     )
     assert.equal(blockValue, '0x0', 'No value should be returned')
     payload = executionPayload
@@ -149,7 +149,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       assert.equal(
         payload!.stateRoot,
         '0x23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
-        'stateRoot should match'
+        'stateRoot should match',
       )
     }
 

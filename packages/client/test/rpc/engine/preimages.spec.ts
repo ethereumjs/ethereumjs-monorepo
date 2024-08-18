@@ -1,10 +1,10 @@
 import {
   BlockHeader,
-  createBlockFromBlockData,
+  createBlock,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
   Withdrawal,
   bytesToHex,
@@ -50,7 +50,7 @@ async function genBlockWithdrawals(blockNumber: number) {
           }
         })
   const withdrawalsRoot = bytesToHex(
-    await genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData))
+    await genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData)),
   )
 
   return { withdrawals, withdrawalsRoot }
@@ -66,14 +66,14 @@ async function runBlock(
     receiptTrie: PrefixedHexString
     gasUsed: PrefixedHexString
     coinbase: PrefixedHexString
-  }
+  },
 ) {
   const { transactions, parentHash, blockNumber, stateRoot, receiptTrie, gasUsed, coinbase } =
     runData
   const txs = []
   for (const [index, serializedTx] of transactions.entries()) {
     try {
-      const tx = TransactionFactory.fromSerializedData(hexToBytes(serializedTx), {
+      const tx = createTxFromSerializedData(hexToBytes(serializedTx), {
         common,
       })
       txs.push(tx)
@@ -97,7 +97,7 @@ async function runBlock(
     coinbase,
   }
   const blockData = { header: headerData, transactions: txs, withdrawals }
-  const executeBlock = createBlockFromBlockData(blockData, { common })
+  const executeBlock = createBlock(blockData, { common })
   const executePayload = blockToExecutionPayload(executeBlock, BigInt(0)).executionPayload
   const res = await rpc.request('engine_newPayloadV2', [executePayload])
   assert.equal(res.result.status, 'VALID', 'valid status should be received')
@@ -116,7 +116,7 @@ describe(`valid verkle network setup`, async () => {
     {
       engine: true,
       savePreimages: true,
-    }
+    },
   )
   ;(chain.blockchain as any).validateHeader = () => {}
 
@@ -137,7 +137,7 @@ describe(`valid verkle network setup`, async () => {
   // and for block1 are coded to return no withdrawals
   //
   // third consideration is for feerecipient which are added here as random
-  // coinbase addrs
+  // coinbase addresses
   const testCases = [
     {
       name: 'block 1 no txs',
@@ -252,12 +252,12 @@ describe(`valid verkle network setup`, async () => {
       for (const preimage of preimages) {
         const preimageBytes = hexToBytes(preimage)
         const savedPreimage = await execution.preimagesManager!.getPreimage(
-          keccak256(preimageBytes)
+          keccak256(preimageBytes),
         )
         assert.isNotNull(savedPreimage, `Missing preimage for ${preimage}`)
         assert.ok(
           savedPreimage !== null && equalsBytes(savedPreimage, preimageBytes),
-          `Incorrect preimage for ${preimage}`
+          `Incorrect preimage for ${preimage}`,
         )
       }
       parentHash = blockHash

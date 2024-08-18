@@ -80,13 +80,13 @@ console.log(`EIP 4844 is active -- ${c.isActivatedEIP(4844)}`)
 ### Custom Cryptography Primitives (WASM)
 
 All EthereumJS packages use cryptographic primitives from the audited `ethereum-cryptography` library by default.
-These primitves, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native
+These primitives, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native
 Javascript and therefore have the potential downside of being less performant than alternative cryptography modules
 written in other languages and then compiled to WASM. If cryptography performance is a bottleneck in your usage of
 the EthereumJS libraries, you can provide your own primitives to the `Common` constructor and they will be used in
 place of the defaults. Depending on how your preferred primitives are implemented, you may need to write wrapper
 methods around them so they conform to the interface exposed by the [`common.customCrypto` property](./src/types.ts).
-See the implementation of this in the [`@etheruemjs/client`](../client/bin/cli.ts#L810) using `@polkadot/wasm-crypto`
+See the implementation of this in the [`@ethereumjs/client`](../client/bin/cli.ts#L810) using `@polkadot/wasm-crypto`
 for an example of how this is done for each available cryptographic primitive.
 
 Note: replacing native JS crypto primitives with WASM based libraries comes with new security assumptions (additional external dependencies, unauditability of WASM code). It is therefore recommended to evaluate your usage context before applying!
@@ -121,7 +121,7 @@ main()
 
 The KZG library used for EIP-4844 Blob Transactions is initialized by `common` under the `common.customCrypto` property
 and is then used throughout the `Ethereumjs` stack wherever KZG cryptography is required. Below is an example of how
-to initalize (assuming you are using the `c-kzg` package as your KZG cryptography library).
+to initialize (assuming you are using the `c-kzg` package as your KZG cryptography library).
 
 ```ts
 // ./examples/initKzg.ts
@@ -362,7 +362,7 @@ library supported:
 - `byzantium` (`Hardfork.Byzantium`)
 - `constantinople` (`Hardfork.Constantinople`)
 - `petersburg` (`Hardfork.Petersburg`) (aka `constantinopleFix`, apply together with `constantinople`)
-- `istanbul` (`Hardfork.Instanbul`)
+- `istanbul` (`Hardfork.Istanbul`)
 - `muirGlacier` (`Hardfork.MuirGlacier`)
 - `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
 - `london` (`Hardfork.London`) (since `v2.4.0`)
@@ -405,11 +405,10 @@ The following EIPs are currently supported:
 
 - [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient storage opcodes (Cancun)
 - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee market change for ETH 1.0 chain
-- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - Simple subroutines for the EVM (`outdated`)
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (removed in v4.0.0, see latest v3 release)
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
-- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Save historical block hashes in state (`experimental`)
+- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes from state (Prague)
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
 - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes
@@ -431,8 +430,14 @@ The following EIPs are currently supported:
 - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (Shanghai)
 - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022 (Gray Glacier)
 - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)
+- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Supply validator deposits on chain (Prague)
 - [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
+- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable withdrawals (Prague)
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Execution layer triggerable validator consolidations (Prague)
+- [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - EOA code transactions (Prague) (`outdated`)
+- [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Osaka)
 - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
+- [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)
 
 ### Bootstrap Nodes
 

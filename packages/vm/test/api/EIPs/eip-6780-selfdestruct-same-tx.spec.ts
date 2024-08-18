@@ -1,17 +1,23 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { Account, Address, equalsBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import {
+  Account,
+  createAddressFromPrivateKey,
+  createAddressFromString,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 
 const GWEI = BigInt(1000000000)
-const sender = new Address(privateToAddress(pkey))
+const sender = createAddressFromPrivateKey(pkey)
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.London,
   eips: [6780],
 })
@@ -41,14 +47,14 @@ describe('EIP 6780 tests', () => {
     const vm = await getVM(common)
 
     const value = 1
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       value,
       gasLimit: 1000000,
       gasPrice: 10,
       data: payload,
     }).sign(pkey)
 
-    const result = await vm.runTx({ tx })
+    const result = await runTx(vm, { tx })
     const createdAddress = result.createdAddress!
 
     const contract = (await vm.stateManager.getAccount(createdAddress)) ?? new Account()
@@ -60,46 +66,46 @@ describe('EIP 6780 tests', () => {
     // Account does not exist...
     assert.ok(!exists, 'account does not exist, so storage is cleared')
     assert.equal(
-      (await vm.stateManager.getAccount(Address.fromString('0x' + '00'.repeat(19) + '01')))!
+      (await vm.stateManager.getAccount(createAddressFromString('0x' + '00'.repeat(19) + '01')))!
         .balance,
       BigInt(value),
-      'balance sent to target'
+      'balance sent to target',
     )
   })
 
   it('should not destroy contract if selfdestructed in a tx after creating the contract', async () => {
     const vm = await getVM(common)
 
-    const target = Address.fromString('0x' + 'ff'.repeat(20))
+    const target = createAddressFromString('0x' + 'ff'.repeat(20))
 
-    await vm.stateManager.putContractCode(target, payload)
+    await vm.stateManager.putCode(target, payload)
     const targetContract = await vm.stateManager.getAccount(target)
     targetContract!.nonce = BigInt(1)
     await vm.stateManager.putAccount(target, targetContract)
 
     const value = 1
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       value,
       gasLimit: 1000000,
       gasPrice: 10,
       to: target,
     }).sign(pkey)
 
-    await vm.runTx({ tx })
+    await runTx(vm, { tx })
 
     const contract = (await vm.stateManager.getAccount(target)) ?? new Account()
     assert.equal(contract.balance, BigInt(0), 'value sent')
     assert.equal(contract.nonce, BigInt(1), 'nonce 1')
 
     const key = hexToBytes(`0x${'00'.repeat(31)}01`)
-    const storage = await vm.stateManager.getContractStorage(target, key)
+    const storage = await vm.stateManager.getStorage(target, key)
 
     assert.ok(equalsBytes(storage, hexToBytes('0x01')), 'storage not cleared')
     assert.equal(
-      (await vm.stateManager.getAccount(Address.fromString('0x' + '00'.repeat(19) + '01')))!
+      (await vm.stateManager.getAccount(createAddressFromString('0x' + '00'.repeat(19) + '01')))!
         .balance,
       BigInt(value),
-      'balance sent to target'
+      'balance sent to target',
     )
   })
 })

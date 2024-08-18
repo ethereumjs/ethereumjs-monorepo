@@ -97,6 +97,59 @@ void main()
 Additionally this usage example shows the use of events to listen on the inner workings and procedural updates
 (`step` event) of the EVM.
 
+### Precompiles
+
+This library support all EVM precompiles up to the `Prague` hardfork.
+
+The following code allows to run precompiles in isolation, e.g. for testing purposes:
+
+```ts
+// ./examples/precompile.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+
+const main = async () => {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Prague })
+
+  // Taken from test/eips/precompiles/bls/add_G1_bls.json
+  const data = hexToBytes(
+    '0x0000000000000000000000000000000017f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb0000000000000000000000000000000008b3f481e3aaa0f1a09e30ed741d8ae4fcf5e095d5d00af600db18cb2c04b3edd03cc744a2888ae40caa232946c5e7e100000000000000000000000000000000112b98340eee2777cc3c14163dea3ec97977ac3dc5c70da32e6e87578f44912e902ccef9efe28d4a78b8999dfbca942600000000000000000000000000000000186b28d92356c4dfec4b5201ad099dbdede3781f8998ddf929b4cd7756192185ca7b8f4ef7088f813270ac3d48868a21',
+  )
+  const gasLimit = BigInt(5000000)
+
+  const evm = await EVM.create({ common })
+  const precompile = getActivePrecompiles(common).get('000000000000000000000000000000000000000b')!
+
+  const callData = {
+    data,
+    gasLimit,
+    common,
+    _EVM: evm,
+  }
+  const result = await precompile(callData)
+  console.log(`Precompile result:${bytesToHex(result.returnValue)}`)
+}
+
+main()
+```
+
+### EIP-2537 BLS Precompiles (Prague)
+
+Starting with `v3.1.0` the EVM support the BLS precompiles introduced with [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537). These precompiles run natively using the [@noble/curves](https://github.com/paulmillr/noble-curves) library (❤️ to `@paulmillr`!).
+
+An alternative WASM implementation (using [bls-wasm](https://github.com/herumi/bls-wasm)) can be optionally used like this if needed for performance reasons:
+
+```ts
+import { EVM, MCLBLS } from '@ethereumjs/evm'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Prague })
+await mcl.init(mcl.BLS12_381)
+const mclbls = new MCLBLS(mcl)
+const evm = await EVM.create({ common, bls })
+```
+
 ## Examples
 
 This projects contain the following examples:
@@ -218,11 +271,10 @@ Currently supported EIPs:
 
 - [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient storage opcodes (Cancun)
 - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee market change for ETH 1.0 chain
-- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - Simple subroutines for the EVM (`outdated`)
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (removed in v4.0.0, see latest v3 release)
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
-- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Save historical block hashes in state (`experimental`)
+- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes from state (Prague)
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
 - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes
@@ -244,8 +296,14 @@ Currently supported EIPs:
 - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (Shanghai)
 - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022 (Gray Glacier)
 - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)
+- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Supply validator deposits on chain (Prague)
 - [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
+- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable withdrawals (Prague)
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Execution layer triggerable validator consolidations (Prague)
+- [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - EOA code transactions (Prague) (`outdated`)
+- [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Osaka)
 - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
+- [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)
 
 ### WASM Crypto Support
 
@@ -415,7 +473,7 @@ Note that this is nevertheless a very theoretical value but pretty valuable for 
 
 Another note: profiler results for at least some opcodes are heavily distorted, first to mention the `SSTORE` opcode where the major "cost" occurs after block execution on checkpoint commit, which is not taken into account by the profiler.
 
-Generally all results should rather encourage and need "self thinking" 😋 and are not suited to be blindedly taken over without a deeper understanding/grasping of the underlying measurement conditions.
+Generally all results should rather encourage and need "self thinking" 😋 and are not suited to be blindly taken over without a deeper understanding/grasping of the underlying measurement conditions.
 
 Happy EVM Profiling! 🎉 🤩
 

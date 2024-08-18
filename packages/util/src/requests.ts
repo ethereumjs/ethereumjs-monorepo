@@ -96,7 +96,7 @@ export class DepositRequest extends CLRequest<CLRequestType.Deposit> {
     public readonly withdrawalCredentials: Uint8Array,
     public readonly amount: bigint,
     public readonly signature: Uint8Array,
-    public readonly index: bigint
+    public readonly index: bigint,
   ) {
     super(CLRequestType.Deposit)
   }
@@ -124,7 +124,13 @@ export class DepositRequest extends CLRequest<CLRequestType.Deposit> {
 
     return concatBytes(
       Uint8Array.from([this.type]),
-      RLP.encode([this.pubkey, this.withdrawalCredentials, amountBytes, this.signature, indexBytes])
+      RLP.encode([
+        this.pubkey,
+        this.withdrawalCredentials,
+        amountBytes,
+        this.signature,
+        indexBytes,
+      ]),
     )
   }
 
@@ -140,7 +146,7 @@ export class DepositRequest extends CLRequest<CLRequestType.Deposit> {
 
   public static deserialize(bytes: Uint8Array): DepositRequest {
     const [pubkey, withdrawalCredentials, amount, signature, index] = RLP.decode(
-      bytes.slice(1)
+      bytes.slice(1),
     ) as [Uint8Array, Uint8Array, Uint8Array, Uint8Array, Uint8Array]
     return this.fromRequestData({
       pubkey,
@@ -156,7 +162,7 @@ export class WithdrawalRequest extends CLRequest<CLRequestType.Withdrawal> {
   constructor(
     public readonly sourceAddress: Uint8Array,
     public readonly validatorPubkey: Uint8Array,
-    public readonly amount: bigint
+    public readonly amount: bigint,
   ) {
     super(CLRequestType.Withdrawal)
   }
@@ -180,7 +186,7 @@ export class WithdrawalRequest extends CLRequest<CLRequestType.Withdrawal> {
 
     return concatBytes(
       Uint8Array.from([this.type]),
-      RLP.encode([this.sourceAddress, this.validatorPubkey, amountBytes])
+      RLP.encode([this.sourceAddress, this.validatorPubkey, amountBytes]),
     )
   }
 
@@ -196,7 +202,7 @@ export class WithdrawalRequest extends CLRequest<CLRequestType.Withdrawal> {
     const [sourceAddress, validatorPubkey, amount] = RLP.decode(bytes.slice(1)) as [
       Uint8Array,
       Uint8Array,
-      Uint8Array
+      Uint8Array,
     ]
     return this.fromRequestData({
       sourceAddress,
@@ -210,7 +216,7 @@ export class ConsolidationRequest extends CLRequest<CLRequestType.Consolidation>
   constructor(
     public readonly sourceAddress: Uint8Array,
     public readonly sourcePubkey: Uint8Array,
-    public readonly targetPubkey: Uint8Array
+    public readonly targetPubkey: Uint8Array,
   ) {
     super(CLRequestType.Consolidation)
   }
@@ -232,7 +238,7 @@ export class ConsolidationRequest extends CLRequest<CLRequestType.Consolidation>
   serialize() {
     return concatBytes(
       Uint8Array.from([this.type]),
-      RLP.encode([this.sourceAddress, this.sourcePubkey, this.targetPubkey])
+      RLP.encode([this.sourceAddress, this.sourcePubkey, this.targetPubkey]),
     )
   }
 
@@ -248,7 +254,7 @@ export class ConsolidationRequest extends CLRequest<CLRequestType.Consolidation>
     const [sourceAddress, sourcePubkey, targetPubkey] = RLP.decode(bytes.slice(1)) as [
       Uint8Array,
       Uint8Array,
-      Uint8Array
+      Uint8Array,
     ]
     return this.fromRequestData({
       sourceAddress,

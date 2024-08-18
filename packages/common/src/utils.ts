@@ -1,9 +1,8 @@
 import { intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
-import { chains as CHAIN_SPECS } from './chains.js'
-import { Chain, Hardfork } from './enums.js'
+import { Goerli, Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.js'
+import { Hardfork } from './enums.js'
 
-import type { ChainConfig, ChainName, ChainsConfig } from './index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 type ConfigHardfork =
@@ -27,12 +26,9 @@ function formatNonce(nonce: string): PrefixedHexString {
 /**
  * Converts Geth genesis parameters to an EthereumJS compatible `CommonOpts` object
  * @param json object representing the Geth genesis file
- * @param optional mergeForkIdPostMerge which clarifies the placement of MergeForkIdTransition
- * hardfork, which by default is post merge as with the merged eth networks but could also come
- * before merge like in kiln genesis
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
-function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
+function parseGethParams(json: any) {
   const {
     name,
     config,
@@ -81,14 +77,23 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   // but have different configuration parameters in geth genesis parameters
   if (config.eip155Block !== config.eip158Block) {
     throw new Error(
-      'EIP155 block number must equal EIP 158 block number since both are part of SpuriousDragon hardfork and the client only supports activating the full hardfork'
+      'EIP155 block number must equal EIP 158 block number since both are part of SpuriousDragon hardfork and the client only supports activating the full hardfork',
     )
+  }
+
+  // Terminal total difficulty logic is not supported any more as the merge has been completed
+  // so the Merge/Paris hardfork block must be 0
+  if (
+    config.terminalTotalDifficulty !== undefined &&
+    (BigInt(difficulty) < BigInt(config.terminalTotalDifficulty) ||
+      config.terminalTotalDifficultyPassed === false)
+  ) {
+    throw new Error('nonzero terminal total difficulty is not supported')
   }
 
   const params = {
     name,
     chainId,
-    networkId: chainId,
     depositContractAddress,
     genesis: {
       timestamp,
@@ -110,10 +115,10 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
             type: 'poa',
             algorithm: 'clique',
             clique: {
-              // The recent geth genesis seems to be using blockperiodseconds
+              // The recent geth genesis seems to be using blockperiodseconds // cspell:disable-line
               // and epochlength for clique specification
               // see: https://hackmd.io/PqZgMpnkSWCWv5joJoFymQ
-              period: config.clique.period ?? config.clique.blockperiodseconds,
+              period: config.clique.period ?? config.clique.blockperiodseconds, // cspell:disable-line
               epoch: config.clique.epoch ?? config.clique.epochlength,
             },
           }
@@ -136,7 +141,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     [Hardfork.MuirGlacier]: { name: 'muirGlacierBlock' },
     [Hardfork.Berlin]: { name: 'berlinBlock' },
     [Hardfork.London]: { name: 'londonBlock' },
-    [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: mergeForkIdPostMerge },
+    [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: true },
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
     [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
@@ -144,12 +149,15 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   }
 
   // forkMapRev is the map from config field name to Hardfork
-  const forkMapRev = Object.keys(forkMap).reduce((acc, elem) => {
-    acc[forkMap[elem].name] = elem
-    return acc
-  }, {} as { [key: string]: string })
+  const forkMapRev = Object.keys(forkMap).reduce(
+    (acc, elem) => {
+      acc[forkMap[elem].name] = elem
+      return acc
+    },
+    {} as { [key: string]: string },
+  )
   const configHardforkNames = Object.keys(config).filter(
-    (key) => forkMapRev[key] !== undefined && config[key] !== undefined && config[key] !== null
+    (key) => forkMapRev[key] !== undefined && config[key] !== undefined && config[key] !== null,
   )
 
   params.hardforks = configHardforkNames
@@ -175,7 +183,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     return (a.timestamp ?? 0) - (b.timestamp ?? 0)
   })
 
-  // only set the genesis timestamp forks to zero post the above sort has happended
+  // only set the genesis timestamp forks to zero post the above sort has happened
   // to get the correct sorting
   for (const hf of params.hardforks) {
     if (hf.timestamp === genesisTimestamp) {
@@ -184,20 +192,16 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   }
 
   if (config.terminalTotalDifficulty !== undefined) {
-    // Following points need to be considered for placement of merge hf
-    // - Merge hardfork can't be placed at genesis
-    // - Place merge hf before any hardforks that require CL participation for e.g. withdrawals
-    // - Merge hardfork has to be placed just after genesis if any of the genesis hardforks make CL
-    //   necessary for e.g. withdrawals
+    // Merge fork must be placed at 0 since ttd logic is no longer supported
     const mergeConfig = {
       name: Hardfork.Paris,
-      ttd: config.terminalTotalDifficulty,
-      block: null,
+      block: 0,
+      timestamp: undefined,
     }
 
     // Merge hardfork has to be placed before first hardfork that is dependent on merge
     const postMergeIndex = params.hardforks.findIndex(
-      (hf: any) => forkMap[hf.name]?.postMerge === true
+      (hf: any) => forkMap[hf.name]?.postMerge === true,
     )
     if (postMergeIndex !== -1) {
       params.hardforks.splice(postMergeIndex, 0, mergeConfig as unknown as ConfigHardfork)
@@ -219,7 +223,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
  * @param name optional chain name
  * @returns parsed params
  */
-export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?: boolean) {
+export function parseGethGenesis(json: any, name?: string) {
   try {
     const required = ['config', 'difficulty', 'gasLimit', 'nonce', 'alloc']
     if (required.some((field) => !(field in json))) {
@@ -233,58 +237,34 @@ export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?
     if (name !== undefined) {
       finalJson.name = name
     }
-    return parseGethParams(finalJson, mergeForkIdPostMerge)
+    return parseGethParams(finalJson)
   } catch (e: any) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }
 }
 
-export function getInitializedChains(customChains?: ChainConfig[]): ChainsConfig {
-  const names: ChainName = {}
-  for (const [name, id] of Object.entries(Chain)) {
-    names[id] = name.toLowerCase()
-  }
-  const chains = { ...CHAIN_SPECS } as ChainsConfig
-  if (customChains) {
-    for (const chain of customChains) {
-      const { name } = chain
-      names[chain.chainId.toString()] = name
-      chains[name] = chain
-    }
-  }
-  chains.names = names
-  return chains
-}
-
 /**
- * Determine if a {@link chainId} is supported as a standard chain
- * @param chainId bigint id (`1`) of a standard chain
- * @returns boolean
+ * Return the preset chain config for one of the predefined chain configurations
+ * @param chain the representing a network name (e.g. 'mainnet') or number representing the chain ID
+ * @returns a {@link ChainConfig}
  */
-export function isSupportedChainId(chainId: bigint): boolean {
-  const initializedChains = getInitializedChains()
-  return Boolean((initializedChains['names'] as ChainName)[chainId.toString()])
-}
-
-export function _getChainParams(
-  chain: string | number | Chain | bigint,
-  customChains?: ChainConfig[]
-): ChainConfig {
-  const initializedChains = getInitializedChains(customChains)
-  if (typeof chain === 'number' || typeof chain === 'bigint') {
-    chain = chain.toString()
-
-    if ((initializedChains['names'] as ChainName)[chain]) {
-      const name: string = (initializedChains['names'] as ChainName)[chain]
-      return initializedChains[name] as ChainConfig
-    }
-
-    throw new Error(`Chain with ID ${chain} not supported`)
+export const getPresetChainConfig = (chain: string | number) => {
+  switch (chain) {
+    case 'goerli':
+    case 5:
+      return Goerli
+    case 'holesky':
+    case 17000:
+      return Holesky
+    case 'kaustinen6':
+    case 69420:
+      return Kaustinen6
+    case 'sepolia':
+    case 11155111:
+      return Sepolia
+    case 'mainnet':
+    case 1:
+    default:
+      return Mainnet
   }
-
-  if (initializedChains[chain] !== undefined) {
-    return initializedChains[chain] as ChainConfig
-  }
-
-  throw new Error(`Chain with name ${chain} not supported`)
 }

@@ -1,4 +1,4 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Goerli, Holesky } from '@ethereumjs/common'
 import { assert, describe, it, vi } from 'vitest'
 
 import { baseSetup, createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
@@ -12,7 +12,7 @@ function compareResult(result: any, chainId: any) {
   assert.equal(
     result,
     chainId,
-    `should be the correct chain ID (expected: ${chainId}, received: ${result})`
+    `should be the correct chain ID (expected: ${chainId}, received: ${result})`,
   )
 }
 
@@ -28,7 +28,7 @@ describe(method, () => {
 
   it('call on holesky', async () => {
     const manager = createManager(
-      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Holesky }) })
+      await createClient({ opened: true, commonChain: new Common({ chain: Holesky }) }),
     )
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
@@ -42,7 +42,7 @@ describe(method, () => {
 
   it('call on goerli', async () => {
     const manager = createManager(
-      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
+      await createClient({ opened: true, commonChain: new Common({ chain: Goerli }) }),
     )
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 

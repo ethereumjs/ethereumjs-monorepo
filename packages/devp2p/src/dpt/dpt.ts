@@ -86,7 +86,7 @@ export class DPT {
     this._refreshIntervalId = setInterval(() => this.refresh(), refreshIntervalSubdivided)
 
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   bind(...args: any[]): void {
@@ -113,7 +113,8 @@ export class DPT {
         })
         .then(() => {
           if (++count < oldPeers.length) return
-          if (err === null) this._banlist.add(newPeer, 300000) // 5 min * 60 * 1000
+          if (err === null)
+            this._banlist.add(newPeer, 300000) // 5 min * 60 * 1000
           else this._kbucket.add(newPeer)
         })
     }
@@ -200,7 +201,7 @@ export class DPT {
     let peers = this._kbucket.closest(id)
     if (this._onlyConfirmed && this._confirmedPeers.size > 0) {
       peers = peers.filter((peer) =>
-        this._confirmedPeers.has(bytesToUnprefixedHex(peer.id as Uint8Array)) ? true : false
+        this._confirmedPeers.has(bytesToUnprefixedHex(peer.id as Uint8Array)) ? true : false,
       )
     }
     return peers
@@ -231,7 +232,7 @@ export class DPT {
       const peers = this.getPeers()
       if (this.DEBUG) {
         this._debug(
-          `call .refresh() (selector ${this._refreshIntervalSelectionCounter}) (${peers.length} peers in table)`
+          `call .refresh() (selector ${this._refreshIntervalSelectionCounter}) (${peers.length} peers in table)`,
         )
       }
 
@@ -259,7 +260,7 @@ export class DPT {
         this._debug(
           `.refresh() Adding ${dnsPeers.length} from DNS tree, (${
             this.getPeers().length
-          } current peers in table)`
+          } current peers in table)`,
         )
       }
 

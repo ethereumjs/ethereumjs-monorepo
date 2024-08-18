@@ -1,10 +1,10 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
-  Address,
   blobsToCommitments,
   bytesToHex,
   commitmentsToVersionedHashes,
+  createAddressFromPrivateKey,
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
@@ -24,17 +24,17 @@ const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1
 const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
 const pkey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
-const sender = Address.fromPrivateKey(pkey)
+const sender = createAddressFromPrivateKey(pkey)
 
 const kzg = await loadKZG()
 
 function get_padded(data: any, blobs_len: number) {
-  const pdata = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
-  const datalen = (data as Uint8Array).byteLength
-  pdata.fill(data, 0, datalen)
+  const pData = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
+  const dataLen = (data as Uint8Array).byteLength
+  pData.fill(data, 0, dataLen)
   // TODO: if data already fits in a pad, then ka-boom
-  pdata[datalen] = 0x80
-  return pdata
+  pData[dataLen] = 0x80
+  return pData
 }
 
 function get_blob(data: any) {
@@ -61,11 +61,11 @@ function get_blobs(data: any) {
 
   const blobs_len = Math.ceil(len / USEFUL_BYTES_PER_BLOB)
 
-  const pdata = get_padded(data, blobs_len)
+  const pData = get_padded(data, blobs_len)
 
   const blobs: Uint8Array[] = []
   for (let i = 0; i < blobs_len; i++) {
-    const chunk = pdata.subarray(i * USEFUL_BYTES_PER_BLOB, (i + 1) * USEFUL_BYTES_PER_BLOB)
+    const chunk = pData.subarray(i * USEFUL_BYTES_PER_BLOB, (i + 1) * USEFUL_BYTES_PER_BLOB)
     const blob = get_blob(chunk)
     blobs.push(blob)
   }
@@ -100,7 +100,7 @@ async function run(data: any) {
   const commitments = blobsToCommitments(kzg, blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
-  const account = Address.fromPrivateKey(randomBytes(32))
+  const account = createAddressFromPrivateKey(randomBytes(32))
   const txData: TxData[TransactionType.BlobEIP4844] = {
     to: account.toString(),
     data: '0x',
@@ -121,7 +121,7 @@ async function run(data: any) {
   txData.gasLimit = BigInt(28000000)
   const nonce = await getNonce(client, sender.toString())
   txData.nonce = BigInt(nonce)
-  const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(pkey)
+  const blobTx = createBlob4844Tx(txData).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 

@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
+import { createTrieFromProof } from '@ethereumjs/trie'
 import { hexToBytes } from '@ethereumjs/util'
 import { utf8ToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it, vi } from 'vitest'
@@ -45,10 +45,10 @@ describe('[StorageFetcher]', async () => {
       storageRequests: [
         {
           accountHash: hexToBytes(
-            '0x352a47fc6863b89a6b51890ef3c1550d560886c027141d2058ba1e2d4c66d99a'
+            '0x352a47fc6863b89a6b51890ef3c1550d560886c027141d2058ba1e2d4c66d99a',
           ),
           storageRoot: hexToBytes(
-            '0x556a482068355939c95a3412bdb21213a301483edb1b64402fb66ac9f3583599'
+            '0x556a482068355939c95a3412bdb21213a301483edb1b64402fb66ac9f3583599',
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -62,10 +62,10 @@ describe('[StorageFetcher]', async () => {
     fetcher.enqueueByStorageRequestList([
       {
         accountHash: hexToBytes(
-          '0xe9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
+          '0xe9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1',
         ),
         storageRoot: hexToBytes(
-          '0x69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
+          '0x69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92',
         ),
         first: BigInt(0),
         count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -111,10 +111,10 @@ describe('[StorageFetcher]', async () => {
       storageRequests: [
         {
           accountHash: hexToBytes(
-            '0xe9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
+            '0xe9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1',
           ),
           storageRoot: hexToBytes(
-            '0x69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
+            '0x69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92',
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -127,7 +127,7 @@ describe('[StorageFetcher]', async () => {
     assert.deepEqual(
       (fetcher.process(job, StorageDataResponse) as any)[0],
       fullResult[0],
-      'got results'
+      'got results',
     )
     assert.throws(() => fetcher.process({} as any, { StorageDataResponse: [] } as any))
   })
@@ -161,7 +161,7 @@ describe('[StorageFetcher]', async () => {
         {
           accountHash: hexToBytes(accountHashString),
           storageRoot: hexToBytes(
-            '0x69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
+            '0x69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92',
           ),
           first: BigInt(10),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -177,14 +177,14 @@ describe('[StorageFetcher]', async () => {
     assert.equal(
       JSON.stringify(fetcher.accountToHighestKnownHash.get(accountHashString)),
       JSON.stringify(utf8ToBytes(highestReceivedhash)),
-      'should set new highest known hash'
+      'should set new highest known hash',
     )
     ;(job.task.storageRequests[0] as any).first = BigInt(3)
     ;(job.task.storageRequests[0] as any).count = BigInt(4)
     const result = (await fetcher.request(job as any)) as any
     assert.ok(
       JSON.stringify(result[0]) === JSON.stringify({ skipped: true }),
-      'should skip fetching task with limit lower than highest known key hash'
+      'should skip fetching task with limit lower than highest known key hash',
     )
 
     StorageDataResponse.completed = true
@@ -192,7 +192,7 @@ describe('[StorageFetcher]', async () => {
     assert.equal(
       fetcher.accountToHighestKnownHash.get(accountHashString),
       undefined,
-      'should delete highest known hash for completed job'
+      'should delete highest known hash for completed job',
     )
   })
 
@@ -215,10 +215,10 @@ describe('[StorageFetcher]', async () => {
       storageRequests: [
         {
           accountHash: hexToBytes(
-            '0xe9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
+            '0xe9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1',
           ),
           storageRoot: hexToBytes(
-            '0x69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
+            '0x69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92',
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -265,10 +265,10 @@ describe('[StorageFetcher]', async () => {
       storageRequests: [
         {
           accountHash: hexToBytes(
-            '0x00009e5969eba9656d7e4dad5b0596241deb87c29bbab71c23b602c2b88a7276'
+            '0x00009e5969eba9656d7e4dad5b0596241deb87c29bbab71c23b602c2b88a7276',
           ),
           storageRoot: hexToBytes(
-            '0x4431bd7d69241190bb930b74485c1e31ff75552f67d758d0b6612e7bd9226121'
+            '0x4431bd7d69241190bb930b74485c1e31ff75552f67d758d0b6612e7bd9226121',
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -278,7 +278,7 @@ describe('[StorageFetcher]', async () => {
     const resData = RLP.decode(hexToBytes(_storageRangesRLP)) as unknown
     const res = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
-      resData
+      resData,
     )
     const { reqId, slots, proof } = res
     const mockedGetStorageRanges = vi.fn((input) => {
@@ -353,7 +353,7 @@ describe('[StorageFetcher]', async () => {
     const ret = await fetcher.request(job as any)
     assert.ok(
       ret?.completed === true,
-      'should handle peer that is signaling that an empty range has been requested with no elements remaining to the right'
+      'should handle peer that is signaling that an empty range has been requested with no elements remaining to the right',
     )
   })
 
@@ -362,7 +362,7 @@ describe('[StorageFetcher]', async () => {
     const pool = new PeerPool() as any
 
     // calculate new root with a key all the way to the right of the trie
-    const trie = await Trie.createFromProof(_zeroElementProof)
+    const trie = await createTrieFromProof(_zeroElementProof)
     await trie.put(hexToBytes(`0x${'F'.repeat(32)}`), hexToBytes('0x123'), true)
     const newRoot = trie.root()
 
@@ -397,7 +397,7 @@ describe('[StorageFetcher]', async () => {
     const ret = await fetcher.request(job as any)
     assert.ok(
       ret?.completed === undefined,
-      'proof verification should fail if elements still remain to the right of the proof'
+      'proof verification should fail if elements still remain to the right of the proof',
     )
   })
 
@@ -422,10 +422,10 @@ describe('[StorageFetcher]', async () => {
       storageRequests: [
         {
           accountHash: hexToBytes(
-            '0x00009e5969eba9656d7e4dad5b0596241deb87c29bbab71c23b602c2b88a7276'
+            '0x00009e5969eba9656d7e4dad5b0596241deb87c29bbab71c23b602c2b88a7276',
           ),
           storageRoot: hexToBytes(
-            '0x4431bd7d69241190bb930b74485c1e31ff75552f67d758d0b6612e7bd9226121'
+            '0x4431bd7d69241190bb930b74485c1e31ff75552f67d758d0b6612e7bd9226121',
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -435,7 +435,7 @@ describe('[StorageFetcher]', async () => {
     const resData = RLP.decode(hexToBytes(_storageRangesRLP)) as unknown
     const res = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
-      resData
+      resData,
     )
     const { reqId, slots, proof } = res
     const mockedGetStorageRanges = vi.fn().mockReturnValueOnce({
@@ -473,10 +473,10 @@ describe('[StorageFetcher]', async () => {
     const accResData = RLP.decode(hexToBytes(_accountRangeRLP)) as unknown
     const { proof: proofInvalid } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
-      accResData
+      accResData,
     )
     const dummyStorageRoot = hexToBytes(
-      '0x39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f'
+      '0x39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f',
     )
     const dummyOrigin = new Uint8Array(32)
     try {
@@ -488,7 +488,7 @@ describe('[StorageFetcher]', async () => {
     } catch (e) {
       assert.ok(
         true,
-        `verifyRangeProof correctly failed on invalid proof, Error: ${(e as Error).message}`
+        `verifyRangeProof correctly failed on invalid proof, Error: ${(e as Error).message}`,
       )
     }
 
@@ -497,7 +497,7 @@ describe('[StorageFetcher]', async () => {
     await fetcher.store([Object.create(null)] as any)
     assert.ok(
       fetcher['destroyWhenDone'] === false,
-      'should still be open to enqueue and process new requests'
+      'should still be open to enqueue and process new requests',
     )
     fetcher.setDestroyWhenDone()
     assert.ok(fetcher['destroyWhenDone'] === true, 'should mark to close on finished')

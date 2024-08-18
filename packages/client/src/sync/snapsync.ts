@@ -4,7 +4,7 @@ import { Event } from '../types.js'
 import { short } from '../util/index.js'
 
 import { AccountFetcher } from './fetcher/index.js'
-import { getInitFecherDoneFlags } from './fetcher/types.js'
+import { getInitFetcherDoneFlags } from './fetcher/types.js'
 import { Synchronizer } from './sync.js'
 
 import type { VMExecution } from '../execution/index.js'
@@ -26,7 +26,7 @@ export class SnapSynchronizer extends Synchronizer {
   public running = false
   skeleton?: Skeleton
   private execution: VMExecution
-  readonly fetcherDoneFlags: SnapFetcherDoneFlags = getInitFecherDoneFlags()
+  readonly fetcherDoneFlags: SnapFetcherDoneFlags = getInitFetcherDoneFlags()
 
   constructor(options: SnapSynchronizerOptions) {
     super(options)
@@ -62,7 +62,7 @@ export class SnapSynchronizer extends Synchronizer {
     await this.pool.open()
 
     this.config.logger.info(
-      `Opened SnapSynchronizer syncTargetHeight=${this.config.syncTargetHeight ?? 'NA'}`
+      `Opened SnapSynchronizer syncTargetHeight=${this.config.syncTargetHeight ?? 'NA'}`,
     )
   }
 
@@ -132,7 +132,7 @@ export class SnapSynchronizer extends Synchronizer {
 
     if (!this.fetcherDoneFlags.done) {
       throw Error(
-        `snap sync fetchers didn't sync complete state accountFetcherDone=${this.fetcherDoneFlags.accountFetcher.done} storageFetcherDone=${this.fetcherDoneFlags.storageFetcher.done} byteCodeFetcherDone=${this.fetcherDoneFlags.byteCodeFetcher.done} trieNodeFetcherDone=${this.fetcherDoneFlags.trieNodeFetcher.done}`
+        `snap sync fetchers didn't sync complete state accountFetcherDone=${this.fetcherDoneFlags.accountFetcher.done} storageFetcherDone=${this.fetcherDoneFlags.storageFetcher.done} byteCodeFetcherDone=${this.fetcherDoneFlags.byteCodeFetcher.done} trieNodeFetcherDone=${this.fetcherDoneFlags.trieNodeFetcher.done}`,
       )
     }
 
@@ -144,8 +144,8 @@ export class SnapSynchronizer extends Synchronizer {
     ) {
       throw Error(
         `Invalid synced data by snapsync snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
-          snapTargetRoot ?? 'na'
-        )} snapTargetHash=${short(snapTargetHash ?? 'na')}`
+          snapTargetRoot ?? 'na',
+        )} snapTargetHash=${short(snapTargetHash ?? 'na')}`,
       )
     }
 
@@ -154,8 +154,8 @@ export class SnapSynchronizer extends Synchronizer {
     if (!equalsBytes(syncedRoot, snapTargetRoot)) {
       throw Error(
         `Invalid snap syncedRoot=${short(syncedRoot)} targetRoot=${short(
-          snapTargetRoot
-        )}  for target height=${snapTargetHeight} hash=${short(snapTargetHash)}`
+          snapTargetRoot,
+        )}  for target height=${snapTargetHeight} hash=${short(snapTargetHash)}`,
       )
       // TODO: figure out what needs to be reinited
       // this.fetcherDoneFlags.accountFetcher.done = false;
@@ -165,7 +165,7 @@ export class SnapSynchronizer extends Synchronizer {
     }
 
     const snapDoneMsg = `snapsync complete!!! height=${snapTargetHeight} root=${short(
-      snapTargetRoot
+      snapTargetRoot,
     )}  hash=${short(snapTargetHash)}`
     if (fetchingAlreadyDone) {
       this.config.logger.debug(snapDoneMsg)
@@ -223,7 +223,7 @@ export class SnapSynchronizer extends Synchronizer {
           this.fetcher === null
             ? ''
             : 'previous fetcher errored=' + this.fetcher.syncErrored?.message
-        }`
+        }`,
       )
       this.fetcher = new AccountFetcher({
         config: this.config,

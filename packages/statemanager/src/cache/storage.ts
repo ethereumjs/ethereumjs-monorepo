@@ -1,6 +1,6 @@
 import { bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
+import { OrderedMap } from '@js-sdsl/ordered-map'
 import debugDefault from 'debug'
-import { OrderedMap } from 'js-sdsl'
 import { LRUCache } from 'lru-cache'
 
 import { Cache } from './cache.js'
@@ -88,7 +88,7 @@ export class StorageCache extends Cache {
       this._debug(
         `Put storage for ${addressHex}: ${keyHex} -> ${
           value !== undefined ? bytesToUnprefixedHex(value) : ''
-        }`
+        }`,
       )
     }
     if (this._lruCache) {
@@ -165,14 +165,14 @@ export class StorageCache extends Cache {
       this._orderedMapCache!.setElement(addressHex, storageMap)
     }
 
-    this._stats.dels += 1
+    this._stats.deletions += 1
   }
 
   /**
    * Deletes all storage slots for address from the cache
    * @param address
    */
-  clearContractStorage(address: Address): void {
+  clearStorage(address: Address): void {
     const addressHex = bytesToUnprefixedHex(address.bytes)
     if (this._lruCache) {
       this._lruCache!.set(addressHex, new Map())
@@ -274,7 +274,7 @@ export class StorageCache extends Cache {
     // Go through diffMap from the pre-commit checkpoint height.
     // 1. Iterate through all state pre states
     // 2. If state pre-state is not in the new (lower) height diff map, take pre commit pre state value
-    // 3. If state is in new map, take this one, since this superseeds subsequent changes
+    // 3. If state is in new map, take this one, since this supersedes subsequent changes
     for (const entry of higherHeightDiffMap.entries()) {
       const addressHex = entry[0]
       const higherHeightStorageDiff = entry[1]
@@ -329,7 +329,7 @@ export class StorageCache extends Cache {
         reads: 0,
         hits: 0,
         writes: 0,
-        dels: 0,
+        deletions: 0,
       }
     }
     return stats

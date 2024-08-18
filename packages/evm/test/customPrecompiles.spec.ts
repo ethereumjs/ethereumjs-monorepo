@@ -1,9 +1,8 @@
-import { Address, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { Address, createZeroAddress, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/evm.js'
+import { type PrecompileInput, createEVM } from '../src/index.js'
 
-import type { PrecompileInput } from '../src/index.js'
 import type { ExecResult } from '../src/types.js'
 
 const sender = new Address(hexToBytes(`0x${'44'.repeat(20)}`))
@@ -28,16 +27,16 @@ function customPrecompileNoInput(): ExecResult {
 
 describe('EVM -> custom precompiles', () => {
   it('should work on precompiles without input arguments', async () => {
-    const EVMOverride = await EVM.create({
+    const EVMOverride = await createEVM({
       customPrecompiles: [
         {
-          address: Address.zero(),
+          address: createZeroAddress(),
           function: customPrecompileNoInput,
         },
       ],
     })
     const result = await EVMOverride.runCall({
-      to: Address.zero(),
+      to: createZeroAddress(),
       gasLimit: BigInt(30000),
       data: utf8ToBytes(''),
       caller: sender,
@@ -47,7 +46,7 @@ describe('EVM -> custom precompiles', () => {
     assert.equal(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
   })
   it('should override existing precompiles', async () => {
-    const EVMOverride = await EVM.create({
+    const EVMOverride = await createEVM({
       customPrecompiles: [
         {
           address: shaAddress,
@@ -67,7 +66,7 @@ describe('EVM -> custom precompiles', () => {
   })
 
   it('should delete existing precompiles', async () => {
-    const EVMOverride = await EVM.create({
+    const EVMOverride = await createEVM({
       customPrecompiles: [
         {
           address: shaAddress,
@@ -85,7 +84,7 @@ describe('EVM -> custom precompiles', () => {
   })
 
   it('should add precompiles', async () => {
-    const EVMOverride = await EVM.create({
+    const EVMOverride = await createEVM({
       customPrecompiles: [
         {
           address: newPrecompile,
@@ -104,14 +103,14 @@ describe('EVM -> custom precompiles', () => {
   })
 
   it('should not persist changes to precompiles', async () => {
-    let EVMSha = await EVM.create()
+    let EVMSha = await createEVM()
     const shaResult = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
       data: hexToBytes('0x'),
       caller: sender,
     })
-    const EVMOverride = await EVM.create({
+    const EVMOverride = await createEVM({
       customPrecompiles: [
         {
           address: shaAddress,
@@ -128,7 +127,7 @@ describe('EVM -> custom precompiles', () => {
     // sanity: check we have overridden
     assert.deepEqual(result.execResult.returnValue, expectedReturn, 'return value is correct')
     assert.ok(result.execResult.executionGasUsed === expectedGas, 'gas used is correct')
-    EVMSha = await EVM.create()
+    EVMSha = await createEVM()
     const shaResult2 = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
@@ -138,16 +137,16 @@ describe('EVM -> custom precompiles', () => {
     assert.deepEqual(
       shaResult.execResult.returnValue,
       shaResult2.execResult.returnValue,
-      'restored sha precompile - returndata correct'
+      'restored sha precompile - returndata correct',
     )
     assert.equal(
       shaResult.execResult.executionGasUsed,
       shaResult2.execResult.executionGasUsed,
-      'restored sha precompile - gas correct'
+      'restored sha precompile - gas correct',
     )
   })
-  it('shold copy custom precompiles', async () => {
-    const evm = await EVM.create({
+  it('should copy custom precompiles', async () => {
+    const evm = await createEVM({
       customPrecompiles: [
         {
           address: shaAddress,
@@ -159,7 +158,7 @@ describe('EVM -> custom precompiles', () => {
     assert.deepEqual(
       (evm as any)._customPrecompiles,
       (evmCopy as any)._customPrecompiles,
-      'evm.shallowCopy() successfully copied customPrecompiles option'
+      'evm.shallowCopy() successfully copied customPrecompiles option',
     )
   })
 })

@@ -2,7 +2,7 @@ import { Account, Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { AccountCache, CacheType } from '../../src/cache/index.js'
-import { createAccount } from '../util.js'
+import { createAccountWithDefaults } from '../util.js'
 
 describe('Account Cache: initialization', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
@@ -19,7 +19,7 @@ describe('Account Cache: put and get account', () => {
     const cache = new AccountCache({ size: 100, type })
 
     const addr = new Address(hexToBytes(`0x${'10'.repeat(20)}`))
-    const acc: Account = createAccount(BigInt(1), BigInt(0xff11))
+    const acc: Account = createAccountWithDefaults(BigInt(1), BigInt(0xff11))
     const accRLP = acc.serialize()
 
     it('should return undefined for CacheElement if account not present in the cache', async () => {
@@ -52,10 +52,10 @@ describe('Account Cache: checkpointing', () => {
     const cache = new AccountCache({ size: 100, type })
 
     const addr = new Address(hexToBytes(`0x${'10'.repeat(20)}`))
-    const acc = createAccount(BigInt(1), BigInt(0xff11))
+    const acc = createAccountWithDefaults(BigInt(1), BigInt(0xff11))
     const accRLP = acc.serialize()
 
-    const updatedAcc = createAccount(BigInt(0x00), BigInt(0xff00))
+    const updatedAcc = createAccountWithDefaults(BigInt(0x00), BigInt(0xff00))
     const updatedAccRLP = updatedAcc.serialize()
 
     it(`should revert to correct state`, async () => {
@@ -65,7 +65,7 @@ describe('Account Cache: checkpointing', () => {
 
       let elem = cache.get(addr)
       assert.ok(
-        elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, updatedAccRLP)
+        elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, updatedAccRLP),
       )
 
       cache.revert()

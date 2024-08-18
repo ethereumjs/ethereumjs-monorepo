@@ -1,10 +1,10 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { FeeMarket1559Tx } from '@ethereumjs/tx'
 import { Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -14,7 +14,7 @@ const ETHER = GWEI * GWEI
 
 const common = new Common({
   eips: [1559, 2718, 2930, 3198],
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.London,
 })
 
@@ -43,7 +43,7 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction) {
   const signed = transaction.sign(pkey)
   const json = signed.toJSON()
 
-  const block = createBlockFromBlockData(
+  const block = createBlock(
     {
       header: {
         number: BigInt(1),
@@ -53,7 +53,7 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction) {
       },
       transactions: [json],
     },
-    { common }
+    { common },
   )
   return block
 }
@@ -62,7 +62,7 @@ describe('EIP3198 tests', () => {
   it('test EIP3198 gas fee and correct value', async () => {
     // Initial base fee for EIP1559
     const fee = BigInt(1000000000)
-    const tx = new FeeMarketEIP1559Transaction(
+    const tx = new FeeMarket1559Tx(
       {
         maxFeePerGas: GWEI * BigInt(5),
         maxPriorityFeePerGas: GWEI * BigInt(2),
@@ -72,7 +72,7 @@ describe('EIP3198 tests', () => {
       },
       {
         common,
-      }
+      },
     )
     const block = makeBlock(fee, tx)
     const vm = await VM.create({ common })
@@ -81,17 +81,17 @@ describe('EIP3198 tests', () => {
     // Track stack
 
     let stack: any = []
-    vm.evm.events!.on('step', (istep: InterpreterStep) => {
-      if (istep.opcode.name === 'STOP') {
-        stack = istep.stack
+    vm.evm.events!.on('step', (iStep: InterpreterStep) => {
+      if (iStep.opcode.name === 'STOP') {
+        stack = iStep.stack
       }
     })
 
-    const results = await vm.runTx({
+    const results = await runTx(vm, {
       tx: block.transactions[0],
       block,
     })
-    const txBaseFee = block.transactions[0].getBaseFee()
+    const txBaseFee = block.transactions[0].getIntrinsicGas()
     const gasUsed = results.totalGasSpent - txBaseFee
     assert.equal(gasUsed, BigInt(2), 'gas used correct')
     assert.equal(stack[0], fee, 'right item pushed on stack')

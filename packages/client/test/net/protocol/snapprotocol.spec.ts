@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { Trie, decodeNode } from '@ethereumjs/trie'
+import { decodeNode, verifyTrieRangeProof } from '@ethereumjs/trie'
 import {
   KECCAK256_NULL,
   KECCAK256_RLP,
@@ -57,34 +57,34 @@ describe('[SnapProtocol]', () => {
         origin,
         limit,
         bytes,
-      }
+      },
     )
 
     assert.ok(
       JSON.stringify(payload[0]) === JSON.stringify(bigIntToBytes(BigInt(1))),
-      'correctly encoded reqId'
+      'correctly encoded reqId',
     )
     assert.ok(
       JSON.stringify(payload[1]) === JSON.stringify(setLengthLeft(root, 32)),
-      'correctly encoded root'
+      'correctly encoded root',
     )
     assert.ok(JSON.stringify(payload[2]) === JSON.stringify(origin), 'correctly encoded origin')
     assert.ok(JSON.stringify(payload[3]) === JSON.stringify(limit), 'correctly encoded limit')
     assert.ok(
       JSON.stringify(payload[4]) === JSON.stringify(bigIntToBytes(bytes)),
-      'correctly encoded bytes'
+      'correctly encoded bytes',
     )
     assert.ok(payload)
 
     const res = p.decode(
       p.messages.filter((message) => message.name === 'GetAccountRange')[0],
-      payload
+      payload,
     )
 
     assert.ok(JSON.stringify(res.reqId) === JSON.stringify(reqId), 'correctly decoded reqId')
     assert.ok(
       JSON.stringify(res.root) === JSON.stringify(setLengthLeft(root, 32)),
-      'correctly decoded root'
+      'correctly decoded root',
     )
     assert.ok(JSON.stringify(res.origin) === JSON.stringify(origin), 'correctly decoded origin')
     assert.ok(JSON.stringify(res.limit) === JSON.stringify(limit), 'correctly decoded limit')
@@ -100,7 +100,7 @@ describe('[SnapProtocol]', () => {
     const data = RLP.decode(hexToBytes(contractAccountRangeRLP)) as unknown
     const { reqId, accounts, proof } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
-      data
+      data,
     )
     assert.ok(reqId === BigInt(1), 'reqId should be 1')
     assert.ok(accounts.length === 2, 'accounts should be 2')
@@ -114,23 +114,23 @@ describe('[SnapProtocol]', () => {
     assert.ok(
       bytesToHex(secondAccount[2]) ===
         '0x3dc6d3cfdc6210b8591ea852961d880821298c7891dea399e02d87550af9d40e',
-      'storageHash of the second account'
+      'storageHash of the second account',
     )
     assert.ok(
       bytesToHex(secondAccount[3]) ===
         '0xe68fe0bb7c4a483affd0f19cc2b989105242bd6b256c6de3afd738f8acd80c66',
-      'codeHash of the second account'
+      'codeHash of the second account',
     )
     const payload = RLP.encode(
       p.encode(p.messages.filter((message) => message.name === 'AccountRange')[0], {
         reqId,
         accounts,
         proof,
-      })
+      }),
     )
     assert.ok(
       contractAccountRangeRLP === bytesToHex(payload),
-      'Re-encoded payload should match with original'
+      'Re-encoded payload should match with original',
     )
   })
 
@@ -144,7 +144,7 @@ describe('[SnapProtocol]', () => {
 
     const fullData = pFull.decode(
       pFull.messages.filter((message) => message.name === 'AccountRange')[0],
-      resData
+      resData,
     )
     const { accounts: accountsFull } = fullData
     assert.ok(accountsFull.length === 3, '3 accounts should be decoded in accountsFull')
@@ -153,14 +153,14 @@ describe('[SnapProtocol]', () => {
     assert.ok(equalsBytes(accountFull[3], KECCAK256_NULL), 'codeHash should be KECCAK256_NULL')
 
     // Lets encode fullData as it should be encoded in slim format and upon decoding
-    // we shpuld get slim format
+    // we should get slim format
     const slimPayload = pFull.encode(
       pFull.messages.filter((message) => message.name === 'AccountRange')[0],
-      fullData
+      fullData,
     )
     const { accounts: accountsSlim } = pSlim.decode(
       pSlim.messages.filter((message) => message.name === 'AccountRange')[0],
-      slimPayload
+      slimPayload,
     )
 
     // 3 accounts are there in accountRangeRLP
@@ -179,19 +179,19 @@ describe('[SnapProtocol]', () => {
     const reqData = RLP.decode(hexToBytes(getAccountRangeRLP))
     const { root: stateRoot } = p.decode(
       p.messages.filter((message) => message.name === 'GetAccountRange')[0],
-      reqData
+      reqData,
     )
     // accountRangeRLP is the corresponding response to getAccountRangeRLP
     const resData = RLP.decode(hexToBytes(accountRangeRLP))
     const { accounts, proof } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
-      resData
+      resData,
     )
 
     try {
       const keys = accounts.map((acc: any) => acc.hash)
       const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
-      await Trie.verifyRangeProof(stateRoot, keys[0], keys[keys.length - 1], keys, values, proof, {
+      await verifyTrieRangeProof(stateRoot, keys[0], keys[keys.length - 1], keys, values, proof, {
         useKeyHashingFunction: keccak256,
       })
     } catch (e) {
@@ -199,7 +199,7 @@ describe('[SnapProtocol]', () => {
     }
     assert.ok(
       equalsBytes(keccak256(proof[0]), stateRoot),
-      'Proof should link to the requested stateRoot'
+      'Proof should link to the requested stateRoot',
     )
   })
 
@@ -226,38 +226,38 @@ describe('[SnapProtocol]', () => {
         origin,
         limit,
         bytes,
-      }
+      },
     )
 
     assert.ok(
       JSON.stringify(payload[0]) === JSON.stringify(bigIntToBytes(BigInt(1))),
-      'correctly encoded reqId'
+      'correctly encoded reqId',
     )
     assert.ok(
       JSON.stringify(payload[1]) === JSON.stringify(setLengthLeft(root, 32)),
-      'correctly encoded root'
+      'correctly encoded root',
     )
     assert.ok(JSON.stringify(payload[2]) === JSON.stringify(accounts), 'correctly encoded accounts')
     assert.ok(JSON.stringify(payload[3]) === JSON.stringify(origin), 'correctly encoded origin')
     assert.ok(JSON.stringify(payload[4]) === JSON.stringify(limit), 'correctly encoded limit')
     assert.ok(
       JSON.stringify(payload[5]) === JSON.stringify(bigIntToBytes(bytes)),
-      'correctly encoded bytes'
+      'correctly encoded bytes',
     )
     assert.ok(payload)
 
     const res = p.decode(
       p.messages.filter((message) => message.name === 'GetStorageRanges')[0],
-      payload
+      payload,
     )
     assert.ok(JSON.stringify(res.reqId) === JSON.stringify(reqId), 'correctly decoded reqId')
     assert.ok(
       JSON.stringify(res.root) === JSON.stringify(setLengthLeft(root, 32)),
-      'correctly decoded root'
+      'correctly decoded root',
     )
     assert.ok(
       JSON.stringify(res.accounts) === JSON.stringify(accounts),
-      'correctly decoded accounts'
+      'correctly decoded accounts',
     )
     assert.ok(JSON.stringify(res.origin) === JSON.stringify(origin), 'correctly decoded origin')
     assert.ok(JSON.stringify(res.limit) === JSON.stringify(limit), 'correctly decoded limit')
@@ -274,14 +274,14 @@ describe('[SnapProtocol]', () => {
     const data = RLP.decode(hexToBytes(storageRangesRLP)) as unknown
     const { reqId, slots, proof } = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
-      data
+      data,
     )
     assert.ok(reqId === BigInt(1), 'correctly decoded reqId')
     assert.ok(slots.length === 1 && slots[0].length === 3, 'correctly decoded slots')
     const { hash, body } = slots[0][2]
     assert.ok(
       bytesToHex(hash) === '0x60264186ee63f748d340388f07b244d96d007fff5cbc397bbd69f8747c421f79',
-      'Slot 3 key'
+      'Slot 3 key',
     )
     assert.ok(bytesToHex(body) === '0x8462b66ae7', 'Slot 3 value')
 
@@ -290,11 +290,11 @@ describe('[SnapProtocol]', () => {
         reqId,
         slots,
         proof,
-      })
+      }),
     )
     assert.ok(
       storageRangesRLP === bytesToHex(payload),
-      'Re-encoded payload should match with original'
+      'Re-encoded payload should match with original',
     )
   })
 
@@ -307,7 +307,7 @@ describe('[SnapProtocol]', () => {
     const accountsData = RLP.decode(hexToBytes(contractAccountRangeRLP))
     const { accounts } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
-      accountsData
+      accountsData,
     )
     const lastAccount = accounts[accounts.length - 1]
 
@@ -315,7 +315,7 @@ describe('[SnapProtocol]', () => {
     const data = RLP.decode(hexToBytes(storageRangesRLP))
     const { proof, slots } = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
-      data
+      data,
     )
     // storageRangesRLP response is to the lastAccount's slots so slots[0] are the slots of
     // lastAccount
@@ -324,7 +324,7 @@ describe('[SnapProtocol]', () => {
     try {
       const keys = lastAccountSlots.map((acc: any) => acc.hash)
       const values = lastAccountSlots.map((acc: any) => acc.body)
-      await Trie.verifyRangeProof(
+      await verifyTrieRangeProof(
         lastAccountStorageRoot,
         keys[0],
         keys[keys.length - 1],
@@ -333,14 +333,14 @@ describe('[SnapProtocol]', () => {
         proof,
         {
           useKeyHashingFunction: keccak256,
-        }
+        },
       )
     } catch (e) {
       assert.fail(`StorageRange proof verification failed with message=${(e as Error).message}`)
     }
     assert.ok(
       equalsBytes(keccak256(proof[0]), lastAccountStorageRoot),
-      'Proof should link to the accounts storageRoot'
+      'Proof should link to the accounts storageRoot',
     )
   })
 
@@ -363,18 +363,18 @@ describe('[SnapProtocol]', () => {
 
     assert.ok(
       JSON.stringify(payload[0]) === JSON.stringify(bigIntToBytes(BigInt(1))),
-      'correctly encoded reqId'
+      'correctly encoded reqId',
     )
     assert.ok(JSON.stringify(payload[1]) === JSON.stringify(hashes), 'correctly encoded hashes')
     assert.ok(
       JSON.stringify(payload[2]) === JSON.stringify(bigIntToBytes(bytes)),
-      'correctly encoded bytes'
+      'correctly encoded bytes',
     )
     assert.ok(payload)
 
     const res = p.decode(
       p.messages.filter((message) => message.name === 'GetByteCodes')[0],
-      payload
+      payload,
     )
 
     assert.ok(JSON.stringify(res.reqId) === JSON.stringify(reqId), 'correctly decoded reqId')
@@ -391,7 +391,7 @@ describe('[SnapProtocol]', () => {
     const codesRes = RLP.decode(hexToBytes(byteCodesRLP))
     const { reqId, codes } = p.decode(
       p.messages.filter((message) => message.name === 'ByteCodes')[0],
-      codesRes
+      codesRes,
     )
 
     assert.ok(reqId === BigInt(1), 'reqId should be 1')
@@ -401,7 +401,7 @@ describe('[SnapProtocol]', () => {
       p.encode(p.messages.filter((message) => message.name === 'ByteCodes')[0], {
         reqId,
         codes,
-      })
+      }),
     )
     assert.ok(byteCodesRLP === bytesToHex(payload), 'Re-encoded payload should match with original')
   })
@@ -415,13 +415,13 @@ describe('[SnapProtocol]', () => {
     const codesReq = RLP.decode(hexToBytes(getByteCodesRLP))
     const { hashes } = p.decode(
       p.messages.filter((message) => message.name === 'GetByteCodes')[0],
-      codesReq
+      codesReq,
     )
     const codeHash = hashes[0]
     const codesRes = RLP.decode(hexToBytes(byteCodesRLP))
     const { codes } = p.decode(
       p.messages.filter((message) => message.name === 'ByteCodes')[0],
-      codesRes
+      codesRes,
     )
     const code = codes[0]
     assert.ok(equalsBytes(keccak256(code), codeHash), 'Code should match the requested codeHash')
@@ -446,19 +446,19 @@ describe('[SnapProtocol]', () => {
 
     assert.ok(
       JSON.stringify(payload[0]) === JSON.stringify(bigIntToBytes(reqId)),
-      'correctly encoded reqId'
+      'correctly encoded reqId',
     )
     assert.ok(JSON.stringify(payload[1]) === JSON.stringify(root), 'correctly encoded root')
     assert.ok(JSON.stringify(payload[2]) === JSON.stringify(paths), 'correctly encoded paths')
     assert.ok(
       JSON.stringify(payload[3]) === JSON.stringify(bigIntToBytes(bytes)),
-      'correctly encoded bytes'
+      'correctly encoded bytes',
     )
     assert.ok(payload)
 
     const res = p.decode(
       p.messages.filter((message) => message.name === 'GetTrieNodes')[0],
-      payload
+      payload,
     )
 
     assert.ok(JSON.stringify(res.reqId) === JSON.stringify(reqId), 'correctly decoded reqId')
@@ -476,7 +476,7 @@ describe('[SnapProtocol]', () => {
     const nodesRes = RLP.decode(hexToBytes(trieNodesRLP)) as unknown
     const { reqId, nodes } = p.decode(
       p.messages.filter((message) => message.name === 'TrieNodes')[0],
-      nodesRes
+      nodesRes,
     )
 
     assert.ok(reqId === BigInt(1), 'reqId should be 1')
@@ -494,7 +494,7 @@ describe('[SnapProtocol]', () => {
       p.encode(p.messages.filter((message) => message.name === 'TrieNodes')[0], {
         reqId,
         nodes,
-      })
+      }),
     )
     assert.ok(trieNodesRLP === bytesToHex(payload), 'Re-encoded payload should match with original')
   })

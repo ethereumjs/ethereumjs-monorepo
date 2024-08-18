@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { decodeNode } from '@ethereumjs/trie'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { OrderedMap } from 'js-sdsl'
+import { OrderedMap } from '@js-sdsl/ordered-map'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/index.js'
@@ -44,7 +44,7 @@ describe('[TrieNodeFetcher]', async () => {
     assert.equal(
       (fetcher as any).pathToNodeRequestData.length,
       1,
-      'one node request has been added'
+      'one node request has been added',
     )
 
     void fetcher.fetch()
@@ -77,7 +77,7 @@ describe('[TrieNodeFetcher]', async () => {
     assert.deepEqual(
       (fetcher.process(job, NodeDataResponse) as any)[0],
       fullResult[0],
-      'got results'
+      'got results',
     )
     assert.notOk(fetcher.process({} as any, { NodeDataResponse: [] } as any), 'bad results')
   })
@@ -135,7 +135,7 @@ describe('[TrieNodeFetcher]', async () => {
     fetcher.requestedNodeToPath = new Map()
     fetcher.requestedNodeToPath.set(
       '9100b295173da75cf0f160214e47b480abc2c9d2fe11330fe8befa69aac69656',
-      ''
+      '',
     )
 
     const resData = RLP.decode(hexToBytes(_trieNodesRLP)) as unknown
@@ -160,7 +160,7 @@ describe('[TrieNodeFetcher]', async () => {
     assert.equal(
       requestResult[0][0],
       res.nodes[0],
-      'Request phase should cross-validate received nodes with requested nodes'
+      'Request phase should cross-validate received nodes with requested nodes',
     )
 
     await fetcher.store(requestResult)
@@ -170,7 +170,7 @@ describe('[TrieNodeFetcher]', async () => {
     assert.equal(
       children.length,
       fetcher.pathToNodeRequestData.length,
-      'Should generate requests for all child nodes'
+      'Should generate requests for all child nodes',
     )
   })
   it('should not throw if undefined', async () => {

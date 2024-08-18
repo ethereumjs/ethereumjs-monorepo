@@ -2,26 +2,11 @@ import { Account, bytesToHex } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
+import { modifyAccountFields } from './util.js'
 
-import type {
-  AccountFields,
-  Common,
-  EVMStateManagerInterface,
-  Proof,
-  StorageDump,
-  StorageRange,
-} from '@ethereumjs/common'
+import type { SimpleStateManagerOpts } from './index.js'
+import type { AccountFields, Common, StateManagerInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
-
-/**
- * Options for constructing a {@link SimpleStateManager}.
- */
-export interface SimpleStateManagerOpts {
-  /**
-   * The common to use
-   */
-  common?: Common
-}
 
 /**
  * Simple and dependency-free state manager for basic state access use cases
@@ -38,7 +23,7 @@ export interface SimpleStateManagerOpts {
  * For a more full fledged and MPT-backed state manager implementation
  * have a look at the `@ethereumjs/statemanager` package.
  */
-export class SimpleStateManager implements EVMStateManagerInterface {
+export class SimpleStateManager implements StateManagerInterface {
   public accountStack: Map<PrefixedHexString, Account | undefined>[] = []
   public codeStack: Map<PrefixedHexString, Uint8Array>[] = []
   public storageStack: Map<string, Uint8Array>[] = []
@@ -52,7 +37,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
 
   constructor(opts: SimpleStateManagerOpts = {}) {
     this.checkpointSync()
-    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this.common = opts.common
   }
 
@@ -94,22 +79,14 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   }
 
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    let account = await this.getAccount(address)
-    if (!account) {
-      account = new Account()
-    }
-    account.nonce = accountFields.nonce ?? account.nonce
-    account.balance = accountFields.balance ?? account.balance
-    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
-    account.codeHash = accountFields.codeHash ?? account.codeHash
-    await this.putAccount(address, account)
+    await modifyAccountFields(this, address, accountFields)
   }
 
-  async getContractCode(address: Address): Promise<Uint8Array> {
+  async getCode(address: Address): Promise<Uint8Array> {
     return this.topCodeStack().get(address.toString()) ?? new Uint8Array(0)
   }
 
-  async putContractCode(address: Address, value: Uint8Array): Promise<void> {
+  async putCode(address: Address, value: Uint8Array): Promise<void> {
     this.topCodeStack().set(address.toString(), value)
     if ((await this.getAccount(address)) === undefined) {
       await this.putAccount(address, new Account())
@@ -119,20 +96,22 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     })
   }
 
-  async getContractCodeSize(address: Address): Promise<number> {
-    const contractCode = await this.getContractCode(address)
+  async getCodeSize(address: Address): Promise<number> {
+    const contractCode = await this.getCode(address)
     return contractCode.length
   }
 
-  async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
+  async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     return (
       this.topStorageStack().get(`${address.toString()}_${bytesToHex(key)}`) ?? new Uint8Array(0)
     )
   }
 
-  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
+  async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     this.topStorageStack().set(`${address.toString()}_${bytesToHex(key)}`, value)
   }
+
+  async clearStorage(): Promise<void> {}
 
   async checkpoint(): Promise<void> {
     this.checkpointSync()
@@ -152,7 +131,7 @@ export class SimpleStateManager implements EVMStateManagerInterface {
   async flush(): Promise<void> {}
   clearCaches(): void {}
 
-  shallowCopy(): EVMStateManagerInterface {
+  shallowCopy(): StateManagerInterface {
     const copy = new SimpleStateManager({ common: this.common })
     for (let i = 0; i < this.accountStack.length; i++) {
       copy.accountStack.push(new Map(this.accountStack[i]))
@@ -170,29 +149,6 @@ export class SimpleStateManager implements EVMStateManagerInterface {
     throw new Error('Method not implemented.')
   }
   hasStateRoot(): Promise<boolean> {
-    throw new Error('Method not implemented.')
-  }
-
-  // Only goes for long term create situations, skip
-  async clearContractStorage(): Promise<void> {}
-
-  // Only "core" methods implemented
-  checkChunkWitnessPresent?(): Promise<boolean> {
-    throw new Error('Method not implemented.')
-  }
-  dumpStorage(): Promise<StorageDump> {
-    throw new Error('Method not implemented.')
-  }
-  dumpStorageRange(): Promise<StorageRange> {
-    throw new Error('Method not implemented.')
-  }
-  generateCanonicalGenesis(): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
-  getProof(): Promise<Proof> {
-    throw new Error('Method not implemented.')
-  }
-  getAppliedKey?(): Uint8Array {
     throw new Error('Method not implemented.')
   }
 }
