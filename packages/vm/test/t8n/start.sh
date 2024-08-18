@@ -1,2 +1,7 @@
 #!/bin/bash
-curl -X POST -d "${1} ${2} ${3} ${4} ${5} ${6} ${7} ${8} ${9} ${10} ${11} ${12} ${13} ${14} ${15} ${16} ${17} ${18} ${19} ${20}" --silent http://localhost:3000/
+if [[ "$1" == "--version" ]]; then
+    echo "ethereumjs t8n v1"
+    exit 0
+fi
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+tsx "$SCRIPT_DIR/t8n.ts" "$@"
