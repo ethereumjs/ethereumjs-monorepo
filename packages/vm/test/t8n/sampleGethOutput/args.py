@@ -1,0 +1,13 @@
+[
+    "/usr/bin/evm",
+    "t8n",
+    "--input.alloc=stdin",
+    "--input.txs=stdin",
+    "--input.env=stdin",
+    "--output.result=stdout",
+    "--output.alloc=stdout",
+    "--output.body=stdout",
+    "--state.fork=Shanghai",
+    "--state.chainid=1",
+    "--state.reward=0"
+]

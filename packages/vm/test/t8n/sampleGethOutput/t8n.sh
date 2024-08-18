@@ -1,0 +1,4 @@
+#!/bin/bash
+rm -rf /home/jochem/Documents/ejs/execution-spec-tests/evmdebug/shanghai__eip3855_push0__test_push0__test_push0_contract_during_call_contexts/fork_Shanghai_blockchain_test_call/0/t8n.sh.out  # hard-coded to avoid surprises
+mkdir /home/jochem/Documents/ejs/execution-spec-tests/evmdebug/shanghai__eip3855_push0__test_push0__test_push0_contract_during_call_contexts/fork_Shanghai_blockchain_test_call/0/t8n.sh.out  # unused if tracing is not enabled
+/usr/bin/evm t8n --input.alloc=stdin --input.txs=stdin --input.env=stdin --output.result=stdout --output.alloc=stdout --output.body=stdout --state.fork=Shanghai --state.chainid=1 --state.reward=0 < /home/jochem/Documents/ejs/execution-spec-tests/evmdebug/shanghai__eip3855_push0__test_push0__test_push0_contract_during_call_contexts/fork_Shanghai_blockchain_test_call/0/stdin.txt
