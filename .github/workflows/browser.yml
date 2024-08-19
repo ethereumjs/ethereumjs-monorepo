@@ -9,6 +9,10 @@ on:
           required: true
           type: string
   workflow_dispatch:
+    inputs:
+      submodule-cache-key:
+        required: false
+        default: 'none'
 
 env:
   cwd: ${{github.workspace}}
@@ -23,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - if: !inputs.dep-cache-key
+      - if: inputs.submodule-cache-key == 'none'
         uses: actions/checkout@v4
         with:
           submodules: recursive
