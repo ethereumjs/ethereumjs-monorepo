@@ -3,12 +3,15 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
+  BIGINT_1,
   bigIntToHex,
   bytesToHex,
   createAddressFromString,
   hexToBytes,
   setLengthLeft,
+  toBytes,
   unpadBytes,
+  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
@@ -22,6 +25,7 @@ import { getCommon } from '../tester/config.js'
 import { makeBlockFromEnv, setupPreConditions } from '../util.js'
 
 import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
+import type { Log } from '@ethereumjs/evm'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 function normalizeNumbers(input: any) {
@@ -126,14 +130,38 @@ let txCounter = 0
 
 let log = true
 
+const logsBuilder: Log[] = []
+
+let txIndex = -BIGINT_1
+
 vm.events.on('afterTx', async (afterTx, continueFn: any) => {
+  txIndex++
   const receipt = afterTx.receipt as PostByzantiumTxReceipt
+
+  const formattedLogs = []
+  for (const log of receipt.logs) {
+    logsBuilder.push(log)
+
+    const entry: any = {
+      address: bytesToHex(log[0]),
+      topics: log[1].map((e) => bytesToHex(e)),
+      data: bytesToHex(log[2]),
+      blockNumber: bytesToHex(toBytes(builder['headerData'].number)),
+      transactionHash: bytesToHex(afterTx.transaction.hash()),
+      transactionIndex: bigIntToHex(txIndex),
+      blockHash: bytesToHex(zeros(32)),
+      logIndex: bigIntToHex(BigInt(formattedLogs.length)),
+      removed: 'false',
+    }
+    formattedLogs.push(entry)
+  }
+
   const pushReceipt = {
     root: '0x',
     status: receipt.status === 0 ? '0x0' : '0x1',
     cumulativeGasUsed: '0x' + receipt.cumulativeBlockGasUsed.toString(16),
     logsBloom: bytesToHex(receipt.bitvector),
-    logs: receipt.logs,
+    logs: formattedLogs,
     transactionHash: bytesToHex(afterTx.transaction.hash()),
     contractAddress: '0x0000000000000000000000000000000000000000',
     gasUsed: '0x' + afterTx.totalGasSpent.toString(16),
@@ -254,14 +282,6 @@ for (const txData of txsData) {
 await vm.evm.journal.cleanup()
 
 const result = await builder.build()
-
-const logsBuilder = []
-
-for (const receipt of receipts) {
-  for (const log of receipt.logs) {
-    logsBuilder.push(log)
-  }
-}
 
 const output = {
   stateRoot: bytesToHex(result.header.stateRoot),
