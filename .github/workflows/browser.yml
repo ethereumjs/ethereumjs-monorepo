@@ -23,7 +23,9 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - if: github.event_name == 'workflow_dispatch'
+      - run: echo ${{ github.event_name }}
+      - run: echo ${{ github.event }}
+      - if: github.event.action ==  'workflow_dispatch'
         uses: actions/checkout@v4
         with:
           submodules: recursive
