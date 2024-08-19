@@ -1,5 +1,6 @@
 import { Block, createBlock, createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
+import { RLP } from '@ethereumjs/rlp'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
   bigIntToHex,
@@ -106,6 +107,10 @@ await setupPreConditions(vm.stateManager, { pre: alloc })
 
 const block = makeBlockFromEnv(inputEnv, { common })
 
+// TODO: add state.reward
+//const acc = (await vm.stateManager.getAccount(block.header.coinbase)) ?? new Account()
+//await vm.stateManager.putAccount(block.header.coinbase, acc)
+
 const headerData = block.header.toJSON()
 headerData.difficulty = inputEnv.parentDifficulty
 
@@ -128,6 +133,7 @@ vm.events.on('afterTx', async (afterTx, continueFn: any) => {
     status: receipt.status === 0 ? '0x0' : '0x1',
     cumulativeGasUsed: '0x' + receipt.cumulativeBlockGasUsed.toString(16),
     logsBloom: bytesToHex(receipt.bitvector),
+    logs: receipt.logs,
     transactionHash: bytesToHex(afterTx.transaction.hash()),
     contractAddress: '0x0000000000000000000000000000000000000000',
     gasUsed: '0x' + afterTx.totalGasSpent.toString(16),
@@ -141,7 +147,7 @@ vm.events.on('afterTx', async (afterTx, continueFn: any) => {
   continueFn!(undefined)
 })
 
-vm.events.on('beforeTx', (e) => {
+vm.events.on('beforeTx', () => {
   console.log('!---! NEW TX')
   console.log('-------------------------------------------------')
 })
@@ -249,11 +255,19 @@ await vm.evm.journal.cleanup()
 
 const result = await builder.build()
 
+const logsBuilder = []
+
+for (const receipt of receipts) {
+  for (const log of receipt.logs) {
+    logsBuilder.push(log)
+  }
+}
+
 const output = {
   stateRoot: bytesToHex(result.header.stateRoot),
   txRoot: bytesToHex(result.header.transactionsTrie),
   receiptsRoot: bytesToHex(result.header.receiptTrie),
-  logsHash: bytesToHex(keccak256(result.header.logsBloom)),
+  logsHash: bytesToHex(keccak256(RLP.encode(logsBuilder))),
   logsBloom: bytesToHex(result.header.logsBloom),
   receipts,
   gasUsed: bigIntToHex(builder.gasUsed),

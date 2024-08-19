@@ -593,6 +593,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           }
 
           runState.stack.push(BigInt(bytesToHex(account.codeHash)))
+          return
         } else {
           runState.stack.push(bytesToBigInt(keccak256(code)))
           return
