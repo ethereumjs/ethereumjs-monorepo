@@ -10,6 +10,9 @@ on:
           type: string
   workflow_dispatch:
     inputs:
+      dep-cache-key:
+        required: false
+        default: 'none'
       submodule-cache-key:
         required: false
         default: 'none'
@@ -32,7 +35,8 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: actions/cache/restore@v4
+      - if: inputs.dep-cache-key != 'none' 
+        uses: actions/cache/restore@v4
         id: dep-cache
         with:
           path: ${{github.workspace}}
@@ -49,7 +53,8 @@ jobs:
         run: npm ci     
         working-directory: ${{ github.workspace }}
 
-      - uses: actions/cache/restore@v4
+      - if: inputs.submodule-cache-key == 'none'
+        uses: actions/cache/restore@v4
         name: Initialize ethereum-tests
         id: submodules-cache
         with:
