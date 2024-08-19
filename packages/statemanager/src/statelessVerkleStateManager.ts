@@ -25,10 +25,11 @@ import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { AccessWitness, AccessedStateType, decodeValue } from './accessWitness.js'
-import { Caches, OriginalStorageCache } from './cache/index.js'
+import { OriginalStorageCache } from './cache/index.js'
 import { modifyAccountFields } from './util.js'
 
 import type { AccessedStateWithAddress } from './accessWitness.js'
+import type { Caches } from './cache/index.js'
 import type { StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
 import type { DefaultStateManager } from './stateManager.js'
 import type { AccountFields, Proof, StateManagerInterface } from '@ethereumjs/common'
@@ -206,9 +207,9 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    * at the last fully committed point, i.e. as if all current
    * checkpoints were reverted.
    */
-  shallowCopy(): StatelessVerkleStateManager {
+  shallowCopy(downlevelCaches = true): StatelessVerkleStateManager {
     const stateManager = new StatelessVerkleStateManager({
-      caches: this._caches !== undefined ? new Caches() : undefined,
+      caches: this._caches?.shallowCopy(downlevelCaches),
       verkleCrypto: this.verkleCrypto,
     })
     return stateManager
@@ -519,7 +520,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    * @param {Uint8Array} stateRoot - The stateRoot to verify the executionWitness against
    * @returns {boolean} - Returns true if the executionWitness matches the provided stateRoot, otherwise false
    */
-  verifyProof(stateRoot: Uint8Array): boolean {
+  verifyVerkleProof(stateRoot: Uint8Array): boolean {
     if (this._executionWitness === undefined) {
       debug('Missing executionWitness')
       return false

@@ -4,6 +4,7 @@ import {
   createBlockFromRLPSerializedBlock,
   createSealedCliqueBlock,
 } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -253,7 +254,8 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   })
 
   it('should fail when block validation fails', async () => {
-    const vm = await VM.create({ common })
+    const blockchain = await createBlockchain()
+    const vm = await VM.create({ common, blockchain })
 
     const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
     const block = Object.create(createBlockFromRLPSerializedBlock(blockRlp, { common }))

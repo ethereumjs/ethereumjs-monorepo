@@ -39,12 +39,12 @@ import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
 import type {
   Block,
-  Blockchain,
   CustomOpcode,
   EVMBLSInterface,
   EVMBN254Interface,
   EVMEvents,
   EVMInterface,
+  EVMMockBlockchainInterface,
   EVMOpts,
   EVMResult,
   EVMRunCallOpts,
@@ -96,7 +96,7 @@ export class EVM implements EVMInterface {
   public readonly events: AsyncEventEmitter<EVMEvents>
 
   public stateManager: StateManagerInterface
-  public blockchain: Blockchain
+  public blockchain: EVMMockBlockchainInterface
   public journal: Journal
 
   public readonly transientStorage: TransientStorage
