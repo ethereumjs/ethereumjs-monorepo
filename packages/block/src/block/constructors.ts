@@ -120,6 +120,18 @@ export function createBlock(blockData: BlockData = {}, opts?: BlockOptions) {
 }
 
 /**
+ * Simple static constructor if only an empty block is needed
+ * (tree shaking advantages since it does not draw all the tx constructors in)
+ *
+ * @param headerData
+ * @param opts
+ */
+export function createEmptyBlock(headerData: HeaderData, opts?: BlockOptions) {
+  const header = createBlockHeader(headerData, opts)
+  return new Block(header)
+}
+
+/**
  * Static constructor to create a block from an array of Bytes values
  *
  * @param values

@@ -1,35 +1,10 @@
-import { equalsBytes, short } from '@ethereumjs/util'
+import { equalsBytes } from '@ethereumjs/util'
 
 import { BLS_GAS_DISCOUNT_PAIRS } from './constants.js'
 
 import type { PrecompileInput } from '../types.js'
 
 const ZERO_BYTES_16 = new Uint8Array(16)
-
-/**
- * Checks that the gas used remain under the gas limit.
- *
- * @param opts
- * @param gasUsed
- * @param pName
- * @returns
- */
-export const gasCheck = (opts: PrecompileInput, gasUsed: bigint, pName: string) => {
-  if (opts._debug !== undefined) {
-    opts._debug(
-      `Run ${pName} precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
-        opts.gasLimit
-      } gasUsed=${gasUsed}`,
-    )
-  }
-  if (opts.gasLimit < gasUsed) {
-    if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: OOG`)
-    }
-    return false
-  }
-  return true
-}
 
 /**
  * Calculates the gas used for the MSM precompiles based on the number of pairs and

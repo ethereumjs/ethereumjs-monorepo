@@ -7,10 +7,11 @@ import {
   publicToAddress,
   setLengthLeft,
   setLengthRight,
-  short,
 } from '@ethereumjs/util'
 
 import { OOGResult } from '../evm.js'
+
+import { gasLimitCheck } from './util.js'
 
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
@@ -18,18 +19,7 @@ import type { PrecompileInput } from './types.js'
 export function precompile01(opts: PrecompileInput): ExecResult {
   const ecrecoverFunction = opts.common.customCrypto.ecrecover ?? ecrecover
   const gasUsed = opts.common.param('ecRecoverGas')
-  if (opts._debug !== undefined) {
-    opts._debug(
-      `Run ECRECOVER (0x01) precompile data=${short(opts.data)} length=${
-        opts.data.length
-      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`,
-    )
-  }
-
-  if (opts.gasLimit < gasUsed) {
-    if (opts._debug !== undefined) {
-      opts._debug(`ECRECOVER (0x01) failed: OOG`)
-    }
+  if (!gasLimitCheck(opts, gasUsed, 'ECRECOVER (0x01)')) {
     return OOGResult(opts.gasLimit)
   }
 

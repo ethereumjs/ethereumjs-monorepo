@@ -7,8 +7,8 @@ export const EOFBYTES = new Uint8Array([FORMAT, MAGIC])
 export const EOFHASH = keccak256(EOFBYTES)
 
 /**
- * Returns `true` if `code` is an EOF contract, returns `false` otherwise
- * @param code Code to test if it is EOF
+ * Returns `true` if `code` is an EOF contract, otherwise `false`
+ * @param code Code to test
  */
 export function isEOF(code: Uint8Array): boolean {
   const check = code.subarray(0, EOFBYTES.length)

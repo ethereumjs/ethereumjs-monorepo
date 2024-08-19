@@ -60,9 +60,15 @@ export interface AsyncOpHandler {
 
 export type OpHandler = SyncOpHandler | AsyncOpHandler
 
-async function eip7702CodeCheck(runState: RunState, code: Uint8Array) {
+function getEIP7702DelegatedAddress(code: Uint8Array) {
   if (equalBytes(code.slice(0, 3), new Uint8Array([0xef, 0x01, 0x00]))) {
-    const address = new Address(code.slice(3, 24))
+    return new Address(code.slice(3, 24))
+  }
+}
+
+async function eip7702CodeCheck(runState: RunState, code: Uint8Array) {
+  const address = getEIP7702DelegatedAddress(code)
+  if (address !== undefined) {
     return runState.stateManager.getCode(address)
   }
 
@@ -571,16 +577,26 @@ export const handlers: Map<number, OpHandler> = new Map([
       const address = createAddressFromStackBigInt(addressBigInt)
 
       // EOF check
-      let code = await runState.stateManager.getCode(address)
+      const code = await runState.stateManager.getCode(address)
       if (isEOF(code)) {
         // In legacy code, the target code is treated as to be "EOFBYTES" code
         // Therefore, push the hash of EOFBYTES to the stack
         runState.stack.push(bytesToBigInt(EOFHASH))
         return
       } else if (common.isActivatedEIP(7702)) {
-        code = await eip7702CodeCheck(runState, code)
-        runState.stack.push(bytesToBigInt(keccak256(code)))
-        return
+        const possibleDelegatedAddress = getEIP7702DelegatedAddress(code)
+        if (possibleDelegatedAddress !== undefined) {
+          const account = await runState.stateManager.getAccount(possibleDelegatedAddress)
+          if (!account || account.isEmpty()) {
+            runState.stack.push(BIGINT_0)
+            return
+          }
+
+          runState.stack.push(BigInt(bytesToHex(account.codeHash)))
+        } else {
+          runState.stack.push(bytesToBigInt(keccak256(code)))
+          return
+        }
       }
 
       const account = await runState.stateManager.getAccount(address)
