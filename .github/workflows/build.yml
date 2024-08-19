@@ -1,8 +1,5 @@
 name: Build
 on:
-  push:
-    branches: [master]
-    tags: ['*']
   pull_request:
     types: [opened, reopened, synchronize]
   workflow_dispatch:
@@ -178,13 +175,6 @@ jobs:
     uses: ./.github/workflows/verkle-build.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-
-  vm-build:
-    needs: [build, checkout-submodules]
-    uses: ./.github/workflows/vm-build.yml
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
 
   vm-pr:
     needs: [build, checkout-submodules]

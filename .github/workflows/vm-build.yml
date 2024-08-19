@@ -1,16 +1,8 @@
 name: VM
 on:
-  workflow_call:
-    inputs:
-      dep-cache-key:
-        required: true
-        type: string
-      submodule-cache-key:
-        required: true
-        type: string
-
-env:
-  cwd: ${{github.workspace}}/packages/vm
+  push:
+    branches: [master]
+    tags: ['*']
 
 defaults:
   run:
@@ -21,45 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-vm-api:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - uses: actions/cache/restore@v4
-        id: dep-cache
-        with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
-
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
-        working-directory: ${{ github.workspace }}
-     
-      - uses: actions/cache/restore@v4
-        name: Initialize ethereum-tests
-        id: submodules-cache
-        with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: ${{ inputs.submodule-cache-key }}
-          fail-on-cache-miss: true
-
-      - run: npm run coverage
-
-      - uses: codecov/codecov-action@v3
-        with:
-          files: ${{ env.cwd }}/coverage/lcov.info
-          flags: vm
-
   test-vm-state:
     runs-on: ubuntu-latest
     steps:
@@ -71,7 +24,7 @@ jobs:
         id: dep-cache
         with:
           path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
+          key: npm-${{ hashFiles('package-lock.json') }}
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
@@ -84,14 +37,6 @@ jobs:
         run: npm ci     
         working-directory: ${{ github.workspace }}
 
-      - uses: actions/cache/restore@v4
-        name: Initialize ethereum-tests
-        id: submodules-cache
-        with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: ${{ inputs.submodule-cache-key}}
-          fail-on-cache-miss: true
-          
       - run: npm run test:state:selectedForks
 
   test-vm-blockchain:
@@ -105,7 +50,7 @@ jobs:
         id: dep-cache
         with:
           path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
+          key: npm-${{ hashFiles('package-lock.json') }}
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
@@ -117,67 +62,5 @@ jobs:
         if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci     
         working-directory: ${{ github.workspace }}
-  
-      - uses: actions/cache/restore@v4
-        name: Initialize ethereum-tests
-        id: submodules-cache
-        with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: ${{ inputs.submodule-cache-key}}
-          fail-on-cache-miss: true
 
       - run: npm run test:blockchain
-
-  vm-benchmarks:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/cache/restore@v4
-        id: dep-cache
-        with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
-
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
-        working-directory: ${{ github.workspace }}
-
-
-      - run: npm run build:benchmarks
-        working-directory: ${{ env.cwd }}
-
-      - run: npm run benchmarks -- mainnetBlocks:10 | tee output.txt
-        working-directory: ${{ env.cwd }}
-
-      # Run git stash in case github-action-benchmark has trouble switching to gh-pages branch due to differing package-locks
-      - run: git stash
-
-      - name: Compare benchmarks
-        uses: rhysd/github-action-benchmark@v1
-        if: github.ref == 'refs/heads/master'
-        with:
-          tool: 'benchmarkjs'
-          # Where the output from the benchmark tool is stored
-          output-file-path: ${{ env.cwd }}/output.txt
-          # Location of data in gh-pages branch
-          benchmark-data-dir-path: dev/bench/vm
-          # Enable alert commit comment (default alert threshold: 200%)
-          comment-on-alert: true
-          # GitHub API token to make a commit comment
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          # Push and deploy to GitHub pages branch automatically (if on master)
-          auto-push: 'true'
-          # Only keep and display the last 30 commits worth of benchmark data
-          max-items-in-chart: 30
-
-      # Re-apply git stash to prepare for saving back to cache.
-      # Avoids exit code 1 by checking if there are changes to be stashed first
-      - run: STASH_LIST=`git stash list` && [ ! -z $STASH_LIST ] && git stash apply || echo "No files to stash-apply. Skipping…"
