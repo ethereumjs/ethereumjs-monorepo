@@ -1,19 +1,13 @@
 import { Block, createBlock, createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import {
-  createLegacyTxFromBytesArray,
-  createTxFromSerializedData,
-  createTxFromTxData,
-} from '@ethereumjs/tx'
-import {
-  Account,
   bigIntToHex,
   bytesToHex,
   createAddressFromString,
   hexToBytes,
   setLengthLeft,
   unpadBytes,
-  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
@@ -27,8 +21,7 @@ import { getCommon } from '../tester/config.js'
 import { makeBlockFromEnv, setupPreConditions } from '../util.js'
 
 import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
-import type { TypedTransaction, TypedTxData } from '@ethereumjs/tx'
-import type { Address, NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 function normalizeNumbers(input: any) {
   const keys = [
@@ -178,20 +171,20 @@ vm.stateManager.putAccount = async function (...args: any) {
 vm.stateManager.putAccount = async function (...args: any) {
   const address = <Address>args[0]
   addAddress(address.toString())
-  return await originalPutAccount.apply(this, args)
+  return originalPutAccount.apply(this, args)
 }
 
 vm.stateManager.putCode = async function (...args: any) {
   const address = <Address>args[0]
   addAddress(address.toString())
-  return await originalPutCode.apply(this, args)
+  return originalPutCode.apply(this, args)
 }
 
 vm.stateManager.putStorage = async function (...args: any) {
   const address = <Address>args[0]
   const key = <Uint8Array>args[1]
   addStorage(address.toString(), bytesToHex(key))
-  return await originalPutStorage.apply(this, args)
+  return originalPutStorage.apply(this, args)
 }
 
 const rejected: any = []
@@ -289,8 +282,6 @@ for (const addressString in allocTracker) {
     }
     const value = await vm.stateManager.getStorage(address, setLengthLeft(keyBytes, 32))
     if (value.length === 0) {
-      console.log(storageKeyTrimmed)
-      console.log(alloc[addressString])
       delete alloc[addressString].storage[storageKeyTrimmed]
       // To be sure, also delete any keys which are left-padded to 32 bytes
       delete alloc[addressString].storage[key]

@@ -11,6 +11,7 @@ import {
 import {
   Account,
   Address,
+  TypeOutput,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
@@ -22,7 +23,6 @@ import {
   setLengthLeft,
   toBytes,
   toType,
-  TypeOutput,
   unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
