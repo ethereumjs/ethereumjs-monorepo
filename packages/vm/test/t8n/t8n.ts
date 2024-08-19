@@ -119,6 +119,8 @@ const receipts: any = []
 
 let txCounter = 0
 
+let log = true
+
 vm.events.on('afterTx', async (afterTx, continueFn: any) => {
   const receipt = afterTx.receipt as PostByzantiumTxReceipt
   const pushReceipt = {
@@ -132,9 +134,22 @@ vm.events.on('afterTx', async (afterTx, continueFn: any) => {
     blockHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
     transactionIndex: '0x' + txCounter.toString(16),
   }
+  console.log('TX DONE')
+  log = false
   receipts.push(pushReceipt)
   txCounter++
   continueFn!(undefined)
+})
+
+vm.events.on('beforeTx', (e) => {
+  console.log('!---! NEW TX')
+  console.log('-------------------------------------------------')
+})
+
+vm.evm.events?.on('step', (e) => {
+  if (log) {
+    console.log(e.address.toString(), e.opcode.name)
+  }
 })
 
 // Track the allocation to ensure the output.alloc is correct
