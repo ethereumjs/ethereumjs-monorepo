@@ -9,7 +9,10 @@ on:
           required: true
           type: string
   workflow_dispatch:
-
+    inputs:
+      submodule-cache-key:
+          required: false
+          type: string
 env:
   cwd: ${{github.workspace}}
 
@@ -23,8 +26,21 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
-          
+      - uses: actions/cache/restore@v4
+        name: Initialize ethereum-tests
+        id: submodules-cache
+        with:
+          path: ${{github.workspace}}/packages/ethereum-tests
+          key: ${{ inputs.submodule-cache-key }}
+        
+      - if: steps.submodules-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - if: steps.submodules-cache.outputs.cache-hit == 'true'
+        uses: actions/checkout@v4    
+
       - uses: actions/cache/restore@v4
         id: dep-cache
         with:
@@ -41,17 +57,6 @@ jobs:
         if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci     
         working-directory: ${{ github.workspace }}
-
-      - uses: actions/cache/restore@v4
-        name: Initialize ethereum-tests
-        id: submodules-cache
-        with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: ${{ inputs.submodule-cache-key }}
-
-      - name: Check if ethereum-tests is present (if not, fail)
-        if: steps.submodules-cache.outputs.cache-hit != 'true'
-        run: exit 1
 
       - run: npm run install-browser-deps
 
