@@ -7,6 +7,7 @@ import {
   Account,
   Address,
   BIGINT_0,
+  BIGINT_1,
   KECCAK256_NULL,
   bytesToBigInt,
   bytesToHex,
@@ -292,8 +293,21 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   // EIP-3607: Reject transactions from senders with deployed code
   if (vm.common.isActivatedEIP(3607) && !equalsBytes(fromAccount.codeHash, KECCAK256_NULL)) {
-    const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', vm, block, tx)
-    throw new Error(msg)
+    if (vm.common.isActivatedEIP(7702)) {
+      const code = await state.getCode(caller)
+      if (!equalsBytes(code.slice(0, 3), new Uint8Array([0xef, 0x01, 0x00]))) {
+        const msg = _errorMsg(
+          'invalid sender address, address is not EOA (EIP-3607)',
+          vm,
+          block,
+          tx,
+        )
+        throw new Error(msg)
+      }
+    } else {
+      const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', vm, block, tx)
+      throw new Error(msg)
+    }
   }
 
   // Check balance against upfront tx cost
@@ -464,14 +478,23 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
           continue
         }
       }
-      if (account.nonce !== bytesToBigInt(nonce)) {
+
+      // Nonce check
+      if (caller.toString() === authority.toString()) {
+        if (account.nonce + BIGINT_1 !== bytesToBigInt(nonce)) {
+          // Edge case: caller is the authority, so is self-signing the delegation
+          // In this case, we "virtually" bump the account nonce by one
+          // We CANNOT put this updated nonce into the account trie, because then
+          // the EVM will bump the nonce once again, thus resulting in a wrong nonce
+          continue
+        }
+      } else if (account.nonce !== bytesToBigInt(nonce)) {
         continue
       }
 
       if (accountExists) {
         const refund = tx.common.param('perEmptyAccountCost') - tx.common.param('perAuthBaseGas')
         gasRefund += refund
-        await vm.evm.journal.putAccount(caller, fromAccount)
       }
 
       account.nonce++
