@@ -38,6 +38,8 @@ function normalizeNumbers(input: any) {
     'currentRandom',
     'currentDifficulty',
     'currentBaseFee',
+    'currentBlobGasUsed',
+    'currentExcessBlobGas',
     'parentDifficulty',
     'parentTimestamp',
     'parentBaseFee',
@@ -248,6 +250,14 @@ if (result.header.withdrawalsRoot !== undefined) {
   ;(output as any).withdrawalsRoot = bytesToHex(result.header.withdrawalsRoot)
 }
 
+if (result.header.blobGasUsed !== undefined) {
+  ;(output as any).blobGasUsed = bigIntToHex(result.header.blobGasUsed)
+}
+
+if (result.header.excessBlobGas !== undefined) {
+  ;(output as any).currentExcessBlobGas = bigIntToHex(result.header.excessBlobGas)
+}
+
 if (rejected.length > 0) {
   ;(output as any).rejected = rejected
 }
@@ -268,8 +278,8 @@ for (const addressString in allocTracker) {
   alloc[addressString].balance = bigIntToHex(account.balance)
   alloc[addressString].code = bytesToHex(await vm.stateManager.getCode(address))
 
-  const storage = allocTracker[addressString].storage ?? {}
-  allocTracker[addressString].storage = storage
+  const storage = allocTracker[addressString].storage
+  alloc[addressString].storage = alloc[addressString].storage ?? {}
 
   for (const key of storage) {
     const keyBytes = hexToBytes(<PrefixedHexString>key)
@@ -279,6 +289,8 @@ for (const addressString in allocTracker) {
     }
     const value = await vm.stateManager.getStorage(address, setLengthLeft(keyBytes, 32))
     if (value.length === 0) {
+      console.log(storageKeyTrimmed)
+      console.log(alloc[addressString])
       delete alloc[addressString].storage[storageKeyTrimmed]
       // To be sure, also delete any keys which are left-padded to 32 bytes
       delete alloc[addressString].storage[key]
