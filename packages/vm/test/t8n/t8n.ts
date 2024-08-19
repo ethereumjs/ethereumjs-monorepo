@@ -37,6 +37,7 @@ function normalizeNumbers(input: any) {
     'currentTimestamp',
     'currentRandom',
     'currentDifficulty',
+    'currentBaseFee',
     'parentDifficulty',
     'parentTimestamp',
     'parentBaseFee',
@@ -127,7 +128,7 @@ vm.events.on('afterTx', async (afterTx, continueFn: any) => {
   const receipt = afterTx.receipt as PostByzantiumTxReceipt
   const pushReceipt = {
     root: '0x',
-    status: receipt.status === 0 ? '0x' : '0x1',
+    status: receipt.status === 0 ? '0x0' : '0x1',
     cumulativeGasUsed: '0x' + receipt.cumulativeBlockGasUsed.toString(16),
     logsBloom: bytesToHex(receipt.bitvector),
     transactionHash: bytesToHex(afterTx.transaction.hash()),
