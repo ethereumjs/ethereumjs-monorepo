@@ -23,15 +23,10 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - run: echo ${{ github.event_name }}
-      - run: echo ${{ github.event }}
-      - if: github.event.action ==  'workflow_dispatch'
+      - if: !inputs.dep-cache-key
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - if: github.event_name == 'workflow_call'
-        uses: actions/checkout@v4    
 
       - uses: actions/cache/restore@v4
         id: dep-cache
