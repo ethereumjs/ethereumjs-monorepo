@@ -423,6 +423,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   await vm.evm.journal.putAccount(caller, fromAccount)
 
+  let gasRefund = BIGINT_0
+
   const writtenAddresses = new Set<string>()
   if (tx.supports(Capability.EIP7702EOACode)) {
     // Add contract code for authority tuples provided by EIP 7702 tx
@@ -468,11 +470,12 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
       if (accountExists) {
         const refund = tx.common.param('perEmptyAccountCost') - tx.common.param('perAuthBaseGas')
-        fromAccount.balance += refund
+        gasRefund += refund
+        await vm.evm.journal.putAccount(caller, fromAccount)
       }
 
-      fromAccount.nonce++
-      await vm.evm.journal.putAccount(authority, fromAccount)
+      account.nonce++
+      await vm.evm.journal.putAccount(authority, account)
 
       const addressCode = concatBytes(new Uint8Array([0xef, 0x01, 0x00]), address)
       await vm.stateManager.putCode(authority, addressCode)
@@ -566,7 +569,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Process any gas refund
-  let gasRefund = results.execResult.gasRefund ?? BIGINT_0
+  gasRefund += results.execResult.gasRefund ?? BIGINT_0
   results.gasRefund = gasRefund
   const maxRefundQuotient = vm.common.param('maxRefundQuotient')
   if (gasRefund !== BIGINT_0) {
