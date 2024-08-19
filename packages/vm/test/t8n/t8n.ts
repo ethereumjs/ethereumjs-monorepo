@@ -205,6 +205,15 @@ for (const txData of txsData) {
         if (e.yParity === undefined) {
           e.yParity = e.v
         }
+        if (e.yParity === '0x0') {
+          e.yParity = '0x'
+        }
+        if (e.nonce === '0x0') {
+          e.nonce = '0x'
+        }
+        if (e.chainId === '0x0') {
+          e.chainId = '0x'
+        }
       })
     }
     if (txData.input !== undefined) {
@@ -249,6 +258,10 @@ if (result.header.blobGasUsed !== undefined) {
 
 if (result.header.excessBlobGas !== undefined) {
   ;(output as any).currentExcessBlobGas = bigIntToHex(result.header.excessBlobGas)
+}
+
+if (result.header.requestsRoot !== undefined) {
+  ;(output as any).requestsRoot = bytesToHex(result.header.requestsRoot)
 }
 
 if (rejected.length > 0) {
