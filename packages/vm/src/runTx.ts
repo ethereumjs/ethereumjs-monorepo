@@ -467,7 +467,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
 
       if (accountExists) {
-        const refund = vm.common.param('perEmptyAccountCost') - vm.common.param('perAuthBaseGas')
+        const refund = tx.common.param('perEmptyAccountCost') - tx.common.param('perAuthBaseGas')
         fromAccount.balance += refund
       }
 
