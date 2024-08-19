@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1723918757509,
+  "lastUpdate": 1724074724510,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "8d87e806add36b8face7a90e69636bf5f14a08b1",
-          "message": "StateManager: Interface Refactor/Simplification (#3543)\n\n* Move originalStorageCache to main interface (implemented by all SMs, alternative: make optional)\r\n\r\n* Remove redundand getProof from interface\r\n\r\n* Move generateCanonicalGenesis to main SM interface, make optional, remove VM genesisState option (only 1 internal usage, can be easily replaced)\r\n\r\n* Move dumpStorage() over to main interface, make optional\r\n\r\n* Move dumpStorageRange() over to main interface, make optional, SM method clean up\r\n\r\n* Bug fix, fix Kaustinen6 test\r\n\r\n* Add simple clearStorage() implementation for simple SM\r\n\r\n* Fully remove EVMStateManager interface\r\n\r\n* Add clearCaches() to the official interface (called into from runBlock(), implemented by all SMs\r\n\r\n* Lint and test fixes\r\n\r\n* Edit comment\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-07-26T14:52:15-04:00",
-          "tree_id": "0e519af7d0aa16bd38cd394a01b1dac2a4df620f",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8d87e806add36b8face7a90e69636bf5f14a08b1"
-        },
-        "date": 1722020089242,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 38681,
-            "range": "±2.01%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 36897,
-            "range": "±2.76%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 37372,
-            "range": "±1.38%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36901,
-            "range": "±1.46%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35835,
-            "range": "±1.82%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.81%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9856f660597edfc4e90b7bdce4e9bdc5b697553c",
+          "message": "VM/SM: Bundle Optimizations (Default wo Caches+EVMMockBlockchain, SM Code put() Fix, VerkleSM out, runTx()+Code Opts) (#3601)\n\n* Use shallowCopy() Caches copy() optimization also for VerkleSM to avoid Caches bundling on non-Caches default\r\n\r\n* Fix default state manager missing direct code write when used without caches\r\n\r\n* Do not initialize caches for default VM state manager\r\n\r\n* Remove copy test not making sense any more under generalized cache/no-cache conditions\r\n\r\n* Some more solid/qualified EVM dummy blockchain + interface naming to allow for exporting\r\n\r\n* Use EVMMockBlockchain(Interface) as default for the VM, adjust some tests\r\n\r\n* Move @ethereumjs/blockchain to dev dependencies in VM\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Adjust/fix some client tests\r\n\r\n* Lint fix\r\n\r\n* Add Verkle SM methods as optional methods to interface, replace VerkleSM imports and castings in VM\r\n\r\n* Also align client (no real effect yet, but generally try to work more on the interfaces and not the classes directly)\r\n\r\n* Initialize runTx() default block with simpler constructor to avoid drawing all txs in\r\n\r\n* Fully switch to DEFAULT_HEADER in VM.runTx() to avoid drawing in block code\r\n\r\n* Opcode list size optimization\r\n\r\n* More optimizations\r\n\r\n* Precompile code optimizations\r\n\r\n* More optimizations (precompile index.ts file)\r\n\r\n* Some more\r\n\r\n* Some doc compatification\r\n\r\n* Add CSpell checker to CI and fix typos (#3590)\r\n\r\n* monorepo: add cspell, add ALL unknown words to valid words\r\n\r\n* cspell: split unknown words in ts/md\r\n\r\n* filter out wrong words in cspell-ts.json\r\n\r\n* cspell ignore hex values\r\n\r\n* fix typos in all packages\r\n\r\n* cspell: use cache\r\n\r\n* cspell: update commands\r\n\r\n* cspell: update md/ts words\r\n\r\n* Typo fixes for README/CHANGELOG files\r\n\r\n* cspell: ensure all relevant monorepo md files are checked\r\n\r\n* ci: add cspell job\r\n\r\n* cspell: update command\r\n\r\n* temp add bogus to markdown\r\n\r\n* remove bogus spell\r\n\r\n* update ci name\r\n\r\n* fix remaining typos + add words to cspell dict\r\n\r\n* Update packages/client/CHANGELOG.md\r\n\r\n* Update packages/util/CHANGELOG.md\r\n\r\n* address review\r\n\r\n* Remove almost all `cspell:ignore` (#3599)\r\n\r\n* remove almost all cspell:ignore\r\n\r\n* more spell changes\r\n\r\n* cspell: fix problems\r\n\r\n* evm: fix quadCoefficient\r\n\r\n* cspell: fixes\r\n\r\n* remove disable line\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Fix spell check\r\n\r\n* Remove accidentally committed examples/test.ts file\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
+          "timestamp": "2024-08-19T15:36:01+02:00",
+          "tree_id": "eba28bd07ea3435889e3f7b3d8cb1799de03a126",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9856f660597edfc4e90b7bdce4e9bdc5b697553c"
+        },
+        "date": 1724074723612,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 37877,
+            "range": "±1.73%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 35937,
+            "range": "±3.35%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 36656,
+            "range": "±1.46%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35733,
+            "range": "±1.60%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 34971,
+            "range": "±1.78%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
           }
         ]
       }
