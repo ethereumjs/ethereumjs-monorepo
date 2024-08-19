@@ -26,7 +26,14 @@ import { Stack } from './stack.js'
 import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
-import type { Block, Blockchain, EOFEnv, EVMProfilerOpts, EVMResult, Log } from './types.js'
+import type {
+  Block,
+  EOFEnv,
+  EVMMockBlockchainInterface,
+  EVMProfilerOpts,
+  EVMResult,
+  Log,
+} from './types.js'
 import type { AccessWitnessInterface, Common, StateManagerInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
@@ -87,7 +94,7 @@ export interface RunState {
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
   cachedPushes: { [pc: number]: bigint }
   stateManager: StateManagerInterface
-  blockchain: Blockchain
+  blockchain: EVMMockBlockchainInterface
   env: Env
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
   interpreter: Interpreter
@@ -147,7 +154,7 @@ export class Interpreter {
   constructor(
     evm: EVM,
     stateManager: StateManagerInterface,
-    blockchain: Blockchain,
+    blockchain: EVMMockBlockchainInterface,
     env: Env,
     gasLeft: bigint,
     journal: Journal,

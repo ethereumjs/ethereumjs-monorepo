@@ -1,7 +1,9 @@
-import { bytesToHex, short } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 
 import { OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
+
+import { gasLimitCheck } from './util.js'
 
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
@@ -190,18 +192,7 @@ export function precompile09(opts: PrecompileInput): ExecResult {
 
   let gasUsed = opts.common.param('blake2RoundGas')
   gasUsed *= BigInt(rounds)
-  if (opts._debug !== undefined) {
-    opts._debug(
-      `Run BLAKE2F (0x09) precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
-        opts.gasLimit
-      } gasUsed=${gasUsed}`,
-    )
-  }
-
-  if (opts.gasLimit < gasUsed) {
-    if (opts._debug !== undefined) {
-      opts._debug(`BLAKE2F (0x09) failed: OOG`)
-    }
+  if (!gasLimitCheck(opts, gasUsed, 'BLAKE2F (0x09)')) {
     return OOGResult(opts.gasLimit)
   }
 

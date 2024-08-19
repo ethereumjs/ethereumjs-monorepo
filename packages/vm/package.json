@@ -65,7 +65,6 @@
   },
   "dependencies": {
     "@ethereumjs/block": "^5.3.0",
-    "@ethereumjs/blockchain": "^7.3.0",
     "@ethereumjs/common": "^4.4.0",
     "@ethereumjs/evm": "^3.1.0",
     "@ethereumjs/rlp": "^5.0.2",
@@ -77,6 +76,7 @@
     "ethereum-cryptography": "^2.2.1"
   },
   "devDependencies": {
+    "@ethereumjs/blockchain": "^7.3.0",
     "@ethereumjs/ethash": "^3.0.3",
     "@ethersproject/abi": "^5.0.12",
     "@types/benchmark": "^1.0.33",

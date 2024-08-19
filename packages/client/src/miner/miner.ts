@@ -12,7 +12,7 @@ import type { Config } from '../config.js'
 import type { VMExecution } from '../execution/index.js'
 import type { FullEthereumService } from '../service/index.js'
 import type { FullSynchronizer } from '../sync/index.js'
-import type { CliqueConsensus } from '@ethereumjs/blockchain'
+import type { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { Miner as EthashMiner, Solution } from '@ethereumjs/ethash'
 
@@ -244,10 +244,9 @@ export class Miner {
       const [signerAddress, signerPrivKey] = this.config.accounts[0]
       cliqueSigner = signerPrivKey
       // Determine if signer is INTURN (2) or NOTURN (1)
-      inTurn = await (vmCopy.blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
-        signerAddress,
-        number,
-      )
+      inTurn = await (
+        (vmCopy.blockchain as Blockchain).consensus as CliqueConsensus
+      ).cliqueSignerInTurn(signerAddress, number)
       difficulty = inTurn ? 2 : 1
     }
 

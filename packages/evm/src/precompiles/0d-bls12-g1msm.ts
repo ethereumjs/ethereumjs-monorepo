@@ -3,8 +3,8 @@ import { bytesToHex } from '@ethereumjs/util'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import { gasCheck, leading16ZeroBytesCheck, msmGasUsed } from './bls12_381/index.js'
-import { moduloLengthCheck } from './util.js'
+import { leading16ZeroBytesCheck, msmGasUsed } from './bls12_381/index.js'
+import { gasLimitCheck, moduloLengthCheck } from './util.js'
 
 import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
@@ -28,7 +28,7 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
   const gasUsedPerPair = opts.common.paramByEIP('Bls12381G1MulGas', 2537) ?? BigInt(0)
   const gasUsed = msmGasUsed(numPairs, gasUsedPerPair)
 
-  if (!gasCheck(opts, gasUsed, 'BLS12G1MSM (0x0d)')) {
+  if (!gasLimitCheck(opts, gasUsed, 'BLS12G1MSM (0x0d)')) {
     return OOGResult(opts.gasLimit)
   }
 

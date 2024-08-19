@@ -11,12 +11,14 @@ import {
   RustBN254,
   getActivePrecompiles,
 } from './precompiles/index.js'
+import { EVMMockBlockchain } from './types.js'
 
 import type { InterpreterStep } from './interpreter.js'
 import type {
   EVMBLSInterface,
   EVMBN254Interface,
   EVMInterface,
+  EVMMockBlockchainInterface,
   EVMOpts,
   EVMResult,
   EVMRunCallOpts,
@@ -30,6 +32,7 @@ export type {
   EVMBLSInterface,
   EVMBN254Interface,
   EVMInterface,
+  EVMMockBlockchainInterface,
   EVMOpts,
   EVMResult,
   EVMRunCallOpts,
@@ -45,6 +48,7 @@ export {
   EVM,
   EvmError,
   EVMErrorMessage,
+  EVMMockBlockchain,
   getActivePrecompiles,
   getOpcodesForHF,
   MCLBLS,
