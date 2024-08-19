@@ -125,7 +125,7 @@ function validateOpcodes(
   opcodeNumbers.delete(0xf0) // CREATE
   opcodeNumbers.delete(0xf5) // CREATE2
 
-  // Note: this name might be misleading since this is the list of opcodes which are OK as final opcodes in a code section
+  // Note: Name might be misleading since this is the list of opcodes which are OK as final opcodes in a code section
   // TODO if using stackDelta for EOF it is possible to add a "termination" boolean for the opcode to mark it as terminating
   // (so no need to generate this set here)
   const terminatingOpcodes = new Set<number>()
@@ -176,11 +176,11 @@ function validateOpcodes(
     const stackHeightMin: number[] = [inputs]
     const stackHeightMax: number[] = [inputs]
 
-    // This loop will loop over the entire code section and will validate various rules
+    // Loop over the entire code section and validate various rules
     // For (most) validation rules, see https://github.com/ipsilon/eof/blob/main/spec/eof.md
     // For all validation rules per opcode, find the corresponding EIP, the rules are there
     while (ptr < code.length) {
-      // This set tracks the successor opcodes of this opcode (for stack purposes)
+      // Tracks the successor opcodes of this opcode (for stack purposes)
       const successorSet = new Set<number>()
 
       // ReachableOpcodes: this can likely be deleted after implementing the 5450 algorithm
@@ -189,8 +189,7 @@ function validateOpcodes(
       }
 
       if (stackHeightMin[ptr] === undefined || stackHeightMax[ptr] === undefined) {
-        // This error either means that the code is unreachable,
-        // or it is possible that it is only reachable via a backwards jump
+        // Code is either unreachable or only reachable via a backwards jump
         validationError(EOFError.UnreachableCode)
       }
 
@@ -240,8 +239,8 @@ function validateOpcodes(
 
         if (opcode === 0xe0) {
           // For RJUMP check that the instruction after RJUMP is reachable
-          // If this is not the case, then it is not yet targeted by a forward jump
-          // And hence violates the spec
+          // If not the case then it is not yet targeted by a forward jump
+          // and hence violates the spec
           if (!reachableOpcodes.has(ptr + 3) && ptr + 3 < code.length) {
             // Note: the final condition above ensures that the bytes after ptr are there
             // This is an edge case, if the container ends with RJUMP (which is valid)
