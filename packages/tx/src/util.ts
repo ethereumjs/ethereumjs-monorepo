@@ -199,6 +199,9 @@ export class AuthorizationLists {
   }
 
   public static verifyAuthorizationList(authorizationList: AuthorizationListBytes) {
+    if (authorizationList.length === 0) {
+      throw new Error('Invalid EIP-7702 transaction: authorization list is empty')
+    }
     for (let key = 0; key < authorizationList.length; key++) {
       const authorizationListItem = authorizationList[key]
       const chainId = authorizationListItem[0]
