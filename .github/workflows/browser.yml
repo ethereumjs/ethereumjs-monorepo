@@ -55,7 +55,6 @@ jobs:
         run: npm ci     
         working-directory: ${{ github.workspace }}
 
-
       - if: inputs.submodule-cache-key != 'none'
         uses: actions/cache/restore@v4
         name: Restore ethereum-tests from cache if available

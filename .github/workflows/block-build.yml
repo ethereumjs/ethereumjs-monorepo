@@ -6,9 +6,16 @@ on:
         required: true
         type: string
       submodule-cache-key:
-        required: true
-        type: string
+          required: true
+          type: string
   workflow_dispatch:
+    inputs:
+      dep-cache-key:
+        required: false
+        default: 'none'
+      submodule-cache-key:
+        required: false
+        default: 'none'
 
 env:
   cwd: ${{github.workspace}}/packages/block
@@ -25,9 +32,15 @@ jobs:
   test-block:
     runs-on: ubuntu-latest
     steps:     
-      - uses: actions/checkout@v4
-          
-      - uses: actions/cache/restore@v4
+      # We clone the repo and submodules if triggered from work-flow dispatch
+      - if: inputs.submodule-cache-key == 'none'
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
+      - if: inputs.dep-cache-key != 'none' 
+        uses: actions/cache/restore@v4
         id: dep-cache
         with:
           path: ${{github.workspace}}
@@ -39,12 +52,13 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: Install Dependencies (if not restored from cache)
+      - name: Install Dependencies (if called from workflow_dispatch)
         if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci     
         working-directory: ${{ github.workspace }}
 
-      - uses: actions/cache/restore@v4
+      - if: inputs.submodule-cache-key != 'none'
+        uses: actions/cache/restore@v4
         name: Initialize ethereum-tests
         id: submodules-cache
         with:

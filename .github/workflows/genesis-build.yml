@@ -9,7 +9,10 @@ on:
     inputs:
       dep-cache-key:
         required: false
-        type: string
+        default: 'none'
+      submodule-cache-key:
+        required: false
+        default: 'none'
 
 env:
   cwd: ${{github.workspace}}/packages/genesis
@@ -27,9 +30,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # We clone the repo and submodules if triggered from work-flow dispatch
+      - if: inputs.submodule-cache-key == 'none'
+        uses: actions/checkout@v4
 
-      - uses: actions/cache/restore@v4
+      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
+      - if: inputs.dep-cache-key != 'none' 
+        uses: actions/cache/restore@v4
         id: dep-cache
         with:
           path: ${{github.workspace}}
@@ -45,9 +52,6 @@ jobs:
         if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci     
         working-directory: ${{ github.workspace }}
-    
-
-
       
       - run: npm run coverage
       - uses: codecov/codecov-action@v3
