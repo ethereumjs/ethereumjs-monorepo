@@ -1,0 +1,33 @@
+name: 'Build EthereumJS monorepo'
+description: 'Builds the EthereumJS monorepo'
+inputs:
+  repo:
+    description: 'Source repository to use to build EthereumJS'
+    required: true
+    default: 'ethereumjs/ethereumjs-monorepo'
+  ref:
+    description: 'Reference to branch, commit, or tag to use to build EthereumJS'
+    required: true
+    default: 't8ntool'
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout EthereumJS monorepo
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.repo }}
+        ref: ${{ inputs.ref }}
+        path: ethereumjs
+
+    - name: Setup node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+
+    - name: Build monorepo
+      run: npm ci
+
+    - name: Add t8ntool to $PATH
+      shell: bash
+      run: echo $GITHUB_WORKSPACE/ethereumjs/packages/vm/test/t8n/ >> $GITHUB_PATH
