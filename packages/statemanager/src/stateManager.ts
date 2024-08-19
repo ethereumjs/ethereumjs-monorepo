@@ -202,8 +202,14 @@ export class DefaultStateManager implements StateManagerInterface {
    * @param value - The value of the `code`
    */
   async putCode(address: Address, value: Uint8Array): Promise<void> {
-    this._caches?.code?.put(address, value)
     const codeHash = this.keccakFunction(value)
+
+    if (this._caches?.code !== undefined) {
+      this._caches!.code!.put(address, value)
+    } else {
+      const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
+      await this._getCodeDB().put(key, value)
+    }
 
     if (this.DEBUG) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)

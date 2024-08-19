@@ -1,9 +1,9 @@
-import { bytesToHex, short } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import { moduloLengthCheck } from './util.js'
+import { gasLimitCheck, moduloLengthCheck } from './util.js'
 
 import type { EVM } from '../evm.js'
 import type { ExecResult } from '../types.js'
@@ -17,18 +17,8 @@ export function precompile08(opts: PrecompileInput): ExecResult {
   const inputDataSize = BigInt(Math.floor(opts.data.length / 192))
   const gasUsed =
     opts.common.param('ecPairingGas') + inputDataSize * opts.common.param('ecPairingWordGas')
-  if (opts._debug !== undefined) {
-    opts._debug(
-      `Run ECPAIRING (0x08) precompile data=${short(opts.data)} length=${
-        opts.data.length
-      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`,
-    )
-  }
 
-  if (opts.gasLimit < gasUsed) {
-    if (opts._debug !== undefined) {
-      opts._debug(`ECPAIRING (0x08) failed: OOG`)
-    }
+  if (!gasLimitCheck(opts, gasUsed, 'ECPAIRING (0x08)')) {
     return OOGResult(opts.gasLimit)
   }
 

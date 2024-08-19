@@ -2,7 +2,7 @@ import { Common, Mainnet } from '@ethereumjs/common'
 import { SimpleStateManager } from '@ethereumjs/statemanager'
 
 import { NobleBN254 } from './precompiles/index.js'
-import { DefaultBlockchain } from './types.js'
+import { EVMMockBlockchain } from './types.js'
 
 import { EVM } from './index.js'
 
@@ -25,7 +25,7 @@ export async function createEVM(createOpts?: EVMOpts) {
   }
 
   if (opts.blockchain === undefined) {
-    opts.blockchain = new DefaultBlockchain()
+    opts.blockchain = new EVMMockBlockchain()
   }
 
   if (opts.stateManager === undefined) {

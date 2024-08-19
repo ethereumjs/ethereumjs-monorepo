@@ -104,9 +104,6 @@ export class PendingBlock {
     const { timestamp, mixHash, parentBeaconBlockRoot, coinbase } = headerData
     let { gasLimit } = parentBlock.header
 
-    if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
-      throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
-    }
     vm.common.setHardforkBy({
       blockNumber: number,
       timestamp,

@@ -1,8 +1,7 @@
-import { cliqueSigner, createBlock } from '@ethereumjs/block'
+import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
-import { Blob4844Tx, Capability, isBlob4844Tx } from '@ethereumjs/tx'
+import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -52,6 +51,8 @@ import type {
 const debug = debugDefault('vm:tx')
 const debugGas = debugDefault('vm:tx:gas')
 
+const DEFAULT_HEADER = createBlockHeader()
+
 let enableProfiler = false
 const initLabel = 'EVM journal init, address/slot warming, fee validation'
 const balanceNonceLabel = 'Balance/Nonce checks and update'
@@ -81,10 +82,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     console.time(entireTxLabel)
   }
 
-  // create a reasonable default if no block is given
-  opts.block = opts.block ?? createBlock({}, { common: vm.common })
-
-  if (opts.skipHardForkValidation !== true) {
+  if (opts.skipHardForkValidation !== true && opts.block !== undefined) {
     // If block and tx don't have a same hardfork, set tx hardfork to block
     if (opts.tx.common.hardfork() !== opts.block.common.hardfork()) {
       opts.tx.common.setHardfork(opts.block.common.hardfork())
@@ -96,7 +94,8 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
-  if (opts.skipBlockGasLimitValidation !== true && opts.block.header.gasLimit < opts.tx.gasLimit) {
+  const gasLimit = opts.block?.header.gasLimit ?? DEFAULT_HEADER.gasLimit
+  if (opts.skipBlockGasLimitValidation !== true && gasLimit < opts.tx.gasLimit) {
     const msg = _errorMsg('tx has a higher gas limit than the block', vm, opts.block, opts.tx)
     throw new Error(msg)
   }
@@ -190,18 +189,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   let stateAccesses
   if (vm.common.isActivatedEIP(6800)) {
-    if (!(vm.stateManager instanceof StatelessVerkleStateManager)) {
+    if (typeof vm.stateManager.initVerkleExecutionWitness !== 'function') {
       throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
     }
-    stateAccesses = (vm.stateManager as StatelessVerkleStateManager).accessWitness
+    stateAccesses = vm.stateManager.accessWitness!
   }
   const txAccesses = stateAccesses?.shallowCopy()
 
   const { tx, block } = opts
-
-  if (!block) {
-    throw new Error('block required')
-  }
 
   /**
    * The `beforeTx` event
@@ -233,7 +228,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       vm.evm.journal.addAlwaysWarmAddress(bytesToUnprefixedHex(tx.to.bytes))
     }
     if (vm.common.isActivatedEIP(3651)) {
-      vm.evm.journal.addAlwaysWarmAddress(bytesToUnprefixedHex(block.header.coinbase.bytes))
+      const coinbase = block?.header.coinbase.bytes ?? DEFAULT_HEADER.coinbase.bytes
+      vm.evm.journal.addAlwaysWarmAddress(bytesToUnprefixedHex(coinbase))
     }
   }
 
@@ -261,7 +257,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // Ensure that the user was willing to at least pay the base fee
     // assert transaction.max_fee_per_gas >= block.base_fee_per_gas
     const maxFeePerGas = 'maxFeePerGas' in tx ? tx.maxFeePerGas : tx.gasPrice
-    const baseFeePerGas = block.header.baseFeePerGas!
+    const baseFeePerGas = block?.header.baseFeePerGas ?? DEFAULT_HEADER.baseFeePerGas!
     if (maxFeePerGas < baseFeePerGas) {
       const msg = _errorMsg(
         `Transaction's ${
@@ -297,7 +293,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Check balance against upfront tx cost
-  const upFrontCost = tx.getUpfrontCost(block.header.baseFeePerGas)
+  const baseFeePerGas = block?.header.baseFeePerGas ?? DEFAULT_HEADER.baseFeePerGas
+  const upFrontCost = tx.getUpfrontCost(baseFeePerGas)
   if (balance < upFrontCost) {
     if (opts.skipBalance === true && fromAccount.balance < upFrontCost) {
       if (tx.supports(Capability.EIP1559FeeMarket) === false) {
@@ -327,7 +324,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     maxCost += tx.gasLimit * (tx as FeeMarket1559Tx).maxFeePerGas
   }
 
-  if (tx instanceof Blob4844Tx) {
+  if (isBlob4844Tx(tx)) {
     if (!vm.common.isActivatedEIP(4844)) {
       const msg = _errorMsg('blob transactions are only valid with EIP4844 active', vm, block, tx)
       throw new Error(msg)
@@ -335,24 +332,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // EIP-4844 spec
     // the signer must be able to afford the transaction
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
-    const castTx = tx as Blob4844Tx
-    totalblobGas = vm.common.param('blobGasPerBlob') * BigInt(castTx.numBlobs())
-    maxCost += totalblobGas * castTx.maxFeePerBlobGas
+    totalblobGas = vm.common.param('blobGasPerBlob') * BigInt(tx.numBlobs())
+    maxCost += totalblobGas * tx.maxFeePerBlobGas
 
     // 4844 minimum blobGas price check
-    if (opts.block === undefined) {
+    blobGasPrice = opts.block?.header.getBlobGasPrice() ?? DEFAULT_HEADER.getBlobGasPrice()
+    if (tx.maxFeePerBlobGas < blobGasPrice) {
       const msg = _errorMsg(
-        `Block option must be supplied to compute blob gas price`,
-        vm,
-        block,
-        tx,
-      )
-      throw new Error(msg)
-    }
-    blobGasPrice = opts.block.header.getBlobGasPrice()
-    if (castTx.maxFeePerBlobGas < blobGasPrice) {
-      const msg = _errorMsg(
-        `Transaction's maxFeePerBlobGas ${castTx.maxFeePerBlobGas}) is less than block blobGasPrice (${blobGasPrice}).`,
+        `Transaction's maxFeePerBlobGas ${tx.maxFeePerBlobGas}) is less than block blobGasPrice (${blobGasPrice}).`,
         vm,
         block,
         tx,
@@ -394,7 +381,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // EIP-1559 tx
   if (tx.supports(Capability.EIP1559FeeMarket)) {
     // TODO make txs use the new getEffectivePriorityFee
-    const baseFee = block.header.baseFeePerGas!
+    const baseFee = block?.header.baseFeePerGas ?? DEFAULT_HEADER.baseFeePerGas!
     inclusionFeePerGas = tx.getEffectivePriorityFee(baseFee)
 
     gasPrice = inclusionFeePerGas + baseFee
@@ -402,15 +389,15 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
     gasPrice = (<LegacyTx>tx).gasPrice
     if (vm.common.isActivatedEIP(1559)) {
-      const baseFee = block.header.baseFeePerGas!
+      const baseFee = block?.header.baseFeePerGas ?? DEFAULT_HEADER.baseFeePerGas!
       inclusionFeePerGas = (<LegacyTx>tx).gasPrice - baseFee
     }
   }
 
   // EIP-4844 tx
   let blobVersionedHashes
-  if (tx instanceof Blob4844Tx) {
-    blobVersionedHashes = (tx as Blob4844Tx).blobVersionedHashes
+  if (isBlob4844Tx(tx)) {
+    blobVersionedHashes = tx.blobVersionedHashes
   }
 
   // Update from account's balance
@@ -589,15 +576,15 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Update miner's balance
   let miner
   if (vm.common.consensusType() === ConsensusType.ProofOfAuthority) {
-    miner = cliqueSigner(block.header)
+    miner = cliqueSigner(block?.header ?? DEFAULT_HEADER)
   } else {
-    miner = block.header.coinbase
+    miner = block?.header.coinbase ?? DEFAULT_HEADER.coinbase
   }
 
   let minerAccount = await state.getAccount(miner)
   if (minerAccount === undefined) {
     if (vm.common.isActivatedEIP(6800)) {
-      ;(state as StatelessVerkleStateManager).accessWitness!.touchAndChargeProofOfAbsence(miner)
+      state.accessWitness!.touchAndChargeProofOfAbsence(miner)
     }
     minerAccount = new Account()
   }
@@ -609,7 +596,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (vm.common.isActivatedEIP(6800)) {
     // use vm utility to build access but the computed gas is not charged and hence free
-    ;(state as StatelessVerkleStateManager).accessWitness!.touchTxTargetAndComputeGas(miner, {
+    state.accessWitness!.touchTxTargetAndComputeGas(miner, {
       sendsValue: true,
     })
   }
@@ -703,7 +690,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Generate the tx receipt
-  const gasUsed = opts.blockGasUsed !== undefined ? opts.blockGasUsed : block.header.gasUsed
+  const gasUsed =
+    opts.blockGasUsed !== undefined
+      ? opts.blockGasUsed
+      : (block?.header.gasUsed ?? DEFAULT_HEADER.gasUsed)
   const cumulativeGasUsed = gasUsed + results.totalGasSpent
   results.receipt = await generateTxReceipt(
     vm,
@@ -835,8 +825,9 @@ export async function generateTxReceipt(
  * @param msg Base error message
  * @hidden
  */
-function _errorMsg(msg: string, vm: VM, block: Block, tx: TypedTransaction) {
-  const blockErrorStr = 'errorStr' in block ? block.errorStr() : 'block'
+function _errorMsg(msg: string, vm: VM, block: Block | undefined, tx: TypedTransaction) {
+  const blockOrHeader = block ?? DEFAULT_HEADER
+  const blockErrorStr = 'errorStr' in blockOrHeader ? blockOrHeader.errorStr() : 'block'
   const txErrorStr = 'errorStr' in tx ? tx.errorStr() : 'tx'
 
   const errorMsg = `${msg} (${vm.errorStr()} -> ${blockErrorStr} -> ${txErrorStr})`
