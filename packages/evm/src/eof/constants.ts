@@ -21,7 +21,7 @@ export const TYPE_DIVISOR = 4 // Divisor of types: the type section size should 
 
 export const CODE_MIN = 0x0001 // Minimum size of code section
 
-export const CODE_SIZE_MIN = 1 // Ninimum size of a code section in the body (the actual code)
+export const CODE_SIZE_MIN = 1 // Minimum size of a code section in the body (the actual code)
 
 export const CONTAINER_MIN = 0x0001 // Minimum size of container section
 export const CONTAINER_MAX = 0x0100 // Maximum size of container section
