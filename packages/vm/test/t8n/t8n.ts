@@ -224,6 +224,7 @@ vm.stateManager.putAccount = async function (...args: any) {
 }
 
 vm.stateManager.putCode = async function (...args: any) {
+  console.log('PUTCODE', args[0].toString(), bytesToHex(args[1]))
   const address = <Address>args[0]
   addAddress(address.toString())
   return originalPutCode.apply(this, args)
