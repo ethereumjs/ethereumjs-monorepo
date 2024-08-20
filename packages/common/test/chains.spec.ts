@@ -1,6 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
 import {
+  ChainConfig,
   Common,
   ConsensusAlgorithm,
   ConsensusType,
@@ -21,6 +22,33 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
       c.DEFAULT_HARDFORK,
       'should set hardfork to hardfork set as DEFAULT_HARDFORK',
     )
+  })
+
+  it('Deep copied common object should have parameters that are independent of the original copy', async () => {
+    let chainConfig: ChainConfig
+    let c: Common
+    const setCommon = async () => {
+      chainConfig = Mainnet
+      c = new Common({ chain: chainConfig })
+      console.log('dbg100')
+      console.log(c)
+      assert.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
+      assert.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
+    }
+
+    const resetCommon = async () => {
+      // modify chain config
+      const cCopy = c.copy()
+      chainConfig.chainId = 2
+      chainConfig.name = 'sidenet'
+      console.log('dbg101')
+      console.log(cCopy)
+      assert.equal(cCopy.chainName(), 'mainnet', 'should return original chain name')
+      assert.equal(cCopy.chainId(), BigInt(1), 'should return original chain Id')
+    }
+
+    await setCommon()
+    await resetCommon()
   })
 
   it('Should initialize with chain provided by chain name or network Id', () => {
