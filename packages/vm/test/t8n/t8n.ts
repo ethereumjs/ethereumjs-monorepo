@@ -4,6 +4,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
   BIGINT_1,
+  CLRequestType,
   bigIntToHex,
   bytesToHex,
   createAddressFromString,
@@ -312,6 +313,30 @@ if (result.header.excessBlobGas !== undefined) {
 
 if (result.header.requestsRoot !== undefined) {
   ;(output as any).requestsRoot = bytesToHex(result.header.requestsRoot)
+}
+
+if (result.requests !== undefined) {
+  if (common.isActivatedEIP(6110)) {
+    ;(output as any).depositRequests = []
+  }
+
+  if (common.isActivatedEIP(7002)) {
+    ;(output as any).withdrawalRequests = []
+  }
+
+  if (common.isActivatedEIP(7251)) {
+    ;(output as any).consolidationRequests = []
+  }
+
+  for (const request of result.requests) {
+    if (request.type === CLRequestType.Deposit) {
+      ;(output as any).depositRequests.push(request.toJSON())
+    } else if (request.type === CLRequestType.Withdrawal) {
+      ;(output as any).withdrawalRequests.push(request.toJSON())
+    } else if (request.type === CLRequestType.Consolidation) {
+      ;(output as any).consolidationRequests.push(request.toJSON())
+    }
+  }
 }
 
 if (rejected.length > 0) {
