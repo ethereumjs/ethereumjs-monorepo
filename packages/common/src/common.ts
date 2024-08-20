@@ -41,6 +41,7 @@ import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
  * can be created via the main constructor).
  */
 export class Common {
+  readonly _opts: CommonOpts
   readonly DEFAULT_HARDFORK: string | Hardfork
 
   protected _chainParams: ChainConfig
@@ -58,6 +59,7 @@ export class Common {
   public events: EventEmitter
 
   constructor(opts: CommonOpts) {
+    this._opts = opts
     this.events = new EventEmitter()
 
     this._chainParams = opts.chain
@@ -69,7 +71,7 @@ export class Common {
         (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]),
     ])
     this._hardfork = this.DEFAULT_HARDFORK
-    this._params = { ...(opts.params ?? {}) } // copy
+    this._params = opts.params ? JSON.parse(JSON.stringify(opts.params)) : {} // copy
 
     if (opts.hardfork !== undefined) {
       this.setHardfork(opts.hardfork)
@@ -105,9 +107,9 @@ export class Common {
   updateParams(params: ParamsDict) {
     for (const [eip, paramsConfig] of Object.entries(params)) {
       if (!(eip in this._params)) {
-        this._params[eip] = { ...paramsConfig } // copy
+        this._params[eip] = JSON.parse(JSON.stringify(paramsConfig)) // copy
       } else {
-        this._params[eip] = { ...this._params[eip], ...params[eip] }
+        this._params[eip] = { ...this._params[eip], ...params[eip] } // TODO this line might also need deep copy logic
       }
     }
 
@@ -130,7 +132,7 @@ export class Common {
    * @param params
    */
   resetParams(params: ParamsDict) {
-    this._params = { ...params } // copy
+    this._params = JSON.parse(JSON.stringify(params)) // copy
     this._buildParamsCache()
   }
 
@@ -841,8 +843,17 @@ export class Common {
    * Returns a deep copy of this {@link Common} instance.
    */
   copy(): Common {
-    const copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
-    copy.events = new EventEmitter()
+    const copy = new Common({
+      ...this._opts,
+      chain: JSON.parse(JSON.stringify(this._chainParams)),
+      params: JSON.parse(JSON.stringify(this._params)),
+    })
+    copy._activatedEIPsCache = [...this._activatedEIPsCache]
+    copy._paramsCache = JSON.parse(JSON.stringify(this._paramsCache))
+    copy._hardfork = JSON.parse(JSON.stringify(this._hardfork))
+    copy.HARDFORK_CHANGES = JSON.parse(JSON.stringify(this.HARDFORK_CHANGES))
+    ;(copy.DEFAULT_HARDFORK as any) = JSON.parse(JSON.stringify(this.DEFAULT_HARDFORK))
+
     return copy
   }
 }
