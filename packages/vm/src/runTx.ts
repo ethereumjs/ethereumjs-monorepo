@@ -12,7 +12,6 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
-  createAddressFromString,
   ecrecover,
   equalsBytes,
   hexToBytes,
@@ -426,7 +425,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   let gasRefund = BIGINT_0
 
-  const writtenAddresses = new Set<string>()
   if (tx.supports(Capability.EIP7702EOACode)) {
     // Add contract code for authority tuples provided by EIP 7702 tx
     const authorizationList = (<EIP7702CompatibleTx>tx).authorizationList
@@ -489,8 +487,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
       const addressCode = concatBytes(new Uint8Array([0xef, 0x01, 0x00]), address)
       await vm.stateManager.putCode(authority, addressCode)
-
-      writtenAddresses.add(authority.toString())
     }
   }
 
@@ -671,15 +667,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         debug(`tx selfdestruct on address=${address}`)
       }
     }
-  }
-
-  /**
-   * Cleanup code of accounts written to in a 7702 transaction
-   */
-
-  for (const str of writtenAddresses) {
-    const address = createAddressFromString(str)
-    await vm.stateManager.putCode(address, new Uint8Array())
   }
 
   if (enableProfiler) {
