@@ -212,7 +212,10 @@ export class BlockBuilder {
    */
   async addTransaction(
     tx: TypedTransaction,
-    { skipHardForkValidation }: { skipHardForkValidation?: boolean } = {},
+    {
+      skipHardForkValidation,
+      allowNoBlobs,
+    }: { skipHardForkValidation?: boolean; allowNoBlobs?: boolean } = {},
   ) {
     this.checkStatus()
 
@@ -241,7 +244,9 @@ export class BlockBuilder {
 
       // Guard against the case if a tx came into the pool without blobs i.e. network wrapper payload
       if (blobTx.blobs === undefined) {
-        throw new Error('blobs missing for 4844 transaction')
+        if (allowNoBlobs !== true) {
+          throw new Error('blobs missing for 4844 transaction')
+        }
       }
 
       if (this.blobGasUsed + BigInt(blobTx.numBlobs()) * blobGasPerBlob > blobGasLimit) {

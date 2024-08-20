@@ -16,6 +16,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
+import { loadKZG } from 'kzg-wasm'
 import { join } from 'path'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
@@ -93,7 +94,7 @@ const alloc = JSON.parse(readFileSync(args.input.alloc).toString())
 const txsData = JSON.parse(readFileSync(args.input.txs).toString())
 const inputEnv = normalizeNumbers(JSON.parse(readFileSync(args.input.env).toString()))
 
-const common = getCommon(args.state.fork)
+const common = getCommon(args.state.fork, await loadKZG())
 
 let blockchain
 if (args.state.fork === 'Merged') {
@@ -271,7 +272,7 @@ for (const txData of txsData) {
       txData.data = txData.input
     }
     const tx = createTxFromTxData(txData, { common })
-    await builder.addTransaction(tx)
+    await builder.addTransaction(tx, { allowNoBlobs: true })
   } catch (e: any) {
     rejected.push({
       index,
