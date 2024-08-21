@@ -41,7 +41,6 @@ import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
  * can be created via the main constructor).
  */
 export class Common {
-  readonly _opts: CommonOpts
   readonly DEFAULT_HARDFORK: string | Hardfork
 
   protected _chainParams: ChainConfig
@@ -59,7 +58,6 @@ export class Common {
   public events: EventEmitter
 
   constructor(opts: CommonOpts) {
-    this._opts = opts
     this.events = new EventEmitter()
 
     this._chainParams = opts.chain
