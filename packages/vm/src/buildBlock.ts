@@ -89,7 +89,7 @@ export class BlockBuilder {
 
     this.headerData = {
       ...opts.headerData,
-      parentHash: opts.parentBlock.hash(),
+      parentHash: opts.headerData?.parentHash ?? opts.parentBlock.hash(),
       number: opts.headerData?.number ?? opts.parentBlock.header.number + BIGINT_1,
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
       timestamp: opts.headerData?.timestamp ?? Math.round(Date.now() / 1000),
