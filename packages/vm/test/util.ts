@@ -302,6 +302,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     currentTimestamp,
     currentGasLimit,
     previousHash,
+    parentHash,
     currentCoinbase,
     currentDifficulty,
     currentExcessBlobGas,
@@ -315,7 +316,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   const headerData: any = {
     number: currentNumber,
     coinbase: currentCoinbase,
-    parentHash: previousHash,
+    parentHash: previousHash ?? parentHash,
     difficulty: currentDifficulty,
     gasLimit: currentGasLimit,
     timestamp: currentTimestamp,

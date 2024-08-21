@@ -120,6 +120,58 @@ await setupPreConditions(vm.stateManager, { pre: alloc })
 
 const block = makeBlockFromEnv(inputEnv, { common })
 
+// Track the allocation to ensure the output.alloc is correct
+const allocTracker: {
+  [address: string]: {
+    storage: string[]
+  }
+} = {}
+
+function addAddress(address: string) {
+  if (allocTracker[address] === undefined) {
+    allocTracker[address] = { storage: [] }
+  }
+  return allocTracker[address]
+}
+
+function addStorage(address: string, storage: string) {
+  const storageList = addAddress(address).storage
+  if (!storageList.includes(storage)) {
+    storageList.push(storage)
+  }
+}
+
+const originalPutAccount = vm.stateManager.putAccount
+const originalPutCode = vm.stateManager.putCode
+const originalPutStorage = vm.stateManager.putStorage
+
+vm.stateManager.putAccount = async function (...args: any) {
+  const address = <Address>args[0]
+  addAddress(address.toString())
+  await originalPutAccount.apply(this, args)
+}
+
+vm.stateManager.putAccount = async function (...args: any) {
+  const address = <Address>args[0]
+  addAddress(address.toString())
+  return originalPutAccount.apply(this, args)
+}
+
+vm.stateManager.putCode = async function (...args: any) {
+  console.log('PUTCODE', args[0].toString(), bytesToHex(args[1]))
+  const address = <Address>args[0]
+  addAddress(address.toString())
+  return originalPutCode.apply(this, args)
+}
+
+vm.stateManager.putStorage = async function (...args: any) {
+  const address = <Address>args[0]
+  const key = <Uint8Array>args[1]
+  console.log('PUTSTORAGE', address.toString(), bytesToHex(key), bytesToHex(args[2]))
+  addStorage(address.toString(), bytesToHex(key))
+  return originalPutStorage.apply(this, args)
+}
+
 // TODO: add state.reward
 //const acc = (await vm.stateManager.getAccount(block.header.coinbase)) ?? new Account()
 //await vm.stateManager.putAccount(block.header.coinbase, acc)
@@ -194,58 +246,6 @@ vm.evm.events?.on('step', (e) => {
     console.log(e.address.toString(), e.opcode.name)
   }
 })
-
-// Track the allocation to ensure the output.alloc is correct
-const allocTracker: {
-  [address: string]: {
-    storage: string[]
-  }
-} = {}
-
-function addAddress(address: string) {
-  if (allocTracker[address] === undefined) {
-    allocTracker[address] = { storage: [] }
-  }
-  return allocTracker[address]
-}
-
-function addStorage(address: string, storage: string) {
-  const storageList = addAddress(address).storage
-  if (!storageList.includes(storage)) {
-    storageList.push(storage)
-  }
-}
-
-const originalPutAccount = vm.stateManager.putAccount
-const originalPutCode = vm.stateManager.putCode
-const originalPutStorage = vm.stateManager.putStorage
-
-vm.stateManager.putAccount = async function (...args: any) {
-  const address = <Address>args[0]
-  addAddress(address.toString())
-  await originalPutAccount.apply(this, args)
-}
-
-vm.stateManager.putAccount = async function (...args: any) {
-  const address = <Address>args[0]
-  addAddress(address.toString())
-  return originalPutAccount.apply(this, args)
-}
-
-vm.stateManager.putCode = async function (...args: any) {
-  console.log('PUTCODE', args[0].toString(), bytesToHex(args[1]))
-  const address = <Address>args[0]
-  addAddress(address.toString())
-  return originalPutCode.apply(this, args)
-}
-
-vm.stateManager.putStorage = async function (...args: any) {
-  const address = <Address>args[0]
-  const key = <Uint8Array>args[1]
-  console.log('PUTSTORAGE', address.toString(), bytesToHex(key), bytesToHex(args[2]))
-  addStorage(address.toString(), bytesToHex(key))
-  return originalPutStorage.apply(this, args)
-}
 
 const rejected: any = []
 
