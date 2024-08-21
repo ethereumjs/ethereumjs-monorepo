@@ -17,11 +17,13 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
 import { loadKZG } from 'kzg-wasm'
+import * as mcl from 'mcl-wasm'
 import { join } from 'path'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { BlockBuilder, buildBlock } from '../../dist/esm/buildBlock.js'
+import { MCLBLS } from '../../../evm/dist/cjs/index.js'
+import { buildBlock } from '../../dist/esm/buildBlock.js'
 import { VM } from '../../dist/esm/vm.js'
 import { getCommon } from '../tester/config.js'
 import { makeBlockFromEnv, setupPreConditions } from '../util.js'
@@ -114,7 +116,13 @@ blockchain.getBlock = async function (number?: Number) {
   }
 }
 
-const vm = await VM.create({ common, blockchain })
+await mcl.init(mcl.BLS12_381)
+const bls = new MCLBLS(mcl)
+const evmOpts = {
+  bls,
+}
+
+const vm = await VM.create({ common, blockchain, evmOpts })
 
 await setupPreConditions(vm.stateManager, { pre: alloc })
 
