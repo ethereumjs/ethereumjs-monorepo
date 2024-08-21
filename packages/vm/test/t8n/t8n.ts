@@ -1,4 +1,5 @@
 import { Block } from '@ethereumjs/block'
+import { EVMMockBlockchain, type Log } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
@@ -26,7 +27,6 @@ import { getCommon } from '../tester/config.js'
 import { makeBlockFromEnv, setupPreConditions } from '../util.js'
 
 import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
-import { EVMMockBlockchain, type Log } from '@ethereumjs/evm'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 function normalizeNumbers(input: any) {
