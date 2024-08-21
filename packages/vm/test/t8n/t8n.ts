@@ -1,5 +1,4 @@
-import { Block, createBlock, createBlockHeader } from '@ethereumjs/block'
-import { createBlockchain } from '@ethereumjs/blockchain'
+import { Block } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
@@ -21,13 +20,13 @@ import { join } from 'path'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { BlockBuilder } from '../../dist/esm/buildBlock.js'
+import { BlockBuilder, buildBlock } from '../../dist/esm/buildBlock.js'
 import { VM } from '../../dist/esm/vm.js'
 import { getCommon } from '../tester/config.js'
 import { makeBlockFromEnv, setupPreConditions } from '../util.js'
 
 import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
-import type { Log } from '@ethereumjs/evm'
+import { EVMMockBlockchain, type Log } from '@ethereumjs/evm'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 function normalizeNumbers(input: any) {
@@ -96,18 +95,26 @@ const inputEnv = normalizeNumbers(JSON.parse(readFileSync(args.input.env).toStri
 
 const common = getCommon(args.state.fork, await loadKZG())
 
-let blockchain
-if (args.state.fork === 'Merged') {
-  const genesisBlockData = {
-    gasLimit: 5000,
-    difficulty: 0,
-    nonce: hexToBytes('0x0000000000000000'),
-    extraData: hexToBytes('0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa'),
+const blockchain = new EVMMockBlockchain()
+
+blockchain.getBlock = async function (number?: Number) {
+  for (const key in inputEnv.blockHashes) {
+    if (Number(key) === number) {
+      return {
+        hash() {
+          return hexToBytes(inputEnv.blockHashes[key])
+        },
+      }
+    }
   }
-  const genesis = createBlock({ header: createBlockHeader(genesisBlockData) })
-  blockchain = await createBlockchain({ common, genesisBlock: genesis })
+  return {
+    hash() {
+      return zeros(32)
+    },
+  }
 }
-const vm = blockchain ? await VM.create({ common, blockchain }) : await VM.create({ common })
+
+const vm = await VM.create({ common, blockchain })
 
 await setupPreConditions(vm.stateManager, { pre: alloc })
 
@@ -120,7 +127,7 @@ const block = makeBlockFromEnv(inputEnv, { common })
 const headerData = block.header.toJSON()
 headerData.difficulty = inputEnv.parentDifficulty
 
-const builder = new BlockBuilder(vm, {
+const builder = await buildBlock(vm, {
   parentBlock: new Block(),
   headerData,
   blockOpts: { putBlockIntoBlockchain: false },
@@ -235,6 +242,7 @@ vm.stateManager.putCode = async function (...args: any) {
 vm.stateManager.putStorage = async function (...args: any) {
   const address = <Address>args[0]
   const key = <Uint8Array>args[1]
+  console.log('PUTSTORAGE', address.toString(), bytesToHex(key), bytesToHex(args[2]))
   addStorage(address.toString(), bytesToHex(key))
   return originalPutStorage.apply(this, args)
 }
