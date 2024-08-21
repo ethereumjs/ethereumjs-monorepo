@@ -66,14 +66,6 @@ const accumulateEIP7002Requests = async (
   )
   const withdrawalsAddress = createAddressFromString(bytesToHex(addressBytes))
 
-  const code = await vm.stateManager.getCode(withdrawalsAddress)
-
-  if (code.length === 0) {
-    /*throw new Error(
-      'Attempt to accumulate EIP-7002 requests failed: the contract does not exist. Ensure the deployment tx has been run, or that the required contract code is stored',
-    )*/
-  }
-
   const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
   const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
 
@@ -115,14 +107,6 @@ const accumulateEIP7251Requests = async (
     20,
   )
   const consolidationsAddress = createAddressFromString(bytesToHex(addressBytes))
-
-  const code = await vm.stateManager.getCode(consolidationsAddress)
-
-  if (code.length === 0) {
-    /*throw new Error(
-      'Attempt to accumulate EIP-7251 requests failed: the contract does not exist. Ensure the deployment tx has been run, or that the required contract code is stored',
-    )*/
-  }
 
   const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
   const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
