@@ -71,7 +71,8 @@ export class Common {
         (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]),
     ])
     this._hardfork = this.DEFAULT_HARDFORK
-    this._params = opts.params ? JSON.parse(JSON.stringify(opts.params)) : {} // copy
+    // this._params = { ...(opts.params ?? {}) } // copy
+    this._params = opts.params ? JSON.parse(JSON.stringify(opts.params)) : {}
 
     if (opts.hardfork !== undefined) {
       this.setHardfork(opts.hardfork)
@@ -107,9 +108,10 @@ export class Common {
   updateParams(params: ParamsDict) {
     for (const [eip, paramsConfig] of Object.entries(params)) {
       if (!(eip in this._params)) {
-        this._params[eip] = JSON.parse(JSON.stringify(paramsConfig)) // copy
+        // this._params[eip] = { ...paramsConfig } // copy
+        this._params[eip] = JSON.parse(JSON.stringify(paramsConfig))
       } else {
-        this._params[eip] = { ...this._params[eip], ...params[eip] } // TODO this line might also need deep copy logic
+        this._params[eip] = JSON.parse(JSON.stringify({ ...this._params[eip], ...params[eip] }))
       }
     }
 
@@ -132,7 +134,8 @@ export class Common {
    * @param params
    */
   resetParams(params: ParamsDict) {
-    this._params = JSON.parse(JSON.stringify(params)) // copy
+    // this._params = { ...params } // copy
+    this._params = JSON.parse(JSON.stringify(params))
     this._buildParamsCache()
   }
 
@@ -844,15 +847,11 @@ export class Common {
    */
   copy(): Common {
     const copy = new Common({
-      ...this._opts,
       chain: JSON.parse(JSON.stringify(this._chainParams)),
       params: JSON.parse(JSON.stringify(this._params)),
+      eips: [...this._eips],
     })
     copy._activatedEIPsCache = [...this._activatedEIPsCache]
-    copy._paramsCache = JSON.parse(JSON.stringify(this._paramsCache))
-    copy._hardfork = JSON.parse(JSON.stringify(this._hardfork))
-    copy.HARDFORK_CHANGES = JSON.parse(JSON.stringify(this.HARDFORK_CHANGES))
-    ;(copy.DEFAULT_HARDFORK as any) = JSON.parse(JSON.stringify(this.DEFAULT_HARDFORK))
 
     return copy
   }
