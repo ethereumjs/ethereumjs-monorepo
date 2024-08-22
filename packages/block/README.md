@@ -40,16 +40,18 @@ Instantiation Example:
 ```ts
 // ./examples/simple.ts
 
-import { BlockHeader } from '@ethereumjs/block'
+import { createBlockHeader } from '@ethereumjs/block'
 import { bytesToHex } from '@ethereumjs/util'
 
-const headerData = {
+import type { HeaderData } from '@ethereumjs/block'
+
+const headerData: HeaderData = {
   number: 15,
   parentHash: '0x6bfee7294bf44572b7266358e627f3c35105e1c3851f3de09e6d646f955725a7',
   gasLimit: 8000000,
   timestamp: 1562422144,
 }
-const header = BlockHeader.fromHeaderData(headerData)
+const header = createBlockHeader(headerData)
 console.log(`Created block header with hash=${bytesToHex(header.hash())}`)
 ```
 
@@ -77,11 +79,11 @@ This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/
 ```ts
 // ./examples/1559.ts
 
-import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
-const block = Block.fromBlockData(
+const block = createBlock(
   {
     header: {
       baseFeePerGas: BigInt(10),
@@ -98,7 +100,7 @@ console.log(Number(block.header.calcNextBaseFee())) // 11
 
 // So for creating a block with a matching base fee in a certain
 // chain context you can do:
-const blockWithMatchingBaseFee = Block.fromBlockData(
+const blockWithMatchingBaseFee = createBlock(
   {
     header: {
       baseFeePerGas: block.header.calcNextBaseFee(),
@@ -121,12 +123,13 @@ Starting with the `v4.1.0` release there is support for [EIP-4895](https://eips.
 ```ts
 // ./examples/withdrawals.ts
 
-import { Block } from '@ethereumjs/block'
-import { Common, Chain } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
+
 import type { WithdrawalData } from '@ethereumjs/util'
 
-const common = new Common({ chain: Chain.Mainnet })
+const common = new Common({ chain: Mainnet })
 
 const withdrawal = <WithdrawalData>{
   index: BigInt(0),
@@ -135,7 +138,7 @@ const withdrawal = <WithdrawalData>{
   amount: BigInt(1000),
 }
 
-const block = Block.fromBlockData(
+const block = createBlock(
   {
     header: {
       withdrawalsRoot: hexToBytes(
@@ -165,29 +168,29 @@ To create blocks which include blob transactions you have to active EIP-4844 in 
 ```ts
 // ./examples/4844.ts
 
-import { Common, Chain, Hardfork } from '@ethereumjs/common'
-import { Block } from '@ethereumjs/block'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createBlob4844Tx } from '@ethereumjs/tx'
+import { createAddressFromPrivateKey } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
+import { loadKZG } from 'kzg-wasm'
 
 const main = async () => {
   const kzg = await loadKZG()
 
   const common = new Common({
-    chain: Chain.Mainnet,
+    chain: Mainnet,
     hardfork: Hardfork.Cancun,
     customCrypto: {
       kzg,
     },
   })
-  const blobTx = BlobEIP4844Transaction.fromTxData(
-    { blobsData: ['myFirstBlob'], to: Address.fromPrivateKey(randomBytes(32)) },
+  const blobTx = createBlob4844Tx(
+    { blobsData: ['myFirstBlob'], to: createAddressFromPrivateKey(randomBytes(32)) },
     { common },
   )
 
-  const block = Block.fromBlockData(
+  const block = createBlock(
     {
       header: {
         excessBlobGas: 0n,
@@ -207,7 +210,7 @@ const main = async () => {
   )
 }
 
-main()
+void main()
 ```
 
 **Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
@@ -223,21 +226,20 @@ Starting with v5.3.0 this library supports requests to the consensus layer which
 ```ts
 // ./examples/6110Requests.ts
 
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Block } from '@ethereumjs/block'
+import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
-  bytesToBigInt,
-  DepositRequest,
-  randomBytes,
   type CLRequest,
   type CLRequestType,
+  DepositRequest,
+  bytesToBigInt,
+  randomBytes,
 } from '@ethereumjs/util'
 
 const main = async () => {
   const common = new Common({
-    chain: Chain.Mainnet,
-    hardfork: Hardfork.Cancun,
-    eips: [7685, 4788],
+    chain: Mainnet,
+    hardfork: Hardfork.Prague,
   })
 
   const depositRequestData = {
@@ -249,9 +251,9 @@ const main = async () => {
   }
   const request = DepositRequest.fromRequestData(depositRequestData) as CLRequest<CLRequestType>
   const requests = [request]
-  const requestsRoot = await Block.genRequestsTrieRoot(requests)
+  const requestsRoot = await genRequestsTrieRoot(requests)
 
-  const block = Block.fromBlockData(
+  const block = createBlock(
     {
       requests,
       header: { requestsRoot },
@@ -261,11 +263,11 @@ const main = async () => {
   console.log(
     `Instantiated block with ${
       block.requests?.length
-    } request, requestTrieValid=${await block.requestsTrieIsValid()}`,
+    } deposit request, requestTrieValid=${await block.requestsTrieIsValid()}`,
   )
 }
 
-main()
+void main()
 ```
 
 Have a look at the EIP for some guidance on how to use and fill in the various deposit request parameters.
@@ -328,19 +330,18 @@ Have a look at the EIP for some guidance on how to use and fill in the various w
 ```ts
 // ./examples/7251Requests.ts
 
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Block } from '@ethereumjs/block'
+import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
-  bytesToBigInt,
-  ConsolidationRequest,
-  randomBytes,
   type CLRequest,
   type CLRequestType,
+  ConsolidationRequest,
+  randomBytes,
 } from '@ethereumjs/util'
 
 const main = async () => {
   const common = new Common({
-    chain: Chain.Mainnet,
+    chain: Mainnet,
     hardfork: Hardfork.Prague,
   })
 
@@ -353,9 +354,9 @@ const main = async () => {
     consolidationRequestData,
   ) as CLRequest<CLRequestType>
   const requests = [request]
-  const requestsRoot = await Block.genRequestsTrieRoot(requests)
+  const requestsRoot = await genRequestsTrieRoot(requests)
 
-  const block = Block.fromBlockData(
+  const block = createBlock(
     {
       requests,
       header: { requestsRoot },
@@ -369,7 +370,7 @@ const main = async () => {
   )
 }
 
-main()
+void main()
 ```
 
 Have a look at the EIP for some guidance on how to use and fill in the various deposit request parameters.
@@ -389,15 +390,15 @@ An Ethash/PoW block can be instantiated as follows:
 ```ts
 // ./examples/pow.ts
 
-import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
 
 console.log(common.consensusType()) // 'pow'
 console.log(common.consensusAlgorithm()) // 'ethash'
 
-Block.fromBlockData({}, { common })
+createBlock({}, { common })
 console.log(`Old Proof-of-Work block created`)
 ```
 
@@ -410,15 +411,15 @@ A clique block can be instantiated as follows:
 ```ts
 // ./examples/clique.ts
 
-import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Goerli, Hardfork } from '@ethereumjs/common'
 
-const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 
 console.log(common.consensusType()) // 'poa'
 console.log(common.consensusAlgorithm()) // 'clique'
 
-Block.fromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
+createBlock({ header: { extraData: new Uint8Array(97) } }, { common })
 console.log(`Old Clique Proof-of-Authority block created`)
 ```
 
@@ -450,12 +451,12 @@ You can instantiate a Merge/PoS block like this:
 ```ts
 // ./examples/pos.ts
 
-import { Block } from '@ethereumjs/block'
-import { Chain, Common } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Mainnet } from '@ethereumjs/common'
 
-const common = new Common({ chain: Chain.Mainnet })
+const common = new Common({ chain: Mainnet })
 
-const block = Block.fromBlockData(
+const block = createBlock(
   {
     // Provide your block data here or use default values
   },
