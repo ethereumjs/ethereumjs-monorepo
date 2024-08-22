@@ -847,6 +847,7 @@ export class Common {
       customCrypto: this.customCrypto,
     })
     copy.updateParams(this._params)
+    copy.setHardfork(this.hardfork())
     return copy
   }
 }
