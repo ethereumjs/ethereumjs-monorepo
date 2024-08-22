@@ -3,7 +3,8 @@
   "include": ["bin", "src", "package.json"],
   "compilerOptions": {
     "outDir": "dist/esm",
-    "typeRoots": ["node_modules/@types", "src/@types"],
+    "types": ["node"],
+    "typeRoots": ["../../node_modules/@types", "src/@types"],
     "composite": true,
     "allowSyntheticDefaultImports": true
   },

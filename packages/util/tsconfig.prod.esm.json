@@ -3,6 +3,8 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist/esm",
+    "types": ["node"],
+    "typeRoots": ["../../node_modules/@types"],
     "composite": true
   },
   "include": ["src/**/*.ts"],

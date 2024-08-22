@@ -4,7 +4,7 @@
     "rootDir": "src",
     "outDir": "dist/cjs",
     "types": ["node"],
-    "typeRoots": ["node_modules/@types"],
+    "typeRoots": ["../../node_modules/@types"],
     "composite": true
   },
   "include": ["src/**/*.ts", "src/**/*.json"],
