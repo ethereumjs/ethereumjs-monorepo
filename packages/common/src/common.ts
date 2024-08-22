@@ -69,8 +69,7 @@ export class Common {
         (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]),
     ])
     this._hardfork = this.DEFAULT_HARDFORK
-    // this._params = { ...(opts.params ?? {}) } // copy
-    this._params = opts.params ? JSON.parse(JSON.stringify(opts.params)) : {}
+    this._params = { ...(opts.params ?? {}) } // copy
 
     if (opts.hardfork !== undefined) {
       this.setHardfork(opts.hardfork)
@@ -106,10 +105,9 @@ export class Common {
   updateParams(params: ParamsDict) {
     for (const [eip, paramsConfig] of Object.entries(params)) {
       if (!(eip in this._params)) {
-        // this._params[eip] = { ...paramsConfig } // copy
-        this._params[eip] = JSON.parse(JSON.stringify(paramsConfig))
+        this._params[eip] = { ...paramsConfig } // copy
       } else {
-        this._params[eip] = JSON.parse(JSON.stringify({ ...this._params[eip], ...params[eip] }))
+        this._params[eip] = { ...this._params[eip], ...params[eip] }
       }
     }
 
@@ -132,8 +130,7 @@ export class Common {
    * @param params
    */
   resetParams(params: ParamsDict) {
-    // this._params = { ...params } // copy
-    this._params = JSON.parse(JSON.stringify(params))
+    this._params = { ...params } // copy
     this._buildParamsCache()
   }
 
@@ -845,12 +842,11 @@ export class Common {
    */
   copy(): Common {
     const copy = new Common({
-      chain: JSON.parse(JSON.stringify(this._chainParams)),
-      params: JSON.parse(JSON.stringify(this._params)),
+      chain: { ...this._chainParams },
       eips: [...this._eips],
+      customCrypto: this.customCrypto,
     })
-    copy._activatedEIPsCache = [...this._activatedEIPsCache]
-
+    copy.updateParams(this._params)
     return copy
   }
 }
