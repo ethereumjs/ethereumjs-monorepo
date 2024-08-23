@@ -40,7 +40,7 @@ const EXTCALL_TARGET_MAX = BigInt(2) ** BigInt(8 * 20) - BigInt(1)
 
 async function eip7702GasCost(runState: RunState, common: Common, address: Address) {
   const code = await runState.stateManager.getCode(address)
-  if (equalsBytes(code, new Uint8Array([0xef, 0x01, 0x00]))) {
+  if (equalsBytes(code.slice(0, 3), new Uint8Array([0xef, 0x01, 0x00]))) {
     return accessAddressEIP2929(runState, code.slice(3, 24), common)
   }
   return BIGINT_0
