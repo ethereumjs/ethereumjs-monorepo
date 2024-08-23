@@ -38,10 +38,15 @@ import type { Address } from '@ethereumjs/util'
 
 const EXTCALL_TARGET_MAX = BigInt(2) ** BigInt(8 * 20) - BigInt(1)
 
-async function eip7702GasCost(runState: RunState, common: Common, address: Address) {
+async function eip7702GasCost(
+  runState: RunState,
+  common: Common,
+  address: Address,
+  charge2929Gas: boolean,
+) {
   const code = await runState.stateManager.getCode(address)
-  if (equalsBytes(code, new Uint8Array([0xef, 0x01, 0x00]))) {
-    return accessAddressEIP2929(runState, code.slice(3, 24), common)
+  if (equalsBytes(code.slice(0, 3), new Uint8Array([0xef, 0x01, 0x00]))) {
+    return accessAddressEIP2929(runState, code.slice(3, 24), common, charge2929Gas)
   }
   return BIGINT_0
 }
@@ -193,7 +198,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (common.isActivatedEIP(7702)) {
-          gas += await eip7702GasCost(runState, common, address)
+          gas += await eip7702GasCost(runState, common, address, charge2929Gas)
         }
 
         return gas
@@ -235,7 +240,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (common.isActivatedEIP(7702)) {
-          gas += await eip7702GasCost(runState, common, address)
+          gas += await eip7702GasCost(runState, common, address, charge2929Gas)
         }
 
         if (dataLength !== BIGINT_0) {
@@ -304,7 +309,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (common.isActivatedEIP(7702)) {
-          gas += await eip7702GasCost(runState, common, address)
+          gas += await eip7702GasCost(runState, common, address, charge2929Gas)
         }
 
         return gas
@@ -608,7 +613,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (common.isActivatedEIP(7702)) {
-          gas += await eip7702GasCost(runState, common, toAddress)
+          gas += await eip7702GasCost(runState, common, toAddress, charge2929Gas)
         }
 
         if (value !== BIGINT_0 && !common.isActivatedEIP(6800)) {
@@ -686,7 +691,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (common.isActivatedEIP(7702)) {
-          gas += await eip7702GasCost(runState, common, toAddress)
+          gas += await eip7702GasCost(runState, common, toAddress, charge2929Gas)
         }
 
         if (value !== BIGINT_0) {
@@ -751,7 +756,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (common.isActivatedEIP(7702)) {
-          gas += await eip7702GasCost(runState, common, toAddress)
+          gas += await eip7702GasCost(runState, common, toAddress, charge2929Gas)
         }
 
         const gasLimit = maxCallGas(
@@ -954,7 +959,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (common.isActivatedEIP(7702)) {
-          gas += await eip7702GasCost(runState, common, createAddressFromStackBigInt(toAddr))
+          gas += await eip7702GasCost(
+            runState,
+            common,
+            createAddressFromStackBigInt(toAddr),
+            charge2929Gas,
+          )
         }
 
         const gasLimit = maxCallGas(
