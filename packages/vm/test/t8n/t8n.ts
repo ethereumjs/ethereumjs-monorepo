@@ -166,7 +166,6 @@ vm.stateManager.putAccount = async function (...args: any) {
 }
 
 vm.stateManager.putCode = async function (...args: any) {
-  console.log('PUTCODE', args[0].toString(), bytesToHex(args[1]))
   const address = <Address>args[0]
   addAddress(address.toString())
   return originalPutCode.apply(this, args)
@@ -175,7 +174,6 @@ vm.stateManager.putCode = async function (...args: any) {
 vm.stateManager.putStorage = async function (...args: any) {
   const address = <Address>args[0]
   const key = <Uint8Array>args[1]
-  console.log('PUTSTORAGE', address.toString(), bytesToHex(key), bytesToHex(args[2]))
   addStorage(address.toString(), bytesToHex(key))
   return originalPutStorage.apply(this, args)
 }
