@@ -17,6 +17,7 @@ import type { EthereumClient } from '../../index.js'
 import type { FullEthereumService } from '../../service/index.js'
 import type { RpcTx } from '../types.js'
 import type { Block } from '@ethereumjs/block'
+import type { StorageRange } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 export interface tracerOpts {
@@ -338,7 +339,7 @@ export class Debug {
    */
   async storageRangeAt(
     params: [PrefixedHexString, number, PrefixedHexString, PrefixedHexString, number],
-  ) {
+  ): Promise<StorageRange> {
     const [blockHash, txIndex, account, startKey, limit] = params
 
     if (this.vm === undefined) {

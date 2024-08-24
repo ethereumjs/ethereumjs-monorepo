@@ -3,7 +3,10 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist/esm",
-    "composite": true
+    "composite": true,
+    "paths": {
+      "@ethereumjs/rlp": ["../rlp/src/index.ts"] // Adjust the path as necessary
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.json"],
   "references": [

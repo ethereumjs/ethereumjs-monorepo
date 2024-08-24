@@ -3,7 +3,6 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist/cjs",
-    "typeRoots": ["../../node_modules/@types"],
     "composite": true
   },
   "include": ["src/*.ts"]
