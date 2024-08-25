@@ -19,14 +19,14 @@ import { readFileSync, writeFileSync } from 'fs'
 import { loadKZG } from 'kzg-wasm'
 import * as mcl from 'mcl-wasm'
 import { join } from 'path'
-import yargs from 'yargs'
-import { hideBin } from 'yargs/helpers'
 
 import { MCLBLS } from '../../../evm/dist/cjs/index.js'
 import { buildBlock } from '../../dist/esm/buildBlock.js'
 import { VM } from '../../dist/esm/vm.js'
 import { getCommon } from '../tester/config.js'
 import { makeBlockFromEnv, setupPreConditions } from '../util.js'
+
+import { getArguments } from './helpers.js'
 
 import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
@@ -61,35 +61,7 @@ function normalizeNumbers(input: any) {
   return input
 }
 
-const args = yargs(hideBin(process.argv))
-  .option('state.fork', {
-    describe: 'Fork to use',
-    type: 'string',
-  })
-  .option('input.alloc', {
-    describe: 'Initial state allocation',
-    type: 'string',
-  })
-  .option('inputs.txs', {
-    describe: 'RLP input of txs to run on top of the initial state allocation',
-    type: 'string',
-  })
-  .option('inputs.env', {
-    describe: 'Input environment (coinbase, difficulty, etc.)',
-    type: 'string',
-  })
-  .option('output.basedir', {
-    describe: 'Base directory to write output to',
-    type: 'string',
-  })
-  .option('output.result', {
-    describe: 'File to write output results to (relative to `output.basedir`)',
-    type: 'string',
-  })
-  .option('output.alloc', {
-    describe: 'File to write output allocation to (after running the transactions)',
-    type: 'string',
-  }).argv as any
+const args = getArguments()
 
 const alloc = JSON.parse(readFileSync(args.input.alloc).toString())
 const txsData = JSON.parse(readFileSync(args.input.txs).toString())
