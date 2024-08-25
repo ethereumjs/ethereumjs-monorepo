@@ -1,2 +1,0 @@
-INFO [08-19|00:30:25.268] Trie dumping started                     root=187e2b..730c05
-INFO [08-19|00:30:25.268] Trie dumping complete                    accounts=4 elapsed="105.981µs"
