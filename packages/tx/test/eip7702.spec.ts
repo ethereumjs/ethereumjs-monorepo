@@ -41,6 +41,7 @@ function getTxData(override: Partial<AuthorizationListItem> = {}): TxData {
         ...override,
       },
     ],
+    to: createZeroAddress(),
   }
 }
 
@@ -52,7 +53,7 @@ describe('[EOACode7702Transaction]', () => {
         maxFeePerGas: 1,
         maxPriorityFeePerGas: 1,
         accessList: [],
-        authorizationList: [],
+        ...getTxData(),
         chainId: 1,
         gasLimit: 100000,
         to: createZeroAddress(),

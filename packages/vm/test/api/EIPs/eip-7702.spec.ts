@@ -5,7 +5,6 @@ import {
   Account,
   Address,
   BIGINT_1,
-  KECCAK256_NULL,
   bigIntToUnpaddedBytes,
   concatBytes,
   createAddressFromString,
@@ -71,12 +70,7 @@ function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytes
   ]
 }
 
-async function runTest(
-  authorizationListOpts: GetAuthListOpts[],
-  expect: Uint8Array,
-  vm?: VM,
-  skipEmptyCode?: boolean,
-) {
+async function runTest(authorizationListOpts: GetAuthListOpts[], expect: Uint8Array, vm?: VM) {
   vm = vm ?? (await VM.create({ common }))
   const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
   const tx = createEOACode7702Tx(
@@ -105,12 +99,6 @@ async function runTest(
   const slot = hexToBytes(`0x${'00'.repeat(31)}01`)
   const value = await vm.stateManager.getStorage(defaultAuthAddr, slot)
   assert.ok(equalsBytes(unpadBytes(expect), value))
-
-  if (skipEmptyCode === undefined) {
-    // Check that the code is cleaned after the `runTx`
-    const account = (await vm.stateManager.getAccount(defaultAuthAddr)) ?? new Account()
-    assert.ok(equalsBytes(account.codeHash, KECCAK256_NULL))
-  }
 }
 
 describe('EIP 7702: set code to EOA accounts', () => {
@@ -195,7 +183,6 @@ describe('EIP 7702: set code to EOA accounts', () => {
       ],
       new Uint8Array(),
       vm,
-      true,
     )
   })
 
@@ -212,8 +199,9 @@ describe('EIP 7702: set code to EOA accounts', () => {
     // 5 * PUSH0: 10
     // 1 * PUSH20: 3
     // 1 * GAS: 2
-    // 1x warm call: 100
-    // Total: 115
+    // 1x warm call: 100 (to auth address)
+    // --> This calls into the cold code1Addr, so add 2600 cold account gas cost
+    // Total: 2715
     const checkAddressWarmCode = hexToBytes(
       `0x5F5F5F5F5F73${defaultAuthAddr.toString().slice(2)}5AF1`,
     )
@@ -240,49 +228,11 @@ describe('EIP 7702: set code to EOA accounts', () => {
     await vm.stateManager.putAccount(defaultSenderAddr, acc)
 
     const res = await runTx(vm, { tx })
-    assert.ok(res.execResult.executionGasUsed === BigInt(115))
-  })
-
-  // This test shows, that due to EIP-161, if an EOA has 0 nonce and 0 balance,
-  // if EIP-7702 code is being ran which sets storage on this EOA,
-  // the account is still deleted after the tx (and thus also the storage is wiped)
-  it('EIP-161 test case', async () => {
-    const vm = await VM.create({ common })
-    const authList = [
-      getAuthorizationListItem({
-        address: code1Addr,
-      }),
-    ]
-    const tx = createEOACode7702Tx(
-      {
-        gasLimit: 100000,
-        maxFeePerGas: 1000,
-        authorizationList: authList,
-        to: defaultAuthAddr,
-        // value: BIGINT_1 // Note, by enabling this line, the account will not get deleted
-        // Therefore, this test will pass
-      },
-      { common },
-    ).sign(defaultSenderPkey)
-
-    // Store value 1 in storage slot 1
-    // PUSH1 PUSH1 SSTORE STOP
-    const code = hexToBytes('0x600160015500')
-    await vm.stateManager.putCode(code1Addr, code)
-
-    const acc = (await vm.stateManager.getAccount(defaultSenderAddr)) ?? new Account()
-    acc.balance = BigInt(1_000_000_000)
-    await vm.stateManager.putAccount(defaultSenderAddr, acc)
-
-    await runTx(vm, { tx })
-
-    // Note: due to EIP-161, defaultAuthAddr is now deleted
-    const account = await vm.stateManager.getAccount(defaultAuthAddr)
-    assert.ok(account === undefined)
+    assert.ok(res.execResult.executionGasUsed === BigInt(2715))
   })
 })
 
-describe.only('test EIP-7702 opcodes', () => {
+describe('test EIP-7702 opcodes', () => {
   it('should correctly report EXTCODESIZE/EXTCODEHASH/EXTCODECOPY opcodes', async () => {
     // extcodesize and extcodehash
     const deploymentAddress = createZeroAddress()
