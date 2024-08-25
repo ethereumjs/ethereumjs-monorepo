@@ -429,13 +429,16 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // Add contract code for authority tuples provided by EIP 7702 tx
     const authorizationList = (<EIP7702CompatibleTx>tx).authorizationList
     const MAGIC = new Uint8Array([5])
+    console.log('CHECK7702')
     for (let i = 0; i < authorizationList.length; i++) {
+      console.log('check auth')
       // Authority tuple validation
       const data = authorizationList[i]
       const chainId = data[0]
       const chainIdBN = bytesToBigInt(chainId)
       if (chainIdBN !== BIGINT_0 && chainIdBN !== vm.common.chainId()) {
         // Chain id does not match, continue
+        console.log('chainid')
         continue
       }
       // Address to take code from
@@ -460,6 +463,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         const code = await vm.stateManager.getCode(authority)
         if (!equalsBytes(code.slice(0, 3), new Uint8Array([0xef, 0x01, 0x00]))) {
           // Account is a "normal" contract
+          console.log('contract')
           continue
         }
       }
