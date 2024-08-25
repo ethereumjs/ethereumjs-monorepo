@@ -5,13 +5,13 @@
     "outDir": "dist/esm",
     "composite": true,
     "paths": {
-      "@ethereumjs/rlp": ["../rlp/src/index.ts"] // Adjust the path as necessary
+      "@ethereumjs/rlp": ["../rlp/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.json"],
   "references": [
-    { "path": "../common/tsconfig.prod.esm.json" },
     { "path": "../block/tsconfig.prod.esm.json" },
+    { "path": "../common/tsconfig.prod.esm.json" },
     { "path": "../ethash/tsconfig.prod.esm.json" },
     { "path": "../genesis/tsconfig.prod.esm.json" },
     { "path": "../rlp/tsconfig.prod.esm.json" },
