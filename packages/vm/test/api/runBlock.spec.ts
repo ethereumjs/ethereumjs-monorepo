@@ -20,7 +20,6 @@ import {
   Address,
   BIGINT_1,
   KECCAK256_RLP,
-  bigIntToBytes,
   concatBytes,
   createAddressFromString,
   createZeroAddress,
@@ -616,7 +615,9 @@ describe('runBlock() -> tx types', async () => {
       const msgToSign = keccak256(concatBytes(new Uint8Array([5]), rlpdMsg))
       const signed = ecsign(msgToSign, pkey)
 
-      return [chainIdBytes, addressBytes, nonceBytes, bigIntToBytes(signed.v), signed.r, signed.s]
+      const yParity = signed.v === BigInt(27) ? new Uint8Array() : new Uint8Array([1])
+
+      return [chainIdBytes, addressBytes, nonceBytes, yParity, signed.r, signed.s]
     }
 
     const common = new Common({
@@ -641,6 +642,7 @@ describe('runBlock() -> tx types', async () => {
     const authorizationListOpts2 = [
       {
         address: code2Addr,
+        nonce: 1,
       },
     ]
 
