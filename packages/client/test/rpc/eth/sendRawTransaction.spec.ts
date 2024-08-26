@@ -30,6 +30,11 @@ describe(method, () => {
     DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
+    Mainnet.hardforks
+      .filter((hf) => hf.timestamp !== undefined)
+      .map((hf) => {
+        hf.timestamp = undefined
+      })
     const common = new Common({ chain: Mainnet })
     common
       .hardforks()
