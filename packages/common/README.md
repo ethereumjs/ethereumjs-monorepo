@@ -42,13 +42,13 @@ All parameters can be accessed through the `Common` class, instantiated with an 
 ```ts
 // ./examples/common.ts#L1-L7
 
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 
 // With enums:
-const commonWithEnums = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const commonWithEnums = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
-// (also possible with directly passing in strings:)
-const commonWithStrings = new Common({ chain: 'mainnet', hardfork: 'london' })
+// Instantiate with the chain (and the default hardfork)
+let c = new Common({ chain: Mainnet })
 ```
 
 If no hardfork is provided, the common is initialized with the default hardfork.
@@ -60,21 +60,17 @@ Here are some simple usage examples:
 ```ts
 // ./examples/common.ts#L9-L23
 
-// Instantiate with the chain (and the default hardfork)
-let c = new Common({ chain: Chain.Mainnet })
-console.log(`The gas price for ecAdd is ${c.param('gasPrices', 'ecAddGas')}`) // 500
-
-// Chain and hardfork provided
-c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
-console.log(`The miner reward under PoW on Byzantium us ${c.param('pow', 'minerReward')}`) // 3000000000000000000
-
 // Get bootstrap nodes for chain/network
 console.log('Below are the known bootstrap nodes')
 console.log(c.bootstrapNodes()) // Array with current nodes
 
 // Instantiate with an EIP activated
-c = new Common({ chain: Chain.Mainnet, eips: [4844] })
+c = new Common({ chain: Mainnet, eips: [4844] })
 console.log(`EIP 4844 is active -- ${c.isActivatedEIP(4844)}`)
+
+// Instantiate common with custom chainID
+const commonWithCustomChainId = createCustomCommon({ chainId: 1234 }, Mainnet)
+console.log(`The current chain ID is ${commonWithCustomChainId.chainId}`)
 ```
 
 ### Custom Cryptography Primitives (WASM)
@@ -98,23 +94,23 @@ The following is an example using the [@polkadot/wasm-crypto](https://github.com
 ```ts
 // ./examples/customCrypto.ts
 
+import { createBlock } from '@ethereumjs/block'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { keccak256, waitReady } from '@polkadot/wasm-crypto'
-import { Chain, Common } from '@ethereumjs/common'
-import { Block } from '@ethereumjs/block'
 
 const main = async () => {
   // @polkadot/wasm-crypto specific initialization
   await waitReady()
 
-  const common = new Common({ chain: Chain.Mainnet, customCrypto: { keccak256 } })
-  const block = Block.fromBlockData({}, { common })
+  const common = new Common({ chain: Mainnet, customCrypto: { keccak256 } })
+  const block = createBlock({}, { common })
 
   // Method invocations within EthereumJS library instantiations where the common
   // instance above is passed will now use the custom keccak256 implementation
   console.log(block.hash())
 }
 
-main()
+void main()
 ```
 
 ### Example 2: KZG
@@ -126,20 +122,20 @@ to initialize (assuming you are using the `c-kzg` package as your KZG cryptograp
 ```ts
 // ./examples/initKzg.ts
 
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { loadKZG } from 'kzg-wasm'
-import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const main = async () => {
   const kzg = await loadKZG()
   const common = new Common({
-    chain: Chain.Mainnet,
+    chain: Mainnet,
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
   })
   console.log(common.customCrypto.kzg) // Should print the initialized KZG interface
 }
 
-main()
+void main()
 ```
 
 ## Browser
@@ -241,10 +237,6 @@ There is a dedicated `Common.custom()` static constructor which allows for an ea
 
 ```ts
 // ./examples/common.ts#L25-L27
-
-// Instantiate common with custom chainID
-const commonWithCustomChainId = Common.custom({ chainId: 1234 })
-console.log(`The current chain ID is ${commonWithCustomChainId.chainId}`)
 ```
 
 The `custom()` method also takes a string as a first input (instead of a dictionary). This can be used in combination with the `CustomChain` enum dict which allows for the selection of predefined supported custom chains for an easier `Common` setup of these supported chains:
@@ -273,11 +265,12 @@ values to the constructor using the `chain` parameter or the `setChain()` method
 ```ts
 // ./examples/customChain.ts
 
-import { Common } from '@ethereumjs/common'
+import { Common, Mainnet, createCustomCommon } from '@ethereumjs/common'
+
 import myCustomChain1 from './genesisData/testnet.json'
 
 // Add custom chain config
-const common1 = new Common({ chain: myCustomChain1 })
+const common1 = createCustomCommon(myCustomChain1, Mainnet)
 console.log(`Common is instantiated with custom chain parameters - ${common1.chainName()}`)
 ```
 
@@ -291,23 +284,15 @@ use the `chain` option to activate one of the custom chains passed or activate a
 (e.g. `mainnet`) and switch to other chains - including the custom ones - by using `Common.setChain()`.
 
 ```ts
-// ./examples/customChains.ts
+// ./examples/customChain.ts
 
-import { Common } from '@ethereumjs/common'
+import { Common, Mainnet, createCustomCommon } from '@ethereumjs/common'
+
 import myCustomChain1 from './genesisData/testnet.json'
-import myCustomChain2 from './genesisData/testnet2.json'
-// Add two custom chains, initial mainnet activation
-const common1 = new Common({ chain: 'mainnet', customChains: [myCustomChain1, myCustomChain2] })
-console.log(`Common is instantiated with mainnet parameters - ${common1.chainName()}`)
-common1.setChain('testnet1')
-console.log(`Common is set to use testnet parameters - ${common1.chainName()}`)
-// Add two custom chains, activate customChain1
-const common2 = new Common({
-  chain: 'testnet2',
-  customChains: [myCustomChain1, myCustomChain2],
-})
 
-console.log(`Common is instantiated with testnet2 parameters - ${common1.chainName()}`)
+// Add custom chain config
+const common1 = createCustomCommon(myCustomChain1, Mainnet)
+console.log(`Common is instantiated with custom chain parameters - ${common1.chainName()}`)
 ```
 
 Starting with v3 custom genesis states should be passed to the [Blockchain](../blockchain/) library directly.
@@ -321,14 +306,14 @@ common from such configuration in the following manner:
 ```ts
 // ./examples/fromGeth.ts
 
-import { Common } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { hexToBytes } from '@ethereumjs/util'
 
 import genesisJson from './genesisData/post-merge.json'
 
 const genesisHash = hexToBytes('0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a')
 // Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
-const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
+const common = createCommonFromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
 // If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
 // after calculating it via `blockchain`)
 common.setForkHashes(genesisHash)
@@ -343,10 +328,10 @@ The `hardfork` can be set in constructor like this:
 ```ts
 // ./examples/common.ts#L1-L4
 
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 
 // With enums:
-const commonWithEnums = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const commonWithEnums = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 ```
 
 ### Active Hardforks
