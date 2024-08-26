@@ -1,11 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
-import {
-  Common,
-  Mainnet,
-  createCommonFromGethGenesis,
-  createCustomCommon,
-} from '@ethereumjs/common'
-import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
+import { Mainnet, createCommonFromGethGenesis, createCustomCommon } from '@ethereumjs/common'
+import { equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it } from 'vitest'
 
@@ -24,10 +19,14 @@ type Subchain = {
   tail: bigint
 }
 
-const common = new Common({ chain: Mainnet })
-const block49 = createBlock({ header: { number: 49 } }, { common, setHardfork: true })
+const common = createCustomCommon(mergeGenesisParams, Mainnet, { name: 'post-merge' })
+const block48 = createBlock({ header: { number: 48 } }, { common, setHardfork: true })
+const block49 = createBlock(
+  { header: { number: 49, parentHash: block48.hash() } },
+  { common, setHardfork: true },
+)
 const block49B = createBlock(
-  { header: { number: 49, extraData: utf8ToBytes('B') } },
+  { header: { number: 49, parentHash: block48.hash(), extraData: utf8ToBytes('B') } },
   { common, setHardfork: true },
 )
 const block50 = createBlock(
@@ -408,6 +407,7 @@ describe('[Skeleton] / setHead', async () => {
           assert.ok(true, `test ${testCaseIndex}: subchain[${i}] matched`)
         }
       }
+      skeleton.logSyncStatus('specLog')
     })
   }
 
@@ -436,7 +436,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should init/setHead properly from genesis', async () => {
-    const config = new Config({ common })
+    const config = new Config({ common, logger: getLogger({ logLevel: 'debug' }) })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -451,8 +451,18 @@ describe('[Skeleton] / setHead', async () => {
       { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
+
+    // block3 from an alternate chain
     const block3 = createBlock(
-      { header: { number: 3, difficulty: 100 } },
+      {
+        header: {
+          number: 3,
+          difficulty: 0,
+          parentHash: hexToBytes(
+            '0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
+          ),
+        },
+      },
       { common, setHardfork: true },
     )
 
@@ -534,11 +544,17 @@ describe('[Skeleton] / setHead', async () => {
       'head should be set to second block',
     )
     assert.equal(skeleton.isLinked(), true, 'subchain status should stay linked')
+    skeleton.logSyncStatus('specLog')
 
     reorg = await skeleton.setHead(block3, true)
+    skeleton.logSyncStatus('specLog')
     assert.equal(reorg, true, 'should not extend on invalid third block')
     // since its not a forced update so shouldn't affect subchain status
-    assert.equal(skeleton['status'].progress.subchains.length, 2, 'new subchain should be created')
+    assert.equal(
+      skeleton['status'].progress.subchains.length,
+      1,
+      'new subchain should be created and previous truncated',
+    )
     assert.equal(
       skeleton['status'].progress.subchains[0].head,
       BigInt(3),
@@ -563,16 +579,18 @@ describe('[Skeleton] / setHead', async () => {
       { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
+
+    // block3 onwards is POS
     const block3 = createBlock(
-      { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
+      { header: { number: 3, parentHash: block2.hash() } },
       { common, setHardfork: true },
     )
     const block4 = createBlock(
-      { header: { number: 4, parentHash: block3.hash(), difficulty: 100 } },
+      { header: { number: 4, parentHash: block3.hash() } },
       { common, setHardfork: true },
     )
     const block5 = createBlock(
-      { header: { number: 5, parentHash: block4.hash(), difficulty: 100 } },
+      { header: { number: 5, parentHash: block4.hash() } },
       { common, setHardfork: true },
     )
 
@@ -588,7 +606,9 @@ describe('[Skeleton] / setHead', async () => {
       BigInt(4),
       'canonical height should update after being linked',
     )
+    skeleton.logSyncStatus('specLog')
     await skeleton.setHead(block5, false)
+    skeleton.logSyncStatus('specLog')
     await wait(200)
     assert.equal(
       chain.blocks.height,
@@ -621,10 +641,16 @@ describe('[Skeleton] / setHead', async () => {
         )} should be available even after filling canonical chain`,
       )
     }
+
+    skeleton.logSyncStatus('specLog')
   })
 
   it('should fill the canonical chain after being linked to a canonical block past genesis', async () => {
-    const config = new Config({ common, engineNewpayloadMaxExecute: 10 })
+    const config = new Config({
+      common,
+      engineNewpayloadMaxExecute: 10,
+      logger: getLogger({ logLevel: 'debug' }),
+    })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
 
@@ -643,23 +669,26 @@ describe('[Skeleton] / setHead', async () => {
       { common, setHardfork: true },
     )
     const block3 = createBlock(
-      { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
+      { header: { number: 3, parentHash: block2.hash() } },
       { common, setHardfork: true },
     )
     const block4 = createBlock(
-      { header: { number: 4, parentHash: block3.hash(), difficulty: 100 } },
+      { header: { number: 4, parentHash: block3.hash() } },
       { common, setHardfork: true },
     )
     const block5 = createBlock(
-      { header: { number: 5, parentHash: block4.hash(), difficulty: 100 } },
+      { header: { number: 5, parentHash: block4.hash() } },
       { common, setHardfork: true },
     )
 
     await chain.putBlocks([block1, block2])
+    skeleton.logSyncStatus('specLog')
     await skeleton.initSync(block4)
+    skeleton.logSyncStatus('specLog')
     assert.equal(chain.blocks.height, BigInt(2), 'canonical height should be at block 2')
     await skeleton.putBlocks([block3])
     await wait(200)
+    skeleton.logSyncStatus('specLog')
     assert.equal(
       chain.blocks.height,
       BigInt(4),
@@ -704,15 +733,15 @@ describe('[Skeleton] / setHead', async () => {
     skeleton['status'].linked = prevLinked
 
     const block41 = createBlock(
-      { header: { number: 4, parentHash: block3.hash(), difficulty: 101 } },
+      { header: { number: 4, parentHash: block3.hash() } },
       { common, setHardfork: true },
     )
     const block51 = createBlock(
-      { header: { number: 5, parentHash: block41.hash(), difficulty: 100 } },
+      { header: { number: 5, parentHash: block41.hash() } },
       { common, setHardfork: true },
     )
     const block61 = createBlock(
-      { header: { number: 6, parentHash: block51.hash(), difficulty: 100 } },
+      { header: { number: 6, parentHash: block51.hash() } },
       { common, setHardfork: true },
     )
 
@@ -728,22 +757,22 @@ describe('[Skeleton] / setHead', async () => {
     )
     assert.equal(
       skeleton['status'].progress.subchains[0]?.tail,
-      BigInt(4),
+      BigInt(3),
       'tail should be backfilled',
     )
     assert.equal(skeleton['status'].linked, true, 'should be linked')
     assert.equal(chain.blocks.height, BigInt(6), 'all blocks should be in chain')
 
     const block71 = createBlock(
-      { header: { number: 7, parentHash: block61.hash(), difficulty: 100 } },
+      { header: { number: 7, parentHash: block61.hash() } },
       { common, setHardfork: true },
     )
     const block81 = createBlock(
-      { header: { number: 8, parentHash: block71.hash(), difficulty: 100 } },
+      { header: { number: 8, parentHash: block71.hash() } },
       { common, setHardfork: true },
     )
     const block91 = createBlock(
-      { header: { number: 9, parentHash: block81.hash(), difficulty: 100 } },
+      { header: { number: 9, parentHash: block81.hash() } },
       { common, setHardfork: true },
     )
 
@@ -771,7 +800,7 @@ describe('[Skeleton] / setHead', async () => {
     )
     assert.equal(
       skeleton['status'].progress.subchains[0]?.tail,
-      BigInt(7),
+      BigInt(8),
       'tail should be backfilled',
     )
     assert.equal(skeleton['status'].linked, true, 'should be linked')
@@ -786,11 +815,11 @@ describe('[Skeleton] / setHead', async () => {
 
     // do a very common reorg that happens in a network: reorged head block
     const block92 = createBlock(
-      { header: { number: 9, parentHash: block81.hash(), difficulty: 101 } },
+      { header: { number: 9, parentHash: block81.hash(), gasLimit: 999 } },
       { common, setHardfork: true },
     )
     const block102 = createBlock(
-      { header: { number: 10, parentHash: block92.hash(), difficulty: 100 } },
+      { header: { number: 10, parentHash: block92.hash(), gasLimit: 999 } },
       { common, setHardfork: true },
     )
 
@@ -828,6 +857,7 @@ describe('[Skeleton] / setHead', async () => {
       common,
       accountCache: 10000,
       storageCache: 1000,
+      logger: getLogger({ logLevel: 'debug' }),
     })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
@@ -868,10 +898,15 @@ describe('[Skeleton] / setHead', async () => {
 
     await skeleton.initSync(block4InvalidPoS)
     // the following putBlocks will fail ad block3 is pow block
-    await skeleton.putBlocks([block3PoW, block2])
+    try {
+      await skeleton.putBlocks([block3PoW])
+      assert.fail('should have failed putting invalid pow')
+      // eslint-disable-next-line no-empty
+    } catch (_e) {}
 
     assert.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
-    await skeleton.putBlocks([block1])
+    skeleton.logSyncStatus('specLog')
+    await skeleton.putBlocks([block2, block1])
     await wait(200)
     assert.equal(
       chain.blocks.height,
@@ -914,5 +949,55 @@ describe('[Skeleton] / setHead', async () => {
     await skeleton.setHead(block5, true)
     await wait(200)
     assert.equal(skeleton.bounds().head, BigInt(5), 'should update to new height')
+  })
+
+  it('should fast forward the chain after annoucement', async () => {
+    const config = new Config({ common, logger: getLogger({ logLevel: 'debug' }) })
+    const chain = await Chain.create({ config })
+    ;(chain.blockchain as any)._validateBlocks = false
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+    await chain.open()
+
+    const genesis = await chain.getBlock(BigInt(0))
+    const block1 = createBlock(
+      { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
+      { common, setHardfork: true },
+    )
+    const block2 = createBlock(
+      { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
+      { common, setHardfork: true },
+    )
+
+    // block3 onwards is POS
+    const block3 = createBlock(
+      { header: { number: 3, parentHash: block2.hash() } },
+      { common, setHardfork: true },
+    )
+    const block4 = createBlock(
+      { header: { number: 4, parentHash: block3.hash() } },
+      { common, setHardfork: true },
+    )
+    const block5 = createBlock(
+      { header: { number: 5, parentHash: block4.hash() } },
+      { common, setHardfork: true },
+    )
+
+    await skeleton.open()
+
+    await skeleton.initSync(block2)
+    await skeleton.setHead(block3, false)
+    await skeleton.setHead(block4, false)
+    await skeleton.setHead(block5, true)
+    assert.equal(
+      skeleton['status'].progress.subchains[0]?.head,
+      BigInt(5),
+      'subchain should be fastforwarded',
+    )
+    assert.equal(
+      skeleton['status'].progress.subchains[0]?.tail,
+      BigInt(2),
+      'subchain should be fastforwarded',
+    )
+    skeleton.logSyncStatus('specLog')
   })
 })

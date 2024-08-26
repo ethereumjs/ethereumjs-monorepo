@@ -21,6 +21,7 @@ export enum DBKey {
   SkeletonStatus,
   SkeletonUnfinalizedBlockByHash,
   Preimage,
+  SkeletonForwardNumberToHash,
 }
 
 export interface MetaDBManagerOptions {

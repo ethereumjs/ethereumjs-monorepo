@@ -12,7 +12,7 @@ import {
 import { Cache } from './cache.js'
 import { DBOp, DBTarget } from './operation.js'
 
-import type { DatabaseKey, OptimisticOpts } from './operation.js'
+import type { DatabaseKey } from './operation.js'
 import type { Block, BlockBodyBytes, BlockBytes, BlockOptions } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { BatchDBOp, DB, DBObject, DelBatch, PutBatch } from '@ethereumjs/util'
@@ -47,7 +47,6 @@ export class DBManager {
       body: new Cache({ max: 256 }),
       numberToHash: new Cache({ max: 2048 }),
       hashToNumber: new Cache({ max: 2048 }),
-      optimisticNumberToHash: new Cache({ max: 2048 }),
     }
   }
 
@@ -85,10 +84,7 @@ export class DBManager {
    * Fetches a block (header and body) given a block id,
    * which can be either its hash or its number.
    */
-  async getBlock(
-    blockId: Uint8Array | bigint | number,
-    optimisticOpts?: OptimisticOpts,
-  ): Promise<Block | undefined> {
+  async getBlock(blockId: Uint8Array | bigint | number): Promise<Block | undefined> {
     if (typeof blockId === 'number' && Number.isInteger(blockId)) {
       blockId = BigInt(blockId)
     }
@@ -102,29 +98,9 @@ export class DBManager {
       if (number === undefined) {
         return undefined
       }
-
-      if (optimisticOpts?.fcUed === true) {
-        let optimisticHash = await this.optimisticNumberToHash(number)
-        if (optimisticHash === undefined && optimisticOpts.linked === true) {
-          optimisticHash = await this.numberToHash(number)
-        }
-        if (optimisticHash === undefined || !equalsBytes(optimisticHash, hash)) {
-          return undefined
-        }
-      }
     } else if (typeof blockId === 'bigint') {
       number = blockId
-      if (optimisticOpts !== undefined) {
-        if (!optimisticOpts.fcUed) {
-          throw Error(`Invalid fcUed optimistic block by number lookup`)
-        }
-        hash = await this.optimisticNumberToHash(blockId)
-        if (hash === undefined && optimisticOpts.linked === true) {
-          hash = await this.numberToHash(blockId)
-        }
-      } else {
-        hash = await this.numberToHash(blockId)
-      }
+      hash = await this.numberToHash(blockId)
     } else {
       throw new Error('Unknown blockId type')
     }
@@ -190,12 +166,29 @@ export class DBManager {
     return createBlockHeaderFromBytesArray(headerValues as Uint8Array[], opts)
   }
 
+  async getHeaderSafe(blockHash: Uint8Array, blockNumber: bigint) {
+    const encodedHeader = await this.get(DBTarget.Header, { blockHash, blockNumber })
+
+    const opts: BlockOptions = { common: this.common, setHardfork: true }
+    return encodedHeader !== undefined
+      ? createBlockHeaderFromBytesArray(RLP.decode(encodedHeader) as Uint8Array[], opts)
+      : undefined
+  }
+
   /**
    * Fetches total difficulty for a block given its hash and number.
    */
   async getTotalDifficulty(blockHash: Uint8Array, blockNumber: bigint): Promise<bigint> {
     const td = await this.get(DBTarget.TotalDifficulty, { blockHash, blockNumber })
     return bytesToBigInt(RLP.decode(td) as Uint8Array)
+  }
+
+  async getTotalDifficultySafe(
+    blockHash: Uint8Array,
+    blockNumber: bigint,
+  ): Promise<bigint | undefined> {
+    const td = await this.get(DBTarget.TotalDifficulty, { blockHash, blockNumber })
+    return td !== undefined ? bytesToBigInt(RLP.decode(td) as Uint8Array) : undefined
   }
 
   /**
@@ -214,11 +207,6 @@ export class DBManager {
    */
   async numberToHash(blockNumber: bigint): Promise<Uint8Array | undefined> {
     const value = await this.get(DBTarget.NumberToHash, { blockNumber })
-    return value
-  }
-
-  async optimisticNumberToHash(blockNumber: bigint): Promise<Uint8Array | undefined> {
-    const value = await this.get(DBTarget.OptimisticNumberToHash, { blockNumber })
     return value
   }
 

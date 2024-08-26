@@ -28,8 +28,6 @@ const TD_SUFFIX = utf8ToBytes('t')
  * headerPrefix + number + numSuffix -> hash
  */
 const NUM_SUFFIX = utf8ToBytes('n')
-const OPTIMISTIC_NUM_SUFFIX = utf8ToBytes('o')
-
 /**
  * blockHashPrefix + hash -> number
  */
@@ -56,9 +54,6 @@ const bodyKey = (n: bigint, hash: Uint8Array) => concatBytes(BODY_PREFIX, bytesB
 
 const numberToHashKey = (n: bigint) => concatBytes(HEADER_PREFIX, bytesBE8(n), NUM_SUFFIX)
 
-const optimisticNumberToHashKey = (n: bigint) =>
-  concatBytes(HEADER_PREFIX, bytesBE8(n), OPTIMISTIC_NUM_SUFFIX)
-
 const hashToNumberKey = (hash: Uint8Array) => concatBytes(BLOCK_HASH_PREFIX, hash)
 
 /**
@@ -73,6 +68,5 @@ export {
   headerKey,
   HEADS_KEY,
   numberToHashKey,
-  optimisticNumberToHashKey,
   tdKey,
 }

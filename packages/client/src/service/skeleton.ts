@@ -208,8 +208,12 @@ export class Skeleton extends MetaDBManager {
     // if its genesis we are linked
     if (tail === BIGINT_0) return true
     if (tail <= this.chain.blocks.height + BIGINT_1) {
-      const nextBlock = await this.chain.getBlock(tail - BIGINT_1)
-      const linked = equalsBytes(next, nextBlock.hash())
+      // we here want the non optimistic block from canonical chain
+      const nextBlock = await this.chain.blockchain.getBlock(tail - BIGINT_1)
+      const tailTD = await this.chain.blockchain
+        .getTotalDifficulty(nextBlock.hash(), tail - BIGINT_1)
+        .catch((_e) => undefined)
+      const linked = equalsBytes(next, nextBlock.hash()) && tailTD !== undefined
       if (linked && this.status.progress.subchains.length > 1) {
         // Remove all other subchains as no more relevant
         const junkedSubChains = this.status.progress.subchains.splice(1)
@@ -236,22 +240,39 @@ export class Skeleton extends MetaDBManager {
   /**
    * Try fast forwarding the chain head to the number
    */
-  private async fastForwardHead(lastchain: SkeletonSubchain, target: bigint) {
+  private async fastForwardHead(
+    lastchain: SkeletonSubchain,
+    target: bigint,
+    targetHash: Uint8Array,
+  ) {
     const head = lastchain.head
     let headBlock = await this.getBlock(head, true)
     if (headBlock === undefined) {
       return
     }
 
+    const fastForwardBlocks = []
+
     for (let newHead = head + BIGINT_1; newHead <= target; newHead += BIGINT_1) {
-      const newBlock = await this.getBlock(newHead, true)
+      const newBlockHash = await this.get(DBKey.SkeletonForwardNumberToHash, bigIntToBytes(newHead))
+      const newBlock = newBlockHash
+        ? await this.chain.blockchain.getBlock(newBlockHash).catch((_e) => undefined)
+        : undefined
       if (newBlock === undefined || !equalsBytes(newBlock.header.parentHash, headBlock.hash())) {
         // Head can't be updated forward
         break
       }
       headBlock = newBlock
+      fastForwardBlocks.push(newBlock)
     }
-    lastchain.head = headBlock.header.number
+
+    if (equalsBytes(headBlock.hash(), targetHash)) {
+      for (const block of fastForwardBlocks) {
+        await this.putBlock(block)
+      }
+      lastchain.head = headBlock.header.number
+    }
+
     this.config.logger.debug(
       `lastchain head fast forwarded from=${head} to=${lastchain.head} tail=${lastchain.tail}`,
     )
@@ -335,7 +356,7 @@ export class Skeleton extends MetaDBManager {
       }
     } else if (lastchain.head + BIGINT_1 < number) {
       if (force) {
-        await this.fastForwardHead(lastchain, number - BIGINT_1)
+        await this.fastForwardHead(lastchain, number - BIGINT_1, head.header.parentHash)
         // If its still less than number then its gapped head
         if (lastchain.head + BIGINT_1 < number) {
           this.config.logger.debug(
@@ -547,7 +568,7 @@ export class Skeleton extends MetaDBManager {
       }
 
       // only add to unfinalized cache if this is announcement and before canonical head
-      await this.putBlock(head, !force && head.header.number <= subchain0Head)
+      await this.putBlock(head, !force)
 
       if (init) {
         await this.trySubChainsMerge()
@@ -1153,7 +1174,6 @@ export class Skeleton extends MetaDBManager {
   async fillCanonicalChain() {
     if (this.filling) return
     this.filling = true
-
     let canonicalHead = this.chain.blocks.height
     const subchain = this.status.progress.subchains[0]!
     if (this.status.canonicalHeadReset) {
@@ -1172,7 +1192,7 @@ export class Skeleton extends MetaDBManager {
           `Resetting canonicalHead for fillCanonicalChain from=${canonicalHead} to=${newHead}`,
         )
         canonicalHead = newHead
-        await this.chain.resetCanonicalHead(canonicalHead)
+        // await this.chain.resetCanonicalHead(canonicalHead)
       }
       // update in lock so as to not conflict/overwrite setHead/putBlock updates
       await this.runWithLock<void>(async () => {
@@ -1353,7 +1373,24 @@ export class Skeleton extends MetaDBManager {
    */
   private async putBlock(block: Block, onlyUnfinalized: boolean = false): Promise<boolean> {
     // Serialize the block with its hardfork so that its easy to load the block latter
-    await this.chain.blockchain.putBlock(block, { fcUed: !onlyUnfinalized })
+    this.config.logger.debug(
+      `blockchain putBlock number=${block.header.number} hash=${short(block.hash())} onlyUnfinalized=${onlyUnfinalized}`,
+    )
+    await this.chain.blockchain.putBlock(block, { notCanonical: onlyUnfinalized })
+
+    if (onlyUnfinalized) {
+      // save the forward annoucement for fast forwarding if lucky
+      const subchain0 = this.status.progress.subchains[0]
+      if (subchain0 === undefined || block.header.number > subchain0.head) {
+        await this.put(
+          DBKey.SkeletonForwardNumberToHash,
+          bigIntToBytes(block.header.number),
+          block.hash(),
+        )
+      }
+    } else {
+      await this.chain.update()
+    }
     return true
   }
 
@@ -1371,13 +1408,33 @@ export class Skeleton extends MetaDBManager {
   /**
    * Gets a block from the skeleton or canonical db by number.
    */
-  async getBlock(number: bigint, onlyCanonical = false): Promise<Block | undefined> {
-    return this.chain.blockchain.dbManager
-      .getBlock(number, {
-        fcUed: onlyCanonical,
-        linked: this.status.linked,
-      })
-      .catch((_e) => undefined)
+  async getBlock(number: bigint, fcUed: boolean = false): Promise<Block | undefined> {
+    const subchain0 = this.status.progress.subchains[0]
+    this.config.logger.debug(
+      `getBlock subchain0: head=${subchain0.head} tail=${subchain0.tail} next=${short(subchain0.next ?? 'na')} number=${number}`,
+    )
+
+    let block
+    if (
+      !this.status.linked &&
+      (subchain0 === undefined || number < subchain0.tail || number > subchain0.head)
+    ) {
+      block = undefined
+    } else {
+      block = await this.chain.blockchain.dbManager.getBlock(number).catch((_e) => undefined)
+    }
+
+    if (block === undefined && fcUed === false) {
+      const blockHash = await this.get(DBKey.SkeletonForwardNumberToHash, bigIntToBytes(number))
+      block = blockHash
+        ? await this.chain.blockchain.getBlock(blockHash).catch((_e) => undefined)
+        : undefined
+    }
+
+    this.config.logger.debug(
+      `found block number=${number} with hash=${block ? short(block.hash()) : undefined}`,
+    )
+    return block
   }
 
   /**
@@ -1387,10 +1444,17 @@ export class Skeleton extends MetaDBManager {
     hash: Uint8Array,
     onlyCanonical: boolean = false,
   ): Promise<Block | undefined> {
-    return this.chain.blockchain.dbManager.getBlock(hash, {
-      fcUed: onlyCanonical,
-      linked: this.status.linked,
-    })
+    const block = await this.chain.blockchain.dbManager.getBlock(hash).catch((_e) => undefined)
+    if (onlyCanonical && block !== undefined) {
+      const canonicalBlock = await this.getBlock(block.header.number)
+      if (canonicalBlock === undefined || !equalsBytes(block.hash(), canonicalBlock.hash())) {
+        return undefined
+      } else {
+        return canonicalBlock
+      }
+    } else {
+      return block
+    }
   }
 
   /**
