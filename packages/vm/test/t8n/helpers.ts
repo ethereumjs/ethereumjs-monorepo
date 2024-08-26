@@ -83,3 +83,40 @@ export function getArguments() {
 
   return args
 }
+
+/**
+ * This function accepts an `inputs.env` which converts non-hex-prefixed numbers
+ * to a BigInt value, to avoid errors when converting non-prefixed hex strings to
+ * numbers
+ * @param input
+ * @returns converted input
+ */
+export function normalizeNumbers(input: any) {
+  const keys = [
+    'currentGasLimit',
+    'currentNumber',
+    'currentTimestamp',
+    'currentRandom',
+    'currentDifficulty',
+    'currentBaseFee',
+    'currentBlobGasUsed',
+    'currentExcessBlobGas',
+    'parentDifficulty',
+    'parentTimestamp',
+    'parentBaseFee',
+    'parentGasUsed',
+    'parentGasLimit',
+    'parentBlobGasUsed',
+    'parentExcessBlobGas',
+  ]
+
+  for (const key of keys) {
+    const value = input[key]
+    if (value !== undefined) {
+      if (value.substring(0, 2) !== '0x') {
+        input[key] = BigInt(value)
+      }
+    }
+  }
+  return input
+}

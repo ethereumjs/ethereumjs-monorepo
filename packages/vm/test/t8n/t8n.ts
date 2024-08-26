@@ -3,6 +3,7 @@ import { EVMMockBlockchain, type Log } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
+  Account,
   BIGINT_1,
   CLRequestType,
   bigIntToHex,
@@ -30,6 +31,7 @@ import { getArguments } from './helpers.js'
 
 import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import { TransitionTool } from './transitionTool.js'
 
 function normalizeNumbers(input: any) {
   const keys = [
@@ -62,6 +64,8 @@ function normalizeNumbers(input: any) {
 }
 
 const args = getArguments()
+
+await TransitionTool.init(args)
 
 const alloc = JSON.parse(readFileSync(args.input.alloc).toString())
 const txsData = JSON.parse(readFileSync(args.input.txs).toString())
@@ -221,7 +225,11 @@ vm.events.on('beforeTx', () => {
 
 vm.evm.events?.on('step', (e) => {
   if (log) {
-    console.log(e.address.toString(), e.opcode.name)
+    console.log({
+      gas: Number(e.gasLeft).toString(16),
+      stack: e.stack.map((a) => a.toString(16)),
+      opName: e.opcode.name,
+    })
   }
 })
 
@@ -269,6 +277,8 @@ for (const txData of txsData) {
 }
 
 await vm.evm.journal.cleanup()
+
+vm.stateManager.deleteAccount(block.header.coinbase)
 
 const result = await builder.build()
 

@@ -16,3 +16,7 @@ export type T8NOptions = {
     body: string
   }
 }
+
+export type T8NAlloc = {}
+
+export type T8NEnv = {}
