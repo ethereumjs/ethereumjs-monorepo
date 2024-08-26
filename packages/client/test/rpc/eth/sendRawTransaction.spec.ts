@@ -30,6 +30,7 @@ describe(method, () => {
     DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
+    // Unschedule any timestamp since tests are not configured for timestamps
     Mainnet.hardforks
       .filter((hf) => hf.timestamp !== undefined)
       .map((hf) => {
