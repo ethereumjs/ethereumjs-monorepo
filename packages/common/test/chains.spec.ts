@@ -1,7 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
 import {
-  ChainConfig,
   Common,
   ConsensusAlgorithm,
   ConsensusType,
@@ -10,6 +9,8 @@ import {
   Mainnet,
   getPresetChainConfig,
 } from '../src/index.js'
+
+import type { ChainConfig } from '../src/index.js'
 
 describe('[Common/Chains]: Initialization / Chain params', () => {
   it('Should initialize with chain provided', () => {
@@ -28,10 +29,8 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     let chainConfig: ChainConfig
     let c: Common
     const setCommon = async () => {
-      chainConfig = Mainnet
+      chainConfig = JSON.parse(JSON.stringify(Mainnet))
       c = new Common({ chain: chainConfig })
-      console.log('dbg100')
-      console.log(c)
       assert.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
       assert.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
     }
@@ -41,8 +40,6 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
       const cCopy = c.copy()
       chainConfig.chainId = 2
       chainConfig.name = 'sidenet'
-      console.log('dbg101')
-      console.log(cCopy)
       assert.equal(cCopy.chainName(), 'mainnet', 'should return original chain name')
       assert.equal(cCopy.chainId(), BigInt(1), 'should return original chain Id')
     }
