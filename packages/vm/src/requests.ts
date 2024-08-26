@@ -71,6 +71,14 @@ const accumulateEIP7002Requests = async (
 
   const originalAccount = await vm.stateManager.getAccount(systemAddress)
 
+  if (originalAccount === undefined) {
+    await vm.stateManager.deleteAccount(systemAddress)
+    return
+  } else {
+    // Restore the original account (the `runCall` updates the nonce)
+    await vm.stateManager.putAccount(systemAddress, originalAccount)
+  }
+
   const results = await vm.evm.runCall({
     caller: systemAddress,
     gasLimit: BigInt(1_000_000),
@@ -87,13 +95,6 @@ const accumulateEIP7002Requests = async (
       const amount = bytesToBigInt(unpadBytes(slicedBytes.slice(68, 76))) // 8 Bytes / Uint64
       requests.push(WithdrawalRequest.fromRequestData({ sourceAddress, validatorPubkey, amount }))
     }
-  }
-
-  if (originalAccount === undefined) {
-    await vm.stateManager.deleteAccount(systemAddress)
-  } else {
-    // Restore the original account (the `runCall` updates the nonce)
-    await vm.stateManager.putAccount(systemAddress, originalAccount)
   }
 }
 
@@ -113,6 +114,14 @@ const accumulateEIP7251Requests = async (
 
   const originalAccount = await vm.stateManager.getAccount(systemAddress)
 
+  if (originalAccount === undefined) {
+    await vm.stateManager.deleteAccount(systemAddress)
+    return
+  } else {
+    // Restore the original account (the `runCall` updates the nonce)
+    await vm.stateManager.putAccount(systemAddress, originalAccount)
+  }
+
   const results = await vm.evm.runCall({
     caller: systemAddress,
     gasLimit: BigInt(1_000_000),
@@ -131,13 +140,6 @@ const accumulateEIP7251Requests = async (
         ConsolidationRequest.fromRequestData({ sourceAddress, sourcePubkey, targetPubkey }),
       )
     }
-  }
-
-  if (originalAccount === undefined) {
-    await vm.stateManager.deleteAccount(systemAddress)
-  } else {
-    // Restore the original account (the `runCall` updates the nonce)
-    await vm.stateManager.putAccount(systemAddress, originalAccount)
   }
 }
 
