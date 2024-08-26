@@ -39,7 +39,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
       // modify chain config
       const cCopy = c.copy()
       chainConfig.chainId = 2
-      chainConfig.name = 'sidenet'
+      chainConfig.name = 'testnet'
       assert.equal(cCopy.chainName(), 'mainnet', 'should return original chain name')
       assert.equal(cCopy.chainId(), BigInt(1), 'should return original chain Id')
     }
