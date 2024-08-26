@@ -28,10 +28,10 @@ import { getCommon } from '../tester/config.js'
 import { makeBlockFromEnv, setupPreConditions } from '../util.js'
 
 import { getArguments } from './helpers.js'
+import { TransitionTool } from './transitionTool.js'
 
 import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
-import { TransitionTool } from './transitionTool.js'
 
 function normalizeNumbers(input: any) {
   const keys = [

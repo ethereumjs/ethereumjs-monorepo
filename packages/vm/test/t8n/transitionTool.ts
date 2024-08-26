@@ -1,16 +1,20 @@
-import { readFileSync } from 'fs'
-import { T8NOptions, T8NAlloc, T8NEnv } from './types.js'
-import { normalizeNumbers } from './helpers.js'
-import { TransactionType, TxData, TypedTxData } from '@ethereumjs/tx'
-import { Common } from '@ethereumjs/common'
-import { getCommon } from '../tester/config.js'
-import { loadKZG } from 'kzg-wasm'
-import { VM } from '../../src/vm.js'
 import { Address, hexToBytes, zeros } from '@ethereumjs/util'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { EVMMockBlockchain, MCLBLS } from '@ethereumjs/evm'
+import { TransactionType, TxData } from '@ethereumjs/tx'
+import { readFileSync } from 'fs'
+import { loadKZG } from 'kzg-wasm'
 import * as mcl from 'mcl-wasm'
+
+import { VM } from '../../src/vm.js'
+import { getCommon } from '../tester/config.js'
 import { makeBlockFromEnv, setupPreConditions } from '../util.js'
+
+import { normalizeNumbers } from './helpers.js'
+
+import type { T8NAlloc, T8NEnv, T8NOptions } from './types.js'
+import type { Common } from '@ethereumjs/common'
+import type { TypedTxData } from '@ethereumjs/tx'
 
 export class TransitionTool {
   public options: T8NOptions
