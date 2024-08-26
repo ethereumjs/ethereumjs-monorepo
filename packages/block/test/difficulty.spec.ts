@@ -39,6 +39,13 @@ const chainTestData: TestData = {
 }
 
 describe('[Header]: difficulty tests', () => {
+  // Unschedule any timestamp since tests are not configured for timestamps
+  Mainnet.hardforks
+    .filter((hf) => hf.timestamp !== undefined)
+    .map((hf) => {
+      hf.timestamp = undefined
+    })
+
   it('by hardfork', () => {
     /* eslint-disable no-restricted-syntax */
     for (const hardfork in hardforkTestData) {
@@ -46,13 +53,7 @@ describe('[Header]: difficulty tests', () => {
       for (const testName in testData) {
         const test = testData[testName]
         const common = new Common({ chain: Mainnet, hardfork })
-        // Unschedule any timestamp since tests are not configured for timestamps
-        common
-          .hardforks()
-          .filter((hf) => hf.timestamp !== undefined)
-          .map((hf) => {
-            hf.timestamp = undefined
-          })
+
         const blockOpts = { common }
         const uncleHash = test.parentUncles === '0x00' ? undefined : test.parentUncles
         const parentBlock = createBlock(
