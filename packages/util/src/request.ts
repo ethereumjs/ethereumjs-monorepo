@@ -186,11 +186,11 @@ export class CLRequestFactory {
   public static fromSerializedRequest(bytes: Uint8Array): CLRequest<CLRequestType> {
     switch (bytes[0]) {
       case CLRequestType.Deposit:
-        return createDepositRequestFromBytes(bytes)
+        return createDepositRequestFromRLP(bytes.subarray(1))
       case CLRequestType.Withdrawal:
-        return createWithDrawalRequestFromBytes(bytes)
+        return createWithDrawalRequestFromRLP(bytes.subarray(1))
       case CLRequestType.Consolidation:
-        return createConsolidationRequestFromBytes(bytes)
+        return createConsolidationRequestFromRLP(bytes.subarray(1))
       default:
         throw Error(`Invalid request type=${bytes[0]}`)
     }
@@ -213,8 +213,8 @@ export function createDepositRequestFromJSON(jsonData: DepositRequestV1): Deposi
   })
 }
 
-export function createDepositRequestFromBytes(bytes: Uint8Array): DepositRequest {
-  const [pubkey, withdrawalCredentials, amount, signature, index] = RLP.decode(bytes.slice(1)) as [
+export function createDepositRequestFromRLP(bytes: Uint8Array): DepositRequest {
+  const [pubkey, withdrawalCredentials, amount, signature, index] = RLP.decode(bytes) as [
     Uint8Array,
     Uint8Array,
     Uint8Array,
@@ -244,8 +244,8 @@ export function createWithdrawalRequestFromJSON(jsonData: WithdrawalRequestV1): 
   })
 }
 
-export function createWithDrawalRequestFromBytes(bytes: Uint8Array): WithdrawalRequest {
-  const [sourceAddress, validatorPubkey, amount] = RLP.decode(bytes.slice(1)) as [
+export function createWithDrawalRequestFromRLP(bytes: Uint8Array): WithdrawalRequest {
+  const [sourceAddress, validatorPubkey, amount] = RLP.decode(bytes) as [
     Uint8Array,
     Uint8Array,
     Uint8Array,
@@ -275,8 +275,8 @@ export function createConsolidationRequestFromJSON(
   })
 }
 
-export function createConsolidationRequestFromBytes(bytes: Uint8Array): ConsolidationRequest {
-  const [sourceAddress, sourcePubkey, targetPubkey] = RLP.decode(bytes.slice(1)) as [
+export function createConsolidationRequestFromRLP(bytes: Uint8Array): ConsolidationRequest {
+  const [sourceAddress, sourcePubkey, targetPubkey] = RLP.decode(bytes) as [
     Uint8Array,
     Uint8Array,
     Uint8Array,
