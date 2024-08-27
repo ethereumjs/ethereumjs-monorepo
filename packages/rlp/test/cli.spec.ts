@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 
-export function cliRunHelper(
+function cliRunHelper(
   cliArgs: string[],
   onData: (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => void,
 ) {

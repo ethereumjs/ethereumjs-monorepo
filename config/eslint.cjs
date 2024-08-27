@@ -22,6 +22,7 @@ module.exports = {
     'node_modules',
     'prettier.config.js',
     'recipes',
+    'rlp.cjs',
     'scripts',
     'typedoc.js',
     'webpack.config.js',

@@ -9,6 +9,7 @@
     "../packages/**/benchmarks/**/*.ts",
     "../packages/**/bin/**/*.ts"
   ],
+  "exclude": ["../packages/**/*.es.js"],
   "compilerOptions": {
     "noEmit": true
   }

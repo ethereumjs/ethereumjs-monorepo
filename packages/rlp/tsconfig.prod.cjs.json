@@ -5,5 +5,5 @@
     "outDir": "dist/cjs",
     "composite": true
   },
-  "include": ["src/*.ts"]
+  "include": ["src/**/*.ts"]
 }
