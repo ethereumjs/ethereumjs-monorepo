@@ -3,9 +3,9 @@ import { bytesToHex, equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/ut
 import { assert, describe, it } from 'vitest'
 
 import {
-  blockHeaderFromRpc,
   createBlockFromJsonRpcProvider,
   createBlockFromRPC,
+  createBlockHeaderFromRPC,
 } from '../src/index.js'
 
 import * as alchemy14151203 from './testdata/alchemy14151203.json'
@@ -35,7 +35,7 @@ describe('[fromRPC]: block #2924874', () => {
   })
 
   it('should create a block header with the correct hash', () => {
-    const block = blockHeaderFromRpc(blockData as JsonRpcBlock, { common })
+    const block = createBlockHeaderFromRPC(blockData as JsonRpcBlock, { common })
     const hash = hexToBytes(blockData.hash as PrefixedHexString)
     assert.ok(equalsBytes(block.hash(), hash))
   })
@@ -115,7 +115,7 @@ describe('[fromRPC]:', () => {
 
   it('should create a block header with the correct hash when EIP-4896 withdrawals are present', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
-    const block = blockHeaderFromRpc(blockDataWithWithdrawals as JsonRpcBlock, { common })
+    const block = createBlockHeaderFromRPC(blockDataWithWithdrawals as JsonRpcBlock, { common })
     const hash = blockDataWithWithdrawals.hash
     assert.equal(bytesToHex(block.hash()), hash)
   })
@@ -168,7 +168,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
 
   it('should correctly parse a cancun block over rpc', () => {
     const common = new Common({ chain: Goerli, hardfork: Hardfork.Cancun })
-    const block = blockHeaderFromRpc(infuraGoerliBlock10536893 as JsonRpcBlock, { common }) // cspell:disable-line
+    const block = createBlockHeaderFromRPC(infuraGoerliBlock10536893 as JsonRpcBlock, { common }) // cspell:disable-line
     const hash = hexToBytes(infuraGoerliBlock10536893.hash as PrefixedHexString)
     assert.ok(equalsBytes(block.hash(), hash))
   })
