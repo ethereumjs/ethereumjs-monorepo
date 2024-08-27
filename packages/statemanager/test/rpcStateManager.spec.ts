@@ -14,7 +14,7 @@ import {
   setLengthLeft,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { VM, runBlock, runTx } from '@ethereumjs/vm'
+import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
@@ -231,7 +231,7 @@ describe('runTx custom transaction test', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
     const state = new RPCStateManager({ provider, blockTag: 1n })
-    const vm = await VM.create({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
+    const vm = await createVM({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
 
     const vitalikDotEth = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const privateKey = hexToBytes(
@@ -264,7 +264,7 @@ describe('runTx test: replay mainnet transactions', () => {
       // Set the state manager to look at the state of the chain before the block has been executed
       blockTag: blockTag - 1n,
     })
-    const vm = await VM.create({ common, stateManager: state })
+    const vm = await createVM({ common, stateManager: state })
     const res = await runTx(vm, { tx })
     assert.equal(
       res.totalGasSpent,
@@ -289,7 +289,7 @@ describe('runBlock test', () => {
     // blocks, also for post merge network, ttd should also be passed
     common.setHardforkBy({ blockNumber: blockTag - 1n })
 
-    const vm = await VM.create({ common, stateManager: state })
+    const vm = await createVM({ common, stateManager: state })
     const block = createBlockFromRPC(blockData.default as JsonRpcBlock, [], { common })
     try {
       const res = await runBlock(vm, {

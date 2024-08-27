@@ -18,12 +18,13 @@ import {
   setLengthLeft,
   toBytes,
 } from '@ethereumjs/util'
-import { VM, runBlock } from '@ethereumjs/vm'
+import { createVM, runBlock } from '@ethereumjs/vm'
 
 import testData from './helpers/blockchain-mock-data.json'
 
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
+import type { VM } from '@ethereumjs/vm'
 
 async function main() {
   const common = new Common({ chain: Mainnet, hardfork: testData.network.toLowerCase() })
@@ -42,7 +43,7 @@ async function main() {
     genesisBlock,
   })
 
-  const vm = await VM.create({ blockchain, common })
+  const vm = await createVM({ blockchain, common })
 
   await setupPreConditions(vm, testData)
 

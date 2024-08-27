@@ -2,11 +2,11 @@ import { createBlock } from '@ethereumjs/block'
 import { Common, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
-import { VM, buildBlock } from '@ethereumjs/vm'
+import { buildBlock, createVM } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet })
-  const vm = await VM.create({ common })
+  const vm = await createVM({ common })
 
   const parentBlock = createBlock(
     { header: { number: 1n } },

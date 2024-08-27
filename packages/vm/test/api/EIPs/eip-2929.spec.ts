@@ -3,7 +3,7 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { Address, createAccount, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -17,7 +17,7 @@ describe('EIP 2929: gas cost tests', () => {
   const runTest = async function (test: any) {
     let i = 0
     let currentGas = initialGas
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     vm.evm.events!.on('step', function (step: any) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
@@ -71,7 +71,7 @@ describe('EIP 2929: gas cost tests', () => {
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
 
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
     await vm.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
 
