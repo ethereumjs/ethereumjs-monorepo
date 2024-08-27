@@ -4,4 +4,4 @@ if [[ "$1" == "--version" ]]; then
     exit 0
 fi
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-tsx "$SCRIPT_DIR/t8n.ts" "$@"
+NODE_OPTIONS="--max-old-space-size=4096" tsx "$SCRIPT_DIR/t8n.ts" "$@"
