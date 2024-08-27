@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { RLP } from '@ethereumjs/rlp'
 import { concatBytes } from 'ethereum-cryptography/utils'
 
@@ -182,21 +181,6 @@ export class ConsolidationRequest extends CLRequest<CLRequestType.Consolidation>
   }
 }
 
-export class CLRequestFactory {
-  public static fromSerializedRequest(bytes: Uint8Array): CLRequest<CLRequestType> {
-    switch (bytes[0]) {
-      case CLRequestType.Deposit:
-        return createDepositRequestFromRLP(bytes.subarray(1))
-      case CLRequestType.Withdrawal:
-        return createWithdrawalRequestFromRLP(bytes.subarray(1))
-      case CLRequestType.Consolidation:
-        return createConsolidationRequestFromRLP(bytes.subarray(1))
-      default:
-        throw Error(`Invalid request type=${bytes[0]}`)
-    }
-  }
-}
-
 export function createDepositRequest(depositData: DepositRequestData): DepositRequest {
   const { pubkey, withdrawalCredentials, amount, signature, index } = depositData
   return new DepositRequest(pubkey, withdrawalCredentials, amount, signature, index)
@@ -286,4 +270,19 @@ export function createConsolidationRequestFromRLP(bytes: Uint8Array): Consolidat
     sourcePubkey,
     targetPubkey,
   })
+}
+
+export class CLRequestFactory {
+  public static fromSerializedRequest(bytes: Uint8Array): CLRequest<CLRequestType> {
+    switch (bytes[0]) {
+      case CLRequestType.Deposit:
+        return createDepositRequestFromRLP(bytes.subarray(1))
+      case CLRequestType.Withdrawal:
+        return createWithdrawalRequestFromRLP(bytes.subarray(1))
+      case CLRequestType.Consolidation:
+        return createConsolidationRequestFromRLP(bytes.subarray(1))
+      default:
+        throw Error(`Invalid request type=${bytes[0]}`)
+    }
+  }
 }
