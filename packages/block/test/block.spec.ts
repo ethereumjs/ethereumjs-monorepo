@@ -1,11 +1,4 @@
-import {
-  ChainConfig,
-  Common,
-  Goerli,
-  Hardfork,
-  Mainnet,
-  createCustomCommon,
-} from '@ethereumjs/common'
+import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
@@ -37,6 +30,7 @@ import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
+import type { ChainConfig } from '@ethereumjs/common'
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
 describe('[Block]: block functions', () => {

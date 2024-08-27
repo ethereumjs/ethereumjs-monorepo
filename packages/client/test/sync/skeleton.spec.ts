@@ -1,6 +1,5 @@
 import { createBlock } from '@ethereumjs/block'
 import {
-  ChainConfig,
   Common,
   Mainnet,
   createCommonFromGethGenesis,
@@ -20,6 +19,7 @@ import mergeGenesisParams from '../testdata/common/mergeTestnet.json'
 import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import type { Block } from '@ethereumjs/block'
+import type { ChainConfig } from '@ethereumjs/common'
 type Subchain = {
   head: bigint
   tail: bigint
