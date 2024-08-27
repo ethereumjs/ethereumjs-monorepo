@@ -65,7 +65,7 @@ function normalizeNumbers(input: any) {
 
 const args = getArguments()
 
-await TransitionTool.init(args)
+//await TransitionTool.init(args)
 
 const alloc = JSON.parse(readFileSync(args.input.alloc).toString())
 const txsData = JSON.parse(readFileSync(args.input.txs).toString())
@@ -277,8 +277,6 @@ for (const txData of txsData) {
 }
 
 await vm.evm.journal.cleanup()
-
-vm.stateManager.deleteAccount(block.header.coinbase)
 
 const result = await builder.build()
 
