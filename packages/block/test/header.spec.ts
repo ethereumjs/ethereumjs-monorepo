@@ -15,7 +15,7 @@ import { assert, describe, it } from 'vitest'
 import {
   Block,
   createBlock,
-  createBlockFromRLPSerializedBlock,
+  createBlockFromRLP,
   createBlockHeader,
   createBlockHeaderFromBytesArray,
   createBlockHeaderFromRLP,
@@ -344,7 +344,7 @@ describe('[Block]: Header functions', () => {
     const blockchain = new Mockchain()
 
     const genesisRlp = toBytes(testDataPreLondon.genesisRLP)
-    const block = createBlockFromRLPSerializedBlock(genesisRlp, { common })
+    const block = createBlockFromRLP(genesisRlp, { common })
     await blockchain.putBlock(block)
 
     headerData.number = 1
@@ -424,7 +424,7 @@ describe('[Block]: Header functions', () => {
     const cliqueSigner = hexToBytes(
       '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
     )
-    const poaBlock = createBlockFromRLPSerializedBlock(genesisRlp, { common, cliqueSigner })
+    const poaBlock = createBlockFromRLP(genesisRlp, { common, cliqueSigner })
     await poaBlockchain.putBlock(poaBlock)
 
     header = createBlockHeader(headerData, { common, cliqueSigner })
@@ -456,12 +456,12 @@ describe('[Block]: Header functions', () => {
         bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData]
           .genesisRLP as PrefixedHexString,
       )
-      const parentBlock = createBlockFromRLPSerializedBlock(genesisRlp, { common })
+      const parentBlock = createBlockFromRLP(genesisRlp, { common })
       const blockRlp = hexToBytes(
         bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData].blocks[0]
           .rlp as PrefixedHexString,
       )
-      const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+      const block = createBlockFromRLP(blockRlp, { common })
       assert.doesNotThrow(() => block.validateGasLimit(parentBlock))
     }
   })

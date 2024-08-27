@@ -37,9 +37,7 @@ const main = async () => {
   const common = new Common({ chain: '${execution.config.execCommon.chainName()}', hardfork: '${
     execution.hardfork
   }' })
-  const block = createBlockFromRLPSerializedBlock(hexToBytes('${bytesToHex(
-    block.serialize(),
-  )}'), { common })
+  const block = createBlockFromRLP(hexToBytes('${bytesToHex(block.serialize())}'), { common })
 
   const stateDB = new Level('${execution.config.getDataDirectory(DataDirectory.State)}')
   const trie = new Trie({ db: stateDB, useKeyHashing: true })

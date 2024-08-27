@@ -25,13 +25,13 @@ npm install @ethereumjs/block
 
 ### Introduction
 
-There are five static factories to instantiate a `Block`:
+There are five standalone functions to instantiate a `Block`:
 
-- `Block.fromBlockData(blockData: BlockData = {}, opts?: BlockOptions)`
-- `Block.fromRLPSerializedBlock(serialized: Uint8Array, opts?: BlockOptions)`
-- `Block.fromValuesArray(values: BlockBytes, opts?: BlockOptions)`
-- `Block.fromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions)`
-- `Block.fromJsonRpcProvider(provider: string | EthersProvider, blockTag: string | bigint, opts: BlockOptions)`
+- `createBlock(blockData: BlockData = {}, opts?: BlockOptions)`
+- `createBlockFromRLPSerializedBlock(serialized: Uint8Array, opts?: BlockOptions)`
+- `createBlockFromBytesArray(values: BlockBytes, opts?: BlockOptions)`
+- `createBlockFromRPC(blockParams: JsonRpcBlock, uncles?: any[], opts?: BlockOptions)`
+- `createBlockFromJsonRPCProvider(provider: string | EthersProvider, blockTag: string | bigint, opts: BlockOptions)`
 
 For `BlockHeader` instantiation analog factory methods exists, see API docs linked below.
 

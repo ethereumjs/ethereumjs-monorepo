@@ -6,7 +6,7 @@
 // 4. Puts the blocks from ../utils/blockchain-mock-data "blocks" attribute into the Blockchain
 // 5. Runs the Blockchain on the VM.
 
-import { createBlock, createBlockFromRLPSerializedBlock } from '@ethereumjs/block'
+import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { Common, ConsensusAlgorithm, ConsensusType, Mainnet } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
@@ -88,7 +88,7 @@ async function setupPreConditions(vm: VM, data: any) {
 async function putBlocks(blockchain: Blockchain, common: Common, data: typeof testData) {
   for (const blockData of data.blocks) {
     const blockRlp = toBytes(blockData.rlp)
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+    const block = createBlockFromRLP(blockRlp, { common })
     await blockchain.putBlock(block)
   }
 }

@@ -28,9 +28,9 @@ import { generateCliqueBlockExtraData } from '../consensus/clique.js'
 import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } from '../helpers.js'
 import {
   Block,
-  blockHeaderFromRpc,
   createBlockHeader,
   createBlockHeaderFromBytesArray,
+  createBlockHeaderFromRPC,
   executionPayloadFromBeaconPayload,
 } from '../index.js'
 
@@ -260,7 +260,7 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
  * @param serialized
  * @param opts
  */
-export function createBlockFromRLPSerializedBlock(serialized: Uint8Array, opts?: BlockOptions) {
+export function createBlockFromRLP(serialized: Uint8Array, opts?: BlockOptions) {
   const values = RLP.decode(Uint8Array.from(serialized)) as BlockBytes
 
   if (!Array.isArray(values)) {
@@ -282,7 +282,7 @@ export function createBlockFromRPC(
   uncles: any[] = [],
   options?: BlockOptions,
 ) {
-  const header = blockHeaderFromRpc(blockParams, options)
+  const header = createBlockHeaderFromRPC(blockParams, options)
 
   const transactions: TypedTransaction[] = []
   const opts = { common: header.common }
@@ -292,7 +292,7 @@ export function createBlockFromRPC(
     transactions.push(tx)
   }
 
-  const uncleHeaders = uncles.map((uh) => blockHeaderFromRpc(uh, options))
+  const uncleHeaders = uncles.map((uh) => createBlockHeaderFromRPC(uh, options))
 
   const requests = blockParams.requests?.map((req) => {
     const bytes = hexToBytes(req as PrefixedHexString)
