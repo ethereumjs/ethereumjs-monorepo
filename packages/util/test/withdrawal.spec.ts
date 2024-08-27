@@ -5,7 +5,7 @@ import {
   bigIntToHex,
   bytesToHex,
   createWithdrawal,
-  createWithdrawalFromValuesArray,
+  createWithdrawalFromBytesArray,
   hexToBytes,
   intToHex,
   withdrawalToBytesArray,
@@ -93,9 +93,9 @@ describe('Withdrawal', () => {
     assert.equal(gethWithdrawalsRlp, withdrawalsDataToRlp, 'The withdrawals to buffer should match')
   })
 
-  it('createWithdrawalFromValuesArray, toJSON and toValue', () => {
+  it('createWithdrawalFromBytesArray, toJSON and toValue', () => {
     const withdrawals = (gethWithdrawalsBuffer as WithdrawalBytes[]).map(
-      createWithdrawalFromValuesArray,
+      createWithdrawalFromBytesArray,
     )
     const withdrawalsJson = withdrawals.map((wt) => wt.toJSON())
     assert.deepEqual(withdrawalsGethVector, withdrawalsJson, 'Withdrawals json should match')

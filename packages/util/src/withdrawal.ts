@@ -72,7 +72,7 @@ export class Withdrawal {
   }
 }
 
-export function createWithdrawalFromValuesArray(withdrawalArray: WithdrawalBytes) {
+export function createWithdrawalFromBytesArray(withdrawalArray: WithdrawalBytes) {
   if (withdrawalArray.length !== 4) {
     throw Error(`Invalid withdrawalArray length expected=4 actual=${withdrawalArray.length}`)
   }

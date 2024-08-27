@@ -109,7 +109,7 @@ describe('7685 tests', () => {
   })
 })
 
-describe('createWithdrawalFromValuesArray tests', () => {
+describe('createWithdrawalFromBytesArray tests', () => {
   it('should construct a block with empty requests root', () => {
     const block = createBlockFromBytesArray(
       [createBlockHeader({}, { common }).raw(), [], [], [], []],
