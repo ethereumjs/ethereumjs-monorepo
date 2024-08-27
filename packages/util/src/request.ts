@@ -188,7 +188,7 @@ export class CLRequestFactory {
       case CLRequestType.Deposit:
         return createDepositRequestFromRLP(bytes.subarray(1))
       case CLRequestType.Withdrawal:
-        return createWithDrawalRequestFromRLP(bytes.subarray(1))
+        return createWithdrawalRequestFromRLP(bytes.subarray(1))
       case CLRequestType.Consolidation:
         return createConsolidationRequestFromRLP(bytes.subarray(1))
       default:
@@ -244,7 +244,7 @@ export function createWithdrawalRequestFromJSON(jsonData: WithdrawalRequestV1): 
   })
 }
 
-export function createWithDrawalRequestFromRLP(bytes: Uint8Array): WithdrawalRequest {
+export function createWithdrawalRequestFromRLP(bytes: Uint8Array): WithdrawalRequest {
   const [sourceAddress, validatorPubkey, amount] = RLP.decode(bytes) as [
     Uint8Array,
     Uint8Array,
