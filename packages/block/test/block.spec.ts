@@ -18,7 +18,7 @@ import {
   type JsonRpcBlock,
   createBlock,
   createBlockFromBytesArray,
-  createBlockFromRLPSerializedBlock,
+  createBlockFromRLP,
   createBlockFromRPC,
   createEmptyBlock,
   paramsBlock,
@@ -62,10 +62,10 @@ describe('[Block]: block functions', () => {
     )
 
     const rlpBlock = block.serialize()
-    block = createBlockFromRLPSerializedBlock(rlpBlock)
+    block = createBlockFromRLP(rlpBlock)
     assert.ok(Object.isFrozen(block), 'block should be frozen by default')
 
-    block = createBlockFromRLPSerializedBlock(rlpBlock, { freeze: false })
+    block = createBlockFromRLP(rlpBlock, { freeze: false })
     assert.ok(
       !Object.isFrozen(block),
       'block should not be frozen when freeze deactivated in options',
@@ -156,7 +156,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const blockRlp = hexToBytes(testDataPreLondon.default.blocks[0].rlp as PrefixedHexString)
     try {
-      createBlockFromRLPSerializedBlock(blockRlp, { common })
+      createBlockFromRLP(blockRlp, { common })
       assert.ok(true, 'should pass')
     } catch (error: any) {
       assert.fail('should not throw')
@@ -182,7 +182,7 @@ describe('[Block]: block functions', () => {
   it('should test transaction validation - invalid tx trie', async () => {
     const blockRlp = hexToBytes(testDataPreLondon.default.blocks[0].rlp as PrefixedHexString)
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common, freeze: false })
+    const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
     ;(block.header as any).transactionsTrie = new Uint8Array(32)
     try {
@@ -222,7 +222,7 @@ describe('[Block]: block functions', () => {
   it('should test transaction validation with legacy tx in london', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const blockRlp = hexToBytes(testDataPreLondon.default.blocks[0].rlp as PrefixedHexString)
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common, freeze: false })
+    const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
     ;(block.transactions[0] as any).gasPrice = BigInt(0)
     const result = block.getTransactionsValidationErrors()
@@ -235,7 +235,7 @@ describe('[Block]: block functions', () => {
   it('should test uncles hash validation', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const blockRlp = hexToBytes(testDataPreLondon2.default.blocks[2].rlp as PrefixedHexString)
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common, freeze: false })
+    const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     assert.equal(block.uncleHashIsValid(), true)
     ;(block.header as any).uncleHash = new Uint8Array(32)
     try {
@@ -325,7 +325,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const rlp = hexToBytes(`0x${testDataGenesis.default.test.genesis_rlp_hex}`)
     const hash = hexToBytes(`0x${testDataGenesis.default.test.genesis_hash}`)
-    const block = createBlockFromRLPSerializedBlock(rlp, { common })
+    const block = createBlockFromRLP(rlp, { common })
     assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
   })
 
@@ -333,7 +333,7 @@ describe('[Block]: block functions', () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const rlp = hexToBytes(`0x${testDataGenesis.default.test.genesis_rlp_hex}`)
     const hash = hexToBytes(`0x${testDataGenesis.default.test.genesis_hash}`)
-    let block = createBlockFromRLPSerializedBlock(rlp, { common })
+    let block = createBlockFromRLP(rlp, { common })
     assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
 
     common = new Common({
@@ -345,14 +345,14 @@ describe('[Block]: block functions', () => {
         },
       },
     })
-    block = createBlockFromRLPSerializedBlock(rlp, { common })
+    block = createBlockFromRLP(rlp, { common })
     assert.deepEqual(block.hash(), new Uint8Array([1]), 'custom crypto applied on hash() method')
   })
 
   it('should error on invalid params', () => {
     assert.throws(
       () => {
-        createBlockFromRLPSerializedBlock('1' as any)
+        createBlockFromRLP('1' as any)
       },
       undefined,
       undefined,
@@ -370,7 +370,7 @@ describe('[Block]: block functions', () => {
 
   it('should return the same block data from raw()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const block = createBlockFromRLPSerializedBlock(
+    const block = createBlockFromRLP(
       toBytes(testDataPreLondon2.default.blocks[2].rlp as PrefixedHexString),
       {
         common,
@@ -382,7 +382,7 @@ describe('[Block]: block functions', () => {
 
   it('should test toJSON', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const block = createBlockFromRLPSerializedBlock(
+    const block = createBlockFromRLP(
       toBytes(testDataPreLondon2.default.blocks[2].rlp as PrefixedHexString),
       {
         common,

@@ -260,7 +260,7 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
  * @param serialized
  * @param opts
  */
-export function createBlockFromRLPSerializedBlock(serialized: Uint8Array, opts?: BlockOptions) {
+export function createBlockFromRLP(serialized: Uint8Array, opts?: BlockOptions) {
   const values = RLP.decode(Uint8Array.from(serialized)) as BlockBytes
 
   if (!Array.isArray(values)) {

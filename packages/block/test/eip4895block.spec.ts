@@ -11,7 +11,7 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import { genWithdrawalsTrieRoot } from '../src/helpers.js'
-import { createBlock, createBlockFromRLPSerializedBlock, createBlockHeader } from '../src/index.js'
+import { createBlock, createBlockFromRLP, createBlockHeader } from '../src/index.js'
 
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
 
@@ -224,7 +224,7 @@ describe('EIP4895 tests', () => {
     // throw check if withdrawals array is not provided in the rlp
     assert.throws(
       () => {
-        createBlockFromRLPSerializedBlock(rlpWithoutWithdrawals, { common })
+        createBlockFromRLP(rlpWithoutWithdrawals, { common })
       },
       undefined,
       undefined,

@@ -1,7 +1,7 @@
 import {
   createBlock,
   createBlockFromBytesArray,
-  createBlockFromRLPSerializedBlock,
+  createBlockFromRLP,
   createSealedCliqueBlock,
 } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
@@ -61,10 +61,10 @@ describe('runBlock() -> successful API parameter usage', async () => {
   async function simpleRun(vm: VM) {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const genesisRlp = hexToBytes(testData.default.genesisRLP as PrefixedHexString)
-    const genesis = createBlockFromRLPSerializedBlock(genesisRlp, { common })
+    const genesis = createBlockFromRLP(genesisRlp, { common })
 
     const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+    const block = createBlockFromRLP(blockRlp, { common })
 
     await setupPreConditions(vm.stateManager, testData)
 
@@ -95,7 +95,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
 
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const block1Rlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
-    const block1 = createBlockFromRLPSerializedBlock(block1Rlp, { common })
+    const block1 = createBlockFromRLP(block1Rlp, { common })
     await runBlock(vm, {
       block: block1,
       root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
@@ -104,7 +104,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     })
 
     const block2Rlp = hexToBytes(testData.default.blocks[1].rlp as PrefixedHexString)
-    const block2 = createBlockFromRLPSerializedBlock(block2Rlp, { common })
+    const block2 = createBlockFromRLP(block2Rlp, { common })
     await runBlock(vm, {
       block: block2,
 
@@ -114,7 +114,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     })
 
     const block3Rlp = toBytes(testData.default.blocks[2].rlp as PrefixedHexString)
-    const block3 = createBlockFromRLPSerializedBlock(block3Rlp, { common })
+    const block3 = createBlockFromRLP(block3Rlp, { common })
     await runBlock(vm, {
       block: block3,
 
@@ -231,7 +231,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   it('should fail when runTx fails', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+    const block = createBlockFromRLP(blockRlp, { common })
 
     // The mocked VM uses a mocked runTx
     // which always returns an error.
@@ -258,7 +258,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     const vm = await VM.create({ common, blockchain })
 
     const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
-    const block = Object.create(createBlockFromRLPSerializedBlock(blockRlp, { common }))
+    const block = Object.create(createBlockFromRLP(blockRlp, { common }))
 
     await runBlock(vm, { block })
       .then(() => assert.fail('should have returned error'))
@@ -273,7 +273,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   it('should fail when no `validateHeader` method exists on blockchain class', async () => {
     const vm = await VM.create({ common })
     const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
-    const block = Object.create(createBlockFromRLPSerializedBlock(blockRlp, { common }))
+    const block = Object.create(createBlockFromRLP(blockRlp, { common }))
     ;(vm.blockchain as any).validateHeader = undefined
     try {
       await runBlock(vm, { block })
@@ -290,7 +290,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     const vm = await VM.create({ common })
 
     const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
-    const block = Object.create(createBlockFromRLPSerializedBlock(blockRlp, { common }))
+    const block = Object.create(createBlockFromRLP(blockRlp, { common }))
     // modify first tx's gasLimit
     const { nonce, gasPrice, to, value, data, v, r, s } = block.transactions[0]
 
@@ -455,7 +455,7 @@ async function runWithHf(hardfork: string) {
   const vm = await setupVM({ common })
 
   const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
-  const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+  const block = createBlockFromRLP(blockRlp, { common })
 
   await setupPreConditions(vm.stateManager, testData)
 
@@ -491,7 +491,7 @@ describe('runBlock() -> tx types', async () => {
     const common = vm.common
 
     const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common, freeze: false })
+    const block = createBlockFromRLP(blockRlp, { common, freeze: false })
 
     //@ts-ignore read-only property
     block.transactions = transactions
