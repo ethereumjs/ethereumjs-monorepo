@@ -445,7 +445,7 @@ For sealing a block on instantiation you can use the `cliqueSigner` constructor 
 
 ```ts
 const cliqueSigner = Buffer.from('PRIVATE_KEY_HEX_STRING', 'hex')
-const block = Block.fromHeaderData(headerData, { cliqueSigner })
+const block = createSealedCliqueBlock(blockData, cliqueSigner)
 ```
 
 Additionally there are the following utility methods for Clique/PoA related functionality in the `BlockHeader` class:
