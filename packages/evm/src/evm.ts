@@ -1020,6 +1020,9 @@ export class EVM implements EVMInterface {
         ) {
           const address = new Address(message.code.slice(3, 24))
           message.code = await this.stateManager.getCode(address)
+          if (message.depth === 0) {
+            this.journal.addAlwaysWarmAddress(address.toString())
+          }
         }
 
         message.isCompiled = false
