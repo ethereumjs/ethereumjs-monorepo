@@ -1,8 +1,6 @@
 import {
-  KeyEncoding,
   Lock,
   MapDB,
-  ValueEncoding,
   bytesToHex,
   equalsBytes,
   intToHex,
@@ -10,8 +8,9 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import debug from 'debug'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { createVerkleTree } from './constructors.js'
 import { CheckpointDB } from './db/checkpoint.js'
 import { InternalNode } from './node/internalNode.js'
 import { LeafNode } from './node/leafNode.js'
@@ -62,7 +61,7 @@ export class VerkleTree {
    * Creates a new verkle tree.
    * @param opts Options for instantiating the verkle tree
    *
-   * Note: in most cases, the static {@link VerkleTree.create} constructor should be used.  It uses the same API but provides sensible defaults
+   * Note: in most cases, the static {@link createVerkleTree} constructor should be used.  It uses the same API but provides sensible defaults
    */
   constructor(opts?: VerkleTreeOpts) {
     if (opts !== undefined) {
@@ -103,40 +102,6 @@ export class VerkleTree {
     || Persistent: ${this._opts.useRootPersistence}
     || CacheSize: ${this._opts.cacheSize}
     || ----------------`)
-  }
-
-  static async create(opts?: VerkleTreeOpts) {
-    const key = ROOT_DB_KEY
-
-    if (opts?.db !== undefined && opts?.useRootPersistence === true) {
-      if (opts?.root === undefined) {
-        opts.root = await opts?.db.get(key, {
-          keyEncoding: KeyEncoding.Bytes,
-          valueEncoding: ValueEncoding.Bytes,
-        })
-      } else {
-        await opts?.db.put(key, opts.root, {
-          keyEncoding: KeyEncoding.Bytes,
-          valueEncoding: ValueEncoding.Bytes,
-        })
-      }
-    }
-
-    if (opts?.verkleCrypto === undefined) {
-      const verkleCrypto = await loadVerkleCrypto()
-      if (opts === undefined)
-        opts = {
-          verkleCrypto,
-          db: new MapDB<Uint8Array, Uint8Array>(),
-        }
-      else {
-        opts.verkleCrypto = verkleCrypto
-      }
-    }
-
-    const trie = new VerkleTree(opts)
-    await trie._createRootNode()
-    return trie
   }
 
   database(db?: DB<Uint8Array, Uint8Array>) {
