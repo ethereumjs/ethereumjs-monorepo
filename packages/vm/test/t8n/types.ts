@@ -1,8 +1,10 @@
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 export type T8NOptions = {
   state: {
     fork: string
-    reward: BigInt
-    chainid: BigInt
+    reward: bigint
+    chainid: bigint
   }
   input: {
     alloc: string
@@ -17,6 +19,41 @@ export type T8NOptions = {
   }
 }
 
-export type T8NAlloc = {}
+export type T8NAlloc = {
+  [address: string]: {
+    nonce?: string
+    balance: string
+    code?: string
+    storage: {
+      [key: string]: string
+    }
+  }
+}
 
-export type T8NEnv = {}
+export type T8NEnv = {
+  currentCoinbase: PrefixedHexString
+  currentGasLimit: string
+  currentNumber: string
+  currentTimestamp: string
+  currentRandom?: string
+  currentDifficulty: string
+  parentDifficulty: string
+  parentTimestamp: string
+  parentBaseFee: string
+  parentGasUsed: string
+  parentGasLimit: string
+  parentUncleHash: PrefixedHexString
+  parentBlobGasUsed?: string
+  parentExcessBlobGas?: string
+  parentBeaconBlockRoot?: PrefixedHexString
+  blockHashes: {
+    [number: string]: PrefixedHexString
+  }
+  ommers: PrefixedHexString[]
+  withdrawals: string[]
+  parentHash: PrefixedHexString
+}
+
+export type RunnerOptions = {
+  log?: boolean
+}
