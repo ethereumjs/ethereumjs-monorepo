@@ -9,6 +9,7 @@ import { VM } from '../../src/vm.js'
 import * as testnetMerge from './testdata/testnetMerge.json'
 import { setupVM } from './utils.js'
 
+import type { ChainConfig } from '@ethereumjs/common'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
 /**
@@ -217,9 +218,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
 
 describe('VM -> setHardfork, state (deprecated), blockchain', () => {
   it('setHardfork', async () => {
-    // @ts-ignore PrefixedHexString type is too strict
-    const common = createCustomCommon(testnetMerge.default, Mainnet, {
-      name: 'testnetMerge',
+    const common = createCustomCommon(testnetMerge.default as ChainConfig, Mainnet, {
       hardfork: Hardfork.Istanbul,
     })
 
