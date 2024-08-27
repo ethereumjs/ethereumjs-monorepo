@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { Address } from './address.js'
 import { bigIntToHex, bytesToHex, toBytes } from './bytes.js'
 import { BIGINT_0 } from './constants.js'
@@ -29,7 +28,31 @@ export interface JsonRpcWithdrawal {
 }
 
 export type WithdrawalBytes = [Uint8Array, Uint8Array, Uint8Array, Uint8Array]
+/**
+ * Convert a withdrawal to a buffer array
+ * @param withdrawal the withdrawal to convert
+ * @returns buffer array of the withdrawal
+ */
+export function withdrawalToBytesArray(withdrawal: Withdrawal | WithdrawalData): WithdrawalBytes {
+  const { index, validatorIndex, address, amount } = withdrawal
+  const indexBytes =
+    toType(index, TypeOutput.BigInt) === BIGINT_0
+      ? new Uint8Array()
+      : toType(index, TypeOutput.Uint8Array)
+  const validatorIndexBytes =
+    toType(validatorIndex, TypeOutput.BigInt) === BIGINT_0
+      ? new Uint8Array()
+      : toType(validatorIndex, TypeOutput.Uint8Array)
+  const addressBytes =
+    address instanceof Address ? (<Address>address).bytes : toType(address, TypeOutput.Uint8Array)
 
+  const amountBytes =
+    toType(amount, TypeOutput.BigInt) === BIGINT_0
+      ? new Uint8Array()
+      : toType(amount, TypeOutput.Uint8Array)
+
+  return [indexBytes, validatorIndexBytes, addressBytes, amountBytes]
+}
 /**
  * Representation of EIP-4895 withdrawal data
  */
@@ -72,40 +95,6 @@ export class Withdrawal {
   }
 }
 
-export function createWithdrawalFromBytesArray(withdrawalArray: WithdrawalBytes) {
-  if (withdrawalArray.length !== 4) {
-    throw Error(`Invalid withdrawalArray length expected=4 actual=${withdrawalArray.length}`)
-  }
-  const [index, validatorIndex, address, amount] = withdrawalArray
-  return createWithdrawal({ index, validatorIndex, address, amount })
-}
-
-/**
- * Convert a withdrawal to a buffer array
- * @param withdrawal the withdrawal to convert
- * @returns buffer array of the withdrawal
- */
-export function withdrawalToBytesArray(withdrawal: Withdrawal | WithdrawalData): WithdrawalBytes {
-  const { index, validatorIndex, address, amount } = withdrawal
-  const indexBytes =
-    toType(index, TypeOutput.BigInt) === BIGINT_0
-      ? new Uint8Array()
-      : toType(index, TypeOutput.Uint8Array)
-  const validatorIndexBytes =
-    toType(validatorIndex, TypeOutput.BigInt) === BIGINT_0
-      ? new Uint8Array()
-      : toType(validatorIndex, TypeOutput.Uint8Array)
-  const addressBytes =
-    address instanceof Address ? (<Address>address).bytes : toType(address, TypeOutput.Uint8Array)
-
-  const amountBytes =
-    toType(amount, TypeOutput.BigInt) === BIGINT_0
-      ? new Uint8Array()
-      : toType(amount, TypeOutput.Uint8Array)
-
-  return [indexBytes, validatorIndexBytes, addressBytes, amountBytes]
-}
-
 export function createWithdrawal(withdrawalData: WithdrawalData) {
   const {
     index: indexData,
@@ -119,4 +108,11 @@ export function createWithdrawal(withdrawalData: WithdrawalData) {
   const amount = toType(amountData, TypeOutput.BigInt)
 
   return new Withdrawal(index, validatorIndex, address, amount)
+}
+export function createWithdrawalFromBytesArray(withdrawalArray: WithdrawalBytes) {
+  if (withdrawalArray.length !== 4) {
+    throw Error(`Invalid withdrawalArray length expected=4 actual=${withdrawalArray.length}`)
+  }
+  const [index, validatorIndex, address, amount] = withdrawalArray
+  return createWithdrawal({ index, validatorIndex, address, amount })
 }
