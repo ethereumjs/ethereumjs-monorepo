@@ -17,6 +17,7 @@ import { VM } from '../../src/vm.js'
 import * as testChain from './testdata/testnet.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
+import type { ChainConfig } from '@ethereumjs/common'
 import type { AccountState, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 
 const storage: Array<[PrefixedHexString, PrefixedHexString]> = [
@@ -49,9 +50,7 @@ const genesisState: GenesisState = {
   [contractAddress]: accountState,
 }
 
-// @ts-ignore PrefixedHesString type is too strict
-const common = createCustomCommon(testChain.default, Mainnet, {
-  name: 'testnet',
+const common = createCustomCommon(testChain.default as ChainConfig, Mainnet, {
   hardfork: Hardfork.Chainstart,
 })
 const block = createBlock(
@@ -117,9 +116,7 @@ describe('VM initialized with custom state', () => {
   })
 
   it('setHardfork', async () => {
-    // @ts-ignore PrefixedHexString type is too strict
-    const common = createCustomCommon(testnetMerge.default, Mainnet, {
-      name: 'testnetMerge',
+    const common = createCustomCommon(testnetMerge.default as ChainConfig, Mainnet, {
       hardfork: Hardfork.Istanbul,
     })
 

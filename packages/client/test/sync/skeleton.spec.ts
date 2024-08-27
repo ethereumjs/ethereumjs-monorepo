@@ -1,5 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import {
+  ChainConfig,
   Common,
   Mainnet,
   createCommonFromGethGenesis,
@@ -810,8 +811,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should abort filling the canonical chain if the terminal block is invalid', async () => {
-    // @ts-ignore PrefixedHexString type is too strict
-    const common = createCustomCommon(mergeGenesisParams, Mainnet, { name: 'post-merge' })
+    const common = createCustomCommon(mergeGenesisParams as ChainConfig, Mainnet)
     common.setHardforkBy({ blockNumber: BigInt(0) })
     const config = new Config({
       common,

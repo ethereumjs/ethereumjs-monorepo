@@ -1,4 +1,11 @@
-import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import {
+  ChainConfig,
+  Common,
+  Goerli,
+  Hardfork,
+  Mainnet,
+  createCustomCommon,
+} from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
@@ -99,10 +106,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('initialization -> setHardfork option', () => {
-    // @ts-ignore type is too strict in this case
-    const common = createCustomCommon(testnetMerge.default, Mainnet, {
-      name: 'testnetMerge',
-    })
+    const common = createCustomCommon(testnetMerge.default as ChainConfig, Mainnet)
 
     let block = createBlock(
       {

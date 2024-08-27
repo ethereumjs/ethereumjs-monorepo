@@ -809,9 +809,7 @@ async function inputAccounts() {
   const accounts: Account[] = []
 
   const rl = readline.createInterface({
-    // @ts-ignore Looks like there is a type incompatibility in NodeJS ReadStream vs what this package expects
-    // TODO: See whether package needs to be updated or not
-    input: process.stdin,
+    input: process.stdin as NodeJS.ReadableStream,
     output: process.stdout,
   })
 

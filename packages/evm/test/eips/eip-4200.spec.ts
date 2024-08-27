@@ -7,6 +7,8 @@ import { createEVM } from '../../src/index.js'
 
 import { getCommon } from './eof-utils.js'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 async function getEVM() {
   const common = getCommon()
   const evm = createEVM({
@@ -19,12 +21,10 @@ describe('EIP 4200 tests', async () => {
   const evm = await getEVM()
   for (const key in testData.validInvalid.vectors) {
     it(`Container validation tests ${key}`, () => {
-      //@ts-ignore
-      const input = testData.validInvalid.vectors[key]
-      const code = hexToBytes(input.code)
+      const input = testData.validInvalid.vectors[key as keyof typeof testData.validInvalid.vectors]
+      const code = hexToBytes(input.code as PrefixedHexString)
 
       const expected = input.results.Prague.result
-      const _exception = input.results.Prague.exception
 
       if (expected === true) {
         validateEOF(code, evm)

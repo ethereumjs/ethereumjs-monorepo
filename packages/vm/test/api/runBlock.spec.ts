@@ -51,9 +51,9 @@ import type {
   RunBlockOpts,
 } from '../../src/types.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
-import type { AuthorizationListBytesItem } from '@ethereumjs/common'
+import type { ChainConfig } from '@ethereumjs/common'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
@@ -154,9 +154,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
   })
 
   it('PoW block, Common custom chain (Common customChains constructor option)', async () => {
-    // @ts-ignore because PrefixedHexString type is too strict
-    const common = createCustomCommon(testnet.default, Mainnet, {
-      name: 'testnet',
+    const common = createCustomCommon(testnet.default as ChainConfig, Mainnet, {
       hardfork: Hardfork.Berlin,
     })
     const vm = await setupVM({ common })
