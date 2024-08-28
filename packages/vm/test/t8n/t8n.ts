@@ -260,6 +260,12 @@ for (const txData of txsData) {
         if (e.chainId === '0x0') {
           e.chainId = '0x'
         }
+        if (e.r === '0x0') {
+          e.r = '0x'
+        }
+        if (e.s === '0x0') {
+          e.s = '0x'
+        }
       })
     }
     if (txData.input !== undefined) {
