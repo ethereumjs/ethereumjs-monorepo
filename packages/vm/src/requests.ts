@@ -68,6 +68,7 @@ const accumulateEIP7002Requests = async (
 
   const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
   const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
+  const systemAccount = await vm.stateManager.getAccount(systemAddress)
 
   const originalAccount = await vm.stateManager.getAccount(withdrawalsAddress)
 
@@ -80,6 +81,12 @@ const accumulateEIP7002Requests = async (
     gasLimit: BigInt(1_000_000),
     to: withdrawalsAddress,
   })
+
+  if (systemAccount === undefined) {
+    await vm.stateManager.deleteAccount(systemAddress)
+  } else {
+    await vm.stateManager.putAccount(systemAddress, systemAccount)
+  }
 
   const resultsBytes = results.execResult.returnValue
   if (resultsBytes.length > 0) {
@@ -107,6 +114,7 @@ const accumulateEIP7251Requests = async (
 
   const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
   const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
+  const systemAccount = await vm.stateManager.getAccount(systemAddress)
 
   const originalAccount = await vm.stateManager.getAccount(consolidationsAddress)
 
@@ -119,6 +127,12 @@ const accumulateEIP7251Requests = async (
     gasLimit: BigInt(1_000_000),
     to: consolidationsAddress,
   })
+
+  if (systemAccount === undefined) {
+    await vm.stateManager.deleteAccount(systemAddress)
+  } else {
+    await vm.stateManager.putAccount(systemAddress, systemAccount)
+  }
 
   const resultsBytes = results.execResult.returnValue
   if (resultsBytes.length > 0) {
