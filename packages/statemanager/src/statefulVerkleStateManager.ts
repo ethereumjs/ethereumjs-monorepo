@@ -1,7 +1,22 @@
 import { Common, Mainnet } from '@ethereumjs/common'
-import { type Account, type Address, MapDB, createAccountFromRLP } from '@ethereumjs/util'
+import {
+  type Account,
+  type Address,
+  MapDB,
+  VerkleLeafType,
+  bigIntToBytes,
+  bytesToBigInt,
+  bytesToInt32,
+  createAccountFromRLP,
+  createPartialAccount,
+  getVerkleKey,
+  getVerkleStem,
+  setLengthRight,
+  short,
+} from '@ethereumjs/util'
 import { VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 import { modifyAccountFields } from './util.js'
@@ -40,6 +55,8 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
    */
   protected readonly DEBUG: boolean = false
 
+  private keccakFunction: Function
+
   constructor(opts: StatefulVerkleStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
@@ -58,21 +75,56 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._debug = debugDefault('statemanager:statefulVerkleStatemanager')
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this._caches = opts.caches
-
+    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
     this.verkleCrypto = opts.verkleCrypto
   }
+
   getAccount = async (address: Address): Promise<Account | undefined> => {
     const elem = this._caches?.account?.get(address)
     if (elem !== undefined) {
       return elem.accountRLP !== undefined ? createAccountFromRLP(elem.accountRLP) : undefined
     }
 
-    const rlp = await this._trie.get(address.bytes)
-    const account = rlp !== undefined ? createAccountFromRLP(rlp) : undefined
-    if (this.DEBUG) {
-      this._debug(`Get account ${address} from DB (${account ? 'exists' : 'non-existent'})`)
+    const stem = getVerkleStem(this.verkleCrypto, address, 0)
+    const versionKey = getVerkleKey(stem, VerkleLeafType.Version)
+    const balanceKey = getVerkleKey(stem, VerkleLeafType.Balance)
+    const nonceKey = getVerkleKey(stem, VerkleLeafType.Nonce)
+    const codeHashKey = getVerkleKey(stem, VerkleLeafType.CodeHash)
+    const codeSizeKey = getVerkleKey(stem, VerkleLeafType.CodeSize)
+    const version = await this._trie.get(versionKey)
+    const balance = await this._trie.get(balanceKey)
+    const nonce = await this._trie.get(nonceKey)
+    const codeHash = await this._trie.get(codeHashKey)
+    // TODO: Only do this check if codeHash !== KECCAK_RLP (or whatever the empty array is)
+    const codeSize = await this._trie.get(codeSizeKey)
+
+    const account = createPartialAccount({
+      version: Array.isArray(version) ? bytesToInt32(version, true) : null,
+      balance: Array.isArray(balance) ? bytesToBigInt(balance, true) : null,
+      nonce: Array.isArray(nonce) ? bytesToBigInt(nonce, true) : null,
+      codeHash: Array.isArray(codeHash) ? codeHash : null,
+      // if codeSizeRaw is null, it means account didn't exist or it was EOA either way codeSize is 0
+      // if codeSizeRaw is undefined, then we pass in null which in our context of partial account means
+      // not specified
+      codeSize: Array.isArray(codeSize) ? bytesToInt32(codeSize, true) : null,
+      storageRoot: null,
+    })
+    // check if the account didn't exist if any of the basic keys are undefined
+    if (
+      version === undefined ||
+      balance === undefined ||
+      nonce === undefined ||
+      codeHash === undefined
+    ) {
+      if (this.DEBUG) {
+        this._debug(`getAccount address=${address.toString()} from DB (non-existent)`)
+      }
+      this._caches?.account?.put(address, account)
     }
-    this._caches?.account?.put(address, account)
+
+    if (this.DEBUG) {
+      this._debug(`getAccount address=${address.toString()} stem=${short(stem)}`)
+    }
     return account
   }
 
@@ -85,19 +137,21 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
           account && account.isEmpty() ? 'yes' : 'no'
         }`,
       )
-    }
-    if (this._caches?.account === undefined) {
-      const trie = this._trie
-      if (account !== undefined) {
-        await trie.put(address.bytes, account.serialize())
+
+      if (this._caches?.account === undefined) {
+        const stem = getVerkleStem(this.verkleCrypto, address, 0)
+        const balanceKey = getVerkleKey(stem, VerkleLeafType.Balance)
+        const nonceKey = getVerkleKey(stem, VerkleLeafType.Nonce)
+        const codeHashKey = getVerkleKey(stem, VerkleLeafType.CodeHash)
+
+        const balanceBuf = setLengthRight(bigIntToBytes(account.balance, true), 32)
+        const nonceBuf = setLengthRight(bigIntToBytes(account.nonce, true), 32)
       } else {
-        await trie.del(address.bytes)
-      }
-    } else {
-      if (account !== undefined) {
-        this._caches.account?.put(address, account)
-      } else {
-        this._caches.account?.del(address)
+        if (account !== undefined) {
+          this._caches?.account?.put(address, account, true)
+        } else {
+          this._caches?.account?.del(address)
+        }
       }
     }
   }
