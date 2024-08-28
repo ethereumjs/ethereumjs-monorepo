@@ -3,8 +3,7 @@ import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import { Account, bytesToHex, createAddressFromPrivateKey, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { runBlock, runTx } from '../../src/index.js'
-import { createVM } from '../../src/vm.js'
+import { createVM, runBlock, runTx } from '../../src/index.js'
 
 describe('VM events', () => {
   const privKey = toBytes('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
