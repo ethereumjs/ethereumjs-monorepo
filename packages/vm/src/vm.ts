@@ -66,7 +66,7 @@ export class VM {
    * use the async {@link createVM} constructor instead (same API).
    * @param opts
    */
-  protected constructor(opts: VMOpts = {}) {
+  constructor(opts: VMOpts = {}) {
     this.common = opts.common!
     this.common.updateParams(opts.params ?? paramsVM)
     this.stateManager = opts.stateManager!

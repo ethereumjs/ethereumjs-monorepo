@@ -81,5 +81,5 @@ export async function createVM(opts: VMOpts = {}): Promise<VM> {
     await opts.evm.journal.commit()
   }
 
-  return VM.constructor.call(opts)
+  return new VM(opts)
 }
