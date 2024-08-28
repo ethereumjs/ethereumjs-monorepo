@@ -447,7 +447,13 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
       const rlpdSignedMessage = RLP.encode([chainId, address, nonce])
       const toSign = keccak256(concatBytes(MAGIC, rlpdSignedMessage))
-      const pubKey = ecrecover(toSign, yParity, r, s)
+      let pubKey
+      try {
+        pubKey = ecrecover(toSign, yParity, r, s)
+      } catch (e) {
+        // Invalid signature, continue
+        continue
+      }
       // Address to set code to
       const authority = new Address(publicToAddress(pubKey))
       const accountMaybeUndefined = await vm.stateManager.getAccount(authority)
