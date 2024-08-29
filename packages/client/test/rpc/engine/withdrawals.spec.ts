@@ -1,6 +1,6 @@
 import { genWithdrawalsTrieRoot } from '@ethereumjs/block'
 import { Trie } from '@ethereumjs/trie'
-import { Withdrawal, bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
+import { bigIntToHex, bytesToHex, createWithdrawal, intToHex } from '@ethereumjs/util'
 import { assert, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -105,7 +105,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
   it(name, async () => {
     // check withdrawals root computation
     const computedWithdrawalsRoot = bytesToHex(
-      await genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData), new Trie()),
+      await genWithdrawalsTrieRoot(withdrawals.map(createWithdrawal), new Trie()),
     )
     assert.equal(
       withdrawalsRoot,

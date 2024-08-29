@@ -8,8 +8,8 @@ import {
   Address,
   GWEI_TO_WEI,
   KECCAK256_RLP,
-  Withdrawal,
   bytesToHex,
+  createWithdrawalFromBytesArray,
   hexToBytes,
   parseGethGenesisState,
   zeros,
@@ -142,7 +142,7 @@ describe('EIP4895 tests', () => {
 
     const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp))
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>
-      Withdrawal.fromValuesArray(wa),
+      createWithdrawalFromBytesArray(wa),
     )
     assert.equal(withdrawals[0].amount, BigInt(0), 'withdrawal 0 should have 0 amount')
     let block: Block
@@ -215,7 +215,7 @@ describe('EIP4895 tests', () => {
 
     const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp))
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>
-      Withdrawal.fromValuesArray(wa),
+      createWithdrawalFromBytesArray(wa),
     )
     const td = await blockchain.getTotalDifficulty(genesisBlock.hash())
 
