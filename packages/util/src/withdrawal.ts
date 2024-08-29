@@ -29,9 +29,9 @@ export interface JsonRpcWithdrawal {
 
 export type WithdrawalBytes = [Uint8Array, Uint8Array, Uint8Array, Uint8Array]
 /**
- * Convert a withdrawal to a buffer array
+ * Convert a withdrawal to a byte array
  * @param withdrawal the withdrawal to convert
- * @returns buffer array of the withdrawal
+ * @returns byte array of the withdrawal
  */
 export function withdrawalToBytesArray(withdrawal: Withdrawal | WithdrawalData): WithdrawalBytes {
   const { index, validatorIndex, address, amount } = withdrawal
@@ -95,6 +95,12 @@ export class Withdrawal {
   }
 }
 
+/**
+ * Creates a validator withdrawal request to be submitted to the consensus layer
+ * @param withdrawalData the consensus layer index and validator index values for the
+ * validator requesting the withdrawal and the address and withdrawal amount of the request
+ * @returns a {@link Withdrawal} object
+ */
 export function createWithdrawal(withdrawalData: WithdrawalData) {
   const {
     index: indexData,
@@ -109,6 +115,13 @@ export function createWithdrawal(withdrawalData: WithdrawalData) {
 
   return new Withdrawal(index, validatorIndex, address, amount)
 }
+
+/**
+ * Creates a validator withdrawal request to be submitted to the consensus layer from
+ * an RLP list
+ * @param withdrawalArray decoded RLP list of withdrawal data elements
+ * @returns a {@link Withdrawal} object
+ */
 export function createWithdrawalFromBytesArray(withdrawalArray: WithdrawalBytes) {
   if (withdrawalArray.length !== 4) {
     throw Error(`Invalid withdrawalArray length expected=4 actual=${withdrawalArray.length}`)
