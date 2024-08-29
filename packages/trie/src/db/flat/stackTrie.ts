@@ -3,7 +3,7 @@ import { KECCAK256_RLP } from '@ethereumjs/util'
 import * as assert from 'assert'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { nibbleTypeToPackedBytes } from '../../util/index.js'
+import { nibblesTypeToPackedBytes } from '../../util/index.js'
 import { bytesToNibbles, matchingNibbleLength } from '../../util/nibbles.js'
 
 import type { Nibbles } from '../../index.js'
@@ -178,7 +178,7 @@ export class STLeafNode extends BaseNode {
   raw(): [Uint8Array, Uint8Array] {
     const val: Nibbles = this._key.slice(0)
     const encodedKey = addHexPrefix(val, true) // add terminator value to end of key
-    return [nibbleTypeToPackedBytes(encodedKey), this._value]
+    return [nibblesTypeToPackedBytes(encodedKey), this._value]
   }
 }
 
@@ -227,7 +227,7 @@ export class STExtensionNode extends BaseNode {
     const childSerialized = RLP.encode(childRaw)
     const value = childSerialized.length < 32 ? childRaw : keccak256(childSerialized)
     const encodedKey = addHexPrefix(this._key.slice(0), false)
-    return [nibbleTypeToPackedBytes(encodedKey), value]
+    return [nibblesTypeToPackedBytes(encodedKey), value]
   }
 }
 

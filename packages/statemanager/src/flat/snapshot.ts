@@ -10,7 +10,9 @@ import {
   bytesToHex,
   concatBytes,
   equalsBytes,
+  createAccountFromRLP,
   hexToBytes,
+  PrefixedHexString,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -18,9 +20,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
-export const ACCOUNT_PREFIX: Uint8Array = hexToBytes('0x' + '00')
-export const STORAGE_PREFIX: Uint8Array = hexToBytes('0x' + '11')
-export const CODE_PREFIX: Uint8Array = hexToBytes('0x' + '22')
+export const ACCOUNT_PREFIX: Uint8Array = hexToBytes('0x${00}')
+export const STORAGE_PREFIX: Uint8Array = hexToBytes('0x${11}')
+export const CODE_PREFIX: Uint8Array = hexToBytes('0x${22}')
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -29,7 +31,7 @@ type SnapshotElement = {
 }
 
 type rootDiffMap = {
-  diff: Map<string, SnapshotElement | undefined>
+  diff: Map<PrefixedHexString, SnapshotElement | undefined>
   root: string
 }
 
@@ -59,7 +61,7 @@ export class Snapshot {
    * to the data), the element didn't exist in the cache
    * before.
    */
-  _diffCache: Map<string, SnapshotElement | undefined>[] = []
+  _diffCache: Map<PrefixedHexString, SnapshotElement | undefined>[] = []
   _checkpoints = 0
 
   _stateRoot: string = KECCAK256_RLP_S // TODO in case of a rollback to the empty root, skip applying diffs and just clear state to speed this up
@@ -69,11 +71,11 @@ export class Snapshot {
 
   constructor(db?: LevelDB<Uint8Array, Uint8Array>) {
     this._db = db ?? new LevelDB<Uint8Array, Uint8Array>()
-    this._diffCache.push(new Map<string, SnapshotElement | undefined>())
+    this._diffCache.push(new Map<PrefixedHexString, SnapshotElement | undefined>())
 
     this._knownStateRoots.add(this._stateRoot)
     this._stateRootDiffCache.push({
-      diff: new Map<string, SnapshotElement | undefined>(),
+      diff: new Map<PrefixedHexString, SnapshotElement | undefined>(),
       root: this._stateRoot,
     })
 
@@ -135,7 +137,7 @@ export class Snapshot {
 
     await this.delAccount(address)
 
-    const account = Account.fromRlpSerializedAccount(rawAccount)
+    const account = createAccountFromRLP(rawAccount)
     if (!equalsBytes(account.codeHash, KECCAK256_NULL)) {
       // TODO figure out if it's necessary/proper to delete the code by codeHash
       // await this.delCode(account.codeHash)
@@ -187,7 +189,7 @@ export class Snapshot {
     // update codeHash field of associated account
     const rawAccount = await this.getAccount(address)
     if (!rawAccount) throw new Error('Creating code for nonexistent account')
-    const account = Account.fromRlpSerializedAccount(rawAccount)
+    const account = createAccountFromRLP(rawAccount)
     account.codeHash = codeHash
     await this.putAccount(address, account)
   }
@@ -195,7 +197,7 @@ export class Snapshot {
   async getCode(address: Address): Promise<Uint8Array | undefined> {
     const rawAccount = await this.getAccount(address)
     if (!rawAccount) return undefined
-    const account = Account.fromRlpSerializedAccount(rawAccount)
+    const account = createAccountFromRLP(rawAccount)
     if (equalsBytes(account.codeHash, KECCAK256_NULL)) {
       return new Uint8Array(0)
     }
@@ -219,7 +221,7 @@ export class Snapshot {
       const storageRoot = storageRoots[bytesToHex(accountKey)]
       let v = value
       if (storageRoot !== undefined) {
-        const acc = Account.fromRlpSerializedAccount(v ?? KECCAK256_NULL)
+        const acc = createAccountFromRLP(v ?? KECCAK256_NULL)
         acc.storageRoot = storageRoot
         v = acc.serialize()
       }
@@ -232,7 +234,7 @@ export class Snapshot {
       this._knownStateRoots.add(this._stateRoot)
       this._stateRootCheckpoints += 1
       this._stateRootDiffCache.push({
-        diff: new Map<string, SnapshotElement | undefined>(),
+        diff: new Map<PrefixedHexString, SnapshotElement | undefined>(),
         root: this._stateRoot,
       })
     }
@@ -342,6 +344,6 @@ export class Snapshot {
    */
   checkpoint(): void {
     this._checkpoints += 1
-    this._diffCache.push(new Map<string, SnapshotElement | undefined>())
+    this._diffCache.push(new Map<PrefixedHexString, SnapshotElement | undefined>())
   }
 }

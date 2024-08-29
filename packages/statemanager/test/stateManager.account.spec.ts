@@ -1,4 +1,11 @@
-import { Address, KECCAK256_RLP, bytesToHex, createAccount, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import {
+  Address,
+  KECCAK256_RLP,
+  bytesToHex,
+  createAccount,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { DefaultStateManager, FlatStateManager } from '../src/index.js'
@@ -23,7 +30,7 @@ describe('StateManager -> General/Account', () => {
 
         // commit some data to the trie
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
-        const account = createAccount({nonce: BigInt(0), balance: BigInt(1000)})
+        const account = createAccount({ nonce: BigInt(0), balance: BigInt(1000) })
         await stateManager.checkpoint()
         await stateManager.putAccount(address, account)
         await stateManager.commit()
@@ -73,7 +80,7 @@ describe('StateManager -> General/Account', () => {
         const contract0 = await stateManager.getContractStorage(address, key)
         assert.ok(
           equalsBytes(contract0, value),
-          "contract key's value is set in the _storageTries cache"
+          "contract key's value is set in the _storageTries cache",
         )
 
         await stateManager.commit()
@@ -115,7 +122,7 @@ describe('StateManager -> General/Account', () => {
 
       it(`should return undefined for an existent account`, async () => {
         const stateManager = new smType({ accountCacheOpts })
-        const account = createAccount({BigInt(0x1), BigInt(0x1)})
+        const account = createAccount({ nonce: BigInt(0x1), balance: BigInt(0x1) })
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
         await stateManager.putAccount(address, account)
@@ -145,10 +152,10 @@ describe('StateManager -> General/Account', () => {
 
         await stateManager.modifyAccountFields(address, {
           codeHash: hexToBytes(
-            '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
+            '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
           ),
           storageRoot: hexToBytes(
-            '0xcafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
+            '0xcafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7',
           ),
         })
 
@@ -156,11 +163,11 @@ describe('StateManager -> General/Account', () => {
 
         assert.equal(
           bytesToHex(res3!.codeHash),
-          '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
+          '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
         )
         assert.equal(
           bytesToHex(res3!.storageRoot),
-          '0xcafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
+          '0xcafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7',
         )
       })
     }

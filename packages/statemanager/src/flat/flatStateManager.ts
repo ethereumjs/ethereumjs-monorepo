@@ -1,12 +1,13 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Mainnet, Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie, merkleizeList } from '@ethereumjs/trie'
+import { Trie, merkleizeList, createMerkleProof, verifyTrieProof } from '@ethereumjs/trie'
 import {
   Account,
   KECCAK256_NULL,
   KECCAK256_NULL_S,
   KECCAK256_RLP,
   KECCAK256_RLP_S,
+  createAccountFromRLP,
   bigIntToHex,
   bytesToHex,
   equalsBytes,
@@ -23,7 +24,7 @@ import { ACCOUNT_PREFIX, STORAGE_PREFIX, Snapshot } from './snapshot.js'
 import type { Proof } from '../index.js'
 import type {
   AccountFields,
-  EVMStateManagerInterface,
+  StateManagerInterface,
   StorageDump,
   StorageProof,
   StorageRange,
@@ -55,7 +56,7 @@ export interface FlatStateManagerOpts {
  * The default state manager implementation uses a
  * `@ethereumjs/trie` trie as a data backend.
  */
-export class FlatStateManager implements EVMStateManagerInterface {
+export class FlatStateManager implements StateManagerInterface {
   protected _debug: Debugger
   // protected _accountCache?: AccountCache
   // protected _storageCache?: StorageCache
@@ -88,15 +89,15 @@ export class FlatStateManager implements EVMStateManagerInterface {
    */
   constructor(opts: FlatStateManagerOpts = {}) {
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
     this._debug = createDebugLogger('statemanager:statemanager')
 
-    this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
+    this.common = opts.common ?? new Common({ chain: Mainnet })
 
     this._snapshot = opts.snapshot ?? new Snapshot()
 
-    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
 
     this._checkpointCount = 0
   }
@@ -107,7 +108,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    */
   async getAccount(address: Address): Promise<Account | undefined> {
     const res = await this._snapshot.getAccount(address)
-    const account = res ? Account.fromRlpSerializedAccount(res) : undefined
+    const account = res ? createAccountFromRLP(res) : undefined
     return account
   }
 
@@ -158,7 +159,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * @param address - Address of the `account` to add the `code` for
    * @param value - The value of the `code`
    */
-  async putContractCode(address: Address, value: Uint8Array): Promise<void> {
+  async putCode(address: Address, value: Uint8Array): Promise<void> {
     if ((await this.getAccount(address)) === undefined) {
       await this.putAccount(address, new Account())
     }
@@ -171,9 +172,14 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * @returns {Promise<Uint8Array>} -  Resolves with the code corresponding to the provided address.
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
-  async getContractCode(address: Address): Promise<Uint8Array> {
+  async getCode(address: Address): Promise<Uint8Array> {
     const code = (await this._snapshot.getCode(address)) ?? new Uint8Array(0)
     return code
+  }
+
+  async getCodeSize(address: Address): Promise<number> {
+    const code = (await this._snapshot.getCode(address)) ?? new Uint8Array(0)
+    return code.length
   }
 
   /**
@@ -185,7 +191,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * corresponding to the provided address at the provided key.
    * If this does not exist an empty `Uint8Array` is returned.
    */
-  async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
+  async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
@@ -210,7 +216,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * Cannot be more than 32 bytes. Leading zeros are stripped.
    * If it is a empty or filled with zeros, deletes the value.
    */
-  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
+  async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
@@ -249,7 +255,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * Clears all storage entries for the account corresponding to `address`.
    * @param address - Address to clear the storage of
    */
-  async clearContractStorage(address: Address): Promise<void> {
+  async clearStorage(address: Address): Promise<void> {
     return this._snapshot.clearAccountStorage(address)
   }
 
@@ -322,7 +328,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
       accounts.map(async ([key, value]) => {
         const accountKey = key.slice(ACCOUNT_PREFIX.length)
         await accountTrie.put(accountKey, value ?? KECCAK256_NULL, true)
-      })
+      }),
     )
 
     const account = await this.getAccount(address)
@@ -333,14 +339,16 @@ export class FlatStateManager implements EVMStateManagerInterface {
         codeHash: KECCAK256_NULL_S,
         nonce: '0x0',
         storageHash: KECCAK256_RLP_S,
-        accountProof: (await accountTrie.createProof(address.bytes)).map((p) => bytesToHex(p)),
+        accountProof: (await createMerkleProof(accountTrie, address.bytes)).map((p) =>
+          bytesToHex(p),
+        ),
         storageProof: [],
       }
       return returnValue
     }
-    const accountProof: PrefixedHexString[] = (await accountTrie.createProof(address.bytes)).map(
-      (p) => bytesToHex(p)
-    )
+    const accountProof: PrefixedHexString[] = (
+      await createMerkleProof(accountTrie, address.bytes)
+    ).map((p) => bytesToHex(p))
 
     const storageProof: StorageProof[] = []
     const storageTrie = new Trie({ useKeyHashing: true, common: this.common })
@@ -350,12 +358,12 @@ export class FlatStateManager implements EVMStateManagerInterface {
       slots.map(async ([key, value]) => {
         const storageKey = key.slice(-32)
         await storageTrie.put(storageKey, RLP.encode(value) ?? KECCAK256_RLP, true)
-      })
+      }),
     )
 
     for (const storageKey of storageSlots) {
-      const proof = (await storageTrie.createProof(storageKey)).map((p) => bytesToHex(p))
-      const value = bytesToHex(await this.getContractStorage(address, storageKey))
+      const proof = (await createMerkleProof(storageTrie, storageKey)).map((p) => bytesToHex(p))
+      const value = bytesToHex(await this.getStorage(address, storageKey))
       const proofItem: StorageProof = {
         key: bytesToHex(storageKey),
         value: value === '0x' ? '0x0' : value, // Return '0x' values as '0x0' since this is a JSON RPC response
@@ -385,12 +393,12 @@ export class FlatStateManager implements EVMStateManagerInterface {
     // TODO make the verifyProof implementation in the DSM static and just reuse it here
     const key = hexToBytes(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
-      hexToBytes(rlpString)
+      hexToBytes(rlpString),
     )
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await Trie.verifyProof(key, accountProof, {
+    const value = await verifyTrieProof(key, accountProof, {
       useKeyHashing: true,
     })
 
@@ -415,7 +423,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
         throw new Error(`${notEmptyErrorMsg} (codeHash does not equal KECCAK256_NULL)`)
       }
     } else {
-      const account = Account.fromRlpSerializedAccount(value)
+      const account = createAccountFromRLP(value)
       const { nonce, balance, storageRoot, codeHash } = account
       const invalidErrorMsg = 'Invalid proof provided:'
       if (nonce !== BigInt(proof.nonce)) {
@@ -436,18 +444,18 @@ export class FlatStateManager implements EVMStateManagerInterface {
       const storageProof = stProof.proof.map((value: PrefixedHexString) => hexToBytes(value))
       const storageValue = setLengthLeft(hexToBytes(stProof.value), 32)
       const storageKey = hexToBytes(stProof.key)
-      const proofValue = await Trie.verifyProof(storageKey, storageProof, {
+      const proofValue = await verifyTrieProof(storageKey, storageProof, {
         useKeyHashing: true,
       })
       const reportedValue = setLengthLeft(
         RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,
-        32
+        32,
       )
       if (!equalsBytes(reportedValue, storageValue)) {
         throw new Error(
           `Reported trie value does not match storage, key: ${stProof.key}, reported: ${bytesToHex(
-            reportedValue
-          )}, actual: ${bytesToHex(storageValue)}`
+            reportedValue,
+          )}, actual: ${bytesToHex(storageValue)}`,
         )
       }
     }
