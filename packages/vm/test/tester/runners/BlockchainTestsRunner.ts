@@ -16,7 +16,7 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import { VM, buildBlock, runBlock } from '../../../src/index.js'
+import { buildBlock, createVM, runBlock } from '../../../src/index.js'
 import { setupPreConditions, verifyPostConditions } from '../../util.js'
 
 import type { Block } from '@ethereumjs/block'
@@ -95,7 +95,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     bls: options.bls,
     bn254: options.bn254,
   }
-  let vm = await VM.create({
+  let vm = await createVM({
     stateManager,
     blockchain,
     common,

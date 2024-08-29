@@ -12,7 +12,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 
 import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
 
@@ -79,7 +79,7 @@ describe('EIP1559 tests', () => {
       },
     )
     const block = makeBlock(GWEI, tx, 2)
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     await vm.stateManager.putAccount(sender, new Account())
     let account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10)
@@ -178,7 +178,7 @@ describe('EIP1559 tests', () => {
       },
     )
     const block = makeBlock(GWEI, tx, 2)
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     const balance = GWEI * BigInt(210000) * BigInt(10)
     await vm.stateManager.modifyAccountFields(sender, { balance })
 

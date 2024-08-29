@@ -1,12 +1,12 @@
 import { Chain } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createAddressFromString } from '@ethereumjs/util'
-import { VM } from '@ethereumjs/vm'
+import { createVM } from '@ethereumjs/vm'
 
 const main = async () => {
   const genesisState = getGenesis(Chain.Mainnet)
 
-  const vm = await VM.create()
+  const vm = await createVM()
   await vm.stateManager.generateCanonicalGenesis!(genesisState)
   const account = await vm.stateManager.getAccount(
     createAddressFromString('0x000d836201318ec6899a67540690382780743280'),
