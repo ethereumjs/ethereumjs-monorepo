@@ -2,6 +2,7 @@ import {
   Address,
   bytesToHex,
   concatBytes,
+  createZeroAddress,
   equalsBytes,
   hexToBytes,
   unpadBytes,
@@ -35,7 +36,7 @@ describe('StateManager -> Storage', () => {
             '0x1234567890123456789012345678901234567890123456789012345678901234',
           )
           const value = hexToBytes('0x0a') // We used this value as its RLP encoding is also 0a
-          await stateManager.putContractStorage(address, key, value)
+          await stateManager.putStorage(address, key, value)
 
           const data = await stateManager.dumpStorage(address)
           const expect = { [bytesToHex(keccak256(key))]: '0x0a' }
@@ -49,7 +50,7 @@ describe('StateManager -> Storage', () => {
           await stateManager.putAccount(address, account)
 
           try {
-            await stateManager.putContractStorage(address, new Uint8Array(12), hexToBytes('0x1231'))
+            await stateManager.putStorage(address, new Uint8Array(12), hexToBytes('0x1231'))
           } catch (e: any) {
             assert.equal(e.message, 'Storage key must be 32 bytes long')
             return
@@ -65,7 +66,7 @@ describe('StateManager -> Storage', () => {
           await stateManager.putAccount(address, account)
 
           try {
-            await stateManager.getContractStorage(address, new Uint8Array(12))
+            await stateManager.getStorage(address, new Uint8Array(12))
           } catch (e: any) {
             assert.equal(e.message, 'Storage key must be 32 bytes long')
             return
@@ -76,14 +77,14 @@ describe('StateManager -> Storage', () => {
 
         it(`should throw on storage values larger than 32 bytes`, async () => {
           const stateManager = new smType({ prefixStorageTrieKeys, storageCacheOpts })
-          const address = Address.zero()
+          const address = createZeroAddress()
           const account = createAccountWithDefaults()
           await stateManager.putAccount(address, account)
 
           const key = zeros(32)
           const value = hexToBytes('0x' + 'aa'.repeat(33))
           try {
-            await stateManager.putContractStorage(address, key, value)
+            await stateManager.putStorage(address, key, value)
             assert.fail('did not throw')
           } catch (e: any) {
             assert.ok(true, 'threw on trying to set storage values larger than 32 bytes')
@@ -92,28 +93,28 @@ describe('StateManager -> Storage', () => {
 
         it(`should strip zeros of storage values`, async () => {
           const stateManager = new smType({ prefixStorageTrieKeys, storageCacheOpts })
-          const address = Address.zero()
+          const address = createZeroAddress()
           const account = createAccountWithDefaults()
           await stateManager.putAccount(address, account)
 
           const key0 = zeros(32)
           const value0 = hexToBytes('0x' + '00' + 'aa'.repeat(30)) // put a value of 31-bytes length with a leading zero byte
           const expect0 = unpadBytes(value0)
-          await stateManager.putContractStorage(address, key0, value0)
-          const slot0 = await stateManager.getContractStorage(address, key0)
+          await stateManager.putStorage(address, key0, value0)
+          const slot0 = await stateManager.getStorage(address, key0)
           assert.ok(equalsBytes(slot0, expect0), 'value of 31 bytes padded correctly')
 
           const key1 = concatBytes(zeros(31), hexToBytes('0x01'))
           const value1 = hexToBytes('0x' + '0000' + 'aa'.repeat(1)) // put a value of 1-byte length with two leading zero bytes
           const expect1 = unpadBytes(value1)
-          await stateManager.putContractStorage(address, key1, value1)
-          const slot1 = await stateManager.getContractStorage(address, key1)
+          await stateManager.putStorage(address, key1, value1)
+          const slot1 = await stateManager.getStorage(address, key1)
 
           assert.ok(equalsBytes(slot1, expect1), 'value of 1 byte padded correctly')
         })
 
         it(`should delete storage values which only consist of zero bytes`, async () => {
-          const address = Address.zero()
+          const address = createZeroAddress()
           const key = zeros(32)
 
           const startValue = hexToBytes('0x01')
@@ -129,15 +130,15 @@ describe('StateManager -> Storage', () => {
             await stateManager.putAccount(address, account)
 
             const value = zeros(length)
-            await stateManager.putContractStorage(address, key, startValue)
-            const currentValue = await stateManager.getContractStorage(address, key)
+            await stateManager.putStorage(address, key, startValue)
+            const currentValue = await stateManager.getStorage(address, key)
             if (!equalsBytes(currentValue, startValue)) {
               // sanity check
               assert.fail('contract value not set correctly')
             } else {
               // delete the value
-              await stateManager.putContractStorage(address, key, value)
-              const deleted = await stateManager.getContractStorage(address, key)
+              await stateManager.putStorage(address, key, value)
+              const deleted = await stateManager.getStorage(address, key)
               assert.ok(equalsBytes(deleted, zeros(0)), 'the storage key should be deleted')
             }
           }
@@ -145,7 +146,7 @@ describe('StateManager -> Storage', () => {
 
         it(`should not strip trailing zeros`, async () => {
           const stateManager = new smType({ prefixStorageTrieKeys, storageCacheOpts })
-          const address = Address.zero()
+          const address = createZeroAddress()
           const account = createAccountWithDefaults()
           await stateManager.putAccount(address, account)
 
@@ -153,8 +154,8 @@ describe('StateManager -> Storage', () => {
           const value = hexToBytes('0x0000aabb00')
           const expect = hexToBytes('0xaabb00')
 
-          await stateManager.putContractStorage(address, key, value)
-          const contractValue = await stateManager.getContractStorage(address, key)
+          await stateManager.putStorage(address, key, value)
+          const contractValue = await stateManager.getStorage(address, key)
           assert.ok(equalsBytes(contractValue, expect), 'trailing zeros are not stripped')
         })
       }

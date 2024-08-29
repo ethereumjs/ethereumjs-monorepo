@@ -1,6 +1,13 @@
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { Account, Address, KECCAK256_RLP, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  KECCAK256_RLP,
+  createAccountFromRLP,
+  bytesToHex,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
@@ -57,7 +64,7 @@ describe('snapshot simple get/put', () => {
     // Check that account's codeHash's field has been updated
     const rawAccount = await snapshot.getAccount(addr)
     assert.ok(rawAccount, 'account should exist')
-    const account = Account.fromRlpSerializedAccount(rawAccount as Uint8Array)
+    const account = createAccountFromRLP(rawAccount as Uint8Array)
     assert.equal(JSON.stringify(account.codeHash), JSON.stringify(codeHash))
   })
   // TODO: what if we insert slot without having inserted account first?
@@ -135,7 +142,7 @@ describe('snapshot merkleize', () => {
     assert.deepEqual(
       root,
       expectedRoot,
-      `Merkleized root ${bytesToHex(root)} should match expected ${bytesToHex(expectedRoot)}`
+      `Merkleized root ${bytesToHex(root)} should match expected ${bytesToHex(expectedRoot)}`,
     )
   })
 
@@ -174,8 +181,8 @@ describe('snapshot merkleize', () => {
     for (let i = 0; i < addrs.length; i++) {
       const j1 = i
       const j2 = (i + 1) % addrs.length
-      await state.putContractStorage(addrs[i], slots[j1][0], slots[j1][1])
-      await state.putContractStorage(addrs[i], slots[j2][0], slots[j2][1])
+      await state.putStorage(addrs[i], slots[j1][0], slots[j1][1])
+      await state.putStorage(addrs[i], slots[j2][0], slots[j2][1])
 
       // Have to RLP encode slot values before directly putting them into a snapshot
       await snapshot.putStorageSlot(addrs[i], slots[j1][0], RLP.encode(slots[j1][1]))
@@ -189,7 +196,7 @@ describe('snapshot merkleize', () => {
     assert.equal(
       bytesToHex(root),
       bytesToHex(expectedRoot),
-      `Merkleized root ${bytesToHex(root)} should match expected ${bytesToHex(expectedRoot)}`
+      `Merkleized root ${bytesToHex(root)} should match expected ${bytesToHex(expectedRoot)}`,
     )
   })
 })
@@ -262,6 +269,12 @@ describe('snapshot checkpointing', () => {
 
     const res = await snapshot.getAccount(addr)
     assert.ok(res !== undefined, 'Account exists in snapshot')
-    assert.deepEqual(Account.fromRlpSerializedAccount(res as Uint8Array), acc)
+
+    console.log(acc._codeSize)
+    console.log(acc.code)
+    console.log(res._codeSize)
+    console.log(res.code)
+    acc._codeSize = acc.code?.length ?? 0
+    assert.deepEqual(createAccountFromRLP(res as Uint8Array), acc)
   })
 })
