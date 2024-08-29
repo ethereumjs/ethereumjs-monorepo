@@ -75,7 +75,7 @@ describe('StateManager -> General/Account', () => {
         const key = hexToBytes('0x1234567890123456789012345678901234567890123456789012345678901234')
         const value = hexToBytes('0x1234')
         await stateManager.putAccount(address, account)
-        await stateManager.putContractStorage(address, key, value)
+        await stateManager.putStorage(address, key, value)
 
         const contract0 = await stateManager.getContractStorage(address, key)
         assert.ok(
