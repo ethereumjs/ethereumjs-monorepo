@@ -102,11 +102,11 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       const codeHash = leaf.node.getValue(VerkleLeafType.CodeHash)
       const codeSize = leaf.node.getValue(VerkleLeafType.CodeSize)
       const account = createPartialAccount({
-        version: Array.isArray(version) ? bytesToInt32(version, true) : null,
-        balance: Array.isArray(balance) ? bytesToBigInt(balance, true) : null,
-        nonce: Array.isArray(nonce) ? bytesToBigInt(nonce, true) : null,
-        codeHash: Array.isArray(codeHash) ? codeHash : null,
-        codeSize: Array.isArray(codeSize) ? bytesToInt32(codeSize, true) : null,
+        version: version instanceof Uint8Array ? bytesToInt32(version, true) : null,
+        balance: balance instanceof Uint8Array ? bytesToBigInt(balance, true) : null,
+        nonce: nonce instanceof Uint8Array ? bytesToBigInt(nonce, true) : null,
+        codeHash: codeHash instanceof Uint8Array ? codeHash : null,
+        codeSize: codeSize instanceof Uint8Array ? bytesToInt32(codeSize, true) : null,
         storageRoot: null,
       })
       // check if the account didn't exist if any of the basic keys are undefined
