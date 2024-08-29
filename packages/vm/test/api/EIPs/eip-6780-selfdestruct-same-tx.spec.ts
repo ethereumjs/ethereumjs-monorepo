@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 
@@ -33,7 +33,7 @@ const common = new Common({
 const payload = hexToBytes('0x60016001556001FF')
 
 async function getVM(common: Common) {
-  const vm = await VM.create({ common })
+  const vm = await createVM({ common })
   const account = (await vm.stateManager.getAccount(sender)) ?? new Account()
   const balance = GWEI * BigInt(21000) * BigInt(10000000)
   account.balance = balance

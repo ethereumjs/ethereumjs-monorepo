@@ -24,8 +24,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { buildBlock, runBlock } from '../../src/index.js'
-import { VM } from '../../src/vm.js'
+import { buildBlock, createVM, runBlock } from '../../src/index.js'
 
 import { setBalance } from './utils.js'
 
@@ -39,7 +38,7 @@ describe('BlockBuilder', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = createBlock({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
 
     await setBalance(vm, pKeyAddress)
 
@@ -73,7 +72,7 @@ describe('BlockBuilder', () => {
 
   it('should throw if adding a transaction exceeds the block gas limit', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     const genesis = createBlock({}, { common })
 
     const blockBuilder = await buildBlock(vm, { parentBlock: genesis })
@@ -112,7 +111,7 @@ describe('BlockBuilder', () => {
       validateConsensus: false,
       consensusDict,
     })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
 
     await setBalance(vm, pKeyAddress)
 
@@ -210,7 +209,7 @@ describe('BlockBuilder', () => {
       { common },
     )
     const blockchain = await createBlockchain({ genesisBlock, common })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
 
     // add balance for tx
     await vm.stateManager.putAccount(signer.address, createAccount({ balance: 100000 }))
@@ -243,7 +242,7 @@ describe('BlockBuilder', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = createBlock({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
 
     await setBalance(vm, pKeyAddress)
 
@@ -297,7 +296,7 @@ describe('BlockBuilder', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = createBlock({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
     const vmCopy = await vm.shallowCopy()
 
     const blockBuilder = await buildBlock(vm, {
@@ -322,7 +321,7 @@ describe('BlockBuilder', () => {
       { common },
     )
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
 
     await setBalance(vm, pKeyAddress)
 
