@@ -88,13 +88,13 @@ async function test() {
 void test()
 ```
 
-When the static `Trie.create` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Ethereum production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
+When the `createTrie` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Ethereum production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
 
 #### Create from a Proof
 
 The trie library supports basic creation of [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) proofs as well as the instantiation of new tries from an existing proof.
 
-The following is an example for using the `createTrieFromProof()` static constructor. This instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
+The following is an example for using the `createTrieFromProof()` constructor. This instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
 
 ```ts
 // ./examples/createFromProof.ts
@@ -188,7 +188,7 @@ By default, the deletion of trie nodes from the underlying database does not occ
 
 #### Root Persistence
 
-You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie through the `Trie.create` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
+You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie through the `createTrie` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
 
 ```ts
 // ./examples/rootPersistence.ts
