@@ -1,6 +1,6 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToHex, zeros } from '@ethereumjs/util'
+import { BlockHeader, createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { bytesToHex, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -9,7 +9,7 @@ import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseSetup, batchBlocks, getRpcClient, setupChain } from '../helpers.js'
 
-const crypto = require('crypto')
+import type { Block } from '@ethereumjs/block'
 
 const method = 'engine_forkchoiceUpdatedV1'
 
@@ -27,11 +27,11 @@ const validPayloadAttributes = {
   suggestedFeeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Paris })
 
-function createBlock(parentBlock: Block) {
-  const prevRandao = crypto.randomBytes(32)
-  const block = Block.fromBlockData(
+function createBlockFromParent(parentBlock: Block) {
+  const prevRandao = randomBytes(32)
+  const block = createBlock(
     {
       header: {
         parentHash: parentBlock.hash(),
@@ -42,7 +42,7 @@ function createBlock(parentBlock: Block) {
         gasLimit: parentBlock.header.gasLimit,
       },
     },
-    { common }
+    { common },
   )
   return block
 }
@@ -60,8 +60,8 @@ describe(method, () => {
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
       res.error.message.includes(
-        "invalid argument 0 for key 'headBlockHash': hex string without 0x prefix"
-      )
+        "invalid argument 0 for key 'headBlockHash': hex string without 0x prefix",
+      ),
     )
   })
 
@@ -70,14 +70,14 @@ describe(method, () => {
 
     const invalidForkChoiceState = {
       ...validForkChoiceState,
-      finalizedBlockHash: '0xinvalid',
+      finalizedBlockHash: '0xinvalid', // cspell:disable-line
     }
     const res = await rpc.request(method, [invalidForkChoiceState, validPayloadAttributes])
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
       res.error.message.includes(
-        "invalid argument 0 for key 'finalizedBlockHash': invalid block hash"
-      )
+        "invalid argument 0 for key 'finalizedBlockHash': invalid block hash",
+      ),
     )
   })
 
@@ -103,7 +103,7 @@ describe(method, () => {
     assert.equal(res.result.payloadStatus.status, 'VALID')
     assert.equal(
       res.result.payloadStatus.latestValidHash,
-      '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a'
+      '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a',
     )
     assert.equal(res.result.payloadStatus.validationError, null)
     assert.notEqual(res.result.payloadId, null)
@@ -118,7 +118,7 @@ describe(method, () => {
     const res = await rpc.request(method, invalidTimestampPayload)
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
-      res.error.message.includes('invalid timestamp in payloadAttributes, got 0, need at least 1')
+      res.error.message.includes('invalid timestamp in payloadAttributes, got 0, need at least 1'),
     )
   })
 
@@ -131,66 +131,6 @@ describe(method, () => {
     assert.equal(res.result.payloadStatus.latestValidHash, validForkChoiceState.headBlockHash)
     assert.equal(res.result.payloadStatus.validationError, null)
     assert.equal(res.result.payloadId, null)
-  })
-
-  it('invalid terminal block with only genesis block', async () => {
-    const genesisWithHigherTtd = {
-      ...genesisJSON,
-      config: {
-        ...genesisJSON.config,
-        terminalTotalDifficulty: 17179869185,
-      },
-    }
-
-    const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
-      engine: true,
-    })
-    const rpc = getRpcClient(server)
-    const res = await rpc.request(method, [validForkChoiceState, null])
-    assert.equal(res.result.payloadStatus.status, 'INVALID')
-    assert.equal(res.result.payloadStatus.latestValidHash, bytesToHex(zeros(32)))
-  })
-
-  it('invalid terminal block with 1+ blocks', async () => {
-    const genesisWithHigherTtd = {
-      ...genesisJSON,
-      config: {
-        ...genesisJSON.config,
-        terminalTotalDifficulty: 17179869185,
-        clique: undefined,
-        ethash: {},
-      },
-    }
-
-    const { server, chain, common } = await setupChain(genesisWithHigherTtd, 'post-merge', {
-      engine: true,
-    })
-    const rpc = getRpcClient(server)
-    const newBlock = Block.fromBlockData(
-      {
-        header: {
-          number: blocks[0].blockNumber,
-          parentHash: blocks[0].parentHash,
-          difficulty: 1,
-          extraData: new Uint8Array(97),
-        },
-      },
-      { common, skipConsensusFormatValidation: true }
-    )
-
-    await chain.putBlocks([newBlock])
-    const newBlockHashHex = bytesToHex(newBlock.hash())
-    const res = await rpc.request(method, [
-      {
-        safeBlockHash: newBlockHashHex,
-        finalizedBlockHash: newBlockHashHex,
-        headBlockHash: newBlockHashHex,
-      },
-      null,
-    ])
-
-    assert.equal(res.result.payloadStatus.status, 'INVALID')
-    assert.equal(res.result.payloadStatus.latestValidHash, bytesToHex(zeros(32)))
   })
 
   it('call with deep parent lookup', async () => {
@@ -307,17 +247,17 @@ describe(method, () => {
     const canonical = [genesis]
 
     for (let i = 0; i < 2; i++) {
-      canonical.push(createBlock(canonical[canonical.length - 1]))
+      canonical.push(createBlockFromParent(canonical[canonical.length - 1]))
     }
 
     // Build an alternative payload
     const reorg = [genesis]
     for (let i = 0; i < 2; i++) {
-      reorg.push(createBlock(reorg[reorg.length - 1]))
+      reorg.push(createBlockFromParent(reorg[reorg.length - 1]))
     }
 
     const canonicalPayload = canonical.map(
-      (e) => blockToExecutionPayload(e, BigInt(0)).executionPayload
+      (e) => blockToExecutionPayload(e, BigInt(0)).executionPayload,
     )
     const reorgPayload = reorg.map((e) => blockToExecutionPayload(e, BigInt(0)).executionPayload)
 
@@ -347,17 +287,17 @@ describe(method, () => {
     const canonical = [genesis]
 
     for (let i = 0; i < 2; i++) {
-      canonical.push(createBlock(canonical[canonical.length - 1]))
+      canonical.push(createBlockFromParent(canonical[canonical.length - 1]))
     }
 
     // Build an alternative payload
     const reorg = [genesis]
     for (let i = 0; i < 2; i++) {
-      reorg.push(createBlock(reorg[reorg.length - 1]))
+      reorg.push(createBlockFromParent(reorg[reorg.length - 1]))
     }
 
     const canonicalPayload = canonical.map(
-      (e) => blockToExecutionPayload(e, BigInt(0)).executionPayload
+      (e) => blockToExecutionPayload(e, BigInt(0)).executionPayload,
     )
     const reorgPayload = reorg.map((e) => blockToExecutionPayload(e, BigInt(0)).executionPayload)
 

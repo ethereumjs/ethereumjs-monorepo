@@ -1,23 +1,25 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { createAddressFromString } from '@ethereumjs/util'
+import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
+import type { Block } from '@ethereumjs/block'
 
 const method = 'eth_getBlockTransactionCountByNumber'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
 
 describe(method, () => {
   it('call with valid arguments', async () => {
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
       validateConsensus: false,
@@ -31,17 +33,17 @@ describe(method, () => {
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
 
-    await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
+    await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))
 
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // construct block with tx
-    const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
+    const tx = createLegacyTx({ gasLimit: 53000 }, { common, freeze: false })
     tx.getSenderAddress = () => {
       return address
     }
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = Block.fromBlockData(
+    const block = createBlock(
       {
         header: {
           parentHash: parent.hash(),
@@ -49,13 +51,13 @@ describe(method, () => {
           gasLimit: 2000000,
         },
       },
-      { common, calcDifficultyFromHeader: parent }
+      { common, calcDifficultyFromHeader: parent },
     )
     block.transactions[0] = tx
 
     let ranBlock: Block | undefined = undefined
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-    await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
 
     // verify that the transaction count is 1
@@ -64,7 +66,7 @@ describe(method, () => {
   })
 
   it('call with valid arguments (multiple transactions)', async () => {
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
       validateConsensus: false,
@@ -78,32 +80,26 @@ describe(method, () => {
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
 
-    await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
+    await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))
 
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // construct block with tx
-    const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
+    const tx = createLegacyTx({ gasLimit: 53000 }, { common, freeze: false })
     tx.getSenderAddress = () => {
       return address
     }
-    const tx2 = LegacyTransaction.fromTxData(
-      { gasLimit: 53000, nonce: 1 },
-      { common, freeze: false }
-    )
+    const tx2 = createLegacyTx({ gasLimit: 53000, nonce: 1 }, { common, freeze: false })
     tx2.getSenderAddress = () => {
       return address
     }
-    const tx3 = LegacyTransaction.fromTxData(
-      { gasLimit: 53000, nonce: 2 },
-      { common, freeze: false }
-    )
+    const tx3 = createLegacyTx({ gasLimit: 53000, nonce: 2 }, { common, freeze: false })
     tx3.getSenderAddress = () => {
       return address
     }
 
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = Block.fromBlockData(
+    const block = createBlock(
       {
         header: {
           parentHash: parent.hash(),
@@ -111,7 +107,7 @@ describe(method, () => {
           gasLimit: 2000000,
         },
       },
-      { common, calcDifficultyFromHeader: parent }
+      { common, calcDifficultyFromHeader: parent },
     )
     block.transactions[0] = tx
     block.transactions[1] = tx2
@@ -119,7 +115,7 @@ describe(method, () => {
 
     let ranBlock: Block | undefined = undefined
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-    await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
 
     // verify that the transaction count is 3
@@ -129,7 +125,7 @@ describe(method, () => {
   })
 
   it('call with unsupported block argument', async () => {
-    const blockchain = await Blockchain.create()
+    const blockchain = await createBlockchain()
 
     const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)

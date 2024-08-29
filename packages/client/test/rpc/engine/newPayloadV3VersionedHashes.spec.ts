@@ -1,5 +1,4 @@
-import { initKZG } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -15,8 +14,7 @@ const [blockData] = blocks
 
 describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
-    const kzg = await createKZG()
-    initKZG(kzg)
+    const kzg = await loadKZG()
 
     const { server } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
@@ -44,7 +42,7 @@ describe(`${method}: Cancun validations`, () => {
     assert.equal(res.result.status, 'INVALID')
     assert.equal(
       res.result.validationError,
-      'Error verifying blobVersionedHashes: expected=0 received=2'
+      'Error verifying blobVersionedHashes: expected=0 received=2',
     )
 
     const txString =
@@ -85,7 +83,7 @@ describe(`${method}: Cancun validations`, () => {
     res = await rpc.request(method, blockDataMissingParentBeaconRoot)
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
-      res.error.message.includes('missing value for required argument parentBeaconBlockRoot')
+      res.error.message.includes('missing value for required argument parentBeaconBlockRoot'),
     )
 
     const blockDataExtraMissingHashes1 = [
@@ -107,7 +105,7 @@ describe(`${method}: Cancun validations`, () => {
     assert.equal(res.result.status, 'INVALID')
     assert.equal(
       res.result.validationError,
-      'Error verifying blobVersionedHashes: expected=2 received=1'
+      'Error verifying blobVersionedHashes: expected=2 received=1',
     )
 
     const blockDataExtraMisMatchingHashes1 = [
@@ -129,7 +127,7 @@ describe(`${method}: Cancun validations`, () => {
     assert.equal(res.result.status, 'INVALID')
     assert.equal(
       res.result.validationError,
-      'Error verifying blobVersionedHashes: mismatch at index=1 expected=0x0131…52c5 received=0x3456…'
+      'Error verifying blobVersionedHashes: mismatch at index=1 expected=0x0131…52c5 received=0x3456…',
     )
 
     const blockDataMatchingVersionedHashes = [

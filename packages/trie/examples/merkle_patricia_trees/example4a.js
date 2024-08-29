@@ -1,7 +1,8 @@
 // Example 4a - Retrieving a Transaction from the Ethereum Blockchain
 
-const INFURA_ENDPOINT = require('./infura_endpoint')
 const https = require('https')
+
+const INFURA_ENDPOINT = require('./infura_endpoint.js')
 
 // Looking up an individual transaction
 function lookupTransaction(transactionHash) {

@@ -1,74 +1,84 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, hexToBytes } from '@ethereumjs/util'
+import { Common, Goerli, Hardfork } from '@ethereumjs/common'
+import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { BlockHeader } from '../src/header.js'
+import {
+  cliqueEpochTransitionSigners,
+  cliqueExtraSeal,
+  cliqueExtraVanity,
+  cliqueIsEpochTransition,
+  cliqueSigner,
+  cliqueVerifySignature,
+  createBlockHeader,
+  createSealedCliqueBlockHeader,
+} from '../src/index.js'
 
 describe('[Header]: Clique PoA Functionality', () => {
-  const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+  const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 
   it('Header Data', () => {
-    let header = BlockHeader.fromHeaderData({ number: 1 })
+    let header = createBlockHeader({ number: 1 })
     assert.throws(
       () => {
-        header.cliqueIsEpochTransition()
+        cliqueIsEpochTransition(header)
       },
       undefined,
       undefined,
-      'cliqueIsEpochTransition() -> should throw on PoW networks'
+      'cliqueIsEpochTransition() -> should throw on PoW networks',
     )
 
-    header = BlockHeader.fromHeaderData({ extraData: new Uint8Array(97) }, { common })
+    header = createBlockHeader({ extraData: new Uint8Array(97) }, { common })
     assert.ok(
-      header.cliqueIsEpochTransition(),
-      'cliqueIsEpochTransition() -> should indicate an epoch transition for the genesis block'
+      cliqueIsEpochTransition(header),
+      'cliqueIsEpochTransition() -> should indicate an epoch transition for the genesis block',
     )
 
-    header = BlockHeader.fromHeaderData({ number: 1, extraData: new Uint8Array(97) }, { common })
+    header = createBlockHeader({ number: 1, extraData: new Uint8Array(97) }, { common })
     assert.notOk(
-      header.cliqueIsEpochTransition(),
-      'cliqueIsEpochTransition() -> should correctly identify a non-epoch block'
+      cliqueIsEpochTransition(header),
+      'cliqueIsEpochTransition() -> should correctly identify a non-epoch block',
     )
     assert.deepEqual(
-      header.cliqueExtraVanity(),
+      cliqueExtraVanity(header),
       new Uint8Array(32),
-      'cliqueExtraVanity() -> should return correct extra vanity value'
+      'cliqueExtraVanity() -> should return correct extra vanity value',
     )
     assert.deepEqual(
-      header.cliqueExtraSeal(),
+      cliqueExtraSeal(header),
       new Uint8Array(65),
-      'cliqueExtraSeal() -> should return correct extra seal value'
+      'cliqueExtraSeal() -> should return correct extra seal value',
     )
     assert.throws(
       () => {
-        header.cliqueEpochTransitionSigners()
+        cliqueEpochTransitionSigners(header)
       },
       undefined,
       undefined,
-      'cliqueEpochTransitionSigners() -> should throw on non-epch block'
+      'cliqueEpochTransitionSigners() -> should throw on non-epoch block',
     )
 
-    header = BlockHeader.fromHeaderData(
-      { number: 60000, extraData: new Uint8Array(137) },
-      { common }
-    )
+    header = createBlockHeader({ number: 60000, extraData: new Uint8Array(137) }, { common })
     assert.ok(
-      header.cliqueIsEpochTransition(),
-      'cliqueIsEpochTransition() -> should correctly identify an epoch block'
+      cliqueIsEpochTransition(header),
+      'cliqueIsEpochTransition() -> should correctly identify an epoch block',
     )
     assert.deepEqual(
-      header.cliqueExtraVanity(),
+      cliqueExtraVanity(header),
       new Uint8Array(32),
-      'cliqueExtraVanity() -> should return correct extra vanity value'
+      'cliqueExtraVanity() -> should return correct extra vanity value',
     )
     assert.deepEqual(
-      header.cliqueExtraSeal(),
+      cliqueExtraSeal(header),
       new Uint8Array(65),
-      'cliqueExtraSeal() -> should return correct extra seal value'
+      'cliqueExtraSeal() -> should return correct extra seal value',
     )
     const msg =
       'cliqueEpochTransitionSigners() -> should return the correct epoch transition signer list on epoch block'
-    assert.deepEqual(header.cliqueEpochTransitionSigners(), [Address.zero(), Address.zero()], msg)
+    assert.deepEqual(
+      cliqueEpochTransitionSigners(header),
+      [createZeroAddress(), createZeroAddress()],
+      msg,
+    )
   })
 
   type Signer = {
@@ -81,26 +91,27 @@ describe('[Header]: Clique PoA Functionality', () => {
     address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
     privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
     publicKey: hexToBytes(
-      '0x40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195'
+      '0x40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195',
     ),
   }
 
   it('Signing', () => {
-    const cliqueSigner = A.privateKey
+    const cliqueSignerKey = A.privateKey
 
-    let header = BlockHeader.fromHeaderData(
+    let header = createSealedCliqueBlockHeader(
       { number: 1, extraData: new Uint8Array(97) },
-      { common, freeze: false, cliqueSigner }
+      cliqueSignerKey,
+      { common, freeze: false },
     )
 
     assert.equal(header.extraData.length, 97)
-    assert.ok(header.cliqueVerifySignature([A.address]), 'should verify signature')
-    assert.ok(header.cliqueSigner().equals(A.address), 'should recover the correct signer address')
+    assert.ok(cliqueVerifySignature(header, [A.address]), 'should verify signature')
+    assert.ok(cliqueSigner(header).equals(A.address), 'should recover the correct signer address')
 
-    header = BlockHeader.fromHeaderData({ extraData: new Uint8Array(97) }, { common })
+    header = createBlockHeader({ extraData: new Uint8Array(97) }, { common })
     assert.ok(
-      header.cliqueSigner().equals(Address.zero()),
-      'should return zero address on default block'
+      cliqueSigner(header).equals(createZeroAddress()),
+      'should return zero address on default block',
     )
   })
 })

@@ -1,12 +1,12 @@
-import { version as packageVersion } from '../package.json'
+import { readFileSync } from 'fs'
 
-import { Chain } from './blockchain'
-import { SyncMode } from './config'
-import { FullEthereumService, LightEthereumService } from './service'
-import { Event } from './types'
+import { Chain } from './blockchain/index.js'
+import { SyncMode } from './config.js'
+import { FullEthereumService, LightEthereumService } from './service/index.js'
+import { Event } from './types.js'
 
-import type { Config } from './config'
-import type { MultiaddrLike } from './types'
+import type { Config } from './config.js'
+import type { MultiaddrLike } from './types.js'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
@@ -126,8 +126,14 @@ export class EthereumClient {
     }
     const name = this.config.chainCommon.chainName()
     const chainId = this.config.chainCommon.chainId()
+    const packageJson = JSON.parse(
+      readFileSync(
+        '/' + import.meta.url.split('client')[0].split('file:///')[1] + 'client/package.json',
+        'utf-8',
+      ),
+    )
     this.config.logger.info(
-      `Initializing Ethereumjs client version=v${packageVersion} network=${name} chainId=${chainId}`
+      `Initializing Ethereumjs client version=v${packageJson.version} network=${name} chainId=${chainId}`,
     )
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {
@@ -135,7 +141,7 @@ export class EthereumClient {
     })
     this.config.events.on(Event.SERVER_LISTENING, (details) => {
       this.config.logger.info(
-        `Server listener up transport=${details.transport} url=${details.url}`
+        `Server listener up transport=${details.transport} url=${details.url}`,
       )
     })
 

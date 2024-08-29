@@ -1,9 +1,9 @@
-import { Address, KECCAK256_RLP, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { Address, KECCAK256_RLP, bytesToHex, createAccount, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { DefaultStateManager, FlatStateManager } from '../src/index.js'
 
-import { createAccount } from './util.js'
+import { createAccountWithDefaults } from './util.js'
 
 describe('StateManager -> General/Account', () => {
   const stateManagers: any[] = [FlatStateManager, DefaultStateManager]
@@ -23,7 +23,7 @@ describe('StateManager -> General/Account', () => {
 
         // commit some data to the trie
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
-        const account = createAccount(BigInt(0), BigInt(1000))
+        const account = createAccount({nonce: BigInt(0), balance: BigInt(1000)})
         await stateManager.checkpoint()
         await stateManager.putAccount(address, account)
         await stateManager.commit()
@@ -45,7 +45,7 @@ describe('StateManager -> General/Account', () => {
       it(`should clear the cache when the state root is set`, async () => {
         const stateManager = new smType({ accountCacheOpts })
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
-        const account = createAccount()
+        const account = createAccount({})
 
         // test account storage cache
         const initialStateRoot = await stateManager.getStateRoot()
@@ -87,7 +87,7 @@ describe('StateManager -> General/Account', () => {
 
       it('should put and get account, and add to the underlying cache if the account is not found', async () => {
         const stateManager = new smType({ accountCacheOpts })
-        const account = createAccount()
+        const account = createAccount({})
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
         await stateManager.putAccount(address, account)
@@ -115,7 +115,7 @@ describe('StateManager -> General/Account', () => {
 
       it(`should return undefined for an existent account`, async () => {
         const stateManager = new smType({ accountCacheOpts })
-        const account = createAccount(BigInt(0x1), BigInt(0x1))
+        const account = createAccount({BigInt(0x1), BigInt(0x1)})
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
         await stateManager.putAccount(address, account)
@@ -127,7 +127,7 @@ describe('StateManager -> General/Account', () => {
 
       it(`should modify account fields correctly`, async () => {
         const stateManager = new smType({ accountCacheOpts })
-        const account = createAccount()
+        const account = createAccount({})
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
         await stateManager.putAccount(address, account)
 

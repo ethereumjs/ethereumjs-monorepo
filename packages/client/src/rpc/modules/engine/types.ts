@@ -1,7 +1,13 @@
-import { UNKNOWN_PAYLOAD } from '../../error-code'
+import { UNKNOWN_PAYLOAD } from '../../error-code.js'
 
-import type { Skeleton } from '../../../service'
+import type { Skeleton } from '../../../service/index.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
+import type {
+  ConsolidationRequestV1,
+  DepositRequestV1,
+  PrefixedHexString,
+  WithdrawalRequestV1,
+} from '@ethereumjs/util'
 
 export enum Status {
   ACCEPTED = 'ACCEPTED',
@@ -11,14 +17,14 @@ export enum Status {
   VALID = 'VALID',
 }
 
-export type Bytes8 = string
-export type Bytes20 = string
-export type Bytes32 = string
+export type Bytes8 = PrefixedHexString
+export type Bytes20 = PrefixedHexString
+export type Bytes32 = PrefixedHexString
 // type Root = Bytes32
 export type Blob = Bytes32
-export type Bytes48 = string
-export type Uint64 = string
-export type Uint256 = string
+export type Bytes48 = PrefixedHexString
+export type Uint64 = PrefixedHexString
+export type Uint256 = PrefixedHexString
 
 type WithdrawalV1 = Exclude<ExecutionPayload['withdrawals'], undefined>[number]
 
@@ -27,6 +33,11 @@ export type ExecutionPayloadV1 = ExecutionPayload
 export type ExecutionPayloadV2 = ExecutionPayloadV1 & { withdrawals: WithdrawalV1[] }
 // parentBeaconBlockRoot comes separate in new payloads and needs to be added to payload data
 export type ExecutionPayloadV3 = ExecutionPayloadV2 & { excessBlobGas: Uint64; blobGasUsed: Uint64 }
+export type ExecutionPayloadV4 = ExecutionPayloadV3 & {
+  depositRequests: DepositRequestV1[]
+  withdrawalRequests: WithdrawalRequestV1[]
+  consolidationRequests: ConsolidationRequestV1[]
+}
 
 export type ForkchoiceStateV1 = {
   headBlockHash: Bytes32
@@ -57,12 +68,6 @@ export type PayloadStatusV1 = {
 export type ForkchoiceResponseV1 = {
   payloadStatus: PayloadStatusV1
   payloadId: Bytes8 | null
-}
-
-export type TransitionConfigurationV1 = {
-  terminalTotalDifficulty: Uint256
-  terminalBlockHash: Bytes32
-  terminalBlockNumber: Uint64
 }
 
 export type BlobsBundleV1 = {

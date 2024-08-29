@@ -1,5 +1,5 @@
-import { Block } from '@ethereumjs/block'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createBlock } from '@ethereumjs/block'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -32,7 +32,7 @@ describe(method, () => {
     res = await rpc.request(method, ['0xabcd', { tracerConfig: { some: 'value' } }])
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
-      res.error.message.includes('custom tracers and tracer configurations are not implemented')
+      res.error.message.includes('custom tracers and tracer configurations are not implemented'),
     )
 
     res = await rpc.request(method, ['0xabcd', { tracer: 'someTracer' }])
@@ -50,7 +50,7 @@ describe(method, () => {
     })
     const rpc = getRpcClient(server)
     // construct block with tx
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0x2,
         gasLimit: 0xfffff,
@@ -59,12 +59,12 @@ describe(method, () => {
         value: 10000,
         data: '0x60AA',
       },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(dummy.privKey)
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = Block.fromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
@@ -79,7 +79,7 @@ describe(method, () => {
     })
     const rpc = getRpcClient(server)
     // construct block with tx
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0x2,
         gasLimit: 0xfffff,
@@ -88,12 +88,12 @@ describe(method, () => {
         value: 10000,
         data: '0x560FAA',
       },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(dummy.privKey)
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = Block.fromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
@@ -108,7 +108,7 @@ describe(method, () => {
     })
     const rpc = getRpcClient(server)
     // construct block with tx
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0x2,
         gasLimit: 0xfffff,
@@ -117,12 +117,12 @@ describe(method, () => {
         value: 10000,
         data: '0x604260005260206000F3',
       },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(dummy.privKey)
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = Block.fromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
@@ -131,7 +131,7 @@ describe(method, () => {
     assert.equal(
       res.result.structLogs[5].memory[0],
       '0x0000000000000000000000000000000000000000000000000000000000000042',
-      'produced a trace with correct memory value returned'
+      'produced a trace with correct memory value returned',
     )
   })
 
@@ -141,7 +141,7 @@ describe(method, () => {
     })
     const rpc = getRpcClient(server)
     // construct block with tx
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0x2,
         gasLimit: 0xfffff,
@@ -150,12 +150,12 @@ describe(method, () => {
         value: 10000,
         data: '0x600F6000',
       },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(dummy.privKey)
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = Block.fromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 

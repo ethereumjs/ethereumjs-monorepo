@@ -1,5 +1,5 @@
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { bytesToHex, createContractAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -23,7 +23,7 @@ const method = 'eth_getLogs'
   ```
 */
 const logExampleBytecode = hexToBytes(
-  '0x608060405234801561001057600080fd5b50610257806100206000396000f3fe608060405234801561001057600080fd5b5060043610610048576000357c010000000000000000000000000000000000000000000000000000000090048063aefb4f0a1461004d575b600080fd5b610067600480360381019061006291906100de565b610069565b005b60005b858110156100c1578284867fbf642f3055e2ef2589825c2c0dd4855c1137a63f6260d9d112629e5cd034a3eb856040516100a69190610168565b60405180910390a480806100b99061018d565b91505061006c565b505050505050565b6000813590506100d88161020a565b92915050565b600080600080600060a086880312156100fa576100f9610205565b5b6000610108888289016100c9565b9550506020610119888289016100c9565b945050604061012a888289016100c9565b935050606061013b888289016100c9565b925050608061014c888289016100c9565b9150509295509295909350565b61016281610183565b82525050565b600060208201905061017d6000830184610159565b92915050565b6000819050919050565b600061019882610183565b91507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8214156101cb576101ca6101d6565b5b600182019050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b600080fd5b61021381610183565b811461021e57600080fd5b5056fea2646970667358221220b98f45f4d4112e71fd287ab0ce7cc1872e53b463eb0abf1182b892192d3d8a1d64736f6c63430008070033'
+  '0x608060405234801561001057600080fd5b50610257806100206000396000f3fe608060405234801561001057600080fd5b5060043610610048576000357c010000000000000000000000000000000000000000000000000000000090048063aefb4f0a1461004d575b600080fd5b610067600480360381019061006291906100de565b610069565b005b60005b858110156100c1578284867fbf642f3055e2ef2589825c2c0dd4855c1137a63f6260d9d112629e5cd034a3eb856040516100a69190610168565b60405180910390a480806100b99061018d565b91505061006c565b505050505050565b6000813590506100d88161020a565b92915050565b600080600080600060a086880312156100fa576100f9610205565b5b6000610108888289016100c9565b9550506020610119888289016100c9565b945050604061012a888289016100c9565b935050606061013b888289016100c9565b925050608061014c888289016100c9565b9150509295509295909350565b61016281610183565b82525050565b600060208201905061017d6000830184610159565b92915050565b6000819050919050565b600061019882610183565b91507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8214156101cb576101ca6101d6565b5b600182019050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b600080fd5b61021381610183565b811461021e57600080fd5b5056fea2646970667358221220b98f45f4d4112e71fd287ab0ce7cc1872e53b463eb0abf1182b892192d3d8a1d64736f6c63430008070033',
 )
 
 describe(method, async () => {
@@ -32,47 +32,47 @@ describe(method, async () => {
     const rpc = getRpcClient(server)
     // deploy contracts at two different addresses
     const txData = { gasLimit: 2000000, gasPrice: 100 }
-    const tx1 = LegacyTransaction.fromTxData(
+    const tx1 = createLegacyTx(
       {
         ...txData,
         data: logExampleBytecode,
         nonce: 0,
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
-    const tx2 = LegacyTransaction.fromTxData(
+    const tx2 = createLegacyTx(
       {
         ...txData,
         data: logExampleBytecode,
         nonce: 1,
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
-    const contractAddr1 = Address.generate(dummy.addr, BigInt(0))
-    const contractAddr2 = Address.generate(dummy.addr, BigInt(1))
+    const contractAddr1 = createContractAddress(dummy.addr, BigInt(0))
+    const contractAddr2 = createContractAddress(dummy.addr, BigInt(1))
     // construct txs to emit the logs
     // data calls log(logCount: 10, num1: 1, num2: 2, num3: 3, num4: 4)
     const data = hexToBytes(
-      '0xaefb4f0a000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000004'
+      '0xaefb4f0a000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000004',
     )
-    const tx3 = LegacyTransaction.fromTxData(
+    const tx3 = createLegacyTx(
       {
         ...txData,
         data,
         to: contractAddr1,
         nonce: 2,
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
-    const tx4 = LegacyTransaction.fromTxData(
+    const tx4 = createLegacyTx(
       {
         ...txData,
         data,
         to: contractAddr2,
         nonce: 3,
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx1, tx2, tx3, tx4])
@@ -94,7 +94,7 @@ describe(method, async () => {
     ) {
       assert.ok(
         true,
-        `should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`
+        `should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`,
       )
     } else {
       assert.fail(`should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`)
@@ -105,7 +105,7 @@ describe(method, async () => {
     assert.equal(
       res.result.length,
       20,
-      'should return the correct logs (fromBlock/toBlock as block numbers)'
+      'should return the correct logs (fromBlock/toBlock as block numbers)',
     )
 
     // test filtering by single address
@@ -137,7 +137,7 @@ describe(method, async () => {
     assert.equal(
       res.result.length,
       20,
-      'should return the correct logs (filter by topic - empty means anything)'
+      'should return the correct logs (filter by topic - empty means anything)',
     )
 
     // test filtering by topics (exact match)
@@ -147,7 +147,7 @@ describe(method, async () => {
     assert.equal(
       res.result.length,
       20,
-      'should return the correct logs (filter by topic - exact match)'
+      'should return the correct logs (filter by topic - exact match)',
     )
 
     // test filtering by topics (exact match for second topic)
@@ -157,7 +157,7 @@ describe(method, async () => {
     assert.equal(
       res.result.length,
       20,
-      'should return the correct logs (filter by topic - exact match for second topic)'
+      'should return the correct logs (filter by topic - exact match for second topic)',
     )
 
     // test filtering by topics (A or B in first position)
@@ -177,7 +177,7 @@ describe(method, async () => {
     assert.equal(
       res.result.length,
       20,
-      'should return the correct logs (filter by topic - A or B in first position)'
+      'should return the correct logs (filter by topic - A or B in first position)',
     )
 
     // test filtering by topics (null means anything)
@@ -190,7 +190,7 @@ describe(method, async () => {
     assert.equal(
       res.result.length,
       20,
-      'should return the correct logs (filter by topic - null means anything)'
+      'should return the correct logs (filter by topic - null means anything)',
     )
 
     // test filtering by blockHash
@@ -234,8 +234,8 @@ describe(method, async () => {
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
       res.error.message.includes(
-        'Can only specify a blockHash if fromBlock or toBlock are not provided'
-      )
+        'Can only specify a blockHash if fromBlock or toBlock are not provided',
+      ),
     )
 
     res = await rpc.request(method, [
@@ -247,8 +247,8 @@ describe(method, async () => {
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
       res.error.message.includes(
-        'Can only specify a blockHash if fromBlock or toBlock are not provided'
-      )
+        'Can only specify a blockHash if fromBlock or toBlock are not provided',
+      ),
     )
 
     // unknown address

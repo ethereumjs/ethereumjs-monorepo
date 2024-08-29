@@ -1,17 +1,20 @@
-import { Block } from '@ethereumjs/block'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { createBlock } from '@ethereumjs/block'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { createAddressFromString } from '@ethereumjs/util'
+import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import pow from '../../testdata/geth-genesis/pow.json'
 import { getRpcClient, setupChain } from '../helpers.js'
 
+import type { Block } from '@ethereumjs/block'
+
 const method = 'eth_getStorageAt'
 
 describe(method, async () => {
   it('call with valid arguments', async () => {
-    const address = Address.fromString(`0x${'11'.repeat(20)}`)
+    const address = createAddressFromString(`0x${'11'.repeat(20)}`)
     const emptySlotStr = `0x${'00'.repeat(32)}`
 
     const { execution, common, server, chain } = await setupChain(pow, 'pow')
@@ -26,11 +29,11 @@ describe(method, async () => {
 
     // construct block with tx
     const gasLimit = 2000000
-    const tx = LegacyTransaction.fromTxData({ gasLimit, data }, { common, freeze: false })
+    const tx = createLegacyTx({ gasLimit, data }, { common, freeze: false })
     const signedTx = tx.sign(tx.getHashedMessageToSign())
 
     const parent = await chain.blockchain.getCanonicalHeadHeader()
-    const block = Block.fromBlockData(
+    const block = createBlock(
       {
         header: {
           parentHash: parent.hash(),
@@ -38,14 +41,18 @@ describe(method, async () => {
           gasLimit,
         },
       },
-      { common, calcDifficultyFromHeader: parent }
+      { common, calcDifficultyFromHeader: parent },
     )
     block.transactions[0] = signedTx
 
     // deploy contract
     let ranBlock: Block | undefined = undefined
     execution.vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-    const result = await execution.vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    const result = await runBlock(execution.vm, {
+      block,
+      generate: true,
+      skipBlockValidation: true,
+    })
     const { createdAddress } = result.results[0]
     await chain.putBlocks([ranBlock as unknown as Block])
 
@@ -58,7 +65,7 @@ describe(method, async () => {
     assert.equal(
       res.result,
       emptySlotStr,
-      'should not have new slot value for block that is addressed by "earliest" tag and is older than latest'
+      'should not have new slot value for block that is addressed by "earliest" tag and is older than latest',
     )
 
     // call with integer for block number to see if getStorageAt allows addressing blocks by number index
@@ -66,7 +73,7 @@ describe(method, async () => {
     assert.equal(
       res.result,
       expectedSlotValue,
-      'should return the correct slot value when addressing the latest block by integer index'
+      'should return the correct slot value when addressing the latest block by integer index',
     )
 
     // call with unsupported block argument

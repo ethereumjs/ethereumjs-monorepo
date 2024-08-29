@@ -1,18 +1,18 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereumjs/util'
 import { Level } from 'level'
 
-import { getLogger } from './logging'
-import { RlpxServer } from './net/server'
-import { Event, EventBus } from './types'
-import { isBrowser, short } from './util'
+import { getLogger } from './logging.js'
+import { RlpxServer } from './net/server/index.js'
+import { Event, EventBus } from './types.js'
+import { isBrowser, short } from './util/index.js'
 
-import type { Logger } from './logging'
-import type { EventBusType, MultiaddrLike } from './types'
+import type { Logger } from './logging.js'
+import type { EventBusType, MultiaddrLike, PrometheusMetrics } from './types.js'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
-import type { Multiaddr } from 'multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export enum DataDirectory {
   Chain = 'chain',
@@ -276,7 +276,7 @@ export interface ConfigOptions {
 
   /**
    * If there is a reorg, this is a safe distance from which
-   * to try to refetch and refeed the blocks.
+   * to try to refetch and re-feed the blocks.
    */
   safeReorgDistance?: number
 
@@ -327,7 +327,23 @@ export interface ConfigOptions {
   snapAvailabilityDepth?: bigint
   snapTransitionSafeDepth?: bigint
 
+  /**
+   * Save account keys preimages in the meta db (default: false)
+   */
+  savePreimages?: boolean
+
+  /**
+   * Enables stateless verkle block execution (default: false)
+   */
   statelessVerkle?: boolean
+  startExecution?: boolean
+  ignoreStatelessInvalidExecs?: boolean
+  initialVerkleStateRoot?: Uint8Array
+
+  /**
+   * Enables Prometheus Metrics that can be collected for monitoring client health
+   */
+  prometheusMetrics?: PrometheusMetrics
 }
 
 export class Config {
@@ -337,7 +353,7 @@ export class Config {
    */
   public readonly events: EventBusType
 
-  public static readonly CHAIN_DEFAULT = 'mainnet'
+  public static readonly CHAIN_DEFAULT = Mainnet
   public static readonly SYNCMODE_DEFAULT = SyncMode.Full
   public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`
@@ -370,10 +386,9 @@ export class Config {
 
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
   // engine new payload calls can come in batch of 64, keeping 128 as the lookup factor
-  public static readonly ENGINE_PARENTLOOKUP_MAX_DEPTH = 128
+  public static readonly ENGINE_PARENT_LOOKUP_MAX_DEPTH = 128
   public static readonly ENGINE_NEWPAYLOAD_MAX_EXECUTE = 2
-  // currently ethereumjs can execute 200 txs in 12 second window so keeping 1/2 target for blocking response
-  public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 100
+  public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 200
   public static readonly SNAP_AVAILABILITY_DEPTH = BigInt(128)
   // distance from head at which we can safely transition from a synced snapstate to vmexecution
   // randomly kept it at 5 for fast testing purposes but ideally should be >=32 slots
@@ -431,11 +446,15 @@ export class Config {
   // Defaulting to false as experimental as of now
   public readonly enableSnapSync: boolean
   public readonly useStringValueTrieDB: boolean
+  public readonly savePreimages: boolean
 
   public readonly statelessVerkle: boolean
+  public readonly startExecution: boolean
+  public readonly ignoreStatelessInvalidExecs: boolean
+  public readonly initialVerkleStateRoot: Uint8Array
 
   public synchronized: boolean
-  public lastsyncronized?: boolean
+  public lastSynchronized?: boolean
   /** lastSyncDate in ms */
   public lastSyncDate: number
   /** Best known block height */
@@ -447,6 +466,8 @@ export class Config {
   public readonly execCommon: Common
 
   public readonly server: RlpxServer | undefined = undefined
+
+  public readonly metrics: PrometheusMetrics | undefined
 
   constructor(options: ConfigOptions = {}) {
     this.events = new EventBus() as EventBusType
@@ -477,6 +498,7 @@ export class Config {
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
     this.isSingleNode = options.isSingleNode ?? false
+    this.savePreimages = options.savePreimages ?? false
 
     if (options.vmProfileBlocks !== undefined || options.vmProfileTxs !== undefined) {
       this.vmProfilerOpts = {
@@ -505,7 +527,7 @@ export class Config {
     this.syncedStateRemovalPeriod =
       options.syncedStateRemovalPeriod ?? Config.SYNCED_STATE_REMOVAL_PERIOD
     this.engineParentLookupMaxDepth =
-      options.engineParentLookupMaxDepth ?? Config.ENGINE_PARENTLOOKUP_MAX_DEPTH
+      options.engineParentLookupMaxDepth ?? Config.ENGINE_PARENT_LOOKUP_MAX_DEPTH
     this.engineNewpayloadMaxExecute =
       options.engineNewpayloadMaxExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_EXECUTE
     this.engineNewpayloadMaxTxsExecute =
@@ -519,6 +541,11 @@ export class Config {
     this.useStringValueTrieDB = options.useStringValueTrieDB ?? false
 
     this.statelessVerkle = options.statelessVerkle ?? true
+    this.startExecution = options.startExecution ?? false
+    this.ignoreStatelessInvalidExecs = options.ignoreStatelessInvalidExecs ?? false
+
+    this.metrics = options.prometheusMetrics
+    this.initialVerkleStateRoot = options.initialVerkleStateRoot ?? new Uint8Array()
 
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine
@@ -532,7 +559,7 @@ export class Config {
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = options.discV4 ?? true
 
-    this.logger = options.logger ?? getLogger({ loglevel: 'error' })
+    this.logger = options.logger ?? getLogger({ logLevel: 'error' })
 
     this.logger.info(`Sync Mode ${this.syncmode}`)
     if (this.syncmode !== SyncMode.None) {
@@ -580,7 +607,7 @@ export class Config {
             this.synchronized = true
             // Log to console the sync status
             this.superMsg(
-              `Synchronized blockchain at height=${height} hash=${short(latest.hash())} 🎉`
+              `Synchronized blockchain at height=${height} hash=${short(latest.hash())} 🎉`,
             )
           }
 
@@ -595,21 +622,21 @@ export class Config {
         if (diff >= this.syncedStateRemovalPeriod) {
           this.synchronized = false
           this.logger.info(
-            `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`
+            `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`,
           )
         }
       }
     }
 
-    if (this.synchronized !== this.lastsyncronized) {
+    if (this.synchronized !== this.lastSynchronized) {
       this.logger.debug(
         `Client synchronized=${this.synchronized}${
           latest !== null && latest !== undefined ? ' height=' + latest.number : ''
         } syncTargetHeight=${this.syncTargetHeight} lastSyncDate=${
           (Date.now() - this.lastSyncDate) / 1000
-        } secs ago`
+        } secs ago`,
       )
-      this.lastsyncronized = this.synchronized
+      this.lastSynchronized = this.synchronized
     }
   }
 
@@ -619,6 +646,10 @@ export class Config {
   getNetworkDirectory(): string {
     const networkDirName = this.chainCommon.chainName()
     return `${this.datadir}/${networkDirName}`
+  }
+
+  getInvalidPayloadsDir(): string {
+    return `${this.getNetworkDirectory()}/invalidPayloads`
   }
 
   /**

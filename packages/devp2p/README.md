@@ -64,7 +64,7 @@ Create your peer table:
 // examples/dpt.ts
 
 import { DPT } from '@ethereumjs/devp2p'
-import { bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 const PRIVATE_KEY = hexToBytes('0xed6df2d4b7e82d105538e4a1279925a16a84e772243e80a561e1b201f2e78220')
 const main = async () => {
@@ -77,10 +77,10 @@ const main = async () => {
   })
   console.log(`DPT is active and has id - ${bytesToHex(dpt.id!)}`)
   // Should log the DPT's hex ID - 0xcd80bb7a768432302d267729c15da61d172373ea036...
-  await dpt.destroy()
+  dpt.destroy()
 }
 
-main()
+void main()
 ```
 
 Add some bootstrap nodes (or some custom nodes with `dpt.addPeer()`):
@@ -122,7 +122,7 @@ Creates new DPT object
 
 #### `dpt.bootstrap(peer)` (`async`)
 
-Uses a peer as new bootstrap peer and calls `findNeighbouts`.
+Uses a peer as new bootstrap peer and calls `findNeighbours`.
 
 - `peer` - Peer to be added, format `{ address: [ADDRESS], udpPort: [UDPPORT], tcpPort: [TCPPORT] }`.
 
@@ -165,14 +165,14 @@ instance with the network you want to connect to and then create an `RLPx` objec
 ```ts
 // ./examples/rlpx.ts
 
-import { Chain, Common } from '@ethereumjs/common'
-import { RLPx, ETH } from '@ethereumjs/devp2p'
+import { Common, Mainnet } from '@ethereumjs/common'
+import { ETH, RLPx } from '@ethereumjs/devp2p'
 import { hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
-  const common = new Common({ chain: Chain.Mainnet })
+  const common = new Common({ chain: Mainnet })
   const PRIVATE_KEY = hexToBytes(
-    '0xed6df2d4b7e82d105538e4a1279925a16a84e772243e80a561e1b201f2e78220'
+    '0xed6df2d4b7e82d105538e4a1279925a16a84e772243e80a561e1b201f2e78220',
   )
   const rlpx = new RLPx(PRIVATE_KEY, {
     maxPeers: 25,
@@ -180,10 +180,10 @@ const main = async () => {
     common,
   })
   console.log(`RLPx is active - ${rlpx._isAlive()}`)
-  await rlpx.destroy()
+  rlpx.destroy()
 }
 
-main()
+void main()
 ```
 
 ### API
@@ -264,8 +264,8 @@ Wait for follow-up messages to arrive, send your responses.
 
 eth.events.on('message', async (code: ETH.MESSAGE_CODES, payload: any) => {
   // We keep track of how many of each message type are received
-  if (code in ETH.MESSAGE_CODES) {
-    requests.msgTypes[code] = code + 1
+  if (code in requests.msgTypes) {
+    requests.msgTypes[code]++
 ```
 
 See the `peer-communication.ts` example for a more detailed use case.
@@ -333,7 +333,7 @@ les.sendStatus({
   forkID: [hexToBytes('0x3b8e0691'), intToBytes(1)],
 })
 
-les.events.once('status', (status: LES.Status) => {
+les.events.once('status', (status: devp2p.LES.Status) => {
   const msg = [
     Uint8Array.from([]),
     [
@@ -351,7 +351,7 @@ Wait for follow-up messages to arrive, send your responses.
 ```ts
 // ./examples/peer-communication-les.ts#L103-L105
 
-les.events.on('message', async (code: LES.MESSAGE_CODES, payload: any) => {
+les.events.on('message', async (code: devp2p.LES.MESSAGE_CODES, payload: any) => {
   switch (code) {
     case devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS: {
 ```
@@ -541,7 +541,7 @@ The following is a list of major implementations of the `devp2p` stack in other 
 
 - Python: [pydevp2p](https://github.com/ethereum/pydevp2p)
 - Go: [Go Ethereum](https://github.com/ethereum/go-ethereum/tree/master/p2p)
-- Elixir: [Exthereum](https://github.com/exthereum/exth_crypto)
+- Elixir: [Exthereum](https://github.com/exthereum/exth_crypto) <!-- cspell:disable-line --->
 
 ### Links
 

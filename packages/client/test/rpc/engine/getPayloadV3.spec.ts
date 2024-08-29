@@ -1,18 +1,18 @@
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import {
   Account,
-  Address,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
+  createAddressFromPrivateKey,
+  createZeroAddress,
   getBlobs,
   hexToBytes,
-  initKZG,
 } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -68,8 +68,7 @@ describe(method, () => {
       return this
     }
 
-    const kzg = await createKZG()
-    initKZG(kzg)
+    const kzg = await loadKZG()
 
     const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
@@ -80,7 +79,7 @@ describe(method, () => {
     const rpc = getRpcClient(server)
     common.setHardfork(Hardfork.Cancun)
     const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
-    const address = Address.fromPrivateKey(pkey)
+    const address = createAddressFromPrivateKey(pkey)
     await service.execution.vm.stateManager.putAccount(address, new Account())
     const account = await service.execution.vm.stateManager.getAccount(address)
 
@@ -91,11 +90,11 @@ describe(method, () => {
     assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
 
     const txBlobs = getBlobs('hello world')
-    const txCommitments = blobsToCommitments(txBlobs)
+    const txCommitments = blobsToCommitments(kzg, txBlobs)
     const txVersionedHashes = commitmentsToVersionedHashes(txCommitments)
-    const txProofs = blobsToProofs(txBlobs, txCommitments)
+    const txProofs = blobsToProofs(kzg, txBlobs, txCommitments)
 
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0x03,
         blobVersionedHashes: txVersionedHashes,
@@ -106,9 +105,9 @@ describe(method, () => {
         maxFeePerGas: 10000000000n,
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
-        to: Address.zero(),
+        to: createZeroAddress(),
       },
-      { common }
+      { common },
     ).sign(pkey)
 
     await service.txPool.add(tx, true)
@@ -118,14 +117,14 @@ describe(method, () => {
     assert.equal(
       executionPayload.blockHash,
       '0x8c71ad199a3dda94de6a1c31cc50a26b1f03a8a4924e9ea3fd7420c6411cac42',
-      'built expected block'
+      'built expected block',
     )
-    assert.equal(executionPayload.excessBlobGas, '0x0', 'correct execess blob gas')
+    assert.equal(executionPayload.excessBlobGas, '0x0', 'correct excess blob gas')
     assert.equal(executionPayload.blobGasUsed, '0x20000', 'correct blob gas used')
     const { commitments, proofs, blobs } = blobsBundle
     assert.ok(
       commitments.length === proofs.length && commitments.length === blobs.length,
-      'equal commitments, proofs and blobs'
+      'equal commitments, proofs and blobs',
     )
     assert.equal(blobs.length, 1, '1 blob should be returned')
     assert.equal(proofs[0], bytesToHex(txProofs[0]), 'proof should match')

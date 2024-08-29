@@ -2,16 +2,17 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   Address,
   RIPEMD160_ADDRESS_STRING,
+  bytesToHex,
   bytesToUnprefixedHex,
   stripHexPrefix,
-  toBytes,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
-import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
-import type { Account } from '@ethereumjs/util'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
+import type { Account, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 type AddressString = string
 type SlotString = string
@@ -31,7 +32,7 @@ type JournalDiffItem = [Set<AddressString>, Map<AddressString, Set<SlotString>>,
 type JournalHeight = number
 
 export class Journal {
-  private stateManager: EVMStateManagerInterface
+  private stateManager: StateManagerInterface
   private common: Common
   private DEBUG: boolean
   private _debug: Debugger
@@ -44,14 +45,15 @@ export class Journal {
   private journalHeight: JournalHeight
 
   public accessList?: Map<AddressString, Set<SlotString>>
+  public preimages?: Map<PrefixedHexString, Uint8Array>
 
-  constructor(stateManager: EVMStateManagerInterface, common: Common) {
+  constructor(stateManager: StateManagerInterface, common: Common) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
-    this._debug = createDebugLogger('statemanager:statemanager')
+    this._debug = debugDefault('statemanager:statemanager')
 
     // TODO maybe call into this.clearJournal
     this.cleanJournal()
@@ -67,6 +69,14 @@ export class Journal {
    */
   startReportingAccessList() {
     this.accessList = new Map()
+  }
+
+  /**
+   * Clears the internal `preimages` map, and marks this journal to start reporting
+   * the images (hashed addresses) of the accounts that have been accessed
+   */
+  startReportingPreimages() {
+    this.preimages = new Map()
   }
 
   async putAccount(address: Address, account: Account | undefined) {
@@ -85,6 +95,18 @@ export class Journal {
   }
 
   private touchAccount(address: string) {
+    // If preimages are being reported, add the address to the preimages map
+    if (this.preimages !== undefined) {
+      const bytesAddress = unprefixedHexToBytes(address)
+      if (this.stateManager.getAppliedKey === undefined) {
+        throw new Error(
+          'touchAccount: stateManager.getAppliedKey can not be undefined if preimage storing is enabled',
+        )
+      }
+      const hashedKey = this.stateManager.getAppliedKey(bytesAddress)
+      this.preimages.set(bytesToHex(hashedKey), bytesAddress)
+    }
+
     if (!this.touched.has(address)) {
       this.touched.add(address)
       const diffArr = this.journalDiff[this.journalDiff.length - 1][1]
@@ -164,14 +186,14 @@ export class Journal {
   }
 
   /**
-   * Removes accounts form the state trie that have been touched,
+   * Removes accounts from the state trie that have been touched,
    * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
    * Also cleanups any other internal fields
    */
   async cleanup(): Promise<void> {
-    if (this.common.gteHardfork(Hardfork.SpuriousDragon) === true) {
+    if (this.common.gteHardfork(Hardfork.SpuriousDragon)) {
       for (const addressHex of this.touched) {
-        const address = new Address(toBytes('0x' + addressHex))
+        const address = new Address(hexToBytes(`0x${addressHex}`))
         const account = await this.stateManager.getAccount(address)
         if (account === undefined || account.isEmpty()) {
           await this.deleteAccount(address)
@@ -183,6 +205,7 @@ export class Journal {
     }
     this.cleanJournal()
     delete this.accessList
+    delete this.preimages
   }
 
   addAlwaysWarmAddress(addressStr: string, addToAccessList: boolean = false) {

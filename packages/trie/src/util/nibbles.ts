@@ -1,3 +1,4 @@
+import { toBytes } from '@ethereumjs/util'
 import type { Nibbles } from '../types.js'
 
 /**
@@ -6,13 +7,14 @@ import type { Nibbles } from '../types.js'
  * @param key
  */
 export function bytesToNibbles(key: Uint8Array): Nibbles {
+  const bKey = toBytes(key)
   const nibbles = [] as Nibbles
 
-  for (let i = 0; i < key.length; i++) {
+  for (let i = 0; i < bKey.length; i++) {
     let q = i * 2
-    nibbles[q] = key[i] >> 4
+    nibbles[q] = bKey[i] >> 4
     ++q
-    nibbles[q] = key[i] % 16
+    nibbles[q] = bKey[i] % 16
   }
 
   return nibbles
@@ -23,7 +25,7 @@ export function bytesToNibbles(key: Uint8Array): Nibbles {
  * @private
  * @param arr - Nibble array
  */
-export function nibblestoBytes(arr: Nibbles): Uint8Array {
+export function nibblesTypeToPackedBytes(arr: Nibbles): Uint8Array {
   const buf = new Uint8Array(arr.length / 2)
   for (let i = 0; i < buf.length; i++) {
     let q = i * 2

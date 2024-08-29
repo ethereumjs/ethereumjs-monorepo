@@ -1,24 +1,23 @@
-import { Block } from '@ethereumjs/block'
-import { Common } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, LegacyTransaction } from '@ethereumjs/tx'
-import { Address, hexToBytes, initKZG } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { createBlock } from '@ethereumjs/block'
+import { Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { createBlob4844Tx, createLegacyTx } from '@ethereumjs/tx'
+import { createZeroAddress, hexToBytes } from '@ethereumjs/util'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, dummy, getRpcClient, startRPC } from '../helpers.js'
 
-const kzg = await createKZG()
-initKZG(kzg)
+const kzg = await loadKZG()
 
-const common = Common.custom({ chainId: 1 }, { customCrypto: { kzg } })
+const common = createCustomCommon({ chainId: 1 }, Mainnet, { customCrypto: { kzg } })
 
 common.setHardfork('cancun')
-const mockedTx1 = LegacyTransaction.fromTxData({}).sign(dummy.privKey)
-const mockedTx2 = LegacyTransaction.fromTxData({ nonce: 1 }).sign(dummy.privKey)
-const mockedBlobTx3 = BlobEIP4844Transaction.fromTxData(
-  { nonce: 2, blobsData: ['0x1234'], to: Address.zero() },
-  { common }
+const mockedTx1 = createLegacyTx({}).sign(dummy.privKey)
+const mockedTx2 = createLegacyTx({ nonce: 1 }).sign(dummy.privKey)
+const mockedBlobTx3 = createBlob4844Tx(
+  { nonce: 2, blobsData: ['0x1234'], to: createZeroAddress() },
+  { common },
 ).sign(dummy.privKey)
 const blockHash = hexToBytes('0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5')
 const transactions = [mockedTx1]
@@ -26,12 +25,13 @@ const transactions2 = [mockedTx2]
 
 const block = {
   hash: () => blockHash,
+  serialize: () => createBlock({ header: { number: 1 }, transactions: transactions2 }).serialize(),
   header: {
     number: BigInt(1),
     hash: () => blockHash,
   },
   toJSON: () => ({
-    ...Block.fromBlockData({ header: { number: 1 } }).toJSON(),
+    ...createBlock({ header: { number: 1 } }).toJSON(),
     transactions: transactions2,
   }),
   transactions: transactions2,
@@ -40,14 +40,18 @@ const block = {
 
 function createChain(headBlock = block) {
   const genesisBlockHash = hexToBytes(
-    '0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5'
+    '0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5',
   )
   const genesisBlock = {
     hash: () => genesisBlockHash,
+    serialize: () => createBlock({ header: { number: 0 }, transactions }).serialize(),
     header: {
       number: BigInt(0),
     },
-    toJSON: () => ({ ...Block.fromBlockData({ header: { number: 0 } }).toJSON(), transactions }),
+    toJSON: () => ({
+      ...createBlock({ header: { number: 0 } }).toJSON(),
+      transactions,
+    }),
     transactions,
     uncleHeaders: [],
   }
@@ -81,7 +85,7 @@ describe(method, async () => {
     assert.equal(
       typeof res.result.transactions[0],
       'string',
-      'should return only the hashes of the transactions'
+      'should return only the hashes of the transactions',
     )
   })
 
@@ -129,8 +133,8 @@ describe(method, async () => {
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
       res.error.message.includes(
-        'invalid argument 0: block option must be a valid 0x-prefixed block hash or hex integer, or "latest", "earliest" or "pending"'
-      )
+        'invalid argument 0: block option must be a valid 0x-prefixed block hash or hex integer, or "latest", "earliest" or "pending"',
+      ),
     )
   })
 
@@ -161,13 +165,13 @@ describe(method, async () => {
 
   describe('call with block with blob txs', () => {
     it('retrieves a block with a blob tx in it', async () => {
-      const genesisBlock = Block.fromBlockData({ header: { number: 0 } })
-      const block1 = Block.fromBlockData(
+      const genesisBlock = createBlock({ header: { number: 0 } })
+      const block1 = createBlock(
         {
           header: { number: 1, parentHash: genesisBlock.header.hash() },
           transactions: [mockedBlobTx3],
         },
-        { common }
+        { common },
       )
       const manager = createManager(await createClient({ chain: createChain(block1 as any) }))
       const rpc = getRpcClient(startRPC(manager.getMethods()))
@@ -176,7 +180,7 @@ describe(method, async () => {
       assert.equal(
         res.result.transactions[0].blobVersionedHashes.length,
         1,
-        'block body contains a transaction with the blobVersionedHashes field'
+        'block body contains a transaction with the blobVersionedHashes field',
       )
     })
   })

@@ -1,9 +1,9 @@
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../../src/blockchain'
-import { Config } from '../../../src/config'
-import { FlowControl, LesProtocol } from '../../../src/net/protocol'
+import { Chain } from '../../../src/blockchain/index.js'
+import { Config } from '../../../src/config.js'
+import { FlowControl, LesProtocol } from '../../../src/net/protocol/index.js'
 
 describe('[LesProtocol]', () => {
   it('should get properties', async () => {
@@ -33,7 +33,7 @@ describe('[LesProtocol]', () => {
       mrc: { GetBlockHeaders: { base: 10, req: 10 } },
     })
     const p = new LesProtocol({ config, chain, flow })
-    Object.defineProperty(chain, 'networkId', {
+    Object.defineProperty(chain, 'chainId', {
       get: () => {
         return BigInt(1)
       },
@@ -65,7 +65,7 @@ describe('[LesProtocol]', () => {
     })
     let status = p.encodeStatus()
     assert.ok(
-      bytesToHex(status.networkId) === '0x01' &&
+      bytesToHex(status.chainId) === '0x01' &&
         bytesToHex(status.headTd) === '0x64' &&
         status.headHash === '0xaa' &&
         bytesToHex(status.headNum) === '0x64' &&
@@ -82,12 +82,12 @@ describe('[LesProtocol]', () => {
         bytesToHex(status['flowControl/MRC'][0][0]) === '0x02' &&
         bytesToHex(status['flowControl/MRC'][0][1]) === '0x0a' &&
         bytesToHex(status['flowControl/MRC'][0][2]) === '0x0a',
-      'encode status'
+      'encode status',
     )
-    status = { ...status, networkId: [0x01] }
+    status = { ...status, chainId: [0x01] }
     status = p.decodeStatus(status)
     assert.ok(
-      status.networkId === BigInt(1) &&
+      status.chainId === BigInt(1) &&
         status.headTd === BigInt(100) &&
         status.headHash === '0xaa' &&
         status.headNum === BigInt(100) &&
@@ -105,7 +105,7 @@ describe('[LesProtocol]', () => {
         status.mrc['2'].req === 10 &&
         status.mrc.GetBlockHeaders.base === 10 &&
         status.mrc.GetBlockHeaders.req === 10,
-      'decode status'
+      'decode status',
     )
   })
 })

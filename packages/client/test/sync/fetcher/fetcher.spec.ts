@@ -1,18 +1,18 @@
 import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
-import { Config } from '../../../src/config'
-import { Fetcher } from '../../../src/sync/fetcher/fetcher'
-import { Event } from '../../../src/types'
+import { Config } from '../../../src/config.js'
+import { Fetcher } from '../../../src/sync/fetcher/fetcher.js'
+import { Event } from '../../../src/types.js'
 
-import type { Job } from '../../../src/sync/fetcher/types'
+import type { Job } from '../../../src/sync/fetcher/types.js'
 
 class FetcherTest extends Fetcher<any, any, any> {
   process(_job: any, res: any) {
     return res
   }
   async request(_job: any, _peer: any) {
-    return
+    return _job
   }
   async store(_store: any) {}
   // Just return any via _error
@@ -44,43 +44,48 @@ it('should handle failure', () => {
   ;(fetcher as any).running = true
   fetcher.next = td.func<FetcherTest['next']>()
   config.events.on(Event.SYNC_FETCHER_ERROR, (err) =>
-    assert.equal(err.message, 'err0', 'got error')
+    assert.equal(err.message, 'err0', 'got error'),
   )
   ;(fetcher as any).failure(job as Job<any, any, any>, new Error('err0'))
   assert.equal((fetcher as any).in.length, 1, 'enqueued job')
 })
 
 describe('should handle expiration', async () => {
-  const config = new Config({ accountCache: 10000, storageCache: 1000 })
-  const fetcher = new FetcherTest({
-    config,
-    pool: td.object(),
-    timeout: 5,
-  })
-  const job = { index: 0 }
-  const peer = { idle: true }
-  fetcher.peer = td.func<FetcherTest['peer']>()
-  fetcher.request = td.func<FetcherTest['request']>()
-  td.when(fetcher.peer()).thenReturn(peer)
-  td.when(fetcher.request(td.matchers.anything(), { idle: false }), { delay: 10 }).thenReject(
-    new Error('err0')
-  )
-  td.when(fetcher['pool'].contains({ idle: false } as any)).thenReturn(true)
-  fetcher['in'].insert(job as any)
-  fetcher['_readableState'] = []
-  fetcher['running'] = true
-  fetcher['total'] = 10
-  fetcher.next()
-  await new Promise((resolve) => {
-    setTimeout(resolve, 10)
-  })
-  it('should expire', () => {
+  it('should expire', async () => {
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
+    const fetcher = new FetcherTest({
+      config,
+      pool: {
+        contains(peer: any) {
+          if (peer.idle === false) return true
+          return false
+        },
+        ban: vi.fn(),
+      } as any,
+      timeout: 5,
+    })
+    const job = { index: 0 }
+    const peer = { idle: true, latest: vi.fn() }
+    fetcher.peer = vi.fn().mockReturnValue(() => peer)
+    fetcher.request = vi.fn().mockImplementationOnce(async (job, peer) => {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000)
+      })
+      if (peer.idle === false) throw new Error('err0')
+      return
+    })
+
+    fetcher['in'].insert(job as any)
+    fetcher['_readableState'] = []
+    fetcher['running'] = true
+    fetcher['total'] = 10
+    fetcher.next()
+    await new Promise((resolve) => {
+      setTimeout(resolve, 10)
+    })
+
     assert.equal((fetcher as any).in.length, 1, 'enqueued job')
-    assert.deepEqual(
-      job as any,
-      { index: 0, peer: { idle: false }, state: 'expired' },
-      'expired job'
-    )
+    assert.deepEqual((job as any).state, 'expired', 'expired job')
   })
 })
 
@@ -126,7 +131,7 @@ describe('should re-enqueue on a non-fatal error', () => {
   ;(fetcher as any).running = true
   fetcher.store = td.func<FetcherTest['store']>()
   td.when(fetcher.store(td.matchers.anything())).thenReject(
-    new Error('could not find parent header')
+    new Error('could not find parent header'),
   )
   td.when(fetcher.processStoreError(td.matchers.anything(), td.matchers.anything())).thenReturn({
     destroyFetcher: false,
@@ -137,7 +142,7 @@ describe('should re-enqueue on a non-fatal error', () => {
   it('should step back', () => {
     assert.ok(
       (fetcher as any).in.peek().task.first === BigInt(1),
-      'should step back for safeReorgDistance'
+      'should step back for safeReorgDistance',
     )
   })
 })

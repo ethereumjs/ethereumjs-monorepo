@@ -1,16 +1,16 @@
 import { Hardfork } from '@ethereumjs/common'
 import { BIGINT_0, BIGINT_1, equalsBytes } from '@ethereumjs/util'
 
-import { Event } from '../types'
-import { short } from '../util'
+import { Event } from '../types.js'
+import { short } from '../util/index.js'
 
-import { BlockFetcher } from './fetcher'
-import { Synchronizer } from './sync'
+import { BlockFetcher } from './fetcher/index.js'
+import { Synchronizer } from './sync.js'
 
-import type { VMExecution } from '../execution'
-import type { Peer } from '../net/peer/peer'
-import type { TxPool } from '../service/txpool'
-import type { SynchronizerOptions } from './sync'
+import type { VMExecution } from '../execution/index.js'
+import type { Peer } from '../net/peer/peer.js'
+import type { TxPool } from '../service/txpool.js'
+import type { SynchronizerOptions } from './sync.js'
 import type { Block } from '@ethereumjs/block'
 
 interface FullSynchronizerOptions extends SynchronizerOptions {
@@ -100,12 +100,12 @@ export class FullSynchronizer extends Synchronizer {
     const hash = this.chain.blocks.latest!.hash()
     this.startingBlock = number
     const timestamp = this.chain.blocks.latest?.header.timestamp
-    this.config.chainCommon.setHardforkBy({ blockNumber: number, td, timestamp })
+    this.config.chainCommon.setHardforkBy({ blockNumber: number, timestamp })
 
     this.config.logger.info(
       `Latest local block number=${Number(number)} td=${td} hash=${short(
-        hash
-      )} hardfork=${this.config.chainCommon.hardfork()}`
+        hash,
+      )} hardfork=${this.config.chainCommon.hardfork()}`,
     )
   }
 
@@ -139,17 +139,6 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   /**
-   * Get latest header of peer
-   */
-  async latest(peer: Peer) {
-    const result = await peer.eth?.getBlockHeaders({
-      block: peer.eth!.status.bestHash,
-      max: 1,
-    })
-    return result ? result[1][0] : undefined
-  }
-
-  /**
    * Checks if tx pool should be started
    */
   checkTxPoolState() {
@@ -175,7 +164,7 @@ export class FullSynchronizer extends Synchronizer {
    * @returns a boolean if the setup was successful
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    const latest = peer ? await this.latest(peer) : undefined
+    const latest = peer ? await peer.latest() : undefined
     if (!latest) return false
 
     const height = latest.number
@@ -220,7 +209,7 @@ export class FullSynchronizer extends Synchronizer {
    * Process blocks fetched from the fetcher.
    */
   async processBlocks(blocks: Block[]) {
-    if (this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       if (this.fetcher !== null) {
         // If we are beyond the merge block we should stop the fetcher
         this.config.logger.info('Paris (Merge) hardfork reached, stopping block fetcher')
@@ -238,10 +227,9 @@ export class FullSynchronizer extends Synchronizer {
     const first = BigInt(blocks[0].header.number)
     const last = BigInt(blocks[blocks.length - 1].header.number)
     const hash = short(blocks[0].hash())
-    const baseFeeAdd =
-      this.config.chainCommon.gteHardfork(Hardfork.London) === true
-        ? `baseFee=${blocks[0].header.baseFeePerGas} `
-        : ''
+    const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
+      ? `baseFee=${blocks[0].header.baseFeePerGas} `
+      : ''
 
     let attentionHF: string | null = null
     const nextHFBlockNum = this.config.chainCommon.nextHardforkBlockOrTimestamp()
@@ -252,18 +240,6 @@ export class FullSynchronizer extends Synchronizer {
         const nextHF = this.config.chainCommon.getHardforkBy({ blockNumber: nextHFBlockNum })
         attentionHF = `${nextHF} HF in ${remaining} blocks`
       }
-    } else {
-      if (
-        this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition &&
-        this.config.chainCommon.gteHardfork(Hardfork.Paris) === false
-      ) {
-        const mergeTTD = this.config.chainCommon.hardforkTTD(Hardfork.Paris)!
-        const td = this.chain.blocks.td
-        const remaining = mergeTTD - td
-        if (remaining <= mergeTTD / BigInt(10)) {
-          attentionHF = `Paris (Merge) HF in ${remaining} TD`
-        }
-      }
     }
 
     this.config.logger.info(
@@ -272,7 +248,7 @@ export class FullSynchronizer extends Synchronizer {
       } first=${first} last=${last} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
         this.pool.size
       }`,
-      { attentionHF }
+      { attentionHF },
     )
 
     this.txPool.removeNewBlockTxs(blocks)
@@ -332,7 +308,7 @@ export class FullSynchronizer extends Synchronizer {
       this.config.logger.debug(
         `Error processing new block from peer ${
           peer ? `id=${peer.id.slice(0, 8)}` : '(no peer)'
-        } hash=${short(block.hash())}`
+        } hash=${short(block.hash())}`,
       )
       this.config.logger.debug(err)
       return

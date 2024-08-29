@@ -1,14 +1,11 @@
 module.exports = {
   extends: '../../config/eslint.cjs',
-  rules: {
-    'import/extensions': 'off',
-  },
   parserOptions: {
-    project: ['./tsconfig.json', './tsconfig.browser.json', './tsconfig.eslint.json'],
+    project: ['./tsconfig.lint.json'],
   },
   overrides: [
     {
-      files: ['bin/**.ts', 'test/sim/**.ts'],
+      files: ['bin/**.ts', 'test/sim/**.ts', 'examples/**/*.ts'],
       rules: {
         'no-console': 'off',
       },

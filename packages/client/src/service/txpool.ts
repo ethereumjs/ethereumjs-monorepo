@@ -1,9 +1,9 @@
 import {
-  BlobEIP4844Transaction,
+  Blob4844Tx,
   Capability,
-  isAccessListEIP2930Tx,
-  isBlobEIP4844Tx,
-  isFeeMarketEIP1559Tx,
+  isAccessList2930Tx,
+  isBlob4844Tx,
+  isFeeMarket1559Tx,
   isLegacyTx,
 } from '@ethereumjs/tx'
 import {
@@ -17,20 +17,16 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 
-import type { Config } from '../config'
-import type { Peer } from '../net/peer'
-import type { PeerPool } from '../net/peerpool'
-import type { FullEthereumService } from './fullethereumservice'
-import type { Block } from '@ethereumjs/block'
-import type {
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-  TypedTransaction,
-} from '@ethereumjs/tx'
-import type { VM } from '@ethereumjs/vm'
-import type QHeap from 'qheap'
+import { Heap } from '../ext/qheap.js'
 
-const Heap = require('qheap')
+import type { Config } from '../config.js'
+import type { QHeap } from '../ext/qheap.js'
+import type { Peer } from '../net/peer/peer.js'
+import type { PeerPool } from '../net/peerpool.js'
+import type { FullEthereumService } from './fullethereumservice.js'
+import type { Block } from '@ethereumjs/block'
+import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
+import type { VM } from '@ethereumjs/vm'
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10
@@ -200,7 +196,7 @@ export class TxPool {
     }
     this._cleanupInterval = setInterval(
       this.cleanup.bind(this),
-      this.POOLED_STORAGE_TIME_LIMIT * 1000 * 60
+      this.POOLED_STORAGE_TIME_LIMIT * 1000 * 60,
     )
 
     if (this.config.logger.isInfoEnabled()) {
@@ -242,17 +238,17 @@ export class TxPool {
       (existingTxGasPrice.maxFee * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
     if (newGasPrice.tip < minTipCap || newGasPrice.maxFee < minFeeCap) {
       throw new Error(
-        `replacement gas too low, got tip ${newGasPrice.tip}, min: ${minTipCap}, got fee ${newGasPrice.maxFee}, min: ${minFeeCap}`
+        `replacement gas too low, got tip ${newGasPrice.tip}, min: ${minTipCap}, got fee ${newGasPrice.maxFee}, min: ${minFeeCap}`,
       )
     }
 
-    if (addedTx instanceof BlobEIP4844Transaction && existingTx instanceof BlobEIP4844Transaction) {
+    if (addedTx instanceof Blob4844Tx && existingTx instanceof Blob4844Tx) {
       const minblobGasFee =
         existingTx.maxFeePerBlobGas +
         (existingTx.maxFeePerBlobGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
       if (addedTx.maxFeePerBlobGas < minblobGasFee) {
         throw new Error(
-          `replacement blob gas too low, got: ${addedTx.maxFeePerBlobGas}, min: ${minblobGasFee}`
+          `replacement blob gas too low, got: ${addedTx.maxFeePerBlobGas}, min: ${minblobGasFee}`,
         )
       }
     }
@@ -268,7 +264,7 @@ export class TxPool {
     }
     if (tx.data.length > TX_MAX_DATA_SIZE) {
       throw new Error(
-        `Tx is too large (${tx.data.length} bytes) and exceeds the max data size of ${TX_MAX_DATA_SIZE} bytes`
+        `Tx is too large (${tx.data.length} bytes) and exceeds the max data size of ${TX_MAX_DATA_SIZE} bytes`,
       )
     }
     const currentGasPrice = this.txGasPrice(tx)
@@ -291,7 +287,7 @@ export class TxPool {
     if (inPool) {
       if (!isLocalTransaction && inPool.length >= MAX_TXS_PER_ACCOUNT) {
         throw new Error(
-          `Cannot add tx for ${senderAddress}: already have max amount of txs for this account`
+          `Cannot add tx for ${senderAddress}: already have max amount of txs for this account`,
         )
       }
       // Replace pooled txs with the same nonce
@@ -307,13 +303,13 @@ export class TxPool {
     if (typeof block.baseFeePerGas === 'bigint' && block.baseFeePerGas !== BIGINT_0) {
       if (currentGasPrice.maxFee < block.baseFeePerGas / BIGINT_2 && !isLocalTransaction) {
         throw new Error(
-          `Tx cannot pay basefee of ${block.baseFeePerGas}, have ${currentGasPrice.maxFee} (not within 50% range of current basefee)`
+          `Tx cannot pay basefee of ${block.baseFeePerGas}, have ${currentGasPrice.maxFee} (not within 50% range of current basefee)`,
         )
       }
     }
     if (tx.gasLimit > block.gasLimit) {
       throw new Error(
-        `Tx gaslimit of ${tx.gasLimit} exceeds block gas limit of ${block.gasLimit} (exceeds last block gas limit)`
+        `Tx gaslimit of ${tx.gasLimit} exceeds block gas limit of ${block.gasLimit} (exceeds last block gas limit)`,
       )
     }
 
@@ -327,13 +323,13 @@ export class TxPool {
     }
     if (account.nonce > tx.nonce) {
       throw new Error(
-        `0x${sender} tries to send a tx with nonce ${tx.nonce}, but account has nonce ${account.nonce} (tx nonce too low)`
+        `0x${sender} tries to send a tx with nonce ${tx.nonce}, but account has nonce ${account.nonce} (tx nonce too low)`,
       )
     }
     const minimumBalance = tx.value + currentGasPrice.maxFee * tx.gasLimit
     if (account.balance < minimumBalance) {
       throw new Error(
-        `0x${sender} does not have enough balance to cover transaction costs, need ${minimumBalance}, but have ${account.balance} (insufficient balance)`
+        `0x${sender} does not have enough balance to cover transaction costs, need ${minimumBalance}, but have ${account.balance} (insufficient balance)`,
       )
     }
   }
@@ -362,7 +358,21 @@ export class TxPool {
       add.push({ tx, added, hash })
       this.pool.set(address, add)
       this.handled.set(hash, { address, added })
+
       this.txsInPool++
+
+      if (isLegacyTx(tx)) {
+        this.config.metrics?.legacyTxGauge?.inc()
+      }
+      if (isAccessList2930Tx(tx)) {
+        this.config.metrics?.accessListEIP2930TxGauge?.inc()
+      }
+      if (isFeeMarket1559Tx(tx)) {
+        this.config.metrics?.feeMarketEIP1559TxGauge?.inc()
+      }
+      if (isBlob4844Tx(tx)) {
+        this.config.metrics?.blobEIP4844TxGauge?.inc()
+      }
     } catch (e) {
       this.handled.set(hash, { address, added, error: e as Error })
       throw e
@@ -391,15 +401,30 @@ export class TxPool {
   /**
    * Removes the given tx from the pool
    * @param txHash Hash of the transaction
+   * @param tx Optional, the transaction object itself can be included for collecting metrics
    */
-  removeByHash(txHash: UnprefixedHash) {
+  removeByHash(txHash: UnprefixedHash, tx?: any) {
     const handled = this.handled.get(txHash)
     if (!handled) return
     const { address } = handled
     const poolObjects = this.pool.get(address)
     if (!poolObjects) return
     const newPoolObjects = poolObjects.filter((poolObj) => poolObj.hash !== txHash)
+
     this.txsInPool--
+    if (isLegacyTx(tx)) {
+      this.config.metrics?.legacyTxGauge?.dec()
+    }
+    if (isAccessList2930Tx(tx)) {
+      this.config.metrics?.accessListEIP2930TxGauge?.dec()
+    }
+    if (isFeeMarket1559Tx(tx)) {
+      this.config.metrics?.feeMarketEIP1559TxGauge?.dec()
+    }
+    if (isBlob4844Tx(tx)) {
+      this.config.metrics?.blobEIP4844TxGauge?.dec()
+    }
+
     if (newPoolObjects.length === 0) {
       // List of txs for address is now empty, can delete
       this.pool.delete(address)
@@ -542,7 +567,7 @@ export class TxPool {
     this.config.logger.debug(`TxPool: received new transactions number=${txs.length}`)
     this.addToKnownByPeer(
       txs.map((tx) => tx.hash()),
-      peer
+      peer,
     )
 
     const newTxHashes: [number[], number[], Uint8Array[]] = [] as any
@@ -554,7 +579,7 @@ export class TxPool {
         newTxHashes[2].push(tx.hash())
       } catch (error: any) {
         this.config.logger.debug(
-          `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`
+          `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`,
         )
       }
     }
@@ -592,7 +617,7 @@ export class TxPool {
     const reqHashesStr: UnprefixedHash[] = reqHashes.map(bytesToUnprefixedHex)
     this.pending = this.pending.concat(reqHashesStr)
     this.config.logger.debug(
-      `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
+      `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`,
     )
     const getPooledTxs = await peer.eth?.getPooledTransactions({
       hashes: reqHashes.slice(0, this.TX_RETRIEVAL_LIMIT),
@@ -613,7 +638,7 @@ export class TxPool {
         await this.add(tx)
       } catch (error: any) {
         this.config.logger.debug(
-          `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`
+          `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`,
         )
       }
       newTxHashes[0].push(tx.type)
@@ -631,7 +656,7 @@ export class TxPool {
     for (const block of newBlocks) {
       for (const tx of block.transactions) {
         const txHash: UnprefixedHash = bytesToUnprefixedHex(tx.hash())
-        this.removeByHash(txHash)
+        this.removeByHash(txHash, tx)
       }
     }
   }
@@ -678,15 +703,15 @@ export class TxPool {
     const supports1559 = tx.supports(Capability.EIP1559FeeMarket)
     if (typeof baseFee === 'bigint' && baseFee !== BIGINT_0) {
       if (supports1559) {
-        return (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+        return (tx as FeeMarket1559Tx).maxPriorityFeePerGas
       } else {
-        return (tx as LegacyTransaction).gasPrice - baseFee
+        return (tx as LegacyTx).gasPrice - baseFee
       }
     } else {
       if (supports1559) {
-        return (tx as FeeMarketEIP1559Transaction).maxFeePerGas
+        return (tx as FeeMarket1559Tx).maxFeePerGas
       } else {
-        return (tx as LegacyTransaction).gasPrice
+        return (tx as LegacyTx).gasPrice
       }
     }
   }
@@ -703,14 +728,14 @@ export class TxPool {
       }
     }
 
-    if (isAccessListEIP2930Tx(tx)) {
+    if (isAccessList2930Tx(tx)) {
       return {
         maxFee: tx.gasPrice,
         tip: tx.gasPrice,
       }
     }
 
-    if (isFeeMarketEIP1559Tx(tx) || isBlobEIP4844Tx(tx)) {
+    if (isFeeMarket1559Tx(tx) || isBlob4844Tx(tx)) {
       return {
         maxFee: tx.maxFeePerGas,
         tip: tx.maxPriorityFeePerGas,
@@ -738,7 +763,7 @@ export class TxPool {
    */
   async txsByPriceAndNonce(
     vm: VM,
-    { baseFee, allowedBlobs }: { baseFee?: bigint; allowedBlobs?: number } = {}
+    { baseFee, allowedBlobs }: { baseFee?: bigint; allowedBlobs?: number } = {},
   ) {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
@@ -749,7 +774,7 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      let account = await vm.stateManager.getAccount(new Address(hexToBytes('0x' + address)))
+      let account = await vm.stateManager.getAccount(new Address(hexToBytes(`0x${address}`)))
       if (account === undefined) {
         account = new Account()
       }
@@ -796,9 +821,9 @@ export class TxPool {
       //   ii) or there is no blobs limit provided
       //   iii) or blobs are still within limit if this best tx's blobs are included
       if (
-        !(best instanceof BlobEIP4844Transaction) ||
+        !(best instanceof Blob4844Tx) ||
         allowedBlobs === undefined ||
-        ((best as BlobEIP4844Transaction).blobs ?? []).length + blobsCount <= allowedBlobs
+        ((best as Blob4844Tx).blobs ?? []).length + blobsCount <= allowedBlobs
       ) {
         if (accTxs.length > 0) {
           byPrice.insert(accTxs[0])
@@ -806,8 +831,8 @@ export class TxPool {
         }
         // Accumulate the best priced transaction and increment blobs count
         txs.push(best)
-        if (best instanceof BlobEIP4844Transaction) {
-          blobsCount += ((best as BlobEIP4844Transaction).blobs ?? []).length
+        if (best instanceof Blob4844Tx) {
+          blobsCount += ((best as Blob4844Tx).blobs ?? []).length
         }
       } else {
         // Since no more blobs can fit in the block, not only skip inserting in byPrice but also remove all other
@@ -817,7 +842,7 @@ export class TxPool {
       }
     }
     this.config.logger.info(
-      `txsByPriceAndNonce selected txs=${txs.length}, skipped byNonce=${skippedStats.byNonce} byPrice=${skippedStats.byPrice} byBlobsLimit=${skippedStats.byBlobsLimit}`
+      `txsByPriceAndNonce selected txs=${txs.length}, skipped byNonce=${skippedStats.byNonce} byPrice=${skippedStats.byPrice} byBlobsLimit=${skippedStats.byBlobsLimit}`,
     )
     return txs
   }
@@ -841,6 +866,12 @@ export class TxPool {
     this.pool.clear()
     this.handled.clear()
     this.txsInPool = 0
+    if (this.config.metrics !== undefined) {
+      // TODO: Only clear the metrics related to the transaction pool here
+      for (const [_, metric] of Object.entries(this.config.metrics)) {
+        metric.set(0)
+      }
+    }
     this.opened = false
   }
 
@@ -853,7 +884,7 @@ export class TxPool {
       broadcasterrors += sendobjects.filter((sendobject) => sendobject.error !== undefined).length
       knownpeers++
     }
-    // Get avergae
+    // Get average
     if (knownpeers > 0) {
       broadcasts = broadcasts / knownpeers
       broadcasterrors = broadcasterrors / knownpeers
@@ -873,13 +904,13 @@ export class TxPool {
       }
     }
     this.config.logger.info(
-      `TxPool Statistics txs=${this.txsInPool} senders=${this.pool.size} peers=${this.service.pool.peers.length}`
+      `TxPool Statistics txs=${this.txsInPool} senders=${this.pool.size} peers=${this.service.pool.peers.length}`,
     )
     this.config.logger.info(
-      `TxPool Statistics broadcasts=${broadcasts}/tx/peer broadcasterrors=${broadcasterrors}/tx/peer knownpeers=${knownpeers} since minutes=${this.POOLED_STORAGE_TIME_LIMIT}`
+      `TxPool Statistics broadcasts=${broadcasts}/tx/peer broadcasterrors=${broadcasterrors}/tx/peer knownpeers=${knownpeers} since minutes=${this.POOLED_STORAGE_TIME_LIMIT}`,
     )
     this.config.logger.info(
-      `TxPool Statistics successfuladds=${handledadds} failedadds=${handlederrors} since minutes=${this.HANDLED_CLEANUP_TIME_LIMIT}`
+      `TxPool Statistics successfuladds=${handledadds} failedadds=${handlederrors} since minutes=${this.HANDLED_CLEANUP_TIME_LIMIT}`,
     )
   }
 }

@@ -1,5 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
-import { equalsBytes, toHex } from 'ethereum-cryptography/utils'
+import { equalsBytes } from '@ethereumjs/util'
+// TODO: replace with bytesToHex from @ethereumjs/util
+import { toHex } from 'ethereum-cryptography/utils.js' // eslint-disable-line
 
 import { BranchNode } from '../node/branch.js'
 import { ExtensionNode } from '../node/extension.js'
@@ -27,7 +29,7 @@ export async function* _walkTrie(
   currentKey: number[] = [],
   onFound: OnFound = async (_trieNode: TrieNode, _key: number[]) => {},
   filter: NodeFilter = async (_trieNode: TrieNode, _key: number[]) => true,
-  visited: Set<string> = new Set<string>()
+  visited: Set<string> = new Set<string>(),
 ): AsyncIterable<{ node: TrieNode; currentKey: number[] }> {
   if (equalsBytes(nodeHash, this.EMPTY_TRIE_ROOT)) {
     return

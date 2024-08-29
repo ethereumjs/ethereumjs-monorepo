@@ -1,12 +1,13 @@
 import { EventEmitter } from 'events'
 
-import type { SyncMode } from '.'
-import type { Peer } from './net/peer'
-import type { Server } from './net/server'
+import type { SyncMode } from './index.js'
+import type { Peer } from './net/peer/index.js'
+import type { Server } from './net/server/index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
-import type { Multiaddr } from 'multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type * as promClient from 'prom-client'
 
 /**
  * Types for the central event bus, emitted
@@ -97,6 +98,8 @@ export type DnsNetwork = string
 
 export interface ClientOpts {
   network?: string
+  chainId?: number
+  // Deprecated, use chainId instead
   networkId?: number
   sync?: SyncMode
   lightServe?: boolean
@@ -129,6 +132,8 @@ export interface ClientOpts {
   logLevelFile?: string
   logRotate?: boolean
   logMaxFiles?: number
+  prometheus?: boolean
+  prometheusPort?: number
   rpcDebug?: string
   rpcDebugVerbose?: string
   rpcCors?: string
@@ -158,14 +163,25 @@ export interface ClientOpts {
   useStringValueTrieDB?: boolean
   txLookupLimit?: number
   startBlock?: number
+  startExecutionFrom?: number
+  startExecution?: boolean
   isSingleNode?: boolean
   vmProfileBlocks?: boolean
   vmProfileTxs?: boolean
-  loadBlocksFromRlp?: string
+  loadBlocksFromRlp?: string[]
   pruneEngineCache?: boolean
+  savePreimages?: boolean
   verkleGenesisStateRoot?: Uint8Array
   statelessVerkle?: boolean
   engineNewpayloadMaxExecute?: number
   skipEngineExec?: boolean
+  ignoreStatelessInvalidExecs?: boolean
   useJsCrypto?: boolean
+}
+
+export type PrometheusMetrics = {
+  legacyTxGauge: promClient.Gauge<string>
+  accessListEIP2930TxGauge: promClient.Gauge<string>
+  feeMarketEIP1559TxGauge: promClient.Gauge<string>
+  blobEIP4844TxGauge: promClient.Gauge<string>
 }

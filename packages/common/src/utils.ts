@@ -1,6 +1,9 @@
-import { intToHex, isHexPrefixed, stripHexPrefix } from '@ethereumjs/util'
+import { intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
+import { Goerli, Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.js'
 import { Hardfork } from './enums.js'
+
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 type ConfigHardfork =
   | { name: string; block: null; timestamp: number }
@@ -10,25 +13,22 @@ type ConfigHardfork =
  * @param nonce string parsed from the Geth genesis file
  * @returns nonce as a 0x-prefixed 8 byte string
  */
-function formatNonce(nonce: string): string {
+function formatNonce(nonce: string): PrefixedHexString {
   if (!nonce || nonce === '0x0') {
     return '0x0000000000000000'
   }
-  if (isHexPrefixed(nonce)) {
-    return '0x' + stripHexPrefix(nonce).padStart(16, '0')
+  if (isHexString(nonce)) {
+    return `0x${stripHexPrefix(nonce).padStart(16, '0')}`
   }
-  return '0x' + nonce.padStart(16, '0')
+  return `0x${nonce.padStart(16, '0')}`
 }
 
 /**
  * Converts Geth genesis parameters to an EthereumJS compatible `CommonOpts` object
  * @param json object representing the Geth genesis file
- * @param optional mergeForkIdPostMerge which clarifies the placement of MergeForkIdTransition
- * hardfork, which by default is post merge as with the merged eth networks but could also come
- * before merge like in kiln genesis
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
-function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
+function parseGethParams(json: any) {
   const {
     name,
     config,
@@ -38,46 +38,63 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     coinbase,
     baseFeePerGas,
     excessBlobGas,
+    extraData: unparsedExtraData,
+    nonce: unparsedNonce,
+    timestamp: unparsedTimestamp,
   }: {
     name: string
     config: any
-    difficulty: string
-    mixHash: string
-    gasLimit: string
-    coinbase: string
-    baseFeePerGas: string
-    excessBlobGas: string
+    difficulty: PrefixedHexString
+    mixHash: PrefixedHexString
+    gasLimit: PrefixedHexString
+    coinbase: PrefixedHexString
+    baseFeePerGas: PrefixedHexString
+    excessBlobGas: PrefixedHexString
+    extraData: string
+    nonce: string
+    timestamp: string
   } = json
-  let { extraData, timestamp, nonce }: { extraData: string; timestamp: string; nonce: string } =
-    json
-  const genesisTimestamp = Number(timestamp)
-  const { chainId }: { chainId: number } = config
+  const genesisTimestamp = Number(unparsedTimestamp)
+  const {
+    chainId,
+    depositContractAddress,
+  }: { chainId: number; depositContractAddress: PrefixedHexString } = config
 
   // geth is not strictly putting empty fields with a 0x prefix
-  if (extraData === '') {
-    extraData = '0x'
-  }
+  const extraData: PrefixedHexString =
+    unparsedExtraData === '' ? '0x' : (unparsedExtraData as PrefixedHexString)
+
   // geth may use number for timestamp
-  if (!isHexPrefixed(timestamp)) {
-    timestamp = intToHex(parseInt(timestamp))
-  }
-  // geth may not give us a nonce strictly formatted to an 8 byte hex string
-  if (nonce.length !== 18) {
-    nonce = formatNonce(nonce)
-  }
+  const timestamp: PrefixedHexString = isHexString(unparsedTimestamp)
+    ? unparsedTimestamp
+    : intToHex(parseInt(unparsedTimestamp))
+
+  // geth may not give us a nonce strictly formatted to an 8 byte 0x-prefixed hex string
+  const nonce: PrefixedHexString =
+    unparsedNonce.length !== 18 ? formatNonce(unparsedNonce) : (unparsedNonce as PrefixedHexString)
 
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
   if (config.eip155Block !== config.eip158Block) {
     throw new Error(
-      'EIP155 block number must equal EIP 158 block number since both are part of SpuriousDragon hardfork and the client only supports activating the full hardfork'
+      'EIP155 block number must equal EIP 158 block number since both are part of SpuriousDragon hardfork and the client only supports activating the full hardfork',
     )
+  }
+
+  // Terminal total difficulty logic is not supported any more as the merge has been completed
+  // so the Merge/Paris hardfork block must be 0
+  if (
+    config.terminalTotalDifficulty !== undefined &&
+    (BigInt(difficulty) < BigInt(config.terminalTotalDifficulty) ||
+      config.terminalTotalDifficultyPassed === false)
+  ) {
+    throw new Error('nonzero terminal total difficulty is not supported')
   }
 
   const params = {
     name,
     chainId,
-    networkId: chainId,
+    depositContractAddress,
     genesis: {
       timestamp,
       gasLimit,
@@ -98,10 +115,10 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
             type: 'poa',
             algorithm: 'clique',
             clique: {
-              // The recent geth genesis seems to be using blockperiodseconds
+              // The recent geth genesis seems to be using blockperiodseconds // cspell:disable-line
               // and epochlength for clique specification
               // see: https://hackmd.io/PqZgMpnkSWCWv5joJoFymQ
-              period: config.clique.period ?? config.clique.blockperiodseconds,
+              period: config.clique.period ?? config.clique.blockperiodseconds, // cspell:disable-line
               epoch: config.clique.epoch ?? config.clique.epochlength,
             },
           }
@@ -124,19 +141,23 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     [Hardfork.MuirGlacier]: { name: 'muirGlacierBlock' },
     [Hardfork.Berlin]: { name: 'berlinBlock' },
     [Hardfork.London]: { name: 'londonBlock' },
-    [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: mergeForkIdPostMerge },
+    [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: true },
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
     [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
+    [Hardfork.Osaka]: { name: 'osakaTime', postMerge: true, isTimestamp: true },
   }
 
   // forkMapRev is the map from config field name to Hardfork
-  const forkMapRev = Object.keys(forkMap).reduce((acc, elem) => {
-    acc[forkMap[elem].name] = elem
-    return acc
-  }, {} as { [key: string]: string })
+  const forkMapRev = Object.keys(forkMap).reduce(
+    (acc, elem) => {
+      acc[forkMap[elem].name] = elem
+      return acc
+    },
+    {} as { [key: string]: string },
+  )
   const configHardforkNames = Object.keys(config).filter(
-    (key) => forkMapRev[key] !== undefined && config[key] !== undefined && config[key] !== null
+    (key) => forkMapRev[key] !== undefined && config[key] !== undefined && config[key] !== null,
   )
 
   params.hardforks = configHardforkNames
@@ -162,7 +183,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     return (a.timestamp ?? 0) - (b.timestamp ?? 0)
   })
 
-  // only set the genesis timestamp forks to zero post the above sort has happended
+  // only set the genesis timestamp forks to zero post the above sort has happened
   // to get the correct sorting
   for (const hf of params.hardforks) {
     if (hf.timestamp === genesisTimestamp) {
@@ -171,20 +192,16 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   }
 
   if (config.terminalTotalDifficulty !== undefined) {
-    // Following points need to be considered for placement of merge hf
-    // - Merge hardfork can't be placed at genesis
-    // - Place merge hf before any hardforks that require CL participation for e.g. withdrawals
-    // - Merge hardfork has to be placed just after genesis if any of the genesis hardforks make CL
-    //   necessary for e.g. withdrawals
+    // Merge fork must be placed at 0 since ttd logic is no longer supported
     const mergeConfig = {
       name: Hardfork.Paris,
-      ttd: config.terminalTotalDifficulty,
-      block: null,
+      block: 0,
+      timestamp: undefined,
     }
 
     // Merge hardfork has to be placed before first hardfork that is dependent on merge
     const postMergeIndex = params.hardforks.findIndex(
-      (hf: any) => forkMap[hf.name]?.postMerge === true
+      (hf: any) => forkMap[hf.name]?.postMerge === true,
     )
     if (postMergeIndex !== -1) {
       params.hardforks.splice(postMergeIndex, 0, mergeConfig as unknown as ConfigHardfork)
@@ -206,18 +223,48 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
  * @param name optional chain name
  * @returns parsed params
  */
-export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?: boolean) {
+export function parseGethGenesis(json: any, name?: string) {
   try {
     const required = ['config', 'difficulty', 'gasLimit', 'nonce', 'alloc']
     if (required.some((field) => !(field in json))) {
       const missingField = required.filter((field) => !(field in json))
       throw new Error(`Invalid format, expected geth genesis field "${missingField}" missing`)
     }
+
+    // We copy the JSON object here because it's frozen in browser and properties can't be modified
+    const finalJson = { ...json }
+
     if (name !== undefined) {
-      json.name = name
+      finalJson.name = name
     }
-    return parseGethParams(json, mergeForkIdPostMerge)
+    return parseGethParams(finalJson)
   } catch (e: any) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
+  }
+}
+
+/**
+ * Return the preset chain config for one of the predefined chain configurations
+ * @param chain the representing a network name (e.g. 'mainnet') or number representing the chain ID
+ * @returns a {@link ChainConfig}
+ */
+export const getPresetChainConfig = (chain: string | number) => {
+  switch (chain) {
+    case 'goerli':
+    case 5:
+      return Goerli
+    case 'holesky':
+    case 17000:
+      return Holesky
+    case 'kaustinen6':
+    case 69420:
+      return Kaustinen6
+    case 'sepolia':
+    case 11155111:
+      return Sepolia
+    case 'mainnet':
+    case 1:
+    default:
+      return Mainnet
   }
 }

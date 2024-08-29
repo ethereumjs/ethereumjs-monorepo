@@ -98,7 +98,7 @@ export function decode(input: Input, stream = false): Uint8Array | NestedUint8Ar
 
 /** Decode an input with RLP */
 function _decode(input: Uint8Array): Decoded {
-  let length: number, llength: number, data: Uint8Array, innerRemainder: Uint8Array, d: Decoded
+  let length: number, lLength: number, data: Uint8Array, innerRemainder: Uint8Array, d: Decoded
   const decoded = []
   const firstByte = input[0]
 
@@ -131,19 +131,19 @@ function _decode(input: Uint8Array): Decoded {
   } else if (firstByte <= 0xbf) {
     // string is greater than 55 bytes long. A single byte with the value (0xb7 plus the length of the length),
     // followed by the length, followed by the string
-    llength = firstByte - 0xb6
-    if (input.length - 1 < llength) {
+    lLength = firstByte - 0xb6
+    if (input.length - 1 < lLength) {
       throw new Error('invalid RLP: not enough bytes for string length')
     }
-    length = decodeLength(safeSlice(input, 1, llength))
+    length = decodeLength(safeSlice(input, 1, lLength))
     if (length <= 55) {
       throw new Error('invalid RLP: expected string length to be greater than 55')
     }
-    data = safeSlice(input, llength, length + llength)
+    data = safeSlice(input, lLength, length + lLength)
 
     return {
       data,
-      remainder: input.subarray(length + llength),
+      remainder: input.subarray(length + lLength),
     }
   } else if (firstByte <= 0xf7) {
     // a list between 0-55 bytes long
@@ -161,17 +161,17 @@ function _decode(input: Uint8Array): Decoded {
     }
   } else {
     // a list over 55 bytes long
-    llength = firstByte - 0xf6
-    length = decodeLength(safeSlice(input, 1, llength))
+    lLength = firstByte - 0xf6
+    length = decodeLength(safeSlice(input, 1, lLength))
     if (length < 56) {
       throw new Error('invalid RLP: encoded list too short')
     }
-    const totalLength = llength + length
+    const totalLength = lLength + length
     if (totalLength > input.length) {
       throw new Error('invalid RLP: total length is larger than the data')
     }
 
-    innerRemainder = safeSlice(input, llength, totalLength)
+    innerRemainder = safeSlice(input, lLength, totalLength)
 
     while (innerRemainder.length) {
       d = _decode(innerRemainder)
@@ -232,7 +232,6 @@ function concatBytes(...arrays: Uint8Array[]): Uint8Array {
 // Global symbols in both browsers and Node.js since v11
 // See https://github.com/microsoft/TypeScript/issues/31535
 declare const TextEncoder: any
-declare const TextDecoder: any
 
 function utf8ToBytes(utf: string): Uint8Array {
   return new TextEncoder().encode(utf)
@@ -253,7 +252,7 @@ function padToEven(a: string): string {
 }
 
 /** Check if a string is prefixed by 0x */
-function isHexPrefixed(str: string): boolean {
+function isHexString(str: string): boolean {
   return str.length >= 2 && str[0] === '0' && str[1] === 'x'
 }
 
@@ -262,7 +261,7 @@ function stripHexPrefix(str: string): string {
   if (typeof str !== 'string') {
     return str
   }
-  return isHexPrefixed(str) ? str.slice(2) : str
+  return isHexString(str) ? str.slice(2) : str
 }
 
 /** Transform anything into a Uint8Array */
@@ -271,7 +270,7 @@ function toBytes(v: Input): Uint8Array {
     return v
   }
   if (typeof v === 'string') {
-    if (isHexPrefixed(v)) {
+    if (isHexString(v)) {
       return hexToBytes(padToEven(stripHexPrefix(v)))
     }
     return utf8ToBytes(v)

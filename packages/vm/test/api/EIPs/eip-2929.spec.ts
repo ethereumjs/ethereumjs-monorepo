@@ -1,16 +1,18 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { Account, Address, hexToBytes } from '@ethereumjs/util'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { Address, createAccount, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
+
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
 describe('EIP 2929: gas cost tests', () => {
   const initialGas = BigInt(0xffffffffff)
   const address = new Address(hexToBytes('0x000000000000000000000000636F6E7472616374'))
   const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
 
   const runTest = async function (test: any) {
     let i = 0
@@ -24,7 +26,7 @@ describe('EIP 2929: gas cost tests', () => {
         assert.equal(
           step.opcode.name,
           test.steps[i].expectedOpcode,
-          `Expected Opcode: ${test.steps[i].expectedOpcode}`
+          `Expected Opcode: ${test.steps[i].expectedOpcode}`,
         )
 
         // Validates the gas consumption of the (i - 1)th opcode
@@ -38,43 +40,43 @@ describe('EIP 2929: gas cost tests', () => {
             gasUsed === expectedGasUsed,
             `Opcode: ${
               test.steps[i - 1].expectedOpcode
-            }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`
+            }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`,
           )
         }
       }
       i++
     })
 
-    await vm.stateManager.putContractCode(address, hexToBytes(test.code))
+    await vm.stateManager.putCode(address, hexToBytes(test.code))
 
-    const unsignedTx = LegacyTransaction.fromTxData({
+    const unsignedTx = createLegacyTx({
       gasLimit: initialGas, // ensure we pass a lot of gas, so we do not run out of gas
       to: address, // call to the contract address,
     })
 
     const tx = unsignedTx.sign(senderKey)
 
-    const result = await vm.runTx({ tx, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, skipHardForkValidation: true })
 
     const totalGasUsed = initialGas - currentGas
     assert.equal(true, totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000)) // Add tx upfront cost.
     return result
   }
 
-  const runCodeTest = async function (code: string, expectedGasUsed: bigint) {
+  const runCodeTest = async function (code: PrefixedHexString, expectedGasUsed: bigint) {
     // setup the accounts for this test
     const privateKey = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     )
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
     const vm = await VM.create({ common })
 
-    await vm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
+    await vm.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
 
     // setup the call arguments
-    const unsignedTx = LegacyTransaction.fromTxData({
+    const unsignedTx = createLegacyTx({
       gasLimit: BigInt(21000 + 9000), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address,
       value: BigInt(1),
@@ -82,16 +84,16 @@ describe('EIP 2929: gas cost tests', () => {
 
     const tx = unsignedTx.sign(privateKey)
 
-    const address = Address.fromPrivateKey(privateKey)
+    const address = createAddressFromPrivateKey(privateKey)
     const initialBalance = BigInt(10) ** BigInt(18)
 
     const account = await vm.stateManager.getAccount(address)
     await vm.stateManager.putAccount(
       address,
-      Account.fromAccountData({ ...account, balance: initialBalance })
+      createAccount({ ...account, balance: initialBalance }),
     )
 
-    const result = await vm.runTx({ tx, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, skipHardForkValidation: true })
 
     assert.equal(result.totalGasSpent, expectedGasUsed)
   }
@@ -207,7 +209,7 @@ describe('EIP 2929: gas cost tests', () => {
   })
 
   // Calls the `identity`-precompile (cheap), then calls an account (expensive)
-  // and `staticcall`s the sameaccount (cheap)
+  // and `staticcall`s the same account (cheap)
   it('should charge for pre-compiles and staticcalls correctly', async () => {
     const test = {
       code: '0x60008080808060046000f15060008080808060ff6000f15060008080808060ff6000fa5000',
@@ -269,11 +271,11 @@ describe('EIP 2929: gas cost tests', () => {
     // call to address 0xFFFF..FF
     const callFF = '6000808080806000195AF1'
     // call address 0xFF..FF, now call same contract again, call 0xFF..FF again (it is now warm)
-    await runCodeTest('0x' + callFF + '60003415601B57600080808080305AF15B00', BigInt(23909))
+    await runCodeTest(`0x${callFF}60003415601B57600080808080305AF15B00`, BigInt(23909))
     // call to contract, call 0xFF..FF, revert, call 0xFF..FF (should be cold)
     await runCodeTest(
-      '0x341515601557' + callFF + '600080FD5B600080808080305AF1' + callFF + '00',
-      BigInt(26414)
+      `0x341515601557${callFF}600080FD5B600080808080305AF1${callFF}00`,
+      BigInt(26414),
     )
   })
 })

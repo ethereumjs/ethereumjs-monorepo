@@ -1,4 +1,3 @@
-import { utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { ENR } from '../src/dns/index.js'
@@ -11,7 +10,7 @@ describe('ENR tests', () => {
   // Root DNS entries
   it('ENR (root): should parse and verify and DNS root entry', () => {
     const subdomain = ENR.parseAndVerifyRoot(dns.enrRoot, dns.publicKey)
-    assert.equal(subdomain, 'JORXBYVVM7AEKETX5DGXW44EAY', 'returns correct subdomain')
+    assert.equal(subdomain, 'JORXBYVVM7AEKETX5DGXW44EAY', 'returns correct subdomain') // cspell:disable-line
   })
 
   it('ENR (root): should error if DNS root entry is mis-prefixed', () => {
@@ -20,7 +19,7 @@ describe('ENR tests', () => {
     } catch (e: any) {
       assert.ok(
         e.toString().includes("ENR root entry must start with 'enrtree-root:'"),
-        'has correct error message'
+        'has correct error message',
       )
     }
   })
@@ -31,7 +30,7 @@ describe('ENR tests', () => {
     } catch (e: any) {
       assert.ok(
         e.toString().includes('Unable to verify ENR root signature'),
-        'has correct error message'
+        'has correct error message',
       )
     }
   })
@@ -42,7 +41,7 @@ describe('ENR tests', () => {
     } catch (e: any) {
       assert.ok(
         e.toString().includes("Could not parse 'l' value from ENR root entry"),
-        'has correct error message'
+        'has correct error message',
       )
     }
   })
@@ -61,7 +60,7 @@ describe('ENR tests', () => {
     } catch (e: any) {
       assert.ok(
         e.toString().includes("ENR tree entry must start with 'enrtree:'"),
-        'has correct error message'
+        'has correct error message',
       )
     }
   })
@@ -72,7 +71,7 @@ describe('ENR tests', () => {
     } catch (e: any) {
       assert.ok(
         e.toString().includes('Could not parse domain from ENR tree entry'),
-        'has correct error message'
+        'has correct error message',
       )
     }
   })
@@ -80,9 +79,11 @@ describe('ENR tests', () => {
   // Branch entries
   it('ENR (branch): should parse and verify a single component DNS branch entry', () => {
     const expected = [
+      // cspell:disable
       'D2SNLTAGWNQ34NTQTPHNZDECFU',
       '67BLTJEU5R2D5S3B4QKJSBRFCY',
       'A2HDMZBB4JIU53VTEGC4TG6P4A',
+      // cspell:enable
     ]
 
     const branches = ENR.parseBranch(dns.enrBranch)
@@ -95,7 +96,7 @@ describe('ENR tests', () => {
     } catch (e: any) {
       assert.ok(
         e.toString().includes("ENR branch entry must start with 'enrtree-branch:'"),
-        'has correct error message'
+        'has correct error message',
       )
     }
   })
@@ -116,33 +117,13 @@ describe('ENR tests', () => {
     assert.equal(udpPort, 30303, 'returns correct udpPort')
   })
 
-  it('ENR (enr): should return correct multiaddr conversion codes for ipv6', () => {
-    const expected = { ipCode: 41, tcpCode: 6, udpCode: 273 }
-    const protocolId = utf8ToBytes('v6')
-    const codes = ENR._getIpProtocolConversionCodes(protocolId)
-
-    assert.deepEqual(codes, expected, 'returns correct codes')
-  })
-
   it('ENR (enr): should error if record mis-prefixed', () => {
     try {
       ENR.parseAndVerifyRecord(dns.enrBadPrefix)
     } catch (e: any) {
       assert.ok(
         e.toString().includes("String encoded ENR must start with 'enr:'"),
-        'has correct error message'
-      )
-    }
-  })
-
-  it('ENR (enr): should error when converting to unrecognized ip protocol id', () => {
-    const protocolId = utf8ToBytes('v7')
-    try {
-      ENR._getIpProtocolConversionCodes(protocolId)
-    } catch (e: any) {
-      assert.ok(
-        e.toString().includes("IP protocol must be 'v4' or 'v6'"),
-        'has correct error message'
+        'has correct error message',
       )
     }
   })

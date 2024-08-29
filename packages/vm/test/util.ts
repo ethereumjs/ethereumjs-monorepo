@@ -1,11 +1,12 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Block, createBlockHeader } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
-  AccessListEIP2930Transaction,
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
+  createAccessList2930Tx,
+  createBlob4844Tx,
+  createEOACode7702Tx,
+  createFeeMarket1559Tx,
+  createLegacyTx,
 } from '@ethereumjs/tx'
 import {
   Account,
@@ -13,18 +14,27 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
+  createAccount,
+  createAccountFromRLP,
   equalsBytes,
   hexToBytes,
-  isHexPrefixed,
+  isHexString,
   setLengthLeft,
-  stripHexPrefix,
   toBytes,
+  unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { BlockOptions } from '@ethereumjs/block'
-import type { EVMStateManagerInterface } from '@ethereumjs/common'
-import type { TxOptions } from '@ethereumjs/tx'
+import type { StateManagerInterface } from '@ethereumjs/common'
+import type {
+  AccessList2930Transaction,
+  Blob4844Tx,
+  EOACode7702Transaction,
+  FeeMarket1559Tx,
+  LegacyTx,
+  TxOptions,
+} from '@ethereumjs/tx'
 import type * as tape from 'tape'
 
 export function dumpState(state: any, cb: Function) {
@@ -34,7 +44,7 @@ export function dumpState(state: any, cb: Function) {
       const rs = state.createReadStream()
       rs.on('data', function (data: any) {
         const rlp = data.value
-        const account = Account.fromRlpSerializedAccount(rlp)
+        const account = createAccountFromRLP(rlp)
         accounts.push(account)
       })
       rs.on('end', function () {
@@ -85,10 +95,10 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
     return new Uint8Array()
   }
 
-  if (typeof a === 'string' && isHexPrefixed(a)) {
+  if (typeof a === 'string' && isHexString(a)) {
     a = a.slice(2)
     if (a.length % 2) a = '0' + a
-    a = hexToBytes('0x' + a)
+    a = hexToBytes(`0x${a}`)
   } else if (!isHex) {
     try {
       a = bigIntToBytes(BigInt(a))
@@ -97,7 +107,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
     }
   } else {
     if (a.length % 2) a = '0' + a
-    a = hexToBytes('0x' + a)
+    a = hexToBytes(`0x${a}`)
   }
 
   if (toZero && bytesToHex(a) === '0x') {
@@ -111,25 +121,32 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
  * Make a tx using JSON from tests repo
  * @param {Object} txData The tx object from tests repo
  * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
- * @returns {BlobEIP4844Transaction | FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction} Transaction to be passed to VM.runTx function
+ * @returns {Blob4844Tx | FeeMarket1559Tx | AccessList2930Transaction | LegacyTx} Transaction to be passed to runTx() function
  */
 export function makeTx(
   txData: any,
-  opts?: TxOptions
-):
-  | BlobEIP4844Transaction
-  | FeeMarketEIP1559Transaction
-  | AccessListEIP2930Transaction
-  | LegacyTransaction {
+  opts?: TxOptions,
+): EOACode7702Transaction | Blob4844Tx | FeeMarket1559Tx | AccessList2930Transaction | LegacyTx {
   let tx
-  if (txData.blobVersionedHashes !== undefined) {
-    tx = BlobEIP4844Transaction.fromTxData(txData, opts)
+  if (txData.authorizationList !== undefined) {
+    // Convert `v` keys to `yParity`
+    for (const signature of txData.authorizationList) {
+      if (signature.v !== undefined) {
+        signature.yParity = bytesToHex(unpadBytes(hexToBytes(signature.v)))
+      }
+      if (signature.nonce !== undefined && signature.nonce[0] === '0x00') {
+        signature.nonce[0] = '0x'
+      }
+    }
+    tx = createEOACode7702Tx(txData, opts)
+  } else if (txData.blobVersionedHashes !== undefined) {
+    tx = createBlob4844Tx(txData, opts)
   } else if (txData.maxFeePerGas !== undefined) {
-    tx = FeeMarketEIP1559Transaction.fromTxData(txData, opts)
+    tx = createFeeMarket1559Tx(txData, opts)
   } else if (txData.accessLists !== undefined) {
-    tx = AccessListEIP2930Transaction.fromTxData(txData, opts)
+    tx = createAccessList2930Tx(txData, opts)
   } else {
-    tx = LegacyTransaction.fromTxData(txData, opts)
+    tx = createLegacyTx(txData, opts)
   }
 
   if (txData.secretKey !== undefined) {
@@ -146,7 +163,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
     const keyMap: any = {}
 
     for (const key in testData) {
-      const hash = bytesToHex(keccak256(hexToBytes(stripHexPrefix(key))))
+      const hash = bytesToHex(keccak256(hexToBytes(isHexString(key) ? key : `0x${key}`)))
       hashedAccounts[hash] = testData[key]
       keyMap[hash] = key
     }
@@ -157,7 +174,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
 
     stream.on('data', function (data: any) {
       const rlp = data.value
-      const account = Account.fromRlpSerializedAccount(rlp)
+      const account = createAccountFromRLP(rlp)
       const key = bytesToHex(data.key)
       const testData = hashedAccounts[key]
       const address = keyMap[key]
@@ -193,7 +210,7 @@ export function verifyAccountPostConditions(
   address: string,
   account: Account,
   acctData: any,
-  t: tape.Test
+  t: tape.Test,
 ) {
   return new Promise<void>((resolve) => {
     t.comment('Account: ' + address)
@@ -201,12 +218,12 @@ export function verifyAccountPostConditions(
       t.comment(
         `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
           account.balance
-        }`
+        }`,
       )
     }
     if (!equalsBytes(format(account.nonce, true), format(acctData.nonce, true))) {
       t.comment(
-        `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`
+        `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`,
       )
     }
 
@@ -215,8 +232,9 @@ export function verifyAccountPostConditions(
 
     const hashedStorage: any = {}
     for (const key in acctData.storage) {
-      hashedStorage[bytesToHex(keccak256(setLengthLeft(hexToBytes(key.slice(2)), 32)))] =
-        acctData.storage[key]
+      hashedStorage[
+        bytesToHex(keccak256(setLengthLeft(hexToBytes(isHexString(key) ? key : `0x${key}`), 32)))
+      ] = acctData.storage[key]
     }
 
     state.root(account.storageRoot)
@@ -235,7 +253,7 @@ export function verifyAccountPostConditions(
         t.comment(
           `Expected storage key ${bytesToHex(data.key)} at address ${address} to have value ${
             hashedStorage[key] ?? '0x'
-          }, but got ${val}}`
+          }, but got ${val}}`,
         )
       }
       delete hashedStorage[key]
@@ -284,6 +302,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     previousHash,
     currentCoinbase,
     currentDifficulty,
+    currentExcessBlobGas,
     currentNumber,
     currentBaseFee,
     currentRandom,
@@ -302,13 +321,13 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   if (opts?.common && opts.common.gteHardfork('london')) {
     headerData['baseFeePerGas'] = currentBaseFee
     if (currentBaseFee === undefined) {
-      const parentBlockHeader = BlockHeader.fromHeaderData(
+      const parentBlockHeader = createBlockHeader(
         {
           gasLimit: parentGasLimit,
           gasUsed: parentGasUsed,
           baseFeePerGas: parentBaseFee,
         },
-        { common: opts.common }
+        { common: opts.common },
       )
       headerData['baseFeePerGas'] = parentBlockHeader.calcNextBaseFee()
     }
@@ -317,7 +336,10 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     headerData['mixHash'] = currentRandom
     headerData['difficulty'] = 0
   }
-  return BlockHeader.fromHeaderData(headerData, opts)
+  if (opts?.common && opts.common.gteHardfork('cancun')) {
+    headerData['excessBlobGas'] = currentExcessBlobGas
+  }
+  return createBlockHeader(headerData, opts)
 }
 
 /**
@@ -336,7 +358,7 @@ export function makeBlockFromEnv(env: any, opts?: BlockOptions): Block {
  * @param state - the state DB/trie
  * @param testData - JSON from tests repo
  */
-export async function setupPreConditions(state: EVMStateManagerInterface, testData: any) {
+export async function setupPreConditions(state: StateManagerInterface, testData: any) {
   await state.checkpoint()
   for (const addressStr of Object.keys(testData.pre)) {
     const { nonce, balance, code, storage } = testData.pre[addressStr]
@@ -355,11 +377,11 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
         continue
       }
       const key = setLengthLeft(format(storageKey), 32)
-      await state.putContractStorage(address, key, val)
+      await state.putStorage(address, key, val)
     }
 
     // Put contract code
-    await state.putContractCode(address, codeBuf)
+    await state.putCode(address, codeBuf)
 
     const storageRoot = (await state.getAccount(address))!.storageRoot
 
@@ -368,7 +390,7 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
     }
 
     // Put account data
-    const account = Account.fromAccountData({ nonce, balance, codeHash, storageRoot })
+    const account = createAccount({ nonce, balance, codeHash, storageRoot })
     await state.putAccount(address, account)
   }
   await state.commit()
@@ -379,7 +401,7 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
  */
 export function getDAOCommon(activationBlock: number) {
   // here: get the default fork list of mainnet and only edit the DAO fork block (thus copy the rest of the "default" hardfork settings)
-  const defaultDAOCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Dao })
+  const defaultDAOCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Dao })
   // retrieve the hard forks list from defaultCommon...
   const forks = defaultDAOCommon.hardforks()
   const editedForks = []
@@ -395,14 +417,14 @@ export function getDAOCommon(activationBlock: number) {
       editedForks.push(fork)
     }
   }
-  const DAOCommon = Common.custom(
+  const DAOCommon = createCustomCommon(
     {
       hardforks: editedForks,
     },
+    Mainnet,
     {
-      baseChain: 'mainnet',
       hardfork: Hardfork.Dao,
-    }
+    },
   )
   return DAOCommon
 }

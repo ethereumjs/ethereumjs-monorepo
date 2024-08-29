@@ -1,15 +1,18 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Common } from '@ethereumjs/common'
+import { createBlock, createBlockHeader } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { Address, bigIntToHex } from '@ethereumjs/util'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
+import { runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
+import type { Block } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_estimateGas'
 
@@ -19,8 +22,11 @@ describe(
     it('call with valid arguments', async () => {
       // Use custom genesis so we can test EIP1559 txs more easily
       const genesisJson = await import('../../testdata/geth-genesis/rpctestnet.json')
-      const common = Common.fromGethGenesis(genesisJson, { chain: 'testnet', hardfork: 'berlin' })
-      const blockchain = await Blockchain.create({
+      const common = createCommonFromGethGenesis(genesisJson, {
+        chain: 'testnet',
+        hardfork: 'berlin',
+      })
+      const blockchain = await createBlockchain({
         common,
         validateBlocks: false,
         validateConsensus: false,
@@ -33,10 +39,10 @@ describe(
       const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
       assert.notEqual(execution, undefined, 'should have valid execution')
       const { vm } = execution
-      await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
+      await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))
 
       // genesis address with balance
-      const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+      const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
       // contract:
       /*
@@ -54,12 +60,12 @@ describe(
 
       // construct block with tx
       const gasLimit = 2000000
-      const tx = LegacyTransaction.fromTxData({ gasLimit, data }, { common, freeze: false })
+      const tx = createLegacyTx({ gasLimit, data }, { common, freeze: false })
       tx.getSenderAddress = () => {
         return address
       }
       const parent = await blockchain.getCanonicalHeadHeader()
-      const block = Block.fromBlockData(
+      const block = createBlock(
         {
           header: {
             parentHash: parent.hash(),
@@ -67,14 +73,14 @@ describe(
             gasLimit,
           },
         },
-        { common, calcDifficultyFromHeader: parent }
+        { common, calcDifficultyFromHeader: parent },
       )
       block.transactions[0] = tx
 
       // deploy contract
       let ranBlock: Block | undefined = undefined
       vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-      const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+      const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
       const { createdAddress } = result.results[0]
       await vm.blockchain.putBlock(ranBlock!)
 
@@ -83,16 +89,16 @@ describe(
       const estimateTxData = {
         to: createdAddress!.toString(),
         from: address.toString(),
-        data: `0x${funcHash}`,
+        data: `0x${funcHash}` as PrefixedHexString,
         gasLimit: bigIntToHex(BigInt(53000)),
+        gasPrice: bigIntToHex(BigInt(1000000000)),
       }
-      const estimateTx = LegacyTransaction.fromTxData(estimateTxData, { freeze: false })
+      const estimateTx = createLegacyTx(estimateTxData, { freeze: false })
       estimateTx.getSenderAddress = () => {
         return address
       }
-      const { totalGasSpent } = await (
-        await vm.shallowCopy()
-      ).runTx({
+      const vmCopy = await vm.shallowCopy()
+      const { totalGasSpent } = await runTx(vmCopy, {
         tx: estimateTx,
         skipNonce: true,
         skipBalance: true,
@@ -108,7 +114,7 @@ describe(
       assert.equal(
         res.result,
         '0x' + totalGasSpent.toString(16),
-        'should return the correct gas estimate'
+        'should return the correct gas estimate',
       )
 
       // Test without blockopt as its optional and should default to latest
@@ -116,16 +122,16 @@ describe(
       assert.equal(
         res2.result,
         '0x' + totalGasSpent.toString(16),
-        'should return the correct gas estimate'
+        'should return the correct gas estimate',
       )
       // Setup chain to run an EIP1559 tx
       const service = client.services[0] as FullEthereumService
       service.execution.vm.common.setHardfork('london')
       service.chain.config.chainCommon.setHardfork('london')
       const headBlock = await service.chain.getCanonicalHeadBlock()
-      const londonBlock = Block.fromBlockData(
+      const londonBlock = createBlock(
         {
-          header: BlockHeader.fromHeaderData(
+          header: createBlockHeader(
             {
               baseFeePerGas: 1000000000n,
               number: 2n,
@@ -135,14 +141,14 @@ describe(
               common: service.chain.config.chainCommon,
               skipConsensusFormatValidation: true,
               calcDifficultyFromHeader: headBlock.header,
-            }
+            },
           ),
         },
-        { common: service.chain.config.chainCommon }
+        { common: service.chain.config.chainCommon },
       )
 
       vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-      await vm.runBlock({ block: londonBlock, generate: true, skipBlockValidation: true })
+      await runBlock(vm, { block: londonBlock, generate: true, skipBlockValidation: true })
       await vm.blockchain.putBlock(ranBlock!)
 
       // Test EIP1559 tx
@@ -152,39 +158,45 @@ describe(
       assert.equal(
         EIP1559res.result,
         '0x' + totalGasSpent.toString(16),
-        'should return the correct gas estimate for EIP1559 tx'
+        'should return the correct gas estimate for EIP1559 tx',
       )
 
       // Test EIP1559 tx with no maxFeePerGas
       const EIP1559reqNoGas = await rpc.request(method, [
-        { ...estimateTxData, type: 2, maxFeePerGas: undefined, gasLimit: undefined },
+        {
+          ...estimateTxData,
+          type: 2,
+          maxFeePerGas: undefined,
+          gasLimit: undefined,
+          gasPrice: undefined,
+        },
       ])
       assert.equal(
         EIP1559reqNoGas.result,
         '0x' + totalGasSpent.toString(16),
-        'should return the correct gas estimate'
+        'should return the correct gas estimate',
       )
 
       // Test legacy tx with London head block
       const legacyTxNoGas = await rpc.request(method, [
-        { ...estimateTxData, maxFeePerGas: undefined, gasLimit: undefined },
+        { ...estimateTxData, maxFeePerGas: undefined, gasLimit: undefined, gasPrice: undefined },
       ])
       assert.equal(
         legacyTxNoGas.result,
         '0x' + totalGasSpent.toString(16),
-        'should return the correct gas estimate'
+        'should return the correct gas estimate',
       )
     })
 
     it('call with unsupported block argument', async () => {
-      const blockchain = await Blockchain.create()
+      const blockchain = await createBlockchain()
 
       const client = await createClient({ blockchain, includeVM: true })
       const manager = createManager(client)
       const rpc = getRpcClient(startRPC(manager.getMethods()))
 
       // genesis address with balance
-      const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+      const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
       const funcHash = '26b85ee1' // borrowed from valid test above
       const estimateTxData = {
@@ -202,5 +214,5 @@ describe(
       assert.ok(res.error.message.includes('"pending" is not yet supported'))
     })
   },
-  20000
+  20000,
 )

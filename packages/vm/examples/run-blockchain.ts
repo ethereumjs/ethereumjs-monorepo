@@ -6,25 +6,39 @@
 // 4. Puts the blocks from ../utils/blockchain-mock-data "blocks" attribute into the Blockchain
 // 5. Runs the Blockchain on the VM.
 
-import { Account, Address, toBytes, setLengthLeft, bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Common, ConsensusType } from '@ethereumjs/common'
-import { VM } from '@ethereumjs/vm'
-//import testData from './helpers/blockchain-mock-data.json'
+import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
+import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
+import { Common, ConsensusAlgorithm, ConsensusType, Mainnet } from '@ethereumjs/common'
+import { Ethash } from '@ethereumjs/ethash'
+import {
+  Address,
+  bytesToHex,
+  createAccount,
+  hexToBytes,
+  setLengthLeft,
+  toBytes,
+} from '@ethereumjs/util'
+import { VM, runBlock } from '@ethereumjs/vm'
 
-const testData = require('./helpers/blockchain-mock-data.json')
+import testData from './helpers/blockchain-mock-data.json'
+
+import type { Block } from '@ethereumjs/block'
+import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
+
 async function main() {
-  const common = new Common({ chain: 1, hardfork: testData.network.toLowerCase() })
+  const common = new Common({ chain: Mainnet, hardfork: testData.network.toLowerCase() })
   const validatePow = common.consensusType() === ConsensusType.ProofOfWork
   const validateBlocks = true
 
-  const genesisBlock = Block.fromBlockData({ header: testData.genesisBlockHeader }, { common })
+  const genesisBlock = createBlock({ header: testData.genesisBlockHeader }, { common })
 
-  const blockchain = await Blockchain.create({
+  const consensusDict: ConsensusDict = {}
+  consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())
+  const blockchain = await createBlockchain({
     common,
-    validateConsensus: validatePow,
     validateBlocks,
+    validateConsensus: validatePow,
+    consensusDict,
     genesisBlock,
   })
 
@@ -34,11 +48,11 @@ async function main() {
 
   await putBlocks(blockchain, common, testData)
 
-  await blockchain.iterator('vm', async (block: Block, reorg: boolean) => {
+  await blockchain.iterator('vm', async (block: Block, _reorg: boolean) => {
     const parentBlock = await blockchain!.getBlock(block.header.parentHash)
     const parentState = parentBlock.header.stateRoot
     // run block
-    await vm.runBlock({ block, root: parentState, skipHardForkValidation: true })
+    await runBlock(vm, { block, root: parentState, skipHardForkValidation: true })
   })
 
   const blockchainHead = await vm.blockchain.getIteratorHead!()
@@ -55,17 +69,17 @@ async function setupPreConditions(vm: VM, data: any) {
     const { nonce, balance, storage, code } = acct as any
 
     const address = new Address(hexToBytes(addr))
-    const account = Account.fromAccountData({ nonce, balance })
+    const account = createAccount({ nonce, balance })
     await vm.stateManager.putAccount(address, account)
 
     for (const [key, val] of Object.entries(storage)) {
       const storageKey = setLengthLeft(hexToBytes(key), 32)
       const storageVal = hexToBytes(val as string)
-      await vm.stateManager.putContractStorage(address, storageKey, storageVal)
+      await vm.stateManager.putStorage(address, storageKey, storageVal)
     }
 
     const codeBuf = hexToBytes('0x' + code)
-    await vm.stateManager.putContractCode(address, codeBuf)
+    await vm.stateManager.putCode(address, codeBuf)
   }
 
   await vm.stateManager.commit()
@@ -74,14 +88,9 @@ async function setupPreConditions(vm: VM, data: any) {
 async function putBlocks(blockchain: Blockchain, common: Common, data: typeof testData) {
   for (const blockData of data.blocks) {
     const blockRlp = toBytes(blockData.rlp)
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+    const block = createBlockFromRLP(blockRlp, { common })
     await blockchain.putBlock(block)
   }
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((err) => {
-    console.error(err)
-    process.exit(1)
-  })
+void main()

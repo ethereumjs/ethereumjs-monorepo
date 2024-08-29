@@ -1,5 +1,5 @@
-import assert from 'assert'
 import { RLP } from '@ethereumjs/rlp'
+import assert from 'assert'
 
 const nestedList = [[], [[]], [[], [[]]]]
 const encoded = RLP.encode(nestedList)

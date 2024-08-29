@@ -1,22 +1,24 @@
+import { type StateManagerInterface } from '@ethereumjs/common'
 import { Account, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { DefaultStateManager, FlatStateManager } from '../src/index.js'
+import { Caches, DefaultStateManager, SimpleStateManager } from '../src/index.js'
 
 const codeEval = async (
-  sm: DefaultStateManager,
+  sm: StateManagerInterface,
   address: Address,
   value: Uint8Array,
-  root: Uint8Array
+  root: Uint8Array,
 ) => {
-  assert.deepEqual(await sm.getContractCode(address), value, 'contract code value should be equal')
+  assert.deepEqual(await sm.getCode(address), value, 'contract code value should be equal')
   const accountCMP = await sm.getAccount(address)
   assert.deepEqual(accountCMP!.codeHash, root, 'account code root should be equal')
 }
 
 describe('StateManager -> Code Checkpointing', () => {
-  const address = new Address(hexToBytes('0x' + '11'.repeat(20)))
-  const account = new Account()
+  const address = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
+
+  const stateManagers = [DefaultStateManager, SimpleStateManager]
 
   const value = hexToBytes('0x01')
   const root = hexToBytes('0x5fe7f977e71dba2ea1a68e21057beebb9be2ac30c6410aa38d4f3fbe41dcffd2')
@@ -88,29 +90,45 @@ describe('StateManager -> Code Checkpointing', () => {
     },
   ]
 
-  const stateManagers: any[] = [FlatStateManager, DefaultStateManager]
-  for (const smType of stateManagers) {
+  for (const SM of stateManagers) {
     for (const c of codeSets) {
       it(`No CP -> C1 -> Flush() (-> C1)`, async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
 
-        await sm.putContractCode(address, c.c1.value)
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
+        await sm.putAccount(address, new Account())
+
+        await sm.putCode(address, c.c1.value)
 
         await sm.flush()
         await codeEval(sm, address, c.c1.value, c.c1.root)
 
         sm.clearCaches()
-        assert.deepEqual(await sm.getContractCode(address), c.c1.value)
+        assert.deepEqual(await sm.getCode(address), c.c1.value)
         await codeEval(sm, address, c.c1.value, c.c1.root)
       })
 
       it(`CP -> C1.1 -> Commit -> Flush() (-> C1.1)`, async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+        await sm.putAccount(address, new Account())
 
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c1.value)
+        await sm.putCode(address, c.c1.value)
         await sm.commit()
         await sm.flush()
         await codeEval(sm, address, c.c1.value, c.c1.root)
@@ -120,11 +138,17 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`CP -> C1.1 -> Revert -> Flush() (-> Undefined)`, async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
+        await sm.putAccount(address, new Account())
 
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c1.value)
+        await sm.putCode(address, c.c1.value)
 
         await sm.revert()
         await sm.flush()
@@ -136,10 +160,16 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`C1.1 -> CP -> Commit -> Flush() (-> C1.1)`, async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
 
-        await sm.putContractCode(address, c.c1.value)
+        await sm.putAccount(address, new Account())
+
+        await sm.putCode(address, c.c1.value)
         await sm.checkpoint()
         await sm.commit()
         await sm.flush()
@@ -150,10 +180,16 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`C1.1 -> CP -> Revert -> Flush() (-> C1.1)`, async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
 
-        await sm.putContractCode(address, c.c1.value)
+        await sm.putAccount(address, new Account())
+
+        await sm.putCode(address, c.c1.value)
         await sm.checkpoint()
         await sm.revert()
         await sm.flush()
@@ -164,12 +200,18 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`C1.1 -> CP -> C1.2 -> Commit -> Flush() (-> C1.2)`, async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
 
-        await sm.putContractCode(address, c.c1.value)
+        await sm.putAccount(address, new Account())
+
+        await sm.putCode(address, c.c1.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c2.value)
+        await sm.putCode(address, c.c2.value)
         await sm.commit()
         await sm.flush()
         await codeEval(sm, address, c.c2.value, c.c2.root)
@@ -179,14 +221,20 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`C1.1 -> CP -> C1.2 -> Commit -> C1.3 -> Flush() (-> C1.3)`, async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
 
-        await sm.putContractCode(address, c.c1.value)
+        await sm.putAccount(address, new Account())
+
+        await sm.putCode(address, c.c1.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c2.value)
+        await sm.putCode(address, c.c2.value)
         await sm.commit()
-        await sm.putContractCode(address, c.c3.value)
+        await sm.putCode(address, c.c3.value)
         await sm.flush()
         await codeEval(sm, address, c.c3.value, c.c3.root)
 
@@ -195,13 +243,19 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`C1.1 -> CP -> C1.2 -> C1.3 -> Commit -> Flush() (-> C1.3)`, async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
 
-        await sm.putContractCode(address, c.c1.value)
+        await sm.putAccount(address, new Account())
+
+        await sm.putCode(address, c.c1.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c2.value)
-        await sm.putContractCode(address, c.c3.value)
+        await sm.putCode(address, c.c2.value)
+        await sm.putCode(address, c.c3.value)
         await sm.commit()
         await sm.flush()
         await codeEval(sm, address, c.c3.value, c.c3.root)
@@ -211,12 +265,18 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`CP -> C1.1 -> C1.2 -> Commit -> Flush() (-> C1.2)`, async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
+        await sm.putAccount(address, new Account())
 
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c1.value)
-        await sm.putContractCode(address, c.c2.value)
+        await sm.putCode(address, c.c1.value)
+        await sm.putCode(address, c.c2.value)
         await sm.commit()
         await sm.flush()
         await codeEval(sm, address, c.c2.value, c.c2.root)
@@ -226,13 +286,19 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`CP -> C1.1 -> C1.2 -> Revert -> Flush() (-> Undefined)`, async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
+        await sm.putAccount(address, new Account())
 
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c1.value)
+        await sm.putCode(address, c.c1.value)
 
-        await sm.putContractCode(address, c.c2.value)
+        await sm.putCode(address, c.c2.value)
         await sm.revert()
         await sm.flush()
         await codeEval(sm, address, valueEmpty, rootEmpty)
@@ -242,12 +308,18 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`C1.1 -> CP -> C1.2 -> Revert -> Flush() (-> C1.1)`, async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
 
-        await sm.putContractCode(address, c.c1.value)
+        await sm.putAccount(address, new Account())
+
+        await sm.putCode(address, c.c1.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c2.value)
+        await sm.putCode(address, c.c2.value)
         await sm.revert()
         await sm.flush()
         await codeEval(sm, address, c.c1.value, c.c1.root)
@@ -257,14 +329,20 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it('C1.1 -> CP -> C1.2 -> CP -> C1.3 -> Commit -> Commit -> Flush() (-> C1.3)', async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
 
-        await sm.putContractCode(address, c.c1.value)
+        await sm.putAccount(address, new Account())
+
+        await sm.putCode(address, c.c1.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c2.value)
+        await sm.putCode(address, c.c2.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c3.value)
+        await sm.putCode(address, c.c3.value)
         await sm.commit()
         await sm.commit()
         await sm.flush()
@@ -275,14 +353,20 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it('C1.1 -> CP -> C1.2 -> CP -> C1.3 -> Commit -> Revert -> Flush() (-> C1.1)', async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
 
-        await sm.putContractCode(address, c.c1.value)
+        await sm.putAccount(address, new Account())
+
+        await sm.putCode(address, c.c1.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c2.value)
+        await sm.putCode(address, c.c2.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c3.value)
+        await sm.putCode(address, c.c3.value)
         await sm.commit()
         await sm.revert()
         await sm.flush()
@@ -293,14 +377,20 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it('C1.1 -> CP -> C1.2 -> CP -> C1.3 -> Revert -> Commit -> Flush() (-> C1.2)', async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
 
-        await sm.putContractCode(address, c.c1.value)
+        await sm.putAccount(address, new Account())
+
+        await sm.putCode(address, c.c1.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c2.value)
+        await sm.putCode(address, c.c2.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c3.value)
+        await sm.putCode(address, c.c3.value)
         await sm.revert()
         await sm.commit()
         await sm.flush()
@@ -311,16 +401,22 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it('C1.1 -> CP -> C1.2 -> CP -> C1.3 -> Revert -> C1.4 -> Commit -> Flush() (-> C1.4)', async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
 
-        await sm.putContractCode(address, c.c1.value)
+        await sm.putAccount(address, new Account())
+
+        await sm.putCode(address, c.c1.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c2.value)
+        await sm.putCode(address, c.c2.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c3.value)
+        await sm.putCode(address, c.c3.value)
         await sm.revert()
-        await sm.putContractCode(address, c.c4.value)
+        await sm.putCode(address, c.c4.value)
         await sm.commit()
         await sm.flush()
         await codeEval(sm, address, c.c4.value, c.c4.root)
@@ -330,18 +426,24 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it('C1.1 -> CP -> C1.2 -> CP -> C1.3 -> Revert -> C1.4 -> CP -> C1.5 -> Commit -> Commit -> Flush() (-> C1.5)', async () => {
-        const sm = new smType()
-        await sm.putAccount(address, account)
+        let sm: DefaultStateManager | SimpleStateManager
+        if (SM === DefaultStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
 
-        await sm.putContractCode(address, c.c1.value)
+        await sm.putAccount(address, new Account())
+
+        await sm.putCode(address, c.c1.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c2.value)
+        await sm.putCode(address, c.c2.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c3.value)
+        await sm.putCode(address, c.c3.value)
         await sm.revert()
-        await sm.putContractCode(address, c.c4.value)
+        await sm.putCode(address, c.c4.value)
         await sm.checkpoint()
-        await sm.putContractCode(address, c.c5.value)
+        await sm.putCode(address, c.c5.value)
         await sm.commit()
         await sm.commit()
         await sm.flush()

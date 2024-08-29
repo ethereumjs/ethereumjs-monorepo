@@ -28,12 +28,12 @@ describe(`${method}: call with executionPayloadV3`, () => {
     const res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
     assert.equal(res.error.code, UNSUPPORTED_FORK)
     assert.ok(
-      res.error.message.includes('NewPayloadV{1|2} MUST be used before Cancun is activated')
+      res.error.message.includes('NewPayloadV{1|2} MUST be used before Cancun is activated'),
     )
   })
 
   it('valid data', async () => {
-    // get the genesis json with late enougt date with respect to block data in batchBlocks
+    // get the genesis json with late enough date with respect to block data in batchBlocks
     const cancunTime = 1689945325
     // deep copy json and add shanghai and cancun to genesis to avoid contamination
     const cancunJson = JSON.parse(JSON.stringify(genesisJSON))
@@ -71,7 +71,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
   })
 
   it('fcU and verify that no errors occur on new payload', async () => {
-    // get the genesis json with late enougt date with respect to block data in batchBlocks
+    // get the genesis json with late enough date with respect to block data in batchBlocks
     const cancunTime = 1689945325
     // deep copy json and add shanghai and cancun to genesis to avoid contamination
     const cancunJson = JSON.parse(JSON.stringify(genesisJSON))

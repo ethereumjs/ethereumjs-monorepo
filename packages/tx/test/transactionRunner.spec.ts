@@ -1,13 +1,14 @@
-import { Common } from '@ethereumjs/common'
-import { bytesToHex, toBytes } from '@ethereumjs/util'
+import { Common, Mainnet } from '@ethereumjs/common'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import minimist from 'minimist'
 import { assert, describe, it } from 'vitest'
 
-import { TransactionFactory } from '../src/index.js'
+import { createTxFromSerializedData } from '../src/transactionFactory.js'
 
 import { getTests } from './testLoader.js'
 
 import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file
@@ -51,7 +52,7 @@ describe('TransactionTests', async () => {
       _filename: string,
       subDir: string,
       testName: string,
-      testData: OfficialTransactionTestData
+      testData: OfficialTransactionTestData,
     ) => {
       it(testName, () => {
         for (const forkName of forkNames) {
@@ -62,14 +63,14 @@ describe('TransactionTests', async () => {
           const shouldBeInvalid = forkTestData.exception !== undefined
 
           try {
-            const rawTx = toBytes(testData.txbytes)
+            const rawTx = hexToBytes(testData.txbytes as PrefixedHexString)
             const hardfork = forkNameMap[forkName]
-            const common = new Common({ chain: 1, hardfork })
+            const common = new Common({ chain: Mainnet, hardfork })
             const activateEIPs = EIPs[forkName]
             if (activateEIPs !== undefined) {
               common.setEIPs(activateEIPs)
             }
-            const tx = TransactionFactory.fromSerializedData(rawTx, { common })
+            const tx = createTxFromSerializedData(rawTx, { common })
             const sender = tx.getSenderAddress().toString()
             const hash = bytesToHex(tx.hash())
             const txIsValid = tx.isValid()
@@ -82,7 +83,7 @@ describe('TransactionTests', async () => {
             } else {
               assert.ok(
                 hashAndSenderAreCorrect && txIsValid,
-                `Transaction should be valid on ${forkName}`
+                `Transaction should be valid on ${forkName}`,
               )
             }
           } catch (e: any) {
@@ -97,6 +98,6 @@ describe('TransactionTests', async () => {
     },
     fileFilterRegex,
     undefined,
-    'TransactionTests'
+    'TransactionTests',
   )
 })

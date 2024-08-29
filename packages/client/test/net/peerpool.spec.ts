@@ -1,11 +1,11 @@
 import { EventEmitter } from 'events'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Config } from '../../src/config'
-import { Event } from '../../src/types'
-import { MockPeer } from '../integration/mocks/mockpeer'
+import { Config } from '../../src/config.js'
+import { Event } from '../../src/types.js'
+import { MockPeer } from '../integration/mocks/mockpeer.js'
 
-const { PeerPool } = await import('../../src/net/peerpool')
+const { PeerPool } = await import('../../src/net/peerpool.js')
 
 describe('should initialize', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -68,7 +68,7 @@ describe('should check contains', () => {
   })
 })
 
-it('should get idle peers', () => {
+describe('should get idle peers', () => {
   // @ts-ignore
   const peers = [new Peer(1), new Peer(2), new Peer(3)]
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -82,7 +82,7 @@ it('should get idle peers', () => {
     assert.equal(
       pool.idle((p: any) => p.id > 1),
       peers[1],
-      'correct idle peer with filter'
+      'correct idle peer with filter',
     )
   })
 })

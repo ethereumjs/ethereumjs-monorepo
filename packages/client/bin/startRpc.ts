@@ -1,18 +1,18 @@
 import { bytesToUnprefixedHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
-import { RPCManager, saveReceiptsMethods } from '../src/rpc'
-import * as modules from '../src/rpc/modules'
+import { RPCManager, saveReceiptsMethods } from '../src/rpc/index.js'
+import * as modules from '../src/rpc/modules/index.js'
 import {
   MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
-} from '../src/util'
+} from '../src/util/index.js'
 
-import type { EthereumClient } from '../src/client'
-import type { Config } from '../src/config'
-import type { Server as RPCServer } from 'jayson/promise'
+import type { EthereumClient } from '../src/client.js'
+import type { Config } from '../src/config.js'
+import type jayson from 'jayson/promise/index.js'
 
 export type RPCArgs = {
   rpc: boolean
@@ -54,7 +54,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
     if (jwtSecretHex === undefined || jwtSecretHex.length !== 64) {
       throw Error('Need a valid 256 bit hex encoded secret')
     }
-    jwtSecret = hexToBytes('0x' + jwtSecretHex)
+    jwtSecret = hexToBytes(`0x${jwtSecretHex}`)
   } else {
     const folderExists = existsSync(config.datadir)
     if (!folderExists) {
@@ -74,7 +74,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
  */
 export function startRPCServers(client: EthereumClient, args: RPCArgs) {
   const { config } = client
-  const servers: RPCServer[] = []
+  const servers: jayson.Server[] = []
   const {
     rpc,
     rpcAddr,
@@ -101,7 +101,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
 
   if ((rpc || rpcEngine) && !config.saveReceipts) {
     logger?.warn(
-      `Starting client without --saveReceipts might lead to interop issues with a CL especially if the CL intends to propose blocks, omitting methods=${saveReceiptsMethods}`
+      `Starting client without --saveReceipts might lead to interop issues with a CL especially if the CL intends to propose blocks, omitting methods=${saveReceiptsMethods}`,
     )
   }
 
@@ -136,12 +136,12 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       logger.info(
         `Started JSON RPC Server address=http://${rpcAddr}:${rpcPort} namespaces=${namespaces}${
           withEngineMethods ? ' rpcEngineAuth=' + rpcEngineAuth.toString() : ''
-        }`
+        }`,
       )
       logger.debug(
         `Methods available at address=http://${rpcAddr}:${rpcPort} namespaces=${namespaces} methods=${Object.keys(
-          methods
-        ).join(',')}`
+          methods,
+        ).join(',')}`,
       )
     }
     if (ws) {
@@ -160,12 +160,12 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       logger.info(
         `Started JSON RPC Server address=ws://${wsAddr}:${wsPort} namespaces=${namespaces}${
           withEngineMethods ? ` rpcEngineAuth=${rpcEngineAuth}` : ''
-        }`
+        }`,
       )
       logger.debug(
         `Methods available at address=ws://${wsAddr}:${wsPort} namespaces=${namespaces} methods=${Object.keys(
-          methods
-        ).join(',')}`
+          methods,
+        ).join(',')}`,
       )
     }
   }
@@ -189,12 +189,12 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     })
     rpcHttpServer.listen(rpcEnginePort, rpcEngineAddr)
     logger.info(
-      `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`
+      `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`,
     )
     logger.debug(
       `Methods available at address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=${namespaces} methods=${Object.keys(
-        methods
-      ).join(',')}`
+        methods,
+      ).join(',')}`,
     )
 
     if (ws) {
@@ -212,12 +212,12 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       const rpcWsServer = createWsRPCServerListener(opts)
       if (rpcWsServer) rpcWsServer.listen(wsEnginePort, wsEngineAddr)
       logger.info(
-        `Started JSON RPC Server address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`
+        `Started JSON RPC Server address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`,
       )
       logger.debug(
         `Methods available at address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces} methods=${Object.keys(
-          methods
-        ).join(',')}`
+          methods,
+        ).join(',')}`,
       )
     }
   }

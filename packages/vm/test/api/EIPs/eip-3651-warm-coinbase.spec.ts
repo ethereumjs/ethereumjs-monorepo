@@ -1,34 +1,34 @@
-import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
-const pkey = hexToBytes('0x' + '20'.repeat(32))
+import { VM, runTx } from '../../../src/index.js'
+const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const GWEI = BigInt(1000000000)
 const sender = new Address(privateToAddress(pkey))
 
-const coinbase = new Address(hexToBytes('0x' + 'ff'.repeat(20)))
+const coinbase = new Address(hexToBytes(`0x${'ff'.repeat(20)}`))
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.London,
   eips: [3651],
 })
 
-const block = Block.fromBlockData(
+const block = createBlock(
   {
     header: {
       baseFeePerGas: 7,
       coinbase,
     },
   },
-  { common }
+  { common },
 )
 
 const code = hexToBytes('0x60008080806001415AF100')
-const contractAddress = new Address(hexToBytes('0x' + 'ee'.repeat(20)))
+const contractAddress = new Address(hexToBytes(`0x${'ee'.repeat(20)}`))
 
 async function getVM(common: Common) {
   const vm = await VM.create({ common })
@@ -38,7 +38,7 @@ async function getVM(common: Common) {
   account!.balance = balance
   await vm.stateManager.putAccount(sender, account!)
 
-  await vm.stateManager.putContractCode(contractAddress, code)
+  await vm.stateManager.putCode(contractAddress, code)
   return vm
 }
 
@@ -46,14 +46,14 @@ describe('EIP 3651 tests', () => {
   it('invalid contract code transactions', async () => {
     const vm = await getVM(common)
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: contractAddress,
       value: 1,
       gasLimit: 1000000,
       gasPrice: 10,
     }).sign(pkey)
 
-    const result = await vm.runTx({
+    const result = await runTx(vm, {
       block,
       tx,
       skipHardForkValidation: true,
@@ -61,19 +61,17 @@ describe('EIP 3651 tests', () => {
 
     const vm2 = await getVM(
       new Common({
-        chain: Chain.Mainnet,
+        chain: Mainnet,
         hardfork: Hardfork.London,
-      })
+      }),
     )
 
-    const result2 = await vm2.runTx({ block, tx, skipHardForkValidation: true })
-    const expectedDiff =
-      common.param('gasPrices', 'coldaccountaccess')! -
-      common.param('gasPrices', 'warmstorageread')!
+    const result2 = await runTx(vm2, { block, tx, skipHardForkValidation: true })
+    const expectedDiff = common.param('coldaccountaccessGas')! - common.param('warmstoragereadGas')!
     assert.equal(
       result2.totalGasSpent - result.totalGasSpent,
       expectedDiff,
-      'gas difference is correct'
+      'gas difference is correct',
     )
   })
 })

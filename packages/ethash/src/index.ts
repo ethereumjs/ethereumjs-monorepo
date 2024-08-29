@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader, createBlock, createBlockHeader } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
@@ -28,7 +28,7 @@ import {
 } from './util.js'
 
 import type { BlockData, HeaderData } from '@ethereumjs/block'
-import type { DB, DBObject } from '@ethereumjs/util'
+import type { DB, DBObject, PrefixedHexString } from '@ethereumjs/util'
 
 function xor(a: Uint8Array, b: Uint8Array) {
   const len = Math.max(a.length, b.length)
@@ -96,12 +96,12 @@ export class Miner {
         const data = <BlockData>this.block.toJSON()
         data.header!.mixHash = solution.mixHash
         data.header!.nonce = solution.nonce
-        return Block.fromBlockData(data, { common: this.block.common })
+        return createBlock(data, { common: this.block.common })
       } else {
         const data = <HeaderData>this.blockHeader.toJSON()
         data.mixHash = solution.mixHash
         data.nonce = solution.nonce
-        return BlockHeader.fromHeaderData(data, { common: this.blockHeader.common })
+        return createBlockHeader(data, { common: this.blockHeader.common })
       }
     }
   }
@@ -227,7 +227,7 @@ export class Ethash {
       const p =
         (fnv(
           i ^ new DataView(s.buffer).getUint32(0, true),
-          new DataView(mix.buffer).getUint32((i % w) * 4, true)
+          new DataView(mix.buffer).getUint32((i % w) * 4, true),
         ) %
           Math.floor(n / mixhashes)) *
         mixhashes
@@ -301,10 +301,10 @@ export class Ethash {
       })
       if (dbData !== undefined) {
         const data = {
-          cache: (dbData.cache as string[]).map((el: string) => hexToBytes(el)),
+          cache: (dbData.cache as PrefixedHexString[]).map((el) => hexToBytes(el)),
           fullSize: dbData.fullSize,
           cacheSize: dbData.cacheSize,
-          seed: hexToBytes(dbData.seed as string),
+          seed: hexToBytes(dbData.seed as PrefixedHexString),
         }
         return [data.seed, epoc]
       } else {
@@ -319,10 +319,10 @@ export class Ethash {
     })
     if (dbData !== undefined) {
       data = {
-        cache: (dbData.cache as string[]).map((el: string) => hexToBytes(el)),
+        cache: (dbData.cache as PrefixedHexString[]).map((el) => hexToBytes(el)),
         fullSize: dbData.fullSize,
         cacheSize: dbData.cacheSize,
-        seed: hexToBytes(dbData.seed as string),
+        seed: hexToBytes(dbData.seed as PrefixedHexString),
       }
     }
     if (!data) {
@@ -344,7 +344,7 @@ export class Ethash {
         {
           keyEncoding: KeyEncoding.Number,
           valueEncoding: ValueEncoding.JSON,
-        }
+        },
       )
     } else {
       this.cache = data.cache.map((a: Uint8Array) => {

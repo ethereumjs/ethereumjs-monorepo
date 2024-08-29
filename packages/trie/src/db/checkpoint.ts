@@ -55,7 +55,6 @@ export class CheckpointDB implements DB {
     this.checkpoints = []
 
     if (this.cacheSize > 0) {
-      // @ts-ignore
       this._cache = new LRUCache({
         max: this.cacheSize,
         updateAgeOnGet: true,
@@ -249,6 +248,7 @@ export class CheckpointDB implements DB {
           type: op.type,
           opts: { ...op.opts, ...{ valueEncoding: this.valueEncoding } },
         }
+        this._stats.db.writes += 1
         if (op.type === 'put' && this.valueEncoding === ValueEncoding.String) {
           convertedOp.value = bytesToUnprefixedHex(<Uint8Array>convertedOp.value)
         }

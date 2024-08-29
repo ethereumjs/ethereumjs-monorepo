@@ -1,14 +1,15 @@
 import { assert, describe, it } from 'vitest'
 
 import {
-  Address,
   addHexPrefix,
+  bigIntToAddressBytes,
   bigIntToBytes,
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
+  createAddressFromString,
   equalsBytes,
   fromSigned,
   hexToBytes,
@@ -16,6 +17,7 @@ import {
   intToHex,
   intToUnpaddedBytes,
   isZeroAddress,
+  matchingBytesLength,
   setLengthLeft,
   setLengthRight,
   short,
@@ -93,7 +95,7 @@ describe('unpadHex', () => {
   })
   it('should throw if input is not hex-prefixed', () => {
     assert.throws(function () {
-      unpadHex('0000000006600')
+      unpadHex('0000000006600' as any)
     })
   })
 })
@@ -241,7 +243,7 @@ describe('toBytes', () => {
           return Uint8Array.from([1])
         },
       }),
-      Uint8Array.from([1])
+      Uint8Array.from([1]),
     )
   })
   it('should fail', () => {
@@ -254,14 +256,14 @@ describe('toBytes', () => {
   })
 
   it('should fail with non 0x-prefixed hex strings', () => {
-    assert.throws(() => toBytes('11'), '11')
-    assert.throws(() => toBytes(''))
+    assert.throws(() => toBytes('11' as any), '11')
+    assert.throws(() => toBytes('' as any))
     assert.throws(() => toBytes('0xR'), '0xR')
   })
 
-  it('should convert a TransformabletoBytes like the Address class (i.e. provides a toBytes method)', () => {
+  it('should convert a TransformableToBytes like the Address class (i.e. provides a toBytes method)', () => {
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
-    const address = Address.fromString(str)
+    const address = createAddressFromString(str)
     const addressBytes = toBytes(address)
     assert.deepEqual(addressBytes, address.toBytes())
   })
@@ -286,7 +288,7 @@ describe('intToBytes', () => {
       () => intToBytes(Number.MAX_SAFE_INTEGER + 1),
       undefined,
       undefined,
-      'throws on unsafe integers'
+      'throws on unsafe integers',
     )
   })
 
@@ -315,7 +317,7 @@ describe('intToHex', () => {
       () => intToHex(Number.MAX_SAFE_INTEGER + 1),
       undefined,
       undefined,
-      'throws on unsafe integers'
+      'throws on unsafe integers',
     )
   })
   it('should pass on correct input', () => {
@@ -328,7 +330,7 @@ describe('validateNoLeadingZeroes', () => {
   const noLeadingZeroes = {
     a: toBytes('0x123'),
   }
-  const noleadingZeroBytes = {
+  const noLeadingZeroBytes = {
     a: toBytes('0x01'),
   }
   const leadingZeroBytes = {
@@ -348,19 +350,19 @@ describe('validateNoLeadingZeroes', () => {
   it('should pass on correct input', () => {
     assert.doesNotThrow(
       () => validateNoLeadingZeroes(noLeadingZeroes),
-      'does not throw when no leading zeroes'
+      'does not throw when no leading zeroes',
     )
     assert.doesNotThrow(
       () => validateNoLeadingZeroes(emptyBuffer),
-      'does not throw with empty buffer'
+      'does not throw with empty buffer',
     )
     assert.doesNotThrow(
       () => validateNoLeadingZeroes(undefinedValue),
-      'does not throw when undefined passed in'
+      'does not throw when undefined passed in',
     )
     assert.doesNotThrow(
-      () => validateNoLeadingZeroes(noleadingZeroBytes),
-      'does not throw when value has leading zero bytes'
+      () => validateNoLeadingZeroes(noLeadingZeroBytes),
+      'does not throw when value has leading zero bytes',
     )
   })
 
@@ -369,13 +371,13 @@ describe('validateNoLeadingZeroes', () => {
       () => validateNoLeadingZeroes(leadingZeroBytes),
       undefined,
       undefined,
-      'throws when value has leading zero bytes'
+      'throws when value has leading zero bytes',
     )
     assert.throws(
       () => validateNoLeadingZeroes(onlyZeroes),
       undefined,
       undefined,
-      'throws when value has only zeroes'
+      'throws when value has only zeroes',
     )
   })
 })
@@ -401,6 +403,36 @@ describe('bigIntToUnpaddedBytes', () => {
   })
 })
 
+describe('bigIntToAddressBytes', () => {
+  const testCases = [
+    [
+      '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e',
+      BigInt('0x0aae40965e6800cd9b1f4b05ff21581047e3f91e'),
+      true,
+    ],
+    [
+      '0xe473f7e92ba2490e9fcbbe8bb9c3be3adbb74efc',
+      BigInt('0xe473f7e92ba2490e9fcbbe8bb9c3be3adbb74efc'),
+      true,
+    ],
+    [
+      '0xae40965e6800cd9b1f4b05ff21581047e3f91e00',
+      BigInt('0x0aae40965e6800cd9b1f4b05ff21581047e3f91e00'),
+      false,
+    ],
+  ]
+
+  for (const [addressHex, addressBigInt, isSafe] of testCases) {
+    it('should correctly convert', () => {
+      const addressHexFromBigInt = bytesToHex(bigIntToAddressBytes(addressBigInt as bigint, false))
+      assert.equal(addressHex, addressHexFromBigInt, `should correctly convert ${addressBigInt}`)
+      if (isSafe === false) {
+        assert.throw(() => bigIntToAddressBytes(addressBigInt as bigint))
+      }
+    })
+  }
+})
+
 describe('intToUnpaddedBytes', () => {
   it('should equal unpadded buffer value', () => {
     assert.deepEqual(intToUnpaddedBytes(0), Uint8Array.from([]))
@@ -417,13 +449,13 @@ describe('bigIntToHex', () => {
 describe('hexToBytes', () => {
   it('should throw on non-prefixed strings', () => {
     assert.throws(() => {
-      hexToBytes('aabbcc112233')
+      hexToBytes('aabbcc112233' as any)
     })
   })
 
   it('should throw on invalid hex', () => {
     assert.throws(() => {
-      hexToBytes('0xinvalidhexstring')
+      hexToBytes('0xInvalidHexString')
     })
     assert.throws(() => {
       hexToBytes('0xfz')
@@ -449,5 +481,49 @@ describe('unprefixedHexToBytes', () => {
   it('should convert unprefixed hex-strings', () => {
     const converted = unprefixedHexToBytes('11')
     assert.deepEqual(converted, new Uint8Array([17]))
+  })
+})
+
+describe('matchingBytesLength', () => {
+  it('should return 0 when both arrays are empty', () => {
+    const bytes1 = new Uint8Array([])
+    const bytes2 = new Uint8Array([])
+    assert.equal(matchingBytesLength(bytes1, bytes2), 0)
+  })
+
+  it('should return 0 when one of the arrays is empty', () => {
+    const bytes1 = new Uint8Array([1, 2, 3])
+    const bytes2 = new Uint8Array([])
+    assert.equal(matchingBytesLength(bytes1, bytes2), 0)
+  })
+
+  it('should return 0 when arrays have no matching elements', () => {
+    const bytes1 = new Uint8Array([1, 2, 3])
+    const bytes2 = new Uint8Array([4, 5, 6])
+    assert.equal(matchingBytesLength(bytes1, bytes2), 0)
+  })
+
+  it('should handle arrays with same elements but different lengths', () => {
+    const bytes1 = new Uint8Array([1, 2, 3])
+    const bytes2 = new Uint8Array([1, 2, 3, 4])
+    assert.equal(matchingBytesLength(bytes1, bytes2), 3)
+  })
+
+  it('should handle arrays with matching elements at end', () => {
+    const bytes1 = new Uint8Array([1, 2, 3])
+    const bytes2 = new Uint8Array([0, 1, 2, 3])
+    assert.equal(matchingBytesLength(bytes1, bytes2), 0)
+  })
+
+  it('should handle arrays with matching elements at start', () => {
+    const bytes1 = new Uint8Array([1, 2, 3])
+    const bytes2 = new Uint8Array([1, 2, 3, 4, 5])
+    assert.equal(matchingBytesLength(bytes1, bytes2), 3)
+  })
+
+  it('should handle arrays with large number of elements', () => {
+    const bytes1 = new Uint8Array(Array.from({ length: 1000000 }, (_, i) => i))
+    const bytes2 = new Uint8Array(Array.from({ length: 1000000 }, (_, i) => i))
+    assert.equal(matchingBytesLength(bytes1, bytes2), 1000000)
   })
 })

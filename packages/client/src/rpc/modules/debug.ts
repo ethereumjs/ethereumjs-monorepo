@@ -1,15 +1,23 @@
-import { Address, TypeOutput, bigIntToHex, bytesToHex, hexToBytes, toType } from '@ethereumjs/util'
+import {
+  TypeOutput,
+  bigIntToHex,
+  bytesToHex,
+  createAddressFromString,
+  hexToBytes,
+  toType,
+} from '@ethereumjs/util'
+import { type VM, encodeReceipt, runTx } from '@ethereumjs/vm'
 
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
-import { callWithStackTrace, getBlockByOption } from '../helpers'
-import { middleware, validators } from '../validation'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code.js'
+import { callWithStackTrace, getBlockByOption } from '../helpers.js'
+import { middleware, validators } from '../validation.js'
 
-import type { EthereumClient } from '../..'
-import type { Chain } from '../../blockchain'
-import type { FullEthereumService } from '../../service'
-import type { RpcTx } from '../types'
+import type { Chain } from '../../blockchain/index.js'
+import type { EthereumClient } from '../../index.js'
+import type { FullEthereumService } from '../../service/index.js'
+import type { RpcTx } from '../types.js'
 import type { Block } from '@ethereumjs/block'
-import type { VM } from '@ethereumjs/vm'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 export interface tracerOpts {
   disableStack?: boolean
@@ -93,7 +101,7 @@ export class Debug {
     this.traceTransaction = middleware(
       callWithStackTrace(this.traceTransaction.bind(this), this._rpcDebug),
       1,
-      [[validators.hex]]
+      [[validators.hex]],
     )
     this.traceCall = middleware(callWithStackTrace(this.traceCall.bind(this), this._rpcDebug), 2, [
       [validators.transaction()],
@@ -108,7 +116,27 @@ export class Debug {
         [validators.address],
         [validators.uint256],
         [validators.unsignedInteger],
-      ]
+      ],
+    )
+    this.getRawBlock = middleware(
+      callWithStackTrace(this.getRawBlock.bind(this), this._rpcDebug),
+      1,
+      [[validators.blockOption]],
+    )
+    this.getRawHeader = middleware(
+      callWithStackTrace(this.getRawHeader.bind(this), this._rpcDebug),
+      1,
+      [[validators.blockOption]],
+    )
+    this.getRawReceipts = middleware(
+      callWithStackTrace(this.getRawReceipts.bind(this), this._rpcDebug),
+      1,
+      [[validators.blockOption]],
+    )
+    this.getRawTransaction = middleware(
+      callWithStackTrace(this.getRawTransaction.bind(this), this._rpcDebug),
+      1,
+      [[validators.hex]],
     )
   }
 
@@ -118,7 +146,7 @@ export class Debug {
    *     1. string representing the transaction hash
    *     2. an optional tracer options object
    */
-  async traceTransaction(params: [string, tracerOpts]) {
+  async traceTransaction(params: [PrefixedHexString, tracerOpts]) {
     const [txHash, config] = params
 
     // Validate configuration and parameters
@@ -132,7 +160,7 @@ export class Debug {
     const opts = validateTracerConfig(config)
 
     const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
-      hexToBytes(txHash)
+      hexToBytes(txHash),
     )
     if (!result) return null
     const [_, blockHash, txIndex] = result
@@ -145,7 +173,7 @@ export class Debug {
     await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
     for (let x = 0; x < txIndex; x++) {
       // Run all txns in the block prior to the traced transaction
-      await vmCopy.runTx({ tx: block.transactions[x], block })
+      await runTx(vmCopy, { tx: block.transactions[x], block })
     }
 
     const trace = {
@@ -158,7 +186,13 @@ export class Debug {
       const memory = []
       let storage = {}
       if (opts.disableStorage === false) {
-        storage = await vmCopy.stateManager.dumpStorage(step.address)
+        if (!('dumpStorage' in vmCopy.stateManager)) {
+          throw {
+            message: 'stateManager has no dumpStorage implementation',
+            code: INTERNAL_ERROR,
+          }
+        }
+        storage = await vmCopy.stateManager.dumpStorage!(step.address)
       }
       if (opts.enableMemory === true) {
         for (let x = 0; x < step.memoryWordCount; x++) {
@@ -189,7 +223,7 @@ export class Debug {
       }
       next?.()
     })
-    const res = await vmCopy.runTx({ tx, block })
+    const res = await runTx(vmCopy, { tx, block })
     trace.gas = bigIntToHex(res.totalGasSpent)
     trace.failed = res.execResult.exceptionError !== undefined
     trace.returnValue = bytesToHex(res.execResult.returnValue)
@@ -239,7 +273,13 @@ export class Debug {
       const memory = []
       let storage = {}
       if (opts.disableStorage === false) {
-        storage = await vm.stateManager.dumpStorage(step.address)
+        if (!('dumpStorage' in vm.stateManager)) {
+          throw {
+            message: 'stateManager has no dumpStorage implementation',
+            code: INTERNAL_ERROR,
+          }
+        }
+        storage = await vm.stateManager.dumpStorage!(step.address)
       }
       if (opts.enableMemory === true) {
         for (let x = 0; x < step.memoryWordCount; x++) {
@@ -271,8 +311,8 @@ export class Debug {
       next?.()
     })
     const runCallOpts = {
-      caller: from !== undefined ? Address.fromString(from) : undefined,
-      to: to !== undefined ? Address.fromString(to) : undefined,
+      caller: from !== undefined ? createAddressFromString(from) : undefined,
+      to: to !== undefined ? createAddressFromString(to) : undefined,
       gasLimit: toType(gasLimit, TypeOutput.BigInt),
       gasPrice: toType(gasPrice, TypeOutput.BigInt),
       value: toType(value, TypeOutput.BigInt),
@@ -296,7 +336,9 @@ export class Debug {
    * @returns A {@link StorageRange} object that will contain at most `limit` entries in its `storage` field.
    * The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
    */
-  async storageRangeAt(params: [string, number, string, string, number]) {
+  async storageRangeAt(
+    params: [PrefixedHexString, number, PrefixedHexString, PrefixedHexString, number],
+  ) {
     const [blockHash, txIndex, account, startKey, limit] = params
 
     if (this.vm === undefined) {
@@ -324,17 +366,73 @@ export class Debug {
     const parentBlock = await this.chain.getBlock(block.header.parentHash)
     // Copy the VM and run transactions including the relevant transaction.
     const vmCopy = await this.vm.shallowCopy()
+    if (!('dumpStorageRange' in vmCopy.stateManager)) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: 'stateManager has no dumpStorageRange implementation',
+      }
+    }
     await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
     for (let i = 0; i <= txIndex; i++) {
-      await vmCopy.runTx({ tx: block.transactions[i], block })
+      await runTx(vmCopy, { tx: block.transactions[i], block })
     }
 
     // await here so that any error can be handled in the catch below for proper response
-    return vmCopy.stateManager.dumpStorageRange(
+    return vmCopy.stateManager.dumpStorageRange!(
       // Validator already verified that `account` and `startKey` are properly formatted.
-      Address.fromString(account),
+      createAddressFromString(account),
       BigInt(startKey),
-      limit
+      limit,
     )
+  }
+  /**
+   * Returns an RLP-encoded block
+   * @param blockOpt Block number or tag
+   */
+  async getRawBlock(params: [string]) {
+    const [blockOpt] = params
+    const block = await getBlockByOption(blockOpt, this.chain)
+    return bytesToHex(block.serialize())
+  }
+  /**
+   * Returns an RLP-encoded block header
+   * @param blockOpt Block number or tag
+   * @returns
+   */
+  async getRawHeader(params: [string]) {
+    const [blockOpt] = params
+    const block = await getBlockByOption(blockOpt, this.chain)
+    return bytesToHex(block.header.serialize())
+  }
+  /**
+   * Returns an array of EIP-2718 binary-encoded receipts
+   * @param blockOpt Block number or tag
+   */
+  async getRawReceipts(params: [string]) {
+    const [blockOpt] = params
+    if (!this.service.execution.receiptsManager) throw new Error('missing receiptsManager')
+    const block = await getBlockByOption(blockOpt, this.chain)
+    const receipts = await this.service.execution.receiptsManager.getReceipts(
+      block.hash(),
+      true,
+      true,
+    )
+    return receipts.map((r) => bytesToHex(encodeReceipt(r, r.txType)))
+  }
+  /**
+   * Returns the bytes of the transaction.
+   * @param blockOpt Block number or tag
+   */
+  async getRawTransaction(params: [PrefixedHexString]) {
+    const [txHash] = params
+    if (!this.service.execution.receiptsManager) throw new Error('missing receiptsManager')
+    const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
+      hexToBytes(txHash),
+    )
+    if (!result) return null
+    const [_receipt, blockHash, txIndex] = result
+    const block = await this.chain.getBlock(blockHash)
+    const tx = block.transactions[txIndex]
+    return bytesToHex(tx.serialize())
   }
 }

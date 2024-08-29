@@ -1,10 +1,18 @@
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { LeafNode, Trie } from '../../src/index.js'
+import {
+  LeafNode,
+  Trie,
+  createMerkleProof,
+  createTrieFromProof,
+  verifyTrieProof,
+} from '../../src/index.js'
 import { _walkTrie } from '../../src/util/asyncWalk.js'
 import { bytesToNibbles } from '../../src/util/nibbles.js'
 import trieTests from '../fixtures/trietest.json'
+
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('walk the tries from official tests', async () => {
   const testNames = Object.keys(trieTests.tests)
@@ -14,7 +22,7 @@ describe('walk the tries from official tests', async () => {
     describe(testName, async () => {
       const inputs = (trieTests as any).tests[testName].in
       const expect = (trieTests as any).tests[testName].root
-      const testKeys: Map<string, Uint8Array | null> = new Map()
+      const testKeys: Map<PrefixedHexString, Uint8Array | null> = new Map()
       const testStrings: Map<string, [string, string | null]> = new Map()
       for await (const [idx, input] of inputs.entries()) {
         const stringPair: [string, string] = [inputs[idx][0], inputs[idx][1] ?? 'null']
@@ -76,11 +84,11 @@ describe('walk a sparse trie', async () => {
   })
   // Generate a proof for inputs[0]
   const proofKey = inputs[0][0]
-  const proof = await trie.createProof(proofKey)
-  assert.ok(await Trie.verifyProof(proofKey, proof))
+  const proof = await createMerkleProof(trie, proofKey)
+  assert.ok(await verifyTrieProof(proofKey, proof))
 
   // Build a sparse trie from the proof
-  const fromProof = await Trie.fromProof(proof, { root: trie.root() })
+  const fromProof = await createTrieFromProof(proof, { root: trie.root() })
 
   // Walk the sparse trie
   const walker = fromProof.walkTrieIterable(fromProof.root())

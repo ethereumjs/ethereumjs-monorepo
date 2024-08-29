@@ -1,9 +1,10 @@
-import { Block } from '@ethereumjs/block'
-import { Common, Chain } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
+
 import type { WithdrawalData } from '@ethereumjs/util'
 
-const common = new Common({ chain: Chain.Mainnet })
+const common = new Common({ chain: Mainnet })
 
 const withdrawal = <WithdrawalData>{
   index: BigInt(0),
@@ -12,18 +13,18 @@ const withdrawal = <WithdrawalData>{
   amount: BigInt(1000),
 }
 
-const block = Block.fromBlockData(
+const block = createBlock(
   {
     header: {
       withdrawalsRoot: hexToBytes(
-        '0x69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357'
+        '0x69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357',
       ),
     },
     withdrawals: [withdrawal],
   },
   {
     common,
-  }
+  },
 )
 
 console.log(`Block with ${block.withdrawals!.length} withdrawal(s) created`)

@@ -1,18 +1,13 @@
-import { Common, Hardfork } from '@ethereumjs/common'
-import {
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-} from '@ethereumjs/tx'
+import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   bytesToHex,
   commitmentsToVersionedHashes,
   getBlobs,
-  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import pow from '../../testdata/geth-genesis/pow.json'
@@ -31,13 +26,13 @@ describe(method, () => {
     const { chain, common, execution, server } = await setupChain(pow, 'pow')
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = LegacyTransaction.fromTxData(
+    const tx = createLegacyTx(
       {
         gasLimit: 2000000,
         gasPrice: 100,
         to: '0x0000000000000000000000000000000000000000',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
@@ -50,18 +45,18 @@ describe(method, () => {
   it('call with 1559 tx', async () => {
     const { chain, common, execution, server } = await setupChain(
       gethGenesisStartLondon(pow),
-      'powLondon'
+      'powLondon',
     )
     const rpc = getRpcClient(server)
     // construct tx
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = createFeeMarket1559Tx(
       {
         gasLimit: 2000000,
         maxFeePerGas: 975000000,
         maxPriorityFeePerGas: 10,
         to: '0x1230000000000000000000000000000000000321',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
@@ -70,6 +65,7 @@ describe(method, () => {
     const res = await rpc.request(method, [bytesToHex(tx.hash())])
 
     assert.equal(res.result.transactionHash, bytesToHex(tx.hash()), 'should return the correct tx')
+    assert.equal(res.result.status, '0x1', 'transaction result is 1 since succeeded')
   })
 
   it('call with unknown tx hash', async () => {
@@ -87,12 +83,11 @@ describe(method, () => {
     if (isBrowser() === true) {
       assert.ok(true)
     } else {
-      const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
+      const gethGenesis = await import('../../../../block/test/testdata/4844-hardfork.json')
 
-      const kzg = await createKZG()
-      initKZG(kzg)
+      const kzg = await loadKZG()
 
-      const common = Common.fromGethGenesis(gethGenesis, {
+      const common = createCommonFromGethGenesis(gethGenesis, {
         chain: 'customChain',
         hardfork: Hardfork.Cancun,
         customCrypto: {
@@ -106,10 +101,10 @@ describe(method, () => {
       const rpc = getRpcClient(server)
 
       const blobs = getBlobs('hello world')
-      const commitments = blobsToCommitments(blobs)
+      const commitments = blobsToCommitments(kzg, blobs)
       const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
       const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
-      const tx = BlobEIP4844Transaction.fromTxData(
+      const tx = createBlob4844Tx(
         {
           blobVersionedHashes,
           blobs,
@@ -122,7 +117,7 @@ describe(method, () => {
           to: randomBytes(20),
           nonce: 0n,
         },
-        { common }
+        { common },
       ).sign(dummy.privKey)
 
       await runBlockWithTxs(chain, execution, [tx], true)

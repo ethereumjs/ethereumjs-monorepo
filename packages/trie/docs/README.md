@@ -19,6 +19,7 @@
 
 - [CheckpointDBOpts](interfaces/CheckpointDBOpts.md)
 - [CommonInterface](interfaces/CommonInterface.md)
+- [Path](interfaces/Path.md)
 - [TrieOpts](interfaces/TrieOpts.md)
 - [TrieShallowCopyOpts](interfaces/TrieShallowCopyOpts.md)
 
@@ -39,7 +40,6 @@
 
 ### Functions
 
-- [asyncTrieReadStream](README.md#asynctriereadstream)
 - [byteTypeToNibbleType](README.md#bytetypetonibbletype)
 - [bytesToNibbles](README.md#bytestonibbles)
 - [compactBytesToNibbles](README.md#compactbytestonibbles)
@@ -72,7 +72,7 @@
 
 #### Defined in
 
-[packages/trie/src/types.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L129)
+[packages/trie/src/types.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L135)
 
 ___
 
@@ -109,7 +109,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L23)
+[packages/trie/src/types.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L29)
 
 ___
 
@@ -133,7 +133,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L30)
+[packages/trie/src/types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L36)
 
 ___
 
@@ -173,7 +173,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L99)
+[packages/trie/src/types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L105)
 
 ## Variables
 
@@ -183,29 +183,9 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L136)
+[packages/trie/src/types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L142)
 
 ## Functions
-
-### asyncTrieReadStream
-
-▸ **asyncTrieReadStream**(`trie`): `ReadableStream`<`any`\>
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `trie` | [`Trie`](classes/Trie.md) |
-
-#### Returns
-
-`ReadableStream`<`any`\>
-
-#### Defined in
-
-[packages/trie/src/util/readStream.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/readStream.ts#L69)
-
-___
 
 ### byteTypeToNibbleType
 
@@ -558,12 +538,12 @@ NOTE: Currently only supports verification when the length of firstKey and lastK
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `rootHash` | `Uint8Array` | root hash. |
-| `firstKey` | ``null`` \| [`Nibbles`](README.md#nibbles) | first key. |
-| `lastKey` | ``null`` \| [`Nibbles`](README.md#nibbles) | last key. |
-| `keys` | [`Nibbles`](README.md#nibbles)[] | key list. |
-| `values` | `Uint8Array`[] | value list, one-to-one correspondence with keys. |
-| `proof` | ``null`` \| `Uint8Array`[] | proof node list, if proof is null, both `firstKey` and `lastKey` must be null |
+| `rootHash` | `Uint8Array` | root hash of state trie this proof is being verified against. |
+| `firstKey` | ``null`` \| [`Nibbles`](README.md#nibbles) | first key of range being proven. |
+| `lastKey` | ``null`` \| [`Nibbles`](README.md#nibbles) | last key of range being proven. |
+| `keys` | [`Nibbles`](README.md#nibbles)[] | key list of leaf data being proven. |
+| `values` | `Uint8Array`[] | value list of leaf data being proven, one-to-one correspondence with keys. |
+| `proof` | ``null`` \| `Uint8Array`[] | proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well |
 | `useKeyHashingFunction` | [`HashKeysFunction`](README.md#hashkeysfunction) | - |
 
 #### Returns
@@ -574,4 +554,4 @@ a flag to indicate whether there exists more trie node in the trie
 
 #### Defined in
 
-[packages/trie/src/proof/range.ts:408](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L408)
+[packages/trie/src/proof/range.ts:411](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L411)

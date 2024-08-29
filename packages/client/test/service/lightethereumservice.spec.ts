@@ -1,21 +1,21 @@
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain/chain'
-import { Config } from '../../src/config'
-import { LesProtocol } from '../../src/net/protocol'
-import { RlpxServer } from '../../src/net/server'
-import { LightSynchronizer } from '../../src/sync/lightsync'
-import { Event } from '../../src/types'
+import { Chain } from '../../src/blockchain/chain.js'
+import { Config } from '../../src/config.js'
+import { LesProtocol } from '../../src/net/protocol/index.js'
+import { RlpxServer } from '../../src/net/server/index.js'
+import { LightSynchronizer } from '../../src/sync/lightsync.js'
+import { Event } from '../../src/types.js'
 
-vi.mock('../../src/net/peerpool')
+vi.mock('../../src/net/peerpool.js')
 
-vi.mock('../../src/net/server')
-vi.mock('../../src/blockchain', () => {
+vi.mock('../../src/net/server/index.js')
+vi.mock('../../src/blockchain/index.js', () => {
   const Chain = vi.fn()
   Chain.prototype.open = vi.fn()
   return { Chain }
 })
-vi.mock('../../src/net/protocol/lesprotocol', () => {
+vi.mock('../../src/net/protocol/lesprotocol.js', () => {
   const LesProtocol = vi.fn()
   return { LesProtocol }
 })
@@ -28,7 +28,7 @@ vi.mock('../../src/sync/lightsync', () => {
   return { LightSynchronizer }
 })
 
-const { LightEthereumService } = await import('../../src/service/lightethereumservice')
+const { LightEthereumService } = await import('../../src/service/lightethereumservice.js')
 
 describe('should initialize correctly', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -60,7 +60,7 @@ describe('should open', async () => {
     expect(server.addProtocols).toBeCalled()
   })
   service.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
-    it('should syncronize', () => {
+    it('should synchronize', () => {
       assert.ok(true, 'synchronized')
     })
   })
@@ -80,7 +80,7 @@ describe('should open', async () => {
   await service.close()
 })
 
-it('should start/stop', async () => {
+describe('should start/stop', async () => {
   const server = new RlpxServer({} as any)
   const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })

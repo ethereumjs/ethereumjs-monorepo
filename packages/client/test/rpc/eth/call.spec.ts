@@ -1,21 +1,24 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { Address, bigIntToHex, bytesToHex } from '@ethereumjs/util'
+import { createBlock } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { bigIntToHex, bytesToHex, createAddressFromString } from '@ethereumjs/util'
+import { runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service'
+import type { FullEthereumService } from '../../../src/service/index.js'
+import type { Block } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_call'
 
 describe(method, () => {
   it('call with valid arguments', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await Blockchain.create({
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
+    const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
       validateConsensus: false,
@@ -30,7 +33,7 @@ describe(method, () => {
     const { vm } = execution
 
     // genesis address with balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // contract:
     /*
@@ -48,12 +51,12 @@ describe(method, () => {
 
     // construct block with tx
     const gasLimit = 2000000
-    const tx = LegacyTransaction.fromTxData({ gasLimit, data }, { common, freeze: false })
+    const tx = createLegacyTx({ gasLimit, data }, { common, freeze: false })
     tx.getSenderAddress = () => {
       return address
     }
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = Block.fromBlockData(
+    const block = createBlock(
       {
         header: {
           parentHash: parent.hash(),
@@ -61,14 +64,14 @@ describe(method, () => {
           gasLimit,
         },
       },
-      { common, calcDifficultyFromHeader: parent }
+      { common, calcDifficultyFromHeader: parent },
     )
     block.transactions[0] = tx
 
     // deploy contract
     let ranBlock: Block | undefined = undefined
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-    const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     const { createdAddress } = result.results[0]
     await vm.blockchain.putBlock(ranBlock!)
 
@@ -77,16 +80,15 @@ describe(method, () => {
     const estimateTxData = {
       to: createdAddress!.toString(),
       from: address.toString(),
-      data: `0x${funcHash}`,
+      data: `0x${funcHash}` as PrefixedHexString,
       gasLimit: bigIntToHex(BigInt(53000)),
     }
-    const estimateTx = LegacyTransaction.fromTxData(estimateTxData, { freeze: false })
+    const estimateTx = createLegacyTx(estimateTxData, { freeze: false })
     estimateTx.getSenderAddress = () => {
       return address
     }
-    const { execResult } = await (
-      await vm.shallowCopy()
-    ).runTx({
+    const vmCopy = await vm.shallowCopy()
+    const { execResult } = await runTx(vmCopy, {
       tx: estimateTx,
       skipNonce: true,
       skipBalance: true,
@@ -99,36 +101,38 @@ describe(method, () => {
       { ...estimateTxData, gas: estimateTxData.gasLimit },
       'latest',
     ])
+    assert.equal(res.error.code, 3, 'should return the correct error code')
     assert.equal(
-      res.result,
+      res.error.data,
       bytesToHex(execResult.returnValue),
-      'should return the correct return value'
+      'should return the correct return value',
     )
 
     res = await rpc.request(method, [{ ...estimateTxData }, 'latest'])
+    assert.equal(res.error.code, 3, 'should return the correct error code')
     assert.equal(
-      res.result,
+      res.error.data,
       bytesToHex(execResult.returnValue),
-      'should return the correct return value with no gas limit provided'
+      'should return the correct return value with no gas limit provided',
     )
 
     res = await rpc.request(method, [{ gasLimit, data }, 'latest'])
     assert.equal(
       res.result,
       bytesToHex(result.results[0].execResult.returnValue),
-      `should let run call without 'to' for contract creation`
+      `should let run call without 'to' for contract creation`,
     )
   })
 
   it('call with unsupported block argument', async () => {
-    const blockchain = await Blockchain.create()
+    const blockchain = await createBlockchain()
 
     const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     // genesis address with balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     const funcHash = '26b85ee1' // borrowed from valid test above
     const estimateTxData = {
@@ -147,14 +151,14 @@ describe(method, () => {
   })
 
   it('call with invalid hex params', async () => {
-    const blockchain = await Blockchain.create()
+    const blockchain = await createBlockchain()
 
     const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     // genesis address with balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     const estimateTxData = {
       to: address.toString(),
       from: address.toString(),

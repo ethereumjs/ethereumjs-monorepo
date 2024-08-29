@@ -1,12 +1,13 @@
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
+import { utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { createMerkleProof, createTrieFromProof, verifyMerkleProof } from '../../src/index.js'
 import { Trie } from '../../src/trie.js'
 
 describe('Run Trie script with DEBUG enabled', async () => {
   const trie_entries: [string, string | null][] = [
     ['do', 'verb'],
-    ['ether', 'wookiedoo'],
+    ['ether', 'wookiedoo'], // cspell:disable-line
     ['doge', 'coin'],
     ['ether', null],
     ['dog', 'puppy'],
@@ -19,8 +20,8 @@ describe('Run Trie script with DEBUG enabled', async () => {
     await trie.put(utf8ToBytes(key), value === null ? Uint8Array.from([]) : utf8ToBytes(value))
   }
 
-  const proof = await trie.createProof(utf8ToBytes('doge'))
-  const valid = await trie.verifyProof(trie.root(), utf8ToBytes('doge'), proof)
+  const proof = await createMerkleProof(trie, utf8ToBytes('doge'))
+  const valid = await verifyMerkleProof(trie, trie.root(), utf8ToBytes('doge'), proof)
 
   it('should be valid', async () => {
     assert.deepEqual(valid, utf8ToBytes('coin'))
@@ -32,9 +33,8 @@ describe('Run Trie script with DEBUG enabled', async () => {
   trie.checkpoint()
   await trie.revert()
   process.env.DEBUG = ''
-  const trie2 = new Trie({})
+  const trie2 = await createTrieFromProof(proof)
   trie2['DEBUG'] = true
-  await trie2.fromProof(proof)
   it('tries should share root', async () => {
     assert.deepEqual(trie.root(), trie2.root())
   })

@@ -1,8 +1,8 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { TransactionFactory } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { createTxFromTxData } from '@ethereumjs/tx'
+import { Account, bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
 import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.js'
@@ -41,13 +41,13 @@ describe(method, () => {
     const rpc = getRpcClient(server)
     common.setHardfork(Hardfork.Cancun)
     const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
-    const address = Address.fromPrivateKey(pkey)
+    const address = createAddressFromPrivateKey(pkey)
     await service.execution.vm.stateManager.putAccount(address, new Account())
     const account = await service.execution.vm.stateManager.getAccount(address)
 
     account!.balance = 0xfffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
@@ -55,9 +55,9 @@ describe(method, () => {
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
       },
-      { common }
+      { common },
     ).sign(pkey)
-    const tx2 = TransactionFactory.fromTxData(
+    const tx2 = createTxFromTxData(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
@@ -66,27 +66,27 @@ describe(method, () => {
         gasLimit: 30000000n,
         nonce: 1n,
       },
-      { common }
+      { common },
     ).sign(pkey)
-    const block = Block.fromBlockData(
+    const block = createBlock(
       {
         transactions: [tx],
-        header: BlockHeader.fromHeaderData(
+        header: createBlockHeader(
           { parentHash: chain.genesis.hash(), number: 1n },
-          { common, skipConsensusFormatValidation: true }
+          { common, skipConsensusFormatValidation: true },
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
-    const block2 = Block.fromBlockData(
+    const block2 = createBlock(
       {
         transactions: [tx2],
-        header: BlockHeader.fromHeaderData(
+        header: createBlockHeader(
           { parentHash: block.hash(), number: 2n },
-          { common, skipConsensusFormatValidation: true }
+          { common, skipConsensusFormatValidation: true },
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
 
     await chain.putBlocks([block, block2], true)
@@ -95,19 +95,19 @@ describe(method, () => {
     assert.equal(
       res.result[0].transactions[0],
       bytesToHex(tx.serialize()),
-      'got expected transaction from first payload'
+      'got expected transaction from first payload',
     )
     assert.equal(
       res.result.length,
       2,
-      'length of response matches start of range up to highest known block'
+      'length of response matches start of range up to highest known block',
     )
 
     const res2 = await rpc.request(method, ['0x3', '0x2'])
     assert.equal(
       res2.result.length,
       0,
-      'got empty array when start of requested range is beyond current chain head'
+      'got empty array when start of requested range is beyond current chain head',
     )
   })
 
@@ -123,13 +123,13 @@ describe(method, () => {
     const rpc = getRpcClient(server)
     common.setHardfork(Hardfork.London)
     const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
-    const address = Address.fromPrivateKey(pkey)
+    const address = createAddressFromPrivateKey(pkey)
     await service.execution.vm.stateManager.putAccount(address, new Account())
     const account = await service.execution.vm.stateManager.getAccount(address)
 
     account!.balance = 0xfffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
@@ -137,9 +137,9 @@ describe(method, () => {
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
       },
-      { common }
+      { common },
     ).sign(pkey)
-    const tx2 = TransactionFactory.fromTxData(
+    const tx2 = createTxFromTxData(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
@@ -148,27 +148,27 @@ describe(method, () => {
         gasLimit: 30000000n,
         nonce: 1n,
       },
-      { common }
+      { common },
     ).sign(pkey)
-    const block = Block.fromBlockData(
+    const block = createBlock(
       {
         transactions: [tx],
-        header: BlockHeader.fromHeaderData(
+        header: createBlockHeader(
           { parentHash: chain.genesis.hash(), number: 1n },
-          { common, skipConsensusFormatValidation: true }
+          { common, skipConsensusFormatValidation: true },
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
-    const block2 = Block.fromBlockData(
+    const block2 = createBlock(
       {
         transactions: [tx2],
-        header: BlockHeader.fromHeaderData(
+        header: createBlockHeader(
           { parentHash: block.hash(), number: 2n },
-          { common, skipConsensusFormatValidation: true }
+          { common, skipConsensusFormatValidation: true },
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
 
     await chain.putBlocks([block, block2], true)

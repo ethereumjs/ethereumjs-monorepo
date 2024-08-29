@@ -1,75 +1,93 @@
-import { Block } from '@ethereumjs/block'
-import { Common } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
+import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
-  Account,
   Address,
+  VerkleLeafType,
   bytesToBigInt,
   bytesToHex,
+  createAccount,
+  createAddressFromString,
+  getVerkleKey,
+  getVerkleStem,
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { getStem } from '@ethereumjs/verkle'
-import { assert, describe, it, test } from 'vitest'
+import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import { assert, beforeAll, describe, it, test } from 'vitest'
 
-import { CacheType, StatelessVerkleStateManager } from '../src/index.js'
+import { CacheType, Caches, StatelessVerkleStateManager } from '../src/index.js'
 
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
-import * as verkleBlockJSON from './testdata/verkleKaustinenBlock.json'
+import * as verkleBlockJSON from './testdata/verkleKaustinen6Block72.json'
+
+import type { BlockData } from '@ethereumjs/block'
+import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
-  const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
-    chain: 'customChain',
-    eips: [6800],
+  let verkleCrypto: VerkleCrypto
+  beforeAll(async () => {
+    verkleCrypto = await loadVerkleCrypto()
   })
-  const block = Block.fromBlockData(verkleBlockJSON, { common })
+  const common = createCommonFromGethGenesis(testnetVerkleKaustinen.default, {
+    chain: 'customChain',
+    eips: [2935, 4895, 6800],
+  })
+
+  const decodedTxs = verkleBlockJSON.default.transactions.map((tx) =>
+    createTxFromSerializedData(hexToBytes(tx as PrefixedHexString), { common }),
+  )
+  const block = createBlock({ ...verkleBlockJSON, transactions: decodedTxs } as BlockData, {
+    common,
+  })
 
   it('initPreState()', async () => {
-    const stateManager = new StatelessVerkleStateManager()
-    stateManager.initVerkleExecutionWitness(block.executionWitness)
+    const stateManager = new StatelessVerkleStateManager({ verkleCrypto })
+    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     assert.ok(Object.keys(stateManager['_state']).length !== 0, 'should initialize with state')
   })
 
   it('getAccount()', async () => {
-    const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initVerkleExecutionWitness(block.executionWitness)
+    const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
+    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const account = await stateManager.getAccount(
-      Address.fromString('0x9791ded6e5d3d5dafca71bb7bb2a14187d17e32e')
+      createAddressFromString('0x6177843db3138ae69679a54b95cf345ed759450d'),
     )
 
-    assert.equal(account!.balance, 99765345920194942688594n, 'should have correct balance')
-    assert.equal(account!.nonce, 3963257n, 'should have correct nonce')
-    assert.equal(
-      bytesToHex(account!.storageRoot),
-      '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      'should have correct storageRoot'
-    )
+    assert.equal(account!.balance, 288610978528114322n, 'should have correct balance')
+    assert.equal(account!.nonce, 300n, 'should have correct nonce')
+    assert.equal(account!._storageRoot, null, 'stateroot should have not been set')
     assert.equal(
       bytesToHex(account!.codeHash),
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-      'should have correct codeHash'
+      'should have correct codeHash',
     )
   })
 
   it('put/delete/modify account', async () => {
-    const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initVerkleExecutionWitness(block.executionWitness)
+    const stateManager = new StatelessVerkleStateManager({
+      common,
+      caches: new Caches(),
+      verkleCrypto,
+    })
+    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const address = new Address(randomBytes(20))
 
     try {
       await stateManager.getAccount(address)
       assert.fail('should throw on getting account that is not found in witness')
-    } catch (e) {
+    } catch (e: any) {
       assert.equal(
         e.message.slice(0, 25),
-        'Missing execution witness',
-        'should throw on getting account that does not exist in cache and witness'
+        'No witness bundled for ad',
+        'should throw on getting account that does not exist in cache and witness',
       )
     }
 
-    const account = Account.fromAccountData({
+    const account = createAccount({
       nonce: BigInt(2),
     })
 
@@ -77,7 +95,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     assert.deepEqual(
       await stateManager.getAccount(address),
       account,
-      'should return correct account'
+      'should return correct account',
     )
 
     await stateManager.modifyAccountFields(address, {
@@ -87,27 +105,27 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     assert.deepEqual(
       await stateManager.getAccount(address),
       account,
-      'should return correct account'
+      'should return correct account',
     )
 
     await stateManager.deleteAccount(address)
 
     assert.isUndefined(
       await stateManager.getAccount(address),
-      'should return undefined for deleted account'
+      'should return undefined for deleted account',
     )
   })
 
-  it('getTreeKeyFor* functions', async () => {
-    const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initVerkleExecutionWitness(block.executionWitness)
+  it('getKey function', async () => {
+    const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
+    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
-    const address = Address.fromString('0x9791ded6e5d3d5dafca71bb7bb2a14187d17e32e')
-    const stem = getStem(address, 0)
+    const address = createAddressFromString('0x6177843db3138ae69679a54b95cf345ed759450d')
+    const stem = getVerkleStem(stateManager.verkleCrypto, address, 0n)
 
-    const balanceKey = stateManager.getTreeKeyForBalance(stem)
-    const nonceKey = stateManager.getTreeKeyForNonce(stem)
-    const codeHashKey = stateManager.getTreeKeyForCodeHash(stem)
+    const balanceKey = getVerkleKey(stem, VerkleLeafType.Balance)
+    const nonceKey = getVerkleKey(stem, VerkleLeafType.Nonce)
+    const codeHashKey = getVerkleKey(stem, VerkleLeafType.CodeHash)
 
     const balanceRaw = stateManager['_state'][bytesToHex(balanceKey)]
     const nonceRaw = stateManager['_state'][bytesToHex(nonceKey)]
@@ -116,66 +134,62 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const account = await stateManager.getAccount(address)
 
     assert.equal(
-      account.balance,
-      bytesToBigInt(hexToBytes(balanceRaw), true),
-      'should have correct balance'
+      account!.balance,
+      bytesToBigInt(hexToBytes(balanceRaw!), true),
+      'should have correct balance',
     )
     assert.equal(
-      account.nonce,
-      bytesToBigInt(hexToBytes(nonceRaw), true),
-      'should have correct nonce'
+      account!.nonce,
+      bytesToBigInt(hexToBytes(nonceRaw!), true),
+      'should have correct nonce',
     )
-    assert.equal(bytesToHex(account.codeHash), codeHash, 'should have correct codeHash')
+    assert.equal(bytesToHex(account!.codeHash), codeHash, 'should have correct codeHash')
   })
 
   it(`copy()`, async () => {
     const stateManager = new StatelessVerkleStateManager({
-      accountCacheOpts: {
-        type: CacheType.ORDERED_MAP,
-      },
-      storageCacheOpts: {
-        type: CacheType.ORDERED_MAP,
-      },
+      caches: new Caches({
+        account: {
+          type: CacheType.ORDERED_MAP,
+        },
+        storage: {
+          type: CacheType.ORDERED_MAP,
+        },
+      }),
       common,
+      verkleCrypto,
     })
-    stateManager.initVerkleExecutionWitness(block.executionWitness)
+    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const stateManagerCopy = stateManager.shallowCopy()
 
     assert.equal(
-      stateManagerCopy['_accountCacheSettings'].type,
+      stateManagerCopy['_caches']?.settings.account.type,
       CacheType.ORDERED_MAP,
-      'should switch to ORDERED_MAP account cache on copy()'
+      'should switch to ORDERED_MAP account cache on copy()',
     )
     assert.equal(
-      stateManagerCopy['_storageCacheSettings'].type,
+      stateManagerCopy['_caches']?.settings.storage.type,
       CacheType.ORDERED_MAP,
-      'should switch to ORDERED_MAP storage cache on copy()'
+      'should switch to ORDERED_MAP storage cache on copy()',
     )
   })
 
   // TODO contract storage functions not yet completely implemented
   test.skip('get/put/clear contract storage', async () => {
-    const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initVerkleExecutionWitness(block.executionWitness)
+    const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
+    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
-    const contractAddress = Address.fromString('0x4242424242424242424242424242424242424242')
+    const contractAddress = createAddressFromString('0x4242424242424242424242424242424242424242')
     const storageKey = '0x0000000000000000000000000000000000000000000000000000000000000022'
     const storageValue = '0xf5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b'
-    await stateManager.putContractStorage(
-      contractAddress,
-      hexToBytes(storageKey),
-      hexToBytes(storageValue)
-    )
-    let contractStorage = await stateManager.getContractStorage(
-      contractAddress,
-      hexToBytes(storageKey)
-    )
+    await stateManager.putStorage(contractAddress, hexToBytes(storageKey), hexToBytes(storageValue))
+    let contractStorage = await stateManager.getStorage(contractAddress, hexToBytes(storageKey))
 
     assert.equal(bytesToHex(contractStorage), storageValue)
 
-    await stateManager.clearContractStorage(contractAddress)
-    contractStorage = await stateManager.getContractStorage(contractAddress, hexToBytes(storageKey))
+    await stateManager.clearStorage(contractAddress)
+    contractStorage = await stateManager.getStorage(contractAddress, hexToBytes(storageKey))
 
     assert.equal(bytesToHex(contractStorage), bytesToHex(new Uint8Array()))
   })

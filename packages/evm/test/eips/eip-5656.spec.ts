@@ -1,8 +1,10 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../../src/index.js'
+import { createEVM } from '../../src/index.js'
+
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 type Situation = {
   pre: string
@@ -60,7 +62,7 @@ describe('should test mcopy', () => {
   for (const situation of situations) {
     it('should produce correct output', async () => {
       // create bytecode
-      let bytecode = '0x'
+      let bytecode: PrefixedHexString = '0x'
       // prepare the memory
       for (let i = 0; i < situation.pre.length / 2; i++) {
         const start = i * 2
@@ -78,12 +80,12 @@ describe('should test mcopy', () => {
       bytecode += MCOPY + STOP
 
       const common = new Common({
-        chain: Chain.Mainnet,
+        chain: Mainnet,
         hardfork: Hardfork.Shanghai,
         eips: [5656],
       })
 
-      const evm = new EVM({
+      const evm = await createEVM({
         common,
       })
 
@@ -92,15 +94,14 @@ describe('should test mcopy', () => {
       evm.events.on('step', (e) => {
         if (e.opcode.name === 'STOP') {
           currentMem = bytesToHex(e.memory)
+          assert.equal(currentMem, '0x' + situation.post, 'post-memory correct')
         }
       })
 
       await evm.runCall({
-        data: hexToBytes(bytecode),
+        data: hexToBytes(bytecode as PrefixedHexString),
         gasLimit: BigInt(0xffffff),
       })
-
-      assert.equal(currentMem, '0x' + situation.post, 'post-memory correct')
     })
   }
 })

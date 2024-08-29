@@ -1,18 +1,18 @@
-import { Common, Hardfork } from '@ethereumjs/common'
-import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { TransactionType, createTxFromTxData } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain'
-import { Config, SyncMode } from '../../src/config'
-import { RlpxServer } from '../../src/net/server'
-import { Event } from '../../src/types'
+import { Chain } from '../../src/blockchain/index.js'
+import { Config, SyncMode } from '../../src/config.js'
+import { RlpxServer } from '../../src/net/server/index.js'
+import { Event } from '../../src/types.js'
 import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
-import type { BeaconSynchronizer } from '../../src/sync'
+import type { BeaconSynchronizer } from '../../src/sync/index.js'
 import type { Log } from '@ethereumjs/evm'
 
-vi.mock('../../src/net/peerpool', () => {
+vi.mock('../../src/net/peerpool.js', () => {
   const PeerPool = vi.fn()
   PeerPool.prototype.open = vi.fn()
   PeerPool.prototype.close = vi.fn()
@@ -21,19 +21,19 @@ vi.mock('../../src/net/peerpool', () => {
   return { PeerPool }
 })
 
-vi.mock('../../src/net/protocol/ethprotocol', () => {
+vi.mock('../../src/net/protocol/ethprotocol.js', () => {
   const EthProtocol = vi.fn()
   EthProtocol.prototype.name = 'eth'
   return { EthProtocol }
 })
 
-vi.mock('../../src/net/protocol/lesprotocol', () => {
+vi.mock('../../src/net/protocol/lesprotocol.js', () => {
   const LesProtocol = vi.fn()
   LesProtocol.prototype.name = 'les'
   return { LesProtocol }
 })
 
-vi.mock('../../src/sync/fullsync', () => {
+vi.mock('../../src/sync/fullsync.js', () => {
   const FullSynchronizer = vi.fn()
   FullSynchronizer.prototype.start = vi.fn()
   FullSynchronizer.prototype.stop = vi.fn()
@@ -45,7 +45,7 @@ vi.mock('../../src/sync/fullsync', () => {
 
   return { FullSynchronizer }
 })
-vi.mock('../../src/sync/beaconsync', () => {
+vi.mock('../../src/sync/beaconsync.js', () => {
   const BeaconSynchronizer = vi.fn()
   BeaconSynchronizer.prototype.start = vi.fn()
   BeaconSynchronizer.prototype.stop = vi.fn()
@@ -57,10 +57,9 @@ vi.mock('../../src/sync/beaconsync', () => {
   }
 })
 
-vi.mock('@ethereumjs/block')
-vi.mock('../../src/net/server')
-vi.mock('../../src/execution')
-const { FullEthereumService } = await import('../../src/service/fullethereumservice')
+vi.mock('../../src/net/server/index.js')
+vi.mock('../../src/execution/index.js')
+const { FullEthereumService } = await import('../../src/service/fullethereumservice.js')
 
 describe('initialize', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -97,7 +96,7 @@ describe('should open', async () => {
   expect(service.synchronizer!.open).toBeCalled()
   expect(server.addProtocols).toBeCalled()
   service.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
-    it('should syncronize', () => {
+    it('should synchronize', () => {
       assert.ok('synchronized')
     })
   })
@@ -137,7 +136,7 @@ describe('should start/stop', async () => {
 describe('should correctly handle GetBlockHeaders', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   vi.unmock('../../src/blockchain')
-  await import('../../src/blockchain')
+  await import('../../src/blockchain/index.js')
   const chain = await Chain.create({ config })
   chain.getHeaders = () => [{ number: 1n }] as any
   const service = new FullEthereumService({ config, chain })
@@ -153,12 +152,12 @@ describe('should correctly handle GetBlockHeaders', async () => {
           it('should send empty headers', () => {
             assert.ok(
               title === 'BlockHeaders' && msg.headers.length === 0,
-              'sent empty headers when block height is too high'
+              'sent empty headers when block height is too high',
             )
           })
         },
       } as any,
-    } as any
+    } as any,
   )
   ;(service.chain as any)._headers = {
     height: 5n,
@@ -178,12 +177,12 @@ describe('should correctly handle GetBlockHeaders', async () => {
           it('should send 1 header', () => {
             assert.ok(
               title === 'BlockHeaders' && msg.headers.length === 1,
-              'sent 1 header when requested'
+              'sent 1 header when requested',
             )
           })
         },
       } as any,
-    } as any
+    } as any,
   )
 })
 
@@ -205,19 +204,20 @@ describe('should call handleNewBlock on NewBlock and handleNewBlockHashes on New
     await service.switchToBeaconSync()
     assert.ok(
       (service.synchronizer as BeaconSynchronizer).type === 'beacon',
-      'switched to BeaconSynchronizer'
+      'switched to BeaconSynchronizer',
     )
     assert.ok(service.beaconSync, 'can access BeaconSynchronizer')
   })
 })
 
 describe('should ban peer for sending NewBlock/NewBlockHashes after merge', async () => {
-  const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Paris })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Paris })
   const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
+  chain.config.chainCommon.setHardfork(Hardfork.Paris)
   const service = new FullEthereumService({ config, chain })
   service.pool.ban = () => {
-    it('should ban peeer', () => {
+    it('should ban peer', () => {
       assert.ok(true, 'banned peer when NewBlock/NewBlockHashes announced after Merge')
     })
   }
@@ -272,21 +272,17 @@ describe('should handle Transactions', async () => {
   const service = new FullEthereumService({ config, chain })
   service.txPool.handleAnnouncedTxs = async (msg, _peer, _pool) => {
     it('should handle transaction message', () => {
-      assert.deepEqual(
-        msg[0],
-        TransactionFactory.fromTxData({ type: 2 }),
-        'handled Transactions message'
-      )
+      assert.deepEqual(msg[0], createTxFromTxData({ type: 2 }), 'handled Transactions message')
     })
   }
 
   await service.handle(
     {
       name: 'Transactions',
-      data: [TransactionFactory.fromTxData({ type: 2 })],
+      data: [createTxFromTxData({ type: 2 })],
     },
     'eth',
-    undefined as any
+    undefined as any,
   )
 })
 
@@ -296,7 +292,7 @@ describe('should handle NewPooledTransactionHashes', async () => {
   const service = new FullEthereumService({ config, chain })
   service.txPool.handleAnnouncedTxHashes = async (msg, _peer, _pool) => {
     it('should handle NewPooledTransactionHashes', () => {
-      assert.deepEqual(msg[0], hexToBytes('0xabcd'), 'handled NewPooledTransactionhashes')
+      assert.deepEqual(msg[0], hexToBytes('0xabcd'), 'handled NewPooledTransactionHashes')
     })
   }
 
@@ -310,7 +306,7 @@ describe('should handle NewPooledTransactionHashes', async () => {
       eth: {
         versions: [66],
       },
-    } as any
+    } as any,
   )
 })
 
@@ -320,7 +316,7 @@ describe('should handle GetPooledTransactions', async () => {
   const service = new FullEthereumService({ config, chain })
   ;(service.txPool as any).validate = () => {}
 
-  const tx = TransactionFactory.fromTxData({ type: 2 }).sign(randomBytes(32))
+  const tx = createTxFromTxData({ type: 2 }).sign(randomBytes(32))
   await service.txPool.add(tx)
 
   await service.handle(
@@ -334,7 +330,7 @@ describe('should handle GetPooledTransactions', async () => {
           })
         },
       } as any,
-    } as any
+    } as any,
   )
 })
 
@@ -348,7 +344,7 @@ describe('should handle decoding NewPooledTransactionHashes with eth/68 message 
   ;(service.txPool as any).handleAnnouncedTxHashes = (
     hashes: Uint8Array[],
     _peer: any,
-    _pool: any
+    _pool: any,
   ) => {
     it('should get correct tx hash from eth68 message', () => {
       assert.deepEqual(hashes[0], txHash)
@@ -362,7 +358,7 @@ describe('should handle decoding NewPooledTransactionHashes with eth/68 message 
       eth: {
         versions: [67, 68],
       },
-    } as any
+    } as any,
   )
 })
 
@@ -385,12 +381,12 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
           },
         },
       } as any,
-    ]
+    ],
   )
 })
 
 describe('should start on beacon sync when past merge', async () => {
-  const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
+  const common = createCommonFromGethGenesis(genesisJSON, { chain: 'post-merge' })
   common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
   const config = new Config({ accountCache: 10000, storageCache: 1000, common })
   const chain = await Chain.create({ config })

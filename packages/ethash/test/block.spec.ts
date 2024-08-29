@@ -1,5 +1,5 @@
-import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlock, createBlockFromBytesArray, createBlockFromRLP } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { MapDB, hexToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -16,28 +16,28 @@ describe('Verify POW for valid and invalid blocks', () => {
   it('should work', async () => {
     const e = new Ethash(cacheDB as any)
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
-    const genesis = Block.fromBlockData({}, { common })
+    const genesis = createBlock({}, { common })
     const genesisResult = await e.verifyPOW(genesis)
     assert.ok(genesisResult, 'genesis block should be valid')
 
-    const validRlp = hexToBytes('0x' + validBlockRlp)
-    const validBlock = Block.fromRLPSerializedBlock(validRlp, { common })
+    const validRlp = hexToBytes(`0x${validBlockRlp}`)
+    const validBlock = createBlockFromRLP(validRlp, { common })
     const validBlockResult = await e.verifyPOW(validBlock)
     assert.ok(validBlockResult, 'should be valid')
 
-    const invalidRlp = hexToBytes('0x' + invalidBlockRlp)
+    const invalidRlp = hexToBytes(`0x${invalidBlockRlp}`)
     // Put correct amount of extraData in block extraData field so block can be deserialized
     const values = RLP.decode(Uint8Array.from(invalidRlp)) as BlockBytes
     values[0][12] = new Uint8Array(32)
-    const invalidBlock = Block.fromValuesArray(values, { common })
+    const invalidBlock = createBlockFromBytesArray(values, { common })
     const invalidBlockResult = await e.verifyPOW(invalidBlock)
     assert.ok(!invalidBlockResult, 'should be invalid')
 
     const testData = require('./block_tests_data.json')
     const blockRlp = toBytes(testData.blocks[0].rlp)
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+    const block = createBlockFromRLP(blockRlp, { common })
     const uncleBlockResult = await e.verifyPOW(block)
     assert.ok(uncleBlockResult, 'should be valid')
   })

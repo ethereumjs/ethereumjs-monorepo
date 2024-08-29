@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { randomBytes } from 'node:crypto'
@@ -11,10 +11,13 @@ import {
   runTxHelper,
   startNetwork,
   waitForELStart,
-} from './simutils'
+} from './simutils.js'
+
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const pkey = hexToBytes(
-  process.env.PRIVATE_KEY ?? '0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e'
+  (process.env.PRIVATE_KEY as PrefixedHexString) ??
+    '0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e',
 )
 const sender = bytesToHex(privateToAddress(pkey))
 const rpcUrl =
@@ -33,12 +36,12 @@ console.log({ sender, rpcUrl, chainId, numTxs })
 const network = 'sharding'
 const shardingJson = require(`./configs/${network}.json`)
 
-// safely change chainId without modifying undelying json
+// safely change chainId without modifying underlying json
 const commonJson = { ...shardingJson }
 commonJson.config = { ...commonJson.config, chainId }
-const common = Common.fromGethGenesis(commonJson, { chain: network })
+const common = createCommonFromGethGenesis(commonJson, { chain: network })
 
-export async function runTx(data: string, to?: string, value?: bigint) {
+export async function runTx(data: PrefixedHexString, to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
 
@@ -65,7 +68,7 @@ describe(`running txes on ${rpcUrl}`, async () => {
       const nonceFetch = await client.request(
         'eth_getTransactionCount',
         [sender.toString(), 'latest'],
-        2.0
+        2.0,
       )
       const nonce = Number(nonceFetch.result)
       assert.ok(true, `fetched ${sender}'s  nonce=${nonce} for blob txs`)
@@ -83,7 +86,7 @@ describe(`running txes on ${rpcUrl}`, async () => {
           gasLimit: BigInt(process.env.GAS_LIMIT ?? 0xffffffn),
           blobSize: Number(process.env.BLOB_SIZE ?? 4096),
         },
-        { common }
+        { common },
       )
       const txHashes = []
       for (const txn of txns) {
@@ -98,7 +101,7 @@ describe(`running txes on ${rpcUrl}`, async () => {
       }
       assert.ok(true, `posted txs=${txHashes.length}`)
     },
-    10 * 60_000
+    10 * 60_000,
   )
 
   it('cleanup', async () => {

@@ -1,8 +1,8 @@
-import { INTERNAL_ERROR } from './error-code'
-import * as modules from './modules'
+import { INTERNAL_ERROR } from './error-code.js'
+import * as modules from './modules/index.js'
 
-import type { EthereumClient } from '../client'
-import type { Config } from '../config'
+import type { EthereumClient } from '../client.js'
+import type { Config } from '../config.js'
 
 export const saveReceiptsMethods = ['getLogs', 'getTransactionReceipt', 'getTransactionByHash']
 
@@ -32,7 +32,7 @@ export class RPCManager {
   getMethods(engine = false, rpcDebug = false) {
     const methods: { [key: string]: Function } = {}
     const mods = modules.list.filter((name: string) =>
-      engine ? name === 'Engine' : name !== 'Engine'
+      engine ? name === 'Engine' : name !== 'Engine',
     )
     for (const modName of mods) {
       const mod = new (modules as any)[modName](this._client, rpcDebug)
@@ -42,8 +42,8 @@ export class RPCManager {
         if (!this._config.saveReceipts && saveReceiptsMethods.includes(methodName)) {
           continue
         }
-        const concatedMethodName = `${modName.toLowerCase()}_${methodName}`
-        methods[concatedMethodName] = mod[methodName].bind((...params: any[]) => {
+        const concatenatedMethodName = `${modName.toLowerCase()}_${methodName}`
+        methods[concatenatedMethodName] = mod[methodName].bind((...params: any[]) => {
           try {
             mod(...params)
           } catch (error: any) {
@@ -64,7 +64,7 @@ export class RPCManager {
    */
   static getMethodNames(mod: Object): string[] {
     const methodNames = Object.getOwnPropertyNames((mod as any).prototype).filter(
-      (methodName: string) => methodName !== 'constructor'
+      (methodName: string) => methodName !== 'constructor',
     )
     return methodNames
   }

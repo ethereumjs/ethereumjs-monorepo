@@ -1,8 +1,8 @@
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain'
-import { Config } from '../../../src/config'
-import { Event } from '../../../src/types'
+import { Chain } from '../../../src/blockchain/index.js'
+import { Config } from '../../../src/config.js'
+import { Event } from '../../../src/types.js'
 
 class PeerPool {
   idle() {}
@@ -10,11 +10,11 @@ class PeerPool {
 }
 PeerPool.prototype.idle = vi.fn()
 PeerPool.prototype.ban = vi.fn()
-vi.mock('../../src/net/peerpool', () => {
+vi.mock('../../src/net/peerpool.js', () => {
   return PeerPool
 })
 
-const { HeaderFetcher } = await import('../../../src/sync/fetcher/headerfetcher')
+const { HeaderFetcher } = await import('../../../src/sync/fetcher/headerfetcher.js')
 describe('[HeaderFetcher]', async () => {
   it('should process', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -23,15 +23,16 @@ describe('[HeaderFetcher]', async () => {
     const fetcher = new HeaderFetcher({ config, pool, flow })
     const headers = [{ number: 1 }, { number: 2 }]
     assert.deepEqual(
-      //@ts-ignore
-      fetcher.process({ task: { count: 2 }, peer: 'peer0' }, { headers, bv: BigInt(1) }),
+      fetcher.process(
+        { task: { count: 2 }, peer: 'peer0' } as any,
+        { headers, bv: BigInt(1) } as any,
+      ),
       headers as any,
-      'got results'
+      'got results',
     )
-    //@ts-ignore
     assert.notOk(
       fetcher.process({ task: { count: 2 } } as any, { headers: [], bv: BigInt(1) } as any),
-      'bad results'
+      'bad results',
     )
     expect((fetcher as any).flow.handleReply).toHaveBeenCalledWith('peer0', 1)
   })
@@ -84,6 +85,7 @@ describe('[HeaderFetcher]', async () => {
       les: { getBlockHeaders: vi.fn() },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
@@ -124,7 +126,7 @@ describe('store()', async () => {
   config.events.on(Event.SYNC_FETCHED_HEADERS, () =>
     it('should emit event on put headers', () => {
       assert.ok(true, 'store() emitted SYNC_FETCHED_HEADERS event on putting headers')
-    })
+    }),
   )
   await fetcher.store([1 as any])
 })

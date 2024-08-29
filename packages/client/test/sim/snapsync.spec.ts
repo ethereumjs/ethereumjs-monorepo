@@ -1,7 +1,7 @@
-import { Common } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
-  Address,
   bytesToHex,
+  createAddressFromString,
   hexToBytes,
   parseGethGenesisState,
   privateToAddress,
@@ -22,17 +22,17 @@ import {
   setupEngineUpdateRelay,
   startNetwork,
   waitForELStart,
-} from './simutils'
+} from './simutils.js'
 
-import type { EthereumClient } from '../../src/client'
-import type { RlpxServer } from '../../src/net/server'
+import type { EthereumClient } from '../../src/client.js'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const client = Client.http({ port: 8545 })
 
 const network = 'mainnet'
 const networkJson = require(`./configs/${network}.json`)
-const common = Common.fromGethGenesis(networkJson, { chain: network })
+const common = createCommonFromGethGenesis(networkJson, { chain: network })
 const customGenesisState = parseGethGenesisState(networkJson)
 
 const pkey = hexToBytes('0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e')
@@ -49,7 +49,7 @@ let stateManager: DefaultStateManager | undefined = undefined
 const EOATransferToAccount = '0x3dA33B9A0894b908DdBb00d96399e506515A1009'
 let EOATransferToBalance = BigInt(0)
 
-export async function runTx(data: string, to?: string, value?: bigint) {
+export async function runTx(data: PrefixedHexString | '', to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
 
@@ -58,7 +58,7 @@ describe('simple mainnet test run', async () => {
     process.env.EXTRA_CL_PARAMS = '--params.CAPELLA_FORK_EPOCH 0'
   }
   // Better add it as a option in startnetwork
-  process.env.NETWORKID = `${common.networkId()}`
+  process.env.NETWORKID = `${common.chainId()}`
   const { teardownCallBack, result } = await startNetwork(network, client, {
     filterKeywords,
     filterOutWords,
@@ -66,7 +66,7 @@ describe('simple mainnet test run', async () => {
     withPeer: process.env.WITH_PEER,
   })
 
-  if (result.includes('Geth')) {
+  if (result.includes('Geth') === true) {
     assert.ok(true, 'connected to Geth')
   } else {
     assert.fail('connected to wrong client')
@@ -92,7 +92,7 @@ describe('simple mainnet test run', async () => {
       assert.equal(
         EOATransferToBalance,
         BigInt(balance.result),
-        `fetched ${EOATransferToAccount} balance=${EOATransferToBalance}`
+        `fetched ${EOATransferToAccount} balance=${EOATransferToBalance}`,
       )
       balance = await client.request('eth_getBalance', [EOATransferToAccount, 'latest'])
 
@@ -110,11 +110,11 @@ describe('simple mainnet test run', async () => {
       balance = await client.request('eth_getBalance', [sender, 'latest'])
       assert.ok(
         balance.result !== undefined,
-        'remaining sender balance after transfers and gas fee'
+        'remaining sender balance after transfers and gas fee',
       )
       senderBalance = BigInt(balance.result)
     },
-    2 * 60_000
+    2 * 60_000,
   )
 
   it.skipIf(process.env.SNAP_SYNC === undefined)(
@@ -130,12 +130,16 @@ describe('simple mainnet test run', async () => {
         beaconSyncRelayer: relayer,
       } =
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        (await createSnapClient(common, customGenesisState, [nodeInfo.enode], peerBeaconUrl).catch(
-          (e) => {
-            console.log(e)
-            return null
-          }
-        )) ?? {
+        (await createSnapClient(
+          common,
+          customGenesisState,
+          [nodeInfo.enode],
+          peerBeaconUrl,
+          '',
+        ).catch((e) => {
+          console.log(e)
+          return null
+        })) ?? {
           ejsInlineClient: null,
           peerConnectedPromise: Promise.reject('Client creation error'),
           beaconSyncRelayer: null,
@@ -146,7 +150,7 @@ describe('simple mainnet test run', async () => {
       snapCompleted = snapSyncCompletedPromise
       assert.ok(ejsClient !== null, 'ethereumjs client started')
 
-      const enode = (ejsClient!.server('rlpx') as RlpxServer)!.getRlpxInfo().enode
+      const enode = ejsClient!.server()!.getRlpxInfo().enode
       const res = await client.request('admin_addPeer', [enode])
       assert.equal(res.result, true, 'successfully requested Geth add EthereumJS as peer')
 
@@ -158,7 +162,7 @@ describe('simple mainnet test run', async () => {
         assert.fail('could not connect to geth peer in 10 seconds')
       }
     },
-    60_000
+    60_000,
   )
 
   it.skipIf(process.env.SNAP_SYNC === undefined)(
@@ -176,7 +180,7 @@ describe('simple mainnet test run', async () => {
           // call sync if not has been called yet
           void ejsClient.services[0].synchronizer?.sync()
           await Promise.race([
-            snapCompleted.then(([root, syncedStateManager]) => {
+            (snapCompleted as any).then(([root, syncedStateManager]: [any, any]) => {
               syncedSnapRoot = root
               stateManager = syncedStateManager
             }),
@@ -197,7 +201,7 @@ describe('simple mainnet test run', async () => {
         assert.fail('ethereumjs client not setup properly for snap sync')
       }
     },
-    10 * 60_000
+    10 * 60_000,
   )
 
   it.skipIf(stateManager !== undefined)('should match entire state', async () => {
@@ -208,17 +212,17 @@ describe('simple mainnet test run', async () => {
         undefined,
         undefined,
         BigInt(0),
-      ]
-      customGenesisState[sender][0] = `0x${senderBalance.toString(16)}`
+      ] as any
+      ;(customGenesisState[sender][0] as any) = `0x${senderBalance.toString(16)}`
     }
 
     for (const addressString of Object.keys(customGenesisState)) {
-      const address = Address.fromString(addressString)
-      const account = await stateManager.getAccount(address)
+      const address = createAddressFromString(addressString)
+      const account = await stateManager?.getAccount(address)
       assert.equal(
         account?.balance,
         BigInt(customGenesisState[addressString][0]),
-        `${addressString} balance should match`
+        `${addressString} balance should match`,
       )
     }
   })
@@ -240,7 +244,7 @@ async function createSnapClient(
   customGenesisState: any,
   bootnodes: any,
   peerBeaconUrl: any,
-  datadir: any
+  datadir: any,
 ) {
   // Turn on `debug` logs, defaults to all client logging
   debug.enable(process.env.DEBUG_SNAP ?? '')
@@ -268,7 +272,7 @@ async function createSnapClient(
     config.events.once(
       Event.SYNC_SNAPSYNC_COMPLETE,
       (stateRoot: Uint8Array, stateManager: DefaultStateManager) =>
-        resolve([stateRoot, stateManager])
+        resolve([stateRoot, stateManager]),
     )
   })
 

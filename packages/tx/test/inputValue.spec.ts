@@ -1,20 +1,21 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, hexToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
-  AccessListEIP2930Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-  TransactionFactory,
   TransactionType,
+  create1559FeeMarketTxFromBytesArray,
+  createAccessList2930TxFromBytesArray,
+  createLegacyTx,
+  createLegacyTxFromBytesArray,
+  createTxFromTxData,
 } from '../src/index.js'
 
 import type { TxValuesArray } from '../src/index.js'
-import type { AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
+import type { AddressLike, BigIntLike, BytesLike, PrefixedHexString } from '@ethereumjs/util'
 
 // @returns: Array with subtypes of the AddressLike type for a given address
-function generateAddressLikeValues(address: string): AddressLike[] {
+function generateAddressLikeValues(address: PrefixedHexString): AddressLike[] {
   return [address, toBytes(address), new Address(toBytes(address))]
 }
 
@@ -24,7 +25,7 @@ function generateBigIntLikeValues(value: number): BigIntLike[] {
 }
 
 // @returns: Array with subtypes of the BytesLike type for a given string
-function generateBytesLikeValues(value: string): BytesLike[] {
+function generateBytesLikeValues(value: PrefixedHexString): BytesLike[] {
   return [value, toBytes(value)]
 }
 
@@ -110,20 +111,20 @@ const eip1559TxValues = {
 
 describe('[Transaction Input Values]', () => {
   it('Legacy Transaction Values', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Homestead })
     const options = { ...baseTxValues, ...legacyTxValues, type: '0' }
     const legacyTxData = generateCombinations({
       options,
     })
     const randomSample = getRandomSubarray(legacyTxData, 100)
     for (const txData of randomSample) {
-      const tx = LegacyTransaction.fromTxData(txData, { common })
+      const tx = createLegacyTx(txData, { common })
       assert.throws(() => tx.hash(), undefined, undefined, 'tx.hash() throws if tx is unsigned')
     }
   })
 
   it('EIP-1559 Transaction Values', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const options = {
       ...baseTxValues,
       ...accessListEip2930TxValues,
@@ -136,7 +137,7 @@ describe('[Transaction Input Values]', () => {
     const randomSample = getRandomSubarray(eip1559TxData, 100)
 
     for (const txData of randomSample) {
-      const tx = LegacyTransaction.fromTxData(txData, { common })
+      const tx = createLegacyTx(txData, { common })
       assert.throws(() => tx.hash(), undefined, undefined, 'tx.hash() should throw if unsigned')
     }
   })
@@ -151,9 +152,9 @@ describe('[Invalid Array Input values]', () => {
     ]
     for (const signed of [false, true]) {
       for (const txType of txTypes) {
-        let tx = TransactionFactory.fromTxData({ type: txType })
+        let tx = createTxFromTxData({ type: txType })
         if (signed) {
-          tx = tx.sign(hexToBytes('0x' + '42'.repeat(32)))
+          tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
         }
         const rawValues = tx.raw()
         for (let x = 0; x < rawValues.length; x++) {
@@ -161,23 +162,21 @@ describe('[Invalid Array Input values]', () => {
           switch (txType) {
             case TransactionType.Legacy:
               assert.throws(() =>
-                LegacyTransaction.fromValuesArray(
-                  rawValues as TxValuesArray[TransactionType.Legacy]
-                )
+                createLegacyTxFromBytesArray(rawValues as TxValuesArray[TransactionType.Legacy]),
               )
               break
             case TransactionType.AccessListEIP2930:
               assert.throws(() =>
-                AccessListEIP2930Transaction.fromValuesArray(
-                  rawValues as TxValuesArray[TransactionType.AccessListEIP2930]
-                )
+                createAccessList2930TxFromBytesArray(
+                  rawValues as TxValuesArray[TransactionType.AccessListEIP2930],
+                ),
               )
               break
             case TransactionType.FeeMarketEIP1559:
               assert.throws(() =>
-                FeeMarketEIP1559Transaction.fromValuesArray(
-                  rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559]
-                )
+                create1559FeeMarketTxFromBytesArray(
+                  rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559],
+                ),
               )
               break
           }
@@ -217,19 +216,19 @@ describe('[Invalid Access Lists]', () => {
         for (const invalidAccessListItem of invalidAccessLists) {
           let tx: any
           try {
-            tx = TransactionFactory.fromTxData({
+            tx = createTxFromTxData({
               type: txType,
               accessList: <any>invalidAccessListItem,
             })
             if (signed) {
-              tx = tx.sign(hexToBytes('0x' + '42'.repeat(32)))
+              tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
             }
             assert.fail('did not fail on `fromTxData`')
           } catch (e: any) {
             assert.ok(true, 'failed ok on decoding in `fromTxData`')
-            tx = TransactionFactory.fromTxData({ type: txType })
+            tx = createTxFromTxData({ type: txType })
             if (signed) {
-              tx = tx.sign(hexToBytes('0x' + '42'.repeat(32)))
+              tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
             }
           }
           const rawValues = tx!.raw()
@@ -243,16 +242,16 @@ describe('[Invalid Access Lists]', () => {
           switch (txType) {
             case TransactionType.AccessListEIP2930:
               assert.throws(() =>
-                AccessListEIP2930Transaction.fromValuesArray(
-                  rawValues as TxValuesArray[TransactionType.AccessListEIP2930]
-                )
+                createAccessList2930TxFromBytesArray(
+                  rawValues as TxValuesArray[TransactionType.AccessListEIP2930],
+                ),
               )
               break
             case TransactionType.FeeMarketEIP1559:
               assert.throws(() =>
-                FeeMarketEIP1559Transaction.fromValuesArray(
-                  rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559]
-                )
+                create1559FeeMarketTxFromBytesArray(
+                  rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559],
+                ),
               )
               break
           }

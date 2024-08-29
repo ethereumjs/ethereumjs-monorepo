@@ -34,15 +34,29 @@ Class representing an `Account` and providing private/public key and address-rel
 ```ts
 // ./examples/account.ts
 
-import { Account } from '@ethereumjs/util'
+import { createAccount } from '@ethereumjs/util'
 
-const account = Account.fromAccountData({
+const account = createAccount({
   nonce: '0x02',
   balance: '0x0384',
   storageRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
   codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
 })
 console.log(`Account with nonce=${account.nonce} and balance=${account.balance} created`)
+```
+
+For Verkle or other contexts it can be useful to create partial accounts not containing all the account parameters. This is supported starting with v9.1.0:
+
+```ts
+// ./examples/accountPartial.ts
+
+import { createPartialAccount } from '@ethereumjs/util'
+
+const account = createPartialAccount({
+  nonce: '0x02',
+  balance: '0x0384',
+})
+console.log(`Partial account with nonce=${account.nonce} and balance=${account.balance} created`)
 ```
 
 ### Module: [address](src/address.ts)
@@ -52,9 +66,9 @@ Class representing an Ethereum `Address` with instantiation helpers and validati
 ```ts
 // ./examples/address.ts
 
-import { Address } from '@ethereumjs/util'
+import { createAddressFromString } from '@ethereumjs/util'
 
-const address = Address.fromString('0x2f015c60e0be116b1f0cd534704db9c92118fb6a')
+const address = createAddressFromString('0x2f015c60e0be116b1f0cd534704db9c92118fb6a')
 console.log(`Ethereum address ${address.toString()} created`)
 ```
 
@@ -117,7 +131,7 @@ Genesis related interfaces and helpers.
 
 ### Module: [internal](src/internal.ts)
 
-Internalized simple helper methods like `isHexPrefixed`. Note that methods from this module might get deprectared in the future.
+Internalized simple helper methods like `isHexString`. Note that methods from this module might get deprecated in the future.
 
 ### Module: [kzg](src/kzg.ts)
 
@@ -126,6 +140,16 @@ KZG interface (used for 4844 blob txs), see [@ethereumjs/tx](https://github.com/
 ### Module: [mapDB](src/mapDB.ts)
 
 Simple map DB implementation using the `DB` interface (see above).
+
+### Module: [requests](src/requests.ts)
+
+Module with various type and an abstract base class for [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) general purpose execution layer requests to the CL (Prague hardfork) as well as concrete implementations for the currently supported request types:
+
+- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110): `DepositRequest` (Prague Hardfork)
+- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002): `WithdrawalRequest` (Prague Hardfork)
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251): `ConsolidationRequest` (Prague Hardfork)
+
+These request types are mainly used within the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library where applied usage instructions are provided in the README.
 
 ### Module: [signature](src/signature.ts)
 
@@ -138,12 +162,12 @@ import { bytesToHex, ecrecover, hexToBytes } from '@ethereumjs/util'
 
 const chainId = BigInt(3) // Ropsten
 
-const echash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
+const ecHash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
 const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
 const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
 const v = BigInt(41)
 
-const pubkey = ecrecover(echash, v, r, s, chainId)
+const pubkey = ecrecover(ecHash, v, r, s, chainId)
 
 console.log(`Recovered public key ${bytesToHex(pubkey)} from valid signature values`)
 ```
@@ -257,7 +281,7 @@ The following methods are available by an internalized version of the [ethjs-uti
 - arrayContainsArray
 - getBinarySize
 - stripHexPrefix
-- isHexPrefixed
+- isHexString
 - isHexString
 - padToEven
 - fromAscii

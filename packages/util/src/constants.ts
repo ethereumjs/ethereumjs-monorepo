@@ -11,7 +11,7 @@ export const MAX_UINT64 = BigInt('0xffffffffffffffff')
  * The max integer that the evm can handle (2^256-1)
  */
 export const MAX_INTEGER = BigInt(
-  '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+  '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
 )
 
 /**
@@ -20,7 +20,7 @@ export const MAX_INTEGER = BigInt(
  * We use literal value instead of calculated value for compatibility issue.
  */
 export const MAX_INTEGER_BIGINT = BigInt(
-  '115792089237316195423570985008687907853269984665640564039457584007913129639935'
+  '115792089237316195423570985008687907853269984665640564039457584007913129639935',
 )
 
 export const SECP256K1_ORDER = secp256k1.CURVE.n
@@ -30,7 +30,7 @@ export const SECP256K1_ORDER_DIV_2 = secp256k1.CURVE.n / BigInt(2)
  * 2^256
  */
 export const TWO_POW256 = BigInt(
-  '0x10000000000000000000000000000000000000000000000000000000000000000'
+  '0x10000000000000000000000000000000000000000000000000000000000000000',
 )
 
 /**

@@ -5,9 +5,8 @@ import { ENR } from './enr.js'
 
 import type { DNSOptions, PeerInfo } from '../types.js'
 import type { Common } from '@ethereumjs/common'
-const { debug: createDebugLogger } = debugDefault
 
-const debug = createDebugLogger('devp2p:dns:dns')
+const debug = debugDefault('devp2p:dns:dns')
 
 type SearchContext = {
   domain: string
@@ -33,7 +32,7 @@ export class DNS {
     this._common = options.common
 
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   /**
@@ -130,7 +129,7 @@ export class DNS {
    *
    * @param {string[]}      branches
    * @param {SearchContext} context
-   * @return {String}       subdomian
+   * @return {String}       subdomain
    */
   private _selectRandomPath(branches: string[], context: SearchContext): string {
     // Identify domains already visited in this traversal of the DNS tree.

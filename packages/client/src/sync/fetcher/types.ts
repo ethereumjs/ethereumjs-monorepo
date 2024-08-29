@@ -1,4 +1,4 @@
-import type { Peer } from '../../net/peer'
+import type { Peer } from '../../net/peer/index.js'
 
 export type Job<JobTask, JobResult, StorageItem> = {
   task: JobTask
@@ -43,7 +43,7 @@ export type SnapFetcherDoneFlags = {
   stateRoot?: Uint8Array
 }
 
-export function getInitFecherDoneFlags(): SnapFetcherDoneFlags {
+export function getInitFetcherDoneFlags(): SnapFetcherDoneFlags {
   return {
     done: false,
     syncing: false,

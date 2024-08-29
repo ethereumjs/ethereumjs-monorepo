@@ -1,8 +1,8 @@
 import { BIGINT_0, bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
 
-import { INTERNAL_ERROR, INVALID_BLOCK, INVALID_PARAMS } from './error-code'
+import { INTERNAL_ERROR, INVALID_BLOCK, INVALID_PARAMS } from './error-code.js'
 
-import type { Chain } from '../blockchain'
+import type { Chain } from '../blockchain/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { JsonRpcTx, TypedTransaction } from '@ethereumjs/tx'
 
@@ -10,6 +10,7 @@ type RpcError = {
   code: number
   message: string
   trace?: string
+  data?: string
 }
 
 export function callWithStackTrace(handler: Function, debug: boolean) {
@@ -21,9 +22,10 @@ export function callWithStackTrace(handler: Function, debug: boolean) {
       const e: RpcError = {
         code: error.code ?? INTERNAL_ERROR,
         message: error.message,
+        data: error.data,
       }
       if (debug === true) {
-        e['trace'] = error.stack ?? 'Stack trace is not available'
+        e['trace'] = error.stack
       }
 
       throw e
@@ -58,6 +60,7 @@ export const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number)
     s: txJSON.s!,
     maxFeePerBlobGas: txJSON.maxFeePerBlobGas,
     blobVersionedHashes: txJSON.blobVersionedHashes,
+    yParity: txJSON.yParity,
   }
 }
 

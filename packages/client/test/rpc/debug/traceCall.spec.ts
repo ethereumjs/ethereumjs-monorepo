@@ -1,5 +1,5 @@
-import { Block } from '@ethereumjs/block'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createBlock } from '@ethereumjs/block'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, expect, expectTypeOf, it } from 'vitest'
 
@@ -51,7 +51,7 @@ describe('trace a call', async () => {
   })
   const rpc = getRpcClient(server)
   // construct block with tx
-  const tx = TransactionFactory.fromTxData(
+  const tx = createTxFromTxData(
     {
       type: 0x2,
       gasLimit: 0xfffff,
@@ -60,12 +60,12 @@ describe('trace a call', async () => {
       value: 10000,
       data: '0x60AA',
     },
-    { common, freeze: false }
+    { common, freeze: false },
   ).sign(dummy.privKey)
   tx.getSenderAddress = () => {
     return dummy.addr
   }
-  const block = Block.fromBlockData({}, { common })
+  const block = createBlock({}, { common })
   block.transactions[0] = tx
   await runBlockWithTxs(chain, execution, [tx], true)
 
@@ -103,7 +103,7 @@ describe('trace a call', async () => {
           },
         ],
       },
-      'produced a correct trace'
+      'produced a correct trace',
     )
   })
 })

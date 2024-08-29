@@ -3,13 +3,13 @@ import {
   compareBytes,
   concatBytes,
   hexToBytes,
+  randomBytes,
   setLengthLeft,
   toBytes,
 } from '@ethereumjs/util'
-import * as crypto from 'crypto'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../../src/index.js'
+import { Trie, createMerkleProof, verifyTrieRangeProof } from '../../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
 
@@ -36,8 +36,8 @@ async function randomTrie(db: DB<string, string>, addKey: boolean = true) {
   }
 
   for (let i = 0; i < TRIE_SIZE; i++) {
-    const key = crypto.randomBytes(32)
-    const val = crypto.randomBytes(20)
+    const key = randomBytes(32)
+    const val = randomBytes(20)
     if ((await trie.get(key)) === null) {
       await trie.put(key, val)
       entries.push([key, val])
@@ -83,18 +83,18 @@ async function verify(
   startKey?: Uint8Array,
   endKey?: Uint8Array,
   keys?: Uint8Array[],
-  vals?: Uint8Array[]
+  values?: Uint8Array[],
 ) {
   startKey = startKey ?? entries[start][0]
   endKey = endKey ?? entries[end][0]
   const targetRange = entries.slice(start, end + 1)
-  return trie.verifyRangeProof(
+  return verifyTrieRangeProof(
     trie.root(),
     startKey,
     endKey,
     keys ?? targetRange.map(([key]) => key),
-    vals ?? targetRange.map(([, val]) => val),
-    [...(await trie.createProof(startKey)), ...(await trie.createProof(endKey))]
+    values ?? targetRange.map(([, val]) => val),
+    [...(await createMerkleProof(trie, startKey)), ...(await createMerkleProof(trie, endKey))],
   )
 }
 
@@ -136,13 +136,13 @@ describe('simple merkle range proofs generation and verification', () => {
 
       assert.equal(
         await verify(trie, entries, start, end, startKey, endKey),
-        end !== entries.length - 1
+        end !== entries.length - 1,
       )
     }
 
     // Special case, two edge proofs for two edge key.
-    const startKey = hexToBytes('0x' + '00'.repeat(32))
-    const endKey = hexToBytes('0x' + 'ff'.repeat(32))
+    const startKey = hexToBytes(`0x${'00'.repeat(32)}`)
+    const endKey = hexToBytes(`0x${'ff'.repeat(32)}`)
     assert.equal(await verify(trie, entries, 0, entries.length - 1, startKey, endKey), false)
   })
 
@@ -195,17 +195,15 @@ describe('simple merkle range proofs generation and verification', () => {
     // One element with two non-existent edge proofs
     assert.equal(
       await verify(trie, entries, start, start, decreasedStartKey, increasedEndKey),
-      true
+      true,
     )
 
     // Test the mini trie with only a single element.
     const tinyTrie = new Trie()
-    const tinyEntries: [Uint8Array, Uint8Array][] = [
-      [crypto.randomBytes(32), crypto.randomBytes(20)],
-    ]
+    const tinyEntries: [Uint8Array, Uint8Array][] = [[randomBytes(32), randomBytes(20)]]
     await tinyTrie.put(tinyEntries[0][0], tinyEntries[0][1])
 
-    const tinyStartKey = hexToBytes('0x' + '00'.repeat(32))
+    const tinyStartKey = hexToBytes(`0x${'00'.repeat(32)}`)
     assert.equal(await verify(tinyTrie, tinyEntries, 0, 0, tinyStartKey), false)
   })
 
@@ -213,15 +211,15 @@ describe('simple merkle range proofs generation and verification', () => {
     const { trie, entries } = await randomTrie(new MapDB())
 
     assert.equal(
-      await trie.verifyRangeProof(
+      await verifyTrieRangeProof(
         trie.root(),
         null,
         null,
         entries.map(([key]) => key),
         entries.map(([, val]) => val),
-        null
+        null,
       ),
-      false
+      false,
     )
 
     // With edge proofs, it should still work.
@@ -234,15 +232,15 @@ describe('simple merkle range proofs generation and verification', () => {
         entries,
         0,
         entries.length - 1,
-        hexToBytes('0x' + '00'.repeat(32)),
-        hexToBytes('0x' + 'ff'.repeat(32))
+        hexToBytes(`0x${'00'.repeat(32)}`),
+        hexToBytes(`0x${'ff'.repeat(32)}`),
       ),
-      false
+      false,
     )
   })
 
   it('create a single side range proof and verify it', async () => {
-    const startKey = hexToBytes('0x' + '00'.repeat(32))
+    const startKey = hexToBytes(`0x${'00'.repeat(32)}`)
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
@@ -252,7 +250,7 @@ describe('simple merkle range proofs generation and verification', () => {
   })
 
   it('create a revert single side range proof and verify it', async () => {
-    const endKey = hexToBytes('0x' + 'ff'.repeat(32))
+    const endKey = hexToBytes(`0x${'ff'.repeat(32)}`)
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
@@ -263,7 +261,7 @@ describe('simple merkle range proofs generation and verification', () => {
 
   it('create a bad range proof and verify it', async () => {
     const runTest = async (
-      cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>
+      cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>,
     ) => {
       const { trie, entries } = await randomTrie(new MapDB(), false)
 
@@ -282,7 +280,7 @@ describe('simple merkle range proofs generation and verification', () => {
       const start = getRandomIntInclusive(0, entries.length - 2)
       const end = getRandomIntInclusive(start + 1, entries.length - 1)
       const targetIndex = getRandomIntInclusive(start, end)
-      entries[targetIndex][0] = crypto.randomBytes(32)
+      entries[targetIndex][0] = randomBytes(32)
       await verify(trie, entries, start, end)
     })
 
@@ -291,7 +289,7 @@ describe('simple merkle range proofs generation and verification', () => {
       const start = getRandomIntInclusive(0, entries.length - 2)
       const end = getRandomIntInclusive(start + 1, entries.length - 1)
       const targetIndex = getRandomIntInclusive(start, end)
-      entries[targetIndex][1] = crypto.randomBytes(20)
+      entries[targetIndex][1] = randomBytes(20)
       await verify(trie, entries, start, end)
     })
 
@@ -351,7 +349,7 @@ describe('simple merkle range proofs generation and verification', () => {
         undefined,
         undefined,
         targetRange.map(([key]) => key),
-        targetRange.map(([, val]) => val)
+        targetRange.map(([, val]) => val),
       )
       result = true
     } catch (err) {
@@ -455,14 +453,14 @@ describe('simple merkle range proofs generation and verification', () => {
 
       if (start === -1) {
         start = 0
-        startKey = hexToBytes('0x' + '00'.repeat(32))
+        startKey = hexToBytes(`0x${'00'.repeat(32)}`)
       } else {
         startKey = entries[start][0]
       }
 
       if (end === -1) {
         end = entries.length - 1
-        endKey = hexToBytes('0x' + 'ff'.repeat(32))
+        endKey = hexToBytes(`0x${'ff'.repeat(32)}`)
       } else {
         endKey = entries[end][0]
       }
@@ -476,7 +474,7 @@ describe('simple merkle range proofs generation and verification', () => {
 
     let bloatedProof: Uint8Array[] = []
     for (let i = 0; i < TRIE_SIZE; i++) {
-      bloatedProof = bloatedProof.concat(await trie.createProof(entries[i][0]))
+      bloatedProof = bloatedProof.concat(await createMerkleProof(trie, entries[i][0]))
     }
 
     assert.equal(await verify(trie, entries, 0, entries.length - 1), false)

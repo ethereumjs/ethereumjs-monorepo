@@ -12,10 +12,10 @@ describe('[Util/genesis]', () => {
     assert.equal(
       genesisState['0x4242424242424242424242424242424242424242'][1].includes(
         // sample data check
-        '0x60806040526004361061003'
+        '0x60806040526004361061003',
       ),
       true,
-      'should have deposit contract'
+      'should have deposit contract',
     )
   })
 })

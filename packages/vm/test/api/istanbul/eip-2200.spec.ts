@@ -1,9 +1,9 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, hexToBytes, setLengthLeft, toBytes } from '@ethereumjs/util'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { Address, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
-import { createAccount } from '../utils'
+import { VM } from '../../../src/index.js'
+import { createAccountWithDefaults } from '../utils.js'
 
 const testCases = [
   {
@@ -46,20 +46,20 @@ describe('Istanbul: EIP-2200', () => {
   it('net-metering SSTORE', async () => {
     const caller = new Address(hexToBytes('0x0000000000000000000000000000000000000000'))
     const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
-    const key = setLengthLeft(toBytes('0x' + BigInt(0).toString(16)), 32)
+    const key = setLengthLeft(hexToBytes(`0x${BigInt(0).toString(16)}`), 32)
 
     for (const testCase of testCases) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+      const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
       const vm = await VM.create({ common })
 
-      const account = createAccount(BigInt(0), BigInt(0))
+      const account = createAccountWithDefaults(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)
-      await vm.stateManager.putContractCode(addr, hexToBytes('0x' + testCase.code))
+      await vm.stateManager.putCode(addr, hexToBytes(`0x${testCase.code}`))
       if (testCase.original !== BigInt(0)) {
-        await vm.stateManager.putContractStorage(
+        await vm.stateManager.putStorage(
           addr,
           key,
-          toBytes('0x' + testCase.original.toString(16))
+          hexToBytes(`0x${testCase.original.toString(16)}`),
         )
       }
 

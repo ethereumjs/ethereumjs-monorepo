@@ -1,14 +1,15 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+import { VM, runTx } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
-const address = new Address(hexToBytes('0x' + '11'.repeat(20)))
-const pkey = hexToBytes('0x' + '20'.repeat(32))
+const address = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
+const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 
 const testCases = [
   {
@@ -110,7 +111,7 @@ const testCases = [
 ]
 
 describe('EIP-3529 tests', () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3529] })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [3529] })
 
   it('should verify EIP test cases', async () => {
     const vm = await VM.create({ common })
@@ -125,19 +126,19 @@ describe('EIP-3529 tests', () => {
     })
 
     const gasLimit = BigInt(100000)
-    const key = hexToBytes('0x' + '00'.repeat(32))
+    const key = hexToBytes(`0x${'00'.repeat(32)}`)
 
     for (const testCase of testCases) {
-      const code = hexToBytes(testCase.code + '00') // add a STOP opcode (0 gas) so we can find the gas used / effective gas
+      const code = hexToBytes(`${testCase.code as PrefixedHexString}00`) // add a STOP opcode (0 gas) so we can find the gas used / effective gas
 
       await vm.stateManager.putAccount(address, new Account())
-      await vm.stateManager.putContractStorage(
+      await vm.stateManager.putStorage(
         address,
         key,
-        hexToBytes('0x' + testCase.original.toString().padStart(64, '0'))
+        hexToBytes(`0x${testCase.original.toString().padStart(64, '0')}`),
       )
 
-      await vm.stateManager.getContractStorage(address, key)
+      await vm.stateManager.getStorage(address, key)
       vm.evm.journal.addAlwaysWarmSlot(bytesToHex(address.bytes), bytesToHex(key))
 
       await vm.evm.runCode!({
@@ -159,12 +160,12 @@ describe('EIP-3529 tests', () => {
   it('should not refund selfdestructs', async () => {
     const vm = await VM.create({ common })
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       data: '0x6000ff',
       gasLimit: 100000,
     }).sign(pkey)
 
-    const result = await vm.runTx({
+    const result = await runTx(vm, {
       tx,
       skipHardForkValidation: true,
     })
@@ -192,31 +193,31 @@ describe('EIP-3529 tests', () => {
       }
     })
 
-    const address = new Address(hexToBytes('0x' + '20'.repeat(20)))
+    const address = new Address(hexToBytes(`0x${'20'.repeat(20)}`))
 
-    const value = hexToBytes('0x' + '01'.repeat(32))
+    const value = hexToBytes(`0x${'01'.repeat(32)}`)
 
-    let code = '0x'
+    let code: PrefixedHexString = '0x'
 
     for (let i = 0; i < 100; i++) {
-      const key = hexToBytes('0x' + i.toString(16).padStart(64, '0'))
+      const key = hexToBytes(`0x${i.toString(16).padStart(64, '0')}`)
       await vm.stateManager.putAccount(address, new Account())
-      await vm.stateManager.putContractStorage(address, key, value)
+      await vm.stateManager.putStorage(address, key, value)
       const hex = i.toString(16).padStart(2, '0')
       // push 0 push <hex> sstore
-      code += '600060' + hex + '55'
+      code = `${code}600060${hex}55`
     }
 
-    code += '00'
+    code = `${code}00`
 
-    await vm.stateManager.putContractCode(address, hexToBytes(code))
+    await vm.stateManager.putCode(address, hexToBytes(code))
 
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       to: address,
       gasLimit: 10000000,
     }).sign(pkey)
 
-    const result = await vm.runTx({ tx, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, skipHardForkValidation: true })
 
     const actualGasUsed = startGas! - finalGas! + BigInt(21000)
     const maxRefund = actualGasUsed / BigInt(5)

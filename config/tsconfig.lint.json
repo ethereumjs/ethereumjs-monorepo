@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "../packages/**/src/**/*.ts",
+    "../packages/**/test/**/*.ts",
+    "../packages/**/examples/**/*.ts",
+    "../packages/**/examples/**/*.cjs",
+    "../packages/**/examples/**/*.js",
+    "../packages/**/benchmarks/**/*.ts",
+    "../packages/**/bin/**/*.ts"
+  ],
+  "compilerOptions": {
+    "noEmit": true
+  }
+}

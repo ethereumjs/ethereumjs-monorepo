@@ -1,17 +1,18 @@
-import { Common } from '@ethereumjs/common'
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { genesisStateRoot } from '@ethereumjs/trie'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src/blockchain.js'
+import { createBlockchain } from '../src/index.js'
 
-// kiln genesis with deposit contract storage set
-import gethGenesisKilnJSON from './testdata/geth-genesis-kiln.json'
+import gethGenesisJSON from './testdata/post-merge.json'
+
+import type { Blockchain } from '../src/blockchain.js'
 
 async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
-  const common = Common.fromGethGenesis(gethGenesis, { chain: 'kiln' })
+  const common = createCommonFromGethGenesis(gethGenesis, { chain: 'kiln' })
   const genesisState = parseGethGenesisState(gethGenesis)
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     genesisState,
     common,
   })
@@ -20,23 +21,23 @@ async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
 
 describe('[Utils/Parse]', () => {
   it('should properly parse genesis state from gethGenesis', async () => {
-    const genesisState = parseGethGenesisState(gethGenesisKilnJSON)
+    const genesisState = parseGethGenesisState(gethGenesisJSON)
     const stateRoot = await genesisStateRoot(genesisState)
     assert.equal(
       bytesToHex(stateRoot),
-      '0x52e628c7f35996ba5a0402d02b34535993c89ff7fc4c430b2763ada8554bee62',
-      'kiln stateRoot matches'
+      '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
+      'stateRoot matches',
     )
   })
 
   it('should initialize blockchain from gethGenesis', async () => {
-    const blockchain = await getBlockchain(gethGenesisKilnJSON)
+    const blockchain = await getBlockchain(gethGenesisJSON)
     const genesisHash = blockchain.genesisBlock.hash()
 
     assert.equal(
       bytesToHex(genesisHash),
-      '0x51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8',
-      'kiln genesis hash matches'
+      '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a',
+      'genesis hash matches',
     )
   })
 })

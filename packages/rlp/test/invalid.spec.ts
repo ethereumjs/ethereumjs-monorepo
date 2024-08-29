@@ -19,7 +19,7 @@ describe('invalid tests', () => {
         },
         undefined,
         undefined,
-        `should not decode invalid RLPs, input: ${out}`
+        `should not decode invalid RLPs, input: ${out}`,
       )
     })
   }
@@ -27,7 +27,7 @@ describe('invalid tests', () => {
   it('should pass long string sanity check test', function () {
     // long string invalid test; string length > 55
     const longBufferTest = RLP.encode(
-      'zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss'
+      'zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss', // cspell:disable-line
     )
     // sanity checks
     assert.ok(longBufferTest[0] > 0xb7)
@@ -40,14 +40,14 @@ describe('invalid tests', () => {
       },
       undefined,
       undefined,
-      'string longer than 55 bytes: should throw'
+      'string longer than 55 bytes: should throw',
     )
   })
 })
 
 // The tests below are taken from Geth
 // https://github.com/ethereum/go-ethereum/blob/99be62a9b16fd7b3d1e2e17f1e571d3bef34f122/rlp/decode_test.go
-// Not all tests were taken; some which throw due to type errors in Geth are ran against Geth's RLPdump to
+// Not all tests were taken; some which throw due to type errors in Geth are ran against Geth's RLPDump to
 // see if there is a decode error or not. In both cases, the test is converted to either reflect the
 // expected value, or if the test is invalid, it is added as error test case
 
@@ -63,13 +63,13 @@ const invalidGethCases: string[] = [
   'F90000',
   'F90055',
   'FA0002FFFF',
-  'BFFFFFFFFFFFFFFFFFFF',
+  'BFFFFFFFFFFFFFFFFFFF', // cspell:disable-line
   'C801',
   'CD04040404FFFFFFFFFFFFFFFFFF0303',
   'C40102030401',
   'C4010203048180',
   '81',
-  'BFFFFFFFFFFFFFFF',
+  'BFFFFFFFFFFFFFFF', // cspell:disable-line
   'C801',
   'c330f9c030f93030ce3030303030303030bd303030303030',
   '8105',
@@ -87,7 +87,7 @@ describe('invalid geth tests', () => {
         },
         undefined,
         undefined,
-        `should throw: ${gethCase}`
+        `should throw: ${gethCase}`,
       )
     })
   }

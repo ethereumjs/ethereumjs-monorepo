@@ -3,20 +3,12 @@ import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import { base32, base64url } from '@scure/base'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
-import { protocols } from 'multiaddr'
-import Convert from 'multiaddr/src/convert.js'
 import { sscanf } from 'scanf'
 
-import { toNewUint8Array } from '../util.js'
+import { ipToString } from '../util.js'
 
 import type { PeerInfo } from '../types.js'
 import type { Common } from '@ethereumjs/common'
-
-type ProtocolCodes = {
-  ipCode: number
-  tcpCode: number
-  udpCode: number
-}
 
 type ENRRootValues = {
   eRoot: string
@@ -28,6 +20,12 @@ type ENRRootValues = {
 type ENRTreeValues = {
   publicKey: string
   domain: string
+}
+
+// Copied over from the multiaddr repo: https://github.com/multiformats/js-multiaddr/blob/main/src/convert.ts
+function bytesToPort(bytes: Uint8Array): number {
+  const view = new DataView(bytes.buffer)
+  return view.getUint16(bytes.byteOffset)
 }
 
 export class ENR {
@@ -76,17 +74,15 @@ export class ENR {
     const isVerified = ecdsaVerify(
       signature as Uint8Array,
       (common?.customCrypto.keccak256 ?? keccak256)(RLP.encode([seq, ...kvs])),
-      obj.secp256k1
+      obj.secp256k1,
     )
 
     if (!isVerified) throw new Error('Unable to verify ENR signature')
 
-    const { ipCode, tcpCode, udpCode } = this._getIpProtocolConversionCodes(obj.id)
-
     const peerInfo: PeerInfo = {
-      address: Convert.toString(ipCode, obj.ip) as string,
-      tcpPort: Number(Convert.toString(tcpCode, toNewUint8Array(obj.tcp))),
-      udpPort: Number(Convert.toString(udpCode, toNewUint8Array(obj.udp))),
+      address: ipToString(obj.ip),
+      tcpPort: bytesToPort(obj.tcp),
+      udpPort: bytesToPort(obj.udp),
     }
 
     return peerInfo
@@ -104,19 +100,19 @@ export class ENR {
     if (!root.startsWith(this.ROOT_PREFIX))
       throw new Error(`ENR root entry must start with '${this.ROOT_PREFIX}'`)
 
-    const rootVals = sscanf(
+    const rootValues = sscanf(
       root,
       `${this.ROOT_PREFIX}v1 e=%s l=%s seq=%d sig=%s`,
       'eRoot',
       'lRoot',
       'seq',
-      'signature'
+      'signature',
     ) as ENRRootValues
 
-    if (!rootVals.eRoot) throw new Error("Could not parse 'e' value from ENR root entry")
-    if (!rootVals.lRoot) throw new Error("Could not parse 'l' value from ENR root entry")
-    if (!rootVals.seq) throw new Error("Could not parse 'seq' value from ENR root entry")
-    if (!rootVals.signature) throw new Error("Could not parse 'sig' value from ENR root entry")
+    if (!rootValues.eRoot) throw new Error("Could not parse 'e' value from ENR root entry")
+    if (!rootValues.lRoot) throw new Error("Could not parse 'l' value from ENR root entry")
+    if (!rootValues.seq) throw new Error("Could not parse 'seq' value from ENR root entry")
+    if (!rootValues.signature) throw new Error("Could not parse 'sig' value from ENR root entry")
 
     const decodedPublicKey = [...base32.decode(publicKey + '===').values()]
 
@@ -126,7 +122,7 @@ export class ENR {
     const signedComponent = root.split(' sig')[0]
     const signedComponentBytes = utf8ToBytes(signedComponent)
     const signatureBytes = Uint8Array.from(
-      [...base64url.decode(rootVals.signature + '=').values()].slice(0, 64)
+      [...base64url.decode(rootValues.signature + '=').values()].slice(0, 64),
     )
 
     const keyBytes = Uint8Array.from(decodedPublicKey)
@@ -134,12 +130,12 @@ export class ENR {
     const isVerified = ecdsaVerify(
       signatureBytes,
       (common?.customCrypto.keccak256 ?? keccak256)(signedComponentBytes),
-      keyBytes
+      keyBytes,
     )
 
     if (!isVerified) throw new Error('Unable to verify ENR root signature')
 
-    return rootVals.eRoot
+    return rootValues.eRoot
   }
 
   /**
@@ -154,17 +150,17 @@ export class ENR {
     if (!tree.startsWith(this.TREE_PREFIX))
       throw new Error(`ENR tree entry must start with '${this.TREE_PREFIX}'`)
 
-    const treeVals = sscanf(
+    const treeValues = sscanf(
       tree,
       `${this.TREE_PREFIX}//%s@%s`,
       'publicKey',
-      'domain'
+      'domain',
     ) as ENRTreeValues
 
-    if (!treeVals.publicKey) throw new Error('Could not parse public key from ENR tree entry')
-    if (!treeVals.domain) throw new Error('Could not parse domain from ENR tree entry')
+    if (!treeValues.publicKey) throw new Error('Could not parse public key from ENR tree entry')
+    if (!treeValues.domain) throw new Error('Could not parse domain from ENR tree entry')
 
-    return treeVals
+    return treeValues
   }
 
   /**
@@ -178,31 +174,5 @@ export class ENR {
       throw new Error(`ENR branch entry must start with '${this.BRANCH_PREFIX}'`)
 
     return branch.split(this.BRANCH_PREFIX)[1].split(',')
-  }
-
-  /**
-   * Gets relevant multiaddr conversion codes for ipv4, ipv6 and tcp, udp formats
-   * @param  {Uint8Array}        protocolId
-   * @return {ProtocolCodes}
-   */
-  static _getIpProtocolConversionCodes(protocolId: Uint8Array): ProtocolCodes {
-    let ipCode
-
-    switch (bytesToUtf8(protocolId)) {
-      case 'v4':
-        ipCode = protocols(4).code
-        break
-      case 'v6':
-        ipCode = protocols(41).code
-        break
-      default:
-        throw new Error("IP protocol must be 'v4' or 'v6'")
-    }
-
-    return {
-      ipCode,
-      tcpCode: protocols('tcp').code,
-      udpCode: protocols('udp').code,
-    }
   }
 }

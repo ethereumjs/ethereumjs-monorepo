@@ -1,11 +1,8 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
+import { BlockHeader, createBlockHeader } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import {
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-} from '@ethereumjs/tx'
+import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -16,20 +13,20 @@ import {
   equalsBytes,
   getBlobs,
   hexToBytes,
-  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it, vi } from 'vitest'
 
 import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
-import { Config } from '../../src/config'
-import { getLogger } from '../../src/logging'
-import { PendingBlock } from '../../src/miner'
-import { TxPool } from '../../src/service/txpool'
-import { mockBlockchain } from '../rpc/mockBlockchain'
+import { Config } from '../../src/config.js'
+import { getLogger } from '../../src/logging.js'
+import { PendingBlock } from '../../src/miner/index.js'
+import { TxPool } from '../../src/service/txpool.js'
+import { mockBlockchain } from '../rpc/mockBlockchain.js'
 
+import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 const A = {
@@ -48,7 +45,7 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
   await vm.stateManager.commit()
 }
 
-const common = new Common({ chain: CommonChain.Goerli, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: Goerli, hardfork: Hardfork.Berlin })
 // Unschedule any timestamp since tests are not configured for timestamps
 common
   .hardforks()
@@ -56,12 +53,15 @@ common
   .map((hf) => {
     hf.timestamp = undefined
   })
-
+const txGauge: any = {
+  inc: () => {},
+}
 const config = new Config({
   common,
   accountCache: 10000,
   storageCache: 1000,
   logger: getLogger({ loglevel: 'debug' }),
+  prometheusMetrics: txGauge,
 })
 
 const setup = () => {
@@ -72,7 +72,7 @@ const setup = () => {
   const service: any = {
     chain: {
       headers: { height: BigInt(0) },
-      getCanonicalHeadHeader: () => BlockHeader.fromHeaderData({}, { common }),
+      getCanonicalHeadHeader: () => createBlockHeader({}, { common }),
     },
     execution: {
       vm: {
@@ -80,7 +80,7 @@ const setup = () => {
         shallowCopy: () => service.execution.vm,
         setStateRoot: () => {},
         blockchain: mockBlockchain({}),
-        common: new Common({ chain: 'mainnet' }),
+        common: new Common({ chain: Mainnet }),
       },
     },
   }
@@ -104,7 +104,7 @@ describe('[PendingBlock]', async () => {
     nonce = 0,
     value = 1,
     gasPrice = 1000000000,
-    gasLimit = 100000
+    gasLimit = 100000,
   ) => {
     const txData = {
       nonce,
@@ -113,7 +113,7 @@ describe('[PendingBlock]', async () => {
       to: to.address,
       value,
     }
-    const tx = LegacyTransaction.fromTxData(txData, { common })
+    const tx = createLegacyTx(txData, { common })
     const signedTx = tx.sign(from.privateKey)
     return signedTx
   }
@@ -126,14 +126,15 @@ describe('[PendingBlock]', async () => {
 
   it('should start and build', async () => {
     const { txPool } = setup()
-    const vm = await VM.create({ common })
+    const blockchain = await createBlockchain({ common })
+    const vm = await VM.create({ common, blockchain })
     await setBalance(vm, A.address, BigInt(5000000000000000))
     await setBalance(vm, B.address, BigInt(5000000000000000))
     await txPool.add(txA01)
     await txPool.add(txA02)
     // skip hardfork validation for ease
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
-    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
+    const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     await txPool.add(txB01)
@@ -147,13 +148,14 @@ describe('[PendingBlock]', async () => {
     assert.equal(
       pendingBlock.pendingPayloads.size,
       0,
-      'should reset the pending payload after build'
+      'should reset the pending payload after build',
     )
   })
 
   it('should include txs with mismatching hardforks that can still be executed', async () => {
     const { txPool } = setup()
-    const vm = await VM.create({ common })
+    const blockchain = await createBlockchain({ common })
+    const vm = await VM.create({ common, blockchain })
     await setBalance(vm, A.address, BigInt(5000000000000000))
     await setBalance(vm, B.address, BigInt(5000000000000000))
 
@@ -162,16 +164,16 @@ describe('[PendingBlock]', async () => {
     assert.equal(txPool.txsInPool, 1, '1 txA011 should be added')
     // skip hardfork validation for ease
     const pendingBlock = new PendingBlock({ config, txPool })
-    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
+    const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     const payload = pendingBlock.pendingPayloads.get(bytesToHex(payloadId))
     assert.equal(
       (payload as any).transactions.filter(
-        (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txA011.hash())
+        (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txA011.hash()),
       ).length,
       1,
-      'txA011 should be in block'
+      'txA011 should be in block',
     )
 
     txB011.common.setHardfork(Hardfork.Paris)
@@ -184,16 +186,16 @@ describe('[PendingBlock]', async () => {
     assert.equal(block?.transactions.length, 2, 'should include txs from pool')
     assert.equal(
       (payload as any).transactions.filter(
-        (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txB011.hash())
+        (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txB011.hash()),
       ).length,
       1,
-      'txB011 should be in block'
+      'txB011 should be in block',
     )
     pendingBlock.pruneSetToMax(0)
     assert.equal(
       pendingBlock.pendingPayloads.size,
       0,
-      'should reset the pending payload after build'
+      'should reset the pending payload after build',
     )
   })
 
@@ -201,27 +203,29 @@ describe('[PendingBlock]', async () => {
     const { txPool } = setup()
     await txPool.add(txA01)
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
-    const vm = await VM.create({ common })
+    const blockchain = await createBlockchain({ common })
+    const vm = await VM.create({ common, blockchain })
     await setBalance(vm, A.address, BigInt(5000000000000000))
-    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
+    const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     pendingBlock.stop(payloadId)
     assert.equal(
       pendingBlock.pendingPayloads.size,
       0,
-      'should reset the pending payload after stopping'
+      'should reset the pending payload after stopping',
     )
   })
 
   it('should stop adding txs when block is full', async () => {
     const { txPool } = setup()
 
-    // set gas limit low so that can accomodate 2 txs
+    // set gas limit low so that can accommodate, 2 txs
     const prevGasLimit = common['_chainParams'].genesis.gasLimit
     common['_chainParams'].genesis.gasLimit = 50000
 
-    const vm = await VM.create({ common })
+    const blockchain = await createBlockchain({ common })
+    const vm = await VM.create({ common, blockchain })
     await setBalance(vm, A.address, BigInt(5000000000000000))
 
     // create alternate transactions with custom gas limits to
@@ -232,19 +236,19 @@ describe('[PendingBlock]', async () => {
     await txPool.add(txA022)
 
     // This tx will not be added since its too big to fit
-    const txA03 = LegacyTransaction.fromTxData(
+    const txA03 = createLegacyTx(
       {
         data: '0xFE', // INVALID opcode, uses all gas
         gasLimit: 10000000,
         gasPrice: 1000000000,
         nonce: 2,
       },
-      { common }
+      { common },
     ).sign(A.privateKey)
     await txPool.add(txA03)
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     await setBalance(vm, A.address, BigInt(5000000000000000))
-    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
+    const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
 
@@ -256,14 +260,14 @@ describe('[PendingBlock]', async () => {
     assert.equal(
       block?.transactions.length,
       2,
-      'should include txs from pool that fit in the block'
+      'should include txs from pool that fit in the block',
     )
     assert.equal(receipts.length, 2, 'receipts should match number of transactions')
     pendingBlock.pruneSetToMax(0)
     assert.equal(
       pendingBlock.pendingPayloads.size,
       0,
-      'should reset the pending payload after build'
+      'should reset the pending payload after build',
     )
 
     // reset gas Limit
@@ -272,23 +276,24 @@ describe('[PendingBlock]', async () => {
 
   it('should skip adding txs when tx too big to fit', async () => {
     const { txPool } = setup()
-    const vm = await VM.create({ common })
+    const blockchain = await createBlockchain({ common })
+    const vm = await VM.create({ common, blockchain })
     await setBalance(vm, A.address, BigInt(5000000000000000))
     await txPool.add(txA01)
     await txPool.add(txA02)
-    const txA03 = LegacyTransaction.fromTxData(
+    const txA03 = createLegacyTx(
       {
         data: '0xFE', // INVALID opcode, uses all gas
         gasLimit: 10000000,
         gasPrice: 1000000000,
         nonce: 2,
       },
-      { common }
+      { common },
     ).sign(A.privateKey)
     await txPool.add(txA03)
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     await setBalance(vm, A.address, BigInt(5000000000000000))
-    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
+    const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     const built = await pendingBlock.build(payloadId)
@@ -298,14 +303,14 @@ describe('[PendingBlock]', async () => {
     assert.equal(
       block?.transactions.length,
       2,
-      'should include txs from pool that fit in the block'
+      'should include txs from pool that fit in the block',
     )
     assert.equal(receipts.length, 2, 'receipts should match number of transactions')
     pendingBlock.pruneSetToMax(0)
     assert.equal(
       pendingBlock.pendingPayloads.size,
       0,
-      'should reset the pending payload after build'
+      'should reset the pending payload after build',
     )
   })
 
@@ -313,8 +318,9 @@ describe('[PendingBlock]', async () => {
     const { txPool } = setup()
     await txPool.add(txA01)
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
-    const vm = await VM.create({ common })
-    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
+    const blockchain = await createBlockchain({ common })
+    const vm = await VM.create({ common, blockchain })
+    const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     const built = await pendingBlock.build(payloadId)
@@ -324,38 +330,20 @@ describe('[PendingBlock]', async () => {
     assert.equal(
       block.transactions.length,
       0,
-      'should not include tx with sender that has insufficient funds'
+      'should not include tx with sender that has insufficient funds',
     )
     assert.equal(receipts.length, 0, 'receipts should match number of transactions')
     pendingBlock.pruneSetToMax(0)
     assert.equal(
       pendingBlock.pendingPayloads.size,
       0,
-      'should reset the pending payload after build'
+      'should reset the pending payload after build',
     )
   })
 
-  it('should throw when blockchain does not have getTotalDifficulty function', async () => {
-    const { txPool } = setup()
-    const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
-    const vm = txPool['service'].execution.vm
-    // override total difficulty function to trigger error case
-    vm.blockchain.getTotalDifficulty = undefined
-    try {
-      await pendingBlock.start(vm, new Block())
-      assert.fail('should have thrown')
-    } catch (err: any) {
-      assert.equal(
-        err.message,
-        'cannot get iterator head: blockchain has no getTotalDifficulty function'
-      )
-    }
-  })
-
   it('construct blob bundles', async () => {
-    const kzg = await createKZG()
-    initKZG(kzg)
-    const common = Common.fromGethGenesis(gethGenesis, {
+    const kzg = await loadKZG()
+    const common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: {
@@ -366,13 +354,13 @@ describe('[PendingBlock]', async () => {
     const { txPool } = setup()
 
     const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
+    const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(blobs, commitments)
+    const proofs = blobsToProofs(kzg, blobs, commitments)
 
     // Create 3 txs with 2 blobs each so that only 2 of them can be included in a build
     for (let x = 0; x <= 2; x++) {
-      const txA01 = BlobEIP4844Transaction.fromTxData(
+      const txA01 = createBlob4844Tx(
         {
           blobVersionedHashes: [
             ...blobVersionedHashes,
@@ -389,13 +377,13 @@ describe('[PendingBlock]', async () => {
           to: randomBytes(20),
           nonce: BigInt(x),
         },
-        { common }
+        { common },
       ).sign(A.privateKey)
       await txPool.add(txA01)
     }
 
     // Add one other normal tx for nonce 3 which should also be not included in the build
-    const txNorm = FeeMarketEIP1559Transaction.fromTxData(
+    const txNorm = createFeeMarket1559Tx(
       {
         gasLimit: 0xffffffn,
         maxFeePerGas: 1000000000n,
@@ -403,16 +391,17 @@ describe('[PendingBlock]', async () => {
         to: randomBytes(20),
         nonce: BigInt(3),
       },
-      { common }
+      { common },
     ).sign(A.privateKey)
     await txPool.add(txNorm)
 
     assert.equal(txPool.txsInPool, 4, '4 txs should still be in the pool')
 
     const pendingBlock = new PendingBlock({ config, txPool })
-    const vm = await VM.create({ common })
+    const blockchain = await createBlockchain({ common })
+    const vm = await VM.create({ common, blockchain })
     await setBalance(vm, A.address, BigInt(500000000000000000))
-    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
+    const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     // stub the vm's common set hf to do nothing but stay in cancun
     vm.common.setHardforkBy = () => {
       return vm.common.hardfork()
@@ -433,10 +422,10 @@ describe('[PendingBlock]', async () => {
   })
 
   it('should exclude missingBlobTx', async () => {
-    const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
-    const kzg = await createKZG()
+    const gethGenesis = await import('../../../block/test/testdata/4844-hardfork.json')
+    const kzg = await loadKZG()
 
-    const common = Common.fromGethGenesis(gethGenesis, {
+    const common = createCommonFromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -445,12 +434,12 @@ describe('[PendingBlock]', async () => {
     const { txPool } = setup()
 
     const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
+    const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(blobs, commitments)
+    const proofs = blobsToProofs(kzg, blobs, commitments)
 
     // create a tx with missing blob data which should be excluded from the build
-    const missingBlobTx = BlobEIP4844Transaction.fromTxData(
+    const missingBlobTx = createBlob4844Tx(
       {
         blobVersionedHashes,
         kzgCommitments: commitments,
@@ -462,16 +451,17 @@ describe('[PendingBlock]', async () => {
         to: randomBytes(20),
         nonce: BigInt(0),
       },
-      { common }
+      { common },
     ).sign(A.privateKey)
     await txPool.add(missingBlobTx)
 
     assert.equal(txPool.txsInPool, 1, '1 txs should still be in the pool')
 
     const pendingBlock = new PendingBlock({ config, txPool })
-    const vm = await VM.create({ common })
+    const blockchain = await createBlockchain({ common })
+    const vm = await VM.create({ common, blockchain })
     await setBalance(vm, A.address, BigInt(500000000000000000))
-    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
+    const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     // stub the vm's common set hf to do nothing but stay in cancun
     vm.common.setHardforkBy = () => {
       return vm.common.hardfork()

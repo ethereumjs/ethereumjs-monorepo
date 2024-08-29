@@ -1,6 +1,10 @@
-import { Chain, Common } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
+import { Common, Mainnet } from '@ethereumjs/common'
+import { createEVM } from '@ethereumjs/evm'
 
-const common = new Common({ chain: Chain.Mainnet, eips: [3074] })
-const evm = new EVM({ common })
-console.log(`EIP 3074 is active - ${evm.common.isActivatedEIP(3074)}`)
+const main = async () => {
+  const common = new Common({ chain: Mainnet, eips: [7702] })
+  const evm = await createEVM({ common })
+  console.log(`EIP 7702 is active - ${evm.common.isActivatedEIP(7702)}`)
+}
+
+void main()

@@ -1,7 +1,8 @@
 // Example 2b - Creating and looking up a branch node
 
-const { Trie } = require('../../dist/cjs')
 const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
+
+const { Trie } = require('../../dist/cjs/index.js')
 
 const trie = new Trie()
 
@@ -31,13 +32,13 @@ async function test() {
     'Node 1 branch 3 (hex): path: ',
     bytesToHex(node1.node._branches[3][0]),
     ' | value: ',
-    bytesToHex(node1.node._branches[3][1])
+    bytesToHex(node1.node._branches[3][1]),
   )
   console.log(
     'Node 1 branch 4 (hex): path: ',
     bytesToHex(node1.node._branches[4][0]),
     ' | value:',
-    bytesToHex(node1.node._branches[4][1])
+    bytesToHex(node1.node._branches[4][1]),
   )
 
   console.log('Value of branch at index 3: ', bytesToUtf8(node1.node._branches[3][1]))
@@ -47,4 +48,4 @@ async function test() {
   console.log('Node 2: ', node2.node)
 }
 
-test()
+void test()

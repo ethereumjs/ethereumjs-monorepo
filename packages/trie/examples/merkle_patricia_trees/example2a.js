@@ -1,7 +1,8 @@
 // Example 2a - Creating and looking up a null node
 
-const { Trie } = require('../../dist/cjs')
 const { utf8ToBytes } = require('@ethereumjs/util')
+
+const { Trie } = require('../../dist/cjs/index.js')
 
 const trie = new Trie()
 
@@ -10,7 +11,7 @@ async function test() {
   console.log('Node 1: ', node1.node) // null
 }
 
-test()
+void test()
 
 /*
 Result:

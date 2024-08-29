@@ -18,7 +18,7 @@ describe('encoding hex prefixes', () => {
     const trie = new Trie()
     const trie2 = new Trie()
     const hex = 'FF44A3B3'
-    await trie.put(hexToBytes('0x' + hex), utf8ToBytes('test'))
+    await trie.put(hexToBytes(`0x${hex}`), utf8ToBytes('test'))
     await trie2.put(toBytes(`0x${hex}`), utf8ToBytes('test'))
     assert.equal(bytesToHex(trie.root()), bytesToHex(trie2.root()))
   })
@@ -51,7 +51,7 @@ describe('support for Uint8Array', () => {
     for (const value of db._database.values()) {
       assert.ok(
         typeof value === 'string',
-        'if a database is provided, string values will be used internally'
+        'if a database is provided, string values will be used internally',
       )
     }
   })

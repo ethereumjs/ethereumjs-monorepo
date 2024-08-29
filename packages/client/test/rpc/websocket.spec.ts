@@ -1,16 +1,17 @@
 import { randomBytes } from '@ethereumjs/util'
 import WebSocket from 'isomorphic-ws'
 import { Client } from 'jayson/promise'
-import { encode } from 'jwt-simple'
 import { assert, describe, it } from 'vitest'
 
-import { METHOD_NOT_FOUND } from '../../src/rpc/error-code'
+import { jwt } from '../../src/ext/jwt-simple.js'
+import { METHOD_NOT_FOUND } from '../../src/rpc/error-code.js'
 
-import { startRPC } from './helpers'
+import { startRPC } from './helpers.js'
 
-import type { TAlgorithm } from 'jwt-simple'
+import type { TAlgorithm } from '../../src/ext/jwt-simple.js'
 
 const jwtSecret = randomBytes(32)
+const { encode } = jwt
 
 describe('JSON-RPC call', () => {
   it('auth protected server with valid token', async () => {

@@ -1,17 +1,19 @@
-import { json as jsonParser } from 'body-parser'
+import bodyParser from 'body-parser'
+import Connect from 'connect'
+import cors from 'cors'
 import { createServer } from 'http'
-import { Server as RPCServer } from 'jayson/promise'
-import { decode } from 'jwt-simple'
+import jayson from 'jayson/promise/index.js'
 import { inspect } from 'util'
 
-import type { Logger } from '../logging'
-import type { RPCManager } from '../rpc'
+import { jwt } from '../ext/jwt-simple.js'
+
+import type { TAlgorithm } from '../ext/jwt-simple.js'
+import type { Logger } from '../logging.js'
+import type { RPCManager } from '../rpc/index.js'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
-import type { TAlgorithm } from 'jwt-simple'
-
-const Connect = require('connect')
-const cors = require('cors')
+const { json: jsonParser } = bodyParser
+const { decode } = jwt
 
 const algorithm: TAlgorithm = 'HS256'
 
@@ -22,13 +24,13 @@ type CreateRPCServerOpts = {
   logger?: Logger
 }
 type CreateRPCServerReturn = {
-  server: RPCServer
+  server: jayson.Server
   methods: { [key: string]: Function }
   namespaces: string
 }
 type CreateRPCServerListenerOpts = {
   rpcCors?: string
-  server: RPCServer
+  server: any
   withEngineMiddleware?: WithEngineMiddleware
 }
 type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: HttpServer }
@@ -84,7 +86,7 @@ export function inspectParams(params: any, shorten?: number) {
 
 export function createRPCServer(
   manager: RPCManager,
-  opts: CreateRPCServerOpts
+  opts: CreateRPCServerOpts,
 ): CreateRPCServerReturn {
   const { methodConfig, rpcDebug, rpcDebugVerbose, logger } = opts
   const onRequest = (request: any) => {
@@ -100,7 +102,7 @@ export function createRPCServer(
       logger?.info(`${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`)
     } else if (checkFilter(request.method, rpcDebug)) {
       logger?.info(
-        `${request.method}${batchAddOn} responded with:\n${inspectParams(response, 125)}`
+        `${request.method}${batchAddOn} responded with:\n${inspectParams(response, 125)}`,
       )
     }
   }
@@ -159,7 +161,7 @@ export function createRPCServer(
     }
   }
 
-  const server = new RPCServer(methods)
+  const server = new jayson.Server(methods)
   server.on('request', onRequest)
   server.on('response', onBatchResponse)
   const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
@@ -204,7 +206,6 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
       }
     })
   }
-
   app.use(server.middleware())
   const httpServer = createServer(app)
   return httpServer
@@ -222,7 +223,6 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
     if (typeof rpcCors === 'string') app.use(cors({ origin: rpcCors }))
     httpServer = createServer(app)
   }
-
   const wss = server.websocket({ noServer: true })
 
   httpServer.on('upgrade', (req, socket, head) => {

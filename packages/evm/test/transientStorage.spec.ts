@@ -1,4 +1,4 @@
-import { Address } from '@ethereumjs/util'
+import { createAddressFromString } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { TransientStorage } from '../src/transientStorage.js'
@@ -7,7 +7,7 @@ describe('Transient Storage', () => {
   it('should set and get storage', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value = new Uint8Array(32).fill(0x99)
 
@@ -19,7 +19,7 @@ describe('Transient Storage', () => {
   it('should return bytes32(0) if there is no key set', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value = new Uint8Array(32).fill(0x11)
 
@@ -36,7 +36,7 @@ describe('Transient Storage', () => {
   it('should revert', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value = new Uint8Array(32).fill(0x99)
 
@@ -58,7 +58,7 @@ describe('Transient Storage', () => {
   it('should commit', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value = new Uint8Array(32).fill(0x99)
 
@@ -74,7 +74,7 @@ describe('Transient Storage', () => {
   it('should fail with wrong size key/value', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
 
     assert.throws(() => {
       transientStorage.put(address, new Uint8Array(10), new Uint8Array(1))
@@ -88,24 +88,24 @@ describe('Transient Storage', () => {
   it('keys are stringified', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value = new Uint8Array(32).fill(0x99)
 
     transientStorage.put(address, key, value)
     assert.deepEqual(
       transientStorage.get(
-        Address.fromString('0xff00000000000000000000000000000000000002'),
-        new Uint8Array(32).fill(0xff)
+        createAddressFromString('0xff00000000000000000000000000000000000002'),
+        new Uint8Array(32).fill(0xff),
       ),
-      value
+      value,
     )
   })
 
   it('revert applies changes in correct order', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value1 = new Uint8Array(32).fill(0x01)
     const value2 = new Uint8Array(32).fill(0x02)
@@ -123,7 +123,7 @@ describe('Transient Storage', () => {
   it('nested reverts', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value0 = new Uint8Array(32).fill(0x00)
     const value1 = new Uint8Array(32).fill(0x01)
@@ -153,7 +153,7 @@ describe('Transient Storage', () => {
   it('commit batches changes into next revert', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value1 = new Uint8Array(32).fill(0x01)
     const value2 = new Uint8Array(32).fill(0x02)

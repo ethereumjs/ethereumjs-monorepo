@@ -5,7 +5,7 @@ export const GWEI_TO_WEI = BigInt(1000000000)
 export function formatBigDecimal(
   numerator: bigint,
   denominator: bigint,
-  maxDecimalFactor: bigint
+  maxDecimalFactor: bigint,
 ): string {
   if (denominator === BIGINT_0) {
     denominator = BIGINT_1
