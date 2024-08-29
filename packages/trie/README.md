@@ -51,6 +51,25 @@ This library by default uses JavaScript implementations for the basic standard c
 
 ### Use with Standalone Constructors
 
+Tries can be instantiated using standalone constructor functions:
+
+```ts
+// ./examples/basicUsage.ts#L5-L6
+
+const trie = await createTrie({ db: new MapDB() })
+await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
+```
+
+Tries can also be instantiated from a merkle proof:
+
+```ts
+// ./examples/createFromProof.ts#L17-L19
+
+const proof = await createMerkleProof(someOtherTrie, k1)
+const trie = await createTrieFromProof(proof, { useKeyHashing: true })
+const otherProof = await createMerkleProof(someOtherTrie, k2)
+```
+
 #### Create new Trie
 
 ```ts
