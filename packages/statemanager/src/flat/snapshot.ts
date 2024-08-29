@@ -20,9 +20,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
-export const ACCOUNT_PREFIX: Uint8Array = hexToBytes('0x${00}')
-export const STORAGE_PREFIX: Uint8Array = hexToBytes('0x${11}')
-export const CODE_PREFIX: Uint8Array = hexToBytes('0x${22}')
+export const ACCOUNT_PREFIX: Uint8Array = hexToBytes('0x00')
+export const STORAGE_PREFIX: Uint8Array = hexToBytes('0x11')
+export const CODE_PREFIX: Uint8Array = hexToBytes('0x22')
 
 const { debug: createDebugLogger } = debugDefault
 
