@@ -14,7 +14,12 @@ import {
   setLengthRight,
   short,
 } from '@ethereumjs/util'
-import { VerkleTree } from '@ethereumjs/verkle'
+import {
+  LeafNode,
+  VerkleLeafNodeValue,
+  VerkleTree,
+  createUntouchedLeafValue,
+} from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -86,46 +91,42 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     }
 
     const stem = getVerkleStem(this.verkleCrypto, address, 0)
-    const versionKey = getVerkleKey(stem, VerkleLeafType.Version)
-    const balanceKey = getVerkleKey(stem, VerkleLeafType.Balance)
-    const nonceKey = getVerkleKey(stem, VerkleLeafType.Nonce)
-    const codeHashKey = getVerkleKey(stem, VerkleLeafType.CodeHash)
-    const codeSizeKey = getVerkleKey(stem, VerkleLeafType.CodeSize)
-    const version = await this._trie.get(versionKey)
-    const balance = await this._trie.get(balanceKey)
-    const nonce = await this._trie.get(nonceKey)
-    const codeHash = await this._trie.get(codeHashKey)
-    // TODO: Only do this check if codeHash !== KECCAK_RLP (or whatever the empty array is)
-    const codeSize = await this._trie.get(codeSizeKey)
 
-    const account = createPartialAccount({
-      version: Array.isArray(version) ? bytesToInt32(version, true) : null,
-      balance: Array.isArray(balance) ? bytesToBigInt(balance, true) : null,
-      nonce: Array.isArray(nonce) ? bytesToBigInt(nonce, true) : null,
-      codeHash: Array.isArray(codeHash) ? codeHash : null,
-      // if codeSizeRaw is null, it means account didn't exist or it was EOA either way codeSize is 0
-      // if codeSizeRaw is undefined, then we pass in null which in our context of partial account means
-      // not specified
-      codeSize: Array.isArray(codeSize) ? bytesToInt32(codeSize, true) : null,
-      storageRoot: null,
-    })
-    // check if the account didn't exist if any of the basic keys are undefined
-    if (
-      version === undefined ||
-      balance === undefined ||
-      nonce === undefined ||
-      codeHash === undefined
-    ) {
-      if (this.DEBUG) {
-        this._debug(`getAccount address=${address.toString()} from DB (non-existent)`)
+    // First retrieve the leaf node from the trie
+    const leaf = await this._trie.findPath(stem)
+    if (leaf.node !== null && leaf.node instanceof LeafNode) {
+      // We have a leaf node so let's pull out the important values for an account
+      const version = leaf.node.getValue(VerkleLeafType.Version)
+      const balance = leaf.node.getValue(VerkleLeafType.Balance)
+      const nonce = leaf.node.getValue(VerkleLeafType.Nonce)
+      const codeHash = leaf.node.getValue(VerkleLeafType.CodeHash)
+      const codeSize = leaf.node.getValue(VerkleLeafType.CodeSize)
+      const account = createPartialAccount({
+        version: Array.isArray(version) ? bytesToInt32(version, true) : null,
+        balance: Array.isArray(balance) ? bytesToBigInt(balance, true) : null,
+        nonce: Array.isArray(nonce) ? bytesToBigInt(nonce, true) : null,
+        codeHash: Array.isArray(codeHash) ? codeHash : null,
+        codeSize: Array.isArray(codeSize) ? bytesToInt32(codeSize, true) : null,
+        storageRoot: null,
+      })
+      // check if the account didn't exist if any of the basic keys are undefined
+      if (
+        version === undefined ||
+        balance === undefined ||
+        nonce === undefined ||
+        codeHash === undefined
+      ) {
+        if (this.DEBUG) {
+          this._debug(`getAccount address=${address.toString()} from DB (non-existent)`)
+        }
+        this._caches?.account?.put(address, account)
       }
-      this._caches?.account?.put(address, account)
-    }
 
-    if (this.DEBUG) {
-      this._debug(`getAccount address=${address.toString()} stem=${short(stem)}`)
+      if (this.DEBUG) {
+        this._debug(`getAccount address=${address.toString()} stem=${short(stem)}`)
+      }
+      return account
     }
-    return account
   }
 
   putAccount = async (address: Address, account?: Account): Promise<void> => {
@@ -139,13 +140,28 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       )
 
       if (this._caches?.account === undefined) {
-        const stem = getVerkleStem(this.verkleCrypto, address, 0)
-        const balanceKey = getVerkleKey(stem, VerkleLeafType.Balance)
-        const nonceKey = getVerkleKey(stem, VerkleLeafType.Nonce)
-        const codeHashKey = getVerkleKey(stem, VerkleLeafType.CodeHash)
-
-        const balanceBuf = setLengthRight(bigIntToBytes(account.balance, true), 32)
-        const nonceBuf = setLengthRight(bigIntToBytes(account.nonce, true), 32)
+        if (account !== undefined) {
+          const stem = getVerkleStem(this.verkleCrypto, address, 0)
+          await this._trie.put(
+            stem,
+            [
+              VerkleLeafType.Version,
+              VerkleLeafType.Balance,
+              VerkleLeafType.Nonce,
+              VerkleLeafType.CodeHash,
+            ],
+            [
+              account.balance !== null
+                ? setLengthRight(bigIntToBytes(account.balance, true), 32)
+                : createUntouchedLeafValue(),
+              account.balance !== null
+                ? setLengthRight(bigIntToBytes(account.balance, true), 32)
+                : createUntouchedLeafValue(),
+              setLengthRight(bigIntToBytes(account.nonce, true), 32),
+              account.codeHash,
+            ],
+          )
+        }
       } else {
         if (account !== undefined) {
           this._caches?.account?.put(address, account, true)
@@ -155,6 +171,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       }
     }
   }
+
   deleteAccount = async (address: Address): Promise<void> => {
     if (this.DEBUG) {
       this._debug(`Delete account ${address}`)
@@ -163,7 +180,8 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._caches?.deleteAccount(address)
 
     if (this._caches?.account === undefined) {
-      await this._trie.del(address.bytes)
+      // TODO: Delete account
+      // await this._trie.del(address.bytes)
     }
   }
 

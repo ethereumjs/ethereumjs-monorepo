@@ -1,21 +1,17 @@
-import { VerkleTree } from '@ethereumjs/verkle'
-import { describe, it } from 'vitest'
+import { createAccount, createAddressFromPrivateKey, randomBytes } from '@ethereumjs/util'
+import { createVerkleTree } from '@ethereumjs/verkle'
+import { assert, describe, it } from 'vitest'
 
 import { StatefulVerkleStateManager } from '../src/statefulVerkleStateManager.js'
 
-import type { PrefixedHexString } from '@ethereumjs/util'
-
 describe('Verkle Tree API tests', () => {
   it('should get an account from the trie', async () => {
-    const trie = await VerkleTree.create()
+    const trie = await createVerkleTree()
     const sm = new StatefulVerkleStateManager({ trie, verkleCrypto: trie['verkleCrypto'] })
-    const accountKeys = [
-      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d00',
-      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
-      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
-      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d03',
-      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d04',
-      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d05',
-    ] as PrefixedHexString[]
+    const address = createAddressFromPrivateKey(randomBytes(32))
+    const account = createAccount({ nonce: 3n, balance: 0xfffn })
+    await sm.putAccount(address, account)
+    const retrievedAccount = await sm.getAccount(address)
+    assert.equal(retrievedAccount?.balance, account.balance)
   })
 })

@@ -78,7 +78,7 @@ describe('Verkle tree', () => {
     assert.deepEqual(res.remaining, presentKeys[0])
 
     for (let i = 0; i < presentKeys.length; i++) {
-      await tree.put(presentKeys[i], values[i])
+      await tree.put(presentKeys[i].slice(0, 31), [presentKeys[i][31]], [values[i]])
     }
     for (let i = 0; i < presentKeys.length; i++) {
       const retrievedValue = await tree.get(presentKeys[i])
@@ -234,18 +234,34 @@ describe('Verkle tree', () => {
 
     await trie['_createRootNode']()
 
-    await trie.put(hexToBytes(keys[0]), hexToBytes(values[0]))
-    await trie.put(hexToBytes(keys[1]), hexToBytes(values[1]))
-    await trie.put(hexToBytes(keys[2]), hexToBytes(values[2]))
-    await trie.put(hexToBytes(keys[3]), hexToBytes(values[3]))
+    const keyWithMultipleValues = hexToBytes(keys[0]).slice(0, 31)
+    await trie.put(
+      keyWithMultipleValues,
+      [parseInt(keys[0].slice(-1)[0]), parseInt(keys[1].slice(-1)[0])],
+      [hexToBytes(values[0]), hexToBytes(values[1])],
+    )
+    await trie.put(
+      hexToBytes(keys[2]).slice(0, 31),
+      [parseInt(keys[2].slice(-1)[0])],
+      [hexToBytes(values[2])],
+    )
+    await trie.put(
+      hexToBytes(keys[3]).slice(0, 31),
+      [parseInt(keys[3].slice(-1)[0])],
+      [hexToBytes(values[3])],
+    )
     assert.deepEqual(await trie.get(hexToBytes(keys[0])), hexToBytes(values[0]))
     assert.deepEqual(await trie.get(hexToBytes(keys[2])), hexToBytes(values[2]))
     assert.deepEqual(await trie.get(hexToBytes(keys[3])), hexToBytes(values[3]))
 
-    await trie.del(hexToBytes(keys[0]))
+    await trie.del(hexToBytes(keys[0]).slice(0, 31), [parseInt(keys[0].slice(-1)[0])])
     assert.deepEqual(await trie.get(hexToBytes(keys[0])), new Uint8Array(32))
 
-    await trie.put(hexToBytes(keys[0]), hexToBytes(values[0]))
+    await trie.put(
+      hexToBytes(keys[0]).slice(0, 31),
+      [parseInt(keys[0].slice(-1)[0])],
+      [hexToBytes(values[0])],
+    )
     assert.deepEqual(await trie.get(hexToBytes(keys[0])), hexToBytes(values[0]))
   })
   it('should put zeros in leaf node when del called with stem that was not in the trie before', async () => {
@@ -260,7 +276,8 @@ describe('Verkle tree', () => {
 
     await trie['_createRootNode']()
     assert.deepEqual(await trie.get(hexToBytes(keys[0])), undefined)
-    await trie.del(hexToBytes(keys[0]))
+
+    await trie.del(hexToBytes(keys[0]).slice(0, 31), [parseInt(keys[0].slice(-1)[0])])
     const res = await trie.findPath(hexToBytes(keys[0]).slice(0, 31))
     assert.ok(res.node !== null)
     assert.deepEqual(

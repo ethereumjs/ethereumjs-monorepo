@@ -175,16 +175,19 @@ export class VerkleTree {
   }
 
   /**
-   * Stores a given `value` at the given `key` or do a delete if `value` is empty Uint8Array
-   * @param key - the key to store the value at
-   * @param value - the value to store
-   * @returns A Promise that resolves once value is stored.
+   * Stores given `values` at the given `stem` and `suffixes` or do a delete if `value` is empty Uint8Array
+   * @param key - the stem to store the value at (must be 31 bytes long)
+   * @param suffixes - array of suffixes at which to store individual values
+   * @param value - the value(s) to store
+   * @returns A Promise that resolves once value(s) are stored.
    */
-  async put(key: Uint8Array, value: Uint8Array): Promise<void> {
-    if (key.length !== 32) throw new Error(`expected key with length 32; got ${key.length}`)
-    const stem = key.slice(0, 31)
-    const suffix = key[key.length - 1]
-    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffix}`, ['PUT'])
+  async put(stem: Uint8Array, suffixes: number[], values: Uint8Array[]): Promise<void> {
+    if (stem.length !== 31) throw new Error(`expected stem with length 31, got ${stem.length}`)
+    if (values.length !== suffixes.length) {
+      // Must have an equal number of values and suffixes
+      throw new Error(`expected number of values; ${values.length} to equal ${suffixes.length}`)
+    }
+    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}`, ['PUT'])
 
     const putStack: [Uint8Array, VerkleNode][] = []
     // Find path to nearest node
@@ -219,19 +222,24 @@ export class VerkleTree {
       leafNode = await LeafNode.create(stem, this.verkleCrypto)
       this.DEBUG && this.debug(`Creating new leaf node at stem: ${bytesToHex(stem)}`, ['PUT'])
     }
-    // Update value in leaf node and push to putStack
-    if (equalsBytes(value, createDeletedLeafValue())) {
-      // Special case for when the deleted leaf value or zeroes is passed to `put`
-      // Writing the deleted leaf value to the suffix indicated in the key
-      leafNode.setValue(suffix, VerkleLeafNodeValue.Deleted)
-    } else {
-      leafNode.setValue(suffix, value)
+    for (let i = 0; i < values.length; i++) {
+      const value = values[i]
+      const suffix = suffixes[i]
+      // Update value(s) in leaf node
+      if (equalsBytes(value, createDeletedLeafValue())) {
+        // Special case for when the deleted leaf value or zeroes is passed to `put`
+        // Writing the deleted leaf value to the suffix
+        leafNode.setValue(suffix, VerkleLeafNodeValue.Deleted)
+      } else {
+        leafNode.setValue(suffix, value)
+      }
+      this.DEBUG &&
+        this.debug(
+          `Updating value for suffix: ${suffix} at leaf node with stem: ${bytesToHex(stem)}`,
+          ['PUT'],
+        )
     }
-    this.DEBUG &&
-      this.debug(
-        `Updating value for suffix: ${suffix} at leaf node with stem: ${bytesToHex(stem)}`,
-        ['PUT'],
-      )
+    // Push new/updated leafNode to putStack
     putStack.push([leafNode.hash(), leafNode])
 
     // `path` is the path to the last node pushed to the `putStack`
@@ -290,11 +298,9 @@ export class VerkleTree {
     await this.saveStack(putStack)
   }
 
-  async del(key: Uint8Array): Promise<void> {
-    const stem = key.slice(0, 31)
-    const suffix = key[key.length - 1]
-    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffix}`, ['DEL'])
-    await this.put(key, createDeletedLeafValue())
+  async del(stem: Uint8Array, suffixes: number[]): Promise<void> {
+    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix(es): ${suffixes}`, ['DEL'])
+    await this.put(stem, suffixes, [createDeletedLeafValue()])
   }
   /**
    * Helper method for updating or creating the parent internal node for a given leaf node
