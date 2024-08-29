@@ -9,8 +9,6 @@ import {
 } from '@ethereumjs/util'
 import debug from 'debug'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { createVerkleTree } from './constructors.js'
 import { CheckpointDB } from './db/checkpoint.js'
 import { InternalNode } from './node/internalNode.js'
 import { LeafNode } from './node/leafNode.js'
@@ -23,6 +21,8 @@ import {
   type VerkleTreeOptsWithDefaults,
 } from './types.js'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { createVerkleTree } from './constructors.js' // Imported so intellisense can display docs
 import type { DB, PutBatch, VerkleCrypto } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 interface Path {
