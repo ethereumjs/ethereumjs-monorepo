@@ -49,7 +49,26 @@ void test()
 
 This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing for keys. See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
-### Use with Static Constructors
+### Use with Standalone Constructors
+
+Tries can be instantiated using standalone constructor functions:
+
+```ts
+// ./examples/basicUsage.ts#L5-L6
+
+const trie = await createTrie({ db: new MapDB() })
+await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
+```
+
+Tries can also be instantiated from a merkle proof:
+
+```ts
+// ./examples/createFromProof.ts#L17-L19
+
+const proof = await createMerkleProof(someOtherTrie, k1)
+const trie = await createTrieFromProof(proof, { useKeyHashing: true })
+const otherProof = await createMerkleProof(someOtherTrie, k2)
+```
 
 #### Create new Trie
 
@@ -69,13 +88,13 @@ async function test() {
 void test()
 ```
 
-When the static `Trie.create` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Ethereum production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
+When the `createTrie` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Ethereum production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
 
 #### Create from a Proof
 
 The trie library supports basic creation of [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) proofs as well as the instantiation of new tries from an existing proof.
 
-The following is an example for using the `Trie.createFromProof()` static constructor. This instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
+The following is an example for using the `createTrieFromProof()` constructor. This instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
 
 ```ts
 // ./examples/createFromProof.ts
@@ -169,7 +188,7 @@ By default, the deletion of trie nodes from the underlying database does not occ
 
 #### Root Persistence
 
-You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie through the `Trie.create` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
+You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie through the `createTrie` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
 
 ```ts
 // ./examples/rootPersistence.ts
@@ -192,7 +211,7 @@ void main()
 
 ### Merkle Proofs
 
-The `createProof` and `verifyProof` functions allow you to verify that a certain value does or does not exist within a Merkle Patricia Tree with a given root.
+The `createMerkleProof` and `verifyMerkleProof` functions allow you to verify that a certain value does or does not exist within a Merkle Patricia Tree with a given root.
 
 #### Proof-of-Inclusion
 
@@ -244,7 +263,7 @@ try {
 
 ### Range Proofs
 
-You may use the `Trie.verifyRangeProof()` function to confirm if the given leaf nodes and edge proof possess the capacity to prove that the given trie leaves' range matches the specific root (which is useful for snap sync, for instance).
+You may use the `verifyTrieRangeProof()` function to confirm if the given leaf nodes and edge proof possess the capacity to prove that the given trie leaves' range matches the specific root (which is useful for snap sync, for instance).
 
 ## Examples
 

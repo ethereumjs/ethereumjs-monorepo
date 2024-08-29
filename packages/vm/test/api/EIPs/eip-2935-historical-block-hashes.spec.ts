@@ -22,8 +22,9 @@ import { assert, describe, it } from 'vitest'
 
 import { bytesToBigInt } from '../../../../util/src/bytes.js'
 import { BIGINT_0 } from '../../../../util/src/constants.js'
-import { VM, buildBlock, paramsVM, runBlock, runTx } from '../../../src/index.js'
+import { buildBlock, createVM, paramsVM, runBlock, runTx } from '../../../src/index.js'
 
+import type { VM } from '../../../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -176,7 +177,7 @@ describe('EIP 2935: historical block hashes', () => {
         validateBlocks: false,
         validateConsensus: false,
       })
-      const vm = await VM.create({ common: commonGenesis, blockchain })
+      const vm = await createVM({ common: commonGenesis, blockchain })
       commonGenesis.setHardforkBy({
         timestamp: 1,
       })
@@ -214,7 +215,7 @@ describe('EIP 2935: historical block hashes', () => {
         validateBlocks: false,
         validateConsensus: false,
       })
-      const vm = await VM.create({ common, blockchain })
+      const vm = await createVM({ common, blockchain })
       let lastBlock = await vm.blockchain.getBlock(0)
       for (let i = 1; i <= blocksToBuild; i++) {
         lastBlock = await (

@@ -36,14 +36,14 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
-import { runBlock } from '../../src/index.js'
-import { VM } from '../../src/vm.js'
+import { createVM, runBlock } from '../../src/index.js'
 import { getDAOCommon, setupPreConditions } from '../util.js'
 
 import * as testData from './testdata/blockchain.json'
 import * as testnet from './testdata/testnet.json'
 import { createAccountWithDefaults, setBalance, setupVM } from './utils.js'
 
+import type { VM } from '../../src/index.js'
 import type {
   AfterBlockEvent,
   PostByzantiumTxReceipt,
@@ -51,9 +51,9 @@ import type {
   RunBlockOpts,
 } from '../../src/types.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
-import type { AuthorizationListBytesItem } from '@ethereumjs/common'
+import type { ChainConfig } from '@ethereumjs/common'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
@@ -154,9 +154,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
   })
 
   it('PoW block, Common custom chain (Common customChains constructor option)', async () => {
-    // @ts-ignore because PrefixedHexString type is too strict
-    const common = createCustomCommon(testnet.default, Mainnet, {
-      name: 'testnet',
+    const common = createCustomCommon(testnet.default as ChainConfig, Mainnet, {
       hardfork: Hardfork.Berlin,
     })
     const vm = await setupVM({ common })
@@ -199,8 +197,8 @@ describe('runBlock() -> successful API parameter usage', async () => {
       )
     }
 
-    const vm = await VM.create({ common: common1, setHardfork: true })
-    const vm_noSelect = await VM.create({ common: common2 })
+    const vm = await createVM({ common: common1, setHardfork: true })
+    const vm_noSelect = await createVM({ common: common2 })
 
     const txResultMuirGlacier = await runBlock(vm, {
       block: getBlock(common1),
@@ -226,7 +224,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
 })
 
 describe('runBlock() -> API parameter usage/data errors', async () => {
-  const vm = await VM.create({ common })
+  const vm = await createVM({ common })
 
   it('should fail when runTx fails', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
@@ -241,7 +239,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   })
 
   it('should fail when block gas limit higher than 2^63-1', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
     const block = createBlock({
       header: {
@@ -255,7 +253,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
 
   it('should fail when block validation fails', async () => {
     const blockchain = await createBlockchain()
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
 
     const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
     const block = Object.create(createBlockFromRLP(blockRlp, { common }))
@@ -271,7 +269,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   })
 
   it('should fail when no `validateHeader` method exists on blockchain class', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
     const block = Object.create(createBlockFromRLP(blockRlp, { common }))
     ;(vm.blockchain as any).validateHeader = undefined
@@ -287,7 +285,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   })
 
   it('should fail when tx gas limit higher than block gas limit', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
     const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
     const block = Object.create(createBlockFromRLP(blockRlp, { common }))
@@ -428,7 +426,7 @@ async function runBlockAndGetAfterBlockEvent(
 }
 
 it('should correctly reflect generated fields', async () => {
-  const vm = await VM.create()
+  const vm = await createVM()
 
   // We create a block with a receiptTrie and transactionsTrie
   // filled with 0s and no txs. Once we run it we should

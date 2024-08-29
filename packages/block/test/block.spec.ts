@@ -30,6 +30,7 @@ import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
+import type { ChainConfig } from '@ethereumjs/common'
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
 describe('[Block]: block functions', () => {
@@ -99,10 +100,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('initialization -> setHardfork option', () => {
-    // @ts-ignore type is too strict in this case
-    const common = createCustomCommon(testnetMerge.default, Mainnet, {
-      name: 'testnetMerge',
-    })
+    const common = createCustomCommon(testnetMerge.default as ChainConfig, Mainnet)
 
     let block = createBlock(
       {
