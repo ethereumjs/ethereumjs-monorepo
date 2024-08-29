@@ -16,6 +16,7 @@ import shanghaiJSON from '../testdata/geth-genesis/withdrawals.json'
 
 import type { BlockData, ExecutionPayload } from '@ethereumjs/block'
 import type { Blockchain } from '@ethereumjs/blockchain'
+import type { ChainConfig } from '@ethereumjs/common'
 
 const shanghaiPayload = {
   blockNumber: '0x1',
@@ -123,8 +124,7 @@ describe('[VMExecution]', () => {
     newHead = await exec.vm.blockchain.getIteratorHead!()
     assert.equal(newHead.header.number, BigInt(5), 'should run all blocks')
 
-    // @ts-ignore PrefixedHexString type is too strict
-    const common = createCustomCommon(testnet, Mainnet)
+    const common = createCustomCommon(testnet as ChainConfig, Mainnet)
     exec = await testSetup(blockchain, common)
     await exec.run()
     assert.equal(exec.hardfork, 'byzantium', 'should update HF on block run')
