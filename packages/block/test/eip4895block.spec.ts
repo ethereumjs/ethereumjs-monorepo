@@ -3,7 +3,7 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
   KECCAK256_RLP,
-  Withdrawal,
+  createWithdrawalFromBytesArray,
   hexToBytes,
   randomBytes,
   zeros,
@@ -40,7 +40,7 @@ describe('EIP4895 tests', () => {
     // get withdrawalsArray
     const gethBlockBytesArray = RLP.decode(hexToBytes(`0x${gethWithdrawals8BlockRlp}`))
     const withdrawals = (gethBlockBytesArray[3] as WithdrawalBytes[]).map((wa) =>
-      Withdrawal.fromValuesArray(wa),
+      createWithdrawalFromBytesArray(wa),
     )
     assert.equal(withdrawals.length, 8, '8 withdrawals should have been found')
     const gethWithdrawalsRoot = (gethBlockBytesArray[0] as Uint8Array[])[16] as Uint8Array
