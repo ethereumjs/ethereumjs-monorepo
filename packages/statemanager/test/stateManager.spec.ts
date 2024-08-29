@@ -1,10 +1,11 @@
-import { Trie } from '@ethereumjs/trie'
+import { Trie, createTrie, createTrieFromProof } from '@ethereumjs/trie'
 import {
   Account,
   Address,
   KECCAK256_RLP,
   bigIntToBytes,
   createAddressFromString,
+  createAddressFromPrivateKey,
   equalsBytes,
   hexToBytes,
   intToBytes,
@@ -17,6 +18,7 @@ import { CacheType, DefaultStateManager, FlatStateManager } from '../src/index.j
 import { createZeroAddress } from '@ethereumjs/util'
 import { zeros } from '@ethereumjs/util'
 
+const ZERO_ADDRESS = createZeroAddress()
 export const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 function verifyAccount(
   account: Account,
@@ -65,13 +67,13 @@ describe('StateManager -> General', () => {
       const storageKey = setLengthLeft(bigIntToBytes(2n), 32)
       const storedData = utf8ToBytes('abcd')
 
-      await sm.putContractCode(contractAddress, contractCode)
-      await sm.putContractStorage(contractAddress, storageKey, storedData)
+      await sm.putCode(contractAddress, contractCode)
+      await sm.putStorage(contractAddress, storageKey, storedData)
 
       let storage = await sm.getStorage(contractAddress, storageKey)
       assert.equal(JSON.stringify(storage), JSON.stringify(storedData), 'contract storage updated')
 
-      await sm.clearContractStorage(contractAddress)
+      await sm.clearStorage(contractAddress)
       storage = await sm.getStorage(contractAddress, storageKey)
       assert.equal(
         JSON.stringify(storage),
@@ -107,12 +109,12 @@ describe('StateManager -> General', () => {
       // TODO caches are not yet integrated with the FSM, so this test will fail for it until caches are implemented
       smCopy = sm.shallowCopy()
       assert.equal(
-        smCopy['_accountCacheSettings'].type,
+        smCopy['_caches']?.settings.account.type,
         CacheType.ORDERED_MAP,
         'should switch to ORDERED_MAP account cache on copy()',
       )
       assert.equal(
-        smCopy['_storageCacheSettings'].type,
+        smCopy['_caches']?.settings.storage.type,
         CacheType.ORDERED_MAP,
         'should switch to ORDERED_MAP storage cache on copy()',
       )
@@ -120,12 +122,12 @@ describe('StateManager -> General', () => {
 
       smCopy = sm.shallowCopy(false)
       assert.equal(
-        smCopy['_accountCacheSettings'].type,
+        smCopy['_caches']?.settings.account.type,
         CacheType.LRU,
         'should retain account cache type when deactivate cache downleveling',
       )
       assert.equal(
-        smCopy['_storageCacheSettings'].type,
+        smCopy['_caches']?.settings.storage.type,
         CacheType.LRU,
         'should retain storage cache type when deactivate cache downleveling',
       )
@@ -159,9 +161,9 @@ describe('StateManager -> General', () => {
       const address2Str = '0x2'.padEnd(42, '0')
       const address3Str = '0x3'.padEnd(42, '0')
 
-      const address1 = Address.fromString(address1Str)
-      const address2 = Address.fromString(address2Str)
-      const address3 = Address.fromString(address3Str)
+      const address1 = createAddressFromString(address1Str)
+      const address2 = createAddressFromString(address2Str)
+      const address3 = createAddressFromString(address3Str)
 
       const key1 = setLengthLeft(new Uint8Array([1]), 32)
       const key2 = setLengthLeft(new Uint8Array([2]), 32)
@@ -201,14 +203,14 @@ describe('StateManager -> General', () => {
       const stateManager = new smType()
 
       for (const [addressStr, entry] of Object.entries(stateSetup)) {
-        const address = Address.fromString(addressStr)
+        const address = createAddressFromString(addressStr)
         const account = new Account(entry.nonce, entry.balance)
         await stateManager.putAccount(address, account)
-        await stateManager.putContractCode(address, entry.code)
+        await stateManager.putCode(address, entry.code)
         for (let i = 0; i < entry.keys.length; i++) {
           const key = entry.keys[i]
           const value = entry.values[i]
-          await stateManager.putContractStorage(address, key, value)
+          await stateManager.putStorage(address, key, value)
         }
         await stateManager.flush()
         stateSetup[addressStr].codeHash = (await stateManager.getAccount(address)!)?.codeHash
@@ -284,8 +286,8 @@ describe('StateManager -> General', () => {
       await postVerify(newPartialStateManager2)
 
       const zeroAddressNonce = BigInt(100)
-      await stateManager.putAccount(Address.zero(), new Account(zeroAddressNonce))
-      const zeroAddressProof = await stateManager.getProof(Address.zero())
+      await stateManager.putAccount(ZERO_ADDRESS, new Account(zeroAddressNonce))
+      const zeroAddressProof = await stateManager.getProof(ZERO_ADDRESS)
 
       try {
         await DefaultStateManager.fromProof([proof1, zeroAddressProof], true)
@@ -296,23 +298,23 @@ describe('StateManager -> General', () => {
 
       await newPartialStateManager2.addProofData(zeroAddressProof)
 
-      let zeroAccount = await newPartialStateManager2.getAccount(Address.zero())
+      let zeroAccount = await newPartialStateManager2.getAccount(ZERO_ADDRESS)
       assert.ok(zeroAccount === undefined)
 
       await newPartialStateManager2.setStateRoot(await stateManager.getStateRoot())
-      zeroAccount = await newPartialStateManager2.getAccount(Address.zero())
+      zeroAccount = await newPartialStateManager2.getAccount(ZERO_ADDRESS)
       assert.ok(zeroAccount!.nonce === zeroAddressNonce)
     })
 
     it.skipIf(isBrowser() === true)(
       'should create a statemanager fromProof with opts preserved',
       async () => {
-        const trie = await Trie.create({ useKeyHashing: false })
+        const trie = await createTrie({ useKeyHashing: false })
         const sm = new DefaultStateManager({ trie })
         const pk = hexToBytes('0x9f12aab647a25a81f821a5a0beec3330cd057b2346af4fb09d7a807e896701ea')
         const pk2 = hexToBytes('0x8724f27e2ce3714af01af3220478849db68a03c0f84edf1721d73d9a6139ad1c')
-        const address = Address.fromPrivateKey(pk)
-        const address2 = Address.fromPrivateKey(pk2)
+        const address = createAddressFromPrivateKey(pk)
+        const address2 = createAddressFromPrivateKey(pk2)
         const account = new Account()
         const account2 = new Account(undefined, 100n)
         await sm.putAccount(address, account)
@@ -325,7 +327,7 @@ describe('StateManager -> General', () => {
           keys.map((key) => hexToBytes(key)),
         )
         const proof2 = await sm.getProof(address2)
-        const newTrie = await Trie.createFromProof(
+        const newTrie = await createTrieFromProof(
           proof.accountProof.map((e) => hexToBytes(e)),
           { useKeyHashing: false },
         )
