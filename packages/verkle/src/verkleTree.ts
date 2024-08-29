@@ -152,26 +152,33 @@ export class VerkleTree {
   }
 
   /**
-   * Gets a value given a `key`
-   * @param key - the key to search for
-   * @returns A Promise that resolves to `Uint8Array` if a value was found or `undefined` if no value was found.
+   * Gets values at a given verkle `stem` and set of suffixes
+   * @param stem - the stem of the leaf node where we're seaking values
+   * @param suffixes - an array of suffixes corresponding to the values desired
+   * @returns A Promise that resolves to an array of `Uint8Array`s if a value
+   * was found or `undefined` if no value was found at a given suffixes.
    */
-  async get(key: Uint8Array): Promise<Uint8Array | undefined> {
-    if (key.length !== 32) throw new Error(`expected key with length 32; got ${key.length}`)
-    const stem = key.slice(0, 31)
-    const suffix = key[key.length - 1]
-    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffix}`, ['GET'])
+  async get(stem: Uint8Array, suffixes: number[]): Promise<(Uint8Array | undefined)[]> {
+    if (stem.length !== 31) throw new Error(`expected stem with length 31; got ${stem.length}`)
+    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffixes}`, ['GET'])
     const res = await this.findPath(stem)
     if (res.node instanceof LeafNode) {
       // The retrieved leaf node contains an array of 256 possible values.
-      // The index of the value we want is at the key's last byte
-      const value = res.node.getValue(suffix)
-      this.DEBUG &&
-        this.debug(`Value: ${value === undefined ? 'undefined' : bytesToHex(value)}`, ['GET'])
-      return value
+      // We read all the suffixes to get the desired values
+      const values = []
+      for (const suffix of suffixes) {
+        const value = res.node.getValue(suffix)
+        this.DEBUG &&
+          this.debug(
+            `Suffix: ${suffix}; Value: ${value === undefined ? 'undefined' : bytesToHex(value)}`,
+            ['GET'],
+          )
+        values.push(value)
+      }
+      return values
     }
 
-    return
+    return []
   }
 
   /**

@@ -92,41 +92,41 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
     const stem = getVerkleStem(this.verkleCrypto, address, 0)
 
-    // First retrieve the leaf node from the trie
-    const leaf = await this._trie.findPath(stem)
-    if (leaf.node !== null && leaf.node instanceof LeafNode) {
-      // We have a leaf node so let's pull out the important values for an account
-      const version = leaf.node.getValue(VerkleLeafType.Version)
-      const balance = leaf.node.getValue(VerkleLeafType.Balance)
-      const nonce = leaf.node.getValue(VerkleLeafType.Nonce)
-      const codeHash = leaf.node.getValue(VerkleLeafType.CodeHash)
-      const codeSize = leaf.node.getValue(VerkleLeafType.CodeSize)
-      const account = createPartialAccount({
-        version: version instanceof Uint8Array ? bytesToInt32(version, true) : null,
-        balance: balance instanceof Uint8Array ? bytesToBigInt(balance, true) : null,
-        nonce: nonce instanceof Uint8Array ? bytesToBigInt(nonce, true) : null,
-        codeHash: codeHash instanceof Uint8Array ? codeHash : null,
-        codeSize: codeSize instanceof Uint8Array ? bytesToInt32(codeSize, true) : null,
-        storageRoot: null,
-      })
-      // check if the account didn't exist if any of the basic keys are undefined
-      if (
-        version === undefined ||
-        balance === undefined ||
-        nonce === undefined ||
-        codeHash === undefined
-      ) {
-        if (this.DEBUG) {
-          this._debug(`getAccount address=${address.toString()} from DB (non-existent)`)
-        }
-        this._caches?.account?.put(address, account)
-      }
+    // First retrieve the account "header" values from the trie
+    const accountValues = await this._trie.get(stem, [
+      VerkleLeafType.Version,
+      VerkleLeafType.Balance,
+      VerkleLeafType.Nonce,
+      VerkleLeafType.CodeHash,
+    ])
 
+    const account = createPartialAccount({
+      version: accountValues[0] instanceof Uint8Array ? bytesToInt32(accountValues[0], true) : null,
+      balance:
+        accountValues[1] instanceof Uint8Array ? bytesToBigInt(accountValues[1], true) : null,
+      nonce: accountValues[2] instanceof Uint8Array ? bytesToBigInt(accountValues[2], true) : null,
+      codeHash: accountValues[3] instanceof Uint8Array ? accountValues[3] : null,
+      codeSize:
+        accountValues[4] instanceof Uint8Array ? bytesToInt32(accountValues[4], true) : null,
+      storageRoot: null,
+    })
+    // check if the account didn't exist if any of the basic keys are undefined
+    if (
+      account.version === null ||
+      account.balance === null ||
+      account.nonce === null ||
+      account.codeHash === null
+    ) {
       if (this.DEBUG) {
-        this._debug(`getAccount address=${address.toString()} stem=${short(stem)}`)
+        this._debug(`getAccount address=${address.toString()} from DB (non-existent)`)
       }
-      return account
+      this._caches?.account?.put(address, account)
     }
+
+    if (this.DEBUG) {
+      this._debug(`getAccount address=${address.toString()} stem=${short(stem)}`)
+    }
+    return account
   }
 
   putAccount = async (address: Address, account?: Account): Promise<void> => {
