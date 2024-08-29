@@ -161,6 +161,8 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
               account.codeHash,
             ],
           )
+        } else {
+          // Delete account
         }
       } else {
         if (account !== undefined) {
