@@ -4,7 +4,7 @@ import { FeeMarket1559Tx } from '@ethereumjs/tx'
 import { Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -75,7 +75,7 @@ describe('EIP3198 tests', () => {
       },
     )
     const block = makeBlock(fee, tx)
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     await vm.stateManager.modifyAccountFields(sender, { balance: ETHER })
 
     // Track stack

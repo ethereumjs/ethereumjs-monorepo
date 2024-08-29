@@ -3,7 +3,7 @@ import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
@@ -16,7 +16,7 @@ describe('EIP 3860 tests', () => {
   })
 
   it('EIP-3860 tests', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     await vm.stateManager.putAccount(sender, new Account())
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)

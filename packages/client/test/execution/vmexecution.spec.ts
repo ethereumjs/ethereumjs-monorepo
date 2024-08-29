@@ -2,7 +2,7 @@ import { createBlockFromExecutionPayload } from '@ethereumjs/block'
 import { createBlockchain, createBlockchainFromBlocksData } from '@ethereumjs/blockchain'
 import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
-import { VM } from '@ethereumjs/vm'
+import { createVM } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../src/blockchain/index.js'
@@ -88,7 +88,7 @@ const shanghaiPayload = {
 
 describe('[VMExecution]', () => {
   it('Initialization', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
     const config = new Config({ vm, accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const exec = new VMExecution({ config, chain })
