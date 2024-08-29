@@ -211,7 +211,7 @@ void main()
 
 ### Merkle Proofs
 
-The `createProof` and `verifyProof` functions allow you to verify that a certain value does or does not exist within a Merkle Patricia Tree with a given root.
+The `createMerkleProof` and `verifyMerkleProof` functions allow you to verify that a certain value does or does not exist within a Merkle Patricia Tree with a given root.
 
 #### Proof-of-Inclusion
 
