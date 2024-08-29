@@ -49,7 +49,7 @@ void test()
 
 This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing for keys. See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
-### Use with Static Constructors
+### Use with Standalone Constructors
 
 #### Create new Trie
 
@@ -75,7 +75,7 @@ When the static `Trie.create` constructor is used without any options, the `trie
 
 The trie library supports basic creation of [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) proofs as well as the instantiation of new tries from an existing proof.
 
-The following is an example for using the `Trie.createFromProof()` static constructor. This instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
+The following is an example for using the `createFromProof()` static constructor. This instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
 
 ```ts
 // ./examples/createFromProof.ts
