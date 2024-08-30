@@ -1,7 +1,15 @@
 import { decode, encode } from '@ethereumjs/rlp'
 import { assert, describe, it } from 'vitest'
 
-import { Withdrawal, bigIntToHex, bytesToHex, hexToBytes, intToHex } from '../src/index.js'
+import {
+  bigIntToHex,
+  bytesToHex,
+  createWithdrawal,
+  createWithdrawalFromBytesArray,
+  hexToBytes,
+  intToHex,
+  withdrawalToBytesArray,
+} from '../src/index.js'
 
 import type { WithdrawalBytes, WithdrawalData } from '../src/index.js'
 
@@ -68,25 +76,27 @@ describe('Withdrawal', () => {
   // gethWithdrawals8Rlp is rlp encoded block with withdrawals in the 4th element of the top array
   const gethWithdrawalsBuffer = decode(hexToBytes(gethWithdrawals8BlockRlp))[3]!
   const gethWithdrawalsRlp = bytesToHex(encode(gethWithdrawalsBuffer))
-  it('fromWithdrawalData and toBytesArray', () => {
+  it('createWithdrawal and withdrawalToBytesArray', () => {
     const withdrawals = withdrawalsGethVector.map((withdrawal) =>
-      Withdrawal.fromWithdrawalData(withdrawal as WithdrawalData),
+      createWithdrawal(withdrawal as WithdrawalData),
     )
     const withdrawalstoBytesArr = withdrawals.map((wt) => wt.raw())
     const withdrawalsToRlp = bytesToHex(encode(withdrawalstoBytesArr))
     assert.equal(gethWithdrawalsRlp, withdrawalsToRlp, 'The withdrawals to buffer should match')
   })
 
-  it('toBytesArray from withdrawalData', () => {
+  it('withdrawalToBytesArray from withdrawalData', () => {
     const withdrawalsDataToBytesArr = withdrawalsGethVector.map((withdrawal) =>
-      Withdrawal.toBytesArray(withdrawal as WithdrawalData),
+      withdrawalToBytesArray(withdrawal as WithdrawalData),
     )
     const withdrawalsDataToRlp = bytesToHex(encode(withdrawalsDataToBytesArr))
     assert.equal(gethWithdrawalsRlp, withdrawalsDataToRlp, 'The withdrawals to buffer should match')
   })
 
-  it('fromValuesArray, toJSON and toValue', () => {
-    const withdrawals = (gethWithdrawalsBuffer as WithdrawalBytes[]).map(Withdrawal.fromValuesArray)
+  it('createWithdrawalFromBytesArray, toJSON and toValue', () => {
+    const withdrawals = (gethWithdrawalsBuffer as WithdrawalBytes[]).map(
+      createWithdrawalFromBytesArray,
+    )
     const withdrawalsJson = withdrawals.map((wt) => wt.toJSON())
     assert.deepEqual(withdrawalsGethVector, withdrawalsJson, 'Withdrawals json should match')
 

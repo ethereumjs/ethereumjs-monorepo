@@ -9,13 +9,13 @@ import {
 } from '@ethereumjs/tx'
 import {
   CLRequestFactory,
-  ConsolidationRequest,
-  DepositRequest,
-  Withdrawal,
-  WithdrawalRequest,
   bigIntToHex,
   bytesToHex,
   bytesToUtf8,
+  createConsolidationRequestFromJSON,
+  createDepositRequestFromJSON,
+  createWithdrawal,
+  createWithdrawalRequestFromJSON,
   equalsBytes,
   fetchFromProvider,
   getProvider,
@@ -103,7 +103,7 @@ export function createBlock(blockData: BlockData = {}, opts?: BlockOptions) {
     uncleHeaders.push(uh)
   }
 
-  const withdrawals = withdrawalsData?.map(Withdrawal.fromWithdrawalData)
+  const withdrawals = withdrawalsData?.map(createWithdrawal)
   // The witness data is planned to come in rlp serialized bytes so leave this
   // stub till that time
   const executionWitness = executionWitnessData
@@ -220,7 +220,7 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
       address,
       amount,
     }))
-    ?.map(Withdrawal.fromWithdrawalData)
+    ?.map(createWithdrawal)
 
   let requests
   if (header.common.isActivatedEIP(7685)) {
@@ -402,7 +402,7 @@ export async function createBlockFromExecutionPayload(
   }
 
   const transactionsTrie = await genTransactionsTrieRoot(txs, new Trie({ common: opts?.common }))
-  const withdrawals = withdrawalsData?.map((wData) => Withdrawal.fromWithdrawalData(wData))
+  const withdrawals = withdrawalsData?.map((wData) => createWithdrawal(wData))
   const withdrawalsRoot = withdrawals
     ? await genWithdrawalsTrieRoot(withdrawals, new Trie({ common: opts?.common }))
     : undefined
@@ -419,17 +419,17 @@ export async function createBlockFromExecutionPayload(
 
   if (depositRequests !== undefined && depositRequests !== null) {
     for (const dJson of depositRequests) {
-      requests!.push(DepositRequest.fromJSON(dJson))
+      requests!.push(createDepositRequestFromJSON(dJson))
     }
   }
   if (withdrawalRequests !== undefined && withdrawalRequests !== null) {
     for (const wJson of withdrawalRequests) {
-      requests!.push(WithdrawalRequest.fromJSON(wJson))
+      requests!.push(createWithdrawalRequestFromJSON(wJson))
     }
   }
   if (consolidationRequests !== undefined && consolidationRequests !== null) {
     for (const cJson of consolidationRequests) {
-      requests!.push(ConsolidationRequest.fromJSON(cJson))
+      requests!.push(createConsolidationRequestFromJSON(cJson))
     }
   }
 
