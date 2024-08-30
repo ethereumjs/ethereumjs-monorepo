@@ -9,17 +9,13 @@ import {
   bytesToInt32,
   createAccountFromRLP,
   createPartialAccount,
-  getVerkleKey,
+  decodeVerkleLeafBasicData,
+  encodeVerkleLeafBasicData,
   getVerkleStem,
   setLengthRight,
   short,
 } from '@ethereumjs/util'
-import {
-  LeafNode,
-  VerkleLeafNodeValue,
-  VerkleTree,
-  createUntouchedLeafValue,
-} from '@ethereumjs/verkle'
+import { VerkleTree, createUntouchedLeafValue } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -94,29 +90,24 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
     // First retrieve the account "header" values from the trie
     const accountValues = await this._trie.get(stem, [
-      VerkleLeafType.Version,
-      VerkleLeafType.Balance,
-      VerkleLeafType.Nonce,
+      VerkleLeafType.BasicData,
       VerkleLeafType.CodeHash,
     ])
 
-    const account = createPartialAccount({
-      version: accountValues[0] instanceof Uint8Array ? bytesToInt32(accountValues[0], true) : null,
-      balance:
-        accountValues[1] instanceof Uint8Array ? bytesToBigInt(accountValues[1], true) : null,
-      nonce: accountValues[2] instanceof Uint8Array ? bytesToBigInt(accountValues[2], true) : null,
-      codeHash: accountValues[3] instanceof Uint8Array ? accountValues[3] : null,
-      codeSize:
-        accountValues[4] instanceof Uint8Array ? bytesToInt32(accountValues[4], true) : null,
-      storageRoot: null,
-    })
+    let account
+    if (accountValues[0] !== undefined) {
+      const basicData = decodeVerkleLeafBasicData(accountValues[0]!)
+      account = createPartialAccount({
+        version: basicData.version,
+        balance: basicData.balance,
+        nonce: basicData.nonce,
+        codeHash: accountValues[1] instanceof Uint8Array ? accountValues[1] : null,
+        codeSize: basicData.codeSize,
+        storageRoot: null, // TODO: Add storage stuff
+      })
+    }
     // check if the account didn't exist if any of the basic keys are undefined
-    if (
-      account.version === null ||
-      account.balance === null ||
-      account.nonce === null ||
-      account.codeHash === null
-    ) {
+    else if (accountValues[0] === undefined || accountValues[1] === undefined) {
       if (this.DEBUG) {
         this._debug(`getAccount address=${address.toString()} from DB (non-existent)`)
       }
@@ -142,24 +133,16 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       if (this._caches?.account === undefined) {
         if (account !== undefined) {
           const stem = getVerkleStem(this.verkleCrypto, address, 0)
+          const basicDataBytes = encodeVerkleLeafBasicData({
+            version: account.version,
+            balance: account.balance,
+            nonce: account.nonce,
+            codeSize: account.codeSize,
+          })
           await this._trie.put(
             stem,
-            [
-              VerkleLeafType.Version,
-              VerkleLeafType.Balance,
-              VerkleLeafType.Nonce,
-              VerkleLeafType.CodeHash,
-            ],
-            [
-              account.balance !== null
-                ? setLengthRight(bigIntToBytes(account.balance, true), 32)
-                : createUntouchedLeafValue(),
-              account.balance !== null
-                ? setLengthRight(bigIntToBytes(account.balance, true), 32)
-                : createUntouchedLeafValue(),
-              setLengthRight(bigIntToBytes(account.nonce, true), 32),
-              account.codeHash,
-            ],
+            [VerkleLeafType.BasicData, VerkleLeafType.CodeHash],
+            [basicDataBytes, account.codeHash],
           )
         } else {
           // Delete account
@@ -238,7 +221,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     throw new Error('Method not implemented.')
   }
 
-  verifyVerkleProof?(stateRoot: Uint8Array): boolean {
+  verifyVerkleProof?(): boolean {
     throw new Error('Method not implemented.')
   }
   verifyPostState?(): boolean {
