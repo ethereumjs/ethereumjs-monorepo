@@ -289,6 +289,14 @@ export class Snapshot {
         const calculatedRoot = bytesToHex(await this.merkleize())
         if (calculatedRoot !== rootString)
           throw new Error('Rollback failed to produce expected root')
+        this._stateRoot = rootString
+        if (rootString === KECCAK256_RLP_S) {
+          this._stateRootDiffCache.push({
+            diff: new Map<PrefixedHexString, SnapshotElement | undefined>(),
+            root: this._stateRoot,
+          })
+          this._stateRootCheckpoints = 0
+        }
         break
       }
     }
