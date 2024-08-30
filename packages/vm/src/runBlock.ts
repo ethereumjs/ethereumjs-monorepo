@@ -150,7 +150,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     // Populate the execution witness
     stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
-    if (stateManager.verifyVerkleProof!(opts.parentStateRoot!) === false) {
+    if (stateManager.verifyVerkleProof!() === false) {
       throw Error(`Verkle proof verification failed`)
     }
 
