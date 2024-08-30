@@ -8,7 +8,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { DefaultStateManager, FlatStateManager } from '../src/index.js'
+import { Caches, DefaultStateManager, FlatStateManager } from '../src/index.js'
 
 import { createAccountWithDefaults } from './util.js'
 
@@ -17,7 +17,11 @@ describe('StateManager -> General/Account', () => {
   for (const smType of stateManagers) {
     for (const accountCacheOpts of [{ size: 1000 }, { size: 0 }]) {
       it(`should set the state root to empty`, async () => {
-        const stateManager = new smType({ accountCacheOpts })
+        const opts =
+          smType instanceof FlatStateManager
+            ? {}
+            : { caches: new Caches({ account: accountCacheOpts }) }
+        const stateManager = new smType(opts)
 
         let root =
           stateManager instanceof FlatStateManager
@@ -46,7 +50,12 @@ describe('StateManager -> General/Account', () => {
       })
 
       it(`should clear the cache when the state root is set`, async () => {
-        const stateManager = new smType({ accountCacheOpts })
+        const opts =
+          smType instanceof FlatStateManager
+            ? {}
+            : { caches: new Caches({ account: accountCacheOpts }) }
+        const stateManager = new smType(opts)
+
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
         const account = createAccount({})
 
@@ -89,7 +98,12 @@ describe('StateManager -> General/Account', () => {
       })
 
       it('should put and get account, and add to the underlying cache if the account is not found', async () => {
-        const stateManager = new smType({ accountCacheOpts })
+        const opts =
+          smType instanceof FlatStateManager
+            ? {}
+            : { caches: new Caches({ account: accountCacheOpts }) }
+        const stateManager = new smType(opts)
+
         const account = createAccount({})
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
@@ -100,7 +114,7 @@ describe('StateManager -> General/Account', () => {
         assert.equal(res1!.balance, BigInt(0xfff384))
 
         await stateManager.flush()
-        stateManager['_accountCache']?.clear()
+        stateManager['_caches']?.account?.clear()
 
         const res2 = await stateManager.getAccount(address)
 
@@ -108,7 +122,12 @@ describe('StateManager -> General/Account', () => {
       })
 
       it(`should return undefined for a non-existent account`, async () => {
-        const stateManager = new smType({ accountCacheOpts })
+        const opts =
+          smType instanceof FlatStateManager
+            ? {}
+            : { caches: new Caches({ account: accountCacheOpts }) }
+        const stateManager = new smType(opts)
+
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
         const res = (await stateManager.getAccount(address)) === undefined
@@ -117,7 +136,12 @@ describe('StateManager -> General/Account', () => {
       })
 
       it(`should return undefined for an existent account`, async () => {
-        const stateManager = new smType({ accountCacheOpts })
+        const opts =
+          smType instanceof FlatStateManager
+            ? {}
+            : { caches: new Caches({ account: accountCacheOpts }) }
+        const stateManager = new smType(opts)
+
         const account = createAccount({ nonce: BigInt(0x1), balance: BigInt(0x1) })
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
@@ -129,7 +153,12 @@ describe('StateManager -> General/Account', () => {
       })
 
       it(`should modify account fields correctly`, async () => {
-        const stateManager = new smType({ accountCacheOpts })
+        const opts =
+          smType instanceof FlatStateManager
+            ? {}
+            : { caches: new Caches({ account: accountCacheOpts }) }
+        const stateManager = new smType(opts)
+
         const account = createAccount({})
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
         await stateManager.putAccount(address, account)
