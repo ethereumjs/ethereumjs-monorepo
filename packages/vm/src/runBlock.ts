@@ -1,7 +1,6 @@
 import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
@@ -134,7 +133,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   }
 
   if (vm.common.isActivatedEIP(6800)) {
-    if (!(stateManager instanceof StatelessVerkleStateManager)) {
+    if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
       throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
     }
 
@@ -149,9 +148,9 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     await stateManager.setStateRoot(block.header.stateRoot)
 
     // Populate the execution witness
-    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
+    stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
-    if (stateManager.verifyProof() === false) {
+    if (stateManager.verifyVerkleProof!(opts.parentStateRoot) === false) {
       throw Error(`Verkle proof verification failed`)
     }
 
@@ -159,7 +158,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       debug(`Verkle proof verification succeeded`)
     }
   } else {
-    if (stateManager instanceof StatelessVerkleStateManager) {
+    if (typeof stateManager.initVerkleExecutionWitness === 'function') {
       throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
     }
   }
@@ -311,7 +310,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
     } else if (vm.common.isActivatedEIP(6800)) {
       // If verkle is activated, only validate the post-state
-      if ((vm['_opts'].stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
+      if (vm['_opts'].stateManager!.verifyPostState!() === false) {
         throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
       }
       debug(`Verkle post state verification succeeded`)
@@ -513,9 +512,11 @@ export async function accumulateParentBlockHash(
     if (vm.common.isActivatedEIP(6800)) {
       const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(ringKey)
       // just create access witnesses without charging for the gas
-      ;(
-        vm.stateManager as StatelessVerkleStateManager
-      ).accessWitness!.touchAddressOnWriteAndComputeGas(historyAddress, treeIndex, subIndex)
+      vm.stateManager.accessWitness!.touchAddressOnWriteAndComputeGas(
+        historyAddress,
+        treeIndex,
+        subIndex,
+      )
     }
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
     await vm.stateManager.putStorage(historyAddress, key, hash)
@@ -730,9 +731,7 @@ export async function rewardAccount(
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
     if (common?.isActivatedEIP(6800) === true) {
-      ;(
-        evm.stateManager as StatelessVerkleStateManager
-      ).accessWitness!.touchAndChargeProofOfAbsence(address)
+      evm.stateManager.accessWitness!.touchAndChargeProofOfAbsence(address)
     }
     account = new Account()
   }
@@ -741,10 +740,7 @@ export async function rewardAccount(
 
   if (common?.isActivatedEIP(6800) === true) {
     // use vm utility to build access but the computed gas is not charged and hence free
-    ;(evm.stateManager as StatelessVerkleStateManager).accessWitness!.touchTxTargetAndComputeGas(
-      address,
-      { sendsValue: true },
-    )
+    evm.stateManager.accessWitness!.touchTxTargetAndComputeGas(address, { sendsValue: true })
   }
   return account
 }

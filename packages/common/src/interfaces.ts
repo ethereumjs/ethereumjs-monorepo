@@ -2,7 +2,7 @@
  * External Interfaces for other EthereumJS libraries
  */
 
-import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Account, Address, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
 
 export interface StorageDump {
   [key: string]: string
@@ -161,6 +161,14 @@ export interface StateManagerInterface {
   }
   generateCanonicalGenesis?(initState: any): Promise<void> // TODO make input more typesafe
   // only Verkle/EIP-6800 (experimental)
+  accessWitness?: AccessWitnessInterface
+  initVerkleExecutionWitness?(
+    blockNum: bigint,
+    executionWitness?: VerkleExecutionWitness | null,
+    accessWitness?: AccessWitnessInterface,
+  ): void
+  verifyVerkleProof?(stateRoot: Uint8Array): boolean
+  verifyPostState?(): boolean
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 

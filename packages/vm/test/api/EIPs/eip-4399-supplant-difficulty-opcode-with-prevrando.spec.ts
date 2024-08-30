@@ -1,18 +1,20 @@
 import { createBlock } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/index.js'
+import { createVM } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 
 describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
   it('should return the right values', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-    const vm = await VM.create({ common })
+    const blockchain = await createBlockchain()
+    const vm = await createVM({ common, blockchain })
 
-    const genesis = await vm.blockchain.getCanonicalHeadBlock!()
+    const genesis = await blockchain.getCanonicalHeadBlock!()
     const header = {
       number: 1,
       parentHash: genesis.header.hash(),

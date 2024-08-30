@@ -1,21 +1,12 @@
-import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common, Mainnet } from '@ethereumjs/common'
-import { createEVM, getActivePrecompiles } from '@ethereumjs/evm'
-import { Caches, DefaultStateManager } from '@ethereumjs/statemanager'
-import {
-  Account,
-  Address,
-  AsyncEventEmitter,
-  createAccount,
-  unprefixedHexToBytes,
-} from '@ethereumjs/util'
+import { createEVM } from '@ethereumjs/evm'
+import { AsyncEventEmitter } from '@ethereumjs/util'
 
+import { createVM } from './constructors.js'
 import { paramsVM } from './params.js'
 
 import type { VMEvents, VMOpts } from './types.js'
-import type { BlockchainInterface } from '@ethereumjs/blockchain'
-import type { StateManagerInterface } from '@ethereumjs/common'
-import type { EVMInterface } from '@ethereumjs/evm'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
+import type { EVMInterface, EVMMockBlockchainInterface } from '@ethereumjs/evm'
 import type { BigIntLike } from '@ethereumjs/util'
 
 /**
@@ -33,7 +24,7 @@ export class VM {
   /**
    * The blockchain the VM operates on
    */
-  readonly blockchain: BlockchainInterface
+  readonly blockchain: EVMMockBlockchainInterface
 
   readonly common: Common
 
@@ -68,95 +59,14 @@ export class VM {
   readonly DEBUG: boolean = false
 
   /**
-   * VM async constructor. Creates engine instance and initializes it.
-   *
-   * @param opts VM engine constructor options
-   */
-  static async create(opts: VMOpts = {}): Promise<VM> {
-    // Save if a `StateManager` was passed (for activatePrecompiles)
-    const didPassStateManager = opts.stateManager !== undefined
-
-    // Add common, SM, blockchain, EVM here
-    if (opts.common === undefined) {
-      opts.common = new Common({ chain: Mainnet })
-    }
-
-    if (opts.stateManager === undefined) {
-      opts.stateManager = new DefaultStateManager({
-        caches: new Caches(),
-        common: opts.common,
-      })
-    }
-
-    if (opts.blockchain === undefined) {
-      opts.blockchain = await createBlockchain({ common: opts.common })
-    }
-
-    if (opts.profilerOpts !== undefined) {
-      const profilerOpts = opts.profilerOpts
-      if (profilerOpts.reportAfterBlock === true && profilerOpts.reportAfterTx === true) {
-        throw new Error(
-          'Cannot have `reportProfilerAfterBlock` and `reportProfilerAfterTx` set to `true` at the same time',
-        )
-      }
-    }
-
-    if (opts.evm !== undefined && opts.evmOpts !== undefined) {
-      throw new Error('the evm and evmOpts options cannot be used in conjunction')
-    }
-
-    if (opts.evm === undefined) {
-      let enableProfiler = false
-      if (
-        opts.profilerOpts?.reportAfterBlock === true ||
-        opts.profilerOpts?.reportAfterTx === true
-      ) {
-        enableProfiler = true
-      }
-      const evmOpts = opts.evmOpts ?? {}
-      opts.evm = await createEVM({
-        common: opts.common,
-        stateManager: opts.stateManager,
-        blockchain: opts.blockchain,
-        profiler: {
-          enabled: enableProfiler,
-        },
-        ...evmOpts,
-      })
-    }
-
-    if (opts.activatePrecompiles === true && !didPassStateManager) {
-      await opts.evm.journal.checkpoint()
-      // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
-      for (const [addressStr] of getActivePrecompiles(opts.common)) {
-        const address = new Address(unprefixedHexToBytes(addressStr))
-        let account = await opts.evm.stateManager.getAccount(address)
-        // Only do this if it is not overridden in genesis
-        // Note: in the case that custom genesis has storage fields, this is preserved
-        if (account === undefined) {
-          account = new Account()
-          const newAccount = createAccount({
-            balance: 1,
-            storageRoot: account.storageRoot,
-          })
-          await opts.evm.stateManager.putAccount(address, newAccount)
-        }
-      }
-      await opts.evm.journal.commit()
-    }
-
-    return new VM(opts)
-  }
-
-  /**
    * Instantiates a new {@link VM} Object.
    *
    * @deprecated The direct usage of this constructor is discouraged since
    * non-finalized async initialization might lead to side effects. Please
-   * use the async {@link VM.create} constructor instead (same API).
+   * use the async {@link createVM} constructor instead (same API).
    * @param opts
    */
-  protected constructor(opts: VMOpts = {}) {
+  constructor(opts: VMOpts = {}) {
     this.common = opts.common!
     this.common.updateParams(opts.params ?? paramsVM)
     this.stateManager = opts.stateManager!
@@ -200,7 +110,7 @@ export class VM {
       stateManager: this._opts.evmOpts?.stateManager?.shallowCopy(downlevelCaches) ?? stateManager,
     }
     const evmCopy = await createEVM(evmOpts) // TODO fixme (should copy the EVMInterface, not default EVM)
-    return VM.create({
+    return createVM({
       stateManager,
       blockchain: this.blockchain,
       common,

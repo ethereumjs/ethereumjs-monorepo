@@ -184,7 +184,7 @@ describe('[BaseTransaction]', () => {
     }
   })
 
-  it('fromValuesArray()', () => {
+  it('createWithdrawalFromBytesArray()', () => {
     let rlpData: any = legacyTxs[0].raw()
     rlpData[0] = toBytes('0x0')
     try {
@@ -270,7 +270,7 @@ describe('[BaseTransaction]', () => {
       for (const tx of txType.txs) {
         assert.ok(
           txType.create.bytesArray(tx.raw() as any, { common }),
-          `${txType.name}: should do roundtrip raw() -> fromValuesArray()`,
+          `${txType.name}: should do roundtrip raw() -> createWithdrawalFromBytesArray()`,
         )
       }
     }

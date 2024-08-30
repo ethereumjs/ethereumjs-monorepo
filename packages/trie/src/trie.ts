@@ -651,7 +651,7 @@ export class Trie {
         if (branchNode instanceof BranchNode) {
           // create an extension node
           // branch->extension->branch
-          // @ts-ignore
+          // @ts-ignore Why does this work, and why are we doing this? See issue https://github.com/ethereumjs/ethereumjs-monorepo/issues/3620
           const extensionNode = new ExtensionNode([branchKey], null)
           stack.push(extensionNode)
           key.push(branchKey)

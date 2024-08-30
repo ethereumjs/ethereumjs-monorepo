@@ -3,14 +3,13 @@ import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import { Account, bytesToHex, createAddressFromPrivateKey, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { runBlock, runTx } from '../../src/index.js'
-import { VM } from '../../src/vm.js'
+import { createVM, runBlock, runTx } from '../../src/index.js'
 
 describe('VM events', () => {
   const privKey = toBytes('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
 
   it('should emit the Block before running it', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let emitted
     vm.events.on('beforeBlock', (val: any) => {
@@ -29,7 +28,7 @@ describe('VM events', () => {
   })
 
   it('should emit a RunBlockResult after running a block', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let emitted
     vm.events.on('afterBlock', (val: any) => {
@@ -49,7 +48,7 @@ describe('VM events', () => {
   })
 
   it('should emit the Transaction before running it', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let emitted
     vm.events.on('beforeTx', (val: any) => {
@@ -68,7 +67,7 @@ describe('VM events', () => {
   })
 
   it('should emit RunTxResult after running a tx', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
     const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
@@ -89,7 +88,7 @@ describe('VM events', () => {
   })
 
   it('should emit the Message before running it', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
     const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
@@ -111,7 +110,7 @@ describe('VM events', () => {
   })
 
   it('should emit EVMResult after running a message', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
     const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
@@ -132,7 +131,7 @@ describe('VM events', () => {
   })
 
   it('should emit InterpreterStep on each step', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let lastEmitted: any
     vm.evm.events!.on('step', (val: any) => {
@@ -154,7 +153,7 @@ describe('VM events', () => {
   })
 
   it('should emit a NewContractEvent on new contracts', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let emitted: any
     vm.evm.events!.on('newContract', (val: any) => {

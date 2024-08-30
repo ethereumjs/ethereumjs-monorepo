@@ -23,8 +23,9 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runBlock as runBlockVM } from '../../../src/index.js'
+import { createVM, runBlock as runBlockVM } from '../../../src/index.js'
 
+import type { VM } from '../../../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
@@ -101,7 +102,7 @@ const BROOT_Address = createAddressFromString(`0x${BROOT_AddressString}`)
  * @returns Two fields: block return status, and callStatus (field saved in the contract)
  */
 async function runBlock(block: Block) {
-  const vm = await VM.create({
+  const vm = await createVM({
     common,
   })
 

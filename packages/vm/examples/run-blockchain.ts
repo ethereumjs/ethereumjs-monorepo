@@ -6,7 +6,7 @@
 // 4. Puts the blocks from ../utils/blockchain-mock-data "blocks" attribute into the Blockchain
 // 5. Runs the Blockchain on the VM.
 
-import { createBlock, createBlockFromRLPSerializedBlock } from '@ethereumjs/block'
+import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { Common, ConsensusAlgorithm, ConsensusType, Mainnet } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
@@ -18,12 +18,13 @@ import {
   setLengthLeft,
   toBytes,
 } from '@ethereumjs/util'
-import { VM, runBlock } from '@ethereumjs/vm'
+import { createVM, runBlock } from '@ethereumjs/vm'
 
 import testData from './helpers/blockchain-mock-data.json'
 
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
+import type { VM } from '@ethereumjs/vm'
 
 async function main() {
   const common = new Common({ chain: Mainnet, hardfork: testData.network.toLowerCase() })
@@ -42,7 +43,7 @@ async function main() {
     genesisBlock,
   })
 
-  const vm = await VM.create({ blockchain, common })
+  const vm = await createVM({ blockchain, common })
 
   await setupPreConditions(vm, testData)
 
@@ -88,7 +89,7 @@ async function setupPreConditions(vm: VM, data: any) {
 async function putBlocks(blockchain: Blockchain, common: Common, data: typeof testData) {
   for (const blockData of data.blocks) {
     const blockRlp = toBytes(blockData.rlp)
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+    const block = createBlockFromRLP(blockRlp, { common })
     await blockchain.putBlock(block)
   }
 }

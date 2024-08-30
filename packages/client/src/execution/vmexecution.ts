@@ -23,7 +23,7 @@ import {
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
-import { VM, runBlock, runTx } from '@ethereumjs/vm'
+import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { writeFileSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
@@ -41,7 +41,7 @@ import { ReceiptsManager } from './receipt.js'
 import type { ExecutionOptions } from './execution.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
+import type { RunBlockOpts, TxReceipt, VM } from '@ethereumjs/vm'
 
 export enum ExecStatus {
   VALID = 'VALID',
@@ -183,7 +183,7 @@ export class VMExecution extends Execution {
 
     await mcl.init(mcl.BLS12_381)
     const rustBN = await initRustBN()
-    this.merkleVM = await VM.create({
+    this.merkleVM = await createVM({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
       stateManager,
@@ -207,7 +207,7 @@ export class VMExecution extends Execution {
     })
     await mcl.init(mcl.BLS12_381)
     const rustBN = await initRustBN()
-    this.verkleVM = await VM.create({
+    this.verkleVM = await createVM({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
       stateManager,
@@ -220,7 +220,7 @@ export class VMExecution extends Execution {
   }
 
   async transitionToVerkle(merkleStateRoot: Uint8Array, assignToVM: boolean = true): Promise<void> {
-    if (this.vm.stateManager instanceof StatelessVerkleStateManager) {
+    if (typeof this.vm.stateManager.initVerkleExecutionWitness === 'function') {
       return
     }
 
@@ -229,15 +229,19 @@ export class VMExecution extends Execution {
         await this.setupMerkleVM()
       }
       const merkleVM = this.merkleVM!
-      const merkleStateManager = merkleVM.stateManager as DefaultStateManager
+      const merkleStateManager = merkleVM.stateManager
 
       if (this.verkleVM === undefined) {
         await this.setupVerkleVM()
       }
       const verkleVM = this.verkleVM!
-      const verkleStateManager = verkleVM.stateManager as StatelessVerkleStateManager
+      const verkleStateManager = verkleVM.stateManager
 
-      const verkleStateRoot = await verkleStateManager.getTransitionStateRoot(
+      // TODO: can we please implement this in a different way and not introduce a method
+      // *inside* one state manager which takes another state manager?
+      // That bloats the interface too much, this should be minimally a separate util method
+      // or fully move to client
+      const verkleStateRoot = await (verkleStateManager as any).getTransitionStateRoot(
         merkleStateManager,
         merkleStateRoot,
       )
@@ -415,7 +419,8 @@ export class VMExecution extends Execution {
             vm = this.verkleVM
           }
 
-          const needsStatelessExecution = vm.stateManager instanceof StatelessVerkleStateManager
+          const needsStatelessExecution =
+            typeof this.vm.stateManager.initVerkleExecutionWitness === 'function'
           if (needsStatelessExecution && block.executionWitness === undefined) {
             throw Error(`Verkle blocks need executionWitness for stateless execution`)
           } else {
@@ -575,7 +580,7 @@ export class VMExecution extends Execution {
       this.config.logger.warn(
         `Setting execution head to hash=${short(jumpToHash)} number=${jumpToNumber}`,
       )
-      await this.vm.blockchain.setIteratorHead('vm', jumpToHash)
+      await this.chain.blockchain.setIteratorHead('vm', jumpToHash)
     })
   }
 
@@ -594,19 +599,9 @@ export class VMExecution extends Execution {
         this.running = true
         let numExecuted: number | null | undefined = undefined
 
-        const { blockchain } = this.vm
-        if (typeof blockchain.getIteratorHead !== 'function') {
-          throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
-        }
-        let startHeadBlock = await blockchain.getIteratorHead()
+        let startHeadBlock = await this.chain.blockchain.getIteratorHead()
         await this.checkAndReset(startHeadBlock)
-
-        if (typeof blockchain.getCanonicalHeadBlock !== 'function') {
-          throw new Error(
-            'cannot get iterator head: blockchain has no getCanonicalHeadBlock function',
-          )
-        }
-        let canonicalHead = await blockchain.getCanonicalHeadBlock()
+        let canonicalHead = await this.chain.blockchain.getCanonicalHeadBlock()
 
         this.config.logger.debug(
           `Running execution startHeadBlock=${startHeadBlock?.header.number} canonicalHead=${canonicalHead?.header.number} loop=${loop}`,
@@ -636,14 +631,14 @@ export class VMExecution extends Execution {
           headBlock = undefined
           parentState = undefined
           errorBlock = undefined
-          this.vmPromise = blockchain
+          this.vmPromise = this.chain.blockchain
             .iterator(
               'vm',
               async (block: Block, reorg: boolean) => {
                 // determine starting state for block run
                 // if we are just starting or if a chain reorg has happened
                 if (headBlock === undefined || reorg) {
-                  headBlock = await blockchain.getBlock(block.header.parentHash)
+                  headBlock = await this.chain.blockchain.getBlock(block.header.parentHash)
                   parentState = headBlock.header.stateRoot
 
                   if (reorg) {
@@ -663,11 +658,6 @@ export class VMExecution extends Execution {
                 // run block, update head if valid
                 try {
                   const { number, timestamp } = block.header
-                  if (typeof blockchain.getTotalDifficulty !== 'function') {
-                    throw new Error(
-                      'cannot get iterator head: blockchain has no getTotalDifficulty function',
-                    )
-                  }
 
                   const hardfork = this.config.execCommon.getHardforkBy({
                     blockNumber: number,
@@ -691,7 +681,7 @@ export class VMExecution extends Execution {
                   }
                   if (
                     (!this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
-                      this.vm.stateManager instanceof StatelessVerkleStateManager) ||
+                      typeof this.vm.stateManager.initVerkleExecutionWitness === 'function') ||
                     (this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
                       this.vm.stateManager instanceof DefaultStateManager)
                   ) {
@@ -799,7 +789,7 @@ export class VMExecution extends Execution {
                         backStepToHash ?? 'na',
                       )} hasParentStateRoot=${short(backStepToRoot ?? 'na')}:\n${error}`,
                     )
-                    await this.vm.blockchain.setIteratorHead('vm', backStepToHash)
+                    await this.chain.blockchain.setIteratorHead('vm', backStepToHash)
                   } else {
                     this.config.logger.error(
                       `${errorMsg}, couldn't back step to vmHead number=${backStepTo} hash=${short(
@@ -854,14 +844,7 @@ export class VMExecution extends Execution {
 
           numExecuted = await this.vmPromise
           if (numExecuted !== null) {
-            let endHeadBlock
-            if (typeof this.vm.blockchain.getIteratorHead === 'function') {
-              endHeadBlock = await this.vm.blockchain.getIteratorHead('vm')
-            } else {
-              throw new Error(
-                'cannot get iterator head: blockchain has no getIteratorHead function',
-              )
-            }
+            const endHeadBlock = await this.chain.blockchain.getIteratorHead('vm')
 
             if (typeof numExecuted === 'number' && numExecuted > 0) {
               const firstNumber = startHeadBlock.header.number
@@ -890,12 +873,7 @@ export class VMExecution extends Execution {
               )
             }
             startHeadBlock = endHeadBlock
-            if (typeof this.vm.blockchain.getCanonicalHeadBlock !== 'function') {
-              throw new Error(
-                'cannot get iterator head: blockchain has no getCanonicalHeadBlock function',
-              )
-            }
-            canonicalHead = await this.vm.blockchain.getCanonicalHeadBlock()
+            canonicalHead = await this.chain.blockchain.getCanonicalHeadBlock()
           }
         }
 
@@ -916,19 +894,12 @@ export class VMExecution extends Execution {
       this.STATS_INTERVAL,
     )
 
-    const { blockchain } = this.vm
     if (this.running || !this.started) {
       return false
     }
 
-    if (typeof blockchain.getIteratorHead !== 'function') {
-      throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
-    }
-    const vmHeadBlock = await blockchain.getIteratorHead()
-    if (typeof blockchain.getCanonicalHeadBlock !== 'function') {
-      throw new Error('cannot get iterator head: blockchain has no getCanonicalHeadBlock function')
-    }
-    const canonicalHead = await blockchain.getCanonicalHeadBlock()
+    const vmHeadBlock = await this.chain.blockchain.getIteratorHead()
+    const canonicalHead = await this.chain.blockchain.getCanonicalHeadBlock()
 
     const infoStr = `vmHead=${vmHeadBlock.header.number} canonicalHead=${
       canonicalHead.header.number
@@ -983,7 +954,7 @@ export class VMExecution extends Execution {
   async executeBlocks(first: number, last: number, txHashes: string[]) {
     this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
 
-    const block = await this.vm.blockchain.getBlock(first)
+    const block = await this.chain.blockchain.getBlock(first)
     const startExecutionHardfork = this.config.execCommon.getHardforkBy({
       blockNumber: block.header.number,
       timestamp: block.header.timestamp,
@@ -999,13 +970,10 @@ export class VMExecution extends Execution {
     const vm = await this.vm.shallowCopy(false)
 
     for (let blockNumber = first; blockNumber <= last; blockNumber++) {
-      const block = await vm.blockchain.getBlock(blockNumber)
-      const parentBlock = await vm.blockchain.getBlock(block.header.parentHash)
+      const block = await this.chain.blockchain.getBlock(blockNumber)
+      const parentBlock = await this.chain.blockchain.getBlock(block.header.parentHash)
       // Set the correct state root
       const root = parentBlock.header.stateRoot
-      if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
-        throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
-      }
       vm.common.setHardforkBy({
         blockNumber,
         timestamp: block.header.timestamp,

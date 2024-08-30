@@ -8,7 +8,7 @@ import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { describe, it } from 'vitest'
 
 import * as verkleBlockJSON from '../../../../statemanager/test/testdata/verkleKaustinen6Block72.json'
-import { VM, runBlock } from '../../../src/index.js'
+import { createVM, runBlock } from '../../../src/index.js'
 
 import type { BlockData } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -39,7 +39,7 @@ describe('EIP 6800 tests', () => {
       verkleCrypto,
     })
     const evm = await createEVM({ common, stateManager: verkleStateManager })
-    const vm = await VM.create({
+    const vm = await createVM({
       common,
       evm,
       stateManager: verkleStateManager,

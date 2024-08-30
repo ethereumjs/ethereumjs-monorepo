@@ -18,8 +18,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { equalsBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 
+import type { VM } from '../../../src/index.js'
 import type { AuthorizationListBytesItem } from '@ethereumjs/common'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
@@ -65,7 +66,7 @@ async function runTest(
   vm?: VM,
   skipEmptyCode?: boolean,
 ) {
-  vm = vm ?? (await VM.create({ common }))
+  vm = vm ?? (await createVM({ common }))
   const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
   const tx = createEOACode7702Tx(
     {
@@ -172,7 +173,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
   })
 
   it('Code is already present in account', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     await vm.stateManager.putCode(defaultAuthAddr, new Uint8Array([1]))
     await runTest(
       [
@@ -187,7 +188,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
   })
 
   it('Auth address is added to warm addresses', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     const authList = [
       getAuthorizationListItem({
         address: code1Addr,
@@ -234,7 +235,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
   // if EIP-7702 code is being ran which sets storage on this EOA,
   // the account is still deleted after the tx (and thus also the storage is wiped)
   it('EIP-161 test case', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     const authList = [
       getAuthorizationListItem({
         address: code1Addr,

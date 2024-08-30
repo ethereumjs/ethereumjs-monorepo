@@ -3,7 +3,7 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { Address } from '@ethereumjs/util'
@@ -21,7 +21,7 @@ describe('EIP 3541 tests', () => {
       gasLimit: 1000000,
     }).sign(pkey)
 
-    let vm = await VM.create({ common })
+    let vm = await createVM({ common })
 
     let result = await runTx(vm, { tx, skipHardForkValidation: true })
     let created = result.createdAddress
@@ -48,7 +48,7 @@ describe('EIP 3541 tests', () => {
 
     // check if we can deposit a contract on non-EIP3541 chains
 
-    vm = await VM.create({ common: commonNoEIP3541 })
+    vm = await createVM({ common: commonNoEIP3541 })
     const tx2 = createLegacyTx({
       data: '0x7FEF0000000000000000000000000000000000000000000000000000000000000060005260206000F3',
       gasLimit: 1000000,
@@ -69,7 +69,7 @@ describe('EIP 3541 tests', () => {
       gasLimit: 1000000,
     }).sign(pkey)
 
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     let address: Address
     vm.evm.events!.on('step', (step: InterpreterStep) => {
       if (step.depth === 1) {
@@ -104,7 +104,7 @@ describe('EIP 3541 tests', () => {
       gasLimit: 1000000,
     }).sign(pkey)
 
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     let address: Address
     vm.evm.events!.on('step', (step: InterpreterStep) => {
       if (step.depth === 1) {

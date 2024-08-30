@@ -1,4 +1,32 @@
+import { short } from '@ethereumjs/util'
+
 import type { PrecompileInput } from './index.js'
+
+/**
+ * Checks that the gas used remain under the gas limit.
+ *
+ * @param opts
+ * @param gasUsed
+ * @param pName
+ * @returns
+ */
+export const gasLimitCheck = (opts: PrecompileInput, gasUsed: bigint, pName: string) => {
+  if (opts._debug !== undefined) {
+    opts._debug(
+      `Run ${pName} precompile data=${short(opts.data)} length=${
+        opts.data.length
+      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`,
+    )
+  }
+
+  if (opts.gasLimit < gasUsed) {
+    if (opts._debug !== undefined) {
+      opts._debug(`${pName} failed: OOG`)
+    }
+    return false
+  }
+  return true
+}
 
 /**
  * Checks that the length of the provided data is equal to `length`.

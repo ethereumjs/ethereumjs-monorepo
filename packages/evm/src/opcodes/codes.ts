@@ -52,159 +52,173 @@ export type OpcodeList = Map<number, Opcode>
 type OpcodeEntry = { [key: number]: { name: string; isAsync: boolean; dynamicGas: boolean } }
 type OpcodeEntryFee = OpcodeEntry & { [key: number]: { fee: number } }
 
+// Default: sync and no dynamic gas
+const defaultOp = (name: string) => {
+  return { name, isAsync: false, dynamicGas: false }
+}
+const dynamicGasOp = (name: string) => {
+  return { name, isAsync: false, dynamicGas: true }
+}
+const asyncOp = (name: string) => {
+  return { name, isAsync: true, dynamicGas: false }
+}
+const asyncAndDynamicGasOp = (name: string) => {
+  return { name, isAsync: true, dynamicGas: true }
+}
+
 // Base opcode list. The opcode list is extended in future hardforks
 const opcodes: OpcodeEntry = {
   // 0x0 range - arithmetic ops
   // name, async
-  0x00: { name: 'STOP', isAsync: false, dynamicGas: false },
-  0x01: { name: 'ADD', isAsync: false, dynamicGas: false },
-  0x02: { name: 'MUL', isAsync: false, dynamicGas: false },
-  0x03: { name: 'SUB', isAsync: false, dynamicGas: false },
-  0x04: { name: 'DIV', isAsync: false, dynamicGas: false },
-  0x05: { name: 'SDIV', isAsync: false, dynamicGas: false },
-  0x06: { name: 'MOD', isAsync: false, dynamicGas: false },
-  0x07: { name: 'SMOD', isAsync: false, dynamicGas: false },
-  0x08: { name: 'ADDMOD', isAsync: false, dynamicGas: false },
-  0x09: { name: 'MULMOD', isAsync: false, dynamicGas: false },
-  0x0a: { name: 'EXP', isAsync: false, dynamicGas: true },
-  0x0b: { name: 'SIGNEXTEND', isAsync: false, dynamicGas: false },
+  0x00: defaultOp('STOP'),
+  0x01: defaultOp('ADD'),
+  0x02: defaultOp('MUL'),
+  0x03: defaultOp('SUB'),
+  0x04: defaultOp('DIV'),
+  0x05: defaultOp('SDIV'),
+  0x06: defaultOp('MOD'),
+  0x07: defaultOp('SMOD'),
+  0x08: defaultOp('ADDMOD'),
+  0x09: defaultOp('MULMOD'),
+  0x0a: dynamicGasOp('EXP'),
+  0x0b: defaultOp('SIGNEXTEND'),
 
   // 0x10 range - bit ops
-  0x10: { name: 'LT', isAsync: false, dynamicGas: false },
-  0x11: { name: 'GT', isAsync: false, dynamicGas: false },
-  0x12: { name: 'SLT', isAsync: false, dynamicGas: false },
-  0x13: { name: 'SGT', isAsync: false, dynamicGas: false },
-  0x14: { name: 'EQ', isAsync: false, dynamicGas: false },
-  0x15: { name: 'ISZERO', isAsync: false, dynamicGas: false },
-  0x16: { name: 'AND', isAsync: false, dynamicGas: false },
-  0x17: { name: 'OR', isAsync: false, dynamicGas: false },
-  0x18: { name: 'XOR', isAsync: false, dynamicGas: false },
-  0x19: { name: 'NOT', isAsync: false, dynamicGas: false },
-  0x1a: { name: 'BYTE', isAsync: false, dynamicGas: false },
+  0x10: defaultOp('LT'),
+  0x11: defaultOp('GT'),
+  0x12: defaultOp('SLT'),
+  0x13: defaultOp('SGT'),
+  0x14: defaultOp('EQ'),
+  0x15: defaultOp('ISZERO'),
+  0x16: defaultOp('AND'),
+  0x17: defaultOp('OR'),
+  0x18: defaultOp('XOR'),
+  0x19: defaultOp('NOT'),
+  0x1a: defaultOp('BYTE'),
 
   // 0x20 range - crypto
-  0x20: { name: 'KECCAK256', isAsync: false, dynamicGas: true },
+  0x20: dynamicGasOp('KECCAK256'),
 
   // 0x30 range - closure state
-  0x30: { name: 'ADDRESS', isAsync: true, dynamicGas: false },
-  0x31: { name: 'BALANCE', isAsync: true, dynamicGas: true },
-  0x32: { name: 'ORIGIN', isAsync: true, dynamicGas: false },
-  0x33: { name: 'CALLER', isAsync: true, dynamicGas: false },
-  0x34: { name: 'CALLVALUE', isAsync: true, dynamicGas: false },
-  0x35: { name: 'CALLDATALOAD', isAsync: true, dynamicGas: false },
-  0x36: { name: 'CALLDATASIZE', isAsync: true, dynamicGas: false },
-  0x37: { name: 'CALLDATACOPY', isAsync: true, dynamicGas: true },
-  0x38: { name: 'CODESIZE', isAsync: false, dynamicGas: false },
-  0x39: { name: 'CODECOPY', isAsync: false, dynamicGas: true },
-  0x3a: { name: 'GASPRICE', isAsync: false, dynamicGas: false },
-  0x3b: { name: 'EXTCODESIZE', isAsync: true, dynamicGas: true },
-  0x3c: { name: 'EXTCODECOPY', isAsync: true, dynamicGas: true },
+  0x30: asyncOp('ADDRESS'),
+  0x31: asyncAndDynamicGasOp('BALANCE'),
+  0x32: asyncOp('ORIGIN'),
+  0x33: asyncOp('CALLER'),
+  0x34: asyncOp('CALLVALUE'),
+  0x35: asyncOp('CALLDATALOAD'),
+  0x36: asyncOp('CALLDATASIZE'),
+  0x37: asyncAndDynamicGasOp('CALLDATACOPY'),
+  0x38: defaultOp('CODESIZE'),
+  0x39: dynamicGasOp('CODECOPY'),
+  0x3a: defaultOp('GASPRICE'),
+  0x3b: asyncAndDynamicGasOp('EXTCODESIZE'),
+  0x3c: asyncAndDynamicGasOp('EXTCODECOPY'),
 
   // '0x40' range - block operations
-  0x40: { name: 'BLOCKHASH', isAsync: true, dynamicGas: false },
-  0x41: { name: 'COINBASE', isAsync: true, dynamicGas: false },
-  0x42: { name: 'TIMESTAMP', isAsync: true, dynamicGas: false },
-  0x43: { name: 'NUMBER', isAsync: true, dynamicGas: false },
-  0x44: { name: 'DIFFICULTY', isAsync: true, dynamicGas: false },
-  0x45: { name: 'GASLIMIT', isAsync: true, dynamicGas: false },
+  0x40: asyncOp('BLOCKHASH'),
+  0x41: asyncOp('COINBASE'),
+  0x42: asyncOp('TIMESTAMP'),
+  0x43: asyncOp('NUMBER'),
+  0x44: asyncOp('DIFFICULTY'),
+  0x45: asyncOp('GASLIMIT'),
 
   // 0x50 range - 'storage' and execution
-  0x50: { name: 'POP', isAsync: false, dynamicGas: false },
-  0x51: { name: 'MLOAD', isAsync: false, dynamicGas: true },
-  0x52: { name: 'MSTORE', isAsync: false, dynamicGas: true },
-  0x53: { name: 'MSTORE8', isAsync: false, dynamicGas: true },
-  0x54: { name: 'SLOAD', isAsync: true, dynamicGas: true },
-  0x55: { name: 'SSTORE', isAsync: true, dynamicGas: true },
-  0x56: { name: 'JUMP', isAsync: false, dynamicGas: false },
-  0x57: { name: 'JUMPI', isAsync: false, dynamicGas: false },
-  0x58: { name: 'PC', isAsync: false, dynamicGas: false },
-  0x59: { name: 'MSIZE', isAsync: false, dynamicGas: false },
-  0x5a: { name: 'GAS', isAsync: false, dynamicGas: false },
-  0x5b: { name: 'JUMPDEST', isAsync: false, dynamicGas: false },
+  0x50: defaultOp('POP'),
+  0x51: dynamicGasOp('MLOAD'),
+  0x52: dynamicGasOp('MSTORE'),
+  0x53: dynamicGasOp('MSTORE8'),
+  0x54: asyncAndDynamicGasOp('SLOAD'),
+  0x55: asyncAndDynamicGasOp('SSTORE'),
+  0x56: defaultOp('JUMP'),
+  0x57: defaultOp('JUMPI'),
+  0x58: defaultOp('PC'),
+  0x59: defaultOp('MSIZE'),
+  0x5a: defaultOp('GAS'),
+  0x5b: defaultOp('JUMPDEST'),
 
   // 0x60, range
-  0x60: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x61: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x62: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x63: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x64: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x65: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x66: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x67: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x68: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x69: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x6a: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x6b: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x6c: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x6d: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x6e: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x6f: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x70: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x71: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x72: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x73: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x74: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x75: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x76: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x77: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x78: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x79: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x7a: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x7b: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x7c: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x7d: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x7e: { name: 'PUSH', isAsync: false, dynamicGas: false },
-  0x7f: { name: 'PUSH', isAsync: false, dynamicGas: false },
+  0x60: defaultOp('PUSH'),
+  0x61: defaultOp('PUSH'),
+  0x62: defaultOp('PUSH'),
+  0x63: defaultOp('PUSH'),
+  0x64: defaultOp('PUSH'),
+  0x65: defaultOp('PUSH'),
+  0x66: defaultOp('PUSH'),
+  0x67: defaultOp('PUSH'),
+  0x68: defaultOp('PUSH'),
+  0x69: defaultOp('PUSH'),
+  0x6a: defaultOp('PUSH'),
+  0x6b: defaultOp('PUSH'),
+  0x6c: defaultOp('PUSH'),
+  0x6d: defaultOp('PUSH'),
+  0x6e: defaultOp('PUSH'),
+  0x6f: defaultOp('PUSH'),
+  0x70: defaultOp('PUSH'),
+  0x71: defaultOp('PUSH'),
+  0x72: defaultOp('PUSH'),
+  0x73: defaultOp('PUSH'),
+  0x74: defaultOp('PUSH'),
+  0x75: defaultOp('PUSH'),
+  0x76: defaultOp('PUSH'),
+  0x77: defaultOp('PUSH'),
+  0x78: defaultOp('PUSH'),
+  0x79: defaultOp('PUSH'),
+  0x7a: defaultOp('PUSH'),
+  0x7b: defaultOp('PUSH'),
+  0x7c: defaultOp('PUSH'),
+  0x7d: defaultOp('PUSH'),
+  0x7e: defaultOp('PUSH'),
+  0x7f: defaultOp('PUSH'),
 
-  0x80: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x81: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x82: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x83: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x84: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x85: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x86: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x87: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x88: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x89: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x8a: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x8b: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x8c: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x8d: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x8e: { name: 'DUP', isAsync: false, dynamicGas: false },
-  0x8f: { name: 'DUP', isAsync: false, dynamicGas: false },
+  0x80: defaultOp('DUP'),
+  0x81: defaultOp('DUP'),
+  0x82: defaultOp('DUP'),
+  0x83: defaultOp('DUP'),
+  0x84: defaultOp('DUP'),
+  0x85: defaultOp('DUP'),
+  0x86: defaultOp('DUP'),
+  0x87: defaultOp('DUP'),
+  0x88: defaultOp('DUP'),
+  0x89: defaultOp('DUP'),
+  0x8a: defaultOp('DUP'),
+  0x8b: defaultOp('DUP'),
+  0x8c: defaultOp('DUP'),
+  0x8d: defaultOp('DUP'),
+  0x8e: defaultOp('DUP'),
+  0x8f: defaultOp('DUP'),
 
-  0x90: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x91: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x92: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x93: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x94: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x95: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x96: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x97: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x98: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x99: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x9a: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x9b: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x9c: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x9d: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x9e: { name: 'SWAP', isAsync: false, dynamicGas: false },
-  0x9f: { name: 'SWAP', isAsync: false, dynamicGas: false },
+  0x90: defaultOp('SWAP'),
+  0x91: defaultOp('SWAP'),
+  0x92: defaultOp('SWAP'),
+  0x93: defaultOp('SWAP'),
+  0x94: defaultOp('SWAP'),
+  0x95: defaultOp('SWAP'),
+  0x96: defaultOp('SWAP'),
+  0x97: defaultOp('SWAP'),
+  0x98: defaultOp('SWAP'),
+  0x99: defaultOp('SWAP'),
+  0x9a: defaultOp('SWAP'),
+  0x9b: defaultOp('SWAP'),
+  0x9c: defaultOp('SWAP'),
+  0x9d: defaultOp('SWAP'),
+  0x9e: defaultOp('SWAP'),
+  0x9f: defaultOp('SWAP'),
 
-  0xa0: { name: 'LOG', isAsync: false, dynamicGas: true },
-  0xa1: { name: 'LOG', isAsync: false, dynamicGas: true },
-  0xa2: { name: 'LOG', isAsync: false, dynamicGas: true },
-  0xa3: { name: 'LOG', isAsync: false, dynamicGas: true },
-  0xa4: { name: 'LOG', isAsync: false, dynamicGas: true },
+  0xa0: dynamicGasOp('LOG'),
+  0xa1: dynamicGasOp('LOG'),
+  0xa2: dynamicGasOp('LOG'),
+  0xa3: dynamicGasOp('LOG'),
+  0xa4: dynamicGasOp('LOG'),
 
   // '0xf0' range - closures
-  0xf0: { name: 'CREATE', isAsync: true, dynamicGas: true },
-  0xf1: { name: 'CALL', isAsync: true, dynamicGas: true },
-  0xf2: { name: 'CALLCODE', isAsync: true, dynamicGas: true },
-  0xf3: { name: 'RETURN', isAsync: false, dynamicGas: true },
+  0xf0: asyncAndDynamicGasOp('CREATE'),
+  0xf1: asyncAndDynamicGasOp('CALL'),
+  0xf2: asyncAndDynamicGasOp('CALLCODE'),
+  0xf3: dynamicGasOp('RETURN'),
 
   // '0x70', range - other
-  0xfe: { name: 'INVALID', isAsync: false, dynamicGas: false },
-  0xff: { name: 'SELFDESTRUCT', isAsync: true, dynamicGas: true },
+  0xfe: defaultOp('INVALID'),
+  0xff: asyncAndDynamicGasOp('SELFDESTRUCT'),
 }
 
 // Array of hard forks in order. These changes are repeatedly applied to `opcodes` until the hard fork is in the future based upon the common
@@ -216,52 +230,52 @@ const hardforkOpcodes: { hardfork: Hardfork; opcodes: OpcodeEntry }[] = [
   {
     hardfork: Hardfork.Homestead,
     opcodes: {
-      0xf4: { name: 'DELEGATECALL', isAsync: true, dynamicGas: true }, // EIP-7
+      0xf4: asyncAndDynamicGasOp('DELEGATECALL'), // EIP-7
     },
   },
   {
     hardfork: Hardfork.TangerineWhistle,
     opcodes: {
-      0x54: { name: 'SLOAD', isAsync: true, dynamicGas: true },
-      0xf1: { name: 'CALL', isAsync: true, dynamicGas: true },
-      0xf2: { name: 'CALLCODE', isAsync: true, dynamicGas: true },
-      0x3b: { name: 'EXTCODESIZE', isAsync: true, dynamicGas: true },
-      0x3c: { name: 'EXTCODECOPY', isAsync: true, dynamicGas: true },
-      0xf4: { name: 'DELEGATECALL', isAsync: true, dynamicGas: true }, // EIP-7
-      0xff: { name: 'SELFDESTRUCT', isAsync: true, dynamicGas: true },
-      0x31: { name: 'BALANCE', isAsync: true, dynamicGas: true },
+      0x54: asyncAndDynamicGasOp('SLOAD'),
+      0xf1: asyncAndDynamicGasOp('CALL'),
+      0xf2: asyncAndDynamicGasOp('CALLCODE'),
+      0x3b: asyncAndDynamicGasOp('EXTCODESIZE'),
+      0x3c: asyncAndDynamicGasOp('EXTCODECOPY'),
+      0xf4: asyncAndDynamicGasOp('DELEGATECALL'), // EIP-7
+      0xff: asyncAndDynamicGasOp('SELFDESTRUCT'),
+      0x31: asyncAndDynamicGasOp('BALANCE'),
     },
   },
   {
     hardfork: Hardfork.Byzantium,
     opcodes: {
-      0xfd: { name: 'REVERT', isAsync: false, dynamicGas: true }, // EIP-140
-      0xfa: { name: 'STATICCALL', isAsync: true, dynamicGas: true }, // EIP-214
-      0x3d: { name: 'RETURNDATASIZE', isAsync: true, dynamicGas: false }, // EIP-211
-      0x3e: { name: 'RETURNDATACOPY', isAsync: true, dynamicGas: true }, // EIP-211
+      0xfd: dynamicGasOp('REVERT'), // EIP-140
+      0xfa: asyncAndDynamicGasOp('STATICCALL'), // EIP-214
+      0x3d: asyncOp('RETURNDATASIZE'), // EIP-211
+      0x3e: asyncAndDynamicGasOp('RETURNDATACOPY'), // EIP-211
     },
   },
   {
     hardfork: Hardfork.Constantinople,
     opcodes: {
-      0x1b: { name: 'SHL', isAsync: false, dynamicGas: false }, // EIP-145
-      0x1c: { name: 'SHR', isAsync: false, dynamicGas: false }, // EIP-145
-      0x1d: { name: 'SAR', isAsync: false, dynamicGas: false }, // EIP-145
-      0x3f: { name: 'EXTCODEHASH', isAsync: true, dynamicGas: true }, // EIP-1052
-      0xf5: { name: 'CREATE2', isAsync: true, dynamicGas: true }, // EIP-1014
+      0x1b: defaultOp('SHL'), // EIP-145
+      0x1c: defaultOp('SHR'), // EIP-145
+      0x1d: defaultOp('SAR'), // EIP-145
+      0x3f: asyncAndDynamicGasOp('EXTCODEHASH'), // EIP-1052
+      0xf5: asyncAndDynamicGasOp('CREATE2'), // EIP-1014
     },
   },
   {
     hardfork: Hardfork.Istanbul,
     opcodes: {
-      0x46: { name: 'CHAINID', isAsync: false, dynamicGas: false }, // EIP-1344
-      0x47: { name: 'SELFBALANCE', isAsync: false, dynamicGas: false }, // EIP-1884
+      0x46: defaultOp('CHAINID'), // EIP-1344
+      0x47: defaultOp('SELFBALANCE'), // EIP-1884
     },
   },
   {
     hardfork: Hardfork.Paris,
     opcodes: {
-      0x44: { name: 'PREVRANDAO', isAsync: true, dynamicGas: false }, // EIP-4399
+      0x44: asyncOp('PREVRANDAO'), // EIP-4399
     },
   },
 ]
@@ -270,92 +284,92 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
   {
     eip: 663,
     opcodes: {
-      0xe6: { name: 'DUPN', isAsync: false, dynamicGas: false },
-      0xe7: { name: 'SWAPN', isAsync: false, dynamicGas: false },
-      0xe8: { name: 'EXCHANGE', isAsync: false, dynamicGas: false },
+      0xe6: defaultOp('DUPN'),
+      0xe7: defaultOp('SWAPN'),
+      0xe8: defaultOp('EXCHANGE'),
     },
   },
   {
     eip: 1153,
     opcodes: {
-      0x5c: { name: 'TLOAD', isAsync: false, dynamicGas: false },
-      0x5d: { name: 'TSTORE', isAsync: false, dynamicGas: false },
+      0x5c: defaultOp('TLOAD'),
+      0x5d: defaultOp('TSTORE'),
     },
   },
   {
     eip: 3198,
     opcodes: {
-      0x48: { name: 'BASEFEE', isAsync: false, dynamicGas: false },
+      0x48: defaultOp('BASEFEE'),
     },
   },
   {
     eip: 3855,
     opcodes: {
-      0x5f: { name: 'PUSH0', isAsync: false, dynamicGas: false },
+      0x5f: defaultOp('PUSH0'),
     },
   },
   {
     eip: 4200,
     opcodes: {
-      0xe0: { name: 'RJUMP', isAsync: false, dynamicGas: false },
-      0xe1: { name: 'RJUMPI', isAsync: false, dynamicGas: false },
-      0xe2: { name: 'RJUMPV', isAsync: false, dynamicGas: false },
+      0xe0: defaultOp('RJUMP'),
+      0xe1: defaultOp('RJUMPI'),
+      0xe2: defaultOp('RJUMPV'),
     },
   },
   {
     eip: 4750,
     opcodes: {
-      0xe3: { name: 'CALLF', isAsync: false, dynamicGas: false },
-      0xe4: { name: 'RETF', isAsync: false, dynamicGas: false },
+      0xe3: defaultOp('CALLF'),
+      0xe4: defaultOp('RETF'),
     },
   },
   {
     eip: 4844,
     opcodes: {
-      0x49: { name: 'BLOBHASH', isAsync: false, dynamicGas: false },
+      0x49: defaultOp('BLOBHASH'),
     },
   },
   {
     eip: 5656,
     opcodes: {
-      0x5e: { name: 'MCOPY', isAsync: false, dynamicGas: true },
+      0x5e: dynamicGasOp('MCOPY'),
     },
   },
   {
     eip: 6206,
     opcodes: {
-      0xe5: { name: 'JUMPF', isAsync: false, dynamicGas: false },
+      0xe5: defaultOp('JUMPF'),
     },
   },
   {
     eip: 7069,
     opcodes: {
-      0xf7: { name: 'RETURNDATALOAD', isAsync: false, dynamicGas: false },
-      0xf8: { name: 'EXTCALL', isAsync: true, dynamicGas: true },
-      0xf9: { name: 'EXTDELEGATECALL', isAsync: true, dynamicGas: true },
-      0xfb: { name: 'EXTSTATICCALL', isAsync: true, dynamicGas: true },
+      0xf7: defaultOp('RETURNDATALOAD'),
+      0xf8: asyncAndDynamicGasOp('EXTCALL'),
+      0xf9: asyncAndDynamicGasOp('EXTDELEGATECALL'),
+      0xfb: asyncAndDynamicGasOp('EXTSTATICCALL'),
     },
   },
   {
     eip: 7480,
     opcodes: {
-      0xd0: { name: 'DATALOAD', isAsync: false, dynamicGas: false },
-      0xd1: { name: 'DATALOADN', isAsync: false, dynamicGas: false },
-      0xd2: { name: 'DATASIZE', isAsync: false, dynamicGas: false },
-      0xd3: { name: 'DATACOPY', isAsync: false, dynamicGas: true },
+      0xd0: defaultOp('DATALOAD'),
+      0xd1: defaultOp('DATALOADN'),
+      0xd2: defaultOp('DATASIZE'),
+      0xd3: dynamicGasOp('DATACOPY'),
     },
   },
   {
     eip: 7516,
     opcodes: {
-      0x4a: { name: 'BLOBBASEFEE', isAsync: false, dynamicGas: false },
+      0x4a: defaultOp('BLOBBASEFEE'),
     },
   },
   {
     eip: 7620,
     opcodes: {
-      0xec: { name: 'EOFCREATE', isAsync: true, dynamicGas: true },
-      0xee: { name: 'RETURNCONTRACT', isAsync: true, dynamicGas: true },
+      0xec: asyncAndDynamicGasOp('EOFCREATE'),
+      0xee: asyncAndDynamicGasOp('RETURNCONTRACT'),
     },
   },
 ]
