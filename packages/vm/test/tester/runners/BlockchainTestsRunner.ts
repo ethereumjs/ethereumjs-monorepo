@@ -24,6 +24,8 @@ import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type * as tape from 'tape'
+import { FlatStateManager } from '@ethereumjs/statemanager'
+import { Snapshot } from '@ethereumjs/statemanager'
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}
@@ -47,10 +49,15 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   common.setHardforkBy({ blockNumber: 0 })
 
   let cacheDB = new MapDB()
-  let state = new Trie({ useKeyHashing: true, common })
-  let stateManager = new DefaultStateManager({
-    caches: new Caches(),
-    trie: state,
+  // let state = new Trie({ useKeyHashing: true, common })
+  // let stateManager = new DefaultStateManager({
+  //   caches: new Caches(),
+  //   trie: state,
+  //   common,
+  // })
+  let state = new Snapshot()
+  let stateManager = new FlatStateManager({
+    snapshot: state,
     common,
   })
 
