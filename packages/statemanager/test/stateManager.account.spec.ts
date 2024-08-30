@@ -15,11 +15,7 @@ import { createAccountWithDefaults } from './util.js'
 describe('StateManager -> General/Account', () => {
   const stateManagers: any[] = [FlatStateManager, DefaultStateManager]
   for (const smType of stateManagers) {
-    for (const accountCacheOpts of [
-      { deactivate: false },
-      { deactivate: true },
-      { deactivate: false, size: 0 },
-    ]) {
+    for (const accountCacheOpts of [{ size: 1000 }, { size: 0 }]) {
       it(`should set the state root to empty`, async () => {
         const stateManager = new smType({ accountCacheOpts })
 
