@@ -129,30 +129,29 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
           account && account.isEmpty() ? 'yes' : 'no'
         }`,
       )
-
-      if (this._caches?.account === undefined) {
-        if (account !== undefined) {
-          const stem = getVerkleStem(this.verkleCrypto, address, 0)
-          const basicDataBytes = encodeVerkleLeafBasicData({
-            version: account.version,
-            balance: account.balance,
-            nonce: account.nonce,
-            codeSize: account.codeSize,
-          })
-          await this._trie.put(
-            stem,
-            [VerkleLeafType.BasicData, VerkleLeafType.CodeHash],
-            [basicDataBytes, account.codeHash],
-          )
-        } else {
-          // Delete account
-        }
+    }
+    if (this._caches?.account === undefined) {
+      if (account !== undefined) {
+        const stem = getVerkleStem(this.verkleCrypto, address, 0)
+        const basicDataBytes = encodeVerkleLeafBasicData({
+          version: account.version,
+          balance: account.balance,
+          nonce: account.nonce,
+          codeSize: account.codeSize,
+        })
+        await this._trie.put(
+          stem,
+          [VerkleLeafType.BasicData, VerkleLeafType.CodeHash],
+          [basicDataBytes, account.codeHash],
+        )
       } else {
-        if (account !== undefined) {
-          this._caches?.account?.put(address, account, true)
-        } else {
-          this._caches?.account?.del(address)
-        }
+        // Delete account
+      }
+    } else {
+      if (account !== undefined) {
+        this._caches?.account?.put(address, account, true)
+      } else {
+        this._caches?.account?.del(address)
       }
     }
   }
