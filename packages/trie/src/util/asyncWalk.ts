@@ -1,7 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { equalsBytes } from '@ethereumjs/util'
-// TODO: replace with bytesToHex from @ethereumjs/util
-import { toHex } from 'ethereum-cryptography/utils.js' // eslint-disable-line
+import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 
 import { BranchNode } from '../node/branch.js'
 import { ExtensionNode } from '../node/extension.js'
@@ -36,10 +34,10 @@ export async function* _walkTrie(
   }
   try {
     const node = await this.lookupNode(nodeHash)
-    if (node === undefined || visited.has(toHex(this.hash(node!.serialize())))) {
+    if (node === undefined || visited.has(bytesToHex(this.hash(node!.serialize())))) {
       return
     }
-    visited.add(toHex(this.hash(node!.serialize())))
+    visited.add(bytesToHex(this.hash(node!.serialize())))
     await onFound(node!, currentKey)
     if (await filter(node!, currentKey)) {
       yield { node: node!, currentKey }

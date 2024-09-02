@@ -45,42 +45,24 @@ for (const { constructor, defaults, title } of [
 
   describe(`${title} (Persistence)`, () => {
     it('creates an instance via createTrie and defaults to `false` with a database', async () => {
-      // TODO: check this test
-      assert.isUndefined(
-        ((await createTrie({ ...defaults, db: new MapDB() })) as any)._useRootPersistence,
-      )
-    })
-
-    it('creates an instance via createTrie and respects the `useRootPersistence` option with a database', async () => {
-      // TODO: check this test
-      assert.isUndefined(
-        (
-          (await createTrie({
-            ...defaults,
-            db: new MapDB(),
-            useRootPersistence: false,
-          })) as any
-        )._useRootPersistence,
-      )
-    })
-
-    it('creates an instance via createTrie and respects the `useRootPersistence` option with a database', async () => {
-      // TODO: check this test
-      assert.isUndefined(
-        (
-          (await createTrie({
-            ...defaults,
-            db: new MapDB(),
-            useRootPersistence: false,
-          })) as any
-        )._useRootPersistence,
+      assert.isFalse(
+        (await createTrie({ ...defaults, db: new MapDB() }))['_opts'].useRootPersistence,
       )
     })
 
     it('creates an instance via createTrie and defaults to `false` without a database', async () => {
-      // TODO: check this test
-      assert.isUndefined(
-        ((await createTrie({ ...defaults, db: new MapDB() })) as any)._useRootPersistence,
+      assert.isFalse((await createTrie({ ...defaults }))['_opts'].useRootPersistence)
+    })
+
+    it('creates an instance via createTrie and respects the `useRootPersistence` option with a database', async () => {
+      assert.isFalse(
+        (
+          await createTrie({
+            ...defaults,
+            db: new MapDB(),
+            useRootPersistence: false,
+          })
+        )['_opts'].useRootPersistence,
       )
     })
 

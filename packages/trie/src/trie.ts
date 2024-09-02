@@ -403,13 +403,11 @@ export class Trie {
       }
     }
     const startingNode = partialPath.stack[partialPath.stack.length - 1]
-    const start = startingNode !== undefined ? this.hash(startingNode?.serialize()) : this.root()
+    const start = startingNode !== undefined ? this.hash(startingNode.serialize()) : this.root()
     try {
       this.DEBUG &&
         this.debug(
-          `Walking trie from ${startingNode === undefined ? 'ROOT' : 'NODE'}: ${bytesToHex(
-            start as Uint8Array,
-          )}`,
+          `Walking trie from ${startingNode === undefined ? 'ROOT' : 'NODE'}: ${bytesToHex(start)}`,
           ['FIND_PATH'],
         )
       await this.walkTrie(start, onFound)
@@ -651,8 +649,7 @@ export class Trie {
         if (branchNode instanceof BranchNode) {
           // create an extension node
           // branch->extension->branch
-          // @ts-ignore Why does this work, and why are we doing this? See issue https://github.com/ethereumjs/ethereumjs-monorepo/issues/3620
-          const extensionNode = new ExtensionNode([branchKey], null)
+          const extensionNode = new ExtensionNode([branchKey], new Uint8Array())
           stack.push(extensionNode)
           key.push(branchKey)
         } else {
