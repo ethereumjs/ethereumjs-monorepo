@@ -48,7 +48,8 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     assert.ok(Object.keys(stateManager['_state']).length !== 0, 'should initialize with state')
   })
 
-  it('getAccount()', async () => {
+  // TODO: Turn back on once we have kaustinen7 data
+  it.skip('getAccount()', async () => {
     const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
