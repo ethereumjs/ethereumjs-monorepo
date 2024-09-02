@@ -6,7 +6,7 @@ class OpcodeInfo {
     opcode: number,
     inputs: number,
     outputs: number,
-    opSize: number
+    opSize: number,
   ) {
     return this.parse(instr, opcode, inputs, outputs, opSize)
   }
@@ -16,7 +16,7 @@ class OpcodeInfo {
     opcode: number,
     inputs: number,
     outputs: number,
-    opSize: number
+    opSize: number,
   ) {
     return this.parse(instr, opcode, inputs, outputs, opSize)
   }
