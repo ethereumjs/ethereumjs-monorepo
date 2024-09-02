@@ -704,6 +704,10 @@ export class EVM implements EVMInterface {
       }
     }
 
+    if (message.depth === 0) {
+      this.postMessageCleanup()
+    }
+
     return {
       createdAddress: message.to,
       execResult: result,
