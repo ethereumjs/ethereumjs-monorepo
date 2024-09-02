@@ -27,7 +27,7 @@ import {
   type createBlock,
   type createBlockFromExecutionPayload,
   type createBlockFromJsonRpcProvider,
-  type createBlockFromRLPSerializedBlock,
+  type createBlockFromRLP,
   type createBlockFromRPC,
   type createBlockFromBytesArray,
 } from '../index.js'
@@ -54,7 +54,7 @@ import type {
  *
  * - {@link createBlock }
  * - {@link createBlockFromBytesArray }
- * - {@link createBlockFromRLPSerializedBlock }
+ * - {@link createBlockFromRLP }
  * - {@link createBlockFromRPC }
  * - {@link createBlockFromJsonRpcProvider }
  * - {@link createBlockFromExecutionPayload }

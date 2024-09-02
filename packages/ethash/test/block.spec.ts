@@ -1,8 +1,4 @@
-import {
-  createBlock,
-  createBlockFromBytesArray,
-  createBlockFromRLPSerializedBlock,
-} from '@ethereumjs/block'
+import { createBlock, createBlockFromBytesArray, createBlockFromRLP } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { MapDB, hexToBytes, toBytes } from '@ethereumjs/util'
@@ -27,7 +23,7 @@ describe('Verify POW for valid and invalid blocks', () => {
     assert.ok(genesisResult, 'genesis block should be valid')
 
     const validRlp = hexToBytes(`0x${validBlockRlp}`)
-    const validBlock = createBlockFromRLPSerializedBlock(validRlp, { common })
+    const validBlock = createBlockFromRLP(validRlp, { common })
     const validBlockResult = await e.verifyPOW(validBlock)
     assert.ok(validBlockResult, 'should be valid')
 
@@ -41,7 +37,7 @@ describe('Verify POW for valid and invalid blocks', () => {
 
     const testData = require('./block_tests_data.json')
     const blockRlp = toBytes(testData.blocks[0].rlp)
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+    const block = createBlockFromRLP(blockRlp, { common })
     const uncleBlockResult = await e.verifyPOW(block)
     assert.ok(uncleBlockResult, 'should be valid')
   })

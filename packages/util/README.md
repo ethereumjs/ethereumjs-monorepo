@@ -34,9 +34,9 @@ Class representing an `Account` and providing private/public key and address-rel
 ```ts
 // ./examples/account.ts
 
-import { Account } from '@ethereumjs/util'
+import { createAccount } from '@ethereumjs/util'
 
-const account = Account.fromAccountData({
+const account = createAccount({
   nonce: '0x02',
   balance: '0x0384',
   storageRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
@@ -50,9 +50,9 @@ For Verkle or other contexts it can be useful to create partial accounts not con
 ```ts
 // ./examples/accountPartial.ts
 
-import { Account } from '@ethereumjs/util'
+import { createPartialAccount } from '@ethereumjs/util'
 
-const account = Account.fromPartialAccountData({
+const account = createPartialAccount({
   nonce: '0x02',
   balance: '0x0384',
 })
@@ -66,9 +66,9 @@ Class representing an Ethereum `Address` with instantiation helpers and validati
 ```ts
 // ./examples/address.ts
 
-import { Address } from '@ethereumjs/util'
+import { createAddressFromString } from '@ethereumjs/util'
 
-const address = Address.fromString('0x2f015c60e0be116b1f0cd534704db9c92118fb6a')
+const address = createAddressFromString('0x2f015c60e0be116b1f0cd534704db9c92118fb6a')
 console.log(`Ethereum address ${address.toString()} created`)
 ```
 
@@ -162,12 +162,12 @@ import { bytesToHex, ecrecover, hexToBytes } from '@ethereumjs/util'
 
 const chainId = BigInt(3) // Ropsten
 
-const echash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
+const ecHash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
 const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
 const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
 const v = BigInt(41)
 
-const pubkey = ecrecover(echash, v, r, s, chainId)
+const pubkey = ecrecover(ecHash, v, r, s, chainId)
 
 console.log(`Recovered public key ${bytesToHex(pubkey)} from valid signature values`)
 ```

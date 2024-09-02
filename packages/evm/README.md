@@ -32,16 +32,16 @@ The following is the simplest example for an EVM instantiation:
 ```ts
 // ./examples/simple.ts
 
+import { createEVM } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
-import { EVM } from '@ethereumjs/evm'
 
 const main = async () => {
-  const evm = await EVM.create()
+  const evm = await createEVM()
   const res = await evm.runCode({ code: hexToBytes('0x6001') }) // PUSH1 01 -- simple bytecode to push 1 onto the stack
   console.log(res.executionGasUsed) // 3n
 }
 
-main()
+void main()
 ```
 
 Note: with the switch from v2 to v3 the old direct `new EVM()` constructor usage has been deprecated and an `EVM` now has to be instantiated with the async static `EVM.create()` constructor.
@@ -53,18 +53,20 @@ If the EVM should run on a certain state an `@ethereumjs/statemanager` is needed
 ```ts
 // ./examples/withBlockchain.ts
 
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEVM } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { bytesToHex } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const main = async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
   const stateManager = new DefaultStateManager()
-  const blockchain = await Blockchain.create()
+  const blockchain = await createBlockchain()
 
-  const evm = await EVM.create({
+  const evm = await createEVM({
     common,
     stateManager,
     blockchain,
@@ -83,7 +85,7 @@ const main = async () => {
   })
 
   const results = await evm.runCode({
-    code: Buffer.from(code.join(''), 'hex'),
+    code: hexToBytes(('0x' + code.join('')) as PrefixedHexString),
     gasLimit: BigInt(0xffff),
   })
 
@@ -106,12 +108,12 @@ The following code allows to run precompiles in isolation, e.g. for testing purp
 ```ts
 // ./examples/precompile.ts
 
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Prague })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
 
   // Taken from test/eips/precompiles/bls/add_G1_bls.json
   const data = hexToBytes(
@@ -119,7 +121,7 @@ const main = async () => {
   )
   const gasLimit = BigInt(5000000)
 
-  const evm = await EVM.create({ common })
+  const evm = await createEVM({ common })
   const precompile = getActivePrecompiles(common).get('000000000000000000000000000000000000000b')!
 
   const callData = {
@@ -132,7 +134,7 @@ const main = async () => {
   console.log(`Precompile result:${bytesToHex(result.returnValue)}`)
 }
 
-main()
+void main()
 ```
 
 ### EIP-2537 BLS Precompiles (Prague)
@@ -255,16 +257,16 @@ If you want to activate an EIP not currently active on the hardfork your `common
 ```ts
 // ./examples/eips.ts
 
-import { Chain, Common } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
+import { Common, Mainnet } from '@ethereumjs/common'
+import { createEVM } from '@ethereumjs/evm'
 
 const main = async () => {
-  const common = new Common({ chain: Chain.Mainnet, eips: [3074] })
-  const evm = await EVM.create({ common })
-  console.log(`EIP 3074 is active - ${evm.common.isActivatedEIP(3074)}`)
+  const common = new Common({ chain: Mainnet, eips: [7702] })
+  const evm = await createEVM({ common })
+  console.log(`EIP 7702 is active - ${evm.common.isActivatedEIP(7702)}`)
 }
 
-main()
+void main()
 ```
 
 Currently supported EIPs:
@@ -320,9 +322,9 @@ To run EVM related EIP-4844 functionality you have to active the EIP in the asso
 ```ts
 // ./examples/4844.ts
 
-import { Common, Chain, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
 ```
 
 EIP-4844 comes with a new opcode `BLOBHASH` (Attention! Renamed from `DATAHASH`) and adds a new point evaluation precompile at address `0x0a`

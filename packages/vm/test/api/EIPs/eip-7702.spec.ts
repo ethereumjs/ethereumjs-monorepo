@@ -20,8 +20,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { equalsBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 
+import type { VM } from '../../../src/index.js'
 import type { AuthorizationListBytesItem } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -71,7 +72,7 @@ function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytes
 }
 
 async function runTest(authorizationListOpts: GetAuthListOpts[], expect: Uint8Array, vm?: VM) {
-  vm = vm ?? (await VM.create({ common }))
+  vm = vm ?? (await createVM({ common }))
   const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
   const tx = createEOACode7702Tx(
     {
@@ -173,7 +174,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
   })
 
   it('Code is already present in account', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     await vm.stateManager.putCode(defaultAuthAddr, new Uint8Array([1]))
     await runTest(
       [
@@ -187,7 +188,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
   })
 
   it('Auth address is added to warm addresses', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     const authList = [
       getAuthorizationListItem({
         address: code1Addr,
@@ -285,7 +286,7 @@ describe('test EIP-7702 opcodes', () => {
     ).sign(defaultSenderPkey)
 
     async function runOpcodeTest(code: Uint8Array, expectedOutput: Uint8Array, name: string) {
-      const vm = await VM.create({ common })
+      const vm = await createVM({ common })
 
       const acc = (await vm.stateManager.getAccount(defaultSenderAddr)) ?? new Account()
       acc.balance = BigInt(1_000_000_000)

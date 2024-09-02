@@ -4,7 +4,7 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const GWEI = BigInt(1000000000)
 const sender = new Address(privateToAddress(pkey))
@@ -31,7 +31,7 @@ const code = hexToBytes('0x60008080806001415AF100')
 const contractAddress = new Address(hexToBytes(`0x${'ee'.repeat(20)}`))
 
 async function getVM(common: Common) {
-  const vm = await VM.create({ common })
+  const vm = await createVM({ common })
   await vm.stateManager.putAccount(sender, new Account())
   const account = await vm.stateManager.getAccount(sender)
   const balance = GWEI * BigInt(21000) * BigInt(10000000)

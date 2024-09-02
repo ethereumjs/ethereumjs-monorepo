@@ -3,7 +3,7 @@ import { Chain } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../src/index.js'
+import { createVM } from '../../src/index.js'
 
 describe('genesis', () => {
   it('should initialize with predefined genesis states', async () => {
@@ -11,7 +11,7 @@ describe('genesis', () => {
       const genesisState = getGenesis(Chain.Mainnet)
 
       const blockchain = await createBlockchain({ genesisState })
-      await VM.create({ blockchain })
+      await createVM({ blockchain })
     }
 
     assert.doesNotThrow(f, 'should allow for initialization with genesis from genesis package')

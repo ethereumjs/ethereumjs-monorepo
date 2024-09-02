@@ -99,7 +99,7 @@ describe('[Transaction]', () => {
     )
   })
 
-  it('Initialization -> decode with fromValuesArray()', () => {
+  it('Initialization -> decode with createWithdrawalFromBytesArray()', () => {
     for (const tx of txFixtures.slice(0, 4)) {
       const txData = tx.raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
       const pt = createLegacyTxFromBytesArray(txData)

@@ -30,6 +30,21 @@ import { getOpcodesForHF } from './opcodes/index.js'
 import { paramsEVM } from './params.js'
 import { NobleBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
 import { TransientStorage } from './transientStorage.js'
+import {
+  type Block,
+  type CustomOpcode,
+  DELEGATION_7702_FLAG,
+  type EVMBLSInterface,
+  type EVMBN254Interface,
+  type EVMEvents,
+  type EVMInterface,
+  type EVMMockBlockchainInterface,
+  type EVMOpts,
+  type EVMResult,
+  type EVMRunCallOpts,
+  type EVMRunCodeOpts,
+  type ExecResult,
+} from './types.js'
 
 import type { InterpreterOpts } from './interpreter.js'
 import type { Timer } from './logger.js'
@@ -37,20 +52,6 @@ import type { MessageWithTo } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
 import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
-import type {
-  Block,
-  CustomOpcode,
-  EVMBLSInterface,
-  EVMBN254Interface,
-  EVMEvents,
-  EVMInterface,
-  EVMMockBlockchainInterface,
-  EVMOpts,
-  EVMResult,
-  EVMRunCallOpts,
-  EVMRunCodeOpts,
-  ExecResult,
-} from './types.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 
 const debug = debugDefault('evm:evm')
@@ -1016,7 +1017,7 @@ export class EVM implements EVMInterface {
         // EIP-7702 delegation check
         if (
           this.common.isActivatedEIP(7702) &&
-          equalsBytes(message.code.slice(0, 3), new Uint8Array([0xef, 0x01, 0x00]))
+          equalsBytes(message.code.slice(0, 3), DELEGATION_7702_FLAG)
         ) {
           const address = new Address(message.code.slice(3, 24))
           message.code = await this.stateManager.getCode(address)

@@ -23,7 +23,7 @@ import {
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
-import { VM, runBlock, runTx } from '@ethereumjs/vm'
+import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { writeFileSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
@@ -41,7 +41,7 @@ import { ReceiptsManager } from './receipt.js'
 import type { ExecutionOptions } from './execution.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
+import type { RunBlockOpts, TxReceipt, VM } from '@ethereumjs/vm'
 
 export enum ExecStatus {
   VALID = 'VALID',
@@ -183,7 +183,7 @@ export class VMExecution extends Execution {
 
     await mcl.init(mcl.BLS12_381)
     const rustBN = await initRustBN()
-    this.merkleVM = await VM.create({
+    this.merkleVM = await createVM({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
       stateManager,
@@ -208,7 +208,7 @@ export class VMExecution extends Execution {
     })
     await mcl.init(mcl.BLS12_381)
     const rustBN = await initRustBN()
-    this.verkleVM = await VM.create({
+    this.verkleVM = await createVM({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
       stateManager,

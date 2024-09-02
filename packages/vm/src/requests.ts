@@ -1,14 +1,14 @@
 import { Mainnet } from '@ethereumjs/common'
 import {
-  ConsolidationRequest,
-  DepositRequest,
-  WithdrawalRequest,
   bigIntToAddressBytes,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
   createAddressFromString,
+  createConsolidationRequest,
+  createDepositRequest,
+  createWithdrawalRequest,
   setLengthLeft,
   unpadBytes,
 } from '@ethereumjs/util'
@@ -96,7 +96,7 @@ const accumulateEIP7002Requests = async (
       const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
       const validatorPubkey = slicedBytes.slice(20, 68) // 48 Bytes
       const amount = bytesToBigInt(unpadBytes(slicedBytes.slice(68, 76))) // 8 Bytes / Uint64
-      requests.push(WithdrawalRequest.fromRequestData({ sourceAddress, validatorPubkey, amount }))
+      requests.push(createWithdrawalRequest({ sourceAddress, validatorPubkey, amount }))
     }
   }
 }
@@ -142,9 +142,7 @@ const accumulateEIP7251Requests = async (
       const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
       const sourcePubkey = slicedBytes.slice(20, 68) // 48 Bytes
       const targetPubkey = slicedBytes.slice(68, 116) // 48 bytes
-      requests.push(
-        ConsolidationRequest.fromRequestData({ sourceAddress, sourcePubkey, targetPubkey }),
-      )
+      requests.push(createConsolidationRequest({ sourceAddress, sourcePubkey, targetPubkey }))
     }
   }
 }
@@ -213,7 +211,7 @@ const accumulateDeposits = async (
         ])
         const index = bytesToBigInt(indexBytesBigEndian)
         requests.push(
-          DepositRequest.fromRequestData({
+          createDepositRequest({
             pubkey,
             withdrawalCredentials,
             amount,

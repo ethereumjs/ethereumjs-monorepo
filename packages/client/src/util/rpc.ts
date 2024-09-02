@@ -166,7 +166,6 @@ export function createRPCServer(
   server.on('response', onBatchResponse)
   const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
 
-  //@ts-ignore
   return { server, methods, namespaces }
 }
 
@@ -207,7 +206,6 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
       }
     })
   }
-  //@ts-ignore
   app.use(server.middleware())
   const httpServer = createServer(app)
   return httpServer

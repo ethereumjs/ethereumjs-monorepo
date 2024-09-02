@@ -64,6 +64,9 @@ const journalCacheCleanUpLabel = 'Journal/cache cleanup'
 const receiptsLabel = 'Receipts'
 const entireTxLabel = 'Entire tx'
 
+// EIP-7702 flag: if contract code starts with these 3 bytes, it is a 7702-delegated EOA
+const DELEGATION_7702_FLAG = new Uint8Array([0xef, 0x01, 0x00])
+
 /**
  * @ignore
  */
@@ -290,7 +293,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (vm.common.isActivatedEIP(3607) && !equalsBytes(fromAccount.codeHash, KECCAK256_NULL)) {
     if (vm.common.isActivatedEIP(7702)) {
       const code = await state.getCode(caller)
-      if (!equalsBytes(code.slice(0, 3), new Uint8Array([0xef, 0x01, 0x00]))) {
+      if (!equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
         const msg = _errorMsg(
           'invalid sender address, address is not EOA (EIP-3607)',
           vm,
@@ -464,7 +467,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       vm.evm.journal.addAlwaysWarmAddress(authority.toString())
       if (account.isContract()) {
         const code = await vm.stateManager.getCode(authority)
-        if (!equalsBytes(code.slice(0, 3), new Uint8Array([0xef, 0x01, 0x00]))) {
+        if (!equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
           // Account is a "normal" contract
           continue
         }
@@ -491,7 +494,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       account.nonce++
       await vm.evm.journal.putAccount(authority, account)
 
-      const addressCode = concatBytes(new Uint8Array([0xef, 0x01, 0x00]), address)
+      const addressCode = concatBytes(DELEGATION_7702_FLAG, address)
       await vm.stateManager.putCode(authority, addressCode)
     }
   }

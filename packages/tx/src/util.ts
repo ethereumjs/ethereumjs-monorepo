@@ -152,8 +152,7 @@ export class AuthorizationLists {
       for (let i = 0; i < authorizationList.length; i++) {
         const item: AuthorizationListItem = authorizationList[i]
         for (const key of jsonItems) {
-          // @ts-ignore TODO why does TsScript fail here?
-          if (item[key] === undefined) {
+          if (item[key as keyof typeof item] === undefined) {
             throw new Error(`EIP-7702 authorization list invalid: ${key} is not defined`)
           }
         }

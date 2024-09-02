@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 
 const common = new Common({
   eips: [2718, 2929, 2930],
@@ -51,7 +51,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
       { common },
     ).sign(privateKey)
 
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
     // contract code PUSH1 0x00 SLOAD STOP
     await vm.stateManager.putCode(contractAddress, hexToBytes('0x60005400'))

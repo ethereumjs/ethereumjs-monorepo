@@ -35,29 +35,29 @@ npm install @ethereumjs/vm
 ```ts
 // ./examples/runTx.ts
 
-import { Address } from '@ethereumjs/util'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { VM } from '@ethereumjs/vm'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { createZeroAddress } from '@ethereumjs/util'
+import { VM, runTx } from '@ethereumjs/vm'
 
 const main = async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
   const vm = await VM.create({ common })
 
-  const tx = LegacyTransaction.fromTxData({
+  const tx = createLegacyTx({
     gasLimit: BigInt(21000),
     gasPrice: BigInt(1000000000),
     value: BigInt(1),
-    to: Address.zero(),
+    to: createZeroAddress(),
     v: BigInt(37),
     r: BigInt('62886504200765677832366398998081608852310526822767264927793100349258111544447'),
     s: BigInt('21948396863567062449199529794141973192314514851405455194940751428901681436138'),
   })
-  const res = await vm.runTx({ tx, skipBalance: true })
+  const res = await runTx(vm, { tx, skipBalance: true })
   console.log(res.totalGasSpent) // 21000n - gas cost for simple ETH transfer
 }
 
-main()
+void main()
 ```
 
 Additionally to the `VM.runTx()` method there is an API method `VM.runBlock()` which allows to run the whole block and execute all included transactions along.
@@ -73,24 +73,24 @@ The following non-complete example gives some illustration on how to use the Blo
 ```ts
 // ./examples/buildBlock.ts
 
-import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
-import { VM } from '@ethereumjs/vm'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { Account, bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
+import { VM, buildBlock } from '@ethereumjs/vm'
 
 const main = async () => {
-  const common = new Common({ chain: Chain.Mainnet })
+  const common = new Common({ chain: Mainnet })
   const vm = await VM.create({ common })
 
-  const parentBlock = Block.fromBlockData(
+  const parentBlock = createBlock(
     { header: { number: 1n } },
     { skipConsensusFormatValidation: true },
   )
   const headerData = {
     number: 2n,
   }
-  const blockBuilder = await vm.buildBlock({
+  const blockBuilder = await buildBlock(vm, {
     parentBlock, // the parent @ethereumjs/block Block
     headerData, // header values for the new block
     blockOpts: {
@@ -102,10 +102,10 @@ const main = async () => {
   })
 
   const pk = hexToBytes('0x26f81cbcffd3d23eace0bb4eac5274bb2f576d310ee85318b5428bf9a71fc89a')
-  const address = Address.fromPrivateKey(pk)
+  const address = createAddressFromPrivateKey(pk)
   const account = new Account(0n, 0xfffffffffn)
   await vm.stateManager.putAccount(address, account) // create a sending account and give it a big balance
-  const tx = LegacyTransaction.fromTxData({ gasLimit: 0xffffff, gasPrice: 75n }).sign(pk)
+  const tx = createLegacyTx({ gasLimit: 0xffffff, gasPrice: 75n }).sign(pk)
   await blockBuilder.addTransaction(tx)
 
   // Add more transactions
@@ -114,7 +114,7 @@ const main = async () => {
   console.log(`Built a block with hash ${bytesToHex(block.hash())}`)
 }
 
-main()
+void main()
 ```
 
 ### WASM Crypto Support
@@ -212,22 +212,25 @@ The following is a simple example for a block run on `Goerli`:
 ```ts
 // ./examples/runGoerliBlock.ts
 
-import { Block } from '@ethereumjs/block'
-import { Chain, Common } from '@ethereumjs/common'
-import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { createBlockFromRPC } from '@ethereumjs/block'
+import { Common, Goerli } from '@ethereumjs/common'
+import { bytesToHex } from '@ethereumjs/util'
+
+import { runBlock } from '../src/index.js'
 import { VM } from '../src/vm.js'
+
 import goerliBlock2 from './testData/goerliBlock2.json'
 
 const main = async () => {
-  const common = new Common({ chain: Chain.Goerli, hardfork: 'london' })
+  const common = new Common({ chain: Goerli, hardfork: 'london' })
   const vm = await VM.create({ common, setHardfork: true })
 
-  const block = Block.fromRPC(goerliBlock2, undefined, { common })
-  const result = await vm.runBlock({ block, generate: true, skipHeaderValidation: true }) // we skip header validation since we are running a block without the full Ethereum history available
+  const block = createBlockFromRPC(goerliBlock2, undefined, { common })
+  const result = await runBlock(vm, { block, generate: true, skipHeaderValidation: true }) // we skip header validation since we are running a block without the full Ethereum history available
   console.log(`The state root for Goerli block 2 is ${bytesToHex(result.stateRoot)}`)
 }
 
-main()
+void main()
 ```
 
 ### Hardfork Support
@@ -239,13 +242,13 @@ An explicit HF in the `VM` - which is then passed on to the inner `EVM` - can be
 ```ts
 // ./examples/runTx.ts#L1-L8
 
-import { Address } from '@ethereumjs/util'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { VM } from '@ethereumjs/vm'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { createZeroAddress } from '@ethereumjs/util'
+import { VM, runTx } from '@ethereumjs/vm'
 
 const main = async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
   const vm = await VM.create({ common })
 ```
 
@@ -262,27 +265,31 @@ For initializing a custom genesis state you can use the `genesisState` construct
 ```ts
 // ./examples/vmWithGenesisState.ts
 
-import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { Address } from '@ethereumjs/util'
+import { createAddressFromString } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 const main = async () => {
   const genesisState = getGenesis(Chain.Mainnet)
 
-  const blockchain = await Blockchain.create({ genesisState })
-  const vm = await VM.create({ blockchain, genesisState })
+  const vm = await VM.create()
+  await vm.stateManager.generateCanonicalGenesis!(genesisState)
   const account = await vm.stateManager.getAccount(
-    Address.fromString('0x000d836201318ec6899a67540690382780743280'),
+    createAddressFromString('0x000d836201318ec6899a67540690382780743280'),
   )
+
+  if (account === undefined) {
+    throw new Error('Account does not exist: failed to import genesis state')
+  }
+
   console.log(
     `This balance for account 0x000d836201318ec6899a67540690382780743280 in this chain's genesis state is ${Number(
       account?.balance,
     )}`,
   )
 }
-main()
+void main()
 ```
 
 Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
@@ -301,15 +308,15 @@ with the respective EIPs, e.g.:
 ```ts
 // ./examples/vmWithEIPs.ts
 
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
 const main = async () => {
-  const common = new Common({ chain: Chain.Mainnet, eips: [3074] })
+  const common = new Common({ chain: Mainnet, eips: [7702] })
   const vm = await VM.create({ common })
-  console.log(`EIP 3074 is active in the VM - ${vm.common.isActivatedEIP(3074)}`)
+  console.log(`EIP 7702 is active in the VM - ${vm.common.isActivatedEIP(7702)}`)
 }
-main()
+void main()
 ```
 
 For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) documentation.
@@ -345,16 +352,17 @@ To run VM/EVM related EIP-4844 functionality you have to activate the EIP in the
 ```ts
 // ./examples/vmWith4844.ts
 
-import { Common, Chain, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
 import { VM } from '../src/vm.js'
 
 const main = async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
   const vm = await VM.create({ common })
   console.log(`4844 is active in the VM - ${vm.common.isActivatedEIP(4844)}`)
 }
 
-main()
+void main()
 ```
 
 EIP-4844 comes with a new opcode `BLOBHASH` and adds a new point evaluation precompile at address `0x14` in the underlying `@ethereumjs/evm` package.

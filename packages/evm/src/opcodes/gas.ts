@@ -18,6 +18,7 @@ import {
 
 import { EOFError } from '../eof/errors.js'
 import { ERROR } from '../exceptions.js'
+import { DELEGATION_7702_FLAG } from '../types.js'
 
 import { updateSstoreGasEIP1283 } from './EIP1283.js'
 import { updateSstoreGasEIP2200 } from './EIP2200.js'
@@ -45,7 +46,7 @@ async function eip7702GasCost(
   charge2929Gas: boolean,
 ) {
   const code = await runState.stateManager.getCode(address)
-  if (equalsBytes(code.slice(0, 3), new Uint8Array([0xef, 0x01, 0x00]))) {
+  if (equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
     return accessAddressEIP2929(runState, code.slice(3, 24), common, charge2929Gas)
   }
   return BIGINT_0

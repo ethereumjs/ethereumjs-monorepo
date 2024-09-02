@@ -2,7 +2,7 @@ import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
-import { VM, runTx } from '@ethereumjs/vm'
+import { createVM, runTx } from '@ethereumjs/vm'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi' // cspell:disable-line
 import { readFileSync } from 'fs'
 import path from 'path'
@@ -13,6 +13,7 @@ import { getAccountNonce, insertAccount } from './helpers/account-utils.js'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.js'
 
 import type { Address } from '@ethereumjs/util'
+import type { VM } from '@ethereumjs/vm'
 
 const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!' // cspell:disable-line
@@ -168,7 +169,7 @@ async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
 async function main() {
   const accountPk = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
-  const vm = await VM.create({ common })
+  const vm = await createVM({ common })
   const accountAddress = createAddressFromPrivateKey(accountPk)
 
   console.log('Account: ', accountAddress.toString())
