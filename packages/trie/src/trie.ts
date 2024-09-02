@@ -649,6 +649,8 @@ export class Trie {
         if (branchNode instanceof BranchNode) {
           // create an extension node
           // branch->extension->branch
+          // We push an extension value with a temporarily empty value to the stack.
+          // It will be replaced later on with the correct value in saveStack
           const extensionNode = new ExtensionNode([branchKey], new Uint8Array())
           stack.push(extensionNode)
           key.push(branchKey)
