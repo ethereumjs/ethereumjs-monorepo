@@ -195,10 +195,10 @@ describe('Transient Storage', () => {
       gasLimit: BigInt(100_000),
     })
     const created = result.createdAddress!
-    const tstored = evm.transientStorage.get(created, keyBuf)
+    const stored = evm.transientStorage.get(created, keyBuf)
     assert.ok(
-      equalsBytes(unpadBytes(tstored), new Uint8Array()),
-      'Transient stoarge has been cleared',
+      equalsBytes(unpadBytes(stored), new Uint8Array()),
+      'Transient storage has been cleared',
     )
   })
 
@@ -212,10 +212,10 @@ describe('Transient Storage', () => {
     await evm.runCall({
       gasLimit: BigInt(100_000),
     })
-    const tstored = evm.transientStorage.get(contractAddress, keyBuf)
+    const stored = evm.transientStorage.get(contractAddress, keyBuf)
     assert.ok(
-      equalsBytes(unpadBytes(tstored), new Uint8Array()),
-      'Transient stoarge has been cleared',
+      equalsBytes(unpadBytes(stored), new Uint8Array()),
+      'Transient storage has been cleared',
     )
   })
 })
