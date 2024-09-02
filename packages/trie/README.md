@@ -175,11 +175,10 @@ As an example, to leverage `LevelDB` for all operations then you should create a
 ```ts
 // ./examples/customLevelDB.ts#L127-L131
 
-  const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION') as any) })
-  console.log(trie.database().db) // LevelDB { ...
-}
-void main()
+const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+console.log(trie.database().db) // LevelDB { ...
 
+void main()
 ```
 
 #### Node Deletion (Pruning)

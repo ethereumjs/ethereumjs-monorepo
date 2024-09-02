@@ -8,21 +8,22 @@ import trieTests from './fixtures/trietest.json'
 
 describe('official tests', () => {
   it('should work', async () => {
-    const testNames = Object.keys(trieTests.tests)
+    const testNames = Object.keys(trieTests.tests) as (keyof typeof trieTests.tests)[]
     let trie = new Trie()
 
     for (const testName of testNames) {
-      const inputs = (trieTests as any).tests[testName].in
-      const expect = (trieTests as any).tests[testName].root
+      const inputs = trieTests.tests[testName].in
+      const expect = trieTests.tests[testName].root
       for (const input of inputs) {
-        for (let i = 0; i < 2; i++) {
-          if (typeof input[i] === 'string' && input[i].slice(0, 2) === '0x') {
-            input[i] = hexToBytes(input[i])
-          } else if (typeof input[i] === 'string') {
-            input[i] = utf8ToBytes(input[i])
+        const processedInput = input.map((item) => {
+          if (item === null) {
+            return item
           }
-          await trie.put(input[0], input[1])
-        }
+
+          return isHexString(item) ? hexToBytes(item) : utf8ToBytes(item)
+        }) as [Uint8Array, Uint8Array | null]
+
+        await trie.put(processedInput[0], processedInput[1])
       }
       assert.equal(bytesToHex(trie.root()), expect)
       trie = new Trie()
@@ -32,28 +33,31 @@ describe('official tests', () => {
 
 describe('official tests any order', async () => {
   it('should work', async () => {
-    const testNames = Object.keys(trieAnyOrderTests.tests)
+    const testNames = Object.keys(
+      trieAnyOrderTests.tests,
+    ) as (keyof typeof trieAnyOrderTests.tests)[]
     let trie = new Trie()
     for (const testName of testNames) {
-      const test = (trieAnyOrderTests.tests as any)[testName]
+      const test = trieAnyOrderTests.tests[testName]
       const keys = Object.keys(test.in)
-      let key: any
-      for (key of keys) {
-        let val = test.in[key]
+      for (const stringKey of keys) {
+        const stringValue: string = test.in[stringKey as keyof typeof test.in]
+        let key: Uint8Array
+        let value: Uint8Array
 
-        if (typeof key === 'string' && isHexString(key)) {
-          key = hexToBytes(key)
-        } else if (typeof key === 'string') {
-          key = utf8ToBytes(key)
+        if (isHexString(stringKey)) {
+          key = hexToBytes(stringKey)
+        } else {
+          key = utf8ToBytes(stringKey)
         }
 
-        if (typeof val === 'string' && isHexString(val)) {
-          val = hexToBytes(val)
-        } else if (typeof val === 'string') {
-          val = utf8ToBytes(val)
+        if (isHexString(stringValue)) {
+          value = hexToBytes(stringValue)
+        } else {
+          value = utf8ToBytes(stringValue)
         }
 
-        await trie.put(key, val)
+        await trie.put(key, value)
       }
       assert.equal(bytesToHex(trie.root()), test.root)
       trie = new Trie()
