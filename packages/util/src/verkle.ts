@@ -247,22 +247,16 @@ export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleL
 }
 
 export function encodeVerkleLeafBasicData(basicData: VerkleLeafBasicData): Uint8Array {
-  const encodedVersion = setLengthRight(
-    int32ToBytes(basicData.version, true),
-    VERKLE_VERSION_BYTES_LENGTH,
-  )
+  const encodedVersion = setLengthLeft(int32ToBytes(basicData.version), VERKLE_VERSION_BYTES_LENGTH)
   // Per EIP-6800, bytes 1-4 are reserved for future use
   const reservedBytes = new Uint8Array([0, 0, 0])
-  const encodedNonce = setLengthRight(
-    bigIntToBytes(basicData.nonce, true),
-    VERKLE_NONCE_BYTES_LENGTH,
-  )
-  const encodedCodeSize = setLengthRight(
-    int32ToBytes(basicData.codeSize, true),
+  const encodedNonce = setLengthLeft(bigIntToBytes(basicData.nonce), VERKLE_NONCE_BYTES_LENGTH)
+  const encodedCodeSize = setLengthLeft(
+    int32ToBytes(basicData.codeSize),
     VERKLE_CODE_SIZE_BYTES_LENGTH,
   )
-  const encodedBalance = setLengthRight(
-    bigIntToBytes(basicData.balance, true),
+  const encodedBalance = setLengthLeft(
+    bigIntToBytes(basicData.balance),
     VERKLE_BALANCE_BYTES_LENGTH,
   )
   return concatBytes(encodedVersion, reservedBytes, encodedNonce, encodedCodeSize, encodedBalance)
