@@ -325,8 +325,8 @@ export class NobleBLS implements EVMBLSInterface {
     for (const [G1, G2] of pairs) {
       // EIP: "If any input is the infinity point, pairing result will be 1"
       if (
-        G1.equals(bls12_381.G1.ProjectivePoint.ZERO) ||
-        G2.equals(bls12_381.G2.ProjectivePoint.ZERO)
+        <boolean>G1.equals(bls12_381.G1.ProjectivePoint.ZERO) ||
+        <boolean>G2.equals(bls12_381.G2.ProjectivePoint.ZERO)
       ) {
         return BLS_ONE_BUFFER
       }
