@@ -13,7 +13,7 @@ import {
 
 import type { CacheMap } from './manager.js'
 
-export type PutOpts = { notCanonical?: boolean; parentTd?: bigint }
+export type PutOpts = { canonical?: boolean; parentTd?: bigint }
 
 export enum DBTarget {
   Heads,

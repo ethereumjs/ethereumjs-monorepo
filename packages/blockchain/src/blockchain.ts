@@ -384,7 +384,7 @@ export class Blockchain implements BlockchainInterface {
         // check if head is still canonical i.e. if this is a block insertion on tail or reinsertion
         // on the same canonical chain
         let isHeadChainStillCanonical
-        if (opts?.notCanonical !== true) {
+        if (opts?.canonical !== false) {
           const childHeaderHash = await this.dbManager.numberToHash(blockNumber + BIGINT_1)
           if (childHeaderHash !== undefined) {
             const childHeader = await this.dbManager
@@ -417,11 +417,11 @@ export class Blockchain implements BlockchainInterface {
           }
         }
 
-        // 1. if notCanonical is explicit true then just dump the block
-        // 2. if notCanonical is explicit false then apply that even for the pow/poa blocks
+        // 1. if canonical is explicit false then just dump the block
+        // 2. if canonical is explicit true then apply that even for the pow/poa blocks
         //    if they are optimistic, i.e. can't apply the normal rule
-        // 3. if notCanonical is not defined, then apply normal rules
-        if (opts?.notCanonical === true) {
+        // 3. if canonical is not defined, then apply normal rules
+        if (opts?.canonical === false) {
           if (parentTd !== undefined) {
             const td = header.difficulty + parentTd
             dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
@@ -437,7 +437,7 @@ export class Blockchain implements BlockchainInterface {
             if (
               !block.isGenesis() &&
               block.common.consensusType() !== ConsensusType.ProofOfStake &&
-              opts?.notCanonical !== false
+              opts?.canonical === undefined
             ) {
               throw Error(
                 `Invalid parentTd=${parentTd} for consensus=${block.common.consensusType()} putBlockOrHeader`,

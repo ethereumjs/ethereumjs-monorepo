@@ -1376,7 +1376,7 @@ export class Skeleton extends MetaDBManager {
     this.config.logger.debug(
       `blockchain putBlock number=${block.header.number} hash=${short(block.hash())} onlyUnfinalized=${onlyUnfinalized}`,
     )
-    await this.chain.blockchain.putBlock(block, { notCanonical: onlyUnfinalized })
+    await this.chain.blockchain.putBlock(block, { canonical: !onlyUnfinalized })
 
     if (onlyUnfinalized) {
       // save the forward annoucement for fast forwarding if lucky
