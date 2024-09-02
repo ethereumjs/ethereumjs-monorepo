@@ -29,6 +29,9 @@ type Fp2 = {
   c1: bigint
 }
 
+const G1_ZERO = bls12_381.G1.ProjectivePoint.ZERO
+const G2_ZERO = bls12_381.G2.ProjectivePoint.ZERO
+
 /**
  * Converts an Uint8Array to a Noble G1 point. Raises errors if the point is not on the curve
  * and (if activated) if the point is in the subgroup / order check.
@@ -37,7 +40,7 @@ type Fp2 = {
  */
 function BLS12_381_ToG1Point(input: Uint8Array, verifyOrder = true) {
   if (equalsBytes(input, BLS_G1_INFINITY_POINT_BYTES)) {
-    return bls12_381.G1.ProjectivePoint.ZERO
+    return G1_ZERO
   }
 
   const x = bytesToBigInt(input.subarray(16, BLS_G1_POINT_BYTE_LENGTH / 2))
@@ -76,7 +79,7 @@ function BLS12_381_FromG1Point(input: AffinePoint<bigint>): Uint8Array {
 function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true): any {
   // TODO: remove any type, temporary fix due to conflicting @noble/curves versions
   if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES)) {
-    return bls12_381.G2.ProjectivePoint.ZERO
+    return G2_ZERO
   }
 
   const p_x_1 = input.subarray(0, 64)
@@ -251,7 +254,7 @@ export class NobleBLS implements EVMBLSInterface {
     const pairLength = 160
     const numPairs = input.length / pairLength
 
-    let pRes = bls12_381.G1.ProjectivePoint.ZERO
+    let pRes = G1_ZERO
     for (let k = 0; k < numPairs; k++) {
       const pairStart = pairLength * k
       const G1 = BLS12_381_ToG1Point(
@@ -262,7 +265,7 @@ export class NobleBLS implements EVMBLSInterface {
       )
       let pMul
       if (Fr === BIGINT_0) {
-        pMul = bls12_381.G1.ProjectivePoint.ZERO
+        pMul = G1_ZERO
       } else {
         pMul = G1.multiplyUnsafe(Fr)
       }
@@ -283,7 +286,7 @@ export class NobleBLS implements EVMBLSInterface {
     const pairLength = 288
     const numPairs = input.length / pairLength
 
-    let pRes = bls12_381.G2.ProjectivePoint.ZERO
+    let pRes = G2_ZERO
     for (let k = 0; k < numPairs; k++) {
       const pairStart = pairLength * k
       const G2 = BLS12_381_ToG2Point(
@@ -294,7 +297,7 @@ export class NobleBLS implements EVMBLSInterface {
       )
       let pMul
       if (Fr === BIGINT_0) {
-        pMul = bls12_381.G2.ProjectivePoint.ZERO
+        pMul = G2_ZERO
       } else {
         pMul = G2.multiplyUnsafe(Fr)
       }
@@ -318,36 +321,19 @@ export class NobleBLS implements EVMBLSInterface {
       const g2start = pairStart + BLS_G1_POINT_BYTE_LENGTH
       const G2 = BLS12_381_ToG2Point(input.subarray(g2start, g2start + BLS_G2_POINT_BYTE_LENGTH))
 
-      pairs.push([G1, G2])
+      pairs.push({ g1: G1, g2: G2 })
     }
 
     // NOTE: check for point of infinity should happen only after all points parsed (in case they are malformed)
-    for (const [G1, G2] of pairs) {
+    for (const { g1, g2 } of pairs) {
       // EIP: "If any input is the infinity point, pairing result will be 1"
-      if (
-        <boolean>G1.equals(bls12_381.G1.ProjectivePoint.ZERO) ||
-        <boolean>G2.equals(bls12_381.G2.ProjectivePoint.ZERO)
-      ) {
+      if (g1.equals(G1_ZERO) || g2.equals(G2_ZERO)) {
         return BLS_ONE_BUFFER
       }
     }
 
-    // run the pairing check
-    // reference (Nethermind): https://github.com/NethermindEth/nethermind/blob/374b036414722b9c8ad27e93d64840b8f63931b9/src/Nethermind/Nethermind.Evm/Precompiles/Bls/Mcl/PairingPrecompile.cs#L93
-    let GT: any // Fp12 type not exported, eventually too complex
-    for (let index = 0; index < pairs.length; index++) {
-      const pair = pairs[index]
-      const G1 = pair[0] as ProjPointType<bigint>
-      const G2 = pair[1] as ProjPointType<Fp2>
+    const FP12 = bls12_381.pairingBatch(pairs, true)
 
-      if (index === 0) {
-        GT = bls12_381.pairing(G1, G2, false)
-      } else {
-        GT = bls12_381.fields.Fp12.mul(GT!, bls12_381.pairing(G1, G2, false))
-      }
-    }
-
-    const FP12 = bls12_381.fields.Fp12.finalExponentiate(GT!)
     if (bls12_381.fields.Fp12.eql(FP12, bls12_381.fields.Fp12.ONE)) {
       return BLS_ONE_BUFFER
     } else {
