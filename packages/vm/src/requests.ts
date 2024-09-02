@@ -66,26 +66,14 @@ const accumulateEIP7002Requests = async (
   )
   const withdrawalsAddress = createAddressFromString(bytesToHex(addressBytes))
 
-  const code = await vm.stateManager.getCode(withdrawalsAddress)
-
-  if (code.length === 0) {
-    /*throw new Error(
-      'Attempt to accumulate EIP-7002 requests failed: the contract does not exist. Ensure the deployment tx has been run, or that the required contract code is stored',
-    )*/
-  }
-
   const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
   const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
   const systemAccount = await vm.stateManager.getAccount(systemAddress)
 
-  const originalAccount = await vm.stateManager.getAccount(systemAddress)
+  const originalAccount = await vm.stateManager.getAccount(withdrawalsAddress)
 
   if (originalAccount === undefined) {
-    await vm.stateManager.deleteAccount(systemAddress)
     return
-  } else {
-    // Restore the original account (the `runCall` updates the nonce)
-    await vm.stateManager.putAccount(systemAddress, originalAccount)
   }
 
   const results = await vm.evm.runCall({
@@ -124,26 +112,14 @@ const accumulateEIP7251Requests = async (
   )
   const consolidationsAddress = createAddressFromString(bytesToHex(addressBytes))
 
-  const code = await vm.stateManager.getCode(consolidationsAddress)
-
-  if (code.length === 0) {
-    /*throw new Error(
-      'Attempt to accumulate EIP-7251 requests failed: the contract does not exist. Ensure the deployment tx has been run, or that the required contract code is stored',
-    )*/
-  }
-
   const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
   const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
   const systemAccount = await vm.stateManager.getAccount(systemAddress)
 
-  const originalAccount = await vm.stateManager.getAccount(systemAddress)
+  const originalAccount = await vm.stateManager.getAccount(consolidationsAddress)
 
   if (originalAccount === undefined) {
-    await vm.stateManager.deleteAccount(systemAddress)
     return
-  } else {
-    // Restore the original account (the `runCall` updates the nonce)
-    await vm.stateManager.putAccount(systemAddress, originalAccount)
   }
 
   const results = await vm.evm.runCall({
