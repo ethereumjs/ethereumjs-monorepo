@@ -1,7 +1,7 @@
 import {
   BlockHeader,
   createBlockFromExecutionPayload,
-  createBlockFromRLPSerializedBlock,
+  createBlockFromRLP,
   executionPayloadFromBeaconPayload,
 } from '@ethereumjs/block'
 import { hexToBytes } from '@ethereumjs/util'
@@ -213,21 +213,21 @@ async function loadGethVectors(vectorsDirPath: string, opts: { common: Common })
     },
   }
   const block0RlpHex = readFileSync(`${vectorsDirPath}/block0.rlp.hex`, 'utf8').trim()
-  const block0 = createBlockFromRLPSerializedBlock(hexToBytes(`0x${block0RlpHex}`), {
+  const block0 = createBlockFromRLP(hexToBytes(`0x${block0RlpHex}`), {
     ...opts,
     executionWitness: executionWitness0,
   })
   const _block0Payload = block0.toExecutionPayload()
 
   const block1RlpHex = readFileSync(`${vectorsDirPath}/block1.rlp.hex`, 'utf8').trim()
-  const block1 = createBlockFromRLPSerializedBlock(hexToBytes(`0x${block1RlpHex}`), {
+  const block1 = createBlockFromRLP(hexToBytes(`0x${block1RlpHex}`), {
     ...opts,
     executionWitness: executionWitness1,
   })
   const block1Payload = block1.toExecutionPayload()
 
   const block2RlpHex = readFileSync(`${vectorsDirPath}/block2.rlp.hex`, 'utf8').trim()
-  const block2 = createBlockFromRLPSerializedBlock(hexToBytes(`0x${block2RlpHex}`), {
+  const block2 = createBlockFromRLP(hexToBytes(`0x${block2RlpHex}`), {
     ...opts,
     executionWitness: executionWitness2,
   })

@@ -60,7 +60,7 @@ export class Common {
   constructor(opts: CommonOpts) {
     this.events = new EventEmitter()
 
-    this._chainParams = opts.chain
+    this._chainParams = JSON.parse(JSON.stringify(opts.chain)) // copy
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Cancun
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
@@ -69,7 +69,7 @@ export class Common {
         (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]),
     ])
     this._hardfork = this.DEFAULT_HARDFORK
-    this._params = { ...(opts.params ?? {}) } // copy
+    this._params = opts.params ? JSON.parse(JSON.stringify(opts.params)) : {} // copy
 
     if (opts.hardfork !== undefined) {
       this.setHardfork(opts.hardfork)
@@ -105,9 +105,9 @@ export class Common {
   updateParams(params: ParamsDict) {
     for (const [eip, paramsConfig] of Object.entries(params)) {
       if (!(eip in this._params)) {
-        this._params[eip] = { ...paramsConfig } // copy
+        this._params[eip] = JSON.parse(JSON.stringify(paramsConfig)) // copy
       } else {
-        this._params[eip] = { ...this._params[eip], ...params[eip] }
+        this._params[eip] = JSON.parse(JSON.stringify({ ...this._params[eip], ...params[eip] })) // copy
       }
     }
 
@@ -130,7 +130,7 @@ export class Common {
    * @param params
    */
   resetParams(params: ParamsDict) {
-    this._params = { ...params } // copy
+    this._params = JSON.parse(JSON.stringify(params)) // copy
     this._buildParamsCache()
   }
 

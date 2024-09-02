@@ -25,15 +25,15 @@ npm install @ethereumjs/block
 
 ### Introduction
 
-There are five static factories to instantiate a `Block`:
+There are five standalone functions to instantiate a `Block`:
 
-- `Block.fromBlockData(blockData: BlockData = {}, opts?: BlockOptions)`
-- `Block.fromRLPSerializedBlock(serialized: Uint8Array, opts?: BlockOptions)`
-- `Block.fromValuesArray(values: BlockBytes, opts?: BlockOptions)`
-- `Block.fromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions)`
-- `Block.fromJsonRpcProvider(provider: string | EthersProvider, blockTag: string | bigint, opts: BlockOptions)`
+- `createBlock(blockData: BlockData = {}, opts?: BlockOptions)`
+- `createBlockFromRLPSerializedBlock(serialized: Uint8Array, opts?: BlockOptions)`
+- `createBlockFromBytesArray(values: BlockBytes, opts?: BlockOptions)`
+- `createBlockFromRPC(blockParams: JsonRpcBlock, uncles?: any[], opts?: BlockOptions)`
+- `createBlockFromJsonRPCProvider(provider: string | EthersProvider, blockTag: string | bigint, opts: BlockOptions)`
 
-For `BlockHeader` instantiation analog factory methods exists, see API docs linked below.
+For `BlockHeader` instantiation standalone functions exists for instantiation, see API docs linked below.
 
 Instantiation Example:
 
@@ -60,11 +60,12 @@ Properties of a `Block` or `BlockHeader` object are frozen with `Object.freeze()
 API Usage Example:
 
 ```ts
+// ./examples/1559.ts#L43-L47
+
 try {
-  await block.validateData()
-  // Block data validation has passed
+  await blockWithMatchingBaseFee.validateData()
 } catch (err) {
-  // handle errors appropriately
+  console.log(err) // block validation fails
 }
 ```
 
@@ -81,6 +82,7 @@ This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/
 
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createTxFromTxData } from '@ethereumjs/tx'
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
 const block = createBlock(
@@ -112,6 +114,22 @@ const blockWithMatchingBaseFee = createBlock(
 )
 
 console.log(Number(blockWithMatchingBaseFee.header.baseFeePerGas)) // 11
+
+// successful validation does not throw error
+await blockWithMatchingBaseFee.validateData()
+
+// failed validation throws error
+const tx = createTxFromTxData(
+  { type: 2, maxFeePerGas: BigInt(20) },
+  { common: new Common({ chain: Mainnet, hardfork: Hardfork.London }) },
+)
+blockWithMatchingBaseFee.transactions.push(tx)
+console.log(blockWithMatchingBaseFee.getTransactionsValidationErrors()) // invalid transaction added to block
+try {
+  await blockWithMatchingBaseFee.validateData()
+} catch (err) {
+  console.log(err) // block validation fails
+}
 ```
 
 EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as `LegacyTransaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
@@ -427,7 +445,7 @@ For sealing a block on instantiation you can use the `cliqueSigner` constructor 
 
 ```ts
 const cliqueSigner = Buffer.from('PRIVATE_KEY_HEX_STRING', 'hex')
-const block = Block.fromHeaderData(headerData, { cliqueSigner })
+const block = createSealedCliqueBlock(blockData, cliqueSigner)
 ```
 
 Additionally there are the following utility methods for Clique/PoA related functionality in the `BlockHeader` class:

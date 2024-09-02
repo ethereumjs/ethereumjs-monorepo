@@ -160,16 +160,16 @@ describe('simple merkle range proofs generation and verification', () => {
     try {
       await verify(trie, entries, start + 5, end, decreasedStartKey)
       assert.fail()
-    } catch (err) {
-      // ignore ..
+    } catch {
+      // Ignore
     }
 
     assert.equal(await verify(trie, entries, start, end, startKey, increasedEndKey), true)
     try {
       await verify(trie, entries, start, end + 5, startKey, increasedEndKey)
       assert.fail()
-    } catch (err) {
-      // ignore ..
+    } catch {
+      // Ignore
     }
   })
 
@@ -269,8 +269,8 @@ describe('simple merkle range proofs generation and verification', () => {
       try {
         await cb(trie, entries)
         result = true
-      } catch (err) {
-        // ignore
+      } catch {
+        // Ignore
       }
       assert.isFalse(result)
     }
@@ -352,8 +352,8 @@ describe('simple merkle range proofs generation and verification', () => {
         targetRange.map(([, val]) => val),
       )
       result = true
-    } catch (err) {
-      // ignore
+    } catch {
+      // Ignore
     }
     assert.isFalse(result)
   })
@@ -372,8 +372,8 @@ describe('simple merkle range proofs generation and verification', () => {
     try {
       await verify(trie, entries, start, end, decreasedStartKey, decreasedEndKey)
       result = true
-    } catch (err) {
-      // ignore
+    } catch {
+      // Ignore
     }
     assert.isFalse(result)
 
@@ -384,8 +384,8 @@ describe('simple merkle range proofs generation and verification', () => {
     try {
       await verify(trie, entries, start, end, increasedStartKey, increasedEndKey)
       result = true
-    } catch (err) {
-      // ignore
+    } catch {
+      // Ignore
     }
     assert.isFalse(result)
   })

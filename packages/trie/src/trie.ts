@@ -403,13 +403,11 @@ export class Trie {
       }
     }
     const startingNode = partialPath.stack[partialPath.stack.length - 1]
-    const start = startingNode !== undefined ? this.hash(startingNode?.serialize()) : this.root()
+    const start = startingNode !== undefined ? this.hash(startingNode.serialize()) : this.root()
     try {
       this.DEBUG &&
         this.debug(
-          `Walking trie from ${startingNode === undefined ? 'ROOT' : 'NODE'}: ${bytesToHex(
-            start as Uint8Array,
-          )}`,
+          `Walking trie from ${startingNode === undefined ? 'ROOT' : 'NODE'}: ${bytesToHex(start)}`,
           ['FIND_PATH'],
         )
       await this.walkTrie(start, onFound)
@@ -651,8 +649,9 @@ export class Trie {
         if (branchNode instanceof BranchNode) {
           // create an extension node
           // branch->extension->branch
-          // @ts-ignore
-          const extensionNode = new ExtensionNode([branchKey], null)
+          // We push an extension value with a temporarily empty value to the stack.
+          // It will be replaced later on with the correct value in saveStack
+          const extensionNode = new ExtensionNode([branchKey], new Uint8Array())
           stack.push(extensionNode)
           key.push(branchKey)
         } else {

@@ -1,4 +1,4 @@
-import { createBlock, createBlockFromRLPSerializedBlock } from '@ethereumjs/block'
+import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
@@ -16,7 +16,7 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import { VM, buildBlock, runBlock } from '../../../src/index.js'
+import { buildBlock, createVM, runBlock } from '../../../src/index.js'
 import { setupPreConditions, verifyPostConditions } from '../../util.js'
 
 import type { Block } from '@ethereumjs/block'
@@ -95,7 +95,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     bls: options.bls,
     bn254: options.bn254,
   }
-  let vm = await VM.create({
+  let vm = await createVM({
     stateManager,
     blockchain,
     common,
@@ -190,7 +190,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+      const block = createBlockFromRLP(blockRlp, { common })
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
