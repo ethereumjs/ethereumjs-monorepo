@@ -1,6 +1,14 @@
-import { createAddressFromString } from '@ethereumjs/util'
+import {
+  createAddressFromString,
+  createZeroAddress,
+  equalsBytes,
+  hexToBytes,
+  setLengthLeft,
+  unpadBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { createEVM } from '../src/index.js'
 import { TransientStorage } from '../src/transientStorage.js'
 
 describe('Transient Storage', () => {
@@ -175,5 +183,39 @@ describe('Transient Storage', () => {
     assert.deepEqual(transientStorage.get(address, key), value2)
     transientStorage.revert()
     assert.deepEqual(transientStorage.get(address, key), value1)
+  })
+
+  it('should cleanup after a message create', async () => {
+    const evm = await createEVM()
+    // PUSH 1 PUSH 1 TSTORE
+    const code = hexToBytes('0x600160015D')
+    const keyBuf = setLengthLeft(new Uint8Array([1]), 32)
+    const result = await evm.runCall({
+      data: code,
+      gasLimit: BigInt(100_000),
+    })
+    const created = result.createdAddress!
+    const stored = evm.transientStorage.get(created, keyBuf)
+    assert.ok(
+      equalsBytes(unpadBytes(stored), new Uint8Array()),
+      'Transient storage has been cleared',
+    )
+  })
+
+  it('should cleanup after a message call', async () => {
+    const evm = await createEVM()
+    const contractAddress = createZeroAddress()
+    // PUSH 1 PUSH 1 TSTORE
+    const code = hexToBytes('0x600160015D')
+    await evm.stateManager.putCode(contractAddress, code)
+    const keyBuf = setLengthLeft(new Uint8Array([1]), 32)
+    await evm.runCall({
+      gasLimit: BigInt(100_000),
+    })
+    const stored = evm.transientStorage.get(contractAddress, keyBuf)
+    assert.ok(
+      equalsBytes(unpadBytes(stored), new Uint8Array()),
+      'Transient storage has been cleared',
+    )
   })
 })
