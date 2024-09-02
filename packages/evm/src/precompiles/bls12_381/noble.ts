@@ -197,7 +197,7 @@ export class NobleBLS implements EVMBLSInterface {
     if (scalar === BIGINT_0) {
       return BLS_G1_INFINITY_POINT_BYTES
     }
-    const result = p.multiply(scalar)
+    const result = p.multiplyUnsafe(scalar)
     return BLS12_381_FromG1Point(result)
   }
 
@@ -221,7 +221,7 @@ export class NobleBLS implements EVMBLSInterface {
     if (scalar === BIGINT_0) {
       return BLS_G2_INFINITY_POINT_BYTES
     }
-    const result = p.multiply(scalar)
+    const result = p.multiplyUnsafe(scalar)
     return BLS12_381_FromG2Point(result)
   }
 
@@ -264,7 +264,7 @@ export class NobleBLS implements EVMBLSInterface {
       if (Fr === BIGINT_0) {
         pMul = bls12_381.G1.ProjectivePoint.ZERO
       } else {
-        pMul = G1.multiply(Fr)
+        pMul = G1.multiplyUnsafe(Fr)
       }
 
       pRes = pRes.add(pMul)
@@ -296,7 +296,7 @@ export class NobleBLS implements EVMBLSInterface {
       if (Fr === BIGINT_0) {
         pMul = bls12_381.G2.ProjectivePoint.ZERO
       } else {
-        pMul = G2.multiply(Fr)
+        pMul = G2.multiplyUnsafe(Fr)
       }
 
       pRes = pRes.add(pMul)
