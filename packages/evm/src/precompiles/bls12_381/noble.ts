@@ -35,7 +35,7 @@ type Fp2 = {
  * @param input Input Uint8Array. Should be 128 bytes
  * @returns Noble G1 point
  */
-function BLS12_381_ToG1Point(input: Uint8Array) {
+function BLS12_381_ToG1Point(input: Uint8Array, verifyOrder = true) {
   if (equalsBytes(input, BLS_G1_INFINITY_POINT_BYTES)) {
     return bls12_381.G1.ProjectivePoint.ZERO
   }
@@ -47,6 +47,13 @@ function BLS12_381_ToG1Point(input: Uint8Array) {
     x,
     y,
   })
+
+  try {
+    G1.assertValidity()
+  } catch (e) {
+    if (verifyOrder || (e as Error).message !== 'bad point: not in prime-order subgroup')
+      throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+  }
 
   return G1
 }
@@ -66,7 +73,7 @@ function BLS12_381_FromG1Point(input: AffinePoint<bigint>): Uint8Array {
  * @param input Input Uint8Array. Should be 256 bytes
  * @returns Noble G2 point
  */
-function BLS12_381_ToG2Point(input: Uint8Array): any {
+function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true): any {
   // TODO: remove any type, temporary fix due to conflicting @noble/curves versions
   if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES)) {
     return bls12_381.G2.ProjectivePoint.ZERO
@@ -84,6 +91,13 @@ function BLS12_381_ToG2Point(input: Uint8Array): any {
     x: Fp2X,
     y: Fp2Y,
   })
+
+  try {
+    pG2.assertValidity()
+  } catch (e) {
+    if (verifyOrder || (e as Error).message !== 'bad point: not in prime-order subgroup')
+      throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+  }
 
   return pG2
 }
@@ -124,10 +138,7 @@ function BLS12_381_ToFrPoint(input: Uint8Array): bigint {
   // 3. bls_g1mul_random*p1_unnormalized_scalar within threshold (ORDER (?))
   // 4. bls_g1mul_random*p1_unnormalized_scalar outside threshold (ORDER + 1 (?))
   //
-  if (Fr > bls12_381.fields.Fr.ORDER) {
-    return Fr % bls12_381.fields.Fr.ORDER
-  }
-  return Fr
+  return bls12_381.fields.Fr.create(Fr)
 }
 
 // input: a 64-byte buffer
@@ -166,9 +177,10 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
  */
 export class NobleBLS implements EVMBLSInterface {
   addG1(input: Uint8Array): Uint8Array {
-    const p1 = BLS12_381_ToG1Point(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH))
+    const p1 = BLS12_381_ToG1Point(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH), false)
     const p2 = BLS12_381_ToG1Point(
       input.subarray(BLS_G1_POINT_BYTE_LENGTH, BLS_G1_POINT_BYTE_LENGTH * 2),
+      false,
     )
 
     const p = p1.add(p2)
@@ -190,9 +202,10 @@ export class NobleBLS implements EVMBLSInterface {
   }
 
   addG2(input: Uint8Array): Uint8Array {
-    const p1 = BLS12_381_ToG2Point(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH))
+    const p1 = BLS12_381_ToG2Point(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH), false)
     const p2 = BLS12_381_ToG2Point(
       input.subarray(BLS_G2_POINT_BYTE_LENGTH, BLS_G2_POINT_BYTE_LENGTH * 2),
+      false,
     )
     const p = p1.add(p2)
     const result = BLS12_381_FromG2Point(p)
@@ -305,12 +318,18 @@ export class NobleBLS implements EVMBLSInterface {
       const g2start = pairStart + BLS_G1_POINT_BYTE_LENGTH
       const G2 = BLS12_381_ToG2Point(input.subarray(g2start, g2start + BLS_G2_POINT_BYTE_LENGTH))
 
+      pairs.push([G1, G2])
+    }
+
+    // NOTE: check for point of infinity should happen only after all points parsed (in case they are malformed)
+    for (const [G1, G2] of pairs) {
       // EIP: "If any input is the infinity point, pairing result will be 1"
-      if (G1 === bls12_381.G1.ProjectivePoint.ZERO || G2 === bls12_381.G2.ProjectivePoint.ZERO) {
+      if (
+        G1.equals(bls12_381.G1.ProjectivePoint.ZERO) ||
+        G2.equals(bls12_381.G2.ProjectivePoint.ZERO)
+      ) {
         return BLS_ONE_BUFFER
       }
-
-      pairs.push([G1, G2])
     }
 
     // run the pairing check
@@ -322,9 +341,9 @@ export class NobleBLS implements EVMBLSInterface {
       const G2 = pair[1] as ProjPointType<Fp2>
 
       if (index === 0) {
-        GT = bls12_381.pairing(G1, G2)
+        GT = bls12_381.pairing(G1, G2, false)
       } else {
-        GT = bls12_381.fields.Fp12.mul(GT!, bls12_381.pairing(G1, G2))
+        GT = bls12_381.fields.Fp12.mul(GT!, bls12_381.pairing(G1, G2, false))
       }
     }
 
