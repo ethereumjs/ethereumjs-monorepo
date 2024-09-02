@@ -33,6 +33,7 @@ import { EOFContainer, EOFContainerMode } from '../eof/container.js'
 import { EOFError } from '../eof/errors.js'
 import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.js'
 import { ERROR } from '../exceptions.js'
+import { DELEGATION_7702_FLAG } from '../types.js'
 
 import {
   createAddressFromStackBigInt,
@@ -61,7 +62,7 @@ export interface AsyncOpHandler {
 export type OpHandler = SyncOpHandler | AsyncOpHandler
 
 function getEIP7702DelegatedAddress(code: Uint8Array) {
-  if (equalBytes(code.slice(0, 3), new Uint8Array([0xef, 0x01, 0x00]))) {
+  if (equalBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
     return new Address(code.slice(3, 24))
   }
 }
