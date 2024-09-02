@@ -1,4 +1,4 @@
-import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes, hexToBytes, isHexString, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -15,27 +15,28 @@ import trieTests from '../fixtures/trietest.json'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('walk the tries from official tests', async () => {
-  const testNames = Object.keys(trieTests.tests)
+  const testNames = Object.keys(trieTests.tests) as (keyof typeof trieTests.tests)[]
 
   for await (const testName of testNames) {
     const trie = new Trie()
     describe(testName, async () => {
-      const inputs = (trieTests as any).tests[testName].in
-      const expect = (trieTests as any).tests[testName].root
+      const inputs = trieTests.tests[testName].in
+      const expect = trieTests.tests[testName].root
       const testKeys: Map<PrefixedHexString, Uint8Array | null> = new Map()
       const testStrings: Map<string, [string, string | null]> = new Map()
       for await (const [idx, input] of inputs.entries()) {
-        const stringPair: [string, string] = [inputs[idx][0], inputs[idx][1] ?? 'null']
+        const stringPair: [string, string] = [inputs[idx][0]!, inputs[idx][1] ?? 'null']
         describe(`put: ${stringPair}`, async () => {
-          for (let i = 0; i < 2; i++) {
-            if (typeof input[i] === 'string' && input[i].slice(0, 2) === '0x') {
-              input[i] = hexToBytes(input[i])
-            } else if (typeof input[i] === 'string') {
-              input[i] = utf8ToBytes(input[i])
+          const processedInput = input.map((item) => {
+            if (item === null) {
+              return null
             }
-          }
+
+            return isHexString(item) ? hexToBytes(item) : utf8ToBytes(item)
+          }) as [Uint8Array, Uint8Array | null]
+
           try {
-            await trie.put(input[0], input[1])
+            await trie.put(processedInput[0], processedInput[1])
             assert(true)
           } catch (e) {
             assert(false, (e as any).message)
@@ -43,8 +44,8 @@ describe('walk the tries from official tests', async () => {
           trie.checkpoint()
           await trie.commit()
           trie.flushCheckpoints()
-          testKeys.set(bytesToHex(input[0]), input[1])
-          testStrings.set(bytesToHex(input[0]), stringPair)
+          testKeys.set(bytesToHex(processedInput[0]), processedInput[1])
+          testStrings.set(bytesToHex(processedInput[0]), stringPair)
           describe(`should get all keys`, async () => {
             for await (const [key, val] of testKeys.entries()) {
               const retrieved = await trie.get(hexToBytes(key))
@@ -64,26 +65,28 @@ describe('walk the tries from official tests', async () => {
 
 describe('walk a sparse trie', async () => {
   const trie = new Trie()
-  const inputs = (trieTests as any).tests.jeff.in
-  const expect = (trieTests as any).tests.jeff.root
+  const inputs = trieTests.tests.jeff.in
+  const expect = trieTests.tests.jeff.root
 
   // Build a Trie
   for await (const input of inputs) {
-    for (let i = 0; i < 2; i++) {
-      if (typeof input[i] === 'string' && input[i].slice(0, 2) === '0x') {
-        input[i] = hexToBytes(input[i])
-      } else if (typeof input[i] === 'string') {
-        input[i] = utf8ToBytes(input[i])
+    const processedInput = input.map((item) => {
+      if (item === null) {
+        return item
       }
-    }
-    await trie.put(input[0], input[1])
+
+      return isHexString(item) ? hexToBytes(item) : utf8ToBytes(item)
+    }) as [Uint8Array, Uint8Array | null]
+
+    await trie.put(processedInput[0], processedInput[1])
   }
   // Check the root
   it(`should have root ${expect}`, async () => {
     assert.equal(bytesToHex(trie.root()), expect)
   })
   // Generate a proof for inputs[0]
-  const proofKey = inputs[0][0]
+  const rawProofKey = inputs[0][0] as string
+  const proofKey = isHexString(rawProofKey) ? hexToBytes(rawProofKey) : utf8ToBytes(rawProofKey)
   const proof = await createMerkleProof(trie, proofKey)
   assert.ok(await verifyTrieProof(proofKey, proof))
 
@@ -102,7 +105,11 @@ describe('walk a sparse trie', async () => {
       // The only leaf node should be leaf from the proof
       const fullKeyNibbles = [...currentKey, ...node._nibbles]
       assert.deepEqual(fullKeyNibbles, bytesToNibbles(proofKey))
-      assert.deepEqual(node.value(), inputs[0][1])
+      const rawNodeValue = inputs[0][1] as string
+      const nodeValue = isHexString(rawNodeValue)
+        ? hexToBytes(rawNodeValue)
+        : utf8ToBytes(rawNodeValue)
+      assert.deepEqual(node.value(), nodeValue)
     }
     // Count the nodes...nodes from the proof should be only nodes in the trie
     found++
@@ -112,7 +119,7 @@ describe('walk a sparse trie', async () => {
 
   // Walk the same sparse trie with WalkController
   try {
-    await fromProof.walkTrie(fromProof.root(), async (noderef, node, key, wc) => {
+    await fromProof.walkTrie(fromProof.root(), async (_, node, __, wc) => {
       wc.allChildren(node!)
     })
     assert.fail('Will throw when it meets a missing node in a sparse trie')

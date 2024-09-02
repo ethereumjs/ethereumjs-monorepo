@@ -52,7 +52,6 @@ import type { EVMBLSInterface, EVMBN254Interface } from '@ethereumjs/evm'
  * --profile                              If this flag is passed, the state/blockchain tests will profile
  */
 
-//@ts-expect-error Typescript thinks there isn't a default export on minimist but there is
 const argv = minimist.default(process.argv.slice(2))
 
 async function runTests() {
