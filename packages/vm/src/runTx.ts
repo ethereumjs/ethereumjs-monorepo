@@ -291,9 +291,15 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   // EIP-3607: Reject transactions from senders with deployed code
   if (vm.common.isActivatedEIP(3607) && !equalsBytes(fromAccount.codeHash, KECCAK256_NULL)) {
-    if (vm.common.isActivatedEIP(7702)) {
-      const code = await state.getCode(caller)
-      if (!equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
+    const isActive7702 = vm.common.isActivatedEIP(7702)
+    switch (isActive7702) {
+      case true: {
+        const code = await state.getCode(caller)
+        // If the EOA is 7702-delegated, sending txs from this EOA is fine
+        if (equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) break
+        // Trying to send TX from account with code (which is not 7702-delegated), falls through and throws
+      }
+      default: {
         const msg = _errorMsg(
           'invalid sender address, address is not EOA (EIP-3607)',
           vm,
@@ -302,9 +308,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         )
         throw new Error(msg)
       }
-    } else {
-      const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', vm, block, tx)
-      throw new Error(msg)
     }
   }
 
