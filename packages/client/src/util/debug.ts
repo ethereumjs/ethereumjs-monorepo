@@ -28,7 +28,7 @@ export async function debugCodeReplayBlock(execution: VMExecution, block: Block)
 import { Level } from 'level';
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { VM, runBlock }  from './src'
+import { VM, runBlock, createVM }  from './src'
 import { Trie } from '@ethereumjs/trie'
 import { DefaultStateManager } from './src/state'
 import { Blockchain } from '@ethereumjs/blockchain'
@@ -37,9 +37,7 @@ const main = async () => {
   const common = new Common({ chain: '${execution.config.execCommon.chainName()}', hardfork: '${
     execution.hardfork
   }' })
-  const block = createBlockFromRLPSerializedBlock(hexToBytes('${bytesToHex(
-    block.serialize(),
-  )}'), { common })
+  const block = createBlockFromRLP(hexToBytes('${bytesToHex(block.serialize())}'), { common })
 
   const stateDB = new Level('${execution.config.getDataDirectory(DataDirectory.State)}')
   const trie = new Trie({ db: stateDB, useKeyHashing: true })
@@ -57,7 +55,7 @@ const main = async () => {
     validateBlocks: true,
     validateConsensus: false,
   })
-  const vm = await VM.create({ stateManager, blockchain, common })
+  const vm = await createVM({ stateManager, blockchain, common })
 
   await runBlock({ block })
 }

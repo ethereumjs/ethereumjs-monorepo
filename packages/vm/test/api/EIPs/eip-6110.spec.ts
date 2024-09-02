@@ -15,7 +15,7 @@ import { assert, describe, it } from 'vitest'
 import { buildBlock, runBlock } from '../../../src/index.js'
 import { setupVM } from '../utils.js'
 
-import type { DepositRequest } from '../../../../util/src/requests.js'
+import type { DepositRequest } from '../../../../util/src/request.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const depositContractByteCode = hexToBytes(

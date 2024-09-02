@@ -3,7 +3,7 @@ import { Address, bytesToHex, createZeroAddress, equalsBytes, hexToBytes } from 
 import { assert, describe, it } from 'vitest'
 
 // eslint-disable-next-line import/order
-import { VM } from '../../../src/index.js'
+import { createVM } from '../../../src/index.js'
 
 // See https://github.com/holiman/go-ethereum/blob/2c99023b68c573ba24a5b01db13e000bd9b82417/core/vm/testdata/precompiles/modexp_eip2565.json
 import testData from '../testdata/eip-2565.json'
@@ -11,7 +11,7 @@ import testData from '../testdata/eip-2565.json'
 describe('EIP-2565 ModExp gas cost tests', () => {
   it('Test return data, gas cost and execution status against testdata', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium, eips: [2565] })
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
     for (const test of testData) {
       const testName = test.Name

@@ -17,7 +17,7 @@ import {
   GWEI_TO_WEI,
   KECCAK256_RLP,
   TypeOutput,
-  Withdrawal,
+  createWithdrawal,
   createZeroAddress,
   toBytes,
   toType,
@@ -40,6 +40,7 @@ import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './
 import type { VM } from './vm.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { Withdrawal } from '@ethereumjs/util'
 
 export enum BuildStatus {
   Reverted = 'reverted',
@@ -94,7 +95,7 @@ export class BlockBuilder {
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
       timestamp: opts.headerData?.timestamp ?? Math.round(Date.now() / 1000),
     }
-    this.withdrawals = opts.withdrawals?.map(Withdrawal.fromWithdrawalData)
+    this.withdrawals = opts.withdrawals?.map(createWithdrawal)
 
     if (
       this.vm.common.isActivatedEIP(1559) &&

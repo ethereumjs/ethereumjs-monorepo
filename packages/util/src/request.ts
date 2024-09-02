@@ -101,22 +101,6 @@ export class DepositRequest extends CLRequest<CLRequestType.Deposit> {
     super(CLRequestType.Deposit)
   }
 
-  public static fromRequestData(depositData: DepositRequestData): DepositRequest {
-    const { pubkey, withdrawalCredentials, amount, signature, index } = depositData
-    return new DepositRequest(pubkey, withdrawalCredentials, amount, signature, index)
-  }
-
-  public static fromJSON(jsonData: DepositRequestV1): DepositRequest {
-    const { pubkey, withdrawalCredentials, amount, signature, index } = jsonData
-    return this.fromRequestData({
-      pubkey: hexToBytes(pubkey),
-      withdrawalCredentials: hexToBytes(withdrawalCredentials),
-      amount: hexToBigInt(amount),
-      signature: hexToBytes(signature),
-      index: hexToBigInt(index),
-    })
-  }
-
   serialize() {
     const indexBytes = this.index === BIGINT_0 ? new Uint8Array() : bigIntToBytes(this.index)
 
@@ -143,19 +127,6 @@ export class DepositRequest extends CLRequest<CLRequestType.Deposit> {
       index: bigIntToHex(this.index),
     }
   }
-
-  public static deserialize(bytes: Uint8Array): DepositRequest {
-    const [pubkey, withdrawalCredentials, amount, signature, index] = RLP.decode(
-      bytes.slice(1),
-    ) as [Uint8Array, Uint8Array, Uint8Array, Uint8Array, Uint8Array]
-    return this.fromRequestData({
-      pubkey,
-      withdrawalCredentials,
-      amount: bytesToBigInt(amount),
-      signature,
-      index: bytesToBigInt(index),
-    })
-  }
 }
 
 export class WithdrawalRequest extends CLRequest<CLRequestType.Withdrawal> {
@@ -165,20 +136,6 @@ export class WithdrawalRequest extends CLRequest<CLRequestType.Withdrawal> {
     public readonly amount: bigint,
   ) {
     super(CLRequestType.Withdrawal)
-  }
-
-  public static fromRequestData(withdrawalData: WithdrawalRequestData): WithdrawalRequest {
-    const { sourceAddress, validatorPubkey, amount } = withdrawalData
-    return new WithdrawalRequest(sourceAddress, validatorPubkey, amount)
-  }
-
-  public static fromJSON(jsonData: WithdrawalRequestV1): WithdrawalRequest {
-    const { sourceAddress, validatorPubkey, amount } = jsonData
-    return this.fromRequestData({
-      sourceAddress: hexToBytes(sourceAddress),
-      validatorPubkey: hexToBytes(validatorPubkey),
-      amount: hexToBigInt(amount),
-    })
   }
 
   serialize() {
@@ -197,19 +154,6 @@ export class WithdrawalRequest extends CLRequest<CLRequestType.Withdrawal> {
       amount: bigIntToHex(this.amount),
     }
   }
-
-  public static deserialize(bytes: Uint8Array): WithdrawalRequest {
-    const [sourceAddress, validatorPubkey, amount] = RLP.decode(bytes.slice(1)) as [
-      Uint8Array,
-      Uint8Array,
-      Uint8Array,
-    ]
-    return this.fromRequestData({
-      sourceAddress,
-      validatorPubkey,
-      amount: bytesToBigInt(amount),
-    })
-  }
 }
 
 export class ConsolidationRequest extends CLRequest<CLRequestType.Consolidation> {
@@ -219,20 +163,6 @@ export class ConsolidationRequest extends CLRequest<CLRequestType.Consolidation>
     public readonly targetPubkey: Uint8Array,
   ) {
     super(CLRequestType.Consolidation)
-  }
-
-  public static fromRequestData(consolidationData: ConsolidationRequestData): ConsolidationRequest {
-    const { sourceAddress, sourcePubkey, targetPubkey } = consolidationData
-    return new ConsolidationRequest(sourceAddress, sourcePubkey, targetPubkey)
-  }
-
-  public static fromJSON(jsonData: ConsolidationRequestV1): ConsolidationRequest {
-    const { sourceAddress, sourcePubkey, targetPubkey } = jsonData
-    return this.fromRequestData({
-      sourceAddress: hexToBytes(sourceAddress),
-      sourcePubkey: hexToBytes(sourcePubkey),
-      targetPubkey: hexToBytes(targetPubkey),
-    })
   }
 
   serialize() {
@@ -249,30 +179,108 @@ export class ConsolidationRequest extends CLRequest<CLRequestType.Consolidation>
       targetPubkey: bytesToHex(this.targetPubkey),
     }
   }
+}
 
-  public static deserialize(bytes: Uint8Array): ConsolidationRequest {
-    const [sourceAddress, sourcePubkey, targetPubkey] = RLP.decode(bytes.slice(1)) as [
-      Uint8Array,
-      Uint8Array,
-      Uint8Array,
-    ]
-    return this.fromRequestData({
-      sourceAddress,
-      sourcePubkey,
-      targetPubkey,
-    })
-  }
+export function createDepositRequest(depositData: DepositRequestData): DepositRequest {
+  const { pubkey, withdrawalCredentials, amount, signature, index } = depositData
+  return new DepositRequest(pubkey, withdrawalCredentials, amount, signature, index)
+}
+
+export function createDepositRequestFromJSON(jsonData: DepositRequestV1): DepositRequest {
+  const { pubkey, withdrawalCredentials, amount, signature, index } = jsonData
+  return createDepositRequest({
+    pubkey: hexToBytes(pubkey),
+    withdrawalCredentials: hexToBytes(withdrawalCredentials),
+    amount: hexToBigInt(amount),
+    signature: hexToBytes(signature),
+    index: hexToBigInt(index),
+  })
+}
+
+export function createDepositRequestFromRLP(bytes: Uint8Array): DepositRequest {
+  const [pubkey, withdrawalCredentials, amount, signature, index] = RLP.decode(bytes) as [
+    Uint8Array,
+    Uint8Array,
+    Uint8Array,
+    Uint8Array,
+    Uint8Array,
+  ]
+  return createDepositRequest({
+    pubkey,
+    withdrawalCredentials,
+    amount: bytesToBigInt(amount),
+    signature,
+    index: bytesToBigInt(index),
+  })
+}
+
+export function createWithdrawalRequest(withdrawalData: WithdrawalRequestData): WithdrawalRequest {
+  const { sourceAddress, validatorPubkey, amount } = withdrawalData
+  return new WithdrawalRequest(sourceAddress, validatorPubkey, amount)
+}
+
+export function createWithdrawalRequestFromJSON(jsonData: WithdrawalRequestV1): WithdrawalRequest {
+  const { sourceAddress, validatorPubkey, amount } = jsonData
+  return createWithdrawalRequest({
+    sourceAddress: hexToBytes(sourceAddress),
+    validatorPubkey: hexToBytes(validatorPubkey),
+    amount: hexToBigInt(amount),
+  })
+}
+
+export function createWithdrawalRequestFromRLP(bytes: Uint8Array): WithdrawalRequest {
+  const [sourceAddress, validatorPubkey, amount] = RLP.decode(bytes) as [
+    Uint8Array,
+    Uint8Array,
+    Uint8Array,
+  ]
+  return createWithdrawalRequest({
+    sourceAddress,
+    validatorPubkey,
+    amount: bytesToBigInt(amount),
+  })
+}
+
+export function createConsolidationRequest(
+  consolidationData: ConsolidationRequestData,
+): ConsolidationRequest {
+  const { sourceAddress, sourcePubkey, targetPubkey } = consolidationData
+  return new ConsolidationRequest(sourceAddress, sourcePubkey, targetPubkey)
+}
+
+export function createConsolidationRequestFromJSON(
+  jsonData: ConsolidationRequestV1,
+): ConsolidationRequest {
+  const { sourceAddress, sourcePubkey, targetPubkey } = jsonData
+  return createConsolidationRequest({
+    sourceAddress: hexToBytes(sourceAddress),
+    sourcePubkey: hexToBytes(sourcePubkey),
+    targetPubkey: hexToBytes(targetPubkey),
+  })
+}
+
+export function createConsolidationRequestFromRLP(bytes: Uint8Array): ConsolidationRequest {
+  const [sourceAddress, sourcePubkey, targetPubkey] = RLP.decode(bytes) as [
+    Uint8Array,
+    Uint8Array,
+    Uint8Array,
+  ]
+  return createConsolidationRequest({
+    sourceAddress,
+    sourcePubkey,
+    targetPubkey,
+  })
 }
 
 export class CLRequestFactory {
   public static fromSerializedRequest(bytes: Uint8Array): CLRequest<CLRequestType> {
     switch (bytes[0]) {
       case CLRequestType.Deposit:
-        return DepositRequest.deserialize(bytes)
+        return createDepositRequestFromRLP(bytes.subarray(1))
       case CLRequestType.Withdrawal:
-        return WithdrawalRequest.deserialize(bytes)
+        return createWithdrawalRequestFromRLP(bytes.subarray(1))
       case CLRequestType.Consolidation:
-        return ConsolidationRequest.deserialize(bytes)
+        return createConsolidationRequestFromRLP(bytes.subarray(1))
       default:
         throw Error(`Invalid request type=${bytes[0]}`)
     }

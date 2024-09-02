@@ -11,7 +11,7 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.js'
 
 import type * as tape from 'tape'
@@ -90,7 +90,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     bls: options.bls,
     bn254: options.bn254,
   }
-  const vm = await VM.create({
+  const vm = await createVM({
     stateManager,
     common,
     blockchain,

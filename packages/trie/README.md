@@ -32,57 +32,80 @@ It is best to select the variant that is most appropriate for your unique use ca
 ```ts
 // ./examples/basicUsage.ts
 
-import { Trie } from '@ethereumjs/trie'
-import { bytesToUtf8, MapDB, utf8ToBytes } from '@ethereumjs/util'
+import { createTrie } from '@ethereumjs/trie'
+import { MapDB, bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 
 async function test() {
-  const trie = await Trie.create({ db: new MapDB() })
+  const trie = await createTrie({ db: new MapDB() })
   await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
   const value = await trie.get(utf8ToBytes('test'))
   console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
 }
 
-test()
+void test()
 ```
 
 ### WASM Crypto Support
 
 This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing for keys. See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
-### Use with Static Constructors
+### Use with Standalone Constructors
+
+Tries can be instantiated using standalone constructor functions:
+
+```ts
+// ./examples/basicUsage.ts#L5-L6
+
+const trie = await createTrie({ db: new MapDB() })
+await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
+```
+
+Tries can also be instantiated from a merkle proof:
+
+```ts
+// ./examples/createFromProof.ts#L17-L19
+
+const proof = await createMerkleProof(someOtherTrie, k1)
+const trie = await createTrieFromProof(proof, { useKeyHashing: true })
+const otherProof = await createMerkleProof(someOtherTrie, k2)
+```
 
 #### Create new Trie
 
 ```ts
 // ./examples/basicUsage.ts
 
-import { Trie } from '@ethereumjs/trie'
-import { bytesToUtf8, MapDB, utf8ToBytes } from '@ethereumjs/util'
+import { createTrie } from '@ethereumjs/trie'
+import { MapDB, bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 
 async function test() {
-  const trie = await Trie.create({ db: new MapDB() })
+  const trie = await createTrie({ db: new MapDB() })
   await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
   const value = await trie.get(utf8ToBytes('test'))
   console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
 }
 
-test()
+void test()
 ```
 
-When the static `Trie.create` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Ethereum production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
+When the `createTrie` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Ethereum production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
 
 #### Create from a Proof
 
 The trie library supports basic creation of [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) proofs as well as the instantiation of new tries from an existing proof.
 
-The following is an example for using the `Trie.createFromProof()` static constructor. This instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
+The following is an example for using the `createTrieFromProof()` constructor. This instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
 
 ```ts
 // ./examples/createFromProof.ts
 
-import { Trie } from '@ethereumjs/trie'
-import { bytesToUtf8 } from '@ethereumjs/util'
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
+import {
+  Trie,
+  createMerkleProof,
+  createTrieFromProof,
+  updateTrieFromMerkleProof,
+} from '@ethereumjs/trie'
+import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 
 async function main() {
   const k1 = utf8ToBytes('keyOne')
@@ -92,12 +115,12 @@ async function main() {
   await someOtherTrie.put(k1, utf8ToBytes('valueOne'))
   await someOtherTrie.put(k2, utf8ToBytes('valueTwo'))
 
-  const proof = await someOtherTrie.createProof(k1)
-  const trie = await Trie.createFromProof(proof, { useKeyHashing: true })
-  const otherProof = await someOtherTrie.createProof(k2)
+  const proof = await createMerkleProof(someOtherTrie, k1)
+  const trie = await createTrieFromProof(proof, { useKeyHashing: true })
+  const otherProof = await createMerkleProof(someOtherTrie, k2)
 
-  // To add more proofs to the trie, use `updateFromProof`
-  await trie.updateFromProof(otherProof)
+  // To add more proofs to the trie, use `updateTrieFromMerkleProof`
+  await updateTrieFromMerkleProof(trie, otherProof)
 
   const value = await trie.get(k1)
   console.log(bytesToUtf8(value!)) // valueOne
@@ -105,7 +128,7 @@ async function main() {
   console.log(bytesToUtf8(otherValue!)) // valueTwo
 }
 
-main()
+void main()
 ```
 
 For further proof usage documentation see additional documentation section below.
@@ -119,11 +142,11 @@ The new walk functionality can be used like the following:
 ```ts
 // ./examples/trieWalking.ts
 
-import { Trie } from '@ethereumjs/trie'
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
+import { createTrie } from '@ethereumjs/trie'
+import { utf8ToBytes } from '@ethereumjs/util'
 
 async function main() {
-  const trie = await Trie.create()
+  const trie = await createTrie()
   await trie.put(utf8ToBytes('key'), utf8ToBytes('val'))
   const walk = trie.walkTrieIterable(trie.root())
 
@@ -132,7 +155,7 @@ async function main() {
     console.log({ node, currentKey })
   }
 }
-main()
+void main()
 ```
 
 ### `Trie` Configuration Options
@@ -152,11 +175,10 @@ As an example, to leverage `LevelDB` for all operations then you should create a
 ```ts
 // ./examples/customLevelDB.ts#L127-L131
 
-async function main() {
-  const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION') as any) })
-  console.log(await trie.database().db) // LevelDB { ...
-}
-main()
+const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+console.log(trie.database().db) // LevelDB { ...
+
+void main()
 ```
 
 #### Node Deletion (Pruning)
@@ -165,30 +187,30 @@ By default, the deletion of trie nodes from the underlying database does not occ
 
 #### Root Persistence
 
-You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie through the `Trie.create` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
+You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie through the `createTrie` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
 
 ```ts
 // ./examples/rootPersistence.ts
 
-import { Trie } from '@ethereumjs/trie'
+import { createTrie } from '@ethereumjs/trie'
 import { bytesToHex } from '@ethereumjs/util'
 
 async function main() {
-  const trie = await Trie.create({
+  const trie = await createTrie({
     useRootPersistence: true,
   })
 
   // this logs the empty root value that has been persisted to the trie db
   console.log(bytesToHex(trie.root())) // 0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
 }
-main()
+void main()
 ```
 
 ## Proofs
 
 ### Merkle Proofs
 
-The `createProof` and `verifyProof` functions allow you to verify that a certain value does or does not exist within a Merkle Patricia Tree with a given root.
+The `createMerkleProof` and `verifyMerkleProof` functions allow you to verify that a certain value does or does not exist within a Merkle Patricia Tree with a given root.
 
 #### Proof-of-Inclusion
 
@@ -199,8 +221,8 @@ The following code demonstrates how to construct and subsequently verify a proof
 
 // proof-of-inclusion
 await trie.put(k1, v1)
-let proof = await trie.createProof(k1)
-let value = await trie.verifyProof(trie.root(), k1, proof)
+let proof = await createMerkleProof(trie, k1)
+let value = await verifyMerkleProof(trie, trie.root(), k1, proof)
 console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
 ```
 
@@ -214,8 +236,8 @@ The following code demonstrates how to construct and subsequently verify a proof
 // proof-of-exclusion
 await trie.put(k1, v1)
 await trie.put(k2, v2)
-proof = await trie.createProof(utf8ToBytes('key3'))
-value = await trie.verifyProof(trie.root(), utf8ToBytes('key3'), proof)
+proof = await createMerkleProof(trie, utf8ToBytes('key3'))
+value = await verifyMerkleProof(trie, trie.root(), utf8ToBytes('key3'), proof)
 console.log(value ? bytesToUtf8(value) : 'null') // null
 ```
 
@@ -229,10 +251,10 @@ If `verifyProof` detects an invalid proof, it will throw an error. While contriv
 // invalid proof
 await trie.put(k1, v1)
 await trie.put(k2, v2)
-proof = await trie.createProof(k2)
+proof = await createMerkleProof(trie, k2)
 proof[0].reverse()
 try {
-  const value = await trie.verifyProof(trie.root(), k2, proof) // results in error
+  const _value = await verifyMerkleProof(trie, trie.root(), k2, proof) // results in error
 } catch (err) {
   console.log(err)
 }
@@ -240,7 +262,7 @@ try {
 
 ### Range Proofs
 
-You may use the `Trie.verifyRangeProof()` function to confirm if the given leaf nodes and edge proof possess the capacity to prove that the given trie leaves' range matches the specific root (which is useful for snap sync, for instance).
+You may use the `verifyTrieRangeProof()` function to confirm if the given leaf nodes and edge proof possess the capacity to prove that the given trie leaves' range matches the specific root (which is useful for snap sync, for instance).
 
 ## Examples
 

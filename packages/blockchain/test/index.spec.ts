@@ -1,6 +1,6 @@
 import {
   createBlock,
-  createBlockFromRLPSerializedBlock,
+  createBlockFromRLP,
   createBlockHeader,
   createBlockHeaderFromBytesArray,
 } from '@ethereumjs/block'
@@ -580,7 +580,7 @@ describe('blockchain test', () => {
   it('should add block with body', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const genesisRlp = hexToBytes(testDataPreLondon.genesisRLP as PrefixedHexString)
-    const genesisBlock = createBlockFromRLPSerializedBlock(genesisRlp, { common })
+    const genesisBlock = createBlockFromRLP(genesisRlp, { common })
     const blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
@@ -588,7 +588,7 @@ describe('blockchain test', () => {
     })
 
     const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+    const block = createBlockFromRLP(blockRlp, { common })
     await blockchain.putBlock(block)
   })
 

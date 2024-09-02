@@ -11,12 +11,12 @@ import {
 import { Interface } from '@ethersproject/abi' // cspell:disable-line
 import { assert, describe, it } from 'vitest'
 
-import { runTx } from '../../src/index.js'
-import { VM } from '../../src/vm.js'
+import { createVM, runTx } from '../../src/index.js'
 
 import * as testChain from './testdata/testnet.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
+import type { ChainConfig } from '@ethereumjs/common'
 import type { AccountState, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 
 const storage: Array<[PrefixedHexString, PrefixedHexString]> = [
@@ -49,9 +49,7 @@ const genesisState: GenesisState = {
   [contractAddress]: accountState,
 }
 
-// @ts-ignore PrefixedHesString type is too strict
-const common = createCustomCommon(testChain.default, Mainnet, {
-  name: 'testnet',
+const common = createCustomCommon(testChain.default as ChainConfig, Mainnet, {
   hardfork: Hardfork.Chainstart,
 })
 const block = createBlock(
@@ -69,7 +67,7 @@ const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3
 describe('VM initialized with custom state', () => {
   it('should transfer eth from already existent account', async () => {
     const blockchain = await createBlockchain({ common, genesisState })
-    const vm = await VM.create({ blockchain, common })
+    const vm = await createVM({ blockchain, common })
     await vm.stateManager.generateCanonicalGenesis!(genesisState)
 
     const to = '0x00000000000000000000000000000000000000ff'
@@ -98,7 +96,7 @@ describe('VM initialized with custom state', () => {
   it('should retrieve value from storage', async () => {
     const blockchain = await createBlockchain({ common, genesisState })
     common.setHardfork(Hardfork.London)
-    const vm = await VM.create({ blockchain, common })
+    const vm = await createVM({ blockchain, common })
     await vm.stateManager.generateCanonicalGenesis!(genesisState)
     const sigHash = new Interface(['function retrieve()']).getSighash(
       'retrieve',
@@ -117,16 +115,14 @@ describe('VM initialized with custom state', () => {
   })
 
   it('setHardfork', async () => {
-    // @ts-ignore PrefixedHexString type is too strict
-    const common = createCustomCommon(testnetMerge.default, Mainnet, {
-      name: 'testnetMerge',
+    const common = createCustomCommon(testnetMerge.default as ChainConfig, Mainnet, {
       hardfork: Hardfork.Istanbul,
     })
 
-    let vm = await VM.create({ common, setHardfork: true })
+    let vm = await createVM({ common, setHardfork: true })
     assert.equal((vm as any)._setHardfork, true, 'should set setHardfork option')
 
-    vm = await VM.create({ common, setHardfork: 5001 })
+    vm = await createVM({ common, setHardfork: 5001 })
     assert.equal((vm as any)._setHardfork, BigInt(5001), 'should set setHardfork option')
   })
 })
