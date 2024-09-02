@@ -21,7 +21,7 @@ import {
 } from './constants.js'
 
 import type { EVMBLSInterface } from '../../types.js'
-import type { AffinePoint, ProjPointType } from '@noble/curves/abstract/weierstrass'
+import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
 
 // Copied from @noble/curves/bls12-381 (only local declaration)
 type Fp2 = {
@@ -326,12 +326,14 @@ export class NobleBLS implements EVMBLSInterface {
 
     // NOTE: check for point of infinity should happen only after all points parsed (in case they are malformed)
     for (const { g1, g2 } of pairs) {
+      const _g2 = g2 as unknown as any
       // EIP: "If any input is the infinity point, pairing result will be 1"
-      if (g1.equals(G1_ZERO) || g2.equals(G2_ZERO)) {
+      if (g1.equals(G1_ZERO) || (_g2.equals(G2_ZERO) as boolean)) {
         return BLS_ONE_BUFFER
       }
     }
 
+    // @ts-ignore
     const FP12 = bls12_381.pairingBatch(pairs, true)
 
     if (bls12_381.fields.Fp12.eql(FP12, bls12_381.fields.Fp12.ONE)) {
