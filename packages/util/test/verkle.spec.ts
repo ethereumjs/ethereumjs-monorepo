@@ -52,29 +52,29 @@ describe('Verkle cryptographic helpers', () => {
     const prestateRoot = hexToBytes(
       '0x64e1a647f42e5c2e3c434531ccf529e1b3e93363a40db9fc8eec81f492123510',
     )
-    const executionWitness = verkleBlockJSON.executionWitness as VerkleExecutionWitness
-    assert.isTrue(verifyVerkleProof(verkle, prestateRoot, executionWitness))
+    const executionWitness = {
+      ...verkleBlockJSON.default.executionWitness,
+      parentStateRoot: bytesToHex(prestateRoot),
+    } as VerkleExecutionWitness
+    assert.isTrue(verifyVerkleProof(verkle, executionWitness))
   })
 
   it('verifyVerkleProof(): should return false for invalid verkle proofs', () => {
     // Random preStateRoot
     const prestateRoot = randomBytes(32)
-    const executionWitness = verkleBlockJSON.executionWitness as VerkleExecutionWitness
+    const executionWitness = {
+      ...verkleBlockJSON.default.executionWitness,
+      parentStateRoot: bytesToHex(prestateRoot),
+    } as VerkleExecutionWitness
     // Modify the proof to make it invalid
-    assert.isFalse(verifyVerkleProof(verkle, prestateRoot, executionWitness))
+    assert.isFalse(verifyVerkleProof(verkle, executionWitness))
   })
 })
 
 describe('should generate valid tree keys', () => {
   it('should generate valid keys for each VerkleLeafType', () => {
     const stem = hexToBytes('0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d')
-    for (const leaf of [
-      VerkleLeafType.Version,
-      VerkleLeafType.Balance,
-      VerkleLeafType.Nonce,
-      VerkleLeafType.CodeHash,
-      VerkleLeafType.CodeSize,
-    ]) {
+    for (const leaf of [VerkleLeafType.BasicData, VerkleLeafType.CodeHash]) {
       const key = getVerkleKey(stem, leaf)
       assert.equal(key.length, 32)
       assert.deepEqual(key, concatBytes(stem, intToBytes(leaf)))
