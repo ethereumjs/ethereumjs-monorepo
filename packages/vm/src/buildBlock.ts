@@ -245,6 +245,8 @@ export class BlockBuilder {
 
       // Guard against the case if a tx came into the pool without blobs i.e. network wrapper payload
       if (blobTx.blobs === undefined) {
+        // TODO: verify if we want this, do we want to allow the block builder to accept blob txs without the actual blobs?
+        // (these must have at least one `blobVersionedHashes`, this is verified at tx-level)
         if (allowNoBlobs !== true) {
           throw new Error('blobs missing for 4844 transaction')
         }
