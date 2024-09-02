@@ -1,5 +1,11 @@
 import { debug as _debug } from 'debug'
-import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
+  PrefixedHexString,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 
 import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
 import { Trie } from '../trie.js'
@@ -52,15 +58,15 @@ function getNodeType(node: TrieNode): TNode {
 function logNode(trie: Trie, node: TrieNode, currentKey: number[]): void {
   delimiter(3)
   const type = getNodeType(node)
-  if (equalsBytes((trie as any).hash(node.serialize()), trie.root())) {
+  if (equalsBytes(trie.hash(node.serialize()), trie.root())) {
     debugN('rt').extend(type)(
-      `{ 0x${bytesToHex((trie as any).hash(node.serialize())).slice(
+      `{ 0x${bytesToHex(trie.hash(node.serialize())).slice(
         0,
         12,
       )}... } ---- \uD83D\uDCA5  \u211B \u2134 \u2134 \u0164  \u0147 \u2134 \u0221 \u2211  \u2737`,
     )
   } else {
-    debugN(type)(`{ 0x${bytesToHex((trie as any).hash(node.serialize())).slice(0, 12)}... } ----`)
+    debugN(type)(`{ 0x${bytesToHex(trie.hash(node.serialize())).slice(0, 12)}... } ----`)
   }
   debugT.extend('Walking')(`from [${currentKey}]`)
   if ('_nibbles' in node) {
@@ -106,8 +112,10 @@ export const view = async (testName: string, inputs: any[], root: string) => {
     testKeys.set(bytesToHex(input[0]), input[1])
     testStrings.set(bytesToHex(input[0]), stringPair)
     for await (const [key, _val] of testKeys.entries()) {
-      const retrieved = await trie.get(hexToBytes(key))
-      debugT.extend('get')(`[${key}]: ${retrieved && equalsBytes(retrieved, hexToBytes(key))}`)
+      const retrieved = await trie.get(hexToBytes(key as PrefixedHexString))
+      debugT.extend('get')(
+        `[${key}]: ${retrieved && equalsBytes(retrieved, hexToBytes(key as PrefixedHexString))}`,
+      )
     }
   }
   debugT(bytesToHex(trie.root()), expect)
