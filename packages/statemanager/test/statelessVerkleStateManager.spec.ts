@@ -4,10 +4,10 @@ import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
   Address,
   VerkleLeafType,
-  bytesToBigInt,
   bytesToHex,
   createAccount,
   createAddressFromString,
+  decodeVerkleLeafBasicData,
   getVerkleKey,
   getVerkleStem,
   hexToBytes,
@@ -123,26 +123,17 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const address = createAddressFromString('0x6177843db3138ae69679a54b95cf345ed759450d')
     const stem = getVerkleStem(stateManager.verkleCrypto, address, 0n)
 
-    const balanceKey = getVerkleKey(stem, VerkleLeafType.Balance)
-    const nonceKey = getVerkleKey(stem, VerkleLeafType.Nonce)
+    const basicDataKey = getVerkleKey(stem, VerkleLeafType.BasicData)
     const codeHashKey = getVerkleKey(stem, VerkleLeafType.CodeHash)
 
-    const balanceRaw = stateManager['_state'][bytesToHex(balanceKey)]
-    const nonceRaw = stateManager['_state'][bytesToHex(nonceKey)]
+    const basicDataRaw = stateManager['_state'][bytesToHex(basicDataKey)]
+    const basicData = decodeVerkleLeafBasicData(hexToBytes(basicDataRaw!))
     const codeHash = stateManager['_state'][bytesToHex(codeHashKey)]
 
     const account = await stateManager.getAccount(address)
 
-    assert.equal(
-      account!.balance,
-      bytesToBigInt(hexToBytes(balanceRaw!), true),
-      'should have correct balance',
-    )
-    assert.equal(
-      account!.nonce,
-      bytesToBigInt(hexToBytes(nonceRaw!), true),
-      'should have correct nonce',
-    )
+    assert.equal(account!.balance, basicData.balance, 'should have correct balance')
+    assert.equal(account!.nonce, basicData.nonce, 'should have correct nonce')
     assert.equal(bytesToHex(account!.codeHash), codeHash, 'should have correct codeHash')
   })
 
