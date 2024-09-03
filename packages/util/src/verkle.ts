@@ -284,3 +284,59 @@ export function encodeVerkleLeafBasicData(account: Account): Uint8Array {
   const encodedBalance = setLengthLeft(bigIntToBytes(account.balance), VERKLE_BALANCE_BYTES_LENGTH)
   return concatBytes(encodedVersion, reservedBytes, encodedNonce, encodedCodeSize, encodedBalance)
 }
+
+export const generateChunkSuffixes = (numChunks: number) => {
+  const chunkSuffixes: number[] = new Array(numChunks)
+  for (let x = 0; x < numChunks; x++) {
+    if (x < 128) {
+      // Suffixes for chunks 0 - 127 start at 128 and end with 255
+      chunkSuffixes[x] = x + 128
+      continue
+    }
+    if (x < 384) {
+      // Suffixes for chunks 128 - 383 start at 0 and go to 255
+      chunkSuffixes[x] = x - 128
+      continue
+    }
+    if (x < 640) {
+      // Suffixes for chunks 384 - 639 start at 0 and go to 255
+      chunkSuffixes[x] = x - 384
+      continue
+    }
+    if (x > 639) {
+      // Suffixes for chunks 640 - 793 start at 0 and go to 153
+      chunkSuffixes[x] = x - 640
+      continue
+    }
+  }
+  return chunkSuffixes
+}
+
+export const generateCodeStems = async (
+  numChunks: number,
+  address: Address,
+  verkleCrypto: VerkleCrypto,
+) => {
+  // The maximum number of chunks is 793 (maxCodeSize - 24576) / (bytes per chunk 31) + (round up - 1)
+  // Code is stored in chunks starting at leaf index 128 of the leaf node corresponding to the stem of the code's address
+  // Code chunks beyond the initial 128 are stored in additional leaf nodes in batches up of up to 256 chunks per leaf node
+  // so the maximum number of leaf nodes that can hold contract code for a specific address is 4 leaf nodes (128 chunks in
+  // the first leaf node and 256 chunks in up to 3 additional leaf nodes)
+  // So, instead of computing every single leaf key (which is a heavy async operation), we just compute the stem for the first
+  // chunk in each leaf node and can then know that the chunks in between have tree keys in monotonically increasing order
+  const numStems = Math.floor(numChunks / 256) + 1
+  const chunkStems = new Array(numStems)
+  // Compute the stem for the initial set of code chunks
+  chunkStems[0] = (await getVerkleTreeKeyForCodeChunk(address, 0, verkleCrypto)).slice(0, 31)
+
+  for (let stemNum = 0; stemNum < numStems - 1; stemNum++) {
+    // Generate additional stems
+    const firstChunkKey = await getVerkleTreeKeyForCodeChunk(
+      address,
+      128 + stemNum * 256,
+      verkleCrypto,
+    )
+    chunkStems[stemNum] = firstChunkKey.slice(0, 31)
+  }
+  return chunkStems
+}

@@ -11,6 +11,8 @@ import {
   decodeVerkleLeafBasicData,
   encodeVerkleLeafBasicData,
   equalsBytes,
+  generateChunkSuffixes,
+  generateCodeStems,
   getVerkleStem,
   getVerkleTreeKeyForCodeChunk,
   short,
@@ -193,53 +195,9 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     }
 
     const codeChunks = chunkifyCode(value)
-    // The maximum number of chunks is 793 (maxCodeSize - 24576) / (bytes per chunk 31) + (round up - 1)
-    // Code is stored in chunks starting at leaf index 128 of the leaf node corresponding to the stem of the code's address
-    // Code chunks beyond the initial 128 are stored in additional leaf nodes in batches up of up to 256 chunks per leaf node
-    // so the maximum number of leaf nodes that can hold contract code for a specific address is 4 leaf nodes (128 chunks in
-    // the first leaf node and 256 chunks in up to 3 additional leaf nodes)
-    // So, instead of computing every single leaf key (which is a heavy async operation), we just compute the stem for the first
-    // chunk in each leaf node and can then know that the chunks in between have tree keys in monotonically increasing order
-    const numStems = Math.floor(codeChunks.length / 256) + 1
-    const chunkStems = [
-      // Compute the stem for the initial set of code chunks
-      (await getVerkleTreeKeyForCodeChunk(address, 0, this.verkleCrypto)).slice(0, 31),
-    ]
+    const chunkStems = await generateCodeStems(codeChunks.length, address, this.verkleCrypto)
 
-    for (let stemNum = 0; stemNum < numStems - 1; stemNum++) {
-      // Generate additional stems
-      const firstChunkKey = await getVerkleTreeKeyForCodeChunk(
-        address,
-        128 + stemNum * 256,
-        this.verkleCrypto,
-      )
-      chunkStems.push(firstChunkKey.slice(0, 31))
-    }
-
-    // Generate code chunk suffixes
-    const chunkSuffixes: number[] = new Array(codeChunks.length)
-    for (let x = 0; x < codeChunks.length; x++) {
-      if (x < 128) {
-        // Suffixes for chunks 0 - 127 start at 128 and end with 255
-        chunkSuffixes[x] = x + 128
-        continue
-      }
-      if (x < 384) {
-        // Suffixes for chunks 128 - 383 start at 0 and go to 255
-        chunkSuffixes[x] = x - 128
-        continue
-      }
-      if (x < 640) {
-        // Suffixes for chunks 384 - 639 start at 0 and go to 255
-        chunkSuffixes[x] = x - 384
-        continue
-      }
-      if (x > 639) {
-        // Suffixes for chunks 640 - 793 start at 0 and go to 153
-        chunkSuffixes[x] = x - 640
-        continue
-      }
-    }
+    const chunkSuffixes: number[] = generateChunkSuffixes(codeChunks.length)
     // Put the code chunks corresponding to the first stem (up to 128 chunks)
     await this._trie.put(
       chunkStems[0],
@@ -247,7 +205,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       codeChunks.slice(0, codeChunks.length <= 128 ? codeChunks.length : 128),
     )
     // Put additional chunks under additional stems as applicable
-    for (let stem = 1; stem < numStems; stem++) {
+    for (let stem = 1; stem < chunkStems.length; stem++) {
       await this._trie.put(
         chunkStems[stem],
         chunkSuffixes.slice(
