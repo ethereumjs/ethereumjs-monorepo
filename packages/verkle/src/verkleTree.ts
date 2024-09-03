@@ -153,7 +153,7 @@ export class VerkleTree {
 
   /**
    * Gets values at a given verkle `stem` and set of suffixes
-   * @param stem - the stem of the leaf node where we're seaking values
+   * @param stem - the stem of the leaf node where we're seeking values
    * @param suffixes - an array of suffixes corresponding to the values desired
    * @returns A Promise that resolves to an array of `Uint8Array`s if a value
    * was found or `undefined` if no value was found at a given suffixes.
