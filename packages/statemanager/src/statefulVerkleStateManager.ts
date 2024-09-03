@@ -2,12 +2,15 @@ import { Common, Mainnet } from '@ethereumjs/common'
 import {
   type Account,
   type Address,
+  KECCAK256_NULL,
   MapDB,
   VerkleLeafType,
   createAccountFromRLP,
   createPartialAccount,
   decodeVerkleLeafBasicData,
   encodeVerkleLeafBasicData,
+  equalsBytes,
+  getVerkleKey,
   getVerkleStem,
   short,
 } from '@ethereumjs/util'
@@ -97,7 +100,12 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         version: basicData.version,
         balance: basicData.balance,
         nonce: basicData.nonce,
-        codeHash: accountValues[1] instanceof Uint8Array ? accountValues[1] : null,
+        codeHash:
+          accountValues[1] === undefined
+            ? KECCAK256_NULL // codeHash is undefined in trie (i.e. not touched)
+            : equalsBytes(accountValues[1], new Uint8Array(32))
+              ? KECCAK256_NULL // codeHash is deleted in trie (i.e. overwritten with zeroes)
+              : accountValues[1],
         codeSize: basicData.codeSize,
         storageRoot: null, // TODO: Add storage stuff
       })
@@ -155,8 +163,11 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._caches?.deleteAccount(address)
 
     if (this._caches?.account === undefined) {
-      // TODO: Delete account
-      // await this._trie.del(address.bytes)
+      const stem = getVerkleStem(this.verkleCrypto, address)
+      // TODO: Determine the best way to clear code/storage for an account when deleting
+      // Will need to inspect all possible code and storage keys to see if it's anything
+      // other than untouched leaf values
+      await this._trie.del(stem, [VerkleLeafType.BasicData, VerkleLeafType.CodeHash])
     }
   }
 

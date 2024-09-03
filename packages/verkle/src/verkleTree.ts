@@ -188,9 +188,9 @@ export class VerkleTree {
    * @param value - the value(s) to store
    * @returns A Promise that resolves once value(s) are stored.
    */
-  async put(stem: Uint8Array, suffixes: number[], values: Uint8Array[]): Promise<void> {
+  async put(stem: Uint8Array, suffixes: number[], values: Uint8Array[] = []): Promise<void> {
     if (stem.length !== 31) throw new Error(`expected stem with length 31, got ${stem.length}`)
-    if (values.length !== suffixes.length) {
+    if (values.length > 0 && values.length !== suffixes.length) {
       // Must have an equal number of values and suffixes
       throw new Error(`expected number of values; ${values.length} to equal ${suffixes.length}`)
     }
@@ -307,7 +307,7 @@ export class VerkleTree {
 
   async del(stem: Uint8Array, suffixes: number[]): Promise<void> {
     this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix(es): ${suffixes}`, ['DEL'])
-    await this.put(stem, suffixes, [createDeletedLeafValue()])
+    await this.put(stem, suffixes, new Array(suffixes.length).fill(createDeletedLeafValue()))
   }
   /**
    * Helper method for updating or creating the parent internal node for a given leaf node
