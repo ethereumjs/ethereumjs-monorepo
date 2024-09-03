@@ -10,6 +10,7 @@ import {
   toBytes,
 } from './bytes.js'
 
+import type { Account } from './account.js'
 import type { Address } from './address.js'
 import type { PrefixedHexString } from './types.js'
 
@@ -246,18 +247,15 @@ export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleL
   return { version, nonce, codeSize, balance }
 }
 
-export function encodeVerkleLeafBasicData(basicData: VerkleLeafBasicData): Uint8Array {
-  const encodedVersion = setLengthLeft(int32ToBytes(basicData.version), VERKLE_VERSION_BYTES_LENGTH)
+export function encodeVerkleLeafBasicData(account: Account): Uint8Array {
+  const encodedVersion = setLengthLeft(int32ToBytes(account.version), VERKLE_VERSION_BYTES_LENGTH)
   // Per EIP-6800, bytes 1-4 are reserved for future use
   const reservedBytes = new Uint8Array([0, 0, 0])
-  const encodedNonce = setLengthLeft(bigIntToBytes(basicData.nonce), VERKLE_NONCE_BYTES_LENGTH)
+  const encodedNonce = setLengthLeft(bigIntToBytes(account.nonce), VERKLE_NONCE_BYTES_LENGTH)
   const encodedCodeSize = setLengthLeft(
-    int32ToBytes(basicData.codeSize),
+    int32ToBytes(account.codeSize),
     VERKLE_CODE_SIZE_BYTES_LENGTH,
   )
-  const encodedBalance = setLengthLeft(
-    bigIntToBytes(basicData.balance),
-    VERKLE_BALANCE_BYTES_LENGTH,
-  )
+  const encodedBalance = setLengthLeft(bigIntToBytes(account.balance), VERKLE_BALANCE_BYTES_LENGTH)
   return concatBytes(encodedVersion, reservedBytes, encodedNonce, encodedCodeSize, encodedBalance)
 }

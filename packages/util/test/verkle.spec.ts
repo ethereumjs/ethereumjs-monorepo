@@ -9,7 +9,6 @@ import {
   VerkleLeafType,
   bytesToHex,
   concatBytes,
-  createAddressFromPrivateKey,
   createAddressFromString,
   decodeVerkleLeafBasicData,
   encodeVerkleLeafBasicData,

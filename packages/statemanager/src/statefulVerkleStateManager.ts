@@ -92,7 +92,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
     let account
     if (accountValues[0] !== undefined) {
-      console.log(accountValues)
       const basicData = decodeVerkleLeafBasicData(accountValues[0]!)
       account = createPartialAccount({
         version: basicData.version,
@@ -130,13 +129,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     if (this._caches?.account === undefined) {
       if (account !== undefined) {
         const stem = getVerkleStem(this.verkleCrypto, address, 0)
-        const basicDataBytes = encodeVerkleLeafBasicData({
-          version: account.version,
-          balance: account.balance,
-          nonce: account.nonce,
-          codeSize: account.codeSize,
-        })
-        console.log(basicDataBytes)
+        const basicDataBytes = encodeVerkleLeafBasicData(account)
         await this._trie.put(
           stem,
           [VerkleLeafType.BasicData, VerkleLeafType.CodeHash],
