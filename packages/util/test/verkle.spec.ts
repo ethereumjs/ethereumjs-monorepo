@@ -8,6 +8,7 @@ import {
   type VerkleExecutionWitness,
   VerkleLeafType,
   bytesToHex,
+  chunkifyCode,
   concatBytes,
   createAddressFromString,
   decodeVerkleLeafBasicData,
@@ -97,5 +98,32 @@ describe('should encode and decode basic data values', () => {
     )
     const decodedData = decodeVerkleLeafBasicData(basicDataBytes)
     assert.equal(decodedData.balance, 123n)
+  })
+})
+
+describe('should chunkify code, accounting for leading PUSHDATA bytes', () => {
+  it('should chunkify code with overflow PUSHDATA', () => {
+    const byteCode = hexToBytes(
+      '0x7faaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    ) // PUSH32 aa.....
+    const chunkifiedCode = chunkifyCode(byteCode)
+    assert.equal(chunkifiedCode.length, 2, 'bytecode of length 33 should be in 2 chunks')
+    assert.equal(
+      chunkifiedCode[1][0],
+      2,
+      'second chunk should have a 2 in first position (for 2 bytes of PUSHDATA overflow from previous chunk',
+    )
+  })
+  it('should chunkify code without overflow PUSHDATA', () => {
+    const byteCode = hexToBytes(
+      '0x70aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    ) // PUSH17 aa.....
+    const chunkifiedCode = chunkifyCode(byteCode)
+    assert.equal(chunkifiedCode.length, 2, 'bytecode of length 33 should be in 2 chunks')
+    assert.equal(
+      chunkifiedCode[1][0],
+      0,
+      'second chunk should have a 0 in first position (for 0 bytes of PUSHDATA overflow from previous chunk',
+    )
   })
 })

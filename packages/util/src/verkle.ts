@@ -210,8 +210,31 @@ export const chunkifyCode = (code: Uint8Array) => {
     const paddingLength = VERKLE_CODE_CHUNK_SIZE - (code.length % VERKLE_CODE_CHUNK_SIZE)
     code = setLengthRight(code, code.length + paddingLength)
   }
-
-  throw new Error('Not implemented')
+  // Put first chunk (leading byte is always 0 since we have no leading PUSHDATA bytes)
+  const chunks = [concatBytes(new Uint8Array(1), code.subarray(0, 31))]
+  for (let i = 1; i < Math.floor(code.length / 31); i++) {
+    const slice = code.slice((i - 1) * 31, i * 31)
+    let x = 31
+    while (x >= 0) {
+      // Look for last push instruction in code chunk
+      if (slice[x] > 0x5f && slice[x] < 0x80) break
+      x--
+    }
+    if (x >= 0 && slice[x] - 0x5f > 31 - x) {
+      // x >= 0 indicates PUSHn in this chunk
+      // n > 31 - x indicates that PUSHDATA spills over to next chunk
+      // PUSHDATA overflow = n - 31 - x (i.e. number of elements PUSHed - size of code chunk (31) - position of PUSHn in the previous code chunk + 1 (since x is zero-indexed))
+      const pushDataOverflow = slice[x] - 0x5f - 31 - x + 1
+      // Put next chunk prepended with number of overflow PUSHDATA bytes
+      chunks.push(
+        concatBytes(Uint8Array.from([pushDataOverflow]), code.slice(i * 31, (i + 1) * 31)),
+      )
+    } else {
+      // Put next chunk prepended with 0 (i.e. no overflow PUSHDATA bytes from previous chunk)
+      chunks.push(concatBytes(new Uint8Array(1), code.slice(i * 31, (i + 1) * 31)))
+    }
+  }
+  return chunks
 }
 
 export const getVerkleTreeKeyForStorageSlot = async (
