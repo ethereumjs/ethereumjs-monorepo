@@ -41,7 +41,7 @@ const getEncodings = (opts: EncodingOpts = {}) => {
  */
 export class LevelDB<
   TKey extends Uint8Array | string = Uint8Array | string,
-  TValue extends Uint8Array | string | DBObject = Uint8Array | string | DBObject
+  TValue extends Uint8Array | string | DBObject = Uint8Array | string | DBObject,
 > implements DB<TKey, TValue>
 {
   _leveldb: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
@@ -52,7 +52,7 @@ export class LevelDB<
    * @param leveldb - An abstract-leveldown compliant store
    */
   constructor(
-    leveldb?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+    leveldb?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>,
   ) {
     this._leveldb = leveldb ?? new MemoryLevel()
   }
@@ -75,7 +75,6 @@ export class LevelDB<
         throw error
       }
     }
-    // eslint-disable-next-line
     if (value instanceof Buffer) value = Uint8Array.from(value)
     return value as TValue
   }
@@ -99,7 +98,10 @@ export class LevelDB<
    * @inheritDoc
    */
   async batch(opStack: BatchDBOp<TKey, TValue>[]): Promise<void> {
-    const levelOps = []
+    const levelOps: {
+      keyEncoding: string
+      valueEncoding: string
+    }[] = []
     for (const op of opStack) {
       const encodings = getEncodings(op.opts)
       levelOps.push({ ...op, ...encodings })

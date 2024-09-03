@@ -52,7 +52,6 @@ import type { EVMBLSInterface, EVMBN254Interface } from '@ethereumjs/evm'
  * --profile                              If this flag is passed, the state/blockchain tests will profile
  */
 
-//@ts-expect-error Typescript thinks there isn't a default export on minimist but there is
 const argv = minimist.default(process.argv.slice(2))
 
 async function runTests() {
@@ -104,23 +103,23 @@ async function runTests() {
   }
 
   let bls: EVMBLSInterface
-  if (argv.bls !== undefined && argv.bls.toLowerCase() === 'noble') {
-    console.log('BLS library used: Noble (JavaScript)')
-    bls = new NobleBLS()
-  } else {
+  if (argv.bls !== undefined && argv.bls.toLowerCase() === 'mcl') {
     await mcl.init(mcl.BLS12_381)
     bls = new MCLBLS(mcl)
     console.log('BLS library used: MCL (WASM)')
+  } else {
+    console.log('BLS library used: Noble (JavaScript)')
+    bls = new NobleBLS()
   }
 
   let bn254: EVMBN254Interface
-  if (argv.bn254 !== undefined && argv.bn254.toLowerCase() === 'noble') {
-    console.log('BN254 (alt_BN128) library used: Noble (JavaScript)')
-    bn254 = new NobleBN254()
-  } else {
+  if (argv.bn254 !== undefined && argv.bn254.toLowerCase() === 'mcl') {
     const rustBN = await initRustBN()
     bn254 = new RustBN254(rustBN)
     console.log('BN254 (alt_BN128) library used: rustbn.js (WASM)')
+  } else {
+    console.log('BN254 (alt_BN128) library used: Noble (JavaScript)')
+    bn254 = new NobleBN254()
   }
 
   /**

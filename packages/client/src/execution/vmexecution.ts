@@ -203,7 +203,6 @@ export class VMExecution extends Execution {
     this.config.logger.info(`Setting up verkleVM`)
     const verkleCrypto = await loadVerkleCrypto()
     const stateManager = new StatelessVerkleStateManager({
-      initialStateRoot: this.config.initialVerkleStateRoot,
       verkleCrypto,
     })
     await mcl.init(mcl.BLS12_381)

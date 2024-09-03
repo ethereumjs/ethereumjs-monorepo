@@ -34,16 +34,16 @@ describe('SecureTrie', () => {
   it('copy trie (new key prefix / default 0 size cache)', async () => {
     const keyPrefix = hexToBytes('0x1234')
     const t = trie.shallowCopy(true, { keyPrefix })
-    assert.ok(equalsBytes(t['_opts']['keyPrefix'] as Uint8Array, keyPrefix))
-    assert.equal(t['_opts']['cacheSize'] as number, 0)
-    assert.equal(trie['_opts']['cacheSize'] as number, 0)
+    assert.ok(equalsBytes(t['_opts']['keyPrefix']!, keyPrefix))
+    assert.equal(t['_opts']['cacheSize'], 0)
+    assert.equal(trie['_opts']['cacheSize'], 0)
   })
 
   it('copy trie (new cache size)', async () => {
     const cacheSize = 1000
     const t = trie.shallowCopy(true, { cacheSize })
-    assert.equal(t['_opts']['cacheSize'] as number, cacheSize)
-    assert.equal(trie['_opts']['cacheSize'] as number, 0)
+    assert.equal(t['_opts']['cacheSize'], cacheSize)
+    assert.equal(trie['_opts']['cacheSize'], 0)
   })
 })
 
@@ -79,10 +79,7 @@ describe('secure tests', () => {
 
   it('empty values', async () => {
     for (const row of secureTrieTests.tests.emptyValues.in) {
-      const val =
-        row[1] !== undefined && row[1] !== null
-          ? utf8ToBytes(row[1])
-          : (null as unknown as Uint8Array)
+      const val = row[1] !== undefined && row[1] !== null ? utf8ToBytes(row[1]) : null
       await trie.put(utf8ToBytes(row[0]!), val)
     }
     assert.equal(bytesToHex(trie.root()), secureTrieTests.tests.emptyValues.root)
@@ -91,27 +88,22 @@ describe('secure tests', () => {
   it('branchingTests', async () => {
     trie = new Trie({ useKeyHashing: true, db: new MapDB() })
     for (const row of secureTrieTests.tests.branchingTests.in) {
-      const val =
-        row[1] !== undefined && row[1] !== null
-          ? utf8ToBytes(row[1])
-          : (null as unknown as Uint8Array)
+      const val = row[1] !== undefined && row[1] !== null ? utf8ToBytes(row[1]) : null
       await trie.put(utf8ToBytes(row[0]!), val)
     }
     assert.equal(bytesToHex(trie.root()), secureTrieTests.tests.branchingTests.root)
   })
 
-  /**
-  TODO: Fix this test
   it('jeff', async () => {
     for (const row of secureTrieTests.tests.jeff.in) {
-      let val = row[1]
+      let val: string | null | Uint8Array = row[1]
       if (val !== undefined && val !== null) {
-        val = hexToBytes(row[1].slice(2))
+        val = hexToBytes(`0x${row[1]!.slice(2)}`)
       }
-      await trie.put(hexToBytes(row[0].slice(2)), val)
+      await trie.put(hexToBytes(`0x${row[0]!.slice(2)}`), val)
     }
     assert.equal(bytesToHex(trie.root()), secureTrieTests.tests.jeff.root)
-  })*/
+  })
 
   it('put fails if the key is the ROOT_DB_KEY', async () => {
     const trie = new Trie({ useKeyHashing: true, db: new MapDB(), useRootPersistence: true })
