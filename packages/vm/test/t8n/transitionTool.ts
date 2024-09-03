@@ -21,6 +21,7 @@ import * as mcl from 'mcl-wasm'
 
 import { buildBlock } from '../../dist/esm/buildBlock.js'
 import { VM } from '../../dist/esm/vm.js'
+import { createVM } from '../../dist/esm/constructors.js'
 import { getCommon } from '../tester/config.js'
 import { makeBlockFromEnv, setupPreConditions } from '../util.js'
 
@@ -85,7 +86,7 @@ export class TransitionTool {
       bls,
     }
 
-    const vm = await VM.create({ common: t8nTool.common, blockchain, evmOpts })
+    const vm = await createVM({ common: t8nTool.common, blockchain, evmOpts })
 
     t8nTool.stateTracker = new StateTracker(vm, t8nTool.alloc)
 
