@@ -223,7 +223,9 @@ export const chunkifyCode = (code: Uint8Array) => {
     if (x >= 0 && slice[x] - 0x5f > 31 - x) {
       // x >= 0 indicates PUSHn in this chunk
       // n > 31 - x indicates that PUSHDATA spills over to next chunk
-      // PUSHDATA overflow = n - 31 - x (i.e. number of elements PUSHed - size of code chunk (31) - position of PUSHn in the previous code chunk + 1 (since x is zero-indexed))
+      // PUSHDATA overflow = n - 31 - x + 1(i.e. number of elements PUSHed
+      // - size of code chunk (31) - position of PUSHn in the previous
+      // code chunk + 1 (since x is zero-indexed))
       const pushDataOverflow = slice[x] - 0x5f - 31 - x + 1
       // Put next chunk prepended with number of overflow PUSHDATA bytes
       chunks.push(

@@ -1,17 +1,18 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import {
-  type Account,
+  Account,
   type Address,
   KECCAK256_NULL,
   MapDB,
   VerkleLeafType,
+  chunkifyCode,
   createAccountFromRLP,
   createPartialAccount,
   decodeVerkleLeafBasicData,
   encodeVerkleLeafBasicData,
   equalsBytes,
-  getVerkleKey,
   getVerkleStem,
+  getVerkleTreeKeyForCodeChunk,
   short,
 } from '@ethereumjs/util'
 import { VerkleTree } from '@ethereumjs/verkle'
@@ -174,11 +175,123 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   modifyAccountFields = async (address: Address, accountFields: AccountFields): Promise<void> => {
     await modifyAccountFields(this, address, accountFields)
   }
-  putCode(address: Address, value: Uint8Array): Promise<void> {
-    throw new Error('Method not implemented.')
+  putCode = async (address: Address, value: Uint8Array): Promise<void> => {
+    if (this.DEBUG) {
+      this._debug(`putCode address=${address.toString()} value=${short(value)}`)
+    }
+
+    this._caches?.code?.put(address, value)
+
+    const codeHash = keccak256(value)
+    if (KECCAK256_NULL === codeHash) {
+      // If the code hash is the null hash, no code has to be stored
+      return
+    }
+
+    if (this.DEBUG) {
+      this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
+    }
+
+    const codeChunks = chunkifyCode(value)
+    // The maximum number of chunks is 793 (maxCodeSize - 24576) / (bytes per chunk 31) + (round up - 1)
+    // Code is stored in chunks starting at leaf index 128 of the leaf node corresponding to the stem of the code's address
+    // Code chunks beyond the initial 128 are stored in additional leaf nodes in batches up of up to 256 chunks per leaf node
+    // so the maximum number of leaf nodes that can hold contract code for a specific address is 4 leaf nodes (128 chunks in
+    // the first leaf node and 256 chunks in up to 3 additional leaf nodes)
+    // So, instead of computing every single leaf key (which is a heavy async operation), we just compute the stem for the first
+    // chunk in each leaf node and can then know that the chunks in between have tree keys in monotonically increasing order
+    const numStems = Math.floor(codeChunks.length / 256) + 1
+    const chunkStems = [
+      // Compute the stem for the initial set of code chunks
+      (await getVerkleTreeKeyForCodeChunk(address, 0, this.verkleCrypto)).slice(0, 31),
+    ]
+
+    for (let stemNum = 0; stemNum < numStems - 1; stemNum++) {
+      // Generate additional stems
+      const firstChunkKey = await getVerkleTreeKeyForCodeChunk(
+        address,
+        128 + stemNum * 256,
+        this.verkleCrypto,
+      )
+      chunkStems.push(firstChunkKey.slice(0, 31))
+    }
+
+    // Generate code chunk suffixes
+    const chunkSuffixes: number[] = new Array(codeChunks.length)
+    for (let x = 0; x < codeChunks.length; x++) {
+      if (x < 128) {
+        // Suffixes for chunks 0 - 127 start at 128 and end with 255
+        chunkSuffixes[x] = x + 128
+        continue
+      }
+      if (x < 384) {
+        // Suffixes for chunks 128 - 383 start at 0 and go to 255
+        chunkSuffixes[x] = x - 128
+        continue
+      }
+      if (x < 640) {
+        // Suffixes for chunks 384 - 639 start at 0 and go to 255
+        chunkSuffixes[x] = x - 384
+        continue
+      }
+      if (x > 639) {
+        // Suffixes for chunks 640 - 793 start at 0 and go to 153
+        chunkSuffixes[x] = x - 640
+        continue
+      }
+    }
+    // Put the code chunks corresponding to the first stem (up to 128 chunks)
+    await this._trie.put(
+      chunkStems[0],
+      chunkSuffixes.slice(0, codeChunks.length <= 128 ? codeChunks.length : 128),
+      codeChunks.slice(0, codeChunks.length <= 128 ? codeChunks.length : 128),
+    )
+    // Put additional chunks under additional stems as applicable
+    for (let stem = 1; stem < numStems; stem++) {
+      await this._trie.put(
+        chunkStems[stem],
+        chunkSuffixes.slice(
+          128 + (256 * stem - 1),
+          codeChunks.length <= 128 + 256 * stem ? codeChunks.length : 128 + 256 * stem,
+        ),
+        codeChunks.slice(
+          128 + (256 * stem - 1),
+          codeChunks.length <= 128 + 256 * stem ? codeChunks.length : 128 + 256 * stem,
+        ),
+      )
+    }
+    if ((await this.getAccount(address)) === undefined) {
+      await this.putAccount(address, new Account())
+    }
+    await this.modifyAccountFields(address, { codeHash, codeSize: value.length })
   }
-  getCode(address: Address): Promise<Uint8Array> {
-    throw new Error('Method not implemented.')
+
+  getCode = async (address: Address): Promise<Uint8Array> => {
+    if (this.DEBUG) {
+      this._debug(`getCode address=${address.toString()}`)
+    }
+
+    const elem = this._caches?.code?.get(address)
+    if (elem !== undefined) {
+      return elem.code ?? new Uint8Array(0)
+    }
+
+    const account = await this.getAccount(address)
+    if (!account) {
+      return new Uint8Array(0)
+    }
+    if (!account.isContract()) {
+      return new Uint8Array(0)
+    }
+
+    // allocate the code
+    const codeSize = account.codeSize
+
+    // TODO: Get code from trie
+    const code = new Uint8Array(codeSize)
+    this._caches?.code?.put(address, code)
+
+    return code
   }
   getCodeSize(address: Address): Promise<number> {
     throw new Error('Method not implemented.')
