@@ -383,21 +383,21 @@ export class Blockchain implements BlockchainInterface {
 
         // check if head is still canonical i.e. if this is a block insertion on tail or reinsertion
         // on the same canonical chain
-        let isHeadChainStillCanonical
-        if (opts?.canonical !== false) {
-          const childHeaderHash = await this.dbManager.numberToHash(blockNumber + BIGINT_1)
-          if (childHeaderHash !== undefined) {
-            const childHeader = await this.dbManager
-              .getHeaderSafe(childHeaderHash, blockNumber + BIGINT_1)
-              .catch((_e) => undefined)
-            isHeadChainStillCanonical =
-              childHeader !== undefined && equalsBytes(childHeader.parentHash, blockHash)
-          } else {
-            isHeadChainStillCanonical = false
-          }
-        } else {
-          isHeadChainStillCanonical = true
-        }
+        // let isHeadChainStillCanonical
+        // if (opts?.canonical !== false) {
+        //   const childHeaderHash = await this.dbManager.numberToHash(blockNumber + BIGINT_1)
+        //   if (childHeaderHash !== undefined) {
+        //     const childHeader = await this.dbManager
+        //       .getHeaderSafe(childHeaderHash, blockNumber + BIGINT_1)
+        //       .catch((_e) => undefined)
+        //     isHeadChainStillCanonical =
+        //       childHeader !== undefined && equalsBytes(childHeader.parentHash, blockHash)
+        //   } else {
+        //     isHeadChainStillCanonical = false
+        //   }
+        // } else {
+        //   isHeadChainStillCanonical = true
+        // }
 
         let dbOps: DBOp[] = []
         dbOps = dbOps.concat(DBSetBlockOrHeader(item))
@@ -421,7 +421,7 @@ export class Blockchain implements BlockchainInterface {
         // 2. if canonical is explicit true then apply that even for the pow/poa blocks
         //    if they are optimistic, i.e. can't apply the normal rule
         // 3. if canonical is not defined, then apply normal rules
-        if (opts?.canonical === false) {
+        if (opts?.canonical === false || (opts?.canonical === undefined && !isComplete)) {
           if (parentTd !== undefined) {
             const td = header.difficulty + parentTd
             dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
@@ -1241,7 +1241,9 @@ export class Blockchain implements BlockchainInterface {
         staleHeadBlock = true
       }
 
-      const parentHeader = await this.dbManager.getHeaderSafe(header.parentHash, --currentNumber)
+      const parentHeader = await this.dbManager
+        .getHeader(header.parentHash, --currentNumber)
+        .catch((_e) => undefined)
       if (parentHeader === undefined) {
         staleHeads = []
         break

@@ -180,6 +180,9 @@ export class DBManager {
    */
   async getTotalDifficulty(blockHash: Uint8Array, blockNumber: bigint): Promise<bigint> {
     const td = await this.get(DBTarget.TotalDifficulty, { blockHash, blockNumber })
+    if (td === undefined) {
+      throw Error(`totalDifficulty not found`)
+    }
     return bytesToBigInt(RLP.decode(td) as Uint8Array)
   }
 
