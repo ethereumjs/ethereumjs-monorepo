@@ -3,12 +3,16 @@ import { assert, beforeAll, describe, it } from 'vitest'
 
 import * as verkleBlockJSON from '../../statemanager/test/testdata/verkleKaustinen6Block72.json'
 import {
+  Account,
   type VerkleCrypto,
   type VerkleExecutionWitness,
   VerkleLeafType,
   bytesToHex,
   concatBytes,
+  createAddressFromPrivateKey,
   createAddressFromString,
+  decodeVerkleLeafBasicData,
+  encodeVerkleLeafBasicData,
   getVerkleKey,
   getVerkleStem,
   hexToBytes,
@@ -79,5 +83,20 @@ describe('should generate valid tree keys', () => {
       assert.equal(key.length, 32)
       assert.deepEqual(key, concatBytes(stem, intToBytes(leaf)))
     }
+  })
+})
+
+describe('should encode and decode basic data values', () => {
+  const account = new Account(2n, 123n)
+  it('should encode basicData to 32 bytes', () => {
+    const basicDataBytes = encodeVerkleLeafBasicData(account)
+    assert.equal(basicDataBytes.length, 32)
+    assert.equal(
+      basicDataBytes.slice(4, 12)[7],
+      2,
+      'confirm that last byte of nonce slice is equal to nonce (i.e. coded as bigEndian',
+    )
+    const decodedData = decodeVerkleLeafBasicData(basicDataBytes)
+    assert.equal(decodedData.balance, 123n)
   })
 })

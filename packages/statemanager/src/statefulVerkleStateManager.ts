@@ -4,18 +4,14 @@ import {
   type Address,
   MapDB,
   VerkleLeafType,
-  bigIntToBytes,
-  bytesToBigInt,
-  bytesToInt32,
   createAccountFromRLP,
   createPartialAccount,
   decodeVerkleLeafBasicData,
   encodeVerkleLeafBasicData,
   getVerkleStem,
-  setLengthRight,
   short,
 } from '@ethereumjs/util'
-import { VerkleTree, createUntouchedLeafValue } from '@ethereumjs/verkle'
+import { VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -96,6 +92,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
     let account
     if (accountValues[0] !== undefined) {
+      console.log(accountValues)
       const basicData = decodeVerkleLeafBasicData(accountValues[0]!)
       account = createPartialAccount({
         version: basicData.version,
@@ -139,6 +136,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
           nonce: account.nonce,
           codeSize: account.codeSize,
         })
+        console.log(basicDataBytes)
         await this._trie.put(
           stem,
           [VerkleLeafType.BasicData, VerkleLeafType.CodeHash],
