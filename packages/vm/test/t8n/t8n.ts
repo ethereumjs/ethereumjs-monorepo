@@ -24,6 +24,7 @@ import { join } from 'path'
 import { MCLBLS } from '../../../evm/dist/cjs/index.js'
 import { buildBlock } from '../../dist/esm/buildBlock.js'
 import { VM } from '../../dist/esm/vm.js'
+import { createVM } from '../../dist/esm/constructors.js'
 import { getCommon } from '../tester/config.js'
 import { makeBlockFromEnv, setupPreConditions } from '../util.js'
 
@@ -98,7 +99,7 @@ const evmOpts = {
   bls,
 }
 
-const vm = await VM.create({ common, blockchain, evmOpts })
+const vm = await createVM({ common, blockchain, evmOpts })
 
 await setupPreConditions(vm.stateManager, { pre: alloc })
 
