@@ -171,7 +171,7 @@ export const getVerkleKey = (stem: Uint8Array, leaf: VerkleLeafType | Uint8Array
   }
 }
 
-export function getVerkleTreeIndexesForStorageSlot(storageKey: bigint): {
+export function getVerkleTreeIndicesForStorageSlot(storageKey: bigint): {
   treeIndex: bigint
   subIndex: number
 } {
@@ -218,7 +218,7 @@ export const getVerkleTreeKeyForStorageSlot = async (
   storageKey: bigint,
   verkleCrypto: VerkleCrypto,
 ) => {
-  const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(storageKey)
+  const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(storageKey)
 
   return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
 }
