@@ -245,14 +245,44 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     // allocate the code
     const codeSize = account.codeSize
 
-    // TODO: Get code from trie
+    const stems = await generateCodeStems(codeSize, address, this.verkleCrypto)
+    const chunkSuffixes = generateChunkSuffixes(codeSize)
+
+    // Retrieve the code chunks stored in the first leaf node
+    const chunks = await this._trie.get(
+      stems[0],
+      chunkSuffixes.slice(0, codeSize <= 128 ? codeSize : 128),
+    )
+
+    // Retrieve code chunks on any additional stems
+    for (let stem = 1; stem < stems.length; stem++) {
+      chunks.concat(
+        await this._trie.get(
+          stems[stem],
+          chunkSuffixes.slice(
+            128 + (256 * stem - 1),
+            codeSize <= 128 + 256 * stem ? codeSize : 128 + 256 * stem,
+          ),
+        ),
+      )
+    }
     const code = new Uint8Array(codeSize)
+    // Insert code chunks into final array (skipping PUSHDATA overflow indicator byte)
+    for (let x = 0; x < chunks.length; x++) {
+      if (chunks[x] === undefined) throw new Error(`expected code chunk at ID ${x}, got undefined`)
+      code.set(chunks[x]!.slice(1), x * 31)
+    }
     this._caches?.code?.put(address, code)
 
     return code
   }
-  getCodeSize(address: Address): Promise<number> {
-    throw new Error('Method not implemented.')
+
+  getCodeSize = async (address: Address): Promise<number> => {
+    const accountBytes = (
+      await this._trie.get(getVerkleStem(this.verkleCrypto, address), [VerkleLeafType.BasicData])
+    )[0]
+    if (accountBytes === undefined) return 0
+    return decodeVerkleLeafBasicData(accountBytes).codeSize
   }
   getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     throw new Error('Method not implemented.')
