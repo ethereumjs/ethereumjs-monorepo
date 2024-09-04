@@ -4,6 +4,8 @@ import {
   type Address,
   KECCAK256_NULL,
   MapDB,
+  VERKLE_CODE_OFFSET,
+  VERKLE_NODE_WIDTH,
   VerkleLeafType,
   chunkifyCode,
   createAccountFromRLP,
@@ -204,20 +206,30 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     // Put the code chunks corresponding to the first stem (up to 128 chunks)
     await this._trie.put(
       chunkStems[0],
-      chunkSuffixes.slice(0, codeChunks.length <= 128 ? codeChunks.length : 128),
-      codeChunks.slice(0, codeChunks.length <= 128 ? codeChunks.length : 128),
+      chunkSuffixes.slice(
+        0,
+        codeChunks.length <= VERKLE_CODE_OFFSET ? codeChunks.length : VERKLE_CODE_OFFSET,
+      ),
+      codeChunks.slice(
+        0,
+        codeChunks.length <= VERKLE_CODE_OFFSET ? codeChunks.length : VERKLE_CODE_OFFSET,
+      ),
     )
     // Put additional chunks under additional stems as applicable
     for (let stem = 1; stem < chunkStems.length; stem++) {
       await this._trie.put(
         chunkStems[stem],
         chunkSuffixes.slice(
-          128 + (256 * stem - 1),
-          codeChunks.length <= 128 + 256 * stem ? codeChunks.length : 128 + 256 * stem,
+          VERKLE_CODE_OFFSET + (VERKLE_NODE_WIDTH * stem - 1),
+          codeChunks.length <= VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem
+            ? codeChunks.length
+            : VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem,
         ),
         codeChunks.slice(
-          128 + (256 * stem - 1),
-          codeChunks.length <= 128 + 256 * stem ? codeChunks.length : 128 + 256 * stem,
+          VERKLE_CODE_OFFSET + (VERKLE_NODE_WIDTH * stem - 1),
+          codeChunks.length <= VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem
+            ? codeChunks.length
+            : VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem,
         ),
       )
     }
@@ -251,7 +263,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     // Retrieve the code chunks stored in the first leaf node
     const chunks = await this._trie.get(
       stems[0],
-      chunkSuffixes.slice(0, codeSize <= 128 ? codeSize : 128),
+      chunkSuffixes.slice(0, codeSize <= VERKLE_CODE_OFFSET ? codeSize : VERKLE_CODE_OFFSET),
     )
 
     // Retrieve code chunks on any additional stems
@@ -260,8 +272,10 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         await this._trie.get(
           stems[stem],
           chunkSuffixes.slice(
-            128 + (256 * stem - 1),
-            codeSize <= 128 + 256 * stem ? codeSize : 128 + 256 * stem,
+            VERKLE_CODE_OFFSET + (VERKLE_NODE_WIDTH * stem - 1),
+            codeSize <= VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem
+              ? codeSize
+              : VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem,
           ),
         ),
       )

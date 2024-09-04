@@ -288,24 +288,24 @@ export function encodeVerkleLeafBasicData(account: Account): Uint8Array {
 export const generateChunkSuffixes = (numChunks: number) => {
   const chunkSuffixes: number[] = new Array(numChunks)
   for (let x = 0; x < numChunks; x++) {
-    if (x < 128) {
+    if (x < VERKLE_CODE_OFFSET) {
       // Suffixes for chunks 0 - 127 start at 128 and end with 255
-      chunkSuffixes[x] = x + 128
+      chunkSuffixes[x] = x + VERKLE_CODE_OFFSET
       continue
     }
     if (x < 384) {
       // Suffixes for chunks 128 - 383 start at 0 and go to 255
-      chunkSuffixes[x] = x - 128
+      chunkSuffixes[x] = x - VERKLE_CODE_OFFSET
       continue
     }
     if (x < 640) {
       // Suffixes for chunks 384 - 639 start at 0 and go to 255
-      chunkSuffixes[x] = x - 384
+      chunkSuffixes[x] = x - VERKLE_CODE_OFFSET - VERKLE_NODE_WIDTH
       continue
     }
     if (x > 639) {
       // Suffixes for chunks 640 - 793 start at 0 and go to 153
-      chunkSuffixes[x] = x - 640
+      chunkSuffixes[x] = x - VERKLE_CODE_OFFSET - 2 * VERKLE_NODE_WIDTH
       continue
     }
   }
@@ -324,7 +324,7 @@ export const generateCodeStems = async (
   // the first leaf node and 256 chunks in up to 3 additional leaf nodes)
   // So, instead of computing every single leaf key (which is a heavy async operation), we just compute the stem for the first
   // chunk in each leaf node and can then know that the chunks in between have tree keys in monotonically increasing order
-  const numStems = Math.floor(numChunks / 256) + 1
+  const numStems = Math.floor(numChunks / VERKLE_NODE_WIDTH) + 1
   const chunkStems = new Array(numStems)
   // Compute the stem for the initial set of code chunks
   chunkStems[0] = (await getVerkleTreeKeyForCodeChunk(address, 0, verkleCrypto)).slice(0, 31)
@@ -333,7 +333,7 @@ export const generateCodeStems = async (
     // Generate additional stems
     const firstChunkKey = await getVerkleTreeKeyForCodeChunk(
       address,
-      128 + stemNum * 256,
+      VERKLE_CODE_OFFSET + stemNum * VERKLE_NODE_WIDTH,
       verkleCrypto,
     )
     chunkStems[stemNum] = firstChunkKey.slice(0, 31)
