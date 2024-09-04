@@ -25,13 +25,13 @@ describe('Verkle Tree API tests', () => {
     const deletedAccount = await sm.getAccount(address)
     assert.ok(deletedAccount?.isEmpty())
   })
-  it.only('should put and get code', async () => {
+  it('should put and get code', async () => {
     const trie = await createVerkleTree()
     const sm = new StatefulVerkleStateManager({ trie, verkleCrypto })
     const address = createAddressFromPrivateKey(randomBytes(32))
     const code = hexToBytes('0x6001') // PUSH 01
     await sm.putCode(address, code)
     const retrievedCode = await sm.getCode(address)
-    console.log(retrievedCode)
+    assert.deepEqual(code, retrievedCode)
   })
 })

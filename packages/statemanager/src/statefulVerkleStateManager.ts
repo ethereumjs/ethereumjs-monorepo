@@ -4,6 +4,7 @@ import {
   type Address,
   KECCAK256_NULL,
   MapDB,
+  VERKLE_CODE_CHUNK_SIZE,
   VERKLE_CODE_OFFSET,
   VERKLE_NODE_WIDTH,
   VerkleLeafType,
@@ -16,7 +17,6 @@ import {
   generateChunkSuffixes,
   generateCodeStems,
   getVerkleStem,
-  getVerkleTreeKeyForCodeChunk,
   short,
 } from '@ethereumjs/util'
 import { VerkleTree } from '@ethereumjs/verkle'
@@ -112,7 +112,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
               ? KECCAK256_NULL // codeHash is deleted in trie (i.e. overwritten with zeroes)
               : accountValues[1],
         codeSize: basicData.codeSize,
-        storageRoot: null, // TODO: Add storage stuff
+        storageRoot: KECCAK256_NULL, // TODO: Add storage stuff
       })
     }
     // check if the account didn't exist if any of the basic keys are undefined
@@ -187,7 +187,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._caches?.code?.put(address, value)
 
     const codeHash = keccak256(value)
-    if (KECCAK256_NULL === codeHash) {
+    if (equalsBytes(codeHash, KECCAK256_NULL)) {
       // If the code hash is the null hash, no code has to be stored
       return
     }
@@ -258,7 +258,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     const codeSize = account.codeSize
 
     const stems = await generateCodeStems(codeSize, address, this.verkleCrypto)
-    const chunkSuffixes = generateChunkSuffixes(codeSize)
+    const chunkSuffixes = generateChunkSuffixes(Math.ceil(codeSize / VERKLE_CODE_CHUNK_SIZE))
 
     // Retrieve the code chunks stored in the first leaf node
     const chunks = await this._trie.get(
@@ -284,7 +284,14 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     // Insert code chunks into final array (skipping PUSHDATA overflow indicator byte)
     for (let x = 0; x < chunks.length; x++) {
       if (chunks[x] === undefined) throw new Error(`expected code chunk at ID ${x}, got undefined`)
-      code.set(chunks[x]!.slice(1), x * 31)
+
+      // Determine code ending byte (if we're on the last chunk)
+      let sliceEnd = 32
+      if (x === chunks.length - 1) {
+        sliceEnd = (codeSize % VERKLE_CODE_CHUNK_SIZE) + 1
+      }
+
+      code.set(chunks[x]!.slice(1, sliceEnd), code.byteOffset + x * VERKLE_CODE_CHUNK_SIZE)
     }
     this._caches?.code?.put(address, code)
 
