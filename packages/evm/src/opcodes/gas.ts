@@ -9,7 +9,7 @@ import {
   VERKLE_BASIC_DATA_LEAF_KEY,
   VERKLE_CODE_HASH_LEAF_KEY,
   bigIntToBytes,
-  getVerkleTreeIndexesForStorageSlot,
+  getVerkleTreeIndicesForStorageSlot,
   setLengthLeft,
 } from '@ethereumjs/util'
 
@@ -313,7 +313,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         let charge2929Gas = true
         if (common.isActivatedEIP(6800)) {
           const address = runState.interpreter.getAddress()
-          const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(key)
+          const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(key)
           const coldAccessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             treeIndex,
@@ -381,7 +381,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         let charge2929Gas = true
         if (common.isActivatedEIP(6800)) {
           const contract = runState.interpreter.getAddress()
-          const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(key)
+          const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(key)
           const coldAccessGas = runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
             contract,
             treeIndex,
