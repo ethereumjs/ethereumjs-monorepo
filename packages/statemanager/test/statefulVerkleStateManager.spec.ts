@@ -1,12 +1,19 @@
-import { createAccount, createAddressFromString, matchingBytesLength } from '@ethereumjs/util'
+import {
+  Account,
+  bigIntToBytes,
+  createAccount,
+  createAddressFromString,
+  hexToBytes,
+  matchingBytesLength,
+  setLengthLeft,
+} from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { StatefulVerkleStateManager } from '../src/statefulVerkleStateManager.js'
 
-import type { VerkleCrypto } from '@ethereumjs/util'
+import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
 describe('Verkle Tree API tests', () => {
   let verkleCrypto: VerkleCrypto
@@ -40,7 +47,7 @@ describe('Verkle Tree API tests', () => {
     const retrievedBigByteCode = await sm.getCode(address)
     assert.deepEqual(bigByteCode, retrievedBigByteCode)
     const reallyBigByteCode = hexToBytes(
-      (await import('./testdata/biggestContractEver.json')).default.bytecode,
+      (await import('./testdata/biggestContractEver.json')).default.bytecode as PrefixedHexString,
     )
     // Biggest mainnet contract - 0x10C621008B210C3A5d0385e458B48af05BF4Ec88 (supposedly anyway)
     await sm.putCode(address, reallyBigByteCode)
@@ -50,5 +57,14 @@ describe('Verkle Tree API tests', () => {
       matchingBytesLength(retrievedReallyBigByteCode, reallyBigByteCode),
       reallyBigByteCode.length,
     )
+  })
+  it('should put and get storage', async () => {
+    const trie = await createVerkleTree()
+    const sm = new StatefulVerkleStateManager({ trie, verkleCrypto })
+    const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
+    await sm.putAccount(address, new Account(0n, 1n))
+    await sm.putStorage(address, setLengthLeft(bigIntToBytes(0n), 32), hexToBytes('0x1'))
+    const retrievedValue = await sm.getStorage(address, setLengthLeft(bigIntToBytes(0n), 32))
+    assert.deepEqual(retrievedValue, hexToBytes('0x1'))
   })
 })

@@ -1,4 +1,5 @@
 import { Common, Mainnet } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
   type Address,
@@ -8,6 +9,7 @@ import {
   VERKLE_CODE_OFFSET,
   VERKLE_NODE_WIDTH,
   VerkleLeafType,
+  bytesToBigInt,
   chunkifyCode,
   createAccountFromRLP,
   createPartialAccount,
@@ -17,7 +19,10 @@ import {
   generateChunkSuffixes,
   generateCodeStems,
   getVerkleStem,
+  getVerkleTreeKeyForStorageSlot,
+  hexToBytes,
   short,
+  unpadBytes,
 } from '@ethereumjs/util'
 import { VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
@@ -305,15 +310,55 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     if (accountBytes === undefined) return 0
     return decodeVerkleLeafBasicData(accountBytes).codeSize
   }
-  getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
-    throw new Error('Method not implemented.')
+  getStorage = async (address: Address, key: Uint8Array): Promise<Uint8Array> => {
+    if (key.length !== 32) {
+      throw new Error('Storage key must be 32 bytes long')
+    }
+    const cachedValue = this._caches?.storage?.get(address, key)
+    if (cachedValue !== undefined) {
+      const decoded = RLP.decode(cachedValue ?? new Uint8Array(0)) as Uint8Array
+      return decoded
+    }
+
+    const account = await this.getAccount(address)
+    if (!account) {
+      return new Uint8Array()
+    }
+    const storageKey = await getVerkleTreeKeyForStorageSlot(
+      address,
+      bytesToBigInt(key, true),
+      this.verkleCrypto,
+    )
+    const value = await this._trie.get(storageKey.slice(0, 31), [storageKey[31]])
+
+    this._caches?.storage?.put(address, key, value[0] ?? hexToBytes('0x80'))
+    const decoded = RLP.decode(value[0] ?? new Uint8Array(0)) as Uint8Array
+    return decoded
   }
-  putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
-    throw new Error('Method not implemented.')
+
+  putStorage = async (address: Address, key: Uint8Array, value: Uint8Array): Promise<void> => {
+    value = unpadBytes(value)
+    this._caches?.storage?.put(address, key, RLP.encode(value))
+    if (this._caches?.storage === undefined) {
+      const storageKey = await getVerkleTreeKeyForStorageSlot(
+        address,
+        bytesToBigInt(key, true),
+        this.verkleCrypto,
+      )
+      await this._trie.put(storageKey.slice(0, 31), [storageKey[31]], [RLP.encode(value)])
+    }
   }
-  clearStorage(address: Address): Promise<void> {
-    throw new Error('Method not implemented.')
+
+  clearStorage = async (address: Address): Promise<void> => {
+    // TODO: Determine if it's possible to clear the actual slots in the trie
+    // since the EIP doesn't seem to state how to handle this
+    // The main concern I have is that we have no way of identifying all storage slots
+    // for a given account so we can't correctly update the trie's root hash
+    // (since presumably "clearStorage" would imply writing over all of the storage slots with zeros)
+    // Also, do we still need a storageRoot? - presumably not since we don't have separate storage tries
+    this._caches?.storage?.clearStorage(address)
   }
+
   checkpoint = async (): Promise<void> => {
     this._trie.checkpoint()
     this._caches?.checkpoint()
