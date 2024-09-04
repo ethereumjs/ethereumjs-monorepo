@@ -159,7 +159,6 @@ export const VERKLE_MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(VERKLE_CODE_CHUN
  * @param subIndex The sub index of the tree to generate the key for as a Uint8Array.
  * @return The tree key as a Uint8Array.
  */
-
 export const getVerkleKey = (stem: Uint8Array, leaf: VerkleLeafType | Uint8Array) => {
   switch (leaf) {
     case VerkleLeafType.BasicData:
