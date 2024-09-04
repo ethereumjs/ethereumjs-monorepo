@@ -324,7 +324,7 @@ export const generateCodeStems = async (
   // the first leaf node and 256 chunks in up to 3 additional leaf nodes)
   // So, instead of computing every single leaf key (which is a heavy async operation), we just compute the stem for the first
   // chunk in each leaf node and can then know that the chunks in between have tree keys in monotonically increasing order
-  const numStems = Math.floor(numChunks / VERKLE_NODE_WIDTH) + 1
+  const numStems = Math.ceil(numChunks / VERKLE_NODE_WIDTH)
   const chunkStems = new Array(numStems)
   // Compute the stem for the initial set of code chunks
   chunkStems[0] = (await getVerkleTreeKeyForCodeChunk(address, 0, verkleCrypto)).slice(0, 31)
@@ -336,7 +336,7 @@ export const generateCodeStems = async (
       VERKLE_CODE_OFFSET + stemNum * VERKLE_NODE_WIDTH,
       verkleCrypto,
     )
-    chunkStems[stemNum] = firstChunkKey.slice(0, 31)
+    chunkStems[stemNum + 1] = firstChunkKey.slice(0, 31)
   }
   return chunkStems
 }

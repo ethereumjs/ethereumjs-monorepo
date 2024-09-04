@@ -215,22 +215,18 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         codeChunks.length <= VERKLE_CODE_OFFSET ? codeChunks.length : VERKLE_CODE_OFFSET,
       ),
     )
+
     // Put additional chunks under additional stems as applicable
     for (let stem = 1; stem < chunkStems.length; stem++) {
+      const sliceStart = VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * (stem - 1)
+      const sliceEnd =
+        value.length <= VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem
+          ? value.length
+          : VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem
       await this._trie.put(
         chunkStems[stem],
-        chunkSuffixes.slice(
-          VERKLE_CODE_OFFSET + (VERKLE_NODE_WIDTH * stem - 1),
-          codeChunks.length <= VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem
-            ? codeChunks.length
-            : VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem,
-        ),
-        codeChunks.slice(
-          VERKLE_CODE_OFFSET + (VERKLE_NODE_WIDTH * stem - 1),
-          codeChunks.length <= VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem
-            ? codeChunks.length
-            : VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem,
-        ),
+        chunkSuffixes.slice(sliceStart, sliceEnd),
+        codeChunks.slice(sliceStart, sliceEnd),
       )
     }
     await this.modifyAccountFields(address, { codeHash, codeSize: value.length })
@@ -257,29 +253,33 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     // allocate the code
     const codeSize = account.codeSize
 
-    const stems = await generateCodeStems(codeSize, address, this.verkleCrypto)
+    const stems = await generateCodeStems(
+      Math.ceil(codeSize / VERKLE_CODE_CHUNK_SIZE),
+      address,
+      this.verkleCrypto,
+    )
     const chunkSuffixes = generateChunkSuffixes(Math.ceil(codeSize / VERKLE_CODE_CHUNK_SIZE))
 
+    const chunksByStem = new Array(stems.length)
     // Retrieve the code chunks stored in the first leaf node
-    const chunks = await this._trie.get(
+    chunksByStem[0] = await this._trie.get(
       stems[0],
       chunkSuffixes.slice(0, codeSize <= VERKLE_CODE_OFFSET ? codeSize : VERKLE_CODE_OFFSET),
     )
 
     // Retrieve code chunks on any additional stems
     for (let stem = 1; stem < stems.length; stem++) {
-      chunks.concat(
-        await this._trie.get(
-          stems[stem],
-          chunkSuffixes.slice(
-            VERKLE_CODE_OFFSET + (VERKLE_NODE_WIDTH * stem - 1),
-            codeSize <= VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem
-              ? codeSize
-              : VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem,
-          ),
-        ),
+      const sliceStart = VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * (stem - 1)
+      const sliceEnd =
+        codeSize <= VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem
+          ? codeSize
+          : VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem
+      chunksByStem[stem] = await this._trie.get(
+        stems[stem],
+        chunkSuffixes.slice(sliceStart, sliceEnd),
       )
     }
+    const chunks = chunksByStem.flat()
     const code = new Uint8Array(codeSize)
     // Insert code chunks into final array (skipping PUSHDATA overflow indicator byte)
     for (let x = 0; x < chunks.length; x++) {
