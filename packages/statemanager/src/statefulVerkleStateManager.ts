@@ -190,6 +190,9 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       return
     }
 
+    if ((await this.getAccount(address)) === undefined) {
+      await this.putAccount(address, new Account())
+    }
     if (this.DEBUG) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
@@ -217,9 +220,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
           codeChunks.length <= 128 + 256 * stem ? codeChunks.length : 128 + 256 * stem,
         ),
       )
-    }
-    if ((await this.getAccount(address)) === undefined) {
-      await this.putAccount(address, new Account())
     }
     await this.modifyAccountFields(address, { codeHash, codeSize: value.length })
   }
