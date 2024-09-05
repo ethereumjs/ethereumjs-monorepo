@@ -461,4 +461,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   shallowCopy(_downlevelCaches?: boolean): StateManagerInterface {
     throw new Error('Method not implemented.')
   }
+  async checkChunkWitnessPresent(_address: Address, _codeOffset: number): Promise<boolean> {
+    throw new Error('Method not implemented.')
+  }
 }
