@@ -215,7 +215,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
   })
 })
 
-describe('VM -> setHardfork, state (deprecated), blockchain', () => {
+describe('VM -> setHardfork, blockchain', () => {
   it('setHardfork', async () => {
     const common = createCustomCommon(testnetMerge.default as ChainConfig, Mainnet, {
       hardfork: Hardfork.Istanbul,
