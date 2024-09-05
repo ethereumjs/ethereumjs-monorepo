@@ -12,6 +12,7 @@ import {
   bytesToBigInt,
   chunkifyCode,
   createAccountFromRLP,
+  createAddressFromString,
   createPartialAccount,
   decodeVerkleLeafBasicData,
   encodeVerkleLeafBasicData,
@@ -23,6 +24,7 @@ import {
   hexToBytes,
   short,
   unpadBytes,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
@@ -364,12 +366,72 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._caches?.checkpoint()
     this._checkpointCount++
   }
-  commit(): Promise<void> {
-    throw new Error('Method not implemented.')
+  commit = async (): Promise<void> => {
+    await this._trie.commit()
+    this._caches?.commit()
+    this._checkpointCount--
+
+    if (this._checkpointCount === 0) {
+      await this.flush()
+      this.originalStorageCache.clear()
+    }
+
+    if (this.DEBUG) {
+      this._debug(`state checkpoint committed`)
+    }
   }
-  revert(): Promise<void> {
-    throw new Error('Method not implemented.')
+  revert = async (): Promise<void> => {
+    await this._trie.revert()
+    this._caches?.revert()
+
+    this._checkpointCount--
+
+    if (this._checkpointCount === 0) {
+      await this.flush()
+      this.originalStorageCache.clear()
+    }
   }
+
+  flush = async (): Promise<void> => {
+    const codeItems = this._caches?.code?.flush() ?? []
+    for (const item of codeItems) {
+      const addr = createAddressFromString(`0x${item[0]}`)
+
+      const code = item[1].code
+      if (code === undefined) {
+        continue
+      }
+
+      await this.putCode(addr, code)
+    }
+
+    const storageItems = this._caches?.storage?.flush() ?? []
+    for (const item of storageItems) {
+      const address = createAddressFromString(`0x${item[0]}`)
+      const keyHex = item[1]
+      const keyBytes = unprefixedHexToBytes(keyHex)
+      const value = item[2]
+
+      const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
+      const account = await this.getAccount(address)
+      if (account) {
+        await this.putStorage(address, keyBytes, decoded)
+      }
+    }
+
+    const accountItems = this._caches?.account?.flush() ?? []
+    for (const item of accountItems) {
+      const address = createAddressFromString(item[0])
+      const elem = item[1]
+      if (elem.accountRLP === undefined) {
+        await this.deleteAccount(address)
+      } else {
+        const account = createAccountFromRLP(elem.accountRLP)
+        await this.putAccount(address, account)
+      }
+    }
+  }
+
   getStateRoot(): Promise<Uint8Array> {
     throw new Error('Method not implemented.')
   }
