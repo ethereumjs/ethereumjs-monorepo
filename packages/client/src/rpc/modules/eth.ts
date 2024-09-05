@@ -35,7 +35,7 @@ import {
 } from '@ethereumjs/vm'
 
 import { INTERNAL_ERROR, INVALID_HEX_STRING, INVALID_PARAMS, PARSE_ERROR } from '../error-code.js'
-import { callWithStackTrace, getBlockByOption, jsonRpcTx } from '../helpers.js'
+import { callWithStackTrace, getBlockByOption, jsonRPCTx } from '../helpers.js'
 import { middleware, validators } from '../validation.js'
 
 import type { Chain } from '../../blockchain/index.js'
@@ -43,8 +43,8 @@ import type { ReceiptsManager } from '../../execution/receipt.js'
 import type { EthereumClient } from '../../index.js'
 import type { EthProtocol } from '../../net/protocol/index.js'
 import type { FullEthereumService, Service } from '../../service/index.js'
-import type { RpcTx } from '../types.js'
-import type { Block, JsonRpcBlock } from '@ethereumjs/block'
+import type { RPCTx } from '../types.js'
+import type { Block, JSONRPCBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
@@ -65,7 +65,7 @@ type GetLogsParams = {
   // neither fromBlock nor toBlock are allowed.
 }
 
-type JsonRpcReceipt = {
+type JSONRPCReceipt = {
   transactionHash: string // DATA, 32 Bytes - hash of the transaction.
   transactionIndex: string // QUANTITY - integer of the transactions index position in the block.
   blockHash: string // DATA, 32 Bytes - hash of the block where this transaction was in.
@@ -76,7 +76,7 @@ type JsonRpcReceipt = {
   effectiveGasPrice: string // QUANTITY - The final gas price per gas paid by the sender in wei.
   gasUsed: string // QUANTITY - The amount of gas used by this specific transaction alone.
   contractAddress: string | null // DATA, 20 Bytes - The contract address created, if the transaction was a contract creation, otherwise null.
-  logs: JsonRpcLog[] // Array - Array of log objects, which this transaction generated.
+  logs: JSONRPCLog[] // Array - Array of log objects, which this transaction generated.
   logsBloom: string // DATA, 256 Bytes - Bloom filter for light clients to quickly retrieve related logs.
   // It also returns either:
   root?: string // DATA, 32 bytes of post-transaction stateroot (pre Byzantium)
@@ -85,7 +85,7 @@ type JsonRpcReceipt = {
   blobGasPrice?: string // QUAntity, blob gas price for block including this transaction (if blob transaction)
   type: string // QUANTITY, transaction type
 }
-type JsonRpcLog = {
+type JSONRPCLog = {
   removed: boolean // TAG - true when the log was removed, due to a chain reorganization. false if it's a valid log.
   logIndex: string | null // QUANTITY - integer of the log index position in the block. null when it's pending.
   transactionIndex: string | null // QUANTITY - integer of the transactions index position log was created from. null when it's pending.
@@ -102,15 +102,15 @@ type JsonRpcLog = {
 /**
  * Returns block formatted to the standard JSON-RPC fields
  */
-const jsonRpcBlock = async (
+const jsonRPCBlock = async (
   block: Block,
   chain: Chain,
   includeTransactions: boolean,
-): Promise<JsonRpcBlock> => {
+): Promise<JSONRPCBlock> => {
   const json = block.toJSON()
   const header = json!.header!
   const transactions = block.transactions.map((tx, txIndex) =>
-    includeTransactions ? jsonRpcTx(tx, block, txIndex) : bytesToHex(tx.hash()),
+    includeTransactions ? jsonRPCTx(tx, block, txIndex) : bytesToHex(tx.hash()),
   )
   const withdrawalsAttr =
     header.withdrawalsRoot !== undefined
@@ -154,13 +154,13 @@ const jsonRpcBlock = async (
 /**
  * Returns log formatted to the standard JSON-RPC fields
  */
-const jsonRpcLog = async (
+const jsonRPCLog = async (
   log: Log,
   block?: Block,
   tx?: TypedTransaction,
   txIndex?: number,
   logIndex?: number,
-): Promise<JsonRpcLog> => ({
+): Promise<JSONRPCLog> => ({
   removed: false, // TODO implement
   logIndex: logIndex !== undefined ? intToHex(logIndex) : null,
   transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
@@ -175,7 +175,7 @@ const jsonRpcLog = async (
 /**
  * Returns receipt formatted to the standard JSON-RPC fields
  */
-const jsonRpcReceipt = async (
+const jsonRPCReceipt = async (
   receipt: TxReceipt,
   gasUsed: bigint,
   effectiveGasPrice: bigint,
@@ -186,7 +186,7 @@ const jsonRpcReceipt = async (
   contractAddress?: Address,
   blobGasUsed?: bigint,
   blobGasPrice?: bigint,
-): Promise<JsonRpcReceipt> => ({
+): Promise<JSONRPCReceipt> => ({
   transactionHash: bytesToHex(tx.hash()),
   transactionIndex: intToHex(txIndex),
   blockHash: bytesToHex(block.hash()),
@@ -198,7 +198,7 @@ const jsonRpcReceipt = async (
   gasUsed: bigIntToHex(gasUsed),
   contractAddress: contractAddress?.toString() ?? null,
   logs: await Promise.all(
-    receipt.logs.map((l, i) => jsonRpcLog(l, block, tx, txIndex, logIndex + i)),
+    receipt.logs.map((l, i) => jsonRPCLog(l, block, tx, txIndex, logIndex + i)),
   ),
   logsBloom: bytesToHex(receipt.bitvector),
   root:
@@ -498,7 +498,7 @@ export class Eth {
    *   2. integer block number, or the string "latest", "earliest" or "pending"
    * @returns The return value of the executed contract.
    */
-  async call(params: [RpcTx, string]) {
+  async call(params: [RPCTx, string]) {
     const [transaction, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
@@ -559,7 +559,7 @@ export class Eth {
    *   2. integer block number, or the string "latest", "earliest" or "pending" (optional)
    * @returns The amount of gas used.
    */
-  async estimateGas(params: [RpcTx, string?]) {
+  async estimateGas(params: [RPCTx, string?]) {
     const [transaction, blockOpt] = params
     const block = await getBlockByOption(blockOpt ?? 'latest', this._chain)
 
@@ -680,7 +680,7 @@ export class Eth {
 
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
-      return await jsonRpcBlock(block, this._chain, includeTransactions)
+      return await jsonRPCBlock(block, this._chain, includeTransactions)
     } catch (error) {
       return null
     }
@@ -702,7 +702,7 @@ export class Eth {
     }
     try {
       const block = await getBlockByOption(blockOpt, this._chain)
-      const response = await jsonRpcBlock(block, this._chain, includeTransactions)
+      const response = await jsonRPCBlock(block, this._chain, includeTransactions)
       return response
     } catch {
       return null
@@ -812,7 +812,7 @@ export class Eth {
       }
 
       const tx = block.transactions[txIndex]
-      return jsonRpcTx(tx, block, txIndex)
+      return jsonRPCTx(tx, block, txIndex)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
@@ -837,7 +837,7 @@ export class Eth {
       }
 
       const tx = block.transactions[txIndex]
-      return jsonRpcTx(tx, block, txIndex)
+      return jsonRPCTx(tx, block, txIndex)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
@@ -859,7 +859,7 @@ export class Eth {
     const [_receipt, blockHash, txIndex] = result
     const block = await this._chain.getBlock(blockHash)
     const tx = block.transactions[txIndex]
-    return jsonRpcTx(tx, block, txIndex)
+    return jsonRPCTx(tx, block, txIndex)
   }
 
   /**
@@ -969,7 +969,7 @@ export class Eth {
                 block.header.baseFeePerGas!
             : (tx as LegacyTx).gasPrice
 
-        return jsonRpcReceipt(
+        return jsonRPCReceipt(
           r,
           totalGasSpent,
           effectiveGasPrice,
@@ -1031,7 +1031,7 @@ export class Eth {
 
     const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
     const { blobGasPrice, blobGasUsed } = runBlockResult.receipts[txIndex] as EIP4844BlobTxReceipt
-    return jsonRpcReceipt(
+    return jsonRPCReceipt(
       receipt,
       totalGasSpent,
       effectiveGasPrice,
@@ -1130,7 +1130,7 @@ export class Eth {
     const logs = await this.receiptsManager.getLogs(from, to, addressBytes, formattedTopics)
     return Promise.all(
       logs.map(({ log, block, tx, txIndex, logIndex }) =>
-        jsonRpcLog(log, block, tx, txIndex, logIndex),
+        jsonRPCLog(log, block, tx, txIndex, logIndex),
       ),
     )
   }

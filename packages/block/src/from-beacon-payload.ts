@@ -32,7 +32,7 @@ type BeaconConsolidationRequest = {
 
 // Payload json that one gets using the beacon apis
 // curl localhost:5052/eth/v2/beacon/blocks/56610 | jq .data.message.body.execution_payload
-export type BeaconPayloadJson = {
+export type BeaconPayloadJSON = {
   parent_hash: PrefixedHexString
   fee_recipient: PrefixedHexString
   state_root: PrefixedHexString
@@ -60,7 +60,7 @@ export type BeaconPayloadJson = {
   execution_witness?: VerkleExecutionWitness
 }
 
-type VerkleProofSnakeJson = {
+type VerkleProofSnakeJSON = {
   commitments_by_path: PrefixedHexString[]
   d: PrefixedHexString
   depth_extension_present: PrefixedHexString
@@ -72,7 +72,7 @@ type VerkleProofSnakeJson = {
   other_stems: PrefixedHexString[]
 }
 
-type VerkleStateDiffSnakeJson = {
+type VerkleStateDiffSnakeJSON = {
   stem: PrefixedHexString
   suffix_diffs: {
     current_value: PrefixedHexString | null
@@ -81,17 +81,17 @@ type VerkleStateDiffSnakeJson = {
   }[]
 }
 
-type VerkleExecutionWitnessSnakeJson = {
+type VerkleExecutionWitnessSnakeJSON = {
   parent_state_root: PrefixedHexString
-  state_diff: VerkleStateDiffSnakeJson[]
-  verkle_proof: VerkleProofSnakeJson
+  state_diff: VerkleStateDiffSnakeJSON[]
+  verkle_proof: VerkleProofSnakeJSON
 }
 
-function parseExecutionWitnessFromSnakeJson({
+function parseExecutionWitnessFromSnakeJSON({
   parent_state_root,
   state_diff,
   verkle_proof,
-}: VerkleExecutionWitnessSnakeJson): VerkleExecutionWitness {
+}: VerkleExecutionWitnessSnakeJSON): VerkleExecutionWitness {
   return {
     parentStateRoot: parent_state_root,
     stateDiff: state_diff.map(({ stem, suffix_diffs }) => ({
@@ -117,10 +117,10 @@ function parseExecutionWitnessFromSnakeJson({
 }
 
 /**
- * Converts a beacon block execution payload JSON object {@link BeaconPayloadJson} to the {@link ExecutionPayload} data needed to construct a {@link Block}.
+ * Converts a beacon block execution payload JSON object {@link BeaconPayloadJSON} to the {@link ExecutionPayload} data needed to construct a {@link Block}.
  * The JSON data can be retrieved from a consensus layer (CL) client on this Beacon API `/eth/v2/beacon/blocks/[block number]`
  */
-export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): ExecutionPayload {
+export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJSON): ExecutionPayload {
   const executionPayload: ExecutionPayload = {
     parentHash: payload.parent_hash,
     feeRecipient: payload.fee_recipient,
@@ -189,8 +189,8 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
     executionPayload.executionWitness =
       payload.execution_witness.verkleProof !== undefined
         ? payload.execution_witness
-        : parseExecutionWitnessFromSnakeJson(
-            payload.execution_witness as unknown as VerkleExecutionWitnessSnakeJson,
+        : parseExecutionWitnessFromSnakeJSON(
+            payload.execution_witness as unknown as VerkleExecutionWitnessSnakeJSON,
           )
   }
 

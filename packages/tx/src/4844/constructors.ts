@@ -20,7 +20,7 @@ import { Blob4844Tx } from './tx.js'
 
 import type {
   BlobEIP4844NetworkValuesArray,
-  JsonBlobTxNetworkWrapper,
+  JSONBlobTxNetworkWrapper,
   TxOptions,
 } from '../types.js'
 import type { TxData, TxValuesArray } from './tx.js'
@@ -305,19 +305,19 @@ export function createMinimal4844TxFromNetworkWrapper(
  * blobs, commitments, and proofs fields
  * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
  * @param opts any TxOptions defined
- * @returns JsonBlobTxNetworkWrapper with blobs, KZG commitments, and KZG proofs fields
+ * @returns JSONBlobTxNetworkWrapper with blobs, KZG commitments, and KZG proofs fields
  */
 export function blobTxNetworkWrapperToJSON(
   serialized: Uint8Array,
   opts?: TxOptions,
-): JsonBlobTxNetworkWrapper {
+): JSONBlobTxNetworkWrapper {
   const tx = createBlob4844TxFromSerializedNetworkWrapper(serialized, opts)
 
   const accessListJSON = AccessLists.getAccessListJSON(tx.accessList)
-  const baseJson = tx.toJSON()
+  const baseJSON = tx.toJSON()
 
   return {
-    ...baseJson,
+    ...baseJSON,
     chainId: bigIntToHex(tx.chainId),
     maxPriorityFeePerGas: bigIntToHex(tx.maxPriorityFeePerGas),
     maxFeePerGas: bigIntToHex(tx.maxFeePerGas),

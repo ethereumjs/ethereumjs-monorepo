@@ -59,12 +59,12 @@ import { Event } from '../src/types.js'
 import { parseMultiaddrs } from '../src/util/index.js'
 import { setupMetrics } from '../src/util/metrics.js'
 
-import { helprpc, startRPCServers } from './startRpc.js'
+import { helprpc, startRPCServers } from './startRPC.js'
 
 import type { Logger } from '../src/logging.js'
 import type { FullEthereumService } from '../src/service/index.js'
 import type { ClientOpts } from '../src/types.js'
-import type { RPCArgs } from './startRpc.js'
+import type { RPCArgs } from './startRPC.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { CustomCrypto } from '@ethereumjs/common'
@@ -226,7 +226,7 @@ const args: ClientOpts = yargs
     describe: 'Provide a file containing a hex encoded jwt secret for Engine RPC server',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
   })
-  .option('helpRpc', {
+  .option('helpRPC', {
     describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
     boolean: true,
   })
@@ -922,7 +922,7 @@ const stopClient = async (
  * Main entry point to start a client
  */
 async function run() {
-  if (args.helpRpc === true) {
+  if (args.helpRPC === true) {
     // Output RPC help and exit
     return helprpc()
   }

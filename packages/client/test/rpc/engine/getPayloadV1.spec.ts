@@ -2,7 +2,7 @@ import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseSetup, getRpcClient, setupChain } from '../helpers.js'
+import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
 
 const method = 'engine_getPayloadV1'
 
@@ -37,7 +37,7 @@ describe(method, () => {
 
   it('call with known payload', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     let res = await rpc.request('engine_forkchoiceUpdatedV1', validPayload)
     const payloadId = res.result.payloadId
 

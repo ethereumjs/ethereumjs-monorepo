@@ -26,7 +26,7 @@ import {
   paramsTx,
 } from '../src/index.js'
 
-import type { AccessList, AccessListBytesItem, JsonTx } from '../src/index.js'
+import type { AccessList, AccessListBytesItem, JSONTx } from '../src/index.js'
 
 const pKey = hexToBytes('0x4646464646464646464646464646464646464646464646464646464646464646')
 const address = privateToAddress(pKey)
@@ -654,7 +654,7 @@ describe('[AccessList2930Transaction] -> Class Specific Tests', () => {
     assert.ok(equalsBytes(expectedSigned, signed.serialize()), 'serialized signed message correct')
     assert.ok(equalsBytes(expectedHash, signed.hash()), 'hash correct')
 
-    const expectedJSON: JsonTx = {
+    const expectedJSON: JSONTx = {
       type: '0x1',
       chainId: '0x796f6c6f763378',
       nonce: '0x0',

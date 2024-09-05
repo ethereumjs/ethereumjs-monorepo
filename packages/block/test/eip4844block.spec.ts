@@ -235,9 +235,9 @@ describe('transaction validation tests', () => {
       () => blockWithValidTx.validateBlobTransactions(parentHeader),
       'does not throw when all tx maxFeePerBlobGas are >= to block blob gas fee',
     )
-    const blockJson = blockWithValidTx.toJSON()
-    blockJson.header!.blobGasUsed = '0x0'
-    const blockWithInvalidHeader = createBlock(blockJson, { common })
+    const blockJSON = blockWithValidTx.toJSON()
+    blockJSON.header!.blobGasUsed = '0x0'
+    const blockWithInvalidHeader = createBlock(blockJSON, { common })
     assert.throws(
       () => blockWithInvalidHeader.validateBlobTransactions(parentHeader),
       'block blobGasUsed mismatch',

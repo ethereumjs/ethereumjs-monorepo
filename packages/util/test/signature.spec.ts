@@ -5,13 +5,13 @@ import {
   bytesToBigInt,
   ecrecover,
   ecsign,
-  fromRpcSig,
+  fromRPCSig,
   hashPersonalMessage,
   hexToBytes,
   isValidSignature,
   privateToPublic,
   toCompactSig,
-  toRpcSig,
+  toRPCSig,
   utf8ToBytes,
 } from '../src/index.js'
 
@@ -257,8 +257,8 @@ describe('message sig', () => {
   it('should return hex strings that the RPC can use', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
-    assert.equal(toRpcSig(BigInt(27), r, s), sig)
-    assert.deepEqual(fromRpcSig(sig), {
+    assert.equal(toRPCSig(BigInt(27), r, s), sig)
+    assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(27),
       r,
       s,
@@ -269,7 +269,7 @@ describe('message sig', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     assert.equal(toCompactSig(BigInt(27), r, s), sig)
-    assert.deepEqual(fromRpcSig(sig), {
+    assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(27),
       r,
       s,
@@ -280,7 +280,7 @@ describe('message sig', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     assert.equal(toCompactSig(BigInt(0), r, s), sig)
-    assert.deepEqual(fromRpcSig(sig), {
+    assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(27),
       r,
       s,
@@ -291,7 +291,7 @@ describe('message sig', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     assert.equal(toCompactSig(BigInt(28), r, s), sig)
-    assert.deepEqual(fromRpcSig(sig), {
+    assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(28),
       r,
       s,
@@ -302,7 +302,7 @@ describe('message sig', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     assert.equal(toCompactSig(BigInt(1), r, s), sig)
-    assert.deepEqual(fromRpcSig(sig), {
+    assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(28),
       r,
       s,
@@ -314,8 +314,8 @@ describe('message sig', () => {
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
     const chainId = BigInt(150)
     const v = chainId * BigInt(2) + BigInt(35)
-    assert.equal(toRpcSig(v, r, s, chainId), sig)
-    assert.deepEqual(fromRpcSig(sig), {
+    assert.equal(toRPCSig(v, r, s, chainId), sig)
+    assert.deepEqual(fromRPCSig(sig), {
       v,
       r,
       s,
@@ -327,15 +327,15 @@ describe('message sig', () => {
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66f2ded8deec6714'
     const chainID = BigInt('34180983699157880')
     const v = BigInt('68361967398315796')
-    assert.deepEqual(toRpcSig(v, r, s, chainID), sig)
+    assert.deepEqual(toRPCSig(v, r, s, chainID), sig)
   })
 
   it('should throw on shorter length', () => {
     assert.throws(function () {
-      fromRpcSig('0x')
+      fromRPCSig('0x')
     })
     assert.throws(function () {
-      fromRpcSig(
+      fromRPCSig(
         '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca',
       )
     })
@@ -343,14 +343,14 @@ describe('message sig', () => {
 
   it('pad short r and s values', () => {
     assert.equal(
-      toRpcSig(BigInt(27), r.slice(20), s.slice(20)),
+      toRPCSig(BigInt(27), r.slice(20), s.slice(20)),
       '0x00000000000000000000000000000000000000004a1579cf389ef88b20a1abe90000000000000000000000000000000000000000326fa689f228040429e3ca661b',
     )
   })
 
   it('should throw on invalid v value', () => {
     assert.throws(function () {
-      toRpcSig(BigInt(2), r, s)
+      toRPCSig(BigInt(2), r, s)
     })
   })
 })

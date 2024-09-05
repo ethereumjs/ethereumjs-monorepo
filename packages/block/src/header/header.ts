@@ -29,7 +29,7 @@ import {
 import { fakeExponential } from '../helpers.js'
 import { paramsBlock } from '../params.js'
 
-import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from '../types.js'
+import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONHeader } from '../types.js'
 
 interface HeaderCache {
   hash: Uint8Array | undefined
@@ -736,11 +736,11 @@ export class BlockHeader {
   /**
    * Returns the block header in JSON format.
    */
-  toJSON(): JsonHeader {
+  toJSON(): JSONHeader {
     const withdrawalAttr = this.withdrawalsRoot
       ? { withdrawalsRoot: bytesToHex(this.withdrawalsRoot) }
       : {}
-    const jsonDict: JsonHeader = {
+    const jsonDict: JSONHeader = {
       parentHash: bytesToHex(this.parentHash),
       uncleHash: bytesToHex(this.uncleHash),
       coinbase: this.coinbase.toString(),

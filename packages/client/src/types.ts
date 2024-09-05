@@ -126,7 +126,7 @@ export interface ClientOpts {
   wsEngineAddr?: string
   rpcEngineAuth?: boolean
   jwtSecret?: string
-  helpRpc?: boolean
+  helpRPC?: boolean
   logLevel?: string
   logFile?: boolean | string
   logLevelFile?: string

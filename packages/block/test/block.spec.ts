@@ -15,7 +15,7 @@ import { genTransactionsTrieRoot } from '../src/helpers.js'
 import {
   type Block,
   type BlockBytes,
-  type JsonRpcBlock,
+  type JSONRPCBlock,
   createBlock,
   createBlockFromBytesArray,
   createBlockFromRLP,
@@ -25,7 +25,7 @@ import {
 } from '../src/index.js'
 
 import * as testDataGenesis from './testdata/genesisHashesTest.json'
-import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
+import * as testDataFromRPCGoerli from './testdata/testdata-from-rpc-goerli.json'
 import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
@@ -165,7 +165,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 
     try {
-      createBlockFromRPC(testDataFromRpcGoerli.default as JsonRpcBlock, [], { common })
+      createBlockFromRPC(testDataFromRPCGoerli.default as JSONRPCBlock, [], { common })
       assert.ok(true, 'does not throw')
     } catch (error: any) {
       assert.fail('error thrown')

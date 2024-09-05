@@ -15,7 +15,7 @@ import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import { getRpcClient, setupChain } from '../helpers.js'
+import { getRPCClient, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain/chain.js'
 import type { VMExecution } from '../../../src/execution/vmexecution.js'
@@ -98,7 +98,7 @@ describe(method, () => {
       },
     })
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, [])
     assert.equal(res.result, '0x1')
   })
@@ -116,7 +116,7 @@ describe(method, () => {
     for (let i = 0; i < 10; i++) {
       await produceBlockWith4844Tx(execution, chain, [6])
     }
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, [])
     assert.equal(res.result, '0x3')
   })

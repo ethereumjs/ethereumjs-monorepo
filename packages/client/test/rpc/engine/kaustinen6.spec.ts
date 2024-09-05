@@ -11,10 +11,10 @@ import { assert, describe, it } from 'vitest'
 
 import blocks from '../../testdata/blocks/kaustinen4.json'
 import genesisJSON from '../../testdata/geth-genesis/kaustinen6.json'
-import { getRpcClient, setupChain } from '../helpers.js'
+import { getRPCClient, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain/index.js'
-import type { BeaconPayloadJson } from '@ethereumjs/block'
+import type { BeaconPayloadJSON } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { VerkleExecutionWitness } from '@ethereumjs/util'
 import type { HttpClient } from 'jayson/promise'
@@ -40,8 +40,8 @@ const originalValidate = (BlockHeader as any).prototype._consensusFormatValidati
 async function fetchExecutionPayload(
   peerBeaconUrl: string,
   slot: number | string,
-): Promise<BeaconPayloadJson | undefined> {
-  let beaconPayload: BeaconPayloadJson | undefined = undefined
+): Promise<BeaconPayloadJSON | undefined> {
+  let beaconPayload: BeaconPayloadJSON | undefined = undefined
   try {
     const beaconBlock = await (await fetch(`${peerBeaconUrl}/eth/v2/beacon/blocks/${slot}`)).json()
     beaconPayload = beaconBlock.data.message.body.execution_payload
@@ -81,7 +81,7 @@ describe(`valid verkle network setup`, async () => {
     engine: true,
     genesisStateRoot: genesisVerkleStateRoot,
   })
-  const rpc = getRpcClient(server)
+  const rpc = getRPCClient(server)
   it('genesis should be correctly setup', async () => {
     const res = await rpc.request('eth_getBlockByNumber', ['0x0', false])
 

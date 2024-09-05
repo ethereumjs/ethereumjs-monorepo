@@ -8,7 +8,7 @@ import { assert, describe, it, vi } from 'vitest'
 import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.js'
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
 import preShanghaiGenesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseSetup, getRpcClient, setupChain } from '../helpers.js'
+import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
 
 const method = 'engine_getPayloadBodiesByRangeV1'
 
@@ -38,7 +38,7 @@ describe(method, () => {
       engine: true,
       hardfork: Hardfork.Cancun,
     })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     common.setHardfork(Hardfork.Cancun)
     const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
     const address = createAddressFromPrivateKey(pkey)
@@ -120,7 +120,7 @@ describe(method, () => {
       engine: true,
       hardfork: Hardfork.London,
     })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     common.setHardfork(Hardfork.London)
     const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
     const address = createAddressFromPrivateKey(pkey)

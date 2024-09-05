@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 import { INVALID_PARAMS, UNSUPPORTED_FORK } from '../../../src/rpc/error-code.js'
 import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { batchBlocks, getRpcClient, setupChain } from '../helpers.js'
+import { batchBlocks, getRPCClient, setupChain } from '../helpers.js'
 
 const method = 'engine_newPayloadV3'
 const [blockData] = blocks
@@ -16,7 +16,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
     })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // get the genesis json with current date
     const validBlock = {
       ...blockData,
@@ -36,11 +36,11 @@ describe(`${method}: call with executionPayloadV3`, () => {
     // get the genesis json with late enough date with respect to block data in batchBlocks
     const cancunTime = 1689945325
     // deep copy json and add shanghai and cancun to genesis to avoid contamination
-    const cancunJson = JSON.parse(JSON.stringify(genesisJSON))
-    cancunJson.config.shanghaiTime = cancunTime
-    cancunJson.config.cancunTime = cancunTime
-    const { server } = await setupChain(cancunJson, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const cancunJSON = JSON.parse(JSON.stringify(genesisJSON))
+    cancunJSON.config.shanghaiTime = cancunTime
+    cancunJSON.config.cancunTime = cancunTime
+    const { server } = await setupChain(cancunJSON, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     const validBlock = {
       ...blockData,
       timestamp: bigIntToHex(BigInt(cancunTime)),
@@ -74,11 +74,11 @@ describe(`${method}: call with executionPayloadV3`, () => {
     // get the genesis json with late enough date with respect to block data in batchBlocks
     const cancunTime = 1689945325
     // deep copy json and add shanghai and cancun to genesis to avoid contamination
-    const cancunJson = JSON.parse(JSON.stringify(genesisJSON))
-    cancunJson.config.shanghaiTime = cancunTime
-    cancunJson.config.cancunTime = cancunTime
-    const { server } = await setupChain(cancunJson, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const cancunJSON = JSON.parse(JSON.stringify(genesisJSON))
+    cancunJSON.config.shanghaiTime = cancunTime
+    cancunJSON.config.cancunTime = cancunTime
+    const { server } = await setupChain(cancunJSON, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     await batchBlocks(rpc, blocks)
 
     // Let's set new head hash

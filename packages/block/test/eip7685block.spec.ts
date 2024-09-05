@@ -155,7 +155,7 @@ describe('fromRPC tests', () => {
     )
     const jsonBlock = block.toJSON()
     const rpcBlock: any = { ...jsonBlock.header, requests: jsonBlock.requests }
-    const createBlockFromJson = createBlockFromRPC(rpcBlock, undefined, { common })
-    assert.deepEqual(block.hash(), createBlockFromJson.hash())
+    const createBlockFromJSON = createBlockFromRPC(rpcBlock, undefined, { common })
+    assert.deepEqual(block.hash(), createBlockFromJSON.hash())
   })
 })

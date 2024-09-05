@@ -21,7 +21,7 @@ import { assert, describe, it } from 'vitest'
 import { blockToExecutionPayload } from '../../../src/rpc/modules/index.js'
 import blocks from '../../testdata/blocks/kaustinen2.json'
 import genesisJSON from '../../testdata/geth-genesis/kaustinen2.json'
-import { getRpcClient, setupChain } from '../helpers.js'
+import { getRPCClient, setupChain } from '../helpers.js'
 
 import type { Common } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -106,12 +106,12 @@ async function runBlock(
 
 describe(`valid verkle network setup`, async () => {
   // unschedule verkle
-  const unschedulePragueJson = {
+  const unschedulePragueJSON = {
     ...genesisJSON,
     config: { ...genesisJSON.config, osakaTime: undefined },
   }
   const { server, chain, common, execution } = await setupChain(
-    unschedulePragueJson,
+    unschedulePragueJSON,
     'post-merge',
     {
       engine: true,
@@ -120,7 +120,7 @@ describe(`valid verkle network setup`, async () => {
   )
   ;(chain.blockchain as any).validateHeader = () => {}
 
-  const rpc = getRpcClient(server)
+  const rpc = getRPCClient(server)
   it('genesis should be correctly setup', async () => {
     const res = await rpc.request('eth_getBlockByNumber', ['0x0', false])
 
