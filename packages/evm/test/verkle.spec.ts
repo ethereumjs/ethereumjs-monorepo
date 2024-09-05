@@ -37,6 +37,7 @@ describe('verkle tests', () => {
       to: createAddressFromString(address.toString()),
     })
     assert.deepEqual(res.execResult.returnValue, new Uint8Array())
+    console.log(res.execResult.runState?.interpreter._env.accessWitness)
     const retrievedValue = await sm.getStorage(address, setLengthLeft(bigIntToBytes(2n), 32))
     assert.deepEqual(retrievedValue, bigIntToBytes(1n))
   })

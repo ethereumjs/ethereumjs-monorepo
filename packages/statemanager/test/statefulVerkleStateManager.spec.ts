@@ -90,7 +90,7 @@ describe('caching functionality works', () => {
       VerkleLeafType.BasicData,
       VerkleLeafType.CodeHash,
     ])
-    assert.equal(accountData[0], undefined, 'account doesnt exist in trie')
+    assert.equal(accountData[0], undefined, 'account does not exist in trie')
 
     // Confirm account exists in cache
     const cachedAccount = sm['_caches']?.account?.get(address)
