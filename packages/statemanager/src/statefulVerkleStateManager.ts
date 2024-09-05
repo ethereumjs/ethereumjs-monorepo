@@ -437,38 +437,28 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   getStateRoot(): Promise<Uint8Array> {
     throw new Error('Method not implemented.')
   }
-  setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void> {
+  setStateRoot(_stateRoot: Uint8Array, _clearCache?: boolean): Promise<void> {
     throw new Error('Method not implemented.')
   }
-  hasStateRoot(root: Uint8Array): Promise<boolean> {
+  hasStateRoot(_root: Uint8Array): Promise<boolean> {
     throw new Error('Method not implemented.')
   }
-  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof> {
+  getProof?(_address: Address, _storageSlots: Uint8Array[]): Promise<Proof> {
     throw new Error('Method not implemented.')
   }
-  dumpStorage?(address: Address): Promise<StorageDump> {
+  dumpStorage?(_address: Address): Promise<StorageDump> {
     throw new Error('Method not implemented.')
   }
-  dumpStorageRange?(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
+  dumpStorageRange?(_address: Address, _startKey: bigint, _limit: number): Promise<StorageRange> {
     throw new Error('Method not implemented.')
   }
-
   verifyVerkleProof?(): boolean {
-    throw new Error('Method not implemented.')
-  }
-  verifyPostState?(): boolean {
-    throw new Error('Method not implemented.')
-  }
-  checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean> {
-    throw new Error('Method not implemented.')
-  }
-  getAppliedKey?(address: Uint8Array): Uint8Array {
     throw new Error('Method not implemented.')
   }
   clearCaches(): void {
     throw new Error('Method not implemented.')
   }
-  shallowCopy(downlevelCaches?: boolean): StateManagerInterface {
+  shallowCopy(_downlevelCaches?: boolean): StateManagerInterface {
     throw new Error('Method not implemented.')
   }
 }
