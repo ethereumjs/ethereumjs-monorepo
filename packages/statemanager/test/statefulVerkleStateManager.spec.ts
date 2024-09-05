@@ -1,8 +1,10 @@
 import {
   Account,
+  VerkleLeafType,
   bigIntToBytes,
   createAccount,
   createAddressFromString,
+  getVerkleStem,
   hexToBytes,
   matchingBytesLength,
   setLengthLeft,
@@ -11,6 +13,7 @@ import { createVerkleTree } from '@ethereumjs/verkle'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
+import { Caches } from '../src/index.js'
 import { StatefulVerkleStateManager } from '../src/statefulVerkleStateManager.js'
 
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
@@ -66,5 +69,46 @@ describe('Verkle Tree API tests', () => {
     await sm.putStorage(address, setLengthLeft(bigIntToBytes(0n), 32), hexToBytes('0x1'))
     const retrievedValue = await sm.getStorage(address, setLengthLeft(bigIntToBytes(0n), 32))
     assert.deepEqual(retrievedValue, hexToBytes('0x1'))
+  })
+})
+
+describe('caching functionality works', () => {
+  let verkleCrypto: VerkleCrypto
+  beforeAll(async () => {
+    verkleCrypto = await loadVerkleCrypto()
+  })
+  it('should cache accounts and then write to trie', async () => {
+    const trie = await createVerkleTree()
+    const sm = new StatefulVerkleStateManager({ trie, verkleCrypto, caches: new Caches() })
+    const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
+    const account = createAccount({ nonce: 3n, balance: 0xfffn })
+    await sm.putAccount(address, account)
+
+    // Confirm account doesn't exist in trie
+    const stem = getVerkleStem(verkleCrypto, address, 0)
+    const accountData = await sm['_trie'].get(stem, [
+      VerkleLeafType.BasicData,
+      VerkleLeafType.CodeHash,
+    ])
+    assert.equal(accountData[0], undefined, 'account doesnt exist in trie')
+
+    // Confirm account exists in cache
+    const cachedAccount = sm['_caches']?.account?.get(address)
+    assert.deepEqual(cachedAccount?.accountRLP, account.serializeWithPartialInfo())
+
+    // Flush account to trie
+    await sm.checkpoint()
+    await sm.commit()
+    await sm.flush()
+    const retrievedAccount = await sm.getAccount(address)
+    assert.equal(retrievedAccount?.balance, account.balance)
+
+    // Delete account
+    await sm.deleteAccount(address)
+    await sm.checkpoint()
+    await sm.commit()
+    await sm.flush()
+    const deletedAccount = await sm.getAccount(address)
+    assert.equal(deletedAccount, undefined)
   })
 })

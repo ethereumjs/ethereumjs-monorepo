@@ -11,9 +11,9 @@ import {
   VerkleLeafType,
   bytesToBigInt,
   chunkifyCode,
-  createAccountFromRLP,
   createAddressFromString,
   createPartialAccount,
+  createPartialAccountFromRLP,
   decodeVerkleLeafBasicData,
   encodeVerkleLeafBasicData,
   equalsBytes,
@@ -94,7 +94,9 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   getAccount = async (address: Address): Promise<Account | undefined> => {
     const elem = this._caches?.account?.get(address)
     if (elem !== undefined) {
-      return elem.accountRLP !== undefined ? createAccountFromRLP(elem.accountRLP) : undefined
+      return elem.accountRLP !== undefined
+        ? createPartialAccountFromRLP(elem.accountRLP)
+        : undefined
     }
 
     const stem = getVerkleStem(this.verkleCrypto, address, 0)
@@ -421,12 +423,12 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
     const accountItems = this._caches?.account?.flush() ?? []
     for (const item of accountItems) {
-      const address = createAddressFromString(item[0])
+      const address = createAddressFromString(`0x${item[0]}`)
       const elem = item[1]
       if (elem.accountRLP === undefined) {
         await this.deleteAccount(address)
       } else {
-        const account = createAccountFromRLP(elem.accountRLP)
+        const account = createPartialAccountFromRLP(elem.accountRLP)
         await this.putAccount(address, account)
       }
     }
