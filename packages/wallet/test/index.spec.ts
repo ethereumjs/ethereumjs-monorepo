@@ -1,5 +1,5 @@
 import { bytesToUnprefixedHex, unprefixedHexToBytes } from '@ethereumjs/util'
-import { encryptKeystoreJSONSync, Wallet as ethersWallet } from 'ethers'
+import { encryptKeystoreJsonSync, Wallet as ethersWallet } from 'ethers'
 import zip from 'lodash.zip'
 import { assert, describe, it } from 'vitest'
 
@@ -295,7 +295,7 @@ describe('Wallet tests', () => {
         p,
       })
 
-      const encFixtureEthersWallet = encryptKeystoreJSONSync(fixtureEthersWallet, pw, {
+      const encFixtureEthersWallet = encryptKeystoreJsonSync(fixtureEthersWallet, pw, {
         scrypt: { N: n, r, p },
         salt: ethersOpts.salt,
         iv: ethersOpts.iv,
@@ -312,7 +312,7 @@ describe('Wallet tests', () => {
         p,
       })
 
-      const encEthersWallet = encryptKeystoreJSONSync(wEthers, pw, {
+      const encEthersWallet = encryptKeystoreJsonSync(wEthers, pw, {
         scrypt: { N: n, r, p },
         salt: ethersOpts.salt,
         iv: ethersOpts.iv,
@@ -418,7 +418,7 @@ describe('Wallet tests', () => {
       r,
       p,
     })
-    let wEthersStr = encryptKeystoreJSONSync(
+    let wEthersStr = encryptKeystoreJsonSync(
       new ethersWallet(fixtureWallet.getPrivateKeyString()),
       pw,
       {
@@ -452,7 +452,7 @@ describe('Wallet tests', () => {
       r,
       p,
     })
-    wEthersStr = encryptKeystoreJSONSync(
+    wEthersStr = encryptKeystoreJsonSync(
       new ethersWallet(fixtureWallet.getPrivateKeyString()),
       pw,
       {
@@ -484,7 +484,7 @@ describe('Wallet tests', () => {
       r,
       p,
     })
-    wEthersStr = encryptKeystoreJSONSync(
+    wEthersStr = encryptKeystoreJsonSync(
       new ethersWallet(fixtureWallet.getPrivateKeyString()),
       pw,
       {
