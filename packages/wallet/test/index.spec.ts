@@ -100,7 +100,7 @@ describe('Wallet tests', () => {
 
     assert.deepEqual(
       bytesToHex(Wallet.fromPublicKey(pubKey).getAddress()),
-      'b14ab53e38da1c172f877dbc6d65e4a1b0474c3c',
+      '0xb14ab53e38da1c172f877dbc6d65e4a1b0474c3c',
       '.getAddress() should work',
     )
 
