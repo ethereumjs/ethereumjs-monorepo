@@ -17,8 +17,8 @@ import {
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
+import { MerkleStateManager } from '../src/merkleStateManager.js'
 import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
-import { MerkleStateManager } from '../src/stateManager.js'
 
 import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
 import { getValues } from './testdata/providerData/mockProvider.js'
