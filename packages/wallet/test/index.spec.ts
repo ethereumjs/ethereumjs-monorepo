@@ -1,4 +1,4 @@
-import { bytesToUnprefixedHex, unprefixedHexToBytes } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { encryptKeystoreJsonSync, Wallet as ethersWallet } from 'ethers'
 import zip from 'lodash.zip'
 import { assert, describe, it } from 'vitest'
@@ -10,16 +10,14 @@ const n = 262144
 const r = 8
 const p = 1
 
-const fixturePrivateKey = 'efca4cdd31923b50f4214af5d2ae10e7ac45a5019e9431cc195482d707485378'
-const fixturePrivateKeyStr = '0x' + fixturePrivateKey
-const fixturePrivateKeyBuffer = unprefixedHexToBytes(fixturePrivateKey)
+const fixturePrivateKey = '0xefca4cdd31923b50f4214af5d2ae10e7ac45a5019e9431cc195482d707485378'
+const fixturePrivateKeyBytes = hexToBytes(fixturePrivateKey)
 
 const fixturePublicKey =
-  '5d4392f450262b276652c1fc037606abac500f3160830ce9df53aa70d95ce7cfb8b06010b2f3691c78c65c21eb4cf3dfdbfc0745d89b664ee10435bb3a0f906c'
-const fixturePublicKeyStr = '0x' + fixturePublicKey
-const fixturePublicKeyBuffer = unprefixedHexToBytes(fixturePublicKey)
+  '0x5d4392f450262b276652c1fc037606abac500f3160830ce9df53aa70d95ce7cfb8b06010b2f3691c78c65c21eb4cf3dfdbfc0745d89b664ee10435bb3a0f906c'
+const fixturePublicKeyBytes = hexToBytes(fixturePublicKey)
 
-const fixtureWallet = Wallet.fromPrivateKey(fixturePrivateKeyBuffer)
+const fixtureWallet = Wallet.fromPrivateKey(fixturePrivateKeyBytes)
 const fixtureEthersWallet = new ethersWallet(fixtureWallet.getPrivateKeyString())
 
 // Hack to detect if running in browser or not
@@ -27,29 +25,29 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 
 describe('Wallet tests', () => {
   it('.getPrivateKey()', () => {
-    assert.equal(bytesToUnprefixedHex(fixtureWallet.getPrivateKey()), fixturePrivateKey)
+    assert.equal(bytesToHex(fixtureWallet.getPrivateKey()), fixturePrivateKey)
 
     assert.throws(() => {
-      Wallet.fromPrivateKey(unprefixedHexToBytes('001122'))
+      Wallet.fromPrivateKey(hexToBytes('0x001122'))
     }, /^Private key does not satisfy the curve requirements/)
   }, 30000)
 
   it('.getPrivateKeyString()', () => {
-    assert.deepEqual(fixtureWallet.getPrivateKeyString(), fixturePrivateKeyStr)
+    assert.deepEqual(fixtureWallet.getPrivateKeyString(), fixturePrivateKey)
   }, 30000)
 
   it('.getPublicKey()', () => {
-    assert.deepEqual(bytesToUnprefixedHex(fixtureWallet.getPublicKey()), fixturePublicKey)
+    assert.deepEqual(bytesToHex(fixtureWallet.getPublicKey()), fixturePublicKey)
   }, 30000)
 
   it('.getPublicKeyString()', () => {
-    assert.deepEqual(fixtureWallet.getPublicKeyString(), fixturePublicKeyStr)
+    assert.deepEqual(fixtureWallet.getPublicKeyString(), fixturePublicKey)
   }, 30000)
 
   it('.getAddress()', () => {
     assert.deepEqual(
-      bytesToUnprefixedHex(fixtureWallet.getAddress()),
-      'b14ab53e38da1c172f877dbc6d65e4a1b0474c3c',
+      bytesToHex(fixtureWallet.getAddress()),
+      '0xb14ab53e38da1c172f877dbc6d65e4a1b0474c3c',
     )
   }, 30000)
 
@@ -65,7 +63,7 @@ describe('Wallet tests', () => {
   }, 30000)
 
   it('.verifyPublicKey()', () => {
-    assert.deepEqual(fixtureWallet.verifyPublicKey(fixturePublicKeyBuffer), true),
+    assert.deepEqual(fixtureWallet.verifyPublicKey(fixturePublicKeyBytes), true),
       'should return true if publicKey, privateKey pair is valid'
 
     assert.deepEqual(
@@ -75,10 +73,10 @@ describe('Wallet tests', () => {
     )
   }, 30000)
 
-  const pubKey = unprefixedHexToBytes(fixturePublicKey)
+  const pubKey = hexToBytes(fixturePublicKey)
   it('public key only wallet', () => {
     assert.deepEqual(
-      bytesToUnprefixedHex(Wallet.fromPublicKey(pubKey).getPublicKey()),
+      bytesToHex(Wallet.fromPublicKey(pubKey).getPublicKey()),
       fixturePublicKey,
       '.fromPublicKey() should work',
     )
@@ -86,27 +84,23 @@ describe('Wallet tests', () => {
     assert.throws(
       function () {
         Wallet.fromPublicKey(
-          unprefixedHexToBytes(
-            '030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d',
-          ),
+          hexToBytes('0x030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d'),
         )
       },
       'Invalid public key',
       '.fromPublicKey() should not accept compressed keys in strict mode',
     )
 
-    const tmp = unprefixedHexToBytes(
-      '030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d',
-    )
+    const tmp = hexToBytes('0x030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d')
     assert.deepEqual(
-      bytesToUnprefixedHex(Wallet.fromPublicKey(tmp, true).getPublicKey()),
-      '0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1',
+      bytesToHex(Wallet.fromPublicKey(tmp, true).getPublicKey()),
+      '0x0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1',
       '.fromPublicKey() should accept compressed keys in non-strict mode',
     )
 
     assert.deepEqual(
-      bytesToUnprefixedHex(Wallet.fromPublicKey(pubKey).getAddress()),
-      'b14ab53e38da1c172f877dbc6d65e4a1b0474c3c',
+      bytesToHex(Wallet.fromPublicKey(pubKey).getAddress()),
+      '0xb14ab53e38da1c172f877dbc6d65e4a1b0474c3c',
       '.getAddress() should work',
     )
 
@@ -153,9 +147,9 @@ describe('Wallet tests', () => {
     const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
     const wallet = Wallet.generate(true)
     assert.equal(wallet.getPrivateKey().length, 32)
-    const addr = bytesToUnprefixedHex(wallet.getAddress())
+    const addr = bytesToHex(wallet.getAddress())
     assert.equal(
-      BigInt('0x' + addr) <= max,
+      BigInt(addr) <= max,
       true,
       'should generate an account compatible with ICAP Direct',
     )
@@ -189,15 +183,15 @@ describe('Wallet tests', () => {
   }, 30000)
 
   const pw = 'testtest'
-  const salt = 'dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6'
-  const iv = 'cecacd85e9cb89788b5aab2f93361233'
-  const uuid = '7e59dc028d42d09db29aa8a0f862cc81'
+  const salt = '0xdc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6'
+  const iv = '0xcecacd85e9cb89788b5aab2f93361233'
+  const uuid = '0x7e59dc028d42d09db29aa8a0f862cc81'
 
   const strKdfOptions = { iv, salt, uuid }
   const bytesKdfOptions = {
-    salt: unprefixedHexToBytes(salt),
-    iv: unprefixedHexToBytes(iv),
-    uuid: unprefixedHexToBytes(uuid),
+    salt: hexToBytes(salt),
+    iv: hexToBytes(iv),
+    uuid: hexToBytes(uuid),
   }
 
   // generate all possible combinations of salt, iv, uuid properties, e.g.
@@ -241,14 +235,6 @@ describe('Wallet tests', () => {
     return permus
   }
 
-  const makeEthersOptions = (opts: object) => {
-    const obj: any = {}
-    Object.entries(opts).forEach(([key, val]: [string, string | Uint8Array]) => {
-      obj[key] = typeof val === 'string' ? '0x' + val : val
-    })
-    return obj
-  }
-
   let permutations = makePermutations(strKdfOptions, bytesKdfOptions)
 
   if (isBrowser() === true) {
@@ -283,7 +269,6 @@ describe('Wallet tests', () => {
     const wEthers = new ethersWallet(wRandom.getPrivateKeyString())
     for (const perm of permutations) {
       const { salt, iv, uuid } = perm
-      const ethersOpts = makeEthersOptions({ salt, iv, uuid })
 
       const encFixtureWallet = await fixtureWallet.toV3String(pw, {
         kdf: 'scrypt',
@@ -297,9 +282,9 @@ describe('Wallet tests', () => {
 
       const encFixtureEthersWallet = encryptKeystoreJsonSync(fixtureEthersWallet, pw, {
         scrypt: { N: n, r, p },
-        salt: ethersOpts.salt,
-        iv: ethersOpts.iv,
-        uuid: ethersOpts.uuid,
+        salt,
+        iv,
+        uuid: uuid as string,
       }).toLowerCase()
 
       const encRandomWallet = await wRandom.toV3String(pw, {
@@ -314,9 +299,9 @@ describe('Wallet tests', () => {
 
       const encEthersWallet = encryptKeystoreJsonSync(wEthers, pw, {
         scrypt: { N: n, r, p },
-        salt: ethersOpts.salt,
-        iv: ethersOpts.iv,
-        uuid: ethersOpts.uuid,
+        salt,
+        iv,
+        uuid: uuid as string,
       }).toLowerCase()
 
       assert.deepEqual(wStatic, JSON.parse(encFixtureWallet))
@@ -397,7 +382,7 @@ describe('Wallet tests', () => {
       (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
 
-    salt = unprefixedHexToBytes('')
+    salt = hexToBytes('0x')
     w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
 
     assert.equal('', w.crypto.kdfparams.salt)
@@ -474,7 +459,7 @@ describe('Wallet tests', () => {
       (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey,
     )
 
-    salt = unprefixedHexToBytes('')
+    salt = hexToBytes('0x')
     wStr = await fixtureWallet.toV3String(pw, {
       salt,
       iv,
@@ -544,18 +529,18 @@ describe('Wallet tests', () => {
       assert.ok(err.message.includes(errStrLength))
     }
     try {
-      await fixtureWallet.toV3(pw, { iv: unprefixedHexToBytes('') })
+      await fixtureWallet.toV3(pw, { iv: hexToBytes('0x') })
     } catch (err: any) {
       assert.ok(err.message.includes(errBuffLength))
     }
     try {
-      await fixtureWallet.toV3(pw, { iv: unprefixedHexToBytes('ff') })
+      await fixtureWallet.toV3(pw, { iv: hexToBytes('0xff') })
     } catch (err: any) {
       assert.ok(err.message.includes(errBuffLength))
     }
     try {
       await fixtureWallet.toV3(pw, {
-        iv: unprefixedHexToBytes('ffffffffffffffffffffffffffffffffff'),
+        iv: hexToBytes('0xffffffffffffffffffffffffffffffffff'),
       })
     } catch (err: any) {
       assert.ok(err.message.includes(errBuffLength))
@@ -606,18 +591,18 @@ describe('Wallet tests', () => {
       assert.ok(err.message.includes(errStrLength))
     }
     try {
-      await fixtureWallet.toV3(pw, { uuid: unprefixedHexToBytes('') })
+      await fixtureWallet.toV3(pw, { uuid: hexToBytes('0x') })
     } catch (err: any) {
       assert.ok(err.message.includes(errBuffLength))
     }
     try {
-      await fixtureWallet.toV3(pw, { uuid: unprefixedHexToBytes('ff') })
+      await fixtureWallet.toV3(pw, { uuid: hexToBytes('0xff') })
     } catch (err: any) {
       assert.ok(err.message.includes(errBuffLength))
     }
     try {
       await fixtureWallet.toV3(pw, {
-        uuid: unprefixedHexToBytes('ffffffffffffffffffffffffffffffffff'),
+        uuid: hexToBytes('0xffffffffffffffffffffffffffffffffff'),
       })
     } catch (err: any) {
       assert.ok(err.message.includes(errBuffLength))
@@ -844,7 +829,7 @@ describe('Wallet tests', () => {
   it('raw new Wallet() init', () => {
     assert.throws(
       function () {
-        new Wallet(fixturePrivateKeyBuffer, fixturePublicKeyBuffer)
+        new Wallet(fixturePrivateKeyBytes, fixturePublicKeyBytes)
       },
       'Cannot supply both a private and a public key to the constructor',
       'should fail when both priv and pub key provided',
