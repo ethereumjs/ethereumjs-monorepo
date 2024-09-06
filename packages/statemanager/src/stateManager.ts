@@ -34,7 +34,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { OriginalStorageCache } from './cache/index.js'
 import { modifyAccountFields } from './util.js'
 
-import { CODEHASH_PREFIX, type DefaultStateManagerOpts } from './index.js'
+import { CODEHASH_PREFIX, type MerkleStateManagerOpts } from './index.js'
 
 import type { Caches, StorageProof } from './index.js'
 import type {
@@ -93,7 +93,7 @@ export class MerkleStateManager implements StateManagerInterface {
   /**
    * Instantiate the StateManager interface.
    */
-  constructor(opts: DefaultStateManagerOpts = {}) {
+  constructor(opts: MerkleStateManagerOpts = {}) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
@@ -598,12 +598,12 @@ export class MerkleStateManager implements StateManagerInterface {
    * @param proof Either a proof retrieved from `getProof`, or an array of those proofs
    * @param safe Whether or not to verify that the roots of the proof items match the reported roots
    * @param opts a dictionary of StateManager opts
-   * @returns A new DefaultStateManager with elements from the given proof included in its backing state trie
+   * @returns A new MerkleStateManager with elements from the given proof included in its backing state trie
    */
   static async fromProof(
     proof: Proof | Proof[],
     safe: boolean = false,
-    opts: DefaultStateManagerOpts = {},
+    opts: MerkleStateManagerOpts = {},
   ): Promise<MerkleStateManager> {
     if (Array.isArray(proof)) {
       if (proof.length === 0) {
