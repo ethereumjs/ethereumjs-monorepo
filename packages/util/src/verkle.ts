@@ -38,13 +38,13 @@ export interface VerkleCrypto {
 /**
  * @dev Returns the 31-bytes verkle tree stem for a given address and tree index.
  * @dev Assumes that the verkle node width = 256
- * @param ffi The verkle ffi object from verkle-cryptography-wasm.
- * @param address The address to generate the tree key for.
+ * @param {VerkleCrypto} verkleCrypto The {@link VerkleCrypto} foreign function interface object from verkle-cryptography-wasm.
+ * @param {Address} address The address to generate the tree key for.
  * @param treeIndex The index of the tree to generate the key for. Defaults to 0.
  * @return The 31-bytes verkle tree stem as a Uint8Array.
  */
 export function getVerkleStem(
-  ffi: VerkleCrypto,
+  verkleCrypto: VerkleCrypto,
   address: Address,
   treeIndex: number | bigint = 0,
 ): Uint8Array {
@@ -57,23 +57,26 @@ export function getVerkleStem(
     treeIndexBytes = setLengthRight(bigIntToBytes(BigInt(treeIndex), true).slice(0, 32), 32)
   }
 
-  const treeStem = ffi.getTreeKey(address32, treeIndexBytes, 0).slice(0, 31)
+  const treeStem = verkleCrypto.getTreeKey(address32, treeIndexBytes, 0).slice(0, 31)
 
   return treeStem
 }
 
 /**
  * Verifies that the executionWitness is valid for the given prestateRoot.
- * @param ffi The verkle ffi object from verkle-cryptography-wasm.
- * @param executionWitness The verkle execution witness.
+ * @param {VerkleCrypto} verkleCrypto The {@link VerkleCrypto} foreign function interface object from verkle-cryptography-wasm.
+ * @param {VerkleExecutionWitness} executionWitness The verkle execution witness.
  * @returns {boolean} Whether or not the executionWitness belongs to the prestateRoot.
  */
 export function verifyVerkleProof(
-  ffi: VerkleCrypto,
+  verkleCrypto: VerkleCrypto,
   executionWitness: VerkleExecutionWitness,
 ): boolean {
   const { parentStateRoot, ...parsedExecutionWitness } = executionWitness
-  return ffi.verifyExecutionWitnessPreState(parentStateRoot, JSON.stringify(parsedExecutionWitness))
+  return verkleCrypto.verifyExecutionWitnessPreState(
+    parentStateRoot,
+    JSON.stringify(parsedExecutionWitness),
+  )
 }
 
 /* Verkle Structure */
@@ -159,7 +162,6 @@ export const VERKLE_MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(VERKLE_CODE_CHUN
  * @param subIndex The sub index of the tree to generate the key for as a Uint8Array.
  * @return The tree key as a Uint8Array.
  */
-
 export const getVerkleKey = (stem: Uint8Array, leaf: VerkleLeafType | Uint8Array) => {
   switch (leaf) {
     case VerkleLeafType.BasicData:
@@ -171,7 +173,13 @@ export const getVerkleKey = (stem: Uint8Array, leaf: VerkleLeafType | Uint8Array
   }
 }
 
-export function getVerkleTreeIndexesForStorageSlot(storageKey: bigint): {
+/**
+ * Calculates the position of the storage key in the Verkle tree, determining
+ * both the tree index (the node in the tree) and the subindex (the position within the node).
+ * @param {bigint} storageKey - The key representing a specific storage slot.
+ * @returns {Object} - An object containing:
+ */
+export function getVerkleTreeIndicesForStorageSlot(storageKey: bigint): {
   treeIndex: bigint
   subIndex: number
 } {
@@ -188,12 +196,25 @@ export function getVerkleTreeIndexesForStorageSlot(storageKey: bigint): {
   return { treeIndex, subIndex }
 }
 
+/**
+ * Calculates the position of the code chunks in the Verkle tree, determining
+ * both the tree index (the node in the tree) and the subindex (the position within the node).
+ * @param {bigint} chunkId - The ID representing a specific chunk.
+ * @returns {Object} - An object containing:
+ */
 export function getVerkleTreeIndicesForCodeChunk(chunkId: number) {
   const treeIndex = Math.floor((VERKLE_CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH)
   const subIndex = (VERKLE_CODE_OFFSET + chunkId) % VERKLE_NODE_WIDTH
   return { treeIndex, subIndex }
 }
 
+/**
+ * Asynchronously calculates the Verkle tree key for the specified code chunk ID.
+ * @param {Address} address - The account address to access code for.
+ * @param {number} chunkId - The ID of the code chunk to retrieve.
+ * @param {VerkleCrypto} verkleCrypto - The cryptographic object used for Verkle-related operations.
+ * @returns {Promise<Uint8Array>} - A promise that resolves to the Verkle tree key as a byte array.
+ */
 export const getVerkleTreeKeyForCodeChunk = async (
   address: Address,
   chunkId: number,
@@ -213,16 +234,32 @@ export const chunkifyCode = (code: Uint8Array) => {
   throw new Error('Not implemented')
 }
 
+/**
+ * Asynchronously calculates the Verkle tree key for the specified storage slot.
+ * @param {Address} address - The account address to access code for.
+ * @param {bigint} storageKey - The storage slot key to retrieve the verkle key for.
+ * @param {VerkleCrypto} verkleCrypto - The cryptographic object used for Verkle-related operations.
+ * @returns {Promise<Uint8Array>} - A promise that resolves to the Verkle tree key as a byte array.
+ */
 export const getVerkleTreeKeyForStorageSlot = async (
   address: Address,
   storageKey: bigint,
   verkleCrypto: VerkleCrypto,
 ) => {
-  const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(storageKey)
+  const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(storageKey)
 
   return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
 }
 
+/**
+ * This function extracts and decodes account header elements (version, nonce, code size, and balance)
+ * from an encoded `Uint8Array` representation of raw Verkle leaf-node basic data. Each component is sliced
+ * from the `encodedBasicData` array based on predefined offsets and lengths, and then converted
+ * to its appropriate type (integer or BigInt).
+ * @param {Uint8Array} encodedBasicData - The encoded Verkle leaf basic data containing the version, nonce,
+ * code size, and balance in a compact binary format.
+ * @returns {VerkleLeafBasicData} - An object containing the decoded version, nonce, code size, and balance.
+ */
 export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleLeafBasicData {
   const versionBytes = encodedBasicData.slice(0, VERKLE_VERSION_BYTES_LENGTH)
   const nonceBytes = encodedBasicData.slice(
@@ -246,6 +283,16 @@ export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleL
   return { version, nonce, codeSize, balance }
 }
 
+/**
+ * This function takes a `VerkleLeafBasicData` object and encodes its properties
+ * (version, nonce, code size, and balance) into a compact `Uint8Array` format. Each
+ * property is serialized and padded to match the required byte lengths defined by
+ * EIP-6800. Additionally, 3 bytes are reserved for future use as specified
+ * in EIP-6800.
+ * @param {VerkleLeafBasicData} basicData - An object containing the version, nonce,
+ *   code size, and balance to be encoded.
+ * @returns {Uint8Array} - A compact, binary-encoded representation of the account header basic data.
+ */
 export function encodeVerkleLeafBasicData(basicData: VerkleLeafBasicData): Uint8Array {
   const encodedVersion = setLengthLeft(int32ToBytes(basicData.version), VERKLE_VERSION_BYTES_LENGTH)
   // Per EIP-6800, bytes 1-4 are reserved for future use
