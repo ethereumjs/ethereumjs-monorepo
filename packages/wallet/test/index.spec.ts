@@ -94,7 +94,7 @@ describe('Wallet tests', () => {
     const tmp = hexToBytes('0x030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d')
     assert.deepEqual(
       bytesToHex(Wallet.fromPublicKey(tmp, true).getPublicKey()),
-      '0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1',
+      '0x0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1',
       '.fromPublicKey() should accept compressed keys in non-strict mode',
     )
 
