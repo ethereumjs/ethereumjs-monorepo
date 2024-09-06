@@ -34,6 +34,8 @@ export interface VerkleCrypto {
   verifyExecutionWitnessPreState: (prestateRoot: string, execution_witness_json: string) => boolean
   hashCommitment: (commitment: Uint8Array) => Uint8Array
   serializeCommitment: (commitment: Uint8Array) => Uint8Array
+  createProof: (bytes: Uint8Array) => Uint8Array
+  verifyProof: (proof: Uint8Array) => boolean
 }
 
 /**
