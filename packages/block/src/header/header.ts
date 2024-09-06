@@ -740,7 +740,7 @@ export class BlockHeader {
     const withdrawalAttr = this.withdrawalsRoot
       ? { withdrawalsRoot: bytesToHex(this.withdrawalsRoot) }
       : {}
-    const jsonDict: JSONHeader = {
+    const JSONDict: JSONHeader = {
       parentHash: bytesToHex(this.parentHash),
       uncleHash: bytesToHex(this.uncleHash),
       coinbase: this.coinbase.toString(),
@@ -759,19 +759,19 @@ export class BlockHeader {
       nonce: bytesToHex(this.nonce),
     }
     if (this.common.isActivatedEIP(1559)) {
-      jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
+      JSONDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
     }
     if (this.common.isActivatedEIP(4844)) {
-      jsonDict.blobGasUsed = bigIntToHex(this.blobGasUsed!)
-      jsonDict.excessBlobGas = bigIntToHex(this.excessBlobGas!)
+      JSONDict.blobGasUsed = bigIntToHex(this.blobGasUsed!)
+      JSONDict.excessBlobGas = bigIntToHex(this.excessBlobGas!)
     }
     if (this.common.isActivatedEIP(4788)) {
-      jsonDict.parentBeaconBlockRoot = bytesToHex(this.parentBeaconBlockRoot!)
+      JSONDict.parentBeaconBlockRoot = bytesToHex(this.parentBeaconBlockRoot!)
     }
     if (this.common.isActivatedEIP(7685)) {
-      jsonDict.requestsRoot = bytesToHex(this.requestsRoot!)
+      JSONDict.requestsRoot = bytesToHex(this.requestsRoot!)
     }
-    return jsonDict
+    return JSONDict
   }
 
   /**

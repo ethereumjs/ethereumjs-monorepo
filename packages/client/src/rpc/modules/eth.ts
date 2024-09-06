@@ -35,7 +35,7 @@ import {
 } from '@ethereumjs/vm'
 
 import { INTERNAL_ERROR, INVALID_HEX_STRING, INVALID_PARAMS, PARSE_ERROR } from '../error-code.js'
-import { callWithStackTrace, getBlockByOption, jsonRPCTx } from '../helpers.js'
+import { callWithStackTrace, getBlockByOption, toJSONRPCTx } from '../helpers.js'
 import { middleware, validators } from '../validation.js'
 
 import type { Chain } from '../../blockchain/index.js'
@@ -102,7 +102,7 @@ type JSONRPCLog = {
 /**
  * Returns block formatted to the standard JSON-RPC fields
  */
-const jsonRPCBlock = async (
+const toJSONRPCBlock = async (
   block: Block,
   chain: Chain,
   includeTransactions: boolean,
@@ -110,7 +110,7 @@ const jsonRPCBlock = async (
   const json = block.toJSON()
   const header = json!.header!
   const transactions = block.transactions.map((tx, txIndex) =>
-    includeTransactions ? jsonRPCTx(tx, block, txIndex) : bytesToHex(tx.hash()),
+    includeTransactions ? toJSONRPCTx(tx, block, txIndex) : bytesToHex(tx.hash()),
   )
   const withdrawalsAttr =
     header.withdrawalsRoot !== undefined
@@ -154,7 +154,7 @@ const jsonRPCBlock = async (
 /**
  * Returns log formatted to the standard JSON-RPC fields
  */
-const jsonRPCLog = async (
+const toJSONRPCLog = async (
   log: Log,
   block?: Block,
   tx?: TypedTransaction,
@@ -175,7 +175,7 @@ const jsonRPCLog = async (
 /**
  * Returns receipt formatted to the standard JSON-RPC fields
  */
-const jsonRPCReceipt = async (
+const toJSONRPCReceipt = async (
   receipt: TxReceipt,
   gasUsed: bigint,
   effectiveGasPrice: bigint,
@@ -198,7 +198,7 @@ const jsonRPCReceipt = async (
   gasUsed: bigIntToHex(gasUsed),
   contractAddress: contractAddress?.toString() ?? null,
   logs: await Promise.all(
-    receipt.logs.map((l, i) => jsonRPCLog(l, block, tx, txIndex, logIndex + i)),
+    receipt.logs.map((l, i) => toJSONRPCLog(l, block, tx, txIndex, logIndex + i)),
   ),
   logsBloom: bytesToHex(receipt.bitvector),
   root:
@@ -680,7 +680,7 @@ export class Eth {
 
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
-      return await jsonRPCBlock(block, this._chain, includeTransactions)
+      return await toJSONRPCBlock(block, this._chain, includeTransactions)
     } catch (error) {
       return null
     }
@@ -702,7 +702,7 @@ export class Eth {
     }
     try {
       const block = await getBlockByOption(blockOpt, this._chain)
-      const response = await jsonRPCBlock(block, this._chain, includeTransactions)
+      const response = await toJSONRPCBlock(block, this._chain, includeTransactions)
       return response
     } catch {
       return null
@@ -812,7 +812,7 @@ export class Eth {
       }
 
       const tx = block.transactions[txIndex]
-      return jsonRPCTx(tx, block, txIndex)
+      return toJSONRPCTx(tx, block, txIndex)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
@@ -837,7 +837,7 @@ export class Eth {
       }
 
       const tx = block.transactions[txIndex]
-      return jsonRPCTx(tx, block, txIndex)
+      return toJSONRPCTx(tx, block, txIndex)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
@@ -859,7 +859,7 @@ export class Eth {
     const [_receipt, blockHash, txIndex] = result
     const block = await this._chain.getBlock(blockHash)
     const tx = block.transactions[txIndex]
-    return jsonRPCTx(tx, block, txIndex)
+    return toJSONRPCTx(tx, block, txIndex)
   }
 
   /**
@@ -969,7 +969,7 @@ export class Eth {
                 block.header.baseFeePerGas!
             : (tx as LegacyTx).gasPrice
 
-        return jsonRPCReceipt(
+        return toJSONRPCReceipt(
           r,
           totalGasSpent,
           effectiveGasPrice,
@@ -1031,7 +1031,7 @@ export class Eth {
 
     const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
     const { blobGasPrice, blobGasUsed } = runBlockResult.receipts[txIndex] as EIP4844BlobTxReceipt
-    return jsonRPCReceipt(
+    return toJSONRPCReceipt(
       receipt,
       totalGasSpent,
       effectiveGasPrice,
@@ -1130,7 +1130,7 @@ export class Eth {
     const logs = await this.receiptsManager.getLogs(from, to, addressBytes, formattedTopics)
     return Promise.all(
       logs.map(({ log, block, tx, txIndex, logIndex }) =>
-        jsonRPCLog(log, block, tx, txIndex, logIndex),
+        toJSONRPCLog(log, block, tx, txIndex, logIndex),
       ),
     )
   }

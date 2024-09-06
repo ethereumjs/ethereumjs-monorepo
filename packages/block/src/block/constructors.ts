@@ -471,8 +471,8 @@ export async function createBlockFromExecutionPayload(
 }
 
 /**
- *  Method to retrieve a block from a beacon payload json
- * @param payload json of a beacon beacon fetched from beacon apis
+ *  Method to retrieve a block from a beacon payload JSON
+ * @param payload JSON of a beacon beacon fetched from beacon apis
  * @param opts {@link BlockOptions}
  * @returns the block constructed block
  */
