@@ -32,7 +32,7 @@ import { modifyAccountFields } from './util.js'
 import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { Caches } from './cache/index.js'
 import type { StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
-import type { MerkleStateManager } from './stateManager.js'
+import type { MerkleStateManager } from './merkleStateManager.js'
 import type { AccountFields, Proof, StateManagerInterface } from '@ethereumjs/common'
 import type {
   Address,
