@@ -17,7 +17,7 @@ import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import { baseSetup, getRpcClient, setupChain } from '../helpers.js'
+import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
 
 // Since the genesis is copy of withdrawals with just sharding hardfork also started
 // at 0, we can re-use the same payload args
@@ -76,7 +76,7 @@ describe(method, () => {
       customCrypto: { kzg },
     })
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     common.setHardfork(Hardfork.Cancun)
     const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
     const address = createAddressFromPrivateKey(pkey)

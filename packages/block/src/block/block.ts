@@ -23,16 +23,16 @@ import {
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
   BlockHeader,
-  type createBlockFromBeaconPayloadJson,
+  type createBlockFromBeaconPayloadJSON,
   type createBlock,
   type createBlockFromExecutionPayload,
-  type createBlockFromJsonRpcProvider,
+  type createBlockFromJSONRPCProvider,
   type createBlockFromRLP,
   type createBlockFromRPC,
   type createBlockFromBytesArray,
 } from '../index.js'
 /* eslint-enable */
-import type { BlockBytes, BlockOptions, ExecutionPayload, JsonBlock } from '../types.js'
+import type { BlockBytes, BlockOptions, ExecutionPayload, JSONBlock } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
 import type {
@@ -56,9 +56,9 @@ import type {
  * - {@link createBlockFromBytesArray }
  * - {@link createBlockFromRLP }
  * - {@link createBlockFromRPC }
- * - {@link createBlockFromJsonRpcProvider }
+ * - {@link createBlockFromJSONRPCProvider }
  * - {@link createBlockFromExecutionPayload }
- * - {@link createBlockFromBeaconPayloadJson }
+ * - {@link createBlockFromBeaconPayloadJSON }
  */
 export class Block {
   public readonly header: BlockHeader
@@ -519,7 +519,7 @@ export class Block {
   /**
    * Returns the block in JSON format.
    */
-  toJSON(): JsonBlock {
+  toJSON(): JSONBlock {
     const withdrawalsAttr = this.withdrawals
       ? {
           withdrawals: this.withdrawals.map((wt) => wt.toJSON()),
@@ -541,10 +541,10 @@ export class Block {
    * @returns dict with the execution payload parameters with camel case naming
    */
   toExecutionPayload(): ExecutionPayload {
-    const blockJson = this.toJSON()
-    const header = blockJson.header!
+    const blockJSON = this.toJSON()
+    const header = blockJSON.header!
     const transactions = this.transactions.map((tx) => bytesToHex(tx.serialize())) ?? []
-    const withdrawalsArr = blockJson.withdrawals ? { withdrawals: blockJson.withdrawals } : {}
+    const withdrawalsArr = blockJSON.withdrawals ? { withdrawals: blockJSON.withdrawals } : {}
 
     const executionPayload: ExecutionPayload = {
       blockNumber: header.number!,

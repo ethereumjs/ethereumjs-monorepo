@@ -12,7 +12,7 @@ const end = (child: ChildProcessWithoutNullStreams, hasEnded: boolean) => {
   assert.ok(res, 'client shut down successfully')
 }
 
-describe('[CLI] rpc', () => {
+describe('[CLI] RPC', () => {
   it('libp2p should start up', () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const child = spawn(process.execPath, [
@@ -34,7 +34,7 @@ describe('[CLI] rpc', () => {
         assert.ok(true, 'libp2p server started')
         const bootnodeAddressArray = message.split(' ')
         const bootnodeAddressIndex = bootnodeAddressArray.findIndex((chunk: string) =>
-          chunk.startsWith('url=')
+          chunk.startsWith('url='),
         )
         const bootNodeAddress = bootnodeAddressArray[bootnodeAddressIndex].split('=')[1]
         child2 = spawn(process.execPath, [

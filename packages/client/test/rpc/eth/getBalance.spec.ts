@@ -8,7 +8,7 @@ import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
 
@@ -24,7 +24,7 @@ describe(
       const client = await createClient({ blockchain, commonChain: common, includeVM: true })
       const manager = createManager(client)
 
-      const rpc = getRpcClient(startRPC(manager.getMethods()))
+      const rpc = getRPCClient(startRPC(manager.getMethods()))
 
       const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
       assert.notEqual(execution, undefined, 'should have valid execution')
@@ -98,7 +98,7 @@ describe(
 
       const client = await createClient({ blockchain, includeVM: true })
       const manager = createManager(client)
-      const rpc = getRpcClient(startRPC(manager.getMethods()))
+      const rpc = getRPCClient(startRPC(manager.getMethods()))
 
       const res = await rpc.request(method, [
         '0xccfd725760a68823ff1e062f4cc97e1360e8d997',

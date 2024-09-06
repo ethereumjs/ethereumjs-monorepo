@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 
 import {
   TransactionType,
-  createTxFromJsonRpcProvider,
+  createTxFromJSONRPCProvider,
   createTxFromRPC,
   createTxFromTxData,
 } from '../src/index.js'
@@ -22,7 +22,7 @@ const txTypes = [
   TransactionType.FeeMarketEIP1559,
 ]
 
-describe('[fromJsonRpcProvider]', () => {
+describe('[fromJSONRPCProvider]', () => {
   it('should work', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const provider = 'https://my.json.rpc.provider.com:8545'
@@ -56,10 +56,10 @@ describe('[fromJsonRpcProvider]', () => {
     }
 
     const txHash = '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
-    const tx = await createTxFromJsonRpcProvider(provider, txHash, { common })
+    const tx = await createTxFromJSONRPCProvider(provider, txHash, { common })
     assert.equal(bytesToHex(tx.hash()), txHash, 'generated correct tx from transaction RPC data')
     try {
-      await createTxFromJsonRpcProvider(provider, bytesToHex(randomBytes(32)), {})
+      await createTxFromJSONRPCProvider(provider, bytesToHex(randomBytes(32)), {})
       assert.fail('should throw')
     } catch (err: any) {
       assert.ok(

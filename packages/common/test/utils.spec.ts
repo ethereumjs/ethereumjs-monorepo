@@ -56,19 +56,19 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should set merge to block 0 when terminalTotalDifficultyPassed is true', () => {
-    const mergeAtGenesisJson = {} as any
-    Object.assign(mergeAtGenesisJson, postMergeJSON)
-    mergeAtGenesisJson.config.terminalTotalDifficultyPassed = true
-    const common = createCommonFromGethGenesis(mergeAtGenesisJson, {})
+    const mergeAtGenesisJSON = {} as any
+    Object.assign(mergeAtGenesisJSON, postMergeJSON)
+    mergeAtGenesisJSON.config.terminalTotalDifficultyPassed = true
+    const common = createCommonFromGethGenesis(mergeAtGenesisJSON, {})
     assert.equal(common.hardforks().slice(-1)[0].block, 0)
   })
 
   it('should set merge to block 0 when terminalTotalDifficultyPassed is true', () => {
-    const mergeAtGenesisJson = {} as any
-    Object.assign(mergeAtGenesisJson, postMergeJSON)
-    mergeAtGenesisJson.config.terminalTotalDifficultyPassed = false
+    const mergeAtGenesisJSON = {} as any
+    Object.assign(mergeAtGenesisJSON, postMergeJSON)
+    mergeAtGenesisJSON.config.terminalTotalDifficultyPassed = false
     try {
-      createCommonFromGethGenesis(mergeAtGenesisJson, {})
+      createCommonFromGethGenesis(mergeAtGenesisJSON, {})
       assert.fail('should have thrown')
     } catch (err: any) {
       assert.ok(err.message.includes('nonzero terminal total difficulty'))
@@ -91,12 +91,12 @@ describe('[Utils/Parse]', () => {
 
   it('should correctly parse deposit contract address', async () => {
     // clone json out to not have side effects
-    const customJson = JSON.parse(JSON.stringify(postMergeHardforkJSON))
-    Object.assign(customJson.config, {
+    const customJSON = JSON.parse(JSON.stringify(postMergeHardforkJSON))
+    Object.assign(customJSON.config, {
       depositContractAddress: '0x4242424242424242424242424242424242424242',
     })
 
-    const common = createCommonFromGethGenesis(customJson, {
+    const common = createCommonFromGethGenesis(customJSON, {
       chain: 'customChain',
     })
     const depositContractAddress =

@@ -5,7 +5,7 @@ import { generateCliqueBlockExtraData } from '../consensus/clique.js'
 import { numberToHex, valuesArrayToHeaderData } from '../helpers.js'
 import { BlockHeader } from '../index.js'
 
-import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonRpcBlock } from '../types.js'
+import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONRPCBlock } from '../types.js'
 
 /**
  * Static constructor to create a block header from a header data dictionary
@@ -96,7 +96,7 @@ export function createSealedCliqueBlockHeader(
  * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param options - An object describing the blockchain
  */
-export function createBlockHeaderFromRPC(blockParams: JsonRpcBlock, options?: BlockOptions) {
+export function createBlockHeaderFromRPC(blockParams: JSONRPCBlock, options?: BlockOptions) {
   const {
     parentHash,
     sha3Uncles,

@@ -6,7 +6,7 @@ import { assert, beforeEach, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import genesisJSON from '../../testdata/geth-genesis/debug.json'
-import { dummy, getRpcClient, setupChain } from '../helpers.js'
+import { dummy, getRPCClient, setupChain } from '../helpers.js'
 
 import type { Block } from '@ethereumjs/block'
 import type { StorageRange } from '@ethereumjs/common'
@@ -88,7 +88,7 @@ describe(method, () => {
     const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
       txLookupLimit: 0,
     })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const firstTx = createTxFromTxData(
       {
         type: 0x2,

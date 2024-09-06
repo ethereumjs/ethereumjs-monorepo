@@ -1,4 +1,4 @@
-import { createBlockFromJsonRpcProvider, createBlockFromRPC } from '@ethereumjs/block'
+import { createBlockFromJSONRPCProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
 import { createFeeMarket1559Tx, createTxFromRPC } from '@ethereumjs/tx'
@@ -24,7 +24,7 @@ import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
 import { getValues } from './testdata/providerData/mockProvider.js'
 import * as txData from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json'
 
-import type { JsonRpcBlock } from '@ethereumjs/block'
+import type { JSONRPCBlock } from '@ethereumjs/block'
 
 const provider = process.env.PROVIDER ?? 'http://cheese'
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
@@ -201,7 +201,7 @@ describe('RPC State Manager API tests', () => {
     assert.deepEqual({}, clearedStorage, 'storage cache should be empty after clear')
 
     try {
-      await createBlockFromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)
+      await createBlockFromJSONRPCProvider(provider, 'fakeBlockTag', {} as any)
       assert.fail('should have thrown')
     } catch (err: any) {
       assert.ok(
@@ -290,7 +290,7 @@ describe('runBlock test', () => {
     common.setHardforkBy({ blockNumber: blockTag - 1n })
 
     const vm = await createVM({ common, stateManager: state })
-    const block = createBlockFromRPC(blockData.default as JsonRpcBlock, [], { common })
+    const block = createBlockFromRPC(blockData.default as JSONRPCBlock, [], { common })
     try {
       const res = await runBlock(vm, {
         block,
@@ -322,7 +322,7 @@ describe('blockchain', () =>
     await evm.stateManager.setStateRoot(
       hexToBytes('0xf8506f559699a58a4724df4fcf2ad4fd242d20324db541823f128f5974feb6c7'),
     )
-    const block = await createBlockFromJsonRpcProvider(provider, 500000n, { setHardfork: true })
+    const block = await createBlockFromJSONRPCProvider(provider, 500000n, { setHardfork: true })
     await evm.stateManager.putCode(contractAddress, hexToBytes(code))
     const runCallArgs: Partial<EVMRunCallOpts> = {
       caller,

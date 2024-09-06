@@ -17,6 +17,7 @@ import {
   createBlockHeader,
 } from '../src/index.js'
 
+import type { JSONRPCBlock } from '../src/index.js'
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 
 function getRandomDepositRequest(): CLRequest<CLRequestType> {
@@ -153,9 +154,9 @@ describe('fromRPC tests', () => {
         common,
       },
     )
-    const jsonBlock = block.toJSON()
-    const rpcBlock: any = { ...jsonBlock.header, requests: jsonBlock.requests }
-    const createBlockFromJson = createBlockFromRPC(rpcBlock, undefined, { common })
-    assert.deepEqual(block.hash(), createBlockFromJson.hash())
+    const JSONBlock = block.toJSON()
+    const RPCBlock = { ...JSONBlock.header, requests: JSONBlock.requests }
+    const createBlockFromJSON = createBlockFromRPC(RPCBlock as JSONRPCBlock, undefined, { common })
+    assert.deepEqual(block.hash(), createBlockFromJSON.hash())
   })
 })

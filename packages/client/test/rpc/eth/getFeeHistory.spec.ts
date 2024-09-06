@@ -19,7 +19,7 @@ import { assert, describe, it } from 'vitest'
 
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
 import pow from '../../testdata/geth-genesis/pow.json'
-import { getRpcClient, gethGenesisStartLondon, setupChain } from '../helpers.js'
+import { getRPCClient, gethGenesisStartLondon, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain/index.js'
 import type { VMExecution } from '../../../src/execution/index.js'
@@ -193,7 +193,7 @@ describe(method, () => {
     await produceFakeGasUsedBlock(execution, chain, gasUsed / BigInt(2))
     await produceFakeGasUsedBlock(execution, chain, gasUsed)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
 
     // Expect to retrieve the blocks [2,3]
     const res = await rpc.request(method, ['0x2', 'latest', []])
@@ -233,7 +233,7 @@ describe(method, () => {
     const gasUsed = BigInt(0)
 
     await produceFakeGasUsedBlock(execution, chain, gasUsed)
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
 
     const res = await rpc.request(method, ['0x2', 'latest', []])
     const [, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [string, string, string]
@@ -258,7 +258,7 @@ describe(method, () => {
     const initialBaseFee = common.param('initialBaseFee')
     const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
 
     const res = await rpc.request(method, ['0x1', 'latest', []])
 
@@ -273,7 +273,7 @@ describe(method, () => {
 
     await produceFakeGasUsedBlock(execution, chain, gasUsed)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
 
     const res = await rpc.request(method, ['0x1', 'latest', []])
 
@@ -289,7 +289,7 @@ describe(method, () => {
 
     await produceFakeGasUsedBlock(execution, chain, gasUsed)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
 
     const res = await rpc.request(method, ['0x2', 'latest', []])
 
@@ -302,7 +302,7 @@ describe(method, () => {
   it(`${method}: should throw error if block count is below 1`, async () => {
     const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
 
     const req = await rpc.request(method, ['0x0', 'latest', []])
     assert.ok(req.error !== undefined)
@@ -311,7 +311,7 @@ describe(method, () => {
   it(`${method}: should throw error if block count is above 1024`, async () => {
     const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
 
     const req = await rpc.request(method, ['0x401', 'latest', []])
     assert.ok(req.error !== undefined)
@@ -321,7 +321,7 @@ describe(method, () => {
     const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
     await produceFakeGasUsedBlock(execution, chain, 1n)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [50, 60]])
     assert.equal(
       parseInt(res.result.reward[0][0]),
@@ -338,7 +338,7 @@ describe(method, () => {
     const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
     await produceBlockWithTx(execution, chain)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [50]])
     assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
   })
@@ -347,7 +347,7 @@ describe(method, () => {
     const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
     await produceBlockWithTx(execution, chain)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [50]])
     assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
   })
@@ -358,7 +358,7 @@ describe(method, () => {
     const gasUsed = [BigInt(400000), BigInt(600000)]
     await produceBlockWithTx(execution, chain, priorityFees, gasUsed)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [40, 100]])
     assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
     const expected = priorityFees.map(bigIntToHex)
@@ -379,7 +379,7 @@ describe(method, () => {
     const gasUsed = [BigInt(500000), BigInt(500000)]
     await produceBlockWithTx(execution, chain, priorityFees, gasUsed)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     /**
      * In this test, both txs use 50% of the block gas used
      * Request the reward percentiles [10, 20, 60, 100] so expect rewards of:
@@ -423,7 +423,7 @@ describe(method, () => {
         await produceBlockWith4844Tx(execution, chain, [i])
       }
 
-      const rpc = getRpcClient(server)
+      const rpc = getRPCClient(server)
 
       const res = await rpc.request(method, ['0x6', 'latest', []])
 

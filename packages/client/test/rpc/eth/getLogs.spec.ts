@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import pow from '../../testdata/geth-genesis/pow.json'
-import { dummy, getRpcClient, runBlockWithTxs, setupChain } from '../helpers.js'
+import { dummy, getRPCClient, runBlockWithTxs, setupChain } from '../helpers.js'
 
 const method = 'eth_getLogs'
 
@@ -29,7 +29,7 @@ const logExampleBytecode = hexToBytes(
 describe(method, async () => {
   it('call with valid arguments', async () => {
     const { chain, common, execution, server } = await setupChain(pow, 'pow')
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // deploy contracts at two different addresses
     const txData = { gasLimit: 2000000, gasPrice: 100 }
     const tx1 = createLegacyTx(
@@ -206,7 +206,7 @@ describe(method, async () => {
 
   it('call with invalid params', async () => {
     const { server } = await setupChain(pow, 'pow')
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // fromBlock greater than current height
     let res = await rpc.request(method, [{ fromBlock: '0x1234' }])
     assert.equal(res.error.code, INVALID_PARAMS)

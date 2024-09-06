@@ -4,9 +4,9 @@ import { INTERNAL_ERROR, INVALID_BLOCK, INVALID_PARAMS } from './error-code.js'
 
 import type { Chain } from '../blockchain/index.js'
 import type { Block } from '@ethereumjs/block'
-import type { JsonRpcTx, TypedTransaction } from '@ethereumjs/tx'
+import type { JSONRPCTx, TypedTransaction } from '@ethereumjs/tx'
 
-type RpcError = {
+type RPCError = {
   code: number
   message: string
   trace?: string
@@ -19,7 +19,7 @@ export function callWithStackTrace(handler: Function, debug: boolean) {
       const res = await handler(...args)
       return res
     } catch (error: any) {
-      const e: RpcError = {
+      const e: RPCError = {
         code: error.code ?? INTERNAL_ERROR,
         message: error.message,
         data: error.data,
@@ -36,7 +36,7 @@ export function callWithStackTrace(handler: Function, debug: boolean) {
 /**
  * Returns tx formatted to the standard JSON-RPC fields
  */
-export const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JsonRpcTx => {
+export const toJSONRPCTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JSONRPCTx => {
   const txJSON = tx.toJSON()
   return {
     blockHash: block ? bytesToHex(block.hash()) : null,

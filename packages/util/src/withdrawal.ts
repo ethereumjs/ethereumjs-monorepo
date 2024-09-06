@@ -20,7 +20,7 @@ export type WithdrawalData = {
  * JSON RPC interface for EIP-4895 withdrawal data with amount in Gwei to
  * match CL representation and for eventual ssz withdrawalsRoot
  */
-export interface JsonRpcWithdrawal {
+export interface JSONRPCWithdrawal {
   index: PrefixedHexString // QUANTITY - bigint 8 bytes
   validatorIndex: PrefixedHexString // QUANTITY - bigint 8 bytes
   address: PrefixedHexString // DATA, 20 Bytes  address to withdraw to
