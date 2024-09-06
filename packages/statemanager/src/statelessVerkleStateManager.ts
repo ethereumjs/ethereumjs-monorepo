@@ -32,7 +32,7 @@ import { modifyAccountFields } from './util.js'
 import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { Caches } from './cache/index.js'
 import type { StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
-import type { DefaultStateManager } from './stateManager.js'
+import type { MerkleStateManager } from './stateManager.js'
 import type { AccountFields, Proof, StateManagerInterface } from '@ethereumjs/common'
 import type {
   Address,
@@ -122,7 +122,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
-  async getTransitionStateRoot(_: DefaultStateManager, __: Uint8Array): Promise<Uint8Array> {
+  async getTransitionStateRoot(_: MerkleStateManager, __: Uint8Array): Promise<Uint8Array> {
     throw Error('not implemented')
   }
 

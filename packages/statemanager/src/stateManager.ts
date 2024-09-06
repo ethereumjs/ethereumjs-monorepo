@@ -62,7 +62,7 @@ import type { Debugger } from 'debug'
  * package which might be an alternative to this implementation
  * for many basic use cases.
  */
-export class DefaultStateManager implements StateManagerInterface {
+export class MerkleStateManager implements StateManagerInterface {
   protected _debug: Debugger
   protected _caches?: Caches
 
@@ -604,10 +604,10 @@ export class DefaultStateManager implements StateManagerInterface {
     proof: Proof | Proof[],
     safe: boolean = false,
     opts: DefaultStateManagerOpts = {},
-  ): Promise<DefaultStateManager> {
+  ): Promise<MerkleStateManager> {
     if (Array.isArray(proof)) {
       if (proof.length === 0) {
-        return new DefaultStateManager(opts)
+        return new MerkleStateManager(opts)
       } else {
         const trie =
           opts.trie ??
@@ -615,7 +615,7 @@ export class DefaultStateManager implements StateManagerInterface {
             proof[0].accountProof.map((e) => hexToBytes(e)),
             { useKeyHashing: true },
           ))
-        const sm = new DefaultStateManager({ ...opts, trie })
+        const sm = new MerkleStateManager({ ...opts, trie })
         const address = createAddressFromString(proof[0].address)
         await sm.addStorageProof(proof[0].storageProof, proof[0].storageHash, address, safe)
         for (let i = 1; i < proof.length; i++) {
@@ -626,7 +626,7 @@ export class DefaultStateManager implements StateManagerInterface {
         return sm
       }
     } else {
-      return DefaultStateManager.fromProof([proof], safe, opts)
+      return MerkleStateManager.fromProof([proof], safe, opts)
     }
   }
 
@@ -918,7 +918,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * Cache values are generally not copied along regardless of the
    * `downlevelCaches` setting.
    */
-  shallowCopy(downlevelCaches = true): DefaultStateManager {
+  shallowCopy(downlevelCaches = true): MerkleStateManager {
     const common = this.common.copy()
     common.setHardfork(this.common.hardfork())
 
@@ -927,7 +927,7 @@ export class DefaultStateManager implements StateManagerInterface {
     const prefixCodeHashes = this._prefixCodeHashes
     const prefixStorageTrieKeys = this._prefixStorageTrieKeys
 
-    return new DefaultStateManager({
+    return new MerkleStateManager({
       common,
       trie,
       prefixStorageTrieKeys,

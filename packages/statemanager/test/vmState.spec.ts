@@ -3,7 +3,7 @@ import { getGenesis } from '@ethereumjs/genesis'
 import { Account, Address, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { DefaultStateManager } from '../src/index.js'
+import { MerkleStateManager } from '../src/index.js'
 
 export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)
@@ -12,7 +12,7 @@ export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
-const StateManager = DefaultStateManager
+const StateManager = MerkleStateManager
 
 describe('stateManager', () => {
   it(`should generate the genesis state root correctly for mainnet from common`, async () => {
@@ -47,7 +47,7 @@ describe('stateManager', () => {
     ]
 
     for (const [chain, expectedStateRoot] of chains) {
-      const stateManager = new DefaultStateManager({})
+      const stateManager = new MerkleStateManager({})
 
       await stateManager.generateCanonicalGenesis(getGenesis(chain))
       const stateRoot = await stateManager.getStateRoot()
@@ -62,7 +62,7 @@ describe('stateManager', () => {
 })
 
 describe('Original storage cache', async () => {
-  const stateManager = new DefaultStateManager()
+  const stateManager = new MerkleStateManager()
 
   const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
   const account = createAccount()

@@ -11,7 +11,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { Caches, DefaultStateManager } from '../src/index.js'
+import { Caches, MerkleStateManager } from '../src/index.js'
 
 import { createAccountWithDefaults } from './util.js'
 
@@ -20,7 +20,7 @@ describe('StateManager -> Storage', () => {
   for (const storageCacheOpts of [{ size: 1000 }, { size: 0 }]) {
     for (const prefixStorageTrieKeys of [false, true]) {
       it.skipIf(isBrowser() === true)(`should dump storage`, async () => {
-        const stateManager = new DefaultStateManager({
+        const stateManager = new MerkleStateManager({
           prefixStorageTrieKeys,
           caches: new Caches({ storage: storageCacheOpts }),
         })
@@ -39,7 +39,7 @@ describe('StateManager -> Storage', () => {
       })
 
       it("should validate the key's length when modifying a contract's storage", async () => {
-        const stateManager = new DefaultStateManager({
+        const stateManager = new MerkleStateManager({
           prefixStorageTrieKeys,
           caches: new Caches({ storage: storageCacheOpts }),
         })
@@ -58,7 +58,7 @@ describe('StateManager -> Storage', () => {
       })
 
       it("should validate the key's length when reading a contract's storage", async () => {
-        const stateManager = new DefaultStateManager({
+        const stateManager = new MerkleStateManager({
           prefixStorageTrieKeys,
           caches: new Caches({ storage: storageCacheOpts }),
         })
@@ -77,7 +77,7 @@ describe('StateManager -> Storage', () => {
       })
 
       it(`should throw on storage values larger than 32 bytes`, async () => {
-        const stateManager = new DefaultStateManager({
+        const stateManager = new MerkleStateManager({
           prefixStorageTrieKeys,
           caches: new Caches({ storage: storageCacheOpts }),
         })
@@ -96,7 +96,7 @@ describe('StateManager -> Storage', () => {
       })
 
       it(`should strip zeros of storage values`, async () => {
-        const stateManager = new DefaultStateManager({
+        const stateManager = new MerkleStateManager({
           prefixStorageTrieKeys,
           caches: new Caches({ storage: storageCacheOpts }),
         })
@@ -129,7 +129,7 @@ describe('StateManager -> Storage', () => {
         const zeroLengths = [0, 1, 31, 32] // checks for arbitrary-length zeros
 
         for (const length of zeroLengths) {
-          const stateManager = new DefaultStateManager({
+          const stateManager = new MerkleStateManager({
             prefixStorageTrieKeys,
             caches: new Caches({ storage: storageCacheOpts }),
           })
@@ -152,7 +152,7 @@ describe('StateManager -> Storage', () => {
       })
 
       it(`should not strip trailing zeros`, async () => {
-        const stateManager = new DefaultStateManager({
+        const stateManager = new MerkleStateManager({
           prefixStorageTrieKeys,
           caches: new Caches({ storage: storageCacheOpts }),
         })
