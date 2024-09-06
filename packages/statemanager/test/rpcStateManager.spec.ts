@@ -231,7 +231,7 @@ describe('runTx custom transaction test', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
     const state = new RPCStateManager({ provider, blockTag: 1n })
-    const vm = await createVM({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
+    const vm = await createVM({ common, stateManager: <any>state }) // TODO fix the type MerkleStateManager back to StateManagerInterface in VM
 
     const vitalikDotEth = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const privateKey = hexToBytes(
@@ -337,7 +337,7 @@ describe('blockchain', () =>
     )
   }))
 
-describe('Should return same value as DefaultStateManager when account does not exist', () => {
+describe('Should return same value as MerkleStateManager when account does not exist', () => {
   it('should work', async () => {
     const rpcState = new RPCStateManager({ provider, blockTag: 1n })
     const defaultState = new MerkleStateManager()
@@ -347,7 +347,7 @@ describe('Should return same value as DefaultStateManager when account does not 
     assert.equal(
       account0,
       account1,
-      'Should return same value as DefaultStateManager when account does not exist',
+      'Should return same value as MerkleStateManager when account does not exist',
     )
   })
 })

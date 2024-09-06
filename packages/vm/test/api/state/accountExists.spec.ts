@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM } from '../../../src/index.js'
 
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { MerkleStateManager } from '@ethereumjs/statemanager'
 
 describe('correctly apply new account gas fee on pre-Spurious Dragon hardforks', () => {
   it('should work', async () => {
@@ -71,7 +71,7 @@ describe('do not apply new account gas fee for empty account in DB on pre-Spurio
     const emptyAddress = new Address(hexToBytes('0xf48a1bdc65d9ccb4b569ffd4bffff415b90783d6'))
     await vm.stateManager.putAccount(emptyAddress, new Account())
     const emptyAccount = (await vm.stateManager.getAccount(emptyAddress)) as Account
-    await (vm.stateManager as DefaultStateManager)['_trie'].put(
+    await (vm.stateManager as MerkleStateManager)['_trie'].put(
       toBytes(emptyAddress),
       emptyAccount.serialize(),
     )
