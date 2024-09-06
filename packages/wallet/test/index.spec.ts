@@ -1,4 +1,4 @@
-import { bytesToUnprefixedHex, hexToBytes, unprefixedHexToBytes } from '@ethereumjs/util'
+import { bytesToUnprefixedHex, unprefixedHexToBytes } from '@ethereumjs/util'
 import { encryptKeystoreJsonSync, Wallet as ethersWallet } from 'ethers'
 import zip from 'lodash.zip'
 import { assert, describe, it } from 'vitest'
@@ -10,14 +10,16 @@ const n = 262144
 const r = 8
 const p = 1
 
-const fixturePrivateKey = '0xefca4cdd31923b50f4214af5d2ae10e7ac45a5019e9431cc195482d707485378'
-const fixturePrivateKeyBytes = hexToBytes(fixturePrivateKey)
+const fixturePrivateKey = 'efca4cdd31923b50f4214af5d2ae10e7ac45a5019e9431cc195482d707485378'
+const fixturePrivateKeyStr = '0x' + fixturePrivateKey
+const fixturePrivateKeyBuffer = unprefixedHexToBytes(fixturePrivateKey)
 
 const fixturePublicKey =
-  '0x5d4392f450262b276652c1fc037606abac500f3160830ce9df53aa70d95ce7cfb8b06010b2f3691c78c65c21eb4cf3dfdbfc0745d89b664ee10435bb3a0f906c'
-const fixturePublicKeyBytes = hexToBytes(fixturePublicKey)
+  '5d4392f450262b276652c1fc037606abac500f3160830ce9df53aa70d95ce7cfb8b06010b2f3691c78c65c21eb4cf3dfdbfc0745d89b664ee10435bb3a0f906c'
+const fixturePublicKeyStr = '0x' + fixturePublicKey
+const fixturePublicKeyBuffer = unprefixedHexToBytes(fixturePublicKey)
 
-const fixtureWallet = Wallet.fromPrivateKey(fixturePrivateKeyBytes)
+const fixtureWallet = Wallet.fromPrivateKey(fixturePrivateKeyBuffer)
 const fixtureEthersWallet = new ethersWallet(fixtureWallet.getPrivateKeyString())
 
 // Hack to detect if running in browser or not
@@ -33,7 +35,7 @@ describe('Wallet tests', () => {
   }, 30000)
 
   it('.getPrivateKeyString()', () => {
-    assert.deepEqual(fixtureWallet.getPrivateKeyString(), fixturePrivateKey)
+    assert.deepEqual(fixtureWallet.getPrivateKeyString(), fixturePrivateKeyStr)
   }, 30000)
 
   it('.getPublicKey()', () => {
@@ -41,7 +43,7 @@ describe('Wallet tests', () => {
   }, 30000)
 
   it('.getPublicKeyString()', () => {
-    assert.deepEqual(fixtureWallet.getPublicKeyString(), fixturePublicKey)
+    assert.deepEqual(fixtureWallet.getPublicKeyString(), fixturePublicKeyStr)
   }, 30000)
 
   it('.getAddress()', () => {
@@ -63,7 +65,7 @@ describe('Wallet tests', () => {
   }, 30000)
 
   it('.verifyPublicKey()', () => {
-    assert.deepEqual(fixtureWallet.verifyPublicKey(fixturePublicKeyBytes), true),
+    assert.deepEqual(fixtureWallet.verifyPublicKey(fixturePublicKeyBuffer), true),
       'should return true if publicKey, privateKey pair is valid'
 
     assert.deepEqual(
@@ -842,7 +844,7 @@ describe('Wallet tests', () => {
   it('raw new Wallet() init', () => {
     assert.throws(
       function () {
-        new Wallet(fixturePrivateKeyBytes, fixturePublicKeyBytes)
+        new Wallet(fixturePrivateKeyBuffer, fixturePublicKeyBuffer)
       },
       'Cannot supply both a private and a public key to the constructor',
       'should fail when both priv and pub key provided',
