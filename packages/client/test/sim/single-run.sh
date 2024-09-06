@@ -39,7 +39,7 @@ then
           echo "geth requires NETWORKID to be passed in env, exiting..."
           exit;
         fi;
-        ELCLIENT_IMAGE="ethereum/client-go:v1.12.2"
+        ELCLIENT_IMAGE="ethereum/client-go:v1.14.8"
         echo "ELCLIENT=$ELCLIENT using ELCLIENT_IMAGE=$ELCLIENT_IMAGE NETWORKID=$NETWORKID"
         ;;
       *)

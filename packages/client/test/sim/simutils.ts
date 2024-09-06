@@ -488,19 +488,48 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
     }
   }
 
-  const playUpdate = async (payload: any, finalizedBlockHash: string, version: string) => {
-    if (version !== 'capella') {
-      throw Error('only capella replay supported yet')
-    }
+  const playUpdate = async (
+    payload: any,
+    {
+      finalizedBlockHash,
+      parentBeaconBlockRoot,
+      blobVersionedHashes,
+    }: {
+      finalizedBlockHash: string
+      parentBeaconBlockRoot?: string
+      blobVersionedHashes?: string[]
+    },
+    version: string,
+  ) => {
+    let newPayloadParams, newPayloadMethod, fcuMethod
     const fcUState = {
       headBlockHash: payload.blockHash,
       safeBlockHash: finalizedBlockHash,
       finalizedBlockHash,
     }
+
+    if (version === 'capella') {
+      newPayloadParams = [payload]
+      newPayloadMethod = 'engine_newPayloadV2'
+      fcuMethod = 'engine_forkchoiceUpdatedV2'
+    } else if (version === 'deneb') {
+      if (parentBeaconBlockRoot === undefined || blobVersionedHashes === undefined) {
+        throw Error(
+          `parentBeaconBlockRoot=undefined or blobVersionedHashes=undefined for CL fork=${version}`,
+        )
+      }
+
+      newPayloadMethod = 'engine_newPayloadV3'
+      fcuMethod = 'engine_forkchoiceUpdatedV3'
+      newPayloadParams = [payload, blobVersionedHashes, parentBeaconBlockRoot]
+    } else {
+      throw Error(`playUpdate not implemented for CL fork=${version}`)
+    }
+
     console.log('playUpdate', fcUState)
 
     try {
-      const newPayloadRes = await engineMethods['engine_newPayloadV2']([payload])
+      const newPayloadRes = await engineMethods[newPayloadMethod](newPayloadParams)
       if (
         newPayloadRes.status === undefined ||
         !['SYNCING', 'VALID', 'ACCEPTED'].includes(newPayloadRes.status)
@@ -510,7 +539,7 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
         )
       }
 
-      const fcuRes = await engineMethods['engine_forkchoiceUpdatedV2']([fcUState])
+      const fcuRes = await engineMethods[fcuMethod]([fcUState])
       if (
         fcuRes.payloadStatus === undefined ||
         !['SYNCING', 'VALID', 'ACCEPTED'].includes(newPayloadRes.status)
@@ -543,13 +572,19 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
       }
 
       const beaconHead = await (await fetch(`${peerBeaconUrl}/eth/v2/beacon/blocks/head`)).json()
-
       const payload = executionPayloadFromBeaconPayload(
         beaconHead.data.message.body.execution_payload,
       )
       const finalizedBlockHash = beaconFinalized.data.finalized_header.execution.block_hash
+      const parentBeaconBlockRoot = beaconHead.data.message.parent_root
+      // blobVersionedHashes should be correctly calculated from commitments
+      const blobVersionedHashes: string[] = []
 
-      await playUpdate(payload, finalizedBlockHash, beaconHead.version)
+      await playUpdate(
+        payload,
+        { finalizedBlockHash, parentBeaconBlockRoot, blobVersionedHashes },
+        beaconHead.version,
+      )
     } catch (e) {
       console.log('update fetch error', e)
       updateState('ERRORED')

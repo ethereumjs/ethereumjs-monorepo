@@ -13,6 +13,7 @@ import { assert, describe, it } from 'vitest'
 import { Config } from '../../src/config.js'
 import { getLogger } from '../../src/logging.js'
 import { Event } from '../../src/types.js'
+import { parseMultiaddrs } from '../../src/util/index.js'
 
 import {
   createInlineClient,
@@ -55,7 +56,7 @@ export async function runTx(data: PrefixedHexString | '', to?: PrefixedHexString
 
 describe('simple mainnet test run', async () => {
   if (process.env.EXTRA_CL_PARAMS === undefined) {
-    process.env.EXTRA_CL_PARAMS = '--params.CAPELLA_FORK_EPOCH 0'
+    process.env.EXTRA_CL_PARAMS = '--params.CAPELLA_FORK_EPOCH 0 --params.DENEB_FORK_EPOCH 0'
   }
   // Better add it as a option in startnetwork
   process.env.NETWORKID = `${common.chainId()}`
@@ -74,6 +75,7 @@ describe('simple mainnet test run', async () => {
 
   const nodeInfo = (await client.request('admin_nodeInfo', [])).result
   assert.ok(nodeInfo.enode !== undefined, 'fetched enode for peering')
+  console.log({ peerEnode: nodeInfo.enode })
 
   console.log(`Waiting for network to start...`)
   try {
@@ -151,7 +153,9 @@ describe('simple mainnet test run', async () => {
       assert.ok(ejsClient !== null, 'ethereumjs client started')
 
       const enode = ejsClient!.server()!.getRlpxInfo().enode
+      console.log({ enode })
       const res = await client.request('admin_addPeer', [enode])
+      console.log(res)
       assert.equal(res.result, true, 'successfully requested Geth add EthereumJS as peer')
 
       const peerConnectTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
@@ -159,6 +163,7 @@ describe('simple mainnet test run', async () => {
         await Promise.race([peerConnectedPromise, peerConnectTimeout])
         assert.ok(true, 'connected to geth peer')
       } catch (e) {
+        console.log(e)
         assert.fail('could not connect to geth peer in 10 seconds')
       }
     },
@@ -251,7 +256,7 @@ async function createSnapClient(
   const logger = getLogger({ logLevel: 'debug' })
   const config = new Config({
     common,
-    bootnodes,
+    bootnodes: parseMultiaddrs(bootnodes),
     multiaddrs: [],
     logger,
     accountCache: 10000,

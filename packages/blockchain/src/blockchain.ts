@@ -1272,6 +1272,13 @@ export class Blockchain implements BlockchainInterface {
       number: 0,
       stateRoot,
       withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      ...(common.isActivatedEIP(4844)
+        ? {
+            blobGasUsed: 0,
+            excessBlobGas: 0,
+            parentBeaconBlockRoot: new Uint8Array(32),
+          }
+        : undefined),
     }
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {
@@ -1282,6 +1289,7 @@ export class Blockchain implements BlockchainInterface {
         header.extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
       }
     }
+
     return createBlockFromBlockData(
       { header, withdrawals: common.isActivatedEIP(4895) ? [] : undefined },
       { common },
