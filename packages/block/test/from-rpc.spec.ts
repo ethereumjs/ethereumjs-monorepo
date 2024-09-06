@@ -42,7 +42,7 @@ describe('[fromRPC]: block #2924874', () => {
 })
 
 describe('[fromRPC]:', () => {
-  it('Should create a block with json data that includes a transaction with value parameter as integer string', () => {
+  it('Should create a block with JSON data that includes a transaction with value parameter as integer string', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const valueAsIntegerString = '1'
     const blockDataTransactionValueAsInteger = blockData
@@ -58,7 +58,7 @@ describe('[fromRPC]:', () => {
     )
   })
 
-  it('Should create a block with json data that includes a transaction with defaults with gasPrice parameter as integer string', () => {
+  it('Should create a block with JSON data that includes a transaction with defaults with gasPrice parameter as integer string', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const gasPriceAsIntegerString = '1'
     const blockDataTransactionGasPriceAsInteger = blockData
@@ -74,7 +74,7 @@ describe('[fromRPC]:', () => {
     )
   })
 
-  it('should create a block given json data that includes a difficulty parameter of type integer string', () => {
+  it('should create a block given JSON data that includes a difficulty parameter of type integer string', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const blockDifficultyAsInteger = createBlockFromRPC(
       blockDataDifficultyAsInteger as JSONRPCBlock,

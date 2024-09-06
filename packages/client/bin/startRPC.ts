@@ -119,7 +119,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
 
     if (rpc) {
       rpcHttpServer = createRPCServerListener({
-        rpcCors,
+        RPCCors: rpcCors,
         server,
         withEngineMiddleware:
           withEngineMethods && rpcEngineAuth
@@ -179,7 +179,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     })
     servers.push(server)
     const rpcHttpServer = createRPCServerListener({
-      rpcCors,
+      RPCCors: rpcCors,
       server,
       withEngineMiddleware: rpcEngineAuth
         ? {
@@ -228,7 +228,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
 /**
  * Output RPC help and exit
  */
-export function helprpc() {
+export function helpRPC() {
   console.log('-'.repeat(27))
   console.log('JSON-RPC: Supported Methods')
   console.log('-'.repeat(27))
