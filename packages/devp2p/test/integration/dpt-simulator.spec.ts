@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import * as testdata from '../testdata.json'
+import * as testdata from '../testdata.js'
 
 import * as util from './util.js'
 

@@ -2,7 +2,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { assert } from 'vitest'
 
 import { DPT, ETH, RLPx, genPrivateKey } from '../../src/index.js'
-import * as testdata from '../testdata.json'
+import * as testdata from '../testdata.js'
 
 import type { Capabilities } from '../../src/index.js'
 import type { it } from 'vitest'

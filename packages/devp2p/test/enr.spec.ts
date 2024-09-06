@@ -2,7 +2,7 @@ import { assert, describe, it } from 'vitest'
 
 import { ENR } from '../src/dns/index.js'
 
-import * as testdata from './testdata.json'
+import * as testdata from './testdata.js'
 
 const dns = testdata.dns
 
