@@ -811,7 +811,7 @@ export class Common {
    * parameters based on the consensus algorithm
    *
    * Expected returns (parameters must be present in
-   * the respective chain json files):
+   * the respective chain JSON files):
    *
    * ethash: empty object
    * clique: period, epoch

@@ -815,13 +815,13 @@ export class VMExecution extends Execution {
                     // save the data in spec test compatible manner
                     const blockNumStr = `${errorBlock.header.number}`
                     const file = `${this.config.getInvalidPayloadsDir()}/${blockNumStr}.json`
-                    const jsonDump = {
+                    const JSONDump = {
                       [blockNumStr]: {
                         parent: headBlock.toExecutionPayload(),
                         execute: errorBlock.toExecutionPayload(),
                       },
                     }
-                    writeFileSync(file, JSON.stringify(jsonDump, null, 2))
+                    writeFileSync(file, JSON.stringify(JSONDump, null, 2))
                     this.config.logger.warn(`${errorMsg}:\n${error} payload saved to=${file}`)
                   } else {
                     this.config.logger.warn(`${errorMsg}:\n${error}`)

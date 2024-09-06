@@ -36,7 +36,7 @@ export function callWithStackTrace(handler: Function, debug: boolean) {
 /**
  * Returns tx formatted to the standard JSON-RPC fields
  */
-export const jsonRPCTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JSONRPCTx => {
+export const toJSONRPCTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JSONRPCTx => {
   const txJSON = tx.toJSON()
   return {
     blockHash: block ? bytesToHex(block.hash()) : null,

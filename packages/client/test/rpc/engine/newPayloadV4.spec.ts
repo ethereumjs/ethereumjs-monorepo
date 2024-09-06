@@ -33,7 +33,7 @@ const validPayload = [
 
 function readyPragueGenesis(genesisJSON: any) {
   const pragueTime = 1689945325
-  // deep copy json and add shanghai and cancun to genesis to avoid contamination
+  // deep copy JSON and add shanghai and cancun to genesis to avoid contamination
   const pragueJSON = JSON.parse(JSON.stringify(genesisJSON))
   pragueJSON.config.shanghaiTime = pragueTime
   pragueJSON.config.cancunTime = pragueTime
@@ -45,7 +45,7 @@ function readyPragueGenesis(genesisJSON: any) {
 
 describe(`${method}: call with executionPayloadV4`, () => {
   it('valid data', async () => {
-    // get the genesis json with late enough date with respect to block data in batchBlocks
+    // get the genesis JSON with late enough date with respect to block data in batchBlocks
 
     const { pragueJSON, pragueTime } = readyPragueGenesis(genesisJSON)
     const { service, server } = await setupChain(pragueJSON, 'post-merge', { engine: true })
