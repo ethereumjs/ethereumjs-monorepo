@@ -437,7 +437,7 @@ describe('Wallet tests', () => {
     )
     assert.equal(
       fixtureWallet.getPrivateKeyString(),
-      (await ethersWallet.fromEncryptedJSON(wEthersStr, pw)).privateKey,
+      (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey,
     )
 
     salt = '0x'
@@ -471,7 +471,7 @@ describe('Wallet tests', () => {
     )
     assert.equal(
       fixtureWallet.getPrivateKeyString(),
-      (await ethersWallet.fromEncryptedJSON(wEthersStr, pw)).privateKey,
+      (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey,
     )
 
     salt = unprefixedHexToBytes('')
@@ -503,7 +503,7 @@ describe('Wallet tests', () => {
     )
     assert.equal(
       fixtureWallet.getPrivateKeyString(),
-      (await ethersWallet.fromEncryptedJSON(wEthersStr, pw)).privateKey,
+      (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey,
     )
   }, 120000)
 
@@ -705,11 +705,11 @@ describe('Wallet tests', () => {
       assert.deepEqual(wallet.getAddressString(), '0x008aeeda4d805471df9b2a5b0f38a0c3bcba786b')
       assert.deepEqual(
         wallet.getAddressString(),
-        (await ethersWallet.fromEncryptedJSON(wEthersCompat, pw)).address.toLowerCase(),
+        (await ethersWallet.fromEncryptedJson(wEthersCompat, pw)).address.toLowerCase(),
       )
       assert.deepEqual(
         walletRandom.getAddressString(),
-        (await ethersWallet.fromEncryptedJSON(wRandom, pw)).address.toLowerCase(),
+        (await ethersWallet.fromEncryptedJson(wRandom, pw)).address.toLowerCase(),
       )
     }, 30000)
 
@@ -724,11 +724,11 @@ describe('Wallet tests', () => {
       assert.deepEqual(wallet.getAddressString(), '0x2f91eb73a6cd5620d7abb50889f24eea7a6a4feb')
       assert.deepEqual(
         wallet.getAddressString(),
-        (await ethersWallet.fromEncryptedJSON(sample, pw)).address.toLowerCase(),
+        (await ethersWallet.fromEncryptedJson(sample, pw)).address.toLowerCase(),
       )
       assert.deepEqual(
         walletRandom.getAddressString(),
-        (await ethersWallet.fromEncryptedJSON(sampleRandom, pw)).address.toLowerCase(),
+        (await ethersWallet.fromEncryptedJson(sampleRandom, pw)).address.toLowerCase(),
       )
     })
     it.skip("should work with 'unencrypted' wallets", async () => {
