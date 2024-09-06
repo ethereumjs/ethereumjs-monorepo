@@ -34,7 +34,7 @@ import {
   executionPayloadFromBeaconPayload,
 } from '../index.js'
 
-import type { BeaconPayloadJson } from '../from-beacon-payload.js'
+import type { BeaconPayloadJSON } from '../from-beacon-payload.js'
 import type {
   BlockBytes,
   BlockData,
@@ -42,7 +42,7 @@ import type {
   ExecutionPayload,
   ExecutionWitnessBytes,
   HeaderData,
-  JsonRpcBlock,
+  JSONRPCBlock,
   RequestsBytes,
   WithdrawalsBytes,
 } from '../types.js'
@@ -278,7 +278,7 @@ export function createBlockFromRLP(serialized: Uint8Array, opts?: BlockOptions) 
  * @param opts - An object describing the blockchain
  */
 export function createBlockFromRPC(
-  blockParams: JsonRpcBlock,
+  blockParams: JSONRPCBlock,
   uncles: any[] = [],
   options?: BlockOptions,
 ) {
@@ -306,12 +306,12 @@ export function createBlockFromRPC(
 
 /**
  *  Method to retrieve a block from a JSON-RPC provider and format as a {@link Block}
- * @param provider either a url for a remote provider or an Ethers JsonRpcProvider object
+ * @param provider either a url for a remote provider or an Ethers JSONRPCProvider object
  * @param blockTag block hash or block number to be run
  * @param opts {@link BlockOptions}
  * @returns the block specified by `blockTag`
  */
-export const createBlockFromJsonRpcProvider = async (
+export const createBlockFromJSONRPCProvider = async (
   provider: string | EthersProvider,
   blockTag: string | bigint,
   opts: BlockOptions,
@@ -418,18 +418,18 @@ export async function createBlockFromExecutionPayload(
       : undefined
 
   if (depositRequests !== undefined && depositRequests !== null) {
-    for (const dJson of depositRequests) {
-      requests!.push(createDepositRequestFromJSON(dJson))
+    for (const dJSON of depositRequests) {
+      requests!.push(createDepositRequestFromJSON(dJSON))
     }
   }
   if (withdrawalRequests !== undefined && withdrawalRequests !== null) {
-    for (const wJson of withdrawalRequests) {
-      requests!.push(createWithdrawalRequestFromJSON(wJson))
+    for (const wJSON of withdrawalRequests) {
+      requests!.push(createWithdrawalRequestFromJSON(wJSON))
     }
   }
   if (consolidationRequests !== undefined && consolidationRequests !== null) {
-    for (const cJson of consolidationRequests) {
-      requests!.push(createConsolidationRequestFromJSON(cJson))
+    for (const cJSON of consolidationRequests) {
+      requests!.push(createConsolidationRequestFromJSON(cJSON))
     }
   }
 
@@ -476,8 +476,8 @@ export async function createBlockFromExecutionPayload(
  * @param opts {@link BlockOptions}
  * @returns the block constructed block
  */
-export async function createBlockFromBeaconPayloadJson(
-  payload: BeaconPayloadJson,
+export async function createBlockFromBeaconPayloadJSON(
+  payload: BeaconPayloadJSON,
   opts?: BlockOptions,
 ): Promise<Block> {
   const executionPayload = executionPayloadFromBeaconPayload(payload)

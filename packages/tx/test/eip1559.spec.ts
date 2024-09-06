@@ -7,7 +7,7 @@ import { createFeeMarket1559Tx } from '../src/index.js'
 
 import testdata from './json/eip1559.json' // Source: Besu
 
-import type { FeeMarketEIP1559TxData, JsonTx } from '../src/index.js'
+import type { FeeMarketEIP1559TxData, JSONTx } from '../src/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const common = createCustomCommon({ chainId: 4 }, Mainnet)
@@ -245,7 +245,7 @@ describe('[FeeMarket1559Tx]', () => {
     const signed = txn.sign(pkey)
 
     const json = signed.toJSON()
-    const expectedJSON: JsonTx = {
+    const expectedJSON: JSONTx = {
       type: '0x2',
       chainId: '0x4',
       nonce: '0x333',

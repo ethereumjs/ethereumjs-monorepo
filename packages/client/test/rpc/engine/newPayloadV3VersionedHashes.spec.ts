@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import { getRpcClient, setupChain } from '../helpers.js'
+import { getRPCClient, setupChain } from '../helpers.js'
 
 const method = 'engine_newPayloadV3'
 
@@ -21,7 +21,7 @@ describe(`${method}: Cancun validations`, () => {
       customCrypto: { kzg },
     })
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const parentBeaconBlockRoot =
       '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2bea7961a639ef29d64'
     const blockDataExtraVersionedHashes = [

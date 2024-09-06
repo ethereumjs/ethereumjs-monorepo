@@ -16,7 +16,7 @@ import { assert, describe, it } from 'vitest'
 import pow from '../../testdata/geth-genesis/pow.json'
 import {
   dummy,
-  getRpcClient,
+  getRPCClient,
   gethGenesisStartLondon,
   runBlockWithTxs,
   setupChain,
@@ -30,7 +30,7 @@ const method2 = 'debug_getRawReceipts'
 describe(method, () => {
   it('call with legacy tx', async () => {
     const { chain, common, execution, server } = await setupChain(pow, 'pow')
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // construct tx
     const tx = createLegacyTx(
       {
@@ -58,7 +58,7 @@ describe(method, () => {
       gethGenesisStartLondon(pow),
       'powLondon',
     )
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // construct tx
     const tx = createFeeMarket1559Tx(
       {
@@ -87,7 +87,7 @@ describe(method, () => {
 
   it('call with unknown block hash', async () => {
     const { server } = await setupChain(pow, 'pow')
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // get a random tx hash
     const res = await rpc.request(method, [
       '0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0',
@@ -115,7 +115,7 @@ describe(method, () => {
         customCrypto: { kzg },
       })
       common.setHardfork(Hardfork.Cancun)
-      const rpc = getRpcClient(server)
+      const rpc = getRPCClient(server)
 
       const blobs = getBlobs('hello world')
       const commitments = blobsToCommitments(kzg, blobs)

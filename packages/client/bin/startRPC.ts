@@ -28,7 +28,7 @@ export type RPCArgs = {
   wsEnginePort: number
   rpcDebug: string
   rpcDebugVerbose: string
-  helpRpc: boolean
+  helpRPC: boolean
   jwtSecret?: string
   rpcEngineAuth: boolean
   rpcCors: string

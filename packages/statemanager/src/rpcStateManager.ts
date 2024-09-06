@@ -59,7 +59,7 @@ export class RPCStateManager implements StateManagerInterface {
   }
 
   /**
-   * Note that the returned statemanager will share the same JsonRpcProvider as the original
+   * Note that the returned statemanager will share the same JSONRPCProvider as the original
    *
    * @returns RPCStateManager
    */

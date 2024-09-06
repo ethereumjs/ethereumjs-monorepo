@@ -5,7 +5,7 @@ import { assert, describe, it } from 'vitest'
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { getRpcClient, setupChain } from '../helpers.js'
+import { getRPCClient, setupChain } from '../helpers.js'
 
 const method = 'engine_newPayloadV4'
 const [blockData] = blocks
@@ -34,22 +34,22 @@ const validPayload = [
 function readyPragueGenesis(genesisJSON: any) {
   const pragueTime = 1689945325
   // deep copy json and add shanghai and cancun to genesis to avoid contamination
-  const pragueJson = JSON.parse(JSON.stringify(genesisJSON))
-  pragueJson.config.shanghaiTime = pragueTime
-  pragueJson.config.cancunTime = pragueTime
-  pragueJson.config.pragueTime = pragueTime
+  const pragueJSON = JSON.parse(JSON.stringify(genesisJSON))
+  pragueJSON.config.shanghaiTime = pragueTime
+  pragueJSON.config.cancunTime = pragueTime
+  pragueJSON.config.pragueTime = pragueTime
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  Object.assign(pragueJson.alloc, electraGenesisContracts)
-  return { pragueJson, pragueTime }
+  Object.assign(pragueJSON.alloc, electraGenesisContracts)
+  return { pragueJSON, pragueTime }
 }
 
 describe(`${method}: call with executionPayloadV4`, () => {
   it('valid data', async () => {
     // get the genesis json with late enough date with respect to block data in batchBlocks
 
-    const { pragueJson, pragueTime } = readyPragueGenesis(genesisJSON)
-    const { service, server } = await setupChain(pragueJson, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { pragueJSON, pragueTime } = readyPragueGenesis(genesisJSON)
+    const { service, server } = await setupChain(pragueJSON, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     let res
 
     res = await rpc.request(`eth_getBlockByNumber`, ['0x0', false])

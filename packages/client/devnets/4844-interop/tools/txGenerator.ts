@@ -17,7 +17,7 @@ import { loadKZG } from 'kzg-wasm'
 // CLI Args
 const clientPort = parseInt(process.argv[2]) // EL client port number
 const input = process.argv[3] // text to generate blob from
-const genesisJson = require(process.argv[4]) // Genesis parameters
+const genesisJSON = require(process.argv[4]) // Genesis parameters
 const pkey = hexToBytes(`0x${process.argv[5]}`) // private key of tx sender as unprefixed hex string (unprefixed in args)
 const sender = createAddressFromPrivateKey(pkey)
 
@@ -29,8 +29,8 @@ async function getNonce(client: Client, account: string) {
 async function run(data: any) {
   const kzg = await loadKZG()
 
-  const common = createCommonFromGethGenesis(genesisJson, {
-    chain: genesisJson.ChainName ?? 'devnet',
+  const common = createCommonFromGethGenesis(genesisJSON, {
+    chain: genesisJSON.ChainName ?? 'devnet',
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
   })

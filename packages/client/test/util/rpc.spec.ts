@@ -12,7 +12,7 @@ import {
   createRPCServerListener,
   createWsRPCServerListener,
 } from '../../src/util/rpc.js'
-import { getRpcClient, setupChain } from '../rpc/helpers.js'
+import { getRPCClient, setupChain } from '../rpc/helpers.js'
 import pow from '../testdata/geth-genesis/pow.json'
 
 describe('[Util/RPC]', () => {
@@ -88,7 +88,7 @@ describe('[Util/RPC]', () => {
 
 describe('[Util/RPC/Engine eth methods]', async () => {
   const { server } = await setupChain(pow, 'pow')
-  const rpc = getRpcClient(server)
+  const rpc = getRPCClient(server)
   const methods = [
     'eth_blockNumber',
     'eth_call',

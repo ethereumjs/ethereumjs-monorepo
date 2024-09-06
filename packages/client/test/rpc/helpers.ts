@@ -82,7 +82,7 @@ export function startRPC(
 
 /** Returns a basic RPC client with no authentication */
 
-export function getRpcClient(server: HttpServer) {
+export function getRPCClient(server: HttpServer) {
   const rpc = Client.http({ port: (server.address()! as AddressInfo).port })
   return rpc
 }

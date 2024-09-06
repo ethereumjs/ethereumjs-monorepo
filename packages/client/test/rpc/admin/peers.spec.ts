@@ -1,14 +1,14 @@
 import { randomBytes } from 'crypto'
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 const method = 'admin_peers'
 
 describe(method, () => {
   it('works', async () => {
     const manager = createManager(await createClient({ opened: true, noPeers: true }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     console.log(manager['_client'].services[0].pool)
     //@ts-ignore

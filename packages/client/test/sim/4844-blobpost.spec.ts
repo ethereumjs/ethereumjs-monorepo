@@ -34,12 +34,12 @@ const numTxs = Number(process.env.NUM_TXS ?? 1)
 console.log({ sender, rpcUrl, chainId, numTxs })
 
 const network = 'sharding'
-const shardingJson = require(`./configs/${network}.json`)
+const shardingJSON = require(`./configs/${network}.json`)
 
 // safely change chainId without modifying underlying json
-const commonJson = { ...shardingJson }
-commonJson.config = { ...commonJson.config, chainId }
-const common = createCommonFromGethGenesis(commonJson, { chain: network })
+const commonJSON = { ...shardingJSON }
+commonJSON.config = { ...commonJSON.config, chainId }
+const common = createCommonFromGethGenesis(commonJSON, { chain: network })
 
 export async function runTx(data: PrefixedHexString, to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
