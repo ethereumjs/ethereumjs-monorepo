@@ -1,4 +1,6 @@
-export const testdataFromRpcGoerliLondonData = {
+import type { JSONRPCBlock } from '../../src/index.js'
+
+export const testdataFromRpcGoerliLondonData: JSONRPCBlock = {
   baseFeePerGas: '0x7',
   difficulty: '0x1',
   extraData:

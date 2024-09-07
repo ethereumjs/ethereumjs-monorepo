@@ -1,4 +1,4 @@
-export const testdataFromRpcWithUnclesUncleBlockDataData = {
+export const testdataFromRpcWithUnclesUncleBlockData = {
   difficulty: '0x851a2177f6dff',
   extraData: '0x706f6f6c696e2e636f6d',
   gasLimit: '0x984bbd',

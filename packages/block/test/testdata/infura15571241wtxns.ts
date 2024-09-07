@@ -1,4 +1,6 @@
-export const infura15571241wtxnsData = {
+import type { JSONRPCBlock } from '../../src/index.js'
+
+export const infura15571241wtxnsData: JSONRPCBlock = {
   baseFeePerGas: '0x18e5cb091',
   difficulty: '0x0',
   extraData: '0x',

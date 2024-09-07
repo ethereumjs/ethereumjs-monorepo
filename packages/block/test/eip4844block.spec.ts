@@ -13,7 +13,7 @@ import { fakeExponential, getNumBlobs } from '../src/helpers.js'
 import { createBlock, createBlockHeader } from '../src/index.js'
 import { paramsBlock } from '../src/params.js'
 
-import gethGenesis from './testdata/4844-hardfork.json'
+import { hardfork4844Data } from './testdata/4844-hardfork.js'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { Kzg } from '@ethereumjs/util'
@@ -24,7 +24,7 @@ describe('EIP4844 header tests', () => {
   beforeAll(async () => {
     const kzg = await loadKZG()
 
-    common = createCommonFromGethGenesis(gethGenesis, {
+    common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -102,7 +102,7 @@ describe('blob gas tests', () => {
   let blobGasPerBlob: bigint
   beforeAll(async () => {
     const kzg = await loadKZG()
-    common = createCommonFromGethGenesis(gethGenesis, {
+    common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       params: paramsBlock,
@@ -163,7 +163,7 @@ describe('transaction validation tests', () => {
   let blobGasPerBlob: bigint
   beforeAll(async () => {
     kzg = await loadKZG()
-    common = createCommonFromGethGenesis(gethGenesis, {
+    common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       params: paramsBlock,
@@ -237,6 +237,7 @@ describe('transaction validation tests', () => {
     )
     const blockJSON = blockWithValidTx.toJSON()
     blockJSON.header!.blobGasUsed = '0x0'
+    // @ts-expect-error
     const blockWithInvalidHeader = createBlock(blockJSON, { common })
     assert.throws(
       () => blockWithInvalidHeader.validateBlobTransactions(parentHeader),

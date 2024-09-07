@@ -1,4 +1,6 @@
-export const infura2000004wtxsData = {
+import type { JSONRPCBlock } from '../../src/index.js'
+
+export const infura2000004wtxsData: JSONRPCBlock = {
   difficulty: '0x2d5c0e55ad87',
   extraData: '0x657468706f6f6c2e6f7267202855533129',
   gasLimit: '0x47e7c4',
