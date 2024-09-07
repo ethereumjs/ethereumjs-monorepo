@@ -8,35 +8,34 @@ import {
   createBlockHeaderFromRPC,
 } from '../src/index.js'
 
-import * as alchemy14151203 from './testdata/alchemy14151203.json'
-import * as infuraGoerliBlock10536893 from './testdata/infura-goerli-block-10536893.json'
-import * as infura15571241woTxs from './testdata/infura15571241.json'
-import * as infura15571241wTxs from './testdata/infura15571241wtxns.json' // cspell:disable-line
-import * as infura2000004woTxs from './testdata/infura2000004wotxns.json' // cspell:disable-line
-import * as infura2000004wTxs from './testdata/infura2000004wtxs.json' // cspell:disable-line
-import * as blockDataDifficultyAsInteger from './testdata/testdata-from-rpc-difficulty-as-integer.json'
-import * as testDataFromRPCGoerliLondon from './testdata/testdata-from-rpc-goerli-london.json'
-import * as blockDataWithUncles from './testdata/testdata-from-rpc-with-uncles.json'
-import * as uncleBlockData from './testdata/testdata-from-rpc-with-uncles_uncle-block-data.json'
-import * as blockDataWithWithdrawals from './testdata/testdata-from-rpc-with-withdrawals.json'
-import * as blockData from './testdata/testdata-from-rpc.json'
+import { alchemy14151203Data } from './testdata/alchemy14151203.js'
+import { infuraGoerliBlock10536893Data } from './testdata/infura-goerli-block-10536893.js'
+import { infura15571241Data } from './testdata/infura15571241.js'
+import { infura15571241wtxnsData } from './testdata/infura15571241wtxns.js' // cspell:disable-line
+import { infura2000004wotxnsData } from './testdata/infura2000004wotxns.js' // cspell:disable-line
+import { infura2000004wtxsData } from './testdata/infura2000004wtxs.js' // cspell:disable-line
+import { testdataFromRpcDifficultyAsIntegerData } from './testdata/testdata-from-rpc-difficulty-as-integer.js'
+import { testdataFromRpcGoerliLondonData } from './testdata/testdata-from-rpc-goerli-london.js'
+import { testdataFromRpcWithUnclesData } from './testdata/testdata-from-rpc-with-uncles.js'
+import { testdataFromRpcWithUnclesUncleBlockData } from './testdata/testdata-from-rpc-with-uncles_uncle-block-data.js'
+import { testdataFromRpcWithWithdrawalsData } from './testdata/testdata-from-rpc-with-withdrawals.js'
+import { testdataFromRpcData } from './testdata/testdata-from-rpc.js'
 
 import type { JSONRPCBlock } from '../src/index.js'
-import type { LegacyTx } from '@ethereumjs/tx'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { JSONRPCTx, LegacyTx } from '@ethereumjs/tx'
 
 describe('[fromRPC]: block #2924874', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
   it('should create a block with transactions with valid signatures', () => {
-    const block = createBlockFromRPC(blockData, [], { common })
+    const block = createBlockFromRPC(testdataFromRpcData, [], { common })
     const allValid = block.transactions.every((tx) => tx.verifySignature())
     assert.equal(allValid, true, 'all transaction signatures are valid')
   })
 
   it('should create a block header with the correct hash', () => {
-    const block = createBlockHeaderFromRPC(blockData as JSONRPCBlock, { common })
-    const hash = hexToBytes(blockData.hash as PrefixedHexString)
+    const block = createBlockHeaderFromRPC(testdataFromRpcData, { common })
+    const hash = hexToBytes(testdataFromRpcData.hash)
     assert.ok(equalsBytes(block.hash(), hash))
   })
 })
@@ -45,8 +44,8 @@ describe('[fromRPC]:', () => {
   it('Should create a block with json data that includes a transaction with value parameter as integer string', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const valueAsIntegerString = '1'
-    const blockDataTransactionValueAsInteger = blockData
-    blockDataTransactionValueAsInteger.transactions[0].value = valueAsIntegerString
+    const blockDataTransactionValueAsInteger = testdataFromRpcData
+    ;(blockDataTransactionValueAsInteger.transactions[0] as JSONRPCTx).value = valueAsIntegerString
     const createBlockFromTransactionValueAsInteger = createBlockFromRPC(
       blockDataTransactionValueAsInteger as JSONRPCBlock,
       undefined,
@@ -61,8 +60,9 @@ describe('[fromRPC]:', () => {
   it('Should create a block with json data that includes a transaction with defaults with gasPrice parameter as integer string', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const gasPriceAsIntegerString = '1'
-    const blockDataTransactionGasPriceAsInteger = blockData
-    blockDataTransactionGasPriceAsInteger.transactions[0].gasPrice = gasPriceAsIntegerString
+    const blockDataTransactionGasPriceAsInteger = testdataFromRpcData
+    ;(blockDataTransactionGasPriceAsInteger.transactions[0] as JSONRPCTx).gasPrice =
+      gasPriceAsIntegerString
     const createBlockFromTransactionGasPriceAsInteger = createBlockFromRPC(
       blockDataTransactionGasPriceAsInteger as JSONRPCBlock,
       undefined,
@@ -77,7 +77,7 @@ describe('[fromRPC]:', () => {
   it('should create a block given json data that includes a difficulty parameter of type integer string', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const blockDifficultyAsInteger = createBlockFromRPC(
-      blockDataDifficultyAsInteger as JSONRPCBlock,
+      testdataFromRpcDifficultyAsIntegerData,
       undefined,
       {
         common,
@@ -85,38 +85,42 @@ describe('[fromRPC]:', () => {
     )
     assert.equal(
       blockDifficultyAsInteger.header.difficulty.toString(),
-      blockDataDifficultyAsInteger.difficulty,
+      testdataFromRpcDifficultyAsIntegerData.difficulty,
     )
   })
 
   it('should create a block from london hardfork', () => {
     const common = new Common({ chain: Goerli, hardfork: Hardfork.London })
-    const block = createBlockFromRPC(testDataFromRPCGoerliLondon as JSONRPCBlock, [], { common })
+    const block = createBlockFromRPC(testdataFromRpcGoerliLondonData, [], { common })
     assert.equal(
       `0x${block.header.baseFeePerGas?.toString(16)}`,
-      testDataFromRPCGoerliLondon.baseFeePerGas,
+      testdataFromRpcGoerliLondonData.baseFeePerGas,
     )
-    assert.equal(bytesToHex(block.hash()), testDataFromRPCGoerliLondon.hash)
+    assert.equal(bytesToHex(block.hash()), testdataFromRpcGoerliLondonData.hash)
   })
 
   it('should create a block with uncles', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const block = createBlockFromRPC(blockDataWithUncles as JSONRPCBlock, [uncleBlockData], {
-      common,
-    })
+    const block = createBlockFromRPC(
+      testdataFromRpcWithUnclesData,
+      [testdataFromRpcWithUnclesUncleBlockData],
+      {
+        common,
+      },
+    )
     assert.ok(block.uncleHashIsValid())
   })
 
   it('should create a block with EIP-4896 withdrawals', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
-    const block = createBlockFromRPC(blockDataWithWithdrawals as JSONRPCBlock, [], { common })
+    const block = createBlockFromRPC(testdataFromRpcWithWithdrawalsData, [], { common })
     assert.ok(block.withdrawalsTrieIsValid())
   })
 
   it('should create a block header with the correct hash when EIP-4896 withdrawals are present', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
-    const block = createBlockHeaderFromRPC(blockDataWithWithdrawals as JSONRPCBlock, { common })
-    const hash = blockDataWithWithdrawals.hash
+    const block = createBlockHeaderFromRPC(testdataFromRpcWithWithdrawalsData, { common })
+    const hash = testdataFromRpcWithWithdrawalsData.hash
     assert.equal(bytesToHex(block.hash()), hash)
   })
 })
@@ -124,52 +128,52 @@ describe('[fromRPC]:', () => {
 describe('[fromRPC] - Alchemy/Infura API block responses', () => {
   it('should create pre merge block from Alchemy API response to eth_getBlockByHash', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-    const block = createBlockFromRPC(alchemy14151203 as JSONRPCBlock, [], { common })
-    assert.equal(bytesToHex(block.hash()), alchemy14151203.hash)
+    const block = createBlockFromRPC(alchemy14151203Data, [], { common })
+    assert.equal(bytesToHex(block.hash()), alchemy14151203Data.hash)
   })
 
   it('should create pre and post merge blocks from Infura API responses to eth_getBlockByHash and eth_getBlockByNumber', () => {
     const common = new Common({ chain: Mainnet })
-    let block = createBlockFromRPC(infura2000004woTxs as JSONRPCBlock, [], {
+    let block = createBlockFromRPC(infura2000004wotxnsData, [], {
       common,
       setHardfork: true,
     })
     assert.equal(
       bytesToHex(block.hash()),
-      infura2000004woTxs.hash,
+      infura2000004wotxnsData.hash,
       'created premerge block w/o txns',
     )
-    block = createBlockFromRPC(infura2000004wTxs as JSONRPCBlock, [], { common, setHardfork: true })
+    block = createBlockFromRPC(infura2000004wtxsData, [], { common, setHardfork: true })
     assert.equal(
       bytesToHex(block.hash()),
-      infura2000004wTxs.hash,
+      infura2000004wtxsData.hash,
       'created premerge block with txns',
     )
-    block = createBlockFromRPC(infura15571241woTxs as JSONRPCBlock, [], {
+    block = createBlockFromRPC(infura15571241Data, [], {
       common,
       setHardfork: true,
     })
     assert.equal(
       bytesToHex(block.hash()),
-      infura15571241woTxs.hash,
+      infura15571241Data.hash,
       'created post merge block without txns',
     )
 
-    block = createBlockFromRPC(infura15571241wTxs as JSONRPCBlock, [], {
+    block = createBlockFromRPC(infura15571241wtxnsData, [], {
       common,
       setHardfork: true,
     })
     assert.equal(
       bytesToHex(block.hash()),
-      infura15571241wTxs.hash,
+      infura15571241wtxnsData.hash,
       'created post merge block with txns',
     )
   })
 
   it('should correctly parse a cancun block over rpc', () => {
     const common = new Common({ chain: Goerli, hardfork: Hardfork.Cancun })
-    const block = createBlockHeaderFromRPC(infuraGoerliBlock10536893 as JSONRPCBlock, { common }) // cspell:disable-line
-    const hash = hexToBytes(infuraGoerliBlock10536893.hash as PrefixedHexString)
+    const block = createBlockHeaderFromRPC(infuraGoerliBlock10536893Data, { common }) // cspell:disable-line
+    const hash = hexToBytes(infuraGoerliBlock10536893Data.hash)
     assert.ok(equalsBytes(block.hash(), hash))
   })
 })
@@ -184,7 +188,7 @@ describe('[fromJSONRPCProvider]', () => {
     global.fetch = async (_url: string, req: any) => {
       const json = JSON.parse(req.body)
       if (json.params[0] === '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24') {
-        const txData = await import(`./testdata/infura15571241wtxns.json`) // cspell:disable-line
+        const txData = await import(`./testdata/infura15571241wtxns.js`) // cspell:disable-line
         return {
           ok: true,
           status: 200,
