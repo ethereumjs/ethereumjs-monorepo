@@ -39,17 +39,17 @@ export type BeaconPayloadJSON = {
   receipts_root: PrefixedHexString
   logs_bloom: PrefixedHexString
   prev_randao: PrefixedHexString
-  block_number: PrefixedHexString
-  gas_limit: PrefixedHexString
-  gas_used: PrefixedHexString
-  timestamp: PrefixedHexString
+  block_number: string
+  gas_limit: string
+  gas_used: string
+  timestamp: string
   extra_data: PrefixedHexString
-  base_fee_per_gas: PrefixedHexString
+  base_fee_per_gas: string
   block_hash: PrefixedHexString
   transactions: PrefixedHexString[]
   withdrawals?: BeaconWithdrawal[]
-  blob_gas_used?: PrefixedHexString
-  excess_blob_gas?: PrefixedHexString
+  blob_gas_used?: string
+  excess_blob_gas?: string
   parent_beacon_block_root?: PrefixedHexString
   // requests data
   deposit_requests?: BeaconDepositRequest[]
