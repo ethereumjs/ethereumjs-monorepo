@@ -1,4 +1,6 @@
-export const testnetMergeData = {
+import type { ChainConfig } from '@ethereumjs/common'
+
+export const testnetMergeData: ChainConfig = {
   name: 'testnetMerge',
   chainId: 55555,
   defaultHardfork: 'istanbul',
