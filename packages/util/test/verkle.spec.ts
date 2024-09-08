@@ -111,7 +111,7 @@ describe('should chunkify code, accounting for leading PUSHDATA bytes', () => {
     assert.equal(
       chunkifiedCode[1][0],
       2,
-      'second chunk should have a 2 in first position (for 2 bytes of PUSHDATA overflow from previous chunk',
+      'second chunk should have a 2 in first position (for 2 bytes of PUSHDATA overflow from previous chunk)',
     )
   })
   it('should chunkify code without overflow PUSHDATA', () => {
@@ -123,7 +123,7 @@ describe('should chunkify code, accounting for leading PUSHDATA bytes', () => {
     assert.equal(
       chunkifiedCode[1][0],
       0,
-      'second chunk should have a 0 in first position (for 0 bytes of PUSHDATA overflow from previous chunk',
+      'second chunk should have a 0 in first position (for 0 bytes of PUSHDATA overflow from previous chunk)',
     )
   })
 })
