@@ -1,7 +1,7 @@
 import { BlockHeader, createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
@@ -97,7 +97,7 @@ describe('[PendingBlock]', async () => {
     }
   })
 
-  DefaultStateManager.prototype.setStateRoot = vi.fn()
+  MerkleStateManager.prototype.setStateRoot = vi.fn()
 
   const createTx = (
     from = A,

@@ -1,4 +1,4 @@
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   BranchNode,
   ExtensionNode,
@@ -38,7 +38,7 @@ type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
 export interface TrieNodeFetcherOptions extends FetcherOptions {
   root: Uint8Array
   accountToStorageTrie?: Map<String, Trie>
-  stateManager?: DefaultStateManager
+  stateManager?: MerkleStateManager
 
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
@@ -69,7 +69,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   protected debug: Debugger
   root: Uint8Array
 
-  stateManager: DefaultStateManager
+  stateManager: MerkleStateManager
   fetcherDoneFlags: SnapFetcherDoneFlags
   accountTrie: Trie
   codeDB: DB
@@ -105,7 +105,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.requestedNodeToPath = new Map<string, string>()
     this.fetchedAccountNodes = new Map<string, FetchedNodeData>()
 
-    this.stateManager = options.stateManager ?? new DefaultStateManager()
+    this.stateManager = options.stateManager ?? new MerkleStateManager()
     this.accountTrie = this.stateManager['_getAccountTrie']()
     this.codeDB = this.stateManager['_getCodeDB']()
 
