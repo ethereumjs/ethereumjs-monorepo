@@ -77,7 +77,7 @@ describe('[fromRPC]:', () => {
   it('should create a block given JSON data that includes a difficulty parameter of type integer string', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const blockDifficultyAsInteger = createBlockFromRPC(
-      testdataFromRpcDifficultyAsIntegerData,
+      testdataFromRpcDifficultyAsIntegerData as JSONRPCBlock,
       undefined,
       {
         common,
@@ -188,7 +188,9 @@ describe('[fromJSONRPCProvider]', () => {
     global.fetch = async (_url: string, req: any) => {
       const json = JSON.parse(req.body)
       if (json.params[0] === '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24') {
-        const txData = await import(`./testdata/infura15571241wtxns.js`) // cspell:disable-line
+        const { infura15571241wtxnsData: txData } = await import(
+          `./testdata/infura15571241wtxns.js` // cspell:disable-line
+        )
         return {
           ok: true,
           status: 200,
