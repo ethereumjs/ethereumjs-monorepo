@@ -128,7 +128,9 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const codeHashKey = getVerkleKey(stem, VerkleLeafType.CodeHash)
 
     const basicDataRaw = stateManager['_state'][bytesToHex(basicDataKey)]
+
     const basicData = decodeVerkleLeafBasicData(hexToBytes(basicDataRaw!))
+
     const codeHash = stateManager['_state'][bytesToHex(codeHashKey)]
 
     const account = await stateManager.getAccount(address)

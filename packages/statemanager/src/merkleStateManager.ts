@@ -34,7 +34,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { OriginalStorageCache } from './cache/index.js'
 import { modifyAccountFields } from './util.js'
 
-import { CODEHASH_PREFIX, type DefaultStateManagerOpts } from './index.js'
+import { CODEHASH_PREFIX, type MerkleStateManagerOpts } from './index.js'
 
 import type { Caches, StorageProof } from './index.js'
 import type {
@@ -62,7 +62,7 @@ import type { Debugger } from 'debug'
  * package which might be an alternative to this implementation
  * for many basic use cases.
  */
-export class DefaultStateManager implements StateManagerInterface {
+export class MerkleStateManager implements StateManagerInterface {
   protected _debug: Debugger
   protected _caches?: Caches
 
@@ -93,7 +93,7 @@ export class DefaultStateManager implements StateManagerInterface {
   /**
    * Instantiate the StateManager interface.
    */
-  constructor(opts: DefaultStateManagerOpts = {}) {
+  constructor(opts: MerkleStateManagerOpts = {}) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
@@ -598,16 +598,16 @@ export class DefaultStateManager implements StateManagerInterface {
    * @param proof Either a proof retrieved from `getProof`, or an array of those proofs
    * @param safe Whether or not to verify that the roots of the proof items match the reported roots
    * @param opts a dictionary of StateManager opts
-   * @returns A new DefaultStateManager with elements from the given proof included in its backing state trie
+   * @returns A new MerkleStateManager with elements from the given proof included in its backing state trie
    */
   static async fromProof(
     proof: Proof | Proof[],
     safe: boolean = false,
-    opts: DefaultStateManagerOpts = {},
-  ): Promise<DefaultStateManager> {
+    opts: MerkleStateManagerOpts = {},
+  ): Promise<MerkleStateManager> {
     if (Array.isArray(proof)) {
       if (proof.length === 0) {
-        return new DefaultStateManager(opts)
+        return new MerkleStateManager(opts)
       } else {
         const trie =
           opts.trie ??
@@ -615,7 +615,7 @@ export class DefaultStateManager implements StateManagerInterface {
             proof[0].accountProof.map((e) => hexToBytes(e)),
             { useKeyHashing: true },
           ))
-        const sm = new DefaultStateManager({ ...opts, trie })
+        const sm = new MerkleStateManager({ ...opts, trie })
         const address = createAddressFromString(proof[0].address)
         await sm.addStorageProof(proof[0].storageProof, proof[0].storageHash, address, safe)
         for (let i = 1; i < proof.length; i++) {
@@ -626,7 +626,7 @@ export class DefaultStateManager implements StateManagerInterface {
         return sm
       }
     } else {
-      return DefaultStateManager.fromProof([proof], safe, opts)
+      return MerkleStateManager.fromProof([proof], safe, opts)
     }
   }
 
@@ -918,7 +918,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * Cache values are generally not copied along regardless of the
    * `downlevelCaches` setting.
    */
-  shallowCopy(downlevelCaches = true): DefaultStateManager {
+  shallowCopy(downlevelCaches = true): MerkleStateManager {
     const common = this.common.copy()
     common.setHardfork(this.common.hardfork())
 
@@ -927,7 +927,7 @@ export class DefaultStateManager implements StateManagerInterface {
     const prefixCodeHashes = this._prefixCodeHashes
     const prefixStorageTrieKeys = this._prefixStorageTrieKeys
 
-    return new DefaultStateManager({
+    return new MerkleStateManager({
       common,
       trie,
       prefixStorageTrieKeys,

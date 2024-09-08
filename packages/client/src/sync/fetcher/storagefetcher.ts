@@ -1,4 +1,4 @@
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { verifyTrieRangeProof } from '@ethereumjs/trie'
 import {
   BIGINT_0,
@@ -56,7 +56,7 @@ export interface StorageFetcherOptions extends FetcherOptions {
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
 
-  stateManager: DefaultStateManager
+  stateManager: MerkleStateManager
 
   fetcherDoneFlags: SnapFetcherDoneFlags
 }
@@ -69,7 +69,7 @@ export type JobTask = {
 export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageData[]> {
   protected debug: Debugger
   root: Uint8Array
-  stateManager: DefaultStateManager
+  stateManager: MerkleStateManager
   fetcherDoneFlags: SnapFetcherDoneFlags
 
   /** The accounts to fetch storage data for */
@@ -88,7 +88,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this.fragmentedRequests = []
 
     this.root = options.root
-    this.stateManager = options.stateManager ?? new DefaultStateManager()
+    this.stateManager = options.stateManager ?? new MerkleStateManager()
     this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFetcherDoneFlags()
     this.storageRequests = options.storageRequests ?? []
     this.fetcherDoneFlags.storageFetcher.count = BigInt(this.storageRequests.length)

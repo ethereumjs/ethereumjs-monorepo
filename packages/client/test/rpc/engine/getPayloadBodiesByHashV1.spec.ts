@@ -1,6 +1,6 @@
 import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
   Account,
@@ -32,10 +32,10 @@ describe(method, () => {
 
   it('call with valid parameters', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-    DefaultStateManager.prototype.setStateRoot = function (): any {}
-    DefaultStateManager.prototype.shallowCopy = function () {
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+    MerkleStateManager.prototype.setStateRoot = function (): any {}
+    MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
     const { chain, service, server, common } = await setupChain(genesisJSON, 'post-merge', {
@@ -108,16 +108,16 @@ describe(method, () => {
     assert.equal(res.result.length, 3, 'length of response matches number of block hashes sent')
 
     // Restore setStateRoot
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 
   it('call with valid parameters on pre-Shanghai block', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-    DefaultStateManager.prototype.setStateRoot = function (): any {}
-    DefaultStateManager.prototype.shallowCopy = function () {
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+    MerkleStateManager.prototype.setStateRoot = function (): any {}
+    MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
     const { chain, service, server, common } = await setupChain(
@@ -192,7 +192,7 @@ describe(method, () => {
     )
 
     // Restore setStateRoot
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 })

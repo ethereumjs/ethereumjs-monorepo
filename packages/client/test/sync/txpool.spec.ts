@@ -1,6 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createAccessList2930Tx, createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   Account,
@@ -106,7 +106,7 @@ const config = new Config({ accountCache: 10000, storageCache: 1000 })
 const handleTxs = async (
   txs: any[],
   failMessage: string,
-  stateManager?: DefaultStateManager,
+  stateManager?: MerkleStateManager,
   pool?: TxPool,
 ) => {
   if (pool === undefined) {
@@ -152,8 +152,8 @@ const handleTxs = async (
 }
 
 describe('[TxPool]', async () => {
-  const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  DefaultStateManager.prototype.setStateRoot = (): any => {}
+  const ogStateManagerSetStateRoot = MerkleStateManager.prototype.setStateRoot
+  MerkleStateManager.prototype.setStateRoot = (): any => {}
 
   const A = {
     address: hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f'),
@@ -884,5 +884,5 @@ describe('[TxPool]', async () => {
     pool.stop()
     pool.close()
   })
-  DefaultStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
+  MerkleStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
 })

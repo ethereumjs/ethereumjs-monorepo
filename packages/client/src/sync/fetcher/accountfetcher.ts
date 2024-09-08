@@ -1,4 +1,4 @@
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { verifyTrieRangeProof } from '@ethereumjs/trie'
 import {
   BIGINT_0,
@@ -54,7 +54,7 @@ export interface AccountFetcherOptions extends FetcherOptions {
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
 
-  stateManager?: DefaultStateManager
+  stateManager?: MerkleStateManager
 
   fetcherDoneFlags?: SnapFetcherDoneFlags
 }
@@ -69,7 +69,7 @@ export type JobTask = {
 
 export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData> {
   protected debug: Debugger
-  stateManager: DefaultStateManager
+  stateManager: MerkleStateManager
   accountTrie: Trie
 
   root: Uint8Array
@@ -96,7 +96,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.first = options.first
     this.count = options.count ?? BIGINT_2EXP256 - this.first
 
-    this.stateManager = options.stateManager ?? new DefaultStateManager()
+    this.stateManager = options.stateManager ?? new MerkleStateManager()
     this.accountTrie = this.stateManager['_getAccountTrie']()
 
     this.debug = debugDefault('client:AccountFetcher')
