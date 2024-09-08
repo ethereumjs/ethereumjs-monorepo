@@ -22,7 +22,7 @@ describe('stateManager', () => {
     const expectedStateRoot = hexToBytes(
       '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544',
     )
-    const stateManager = new StateManager({})
+    const stateManager = new StateManager()
 
     await stateManager.generateCanonicalGenesis(getGenesis(Chain.Mainnet))
     const stateRoot = await stateManager.getStateRoot()
@@ -47,7 +47,7 @@ describe('stateManager', () => {
     ]
 
     for (const [chain, expectedStateRoot] of chains) {
-      const stateManager = new MerkleStateManager({})
+      const stateManager = new MerkleStateManager()
 
       await stateManager.generateCanonicalGenesis(getGenesis(chain))
       const stateRoot = await stateManager.getStateRoot()
