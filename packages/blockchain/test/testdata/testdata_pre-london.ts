@@ -1,4 +1,4 @@
-export const testdata_preLondonData = {
+export const preLondonData = {
   _info: {
     comment: '',
     filledwith: 'testeth 1.7.0-alpha.0+commit.fe75b954.dirty',
