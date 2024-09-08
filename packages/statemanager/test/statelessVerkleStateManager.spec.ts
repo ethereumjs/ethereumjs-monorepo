@@ -124,7 +124,6 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const address = createAddressFromString('0x6177843db3138ae69679a54b95cf345ed759450d')
     const stem = getVerkleStem(stateManager.verkleCrypto, address, 0n)
 
-    console.log(bytesToHex(stem))
 
     const basicDataKey = getVerkleKey(stem, VerkleLeafType.BasicData)
     const codeHashKey = getVerkleKey(stem, VerkleLeafType.CodeHash)
