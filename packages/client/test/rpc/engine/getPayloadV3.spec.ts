@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
   Account,
@@ -61,10 +61,10 @@ describe(method, () => {
 
   it('call with known payload', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-    DefaultStateManager.prototype.setStateRoot = function (): any {}
-    DefaultStateManager.prototype.shallowCopy = function () {
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+    MerkleStateManager.prototype.setStateRoot = function (): any {}
+    MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
 
@@ -131,7 +131,7 @@ describe(method, () => {
     assert.equal(commitments[0], bytesToHex(txCommitments[0]), 'commitment should match')
     assert.equal(blobs[0], bytesToHex(txBlobs[0]), 'blob should match')
 
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 })
