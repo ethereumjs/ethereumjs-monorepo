@@ -763,7 +763,7 @@ describe('[CLI]', () => {
       if (message.includes('Initializing Ethereumjs client')) {
         assert.ok(
           message.includes('network=customChain'),
-          'Client respects custom chain parameters json file option',
+          'Client respects custom chain parameters JSON file option',
         )
       }
       if (message.includes('Client started successfully')) {

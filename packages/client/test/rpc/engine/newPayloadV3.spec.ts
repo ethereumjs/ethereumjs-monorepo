@@ -17,7 +17,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
       engine: true,
     })
     const rpc = getRPCClient(server)
-    // get the genesis json with current date
+    // get the genesis JSON with current date
     const validBlock = {
       ...blockData,
       withdrawals: [],
@@ -33,9 +33,9 @@ describe(`${method}: call with executionPayloadV3`, () => {
   })
 
   it('valid data', async () => {
-    // get the genesis json with late enough date with respect to block data in batchBlocks
+    // get the genesis JSON with late enough date with respect to block data in batchBlocks
     const cancunTime = 1689945325
-    // deep copy json and add shanghai and cancun to genesis to avoid contamination
+    // deep copy JSON and add shanghai and cancun to genesis to avoid contamination
     const cancunJSON = JSON.parse(JSON.stringify(genesisJSON))
     cancunJSON.config.shanghaiTime = cancunTime
     cancunJSON.config.cancunTime = cancunTime
@@ -71,9 +71,9 @@ describe(`${method}: call with executionPayloadV3`, () => {
   })
 
   it('fcU and verify that no errors occur on new payload', async () => {
-    // get the genesis json with late enough date with respect to block data in batchBlocks
+    // get the genesis JSON with late enough date with respect to block data in batchBlocks
     const cancunTime = 1689945325
-    // deep copy json and add shanghai and cancun to genesis to avoid contamination
+    // deep copy JSON and add shanghai and cancun to genesis to avoid contamination
     const cancunJSON = JSON.parse(JSON.stringify(genesisJSON))
     cancunJSON.config.shanghaiTime = cancunTime
     cancunJSON.config.cancunTime = cancunTime

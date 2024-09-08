@@ -59,7 +59,7 @@ import { Event } from '../src/types.js'
 import { parseMultiaddrs } from '../src/util/index.js'
 import { setupMetrics } from '../src/util/metrics.js'
 
-import { helprpc, startRPCServers } from './startRPC.js'
+import { helpRPC, startRPCServers } from './startRPC.js'
 
 import type { Logger } from '../src/logging.js'
 import type { FullEthereumService } from '../src/service/index.js'
@@ -924,7 +924,7 @@ const stopClient = async (
 async function run() {
   if (args.helpRPC === true) {
     // Output RPC help and exit
-    return helprpc()
+    return helpRPC()
   }
 
   // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
