@@ -21,6 +21,7 @@ describe('verkle tests', () => {
     verkleCrypto = await loadVerkleCrypto()
   })
   it('should execute bytecode and update the state', async () => {
+    // This tests executes some very simple bytecode that stores the value 1 in slot 2
     const common = new Common({ chain: Mainnet, eips: [6800], hardfork: Hardfork.Cancun })
     const trie = await createVerkleTree()
     const sm = new StatefulVerkleStateManager({ trie, verkleCrypto })
@@ -28,16 +29,15 @@ describe('verkle tests', () => {
     const account = createAccount({ nonce: 3n, balance: 0xffffffffn })
     await sm.putAccount(address, account)
     const evm = await createEVM({ common, stateManager: sm })
-    const code = hexToBytes('0x6001600255')
+    const code = hexToBytes('0x6001600255') // PUSH1 01 PUSH1 02 SSTORE
     const accessWitness = new AccessWitness({ verkleCrypto })
     const res = await evm.runCall({
       code,
       caller: address,
       accessWitness,
-      to: createAddressFromString(address.toString()),
+      to: address,
     })
     assert.deepEqual(res.execResult.returnValue, new Uint8Array())
-    console.log(res.execResult.runState?.interpreter._env.accessWitness)
     const retrievedValue = await sm.getStorage(address, setLengthLeft(bigIntToBytes(2n), 32))
     assert.deepEqual(retrievedValue, bigIntToBytes(1n))
   })

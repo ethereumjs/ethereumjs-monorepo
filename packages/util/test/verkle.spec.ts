@@ -98,6 +98,7 @@ describe('should encode and decode basic data values', () => {
     )
     const decodedData = decodeVerkleLeafBasicData(basicDataBytes)
     assert.equal(decodedData.balance, 123n)
+    assert.equal(decodedData.nonce, 2n)
   })
 })
 

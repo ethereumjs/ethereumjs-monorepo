@@ -144,7 +144,7 @@ export const VERKLE_BALANCE_OFFSET = 16
 
 export const VERKLE_VERSION_BYTES_LENGTH = 1
 export const VERKLE_NONCE_BYTES_LENGTH = 8
-export const VERKLE_CODE_SIZE_BYTES_LENGTH = 4
+export const VERKLE_CODE_SIZE_BYTES_LENGTH = 3
 export const VERKLE_BALANCE_BYTES_LENGTH = 16
 
 export const VERKLE_BASIC_DATA_LEAF_KEY = intToBytes(VerkleLeafType.BasicData)
@@ -313,7 +313,7 @@ export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleL
  * This function takes a `VerkleLeafBasicData` object and encodes its properties
  * (version, nonce, code size, and balance) into a compact `Uint8Array` format. Each
  * property is serialized and padded to match the required byte lengths defined by
- * EIP-6800. Additionally, 3 bytes are reserved for future use as specified
+ * EIP-6800. Additionally, 4 bytes are reserved for future use as specified
  * in EIP-6800.
  * @param {VerkleLeafBasicData} basicData - An object containing the version, nonce,
  *   code size, and balance to be encoded.
@@ -322,7 +322,7 @@ export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleL
 export function encodeVerkleLeafBasicData(account: Account): Uint8Array {
   const encodedVersion = setLengthLeft(int32ToBytes(account.version), VERKLE_VERSION_BYTES_LENGTH)
   // Per EIP-6800, bytes 1-4 are reserved for future use
-  const reservedBytes = new Uint8Array([0, 0, 0])
+  const reservedBytes = new Uint8Array([0, 0, 0, 0])
   const encodedNonce = setLengthLeft(bigIntToBytes(account.nonce), VERKLE_NONCE_BYTES_LENGTH)
   const encodedCodeSize = setLengthLeft(
     int32ToBytes(account.codeSize),

@@ -114,18 +114,16 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         version: basicData.version,
         balance: basicData.balance,
         nonce: basicData.nonce,
+        // Codehash is either untouhed (i.e. undefined) or deleted (i.e. overwritten with zeros)
         codeHash:
-          accountValues[1] === undefined
-            ? KECCAK256_NULL // codeHash is undefined in trie (i.e. not touched)
-            : equalsBytes(accountValues[1], new Uint8Array(32))
-              ? KECCAK256_NULL // codeHash is deleted in trie (i.e. overwritten with zeroes)
-              : accountValues[1],
+          accountValues[1] === undefined || equalsBytes(accountValues[1], new Uint8Array(32))
+            ? KECCAK256_NULL
+            : accountValues[1],
         codeSize: basicData.codeSize,
         storageRoot: KECCAK256_NULL, // TODO: Add storage stuff
       })
-    }
-    // check if the account didn't exist if any of the basic keys are undefined
-    else if (accountValues[0] === undefined || accountValues[1] === undefined) {
+    } else if (accountValues[1] === undefined) {
+      // account does not exist if both basic fields and codehash are undefined
       if (this.DEBUG) {
         this._debug(`getAccount address=${address.toString()} from DB (non-existent)`)
       }
@@ -159,6 +157,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         )
       } else {
         // Delete account
+        // TODO - add code here
       }
     } else {
       if (account !== undefined) {
