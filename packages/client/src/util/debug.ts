@@ -30,7 +30,7 @@ import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { VM, runBlock, createVM }  from './src'
 import { Trie } from '@ethereumjs/trie'
-import { DefaultStateManager } from './src/state'
+import { MerkleStateManager } from './src/state'
 import { Blockchain } from '@ethereumjs/blockchain'
 
 const main = async () => {
@@ -41,7 +41,7 @@ const main = async () => {
 
   const stateDB = new Level('${execution.config.getDataDirectory(DataDirectory.State)}')
   const trie = new Trie({ db: stateDB, useKeyHashing: true })
-  const stateManager = new DefaultStateManager({ trie, common })
+  const stateManager = new MerkleStateManager({ trie, common })
   // Ensure we run on the right root
   stateManager.setStateRoot(hexToBytes('${bytesToHex(
     await execution.vm.stateManager.getStateRoot(),

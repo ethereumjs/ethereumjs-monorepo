@@ -25,7 +25,7 @@ import {
 } from './simutils.js'
 
 import type { EthereumClient } from '../../src/client.js'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const client = Client.http({ port: 8545 })
@@ -43,7 +43,7 @@ let senderBalance = BigInt(customGenesisState[sender][0])
 let ejsClient: EthereumClient | null = null
 let beaconSyncRelayer: any = null
 let snapCompleted: Promise<unknown> | undefined = undefined
-let stateManager: DefaultStateManager | undefined = undefined
+let stateManager: MerkleStateManager | undefined = undefined
 
 // This account doesn't exist in the genesis so starting balance is zero
 const EOATransferToAccount = '0x3dA33B9A0894b908DdBb00d96399e506515A1009'
@@ -271,7 +271,7 @@ async function createSnapClient(
   const snapSyncCompletedPromise = new Promise((resolve) => {
     config.events.once(
       Event.SYNC_SNAPSYNC_COMPLETE,
-      (stateRoot: Uint8Array, stateManager: DefaultStateManager) =>
+      (stateRoot: Uint8Array, stateManager: MerkleStateManager) =>
         resolve([stateRoot, stateManager]),
     )
   })

@@ -1,6 +1,6 @@
 import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import { Account, bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
@@ -30,8 +30,8 @@ describe(method, () => {
   })
 
   it('call with valid parameters', async () => {
-    DefaultStateManager.prototype.setStateRoot = vi.fn()
-    DefaultStateManager.prototype.shallowCopy = function () {
+    MerkleStateManager.prototype.setStateRoot = vi.fn()
+    MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
     const { chain, service, server, common } = await setupChain(genesisJSON, 'post-merge', {
@@ -112,8 +112,8 @@ describe(method, () => {
   })
 
   it('call with valid parameters on pre-Shanghai hardfork', async () => {
-    DefaultStateManager.prototype.setStateRoot = vi.fn()
-    DefaultStateManager.prototype.shallowCopy = function () {
+    MerkleStateManager.prototype.setStateRoot = vi.fn()
+    MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
     const { chain, service, server, common } = await setupChain(preShanghaiGenesisJSON, 'london', {

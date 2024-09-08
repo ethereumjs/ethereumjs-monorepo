@@ -17,8 +17,8 @@ import {
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
+import { MerkleStateManager } from '../src/merkleStateManager.js'
 import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
-import { DefaultStateManager } from '../src/stateManager.js'
 
 import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
 import { getValues } from './testdata/providerData/mockProvider.js'
@@ -231,7 +231,7 @@ describe('runTx custom transaction test', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
     const state = new RPCStateManager({ provider, blockTag: 1n })
-    const vm = await createVM({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
+    const vm = await createVM({ common, stateManager: <any>state }) // TODO fix the type MerkleStateManager back to StateManagerInterface in VM
 
     const vitalikDotEth = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const privateKey = hexToBytes(
@@ -337,17 +337,17 @@ describe('blockchain', () =>
     )
   }))
 
-describe('Should return same value as DefaultStateManager when account does not exist', () => {
+describe('Should return same value as MerkleStateManager when account does not exist', () => {
   it('should work', async () => {
     const rpcState = new RPCStateManager({ provider, blockTag: 1n })
-    const defaultState = new DefaultStateManager()
+    const defaultState = new MerkleStateManager()
 
     const account0 = await rpcState.getAccount(new Address(hexToBytes(`0x${'01'.repeat(20)}`)))
     const account1 = await defaultState.getAccount(new Address(hexToBytes(`0x${'01'.repeat(20)}`)))
     assert.equal(
       account0,
       account1,
-      'Should return same value as DefaultStateManager when account does not exist',
+      'Should return same value as MerkleStateManager when account does not exist',
     )
   })
 })

@@ -1,4 +1,4 @@
-import { CODEHASH_PREFIX, DefaultStateManager } from '@ethereumjs/statemanager'
+import { CODEHASH_PREFIX, MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   BIGINT_0,
   bytesToHex,
@@ -26,7 +26,7 @@ type ByteCodeDataResponse = Uint8Array[] & { completed?: boolean }
  */
 export interface ByteCodeFetcherOptions extends FetcherOptions {
   hashes: Uint8Array[]
-  stateManager?: DefaultStateManager
+  stateManager?: MerkleStateManager
   fetcherDoneFlags?: SnapFetcherDoneFlags
 
   /** Destroy fetcher once all tasks are done */
@@ -40,7 +40,7 @@ export type JobTask = {
 
 export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
   protected debug: Debugger
-  stateManager: DefaultStateManager
+  stateManager: MerkleStateManager
   fetcherDoneFlags: SnapFetcherDoneFlags
   codeDB: DB
 
@@ -54,7 +54,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   constructor(options: ByteCodeFetcherOptions) {
     super(options)
     this.hashes = options.hashes ?? []
-    this.stateManager = options.stateManager ?? new DefaultStateManager()
+    this.stateManager = options.stateManager ?? new MerkleStateManager()
     this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFetcherDoneFlags()
     this.fetcherDoneFlags.byteCodeFetcher.count = BigInt(this.hashes.length)
     this.codeDB = this.stateManager['_getCodeDB']()

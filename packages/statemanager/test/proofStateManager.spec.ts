@@ -15,7 +15,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { DefaultStateManager } from '../src/index.js'
+import { MerkleStateManager } from '../src/index.js'
 
 import * as ropsten_contractWithStorage from './testdata/ropsten_contractWithStorage.json'
 import * as ropsten_nonexistentAccount from './testdata/ropsten_nonexistentAccount.json'
@@ -28,7 +28,7 @@ describe('ProofStateManager', () => {
   it(`should return quantity-encoded RPC representation`, async () => {
     const address = createZeroAddress()
     const key = zeros(32)
-    const stateManager = new DefaultStateManager()
+    const stateManager = new MerkleStateManager()
 
     const proof = await stateManager.getProof(address, [key])
     assert.equal(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
@@ -38,7 +38,7 @@ describe('ProofStateManager', () => {
   it(`should correctly return the right storage root / account root`, async () => {
     const address = createZeroAddress()
     const key = zeros(32)
-    const stateManager = new DefaultStateManager()
+    const stateManager = new MerkleStateManager()
 
     await stateManager.putAccount(address, new Account(BigInt(100), BigInt(200)))
     const storageRoot = (await stateManager.getAccount(address))!.storageRoot
@@ -52,7 +52,7 @@ describe('ProofStateManager', () => {
   it(`should return quantity-encoded RPC representation for existing accounts`, async () => {
     const address = createZeroAddress()
     const key = zeros(32)
-    const stateManager = new DefaultStateManager()
+    const stateManager = new MerkleStateManager()
 
     const account = new Account()
     await stateManager.putAccount(address, account)
@@ -82,7 +82,7 @@ describe('ProofStateManager', () => {
     const key = zeros(32)
     const value = hexToBytes('0x0000aabb00')
     const code = hexToBytes('0x6000')
-    const stateManager = new DefaultStateManager()
+    const stateManager = new MerkleStateManager()
     await stateManager.checkpoint()
     await stateManager.putAccount(address, new Account())
     await stateManager.putStorage(address, key, value)
@@ -117,7 +117,7 @@ describe('ProofStateManager', () => {
     // Storage slots: empty list
     const address = createAddressFromString('0xc626553e7c821d0f8308c28d56c60e3c15f8d55a')
     const trie = await createTrie({ useKeyHashing: true })
-    const stateManager = new DefaultStateManager({ trie })
+    const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropsten_validAccount.accountProof) {
@@ -141,7 +141,7 @@ describe('ProofStateManager', () => {
     // Storage slots: empty list
     const address = createAddressFromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
     const trie = new Trie({ useKeyHashing: true })
-    const stateManager = new DefaultStateManager({ trie })
+    const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropsten_nonexistentAccount.accountProof) {
@@ -165,7 +165,7 @@ describe('ProofStateManager', () => {
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = createAddressFromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
     const trie = new Trie({ useKeyHashing: true })
-    const stateManager = new DefaultStateManager({ trie })
+    const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropsten_contractWithStorage.accountProof) {
@@ -203,7 +203,7 @@ describe('ProofStateManager', () => {
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = createAddressFromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
     const trie = new Trie({ useKeyHashing: true })
-    const stateManager = new DefaultStateManager({ trie })
+    const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropsten_contractWithStorage.accountProof) {
@@ -269,7 +269,7 @@ describe('ProofStateManager', () => {
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = createAddressFromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
     const trie = new Trie({ useKeyHashing: true })
-    const stateManager = new DefaultStateManager({ trie })
+    const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropsten_nonexistentAccount.accountProof) {

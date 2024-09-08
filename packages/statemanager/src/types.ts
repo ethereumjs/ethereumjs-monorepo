@@ -30,7 +30,7 @@ export interface RPCStateManagerOpts extends BaseStateManagerOpts {
 /**
  * Options for constructing a {@link StateManager}.
  */
-export interface DefaultStateManagerOpts extends BaseStateManagerOpts {
+export interface MerkleStateManagerOpts extends BaseStateManagerOpts {
   /**
    * A {@link Trie} instance
    */

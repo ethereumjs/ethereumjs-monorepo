@@ -1,9 +1,9 @@
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { Address, hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
   // setup `stateManager` with some existing address
-  const stateManager = new DefaultStateManager()
+  const stateManager = new MerkleStateManager()
   const contractAddress = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
   const byteCode = hexToBytes('0x67ffffffffffffffff600160006000fb')
   const storageKey1 = hexToBytes(
@@ -21,7 +21,7 @@ const main = async () => {
 
   const proof = await stateManager.getProof(contractAddress)
   const proofWithStorage = await stateManager.getProof(contractAddress, [storageKey1, storageKey2])
-  const partialStateManager = await DefaultStateManager.fromProof(proof)
+  const partialStateManager = await MerkleStateManager.fromProof(proof)
 
   // To add more proof data, use `addProofData`
   await partialStateManager.addProofData(proofWithStorage)

@@ -1,14 +1,14 @@
 import { Address, KECCAK256_RLP, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Caches, DefaultStateManager } from '../src/index.js'
+import { Caches, MerkleStateManager } from '../src/index.js'
 
 import { createAccountWithDefaults } from './util.js'
 
 describe('StateManager -> General/Account', () => {
   for (const accountCacheOpts of [{ size: 1000 }, { size: 0 }]) {
     it(`should set the state root to empty`, async () => {
-      const stateManager = new DefaultStateManager({
+      const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
       assert.ok(equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has default root')
@@ -30,7 +30,7 @@ describe('StateManager -> General/Account', () => {
     })
 
     it(`should clear the cache when the state root is set`, async () => {
-      const stateManager = new DefaultStateManager({
+      const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
@@ -75,7 +75,7 @@ describe('StateManager -> General/Account', () => {
     })
 
     it('should put and get account, and add to the underlying cache if the account is not found', async () => {
-      const stateManager = new DefaultStateManager({
+      const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
       const account = createAccountWithDefaults()
@@ -96,7 +96,7 @@ describe('StateManager -> General/Account', () => {
     })
 
     it(`should return undefined for a non-existent account`, async () => {
-      const stateManager = new DefaultStateManager({
+      const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
@@ -107,7 +107,7 @@ describe('StateManager -> General/Account', () => {
     })
 
     it(`should return undefined for an existent account`, async () => {
-      const stateManager = new DefaultStateManager({
+      const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
       const account = createAccountWithDefaults(BigInt(0x1), BigInt(0x1))
@@ -121,7 +121,7 @@ describe('StateManager -> General/Account', () => {
     })
 
     it(`should modify account fields correctly`, async () => {
-      const stateManager = new DefaultStateManager({
+      const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
       const account = createAccountWithDefaults()
