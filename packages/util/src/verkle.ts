@@ -157,6 +157,7 @@ export const VERKLE_HEADER_STORAGE_OFFSET = 64
 export const VERKLE_CODE_OFFSET = 128
 export const VERKLE_NODE_WIDTH = 256
 export const VERKLE_MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(VERKLE_CODE_CHUNK_SIZE)
+export const VERKLE_MAX_CHUNKS = 793 // The maximum number of chunks is 793 (maxCodeSize of 24576) / (bytes per chunk 31) + (round up 1)
 
 /**
  * @dev Returns the tree key for a given verkle tree stem, and sub index.
@@ -334,7 +335,18 @@ export function encodeVerkleLeafBasicData(account: Account): Uint8Array {
   return concatBytes(encodedVersion, reservedBytes, encodedNonce, encodedCodeSize, encodedBalance)
 }
 
-export const generateChunkSuffixes = (numChunks: number) => {
+/**
+ * Helper method to generate the suffixes for code chunks for putting code
+ * @param numChunks number of chunks to generate suffixes for
+ * @param allowUnlimitedCodeSize - boolean allowing contracts bigger than max code size
+ * defaults to false
+ * @returns number[] - an array of numbers corresponding to the code chunks being put
+ */
+export const generateChunkSuffixes = (numChunks: number, allowUnlimitedCodeSize = false) => {
+  if (numChunks > VERKLE_MAX_CHUNKS && !allowUnlimitedCodeSize)
+    throw new Error(
+      `exceeded max number of chunks(i.e. code size); max allowed ${VERKLE_MAX_CHUNKS}, got ${numChunks}`,
+    )
   const chunkSuffixes: number[] = new Array(numChunks)
   for (let x = 0; x < numChunks; x++) {
     if (x < VERKLE_CODE_OFFSET) {
@@ -361,11 +373,18 @@ export const generateChunkSuffixes = (numChunks: number) => {
   return chunkSuffixes
 }
 
+/**
+ * Helper method for generating the code stems necessary for putting code
+ * @param numChunks the number of code chunks to be put
+ * @param address the address of the account getting the code
+ * @param verkleCrypto an initialized {@link VerkleCrypto} object
+ * @returns an array of stems for putting code
+ */
 export const generateCodeStems = async (
   numChunks: number,
   address: Address,
   verkleCrypto: VerkleCrypto,
-) => {
+): Promise<Uint8Array[]> => {
   // The maximum number of chunks is 793 (maxCodeSize - 24576) / (bytes per chunk 31) + (round up - 1)
   // Code is stored in chunks starting at leaf index 128 of the leaf node corresponding to the stem of the code's address
   // Code chunks beyond the initial 128 are stored in additional leaf nodes in batches up of up to 256 chunks per leaf node
@@ -374,7 +393,7 @@ export const generateCodeStems = async (
   // So, instead of computing every single leaf key (which is a heavy async operation), we just compute the stem for the first
   // chunk in each leaf node and can then know that the chunks in between have tree keys in monotonically increasing order
   const numStems = Math.ceil(numChunks / VERKLE_NODE_WIDTH)
-  const chunkStems = new Array(numStems)
+  const chunkStems = new Array<Uint8Array>(numStems)
   // Compute the stem for the initial set of code chunks
   chunkStems[0] = (await getVerkleTreeKeyForCodeChunk(address, 0, verkleCrypto)).slice(0, 31)
 
