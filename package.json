@@ -54,6 +54,9 @@
     "vite-plugin-wasm": "^3.3.0",
     "vitest": "^v2.0.0-beta.12"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "*"
+  },
   "peerDependencies": {
     "@vitest/browser": "^v2.0.0-beta.12",
     "webdriverio": "^8.39.0"
