@@ -166,9 +166,10 @@ describe(`valid verkle network setup`, async () => {
 
 async function loadGethVectors(vectorsDirPath: string, opts: { common: Common }) {
   // set chain id to 1 for geth vectors
-  opts.common['_chainParams'].chainId = BigInt(1)
+  opts.common['_chainParams'].chainId = 1
   const stateDiffVec = JSON.parse(readFileSync(`${vectorsDirPath}/statediffs.json`, 'utf8'))
   const executionWitness0: VerkleExecutionWitness = {
+    parentStateRoot: '0x',
     stateDiff: [],
     verkleProof: {
       commitmentsByPath: [],
@@ -184,6 +185,7 @@ async function loadGethVectors(vectorsDirPath: string, opts: { common: Common })
   }
 
   const executionWitness1: VerkleExecutionWitness = {
+    parentStateRoot: '0x',
     stateDiff: stateDiffVec[0],
     verkleProof: {
       commitmentsByPath: [],
@@ -199,6 +201,7 @@ async function loadGethVectors(vectorsDirPath: string, opts: { common: Common })
   }
 
   const executionWitness2: VerkleExecutionWitness = {
+    parentStateRoot: '0x',
     stateDiff: stateDiffVec[1],
     verkleProof: {
       commitmentsByPath: [],

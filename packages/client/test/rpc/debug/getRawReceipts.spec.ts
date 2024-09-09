@@ -100,7 +100,7 @@ describe(method, () => {
     if (isBrowser() === true) {
       assert.ok(true)
     } else {
-      const gethGenesis = await import('../../../../block/test/testdata/4844-hardfork.json')
+      const gethGenesis = await import('../../../../block/test/testdata/4844-hardfork.js')
 
       const kzg = await loadKZG()
 

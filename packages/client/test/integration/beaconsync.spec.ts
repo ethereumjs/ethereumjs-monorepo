@@ -8,7 +8,7 @@ import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 import { destroy, setup, wait } from './util.js'
 
 const common = createCommonFromGethGenesis(genesisJSON, { chain: 'post-merge' })
-common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
+common.setHardforkBy({ blockNumber: BigInt(0) })
 
 describe('should sync blocks', async () => {
   BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()

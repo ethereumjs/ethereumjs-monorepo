@@ -219,11 +219,11 @@ describe(method, () => {
     // Disable block header consensus format validation
     const consensusFormatValidation = BlockHeader.prototype['_consensusFormatValidation']
     BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
-    const gethGenesis = await import('../../../../block/test/testdata/4844-hardfork.json')
+    const { hardfork4844Data } = await import('../../../../block/test/testdata/4844-hardfork.js')
 
     const kzg = await loadKZG()
 
-    const common = createCommonFromGethGenesis(gethGenesis, {
+    const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },

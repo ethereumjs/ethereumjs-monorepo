@@ -19,7 +19,7 @@ import { createVM } from '@ethereumjs/vm'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it, vi } from 'vitest'
 
-import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
+import { hardfork4844Data } from '../../../block/test/testdata/4844-hardfork.js'
 import { Config } from '../../src/config.js'
 import { getLogger } from '../../src/logging.js'
 import { PendingBlock } from '../../src/miner/index.js'
@@ -344,7 +344,7 @@ describe('[PendingBlock]', async () => {
 
   it('construct blob bundles', async () => {
     const kzg = await loadKZG()
-    const common = createCommonFromGethGenesis(gethGenesis, {
+    const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: {
@@ -423,10 +423,9 @@ describe('[PendingBlock]', async () => {
   })
 
   it('should exclude missingBlobTx', async () => {
-    const gethGenesis = await import('../../../block/test/testdata/4844-hardfork.json')
     const kzg = await loadKZG()
 
-    const common = createCommonFromGethGenesis(gethGenesis, {
+    const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
