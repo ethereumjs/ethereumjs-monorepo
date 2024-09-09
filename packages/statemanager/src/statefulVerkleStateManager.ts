@@ -118,7 +118,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         version: basicData.version,
         balance: basicData.balance,
         nonce: basicData.nonce,
-        // Codehash is either untouhed (i.e. undefined) or deleted (i.e. overwritten with zeros)
+        // Codehash is either untouched (i.e. undefined) or deleted (i.e. overwritten with zeros)
         codeHash:
           accountValues[1] === undefined || equalsBytes(accountValues[1], new Uint8Array(32))
             ? KECCAK256_NULL

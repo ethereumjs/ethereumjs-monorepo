@@ -60,7 +60,7 @@ describe('lets make proofs', () => {
     const verificationInput = concatBytes(
       proof, // 576 byte proof
       verkleCrypto.serializeCommitment(leafNode.commitment), // serialized leafNode commitment
-      new Uint8Array(1).fill(1), // Position in valuesd array (aka "z value")
+      new Uint8Array(1).fill(1), // Position in values array (aka "z value")
       leafNode.getValue(1)!, // Value at position (aka "y value")
     )
 
