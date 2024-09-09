@@ -1,7 +1,7 @@
 import { bigIntToHex } from '@ethereumjs/util'
 
 import type { ExecutionPayload } from './types.js'
-import type { PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
+import type { NumericString, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
 
 type BeaconWithdrawal = {
   index: PrefixedHexString
@@ -39,17 +39,17 @@ export type BeaconPayloadJSON = {
   receipts_root: PrefixedHexString
   logs_bloom: PrefixedHexString
   prev_randao: PrefixedHexString
-  block_number: string
-  gas_limit: string
-  gas_used: string
-  timestamp: string
+  block_number: NumericString
+  gas_limit: NumericString
+  gas_used: NumericString
+  timestamp: NumericString
   extra_data: PrefixedHexString
-  base_fee_per_gas: string
+  base_fee_per_gas: NumericString
   block_hash: PrefixedHexString
   transactions: PrefixedHexString[]
   withdrawals?: BeaconWithdrawal[]
-  blob_gas_used?: string
-  excess_blob_gas?: string
+  blob_gas_used?: NumericString
+  excess_blob_gas?: NumericString
   parent_beacon_block_root?: PrefixedHexString
   // requests data
   deposit_requests?: BeaconDepositRequest[]
