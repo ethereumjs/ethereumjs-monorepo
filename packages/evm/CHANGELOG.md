@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 3.1.1 - 2024-09-09
 
-- Fixes a Transient Storage EIP-1153 bug related to not clearing Transient Storage after creating a contract at tx-level (thanks @yann300 ❤️), PR [#3643](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3643)
+- Fixes a Transient Storage EIP-1153 bug related to not clearing Transient Storage after creating a contract at tx-level (thanks to @yann300 ❤️), PR [#3643](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3643)
 
 ## 3.1.0 - 2024-08-15
 
