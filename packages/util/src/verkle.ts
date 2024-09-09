@@ -257,7 +257,7 @@ export const getVerkleTreeKeyForStorageSlot = async (
  * from the `encodedBasicData` array based on predefined offsets and lengths, and then converted
  * to its appropriate type (integer or BigInt).
  * @param {Uint8Array} encodedBasicData - The encoded Verkle leaf basic data containing the version, nonce,
- * code size, and balance in a compact binary format.
+ * code size, and balance in a compact Uint8Array format.
  * @returns {VerkleLeafBasicData} - An object containing the decoded version, nonce, code size, and balance.
  */
 export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleLeafBasicData {
@@ -291,7 +291,7 @@ export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleL
  * in EIP-6800.
  * @param {VerkleLeafBasicData} basicData - An object containing the version, nonce,
  *   code size, and balance to be encoded.
- * @returns {Uint8Array} - A compact, binary-encoded representation of the account header basic data.
+ * @returns {Uint8Array} - A compact, bytes representation of the account header basic data.
  */
 export function encodeVerkleLeafBasicData(basicData: VerkleLeafBasicData): Uint8Array {
   const encodedVersion = setLengthLeft(int32ToBytes(basicData.version), VERKLE_VERSION_BYTES_LENGTH)
