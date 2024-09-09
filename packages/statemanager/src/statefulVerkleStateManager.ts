@@ -91,6 +91,10 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this.verkleCrypto = opts.verkleCrypto
   }
 
+  /**
+   * Gets the account associated with `address` or `undefined` if account does not exist
+   * @param address - Address of the `account` to get
+   */
   getAccount = async (address: Address): Promise<Account | undefined> => {
     const elem = this._caches?.account?.get(address)
     if (elem !== undefined) {
@@ -136,6 +140,11 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     return account
   }
 
+  /**
+   * Saves an account into state under the provided `address`.
+   * @param address - Address under which to store `account`
+   * @param account - The account to store or undefined if to be deleted
+   */
   putAccount = async (address: Address, account?: Account): Promise<void> => {
     if (this.DEBUG) {
       this._debug(
@@ -157,7 +166,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         )
       } else {
         // Delete account
-        // TODO - add code here
+        await this.deleteAccount(address)
       }
     } else {
       if (account !== undefined) {
@@ -168,6 +177,10 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     }
   }
 
+  /**
+   * Deletes an account from state under the provided `address`.
+   * @param address - Address of the account which should be deleted
+   */
   deleteAccount = async (address: Address): Promise<void> => {
     if (this.DEBUG) {
       this._debug(`Delete account ${address}`)
