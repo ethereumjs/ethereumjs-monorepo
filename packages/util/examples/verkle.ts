@@ -24,4 +24,4 @@ const basicDataKey = getVerkleKey(stem, VerkleLeafType.BasicData)
 const basicDataRaw = state[bytesToHex(basicDataKey)]
 const basicData = decodeVerkleLeafBasicData(hexToBytes(basicDataRaw!))
 
-console.log(basicData) // { version: 0, nonce: 0n, codeSize: 0, balance: 0n }
+console.log(basicData) // { version: 1, nonce: 1n, codeSize: 0, balance: 1n }
