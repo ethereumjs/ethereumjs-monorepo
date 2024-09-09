@@ -1,3 +1,4 @@
+//@cspell:disable
 export const testData = {
   eip8Values: {
     keyA: '49a7b37aa6f6645917e7b807e9d1c00d4fa71f18343b0d4122a4d2df64dd6fee',
