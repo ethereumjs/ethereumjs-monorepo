@@ -157,7 +157,6 @@ export const VERKLE_HEADER_STORAGE_OFFSET = 64
 export const VERKLE_CODE_OFFSET = 128
 export const VERKLE_NODE_WIDTH = 256
 export const VERKLE_MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(VERKLE_CODE_CHUNK_SIZE)
-export const VERKLE_MAX_CHUNKS = 793 // The maximum number of chunks is 793 (maxCodeSize of 24576) / (bytes per chunk 31) + (round up 1)
 
 /**
  * @dev Returns the tree key for a given verkle tree stem, and sub index.
@@ -229,6 +228,7 @@ export const getVerkleTreeKeyForCodeChunk = async (
 }
 
 export const chunkifyCode = (code: Uint8Array) => {
+  if (code.length === 0) return []
   // Pad code to multiple of VERKLE_CODE_CHUNK_SIZE bytes
   if (code.length % VERKLE_CODE_CHUNK_SIZE !== 0) {
     const paddingLength = VERKLE_CODE_CHUNK_SIZE - (code.length % VERKLE_CODE_CHUNK_SIZE)
@@ -338,38 +338,23 @@ export function encodeVerkleLeafBasicData(account: Account): Uint8Array {
 /**
  * Helper method to generate the suffixes for code chunks for putting code
  * @param numChunks number of chunks to generate suffixes for
- * @param allowUnlimitedCodeSize - boolean allowing contracts bigger than max code size
- * defaults to false
  * @returns number[] - an array of numbers corresponding to the code chunks being put
  */
-export const generateChunkSuffixes = (numChunks: number, allowUnlimitedCodeSize = false) => {
-  if (numChunks > VERKLE_MAX_CHUNKS && !allowUnlimitedCodeSize)
-    throw new Error(
-      `exceeded max number of chunks(i.e. code size); max allowed ${VERKLE_MAX_CHUNKS}, got ${numChunks}`,
-    )
-  const chunkSuffixes: number[] = new Array(numChunks)
-  for (let x = 0; x < numChunks; x++) {
-    if (x < VERKLE_CODE_OFFSET) {
-      // Suffixes for chunks 0 - 127 start at 128 and end with 255
-      chunkSuffixes[x] = x + VERKLE_CODE_OFFSET
-      continue
-    }
-    if (x < 384) {
-      // Suffixes for chunks 128 - 383 start at 0 and go to 255
-      chunkSuffixes[x] = x - VERKLE_CODE_OFFSET
-      continue
-    }
-    if (x < 640) {
-      // Suffixes for chunks 384 - 639 start at 0 and go to 255
-      chunkSuffixes[x] = x - VERKLE_CODE_OFFSET - VERKLE_NODE_WIDTH
-      continue
-    }
-    if (x > 639) {
-      // Suffixes for chunks 640 - 793 start at 0 and go to 153
-      chunkSuffixes[x] = x - VERKLE_CODE_OFFSET - 2 * VERKLE_NODE_WIDTH
-      continue
+export const generateChunkSuffixes = (numChunks: number) => {
+  if (numChunks === 0) return []
+  const chunkSuffixes: number[] = new Array<number>(numChunks)
+  const firstChunksSet = numChunks > VERKLE_CODE_OFFSET ? VERKLE_CODE_OFFSET : numChunks
+  for (let x = 0; x < firstChunksSet; x++) {
+    // Fill up to first 128 suffixes
+    chunkSuffixes[x] = x + VERKLE_CODE_OFFSET
+  }
+  if (numChunks > VERKLE_CODE_OFFSET) {
+    for (let x = VERKLE_CODE_OFFSET; x < numChunks; x++) {
+      // Fill subsequent chunk suffixes up to 256 and then start over since a single node
+      chunkSuffixes[x] = x - Math.floor(x / VERKLE_NODE_WIDTH) * VERKLE_NODE_WIDTH
     }
   }
+
   return chunkSuffixes
 }
 

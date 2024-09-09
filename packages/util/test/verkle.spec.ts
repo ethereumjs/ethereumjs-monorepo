@@ -4,6 +4,7 @@ import { assert, beforeAll, describe, it } from 'vitest'
 import * as verkleBlockJSON from '../../statemanager/test/testdata/verkleKaustinen6Block72.json'
 import {
   Account,
+  VERKLE_CODE_CHUNK_SIZE,
   type VerkleCrypto,
   type VerkleExecutionWitness,
   VerkleLeafType,
@@ -13,6 +14,7 @@ import {
   createAddressFromString,
   decodeVerkleLeafBasicData,
   encodeVerkleLeafBasicData,
+  generateChunkSuffixes,
   getVerkleKey,
   getVerkleStem,
   hexToBytes,
@@ -126,5 +128,18 @@ describe('should chunkify code, accounting for leading PUSHDATA bytes', () => {
       0,
       'second chunk should have a 0 in first position (for 0 bytes of PUSHDATA overflow from previous chunk)',
     )
+  })
+  it('should generate the correct number of chunks, suffixes, and stems', () => {
+    const codeSizes = [0, 1, 257, 25460, 30000]
+    const expectedSuffixes = [0, 1, 257, 25460, 30000]
+    for (const [idx, size] of codeSizes.entries()) {
+      const suffixes = generateChunkSuffixes(size)
+      const chunks = chunkifyCode(randomBytes(size))
+      assert.equal(suffixes.length, expectedSuffixes[idx])
+      assert.equal(Math.ceil(size / VERKLE_CODE_CHUNK_SIZE), chunks.length)
+      for (const suffix of suffixes) {
+        if (suffix > 255 || suffix < 0) assert.fail(`suffix must in range 0-255, got ${suffix}`)
+      }
+    }
   })
 })
