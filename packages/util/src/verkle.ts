@@ -140,13 +140,13 @@ export type VerkleLeafBasicData = {
 }
 
 export const VERKLE_VERSION_OFFSET = 0
-export const VERKLE_NONCE_OFFSET = 4
-export const VERKLE_CODE_SIZE_OFFSET = 12
+export const VERKLE_CODE_SIZE_OFFSET = 5
+export const VERKLE_NONCE_OFFSET = 8
 export const VERKLE_BALANCE_OFFSET = 16
 
 export const VERKLE_VERSION_BYTES_LENGTH = 1
-export const VERKLE_NONCE_BYTES_LENGTH = 8
 export const VERKLE_CODE_SIZE_BYTES_LENGTH = 3
+export const VERKLE_NONCE_BYTES_LENGTH = 8
 export const VERKLE_BALANCE_BYTES_LENGTH = 16
 
 export const VERKLE_BASIC_DATA_LEAF_KEY = intToBytes(VerkleLeafType.BasicData)
@@ -332,7 +332,7 @@ export function encodeVerkleLeafBasicData(account: Account): Uint8Array {
     VERKLE_CODE_SIZE_BYTES_LENGTH,
   )
   const encodedBalance = setLengthLeft(bigIntToBytes(account.balance), VERKLE_BALANCE_BYTES_LENGTH)
-  return concatBytes(encodedVersion, reservedBytes, encodedNonce, encodedCodeSize, encodedBalance)
+  return concatBytes(encodedVersion, reservedBytes, encodedCodeSize, encodedNonce, encodedBalance)
 }
 
 /**

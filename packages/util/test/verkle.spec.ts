@@ -92,11 +92,12 @@ describe('should encode and decode basic data values', () => {
     const basicDataBytes = encodeVerkleLeafBasicData(account)
     assert.equal(basicDataBytes.length, 32)
     assert.equal(
-      basicDataBytes.slice(4, 12)[7],
+      basicDataBytes.slice(8, 16)[7],
       2,
       'confirm that last byte of nonce slice is equal to nonce (i.e. coded as bigEndian)',
     )
     const decodedData = decodeVerkleLeafBasicData(basicDataBytes)
+    console.log(basicDataBytes, decodedData)
     assert.equal(decodedData.balance, 123n)
     assert.equal(decodedData.nonce, 2n)
   })

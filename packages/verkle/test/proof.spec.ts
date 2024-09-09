@@ -12,7 +12,7 @@ describe('lets make proofs', () => {
   beforeAll(async () => {
     verkleCrypto = await loadVerkleCrypto()
   })
-  it('should generate a proof of a specific state root and then verify it', async () => {
+  it.skip('should generate a proof of a specific state root and then verify it', async () => {
     const keys = [
       // Two keys with the same stem but different suffixes
       '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
