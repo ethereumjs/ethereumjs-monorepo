@@ -100,18 +100,18 @@ describe(method, () => {
     if (isBrowser() === true) {
       assert.ok(true)
     } else {
-      const gethGenesis = await import('../../../../block/test/testdata/4844-hardfork.js')
+      const { hardfork4844Data } = await import('../../../../block/test/testdata/4844-hardfork.js')
 
       const kzg = await loadKZG()
 
-      const common = createCommonFromGethGenesis(gethGenesis, {
+      const common = createCommonFromGethGenesis(hardfork4844Data, {
         chain: 'customChain',
         hardfork: Hardfork.Cancun,
         customCrypto: {
           kzg,
         },
       })
-      const { chain, execution, server } = await setupChain(gethGenesis, 'customChain', {
+      const { chain, execution, server } = await setupChain(hardfork4844Data, 'customChain', {
         customCrypto: { kzg },
       })
       common.setHardfork(Hardfork.Cancun)
