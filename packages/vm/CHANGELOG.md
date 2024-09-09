@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 8.1.1 - 2024-09-09
+
+- Fixes a Transient Storage EIP-1153 bug in the underlying EVM related to not clearing Transient Storage after creating a contract at tx-level (thanks @yann300 ❤️), PR [#3643](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3643)
+
 ## 8.1.0 - 2024-08-15
 
 ### EIP-7685 Requests: EIP-6110 (Deposits) / EIP-7002 (Withdrawals) / EIP-7251 (Consolidations)
