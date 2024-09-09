@@ -1,6 +1,6 @@
 import type { JSONRPCBlock } from '../../src/index.js'
 
-export const testdataFromRpcGoerliData: JSONRPCBlock = {
+export const testdataFromRPCGoerliData: JSONRPCBlock = {
   difficulty: '0x1',
   extraData:
     '0x696e667572612d696f0000000000000000000000000000000000000000000000c321f5bc793e6eb41a4a319e8bd605aaa9316a24ad9b7d3af7b924176500fcf71424f2833fdc64326fb1b2229bc70943fed8d8446e4803f6c65503f0a1535a0c00',

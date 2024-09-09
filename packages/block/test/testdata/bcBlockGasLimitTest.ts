@@ -1,3 +1,4 @@
+// cspell:disable
 export const bcBlockGasLimitTestData = {
   source: 'https://github.com/ethereum/tests/tree/develop/BlockchainTests/bcBlockGasLimitTest',
   commit: 'f4e6c9dafc25bbb78a7ee18d5fdeaecc48a01b7a',

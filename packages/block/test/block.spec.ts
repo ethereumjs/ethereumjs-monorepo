@@ -24,7 +24,7 @@ import {
 } from '../src/index.js'
 
 import { genesisHashesTestData } from './testdata/genesisHashesTest.js'
-import { testdataFromRpcGoerliData } from './testdata/testdata-from-rpc-goerli.js'
+import { testdataFromRPCGoerliData } from './testdata/testdata-from-rpc-goerli.js'
 import { testdataPreLondon2Data } from './testdata/testdata_pre-london-2.js'
 import { testdataPreLondonData } from './testdata/testdata_pre-london.js'
 import { testnetMergeData } from './testdata/testnetMerge.js'
@@ -163,7 +163,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 
     try {
-      createBlockFromRPC(testdataFromRpcGoerliData, [], { common })
+      createBlockFromRPC(testdataFromRPCGoerliData, [], { common })
       assert.ok(true, 'does not throw')
     } catch (error: any) {
       assert.fail('error thrown')

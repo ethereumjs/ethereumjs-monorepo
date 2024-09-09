@@ -1,6 +1,6 @@
 import type { JSONRPCBlock } from '../../src/index.js'
 
-export const testdataFromRpcWithWithdrawalsData: JSONRPCBlock = {
+export const testdataFromRPCWithWithdrawalsData: JSONRPCBlock = {
   baseFeePerGas: '0x127d82ba5b',
   difficulty: '0x0',
   extraData: '0xd883010b04846765746888676f312e32302e32856c696e7578',

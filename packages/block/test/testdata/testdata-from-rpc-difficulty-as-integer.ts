@@ -1,6 +1,6 @@
 import type { JSONRPCBlock } from '../../src/index.js'
 
-export const testdataFromRpcDifficultyAsIntegerData: JSONRPCBlock = {
+export const testdataFromRPCDifficultyAsIntegerData: JSONRPCBlock = {
   difficulty: '82459156443011',
   extraData: '0x657468706f6f6c202d20555331',
   gasLimit: '0x3d37da',

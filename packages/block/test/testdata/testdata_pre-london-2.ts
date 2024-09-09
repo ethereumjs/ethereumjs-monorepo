@@ -2,7 +2,7 @@ export const testdataPreLondon2Data = {
   _info: {
     comment: '',
     filledwith: 'cpp-1.3.0+commit.26123543.Linux.g++',
-    source: '/src/BlockchainTestsFiller/bcUncleHeaderValiditiy/correctFiller.json',
+    source: '/src/BlockchainTestsFiller/bcUncleHeaderValiditiy/correctFiller.json', // cspell:disable-line
   },
   blocks: [
     {
