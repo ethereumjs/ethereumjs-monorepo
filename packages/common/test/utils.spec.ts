@@ -91,7 +91,7 @@ describe('[Utils/Parse]', () => {
 
   it('should correctly parse deposit contract address', async () => {
     // clone json out to not have side effects
-    const customData = JSON.parse(JSON.stringify(postMergeHardforkData))
+    const customData = postMergeHardforkData
     Object.assign(customData.config, {
       depositContractAddress: '0x4242424242424242424242424242424242424242',
     })
