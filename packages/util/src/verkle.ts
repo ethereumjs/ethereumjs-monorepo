@@ -177,7 +177,7 @@ export const getVerkleKey = (stem: Uint8Array, leaf: VerkleLeafType | Uint8Array
  * Calculates the position of the storage key in the Verkle tree, determining
  * both the tree index (the node in the tree) and the subindex (the position within the node).
  * @param {bigint} storageKey - The key representing a specific storage slot.
- * @returns {Object} - An object containing:
+ * @returns {Object} - An object containing the tree index and subindex
  */
 export function getVerkleTreeIndicesForStorageSlot(storageKey: bigint): {
   treeIndex: bigint
@@ -200,7 +200,7 @@ export function getVerkleTreeIndicesForStorageSlot(storageKey: bigint): {
  * Calculates the position of the code chunks in the Verkle tree, determining
  * both the tree index (the node in the tree) and the subindex (the position within the node).
  * @param {bigint} chunkId - The ID representing a specific chunk.
- * @returns {Object} - An object containing:
+ * @returns {Object} - An object containing the tree index and subindex
  */
 export function getVerkleTreeIndicesForCodeChunk(chunkId: number) {
   const treeIndex = Math.floor((VERKLE_CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH)
