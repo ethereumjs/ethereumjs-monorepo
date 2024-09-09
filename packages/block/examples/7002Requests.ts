@@ -3,8 +3,8 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   type CLRequest,
   type CLRequestType,
-  WithdrawalRequest,
   bytesToBigInt,
+  createWithdrawalRequest,
   randomBytes,
 } from '@ethereumjs/util'
 
@@ -19,9 +19,7 @@ const main = async () => {
     validatorPubkey: randomBytes(48),
     amount: bytesToBigInt(randomBytes(8)),
   }
-  const request = WithdrawalRequest.fromRequestData(
-    withdrawalRequestData,
-  ) as CLRequest<CLRequestType>
+  const request = createWithdrawalRequest(withdrawalRequestData) as CLRequest<CLRequestType>
   const requests = [request]
   const requestsRoot = await genRequestsTrieRoot(requests)
 
