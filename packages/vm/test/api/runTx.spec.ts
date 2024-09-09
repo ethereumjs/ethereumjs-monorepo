@@ -3,6 +3,7 @@ import { Blockchain, createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   Blob4844Tx,
+  EOACode7702Transaction,
   FeeMarket1559Tx,
   TransactionType,
   createFeeMarket1559Tx,
@@ -26,7 +27,6 @@ import {
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { EOACode7702Transaction } from '../../../tx/dist/cjs/index.js'
 import { createVM, runTx } from '../../src/index.js'
 
 import { createAccountWithDefaults, getTransaction, setBalance } from './utils.js'
