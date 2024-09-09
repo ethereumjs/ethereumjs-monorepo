@@ -12,7 +12,7 @@ describe('lets make proofs', () => {
   beforeAll(async () => {
     verkleCrypto = await loadVerkleCrypto()
   })
-  it('should sequentially put->find->delete->put values', async () => {
+  it('should generate a proof of a specific state root and then verify it', async () => {
     const keys = [
       // Two keys with the same stem but different suffixes
       '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
@@ -56,15 +56,19 @@ describe('lets make proofs', () => {
       leafNode.getValue(1)!, // Value at position (aka "y value")
     )
     const proof = verkleCrypto.createProof(proofInput)
-    console.log(proof)
+
     const verificationInput = concatBytes(
       proof, // 576 byte proof
       verkleCrypto.serializeCommitment(leafNode.commitment), // serialized leafNode commitment
       new Uint8Array(1).fill(1), // Position in valuesd array (aka "z value")
       leafNode.getValue(1)!, // Value at position (aka "y value")
     )
-    const res = verkleCrypto.verifyProof(verificationInput)
 
-    console.log(res)
+    try {
+      const res = verkleCrypto.verifyProof(verificationInput)
+      assert.ok(res)
+    } catch (err) {
+      assert.fail(`Failed to verify proof: ${err}`)
+    }
   })
 })
