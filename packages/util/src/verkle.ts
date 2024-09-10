@@ -177,7 +177,7 @@ export const getVerkleKey = (stem: Uint8Array, leaf: VerkleLeafType | Uint8Array
  * Calculates the position of the storage key in the Verkle tree, determining
  * both the tree index (the node in the tree) and the subindex (the position within the node).
  * @param {bigint} storageKey - The key representing a specific storage slot.
- * @returns {Object} - An object containing:
+ * @returns {Object} - An object containing the tree index and subindex
  */
 export function getVerkleTreeIndicesForStorageSlot(storageKey: bigint): {
   treeIndex: bigint
@@ -200,7 +200,7 @@ export function getVerkleTreeIndicesForStorageSlot(storageKey: bigint): {
  * Calculates the position of the code chunks in the Verkle tree, determining
  * both the tree index (the node in the tree) and the subindex (the position within the node).
  * @param {bigint} chunkId - The ID representing a specific chunk.
- * @returns {Object} - An object containing:
+ * @returns {Object} - An object containing the tree index and subindex
  */
 export function getVerkleTreeIndicesForCodeChunk(chunkId: number) {
   const treeIndex = Math.floor((VERKLE_CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH)
@@ -257,7 +257,7 @@ export const getVerkleTreeKeyForStorageSlot = async (
  * from the `encodedBasicData` array based on predefined offsets and lengths, and then converted
  * to its appropriate type (integer or BigInt).
  * @param {Uint8Array} encodedBasicData - The encoded Verkle leaf basic data containing the version, nonce,
- * code size, and balance in a compact binary format.
+ * code size, and balance in a compact Uint8Array format.
  * @returns {VerkleLeafBasicData} - An object containing the decoded version, nonce, code size, and balance.
  */
 export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleLeafBasicData {
@@ -291,7 +291,7 @@ export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleL
  * in EIP-6800.
  * @param {VerkleLeafBasicData} basicData - An object containing the version, nonce,
  *   code size, and balance to be encoded.
- * @returns {Uint8Array} - A compact, binary-encoded representation of the account header basic data.
+ * @returns {Uint8Array} - A compact bytes representation of the account header basic data.
  */
 export function encodeVerkleLeafBasicData(basicData: VerkleLeafBasicData): Uint8Array {
   const encodedVersion = setLengthLeft(int32ToBytes(basicData.version), VERKLE_VERSION_BYTES_LENGTH)
