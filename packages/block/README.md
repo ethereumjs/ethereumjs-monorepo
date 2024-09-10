@@ -60,13 +60,13 @@ Properties of a `Block` or `BlockHeader` object are frozen with `Object.freeze()
 API Usage Example:
 
 ```ts
-// ./examples/1559.ts#L43-L47
+// ./examples/1559.ts#L46-L50
 
-)
-blockWithMatchingBaseFee.transactions.push(tx)
-console.log(blockWithMatchingBaseFee.getTransactionsValidationErrors()) // invalid transaction added to block
 try {
   await blockWithMatchingBaseFee.validateData()
+} catch (err) {
+  console.log(err) // block validation fails
+}
 ```
 
 ### WASM Crypto Support
