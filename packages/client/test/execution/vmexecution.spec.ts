@@ -110,9 +110,9 @@ describe('[VMExecution]', () => {
       validateConsensus: false,
     })
     let exec = await testSetup(blockchain)
-    const oldHead = await exec.vm.blockchain.getIteratorHead!()
+    const oldHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     await exec.run()
-    let newHead = await exec.vm.blockchain.getIteratorHead!()
+    let newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     assert.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
     blockchain = await createBlockchainFromBlocksData(blocksDataMainnet as BlockData[], {
@@ -121,7 +121,7 @@ describe('[VMExecution]', () => {
     })
     exec = await testSetup(blockchain)
     await exec.run()
-    newHead = await exec.vm.blockchain.getIteratorHead!()
+    newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     assert.equal(newHead.header.number, BigInt(5), 'should run all blocks')
 
     const common = createCustomCommon(testnet as ChainConfig, Mainnet)
@@ -176,9 +176,9 @@ describe('[VMExecution]', () => {
       common,
     })
     let exec = await testSetup(blockchain, common)
-    const oldHead = await exec.vm.blockchain.getIteratorHead!()
+    const oldHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     await exec.run()
-    let newHead = await exec.vm.blockchain.getIteratorHead!()
+    let newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     assert.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
     blockchain = await createBlockchainFromBlocksData(blocksDataGoerli as BlockData[], {
@@ -188,7 +188,7 @@ describe('[VMExecution]', () => {
     })
     exec = await testSetup(blockchain, common)
     await exec.run()
-    newHead = await exec.vm.blockchain.getIteratorHead!()
+    newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     assert.equal(newHead.header.number, BigInt(7), 'should run all blocks')
   })
 

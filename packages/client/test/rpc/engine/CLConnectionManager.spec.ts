@@ -58,7 +58,7 @@ describe('starts and stops connection manager', () => {
 
 describe('hardfork MergeForkBlock', () => {
   ;(genesisJSON.config as any).mergeForkBlock = 0
-  const params = parseGethGenesis(genesisJSON, 'post-merge', false)
+  const params = parseGethGenesis(genesisJSON, 'post-merge')
   const common = createCommonFromGethGenesis(genesisJSON, { chain: params.name })
   common.setHardforkBy({ blockNumber: 0 })
   const config = new Config({ common })
@@ -71,7 +71,7 @@ describe('hardfork MergeForkBlock', () => {
 describe('postmerge hardfork', () => {
   it('starts on mergeBlock', async () => {
     ;(genesisJSON.config as any).mergeForkBlock = 10
-    const params = parseGethGenesis(genesisJSON, 'post-merge', false)
+    const params = parseGethGenesis(genesisJSON, 'post-merge')
 
     const common = createCommonFromGethGenesis(genesisJSON, {
       chain: params.name,

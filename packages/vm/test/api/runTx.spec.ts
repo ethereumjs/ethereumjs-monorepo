@@ -3,6 +3,7 @@ import { Blockchain, createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   Blob4844Tx,
+  EOACode7702Transaction,
   FeeMarket1559Tx,
   TransactionType,
   createFeeMarket1559Tx,
@@ -230,7 +231,9 @@ describe('runTx() -> successful API parameter usage', async () => {
       // calculate expected coinbase balance
       const baseFee = block.header.baseFeePerGas!
       const inclusionFeePerGas =
-        tx instanceof FeeMarket1559Tx || tx instanceof Blob4844Tx
+        tx instanceof FeeMarket1559Tx ||
+        tx instanceof Blob4844Tx ||
+        tx instanceof EOACode7702Transaction
           ? tx.maxPriorityFeePerGas < tx.maxFeePerGas - baseFee
             ? tx.maxPriorityFeePerGas
             : tx.maxFeePerGas - baseFee
@@ -860,8 +863,8 @@ describe('EIP 4844 transaction tests', () => {
   it('should work', async () => {
     const kzg = await loadKZG()
 
-    const genesisJSON = await import('../../../block/test/testdata/4844-hardfork.json')
-    const common = createCommonFromGethGenesis(genesisJSON, {
+    const { hardfork4844Data } = await import('../../../block/test/testdata/4844-hardfork.js')
+    const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },

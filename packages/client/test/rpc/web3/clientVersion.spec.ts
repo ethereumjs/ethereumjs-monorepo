@@ -12,7 +12,7 @@ describe(method, () => {
     const res = await rpc.request(method, [])
 
     const { result } = res
-    const { version } = await import('../../../package.json')
+    const { version } = (await import('../../../package.json')).default
     const expectedClientTitle = 'EthereumJS'
     const expectedPackageVersion = version
     const expectedPlatform = platform()
