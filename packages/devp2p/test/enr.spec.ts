@@ -2,9 +2,9 @@ import { assert, describe, it } from 'vitest'
 
 import { ENR } from '../src/dns/index.js'
 
-import * as testdata from './testdata.json'
+import { testData } from './testdata.js'
 
-const dns = testdata.dns
+const dns = testData.dns
 
 describe('ENR tests', () => {
   // Root DNS entries
