@@ -27,6 +27,7 @@ import {
   toBytes,
   unpadBytes,
   unprefixedHexToBytes,
+  utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -34,7 +35,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { OriginalStorageCache } from './cache/index.js'
 import { modifyAccountFields } from './util.js'
 
-import { CODEHASH_PREFIX, type MerkleStateManagerOpts } from './index.js'
+import { type MerkleStateManagerOpts } from './index.js'
 
 import type { Caches, StorageProof } from './index.js'
 import type {
@@ -46,6 +47,16 @@ import type {
 } from '@ethereumjs/common'
 import type { Address, DB, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+
+/**
+ * Prefix to distinguish between a contract deployed with code `0x80`
+ * and `RLP([])` (also having the value `0x80`).
+ *
+ * Otherwise the creation of the code hash for the `0x80` contract
+ * will be the same as the hash of the empty trie which leads to
+ * misbehaviour in the underlying trie library.
+ */
+export const CODEHASH_PREFIX = utf8ToBytes('c')
 
 /**
  * Default StateManager implementation for the VM.
