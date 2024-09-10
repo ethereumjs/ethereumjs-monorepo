@@ -3,20 +3,7 @@
 
 <head>
     <title>EthereumJS Browser Examples</title>
-    <script type="module">
-        import { Trie } from '@ethereumjs/trie'
-        import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
-
-        const trie = new Trie()
-
-        const test = async () => {
-            await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
-            const value = await trie.get(utf8ToBytes('test'))
-            console.log(bytesToUtf8(value)) // 'one'
-        }
-
-        test()
-    </script>
+    <script src="./basicUsage.ts" type="module"></script>
 
 </head>
 
