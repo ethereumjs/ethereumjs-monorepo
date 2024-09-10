@@ -6,8 +6,8 @@ import { Account, bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@e
 import { assert, describe, it, vi } from 'vitest'
 
 import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.js'
-import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import preShanghaiGenesisJSON from '../../testdata/geth-genesis/post-merge.json'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
 import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
 
 const method = 'engine_getPayloadBodiesByRangeV1'
@@ -34,7 +34,7 @@ describe(method, () => {
     MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
-    const { chain, service, server, common } = await setupChain(genesisJSON, 'post-merge', {
+    const { chain, service, server, common } = await setupChain(eip4844Data, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
     })
@@ -116,7 +116,7 @@ describe(method, () => {
     MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
-    const { chain, service, server, common } = await setupChain(preShanghaiGenesisJSON, 'london', {
+    const { chain, service, server, common } = await setupChain(postMergeData, 'london', {
       engine: true,
       hardfork: Hardfork.London,
     })

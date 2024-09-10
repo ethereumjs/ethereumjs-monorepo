@@ -9,8 +9,8 @@ import { readFileSync } from 'fs'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import blocks from '../../testdata/blocks/kaustinen4.json'
-import genesisJSON from '../../testdata/geth-genesis/kaustinen6.json'
+import { kaustinen4Data } from '../../testdata/blocks/kaustinen4.js'
+import { kaustinen6Data } from '../../testdata/geth-genesis/kaustinen6.js'
 import { getRPCClient, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain/index.js'
@@ -77,7 +77,7 @@ async function runBlock(
 }
 
 describe(`valid verkle network setup`, async () => {
-  const { server, chain, common } = await setupChain(genesisJSON, 'post-merge', {
+  const { server, chain, common } = await setupChain(kaustinen6Data, 'post-merge', {
     engine: true,
     genesisStateRoot: genesisVerkleStateRoot,
   })
@@ -105,7 +105,7 @@ describe(`valid verkle network setup`, async () => {
         testData = JSON.parse(readFileSync(fileName, 'utf8'))[testCase]
         isBeaconData = false
       } else {
-        testData = blocks[testCase as keyof typeof blocks]
+        testData = kaustinen4Data[testCase as keyof typeof kaustinen4Data]
         isBeaconData = true
       }
       if (testData === undefined) {

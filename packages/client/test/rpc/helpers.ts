@@ -227,6 +227,7 @@ export async function baseSetup(clientOpts: any = {}) {
 /**
  * Sets up a custom chain with metaDB enabled (saving receipts, logs, indexes)
  */
+// TODO: Improve the params typing
 export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts: any = {}) {
   const genesisParams = parseGethGenesis(genesisFile, chainName)
   const genesisState = parseGethGenesisState(genesisFile)

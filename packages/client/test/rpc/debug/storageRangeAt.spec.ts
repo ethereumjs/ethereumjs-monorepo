@@ -5,7 +5,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, beforeEach, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import genesisJSON from '../../testdata/geth-genesis/debug.json'
+import { debugData } from '../../testdata/geth-genesis/debug.js'
 import { dummy, getRPCClient, setupChain } from '../helpers.js'
 
 import type { Block } from '@ethereumjs/block'
@@ -85,7 +85,7 @@ describe(method, () => {
     // the second one updates a value in that contract, and the third one deploys
     // another contract that does not put anything in its storage.
 
-    const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+    const { chain, common, execution, server } = await setupChain(debugData, 'post-merge', {
       txLookupLimit: 0,
     })
     const rpc = getRPCClient(server)

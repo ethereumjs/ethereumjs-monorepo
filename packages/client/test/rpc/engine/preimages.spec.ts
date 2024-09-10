@@ -19,8 +19,8 @@ import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
 import { blockToExecutionPayload } from '../../../src/rpc/modules/index.js'
-import blocks from '../../testdata/blocks/kaustinen2.json'
-import genesisJSON from '../../testdata/geth-genesis/kaustinen2.json'
+import { kaustinen2Data } from '../../testdata/blocks/kaustinen2.js'
+import { kaustinen2Data as kaustinen2GethGenesisData } from '../../testdata/geth-genesis/kaustinen2.js'
 import { getRPCClient, setupChain } from '../helpers.js'
 
 import type { Common } from '@ethereumjs/common'
@@ -107,8 +107,8 @@ async function runBlock(
 describe(`valid verkle network setup`, async () => {
   // unschedule verkle
   const unschedulePragueJSON = {
-    ...genesisJSON,
-    config: { ...genesisJSON.config, osakaTime: undefined },
+    ...kaustinen2GethGenesisData,
+    config: { ...kaustinen2GethGenesisData.config, osakaTime: undefined },
   }
   const { server, chain, common, execution } = await setupChain(
     unschedulePragueJSON,
@@ -159,7 +159,7 @@ describe(`valid verkle network setup`, async () => {
     {
       name: 'block 2 having kaustinen2 block 12 txs',
       blockData: {
-        transactions: blocks.block12.execute.transactions as PrefixedHexString[],
+        transactions: kaustinen2Data.block12.execute.transactions as PrefixedHexString[],
         blockNumber: '0x02',
         stateRoot: '0xa86d54279c8faebed72e112310b29115d3600e8cc6ff2a2e4466a788b8776ad9',
         receiptTrie: '0xd95b673818fa493deec414e01e610d97ee287c9421c8eff4102b1647c1a184e4',
@@ -213,7 +213,7 @@ describe(`valid verkle network setup`, async () => {
     {
       name: 'block 4 with kaustinen block13 txs and withdrawals',
       blockData: {
-        transactions: blocks.block13.execute.transactions as PrefixedHexString[],
+        transactions: kaustinen2Data.block13.execute.transactions as PrefixedHexString[],
         blockNumber: '0x04',
         stateRoot: '0x57e675e1d6b2ab5d65601e81658de1468afad77752a271a48364dcefda856614',
         receiptTrie: '0x6a0be0e8208f625225e43681258eb9901ed753e2656f0cd6c0a3971fada5f190',

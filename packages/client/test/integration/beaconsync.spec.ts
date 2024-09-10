@@ -3,11 +3,11 @@ import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Event } from '../../src/types.js'
-import genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import { postMergeData } from '../testdata/geth-genesis/post-merge.js'
 
 import { destroy, setup, wait } from './util.js'
 
-const common = createCommonFromGethGenesis(genesisJSON, { chain: 'post-merge' })
+const common = createCommonFromGethGenesis({ postMergeData }, { chain: 'post-merge' })
 common.setHardforkBy({ blockNumber: BigInt(0) })
 
 describe('should sync blocks', async () => {
