@@ -46,7 +46,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     const c2Values = createCValues(values.slice(128))
     let c1 = verkleCrypto.zeroCommitment
     let c2 = verkleCrypto.zeroCommitment
-    verkleCrypto.updateCommitment()
+
     // Update the c1/c2 commitments for any values that are nonzero
     for (let x = 0; x < 256; x++) {
       if (!equalsBytes(c1Values[x], new Uint8Array(32))) {
