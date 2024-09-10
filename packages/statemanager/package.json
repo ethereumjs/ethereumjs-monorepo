@@ -54,6 +54,7 @@
     "@ethereumjs/rlp": "^5.0.2",
     "@ethereumjs/trie": "^6.2.1",
     "@ethereumjs/util": "^9.1.0",
+    "@ethereumjs/verkle": "^0.1.0",
     "@js-sdsl/ordered-map": "^4.4.2",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.2.1",
@@ -64,6 +65,6 @@
     "@ethereumjs/genesis": "^0.2.3",
     "@types/debug": "^4.1.9",
     "rustbn-wasm": "^0.4.0",
-    "verkle-cryptography-wasm": "^0.4.5"
+    "verkle-cryptography-wasm": "^0.4.6"
   }
 }

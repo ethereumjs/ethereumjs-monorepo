@@ -459,12 +459,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     if (this._caches?.account === undefined) {
       const stem = getVerkleStem(this.verkleCrypto, address, 0)
       const basicDataKey = getVerkleKey(stem, VerkleLeafType.BasicData)
-      const basicDataBytes = encodeVerkleLeafBasicData({
-        version: account.version,
-        balance: account.balance,
-        nonce: account.nonce,
-        codeSize: account.codeSize,
-      })
+      const basicDataBytes = encodeVerkleLeafBasicData(account)
 
       this._state[bytesToHex(basicDataKey)] = bytesToHex(basicDataBytes)
     } else {
