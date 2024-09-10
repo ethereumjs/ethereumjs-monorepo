@@ -291,7 +291,7 @@ export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleL
  * in EIP-6800.
  * @param {VerkleLeafBasicData} basicData - An object containing the version, nonce,
  *   code size, and balance to be encoded.
- * @returns {Uint8Array} - A compact, bytes representation of the account header basic data.
+ * @returns {Uint8Array} - A compact bytes representation of the account header basic data.
  */
 export function encodeVerkleLeafBasicData(basicData: VerkleLeafBasicData): Uint8Array {
   const encodedVersion = setLengthLeft(int32ToBytes(basicData.version), VERKLE_VERSION_BYTES_LENGTH)
