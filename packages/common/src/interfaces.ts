@@ -31,7 +31,9 @@ export interface StorageRange {
   nextKey: string | null
 }
 
-export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash'>>
+export type AccountFields = Partial<
+  Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash' | 'codeSize'>
+>
 
 export type StorageProof = {
   key: PrefixedHexString

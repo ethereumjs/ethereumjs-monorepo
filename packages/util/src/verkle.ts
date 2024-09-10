@@ -10,6 +10,7 @@ import {
   toBytes,
 } from './bytes.js'
 
+import type { Account } from './account.js'
 import type { Address } from './address.js'
 import type { PrefixedHexString } from './types.js'
 
@@ -33,6 +34,8 @@ export interface VerkleCrypto {
   verifyExecutionWitnessPreState: (prestateRoot: string, execution_witness_json: string) => boolean
   hashCommitment: (commitment: Uint8Array) => Uint8Array
   serializeCommitment: (commitment: Uint8Array) => Uint8Array
+  createProof: (bytes: Uint8Array) => Uint8Array
+  verifyProof: (proof: Uint8Array) => boolean
 }
 
 /**
@@ -137,13 +140,13 @@ export type VerkleLeafBasicData = {
 }
 
 export const VERKLE_VERSION_OFFSET = 0
-export const VERKLE_NONCE_OFFSET = 4
-export const VERKLE_CODE_SIZE_OFFSET = 12
+export const VERKLE_CODE_SIZE_OFFSET = 5
+export const VERKLE_NONCE_OFFSET = 8
 export const VERKLE_BALANCE_OFFSET = 16
 
 export const VERKLE_VERSION_BYTES_LENGTH = 1
+export const VERKLE_CODE_SIZE_BYTES_LENGTH = 3
 export const VERKLE_NONCE_BYTES_LENGTH = 8
-export const VERKLE_CODE_SIZE_BYTES_LENGTH = 4
 export const VERKLE_BALANCE_BYTES_LENGTH = 16
 
 export const VERKLE_BASIC_DATA_LEAF_KEY = intToBytes(VerkleLeafType.BasicData)
@@ -225,13 +228,39 @@ export const getVerkleTreeKeyForCodeChunk = async (
 }
 
 export const chunkifyCode = (code: Uint8Array) => {
+  if (code.length === 0) return []
   // Pad code to multiple of VERKLE_CODE_CHUNK_SIZE bytes
   if (code.length % VERKLE_CODE_CHUNK_SIZE !== 0) {
     const paddingLength = VERKLE_CODE_CHUNK_SIZE - (code.length % VERKLE_CODE_CHUNK_SIZE)
     code = setLengthRight(code, code.length + paddingLength)
   }
-
-  throw new Error('Not implemented')
+  // Put first chunk (leading byte is always 0 since we have no leading PUSHDATA bytes)
+  const chunks = [concatBytes(new Uint8Array(1), code.subarray(0, 31))]
+  for (let i = 1; i < Math.floor(code.length / 31); i++) {
+    const slice = code.slice((i - 1) * 31, i * 31)
+    let x = 31
+    while (x >= 0) {
+      // Look for last push instruction in code chunk
+      if (slice[x] > 0x5f && slice[x] < 0x80) break
+      x--
+    }
+    if (x >= 0 && slice[x] - 0x5f > 31 - x) {
+      // x >= 0 indicates PUSHn in this chunk
+      // n > 31 - x indicates that PUSHDATA spills over to next chunk
+      // PUSHDATA overflow = n - 31 - x + 1(i.e. number of elements PUSHed
+      // - size of code chunk (31) - position of PUSHn in the previous
+      // code chunk + 1 (since x is zero-indexed))
+      const pushDataOverflow = slice[x] - 0x5f - 31 - x + 1
+      // Put next chunk prepended with number of overflow PUSHDATA bytes
+      chunks.push(
+        concatBytes(Uint8Array.from([pushDataOverflow]), code.slice(i * 31, (i + 1) * 31)),
+      )
+    } else {
+      // Put next chunk prepended with 0 (i.e. no overflow PUSHDATA bytes from previous chunk)
+      chunks.push(concatBytes(new Uint8Array(1), code.slice(i * 31, (i + 1) * 31)))
+    }
+  }
+  return chunks
 }
 
 /**
@@ -275,10 +304,10 @@ export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleL
     VERKLE_BALANCE_OFFSET + VERKLE_BALANCE_BYTES_LENGTH,
   )
 
-  const version = bytesToInt32(versionBytes, true)
-  const nonce = bytesToBigInt(nonceBytes, true)
-  const codeSize = bytesToInt32(codeSizeBytes, true)
-  const balance = bytesToBigInt(balanceBytes, true)
+  const version = bytesToInt32(versionBytes)
+  const nonce = bytesToBigInt(nonceBytes)
+  const codeSize = bytesToInt32(codeSizeBytes)
+  const balance = bytesToBigInt(balanceBytes)
 
   return { version, nonce, codeSize, balance }
 }
@@ -287,24 +316,80 @@ export function decodeVerkleLeafBasicData(encodedBasicData: Uint8Array): VerkleL
  * This function takes a `VerkleLeafBasicData` object and encodes its properties
  * (version, nonce, code size, and balance) into a compact `Uint8Array` format. Each
  * property is serialized and padded to match the required byte lengths defined by
- * EIP-6800. Additionally, 3 bytes are reserved for future use as specified
+ * EIP-6800. Additionally, 4 bytes are reserved for future use as specified
  * in EIP-6800.
  * @param {VerkleLeafBasicData} basicData - An object containing the version, nonce,
  *   code size, and balance to be encoded.
  * @returns {Uint8Array} - A compact bytes representation of the account header basic data.
  */
-export function encodeVerkleLeafBasicData(basicData: VerkleLeafBasicData): Uint8Array {
-  const encodedVersion = setLengthLeft(int32ToBytes(basicData.version), VERKLE_VERSION_BYTES_LENGTH)
+export function encodeVerkleLeafBasicData(account: Account): Uint8Array {
+  const encodedVersion = setLengthLeft(int32ToBytes(account.version), VERKLE_VERSION_BYTES_LENGTH)
   // Per EIP-6800, bytes 1-4 are reserved for future use
-  const reservedBytes = new Uint8Array([0, 0, 0])
-  const encodedNonce = setLengthLeft(bigIntToBytes(basicData.nonce), VERKLE_NONCE_BYTES_LENGTH)
+  const reservedBytes = new Uint8Array([0, 0, 0, 0])
+  const encodedNonce = setLengthLeft(bigIntToBytes(account.nonce), VERKLE_NONCE_BYTES_LENGTH)
   const encodedCodeSize = setLengthLeft(
-    int32ToBytes(basicData.codeSize),
+    int32ToBytes(account.codeSize),
     VERKLE_CODE_SIZE_BYTES_LENGTH,
   )
-  const encodedBalance = setLengthLeft(
-    bigIntToBytes(basicData.balance),
-    VERKLE_BALANCE_BYTES_LENGTH,
-  )
-  return concatBytes(encodedVersion, reservedBytes, encodedNonce, encodedCodeSize, encodedBalance)
+  const encodedBalance = setLengthLeft(bigIntToBytes(account.balance), VERKLE_BALANCE_BYTES_LENGTH)
+  return concatBytes(encodedVersion, reservedBytes, encodedCodeSize, encodedNonce, encodedBalance)
+}
+
+/**
+ * Helper method to generate the suffixes for code chunks for putting code
+ * @param numChunks number of chunks to generate suffixes for
+ * @returns number[] - an array of numbers corresponding to the code chunks being put
+ */
+export const generateChunkSuffixes = (numChunks: number) => {
+  if (numChunks === 0) return []
+  const chunkSuffixes = new Array<number>(numChunks)
+  const firstChunksSet = Math.min(numChunks, VERKLE_CODE_OFFSET)
+  for (let x = 0; x < firstChunksSet; x++) {
+    // Fill up to first 128 suffixes
+    chunkSuffixes[x] = x + VERKLE_CODE_OFFSET
+  }
+  if (numChunks > VERKLE_CODE_OFFSET) {
+    for (let x = VERKLE_CODE_OFFSET; x < numChunks; x++) {
+      // Fill subsequent chunk suffixes up to 256 and then start over since a single node
+      chunkSuffixes[x] = x - Math.floor(x / VERKLE_NODE_WIDTH) * VERKLE_NODE_WIDTH
+    }
+  }
+
+  return chunkSuffixes
+}
+
+/**
+ * Helper method for generating the code stems necessary for putting code
+ * @param numChunks the number of code chunks to be put
+ * @param address the address of the account getting the code
+ * @param verkleCrypto an initialized {@link VerkleCrypto} object
+ * @returns an array of stems for putting code
+ */
+export const generateCodeStems = async (
+  numChunks: number,
+  address: Address,
+  verkleCrypto: VerkleCrypto,
+): Promise<Uint8Array[]> => {
+  // The maximum number of chunks is 793 (maxCodeSize - 24576) / (bytes per chunk 31) + (round up - 1)
+  // Code is stored in chunks starting at leaf index 128 of the leaf node corresponding to the stem of the code's address
+  // Code chunks beyond the initial 128 are stored in additional leaf nodes in batches up of up to 256 chunks per leaf node
+  // so the maximum number of leaf nodes that can hold contract code for a specific address is 4 leaf nodes (128 chunks in
+  // the first leaf node and 256 chunks in up to 3 additional leaf nodes)
+  // So, instead of computing every single leaf key (which is a heavy async operation), we just compute the stem for the first
+  // chunk in each leaf node and can then know that the chunks in between have tree keys in monotonically increasing order
+  const numStems = Math.ceil(numChunks / VERKLE_NODE_WIDTH)
+  const chunkStems = new Array<Uint8Array>(numStems)
+  // Compute the stem for the initial set of code chunks
+  chunkStems[0] = (await getVerkleTreeKeyForCodeChunk(address, 0, verkleCrypto)).slice(0, 31)
+
+  for (let stemNum = 0; stemNum < numStems - 1; stemNum++) {
+    // Generate additional stems
+    const firstChunkKey = await getVerkleTreeKeyForCodeChunk(
+      address,
+      VERKLE_CODE_OFFSET + stemNum * VERKLE_NODE_WIDTH,
+      verkleCrypto,
+    )
+    chunkStems[stemNum + 1] = firstChunkKey.slice(0, 31)
+  }
+  return chunkStems
 }

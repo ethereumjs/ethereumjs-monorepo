@@ -4,7 +4,7 @@ import type { AccessWitness, Caches } from './index.js'
 import type { Common } from '@ethereumjs/common'
 import type { Trie } from '@ethereumjs/trie'
 import type { VerkleCrypto } from '@ethereumjs/util'
-
+import type { VerkleTree } from '@ethereumjs/verkle'
 /**
  * Basic state manager options (not to be used directly)
  */
@@ -75,6 +75,11 @@ export interface StatelessVerkleStateManagerOpts extends BaseStateManagerOpts {
   caches?: Caches
 }
 
+export interface StatefulVerkleStateManagerOpts extends BaseStateManagerOpts {
+  verkleCrypto: VerkleCrypto
+  trie?: VerkleTree
+  caches?: Caches
+}
 export interface VerkleState {
   [key: PrefixedHexString]: PrefixedHexString | null
 }
