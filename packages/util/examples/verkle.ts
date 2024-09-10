@@ -8,7 +8,7 @@ import {
 
 const state = {
   '0xdf67dea9181141d6255ac05c7ada5a590fb30a375023f16c31223f067319e300':
-    '0x0000000000000000000000000000000000000000000000000000000000000000',
+    '0x0100000001000000000000000000000001000000000000000000000000000000',
   '0xdf67dea9181141d6255ac05c7ada5a590fb30a375023f16c31223f067319e301':
     '0x923672e5275a0104000000000000000000000000000000000000000000000000',
   '0xdf67dea9181141d6255ac05c7ada5a590fb30a375023f16c31223f067319e302':
@@ -24,4 +24,4 @@ const basicDataKey = getVerkleKey(stem, VerkleLeafType.BasicData)
 const basicDataRaw = state[bytesToHex(basicDataKey)]
 const basicData = decodeVerkleLeafBasicData(hexToBytes(basicDataRaw!))
 
-console.log(basicData) // { version: 0, nonce: 0n, codeSize: 0, balance: 0n }
+console.log(basicData) // { version: 1, nonce: 1n, codeSize: 0, balance: 1n }
