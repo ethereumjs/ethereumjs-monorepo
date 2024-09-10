@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { beaconData } from '../../testdata/blocks/beacon.js'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
 import { getRPCClient, setupChain } from '../helpers.js'
 
 const method = 'engine_newPayloadV3'
@@ -16,7 +16,7 @@ describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
     const kzg = await loadKZG()
 
-    const { server } = await setupChain(postMergeData, 'post-merge', {
+    const { server } = await setupChain(eip4844Data, 'post-merge', {
       engine: true,
       customCrypto: { kzg },
     })

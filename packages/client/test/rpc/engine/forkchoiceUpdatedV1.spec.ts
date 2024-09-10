@@ -82,7 +82,7 @@ describe(method, () => {
   })
 
   it('call with valid data but parent block is not loaded yet', async () => {
-    const { server } = await setupChain({ postMergeData }, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     const nonExistentHeadBlockHash = {
       ...validForkChoiceState,
@@ -97,7 +97,7 @@ describe(method, () => {
   })
 
   it('call with valid data and synced data', async () => {
-    const { server } = await setupChain({ postMergeData }, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, validPayload)
     assert.equal(res.result.payloadStatus.status, 'VALID')
@@ -110,7 +110,7 @@ describe(method, () => {
   })
 
   it('call with invalid timestamp payloadAttributes', async () => {
-    const { server } = await setupChain({ postMergeData }, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     const invalidTimestampPayload = [
       { ...validPayload[0] },
@@ -125,7 +125,7 @@ describe(method, () => {
   })
 
   it('call with valid fork choice state without payload attributes', async () => {
-    const { server } = await setupChain({ postMergeData }, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, [validForkChoiceState])
 
@@ -136,7 +136,7 @@ describe(method, () => {
   })
 
   it('call with deep parent lookup', async () => {
-    const { server } = await setupChain({ postMergeData }, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     let res = await rpc.request(method, [validForkChoiceState])
 
@@ -155,7 +155,7 @@ describe(method, () => {
   })
 
   it('call with deep parent lookup and with stored safe block hash', async () => {
-    const { server } = await setupChain({ postMergeData }, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     let res = await rpc.request(method, [validForkChoiceState])
 
@@ -175,7 +175,7 @@ describe(method, () => {
   })
 
   it('unknown finalized block hash', async () => {
-    const { server } = await setupChain({ postMergeData }, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, [
       {
@@ -188,7 +188,7 @@ describe(method, () => {
   })
 
   it('invalid safe block hash', async () => {
-    const { server } = await setupChain({ postMergeData }, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, [
       {
@@ -201,7 +201,7 @@ describe(method, () => {
   })
 
   it('latest block after reorg', async () => {
-    const { server, blockchain } = await setupChain({ postMergeData }, 'post-merge', {
+    const { server, blockchain } = await setupChain(postMergeData, 'post-merge', {
       engine: true,
     })
     const rpc = getRPCClient(server)
@@ -243,7 +243,7 @@ describe(method, () => {
   })
 
   it('validate safeBlockHash is part of canonical chain', async () => {
-    const { server, chain } = await setupChain({ postMergeData }, 'post-merge', { engine: true })
+    const { server, chain } = await setupChain(postMergeData, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     const genesis = await chain.getBlock(BigInt(0))
 
@@ -283,7 +283,7 @@ describe(method, () => {
   })
 
   it('validate finalizedBlockHash is part of canonical chain', async () => {
-    const { server, chain } = await setupChain({ postMergeData }, 'post-merge', { engine: true })
+    const { server, chain } = await setupChain(postMergeData, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     const genesis = await chain.getBlock(BigInt(0))
 

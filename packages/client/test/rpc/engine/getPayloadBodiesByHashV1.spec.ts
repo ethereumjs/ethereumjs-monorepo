@@ -38,7 +38,7 @@ describe(method, () => {
     MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
-    const { chain, service, server, common } = await setupChain(postMergeData, 'post-merge', {
+    const { chain, service, server, common } = await setupChain(eip4844Data, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
     })
@@ -120,7 +120,7 @@ describe(method, () => {
     MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
-    const { chain, service, server, common } = await setupChain(eip4844Data, 'post-merge', {
+    const { chain, service, server, common } = await setupChain(postMergeData, 'post-merge', {
       engine: true,
       hardfork: Hardfork.London,
     })
