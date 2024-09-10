@@ -60,7 +60,7 @@ Properties of a `Block` or `BlockHeader` object are frozen with `Object.freeze()
 API Usage Example:
 
 ```ts
-// ./examples/1559.ts#L43-L47
+// ./examples/1559.ts#L46-L50
 
 try {
   await blockWithMatchingBaseFee.validateData()
@@ -249,8 +249,8 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   type CLRequest,
   type CLRequestType,
-  DepositRequest,
   bytesToBigInt,
+  createDepositRequest,
   randomBytes,
 } from '@ethereumjs/util'
 
@@ -267,7 +267,7 @@ const main = async () => {
     signature: randomBytes(96),
     index: bytesToBigInt(randomBytes(8)),
   }
-  const request = DepositRequest.fromRequestData(depositRequestData) as CLRequest<CLRequestType>
+  const request = createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
   const requests = [request]
   const requestsRoot = await genRequestsTrieRoot(requests)
 
@@ -295,19 +295,21 @@ Have a look at the EIP for some guidance on how to use and fill in the various d
 [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) introduces the possibility for validators to trigger exits and partial withdrawals via the execution layer. Starting with v5.3.0 this library supports withdrawal requests and a containing block can be instantiated as follows:
 
 ```ts
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Block } from '@ethereumjs/block'
+// ./examples/7002Requests.ts
+
+import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
-  bytesToBigInt,
-  randomBytes,
-  WithdrawalRequest,
   type CLRequest,
   type CLRequestType,
+  bytesToBigInt,
+  createWithdrawalRequest,
+  randomBytes,
 } from '@ethereumjs/util'
 
 const main = async () => {
   const common = new Common({
-    chain: Chain.Mainnet,
+    chain: Mainnet,
     hardfork: Hardfork.Prague,
   })
 
@@ -316,13 +318,11 @@ const main = async () => {
     validatorPubkey: randomBytes(48),
     amount: bytesToBigInt(randomBytes(8)),
   }
-  const request = WithdrawalRequest.fromRequestData(
-    withdrawalRequestData,
-  ) as CLRequest<CLRequestType>
+  const request = createWithdrawalRequest(withdrawalRequestData) as CLRequest<CLRequestType>
   const requests = [request]
-  const requestsRoot = await Block.genRequestsTrieRoot(requests)
+  const requestsRoot = await genRequestsTrieRoot(requests)
 
-  const block = Block.fromBlockData(
+  const block = createBlock(
     {
       requests,
       header: { requestsRoot },
@@ -336,7 +336,7 @@ const main = async () => {
   )
 }
 
-main()
+void main()
 ```
 
 Have a look at the EIP for some guidance on how to use and fill in the various withdrawal request parameters.
@@ -353,7 +353,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   type CLRequest,
   type CLRequestType,
-  ConsolidationRequest,
+  createConsolidationRequest,
   randomBytes,
 } from '@ethereumjs/util'
 
@@ -368,9 +368,7 @@ const main = async () => {
     sourcePubkey: randomBytes(48),
     targetPubkey: randomBytes(48),
   }
-  const request = ConsolidationRequest.fromRequestData(
-    consolidationRequestData,
-  ) as CLRequest<CLRequestType>
+  const request = createConsolidationRequest(consolidationRequestData) as CLRequest<CLRequestType>
   const requests = [request]
   const requestsRoot = await genRequestsTrieRoot(requests)
 

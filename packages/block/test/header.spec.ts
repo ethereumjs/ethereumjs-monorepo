@@ -21,9 +21,9 @@ import {
   createBlockHeaderFromRLP,
 } from '../src/index.js'
 
-import * as testData from './testdata/bcBlockGasLimitTest.json'
-import * as blocksGoerli from './testdata/blocks_goerli.json'
-import * as blocksMainnet from './testdata/blocks_mainnet.json'
+import { bcBlockGasLimitTestData } from './testdata/bcBlockGasLimitTest.js'
+import { blocksGoerliData } from './testdata/blocks_goerli.js'
+import { blocksMainnetData } from './testdata/blocks_mainnet.js'
 
 import type { BlockHeader } from '../src/index.js'
 import type { CliqueConfig } from '@ethereumjs/common'
@@ -449,17 +449,15 @@ describe('[Block]: Header functions', () => {
 */
   it('should test validateGasLimit()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-    const bcBlockGasLimitTestData = testData.default.tests.BlockGasLimit2p63m1
+    const testData = bcBlockGasLimitTestData.tests.BlockGasLimit2p63m1
 
-    for (const key of Object.keys(bcBlockGasLimitTestData)) {
+    for (const key of Object.keys(testData)) {
       const genesisRlp = hexToBytes(
-        bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData]
-          .genesisRLP as PrefixedHexString,
+        testData[key as keyof typeof testData].genesisRLP as PrefixedHexString,
       )
       const parentBlock = createBlockFromRLP(genesisRlp, { common })
       const blockRlp = hexToBytes(
-        bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData].blocks[0]
-          .rlp as PrefixedHexString,
+        testData[key as keyof typeof testData].blocks[0].rlp as PrefixedHexString,
       )
       const block = createBlockFromRLP(blockRlp, { common })
       assert.doesNotThrow(() => block.validateGasLimit(parentBlock))
@@ -476,7 +474,7 @@ describe('[Block]: Header functions', () => {
 
   it('should test hash() function', () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    let header = createBlockHeader((blocksMainnet as any).default[0]['header'], { common })
+    let header = createBlockHeader(blocksMainnetData[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
       '0x88e96d4537bea4d9c05d12549907b32561d3bf31f45aae734cdc119f13406cb6',
@@ -484,7 +482,7 @@ describe('[Block]: Header functions', () => {
     )
 
     common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
-    header = createBlockHeader((blocksGoerli as any).default[0]['header'], { common })
+    header = createBlockHeader(blocksGoerliData[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
       '0x8f5bab218b6bb34476f51ca588e9f4553a3a7ce5e13a66c660a5283e97e9a85a',

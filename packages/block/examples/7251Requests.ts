@@ -3,7 +3,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   type CLRequest,
   type CLRequestType,
-  ConsolidationRequest,
+  createConsolidationRequest,
   randomBytes,
 } from '@ethereumjs/util'
 
@@ -18,9 +18,7 @@ const main = async () => {
     sourcePubkey: randomBytes(48),
     targetPubkey: randomBytes(48),
   }
-  const request = ConsolidationRequest.fromRequestData(
-    consolidationRequestData,
-  ) as CLRequest<CLRequestType>
+  const request = createConsolidationRequest(consolidationRequestData) as CLRequest<CLRequestType>
   const requests = [request]
   const requestsRoot = await genRequestsTrieRoot(requests)
 

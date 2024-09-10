@@ -1,4 +1,4 @@
-import { BlockHeader, createBlockFromBytesArray } from '@ethereumjs/block'
+import { createBlockFromBytesArray, createBlockHeaderFromBytesArray } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import * as devp2p from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'

@@ -10,6 +10,7 @@ import type {
   ConsolidationRequestV1,
   DepositRequestV1,
   JSONRPCWithdrawal,
+  NumericString,
   PrefixedHexString,
   RequestBytes,
   VerkleExecutionWitness,
@@ -224,7 +225,7 @@ export interface JSONRPCBlock {
   stateRoot: PrefixedHexString // the root of the final state trie of the block.
   receiptsRoot: PrefixedHexString // the root of the receipts trie of the block.
   miner: PrefixedHexString // the address of the beneficiary to whom the mining rewards were given.
-  difficulty: PrefixedHexString // integer of the difficulty for this block.
+  difficulty: PrefixedHexString | NumericString // integer of the difficulty for this block. Can be a 0x-prefixed hex string or a string integer
   totalDifficulty: PrefixedHexString // integer of the total difficulty of the chain until this block.
   extraData: PrefixedHexString // the “extra data” field of this block.
   size: PrefixedHexString // integer the size of this block in bytes.
