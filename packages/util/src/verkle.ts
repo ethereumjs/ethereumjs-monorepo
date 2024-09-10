@@ -342,8 +342,8 @@ export function encodeVerkleLeafBasicData(account: Account): Uint8Array {
  */
 export const generateChunkSuffixes = (numChunks: number) => {
   if (numChunks === 0) return []
-  const chunkSuffixes: number[] = new Array<number>(numChunks)
-  const firstChunksSet = numChunks > VERKLE_CODE_OFFSET ? VERKLE_CODE_OFFSET : numChunks
+  const chunkSuffixes = new Array<number>(numChunks)
+  const firstChunksSet = Math.min(numChunks, VERKLE_CODE_OFFSET)
   for (let x = 0; x < firstChunksSet; x++) {
     // Fill up to first 128 suffixes
     chunkSuffixes[x] = x + VERKLE_CODE_OFFSET
