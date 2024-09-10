@@ -1,4 +1,4 @@
-import { type PrefixedHexString, utf8ToBytes } from '@ethereumjs/util'
+import { type PrefixedHexString } from '@ethereumjs/util'
 
 import type { AccessWitness, Caches } from './index.js'
 import type { Common } from '@ethereumjs/common'
@@ -82,16 +82,6 @@ export interface VerkleState {
 export interface EncodedVerkleProof {
   [key: PrefixedHexString]: PrefixedHexString
 }
-
-/**
- * Prefix to distinguish between a contract deployed with code `0x80`
- * and `RLP([])` (also having the value `0x80`).
- *
- * Otherwise the creation of the code hash for the `0x80` contract
- * will be the same as the hash of the empty trie which leads to
- * misbehaviour in the underlying trie library.
- */
-export const CODEHASH_PREFIX = utf8ToBytes('c')
 
 export type StorageProof = {
   key: PrefixedHexString
