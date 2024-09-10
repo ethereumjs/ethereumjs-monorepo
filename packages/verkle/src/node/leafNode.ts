@@ -1,4 +1,4 @@
-import { equalsBytes, intToBytes, setLengthLeft, setLengthRight } from '@ethereumjs/util'
+import { equalsBytes, intToBytes, setLengthRight } from '@ethereumjs/util'
 
 import { BaseVerkleNode } from './baseVerkleNode.js'
 import { NODE_WIDTH, VerkleLeafNodeValue, VerkleNodeType } from './types.js'
@@ -46,7 +46,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     const c2Values = createCValues(values.slice(128))
     let c1 = verkleCrypto.zeroCommitment
     let c2 = verkleCrypto.zeroCommitment
-
+    verkleCrypto.updateCommitment()
     // Update the c1/c2 commitments for any values that are nonzero
     for (let x = 0; x < 256; x++) {
       if (!equalsBytes(c1Values[x], new Uint8Array(32))) {
@@ -66,7 +66,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       verkleCrypto.zeroCommitment,
       0,
       new Uint8Array(32),
-      setLengthLeft(intToBytes(1), 32),
+      setLengthRight(intToBytes(1), 32),
     )
     commitment = verkleCrypto.updateCommitment(
       commitment,

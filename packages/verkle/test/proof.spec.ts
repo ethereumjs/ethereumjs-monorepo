@@ -1,10 +1,13 @@
-import { MapDB, concatBytes, hexToBytes } from '@ethereumjs/util'
+import { MapDB, bigIntToBytes, hexToBytes, setLengthRight } from '@ethereumjs/util'
+import { randomBytes } from 'crypto'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { createVerkleTree } from '../src/constructors.js'
+import { LeafNode } from '../src/index.js'
 
-import type { LeafNode } from '../src/index.js'
+import { createProof, verifyProof } from './util.js'
+
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
 describe('lets make proofs', () => {
@@ -43,32 +46,54 @@ describe('lets make proofs', () => {
     const path = await trie.findPath(keys[0].slice(0, 31))
 
     const leafNode = path.node! as LeafNode
-    let valuesArray = new Uint8Array()
+    const valuesArray = new Array<Uint8Array>(256)
     for (let x = 0; x < 256; x++) {
       let value = leafNode.getValue(x)
       if (value === undefined) value = new Uint8Array(32)
-      valuesArray = concatBytes(valuesArray, value)
+      valuesArray[x] = value
     }
-    const proofInput = concatBytes(
-      verkleCrypto.serializeCommitment(leafNode.commitment), // serialized (not hashed!) node commitment
-      valuesArray, // All values from node concatenated
-      new Uint8Array(1).fill(1), // Position in values array (aka "z value")
-      leafNode.getValue(1)!, // Value at position (aka "y value")
-    )
-    const proof = verkleCrypto.createProof(proofInput)
-
-    const verificationInput = concatBytes(
-      proof, // 576 byte proof
-      verkleCrypto.serializeCommitment(leafNode.commitment), // serialized leafNode commitment
-      new Uint8Array(1).fill(1), // Position in values array (aka "z value")
-      leafNode.getValue(1)!, // Value at position (aka "y value")
-    )
+    const proof = createProof(verkleCrypto, leafNode.commitment, valuesArray, 1)
 
     try {
-      const res = verkleCrypto.verifyProof(verificationInput)
-      assert.ok(res)
+      const result = verifyProof(verkleCrypto, proof, leafNode.commitment, 1, leafNode.getValue(1)!)
+      assert.ok(result)
     } catch (err) {
       assert.fail(`Failed to verify proof: ${err}`)
     }
+  })
+  it('should pass for empty trie', async () => {
+    const trie = await createVerkleTree({ verkleCrypto, db: new MapDB() })
+
+    await trie['_createRootNode']()
+    const proof = createProof(
+      verkleCrypto,
+      // Get commitment from root node
+      (await trie.findPath(new Uint8Array(31))).stack![0][0].commitment,
+      new Array(256).fill(new Uint8Array(32).fill(0)),
+      0,
+    )
+    const res = verifyProof(
+      verkleCrypto,
+      proof,
+      (await trie.findPath(new Uint8Array(31))).stack![0][0].commitment,
+      0,
+      new Uint8Array(32),
+    )
+    assert.ok(res)
+  })
+  it('should verify proof for single leaf node', async () => {
+    const node = await LeafNode.create(randomBytes(31), verkleCrypto)
+    node.setValue(0, setLengthRight(bigIntToBytes(1n), 32))
+    const valuesArray = new Array<Uint8Array>(256)
+    for (let x = 0; x < 256; x++) {
+      let value = node.getValue(x)
+      if (value === undefined) value = new Uint8Array(32)
+      valuesArray[x] = value
+    }
+    console.log(node.commitment)
+    const proof = createProof(verkleCrypto, node.commitment, valuesArray, 0)
+    console.log(proof)
+    const res = verifyProof(verkleCrypto, proof, node.commitment, 0, node.getValue(0)!)
+    assert.ok(res)
   })
 })
