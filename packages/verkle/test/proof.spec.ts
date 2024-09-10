@@ -91,9 +91,20 @@ describe('lets make proofs', () => {
       valuesArray[x] = value
     }
     console.log(node.commitment)
-    const proof = createProof(verkleCrypto, node.commitment, valuesArray, 0)
+    const proof = verkleCrypto.createProof([
+      {
+        serializedCommitment: verkleCrypto.serializeCommitment(node.commitment),
+        vector: valuesArray,
+        indices: [0],
+      },
+    ])
     console.log(proof)
-    const res = verifyProof(verkleCrypto, proof, node.commitment, 0, node.getValue(0)!)
+    const res = verkleCrypto.verifyProof(proof, [
+      {
+        serializedCommitment: verkleCrypto.serializeCommitment(node.commitment),
+        indexValuePairs: [{ index: 0, value: node.getValue(0)! }],
+      },
+    ])
     assert.ok(res)
   })
 })
