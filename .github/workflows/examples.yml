@@ -46,4 +46,6 @@ jobs:
         if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci     
         working-directory: ${{ github.workspace }}
+      
+      - run: npm run examples
     
