@@ -141,6 +141,42 @@ const precompileEntries: PrecompileEntry[] = [
     name: 'BLAKE2f (0x09)',
   },
   {
+    address: BYTES_19 + '10',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile10,
+    name: 'BLS12_G2MSM',
+  },
+  {
+    address: BYTES_19 + '11',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile11,
+    name: 'BLS12_PAIRING',
+  },
+  {
+    address: BYTES_19 + '12',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile12,
+    name: 'BLS12_MAP_FP_TO_G1',
+  },
+  {
+    address: BYTES_19 + '13',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile13,
+    name: 'BLS12_MAP_FP2_TO_G2',
+  },
+  {
     address: BYTES_19 + '0a',
     check: {
       type: PrecompileAvailabilityCheck.EIP,
@@ -193,42 +229,6 @@ const precompileEntries: PrecompileEntry[] = [
     },
     precompile: precompile0f,
     name: 'BLS12_G2MUL',
-  },
-  {
-    address: BYTES_19 + '10',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile10,
-    name: 'BLS12_G2MSM',
-  },
-  {
-    address: BYTES_19 + '11',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile11,
-    name: 'BLS12_PAIRING',
-  },
-  {
-    address: BYTES_19 + '12',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile12,
-    name: 'BLS12_MAP_FP_TO_G1',
-  },
-  {
-    address: BYTES_19 + '13',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile13,
-    name: 'BLS12_MAP_FP2_TO_G2',
   },
 ]
 
