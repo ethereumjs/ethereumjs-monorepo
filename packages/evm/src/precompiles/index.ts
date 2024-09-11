@@ -75,7 +75,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Chainstart,
     },
     precompile: precompile02,
-    name: 'KECCAK256 (0x02)',
+    name: 'SHA256 (0x02)',
   },
   {
     address: BYTES_19 + '03',
