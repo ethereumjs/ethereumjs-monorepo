@@ -1,7 +1,6 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createEOACode7702Tx } from '@ethereumjs/tx'
-
-import type { PrefixedHexString } from '@ethereumjs/util'
+import { type PrefixedHexString, createAddressFromPrivateKey, randomBytes } from '@ethereumjs/util'
 
 const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
 
@@ -12,12 +11,13 @@ const tx = createEOACode7702Tx(
       {
         chainId: '0x2',
         address: `0x${'20'.repeat(20)}`,
-        nonce: ['0x1'],
+        nonce: '0x1',
         yParity: '0x1',
         r: ones32,
         s: ones32,
       },
     ],
+    to: createAddressFromPrivateKey(randomBytes(32)),
   },
   { common },
 )

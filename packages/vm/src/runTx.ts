@@ -6,12 +6,12 @@ import {
   Account,
   Address,
   BIGINT_0,
+  BIGINT_1,
   KECCAK256_NULL,
   bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
-  createAddressFromString,
   ecrecover,
   equalsBytes,
   hexToBytes,
@@ -63,6 +63,9 @@ const accessListLabel = 'Access list label'
 const journalCacheCleanUpLabel = 'Journal/cache cleanup'
 const receiptsLabel = 'Receipts'
 const entireTxLabel = 'Entire tx'
+
+// EIP-7702 flag: if contract code starts with these 3 bytes, it is a 7702-delegated EOA
+const DELEGATION_7702_FLAG = new Uint8Array([0xef, 0x01, 0x00])
 
 /**
  * @ignore
@@ -288,8 +291,24 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   // EIP-3607: Reject transactions from senders with deployed code
   if (vm.common.isActivatedEIP(3607) && !equalsBytes(fromAccount.codeHash, KECCAK256_NULL)) {
-    const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', vm, block, tx)
-    throw new Error(msg)
+    const isActive7702 = vm.common.isActivatedEIP(7702)
+    switch (isActive7702) {
+      case true: {
+        const code = await state.getCode(caller)
+        // If the EOA is 7702-delegated, sending txs from this EOA is fine
+        if (equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) break
+        // Trying to send TX from account with code (which is not 7702-delegated), falls through and throws
+      }
+      default: {
+        const msg = _errorMsg(
+          'invalid sender address, address is not EOA (EIP-3607)',
+          vm,
+          block,
+          tx,
+        )
+        throw new Error(msg)
+      }
+    }
   }
 
   // Check balance against upfront tx cost
@@ -410,7 +429,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   await vm.evm.journal.putAccount(caller, fromAccount)
 
-  const writtenAddresses = new Set<string>()
+  let gasRefund = BIGINT_0
+
   if (tx.supports(Capability.EIP7702EOACode)) {
     // Add contract code for authority tuples provided by EIP 7702 tx
     const authorizationList = (<EIP7702CompatibleTx>tx).authorizationList
@@ -426,33 +446,59 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
       // Address to take code from
       const address = data[1]
-      const nonceList = data[2]
+      const nonce = data[2]
       const yParity = bytesToBigInt(data[3])
       const r = data[4]
       const s = data[5]
 
-      const rlpdSignedMessage = RLP.encode([chainId, address, nonceList])
+      const rlpdSignedMessage = RLP.encode([chainId, address, nonce])
       const toSign = keccak256(concatBytes(MAGIC, rlpdSignedMessage))
-      const pubKey = ecrecover(toSign, yParity, r, s)
+      let pubKey
+      try {
+        pubKey = ecrecover(toSign, yParity, r, s)
+      } catch (e) {
+        // Invalid signature, continue
+        continue
+      }
       // Address to set code to
       const authority = new Address(publicToAddress(pubKey))
-      const account = (await vm.stateManager.getAccount(authority)) ?? new Account()
+      const accountMaybeUndefined = await vm.stateManager.getAccount(authority)
+      const accountExists = accountMaybeUndefined !== undefined
+      const account = accountMaybeUndefined ?? new Account()
 
-      if (account.isContract()) {
-        // Note: vm also checks if the code has already been set once by a previous tuple
-        // So, if there are multiply entires for the same address, then vm is fine
-        continue
-      }
-      if (nonceList.length !== 0 && account.nonce !== bytesToBigInt(nonceList[0])) {
-        continue
-      }
-
-      const addressConverted = new Address(address)
-      const addressCode = await vm.stateManager.getCode(addressConverted)
-      await vm.stateManager.putCode(authority, addressCode)
-
-      writtenAddresses.add(authority.toString())
+      // Add authority address to warm addresses
       vm.evm.journal.addAlwaysWarmAddress(authority.toString())
+      if (account.isContract()) {
+        const code = await vm.stateManager.getCode(authority)
+        if (!equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
+          // Account is a "normal" contract
+          continue
+        }
+      }
+
+      // Nonce check
+      if (caller.toString() === authority.toString()) {
+        if (account.nonce + BIGINT_1 !== bytesToBigInt(nonce)) {
+          // Edge case: caller is the authority, so is self-signing the delegation
+          // In this case, we "virtually" bump the account nonce by one
+          // We CANNOT put this updated nonce into the account trie, because then
+          // the EVM will bump the nonce once again, thus resulting in a wrong nonce
+          continue
+        }
+      } else if (account.nonce !== bytesToBigInt(nonce)) {
+        continue
+      }
+
+      if (accountExists) {
+        const refund = tx.common.param('perEmptyAccountCost') - tx.common.param('perAuthBaseGas')
+        gasRefund += refund
+      }
+
+      account.nonce++
+      await vm.evm.journal.putAccount(authority, account)
+
+      const addressCode = concatBytes(DELEGATION_7702_FLAG, address)
+      await vm.stateManager.putCode(authority, addressCode)
     }
   }
 
@@ -541,7 +587,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Process any gas refund
-  let gasRefund = results.execResult.gasRefund ?? BIGINT_0
+  gasRefund += results.execResult.gasRefund ?? BIGINT_0
   results.gasRefund = gasRefund
   const maxRefundQuotient = vm.common.param('maxRefundQuotient')
   if (gasRefund !== BIGINT_0) {
@@ -633,15 +679,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         debug(`tx selfdestruct on address=${address}`)
       }
     }
-  }
-
-  /**
-   * Cleanup code of accounts written to in a 7702 transaction
-   */
-
-  for (const str of writtenAddresses) {
-    const address = createAddressFromString(str)
-    await vm.stateManager.putCode(address, new Uint8Array())
   }
 
   if (enableProfiler) {

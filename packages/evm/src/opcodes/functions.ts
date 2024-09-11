@@ -26,12 +26,14 @@ import {
   getVerkleTreeIndicesForStorageSlot,
   setLengthLeft,
 } from '@ethereumjs/util'
+import { equalBytes } from '@noble/curves/abstract/utils'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { EOFContainer, EOFContainerMode } from '../eof/container.js'
 import { EOFError } from '../eof/errors.js'
 import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.js'
 import { ERROR } from '../exceptions.js'
+import { DELEGATION_7702_FLAG } from '../types.js'
 
 import {
   createAddressFromStackBigInt,
@@ -58,6 +60,21 @@ export interface AsyncOpHandler {
 }
 
 export type OpHandler = SyncOpHandler | AsyncOpHandler
+
+function getEIP7702DelegatedAddress(code: Uint8Array) {
+  if (equalBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
+    return new Address(code.slice(3, 24))
+  }
+}
+
+async function eip7702CodeCheck(runState: RunState, code: Uint8Array) {
+  const address = getEIP7702DelegatedAddress(code)
+  if (address !== undefined) {
+    return runState.stateManager.getCode(address)
+  }
+
+  return code
+}
 
 // the opcode functions
 export const handlers: Map<number, OpHandler> = new Map([
@@ -511,20 +528,20 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3b: EXTCODESIZE
   [
     0x3b,
-    async function (runState) {
+    async function (runState, common) {
       const addressBigInt = runState.stack.pop()
       const address = createAddressFromStackBigInt(addressBigInt)
       // EOF check
-      const code = await runState.stateManager.getCode(address)
+      let code = await runState.stateManager.getCode(address)
       if (isEOF(code)) {
         // In legacy code, the target code is treated as to be "EOFBYTES" code
         runState.stack.push(BigInt(EOFBYTES.length))
         return
+      } else if (common.isActivatedEIP(7702)) {
+        code = await eip7702CodeCheck(runState, code)
       }
 
-      const size = BigInt(
-        await runState.stateManager.getCodeSize(createAddressFromStackBigInt(addressBigInt)),
-      )
+      const size = BigInt(code.length)
 
       runState.stack.push(size)
     },
@@ -532,15 +549,18 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3c: EXTCODECOPY
   [
     0x3c,
-    async function (runState) {
+    async function (runState, common) {
       const [addressBigInt, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
 
       if (dataLength !== BIGINT_0) {
-        let code = await runState.stateManager.getCode(createAddressFromStackBigInt(addressBigInt))
+        const address = createAddressFromStackBigInt(addressBigInt)
+        let code = await runState.stateManager.getCode(address)
 
         if (isEOF(code)) {
           // In legacy code, the target code is treated as to be "EOFBYTES" code
           code = EOFBYTES
+        } else if (common.isActivatedEIP(7702)) {
+          code = await eip7702CodeCheck(runState, code)
         }
 
         const data = getDataSlice(code, codeOffset, dataLength)
@@ -553,7 +573,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3f: EXTCODEHASH
   [
     0x3f,
-    async function (runState) {
+    async function (runState, common) {
       const addressBigInt = runState.stack.pop()
       const address = createAddressFromStackBigInt(addressBigInt)
 
@@ -564,6 +584,21 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Therefore, push the hash of EOFBYTES to the stack
         runState.stack.push(bytesToBigInt(EOFHASH))
         return
+      } else if (common.isActivatedEIP(7702)) {
+        const possibleDelegatedAddress = getEIP7702DelegatedAddress(code)
+        if (possibleDelegatedAddress !== undefined) {
+          const account = await runState.stateManager.getAccount(possibleDelegatedAddress)
+          if (!account || account.isEmpty()) {
+            runState.stack.push(BIGINT_0)
+            return
+          }
+
+          runState.stack.push(BigInt(bytesToHex(account.codeHash)))
+          return
+        } else {
+          runState.stack.push(bytesToBigInt(keccak256(code)))
+          return
+        }
       }
 
       const account = await runState.stateManager.getAccount(address)
