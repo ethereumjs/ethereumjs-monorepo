@@ -129,7 +129,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Byzantium,
     },
     precompile: precompile08,
-    name: 'ECPAIR (0x08)',
+    name: 'BN254PAIRING (0x08)',
   },
   {
     address: BYTES_19 + '09',
