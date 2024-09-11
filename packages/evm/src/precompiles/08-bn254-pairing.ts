@@ -19,7 +19,7 @@ export function precompile08(opts: PrecompileInput): ExecResult {
 
   const inputDataSize = BigInt(Math.floor(opts.data.length / 192))
   const gasUsed =
-    opts.common.param('ecPairingGas') + inputDataSize * opts.common.param('ecPairingWordGas')
+    opts.common.param('bn254PairingGas') + inputDataSize * opts.common.param('bn254PairingWordGas')
 
   if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)

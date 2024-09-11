@@ -137,10 +137,10 @@ export const paramsEVM: ParamsDict = {
   609: {
     // gasPrices
     modexpGquaddivisorGas: 20, // Gquaddivisor from modexp precompile for gas calculation
-    ecAddGas: 500, // Gas costs for curve addition precompile
-    ecMulGas: 40000, // Gas costs for curve multiplication precompile
-    ecPairingGas: 100000, // Base gas costs for curve pairing precompile
-    ecPairingWordGas: 80000, // Gas costs regarding curve pairing precompile input length
+    bn254AddGas: 500, // Gas costs for curve addition precompile
+    bn254MulGas: 40000, // Gas costs for curve multiplication precompile
+    bn254PairingGas: 100000, // Base gas costs for curve pairing precompile
+    bn254PairingWordGas: 80000, // Gas costs regarding curve pairing precompile input length
     revertGas: 0, // Base fee of the REVERT opcode
     staticcallGas: 700, // Base fee of the STATICCALL opcode
     returndatasizeGas: 2, // Base fee of the RETURNDATASIZE opcode
@@ -183,10 +183,10 @@ export const paramsEVM: ParamsDict = {
   1679: {
     // gasPrices
     blake2RoundGas: 1, // Gas cost per round for the Blake2 F precompile
-    ecAddGas: 150, // Gas costs for curve addition precompile
-    ecMulGas: 6000, // Gas costs for curve multiplication precompile
-    ecPairingGas: 45000, // Base gas costs for curve pairing precompile
-    ecPairingWordGas: 34000, // Gas costs regarding curve pairing precompile input length
+    bn254AddGas: 150, // Gas costs for curve addition precompile
+    bn254MulGas: 6000, // Gas costs for curve multiplication precompile
+    bn254PairingGas: 45000, // Base gas costs for curve pairing precompile
+    bn254PairingWordGas: 34000, // Gas costs regarding curve pairing precompile input length
     sstoreSentryEIP2200Gas: 2300, // Minimum gas required to be present for an SSTORE call, not consumed
     sstoreNoopEIP2200Gas: 800, // Once per SSTORE operation if the value doesn't change
     sstoreDirtyEIP2200Gas: 800, // Once per SSTORE operation if a dirty value is changed

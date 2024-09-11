@@ -12,7 +12,7 @@ import type { PrecompileInput } from './types.js'
 
 export function precompile06(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('06')
-  const gasUsed = opts.common.param('ecAddGas')
+  const gasUsed = opts.common.param('bn254AddGas')
   if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
   }
