@@ -194,4 +194,11 @@ jobs:
     uses: ./.github/workflows/lint.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-      
+
+  typecheck:
+    needs: build
+    uses: ./.github/workflows/typecheck.yml
+    with:
+      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+
+  
