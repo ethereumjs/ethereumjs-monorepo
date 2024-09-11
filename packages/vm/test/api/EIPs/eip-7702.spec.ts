@@ -248,23 +248,21 @@ describe('test EIP-7702 opcodes', () => {
       // EXTCODESIZE
       {
         // PUSH20 <defaultAuthAddr> EXTCODESIZE PUSH0 SSTORE STOP
-        code: <PrefixedHexString>('0x73' + defaultAuthAddr.toString().slice(2) + '3b' + '5f5500'),
+        code: `0x73${defaultAuthAddr.toString().slice(2)}3b5f5500`,
         expectedStorage: bigIntToUnpaddedBytes(BigInt(randomCode.length)),
         name: 'EXTCODESIZE',
       },
       // EXTCODEHASH
       {
         // PUSH20 <defaultAuthAddr> EXTCODEHASH PUSH0 SSTORE STOP
-        code: <PrefixedHexString>('0x73' + defaultAuthAddr.toString().slice(2) + '3f' + '5f5500'),
+        code: `0x73${defaultAuthAddr.toString().slice(2)}3f5f5500`,
         expectedStorage: keccak256(randomCode),
         name: 'EXTCODEHASH',
       },
       // EXTCODECOPY
       {
         // PUSH1 32 PUSH0 PUSH0 PUSH20 <defaultAuthAddr> EXTCODEHASH PUSH0 MLOAD PUSH0 SSTORE STOP
-        code: <PrefixedHexString>(
-          ('0x60205f5f73' + defaultAuthAddr.toString().slice(2) + '3c' + '5f515f5500')
-        ),
+        code: `0x60205f5f73${defaultAuthAddr.toString().slice(2)}3c5f515f5500`,
         expectedStorage: setLengthRight(randomCode, 32),
         name: 'EXTCODECOPY',
       },
