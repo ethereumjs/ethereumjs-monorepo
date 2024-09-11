@@ -1,6 +1,6 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createBlob4844Tx, createFeeMarket1559TxFromRLP, createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
@@ -24,10 +24,10 @@ const method = 'eth_sendRawTransaction'
 describe(method, () => {
   it('call with valid arguments', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-    DefaultStateManager.prototype.setStateRoot = function (): any {}
-    DefaultStateManager.prototype.shallowCopy = function () {
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+    MerkleStateManager.prototype.setStateRoot = function (): any {}
+    MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
     // Unschedule any timestamp since tests are not configured for timestamps
@@ -66,14 +66,14 @@ describe(method, () => {
     )
 
     // Restore setStateRoot
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 
   it('send local tx with gasprice lower than minimum', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    DefaultStateManager.prototype.setStateRoot = (): any => {}
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    MerkleStateManager.prototype.setStateRoot = (): any => {}
     const syncTargetHeight = new Common({ chain: Mainnet }).hardforkBlock(Hardfork.London)
     const { rpc } = await baseSetup({ syncTargetHeight, includeVM: true })
 
@@ -94,13 +94,13 @@ describe(method, () => {
     )
 
     // Restore setStateRoot
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
   })
 
   it('call with invalid arguments: not enough balance', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    DefaultStateManager.prototype.setStateRoot = (): any => {}
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    MerkleStateManager.prototype.setStateRoot = (): any => {}
     const syncTargetHeight = new Common({ chain: Mainnet }).hardforkBlock(Hardfork.London)
     const { rpc } = await baseSetup({ syncTargetHeight, includeVM: true })
 
@@ -113,7 +113,7 @@ describe(method, () => {
     assert.ok(res.error.message.includes('insufficient balance'))
 
     // Restore setStateRoot
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
   })
 
   it('call with sync target height not set yet', async () => {
@@ -170,10 +170,10 @@ describe(method, () => {
 
   it('call with no peers', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    DefaultStateManager.prototype.setStateRoot = (): any => {}
-    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-    DefaultStateManager.prototype.shallowCopy = function () {
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    MerkleStateManager.prototype.setStateRoot = (): any => {}
+    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+    MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
@@ -204,26 +204,26 @@ describe(method, () => {
     assert.ok(res.error.message.includes('no peer connection available'))
 
     // Restore setStateRoot
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 
   it('blob EIP 4844 transaction', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    DefaultStateManager.prototype.setStateRoot = (): any => {}
-    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-    DefaultStateManager.prototype.shallowCopy = function () {
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    MerkleStateManager.prototype.setStateRoot = (): any => {}
+    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+    MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
     // Disable block header consensus format validation
     const consensusFormatValidation = BlockHeader.prototype['_consensusFormatValidation']
     BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
-    const gethGenesis = await import('../../../../block/test/testdata/4844-hardfork.json')
+    const { hardfork4844Data } = await import('../../../../block/test/testdata/4844-hardfork.js')
 
     const kzg = await loadKZG()
 
-    const common = createCommonFromGethGenesis(gethGenesis, {
+    const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -283,8 +283,8 @@ describe(method, () => {
     assert.ok(res2.error.message.includes('replacement blob gas too low'))
 
     // Restore stubbed out functionality
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
     BlockHeader.prototype['_consensusFormatValidation'] = consensusFormatValidation
   })
 })

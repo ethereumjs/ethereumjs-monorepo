@@ -16,7 +16,7 @@ import {
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
-import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
+import { eip4844Data } from '../../../../client/test/testdata/geth-genesis/eip4844.js'
 import { buildBlock, createVM, runBlock } from '../../../src/index.js'
 import { setBalance } from '../utils.js'
 
@@ -27,7 +27,7 @@ describe('EIP4844 tests', () => {
   it('should build a block correctly with blobs', async () => {
     const kzg = await loadKZG()
 
-    const common = createCommonFromGethGenesis(genesisJSON, {
+    const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'eip4844',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },

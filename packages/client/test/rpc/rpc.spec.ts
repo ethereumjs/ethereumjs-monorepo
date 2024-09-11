@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 
 import { jwt } from '../../src/ext/jwt-simple.js'
 
-import { createClient, createManager, getRpcClient, startRPC } from './helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from './helpers.js'
 
 import type { TAlgorithm } from '../../src/ext/jwt-simple.js'
 import type { AddressInfo } from 'net'
@@ -14,7 +14,7 @@ const jwtSecret = randomBytes(32)
 
 describe('JSON-RPC call', () => {
   it('without Content-Type header', async () => {
-    const rpc = getRpcClient(startRPC({}))
+    const rpc = getRPCClient(startRPC({}))
     const req = 'plaintext'
     const res = await rpc.request(req, [])
     assert.equal(res.error.code, -32601)

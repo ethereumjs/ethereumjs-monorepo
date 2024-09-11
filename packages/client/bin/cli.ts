@@ -59,12 +59,12 @@ import { Event } from '../src/types.js'
 import { parseMultiaddrs } from '../src/util/index.js'
 import { setupMetrics } from '../src/util/metrics.js'
 
-import { helprpc, startRPCServers } from './startRpc.js'
+import { helpRPC, startRPCServers } from './startRPC.js'
 
 import type { Logger } from '../src/logging.js'
 import type { FullEthereumService } from '../src/service/index.js'
 import type { ClientOpts } from '../src/types.js'
-import type { RPCArgs } from './startRpc.js'
+import type { RPCArgs } from './startRPC.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { CustomCrypto } from '@ethereumjs/common'
@@ -226,7 +226,7 @@ const args: ClientOpts = yargs
     describe: 'Provide a file containing a hex encoded jwt secret for Engine RPC server',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
   })
-  .option('helpRpc', {
+  .option('helpRPC', {
     describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
     boolean: true,
   })
@@ -473,12 +473,6 @@ const args: ClientOpts = yargs
       'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution failures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
     boolean: true,
     hidden: true,
-  })
-  .option('initialVerkleStateRoot', {
-    describe:
-      'Provides an initial stateRoot to start the StatelessVerkleStateManager. This is required to bootstrap verkle witness proof verification, since they depend on the stateRoot of the parent block',
-    string: true,
-    coerce: (initialVerkleStateRoot: PrefixedHexString) => hexToBytes(initialVerkleStateRoot),
   })
   .option('useJsCrypto', {
     describe: 'Use pure Javascript cryptography functions',
@@ -928,9 +922,9 @@ const stopClient = async (
  * Main entry point to start a client
  */
 async function run() {
-  if (args.helpRpc === true) {
+  if (args.helpRPC === true) {
     // Output RPC help and exit
-    return helprpc()
+    return helpRPC()
   }
 
   // TODO sharding: Just initialize kzg library now, in future it can be optimized to be

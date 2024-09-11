@@ -7,7 +7,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Caches, DefaultStateManager } from '../src/index.js'
+import { Caches, MerkleStateManager } from '../src/index.js'
 
 import { createAccountWithDefaults } from './util.js'
 
@@ -28,10 +28,10 @@ describe('StateManager -> Code', () => {
         */
 
         // Setup
-        const stateManager = new DefaultStateManager({
+        const stateManager = new MerkleStateManager({
           caches: new Caches({ account: accountCacheOpts, code: codeCacheOpts }),
         })
-        const codeStateManager = new DefaultStateManager({
+        const codeStateManager = new MerkleStateManager({
           caches: new Caches({ account: accountCacheOpts, code: codeCacheOpts }),
         })
         const address1 = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
@@ -88,7 +88,7 @@ describe('StateManager -> Code', () => {
       })
 
       it(`should set and get code`, async () => {
-        const stateManager = new DefaultStateManager({
+        const stateManager = new MerkleStateManager({
           caches: new Caches({ account: accountCacheOpts, code: codeCacheOpts }),
         })
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
@@ -108,7 +108,7 @@ describe('StateManager -> Code', () => {
       })
 
       it(`should not get code if is not contract`, async () => {
-        const stateManager = new DefaultStateManager({
+        const stateManager = new MerkleStateManager({
           caches: new Caches({ account: accountCacheOpts, code: codeCacheOpts }),
         })
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
@@ -123,7 +123,7 @@ describe('StateManager -> Code', () => {
       })
 
       it(`should set empty code`, async () => {
-        const stateManager = new DefaultStateManager({
+        const stateManager = new MerkleStateManager({
           caches: new Caches({ account: accountCacheOpts, code: codeCacheOpts }),
         })
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
@@ -140,7 +140,7 @@ describe('StateManager -> Code', () => {
       })
 
       it(`should prefix codehashes by default`, async () => {
-        const stateManager = new DefaultStateManager({
+        const stateManager = new MerkleStateManager({
           caches: new Caches({ account: accountCacheOpts, code: codeCacheOpts }),
         })
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
@@ -151,7 +151,7 @@ describe('StateManager -> Code', () => {
       })
 
       it(`should not prefix codehashes if prefixCodeHashes = false`, async () => {
-        const stateManager = new DefaultStateManager({
+        const stateManager = new MerkleStateManager({
           prefixCodeHashes: false,
           caches: new Caches({ account: accountCacheOpts, code: codeCacheOpts }),
         })
@@ -166,7 +166,7 @@ describe('StateManager -> Code', () => {
       })
 
       it('putCode with empty code on existing address should correctly propagate', async () => {
-        const stateManager = new DefaultStateManager({
+        const stateManager = new MerkleStateManager({
           caches: new Caches({ account: accountCacheOpts, code: codeCacheOpts }),
         })
         const address = createZeroAddress()

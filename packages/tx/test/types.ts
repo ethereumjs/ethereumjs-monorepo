@@ -38,7 +38,7 @@ export interface VitaliksTestsDataEntry {
 }
 
 // The type of ./txs.json
-export type TxsJsonEntry = {
+export type TxsJSONEntry = {
   privateKey: string
   sendersAddress: string
   type: string

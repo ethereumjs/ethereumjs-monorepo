@@ -31,7 +31,9 @@ export interface StorageRange {
   nextKey: string | null
 }
 
-export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash'>>
+export type AccountFields = Partial<
+  Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash' | 'codeSize'>
+>
 
 export type StorageProof = {
   key: PrefixedHexString
@@ -167,7 +169,7 @@ export interface StateManagerInterface {
     executionWitness?: VerkleExecutionWitness | null,
     accessWitness?: AccessWitnessInterface,
   ): void
-  verifyVerkleProof?(stateRoot: Uint8Array): boolean
+  verifyVerkleProof?(): boolean
   verifyPostState?(): boolean
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages

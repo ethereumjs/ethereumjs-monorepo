@@ -117,7 +117,7 @@ export class Account {
     if (this._codeSize !== null) {
       return this._codeSize
     } else {
-      throw Error(`codeHash=${this._codeSize} not loaded`)
+      throw Error(`codeSize=${this._codeSize} not loaded`)
     }
   }
   set codeSize(_codeSize: number) {
@@ -134,7 +134,7 @@ export class Account {
     balance: bigint | null = BIGINT_0,
     storageRoot: Uint8Array | null = KECCAK256_RLP,
     codeHash: Uint8Array | null = KECCAK256_NULL,
-    codeSize: number | null = null,
+    codeSize: number | null = 0,
     version: number | null = 0,
   ) {
     this._nonce = nonce

@@ -16,7 +16,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/withdrawals.json'
+import { withdrawalsData } from '../../../../client/test/testdata/geth-genesis/withdrawals.js'
 import { buildBlock, createVM, runBlock } from '../../../src/index.js'
 
 import type { Block } from '@ethereumjs/block'
@@ -132,7 +132,7 @@ describe('EIP4895 tests', () => {
     const blockchain = await createBlockchain()
     const vm = await createVM({ common, blockchain })
 
-    await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(genesisJSON))
+    await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(withdrawalsData))
     const preState = bytesToHex(await vm.stateManager.getStateRoot())
     assert.equal(
       preState,
@@ -193,9 +193,9 @@ describe('EIP4895 tests', () => {
   })
 
   it('should build a block correctly with withdrawals', async () => {
-    const common = createCommonFromGethGenesis(genesisJSON, { chain: 'custom' })
+    const common = createCommonFromGethGenesis(withdrawalsData, { chain: 'custom' })
     common.setHardfork(Hardfork.Shanghai)
-    const genesisState = parseGethGenesisState(genesisJSON)
+    const genesisState = parseGethGenesisState(withdrawalsData)
     const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
@@ -210,14 +210,13 @@ describe('EIP4895 tests', () => {
       'correct state root should be generated',
     )
     const vm = await createVM({ common, blockchain })
-    await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(genesisJSON))
+    await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(withdrawalsData))
     const vmCopy = await vm.shallowCopy()
 
     const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp))
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>
       createWithdrawalFromBytesArray(wa),
     )
-    const td = await blockchain.getTotalDifficulty(genesisBlock.hash())
 
     const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
@@ -225,7 +224,6 @@ describe('EIP4895 tests', () => {
       blockOpts: {
         calcDifficultyFromHeader: genesisBlock.header,
         freeze: false,
-        setHardfork: td,
       },
     })
 

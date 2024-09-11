@@ -28,7 +28,7 @@ import { buildBlock, createVM, runBlock } from '../../src/index.js'
 
 import { setBalance } from './utils.js'
 
-import type { ConsensusDict } from '@ethereumjs/blockchain'
+import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 const pKeyAddress = createAddressFromPrivateKey(privateKey)
@@ -136,7 +136,9 @@ describe('BlockBuilder', () => {
 
     assert.deepEqual(block.header.mixHash, sealOpts.mixHash)
     assert.deepEqual(block.header.nonce, sealOpts.nonce)
-    assert.doesNotThrow(async () => vm.blockchain.consensus!.validateDifficulty(block.header))
+    assert.doesNotThrow(async () =>
+      (vm.blockchain as Blockchain).consensus!.validateDifficulty(block.header),
+    )
   })
 
   it('should correctly seal a PoA block', async () => {

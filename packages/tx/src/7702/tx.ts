@@ -27,7 +27,7 @@ import type {
   TxValuesArray as AllTypesTxValuesArray,
   AuthorizationList,
   AuthorizationListBytes,
-  JsonTx,
+  JSONTx,
   TxOptions,
 } from '../types.js'
 
@@ -281,12 +281,12 @@ export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOAC
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  toJSON(): JsonTx {
+  toJSON(): JSONTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJson = super.toJSON()
+    const baseJSON = super.toJSON()
 
     return {
-      ...baseJson,
+      ...baseJSON,
       chainId: bigIntToHex(this.chainId),
       maxPriorityFeePerGas: bigIntToHex(this.maxPriorityFeePerGas),
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),

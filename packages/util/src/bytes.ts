@@ -29,27 +29,19 @@ for (let i = 0; i < 16; i++) {
 }
 
 /**
- * NOTE: only use this function if the string is even, and only consists of hex characters
- * If this is not the case, this function could return weird results
- * @deprecated
- */
-function _unprefixedHexToBytes(hex: string): Uint8Array {
-  const byteLen = hex.length
-  const bytes = new Uint8Array(byteLen / 2)
-  for (let i = 0; i < byteLen; i += 2) {
-    bytes[i / 2] = hexToBytesMapFirstKey[hex[i]] + hexToBytesMapSecondKey[hex[i + 1]]
-  }
-  return bytes
-}
-
-/**
  * @deprecated
  */
 export const unprefixedHexToBytes = (inp: string) => {
   if (inp.slice(0, 2) === '0x') {
     throw new Error('hex string is prefixed with 0x, should be unprefixed')
   } else {
-    return _unprefixedHexToBytes(padToEven(inp))
+    inp = padToEven(inp)
+    const byteLen = inp.length
+    const bytes = new Uint8Array(byteLen / 2)
+    for (let i = 0; i < byteLen; i += 2) {
+      bytes[i / 2] = hexToBytesMapFirstKey[inp[i]] + hexToBytesMapSecondKey[inp[i + 1]]
+    }
+    return bytes
   }
 }
 
@@ -124,9 +116,7 @@ export const hexToBytes = (hex: PrefixedHexString): Uint8Array => {
 
   const unprefixedHex = hex.slice(2)
 
-  return _unprefixedHexToBytes(
-    unprefixedHex.length % 2 === 0 ? unprefixedHex : padToEven(unprefixedHex),
-  )
+  return unprefixedHexToBytes(unprefixedHex)
 }
 
 /******************************************/

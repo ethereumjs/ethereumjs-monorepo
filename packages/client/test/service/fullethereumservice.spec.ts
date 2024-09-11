@@ -7,7 +7,7 @@ import { Chain } from '../../src/blockchain/index.js'
 import { Config, SyncMode } from '../../src/config.js'
 import { RlpxServer } from '../../src/net/server/index.js'
 import { Event } from '../../src/types.js'
-import genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import { postMergeData } from '../testdata/geth-genesis/post-merge.js'
 
 import type { BeaconSynchronizer } from '../../src/sync/index.js'
 import type { Log } from '@ethereumjs/evm'
@@ -386,8 +386,8 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
 })
 
 describe('should start on beacon sync when past merge', async () => {
-  const common = createCommonFromGethGenesis(genesisJSON, { chain: 'post-merge' })
-  common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
+  const common = createCommonFromGethGenesis(postMergeData, { chain: 'post-merge' })
+  common.setHardforkBy({ blockNumber: BigInt(0) })
   const config = new Config({ accountCache: 10000, storageCache: 1000, common })
   const chain = await Chain.create({ config })
   it('should be available', () => {

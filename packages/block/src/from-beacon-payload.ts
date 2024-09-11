@@ -1,7 +1,7 @@
 import { bigIntToHex } from '@ethereumjs/util'
 
 import type { ExecutionPayload } from './types.js'
-import type { PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
+import type { NumericString, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
 
 type BeaconWithdrawal = {
   index: PrefixedHexString
@@ -30,26 +30,26 @@ type BeaconConsolidationRequest = {
   target_pubkey: PrefixedHexString
 }
 
-// Payload json that one gets using the beacon apis
+// Payload JSON that one gets using the beacon apis
 // curl localhost:5052/eth/v2/beacon/blocks/56610 | jq .data.message.body.execution_payload
-export type BeaconPayloadJson = {
+export type BeaconPayloadJSON = {
   parent_hash: PrefixedHexString
   fee_recipient: PrefixedHexString
   state_root: PrefixedHexString
   receipts_root: PrefixedHexString
   logs_bloom: PrefixedHexString
   prev_randao: PrefixedHexString
-  block_number: PrefixedHexString
-  gas_limit: PrefixedHexString
-  gas_used: PrefixedHexString
-  timestamp: PrefixedHexString
+  block_number: NumericString
+  gas_limit: NumericString
+  gas_used: NumericString
+  timestamp: NumericString
   extra_data: PrefixedHexString
-  base_fee_per_gas: PrefixedHexString
+  base_fee_per_gas: NumericString
   block_hash: PrefixedHexString
   transactions: PrefixedHexString[]
   withdrawals?: BeaconWithdrawal[]
-  blob_gas_used?: PrefixedHexString
-  excess_blob_gas?: PrefixedHexString
+  blob_gas_used?: NumericString
+  excess_blob_gas?: NumericString
   parent_beacon_block_root?: PrefixedHexString
   // requests data
   deposit_requests?: BeaconDepositRequest[]
@@ -60,7 +60,7 @@ export type BeaconPayloadJson = {
   execution_witness?: VerkleExecutionWitness
 }
 
-type VerkleProofSnakeJson = {
+type VerkleProofSnakeJSON = {
   commitments_by_path: PrefixedHexString[]
   d: PrefixedHexString
   depth_extension_present: PrefixedHexString
@@ -72,7 +72,7 @@ type VerkleProofSnakeJson = {
   other_stems: PrefixedHexString[]
 }
 
-type VerkleStateDiffSnakeJson = {
+type VerkleStateDiffSnakeJSON = {
   stem: PrefixedHexString
   suffix_diffs: {
     current_value: PrefixedHexString | null
@@ -81,16 +81,19 @@ type VerkleStateDiffSnakeJson = {
   }[]
 }
 
-type VerkleExecutionWitnessSnakeJson = {
-  state_diff: VerkleStateDiffSnakeJson[]
-  verkle_proof: VerkleProofSnakeJson
+type VerkleExecutionWitnessSnakeJSON = {
+  parent_state_root: PrefixedHexString
+  state_diff: VerkleStateDiffSnakeJSON[]
+  verkle_proof: VerkleProofSnakeJSON
 }
 
-function parseExecutionWitnessFromSnakeJson({
+function parseExecutionWitnessFromSnakeJSON({
+  parent_state_root,
   state_diff,
   verkle_proof,
-}: VerkleExecutionWitnessSnakeJson): VerkleExecutionWitness {
+}: VerkleExecutionWitnessSnakeJSON): VerkleExecutionWitness {
   return {
+    parentStateRoot: parent_state_root,
     stateDiff: state_diff.map(({ stem, suffix_diffs }) => ({
       stem,
       suffixDiffs: suffix_diffs.map(({ current_value, new_value, suffix }) => ({
@@ -114,10 +117,10 @@ function parseExecutionWitnessFromSnakeJson({
 }
 
 /**
- * Converts a beacon block execution payload JSON object {@link BeaconPayloadJson} to the {@link ExecutionPayload} data needed to construct a {@link Block}.
+ * Converts a beacon block execution payload JSON object {@link BeaconPayloadJSON} to the {@link ExecutionPayload} data needed to construct a {@link Block}.
  * The JSON data can be retrieved from a consensus layer (CL) client on this Beacon API `/eth/v2/beacon/blocks/[block number]`
  */
-export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): ExecutionPayload {
+export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJSON): ExecutionPayload {
   const executionPayload: ExecutionPayload = {
     parentHash: payload.parent_hash,
     feeRecipient: payload.fee_recipient,
@@ -186,8 +189,8 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
     executionPayload.executionWitness =
       payload.execution_witness.verkleProof !== undefined
         ? payload.execution_witness
-        : parseExecutionWitnessFromSnakeJson(
-            payload.execution_witness as unknown as VerkleExecutionWitnessSnakeJson,
+        : parseExecutionWitnessFromSnakeJSON(
+            payload.execution_witness as unknown as VerkleExecutionWitnessSnakeJSON,
           )
   }
 

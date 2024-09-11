@@ -1,4 +1,4 @@
-import type { JsonBlock } from '@ethereumjs/block'
+import type { JSONBlock } from '@ethereumjs/block'
 
 export type SupportedMethods =
   | 'eth_getProof'
@@ -7,18 +7,18 @@ export type SupportedMethods =
   | 'eth_getBlockByNumber'
   | 'eth_getTransactionByHash'
 
-export type JsonReturnType = {
+export type JSONReturnType = {
   eth_getProof: { id: number; result: any }
   eth_getStorageAt: { id: number; result: any }
   eth_getCode: { id: number; result: string }
-  eth_getBlockByNumber: { id: number; result: JsonBlock }
+  eth_getBlockByNumber: { id: number; result: JSONBlock }
   eth_getTransactionByHash: { id: number; result: any }
 }
 export const getValues = async <Method extends SupportedMethods>(
   method: Method,
   id: number,
   params: any[],
-): Promise<JsonReturnType[Method]> => {
+): Promise<JSONReturnType[Method]> => {
   switch (method) {
     case 'eth_getProof':
       return {

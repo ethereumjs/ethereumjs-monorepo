@@ -114,7 +114,13 @@ export class CliqueConsensus implements Consensus {
    */
   public _cliqueLatestBlockSigners: CliqueLatestBlockSigners = []
 
+  DEBUG: boolean // Guard for debug logs
   constructor() {
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    // Additional window check is to prevent vite browser bundling (and potentially other) to break
+    this.DEBUG =
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+
     this.algorithm = ConsensusAlgorithm.Clique
   }
 
@@ -220,7 +226,7 @@ export class CliqueConsensus implements Consensus {
       cliqueEpochTransitionSigners(genesisBlock.header),
     ]
     await this.cliqueUpdateSignerStates(genesisSignerState)
-    debug(`[Block 0] Genesis block -> update signer states`)
+    this.DEBUG && debug(`[Block 0] Genesis block -> update signer states`)
     await this.cliqueUpdateVotes()
   }
 
@@ -270,7 +276,7 @@ export class CliqueConsensus implements Consensus {
       let i = 0
       try {
         for (const signer of this.cliqueActiveSigners(signerState[0])) {
-          debug(`Clique signer [${i}]: ${signer} (block: ${signerState[0]})`)
+          this.DEBUG && debug(`Clique signer [${i}]: ${signer} (block: ${signerState[0]})`)
           i++
         }
         // eslint-disable-next-line no-empty
@@ -344,7 +350,8 @@ export class CliqueConsensus implements Consensus {
           this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
             (vote) => !vote[1][1].equals(beneficiary),
           )
-          debug(`[Block ${header.number}] Clique majority consensus (AUTH ${beneficiary})`)
+          this.DEBUG &&
+            debug(`[Block ${header.number}] Clique majority consensus (AUTH ${beneficiary})`)
         }
         // DROP vote
         votes = this._cliqueLatestVotes.filter((vote) => {
@@ -378,27 +385,31 @@ export class CliqueConsensus implements Consensus {
             // Discard votes from removed signer and for removed signer
             (vote) => !vote[1][0].equals(beneficiary) && !vote[1][1].equals(beneficiary),
           )
-          debug(`[Block ${header.number}] Clique majority consensus (DROP ${beneficiary})`)
+          this.DEBUG &&
+            debug(`[Block ${header.number}] Clique majority consensus (DROP ${beneficiary})`)
         }
         if (round === 1) {
           // Always add the latest vote to the history no matter if already voted
           // the same vote or not
           this._cliqueLatestVotes.push(latestVote)
-          debug(
-            `[Block ${header.number}] New clique vote: ${signer} -> ${beneficiary} ${
-              equalsBytes(nonce, CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
-            }`,
-          )
+          this.DEBUG &&
+            debug(
+              `[Block ${header.number}] New clique vote: ${signer} -> ${beneficiary} ${
+                equalsBytes(nonce, CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
+              }`,
+            )
         }
         if (consensus) {
           if (round === 1) {
-            debug(
-              `[Block ${header.number}] Clique majority consensus on existing votes -> update signer states`,
-            )
+            this.DEBUG &&
+              debug(
+                `[Block ${header.number}] Clique majority consensus on existing votes -> update signer states`,
+              )
           } else {
-            debug(
-              `[Block ${header.number}] Clique majority consensus on new vote -> update signer states`,
-            )
+            this.DEBUG &&
+              debug(
+                `[Block ${header.number}] Clique majority consensus on new vote -> update signer states`,
+              )
           }
           const newSignerState: CliqueSignerState = [header.number, activeSigners]
           await this.cliqueUpdateSignerStates(newSignerState)
