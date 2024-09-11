@@ -1,6 +1,12 @@
 import {
+  BIGINT_0,
+  BIGINT_1,
+  MAX_INTEGER,
+  MAX_UINT64,
   type PrefixedHexString,
+  SECP256K1_ORDER_DIV_2,
   TypeOutput,
+  bytesToBigInt,
   bytesToHex,
   hexToBytes,
   setLengthLeft,
@@ -152,15 +158,12 @@ export class AuthorizationLists {
         }
         const chainId = hexToBytes(item.chainId)
         const addressBytes = hexToBytes(item.address)
-        const nonceList = []
-        for (let j = 0; j < item.nonce.length; j++) {
-          nonceList.push(hexToBytes(item.nonce[j]))
-        }
+        const nonce = hexToBytes(item.nonce)
         const yParity = hexToBytes(item.yParity)
         const r = hexToBytes(item.r)
         const s = hexToBytes(item.s)
 
-        newAuthorizationList.push([chainId, addressBytes, nonceList, yParity, r, s])
+        newAuthorizationList.push([chainId, addressBytes, nonce, yParity, r, s])
       }
       bufferAuthorizationList = newAuthorizationList
     } else {
@@ -171,18 +174,14 @@ export class AuthorizationLists {
         const data = bufferAuthorizationList[i]
         const chainId = bytesToHex(data[0])
         const address = bytesToHex(data[1])
-        const nonces = data[2]
-        const nonceList: PrefixedHexString[] = []
-        for (let j = 0; j < nonces.length; j++) {
-          nonceList.push(bytesToHex(nonces[j]))
-        }
+        const nonce = bytesToHex(data[2])
         const yParity = bytesToHex(data[3])
         const r = bytesToHex(data[4])
         const s = bytesToHex(data[5])
         const jsonItem: AuthorizationListItem = {
           chainId,
           address,
-          nonce: nonceList,
+          nonce,
           yParity,
           r,
           s,
@@ -199,21 +198,36 @@ export class AuthorizationLists {
   }
 
   public static verifyAuthorizationList(authorizationList: AuthorizationListBytes) {
+    if (authorizationList.length === 0) {
+      throw new Error('Invalid EIP-7702 transaction: authorization list is empty')
+    }
     for (let key = 0; key < authorizationList.length; key++) {
       const authorizationListItem = authorizationList[key]
+      const chainId = authorizationListItem[0]
       const address = authorizationListItem[1]
-      const nonceList = authorizationListItem[2]
+      const nonce = authorizationListItem[2]
       const yParity = authorizationListItem[3]
       const r = authorizationListItem[4]
       const s = authorizationListItem[5]
-      validateNoLeadingZeroes({ yParity, r, s })
+      validateNoLeadingZeroes({ yParity, r, s, nonce, chainId })
       if (address.length !== 20) {
         throw new Error('Invalid EIP-7702 transaction: address length should be 20 bytes')
       }
-      if (nonceList.length > 1) {
-        throw new Error('Invalid EIP-7702 transaction: nonce list should consist of at most 1 item')
-      } else if (nonceList.length === 1) {
-        validateNoLeadingZeroes({ nonce: nonceList[0] })
+      if (bytesToBigInt(chainId) > MAX_INTEGER) {
+        throw new Error('Invalid EIP-7702 transaction: chainId exceeds 2^256 - 1')
+      }
+      if (bytesToBigInt(nonce) > MAX_UINT64) {
+        throw new Error('Invalid EIP-7702 transaction: nonce exceeds 2^64 - 1')
+      }
+      const yParityBigInt = bytesToBigInt(yParity)
+      if (yParityBigInt !== BIGINT_0 && yParityBigInt !== BIGINT_1) {
+        throw new Error('Invalid EIP-7702 transaction: yParity should be 0 or 1')
+      }
+      if (bytesToBigInt(r) > MAX_INTEGER) {
+        throw new Error('Invalid EIP-7702 transaction: r exceeds 2^256 - 1')
+      }
+      if (bytesToBigInt(s) > SECP256K1_ORDER_DIV_2) {
+        throw new Error('Invalid EIP-7702 transaction: s > secp256k1n/2')
       }
     }
   }

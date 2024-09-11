@@ -1,5 +1,14 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createAddressFromPrivateKey, createZeroAddress, hexToBytes } from '@ethereumjs/util'
+import {
+  BIGINT_1,
+  MAX_INTEGER,
+  MAX_UINT64,
+  SECP256K1_ORDER_DIV_2,
+  bigIntToHex,
+  createAddressFromPrivateKey,
+  createZeroAddress,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createEOACode7702Tx } from '../src/index.js'
@@ -19,7 +28,7 @@ function getTxData(override: Partial<AuthorizationListItem> = {}): TxData {
   const validAuthorizationList: AuthorizationListItem = {
     chainId: '0x',
     address: `0x${'20'.repeat(20)}`,
-    nonce: ['0x1'],
+    nonce: '0x1',
     yParity: '0x1',
     r: ones32,
     s: ones32,
@@ -32,6 +41,7 @@ function getTxData(override: Partial<AuthorizationListItem> = {}): TxData {
         ...override,
       },
     ],
+    to: createZeroAddress(),
   }
 }
 
@@ -43,7 +53,7 @@ describe('[EOACode7702Transaction]', () => {
         maxFeePerGas: 1,
         maxPriorityFeePerGas: 1,
         accessList: [],
-        authorizationList: [],
+        ...getTxData(),
         chainId: 1,
         gasLimit: 100000,
         to: createZeroAddress(),
@@ -65,18 +75,25 @@ describe('[EOACode7702Transaction]', () => {
         },
         'address length should be 20 bytes',
       ],
-      [
-        {
-          nonce: ['0x1', '0x2'],
-        },
-        'nonce list should consist of at most 1 item',
-      ],
       [{ s: undefined as never }, 's is not defined'],
       [{ r: undefined as never }, 'r is not defined'],
       [{ yParity: undefined as never }, 'yParity is not defined'],
       [{ nonce: undefined as never }, 'nonce is not defined'],
       [{ address: undefined as never }, 'address is not defined'],
       [{ chainId: undefined as never }, 'chainId is not defined'],
+      [{ chainId: bigIntToHex(MAX_INTEGER + BIGINT_1) }, 'chainId exceeds 2^256 - 1'],
+      [
+        { nonce: bigIntToHex(MAX_UINT64 + BIGINT_1) },
+        'Invalid EIP-7702 transaction: nonce exceeds 2^64 - 1',
+      ],
+      [{ yParity: '0x2' }, 'yParity should be 0 or 1'],
+      [{ r: bigIntToHex(MAX_INTEGER + BIGINT_1) }, 'r exceeds 2^256 - 1'],
+      [{ s: bigIntToHex(SECP256K1_ORDER_DIV_2 + BIGINT_1) }, 's > secp256k1n/2'],
+      [{ yParity: '0x0002' }, 'yParity cannot have leading zeros'],
+      [{ r: '0x0001' }, 'r cannot have leading zeros'],
+      [{ s: '0x0001' }, 's cannot have leading zeros'],
+      [{ nonce: '0x0001' }, 'nonce cannot have leading zeros'],
+      [{ chainId: '0x0001' }, 'chainId cannot have leading zeros'],
     ]
 
     for (const test of tests) {

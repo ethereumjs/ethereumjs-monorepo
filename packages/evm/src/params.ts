@@ -409,12 +409,4 @@ export const paramsEVM: ParamsDict = {
     eofcreateGas: 32000, // Base fee of the EOFCREATE opcode (Same as CREATE/CREATE2)
     returncontractGas: 0, // Base fee of the RETURNCONTRACT opcode
   },
-  /**
-.  * Set EOA account code for one transaction
-.  */
-  7702: {
-    // TODO: Set correct minimum hardfork
-    // gasPrices
-    perAuthBaseGas: 2500, // Gas cost of each authority item
-  },
 }
