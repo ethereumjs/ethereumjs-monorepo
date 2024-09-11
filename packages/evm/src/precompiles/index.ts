@@ -141,42 +141,6 @@ const precompileEntries: PrecompileEntry[] = [
     name: 'BLAKE2f (0x09)',
   },
   {
-    address: BYTES_19 + '10',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile10,
-    name: 'BLS12_G2MSM (0x10)',
-  },
-  {
-    address: BYTES_19 + '11',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile11,
-    name: 'BLS12_PAIRING (0x11)',
-  },
-  {
-    address: BYTES_19 + '12',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile12,
-    name: 'BLS12_MAP_FP_TO_G1 (0x12)',
-  },
-  {
-    address: BYTES_19 + '13',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile13,
-    name: 'BLS12_MAP_FP2_TO_G2 (0x13)',
-  },
-  {
     address: BYTES_19 + '0a',
     check: {
       type: PrecompileAvailabilityCheck.EIP,
@@ -230,6 +194,42 @@ const precompileEntries: PrecompileEntry[] = [
     precompile: precompile0f,
     name: 'BLS12_G2MUL (0x0f)',
   },
+  {
+    address: BYTES_19 + '10',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile10,
+    name: 'BLS12_G2MSM (0x10)',
+  },
+  {
+    address: BYTES_19 + '11',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile11,
+    name: 'BLS12_PAIRING (0x11)',
+  },
+  {
+    address: BYTES_19 + '12',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile12,
+    name: 'BLS12_MAP_FP_TO_G1 (0x12)',
+  },
+  {
+    address: BYTES_19 + '13',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile13,
+    name: 'BLS12_MAP_FP2_TO_G2 (0x13)',
+  },
 ]
 
 const precompiles: Precompiles = {
@@ -242,16 +242,16 @@ const precompiles: Precompiles = {
   [BYTES_19 + '07']: precompile07,
   [BYTES_19 + '08']: precompile08,
   [BYTES_19 + '09']: precompile09,
-  [BYTES_19 + '10']: precompile10,
-  [BYTES_19 + '11']: precompile11,
-  [BYTES_19 + '12']: precompile12,
-  [BYTES_19 + '13']: precompile13,
   [BYTES_19 + '0a']: precompile0a,
   [BYTES_19 + '0b']: precompile0b,
   [BYTES_19 + '0c']: precompile0c,
   [BYTES_19 + '0d']: precompile0d,
   [BYTES_19 + '0e']: precompile0e,
   [BYTES_19 + '0f']: precompile0f,
+  [BYTES_19 + '10']: precompile10,
+  [BYTES_19 + '11']: precompile11,
+  [BYTES_19 + '12']: precompile12,
+  [BYTES_19 + '13']: precompile13,
 }
 
 type DeletePrecompile = {
