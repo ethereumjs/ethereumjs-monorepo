@@ -10,7 +10,7 @@ import type { PrecompileInput } from './types.js'
 
 export function precompile06(opts: PrecompileInput): ExecResult {
   const gasUsed = opts.common.param('ecAddGas')
-  if (!gasLimitCheck(opts, gasUsed, 'ECADD (0x06)')) {
+  if (!gasLimitCheck(opts, gasUsed, 'BN254ADD (0x06)')) {
     return OOGResult(opts.gasLimit)
   }
 
@@ -23,7 +23,7 @@ export function precompile06(opts: PrecompileInput): ExecResult {
     returnData = (opts._EVM as EVM)['_bn254'].add(input)
   } catch (e: any) {
     if (opts._debug !== undefined) {
-      opts._debug(`ECADD (0x06) failed: ${e.message}`)
+      opts._debug(`BN254ADD (0x06) failed: ${e.message}`)
     }
     return EvmErrorResult(e, opts.gasLimit)
   }
@@ -31,13 +31,13 @@ export function precompile06(opts: PrecompileInput): ExecResult {
   // check ecadd success or failure by comparing the output length
   if (returnData.length !== 64) {
     if (opts._debug !== undefined) {
-      opts._debug(`ECADD (0x06) failed: OOG`)
+      opts._debug(`BN254ADD (0x06) failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {
-    opts._debug(`ECADD (0x06) return value=${bytesToHex(returnData)}`)
+    opts._debug(`BN254ADD (0x06) return value=${bytesToHex(returnData)}`)
   }
 
   return {

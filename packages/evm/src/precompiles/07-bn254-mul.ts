@@ -10,7 +10,7 @@ import type { PrecompileInput } from './types.js'
 
 export function precompile07(opts: PrecompileInput): ExecResult {
   const gasUsed = opts.common.param('ecMulGas')
-  if (!gasLimitCheck(opts, gasUsed, 'ECMUL (0x07)')) {
+  if (!gasLimitCheck(opts, gasUsed, 'BN254MUL (0x07)')) {
     return OOGResult(opts.gasLimit)
   }
 
@@ -23,7 +23,7 @@ export function precompile07(opts: PrecompileInput): ExecResult {
     returnData = (opts._EVM as EVM)['_bn254'].mul(input)
   } catch (e: any) {
     if (opts._debug !== undefined) {
-      opts._debug(`ECMUL (0x07) failed: ${e.message}`)
+      opts._debug(`BN254MUL (0x07) failed: ${e.message}`)
     }
     return EvmErrorResult(e, opts.gasLimit)
   }
@@ -31,14 +31,14 @@ export function precompile07(opts: PrecompileInput): ExecResult {
   // check ecmul success or failure by comparing the output length
   if (returnData.length !== 64) {
     if (opts._debug !== undefined) {
-      opts._debug(`ECMUL (0x07) failed: OOG`)
+      opts._debug(`BN254MUL (0x07) failed: OOG`)
     }
     // TODO: should this really return OOG?
     return OOGResult(opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {
-    opts._debug(`ECMUL (0x07) return value=${bytesToHex(returnData)}`)
+    opts._debug(`BN254MUL (0x07) return value=${bytesToHex(returnData)}`)
   }
 
   return {

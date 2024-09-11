@@ -6,9 +6,9 @@ import { precompile02 } from './02-sha256.js'
 import { precompile03 } from './03-ripemd160.js'
 import { precompile04 } from './04-identity.js'
 import { precompile05 } from './05-modexp.js'
-import { precompile06 } from './06-ecadd.js'
-import { precompile07 } from './07-ecmul.js'
-import { precompile08 } from './08-ecpairing.js'
+import { precompile06 } from './06-bn254-add.js'
+import { precompile07 } from './07-bn254-mul.js'
+import { precompile08 } from './08-bn254-pairing.js'
 import { precompile09 } from './09-blake2f.js'
 import { precompile0a } from './0a-kzg-point-evaluation.js'
 import { precompile0b } from './0b-bls12-g1add.js'
@@ -111,7 +111,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Byzantium,
     },
     precompile: precompile06,
-    name: 'ECADD (0x06)',
+    name: 'BN254ADD (0x06)',
   },
   {
     address: BYTES_19 + '07',
@@ -120,7 +120,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Byzantium,
     },
     precompile: precompile07,
-    name: 'ECMUL (0x07)',
+    name: 'BN254MUL (0x07)',
   },
   {
     address: BYTES_19 + '08',
