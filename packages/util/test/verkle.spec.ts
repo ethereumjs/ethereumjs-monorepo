@@ -1,7 +1,7 @@
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import * as verkleBlockJSON from '../../statemanager/test/testdata/verkleKaustinen6Block72.json'
+import { verkleKaustinen6Block72Data } from '../../statemanager/test/testdata/verkleKaustinen6Block72.js'
 import {
   Account,
   VERKLE_CODE_CHUNK_SIZE,
@@ -59,7 +59,7 @@ describe('Verkle cryptographic helpers', () => {
       '0x64e1a647f42e5c2e3c434531ccf529e1b3e93363a40db9fc8eec81f492123510',
     )
     const executionWitness = {
-      ...verkleBlockJSON.default.executionWitness,
+      ...verkleKaustinen6Block72Data.executionWitness,
       parentStateRoot: bytesToHex(prestateRoot),
     } as VerkleExecutionWitness
     assert.isTrue(verifyVerkleProof(verkle, executionWitness))
@@ -69,7 +69,7 @@ describe('Verkle cryptographic helpers', () => {
     // Random preStateRoot
     const prestateRoot = randomBytes(32)
     const executionWitness = {
-      ...verkleBlockJSON.default.executionWitness,
+      ...verkleKaustinen6Block72Data.executionWitness,
       parentStateRoot: bytesToHex(prestateRoot),
     } as VerkleExecutionWitness
     // Modify the proof to make it invalid

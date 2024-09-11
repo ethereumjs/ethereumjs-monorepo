@@ -51,7 +51,8 @@ describe('Verkle Tree API tests', () => {
     const retrievedBigByteCode = await sm.getCode(address)
     assert.deepEqual(bigByteCode, retrievedBigByteCode)
     const reallyBigByteCode = hexToBytes(
-      (await import('./testdata/biggestContractEver.json')).default.bytecode as PrefixedHexString,
+      (await import('./testdata/biggestContractEver.js')).biggestContractEverData
+        .bytecode as PrefixedHexString,
     )
     // Biggest mainnet contract - 0x10C621008B210C3A5d0385e458B48af05BF4Ec88 (supposedly anyway)
     await sm.putCode(address, reallyBigByteCode)
