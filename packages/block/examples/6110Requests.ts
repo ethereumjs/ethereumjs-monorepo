@@ -3,6 +3,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   type CLRequest,
   type CLRequestType,
+  DepositRequest,
   bytesToBigInt,
   createDepositRequest,
   randomBytes,
@@ -21,7 +22,7 @@ const main = async () => {
     signature: randomBytes(96),
     index: bytesToBigInt(randomBytes(8)),
   }
-  const request = createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
+  const request = DepositRequest.create(depositRequestData) as CLRequest<CLRequestType>
   const requests = [request]
   const requestsRoot = await genRequestsTrieRoot(requests)
 
