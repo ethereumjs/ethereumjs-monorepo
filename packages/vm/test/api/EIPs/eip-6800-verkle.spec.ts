@@ -7,10 +7,9 @@ import { hexToBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { describe, it } from 'vitest'
 
-import * as verkleBlockJSON from '../../../../statemanager/test/testdata/verkleKaustinen6Block72.json'
+import { verkleKaustinen6Block72Data } from '../../../../statemanager/test/testdata/verkleKaustinen6Block72.js'
 import { createVM, runBlock } from '../../../src/index.js'
 
-import type { BlockData } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const customChainParams = { name: 'custom', chainId: 69420 }
@@ -18,7 +17,7 @@ const common = createCustomCommon(customChainParams, Mainnet, {
   hardfork: Hardfork.Cancun,
   eips: [2935, 4895, 6800],
 })
-const decodedTxs = verkleBlockJSON.default.transactions.map((tx) =>
+const decodedTxs = verkleKaustinen6Block72Data.transactions?.map((tx) =>
   createTxFromSerializedData(hexToBytes(tx as PrefixedHexString), { common }),
 )
 
@@ -26,9 +25,12 @@ const parentStateRoot = hexToBytes(
   '0x64e1a647f42e5c2e3c434531ccf529e1b3e93363a40db9fc8eec81f492123510',
 )
 
-const block = createBlock({ ...verkleBlockJSON, transactions: decodedTxs } as BlockData, {
-  common,
-})
+const block = createBlock(
+  { ...verkleKaustinen6Block72Data, transactions: decodedTxs },
+  {
+    common,
+  },
+)
 
 describe('EIP 6800 tests', () => {
   // TODO: Turn back on once we have kaustinen7 block data

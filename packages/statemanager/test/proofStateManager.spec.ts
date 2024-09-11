@@ -17,11 +17,10 @@ import { assert, describe, it } from 'vitest'
 
 import { MerkleStateManager } from '../src/index.js'
 
-import * as ropsten_contractWithStorage from './testdata/ropsten_contractWithStorage.json'
-import * as ropsten_nonexistentAccount from './testdata/ropsten_nonexistentAccount.json'
-import * as ropsten_validAccount from './testdata/ropsten_validAccount.json'
+import { ropstenContractWithStorageData } from './testdata/ropsten_contractWithStorage.js'
+import { ropstenNonexistentAccountData } from './testdata/ropsten_nonexistentAccount.js'
+import { ropstenValidAccountData } from './testdata/ropsten_validAccount.js'
 
-import type { Proof } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('ProofStateManager', () => {
@@ -120,8 +119,8 @@ describe('ProofStateManager', () => {
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
-    for (const proofData of ropsten_validAccount.accountProof) {
-      const bufferData = hexToBytes(proofData as PrefixedHexString)
+    for (const proofData of ropstenValidAccountData.accountProof) {
+      const bufferData = hexToBytes(proofData)
       const key = keccak256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
@@ -130,8 +129,8 @@ describe('ProofStateManager', () => {
     }
     trie.root(stateRoot!)
     const proof = await stateManager.getProof(address)
-    assert.deepEqual((ropsten_validAccount as any).default, proof)
-    assert.ok(await stateManager.verifyProof((ropsten_validAccount as any).default))
+    assert.deepEqual(ropstenValidAccountData, proof)
+    assert.ok(await stateManager.verifyProof(ropstenValidAccountData))
   })
 
   it('should report data equal to geth output for EIP 1178 proofs - nonexistent account', async () => {
@@ -144,8 +143,8 @@ describe('ProofStateManager', () => {
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
-    for (const proofData of ropsten_nonexistentAccount.accountProof) {
-      const bufferData = hexToBytes(proofData as PrefixedHexString)
+    for (const proofData of ropstenNonexistentAccountData.accountProof) {
+      const bufferData = hexToBytes(proofData)
       const key = keccak256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
@@ -154,8 +153,8 @@ describe('ProofStateManager', () => {
     }
     trie.root(stateRoot!)
     const proof = await stateManager.getProof(address)
-    assert.deepEqual((ropsten_nonexistentAccount as any).default, proof)
-    assert.ok(await stateManager.verifyProof(ropsten_nonexistentAccount as Proof))
+    assert.deepEqual(ropstenNonexistentAccountData, proof)
+    assert.ok(await stateManager.verifyProof(ropstenNonexistentAccountData))
   })
 
   it('should report data equal to geth output for EIP 1178 proofs - account with storage', async () => {
@@ -168,22 +167,22 @@ describe('ProofStateManager', () => {
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
-    for (const proofData of ropsten_contractWithStorage.accountProof) {
-      const bufferData = hexToBytes(proofData as PrefixedHexString)
+    for (const proofData of ropstenContractWithStorageData.accountProof) {
+      const bufferData = hexToBytes(proofData)
       const key = keccak256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
       await trie['_db'].put(key, bufferData)
     }
-    const storageRoot = ropsten_contractWithStorage.storageHash as PrefixedHexString
+    const storageRoot = ropstenContractWithStorageData.storageHash
     const storageTrie = new Trie({ useKeyHashing: true })
     const storageKeys: Uint8Array[] = []
-    for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
-      storageKeys.push(hexToBytes(storageProofsData.key as PrefixedHexString))
+    for (const storageProofsData of ropstenContractWithStorageData.storageProof) {
+      storageKeys.push(hexToBytes(storageProofsData.key))
       for (const storageProofData of storageProofsData.proof) {
-        const key = keccak256(hexToBytes(storageProofData as PrefixedHexString))
-        await storageTrie['_db'].put(key, hexToBytes(storageProofData as PrefixedHexString))
+        const key = keccak256(hexToBytes(storageProofData))
+        await storageTrie['_db'].put(key, hexToBytes(storageProofData))
       }
     }
     storageTrie.root(hexToBytes(storageRoot))
@@ -192,8 +191,8 @@ describe('ProofStateManager', () => {
     trie.root(stateRoot!)
 
     const proof = await stateManager.getProof(address, storageKeys)
-    assert.deepEqual((ropsten_contractWithStorage as any).default, proof)
-    await stateManager.verifyProof(ropsten_contractWithStorage as Proof)
+    assert.deepEqual(ropstenContractWithStorageData, proof)
+    await stateManager.verifyProof(ropstenContractWithStorageData)
   })
 
   it(`should throw on invalid proofs - existing accounts/slots`, async () => {
@@ -206,22 +205,22 @@ describe('ProofStateManager', () => {
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
-    for (const proofData of ropsten_contractWithStorage.accountProof) {
-      const bufferData = hexToBytes(proofData as PrefixedHexString)
+    for (const proofData of ropstenContractWithStorageData.accountProof) {
+      const bufferData = hexToBytes(proofData)
       const key = keccak256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
       await trie['_db'].put(key, bufferData)
     }
-    const storageRoot = ropsten_contractWithStorage.storageHash as PrefixedHexString
+    const storageRoot = ropstenContractWithStorageData.storageHash
     const storageTrie = new Trie({ useKeyHashing: true })
     const storageKeys: Uint8Array[] = []
-    for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
-      storageKeys.push(hexToBytes(storageProofsData.key as PrefixedHexString))
+    for (const storageProofsData of ropstenContractWithStorageData.storageProof) {
+      storageKeys.push(hexToBytes(storageProofsData.key))
       for (const storageProofData of storageProofsData.proof) {
-        const key = keccak256(hexToBytes(storageProofData as PrefixedHexString))
-        await storageTrie['_db'].put(key, hexToBytes(storageProofData as PrefixedHexString))
+        const key = keccak256(hexToBytes(storageProofData))
+        await storageTrie['_db'].put(key, hexToBytes(storageProofData))
       }
     }
     storageTrie.root(hexToBytes(storageRoot))
@@ -230,29 +229,29 @@ describe('ProofStateManager', () => {
     trie.root(stateRoot!)
 
     // tamper with account data
-    const testdata = { ...(ropsten_contractWithStorage as any) }
+    const testData = { ...ropstenContractWithStorageData }
     for (const tamper of ['nonce', 'balance', 'codeHash', 'storageHash']) {
-      const original = testdata[tamper]
+      const original = testData[tamper as keyof typeof testData] as PrefixedHexString
       try {
-        const newField = `0x9${original.slice(3)}`
-        testdata[tamper] = newField
-        await stateManager.verifyProof(testdata)
+        ;(testData[tamper as keyof typeof testData] as PrefixedHexString) =
+          `0x9${original.slice(3)}`
+        await stateManager.verifyProof(testData)
         // note: this implicitly means that newField !== original,
         // if newField === original then the proof would be valid and test would fail
         assert.fail('should throw')
       } catch (e) {
         assert.ok(true, 'threw on invalid proof')
       } finally {
-        testdata[tamper] = original
+        ;(testData[tamper as keyof typeof testData] as PrefixedHexString) = original
       }
     }
 
     // tamper with storage slots
-    for (const slot of testdata.storageProof) {
+    for (const slot of testData.storageProof) {
       const original = slot.value
       slot.value = `0x9${original.slice(3)}`
       try {
-        await stateManager.verifyProof(testdata)
+        await stateManager.verifyProof(testData)
         assert.fail('should throw')
       } catch {
         assert.ok(true, 'threw on invalid proof')
@@ -272,15 +271,15 @@ describe('ProofStateManager', () => {
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
-    for (const proofData of ropsten_nonexistentAccount.accountProof) {
-      const bufferData = hexToBytes(proofData as PrefixedHexString)
+    for (const proofData of ropstenNonexistentAccountData.accountProof) {
+      const bufferData = hexToBytes(proofData)
       const key = keccak256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
       await trie['_db'].put(key, bufferData)
     }
-    const storageRoot = ropsten_nonexistentAccount.storageHash as PrefixedHexString
+    const storageRoot = ropstenNonexistentAccountData.storageHash
     const storageTrie = new Trie({ useKeyHashing: true })
     storageTrie.root(hexToBytes(storageRoot))
     const addressHex = bytesToHex(address.bytes)
@@ -288,7 +287,7 @@ describe('ProofStateManager', () => {
     trie.root(stateRoot!)
 
     // tamper with account data
-    const testdata = { ...(ropsten_nonexistentAccount as any) }
+    const testdata = { ...(ropstenNonexistentAccountData as any) }
     for (const tamper of ['nonce', 'balance', 'codeHash', 'storageHash']) {
       const original = testdata[tamper]
       try {
