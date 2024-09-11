@@ -17,8 +17,8 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
-import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import pow from '../../testdata/geth-genesis/pow.json'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
+import { powData } from '../../testdata/geth-genesis/pow.js'
 import { getRPCClient, gethGenesisStartLondon, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain/index.js'
@@ -184,8 +184,11 @@ const produceBlockWith4844Tx = async (
 
 describe(method, () => {
   it(`${method}: should return 12.5% increased baseFee if parent block is full`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
-    const gasUsed = bytesToBigInt(hexToBytes(pow.gasLimit))
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
+    const gasUsed = bytesToBigInt(hexToBytes(powData.gasLimit))
 
     // Produce 3 fake blocks on the chain.
     // This also ensures that the correct blocks are being retrieved.
@@ -229,7 +232,10 @@ describe(method, () => {
   })
 
   it(`${method}: should return 12.5% decreased base fee if the block is empty`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
     const gasUsed = BigInt(0)
 
     await produceFakeGasUsedBlock(execution, chain, gasUsed)
@@ -256,7 +262,7 @@ describe(method, () => {
     })
 
     const initialBaseFee = common.param('initialBaseFee')
-    const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { server } = await setupChain(gethGenesisStartLondon(powData), 'powLondon')
 
     const rpc = getRPCClient(server)
 
@@ -268,7 +274,7 @@ describe(method, () => {
   })
 
   it(`${method}: should return 0x0 for base fees requested before eip-1559`, async () => {
-    const { chain, execution, server } = await setupChain(pow, 'pow')
+    const { chain, execution, server } = await setupChain(powData, 'pow')
     const gasUsed = BigInt(0)
 
     await produceFakeGasUsedBlock(execution, chain, gasUsed)
@@ -284,8 +290,11 @@ describe(method, () => {
   })
 
   it(`${method}: should return correct gas used ratios`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
-    const gasUsed = bytesToBigInt(hexToBytes(pow.gasLimit)) / 2n
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
+    const gasUsed = bytesToBigInt(hexToBytes(powData.gasLimit)) / 2n
 
     await produceFakeGasUsedBlock(execution, chain, gasUsed)
 
@@ -300,7 +309,7 @@ describe(method, () => {
   })
 
   it(`${method}: should throw error if block count is below 1`, async () => {
-    const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { server } = await setupChain(gethGenesisStartLondon(powData), 'powLondon')
 
     const rpc = getRPCClient(server)
 
@@ -309,7 +318,7 @@ describe(method, () => {
   })
 
   it(`${method}: should throw error if block count is above 1024`, async () => {
-    const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { server } = await setupChain(gethGenesisStartLondon(powData), 'powLondon')
 
     const rpc = getRPCClient(server)
 
@@ -318,7 +327,10 @@ describe(method, () => {
   })
 
   it(`${method}: should generate reward percentiles with 0s`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
     await produceFakeGasUsedBlock(execution, chain, 1n)
 
     const rpc = getRPCClient(server)
@@ -335,7 +347,10 @@ describe(method, () => {
     )
   })
   it(`${method}: should generate reward percentiles`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
     await produceBlockWithTx(execution, chain)
 
     const rpc = getRPCClient(server)
@@ -344,7 +359,10 @@ describe(method, () => {
   })
 
   it(`${method}: should generate reward percentiles`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
     await produceBlockWithTx(execution, chain)
 
     const rpc = getRPCClient(server)
@@ -353,7 +371,10 @@ describe(method, () => {
   })
 
   it(`${method}: should generate reward percentiles - sorted check`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
     const priorityFees = [BigInt(100), BigInt(200)]
     const gasUsed = [BigInt(400000), BigInt(600000)]
     await produceBlockWithTx(execution, chain, priorityFees, gasUsed)
@@ -374,7 +395,10 @@ describe(method, () => {
   })
 
   it(`${method} - reward percentiles - should return the correct reward percentiles`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
     const priorityFees = [BigInt(100), BigInt(200)]
     const gasUsed = [BigInt(500000), BigInt(500000)]
     await produceBlockWithTx(execution, chain, priorityFees, gasUsed)
@@ -404,7 +428,7 @@ describe(method, () => {
     `${method} - Should correctly return the right blob base fees and ratios for a chain with 4844 active`,
     async () => {
       const kzg = await loadKZG()
-      const { chain, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+      const { chain, execution, server } = await setupChain(eip4844Data, 'post-merge', {
         engine: true,
         hardfork: Hardfork.Cancun,
         customCrypto: {

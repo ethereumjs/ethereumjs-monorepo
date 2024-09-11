@@ -2,14 +2,14 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import pow from '../../testdata/geth-genesis/pow.json'
+import { powData } from '../../testdata/geth-genesis/pow.js'
 import { baseSetup, dummy, getRPCClient, runBlockWithTxs, setupChain } from '../helpers.js'
 
 const method = 'eth_getTransactionByBlockHashAndIndex'
 
 // build a server with 1 genesis block and one custom block containing 2 txs
 async function setUp() {
-  const { common, execution, server, chain } = await setupChain(pow, 'pow')
+  const { common, execution, server, chain } = await setupChain(powData, 'pow')
   const txs = [
     createLegacyTx(
       {
@@ -53,7 +53,7 @@ describe(method, async () => {
   })
 
   it('call with unknown block hash', async () => {
-    const { server } = await setupChain(pow, 'pow')
+    const { server } = await setupChain(powData, 'pow')
     const rpc = getRPCClient(server)
     const mockBlockHash = '0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0'
     const mockTxIndex = '0x1'

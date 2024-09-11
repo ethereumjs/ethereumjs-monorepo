@@ -35,12 +35,12 @@ type CLConnectionManagerOpts = {
   inActivityCb?: () => void
 }
 
-type NewPayload = {
+export type NewPayload = {
   payload: ExecutionPayloadV1 | ExecutionPayloadV2 | ExecutionPayloadV3
   response?: PayloadStatusV1
 }
 
-type ForkchoiceUpdate = {
+export type ForkchoiceUpdate = {
   state: ForkchoiceStateV1
   response?: ForkchoiceResponseV1
   headBlock?: Block

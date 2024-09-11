@@ -21,7 +21,7 @@ import { assert, describe, it } from 'vitest'
 import { createVM, runTx } from '../../../src/index.js'
 
 import type { VM } from '../../../src/index.js'
-import type { AuthorizationListBytesItem } from '@ethereumjs/common'
+import type { AuthorizationListBytesItem } from '@ethereumjs/tx'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 
