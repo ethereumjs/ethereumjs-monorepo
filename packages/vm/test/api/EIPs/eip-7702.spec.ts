@@ -255,7 +255,7 @@ describe('test EIP-7702 opcodes', () => {
       // EXTCODEHASH
       {
         // PUSH20 <defaultAuthAddr> EXTCODEHASH PUSH0 SSTORE STOP
-        code: `0x73'${defaultAuthAddr.toString().slice(2)}3f5f5500`,
+        code: `0x73${defaultAuthAddr.toString().slice(2)}3f5f5500`,
         expectedStorage: keccak256(randomCode),
         name: 'EXTCODEHASH',
       },
