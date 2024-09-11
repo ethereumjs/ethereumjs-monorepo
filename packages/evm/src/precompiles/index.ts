@@ -75,7 +75,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Chainstart,
     },
     precompile: precompile02,
-    name: 'SHA256 (0x02)',
+    name: 'KECCAK256 (0x02)',
   },
   {
     address: BYTES_19 + '03',
@@ -93,7 +93,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Chainstart,
     },
     precompile: precompile04,
-    name: 'Identity (0x04)',
+    name: 'IDENTITY (0x04)',
   },
   {
     address: BYTES_19 + '05',
@@ -111,7 +111,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Byzantium,
     },
     precompile: precompile06,
-    name: 'BN254ADD (0x06)',
+    name: 'BN254_ADD (0x06)',
   },
   {
     address: BYTES_19 + '07',
@@ -120,7 +120,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Byzantium,
     },
     precompile: precompile07,
-    name: 'BN254MUL (0x07)',
+    name: 'BN254_MUL (0x07)',
   },
   {
     address: BYTES_19 + '08',
@@ -129,7 +129,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Byzantium,
     },
     precompile: precompile08,
-    name: 'BN254PAIRING (0x08)',
+    name: 'BN254_PAIRING (0x08)',
   },
   {
     address: BYTES_19 + '09',
@@ -147,7 +147,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile10,
-    name: 'BLS12_G2MSM',
+    name: 'BLS12_G2MSM (0x10)',
   },
   {
     address: BYTES_19 + '11',
@@ -156,7 +156,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile11,
-    name: 'BLS12_PAIRING',
+    name: 'BLS12_PAIRING (0x11)',
   },
   {
     address: BYTES_19 + '12',
@@ -165,7 +165,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile12,
-    name: 'BLS12_MAP_FP_TO_G1',
+    name: 'BLS12_MAP_FP_TO_G1 (0x12)',
   },
   {
     address: BYTES_19 + '13',
@@ -174,7 +174,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile13,
-    name: 'BLS12_MAP_FP2_TO_G2',
+    name: 'BLS12_MAP_FP2_TO_G2 (0x13)',
   },
   {
     address: BYTES_19 + '0a',
@@ -183,7 +183,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 4844,
     },
     precompile: precompile0a,
-    name: 'KZG (0x0a)',
+    name: 'KZG_POINT_EVALUATION (0x0a)',
   },
   {
     address: BYTES_19 + '0b',
@@ -192,7 +192,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile0b,
-    name: 'BLS12_G1ADD',
+    name: 'BLS12_G1ADD (0x0b)',
   },
   {
     address: BYTES_19 + '0c',
@@ -201,7 +201,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile0c,
-    name: 'BLS12_G1MUL',
+    name: 'BLS12_G1MUL (0x0c)',
   },
   {
     address: BYTES_19 + '0d',
@@ -210,7 +210,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile0d,
-    name: 'BLS12_G1MSM',
+    name: 'BLS12_G1MSM (0x0d)',
   },
   {
     address: BYTES_19 + '0e',
@@ -219,7 +219,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile0e,
-    name: 'BLS12_G2ADD',
+    name: 'BLS12_G2ADD (0x0e)',
   },
   {
     address: BYTES_19 + '0f',
@@ -228,7 +228,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile0f,
-    name: 'BLS12_G2MUL',
+    name: 'BLS12_G2MUL (0x0f)',
   },
 ]
 
@@ -296,11 +296,15 @@ function getActivePrecompiles(
 }
 
 function getPrecompileName(addressUnprefixedStr: string) {
+  if (addressUnprefixedStr.length < 40) {
+    addressUnprefixedStr = addressUnprefixedStr.padStart(40, '0')
+  }
   for (const entry of precompileEntries) {
     if (entry.address === addressUnprefixedStr) {
       return entry.name
     }
   }
+  return ''
 }
 
 export {
