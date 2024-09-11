@@ -45,6 +45,6 @@ export const paramsTest: ParamsDict = {
    */
   2537: {
     // gasPrices
-    Bls12381G1AddGas: 500, // Gas cost of a single BLS12-381 G1 addition precompile-call
+    bls12381G1AddGas: 500, // Gas cost of a single BLS12-381 G1 addition precompile-call
   },
 }

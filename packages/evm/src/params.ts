@@ -234,14 +234,14 @@ export const paramsEVM: ParamsDict = {
    */
   2537: {
     // gasPrices
-    Bls12381G1AddGas: 500, // Gas cost of a single BLS12-381 G1 addition precompile-call
-    Bls12381G1MulGas: 12000, // Gas cost of a single BLS12-381 G1 multiplication precompile-call
-    Bls12381G2AddGas: 800, // Gas cost of a single BLS12-381 G2 addition precompile-call
-    Bls12381G2MulGas: 45000, // Gas cost of a single BLS12-381 G2 multiplication precompile-call
-    Bls12381PairingBaseGas: 65000, // Base gas cost of BLS12-381 pairing check
-    Bls12381PairingPerPairGas: 43000, // Per-pair gas cost of BLS12-381 pairing check
-    Bls12381MapG1Gas: 5500, // Gas cost of BLS12-381 map field element to G1
-    Bls12381MapG2Gas: 75000, // Gas cost of BLS12-381 map field element to G2
+    bls12381G1AddGas: 500, // Gas cost of a single BLS12-381 G1 addition precompile-call
+    bls12381G1MulGas: 12000, // Gas cost of a single BLS12-381 G1 multiplication precompile-call
+    bls12381G2AddGas: 800, // Gas cost of a single BLS12-381 G2 addition precompile-call
+    bls12381G2MulGas: 45000, // Gas cost of a single BLS12-381 G2 multiplication precompile-call
+    bls12381PairingBaseGas: 65000, // Base gas cost of BLS12-381 pairing check
+    bls12381PairingPerPairGas: 43000, // Per-pair gas cost of BLS12-381 pairing check
+    bls12381MapG1Gas: 5500, // Gas cost of BLS12-381 map field element to G1
+    bls12381MapG2Gas: 75000, // Gas cost of BLS12-381 map field element to G2
   },
   /**
 .  * Gas cost increases for state access opcodes

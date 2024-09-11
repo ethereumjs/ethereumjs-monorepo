@@ -123,12 +123,12 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
 
     const UNSUPPORTED_EIP = 1000000
     const f = function () {
-      c.paramByEIP('Bls12381G1AddGas', UNSUPPORTED_EIP)
+      c.paramByEIP('bls12381G1AddGas', UNSUPPORTED_EIP)
     }
     let msg = 'Should throw for using paramByEIP() with an unsupported EIP'
     assert.throws(f, /not supported$/, undefined, msg)
 
-    msg = 'Should return Bls12381G1AddGas gas price for EIP2537'
-    assert.equal(c.paramByEIP('Bls12381G1AddGas', 2537), BigInt(500), msg)
+    msg = 'Should return bls12381G1AddGas gas price for EIP2537'
+    assert.equal(c.paramByEIP('bls12381G1AddGas', 2537), BigInt(500), msg)
   })
 })
