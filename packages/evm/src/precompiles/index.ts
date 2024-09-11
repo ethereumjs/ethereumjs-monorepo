@@ -242,16 +242,16 @@ const precompiles: Precompiles = {
   [BYTES_19 + '07']: precompile07,
   [BYTES_19 + '08']: precompile08,
   [BYTES_19 + '09']: precompile09,
+  [BYTES_19 + '10']: precompile10,
+  [BYTES_19 + '11']: precompile11,
+  [BYTES_19 + '12']: precompile12,
+  [BYTES_19 + '13']: precompile13,
   [BYTES_19 + '0a']: precompile0a,
   [BYTES_19 + '0b']: precompile0b,
   [BYTES_19 + '0c']: precompile0c,
   [BYTES_19 + '0d']: precompile0d,
   [BYTES_19 + '0e']: precompile0e,
   [BYTES_19 + '0f']: precompile0f,
-  [BYTES_19 + '10']: precompile10,
-  [BYTES_19 + '11']: precompile11,
-  [BYTES_19 + '12']: precompile12,
-  [BYTES_19 + '13']: precompile13,
 }
 
 type DeletePrecompile = {
