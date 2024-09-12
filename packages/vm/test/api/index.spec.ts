@@ -183,7 +183,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     let common = createCustomCommon({ chainId: 3 }, Mainnet)
     common.setHardfork(Hardfork.Byzantium)
     let vm = await createVM({ common })
-    assert.equal(vm.common.param('ecAddGas'), BigInt(500))
+    assert.equal(vm.common.param('bn254AddGas'), BigInt(500))
 
     try {
       common = new Common({ chain: Mainnet, hardfork: 'extraCheese' })
