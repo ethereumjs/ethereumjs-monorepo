@@ -23,8 +23,8 @@ import { join } from 'path'
 
 import { MCLBLS } from '../../../evm/dist/cjs/index.js'
 import { buildBlock } from '../../dist/esm/buildBlock.js'
-import { VM } from '../../dist/esm/vm.js'
 import { createVM } from '../../dist/esm/constructors.js'
+import { VM } from '../../dist/esm/vm.js'
 import { getCommon } from '../tester/config.js'
 import { makeBlockFromEnv, setupPreConditions } from '../util.js'
 
@@ -178,7 +178,7 @@ const logsBuilder: Log[] = []
 
 let txIndex = -BIGINT_1
 
-vm.events.on('afterTx', async (afterTx, continueFn: any) => {
+vm.events.on('afterTx', (afterTx, continueFn: any) => {
   txIndex++
   const receipt = afterTx.receipt as PostByzantiumTxReceipt
 

@@ -12,7 +12,6 @@ import {
   toBytes,
   zeros,
 } from '@ethereumjs/util'
-
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { readFileSync } from 'fs'
@@ -20,7 +19,6 @@ import { loadKZG } from 'kzg-wasm'
 import * as mcl from 'mcl-wasm'
 
 import { buildBlock } from '../../dist/esm/buildBlock.js'
-import { VM } from '../../dist/esm/vm.js'
 import { createVM } from '../../dist/esm/constructors.js'
 import { getCommon } from '../tester/config.js'
 import { makeBlockFromEnv, setupPreConditions } from '../util.js'
@@ -28,11 +26,11 @@ import { makeBlockFromEnv, setupPreConditions } from '../util.js'
 import { normalizeNumbers } from './helpers.js'
 
 import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
+import type { VM } from '../../dist/esm/vm.js'
 import type { RunnerOptions, T8NAlloc, T8NEnv, T8NOptions } from './types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Log } from '@ethereumjs/evm'
 import type { TypedTxData } from '@ethereumjs/tx'
-
 import type { Address } from '@ethereumjs/util'
 
 export class TransitionTool {
