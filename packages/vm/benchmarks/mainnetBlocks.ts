@@ -4,6 +4,7 @@ import { createVM, runBlock as runBlockVM, VM } from '@ethereumjs/vm'
 import Benchmark from 'benchmark'
 import { readFileSync } from 'fs'
 import { getBlockchain, getPreState, verifyResult } from './util.js'
+import { Bench } from 'tinybench'
 
 const BLOCK_FIXTURE = 'benchmarks/fixture/blocks-prestate.json'
 

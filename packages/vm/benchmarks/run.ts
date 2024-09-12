@@ -1,4 +1,4 @@
-import { bytecode } from './bytecode'
+import { bytecode } from './bytecode.js'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import Benchmark from 'benchmark'
