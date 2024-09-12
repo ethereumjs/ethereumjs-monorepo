@@ -84,7 +84,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._trie =
       opts.trie ??
       new VerkleTree({ verkleCrypto: opts.verkleCrypto, db: new MapDB<Uint8Array, Uint8Array>() })
-    this._debug = debugDefault('statemanager:statefulVerkleStatemanager')
+    this._debug = debugDefault('statemanager:StatefulVerkleStateManager')
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this._caches = opts.caches
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
