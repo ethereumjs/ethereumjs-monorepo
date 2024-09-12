@@ -1,7 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 function createChain() {
   const block = {
@@ -28,7 +28,7 @@ describe(method, () => {
     const mockUncleCount = 3
 
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x1'])
     assert.equal(res.result, mockUncleCount, 'should return the correct number')
@@ -36,7 +36,7 @@ describe(method, () => {
 
   it('call with invalid block number', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x5a'])
 

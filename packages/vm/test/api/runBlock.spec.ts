@@ -51,7 +51,7 @@ import type {
 } from '../../src/types.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { ChainConfig } from '@ethereumjs/common'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
@@ -68,14 +68,14 @@ describe('runBlock() -> successful API parameter usage', async () => {
     await setupPreConditions(vm.stateManager, testData)
 
     assert.deepEqual(
-      (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      (vm.stateManager as MerkleStateManager)['_trie'].root(),
       genesis.header.stateRoot,
       'genesis state root should match calculated state root',
     )
 
     const res = await runBlock(vm, {
       block,
-      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      root: (vm.stateManager as MerkleStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -97,7 +97,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     const block1 = createBlockFromRLP(block1Rlp, { common })
     await runBlock(vm, {
       block: block1,
-      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      root: (vm.stateManager as MerkleStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -107,7 +107,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     await runBlock(vm, {
       block: block2,
 
-      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      root: (vm.stateManager as MerkleStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -117,7 +117,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     await runBlock(vm, {
       block: block3,
 
-      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      root: (vm.stateManager as MerkleStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })

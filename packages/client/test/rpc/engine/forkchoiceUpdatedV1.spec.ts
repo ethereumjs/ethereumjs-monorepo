@@ -5,15 +5,15 @@ import { assert, describe, it, vi } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { blockToExecutionPayload } from '../../../src/rpc/modules/index.js'
-import blocks from '../../testdata/blocks/beacon.json'
-import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseSetup, batchBlocks, getRpcClient, setupChain } from '../helpers.js'
+import { beaconData } from '../../testdata/blocks/beacon.js'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
+import { baseSetup, batchBlocks, getRPCClient, setupChain } from '../helpers.js'
 
 import type { Block } from '@ethereumjs/block'
 
 const method = 'engine_forkchoiceUpdatedV1'
 
-;(BlockHeader as any).prototype._consensusFormatValidation = vi.fn()
+BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
 
 const validForkChoiceState = {
   headBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a',
@@ -82,8 +82,8 @@ describe(method, () => {
   })
 
   it('call with valid data but parent block is not loaded yet', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     const nonExistentHeadBlockHash = {
       ...validForkChoiceState,
       headBlockHash: '0x1d93f244823f80efbd9292a0d0d72a2b03df8cd5a9688c6c3779d26a7cc5009c',
@@ -97,8 +97,8 @@ describe(method, () => {
   })
 
   it('call with valid data and synced data', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, validPayload)
     assert.equal(res.result.payloadStatus.status, 'VALID')
     assert.equal(
@@ -110,10 +110,12 @@ describe(method, () => {
   })
 
   it('call with invalid timestamp payloadAttributes', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
-    const invalidTimestampPayload: any = [{ ...validPayload[0] }, { ...validPayload[1] }]
-    invalidTimestampPayload[1].timestamp = '0x0'
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
+    const invalidTimestampPayload = [
+      { ...validPayload[0] },
+      { ...validPayload[1], timestamp: '0x0' },
+    ]
 
     const res = await rpc.request(method, invalidTimestampPayload)
     assert.equal(res.error.code, INVALID_PARAMS)
@@ -123,8 +125,8 @@ describe(method, () => {
   })
 
   it('call with valid fork choice state without payload attributes', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, [validForkChoiceState])
 
     assert.equal(res.result.payloadStatus.status, 'VALID')
@@ -134,38 +136,38 @@ describe(method, () => {
   })
 
   it('call with deep parent lookup', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     let res = await rpc.request(method, [validForkChoiceState])
 
     assert.equal(res.result.payloadStatus.status, 'VALID')
 
     for (let i = 0; i < 3; i++) {
-      const res = await rpc.request('engine_newPayloadV1', [blocks[i]])
+      const res = await rpc.request('engine_newPayloadV1', [beaconData[i]])
       assert.equal(res.result.status, 'VALID')
     }
 
     // Now set the head to the last hash
     res = await rpc.request(method, [
-      { ...validForkChoiceState, headBlockHash: blocks[2].blockHash },
+      { ...validForkChoiceState, headBlockHash: beaconData[2].blockHash },
     ])
     assert.equal(res.result.payloadStatus.status, 'VALID')
   })
 
   it('call with deep parent lookup and with stored safe block hash', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     let res = await rpc.request(method, [validForkChoiceState])
 
     assert.equal(res.result.payloadStatus.status, 'VALID')
 
-    await batchBlocks(rpc, blocks)
+    await batchBlocks(rpc, beaconData)
 
     res = await rpc.request(method, [
       {
         ...validForkChoiceState,
-        headBlockHash: blocks[2].blockHash,
-        safeBlockHash: blocks[0].blockHash,
+        headBlockHash: beaconData[2].blockHash,
+        safeBlockHash: beaconData[0].blockHash,
       },
     ])
 
@@ -173,8 +175,8 @@ describe(method, () => {
   })
 
   it('unknown finalized block hash', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, [
       {
         ...validForkChoiceState,
@@ -186,8 +188,8 @@ describe(method, () => {
   })
 
   it('invalid safe block hash', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, [
       {
         ...validForkChoiceState,
@@ -199,19 +201,21 @@ describe(method, () => {
   })
 
   it('latest block after reorg', async () => {
-    const { server, blockchain } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server, blockchain } = await setupChain(postMergeData, 'post-merge', {
+      engine: true,
+    })
+    const rpc = getRPCClient(server)
     let res = await rpc.request(method, [validForkChoiceState])
 
     assert.equal(res.result.payloadStatus.status, 'VALID')
 
-    await batchBlocks(rpc, blocks)
+    await batchBlocks(rpc, beaconData)
 
     res = await rpc.request(method, [
       {
         ...validForkChoiceState,
-        headBlockHash: blocks[2].blockHash,
-        safeBlockHash: blocks[0].blockHash,
+        headBlockHash: beaconData[2].blockHash,
+        safeBlockHash: beaconData[0].blockHash,
         finalizedBlockHash: bytesToHex(blockchain.genesisBlock.hash()),
       },
     ])
@@ -229,9 +233,9 @@ describe(method, () => {
 
     res = await rpc.request(method, [
       {
-        headBlockHash: blocks[1].blockHash,
-        safeBlockHash: blocks[2].blockHash,
-        finalizedBlockHash: blocks[2].blockHash,
+        headBlockHash: beaconData[1].blockHash,
+        safeBlockHash: beaconData[2].blockHash,
+        finalizedBlockHash: beaconData[2].blockHash,
       },
     ])
 
@@ -239,8 +243,8 @@ describe(method, () => {
   })
 
   it('validate safeBlockHash is part of canonical chain', async () => {
-    const { server, chain } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server, chain } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     const genesis = await chain.getBlock(BigInt(0))
 
     // Build the payload for the canonical chain
@@ -279,8 +283,8 @@ describe(method, () => {
   })
 
   it('validate finalizedBlockHash is part of canonical chain', async () => {
-    const { server, chain } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server, chain } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     const genesis = await chain.getBlock(BigInt(0))
 
     // Build the payload for the canonical chain

@@ -2,22 +2,22 @@ import { bigIntToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS, UNSUPPORTED_FORK } from '../../../src/rpc/error-code.js'
-import blocks from '../../testdata/blocks/beacon.json'
-import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { batchBlocks, getRpcClient, setupChain } from '../helpers.js'
+import { beaconData } from '../../testdata/blocks/beacon.js'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
+import { batchBlocks, getRPCClient, setupChain } from '../helpers.js'
 
 const method = 'engine_newPayloadV3'
-const [blockData] = blocks
+const [blockData] = beaconData
 
 const parentBeaconBlockRoot = '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2bea7961a639ef29d64'
 
 describe(`${method}: call with executionPayloadV3`, () => {
   it('invalid call before Cancun', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', {
+    const { server } = await setupChain(postMergeData, 'post-merge', {
       engine: true,
     })
-    const rpc = getRpcClient(server)
-    // get the genesis json with current date
+    const rpc = getRPCClient(server)
+    // get the genesis JSON with current date
     const validBlock = {
       ...blockData,
       withdrawals: [],
@@ -33,14 +33,14 @@ describe(`${method}: call with executionPayloadV3`, () => {
   })
 
   it('valid data', async () => {
-    // get the genesis json with late enough date with respect to block data in batchBlocks
+    // get the genesis JSON with late enough date with respect to block data in batchBlocks
     const cancunTime = 1689945325
-    // deep copy json and add shanghai and cancun to genesis to avoid contamination
-    const cancunJson = JSON.parse(JSON.stringify(genesisJSON))
-    cancunJson.config.shanghaiTime = cancunTime
-    cancunJson.config.cancunTime = cancunTime
-    const { server } = await setupChain(cancunJson, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    // deep copy JSON and add shanghai and cancun to genesis to avoid contamination
+    const cancunJSON = JSON.parse(JSON.stringify(postMergeData))
+    cancunJSON.config.shanghaiTime = cancunTime
+    cancunJSON.config.cancunTime = cancunTime
+    const { server } = await setupChain(cancunJSON, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     const validBlock = {
       ...blockData,
       timestamp: bigIntToHex(BigInt(cancunTime)),
@@ -71,27 +71,27 @@ describe(`${method}: call with executionPayloadV3`, () => {
   })
 
   it('fcU and verify that no errors occur on new payload', async () => {
-    // get the genesis json with late enough date with respect to block data in batchBlocks
+    // get the genesis JSON with late enough date with respect to block data in batchBlocks
     const cancunTime = 1689945325
-    // deep copy json and add shanghai and cancun to genesis to avoid contamination
-    const cancunJson = JSON.parse(JSON.stringify(genesisJSON))
-    cancunJson.config.shanghaiTime = cancunTime
-    cancunJson.config.cancunTime = cancunTime
-    const { server } = await setupChain(cancunJson, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
-    await batchBlocks(rpc, blocks)
+    // deep copy JSON and add shanghai and cancun to genesis to avoid contamination
+    const cancunJSON = JSON.parse(JSON.stringify(postMergeData))
+    cancunJSON.config.shanghaiTime = cancunTime
+    cancunJSON.config.cancunTime = cancunTime
+    const { server } = await setupChain(cancunJSON, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
+    await batchBlocks(rpc, beaconData)
 
     // Let's set new head hash
     let res = await rpc.request('engine_forkchoiceUpdatedV3', [
       {
-        headBlockHash: blocks[2].blockHash,
-        finalizedBlockHash: blocks[2].blockHash,
-        safeBlockHash: blocks[2].blockHash,
+        headBlockHash: beaconData[2].blockHash,
+        finalizedBlockHash: beaconData[2].blockHash,
+        safeBlockHash: beaconData[2].blockHash,
       },
     ])
     assert.equal(res.result.payloadStatus.status, 'VALID')
 
-    // use new payload v1 as blocks all belong to pre-shanghai
+    // use new payload v1 as beaconData all belong to pre-shanghai
     res = await rpc.request('engine_newPayloadV1', [blockData])
     assert.equal(res.result.status, 'VALID')
   })

@@ -1,7 +1,7 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createFeeMarket1559TxFromRLP } from '@ethereumjs/tx'
 import { Account, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
 import * as td from 'testdouble'
@@ -18,10 +18,10 @@ import { destroy } from './util.js'
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
 
 // Stub out setStateRoot since correct state root doesn't exist in mock state.
-const ogSetStateRoot = DefaultStateManager.prototype.setStateRoot
-DefaultStateManager.prototype.setStateRoot = (): any => {}
-const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-DefaultStateManager.prototype.shallowCopy = function () {
+const ogSetStateRoot = MerkleStateManager.prototype.setStateRoot
+MerkleStateManager.prototype.setStateRoot = (): any => {}
+const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+MerkleStateManager.prototype.shallowCopy = function () {
   return this
 }
 async function setup(): Promise<[MockServer, FullEthereumService]> {
@@ -128,6 +128,6 @@ describe('should handle LES requests', async () => {
   await destroy(server, service)
 
   // unstub setStateRoot
-  DefaultStateManager.prototype.setStateRoot = ogSetStateRoot
-  DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+  MerkleStateManager.prototype.setStateRoot = ogSetStateRoot
+  MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
 }, 30000)

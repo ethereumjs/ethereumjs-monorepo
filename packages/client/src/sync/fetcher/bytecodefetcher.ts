@@ -1,4 +1,4 @@
-import { CODEHASH_PREFIX, DefaultStateManager } from '@ethereumjs/statemanager'
+import { CODEHASH_PREFIX, MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   BIGINT_0,
   bytesToHex,
@@ -26,7 +26,7 @@ type ByteCodeDataResponse = Uint8Array[] & { completed?: boolean }
  */
 export interface ByteCodeFetcherOptions extends FetcherOptions {
   hashes: Uint8Array[]
-  stateManager?: DefaultStateManager
+  stateManager?: MerkleStateManager
   fetcherDoneFlags?: SnapFetcherDoneFlags
 
   /** Destroy fetcher once all tasks are done */
@@ -40,7 +40,7 @@ export type JobTask = {
 
 export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
   protected debug: Debugger
-  stateManager: DefaultStateManager
+  stateManager: MerkleStateManager
   fetcherDoneFlags: SnapFetcherDoneFlags
   codeDB: DB
 
@@ -54,7 +54,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   constructor(options: ByteCodeFetcherOptions) {
     super(options)
     this.hashes = options.hashes ?? []
-    this.stateManager = options.stateManager ?? new DefaultStateManager()
+    this.stateManager = options.stateManager ?? new MerkleStateManager()
     this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFetcherDoneFlags()
     this.fetcherDoneFlags.byteCodeFetcher.count = BigInt(this.hashes.length)
     this.codeDB = this.stateManager['_getCodeDB']()
@@ -64,9 +64,10 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.debug = debug('client:ByteCodeFetcher')
     if (this.hashes.length > 0) {
       const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Uint8Array[], Uint8Array>
-      this.debug(
-        `Bytecode fetcher instantiated ${fullJob.task.hashes.length} hash requests destroyWhenDone=${this.destroyWhenDone}`,
-      )
+      this.DEBUG &&
+        this.debug(
+          `Bytecode fetcher instantiated ${fullJob.task.hashes.length} hash requests destroyWhenDone=${this.destroyWhenDone}`,
+        )
     }
   }
 
@@ -91,7 +92,8 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
     await peer?.latest()
 
-    this.debug(`requested code hashes: ${Array.from(task.hashes).map((h) => bytesToHex(h))}`)
+    this.DEBUG &&
+      this.debug(`requested code hashes: ${Array.from(task.hashes).map((h) => bytesToHex(h))}`)
 
     const rangeResult = await peer!.snap!.getByteCodes({
       hashes: Array.from(task.hashes),
@@ -102,7 +104,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     // the requested data. For bytecode range queries that means the peer is not
     // yet synced.
     if (rangeResult === undefined || task.hashes.length < rangeResult.codes.length) {
-      this.debug(`Peer rejected bytecode request`)
+      this.DEBUG && this.debug(`Peer rejected bytecode request`)
       return undefined
     }
 
@@ -140,7 +142,8 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     // requeue missed requests for fetching
     if (missingCodeHashes.length > 0) {
-      this.debug(`${missingCodeHashes.length} missed requests adding them to request backlog`)
+      this.DEBUG &&
+        this.debug(`${missingCodeHashes.length} missed requests adding them to request backlog`)
       this.hashes.push(...missingCodeHashes)
     }
     return Object.assign([], [receivedCodes], { completed: true })
@@ -192,7 +195,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.fetcherDoneFlags.byteCodeFetcher.count =
       this.fetcherDoneFlags.byteCodeFetcher.first + BigInt(this.hashes.length)
 
-    this.debug(`Stored ${storeCount} bytecode in code trie`)
+    this.DEBUG && this.debug(`Stored ${storeCount} bytecode in code trie`)
   }
 
   /**
@@ -212,9 +215,10 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     // weird method of tracking the count
     this.fetcherDoneFlags.byteCodeFetcher.count =
       this.fetcherDoneFlags.byteCodeFetcher.first + BigInt(this.hashes.length)
-    this.debug(
-      `Number of bytecode fetch requests added to fetcher queue: ${byteCodeRequestList.length}`,
-    )
+    this.DEBUG &&
+      this.debug(
+        `Number of bytecode fetch requests added to fetcher queue: ${byteCodeRequestList.length}`,
+      )
     this.nextTasks()
   }
 
@@ -228,16 +232,17 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     while (tasks.length < maxTasks && this.hashes.length > 0) {
       tasks.push({ hashes: this.hashes.splice(0, max) })
     }
-    this.debug(`Created new tasks num=${tasks.length}`)
+    this.DEBUG && this.debug(`Created new tasks num=${tasks.length}`)
     return tasks
   }
 
   nextTasks(): void {
-    this.debug(`Entering nextTasks with hash request queue length of ${this.hashes.length}`)
-    this.debug('Bytecode requests in primary queue:')
+    this.DEBUG &&
+      this.debug(`Entering nextTasks with hash request queue length of ${this.hashes.length}`)
+    this.DEBUG && this.debug('Bytecode requests in primary queue:')
     for (const h of this.hashes) {
-      this.debug(`\tCode hash: ${bytesToHex(h)}`)
-      this.debug('\t---')
+      this.DEBUG && this.debug(`\tCode hash: ${bytesToHex(h)}`)
+      this.DEBUG && this.debug('\t---')
     }
     try {
       if (this.in.length === 0 && this.hashes.length > 0) {
@@ -246,10 +251,11 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         for (const task of tasks) {
           this.enqueueTask(task, true)
         }
-        this.debug(`Fetcher pending with ${fullJob!.task.hashes.length} code hashes requested`)
+        this.DEBUG &&
+          this.debug(`Fetcher pending with ${fullJob!.task.hashes.length} code hashes requested`)
       }
     } catch (err) {
-      this.debug(err)
+      this.DEBUG && this.debug(err)
     }
   }
 

@@ -6,13 +6,11 @@ import {
   BIGINT_31,
   BIGINT_32,
   BIGINT_64,
-  VERKLE_BALANCE_LEAF_KEY,
+  VERKLE_BASIC_DATA_LEAF_KEY,
   VERKLE_CODE_HASH_LEAF_KEY,
-  VERKLE_CODE_SIZE_LEAF_KEY,
-  VERKLE_VERSION_LEAF_KEY,
   bigIntToBytes,
   equalsBytes,
-  getVerkleTreeIndexesForStorageSlot,
+  getVerkleTreeIndicesForStorageSlot,
   setLengthLeft,
 } from '@ethereumjs/util'
 
@@ -111,7 +109,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           const coldAccessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             0,
-            VERKLE_BALANCE_LEAF_KEY,
+            VERKLE_BASIC_DATA_LEAF_KEY,
           )
 
           gas += coldAccessGas
@@ -181,12 +179,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             0,
-            VERKLE_VERSION_LEAF_KEY,
-          )
-          coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
-            address,
-            0,
-            VERKLE_CODE_SIZE_LEAF_KEY,
+            VERKLE_BASIC_DATA_LEAF_KEY,
           )
 
           gas += coldAccessGas
@@ -223,12 +216,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             0,
-            VERKLE_VERSION_LEAF_KEY,
-          )
-          coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
-            address,
-            0,
-            VERKLE_CODE_SIZE_LEAF_KEY,
+            VERKLE_BASIC_DATA_LEAF_KEY,
           )
 
           gas += coldAccessGas
@@ -353,7 +341,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         let charge2929Gas = true
         if (common.isActivatedEIP(6800)) {
           const address = runState.interpreter.getAddress()
-          const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(key)
+          const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(key)
           const coldAccessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             treeIndex,
@@ -421,7 +409,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         let charge2929Gas = true
         if (common.isActivatedEIP(6800)) {
           const contract = runState.interpreter.getAddress()
-          const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(key)
+          const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(key)
           const coldAccessGas = runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
             contract,
             treeIndex,
@@ -1075,30 +1063,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         let selfDestructToCharge2929Gas = true
         if (common.isActivatedEIP(6800)) {
-          // read accesses for version and code size
-          if (runState.interpreter._evm.getPrecompile(contractAddress) === undefined) {
-            gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
-              contractAddress,
-              0,
-              VERKLE_VERSION_LEAF_KEY,
-            )
-            gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
-              contractAddress,
-              0,
-              VERKLE_CODE_SIZE_LEAF_KEY,
-            )
-          }
-
           gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             contractAddress,
             0,
-            VERKLE_BALANCE_LEAF_KEY,
+            VERKLE_BASIC_DATA_LEAF_KEY,
           )
           if (balance > BIGINT_0) {
             gas += runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
               contractAddress,
               0,
-              VERKLE_BALANCE_LEAF_KEY,
+              VERKLE_BASIC_DATA_LEAF_KEY,
             )
           }
 
@@ -1106,14 +1080,14 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
               selfdestructToAddress,
               0,
-              VERKLE_BALANCE_LEAF_KEY,
+              VERKLE_BASIC_DATA_LEAF_KEY,
             )
           if (balance > BIGINT_0) {
             selfDestructToColdAccessGas +=
               runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
                 selfdestructToAddress,
                 0,
-                VERKLE_BALANCE_LEAF_KEY,
+                VERKLE_BASIC_DATA_LEAF_KEY,
               )
           }
 

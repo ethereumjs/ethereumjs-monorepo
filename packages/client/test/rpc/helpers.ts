@@ -82,7 +82,7 @@ export function startRPC(
 
 /** Returns a basic RPC client with no authentication */
 
-export function getRpcClient(server: HttpServer) {
+export function getRPCClient(server: HttpServer) {
   const rpc = Client.http({ port: (server.address()! as AddressInfo).port })
   return rpc
 }
@@ -227,6 +227,7 @@ export async function baseSetup(clientOpts: any = {}) {
 /**
  * Sets up a custom chain with metaDB enabled (saving receipts, logs, indexes)
  */
+// TODO: Improve the params typing
 export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts: any = {}) {
   const genesisParams = parseGethGenesis(genesisFile, chainName)
   const genesisState = parseGethGenesisState(genesisFile)

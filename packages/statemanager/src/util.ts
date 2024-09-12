@@ -14,5 +14,6 @@ export async function modifyAccountFields(
   account.balance = accountFields.balance ?? account.balance
   account.storageRoot = accountFields.storageRoot ?? account.storageRoot
   account.codeHash = accountFields.codeHash ?? account.codeHash
+  account.codeSize = accountFields.codeSize ?? account.codeSize
   await stateManager.putAccount(address, account)
 }

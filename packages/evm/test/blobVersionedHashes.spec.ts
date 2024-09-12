@@ -17,8 +17,8 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
   it('should work', async () => {
     // setup the evm
-    const genesisJSON = await import('../../client/test/testdata/geth-genesis/eip4844.json')
-    const common = createCommonFromGethGenesis(genesisJSON, {
+    const { eip4844Data } = await import('../../client/test/testdata/geth-genesis/eip4844.js')
+    const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
@@ -47,8 +47,8 @@ describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
 describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
   it('should work', async () => {
     // setup the evm
-    const genesisJSON = await import('../../client/test/testdata/geth-genesis/eip4844.json')
-    const common = createCommonFromGethGenesis(genesisJSON, {
+    const { eip4844Data } = await import('../../client/test/testdata/geth-genesis/eip4844.js')
+    const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
@@ -97,8 +97,8 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
 describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () => {
   it('should work', async () => {
     // setup the evm
-    const genesisJSON = await import('../../client/test/testdata/geth-genesis/eip4844.json')
-    const common = createCommonFromGethGenesis(genesisJSON, {
+    const { eip4844Data } = await import('../../client/test/testdata/geth-genesis/eip4844.js')
+    const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })

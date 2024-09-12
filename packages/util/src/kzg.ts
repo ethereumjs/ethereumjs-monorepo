@@ -22,14 +22,3 @@ export interface Kzg {
     kzgProofs: Uint8Array[],
   ): boolean
 }
-
-/**
- * @deprecated This initialization method is deprecated since trusted setup loading is done directly in the reference KZG library
- * initialization or should otherwise be assured independently before KZG library usage.
- *
- * @param kzgLib a KZG implementation (defaults to c-kzg)
- * @param a dictionary of trusted setup options
- */
-export function initKZG(kzg: Kzg, _trustedSetupPath?: string) {
-  kzg.loadTrustedSetup()
-}

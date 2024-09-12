@@ -1,6 +1,6 @@
 import { utf8ToBytes } from '@ethereumjs/util'
 
-import type { DB } from '@ethereumjs/util'
+import type { DB, VerkleCrypto } from '@ethereumjs/util'
 
 // Field representation of a commitment
 export interface Fr {}
@@ -11,7 +11,7 @@ export interface VerkleTreeOpts {
   /**
    * An instantiated Verkle Cryptography interface
    */
-  verkleCrypto: any
+  verkleCrypto: VerkleCrypto | undefined
   /**
    * A database instance.
    */

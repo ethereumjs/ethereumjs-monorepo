@@ -17,7 +17,7 @@ import {
   concatBytes,
   createAddressFromString,
   equalsBytes,
-  getVerkleTreeIndexesForStorageSlot,
+  getVerkleTreeIndicesForStorageSlot,
   hexToBytes,
   intToBytes,
   setLengthLeft,
@@ -137,10 +137,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
     }
 
-    if (opts.parentStateRoot === undefined) {
-      throw Error(`Parent state root is required for StatelessVerkleStateManager execution`)
-    }
-
     if (vm.DEBUG) {
       debug(`Initializing StatelessVerkleStateManager executionWitness`)
     }
@@ -154,7 +150,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     // Populate the execution witness
     stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
-    if (stateManager.verifyVerkleProof!(opts.parentStateRoot) === false) {
+    if (stateManager.verifyVerkleProof!() === false) {
       throw Error(`Verkle proof verification failed`)
     }
 
@@ -512,7 +508,7 @@ export async function accumulateParentBlockHash(
 
     // generate access witness
     if (vm.common.isActivatedEIP(6800)) {
-      const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(ringKey)
+      const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(ringKey)
       // just create access witnesses without charging for the gas
       vm.stateManager.accessWitness!.touchAddressOnWriteAndComputeGas(
         historyAddress,

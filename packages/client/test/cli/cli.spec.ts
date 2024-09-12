@@ -379,7 +379,7 @@ describe('[CLI]', () => {
   }, 30000)
   // logging and documentation tests
   it('should log out available RPC methods', async () => {
-    const cliArgs = ['--rpc', '--helpRpc=true', '--dev=poa', '--port=39672', '--rpcPort=9999']
+    const cliArgs = ['--rpc', '--helpRPC=true', '--dev=poa', '--port=39672', '--rpcPort=9999']
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
@@ -658,8 +658,8 @@ describe('[CLI]', () => {
   }, 30000)
   // Client file and directory path options tests
   it('should start client with custom file path parameters', async () => {
-    const customGenesisJson = JSON.stringify(getGenesis(11155111))
-    const customChainJson = `{
+    const customGenesisJSON = JSON.stringify(getGenesis(11155111))
+    const customChainJSON = `{
       "name": "customChain",
       "chainId": 11155111,
       "defaultHardfork": "shanghai",
@@ -705,7 +705,7 @@ describe('[CLI]', () => {
     const dir = fs.mkdtempSync('test')
     fs.open(`${dir}/customChain.json`, 'w', (err, fd) => {
       if (err !== null) throw err
-      fs.write(fd, customChainJson, (writeErr) => {
+      fs.write(fd, customChainJSON, (writeErr) => {
         if (writeErr !== null) {
           assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
@@ -721,7 +721,7 @@ describe('[CLI]', () => {
     })
     fs.open(`${dir}/customGenesis.json`, 'w', (err, fd) => {
       if (err !== null) throw err
-      fs.write(fd, customGenesisJson, (writeErr) => {
+      fs.write(fd, customGenesisJSON, (writeErr) => {
         if (writeErr !== null) {
           assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
@@ -763,7 +763,7 @@ describe('[CLI]', () => {
       if (message.includes('Initializing Ethereumjs client')) {
         assert.ok(
           message.includes('network=customChain'),
-          'Client respects custom chain parameters json file option',
+          'Client respects custom chain parameters JSON file option',
         )
       }
       if (message.includes('Client started successfully')) {

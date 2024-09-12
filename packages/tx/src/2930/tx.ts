@@ -23,7 +23,7 @@ import type {
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
-  JsonTx,
+  JSONTx,
   TxOptions,
 } from '../types.js'
 
@@ -241,12 +241,12 @@ export class AccessList2930Transaction extends BaseTransaction<TransactionType.A
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  toJSON(): JsonTx {
+  toJSON(): JSONTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJson = super.toJSON()
+    const baseJSON = super.toJSON()
 
     return {
-      ...baseJson,
+      ...baseJSON,
       chainId: bigIntToHex(this.chainId),
       gasPrice: bigIntToHex(this.gasPrice),
       accessList: accessListJSON,

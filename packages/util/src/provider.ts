@@ -38,7 +38,7 @@ export const fetchFromProvider = async (url: string, params: rpcParams) => {
   })
   if (!res.ok) {
     throw new Error(
-      `JSONRpcError: ${JSON.stringify(
+      `JSONRPCError: ${JSON.stringify(
         {
           method: params.method,
           status: res.status,
@@ -72,7 +72,7 @@ export const getProvider = (provider: string | EthersProvider) => {
 }
 
 /**
- * A partial interface for an `ethers` `JsonRpcProvider`
+ * A partial interface for an `ethers` `JSONRPCProvider`
  * We only use the url string since we do raw `fetch` calls to
  * retrieve the necessary data
  */

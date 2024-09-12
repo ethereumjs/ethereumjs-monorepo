@@ -97,13 +97,13 @@ describe('Withdrawal', () => {
     const withdrawals = (gethWithdrawalsBuffer as WithdrawalBytes[]).map(
       createWithdrawalFromBytesArray,
     )
-    const withdrawalsJson = withdrawals.map((wt) => wt.toJSON())
-    assert.deepEqual(withdrawalsGethVector, withdrawalsJson, 'Withdrawals json should match')
+    const withdrawalsJSON = withdrawals.map((wt) => wt.toJSON())
+    assert.deepEqual(withdrawalsGethVector, withdrawalsJSON, 'Withdrawals json should match')
 
     const withdrawalsValue = withdrawals.map((wt) => wt.toValue())
     assert.deepEqual(
       withdrawalsValue.map((wt) => bytesToHex(wt.address)),
-      withdrawalsJson.map((wt) => wt.address),
+      withdrawalsJSON.map((wt) => wt.address),
     )
   })
 })

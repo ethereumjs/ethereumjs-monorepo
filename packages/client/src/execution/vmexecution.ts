@@ -10,7 +10,7 @@ import { getGenesis } from '@ethereumjs/genesis'
 import {
   CacheType,
   Caches,
-  DefaultStateManager,
+  MerkleStateManager,
   StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
 import { createTrie } from '@ethereumjs/trie'
@@ -161,7 +161,7 @@ export class VMExecution extends Execution {
     this.config.logger.info(`Initializing code cache size=${this.config.codeCache}`)
     this.config.logger.info(`Initializing trie cache size=${this.config.trieCache}`)
 
-    const stateManager = new DefaultStateManager({
+    const stateManager = new MerkleStateManager({
       trie,
       prefixStorageTrieKeys: this.config.prefixStorageTrieKeys,
       caches: new Caches({
@@ -203,7 +203,6 @@ export class VMExecution extends Execution {
     this.config.logger.info(`Setting up verkleVM`)
     const verkleCrypto = await loadVerkleCrypto()
     const stateManager = new StatelessVerkleStateManager({
-      initialStateRoot: this.config.initialVerkleStateRoot,
       verkleCrypto,
     })
     await mcl.init(mcl.BLS12_381)
@@ -684,7 +683,7 @@ export class VMExecution extends Execution {
                     (!this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
                       typeof this.vm.stateManager.initVerkleExecutionWitness === 'function') ||
                     (this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
-                      this.vm.stateManager instanceof DefaultStateManager)
+                      this.vm.stateManager instanceof MerkleStateManager)
                   ) {
                     throw Error(
                       `Invalid vm stateManager type=${typeof this.vm.stateManager} for fork=${
@@ -816,13 +815,13 @@ export class VMExecution extends Execution {
                     // save the data in spec test compatible manner
                     const blockNumStr = `${errorBlock.header.number}`
                     const file = `${this.config.getInvalidPayloadsDir()}/${blockNumStr}.json`
-                    const jsonDump = {
+                    const JSONDump = {
                       [blockNumStr]: {
                         parent: headBlock.toExecutionPayload(),
                         execute: errorBlock.toExecutionPayload(),
                       },
                     }
-                    writeFileSync(file, JSON.stringify(jsonDump, null, 2))
+                    writeFileSync(file, JSON.stringify(JSONDump, null, 2))
                     this.config.logger.warn(`${errorMsg}:\n${error} payload saved to=${file}`)
                   } else {
                     this.config.logger.warn(`${errorMsg}:\n${error}`)
@@ -1029,8 +1028,8 @@ export class VMExecution extends Execution {
   }
 
   stats() {
-    if (this._statsVM instanceof DefaultStateManager) {
-      const sm = this._statsVM.stateManager as DefaultStateManager
+    if (this._statsVM instanceof MerkleStateManager) {
+      const sm = this._statsVM.stateManager as MerkleStateManager
       const deactivatedStats = { size: 0, reads: 0, hits: 0, writes: 0 }
       let stats
       stats = sm['_caches']?.account?.stats() ?? deactivatedStats
