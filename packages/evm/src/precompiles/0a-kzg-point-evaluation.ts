@@ -11,6 +11,8 @@ import { ERROR, EvmError } from '../exceptions.js'
 
 import { gasLimitCheck } from './util.js'
 
+import { getPrecompileName } from './index.js'
+
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
@@ -21,11 +23,12 @@ export const BLS_MODULUS = BigInt(
 const modulusBuffer = setLengthLeft(bigIntToBytes(BLS_MODULUS), 32)
 
 export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
+  const pName = getPrecompileName('0a')
   if (opts.common.customCrypto?.kzg === undefined) {
     throw new Error('kzg not initialized')
   }
   const gasUsed = opts.common.param('kzgPointEvaluationPrecompileGas')
-  if (!gasLimitCheck(opts, gasUsed, 'KZG_POINT_EVALUATION (0x14)')) {
+  if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
   }
 
@@ -43,14 +46,14 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
 
   if (bytesToHex(computeVersionedHash(commitment, version)) !== bytesToHex(versionedHash)) {
     if (opts._debug !== undefined) {
-      opts._debug(`KZG_POINT_EVALUATION (0x14) failed: INVALID_COMMITMENT`)
+      opts._debug(`${pName} failed: INVALID_COMMITMENT`)
     }
     return EvmErrorResult(new EvmError(ERROR.INVALID_COMMITMENT), opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {
     opts._debug(
-      `KZG_POINT_EVALUATION (0x14): proof verification with commitment=${bytesToHex(
+      `${pName}: proof verification with commitment=${bytesToHex(
         commitment,
       )} z=${bytesToHex(z)} y=${bytesToHex(y)} kzgProof=${bytesToHex(kzgProof)}`,
     )
@@ -63,12 +66,12 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   } catch (err: any) {
     if (err.message.includes('C_KZG_BADARGS') === true) {
       if (opts._debug !== undefined) {
-        opts._debug(`KZG_POINT_EVALUATION (0x14) failed: INVALID_INPUTS`)
+        opts._debug(`${pName} failed: INVALID_INPUTS`)
       }
       return EvmErrorResult(new EvmError(ERROR.INVALID_INPUTS), opts.gasLimit)
     }
     if (opts._debug !== undefined) {
-      opts._debug(`KZG_POINT_EVALUATION (0x14) failed: Unknown error - ${err.message}`)
+      opts._debug(`${pName} failed: Unknown error - ${err.message}`)
     }
     return EvmErrorResult(new EvmError(ERROR.REVERT), opts.gasLimit)
   }
@@ -78,7 +81,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
 
   if (opts._debug !== undefined) {
     opts._debug(
-      `KZG_POINT_EVALUATION (0x14) return fieldElements=${bytesToHex(
+      `${pName} return fieldElements=${bytesToHex(
         fieldElementsBuffer,
       )} modulus=${bytesToHex(modulusBuffer)}`,
     )

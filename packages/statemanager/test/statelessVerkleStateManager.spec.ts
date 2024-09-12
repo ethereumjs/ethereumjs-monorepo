@@ -18,10 +18,9 @@ import { assert, beforeAll, describe, it, test } from 'vitest'
 
 import { CacheType, Caches, StatelessVerkleStateManager } from '../src/index.js'
 
-import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
-import * as verkleBlockJSON from './testdata/verkleKaustinen6Block72.json'
+import { testnetVerkleKaustinenData } from './testdata/testnetVerkleKaustinen.js'
+import { verkleKaustinen6Block72Data } from './testdata/verkleKaustinen6Block72.js'
 
-import type { BlockData } from '@ethereumjs/block'
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
@@ -29,17 +28,20 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   beforeAll(async () => {
     verkleCrypto = await loadVerkleCrypto()
   })
-  const common = createCommonFromGethGenesis(testnetVerkleKaustinen.default, {
+  const common = createCommonFromGethGenesis(testnetVerkleKaustinenData, {
     chain: 'customChain',
     eips: [2935, 4895, 6800],
   })
 
-  const decodedTxs = verkleBlockJSON.default.transactions.map((tx) =>
+  const decodedTxs = verkleKaustinen6Block72Data.transactions?.map((tx) =>
     createTxFromSerializedData(hexToBytes(tx as PrefixedHexString), { common }),
   )
-  const block = createBlock({ ...verkleBlockJSON, transactions: decodedTxs } as BlockData, {
-    common,
-  })
+  const block = createBlock(
+    { ...verkleKaustinen6Block72Data, transactions: decodedTxs },
+    {
+      common,
+    },
+  )
 
   it('initPreState()', async () => {
     const stateManager = new StatelessVerkleStateManager({ verkleCrypto })

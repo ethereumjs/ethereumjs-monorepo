@@ -14,11 +14,15 @@ describe('initialization', () => {
 
   it('EVM parameter customization', async () => {
     let evm = await createEVM()
-    assert.equal(evm.common.param('ecAddGas'), BigInt(150), 'should use default EVM parameters')
+    assert.equal(evm.common.param('bn254AddGas'), BigInt(150), 'should use default EVM parameters')
 
     const params = JSON.parse(JSON.stringify(paramsEVM))
-    params['1679']['ecAddGas'] = 100 // 150
+    params['1679']['bn254AddGas'] = 100 // 150
     evm = await createEVM({ params })
-    assert.equal(evm.common.param('ecAddGas'), BigInt(100), 'should use custom parameters provided')
+    assert.equal(
+      evm.common.param('bn254AddGas'),
+      BigInt(100),
+      'should use custom parameters provided',
+    )
   })
 })
