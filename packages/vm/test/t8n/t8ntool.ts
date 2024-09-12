@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { EVMMockBlockchain, MCLBLS } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromTxData } from '@ethereumjs/tx'
-import { bigIntToHex, hexToBytes, toBytes, zeros } from '@ethereumjs/util'
+import { CLRequestType, bigIntToHex, hexToBytes, toBytes, zeros } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { readFileSync, writeFileSync } from 'fs'
@@ -16,12 +16,20 @@ import { getCommon } from '../tester/config.js'
 import { makeBlockFromEnv, setupPreConditions } from '../util.js'
 
 import { normalizeNumbers } from './helpers.js'
+import { StateTracker } from './stateTracker.js'
 
 import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
 import type { BlockBuilder, VM } from '../../src/index.js'
 import type { AfterTxEvent } from '../../src/types.js'
-import { StateTracker } from './stateTracker.js'
-import type { RunnerOptions, T8NAlloc, T8NEnv, T8NOptions, T8NOutput, T8NReceipt } from './types.js'
+import type {
+  RunnerOptions,
+  T8NAlloc,
+  T8NEnv,
+  T8NOptions,
+  T8NOutput,
+  T8NReceipt,
+  T8NRejectedTx,
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Log } from '@ethereumjs/evm'
 import type { TypedTxData } from '@ethereumjs/tx'
@@ -43,7 +51,7 @@ export class TransitionTool {
   // These are rejected in case of:
   // (1) The transaction is invalid (for instance, an Authorization List tx does not contain an authorization list)
   // (2) The transaction is rejected by the block builder (for instance, if the sender does not have enough funds to pay)
-  public rejected: { index: number; error: string }[]
+  public rejected: T8NRejectedTx[]
 
   // Logs tracker (for logsHash)
   public logs: Log[]
@@ -197,6 +205,54 @@ export class TransitionTool {
       logsBloom: bytesToHex(block.header.logsBloom),
       receipts: this.receipts,
       gasUsed: bigIntToHex(block.header.gasUsed),
+    }
+
+    if (block.header.baseFeePerGas !== undefined) {
+      output.currentBaseFee = bigIntToHex(block.header.baseFeePerGas)
+    }
+
+    if (block.header.withdrawalsRoot !== undefined) {
+      output.withdrawalsRoot = bytesToHex(block.header.withdrawalsRoot)
+    }
+
+    if (block.header.blobGasUsed !== undefined) {
+      output.blobGasUsed = bigIntToHex(block.header.blobGasUsed)
+    }
+
+    if (block.header.excessBlobGas !== undefined) {
+      output.currentExcessBlobGas = bigIntToHex(block.header.excessBlobGas)
+    }
+
+    if (block.header.requestsRoot !== undefined) {
+      output.requestsRoot = bytesToHex(block.header.requestsRoot)
+    }
+
+    if (block.requests !== undefined) {
+      if (this.common.isActivatedEIP(6110)) {
+        output.depositRequests = []
+      }
+
+      if (this.common.isActivatedEIP(7002)) {
+        output.withdrawalRequests = []
+      }
+
+      if (this.common.isActivatedEIP(7251)) {
+        output.consolidationRequests = []
+      }
+
+      for (const request of block.requests) {
+        if (request.type === CLRequestType.Deposit) {
+          output.depositRequests!.push(request.toJSON())
+        } else if (request.type === CLRequestType.Withdrawal) {
+          output.withdrawalRequests!.push(request.toJSON())
+        } else if (request.type === CLRequestType.Consolidation) {
+          output.consolidationRequests!.push(request.toJSON())
+        }
+      }
+    }
+
+    if (this.rejected.length > 0) {
+      output.rejected = this.rejected
     }
 
     return output

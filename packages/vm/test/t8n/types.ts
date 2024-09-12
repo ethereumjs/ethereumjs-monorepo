@@ -57,6 +57,8 @@ export type RunnerOptions = {
   log?: boolean
 }
 
+export type T8NRejectedTx = { index: number; error: string }
+
 export type T8NOutput = {
   stateRoot: string
   txRoot: string
@@ -73,6 +75,7 @@ export type T8NOutput = {
   depositRequests?: string[]
   withdrawalRequests?: string[]
   consolidationRequests?: string[]
+  rejected?: T8NRejectedTx[]
 }
 
 type T8NLog = {
