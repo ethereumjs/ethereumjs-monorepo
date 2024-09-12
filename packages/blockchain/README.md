@@ -239,9 +239,10 @@ The `Blockchain` class has a public property `events` which contains an `EventEm
 | ------------------------ | ------------------------------------------- |
 | `deletedCanonicalBlocks` | Emitted when blocks are reorged and deleted |
 
-## Developer
+## Debugging
 
-For debugging blockchain control flows the [debug](https://github.com/visionmedia/debug) library is used and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js`.
+For the debugging output to show up, set the `DEBUG` environment variable, e.g. in Linux/Mac OS:
+`export DEBUG=ethjs,*`
 
 The following initial logger is currently available:
 
