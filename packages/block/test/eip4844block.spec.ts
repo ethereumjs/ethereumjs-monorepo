@@ -16,7 +16,7 @@ import { paramsBlock } from '../src/params.js'
 import { hardfork4844Data } from './testdata/4844-hardfork.js'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { Kzg } from '@ethereumjs/util'
+import type { KZG } from '@ethereumjs/util'
 
 describe('EIP4844 header tests', () => {
   let common: Common
@@ -158,7 +158,7 @@ describe('blob gas tests', () => {
 })
 
 describe('transaction validation tests', () => {
-  let kzg: Kzg
+  let kzg: KZG
   let common: Common
   let blobGasPerBlob: bigint
   beforeAll(async () => {

@@ -104,7 +104,7 @@ export function getTransaction(
     txParams['blobs'] = getBlobs('hello world')
     txParams['kzgCommitments'] = blobsToCommitments(common.customCrypto!.kzg!, txParams['blobs'])
     txParams['kzgProofs'] = txParams['blobs'].map((blob: Uint8Array, ctx: number) =>
-      common.customCrypto!.kzg!.computeBlobKzgProof(
+      common.customCrypto!.kzg!.computeBlobKZGProof(
         blob,
         txParams['kzgCommitments'][ctx] as Uint8Array,
       ),

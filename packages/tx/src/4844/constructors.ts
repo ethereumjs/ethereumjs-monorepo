@@ -24,7 +24,7 @@ import type {
   TxOptions,
 } from '../types.js'
 import type { TxData, TxValuesArray } from './tx.js'
-import type { Kzg } from '@ethereumjs/util'
+import type { KZG } from '@ethereumjs/util'
 
 const validateBlobTransactionNetworkWrapper = (
   blobVersionedHashes: Uint8Array[],
@@ -32,7 +32,7 @@ const validateBlobTransactionNetworkWrapper = (
   commitments: Uint8Array[],
   kzgProofs: Uint8Array[],
   version: number,
-  kzg: Kzg,
+  kzg: KZG,
 ) => {
   if (!(blobVersionedHashes.length === blobs.length && blobs.length === commitments.length)) {
     throw new Error('Number of blobVersionedHashes, blobs, and commitments not all equal')
@@ -43,7 +43,7 @@ const validateBlobTransactionNetworkWrapper = (
 
   let isValid
   try {
-    isValid = kzg.verifyBlobKzgProofBatch(blobs, commitments, kzgProofs)
+    isValid = kzg.verifyBlobKZGProofBatch(blobs, commitments, kzgProofs)
   } catch (error) {
     throw new Error(`KZG verification of blobs fail with error=${error}`)
   }
@@ -249,7 +249,7 @@ export function createBlob4844TxFromSerializedNetworkWrapper(
   const commonCopy = opts.common.copy()
   commonCopy.updateParams(opts.params ?? paramsTx)
 
-  const version = Number(commonCopy.param('blobCommitmentVersionKzg'))
+  const version = Number(commonCopy.param('blobCommitmentVersionKZG'))
   validateBlobTransactionNetworkWrapper(
     decodedTx.blobVersionedHashes,
     blobs,

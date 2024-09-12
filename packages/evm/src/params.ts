@@ -339,7 +339,7 @@ export const paramsEVM: ParamsDict = {
     kzgPointEvaluationPrecompileGas: 50000, // The fee associated with the point evaluation precompile
     blobhashGas: 3, // Base fee of the BLOBHASH opcode
     // sharding
-    blobCommitmentVersionKzg: 1, // The number indicated a versioned hash is a KZG commitment
+    blobCommitmentVersionKZG: 1, // The number indicated a versioned hash is a KZG commitment
     fieldElementsPerBlob: 4096, // The number of field elements allowed per blob
   },
   /**

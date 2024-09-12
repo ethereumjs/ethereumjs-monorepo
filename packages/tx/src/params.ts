@@ -41,7 +41,7 @@ export const paramsTx: ParamsDict = {
 .  * Shard Blob Transactions
 .  */
   4844: {
-    blobCommitmentVersionKzg: 1, // The number indicated a versioned hash is a KZG commitment
+    blobCommitmentVersionKZG: 1, // The number indicated a versioned hash is a KZG commitment
   },
   /**
 .  * Set EOA account code for one transaction

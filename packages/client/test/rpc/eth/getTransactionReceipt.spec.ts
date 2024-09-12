@@ -103,7 +103,7 @@ describe(method, () => {
       const blobs = getBlobs('hello world')
       const commitments = blobsToCommitments(kzg, blobs)
       const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-      const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
+      const proofs = blobs.map((blob, ctx) => kzg.computeBlobKZGProof(blob, commitments[ctx]))
       const tx = createBlob4844Tx(
         {
           blobVersionedHashes,

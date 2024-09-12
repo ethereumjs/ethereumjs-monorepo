@@ -125,7 +125,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
         const msg = this._errorMsg('versioned hash is invalid length')
         throw new Error(msg)
       }
-      if (BigInt(hash[0]) !== this.common.param('blobCommitmentVersionKzg')) {
+      if (BigInt(hash[0]) !== this.common.param('blobCommitmentVersionKZG')) {
         const msg = this._errorMsg('versioned hash does not start with KZG commitment version')
         throw new Error(msg)
       }

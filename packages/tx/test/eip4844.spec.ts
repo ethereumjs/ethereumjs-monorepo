@@ -30,7 +30,7 @@ import blobTx from './json/serialized4844tx.json'
 
 import type { BlobEIP4844TxData } from '../src/index.js'
 import type { Common } from '@ethereumjs/common'
-import type { Kzg, PrefixedHexString } from '@ethereumjs/util'
+import type { KZG, PrefixedHexString } from '@ethereumjs/util'
 
 const pk = randomBytes(32)
 describe('EIP4844 addSignature tests', () => {
@@ -264,7 +264,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
 })
 
 describe('Network wrapper tests', () => {
-  let kzg: Kzg
+  let kzg: KZG
   let common: Common
   beforeAll(async () => {
     kzg = await loadKZG()
@@ -610,7 +610,7 @@ it('getEffectivePriorityFee()', async () => {
 })
 
 describe('Network wrapper deserialization test', () => {
-  let kzg: Kzg
+  let kzg: KZG
   let common: Common
   beforeAll(async () => {
     kzg = await loadKZG()

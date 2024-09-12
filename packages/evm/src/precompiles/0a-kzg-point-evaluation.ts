@@ -33,7 +33,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
-  const version = Number(opts.common.param('blobCommitmentVersionKzg'))
+  const version = Number(opts.common.param('blobCommitmentVersionKZG'))
   const fieldElementsPerBlob = opts.common.param('fieldElementsPerBlob')
   const versionedHash = opts.data.subarray(0, 32)
   const z = opts.data.subarray(32, 64)
@@ -56,7 +56,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     )
   }
   try {
-    const res = opts.common.customCrypto?.kzg?.verifyKzgProof(commitment, z, y, kzgProof)
+    const res = opts.common.customCrypto?.kzg?.verifyKZGProof(commitment, z, y, kzgProof)
     if (res === false) {
       return EvmErrorResult(new EvmError(ERROR.INVALID_PROOF), opts.gasLimit)
     }

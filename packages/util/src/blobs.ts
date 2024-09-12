@@ -2,7 +2,7 @@ import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 import { utf8ToBytes } from './bytes.js'
 
-import type { Kzg } from './kzg.js'
+import type { KZG } from './kzg.js'
 
 /**
  * These utilities for constructing blobs are borrowed from https://github.com/Inphi/eip4844-interop.git
@@ -56,7 +56,7 @@ export const getBlobs = (input: string) => {
   return blobs
 }
 
-export const blobsToCommitments = (kzg: Kzg, blobs: Uint8Array[]) => {
+export const blobsToCommitments = (kzg: KZG, blobs: Uint8Array[]) => {
   const commitments: Uint8Array[] = []
   for (const blob of blobs) {
     commitments.push(kzg.blobToKzgCommitment(blob))
@@ -64,7 +64,7 @@ export const blobsToCommitments = (kzg: Kzg, blobs: Uint8Array[]) => {
   return commitments
 }
 
-export const blobsToProofs = (kzg: Kzg, blobs: Uint8Array[], commitments: Uint8Array[]) => {
+export const blobsToProofs = (kzg: KZG, blobs: Uint8Array[], commitments: Uint8Array[]) => {
   const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
 
   return proofs
