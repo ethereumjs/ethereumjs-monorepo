@@ -6,7 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 6.2.0 - 2024-03-05
+## 6.2.1 - 2024-08-15
+
+### Other Features
+
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Bugfixes
+
+- Fixes an issue in the delete operation used for unhashed tries and pruning activated which resulted in a wrong state root (bad!), PR [#3333](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3333)
+
+## 6.2.0 - 2024-03-18
 
 In the hope that you do not have yet integrated: we needed to remove the new more modern async trie iteration with web streams functionality (new `createAsyncReadStream()` method) introduced with the `v6.1.0` release - see PR [#3231](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3231) for context - since the related Node.js web streams API import caused relatively severe problems for all upstream libraries when being used in the browser.
 
@@ -76,7 +86,7 @@ See [Debugging](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/pa
 
 - New parameter `skipKeyTransform` (default: `false`) for Trie `put()`, `del()` and `batch()` method to allow to pass in already hashed keys, PR [#2950](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2950)
 - New `keyPrefix` option tries to store node keys with a static prefix (used upstream in the `statemanager` package to speed to storage trie reads), PR [#3023](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3023)
-- Peformance: `findPath()` optimizations, PR [#3066](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3066)
+- Performance: `findPath()` optimizations, PR [#3066](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3066)
 - Make `null` available as type option for `put()` method value, PR [#3020](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3020)
 - Allow partial trie options for `shallowCopy()` (e.g. for a more flexible cache configuration for the trie copy), PR [#3063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3063)
 - Use `lock` class from `@ethereumjs/util`, PR [#3109](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3109)
@@ -121,7 +131,7 @@ While you could use our libraries in the browser libraries before, there had bee
 
 WE HAVE ELIMINATED ALL OF THEM.
 
-The largest two undertakings: First: we have rewritten all (half) of our API and elimited the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went throuh our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
+The largest two undertakings: First: we have rewritten all (half) of our API and eliminated the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went through our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
 
 Together with some few other modifications this now allows to run each (maybe adding an asterisk for client and devp2p) of our libraries directly in the browser - more or less without any modifications - see the `examples/browser.html` file in each package folder for an easy to set up example.
 
@@ -361,11 +371,11 @@ See our [Upgrade Guide](https://github.com/ethereumjs/ethereumjs-monorepo/blob/m
 
 Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/CHANGELOG.md)).
 
-### Root Hash Persistance
+### Root Hash Persistence
 
 The trie library now comes with a new constructor option `useRootPersistence` (note that the option has been called `persistRoot` up to Beta 3) which is disabled by default but allows to persist state root updates along write operations directly in the DB and therefore omits the need to manually set to a new state root, see PR [#2071](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2071) and PR [#2123](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2123), thanks to @faustbrian for the contribution! ❤️
 
-To activate root hash persistance you can set the `useRootPersistence` option on instantiation:
+To activate root hash persistence you can set the `useRootPersistence` option on instantiation:
 
 ```ts
 import { Trie, LevelDB } from '@ethereumjs/trie'
@@ -387,13 +397,13 @@ Beta 2 release for the upcoming breaking release round on the [EthereumJS monore
 
 ### Removed Default Exports
 
-The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all across the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
 
 Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
 
 Now every import is a named import and we think the long term benefits will very much outweigh the one-time hassle of some import adoptions.
 
-So if you use the Trie library together with other EthereumJS libraries check if the respetive imports need an update.
+So if you use the Trie library together with other EthereumJS libraries check if the respective imports need an update.
 
 ## Custom Hash Function
 
@@ -486,7 +496,7 @@ Because of the upgrade, any `level` implementation compliant with the `abstract-
 
 ### API Changes
 
-Options for the Trie constructor are now also taken in as an options dict like in the other EthereumJS libaries. This makes it easier to add additional options in the future, see PR [#1874](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1874).
+Options for the Trie constructor are now also taken in as an options dict like in the other EthereumJS libraries. This makes it easier to add additional options in the future, see PR [#1874](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1874).
 
 Check your Trie instantiations and see if you use constructor options. In this case you need to update to the new format:
 

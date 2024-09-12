@@ -1,7 +1,8 @@
 // Example 2c - Creating and looking up a leaf node
 
-const { Trie } = require('../../dist/cjs')
 const { bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
+
+const { Trie } = require('../../dist/cjs/index.js')
 
 const trie = new Trie()
 
@@ -14,4 +15,4 @@ async function test() {
   console.log('Node 1 value: ', bytesToUtf8(node1.node._value)) // The leaf node's value
 }
 
-test()
+void test()

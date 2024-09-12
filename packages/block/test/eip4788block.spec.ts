@@ -1,48 +1,47 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { BlockHeader } from '../src/header.js'
-import { Block } from '../src/index.js'
+import { createBlock, createBlockHeader } from '../src/index.js'
 
 describe('EIP4788 header tests', () => {
   it('should work', () => {
-    const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [4788] })
+    const earlyCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [4788] })
 
     assert.throws(
       () => {
-        BlockHeader.fromHeaderData(
+        createBlockHeader(
           {
             parentBeaconBlockRoot: zeros(32),
           },
           {
             common: earlyCommon,
-          }
+          },
         )
       },
       'A parentBeaconBlockRoot for a header can only be provided with EIP4788 being activated',
       undefined,
-      'should throw when setting parentBeaconBlockRoot with EIP4788 not being activated'
+      'should throw when setting parentBeaconBlockRoot with EIP4788 not being activated',
     )
 
     assert.throws(
       () => {
-        BlockHeader.fromHeaderData(
+        createBlockHeader(
           {
             blobGasUsed: 1n,
           },
           {
             common: earlyCommon,
-          }
+          },
         )
       },
       'blob gas used can only be provided with EIP4844 activated',
       undefined,
-      'should throw when setting blobGasUsed with EIP4844 not being activated'
+      'should throw when setting blobGasUsed with EIP4844 not being activated',
     )
     assert.doesNotThrow(() => {
-      BlockHeader.fromHeaderData(
+      createBlockHeader(
         {
           excessBlobGas: 0n,
           blobGasUsed: 0n,
@@ -51,20 +50,20 @@ describe('EIP4788 header tests', () => {
         {
           common,
           skipConsensusFormatValidation: true,
-        }
+        },
       )
     }, 'correctly instantiates an EIP4788 block header')
 
-    const block = Block.fromBlockData(
+    const block = createBlock(
       {
-        header: BlockHeader.fromHeaderData({}, { common }),
+        header: createBlockHeader({}, { common }),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
     assert.equal(
       block.toJSON().header?.parentBeaconBlockRoot,
       bytesToHex(zeros(32)),
-      'JSON output includes excessBlobGas'
+      'JSON output includes excessBlobGas',
     )
   })
 })

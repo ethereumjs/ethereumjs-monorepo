@@ -1,8 +1,6 @@
-import { Block, BlockHeader, valuesArrayToHeaderData } from '@ethereumjs/block'
+import { createBlockFromBytesArray, createBlockHeaderFromBytesArray } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
-  BIGINT_0,
-  BIGINT_1,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   bytesToBigInt,
@@ -15,7 +13,7 @@ import { Cache } from './cache.js'
 import { DBOp, DBTarget } from './operation.js'
 
 import type { DatabaseKey } from './operation.js'
-import type { BlockBodyBytes, BlockBytes, BlockOptions } from '@ethereumjs/block'
+import type { Block, BlockBodyBytes, BlockBytes, BlockOptions } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { BatchDBOp, DB, DBObject, DelBatch, PutBatch } from '@ethereumjs/util'
 
@@ -109,7 +107,7 @@ export class DBManager {
     let body = await this.getBody(hash, number)
 
     // be backward compatible where we didn't use to store a body with no txs, uncles, withdrawals
-    // otherwise the body is never partially stored and if we have some body, its in entirity
+    // otherwise the body is never partially stored and if we have some body, its in entirety
     if (body === undefined) {
       body = [[], []] as BlockBodyBytes
       // Do extra validations on the header since we are assuming empty transactions and uncles
@@ -142,13 +140,8 @@ export class DBManager {
     }
 
     const blockData = [header.raw(), ...body] as BlockBytes
-    const opts: BlockOptions = { common: this.common }
-    if (number === BIGINT_0) {
-      opts.setHardfork = await this.getTotalDifficulty(hash, BIGINT_0)
-    } else {
-      opts.setHardfork = await this.getTotalDifficulty(header.parentHash, number - BIGINT_1)
-    }
-    return Block.fromValuesArray(blockData, opts)
+    const opts: BlockOptions = { common: this.common, setHardfork: true }
+    return createBlockFromBytesArray(blockData, opts)
   }
 
   /**
@@ -166,17 +159,8 @@ export class DBManager {
     const encodedHeader = await this.get(DBTarget.Header, { blockHash, blockNumber })
     const headerValues = RLP.decode(encodedHeader)
 
-    const opts: BlockOptions = { common: this.common }
-    if (blockNumber === BIGINT_0) {
-      opts.setHardfork = await this.getTotalDifficulty(blockHash, BIGINT_0)
-    } else {
-      // Lets fetch the parent hash but not by number since this block might not
-      // be in canonical chain
-      const headerData = valuesArrayToHeaderData(headerValues as Uint8Array[])
-      const parentHash = headerData.parentHash as Uint8Array
-      opts.setHardfork = await this.getTotalDifficulty(parentHash, blockNumber - BIGINT_1)
-    }
-    return BlockHeader.fromValuesArray(headerValues as Uint8Array[], opts)
+    const opts: BlockOptions = { common: this.common, setHardfork: true }
+    return createBlockHeaderFromBytesArray(headerValues as Uint8Array[], opts)
   }
 
   /**
@@ -249,8 +233,8 @@ export class DBManager {
         op.baseDBOp.type !== undefined
           ? op.baseDBOp.type
           : op.baseDBOp.value !== undefined
-          ? 'put'
-          : 'del'
+            ? 'put'
+            : 'del'
       const convertedOp = {
         key: op.baseDBOp.key,
         value: op.baseDBOp.value,

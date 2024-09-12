@@ -71,7 +71,7 @@ A Docker image is built nightly from the current master branch and can be retrie
 docker pull ethpandaops/ethereumjs:master
 ```
 
-Alternatively, an image from the most recent stable releast can be accessed via:
+Alternatively, an image from the most recent stable release can be accessed via:
 
 ```sh
 docker pull ethpandaops/ethereumjs:stable
@@ -307,8 +307,8 @@ dist/bin/cli.js --d
 
 ## Metrics
 
-The client can optionally collect metrics using the Prometheus metrics platform and expose them via an HTTP endpoint with the following CLI flags.  
-The current metrics that are reported by the client can be found [here](./src/util//metrics.ts).
+The client can optionally collect metrics using the [Prometheus](https://github.com/prometheus/prometheus) metrics platform and expose them via an HTTP endpoint with the following CLI flags.  
+The current metrics that are reported by the client can be found at the default port and route: `localhost:8000/metrics`.
 
 ```sh
 # npm installation
@@ -317,8 +317,6 @@ ethereumjs --prometheus
 # source installation
 npm run client:start:ts -- --prometheus --prometheusPort=9123
 ```
-
-Note: The Prometheus endpoint runs on port 8000 by default
 
 ## API
 

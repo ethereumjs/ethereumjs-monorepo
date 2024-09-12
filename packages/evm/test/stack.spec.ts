@@ -1,7 +1,7 @@
 import { Account, Address, bigIntToBytes, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/index.js'
+import { createEVM } from '../src/index.js'
 import { Stack } from '../src/stack.js'
 
 import { createAccount } from './utils.js'
@@ -99,7 +99,7 @@ describe('Stack', () => {
   it('stack items should not change if they are DUPed', async () => {
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee'))
     const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
-    const evm = await EVM.create()
+    const evm = await createEVM()
     const account = createAccount(BigInt(0), BigInt(0))
     const code = '0x60008080808060013382F15060005260206000F3'
     const expectedReturnValue = setLengthLeft(bigIntToBytes(BigInt(0)), 32)
@@ -122,7 +122,7 @@ describe('Stack', () => {
           RETURN        stack: [0, 0x20] (we thus return the stack item which was originally pushed as 0, and then DUPed)
     */
     await evm.stateManager.putAccount(addr, account)
-    await evm.stateManager.putContractCode(addr, hexToBytes(code))
+    await evm.stateManager.putCode(addr, hexToBytes(code))
     await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
     const runCallArgs = {
       caller,

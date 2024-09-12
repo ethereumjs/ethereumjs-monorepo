@@ -1,16 +1,14 @@
+import { Block, createBlockFromRPC } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createVM, runBlock as runBlockVM, VM } from '@ethereumjs/vm'
+import Benchmark from 'benchmark'
 import { readFileSync } from 'fs'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Block } from '@ethereumjs/block'
-import { VM } from '../dist/cjs'
-import { getPreState, getBlockchain, verifyResult } from './util'
-import { Bench } from 'tinybench'
+import { getBlockchain, getPreState, verifyResult } from './util.js'
 
 const BLOCK_FIXTURE = 'benchmarks/fixture/blocks-prestate.json'
 
 const runBlock = async (vm: VM, block: Block, receipts: any) => {
-  await (
-    await vm.shallowCopy()
-  ).runBlock({
+  await runBlockVM(await vm.shallowCopy(), {
     block,
     generate: true,
     skipBlockValidation: true,
@@ -27,14 +25,14 @@ export async function mainnetBlocks(numSamples?: number) {
   console.log(`Number of blocks to sample: ${numSamples}`)
   data = data.slice(0, numSamples)
 
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
 
   const bench = new Bench({
     time: 10000,
   })
 
   for (const blockData of data) {
-    const block = Block.fromRPC(blockData.block, [], { common })
+    const block = createBlockFromRPC(blockData.block, [], { common })
     const blockNumber = Number(block.header.number)
     const { receipts, preState, blockhashes } = blockData
 
@@ -48,7 +46,7 @@ export async function mainnetBlocks(numSamples?: number) {
 
     const stateManager = await getPreState(preState, common)
     const blockchain = getBlockchain(blockhashes) as any
-    const vm = await VM.create({ stateManager, common, blockchain })
+    const vm = await createVM({ stateManager, common, blockchain })
 
     bench.add('block ' + blockNumber.toString(), async () => {
       await runBlock(vm, block, receipts)

@@ -1,13 +1,21 @@
-import { Address } from '@ethereumjs/util'
+import {
+  createAddressFromString,
+  createZeroAddress,
+  equalsBytes,
+  hexToBytes,
+  setLengthLeft,
+  unpadBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { createEVM } from '../src/index.js'
 import { TransientStorage } from '../src/transientStorage.js'
 
 describe('Transient Storage', () => {
   it('should set and get storage', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value = new Uint8Array(32).fill(0x99)
 
@@ -19,7 +27,7 @@ describe('Transient Storage', () => {
   it('should return bytes32(0) if there is no key set', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value = new Uint8Array(32).fill(0x11)
 
@@ -36,7 +44,7 @@ describe('Transient Storage', () => {
   it('should revert', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value = new Uint8Array(32).fill(0x99)
 
@@ -58,7 +66,7 @@ describe('Transient Storage', () => {
   it('should commit', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value = new Uint8Array(32).fill(0x99)
 
@@ -74,7 +82,7 @@ describe('Transient Storage', () => {
   it('should fail with wrong size key/value', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
 
     assert.throws(() => {
       transientStorage.put(address, new Uint8Array(10), new Uint8Array(1))
@@ -88,24 +96,24 @@ describe('Transient Storage', () => {
   it('keys are stringified', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value = new Uint8Array(32).fill(0x99)
 
     transientStorage.put(address, key, value)
     assert.deepEqual(
       transientStorage.get(
-        Address.fromString('0xff00000000000000000000000000000000000002'),
-        new Uint8Array(32).fill(0xff)
+        createAddressFromString('0xff00000000000000000000000000000000000002'),
+        new Uint8Array(32).fill(0xff),
       ),
-      value
+      value,
     )
   })
 
   it('revert applies changes in correct order', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value1 = new Uint8Array(32).fill(0x01)
     const value2 = new Uint8Array(32).fill(0x02)
@@ -123,7 +131,7 @@ describe('Transient Storage', () => {
   it('nested reverts', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value0 = new Uint8Array(32).fill(0x00)
     const value1 = new Uint8Array(32).fill(0x01)
@@ -153,7 +161,7 @@ describe('Transient Storage', () => {
   it('commit batches changes into next revert', () => {
     const transientStorage = new TransientStorage()
 
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const address = createAddressFromString('0xff00000000000000000000000000000000000002')
     const key = new Uint8Array(32).fill(0xff)
     const value1 = new Uint8Array(32).fill(0x01)
     const value2 = new Uint8Array(32).fill(0x02)
@@ -175,5 +183,39 @@ describe('Transient Storage', () => {
     assert.deepEqual(transientStorage.get(address, key), value2)
     transientStorage.revert()
     assert.deepEqual(transientStorage.get(address, key), value1)
+  })
+
+  it('should cleanup after a message create', async () => {
+    const evm = await createEVM()
+    // PUSH 1 PUSH 1 TSTORE
+    const code = hexToBytes('0x600160015D')
+    const keyBuf = setLengthLeft(new Uint8Array([1]), 32)
+    const result = await evm.runCall({
+      data: code,
+      gasLimit: BigInt(100_000),
+    })
+    const created = result.createdAddress!
+    const stored = evm.transientStorage.get(created, keyBuf)
+    assert.ok(
+      equalsBytes(unpadBytes(stored), new Uint8Array()),
+      'Transient storage has been cleared',
+    )
+  })
+
+  it('should cleanup after a message call', async () => {
+    const evm = await createEVM()
+    const contractAddress = createZeroAddress()
+    // PUSH 1 PUSH 1 TSTORE
+    const code = hexToBytes('0x600160015D')
+    await evm.stateManager.putCode(contractAddress, code)
+    const keyBuf = setLengthLeft(new Uint8Array([1]), 32)
+    await evm.runCall({
+      gasLimit: BigInt(100_000),
+    })
+    const stored = evm.transientStorage.get(contractAddress, keyBuf)
+    assert.ok(
+      equalsBytes(unpadBytes(stored), new Uint8Array()),
+      'Transient storage has been cleared',
+    )
   })
 })

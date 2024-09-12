@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/common",
-  "version": "4.3.0",
+  "version": "4.4.0",
   "description": "Resources common to all Ethereum implementations",
   "keywords": [
     "ethereum",
@@ -26,7 +26,8 @@
       "email": "Holger.Drewes@gmail.com"
     }
   ],
-  "type": "commonjs",
+  "type": "module",
+  "sideEffects": false,
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
@@ -51,12 +52,13 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --config=../../config/vitest.browser.config.mts",
+    "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^9.0.3"
+    "@ethereumjs/util": "^9.1.0",
+    "ethereum-cryptography": "^2.2.1"
   },
   "devDependencies": {
     "@polkadot/util": "^12.6.2",

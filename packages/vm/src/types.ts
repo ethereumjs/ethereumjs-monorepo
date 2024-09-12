@@ -1,14 +1,18 @@
 import type { Bloom } from './bloom/index.js'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
-import type { BlockchainInterface } from '@ethereumjs/blockchain'
-import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
-import type { EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
+import type { Common, ParamsDict, StateManagerInterface } from '@ethereumjs/common'
+import type {
+  EVMInterface,
+  EVMMockBlockchainInterface,
+  EVMOpts,
+  EVMResult,
+  Log,
+} from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type {
   BigIntLike,
   CLRequest,
   CLRequestType,
-  GenesisState,
   PrefixedHexString,
   WithdrawalData,
 } from '@ethereumjs/util'
@@ -65,7 +69,7 @@ export interface EIP4844BlobTxReceipt extends PostByzantiumTxReceipt {
   /**
    * blob gas price for block transaction was included in
    *
-   * Note: This valus is not included in the `receiptRLP` used for encoding the `receiptsRoot` in a block
+   * Note: This values is not included in the `receiptRLP` used for encoding the `receiptsRoot` in a block
    * and is only provided as part of receipt metadata.
    */
   blobGasPrice: bigint
@@ -118,11 +122,11 @@ export interface VMOpts {
   /**
    * A {@link StateManager} instance to use as the state store
    */
-  stateManager?: EVMStateManagerInterface
+  stateManager?: StateManagerInterface
   /**
    * A {@link Blockchain} object for storing/retrieving blocks
    */
-  blockchain?: BlockchainInterface
+  blockchain?: EVMMockBlockchainInterface
   /**
    * If true, create entries in the state tree for the precompiled contracts, saving some gas the
    * first time each of them is called.
@@ -137,11 +141,6 @@ export interface VMOpts {
    * Default: `false`
    */
   activatePrecompiles?: boolean
-  /**
-   * A genesisState to generate canonical genesis for the "in-house" created stateManager if external
-   * stateManager not provided for the VM, defaults to an empty state
-   */
-  genesisState?: GenesisState
 
   /**
    * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
@@ -153,11 +152,36 @@ export interface VMOpts {
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
   setHardfork?: boolean | BigIntLike
+  /**
+   * VM parameters sorted by EIP can be found in the exported `paramsVM` dictionary,
+   * which is internally passed to the associated `@ethereumjs/common` instance which
+   * manages parameter selection based on the hardfork and EIP settings.
+   *
+   * This option allows providing a custom set of parameters. Note that parameters
+   * get fully overwritten, so you need to extend the default parameter dict
+   * to provide the full parameter set.
+   *
+   * It is recommended to deep-clone the params object for this to avoid side effects:
+   *
+   * ```ts
+   * const params = JSON.parse(JSON.stringify(paramsVM))
+   * params['1559']['elasticityMultiplier'] = 10 // 2
+   * ```
+   */
+  params?: ParamsDict
 
   /**
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
    */
   evm?: EVMInterface
+
+  /**
+   * Often there is no need to provide a full custom EVM but only a few options need to be
+   * adopted. This option allows to provide a custom set of EVM options to be passed.
+   *
+   * Note: This option will throw if used in conjunction with a full custom EVM passed.
+   */
+  evmOpts?: EVMOpts
 
   profilerOpts?: VMProfilerOpts
 }
@@ -176,6 +200,11 @@ export interface BuilderOpts extends BlockOptions {
    * Default: true
    */
   putBlockIntoBlockchain?: boolean
+  /**
+   * Provide a clique signer's privateKey to seal this block.
+   * Will throw if provided on a non-PoA chain.
+   */
+  cliqueSigner?: Uint8Array
 }
 
 /**
@@ -281,12 +310,9 @@ export interface RunBlockOpts {
    * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
    * for older Hfs.
    *
-   * Additionally it is possible to pass in a specific TD value to support live-Merge-HF
-   * transitions. Note that this should only be needed in very rare and specific scenarios.
-   *
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
-  setHardfork?: boolean | BigIntLike
+  setHardfork?: boolean
 
   /**
    * If true, adds a hashedKey -> preimages mapping of all touched accounts

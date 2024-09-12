@@ -35,7 +35,7 @@ You can import the `Wallet` class like this
 Node.js / ES6:
 
 ```js
-// ./examples/wallet.js
+// ./examples/wallet.cjs
 
 const { Wallet } = require('@ethereumjs/wallet')
 
@@ -61,7 +61,7 @@ Importing various third party wallets is possible through the `thirdparty` submo
 Node.js / ES5:
 
 ```js
-// ./examples/thirdparty.js
+// ./examples/thirdparty.cjs
 
 const { thirdparty } = require('@ethereumjs/wallet')
 
@@ -89,12 +89,12 @@ To use BIP32 HD wallets, first include the `hdkey` submodule:
 Node.js / ES5:
 
 ```js
-// ./examples/hdKey.js
+// ./examples/hdKey.cjs
 
 const { hdkey } = require('@ethereumjs/wallet')
 
 const wallet = hdkey.EthereumHDKey.fromMnemonic(
-  'clown galaxy face oxygen birth round modify fame correct stumble kind excess'
+  'clown galaxy face oxygen birth round modify fame correct stumble kind excess',
 )
 console.log(wallet.getWallet().getAddressString()) // Should print an Ethereum address
 ```
@@ -107,7 +107,7 @@ ESM / TypeScript:
 import { hdkey } from '@ethereumjs/wallet'
 
 const wallet = hdkey.EthereumHDKey.fromMnemonic(
-  'clown galaxy face oxygen birth round modify fame correct stumble kind excess'
+  'clown galaxy face oxygen birth round modify fame correct stumble kind excess',
 )
 console.log(wallet.getWallet().getAddressString()) // Should print an Ethereum address
 ```

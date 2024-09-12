@@ -1,4 +1,4 @@
-import type { Blockchain } from '.'
+import type { Blockchain } from './index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Common, ConsensusAlgorithm } from '@ethereumjs/common'
 import type { AsyncEventEmitter, DB, DBObject, GenesisState } from '@ethereumjs/util'
@@ -10,7 +10,7 @@ export type BlockchainEvents = {
 }
 
 export interface BlockchainInterface {
-  consensus: Consensus
+  consensus: Consensus | undefined
   /**
    * Adds a block to the blockchain.
    *
@@ -44,7 +44,7 @@ export interface BlockchainInterface {
     name: string,
     onBlock: OnBlock,
     maxBlocks?: number,
-    releaseLockOnCallback?: boolean
+    releaseLockOnCallback?: boolean,
   ): Promise<number>
 
   /**
@@ -132,6 +132,10 @@ export interface GenesisOptions {
   genesisStateRoot?: Uint8Array
 }
 
+export type ConsensusDict = {
+  [consensusAlgorithm: ConsensusAlgorithm | string]: Consensus
+}
+
 /**
  * This are the options that the Blockchain constructor can receive.
  */
@@ -162,17 +166,6 @@ export interface BlockchainOptions extends GenesisOptions {
   db?: DB<Uint8Array | string | number, Uint8Array | string | DBObject>
 
   /**
-   * This flags indicates if a block should be validated along the consensus algorithm
-   * or protocol used by the chain, e.g. by verifying the PoW on the block.
-   *
-   * Supported consensus types and algorithms (taken from the `Common` instance):
-   * - 'pow' with 'ethash' algorithm (validates the proof-of-work)
-   * - 'poa' with 'clique' algorithm (verifies the block signatures)
-   * Default: `true`.
-   */
-  validateConsensus?: boolean
-
-  /**
    * This flag indicates if protocol-given consistency checks on
    * block headers and included uncles and transactions should be performed,
    * see Block#validate for details.
@@ -181,9 +174,40 @@ export interface BlockchainOptions extends GenesisOptions {
   validateBlocks?: boolean
 
   /**
-   * Optional custom consensus that implements the {@link Consensus} class
+   * Validate the consensus with the respective consensus implementation passed
+   * to `consensusDict` (see respective option) `CasperConsensus` (which effectively
+   * does nothing) is available by default.
+   *
+   * For the build-in validation classes the following validations take place.
+   * - 'pow' with 'ethash' algorithm (validates the proof-of-work)
+   * - 'poa' with 'clique' algorithm (verifies the block signatures)
+   * Default: `false`.
    */
-  consensus?: Consensus
+  validateConsensus?: boolean
+
+  /**
+   * Optional dictionary with consensus objects (adhering to the {@link Consensus} interface)
+   * if consensus validation is wished for certain consensus algorithms.
+   *
+   * Since consensus validation moved to the Ethereum consensus layer with Proof-of-Stake
+   * consensus is not validated by default. For `ConsensusAlgorithm.Ethash` and
+   * `ConsensusAlgorithm.Clique` consensus validation can be activated by passing in the
+   * respective consensus validation objects `EthashConsensus` or `CliqueConsensus`.
+   *
+   * ```ts
+   * import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
+   * import type { ConsensusDict } from '@ethereumjs/blockchain'
+   *
+   * const consensusDict: ConsensusDict = {}
+   * consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
+   * const blockchain = await createBlockchain({ common, consensusDict })
+   * ```
+   *
+   * Additionally it is possible to provide a fully custom consensus implementation.
+   * Note that this needs a custom `Common` object passed to the blockchain where
+   * the `ConsensusAlgorithm` string matches the string used here.
+   */
+  consensusDict?: ConsensusDict
 }
 
 /**
@@ -219,7 +243,7 @@ export interface Consensus {
   newBlock(
     block: Block,
     commonAncestor?: BlockHeader,
-    ancientHeaders?: BlockHeader[]
+    ancientHeaders?: BlockHeader[],
   ): Promise<void>
 }
 

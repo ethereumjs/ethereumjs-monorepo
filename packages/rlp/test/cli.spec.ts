@@ -5,7 +5,7 @@ import type { ChildProcessWithoutNullStreams } from 'child_process'
 
 export function cliRunHelper(
   cliArgs: string[],
-  onData: (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => void
+  onData: (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => void,
 ) {
   const file = require.resolve('../bin/rlp.cjs')
   const child = spawn(process.execPath, [file, ...cliArgs])
@@ -46,7 +46,7 @@ describe('rlp CLI', async () => {
       const onData = (
         message: string,
         child: ChildProcessWithoutNullStreams,
-        resolve: Function
+        resolve: Function,
       ) => {
         assert.ok(message.includes('0x05'), 'cli correctly encoded 5')
         child.kill(9)

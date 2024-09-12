@@ -41,7 +41,7 @@ const getEncodings = (opts: EncodingOpts = {}) => {
  */
 export class LevelDB<
   TKey extends Uint8Array | string = Uint8Array | string,
-  TValue extends Uint8Array | string | DBObject = Uint8Array | string | DBObject
+  TValue extends Uint8Array | string | DBObject = Uint8Array | string | DBObject,
 > implements DB<TKey, TValue>
 {
   _leveldb: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
@@ -52,7 +52,7 @@ export class LevelDB<
    * @param leveldb - An abstract-leveldown compliant store
    */
   constructor(
-    leveldb?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+    leveldb?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>,
   ) {
     this._leveldb = leveldb ?? new MemoryLevel()
   }

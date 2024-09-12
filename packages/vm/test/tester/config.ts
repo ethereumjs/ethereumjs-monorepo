@@ -1,7 +1,8 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { type Kzg } from '@ethereumjs/util'
 import * as path from 'path'
 
-import type { Kzg } from '@ethereumjs/util'
+import type { HardforkTransitionConfig } from '@ethereumjs/common'
 
 /**
  * Default tests path (git submodule: ethereum-tests)
@@ -24,6 +25,11 @@ export const SKIP_BROKEN = [
   'blockChainFrontierWithLargerTDvsHomesteadBlockchain2_FrontierToHomesteadAt5',
   'blockChainFrontierWithLargerTDvsHomesteadBlockchain_FrontierToHomesteadAt5',
   'HomesteadOverrideFrontier_FrontierToHomesteadAt5',
+
+  // Test skipped in ethereum-tests v14, this is an internal test for retesteth to throw an error if the test self is wrong
+  // This test is thus not supposed to pass
+  // TODO: remove me once this test is removed from the releases
+  'filling_unexpectedException',
 ]
 
 /**
@@ -165,17 +171,18 @@ const testLegacy = {
   byzantium: true,
   constantinople: true,
   petersburg: true,
-  istanbul: false,
-  muirGlacier: false,
-  berlin: false,
-  london: false,
-  paris: false,
-  ByzantiumToConstantinopleFixAt5: false,
-  EIP158ToByzantiumAt5: false,
-  FrontierToHomesteadAt5: false,
-  HomesteadToDaoAt5: false,
-  HomesteadToEIP150At5: false,
-  BerlinToLondonAt5: false,
+  istanbul: true,
+  muirGlacier: true,
+  berlin: true,
+  london: true,
+  paris: true,
+  shanghai: true,
+  ByzantiumToConstantinopleFixAt5: true,
+  EIP158ToByzantiumAt5: true,
+  FrontierToHomesteadAt5: true,
+  HomesteadToDaoAt5: true,
+  HomesteadToEIP150At5: true,
+  BerlinToLondonAt5: true,
 }
 
 /**
@@ -190,9 +197,12 @@ export function getTestDirs(network: string, testType: string) {
       key.toLowerCase() === network.toLowerCase() &&
       testLegacy[key as keyof typeof testLegacy] === true
     ) {
-      // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
+      // Tests snapshots have moved in `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
+      // Also tests have moved in `LegacyTests/Cancun`:
+      // https://github.com/ethereum/tests/releases/tag/v14.0
       testDirs.push('LegacyTests/Constantinople/' + testType)
+      testDirs.push('LegacyTests/Cancun/' + testType)
       break
     }
   }
@@ -215,11 +225,11 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
   // normal hard fork, return the common with this hard fork
   // find the right upper/lowercased version
   const hfName = normalHardforks.reduce((previousValue, currentValue) =>
-    currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue
+    currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue,
   )
-  const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
+  const mainnetCommon = new Common({ chain: Mainnet, hardfork: hfName })
   const hardforks = mainnetCommon.hardforks()
-  const testHardforks = []
+  const testHardforks: HardforkTransitionConfig[] = []
   for (const hf of hardforks) {
     // check if we enable this hf
     // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
@@ -233,18 +243,13 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
       })
     } else {
       // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
-      if (ttd === undefined && timestamp === undefined) {
-        testHardforks.push({
-          name: hf.name,
-          //forkHash: hf.forkHash,
-          block: null,
-        })
-      } else if (hf.name === 'paris' && ttd !== undefined) {
-        // merge will currently always be after a hardfork, so add it here
+      if (
+        (ttd === undefined && timestamp === undefined) ||
+        (hf.name === 'paris' && ttd !== undefined)
+      ) {
         testHardforks.push({
           name: hf.name,
           block: null,
-          ttd: BigInt(ttd),
         })
       }
       if (timestamp !== undefined && hf.name !== Hardfork.Dao) {
@@ -256,12 +261,13 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
       }
     }
   }
-  const common = Common.custom(
+  const common = createCustomCommon(
     {
       hardforks: testHardforks,
       defaultHardfork: hfName,
     },
-    { eips: [3607], customCrypto: { kzg } }
+    Mainnet,
+    { eips: [3607], customCrypto: { kzg } },
   )
   // Activate EIPs
   const eips = network.match(/(?<=\+)(.\d+)/g)
@@ -316,7 +322,7 @@ export function getCommon(network: string, kzg?: Kzg): Common {
       throw new Error('network not supported: ' + network)
     }
     const mainnetCommon = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: transitionForks.finalSupportedFork,
     })
     const hardforks = mainnetCommon.hardforks()
@@ -340,16 +346,16 @@ export function getCommon(network: string, kzg?: Kzg): Common {
         })
       }
     }
-    const common = Common.custom(
+    const common = createCustomCommon(
       {
         hardforks: testHardforks,
       },
+      Mainnet,
       {
-        baseChain: 'mainnet',
         hardfork: transitionForks.startFork,
         eips: [3607],
         customCrypto: { kzg },
-      }
+      },
     )
     return common
   }
@@ -413,7 +419,7 @@ const expectedTestsFull: {
  */
 export function getExpectedTests(
   fork: string,
-  name: 'BlockchainTests' | 'GeneralStateTests'
+  name: 'BlockchainTests' | 'GeneralStateTests',
 ): number | undefined {
   if (expectedTestsFull[name] === undefined) {
     return

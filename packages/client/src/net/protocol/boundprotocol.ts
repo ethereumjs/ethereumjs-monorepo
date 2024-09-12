@@ -84,7 +84,7 @@ export class BoundProtocol {
       }
     })
     this.sender.on('error', (error: Error) =>
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer),
     )
   }
 
@@ -137,7 +137,7 @@ export class BoundProtocol {
           Event.PROTOCOL_MESSAGE,
           { name: message.name, data },
           this.protocol.name,
-          this.peer
+          this.peer,
         )
       }
     }

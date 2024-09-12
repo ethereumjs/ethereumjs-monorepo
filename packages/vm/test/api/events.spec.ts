@@ -1,15 +1,15 @@
 import { Block } from '@ethereumjs/block'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, toBytes } from '@ethereumjs/util'
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
+import { Account, bytesToHex, createAddressFromPrivateKey, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../src/vm'
+import { createVM, runBlock, runTx } from '../../src/index.js'
 
 describe('VM events', () => {
   const privKey = toBytes('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
 
   it('should emit the Block before running it', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let emitted
     vm.events.on('beforeBlock', (val: any) => {
@@ -18,7 +18,7 @@ describe('VM events', () => {
 
     const block = new Block()
 
-    await vm.runBlock({
+    await runBlock(vm, {
       block,
       generate: true,
       skipBlockValidation: true,
@@ -28,7 +28,7 @@ describe('VM events', () => {
   })
 
   it('should emit a RunBlockResult after running a block', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let emitted
     vm.events.on('afterBlock', (val: any) => {
@@ -37,7 +37,7 @@ describe('VM events', () => {
 
     const block = new Block()
 
-    await vm.runBlock({
+    await runBlock(vm, {
       block,
       generate: true,
       skipBlockValidation: true,
@@ -48,90 +48,90 @@ describe('VM events', () => {
   })
 
   it('should emit the Transaction before running it', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let emitted
     vm.events.on('beforeTx', (val: any) => {
       emitted = val
     })
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
     }).sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(emitted, tx)
   })
 
   it('should emit RunTxResult after running a tx', async () => {
-    const vm = await VM.create()
-    const address = Address.fromPrivateKey(privKey)
+    const vm = await createVM()
+    const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.events.on('afterTx', (val: any) => {
       emitted = val
     })
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
       value: 1,
     }).sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(bytesToHex(emitted.execResult.returnValue), '0x')
   })
 
   it('should emit the Message before running it', async () => {
-    const vm = await VM.create()
-    const address = Address.fromPrivateKey(privKey)
+    const vm = await createVM()
+    const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.evm.events!.on('beforeMessage', (val: any) => {
       emitted = val
     })
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
       value: 1,
     }).sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(emitted.to.toString(), '0x1111111111111111111111111111111111111111')
     assert.equal(bytesToHex(emitted.code), '0x')
   })
 
   it('should emit EVMResult after running a message', async () => {
-    const vm = await VM.create()
-    const address = Address.fromPrivateKey(privKey)
+    const vm = await createVM()
+    const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.evm.events!.on('afterMessage', (val: any) => {
       emitted = val
     })
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
       value: 1,
     }).sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(bytesToHex(emitted.createdAddress), '0x')
   })
 
   it('should emit InterpreterStep on each step', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let lastEmitted: any
     vm.evm.events!.on('step', (val: any) => {
@@ -141,19 +141,19 @@ describe('VM events', () => {
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
     // This deploys a contract which has a single byte of code, 0x41.
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
     }).sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(lastEmitted.opcode.name, 'RETURN')
   })
 
   it('should emit a NewContractEvent on new contracts', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let emitted: any
     vm.evm.events!.on('newContract', (val: any) => {
@@ -163,17 +163,17 @@ describe('VM events', () => {
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
     // This deploys a contract which has a single byte of code, 0x41.
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
     }).sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(
       bytesToHex(emitted.code),
-      '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3'
+      '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
     )
   })
 })

@@ -2,7 +2,12 @@ import { UNKNOWN_PAYLOAD } from '../../error-code.js'
 
 import type { Skeleton } from '../../../service/index.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
-import type { DepositRequestV1, PrefixedHexString, WithdrawalRequestV1 } from '@ethereumjs/util'
+import type {
+  ConsolidationRequestV1,
+  DepositRequestV1,
+  PrefixedHexString,
+  WithdrawalRequestV1,
+} from '@ethereumjs/util'
 
 export enum Status {
   ACCEPTED = 'ACCEPTED',
@@ -31,6 +36,7 @@ export type ExecutionPayloadV3 = ExecutionPayloadV2 & { excessBlobGas: Uint64; b
 export type ExecutionPayloadV4 = ExecutionPayloadV3 & {
   depositRequests: DepositRequestV1[]
   withdrawalRequests: WithdrawalRequestV1[]
+  consolidationRequests: ConsolidationRequestV1[]
 }
 
 export type ForkchoiceStateV1 = {
@@ -62,12 +68,6 @@ export type PayloadStatusV1 = {
 export type ForkchoiceResponseV1 = {
   payloadStatus: PayloadStatusV1
   payloadId: Bytes8 | null
-}
-
-export type TransitionConfigurationV1 = {
-  terminalTotalDifficulty: Uint256
-  terminalBlockHash: Bytes32
-  terminalBlockNumber: Uint64
 }
 
 export type BlobsBundleV1 = {

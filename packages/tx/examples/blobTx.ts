@@ -1,5 +1,5 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createBlob4844Tx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
 
@@ -7,7 +7,7 @@ const main = async () => {
   const kzg = await loadKZG()
 
   const common = new Common({
-    chain: Chain.Mainnet,
+    chain: Mainnet,
     hardfork: Hardfork.Shanghai,
     eips: [4844],
     customCrypto: { kzg },
@@ -31,9 +31,9 @@ const main = async () => {
     blobsData: ['abcd'],
   }
 
-  const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
+  const tx = createBlob4844Tx(txData, { common })
 
   console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
 }
 
-main()
+void main()

@@ -2,7 +2,7 @@
  * External Interfaces for other EthereumJS libraries
  */
 
-import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Account, Address, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
 
 export interface StorageDump {
   [key: string]: string
@@ -31,7 +31,9 @@ export interface StorageRange {
   nextKey: string | null
 }
 
-export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash'>>
+export type AccountFields = Partial<
+  Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash' | 'codeSize'>
+>
 
 export type StorageProof = {
   key: PrefixedHexString
@@ -49,54 +51,132 @@ export type Proof = {
   storageProof: StorageProof[]
 }
 
-/*
- * Access List types
+/**
+ * Verkle related
+ *
+ * Experimental (do not implement)
  */
+export type AccessEventFlags = {
+  stemRead: boolean
+  stemWrite: boolean
+  chunkRead: boolean
+  chunkWrite: boolean
+  chunkFill: boolean
+}
 
-export type AccessListItem = {
-  address: PrefixedHexString
-  storageKeys: PrefixedHexString[]
+/**
+ * Verkle related
+ *
+ * Experimental (do not implement)
+ */
+export interface AccessWitnessInterface {
+  touchAndChargeProofOfAbsence(address: Address): bigint
+  touchAndChargeMessageCall(address: Address): bigint
+  touchAndChargeValueTransfer(caller: Address, target: Address): bigint
+  touchAndChargeContractCreateInit(address: Address): bigint
+  touchAndChargeContractCreateCompleted(address: Address): bigint
+  touchTxOriginAndComputeGas(origin: Address): bigint
+  touchTxTargetAndComputeGas(target: Address, { sendsValue }: { sendsValue?: boolean }): bigint
+  touchCodeChunksRangeOnReadAndChargeGas(contact: Address, startPc: number, endPc: number): bigint
+  touchCodeChunksRangeOnWriteAndChargeGas(contact: Address, startPc: number, endPc: number): bigint
+  touchAddressOnWriteAndComputeGas(
+    address: Address,
+    treeIndex: number | bigint,
+    subIndex: number | Uint8Array,
+  ): bigint
+  touchAddressOnReadAndComputeGas(
+    address: Address,
+    treeIndex: number | bigint,
+    subIndex: number | Uint8Array,
+  ): bigint
+  touchAddressAndChargeGas(
+    address: Address,
+    treeIndex: number | bigint,
+    subIndex: number | Uint8Array,
+    { isWrite }: { isWrite?: boolean },
+  ): bigint
+  touchAddress(
+    address: Address,
+    treeIndex: number | bigint,
+    subIndex: number | Uint8Array,
+    { isWrite }: { isWrite?: boolean },
+  ): AccessEventFlags
+  shallowCopy(): AccessWitnessInterface
+  merge(accessWitness: AccessWitnessInterface): void
 }
 
 /*
- * An Access List as a tuple of [address: Uint8Array, storageKeys: Uint8Array[]]
+ * Generic StateManager interface corresponding with the @ethereumjs/statemanager package
+ *
  */
-export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
-export type AccessListBytes = AccessListBytesItem[]
-export type AccessList = AccessListItem[]
-
 export interface StateManagerInterface {
+  /*
+   * Core Access Functionality
+   */
+  // Account methods
   getAccount(address: Address): Promise<Account | undefined>
   putAccount(address: Address, account?: Account): Promise<void>
   deleteAccount(address: Address): Promise<void>
   modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
-  putContractCode(address: Address, value: Uint8Array): Promise<void>
-  getContractCode(address: Address): Promise<Uint8Array>
-  getContractCodeSize?(address: Address): Promise<number>
-  getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
-  putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
-  clearContractStorage(address: Address): Promise<void>
+
+  // Code methods
+  putCode(address: Address, value: Uint8Array): Promise<void>
+  getCode(address: Address): Promise<Uint8Array>
+  getCodeSize(address: Address): Promise<number>
+
+  // Storage methods
+  getStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
+  putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
+  clearStorage(address: Address): Promise<void>
+
+  /*
+   * Checkpointing Functionality
+   */
   checkpoint(): Promise<void>
   commit(): Promise<void>
   revert(): Promise<void>
+
+  /*
+   * State Root Functionality
+   */
   getStateRoot(): Promise<Uint8Array>
   setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
-  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
   hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
-  shallowCopy(downlevelCaches?: boolean): StateManagerInterface
-  getAppliedKey?(address: Uint8Array): Uint8Array
-}
 
-export interface EVMStateManagerInterface extends StateManagerInterface {
+  /*
+   * Extra Functionality
+   *
+   * Optional non-essential methods, these methods should always be guarded
+   * on usage (check for existence)
+   */
+  // Client RPC
+  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
+  dumpStorage?(address: Address): Promise<StorageDump>
+  dumpStorageRange?(address: Address, startKey: bigint, limit: number): Promise<StorageRange>
+
+  /*
+   * EVM/VM Specific Functionality
+   */
   originalStorageCache: {
     get(address: Address, key: Uint8Array): Promise<Uint8Array>
     clear(): void
   }
+  generateCanonicalGenesis?(initState: any): Promise<void> // TODO make input more typesafe
+  // only Verkle/EIP-6800 (experimental)
+  accessWitness?: AccessWitnessInterface
+  initVerkleExecutionWitness?(
+    blockNum: bigint,
+    executionWitness?: VerkleExecutionWitness | null,
+    accessWitness?: AccessWitnessInterface,
+  ): void
+  verifyVerkleProof?(): boolean
+  verifyPostState?(): boolean
+  checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
+  getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 
-  dumpStorage(address: Address): Promise<StorageDump> // only used in client
-  dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> // only used in client
-  generateCanonicalGenesis(initState: any): Promise<void> // TODO make input more typesafe
-  getProof(address: Address, storageSlots?: Uint8Array[]): Promise<Proof>
-
-  shallowCopy(downlevelCaches?: boolean): EVMStateManagerInterface
+  /*
+   * Utility
+   */
+  clearCaches(): void
+  shallowCopy(downlevelCaches?: boolean): StateManagerInterface
 }

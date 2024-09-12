@@ -1,5 +1,5 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlock } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { KeyEncoding, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -33,23 +33,23 @@ describe('[Chain]', () => {
   it('should retrieve chain properties', async () => {
     const chain = await Chain.create({ config })
     await chain.open()
-    assert.equal(chain.networkId, BigInt(1), 'get chain.networkId')
+    assert.equal(chain.chainId, BigInt(1), 'get chain.chainId')
     assert.equal(chain.blocks.td.toString(10), '17179869184', 'get chain.blocks.td')
     assert.equal(chain.blocks.height.toString(10), '0', 'get chain.blocks.height')
     assert.equal(
       bytesToHex(chain.genesis.hash()),
       '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-      'get chain.genesis'
+      'get chain.genesis',
     )
     assert.ok(
       equalsBytes(chain.genesis.hash(), chain.blocks.latest!.hash()),
-      'get chain.block.latest'
+      'get chain.block.latest',
     )
     await chain.close()
   })
 
   it('should detect unopened chain', async () => {
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       validateBlocks: false,
       validateConsensus: false,
     })
@@ -59,7 +59,7 @@ describe('[Chain]', () => {
       difficulty: BigInt(0xabcdffff),
       parentHash: chain.genesis.hash(),
     }
-    const block = Block.fromBlockData({ header: headerData } as BlockData, {
+    const block = createBlock({ header: headerData } as BlockData, {
       common: config.chainCommon,
     })
 
@@ -122,7 +122,7 @@ describe('[Chain]', () => {
 
   it('should add block to chain', async () => {
     // TODO: add test cases with activated block validation
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       validateBlocks: false,
       validateConsensus: false,
     })
@@ -133,7 +133,7 @@ describe('[Chain]', () => {
       difficulty: BigInt(0xabcdffff),
       parentHash: chain.genesis.hash(),
     }
-    const block = Block.fromBlockData({ header: headerData } as BlockData, {
+    const block = createBlock({ header: headerData } as BlockData, {
       common: config.chainCommon,
     })
     await chain.putBlocks([block])

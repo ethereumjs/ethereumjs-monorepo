@@ -1,4 +1,4 @@
-import type { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
+import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
 import type { BigIntLike, ECDSASignature, Kzg, PrefixedHexString } from '@ethereumjs/util'
 
 export interface ChainName {
@@ -27,8 +27,7 @@ type ConsensusConfig = {
 
 export interface ChainConfig {
   name: string
-  chainId: number | bigint
-  networkId: number | bigint
+  chainId: number | string
   defaultHardfork?: string
   comment?: string
   url?: string
@@ -41,21 +40,19 @@ export interface ChainConfig {
   depositContractAddress?: PrefixedHexString
 }
 
-// TODO: Remove the string type and only keep PrefixedHexString
 export interface GenesisBlockConfig {
-  timestamp?: PrefixedHexString | string
-  gasLimit: number | PrefixedHexString | string
-  difficulty: number | PrefixedHexString | string
-  nonce: PrefixedHexString | string
-  extraData: PrefixedHexString | string
-  baseFeePerGas?: PrefixedHexString | string
-  excessBlobGas?: PrefixedHexString | string
+  timestamp?: PrefixedHexString
+  gasLimit: number | PrefixedHexString
+  difficulty: number | PrefixedHexString
+  nonce: PrefixedHexString
+  extraData: PrefixedHexString
+  baseFeePerGas?: PrefixedHexString
+  excessBlobGas?: PrefixedHexString
 }
 
 export interface HardforkTransitionConfig {
   name: Hardfork | string
   block: number | null // null is used for hardforks that should not be applied -- since `undefined` isn't a valid value in JSON
-  ttd?: bigint | string
   timestamp?: number | string
   forkHash?: PrefixedHexString | null
 }
@@ -80,7 +77,7 @@ export interface CustomCrypto {
     v: bigint,
     r: Uint8Array,
     s: Uint8Array,
-    chainId?: bigint
+    chainId?: bigint,
   ) => Uint8Array
   sha256?: (msg: Uint8Array) => Uint8Array
   ecsign?: (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => ECDSASignature
@@ -89,7 +86,7 @@ export interface CustomCrypto {
   kzg?: Kzg
 }
 
-interface BaseOpts {
+export interface BaseOpts {
   /**
    * String identifier ('byzantium') for hardfork or {@link Hardfork} enum.
    *
@@ -105,6 +102,24 @@ interface BaseOpts {
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
    */
   eips?: number[]
+  /**
+   * Optionally pass in an EIP params dictionary, see one of the
+   * EthereumJS library `params.ts` files for an example (e.g. tx, evm).
+   * By default parameters are set by the respective library, so this
+   * is only relevant if you want to use EthereumJS libraries with a
+   * custom parameter set.
+   *
+   * Example Format:
+   *
+   * ```ts
+   * {
+   *   1559: {
+   *     initialBaseFee: 1000000000,
+   *   }
+   * }
+   * ```
+   */
+  params?: ParamsDict
   /**
    * This option can be used to replace the most common crypto primitives
    * (keccak256 hashing e.g.) within the EthereumJS ecosystem libraries
@@ -123,34 +138,10 @@ interface BaseOpts {
  */
 export interface CommonOpts extends BaseOpts {
   /**
-   * Chain name ('mainnet'), id (1), or {@link Chain} enum,
-   * either from a chain directly supported or a custom chain
-   * passed in via {@link CommonOpts.customChains}.
+   * The chain configuration to be used. There are available configuration object for mainnet
+   * (`Mainnet`) and the currently active testnets which can be directly used.
    */
-  chain: string | number | Chain | bigint | object
-  /**
-   * Initialize (in addition to the supported chains) with the selected
-   * custom chains. Custom genesis state should be passed to the Blockchain class if used.
-   *
-   * Usage (directly with the respective chain initialization via the {@link CommonOpts.chain} option):
-   *
-   * ```javascript
-   * import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
-   * const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomChain1 ]})
-   * ```
-   */
-  customChains?: ChainConfig[]
-}
-
-/**
- * Options to be used with the {@link Common.custom} static constructor.
- */
-export interface CustomCommonOpts extends BaseOpts {
-  /**
-   * The name (`mainnet`), id (`1`), or {@link Chain} enum of
-   * a standard chain used to base the custom chain params on.
-   */
-  baseChain?: string | number | Chain | bigint
+  chain: ChainConfig
 }
 
 export interface GethConfigOpts extends BaseOpts {
@@ -159,49 +150,33 @@ export interface GethConfigOpts extends BaseOpts {
   mergeForkIdPostMerge?: boolean
 }
 
-// TODO: Deprecate the string type and only keep BigIntLike
 export interface HardforkByOpts {
-  blockNumber?: BigIntLike | string
-  timestamp?: BigIntLike | string
-  td?: BigIntLike | string
-}
-
-type ParamDict = {
-  v: number | bigint | null
-  d: string
-}
-
-export type EIPOrHFConfig = {
-  comment: string
-  url: string
-  status: string
-  gasConfig?: {
-    [key: string]: ParamDict
-  }
-  gasPrices?: {
-    [key: string]: ParamDict
-  }
-  pow?: {
-    [key: string]: ParamDict
-  }
-  sharding?: {
-    [key: string]: ParamDict
-  }
-  vm?: {
-    [key: string]: ParamDict
-  }
+  blockNumber?: BigIntLike
+  timestamp?: BigIntLike
 }
 
 export type EIPConfig = {
   minimumHardfork: Hardfork
-  requiredEIPs: number[]
-} & EIPOrHFConfig
+  requiredEIPs?: number[]
+}
+
+export type ParamsConfig = {
+  [key: string]: number | string | null
+}
 
 export type HardforkConfig = {
-  name: string
   eips?: number[]
   consensus?: ConsensusConfig
-} & EIPOrHFConfig
+  params?: ParamsConfig
+}
+
+export type EIPsDict = {
+  [key: string]: EIPConfig
+}
+
+export type ParamsDict = {
+  [key: string]: ParamsConfig
+}
 
 export type HardforksDict = {
   [key: string]: HardforkConfig

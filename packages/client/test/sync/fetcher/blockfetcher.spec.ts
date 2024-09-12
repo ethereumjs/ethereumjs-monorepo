@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { createBlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { KECCAK256_RLP } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
@@ -71,7 +71,7 @@ describe('[BlockFetcher]', async () => {
     assert.equal(
       fetcher.first + fetcher.count - BigInt(1) === BigInt(15),
       true,
-      'height should now be 15'
+      'height should now be 15',
     )
 
     // Clear fetcher queue for next test of gap when following head
@@ -83,7 +83,7 @@ describe('[BlockFetcher]', async () => {
     assert.equal(
       (fetcher as any).in.length,
       11,
-      '10 new tasks to catch up to head (1-49, 5 per request), 1 new task for subsequent block numbers (50-51)'
+      '10 new tasks to catch up to head (1-49, 5 per request), 1 new task for subsequent block numbers (50-51)',
     )
 
     fetcher.destroy()
@@ -104,7 +104,7 @@ describe('[BlockFetcher]', async () => {
     assert.deepEqual(fetcher.process({ task: { count: 2 } } as any, blocks), blocks, 'got results')
     assert.notOk(
       fetcher.process({ task: { count: 2 } } as any, { blocks: [] } as any),
-      'bad results'
+      'bad results',
     )
   })
 
@@ -188,14 +188,10 @@ describe('[BlockFetcher]', async () => {
   it('should parse bodies correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     config.chainCommon.getHardforkBy = vi.fn((input) => {
-      if (
-        input['blockNumber'] !== undefined &&
-        input['td'] !== undefined &&
-        input['timestamp'] !== undefined
-      )
+      if (input['blockNumber'] !== undefined && input['timestamp'] !== undefined)
         return Hardfork.Shanghai
 
-      if (input['blockNumber'] !== undefined && input['td'] !== undefined) return Hardfork.Shanghai
+      if (input['blockNumber'] !== undefined) return Hardfork.Shanghai
 
       if (input['blockNumber'] !== undefined && input['timestamp'] !== undefined)
         return Hardfork.Shanghai
@@ -211,9 +207,9 @@ describe('[BlockFetcher]', async () => {
       count: BigInt(0),
     })
 
-    const shanghaiHeader = BlockHeader.fromHeaderData(
+    const shanghaiHeader = createBlockHeader(
       { number: 1, withdrawalsRoot: KECCAK256_RLP },
-      { common: config.chainCommon, setHardfork: true }
+      { common: config.chainCommon, setHardfork: true },
     )
 
     const task = { count: 1, first: BigInt(1) }
@@ -267,7 +263,7 @@ describe('store()', async () => {
   config.events.on(Event.SYNC_FETCHED_BLOCKS, () =>
     it('should emit fetched blocks event', () => {
       assert.ok(true, 'store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')
-    })
+    }),
   )
   await fetcher.store([])
 })

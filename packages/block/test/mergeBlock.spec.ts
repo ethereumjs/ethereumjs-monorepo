@@ -1,26 +1,27 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
-  Address,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
+  createZeroAddress,
   equalsBytes,
   hexToBytes,
   zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Block } from '../src/block.js'
-import { BlockHeader } from '../src/header.js'
+import { Block, createBlock, createBlockHeader } from '../src/index.js'
+
+import type { BlockHeader } from '../src/index.js'
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.Paris,
 })
 
 function validateMergeHeader(header: BlockHeader) {
   assert.ok(equalsBytes(header.parentHash, zeros(32)), 'parentHash')
   assert.ok(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY), 'uncleHash')
-  assert.ok(header.coinbase.equals(Address.zero()), 'coinbase')
+  assert.ok(header.coinbase.equals(createZeroAddress()), 'coinbase')
   assert.ok(equalsBytes(header.stateRoot, zeros(32)), 'stateRoot')
   assert.ok(equalsBytes(header.transactionsTrie, KECCAK256_RLP), 'transactionsTrie')
   assert.ok(equalsBytes(header.receiptTrie, KECCAK256_RLP), 'receiptTrie')
@@ -37,7 +38,7 @@ function validateMergeHeader(header: BlockHeader) {
 
 describe('[Header]: Casper PoS / The Merge Functionality', () => {
   it('should construct default blocks with post-merge PoS constants fields', () => {
-    const header = BlockHeader.fromHeaderData({}, { common })
+    const header = createBlockHeader({}, { common })
     validateMergeHeader(header)
 
     const block = new Block(undefined, undefined, undefined, undefined, { common }, undefined)
@@ -50,7 +51,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       const headerData = {
         uncleHash: hexToBytes('0x123abc'),
       }
-      BlockHeader.fromHeaderData(headerData, { common })
+      createBlockHeader(headerData, { common })
       assert.fail('should throw')
     } catch (e: any) {
       assert.ok(true, 'should throw on wrong uncleHash')
@@ -61,7 +62,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
         difficulty: BigInt(123456),
         number: 1n,
       }
-      BlockHeader.fromHeaderData(headerData, { common })
+      createBlockHeader(headerData, { common })
       assert.fail('should throw')
     } catch (e: any) {
       assert.ok(true, 'should throw on wrong difficulty')
@@ -72,7 +73,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
         extraData: new Uint8Array(33).fill(1),
         number: 1n,
       }
-      BlockHeader.fromHeaderData(headerData, { common })
+      createBlockHeader(headerData, { common })
       assert.fail('should throw')
     } catch (e: any) {
       assert.ok(true, 'should throw on invalid extraData length')
@@ -82,7 +83,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       const headerData = {
         mixHash: new Uint8Array(30).fill(1),
       }
-      BlockHeader.fromHeaderData(headerData, { common })
+      createBlockHeader(headerData, { common })
       assert.fail('should throw')
     } catch (e: any) {
       assert.ok(true, 'should throw on invalid mixHash length')
@@ -93,7 +94,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
         nonce: new Uint8Array(8).fill(1),
         number: 1n,
       }
-      BlockHeader.fromHeaderData(headerData, { common })
+      createBlockHeader(headerData, { common })
       assert.fail('should throw')
     } catch (e: any) {
       assert.ok(true, 'should throw on wrong nonce')
@@ -102,32 +103,26 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
 
   it('test that a PoS block with uncles cannot be produced', () => {
     try {
-      new Block(
-        undefined,
-        undefined,
-        [BlockHeader.fromHeaderData(undefined, { common })],
-        undefined,
-        {
-          common,
-        }
-      )
+      new Block(undefined, undefined, [createBlockHeader(undefined, { common })], undefined, {
+        common,
+      })
       assert.fail('should have thrown')
     } catch (e: any) {
       assert.ok(true, 'should throw')
     }
   })
 
-  it('EIP-4399: prevRando should return mixHash value', () => {
+  it('EIP-4399: prevRandao should return mixHash value', () => {
     const mixHash = new Uint8Array(32).fill(3)
-    let block = Block.fromBlockData({ header: { mixHash } }, { common })
+    let block = createBlock({ header: { mixHash } }, { common })
     assert.ok(
       equalsBytes(block.header.prevRandao, mixHash),
-      'prevRandao should return mixHash value'
+      'prevRandao should return mixHash value',
     )
 
     const commonLondon = common.copy()
     commonLondon.setHardfork(Hardfork.London)
-    block = Block.fromBlockData({ header: { mixHash } }, { common: commonLondon })
+    block = createBlock({ header: { mixHash } }, { common: commonLondon })
     try {
       block.header.prevRandao
       assert.fail('should have thrown')

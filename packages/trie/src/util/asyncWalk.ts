@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { equalsBytes, toHex } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 
 import { BranchNode } from '../node/branch.js'
 import { ExtensionNode } from '../node/extension.js'
@@ -27,17 +27,17 @@ export async function* _walkTrie(
   currentKey: number[] = [],
   onFound: OnFound = async (_trieNode: TrieNode, _key: number[]) => {},
   filter: NodeFilter = async (_trieNode: TrieNode, _key: number[]) => true,
-  visited: Set<string> = new Set<string>()
+  visited: Set<string> = new Set<string>(),
 ): AsyncIterable<{ node: TrieNode; currentKey: number[] }> {
   if (equalsBytes(nodeHash, this.EMPTY_TRIE_ROOT)) {
     return
   }
   try {
     const node = await this.lookupNode(nodeHash)
-    if (node === undefined || visited.has(toHex(this.hash(node!.serialize())))) {
+    if (node === undefined || visited.has(bytesToHex(this.hash(node!.serialize())))) {
       return
     }
-    visited.add(toHex(this.hash(node!.serialize())))
+    visited.add(bytesToHex(this.hash(node!.serialize())))
     await onFound(node!, currentKey)
     if (await filter(node!, currentKey)) {
       yield { node: node!, currentKey }

@@ -18,13 +18,13 @@ describe('getProvider', () => {
     assert.equal(
       getProvider(fakeEthersProvider),
       fakeEthersProvider._getConnection().url,
-      'returned correct provider url string'
+      'returned correct provider url string',
     )
     assert.throws(
       () => getProvider(<any>1),
       'Must provide valid provider URL or Web3Provider',
       undefined,
-      'throws correct error'
+      'throws correct error',
     )
   })
 })
@@ -86,7 +86,7 @@ describe('fetchFromProvider', () => {
     vi.unstubAllGlobals()
   })
 
-  it('handles the corner case of res.text() failing because of a network error not recieving the full response', async () => {
+  it('handles the corner case of res.text() failing because of a network error not receiving the full response', async () => {
     vi.stubGlobal('fetch', async (_url: string, _req: any) => {
       return {
         text: async () => {

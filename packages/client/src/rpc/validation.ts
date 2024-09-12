@@ -11,7 +11,7 @@ export function middleware(
   method: any,
   requiredParamsCount: number,
   validators: any[] = [],
-  names: string[] = []
+  names: string[] = [],
 ): any {
   return function (params: any[] = []) {
     return new Promise((resolve, reject) => {
@@ -379,7 +379,7 @@ export const validators = {
   },
 
   /**
-   * validator to ensure required withdawal fields are present, and checks for valid address and hex values
+   * validator to ensure required withdrawal fields are present, and checks for valid address and hex values
    * for the other quantity based fields
    * @param requiredFields array of required fields
    * @returns validator function with params:
@@ -430,7 +430,13 @@ export const validators = {
 
   get depositRequest() {
     return (
-      requiredFields: string[] = ['pubkey', 'withdrawalCredentials', 'amount', 'signature', 'index']
+      requiredFields: string[] = [
+        'pubkey',
+        'withdrawalCredentials',
+        'amount',
+        'signature',
+        'index',
+      ],
     ) => {
       return (params: any[], index: number) => {
         if (typeof params[index] !== 'object') {
@@ -440,10 +446,10 @@ export const validators = {
           }
         }
 
-        const wt = params[index]
+        const clReq = params[index]
 
         for (const field of requiredFields) {
-          if (wt[field] === undefined) {
+          if (clReq[field] === undefined) {
             return {
               code: INVALID_PARAMS,
               message: `invalid argument ${index}: required field ${field}`,
@@ -458,25 +464,25 @@ export const validators = {
         }
 
         // validate pubkey
-        for (const field of [wt.pubkey]) {
+        for (const field of [clReq.pubkey]) {
           const v = validate(field, this.bytes48)
           if (v !== undefined) return v
         }
 
         // validate withdrawalCredentials
-        for (const field of [wt.withdrawalCredentials]) {
+        for (const field of [clReq.withdrawalCredentials]) {
           const v = validate(field, this.bytes32)
           if (v !== undefined) return v
         }
 
         // validate amount, index
-        for (const field of [wt.amount, wt.index]) {
+        for (const field of [clReq.amount, clReq.index]) {
           const v = validate(field, this.bytes8)
           if (v !== undefined) return v
         }
 
         // validate signature
-        for (const field of [wt.signature]) {
+        for (const field of [clReq.signature]) {
           const v = validate(field, this.bytes96)
           if (v !== undefined) return v
         }
@@ -485,7 +491,7 @@ export const validators = {
   },
 
   get withdrawalRequest() {
-    return (requiredFields: string[] = ['sourceAddress', 'validatorPublicKey', 'amount']) => {
+    return (requiredFields: string[] = ['sourceAddress', 'validatorPubkey', 'amount']) => {
       return (params: any[], index: number) => {
         if (typeof params[index] !== 'object') {
           return {
@@ -494,10 +500,10 @@ export const validators = {
           }
         }
 
-        const wt = params[index]
+        const clReq = params[index]
 
         for (const field of requiredFields) {
-          if (wt[field] === undefined) {
+          if (clReq[field] === undefined) {
             return {
               code: INVALID_PARAMS,
               message: `invalid argument ${index}: required field ${field}`,
@@ -512,20 +518,68 @@ export const validators = {
         }
 
         // validate sourceAddress
-        for (const field of [wt.sourceAddress]) {
+        for (const field of [clReq.sourceAddress]) {
           const v = validate(field, this.address)
           if (v !== undefined) return v
         }
 
-        // validate validatorPublicKey
-        for (const field of [wt.validatorPublicKey]) {
+        // validate validatorPubkey
+        for (const field of [clReq.validatorPubkey]) {
           const v = validate(field, this.bytes48)
           if (v !== undefined) return v
         }
 
         // validate amount
-        for (const field of [wt.amount]) {
+        for (const field of [clReq.amount]) {
           const v = validate(field, this.bytes8)
+          if (v !== undefined) return v
+        }
+      }
+    }
+  },
+
+  get consolidationRequest() {
+    return (requiredFields: string[] = ['sourceAddress', 'sourcePubkey', 'targetPubkey']) => {
+      return (params: any[], index: number) => {
+        if (typeof params[index] !== 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument must be an object`,
+          }
+        }
+
+        const clReq = params[index]
+
+        for (const field of requiredFields) {
+          if (clReq[field] === undefined) {
+            return {
+              code: INVALID_PARAMS,
+              message: `invalid argument ${index}: required field ${field}`,
+            }
+          }
+        }
+
+        const validate = (field: any, validator: Function) => {
+          if (field === undefined) return
+          const v = validator([field], 0)
+          if (v !== undefined) return v
+        }
+
+        // validate sourceAddress
+        for (const field of [clReq.sourceAddress]) {
+          const v = validate(field, this.address)
+          if (v !== undefined) return v
+        }
+
+        // validate validatorPubkey
+        for (const field of [clReq.sourcePubkey]) {
+          const v = validate(field, this.bytes48)
+          if (v !== undefined) return v
+        }
+
+        // validate amount
+        for (const field of [clReq.targetPubkey]) {
+          const v = validate(field, this.bytes48)
           if (v !== undefined) return v
         }
       }
@@ -623,7 +677,7 @@ export const validators = {
   /**
    * Verification of rewardPercentiles array
    *
-   *  description: A monotonically increasing list of percentile values. For each block in the requested range, the transactions will be sorted in ascending order by effective tip per gas and the coresponding effective tip for the percentile will be determined, accounting for gas consumed.
+   *  description: A monotonically increasing list of percentile values. For each block in the requested range, the transactions will be sorted in ascending order by effective tip per gas and the corresponding effective tip for the percentile will be determined, accounting for gas consumed.
    *  type: array
    *    items: rewardPercentile value
    *

@@ -1,11 +1,11 @@
-import { Block } from '@ethereumjs/block'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createBlock } from '@ethereumjs/block'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import genesisJSON from '../../testdata/geth-genesis/debug.json'
-import { baseSetup, dummy, getRpcClient, runBlockWithTxs, setupChain } from '../helpers.js'
+import { debugData } from '../../testdata/geth-genesis/debug.js'
+import { baseSetup, dummy, getRPCClient, runBlockWithTxs, setupChain } from '../helpers.js'
 
 const method = 'debug_traceTransaction'
 
@@ -19,8 +19,8 @@ describe(method, () => {
   })
 
   it('call with invalid parameters', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge')
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(debugData, 'post-merge')
+    const rpc = getRPCClient(server)
     let res = await rpc.request(method, ['abcd', {}])
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(res.error.message.includes('hex string without 0x prefix'))
@@ -32,7 +32,7 @@ describe(method, () => {
     res = await rpc.request(method, ['0xabcd', { tracerConfig: { some: 'value' } }])
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
-      res.error.message.includes('custom tracers and tracer configurations are not implemented')
+      res.error.message.includes('custom tracers and tracer configurations are not implemented'),
     )
 
     res = await rpc.request(method, ['0xabcd', { tracer: 'someTracer' }])
@@ -45,12 +45,12 @@ describe(method, () => {
   })
 
   it('call with valid parameters', async () => {
-    const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+    const { chain, common, execution, server } = await setupChain(debugData, 'post-merge', {
       txLookupLimit: 0,
     })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // construct block with tx
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0x2,
         gasLimit: 0xfffff,
@@ -59,12 +59,12 @@ describe(method, () => {
         value: 10000,
         data: '0x60AA',
       },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(dummy.privKey)
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = Block.fromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
@@ -74,12 +74,12 @@ describe(method, () => {
   })
 
   it('call with reverting code', async () => {
-    const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+    const { chain, common, execution, server } = await setupChain(debugData, 'post-merge', {
       txLookupLimit: 0,
     })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // construct block with tx
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0x2,
         gasLimit: 0xfffff,
@@ -88,12 +88,12 @@ describe(method, () => {
         value: 10000,
         data: '0x560FAA',
       },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(dummy.privKey)
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = Block.fromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
@@ -103,12 +103,12 @@ describe(method, () => {
   })
 
   it('call with memory enabled', async () => {
-    const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+    const { chain, common, execution, server } = await setupChain(debugData, 'post-merge', {
       txLookupLimit: 0,
     })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // construct block with tx
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0x2,
         gasLimit: 0xfffff,
@@ -117,12 +117,12 @@ describe(method, () => {
         value: 10000,
         data: '0x604260005260206000F3',
       },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(dummy.privKey)
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = Block.fromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
@@ -131,17 +131,17 @@ describe(method, () => {
     assert.equal(
       res.result.structLogs[5].memory[0],
       '0x0000000000000000000000000000000000000000000000000000000000000042',
-      'produced a trace with correct memory value returned'
+      'produced a trace with correct memory value returned',
     )
   })
 
   it('call with stack disabled', async () => {
-    const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+    const { chain, common, execution, server } = await setupChain(debugData, 'post-merge', {
       txLookupLimit: 0,
     })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // construct block with tx
-    const tx = TransactionFactory.fromTxData(
+    const tx = createTxFromTxData(
       {
         type: 0x2,
         gasLimit: 0xfffff,
@@ -150,12 +150,12 @@ describe(method, () => {
         value: 10000,
         data: '0x600F6000',
       },
-      { common, freeze: false }
+      { common, freeze: false },
     ).sign(dummy.privKey)
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = Block.fromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 

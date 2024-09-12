@@ -1,8 +1,9 @@
-import { BenchmarksType } from './util'
-import { mainnetBlocks } from './mainnetBlocks'
 import { bytecode } from './bytecode'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
+import Benchmark from 'benchmark'
+import { BenchmarksType } from './util.js'
+import { mainnetBlocks } from './mainnetBlocks.js'
 
 // Add an import and a BENCHMARKS entry to list a new benchmark
 const BENCHMARKS: BenchmarksType = {

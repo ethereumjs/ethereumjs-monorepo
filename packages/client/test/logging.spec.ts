@@ -9,11 +9,11 @@ describe('[Logging]', () => {
   it('should have correct transports', () => {
     assert.ok(
       logger.transports.find((t: any) => t.name === 'console') !== undefined,
-      'should have stdout transport'
+      'should have stdout transport',
     )
     assert.ok(
       logger.transports.find((t: any) => t.name === 'file') !== undefined,
-      'should have file transport'
+      'should have file transport',
     )
   })
 
@@ -24,11 +24,11 @@ describe('[Logging]', () => {
       e.level = 'error'
       assert.ok(
         /an error\n {4}at/.test((format.transform(e) as any).message),
-        'log message should contain stack trace (1)'
+        'log message should contain stack trace (1)',
       )
       assert.ok(
         /an error\n {4}at/.test((format.transform({ level: 'error', message: e }) as any).message),
-        'log message should contain stack trace (2)'
+        'log message should contain stack trace (2)',
       )
     }
   })
@@ -44,8 +44,8 @@ describe('[Logging]', () => {
     }) as any
     assert.equal(
       message,
-      'test \x1B[38;2;0;128;0mkey\x1B[39m=value ',
-      'key=value pairs should be colorized'
+      'test \x1B[38;2;0;128;0mkey\x1B[39m=value ', // cspell:disable-line
+      'key=value pairs should be colorized',
     )
   })
 })

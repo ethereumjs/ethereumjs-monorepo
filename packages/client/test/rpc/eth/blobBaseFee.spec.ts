@@ -1,30 +1,32 @@
 import { Hardfork } from '@ethereumjs/common'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import {
-  Address,
   BIGINT_0,
   BIGINT_256,
   blobsToCommitments,
   commitmentsToVersionedHashes,
+  createAddressFromPrivateKey,
+  createZeroAddress,
   getBlobs,
   hexToBytes,
 } from '@ethereumjs/util'
+import { buildBlock } from '@ethereumjs/vm'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
-import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import { getRpcClient, setupChain } from '../helpers.js'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
+import { getRPCClient, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain/chain.js'
 import type { VMExecution } from '../../../src/execution/vmexecution.js'
 const method = 'eth_blobBaseFee'
 
 const privateKey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
-const accountAddress = Address.fromPrivateKey(privateKey)
+const accountAddress = createAddressFromPrivateKey(privateKey)
 const produceBlockWith4844Tx = async (
   execution: VMExecution,
   chain: Chain,
-  blobsCount: number[]
+  blobsCount: number[],
 ) => {
   const kzg = await loadKZG()
   // 4844 sample blob
@@ -38,7 +40,7 @@ const produceBlockWith4844Tx = async (
   const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.shallowCopy()
   // Set block's gas used to max
-  const blockBuilder = await vmCopy.buildBlock({
+  const blockBuilder = await buildBlock(vmCopy, {
     parentBlock,
     headerData: {
       timestamp: parentBlock.header.timestamp + BigInt(1),
@@ -52,7 +54,7 @@ const produceBlockWith4844Tx = async (
     const blobVersionedHashes = []
     const blobs = []
     const kzgCommitments = []
-    const to = Address.zero()
+    const to = createZeroAddress()
     if (blobsCount[i] > 0) {
       for (let blob = 0; blob < blobsCount[i]; blob++) {
         blobVersionedHashes.push(...blobVersionedHash)
@@ -61,7 +63,7 @@ const produceBlockWith4844Tx = async (
       }
     }
     await blockBuilder.addTransaction(
-      TransactionFactory.fromTxData(
+      createTxFromTxData(
         {
           type: 3,
           gasLimit: 21000,
@@ -74,8 +76,8 @@ const produceBlockWith4844Tx = async (
           kzgCommitments,
           maxFeePerBlobGas: BigInt(1000),
         },
-        { common: vmCopy.common }
-      ).sign(privateKey)
+        { common: vmCopy.common },
+      ).sign(privateKey),
     )
     nonce++
   }
@@ -88,7 +90,7 @@ const produceBlockWith4844Tx = async (
 describe(method, () => {
   it('call', async () => {
     const kzg = await loadKZG()
-    const { server } = await setupChain(genesisJSON, 'post-merge', {
+    const { server } = await setupChain(eip4844Data, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
       customCrypto: {
@@ -96,14 +98,14 @@ describe(method, () => {
       },
     })
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, [])
     assert.equal(res.result, '0x1')
   })
 
   it('call with more realistic blockchain', async () => {
     const kzg = await loadKZG()
-    const { server, execution, chain } = await setupChain(genesisJSON, 'post-merge', {
+    const { server, execution, chain } = await setupChain(eip4844Data, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
       customCrypto: {
@@ -114,7 +116,7 @@ describe(method, () => {
     for (let i = 0; i < 10; i++) {
       await produceBlockWith4844Tx(execution, chain, [6])
     }
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, [])
     assert.equal(res.result, '0x3')
   })

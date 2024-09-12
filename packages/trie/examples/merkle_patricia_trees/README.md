@@ -662,7 +662,7 @@ Now let's suppose that I'm provided with various pieces of information, some tha
 Now, I'm getting conflicting information from two other shady sources:
 
 - Marie claims that: _That branch node contains another branch, representing key-value pair "testKey000A": "testValueA"_
-- John claims that: _That branch node contains another branch, representing key-value pairs "testKey000z": "testValuez"._
+- John claims that: _That branch node contains another branch, representing key-value pairs "testKey000z": "testValues"._
 
 How can I determine who's telling the truth? Simple: by computing the branch node hash for each possibility, and comparing them with our trusted branch node hash!
 
@@ -673,7 +673,7 @@ How can I determine who's telling the truth? Simple: by computing the branch nod
 
   await trie2.put(utf8ToBytes('testKey'), utf8ToBytes('testValue'))
   await trie2.put(utf8ToBytes('testKey0001'), utf8ToBytes('testValue1'))
-  await trie2.put(utf8ToBytes('testKey000z'), utf8ToBytes('testValuez'))
+  await trie2.put(utf8ToBytes('testKey000z'), utf8ToBytes('testValues'))
 
   const temp1 = await trie1.findPath(utf8ToBytes('testKey'))
   const temp2 = await trie2.findPath(utf8ToBytes('testKey'))

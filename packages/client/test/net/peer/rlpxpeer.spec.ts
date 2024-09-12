@@ -52,7 +52,7 @@ describe('[RlpxPeer]', async () => {
         { name: 'les', version: 4, length: 23 },
         { name: 'snap', version: 1, length: 8 },
       ],
-      'correct capabilities'
+      'correct capabilities',
     )
   })
 
@@ -95,10 +95,10 @@ describe('[RlpxPeer]', async () => {
     })
 
     peer.config.events.on(Event.PEER_CONNECTED, (peer) =>
-      assert.equal(peer.id, 'abcdef0123', 'got connected')
+      assert.equal(peer.id, 'abcdef0123', 'got connected'),
     )
     peer.config.events.on(Event.PEER_DISCONNECTED, (rlpxPeer) =>
-      assert.equal(rlpxPeer.pooled, false, 'got disconnected')
+      assert.equal(rlpxPeer.pooled, false, 'got disconnected'),
     )
     peer.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
     peer.rlpx!.events.emit('peer:added', rlpxPeer)

@@ -1,7 +1,8 @@
 /* Example 1d - Deleting a Key-Value Pair from a Trie*/
 
-const { Trie } = require('../../dist/cjs')
 const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
+
+const { Trie } = require('../../dist/cjs/index.js')
 
 const trie = new Trie()
 console.log('Empty trie root: ', bytesToHex(trie.root())) // The trie root
@@ -20,7 +21,7 @@ async function test() {
   console.log('Trie root after deletion:', bytesToHex(trie.root())) // Our trie root is back to its initial value
 }
 
-test()
+void test()
 
 /*
 Results:

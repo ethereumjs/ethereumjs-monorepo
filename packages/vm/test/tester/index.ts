@@ -1,4 +1,6 @@
+import { MCLBLS, NobleBLS, NobleBN254, RustBN254 } from '@ethereumjs/evm'
 import { loadKZG } from 'kzg-wasm'
+import * as mcl from 'mcl-wasm'
 import * as minimist from 'minimist'
 import * as path from 'path'
 import * as process from 'process'
@@ -13,13 +15,13 @@ import {
   getRequiredForkConfigAlias,
   getSkipTests,
   getTestDirs,
-} from './config'
-import { runBlockchainTest } from './runners/BlockchainTestsRunner'
-import { runStateTest } from './runners/GeneralStateTestsRunner'
-import { getTestFromSource, getTestsFromArgs } from './testLoader'
+} from './config.js'
+import { runBlockchainTest } from './runners/BlockchainTestsRunner.js'
+import { runStateTest } from './runners/GeneralStateTestsRunner.js'
+import { getTestFromSource, getTestsFromArgs } from './testLoader.js'
 
 import type { Common } from '@ethereumjs/common'
-import type { bn128 } from '@ethereumjs/evm'
+import type { EVMBLSInterface, EVMBN254Interface } from '@ethereumjs/evm'
 
 /**
  * Test runner
@@ -45,10 +47,11 @@ import type { bn128 } from '@ethereumjs/evm'
  * --expected-test-amount: number.        If passed, check after tests are ran if at least this amount of tests have passed (inclusive)
  * --verify-test-amount-alltests: number. If passed, get the expected amount from tests and verify afterwards if this is the count of tests (expects tests are ran with default settings)
  * --reps: number.                        If passed, each test case will be run the number of times indicated
+ * --bls: string.                         BLS library being used, choices: Noble, MCL (default: MCL)
+ * --bn254: string.                       BN254 (alt_BN128) library being used, choices: Noble, RustBN (default: RustBN)
  * --profile                              If this flag is passed, the state/blockchain tests will profile
  */
 
-//@ts-expect-error Typescript thinks there isn't a default export on minimist but there is
 const argv = minimist.default(process.argv.slice(2))
 
 async function runTests() {
@@ -99,11 +102,30 @@ async function runTests() {
     customStateTest: argv.customStateTest,
   }
 
+  let bls: EVMBLSInterface
+  if (argv.bls !== undefined && argv.bls.toLowerCase() === 'mcl') {
+    await mcl.init(mcl.BLS12_381)
+    bls = new MCLBLS(mcl)
+    console.log('BLS library used: MCL (WASM)')
+  } else {
+    console.log('BLS library used: Noble (JavaScript)')
+    bls = new NobleBLS()
+  }
+
+  let bn254: EVMBN254Interface
+  if (argv.bn254 !== undefined && argv.bn254.toLowerCase() === 'mcl') {
+    const rustBN = await initRustBN()
+    bn254 = new RustBN254(rustBN)
+    console.log('BN254 (alt_BN128) library used: rustbn.js (WASM)')
+  } else {
+    console.log('BN254 (alt_BN128) library used: Noble (JavaScript)')
+    bn254 = new NobleBN254()
+  }
+
   /**
    * Run-time configuration
    */
   const kzg = await loadKZG()
-  const bn128 = (await initRustBN()) as bn128
   const runnerArgs: {
     forkConfigVM: string
     forkConfigTestSuite: string
@@ -116,7 +138,8 @@ async function runTests() {
     debug?: boolean
     reps?: number
     profile: boolean
-    bn128: bn128
+    bls: EVMBLSInterface
+    bn254: EVMBN254Interface
   } = {
     forkConfigVM: FORK_CONFIG_VM,
     forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
@@ -128,8 +151,9 @@ async function runTests() {
     value: argv.value, // GeneralStateTests
     debug: argv.debug, // BlockchainTests
     reps: argv.reps, // test repetitions
+    bls,
     profile: RUN_PROFILER,
-    bn128,
+    bn254,
   }
 
   /**
@@ -154,8 +178,8 @@ async function runTests() {
     argv['verify-test-amount-alltests'] > 0
       ? getExpectedTests(FORK_CONFIG_VM, name)
       : argv['expected-test-amount'] !== undefined && argv['expected-test-amount'] > 0
-      ? argv['expected-test-amount']
-      : undefined
+        ? argv['expected-test-amount']
+        : undefined
 
   /**
    * Initialization output to console
@@ -171,7 +195,7 @@ async function runTests() {
         .filter(([_k, v]) => typeof v === 'string' || (Array.isArray(v) && v.length !== 0))
         .map(([k, v]) => ({
           [k]: Array.isArray(v) && v.length > 0 ? v.length : v,
-        }))
+        })),
     )
   }
   const formattedGetterArgs = formatArgs(testGetterArgs)
@@ -253,7 +277,7 @@ async function runTests() {
                 await runner(runnerArgs, test, t)
               }
             },
-            testGetterArgs
+            testGetterArgs,
           )
             .then(() => {
               resolve()

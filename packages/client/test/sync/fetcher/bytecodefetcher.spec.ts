@@ -73,7 +73,7 @@ describe('[ByteCodeFetcher]', async () => {
     assert.deepEqual(
       (fetcher.process(job, ByteCodeResponse) as any)[0],
       fullResult[0],
-      'got results'
+      'got results',
     )
     assert.notOk(fetcher.process({} as any, { ByteCodeResponse: [] } as any), 'bad results')
   })

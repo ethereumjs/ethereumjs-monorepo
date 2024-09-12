@@ -1,8 +1,8 @@
-import { Trie } from '@ethereumjs/trie'
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
+import { createTrie } from '@ethereumjs/trie'
+import { utf8ToBytes } from '@ethereumjs/util'
 
 async function main() {
-  const trie = await Trie.create()
+  const trie = await createTrie()
   await trie.put(utf8ToBytes('key'), utf8ToBytes('val'))
   const walk = trie.walkTrieIterable(trie.root())
 
@@ -11,4 +11,4 @@ async function main() {
     console.log({ node, currentKey })
   }
 }
-main()
+void main()

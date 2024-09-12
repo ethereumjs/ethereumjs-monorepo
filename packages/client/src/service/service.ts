@@ -86,7 +86,7 @@ export class Service {
           await this.handle(message, protocol, peer)
         } catch (error: any) {
           this.config.logger.debug(
-            `Error handling message (${protocol}:${message.name}): ${error.message}`
+            `Error handling message (${protocol}:${message.name}): ${error.message}`,
           )
         }
       }
@@ -126,13 +126,13 @@ export class Service {
     this.config.server && this.config.server.addProtocols(protocols)
 
     this.config.events.on(Event.POOL_PEER_BANNED, (peer) =>
-      this.config.logger.debug(`Peer banned: ${peer}`)
+      this.config.logger.debug(`Peer banned: ${peer}`),
     )
     this.config.events.on(Event.POOL_PEER_ADDED, (peer) =>
-      this.config.logger.debug(`Peer added: ${peer}`)
+      this.config.logger.debug(`Peer added: ${peer}`),
     )
     this.config.events.on(Event.POOL_PEER_REMOVED, (peer) =>
-      this.config.logger.debug(`Peer removed: ${peer}`)
+      this.config.logger.debug(`Peer removed: ${peer}`),
     )
 
     await this.pool.open()
@@ -168,7 +168,7 @@ export class Service {
     this._statsInterval = setInterval(
       // eslint-disable-next-line @typescript-eslint/await-thenable
       await this.stats.bind(this),
-      this.STATS_INTERVAL
+      this.STATS_INTERVAL,
     )
     this.running = true
     this.config.logger.info(`Started ${this.name} service.`)

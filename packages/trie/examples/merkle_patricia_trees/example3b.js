@@ -1,7 +1,9 @@
 // Example 3b - Verification using a hash
 
-const { Trie } = require('../../dist/cjs')
 const { bytesToHex, utf8ToBytes } = require('@ethereumjs/util')
+
+const { Trie } = require('../../dist/cjs/index.js')
+
 const trie1 = new Trie()
 const trie2 = new Trie()
 
@@ -27,4 +29,4 @@ async function test() {
   console.log('Root of trie 2: ', bytesToHex(trie2.root()))
 }
 
-test()
+void test()

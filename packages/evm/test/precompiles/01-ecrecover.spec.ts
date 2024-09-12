@@ -1,9 +1,9 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, bytesToUnprefixedHex, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.js'
 
 const prefix = bytesToUnprefixedHex(utf8ToBytes('\x19Ethereum Signed Message:\n32'))
 const _hash = '852daa74cc3c31fe64542bb9b8764cfb91cc30f9acf9389071ffb44a9eefde46'
@@ -16,8 +16,8 @@ describe('Precompiles: ECRECOVER', () => {
   it('ECRECOVER', async () => {
     // Test reference: https://github.com/ethereum/go-ethereum/issues/3731#issuecomment-293866868
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const evm = await EVM.create({
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Petersburg })
+    const evm = await createEVM({
       common,
     })
     const addressStr = '0000000000000000000000000000000000000001'
@@ -34,7 +34,7 @@ describe('Precompiles: ECRECOVER', () => {
     assert.deepEqual(
       bytesToHex(result.returnValue.slice(-20)),
       address,
-      'should recover expected address'
+      'should recover expected address',
     )
 
     result = await ECRECOVER({

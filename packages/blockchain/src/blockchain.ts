@@ -1,13 +1,5 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import {
-  Chain,
-  ChainGenesis,
-  Common,
-  ConsensusAlgorithm,
-  ConsensusType,
-  Hardfork,
-} from '@ethereumjs/common'
-import { genesisStateRoot as genMerkleGenesisStateRoot } from '@ethereumjs/trie'
+import { Block, BlockHeader, createBlock } from '@ethereumjs/block'
+import { Common, ConsensusAlgorithm, ConsensusType, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   AsyncEventEmitter,
   BIGINT_0,
@@ -22,7 +14,7 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 
-import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus/index.js'
+import { CasperConsensus } from './consensus/casper.js'
 import {
   DBOp,
   DBSaveLookups,
@@ -38,48 +30,24 @@ import type {
   BlockchainInterface,
   BlockchainOptions,
   Consensus,
+  ConsensusDict,
   OnBlock,
 } from './types.js'
-import type { BlockData, HeaderData } from '@ethereumjs/block'
+import type { HeaderData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
 
 /**
- * Verkle or Merkle genesis root
- * @param genesisState
- * @param common
- * @returns
- */
-async function genGenesisStateRoot(
-  genesisState: GenesisState,
-  common: Common
-): Promise<Uint8Array> {
-  const genCommon = common.copy()
-  genCommon.setHardforkBy({
-    blockNumber: 0,
-    td: BigInt(genCommon.genesis().difficulty),
-    timestamp: genCommon.genesis().timestamp,
-  })
-  if (genCommon.isActivatedEIP(6800)) {
-    throw Error(`Verkle tree state not yet supported`)
-  } else {
-    return genMerkleGenesisStateRoot(genesisState)
-  }
-}
-
-/**
- * Returns the genesis state root if chain is well known or an empty state's root otherwise
- */
-async function getGenesisStateRoot(chainId: Chain, common: Common): Promise<Uint8Array> {
-  const chainGenesis = ChainGenesis[chainId]
-  return chainGenesis !== undefined ? chainGenesis.stateRoot : genGenesisStateRoot({}, common)
-}
-
-/**
- * This class stores and interacts with blocks.
+ * Blockchain implementation to create and maintain a valid canonical chain
+ * of block headers or blocks with support for reorgs and the ability to provide
+ * custom DB backends.
+ *
+ * By default consensus validation is not provided since with the switch to
+ * Proof-of-Stake consensus is validated by the Ethereum consensus layer.
+ * If consensus validation is desired for Ethash or Clique blockchains the
+ * optional `consensusDict` option can be used to pass in validation objects.
  */
 export class Blockchain implements BlockchainInterface {
-  consensus: Consensus
   db: DB<Uint8Array | string, Uint8Array | string | DBObject>
   dbManager: DBManager
   events: AsyncEventEmitter<BlockchainEvents>
@@ -109,8 +77,9 @@ export class Blockchain implements BlockchainInterface {
 
   public readonly common: Common
   private _hardforkByHeadBlockNumber: boolean
-  private readonly _validateConsensus: boolean
   private readonly _validateBlocks: boolean
+  private readonly _validateConsensus: boolean
+  private _consensusDict: ConsensusDict
 
   /**
    * This is used to track which canonical blocks are deleted. After a method calls
@@ -120,121 +89,20 @@ export class Blockchain implements BlockchainInterface {
   private _deletedBlocks: Block[] = []
 
   /**
-   * Safe creation of a new Blockchain object awaiting the initialization function,
-   * encouraged method to use when creating a blockchain object.
-   *
-   * @param opts Constructor options, see {@link BlockchainOptions}
-   */
-
-  public static async create(opts: BlockchainOptions = {}) {
-    const blockchain = new Blockchain(opts)
-
-    await blockchain.consensus.setup({ blockchain })
-
-    let stateRoot = opts.genesisBlock?.header.stateRoot ?? opts.genesisStateRoot
-    if (stateRoot === undefined) {
-      if (blockchain._customGenesisState !== undefined) {
-        stateRoot = await genGenesisStateRoot(blockchain._customGenesisState, blockchain.common)
-      } else {
-        stateRoot = await getGenesisStateRoot(
-          Number(blockchain.common.chainId()) as Chain,
-          blockchain.common
-        )
-      }
-    }
-
-    const genesisBlock = opts.genesisBlock ?? blockchain.createGenesisBlock(stateRoot)
-
-    let genesisHash = await blockchain.dbManager.numberToHash(BIGINT_0)
-
-    const dbGenesisBlock =
-      genesisHash !== undefined ? await blockchain.dbManager.getBlock(genesisHash) : undefined
-
-    // If the DB has a genesis block, then verify that the genesis block in the
-    // DB is indeed the Genesis block generated or assigned.
-    if (dbGenesisBlock !== undefined && !equalsBytes(genesisBlock.hash(), dbGenesisBlock.hash())) {
-      throw new Error(
-        'The genesis block in the DB has a different hash than the provided genesis block.'
-      )
-    }
-
-    genesisHash = genesisBlock.hash()
-
-    if (!dbGenesisBlock) {
-      // If there is no genesis block put the genesis block in the DB.
-      // For that TD, the BlockOrHeader, and the Lookups have to be saved.
-      const dbOps: DBOp[] = []
-      dbOps.push(DBSetTD(genesisBlock.header.difficulty, BIGINT_0, genesisHash))
-      DBSetBlockOrHeader(genesisBlock).map((op) => dbOps.push(op))
-      DBSaveLookups(genesisHash, BIGINT_0).map((op) => dbOps.push(op))
-      await blockchain.dbManager.batch(dbOps)
-      await blockchain.consensus.genesisInit(genesisBlock)
-    }
-
-    // At this point, we can safely set the genesis:
-    // it is either the one we put in the DB, or it is equal to the one
-    // which we read from the DB.
-    blockchain._genesisBlock = genesisBlock
-
-    // load verified iterator heads
-    const heads = await blockchain.dbManager.getHeads()
-    blockchain._heads = heads !== undefined ? heads : {}
-
-    // load headerchain head
-    let hash = await blockchain.dbManager.getHeadHeader()
-    blockchain._headHeaderHash = hash !== undefined ? hash : genesisHash
-
-    // load blockchain head
-    hash = await blockchain.dbManager.getHeadBlock()
-    blockchain._headBlockHash = hash !== undefined ? hash : genesisHash
-
-    if (blockchain._hardforkByHeadBlockNumber) {
-      const latestHeader = await blockchain._getHeader(blockchain._headHeaderHash)
-      const td = await blockchain.getParentTD(latestHeader)
-      await blockchain.checkAndTransitionHardForkByNumber(
-        latestHeader.number,
-        td,
-        latestHeader.timestamp
-      )
-    }
-
-    return blockchain
-  }
-
-  /**
-   * Creates a blockchain from a list of block objects,
-   * objects must be readable by {@link Block.fromBlockData}
-   *
-   * @param blockData List of block objects
-   * @param opts Constructor options, see {@link BlockchainOptions}
-   */
-  public static async fromBlocksData(blocksData: BlockData[], opts: BlockchainOptions = {}) {
-    const blockchain = await Blockchain.create(opts)
-    for (const blockData of blocksData) {
-      const block = Block.fromBlockData(blockData, {
-        common: blockchain.common,
-        setHardfork: true,
-      })
-      await blockchain.putBlock(block)
-    }
-    return blockchain
-  }
-
-  /**
    * Creates new Blockchain object.
    *
    * @deprecated The direct usage of this constructor is discouraged since
    * non-finalized async initialization might lead to side effects. Please
-   * use the async {@link Blockchain.create} constructor instead (same API).
+   * use the async {@link createBlockchain} constructor instead (same API).
    *
    * @param opts An object with the options that this constructor takes. See
    * {@link BlockchainOptions}.
    */
-  protected constructor(opts: BlockchainOptions = {}) {
+  constructor(opts: BlockchainOptions = {}) {
     if (opts.common) {
       this.common = opts.common
     } else {
-      const DEFAULT_CHAIN = Chain.Mainnet
+      const DEFAULT_CHAIN = Mainnet
       const DEFAULT_HARDFORK = Hardfork.Chainstart
       this.common = new Common({
         chain: DEFAULT_CHAIN,
@@ -243,8 +111,8 @@ export class Blockchain implements BlockchainInterface {
     }
 
     this._hardforkByHeadBlockNumber = opts.hardforkByHeadBlockNumber ?? false
-    this._validateConsensus = opts.validateConsensus ?? true
     this._validateBlocks = opts.validateBlocks ?? true
+    this._validateConsensus = opts.validateConsensus ?? false
     this._customGenesisState = opts.genesisState
 
     this.db = opts.db !== undefined ? opts.db : new MapDB()
@@ -253,38 +121,13 @@ export class Blockchain implements BlockchainInterface {
 
     this.events = new AsyncEventEmitter()
 
-    if (opts.consensus) {
-      this.consensus = opts.consensus
-    } else {
-      switch (this.common.consensusAlgorithm()) {
-        case ConsensusAlgorithm.Casper:
-          this.consensus = new CasperConsensus()
-          break
-        case ConsensusAlgorithm.Clique:
-          this.consensus = new CliqueConsensus()
-          break
-        case ConsensusAlgorithm.Ethash:
-          this.consensus = new EthashConsensus()
-          break
-        default:
-          throw new Error(`consensus algorithm ${this.common.consensusAlgorithm()} not supported`)
-      }
-    }
+    this._consensusDict = {}
+    this._consensusDict[ConsensusAlgorithm.Casper] = new CasperConsensus()
 
-    if (this._validateConsensus) {
-      if (this.common.consensusType() === ConsensusType.ProofOfWork) {
-        if (this.common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
-          throw new Error('consensus validation only supported for pow ethash algorithm')
-        }
-      }
-      if (this.common.consensusType() === ConsensusType.ProofOfAuthority) {
-        if (this.common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
-          throw new Error(
-            'consensus (signature) validation only supported for poa clique algorithm'
-          )
-        }
-      }
+    if (opts.consensusDict !== undefined) {
+      this._consensusDict = { ...this._consensusDict, ...opts.consensusDict }
     }
+    this._consensusCheck()
 
     this._heads = {}
 
@@ -293,6 +136,22 @@ export class Blockchain implements BlockchainInterface {
     if (opts.genesisBlock && !opts.genesisBlock.isGenesis()) {
       throw 'supplied block is not a genesis block'
     }
+  }
+
+  private _consensusCheck() {
+    if (this._validateConsensus && this.consensus === undefined) {
+      throw new Error(
+        `Consensus object for ${this.common.consensusAlgorithm()} must be passed (see consensusDict option) if consensus validation is activated`,
+      )
+    }
+  }
+
+  /**
+   * Returns an eventual consensus object matching the current consensus algorithm from Common
+   * or undefined if non available
+   */
+  get consensus(): Consensus | undefined {
+    return this._consensusDict[this.common.consensusAlgorithm()]
   }
 
   /**
@@ -309,7 +168,7 @@ export class Blockchain implements BlockchainInterface {
   shallowCopy(): Blockchain {
     const copiedBlockchain = Object.create(
       Object.getPrototypeOf(this),
-      Object.getOwnPropertyDescriptors(this)
+      Object.getOwnPropertyDescriptors(this),
     )
     copiedBlockchain.common = this.common.copy()
     return copiedBlockchain
@@ -459,14 +318,13 @@ export class Blockchain implements BlockchainInterface {
         throw new Error(`no block for ${canonicalHead} found in DB`)
       }
       const header = await this._getHeader(hash, canonicalHead)
-      const td = await this.getParentTD(header)
 
       const dbOps: DBOp[] = []
       await this._deleteCanonicalChainReferences(canonicalHead + BIGINT_1, hash, dbOps)
       const ops = dbOps.concat(this._saveHeadOps())
 
       await this.dbManager.batch(ops)
-      await this.checkAndTransitionHardForkByNumber(canonicalHead, td, header.timestamp)
+      await this.checkAndTransitionHardForkByNumber(canonicalHead, header.timestamp)
     })
     if (this._deletedBlocks.length > 0) {
       this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
@@ -507,7 +365,7 @@ export class Blockchain implements BlockchainInterface {
             return
           }
           throw new Error(
-            'Cannot put a different genesis block than current blockchain genesis: create a new Blockchain'
+            'Cannot put a different genesis block than current blockchain genesis: create a new Blockchain',
           )
         }
 
@@ -520,7 +378,7 @@ export class Blockchain implements BlockchainInterface {
 
         if (block.common.chainId() !== this.common.chainId()) {
           throw new Error(
-            `Chain mismatch while trying to put block or header. Chain ID of block: ${block.common.chainId}, chain ID of blockchain : ${this.common.chainId}`
+            `Chain mismatch while trying to put block or header. Chain ID of block: ${block.common.chainId}, chain ID of blockchain : ${this.common.chainId}`,
           )
         }
 
@@ -530,7 +388,7 @@ export class Blockchain implements BlockchainInterface {
         }
 
         if (this._validateConsensus) {
-          await this.consensus.validateConsensus(block)
+          await this.consensus!.validateConsensus(block)
         }
 
         // set total difficulty in the current context scope
@@ -570,7 +428,7 @@ export class Blockchain implements BlockchainInterface {
             this._headBlockHash = blockHash
           }
           if (this._hardforkByHeadBlockNumber) {
-            await this.checkAndTransitionHardForkByNumber(blockNumber, parentTd, header.timestamp)
+            await this.checkAndTransitionHardForkByNumber(blockNumber, header.timestamp)
           }
 
           // delete higher number assignments and overwrite stale canonical chain
@@ -593,9 +451,9 @@ export class Blockchain implements BlockchainInterface {
         const ops = dbOps.concat(this._saveHeadOps())
         await this.dbManager.batch(ops)
 
-        await this.consensus.newBlock(block, commonAncestor, ancestorHeaders)
+        await this.consensus?.newBlock(block, commonAncestor, ancestorHeaders)
       } catch (e) {
-        // restore head to the previouly sane state
+        // restore head to the previously sane state
         this._heads = oldHeads
         this._headHeaderHash = oldHeadHeaderHash
         this._headBlockHash = oldHeadBlockHash
@@ -639,7 +497,7 @@ export class Blockchain implements BlockchainInterface {
       throw new Error(`invalid timestamp ${header.errorStr()}`)
     }
 
-    if (!(header.common.consensusType() === 'pos')) await this.consensus.validateDifficulty(header)
+    if (!(header.common.consensusType() === 'pos')) await this.consensus?.validateDifficulty(header)
 
     if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       const period = (this.common.consensusConfig() as CliqueConfig).period
@@ -656,7 +514,7 @@ export class Blockchain implements BlockchainInterface {
 
       if (!(dif < BIGINT_8 && dif > BIGINT_1)) {
         throw new Error(
-          `uncle block has a parent that is too old or too young ${header.errorStr()}`
+          `uncle block has a parent that is too old or too young ${header.errorStr()}`,
         )
       }
     }
@@ -668,7 +526,7 @@ export class Blockchain implements BlockchainInterface {
       const londonHfBlock = this.common.hardforkBlock(Hardfork.London)
       const isInitialEIP1559Block = number === londonHfBlock
       if (isInitialEIP1559Block) {
-        expectedBaseFee = header.common.param('gasConfig', 'initialBaseFee')
+        expectedBaseFee = header.common.param('initialBaseFee')
       } else {
         expectedBaseFee = parentHeader.calcNextBaseFee()
       }
@@ -778,7 +636,7 @@ export class Blockchain implements BlockchainInterface {
 
       if (!canonicalChainHashes[parentHash]) {
         throw new Error(
-          `The parent hash of the uncle header is not part of the canonical chain ${block.errorStr()}`
+          `The parent hash of the uncle header is not part of the canonical chain ${block.errorStr()}`,
         )
       }
 
@@ -853,7 +711,7 @@ export class Blockchain implements BlockchainInterface {
     blockId: Uint8Array | bigint | number,
     maxBlocks: number,
     skip: number,
-    reverse: boolean
+    reverse: boolean,
   ): Promise<Block[]> {
     return this.runWithLock<Block[]>(async () => {
       const blocks: Block[] = []
@@ -994,7 +852,7 @@ export class Blockchain implements BlockchainInterface {
     blockHash: Uint8Array,
     blockNumber: bigint,
     headHash: Uint8Array | null,
-    ops: DBOp[]
+    ops: DBOp[],
   ) {
     // delete header, body, hash to number mapping and td
     ops.push(DBOp.del(DBTarget.Header, { blockHash, blockNumber }))
@@ -1042,7 +900,7 @@ export class Blockchain implements BlockchainInterface {
     name: string,
     onBlock: OnBlock,
     maxBlocks?: number,
-    releaseLockOnCallback?: boolean
+    releaseLockOnCallback?: boolean,
   ): Promise<number> {
     return this.runWithLock<number>(async (): Promise<number> => {
       let headHash = this._heads[name] ?? this.genesisBlock.hash()
@@ -1082,9 +940,9 @@ export class Blockchain implements BlockchainInterface {
             } finally {
               if (releaseLockOnCallback === true) {
                 await this._lock.acquire()
-                // If lock was released check if reorg occured
+                // If lock was released check if reorg occurred
                 const nextBlockMayBeReorged = await this.getBlock(nextBlockNumber).catch(
-                  (_e) => null
+                  (_e) => null,
                 )
                 reorgWhileOnBlock = nextBlockMayBeReorged
                   ? !equalsBytes(nextBlockMayBeReorged.hash(), nextBlock.hash())
@@ -1182,7 +1040,7 @@ export class Blockchain implements BlockchainInterface {
   private async _deleteCanonicalChainReferences(
     blockNumber: bigint,
     headHash: Uint8Array,
-    ops: DBOp[]
+    ops: DBOp[],
   ) {
     try {
       let hash: Uint8Array | false
@@ -1318,7 +1176,7 @@ export class Blockchain implements BlockchainInterface {
     // LevelDB doesn't handle Uint8Arrays properly when they are part
     // of a JSON object being stored as a value in the DB
     const hexHeads = Object.fromEntries(
-      Object.entries(this._heads).map((entry) => [entry[0], bytesToUnprefixedHex(entry[1])])
+      Object.entries(this._heads).map((entry) => [entry[0], bytesToUnprefixedHex(entry[1])]),
     )
     return [
       DBOp.set(DBTarget.Heads, hexHeads),
@@ -1352,40 +1210,16 @@ export class Blockchain implements BlockchainInterface {
 
   async checkAndTransitionHardForkByNumber(
     number: BigIntLike,
-    td?: BigIntLike,
-    timestamp?: BigIntLike
+    timestamp?: BigIntLike,
   ): Promise<void> {
     this.common.setHardforkBy({
       blockNumber: number,
-      td,
       timestamp,
     })
 
-    // If custom consensus algorithm is used, skip merge hardfork consensus checks
-    if (!Object.values(ConsensusAlgorithm).includes(this.consensus.algorithm as ConsensusAlgorithm))
-      return
-
-    switch (this.common.consensusAlgorithm()) {
-      case ConsensusAlgorithm.Casper:
-        if (!(this.consensus instanceof CasperConsensus)) {
-          this.consensus = new CasperConsensus()
-        }
-        break
-      case ConsensusAlgorithm.Clique:
-        if (!(this.consensus instanceof CliqueConsensus)) {
-          this.consensus = new CliqueConsensus()
-        }
-        break
-      case ConsensusAlgorithm.Ethash:
-        if (!(this.consensus instanceof EthashConsensus)) {
-          this.consensus = new EthashConsensus()
-        }
-        break
-      default:
-        throw new Error(`consensus algorithm ${this.common.consensusAlgorithm()} not supported`)
-    }
-    await this.consensus.setup({ blockchain: this })
-    await this.consensus.genesisInit(this.genesisBlock)
+    this._consensusCheck()
+    await this.consensus?.setup({ blockchain: this })
+    await this.consensus?.genesisInit(this.genesisBlock)
   }
 
   /**
@@ -1426,7 +1260,6 @@ export class Blockchain implements BlockchainInterface {
     const common = this.common.copy()
     common.setHardforkBy({
       blockNumber: 0,
-      td: BigInt(common.genesis().difficulty),
       timestamp: common.genesis().timestamp,
     })
 
@@ -1438,16 +1271,16 @@ export class Blockchain implements BlockchainInterface {
     }
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {
-        // Ensure exta data is populated from genesis data if provided
+        // Ensure extra data is populated from genesis data if provided
         header.extraData = common.genesis().extraData
       } else {
         // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes
         header.extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
       }
     }
-    return Block.fromBlockData(
+    return createBlock(
       { header, withdrawals: common.isActivatedEIP(4895) ? [] : undefined },
-      { common }
+      { common },
     )
   }
 }

@@ -28,42 +28,39 @@ export async function debugCodeReplayBlock(execution: VMExecution, block: Block)
 import { Level } from 'level';
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { VM }  from './src'
+import { VM, runBlock, createVM }  from './src'
 import { Trie } from '@ethereumjs/trie'
-import { DefaultStateManager } from './src/state'
+import { MerkleStateManager } from './src/state'
 import { Blockchain } from '@ethereumjs/blockchain'
 
 const main = async () => {
   const common = new Common({ chain: '${execution.config.execCommon.chainName()}', hardfork: '${
     execution.hardfork
   }' })
-  const block = Block.fromRLPSerializedBlock(hexToBytes('${bytesToHex(
-    block.serialize()
-  )}'), { common })
+  const block = createBlockFromRLP(hexToBytes('${bytesToHex(block.serialize())}'), { common })
 
   const stateDB = new Level('${execution.config.getDataDirectory(DataDirectory.State)}')
   const trie = new Trie({ db: stateDB, useKeyHashing: true })
-  const stateManager = new DefaultStateManager({ trie, common })
+  const stateManager = new MerkleStateManager({ trie, common })
   // Ensure we run on the right root
   stateManager.setStateRoot(hexToBytes('${bytesToHex(
-    await execution.vm.stateManager.getStateRoot()
+    await execution.vm.stateManager.getStateRoot(),
   )}'))
 
 
   const chainDB = new Level('${execution.config.getDataDirectory(DataDirectory.Chain)}')
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     db: chainDB,
     common,
     validateBlocks: true,
     validateConsensus: false,
   })
-  const vm = await VM.create({ stateManager, blockchain, common })
+  const vm = await createVM({ stateManager, blockchain, common })
 
-  await vm.runBlock({ block })
+  await runBlock({ block })
 }
 
 main()
     `
-
   execution.config.logger.info(code)
 }

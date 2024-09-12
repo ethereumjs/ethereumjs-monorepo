@@ -1,8 +1,8 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../../src/index.js'
+import { createEVM } from '../../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -80,12 +80,12 @@ describe('should test mcopy', () => {
       bytecode += MCOPY + STOP
 
       const common = new Common({
-        chain: Chain.Mainnet,
+        chain: Mainnet,
         hardfork: Hardfork.Shanghai,
         eips: [5656],
       })
 
-      const evm = await EVM.create({
+      const evm = await createEVM({
         common,
       })
 

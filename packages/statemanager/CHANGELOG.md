@@ -6,7 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.3.0 - 2024-03-05
+## 2.4.0 - 2024-08-15
+
+### Verkle Updates
+
+- Various fixes for Kaustinen4 support (partial account integration, `getContractCodeSize()`, other), PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- Kaustinen5 related fixes, PR [#3343](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3343)
+- Kaustinen6 adjustments, `verkle-cryptography-wasm` migration, PRs [#3355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3355) and [#3356](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3356)
+- Missing beaconroot account verkle fix, PR [#3421](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3421)
+- Verkle decoupling, PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462)
+
+### Other Features
+
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Other Changes
+
+- Modify RPCStateManager `getAccount()`, PR [#3345](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3345)
+
+### Bugfixes
+
+- Fixes an issue where under certain deployment conditions wrong storage values could be provided, PR [#3434](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3434)
+- Fixes statemanager empty code bug, PR [#3483](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3483)
+
+## 2.3.0 - 2024-03-18
 
 ### Full 4844 Browser Readiness
 
@@ -52,7 +75,7 @@ Since this fits well also to be placed here relatively prominently for awareness
 
 ## 2.2.2 - 2024-02-08
 
-- Hotfix release moving the `@ethereumjs/verkle` dependency from a peer dependency to the main dependencis (note that this decision might be temporary)
+- Hotfix release moving the `@ethereumjs/verkle` dependency from a peer dependency to the main dependencies (note that this decision might be temporary)
 
 ## 2.2.1 - 2024-02-08
 
@@ -99,7 +122,7 @@ This release introduces a new code cache implementation, see PR [#3022](https://
 
 The new cache is substantially more robust towards various type of revert-based attacks and grows a more-used cache over time, since never-applied values are consecutively sorted out.
 
-### Peformance Option to store Storage Keys with Prefix
+### Performance Option to store Storage Keys with Prefix
 
 This release introduces a new option `prefixStorageTrieKeys` which triggers the underlying trie to store storage key values with a prefix based on the account address, see PR [#3023](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3023). This significantly increases performance for consecutive storage accesses for the same account on especially larger tries, since trie node accesses get noticeably faster when performed by the underlying key-value store since values are stored close to each other.
 
@@ -139,7 +162,7 @@ While you could use our libraries in the browser libraries before, there had bee
 
 WE HAVE ELIMINATED ALL OF THEM.
 
-The largest two undertakings: First: we have rewritten all (half) of our API and elimited the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went throuh our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
+The largest two undertakings: First: we have rewritten all (half) of our API and eliminated the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went through our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
 
 Together with some few other modifications this now allows to run each (maybe adding an asterisk for client and devp2p) of our libraries directly in the browser - more or less without any modifications - see the `examples/browser.html` file in each package folder for an easy to set up example.
 
@@ -374,7 +397,7 @@ Beta 2 release for the upcoming breaking release round on the [EthereumJS monore
 
 ### Removed Default Exports
 
-The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all across the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
 
 Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
 
@@ -382,7 +405,7 @@ Now every import is a named import and we think the long term benefits will very
 
 #### Common Library Import Updates
 
-Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all accross our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
+Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all across our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
 
 So Common import and usage is changing from:
 

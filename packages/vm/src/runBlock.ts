@@ -1,7 +1,6 @@
-import { Block } from '@ethereumjs/block'
+import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
@@ -16,18 +15,22 @@ import {
   bigIntToBytes,
   bytesToHex,
   concatBytes,
+  createAddressFromString,
   equalsBytes,
+  getVerkleTreeIndicesForStorageSlot,
   hexToBytes,
   intToBytes,
   setLengthLeft,
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { getTreeIndexesForStorageSlot } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 
 import { Bloom } from './bloom/index.js'
+import { emitEVMProfile } from './emitEVMProfile.js'
 import { accumulateRequests } from './requests.js'
+
+import { runTx } from './index.js'
 
 import type {
   AfterBlockEvent,
@@ -40,16 +43,15 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
+import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 
-const { debug: createDebugLogger } = debugDefault
+const debug = debugDefault('vm:block')
 
-const debug = createDebugLogger('vm:block')
-
-const parentBeaconBlockRootAddress = Address.fromString(
-  '0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02'
+const parentBeaconBlockRootAddress = createAddressFromString(
+  '0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02',
 )
 
 let enableProfiler = false
@@ -59,16 +61,24 @@ const withdrawalsRewardsCommitLabel = 'Withdrawals, Rewards, EVM journal commit'
 const entireBlockLabel = 'Entire block'
 
 /**
- * @ignore
+ * Processes the `block` running all of the transactions it contains and updating the miner's account
+ *
+ * vm method modifies the state. If `generate` is `true`, the state modifications will be
+ * reverted if an exception is raised. If it's `false`, it won't revert if the block's header is
+ * invalid. If an error is thrown from an event handler, the state may or may not be reverted.
+ *
+ * @param {VM} vm
+ * @param {RunBlockOpts} opts - Default values for options:
+ *  - `generate`: false
  */
-export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
-  if (this._opts.profilerOpts?.reportAfterBlock === true) {
+export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
+  if (vm['_opts'].profilerOpts?.reportAfterBlock === true) {
     enableProfiler = true
     // eslint-disable-next-line no-console
     console.time(entireBlockLabel)
   }
 
-  const stateManager = this.stateManager
+  const stateManager = vm.stateManager
 
   const { root } = opts
   const clearCache = opts.clearCache ?? true
@@ -93,51 +103,41 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
    * @type {Object}
    * @property {Block} block emits the block that is about to be processed
    */
-  await this._emit('beforeBlock', block)
+  await vm._emit('beforeBlock', block)
 
-  if (setHardfork !== false || this._setHardfork !== false) {
-    const setHardforkUsed = setHardfork ?? this._setHardfork
+  if (setHardfork !== false || vm['_setHardfork'] !== false) {
+    const setHardforkUsed = setHardfork ?? vm['_setHardfork']
     if (setHardforkUsed === true) {
-      this.common.setHardforkBy({
+      vm.common.setHardforkBy({
         blockNumber: block.header.number,
-        timestamp: block.header.timestamp,
-      })
-    } else if (typeof setHardforkUsed !== 'boolean') {
-      this.common.setHardforkBy({
-        blockNumber: block.header.number,
-        td: setHardforkUsed,
         timestamp: block.header.timestamp,
       })
     }
   }
 
-  if (this.DEBUG) {
+  if (vm.DEBUG) {
     debug('-'.repeat(100))
     debug(
       `Running block hash=${bytesToHex(block.hash())} number=${
         block.header.number
-      } hardfork=${this.common.hardfork()}`
+      } hardfork=${vm.common.hardfork()}`,
     )
   }
 
   // Set state root if provided
   if (root) {
-    if (this.DEBUG) {
+    if (vm.DEBUG) {
       debug(`Set provided state root ${bytesToHex(root)} clearCache=${clearCache}`)
     }
     await stateManager.setStateRoot(root, clearCache)
   }
 
-  if (this.common.isActivatedEIP(6800)) {
-    if (!(stateManager instanceof StatelessVerkleStateManager)) {
+  if (vm.common.isActivatedEIP(6800)) {
+    if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
       throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
     }
 
-    if (opts.parentStateRoot === undefined) {
-      throw Error(`Parent state root is required for StatelessVerkleStateManager execution`)
-    }
-
-    if (this.DEBUG) {
+    if (vm.DEBUG) {
       debug(`Initializing StatelessVerkleStateManager executionWitness`)
     }
     if (clearCache) {
@@ -148,57 +148,57 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     await stateManager.setStateRoot(block.header.stateRoot)
 
     // Populate the execution witness
-    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
+    stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
-    if (stateManager.verifyProof(opts.parentStateRoot) === false) {
+    if (stateManager.verifyVerkleProof!() === false) {
       throw Error(`Verkle proof verification failed`)
     }
 
-    if (this.DEBUG) {
+    if (vm.DEBUG) {
       debug(`Verkle proof verification succeeded`)
     }
   } else {
-    if (stateManager instanceof StatelessVerkleStateManager) {
+    if (typeof stateManager.initVerkleExecutionWitness === 'function') {
       throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
     }
   }
 
   // check for DAO support and if we should apply the DAO fork
   if (
-    this.common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) &&
-    block.header.number === this.common.hardforkBlock(Hardfork.Dao)!
+    vm.common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) &&
+    block.header.number === vm.common.hardforkBlock(Hardfork.Dao)!
   ) {
-    if (this.DEBUG) {
+    if (vm.DEBUG) {
       debug(`Apply DAO hardfork`)
     }
 
-    await this.evm.journal.checkpoint()
-    await _applyDAOHardfork(this.evm)
-    await this.evm.journal.commit()
+    await vm.evm.journal.checkpoint()
+    await _applyDAOHardfork(vm.evm)
+    await vm.evm.journal.commit()
   }
 
   // Checkpoint state
-  await this.evm.journal.checkpoint()
-  if (this.DEBUG) {
+  await vm.evm.journal.checkpoint()
+  if (vm.DEBUG) {
     debug(`block checkpoint`)
   }
 
   let result: ApplyBlockResult
 
   try {
-    result = await applyBlock.bind(this)(block, opts)
-    if (this.DEBUG) {
+    result = await applyBlock(vm, block, opts)
+    if (vm.DEBUG) {
       debug(
         `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${
           result.bloom.bitvector.length
         } bytes) receiptsRoot=${bytesToHex(result.receiptsRoot)} receipts=${
           result.receipts.length
-        } txResults=${result.results.length}`
+        } txResults=${result.results.length}`,
       )
     }
   } catch (err: any) {
-    await this.evm.journal.revert()
-    if (this.DEBUG) {
+    await vm.evm.journal.revert()
+    if (vm.DEBUG) {
       debug(`block checkpoint reverted`)
     }
     if (enableProfiler) {
@@ -211,13 +211,13 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   let requestsRoot: Uint8Array | undefined
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
-    requests = await accumulateRequests(this, result.results)
-    requestsRoot = await Block.genRequestsTrieRoot(requests)
+    requests = await accumulateRequests(vm, result.results)
+    requestsRoot = await genRequestsTrieRoot(requests)
   }
 
   // Persist state
-  await this.evm.journal.commit()
-  if (this.DEBUG) {
+  await vm.evm.journal.commit()
+  if (vm.DEBUG) {
     debug(`block checkpoint committed`)
   }
 
@@ -244,73 +244,73 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       requests,
       header: { ...block.header, ...generatedFields },
     }
-    block = Block.fromBlockData(blockData, { common: this.common })
+    block = createBlock(blockData, { common: vm.common })
   } else {
-    if (this.common.isActivatedEIP(7685)) {
+    if (vm.common.isActivatedEIP(7685)) {
       const valid = await block.requestsTrieIsValid(requests)
       if (!valid) {
-        const validRoot = await Block.genRequestsTrieRoot(requests!)
-        if (this.DEBUG)
+        const validRoot = await genRequestsTrieRoot(requests!)
+        if (vm.DEBUG)
           debug(
             `Invalid requestsRoot received=${bytesToHex(
-              block.header.requestsRoot!
-            )} expected=${bytesToHex(validRoot)}`
+              block.header.requestsRoot!,
+            )} expected=${bytesToHex(validRoot)}`,
           )
-        const msg = _errorMsg('invalid requestsRoot', this, block)
+        const msg = _errorMsg('invalid requestsRoot', vm, block)
         throw new Error(msg)
       }
     }
-    if (!this.common.isActivatedEIP(6800)) {
+    if (!vm.common.isActivatedEIP(6800)) {
       // Only validate the following headers if verkle blocks aren't activated
       if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
-        if (this.DEBUG) {
+        if (vm.DEBUG) {
           debug(
             `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
-              block.header.receiptTrie
-            )}`
+              block.header.receiptTrie,
+            )}`,
           )
         }
-        const msg = _errorMsg('invalid receiptTrie', this, block)
+        const msg = _errorMsg('invalid receiptTrie', vm, block)
         throw new Error(msg)
       }
       if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
-        if (this.DEBUG) {
+        if (vm.DEBUG) {
           debug(
             `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
-              block.header.logsBloom
-            )}`
+              block.header.logsBloom,
+            )}`,
           )
         }
-        const msg = _errorMsg('invalid bloom', this, block)
+        const msg = _errorMsg('invalid bloom', vm, block)
         throw new Error(msg)
       }
       if (result.gasUsed !== block.header.gasUsed) {
-        if (this.DEBUG) {
+        if (vm.DEBUG) {
           debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
         }
-        const msg = _errorMsg('invalid gasUsed', this, block)
+        const msg = _errorMsg('invalid gasUsed', vm, block)
         throw new Error(msg)
       }
       if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
-        if (this.DEBUG) {
+        if (vm.DEBUG) {
           debug(
             `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
-              block.header.stateRoot
-            )}`
+              block.header.stateRoot,
+            )}`,
           )
         }
         const msg = _errorMsg(
           `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
-            block.header.stateRoot
+            block.header.stateRoot,
           )}`,
-          this,
-          block
+          vm,
+          block,
         )
         throw new Error(msg)
       }
-    } else if (this.common.isActivatedEIP(6800)) {
+    } else if (vm.common.isActivatedEIP(6800)) {
       // If verkle is activated, only validate the post-state
-      if ((this._opts.stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
+      if (vm['_opts'].stateManager!.verifyPostState!() === false) {
         throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
       }
       debug(`Verkle post state verification succeeded`)
@@ -343,27 +343,27 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
    * @type {AfterBlockEvent}
    * @property {AfterBlockEvent} result emits the results of processing a block
    */
-  await this._emit('afterBlock', afterBlockEvent)
-  if (this.DEBUG) {
+  await vm._emit('afterBlock', afterBlockEvent)
+  if (vm.DEBUG) {
     debug(
       `Running block finished hash=${bytesToHex(block.hash())} number=${
         block.header.number
-      } hardfork=${this.common.hardfork()}`
+      } hardfork=${vm.common.hardfork()}`,
     )
   }
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
     console.timeEnd(entireBlockLabel)
-    const logs = (<EVM>this.evm).getPerformanceLogs()
+    const logs = (<EVM>vm.evm).getPerformanceLogs()
     if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
       // eslint-disable-next-line no-console
       console.log('No block txs with precompile or opcode execution.')
     }
 
-    this.emitEVMProfile(logs.precompiles, 'Precompile performance')
-    this.emitEVMProfile(logs.opcodes, 'Opcodes performance')
-    ;(<EVM>this.evm).clearPerformanceLogs()
+    emitEVMProfile(logs.precompiles, 'Precompile performance')
+    emitEVMProfile(logs.opcodes, 'Opcodes performance')
+    ;(<EVM>vm.evm).clearPerformanceLogs()
   }
 
   return results
@@ -371,26 +371,26 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
 /**
  * Validates and applies a block, computing the results of
- * applying its transactions. This method doesn't modify the
+ * applying its transactions. vm method doesn't modify the
  * block itself. It computes the block rewards and puts
  * them on state (but doesn't persist the changes).
  * @param {Block} block
  * @param {RunBlockOpts} opts
  */
-async function applyBlock(this: VM, block: Block, opts: RunBlockOpts): Promise<ApplyBlockResult> {
+async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<ApplyBlockResult> {
   // Validate block
   if (opts.skipBlockValidation !== true) {
     if (block.header.gasLimit >= BigInt('0x8000000000000000')) {
-      const msg = _errorMsg('Invalid block with gas limit greater than (2^63 - 1)', this, block)
+      const msg = _errorMsg('Invalid block with gas limit greater than (2^63 - 1)', vm, block)
       throw new Error(msg)
     } else {
-      if (this.DEBUG) {
+      if (vm.DEBUG) {
         debug(`Validate block`)
       }
       // TODO: decide what block validation method is appropriate here
       if (opts.skipHeaderValidation !== true) {
-        if (typeof (<any>this.blockchain).validateHeader === 'function') {
-          await (<any>this.blockchain).validateHeader(block.header)
+        if (typeof (<any>vm.blockchain).validateHeader === 'function') {
+          await (<any>vm.blockchain).validateHeader(block.header)
         } else {
           throw new Error('cannot validate header: blockchain has no `validateHeader` method')
         }
@@ -398,21 +398,22 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts): Promise<A
       await block.validateData()
     }
   }
-  if (this.common.isActivatedEIP(4788)) {
-    if (this.DEBUG) {
+  if (vm.common.isActivatedEIP(4788)) {
+    if (vm.DEBUG) {
       debug(`accumulate parentBeaconBlockRoot`)
     }
-    await accumulateParentBeaconBlockRoot.bind(this)(
+    await accumulateParentBeaconBlockRoot(
+      vm,
       block.header.parentBeaconBlockRoot!,
-      block.header.timestamp
+      block.header.timestamp,
     )
   }
-  if (this.common.isActivatedEIP(2935)) {
-    if (this.DEBUG) {
+  if (vm.common.isActivatedEIP(2935)) {
+    if (vm.DEBUG) {
       debug(`accumulate parentBlockHash `)
     }
 
-    await accumulateParentBlockHash.bind(this)(block.header.number, block.header.parentHash)
+    await accumulateParentBlockHash(vm, block.header.number, block.header.parentHash)
   }
 
   if (enableProfiler) {
@@ -421,10 +422,10 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts): Promise<A
   }
 
   // Apply transactions
-  if (this.DEBUG) {
+  if (vm.DEBUG) {
     debug(`Apply transactions`)
   }
-  const blockResults = await applyTransactions.bind(this)(block, opts)
+  const blockResults = await applyTransactions(vm, block, opts)
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
@@ -435,14 +436,14 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts): Promise<A
   // Also add the coinbase preimage
 
   if (opts.reportPreimages === true) {
-    if (this.evm.stateManager.getAppliedKey === undefined) {
+    if (vm.evm.stateManager.getAppliedKey === undefined) {
       throw new Error(
-        'applyBlock: evm.stateManager.getAppliedKey can not be undefined if reportPreimages is true'
+        'applyBlock: evm.stateManager.getAppliedKey can not be undefined if reportPreimages is true',
       )
     }
     blockResults.preimages.set(
-      bytesToHex(this.evm.stateManager.getAppliedKey(block.header.coinbase.toBytes())),
-      block.header.coinbase.toBytes()
+      bytesToHex(vm.evm.stateManager.getAppliedKey(block.header.coinbase.toBytes())),
+      block.header.coinbase.toBytes(),
     )
     for (const txResult of blockResults.results) {
       if (txResult.preimages !== undefined) {
@@ -453,58 +454,54 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts): Promise<A
     }
   }
 
-  if (this.common.isActivatedEIP(4895)) {
-    if (opts.reportPreimages === true) this.evm.journal.startReportingPreimages!()
-    await assignWithdrawals.bind(this)(block)
-    if (opts.reportPreimages === true && this.evm.journal.preimages !== undefined) {
-      for (const [key, preimage] of this.evm.journal.preimages) {
+  if (vm.common.isActivatedEIP(4895)) {
+    if (opts.reportPreimages === true) vm.evm.journal.startReportingPreimages!()
+    await assignWithdrawals(vm, block)
+    if (opts.reportPreimages === true && vm.evm.journal.preimages !== undefined) {
+      for (const [key, preimage] of vm.evm.journal.preimages) {
         blockResults.preimages.set(key, preimage)
       }
     }
-    await this.evm.journal.cleanup()
+    await vm.evm.journal.cleanup()
   }
   // Pay ommers and miners
   if (block.common.consensusType() === ConsensusType.ProofOfWork) {
-    await assignBlockRewards.bind(this)(block)
+    await assignBlockRewards(vm, block)
   }
 
   return blockResults
 }
 
 /**
- * This method runs the logic of EIP 2935 (save blockhashes to state)
+ * vm method runs the logic of EIP 2935 (save blockhashes to state)
  * It will put the `parentHash` of the block to the storage slot of `block.number - 1` of the history storage contract.
- * This contract is used to retrieve BLOCKHASHes in EVM if EIP 2935 is activated.
+ * vm contract is used to retrieve BLOCKHASHes in EVM if EIP 2935 is activated.
  * In case that the previous block of `block` is pre-EIP-2935 (so we are on the EIP 2935 fork block), additionally
  * also add the currently available past blockhashes which are available by BLOCKHASH (so, the past 256 block hashes)
- * @param this The VM to run on
+ * @param vm The VM to run on
  * @param block The current block to save the parent block hash of
  */
 export async function accumulateParentBlockHash(
-  this: VM,
+  vm: VM,
   currentBlockNumber: bigint,
-  parentHash: Uint8Array
+  parentHash: Uint8Array,
 ) {
-  if (!this.common.isActivatedEIP(2935)) {
+  if (!vm.common.isActivatedEIP(2935)) {
     throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
   }
-  const historyAddress = new Address(
-    bigIntToAddressBytes(this.common.param('vm', 'historyStorageAddress'))
-  )
-  const historyServeWindow = this.common.param('vm', 'historyServeWindow')
+  const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('historyStorageAddress')))
+  const historyServeWindow = vm.common.param('historyServeWindow')
 
-  const forkTime = this.common.eipTimestamp(2935)
-
-  // getAccount with historyAddress will throw error as witnesses are not bundeled
+  // getAccount with historyAddress will throw error as witnesses are not bundled
   // but we need to put account so as to query later for slot
   try {
-    if ((await this.stateManager.getAccount(historyAddress)) === undefined) {
+    if ((await vm.stateManager.getAccount(historyAddress)) === undefined) {
       const emptyHistoryAcc = new Account(BigInt(1))
-      await this.evm.journal.putAccount(historyAddress, emptyHistoryAcc)
+      await vm.evm.journal.putAccount(historyAddress, emptyHistoryAcc)
     }
   } catch (_e) {
     const emptyHistoryAcc = new Account(BigInt(1))
-    await this.evm.journal.putAccount(historyAddress, emptyHistoryAcc)
+    await vm.evm.journal.putAccount(historyAddress, emptyHistoryAcc)
   }
 
   async function putBlockHash(vm: VM, hash: Uint8Array, number: bigint) {
@@ -513,60 +510,36 @@ export async function accumulateParentBlockHash(
 
     // generate access witness
     if (vm.common.isActivatedEIP(6800)) {
-      const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(ringKey)
+      const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(ringKey)
       // just create access witnesses without charging for the gas
-      ;(
-        vm.stateManager as StatelessVerkleStateManager
-      ).accessWitness!.touchAddressOnWriteAndComputeGas(historyAddress, treeIndex, subIndex)
+      vm.stateManager.accessWitness!.touchAddressOnWriteAndComputeGas(
+        historyAddress,
+        treeIndex,
+        subIndex,
+      )
     }
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
-    await vm.stateManager.putContractStorage(historyAddress, key, hash)
+    await vm.stateManager.putStorage(historyAddress, key, hash)
   }
-  await putBlockHash(this, parentHash, currentBlockNumber - BIGINT_1)
-
-  // in stateless execution parentBlock is not in blockchain but in chain's blockCache
-  // need to move the blockCache to the blockchain, in any case we can ignore forkblock
-  // which is where we need this code segment
-  try {
-    const parentBlock = await this.blockchain.getBlock(parentHash)
-
-    // If on the fork block, store the old block hashes as well
-    if (forkTime !== null && parentBlock.header.timestamp < forkTime) {
-      // forkTime could be null in test fixtures
-      let ancestor = parentBlock
-      for (let i = 0; i < Number(historyServeWindow) - 1; i++) {
-        if (ancestor.header.number === BIGINT_0) {
-          break
-        }
-
-        ancestor = await this.blockchain.getBlock(ancestor.header.parentHash)
-        await putBlockHash(this, ancestor.hash(), ancestor.header.number)
-      }
-    }
-    // eslint-disable-next-line no-empty
-  } catch (_e) {}
+  await putBlockHash(vm, parentHash, currentBlockNumber - BIGINT_1)
 
   // do cleanup if the code was not deployed
-  await this.evm.journal.cleanup()
+  await vm.evm.journal.cleanup()
 }
 
-export async function accumulateParentBeaconBlockRoot(
-  this: VM,
-  root: Uint8Array,
-  timestamp: bigint
-) {
-  if (!this.common.isActivatedEIP(4788)) {
+export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, timestamp: bigint) {
+  if (!vm.common.isActivatedEIP(4788)) {
     throw new Error('Cannot call `accumulateParentBeaconBlockRoot`: EIP 4788 is not active')
   }
   // Save the parentBeaconBlockRoot to the beaconroot stateful precompile ring buffers
-  const historicalRootsLength = BigInt(this.common.param('vm', 'historicalRootsLength'))
+  const historicalRootsLength = BigInt(vm.common.param('historicalRootsLength'))
   const timestampIndex = timestamp % historicalRootsLength
   const timestampExtended = timestampIndex + historicalRootsLength
 
   /**
    * Note: (by Jochem)
-   * If we don't do this (put account if undefined / non-existant), block runner crashes because the beacon root address does not exist
-   * This is hence (for me) again a reason why it should /not/ throw if the address does not exist
+   * If we don't do vm (put account if undefined / non-existent), block runner crashes because the beacon root address does not exist
+   * vm is hence (for me) again a reason why it should /not/ throw if the address does not exist
    * All ethereum accounts have empty storage by default
    */
 
@@ -576,48 +549,48 @@ export async function accumulateParentBeaconBlockRoot(
    * But we do need an account so we are able to put the storage
    */
   try {
-    if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
-      await this.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
+    if ((await vm.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+      await vm.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
     }
   } catch (_) {
-    await this.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
+    await vm.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
   }
 
-  await this.stateManager.putContractStorage(
+  await vm.stateManager.putStorage(
     parentBeaconBlockRootAddress,
     setLengthLeft(bigIntToBytes(timestampIndex), 32),
-    bigIntToBytes(timestamp)
+    bigIntToBytes(timestamp),
   )
-  await this.stateManager.putContractStorage(
+  await vm.stateManager.putStorage(
     parentBeaconBlockRootAddress,
     setLengthLeft(bigIntToBytes(timestampExtended), 32),
-    root
+    root,
   )
 
   // do cleanup if the code was not deployed
-  await this.evm.journal.cleanup()
+  await vm.evm.journal.cleanup()
 }
 
 /**
  * Applies the transactions in a block, computing the receipts
- * as well as gas usage and some relevant data. This method is
+ * as well as gas usage and some relevant data. vm method is
  * side-effect free (it doesn't modify the block nor the state).
  * @param {Block} block
  * @param {RunBlockOpts} opts
  */
-async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
+async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
   if (enableProfiler) {
     // eslint-disable-next-line no-console
     console.time(processTxsLabel)
   }
 
-  const bloom = new Bloom(undefined, this.common)
+  const bloom = new Bloom(undefined, vm.common)
   // the total amount of gas used processing these transactions
   let gasUsed = BIGINT_0
 
   let receiptTrie: Trie | undefined = undefined
   if (block.transactions.length !== 0) {
-    receiptTrie = new Trie({ common: this.common })
+    receiptTrie = new Trie({ common: vm.common })
   }
 
   const receipts: TxReceipt[] = []
@@ -630,21 +603,21 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     const tx = block.transactions[txIdx]
 
     let maxGasLimit
-    if (this.common.isActivatedEIP(1559)) {
-      maxGasLimit = block.header.gasLimit * this.common.param('gasConfig', 'elasticityMultiplier')
+    if (vm.common.isActivatedEIP(1559)) {
+      maxGasLimit = block.header.gasLimit * vm.common.param('elasticityMultiplier')
     } else {
       maxGasLimit = block.header.gasLimit
     }
     const gasLimitIsHigherThanBlock = maxGasLimit < tx.gasLimit + gasUsed
     if (gasLimitIsHigherThanBlock) {
-      const msg = _errorMsg('tx has a higher gas limit than the block', this, block)
+      const msg = _errorMsg('tx has a higher gas limit than the block', vm, block)
       throw new Error(msg)
     }
 
     // Run the tx through the VM
     const { skipBalance, skipNonce, skipHardForkValidation, reportPreimages } = opts
 
-    const txRes = await this.runTx({
+    const txRes = await runTx(vm, {
       tx,
       block,
       skipBalance,
@@ -654,13 +627,13 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
       reportPreimages,
     })
     txResults.push(txRes)
-    if (this.DEBUG) {
+    if (vm.DEBUG) {
       debug('-'.repeat(100))
     }
 
     // Add to total block gas usage
     gasUsed += txRes.totalGasSpent
-    if (this.DEBUG) {
+    if (vm.DEBUG) {
       debug(`Add tx gas used (${txRes.totalGasSpent}) to total block gas usage (-> ${gasUsed})`)
     }
 
@@ -690,7 +663,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   }
 }
 
-async function assignWithdrawals(this: VM, block: Block): Promise<void> {
+async function assignWithdrawals(vm: VM, block: Block): Promise<void> {
   const withdrawals = block.withdrawals!
   for (const withdrawal of withdrawals) {
     const { address, amount } = withdrawal
@@ -698,7 +671,7 @@ async function assignWithdrawals(this: VM, block: Block): Promise<void> {
     // converted to wei
     // Note: event if amount is 0, still reward the account
     // such that the account is touched and marked for cleanup if it is empty
-    await rewardAccount(this.evm, address, amount * GWEI_TO_WEI, this.common)
+    await rewardAccount(vm.evm, address, amount * GWEI_TO_WEI, vm.common)
   }
 }
 
@@ -706,24 +679,24 @@ async function assignWithdrawals(this: VM, block: Block): Promise<void> {
  * Calculates block rewards for miner and ommers and puts
  * the updated balances of their accounts to state.
  */
-async function assignBlockRewards(this: VM, block: Block): Promise<void> {
-  if (this.DEBUG) {
+async function assignBlockRewards(vm: VM, block: Block): Promise<void> {
+  if (vm.DEBUG) {
     debug(`Assign block rewards`)
   }
-  const minerReward = this.common.param('pow', 'minerReward')
+  const minerReward = vm.common.param('minerReward')
   const ommers = block.uncleHeaders
   // Reward ommers
   for (const ommer of ommers) {
     const reward = calculateOmmerReward(ommer.number, block.header.number, minerReward)
-    const account = await rewardAccount(this.evm, ommer.coinbase, reward, this.common)
-    if (this.DEBUG) {
+    const account = await rewardAccount(vm.evm, ommer.coinbase, reward, vm.common)
+    if (vm.DEBUG) {
       debug(`Add uncle reward ${reward} to account ${ommer.coinbase} (-> ${account.balance})`)
     }
   }
   // Reward miner
   const reward = calculateMinerReward(minerReward, ommers.length)
-  const account = await rewardAccount(this.evm, block.header.coinbase, reward, this.common)
-  if (this.DEBUG) {
+  const account = await rewardAccount(vm.evm, block.header.coinbase, reward, vm.common)
+  if (vm.DEBUG) {
     debug(`Add miner reward ${reward} to account ${block.header.coinbase} (-> ${account.balance})`)
   }
 }
@@ -731,7 +704,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
 function calculateOmmerReward(
   ommerBlockNumber: bigint,
   blockNumber: bigint,
-  minerReward: bigint
+  minerReward: bigint,
 ): bigint {
   const heightDiff = blockNumber - ommerBlockNumber
   let reward = ((BIGINT_8 - heightDiff) * minerReward) / BIGINT_8
@@ -753,14 +726,12 @@ export async function rewardAccount(
   evm: EVMInterface,
   address: Address,
   reward: bigint,
-  common?: Common
+  common?: Common,
 ): Promise<Account> {
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
     if (common?.isActivatedEIP(6800) === true) {
-      ;(
-        evm.stateManager as StatelessVerkleStateManager
-      ).accessWitness!.touchAndChargeProofOfAbsence(address)
+      evm.stateManager.accessWitness!.touchAndChargeProofOfAbsence(address)
     }
     account = new Account()
   }
@@ -768,11 +739,8 @@ export async function rewardAccount(
   await evm.journal.putAccount(address, account)
 
   if (common?.isActivatedEIP(6800) === true) {
-    // use this utility to build access but the computed gas is not charged and hence free
-    ;(evm.stateManager as StatelessVerkleStateManager).accessWitness!.touchTxTargetAndComputeGas(
-      address,
-      { sendsValue: true }
-    )
+    // use vm utility to build access but the computed gas is not charged and hence free
+    evm.stateManager.accessWitness!.touchTxTargetAndComputeGas(address, { sendsValue: true })
   }
   return account
 }

@@ -171,13 +171,13 @@ describe('geth tests', () => {
           assert.deepEqual(
             JSON.stringify(arrayOutput),
             JSON.stringify(gethCase.value!),
-            `invalid output: ${gethCase.input}`
+            `invalid output: ${gethCase.input}`,
           )
         } else {
           assert.deepEqual(
             bytesToHex(Uint8Array.from(output as any)),
             gethCase.value,
-            `invalid output: ${gethCase.input}`
+            `invalid output: ${gethCase.input}`,
           )
         }
       }, `should not throw: ${gethCase.input}`)

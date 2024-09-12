@@ -1,6 +1,6 @@
-import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
+import { PrioritizedTaskExecutor } from '@ethereumjs/util'
 
-import { PrioritizedTaskExecutor } from './tasks.js'
+import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
 
 import type { Trie } from '../trie.js'
 import type { FoundNodeFunction, Nibbles, TrieNode } from '../types.js'
@@ -40,7 +40,7 @@ export class WalkController {
     onNode: FoundNodeFunction,
     trie: Trie,
     root: Uint8Array,
-    poolSize?: number
+    poolSize?: number,
   ): Promise<void> {
     const strategy = new WalkController(onNode, trie, poolSize ?? 500)
     await strategy.startWalk(root)
@@ -106,7 +106,7 @@ export class WalkController {
         }
         taskFinishedCallback() // this marks the current task as finished. If there are any tasks left in the queue, this will immediately execute the first task.
         this.processNode(nodeRef as Uint8Array, childNode as TrieNode, key)
-      }
+      },
     )
   }
 

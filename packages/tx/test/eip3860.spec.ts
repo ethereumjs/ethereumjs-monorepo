@@ -1,30 +1,31 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createZeroAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { TransactionFactory, TransactionType } from '../src/index.js'
+import { TransactionType, createTxFromTxData, paramsTx } from '../src/index.js'
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.Paris,
   eips: [3860, 4844, 4895],
+  params: paramsTx,
 })
 
-const maxInitCodeSize = common.param('vm', 'maxInitCodeSize')
+const maxInitCodeSize = common.param('maxInitCodeSize')
 const txTypes = [
   TransactionType.Legacy,
   TransactionType.AccessListEIP2930,
   TransactionType.FeeMarketEIP1559,
   //TransactionType.BlobEIP4844, // Explicitly commented out: BlobEIP4844 txs cannot create contracts
 ]
-const addressZero = Address.zero()
+const addressZero = createZeroAddress()
 
 describe('[EIP3860 tests]', () => {
   it(`Should instantiate create txs with MAX_INITCODE_SIZE`, () => {
     const data = new Uint8Array(Number(maxInitCodeSize))
     for (const txType of txTypes) {
       try {
-        TransactionFactory.fromTxData({ data, type: txType }, { common })
+        createTxFromTxData({ data, type: txType }, { common })
         assert.ok('Instantiated create tx with MAX_INITCODE_SIZE data')
       } catch (e) {
         assert.fail('Did not instantiate create tx with MAX_INITCODE_SIZE')
@@ -36,7 +37,7 @@ describe('[EIP3860 tests]', () => {
     const data = new Uint8Array(Number(maxInitCodeSize))
     for (const txType of txTypes) {
       try {
-        TransactionFactory.fromTxData({ data, type: txType, to: addressZero }, { common })
+        createTxFromTxData({ data, type: txType, to: addressZero }, { common })
         assert.ok('Instantiated tx with MAX_INITCODE_SIZE')
       } catch (e) {
         assert.fail('Did not instantiated tx with MAX_INITCODE_SIZE')
@@ -48,7 +49,7 @@ describe('[EIP3860 tests]', () => {
     const data = new Uint8Array(Number(maxInitCodeSize) + 1)
     for (const txType of txTypes) {
       try {
-        TransactionFactory.fromTxData({ data, type: txType }, { common })
+        createTxFromTxData({ data, type: txType }, { common })
         assert.fail('Instantiated create tx with MAX_INITCODE_SIZE+1')
       } catch (e) {
         assert.ok('Did not instantiate create tx with MAX_INITCODE_SIZE+1')
@@ -60,7 +61,7 @@ describe('[EIP3860 tests]', () => {
     const data = new Uint8Array(Number(maxInitCodeSize) + 1)
     for (const txType of txTypes) {
       try {
-        TransactionFactory.fromTxData({ data, type: txType, to: addressZero }, { common })
+        createTxFromTxData({ data, type: txType, to: addressZero }, { common })
         assert.ok('Instantiated tx with MAX_INITCODE_SIZE+1')
       } catch (e) {
         assert.fail('Did not instantiate tx with MAX_INITCODE_SIZE+1')
@@ -73,10 +74,7 @@ describe('[EIP3860 tests]', () => {
       const data = new Uint8Array(Number(maxInitCodeSize) + 1)
       for (const txType of txTypes) {
         try {
-          TransactionFactory.fromTxData(
-            { data, type: txType },
-            { common, allowUnlimitedInitCodeSize: true }
-          )
+          createTxFromTxData({ data, type: txType }, { common, allowUnlimitedInitCodeSize: true })
           assert.ok('Instantiated create tx with MAX_INITCODE_SIZE+1')
         } catch (e) {
           assert.fail('Did not instantiate tx with MAX_INITCODE_SIZE+1')
@@ -89,17 +87,17 @@ describe('[EIP3860 tests]', () => {
     it('should work', () => {
       const data = new Uint8Array(Number(maxInitCodeSize))
       for (const txType of txTypes) {
-        const eip3860ActiveTx = TransactionFactory.fromTxData(
+        const eip3860ActiveTx = createTxFromTxData(
           { data, type: txType },
-          { common, allowUnlimitedInitCodeSize: true }
+          { common, allowUnlimitedInitCodeSize: true },
         )
-        const eip3860DeactivedTx = TransactionFactory.fromTxData(
+        const eip3860DeactivatedTx = createTxFromTxData(
           { data, type: txType },
-          { common, allowUnlimitedInitCodeSize: false }
+          { common, allowUnlimitedInitCodeSize: false },
         )
         assert.ok(
-          eip3860ActiveTx.getDataFee() === eip3860DeactivedTx.getDataFee(),
-          'charged initcode analysis gas'
+          eip3860ActiveTx.getDataGas() === eip3860DeactivatedTx.getDataGas(),
+          'charged initcode analysis gas',
         )
       }
     })

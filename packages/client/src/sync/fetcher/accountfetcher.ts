@@ -1,5 +1,5 @@
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { verifyTrieRangeProof } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -26,15 +26,15 @@ import { ByteCodeFetcher } from './bytecodefetcher.js'
 import { Fetcher } from './fetcher.js'
 import { StorageFetcher } from './storagefetcher.js'
 import { TrieNodeFetcher } from './trienodefetcher.js'
-import { getInitFecherDoneFlags } from './types.js'
+import { getInitFetcherDoneFlags } from './types.js'
 
 import type { Peer } from '../../net/peer/index.js'
 import type { AccountData } from '../../net/protocol/snapprotocol.js'
 import type { FetcherOptions } from './fetcher.js'
 import type { StorageRequest } from './storagefetcher.js'
 import type { Job, SnapFetcherDoneFlags } from './types.js'
+import type { Trie } from '@ethereumjs/trie'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
 
@@ -54,7 +54,7 @@ export interface AccountFetcherOptions extends FetcherOptions {
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
 
-  stateManager?: DefaultStateManager
+  stateManager?: MerkleStateManager
 
   fetcherDoneFlags?: SnapFetcherDoneFlags
 }
@@ -69,7 +69,7 @@ export type JobTask = {
 
 export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData> {
   protected debug: Debugger
-  stateManager: DefaultStateManager
+  stateManager: MerkleStateManager
   accountTrie: Trie
 
   root: Uint8Array
@@ -90,16 +90,16 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    */
   constructor(options: AccountFetcherOptions) {
     super(options)
-    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
+    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFetcherDoneFlags()
 
     this.root = options.root
     this.first = options.first
     this.count = options.count ?? BIGINT_2EXP256 - this.first
 
-    this.stateManager = options.stateManager ?? new DefaultStateManager()
+    this.stateManager = options.stateManager ?? new MerkleStateManager()
     this.accountTrie = this.stateManager['_getAccountTrie']()
 
-    this.debug = createDebugLogger('client:AccountFetcher')
+    this.debug = debugDefault('client:AccountFetcher')
 
     this.storageFetcher = new StorageFetcher({
       config: this.config,
@@ -136,11 +136,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const origin = this.getOrigin(syncRange)
     const limit = this.getLimit(syncRange)
 
-    this.debug(
-      `Account fetcher instantiated root=${short(this.root)} origin=${short(origin)} limit=${short(
-        limit
-      )} destroyWhenDone=${this.destroyWhenDone}`
-    )
+    this.DEBUG &&
+      this.debug(
+        `Account fetcher instantiated root=${short(this.root)} origin=${short(origin)} limit=${short(
+          limit,
+        )} destroyWhenDone=${this.destroyWhenDone}`,
+      )
   }
 
   async blockingFetch(): Promise<boolean> {
@@ -171,7 +172,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             () => this.snapFetchersCompleted(StorageFetcher),
             () => {
               throw Error('Snap fetcher failed to exit')
-            }
+            },
           )
         : null
       const codeFetch = !this.fetcherDoneFlags.byteCodeFetcher.done
@@ -179,12 +180,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             () => this.snapFetchersCompleted(ByteCodeFetcher),
             () => {
               throw Error('Snap fetcher failed to exit')
-            }
+            },
           )
         : null
 
       this.config.superMsg(
-        `Snapsync: running storageFetch=${storageFetch !== null} codeFetch=${codeFetch !== null}`
+        `Snapsync: running storageFetch=${storageFetch !== null} codeFetch=${codeFetch !== null}`,
       )
 
       this.storageFetcher.setDestroyWhenDone()
@@ -196,7 +197,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         this.fetcherDoneFlags.byteCodeFetcher.done !== true
       ) {
         throw Error(
-          `storageFetch or codeFetch didn't complete storageFetcherDone=${this.fetcherDoneFlags.storageFetcher.done} byteCodeFetcherDone=${this.fetcherDoneFlags.byteCodeFetcher.done}`
+          `storageFetch or codeFetch didn't complete storageFetcherDone=${this.fetcherDoneFlags.storageFetcher.done} byteCodeFetcherDone=${this.fetcherDoneFlags.byteCodeFetcher.done}`,
         )
       }
 
@@ -209,7 +210,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         },
         () => {
           throw Error('Snap fetcher failed to exit')
-        }
+        },
       )
       this.config.superMsg(`Snapsync: running trieNodeFetch=${trieNodeFetch !== null}`)
       this.trieNodeFetcher.setDestroyWhenDone()
@@ -239,10 +240,10 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
           const fetcherProgress = formatBigDecimal(
             fetcherDoneFlags.accountFetcher.first * BIGINT_100,
             BIGINT_2EXP256,
-            BIGINT_100
+            BIGINT_100,
           )
           this.config.logger.warn(
-            `accountFetcher completed with pending range done=${fetcherProgress}%`
+            `accountFetcher completed with pending range done=${fetcherProgress}%`,
           )
         }
         break
@@ -253,10 +254,10 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
           const reqsDone = formatBigDecimal(
             fetcherDoneFlags.storageFetcher.first * BIGINT_100,
             fetcherDoneFlags.storageFetcher.count,
-            BIGINT_100
+            BIGINT_100,
           )
           this.config.logger.warn(
-            `storageFetcher completed with pending tasks done=${reqsDone}% of ${fetcherDoneFlags.storageFetcher.count} queued=${this.storageFetcher.storageRequests.length}`
+            `storageFetcher completed with pending tasks done=${reqsDone}% of ${fetcherDoneFlags.storageFetcher.count} queued=${this.storageFetcher.storageRequests.length}`,
           )
         }
 
@@ -268,10 +269,10 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
           const reqsDone = formatBigDecimal(
             fetcherDoneFlags.byteCodeFetcher.first * BIGINT_100,
             fetcherDoneFlags.byteCodeFetcher.count,
-            BIGINT_100
+            BIGINT_100,
           )
           this.config.logger.warn(
-            `byteCodeFetcher completed with pending tasks done=${reqsDone}% of ${fetcherDoneFlags.byteCodeFetcher.count}`
+            `byteCodeFetcher completed with pending tasks done=${reqsDone}% of ${fetcherDoneFlags.byteCodeFetcher.count}`,
           )
         }
         break
@@ -286,10 +287,10 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     this.config.superMsg(
       `snapFetchersCompletion root=${short(this.root)} accountsRoot=${short(
-        fetcherDoneFlags.stateRoot ?? 'na'
+        fetcherDoneFlags.stateRoot ?? 'na',
       )} done=${this.fetcherDoneFlags.done} accountsDone=${accountFetcher.done} storageDone=${
         storageFetcher.done
-      } byteCodesDone=${byteCodeFetcher.done} trieNodesDone=${trieNodeFetcher.done}`
+      } byteCodesDone=${byteCodeFetcher.done} trieNodesDone=${trieNodeFetcher.done}`,
     )
 
     if (this.fetcherDoneFlags.done) {
@@ -300,13 +301,14 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   private async verifyRangeProof(
     stateRoot: Uint8Array,
     origin: Uint8Array,
-    { accounts, proof }: { accounts: AccountData[]; proof: Uint8Array[] }
+    { accounts, proof }: { accounts: AccountData[]; proof: Uint8Array[] },
   ): Promise<boolean> {
-    this.debug(
-      `verifyRangeProof accounts:${accounts.length} first=${bytesToHex(
-        accounts[0].hash
-      )} last=${short(accounts[accounts.length - 1].hash)}`
-    )
+    this.DEBUG &&
+      this.debug(
+        `verifyRangeProof accounts:${accounts.length} first=${bytesToHex(
+          accounts[0].hash,
+        )} last=${short(accounts[accounts.length - 1].hash)}`,
+      )
 
     for (let i = 0; i < accounts.length - 1; i++) {
       // ensure the range is monotonically increasing
@@ -314,7 +316,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         throw Error(
           `Account hashes not monotonically increasing: ${i} ${accounts[i].hash} vs ${i + 1} ${
             accounts[i + 1].hash
-          }`
+          }`,
         )
       }
     }
@@ -322,7 +324,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const keys = accounts.map((acc: any) => acc.hash)
     const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values
-    return Trie.verifyRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, proof, {
+    return verifyTrieRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, proof, {
       common: this.config.chainCommon,
       useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
     })
@@ -347,7 +349,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
   private isMissingRightRange(
     limit: Uint8Array,
-    { accounts, proof: _proof }: { accounts: AccountData[]; proof: Uint8Array[] }
+    { accounts, proof: _proof }: { accounts: AccountData[]; proof: Uint8Array[] },
   ): boolean {
     if (
       accounts.length > 0 &&
@@ -369,7 +371,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    * @param peer
    */
   async request(
-    job: Job<JobTask, AccountData[], AccountData>
+    job: Job<JobTask, AccountData[], AccountData>,
   ): Promise<AccountDataResponse | undefined> {
     const { peer } = job
     // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
@@ -382,7 +384,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     if (this.highestKnownHash && compareBytes(limit, this.highestKnownHash) < 0) {
       // skip this job and don't rerequest it if it's limit is lower than the highest known key hash
-      this.debug(`skipping request with limit lower than highest known hash`)
+      this.DEBUG && this.debug(`skipping request with limit lower than highest known hash`)
       return Object.assign([], [{ skipped: true }], { completed: true })
     }
 
@@ -403,24 +405,24 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // check zero-element proof
       if (rangeResult.proof.length > 0) {
         try {
-          const isMissingRightRange = await Trie.verifyRangeProof(
+          const isMissingRightRange = await verifyTrieRangeProof(
             this.root,
             origin,
             null,
             [],
             [],
             <any>rangeResult.proof,
-            { useKeyHashingFunction: keccak256 }
+            { useKeyHashingFunction: keccak256 },
           )
           // if proof is false, reject corrupt peer
           if (isMissingRightRange !== false) return undefined
         } catch (e) {
-          this.debug(e)
+          this.DEBUG && this.debug(e)
           // if proof is false, reject corrupt peer
           return undefined
         }
 
-        this.debug(`Data for last range has been received`)
+        this.DEBUG && this.debug(`Data for last range has been received`)
         // response contains empty object so that task can be terminated in store phase and not reenqueued
         return Object.assign([], [Object.create(null)], { completed: true })
       }
@@ -436,11 +438,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // Check if there is any pending data to be synced to the right
       let completed: boolean
       if (isMissingRightRange && this.isMissingRightRange(limit, rangeResult)) {
-        this.debug(
-          `Peer ${peerInfo} returned missing right range account=${bytesToHex(
-            rangeResult.accounts[rangeResult.accounts.length - 1].hash
-          )} limit=${bytesToHex(limit)}`
-        )
+        this.DEBUG &&
+          this.debug(
+            `Peer ${peerInfo} returned missing right range account=${bytesToHex(
+              rangeResult.accounts[rangeResult.accounts.length - 1].hash,
+            )} limit=${bytesToHex(limit)}`,
+          )
         completed = false
       } else {
         completed = true
@@ -460,7 +463,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    */
   process(
     job: Job<JobTask, AccountData[], AccountData>,
-    result: AccountDataResponse
+    result: AccountDataResponse,
   ): AccountData[] | undefined {
     const fullResult = (job.partialResult ?? []).concat(result)
 
@@ -487,7 +490,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    * @param result fetch result
    */
   async store(result: AccountData[]): Promise<void> {
-    this.debug(`Stored ${result.length} accounts in account trie`)
+    this.DEBUG && this.debug(`Stored ${result.length} accounts in account trie`)
 
     if (JSON.stringify(result[0]) === JSON.stringify({ skipped: true })) {
       // return without storing to skip this task
@@ -495,7 +498,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
     if (JSON.stringify(result[0]) === JSON.stringify(Object.create(null))) {
       // TODO fails to handle case where there is a proof of non existence and returned accounts for last requested range
-      this.debug('Final range received with no elements remaining to the right')
+      this.DEBUG && this.debug('Final range received with no elements remaining to the right')
 
       await this.accountTrie.persistRoot()
       this.snapFetchersCompleted(AccountFetcher, this.accountTrie.root())
@@ -533,11 +536,11 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     if (storageFetchRequests.size > 0)
       this.storageFetcher.enqueueByStorageRequestList(
-        Array.from(storageFetchRequests) as StorageRequest[]
+        Array.from(storageFetchRequests) as StorageRequest[],
       )
     if (byteCodeFetchRequests.size > 0)
       this.byteCodeFetcher.enqueueByByteCodeRequestList(
-        Array.from(byteCodeFetchRequests) as Uint8Array[]
+        Array.from(byteCodeFetchRequests) as Uint8Array[],
       )
   }
 
@@ -546,7 +549,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    * remaining items apart from the tasks it pushes in the queue
    *
    * Divides the full 256-bit range of hashes into ranges of @maxAccountRange
-   * size and turnes each range into a task for the fetcher
+   * size and turns each range into a task for the fetcher
    */
 
   tasks(first = this.first, count = this.count, maxTasks = this.config.maxFetcherJobs): JobTask[] {
@@ -577,9 +580,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
 
     debugStr += ` limit=${short(
-      setLengthLeft(bigIntToBytes(startedWith + pushedCount - BIGINT_1), 32)
+      setLengthLeft(bigIntToBytes(startedWith + pushedCount - BIGINT_1), 32),
     )}`
-    this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
+    this.DEBUG && this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks
   }
 
@@ -602,7 +605,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       const origin = this.getOrigin(pendingRange)
       const limit = this.getLimit(pendingRange)
 
-      this.debug(`Fetcher pending with origin=${short(origin)} limit=${short(limit)}`)
+      this.DEBUG && this.debug(`Fetcher pending with origin=${short(origin)} limit=${short(limit)}`)
       const tasks = this.tasks()
       for (const task of tasks) {
         this.enqueueTask(task)
@@ -626,7 +629,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
   processStoreError(
     error: Error,
-    _task: JobTask
+    _task: JobTask,
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
     const stepBack = BIGINT_0
     const destroyFetcher =

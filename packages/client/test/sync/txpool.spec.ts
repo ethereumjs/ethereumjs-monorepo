@@ -1,7 +1,7 @@
-import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { createAccessList2930Tx, createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   Account,
   bytesToHex,
@@ -100,22 +100,22 @@ const setup = () => {
   return { pool, metricsServer }
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
 
 const handleTxs = async (
   txs: any[],
   failMessage: string,
-  stateManager?: DefaultStateManager,
-  pool?: TxPool
+  stateManager?: MerkleStateManager,
+  pool?: TxPool,
 ) => {
   if (pool === undefined) {
     pool = setup().pool
   }
   try {
     if (stateManager !== undefined) {
-      ;(<any>pool).service.execution.vm.stateManager = stateManager
-      ;(<any>pool).service.execution.vm.stateManager.setStateRoot = async (_root: Uint8Array) => {}
+      ;(pool['service'].execution.vm.stateManager as any) = stateManager
+      pool['service'].execution.vm.stateManager.setStateRoot = async (_root: Uint8Array) => {}
     }
 
     pool.open()
@@ -134,7 +134,7 @@ const handleTxs = async (
     await pool.handleAnnouncedTxHashes(
       validTxs.map((e) => e.hash()),
       peer,
-      peerPool
+      peerPool,
     )
 
     await pool.add(txs[txs.length - 1])
@@ -152,8 +152,8 @@ const handleTxs = async (
 }
 
 describe('[TxPool]', async () => {
-  const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  DefaultStateManager.prototype.setStateRoot = (): any => {}
+  const ogStateManagerSetStateRoot = MerkleStateManager.prototype.setStateRoot
+  MerkleStateManager.prototype.setStateRoot = (): any => {}
 
   const A = {
     address: hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f'),
@@ -176,7 +176,7 @@ describe('[TxPool]', async () => {
     }
     txData.maxFeePerGas += (txData.maxFeePerGas * feeBump) / 100
     txData.maxPriorityFeePerGas += (txData.maxPriorityFeePerGas * feeBump) / 100
-    const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
+    const tx = createFeeMarket1559Tx(txData, { common })
     const signedTx = tx.sign(from.privateKey)
     return signedTx
   }
@@ -190,15 +190,15 @@ describe('[TxPool]', async () => {
   it('should initialize correctly', () => {
     const { pool } = setup()
     assert.equal(pool.pool.size, 0, 'pool empty')
-    assert.notOk((pool as any).opened, 'pool not opened yet')
+    assert.notOk(pool['opened'], 'pool not opened yet')
     pool.open()
-    assert.ok((pool as any).opened, 'pool opened')
+    assert.ok(pool['opened'], 'pool opened')
     pool.start()
-    assert.ok((pool as any).running, 'pool running')
+    assert.ok(pool['running'], 'pool running')
     pool.stop()
-    assert.notOk((pool as any).running, 'pool not running anymore')
+    assert.notOk(pool['running'], 'pool not running anymore')
     pool.close()
-    assert.notOk((pool as any).opened, 'pool not opened anymore')
+    assert.notOk(pool['opened'], 'pool not opened anymore')
   })
 
   it('should open/close', async () => {
@@ -206,11 +206,11 @@ describe('[TxPool]', async () => {
 
     pool.open()
     pool.start()
-    assert.ok((pool as any).opened, 'pool opened')
+    assert.ok(pool['opened'], 'pool opened')
     assert.equal(pool.open(), false, 'already opened')
     pool.stop()
     pool.close()
-    assert.notOk((pool as any).opened, 'closed')
+    assert.notOk(pool['opened'], 'closed')
   })
 
   it('announcedTxHashes() -> add single tx / knownByPeer / getByHash()', async () => {
@@ -256,19 +256,15 @@ describe('[TxPool]', async () => {
 
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
     assert.equal(pool.pool.size, 1, 'pool size 1')
-    assert.equal((pool as any).pending.length, 0, 'cleared pending txs')
-    assert.equal((pool as any).handled.size, 1, 'added to handled txs')
+    assert.equal(pool['pending'].length, 0, 'cleared pending txs')
+    assert.equal(pool['handled'].size, 1, 'added to handled txs')
 
+    assert.equal(pool['knownByPeer'].size, 2, 'known tx hashes size 2 (entries for both peers)')
+    assert.equal(pool['knownByPeer'].get(peer.id)?.length, 1, 'one tx added for peer 1')
     assert.equal(
-      (pool as any).knownByPeer.size,
-      2,
-      'known tx hashes size 2 (entries for both peers)'
-    )
-    assert.equal((pool as any).knownByPeer.get(peer.id).length, 1, 'one tx added for peer 1')
-    assert.equal(
-      (pool as any).knownByPeer.get(peer.id)[0].hash,
+      pool['knownByPeer'].get(peer.id)?.[0].hash,
       bytesToUnprefixedHex(txA01.hash()),
-      'new known tx hashes entry for announcing peer'
+      'new known tx hashes entry for announcing peer',
     )
 
     const txs = pool.getByHash([txA01.hash()])
@@ -276,7 +272,7 @@ describe('[TxPool]', async () => {
     assert.equal(
       bytesToHex(txs[0].serialize()),
       bytesToHex(txA01.serialize()),
-      'should get correct tx by hash'
+      'should get correct tx by hash',
     )
 
     // check if transaction added in metrics
@@ -294,22 +290,18 @@ describe('[TxPool]', async () => {
     assert.equal(
       feeMarketEip1559TransactionCountInPool,
       pool.pool.size,
-      'pool should contain single eip 1559 transaction'
+      'pool should contain single eip 1559 transaction',
     )
 
     pool.pool.clear()
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
     assert.equal(pool.pool.size, 0, 'should not add a once handled tx')
     assert.equal(
-      (pool as any).knownByPeer.get(peer.id).length,
+      pool['knownByPeer'].get(peer.id)?.length,
       1,
-      'should add tx only once to known tx hashes'
+      'should add tx only once to known tx hashes',
     )
-    assert.equal(
-      (pool as any).knownByPeer.size,
-      2,
-      'known tx hashes size 2 (entries for both peers)'
-    )
+    assert.equal(pool['knownByPeer'].size, 2, 'known tx hashes size 2 (entries for both peers)')
 
     pool.stop()
     pool.close()
@@ -318,7 +310,7 @@ describe('[TxPool]', async () => {
 
   it('announcedTxHashes() -> TX_RETRIEVAL_LIMIT', async () => {
     const { pool } = setup()
-    const TX_RETRIEVAL_LIMIT: number = (pool as any).TX_RETRIEVAL_LIMIT
+    const TX_RETRIEVAL_LIMIT: number = pool['TX_RETRIEVAL_LIMIT']
 
     pool.open()
     pool.start()
@@ -329,7 +321,7 @@ describe('[TxPool]', async () => {
           assert.equal(
             res['hashes'].length,
             TX_RETRIEVAL_LIMIT,
-            'should limit to TX_RETRIEVAL_LIMIT'
+            'should limit to TX_RETRIEVAL_LIMIT',
           )
           return [null, []]
         },
@@ -431,7 +423,7 @@ describe('[TxPool]', async () => {
     } catch (e: any) {
       assert.ok(
         e.message.includes('replacement gas too low'),
-        'successfully failed adding underpriced txn'
+        'successfully failed adding underpriced txn',
       )
       const poolObject = pool['handled'].get(bytesToUnprefixedHex(txA02_Underpriced.hash()))
       assert.equal(poolObject?.error, e, 'should have an errored poolObject')
@@ -440,17 +432,17 @@ describe('[TxPool]', async () => {
     }
     assert.equal(pool.pool.size, 1, 'pool size 1')
     assert.equal(sentToPeer2, 1, 'broadcast attempt to the peer')
-    assert.equal((pool as any).knownByPeer.get(peer2.id).length, 1, 'known send objects')
+    assert.equal(pool['knownByPeer'].get(peer2.id)?.length, 1, 'known send objects')
     assert.equal(
-      (pool as any).knownByPeer.get(peer2.id)[0]?.error?.message,
+      pool['knownByPeer'].get(peer2.id)?.[0]?.error?.message,
       'NewPooledTransactionHashes',
-      'should have errored sendObject for NewPooledTransactionHashes broadcast'
+      'should have errored sendObject for NewPooledTransactionHashes broadcast',
     )
     const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
     assert.equal(poolContent.length, 1, 'only one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
-    // Another attempt to add tx which should not be broadcased to peer2
+    // Another attempt to add tx which should not be broadcasted to peer2
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
     assert.equal(sentToPeer2, 1, 'no new broadcast attempt to the peer')
     // Just to enhance logging coverage, assign peerPool for stats collection
@@ -492,7 +484,7 @@ describe('[TxPool]', async () => {
     for (let account = 0; account < 51; account++) {
       const pkey = concatBytes(
         hexToBytes(`0x${'aa'.repeat(31)}`),
-        hexToBytes(`0x${account.toString(16).padStart(2, '0')}`)
+        hexToBytes(`0x${account.toString(16).padStart(2, '0')}`),
       )
       const from = {
         address: privateToAddress(pkey),
@@ -523,7 +515,7 @@ describe('[TxPool]', async () => {
 
     assert.notOk(
       await handleTxs(txs, 'already have max amount of txs for this account'),
-      'successfully rejected too many txs from same account'
+      'successfully rejected too many txs from same account',
     )
   })
 
@@ -531,15 +523,15 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
+      createFeeMarket1559Tx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
-      })
+      }),
     )
 
     assert.notOk(
       await handleTxs(txs, 'Cannot call hash method if transaction is not signed'),
-      'successfully rejected unsigned tx'
+      'successfully rejected unsigned tx',
     )
   })
 
@@ -547,42 +539,42 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
+      createFeeMarket1559Tx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         nonce: 0,
-      }).sign(A.privateKey)
+      }).sign(A.privateKey),
     )
 
     assert.notOk(
       await handleTxs(txs, 'tx nonce too low', {
         getAccount: () => new Account(BigInt(1), BigInt('50000000000000000000')),
       } as any),
-      'successfully rejected tx with invalid nonce'
+      'successfully rejected tx with invalid nonce',
     )
   })
 
   it('announcedTxHashes() -> reject txs with too much data', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Paris })
 
     const txs = []
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData(
+      createFeeMarket1559Tx(
         {
           maxFeePerGas: 1000000000,
           maxPriorityFeePerGas: 1000000000,
           nonce: 0,
           data: `0x${'00'.repeat(128 * 1024 + 1)}`,
         },
-        { common }
-      ).sign(A.privateKey)
+        { common },
+      ).sign(A.privateKey),
     )
 
     assert.notOk(
       await handleTxs(txs, 'exceeds the max data size', {
         getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000000')),
       } as any),
-      'successfully rejected tx with too much data'
+      'successfully rejected tx with too much data',
     )
   })
 
@@ -590,19 +582,19 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
+      createFeeMarket1559Tx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         gasLimit: 21000,
         nonce: 0,
-      }).sign(A.privateKey)
+      }).sign(A.privateKey),
     )
 
     assert.notOk(
       await handleTxs(txs, 'insufficient balance', {
         getAccount: () => new Account(BigInt(0), BigInt('0')),
       } as any),
-      'successfully rejected account with too low balance'
+      'successfully rejected account with too low balance',
     )
   })
 
@@ -610,11 +602,11 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
+      createFeeMarket1559Tx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         nonce: 0,
-      }).sign(A.privateKey)
+      }).sign(A.privateKey),
     )
 
     const { pool } = setup()
@@ -625,7 +617,7 @@ describe('[TxPool]', async () => {
 
     assert.notOk(
       await handleTxs(txs, 'not within 50% range of current basefee', undefined, pool),
-      'successfully rejected tx with too low gas price'
+      'successfully rejected tx with too low gas price',
     )
   })
 
@@ -633,12 +625,12 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
+      createFeeMarket1559Tx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         nonce: 0,
         gasLimit: 21000,
-      }).sign(A.privateKey)
+      }).sign(A.privateKey),
     )
 
     const { pool } = setup()
@@ -649,7 +641,7 @@ describe('[TxPool]', async () => {
 
     assert.notOk(
       await handleTxs(txs, 'exceeds last block gas limit', undefined, pool),
-      'successfully rejected tx which has gas limit higher than block gas limit'
+      'successfully rejected tx which has gas limit higher than block gas limit',
     )
   })
 
@@ -657,10 +649,10 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
+      createFeeMarket1559Tx({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
-      }).sign(A.privateKey)
+      }).sign(A.privateKey),
     )
 
     txs.push(txs[0])
@@ -669,7 +661,7 @@ describe('[TxPool]', async () => {
 
     assert.notOk(
       await handleTxs(txs, 'this transaction is already in the TxPool', undefined, pool),
-      'successfully rejected tx which is already in pool'
+      'successfully rejected tx which is already in pool',
     )
   })
 
@@ -677,16 +669,16 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
+      createFeeMarket1559Tx({
         maxFeePerGas: 10000000,
         maxPriorityFeePerGas: 10000000,
         nonce: 0,
-      }).sign(A.privateKey)
+      }).sign(A.privateKey),
     )
 
     assert.notOk(
       await handleTxs(txs, 'does not pay the minimum gas price of'),
-      'successfully rejected tx with too low gas price'
+      'successfully rejected tx with too low gas price',
     )
   })
 
@@ -694,29 +686,29 @@ describe('[TxPool]', async () => {
     const txs = []
 
     txs.push(
-      AccessListEIP2930Transaction.fromTxData({
+      createAccessList2930Tx({
         gasPrice: 10000000,
         nonce: 0,
-      }).sign(A.privateKey)
+      }).sign(A.privateKey),
     )
 
     assert.notOk(
       await handleTxs(txs, 'does not pay the minimum gas price of'),
-      'successfully rejected tx with too low gas price'
+      'successfully rejected tx with too low gas price',
     )
   })
 
   it('announcedTxHashes() -> reject txs with too low gas price (invalid tx type)', async () => {
     const txs = []
 
-    const tx = AccessListEIP2930Transaction.fromTxData(
+    const tx = createAccessList2930Tx(
       {
         gasPrice: 1000000000 - 1,
         nonce: 0,
       },
       {
         freeze: false,
-      }
+      },
     ).sign(A.privateKey)
 
     Object.defineProperty(tx, 'type', { get: () => 5 })
@@ -766,12 +758,12 @@ describe('[TxPool]', async () => {
     assert.equal(pool.pool.size, 1, 'pool size 1')
 
     // Craft block with tx not in pool
-    let block = Block.fromBlockData({ transactions: [txA02] }, { common })
+    let block = createBlock({ transactions: [txA02] }, { common })
     pool.removeNewBlockTxs([block])
     assert.equal(pool.pool.size, 1, 'pool size 1')
 
     // Craft block with tx in pool
-    block = Block.fromBlockData({ transactions: [txA01] }, { common })
+    block = createBlock({ transactions: [txA01] }, { common })
     pool.removeNewBlockTxs([block])
     assert.equal(pool.pool.size, 0, 'pool should be empty')
 
@@ -789,20 +781,20 @@ describe('[TxPool]', async () => {
     assert.equal(poolContent.length, 2, 'two txs')
 
     // Craft block with tx not in pool
-    block = Block.fromBlockData({ transactions: [txA02] }, { common })
+    block = createBlock({ transactions: [txA02] }, { common })
     pool.removeNewBlockTxs([block])
     assert.equal(pool.pool.size, 1, 'pool size 1')
     poolContent = pool.pool.get(address)!
     assert.equal(poolContent.length, 2, 'two txs')
 
     // Craft block with tx in pool
-    block = Block.fromBlockData({ transactions: [txB01] }, { common })
+    block = createBlock({ transactions: [txB01] }, { common })
     pool.removeNewBlockTxs([block])
     poolContent = pool.pool.get(address)!
     assert.equal(poolContent.length, 1, 'only one tx')
 
     // Craft block with tx in pool
-    block = Block.fromBlockData({ transactions: [txB02] }, { common })
+    block = createBlock({ transactions: [txB02] }, { common })
     pool.removeNewBlockTxs([block])
     assert.equal(pool.pool.size, 0, 'pool size 0')
 
@@ -828,25 +820,25 @@ describe('[TxPool]', async () => {
 
     await pool.handleAnnouncedTxHashes([txA01.hash(), txB01.hash()], peer, peerPool)
     assert.equal(pool.pool.size, 2, 'pool size 2')
-    assert.equal((pool as any).handled.size, 2, 'handled size 2')
-    assert.equal((pool as any).knownByPeer.size, 1, 'known by peer size 1')
-    assert.equal((pool as any).knownByPeer.get(peer.id).length, 2, '2 known txs')
+    assert.equal(pool['handled'].size, 2, 'handled size 2')
+    assert.equal(pool['knownByPeer'].size, 1, 'known by peer size 1')
+    assert.equal(pool['knownByPeer'].get(peer.id)!.length, 2, '2 known txs')
 
     pool.cleanup()
     assert.equal(
       pool.pool.size,
       2,
-      'should not remove txs from pool (POOLED_STORAGE_TIME_LIMIT within range)'
+      'should not remove txs from pool (POOLED_STORAGE_TIME_LIMIT within range)',
     )
     assert.equal(
-      (pool as any).knownByPeer.size,
+      pool['knownByPeer'].size,
       1,
-      'should not remove txs from known by peer map (POOLED_STORAGE_TIME_LIMIT within range)'
+      'should not remove txs from known by peer map (POOLED_STORAGE_TIME_LIMIT within range)',
     )
     assert.equal(
-      (pool as any).handled.size,
+      pool['handled'].size,
       2,
-      'should not remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT within range)'
+      'should not remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT within range)',
     )
 
     const address = txB01.getSenderAddress().toString().slice(2)
@@ -854,35 +846,35 @@ describe('[TxPool]', async () => {
     poolObj.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 1000 * 60 - 1
     pool.pool.set(address, [poolObj])
 
-    const knownByPeerObj1 = (pool as any).knownByPeer.get(peer.id)[0]
-    const knownByPeerObj2 = (pool as any).knownByPeer.get(peer.id)[1]
+    const knownByPeerObj1 = pool['knownByPeer'].get(peer.id)![0]
+    const knownByPeerObj2 = pool['knownByPeer'].get(peer.id)![1]
     knownByPeerObj1.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 1000 * 60 - 1
-    ;(pool as any).knownByPeer.set(peer.id, [knownByPeerObj1, knownByPeerObj2])
+    pool['knownByPeer'].set(peer.id, [knownByPeerObj1, knownByPeerObj2])
 
     const hash = bytesToUnprefixedHex(txB01.hash())
-    const handledObj = (pool as any).handled.get(hash)
+    const handledObj = pool['handled'].get(hash)!
     handledObj.added = Date.now() - pool.HANDLED_CLEANUP_TIME_LIMIT * 1000 * 60 - 1
-    ;(pool as any).handled.set(hash, handledObj)
+    pool['handled'].set(hash, handledObj)
 
     pool.cleanup()
     assert.equal(
       pool.pool.size,
       1,
-      'should remove txs from pool (POOLED_STORAGE_TIME_LIMIT before range)'
+      'should remove txs from pool (POOLED_STORAGE_TIME_LIMIT before range)',
     )
     assert.equal(
-      (pool as any).knownByPeer.get(peer.id).length,
+      pool['knownByPeer'].get(peer.id)!.length,
       1,
-      'should remove one tx from known by peer map (POOLED_STORAGE_TIME_LIMIT before range)'
+      'should remove one tx from known by peer map (POOLED_STORAGE_TIME_LIMIT before range)',
     )
     assert.equal(
-      (pool as any).handled.size,
+      pool['handled'].size,
       1,
-      'should remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT before range)'
+      'should remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT before range)',
     )
 
     pool.stop()
     pool.close()
   })
-  DefaultStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
+  MerkleStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
 })

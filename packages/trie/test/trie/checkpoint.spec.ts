@@ -10,7 +10,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY, Trie } from '../../src/index.js'
+import { ROOT_DB_KEY, Trie, createTrie } from '../../src/index.js'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 
@@ -208,8 +208,8 @@ describe('testing checkpoints', () => {
     const KEY = utf8ToBytes('last_block_height')
     const KEY_ROOT = keccak256(ROOT_DB_KEY)
 
-    // Initialise State
-    const CommittedState = await Trie.create({
+    // Initialize State
+    const CommittedState = await createTrie({
       useKeyHashing: true,
       useNodePruning: true,
       useRootPersistence: true,
@@ -234,11 +234,11 @@ describe('testing checkpoints', () => {
     assert.equal(bytesToUtf8((await CommittedState.get(KEY))!), '1')
     assert.equal(
       bytesToHex((await CommittedState['_db'].get(KEY_ROOT))!),
-      '0x77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
+      '0x77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c',
     )
     assert.equal(
       bytesToHex(CommittedState.root()),
-      '0x77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
+      '0x77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c',
     )
 
     // From MemoryState, now take the final checkpoint
@@ -264,7 +264,7 @@ describe('testing checkpoints', () => {
       [
         hexToBytes('0xd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'),
         hexToBytes('0xe3a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c32'),
-      ]
+      ],
     )
     // Verify that the key is updated
     assert.equal(bytesToUtf8((await CommittedState.get(KEY))!), '2')

@@ -1,22 +1,25 @@
-import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { paramsBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createTxFromTxData } from '@ethereumjs/tx'
 import {
-  Address,
   BIGINT_0,
   BIGINT_256,
   bigIntToHex,
   blobsToCommitments,
   bytesToBigInt,
   commitmentsToVersionedHashes,
+  createAddressFromPrivateKey,
+  createZeroAddress,
   getBlobs,
 } from '@ethereumjs/util'
+import { buildBlock } from '@ethereumjs/vm'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
-import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import pow from '../../testdata/geth-genesis/pow.json'
-import { getRpcClient, gethGenesisStartLondon, setupChain } from '../helpers.js'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
+import { powData } from '../../testdata/geth-genesis/pow.js'
+import { getRPCClient, gethGenesisStartLondon, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain/index.js'
 import type { VMExecution } from '../../../src/execution/index.js'
@@ -24,19 +27,19 @@ import type { VMExecution } from '../../../src/execution/index.js'
 const method = 'eth_feeHistory'
 
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
-const pKeyAddress = Address.fromPrivateKey(privateKey)
+const pKeyAddress = createAddressFromPrivateKey(privateKey)
 
 const privateKey4844 = hexToBytes(
-  '0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8'
+  '0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8',
 )
-const p4844Address = Address.fromPrivateKey(privateKey4844)
+const p4844Address = createAddressFromPrivateKey(privateKey4844)
 
 const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gasUsed: bigint) => {
   const { vm } = execution
   const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.shallowCopy()
   // Set block's gas used to max
-  const blockBuilder = await vmCopy.buildBlock({
+  const blockBuilder = await buildBlock(vmCopy, {
     parentBlock,
     headerData: {
       timestamp: parentBlock.header.timestamp + BigInt(1),
@@ -67,7 +70,7 @@ const produceBlockWithTx = async (
   execution: VMExecution,
   chain: Chain,
   maxPriorityFeesPerGas: bigint[] = [BigInt(0xff)],
-  gasLimits: bigint[] = [BigInt(0xfffff)]
+  gasLimits: bigint[] = [BigInt(0xfffff)],
 ) => {
   const { vm } = execution
   const account = await vm.stateManager.getAccount(pKeyAddress)
@@ -75,7 +78,7 @@ const produceBlockWithTx = async (
   const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.shallowCopy()
   // Set block's gas used to max
-  const blockBuilder = await vmCopy.buildBlock({
+  const blockBuilder = await buildBlock(vmCopy, {
     parentBlock,
     headerData: {
       timestamp: parentBlock.header.timestamp + BigInt(1),
@@ -89,7 +92,7 @@ const produceBlockWithTx = async (
     const maxPriorityFeePerGas = maxPriorityFeesPerGas[i]
     const gasLimit = gasLimits[i]
     await blockBuilder.addTransaction(
-      TransactionFactory.fromTxData(
+      createTxFromTxData(
         {
           type: 2,
           gasLimit,
@@ -98,8 +101,8 @@ const produceBlockWithTx = async (
           nonce,
           data: '0xFE',
         },
-        { common: vmCopy.common }
-      ).sign(privateKey)
+        { common: vmCopy.common },
+      ).sign(privateKey),
     )
     nonce++
   }
@@ -118,7 +121,7 @@ const produceBlockWithTx = async (
 const produceBlockWith4844Tx = async (
   execution: VMExecution,
   chain: Chain,
-  blobsCount: number[]
+  blobsCount: number[],
 ) => {
   const kzg = await loadKZG()
   // 4844 sample blob
@@ -132,7 +135,7 @@ const produceBlockWith4844Tx = async (
   const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.shallowCopy()
   // Set block's gas used to max
-  const blockBuilder = await vmCopy.buildBlock({
+  const blockBuilder = await buildBlock(vmCopy, {
     parentBlock,
     headerData: {
       timestamp: parentBlock.header.timestamp + BigInt(1),
@@ -146,7 +149,7 @@ const produceBlockWith4844Tx = async (
     const blobVersionedHashes = []
     const blobs = []
     const kzgCommitments = []
-    const to = Address.zero()
+    const to = createZeroAddress()
     if (blobsCount[i] > 0) {
       for (let blob = 0; blob < blobsCount[i]; blob++) {
         blobVersionedHashes.push(...blobVersionedHash)
@@ -155,7 +158,7 @@ const produceBlockWith4844Tx = async (
       }
     }
     await blockBuilder.addTransaction(
-      TransactionFactory.fromTxData(
+      createTxFromTxData(
         {
           type: 3,
           gasLimit: 21000,
@@ -168,8 +171,8 @@ const produceBlockWith4844Tx = async (
           kzgCommitments,
           maxFeePerBlobGas: BigInt(1000),
         },
-        { common: vmCopy.common }
-      ).sign(privateKey4844)
+        { common: vmCopy.common },
+      ).sign(privateKey4844),
     )
     nonce++
   }
@@ -181,8 +184,11 @@ const produceBlockWith4844Tx = async (
 
 describe(method, () => {
   it(`${method}: should return 12.5% increased baseFee if parent block is full`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
-    const gasUsed = bytesToBigInt(hexToBytes(pow.gasLimit))
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
+    const gasUsed = bytesToBigInt(hexToBytes(powData.gasLimit))
 
     // Produce 3 fake blocks on the chain.
     // This also ensures that the correct blocks are being retrieved.
@@ -190,20 +196,20 @@ describe(method, () => {
     await produceFakeGasUsedBlock(execution, chain, gasUsed / BigInt(2))
     await produceFakeGasUsedBlock(execution, chain, gasUsed)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
 
     // Expect to retrieve the blocks [2,3]
     const res = await rpc.request(method, ['0x2', 'latest', []])
     const [firstBaseFee, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [
       string,
       string,
-      string
+      string,
     ]
     const increase =
       Number(
         (1000n *
           (bytesToBigInt(hexToBytes(nextBaseFee)) - bytesToBigInt(hexToBytes(previousBaseFee)))) /
-          bytesToBigInt(hexToBytes(previousBaseFee))
+          bytesToBigInt(hexToBytes(previousBaseFee)),
       ) / 1000
 
     // Note: this also ensures that block 2,3 are returned, since gas of block 0 -> 1 and 1 -> 2 does not change
@@ -226,11 +232,14 @@ describe(method, () => {
   })
 
   it(`${method}: should return 12.5% decreased base fee if the block is empty`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
     const gasUsed = BigInt(0)
 
     await produceFakeGasUsedBlock(execution, chain, gasUsed)
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
 
     const res = await rpc.request(method, ['0x2', 'latest', []])
     const [, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [string, string, string]
@@ -238,7 +247,7 @@ describe(method, () => {
       Number(
         (1000n *
           (bytesToBigInt(hexToBytes(nextBaseFee)) - bytesToBigInt(hexToBytes(previousBaseFee)))) /
-          bytesToBigInt(hexToBytes(previousBaseFee))
+          bytesToBigInt(hexToBytes(previousBaseFee)),
       ) / 1000
 
     assert.equal(decrease, -0.125)
@@ -247,14 +256,15 @@ describe(method, () => {
   it(`${method}: should return initial base fee if the block number is london hard fork`, async () => {
     const common = new Common({
       eips: [1559],
-      chain: CommonChain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.London,
+      params: paramsBlock,
     })
 
-    const initialBaseFee = common.param('gasConfig', 'initialBaseFee')
-    const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const initialBaseFee = common.param('initialBaseFee')
+    const { server } = await setupChain(gethGenesisStartLondon(powData), 'powLondon')
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
 
     const res = await rpc.request(method, ['0x1', 'latest', []])
 
@@ -264,12 +274,12 @@ describe(method, () => {
   })
 
   it(`${method}: should return 0x0 for base fees requested before eip-1559`, async () => {
-    const { chain, execution, server } = await setupChain(pow, 'pow')
+    const { chain, execution, server } = await setupChain(powData, 'pow')
     const gasUsed = BigInt(0)
 
     await produceFakeGasUsedBlock(execution, chain, gasUsed)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
 
     const res = await rpc.request(method, ['0x1', 'latest', []])
 
@@ -280,12 +290,15 @@ describe(method, () => {
   })
 
   it(`${method}: should return correct gas used ratios`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
-    const gasUsed = bytesToBigInt(hexToBytes(pow.gasLimit)) / 2n
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
+    const gasUsed = bytesToBigInt(hexToBytes(powData.gasLimit)) / 2n
 
     await produceFakeGasUsedBlock(execution, chain, gasUsed)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
 
     const res = await rpc.request(method, ['0x2', 'latest', []])
 
@@ -296,65 +309,77 @@ describe(method, () => {
   })
 
   it(`${method}: should throw error if block count is below 1`, async () => {
-    const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { server } = await setupChain(gethGenesisStartLondon(powData), 'powLondon')
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
 
     const req = await rpc.request(method, ['0x0', 'latest', []])
     assert.ok(req.error !== undefined)
   })
 
   it(`${method}: should throw error if block count is above 1024`, async () => {
-    const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { server } = await setupChain(gethGenesisStartLondon(powData), 'powLondon')
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
 
     const req = await rpc.request(method, ['0x401', 'latest', []])
     assert.ok(req.error !== undefined)
   })
 
   it(`${method}: should generate reward percentiles with 0s`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
     await produceFakeGasUsedBlock(execution, chain, 1n)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [50, 60]])
     assert.equal(
       parseInt(res.result.reward[0][0]),
       0,
-      'Should return 0 for empty block reward percentiles'
+      'Should return 0 for empty block reward percentiles',
     )
     assert.equal(
       res.result.reward[0][1],
       '0x0',
-      'Should return 0 for empty block reward percentiles'
+      'Should return 0 for empty block reward percentiles',
     )
   })
   it(`${method}: should generate reward percentiles`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
     await produceBlockWithTx(execution, chain)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [50]])
     assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
   })
 
   it(`${method}: should generate reward percentiles`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
     await produceBlockWithTx(execution, chain)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [50]])
     assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
   })
 
   it(`${method}: should generate reward percentiles - sorted check`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
     const priorityFees = [BigInt(100), BigInt(200)]
     const gasUsed = [BigInt(400000), BigInt(600000)]
     await produceBlockWithTx(execution, chain, priorityFees, gasUsed)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [40, 100]])
     assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
     const expected = priorityFees.map(bigIntToHex)
@@ -370,12 +395,15 @@ describe(method, () => {
   })
 
   it(`${method} - reward percentiles - should return the correct reward percentiles`, async () => {
-    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const { chain, server, execution } = await setupChain(
+      gethGenesisStartLondon(powData),
+      'powLondon',
+    )
     const priorityFees = [BigInt(100), BigInt(200)]
     const gasUsed = [BigInt(500000), BigInt(500000)]
     await produceBlockWithTx(execution, chain, priorityFees, gasUsed)
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     /**
      * In this test, both txs use 50% of the block gas used
      * Request the reward percentiles [10, 20, 60, 100] so expect rewards of:
@@ -384,7 +412,7 @@ describe(method, () => {
     const res = await rpc.request(method, ['0x1', 'latest', [10, 20, 60, 100]])
 
     const expected = [priorityFees[0], priorityFees[0], priorityFees[1], priorityFees[1]].map(
-      bigIntToHex
+      bigIntToHex,
     )
     assert.deepEqual(res.result.reward[0], expected)
 
@@ -400,7 +428,7 @@ describe(method, () => {
     `${method} - Should correctly return the right blob base fees and ratios for a chain with 4844 active`,
     async () => {
       const kzg = await loadKZG()
-      const { chain, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+      const { chain, execution, server } = await setupChain(eip4844Data, 'post-merge', {
         engine: true,
         hardfork: Hardfork.Cancun,
         customCrypto: {
@@ -419,7 +447,7 @@ describe(method, () => {
         await produceBlockWith4844Tx(execution, chain, [i])
       }
 
-      const rpc = getRpcClient(server)
+      const rpc = getRPCClient(server)
 
       const res = await rpc.request(method, ['0x6', 'latest', []])
 
@@ -441,6 +469,6 @@ describe(method, () => {
     },
     {
       timeout: 60000,
-    }
+    },
   )
 })

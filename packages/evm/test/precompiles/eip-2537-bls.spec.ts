@@ -1,9 +1,10 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { Address, bytesToHex, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { readFileSync, readdirSync } from 'fs'
+import * as mcl from 'mcl-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src/index.js'
+import { MCLBLS, createEVM, getActivePrecompiles } from '../../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -33,50 +34,62 @@ const precompileMap: { [key: string]: string } = {
   'pairing_check_bls.json': '0000000000000000000000000000000000000011',
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2537] })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [2537] })
 
-for (const fname of files) {
-  const fullName = `${dir}/${fname}`
-  const parsedJSON = JSON.parse(readFileSync(fullName, 'utf-8'))
-  describe(`Precompiles: ${fname}`, () => {
-    for (const data of parsedJSON) {
-      it(`${data.Name}`, async () => {
-        const evm = await EVM.create({
-          common,
+// MCL Instantiation
+await mcl.init(mcl.BLS12_381)
+const mclbls = new MCLBLS(mcl)
+
+// Running tests with default BLS implementation (undefined, Noble) as well
+// as MCL (optional).
+// Remove from array to run only with one specific interface implementation.
+for (const bls of [undefined, mclbls]) {
+  for (const fname of files) {
+    // Uncomment for running single test cases (example)
+    // if (fname !== 'pairing_check_bls.json') continue
+    const fullName = `${dir}/${fname}`
+    const parsedJSON = JSON.parse(readFileSync(fullName, 'utf-8'))
+    describe(`Precompiles: ${fname}`, () => {
+      for (const data of parsedJSON) {
+        it(`${data.Name}`, async () => {
+          const evm = await createEVM({
+            common,
+            bls,
+          })
+          const precompileAddr = precompileMap[fname]
+          const precompile = getActivePrecompiles(common).get(precompileAddr)!
+
+          const callData = {
+            data: hexToBytes(`0x${data.Input}`),
+            gasLimit: BigInt(5000000),
+            common,
+            _EVM: evm,
+          }
+
+          if (data.ExpectedError !== undefined) {
+            try {
+              await precompile(callData)
+              assert.fail('The precompile should have thrown')
+            } catch {
+              // If the precompile throws, catch it here, but this is fine, since it is expected to fail
+            }
+          } else {
+            try {
+              const result = await precompile(callData)
+              assert.deepEqual(
+                '0x' + data.Expected,
+                bytesToHex(result.returnValue),
+                'return value should match testVectorResult',
+              )
+              assert.equal(result.executionGasUsed, BigInt(data.Gas))
+            } catch (e) {
+              assert.fail('The precompile should not throw')
+            }
+          }
         })
-        const precompileAddr = precompileMap[fname]
-        const precompile = getActivePrecompiles(common).get(precompileAddr)!
-
-        const callData = {
-          data: hexToBytes(`0x${data.Input}`),
-          gasLimit: BigInt(5000000),
-          common,
-          _EVM: evm,
-        }
-
-        if (data.ExpectedError !== undefined) {
-          try {
-            await precompile(callData)
-            assert.fail('The precompile should have thrown')
-          } catch {
-            // If the precompile throws, catch it here, but this is fine, since it is expected to fail
-          }
-        } else {
-          try {
-            const result = await precompile(callData)
-            assert.deepEqual(
-              '0x' + data.Expected,
-              bytesToHex(result.returnValue),
-              'return value should match testVectorResult'
-            )
-            assert.equal(result.executionGasUsed, BigInt(data.Gas))
-          } catch (e) {
-            assert.fail('The precompile should not throw')
-          }
-        }
-      })
-    }
-  })
+      }
+    })
+  }
 }
 
 const precompileAddressStart = 0x0b
@@ -90,15 +103,15 @@ for (let address = precompileAddressStart; address <= precompileAddressEnd; addr
 
 describe('EIP-2537 BLS precompile availability tests', () => {
   it('BLS precompiles should not be available if EIP not activated', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
-    const evm = await EVM.create({
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
+    const evm = await createEVM({
       common,
     })
 
     for (const address of precompiles) {
       const to = new Address(hexToBytes(address))
       const result = await evm.runCall({
-        caller: Address.zero(),
+        caller: createZeroAddress(),
         gasLimit: BigInt(0xffffffffff),
         to,
         value: BigInt(0),

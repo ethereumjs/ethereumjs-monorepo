@@ -10,10 +10,9 @@ import {
 import debugDefault from 'debug'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
-import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { Account, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 type AddressString = string
 type SlotString = string
@@ -33,7 +32,7 @@ type JournalDiffItem = [Set<AddressString>, Map<AddressString, Set<SlotString>>,
 type JournalHeight = number
 
 export class Journal {
-  private stateManager: EVMStateManagerInterface
+  private stateManager: StateManagerInterface
   private common: Common
   private DEBUG: boolean
   private _debug: Debugger
@@ -48,13 +47,13 @@ export class Journal {
   public accessList?: Map<AddressString, Set<SlotString>>
   public preimages?: Map<PrefixedHexString, Uint8Array>
 
-  constructor(stateManager: EVMStateManagerInterface, common: Common) {
+  constructor(stateManager: StateManagerInterface, common: Common) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
-    this._debug = createDebugLogger('statemanager:statemanager')
+    this._debug = debugDefault('statemanager:statemanager')
 
     // TODO maybe call into this.clearJournal
     this.cleanJournal()
@@ -101,7 +100,7 @@ export class Journal {
       const bytesAddress = unprefixedHexToBytes(address)
       if (this.stateManager.getAppliedKey === undefined) {
         throw new Error(
-          'touchAccount: stateManager.getAppliedKey can not be undefined if preimage storing is enabled'
+          'touchAccount: stateManager.getAppliedKey can not be undefined if preimage storing is enabled',
         )
       }
       const hashedKey = this.stateManager.getAppliedKey(bytesAddress)

@@ -1,4 +1,4 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import {
   Address,
   BIGINT_0,
@@ -13,11 +13,12 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 
+import { paramsTx } from './params.js'
 import { Capability, TransactionType } from './types.js'
 import { checkMaxInitCodeSize } from './util.js'
 
 import type {
-  JsonTx,
+  JSONTx,
   Transaction,
   TransactionCache,
   TransactionInterface,
@@ -25,7 +26,6 @@ import type {
   TxOptions,
   TxValuesArray,
 } from './types.js'
-import type { BigIntLike } from '@ethereumjs/util'
 
 /**
  * This base class will likely be subject to further
@@ -62,7 +62,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   /**
    * List of tx type defining EIPs,
    * e.g. 1559 (fee market) and 2930 (access lists)
-   * for FeeMarketEIP1559Transaction objects
+   * for FeeMarket1559Tx objects
    */
   protected activeCapabilities: number[] = []
 
@@ -74,9 +74,11 @@ export abstract class BaseTransaction<T extends TransactionType>
    *
    * @hidden
    */
-  protected DEFAULT_CHAIN = Chain.Mainnet
+  protected DEFAULT_CHAIN = Mainnet
 
   constructor(txData: TxData[T], opts: TxOptions) {
+    this.common = opts.common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
+
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
     this._type = Number(bytesToBigInt(toBytes(type)))
 
@@ -107,9 +109,14 @@ export abstract class BaseTransaction<T extends TransactionType>
 
     const createContract = this.to === undefined || this.to === null
     const allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
-    const common = opts.common ?? this._getCommon()
-    if (createContract && common.isActivatedEIP(3860) && allowUnlimitedInitCodeSize === false) {
-      checkMaxInitCodeSize(common, this.data.length)
+
+    this.common.updateParams(opts.params ?? paramsTx)
+    if (
+      createContract &&
+      this.common.isActivatedEIP(3860) &&
+      allowUnlimitedInitCodeSize === false
+    ) {
+      checkMaxInitCodeSize(this.common, this.data.length)
     }
   }
 
@@ -153,8 +160,10 @@ export abstract class BaseTransaction<T extends TransactionType>
       errors.push('Invalid Signature')
     }
 
-    if (this.getBaseFee() > this.gasLimit) {
-      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
+    if (this.getIntrinsicGas() > this.gasLimit) {
+      errors.push(
+        `gasLimit is too low. given ${this.gasLimit}, need at least ${this.getIntrinsicGas()}`,
+      )
     }
 
     return errors
@@ -171,25 +180,28 @@ export abstract class BaseTransaction<T extends TransactionType>
   }
 
   /**
-   * The minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
+   * The minimum gas limit which the tx to have to be valid.
+   * This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
+   * the optional creation fee (if the transaction creates a contract), and if relevant the gas
+   * to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
    */
-  getBaseFee(): bigint {
-    const txFee = this.common.param('gasPrices', 'tx')
-    let fee = this.getDataFee()
+  getIntrinsicGas(): bigint {
+    const txFee = this.common.param('txGas')
+    let fee = this.getDataGas()
     if (txFee) fee += txFee
     if (this.common.gteHardfork('homestead') && this.toCreationAddress()) {
-      const txCreationFee = this.common.param('gasPrices', 'txCreation')
+      const txCreationFee = this.common.param('txCreationGas')
       if (txCreationFee) fee += txCreationFee
     }
     return fee
   }
 
   /**
-   * The amount of gas paid for the data in this tx
+   * The amount of gas paid for the calldata in this tx
    */
-  getDataFee(): bigint {
-    const txDataZero = this.common.param('gasPrices', 'txDataZero')
-    const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
+  getDataGas(): bigint {
+    const txDataZero = this.common.param('txDataZeroGas')
+    const txDataNonZero = this.common.param('txDataNonZeroGas')
 
     let cost = BIGINT_0
     for (let i = 0; i < this.data.length; i++) {
@@ -198,7 +210,7 @@ export abstract class BaseTransaction<T extends TransactionType>
 
     if ((this.to === undefined || this.to === null) && this.common.isActivatedEIP(3860)) {
       const dataLength = BigInt(Math.ceil(this.data.length / 32))
-      const initCodeCost = this.common.param('gasPrices', 'initCodeWordCost') * dataLength
+      const initCodeCost = this.common.param('initCodeWordGas') * dataLength
       cost += initCodeCost
     }
 
@@ -213,7 +225,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   abstract getEffectivePriorityFee(baseFee: bigint | undefined): bigint
 
   /**
-   * The up front amount that an account must have for this transaction to be valid
+   * The upfront amount of wei to be paid in order for this tx to be valid and included in a block
    */
   abstract getUpfrontCost(): bigint
 
@@ -228,7 +240,7 @@ export abstract class BaseTransaction<T extends TransactionType>
    * Returns a Uint8Array Array of the raw Bytes of this transaction, in order.
    *
    * Use {@link BaseTransaction.serialize} to add a transaction to a block
-   * with {@link Block.fromValuesArray}.
+   * with {@link createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
@@ -333,7 +345,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  toJSON(): JsonTx {
+  toJSON(): JSONTx {
     return {
       type: bigIntToHex(BigInt(this.type)),
       nonce: bigIntToHex(this.nonce),
@@ -344,6 +356,8 @@ export abstract class BaseTransaction<T extends TransactionType>
       v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
       r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
       s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
+      chainId: bigIntToHex(this.common.chainId()),
+      yParity: this.v === 0n || this.v === 1n ? bigIntToHex(this.v) : undefined,
     }
   }
 
@@ -360,55 +374,8 @@ export abstract class BaseTransaction<T extends TransactionType>
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV?: boolean
+    convertV?: boolean,
   ): Transaction[T]
-
-  /**
-   * Does chain ID checks on common and returns a common
-   * to be used on instantiation
-   * @hidden
-   *
-   * @param common - {@link Common} instance from tx options
-   * @param chainId - Chain ID from tx options (typed txs) or signature (legacy tx)
-   */
-  protected _getCommon(common?: Common, chainId?: BigIntLike) {
-    // Chain ID provided
-    if (chainId !== undefined) {
-      const chainIdBigInt = bytesToBigInt(toBytes(chainId))
-      if (common) {
-        if (common.chainId() !== chainIdBigInt) {
-          const msg = this._errorMsg(
-            `The chain ID does not match the chain ID of Common. Got: ${chainIdBigInt}, expected: ${common.chainId()}`
-          )
-          throw new Error(msg)
-        }
-        // Common provided, chain ID does match
-        // -> Return provided Common
-        return common.copy()
-      } else {
-        if (Common.isSupportedChainId(chainIdBigInt)) {
-          // No Common, chain ID supported by Common
-          // -> Instantiate Common with chain ID
-          return new Common({ chain: chainIdBigInt })
-        } else {
-          // No Common, chain ID not supported by Common
-          // -> Instantiate custom Common derived from DEFAULT_CHAIN
-          return Common.custom(
-            {
-              name: 'custom-chain',
-              networkId: chainIdBigInt,
-              chainId: chainIdBigInt,
-            },
-            { baseChain: this.DEFAULT_CHAIN }
-          )
-        }
-      }
-    } else {
-      // No chain ID provided
-      // -> return Common provided or create new default Common
-      return common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
-    }
-  }
 
   /**
    * Validates that an object with BigInt values cannot exceed the specified bit limit.
@@ -419,7 +386,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   protected _validateCannotExceedMaxInteger(
     values: { [key: string]: bigint | undefined },
     bits = 256,
-    cannotEqual = false
+    cannotEqual = false,
   ) {
     for (const [key, value] of Object.entries(values)) {
       switch (bits) {
@@ -427,7 +394,7 @@ export abstract class BaseTransaction<T extends TransactionType>
           if (cannotEqual) {
             if (value !== undefined && value >= MAX_UINT64) {
               const msg = this._errorMsg(
-                `${key} cannot equal or exceed MAX_UINT64 (2^64-1), given ${value}`
+                `${key} cannot equal or exceed MAX_UINT64 (2^64-1), given ${value}`,
               )
               throw new Error(msg)
             }
@@ -442,14 +409,14 @@ export abstract class BaseTransaction<T extends TransactionType>
           if (cannotEqual) {
             if (value !== undefined && value >= MAX_INTEGER) {
               const msg = this._errorMsg(
-                `${key} cannot equal or exceed MAX_INTEGER (2^256-1), given ${value}`
+                `${key} cannot equal or exceed MAX_INTEGER (2^256-1), given ${value}`,
               )
               throw new Error(msg)
             }
           } else {
             if (value !== undefined && value > MAX_INTEGER) {
               const msg = this._errorMsg(
-                `${key} cannot exceed MAX_INTEGER (2^256-1), given ${value}`
+                `${key} cannot exceed MAX_INTEGER (2^256-1), given ${value}`,
               )
               throw new Error(msg)
             }
@@ -458,31 +425,6 @@ export abstract class BaseTransaction<T extends TransactionType>
         default: {
           const msg = this._errorMsg('unimplemented bits value')
           throw new Error(msg)
-        }
-      }
-    }
-  }
-
-  protected static _validateNotArray(values: { [key: string]: any }) {
-    const txDataKeys = [
-      'nonce',
-      'gasPrice',
-      'gasLimit',
-      'to',
-      'value',
-      'data',
-      'v',
-      'r',
-      's',
-      'type',
-      'baseFee',
-      'maxFeePerGas',
-      'chainId',
-    ]
-    for (const [key, value] of Object.entries(values)) {
-      if (txDataKeys.includes(key)) {
-        if (Array.isArray(value)) {
-          throw new Error(`${key} cannot be an array`)
         }
       }
     }

@@ -41,7 +41,7 @@ const ignoredErrors = new RegExp(
     // Client
     'Handshake timed out', // Protocol handshake
     'Server already destroyed', // Bootstrap retrigger
-  ].join('|')
+  ].join('|'),
 )
 
 /**
@@ -72,11 +72,11 @@ export class RlpxServer extends Server {
       'go1.6',
       'go1.7',
       'quorum',
-      'pirl',
-      'ubiq',
-      'gmc',
-      'gwhale',
-      'prichain',
+      'pirl', // cspell:disable-line
+      'ubiq', // cspell:disable-line
+      'gmc', // cspell:disable-line
+      'gwhale', // cspell:disable-line
+      'prichain', // cspell:disable-line
     ]
   }
 
@@ -243,7 +243,7 @@ export class RlpxServer extends Server {
         this.dpt.bind(this.config.port, '0.0.0.0')
       }
       this.config.logger.info(
-        `Started discovery service discV4=${this.config.discV4} dns=${this.config.discDns} refreshInterval=${this.refreshInterval}`
+        `Started discovery service discV4=${this.config.discV4} dns=${this.config.discDns} refreshInterval=${this.refreshInterval}`,
       )
     })
   }
@@ -291,14 +291,14 @@ export class RlpxServer extends Server {
         if (peer) {
           this.peers.delete(peer.id)
           this.config.logger.debug(
-            `Peer disconnected (${rlpxPeer.getDisconnectPrefix(reason)}): ${peer}`
+            `Peer disconnected (${rlpxPeer.getDisconnectPrefix(reason)}): ${peer}`,
           )
           this.config.events.emit(Event.PEER_DISCONNECTED, peer)
         }
       })
 
       this.rlpx.events.on('peer:error', (rlpxPeer: Devp2pRLPxPeer, error: Error) =>
-        this.error(error)
+        this.error(error),
       )
 
       this.rlpx.events.on('error', (e: Error) => {

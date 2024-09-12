@@ -1,27 +1,29 @@
-import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { bigIntToHex, intToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import pow from '../../testdata/geth-genesis/pow.json'
+import { powData } from '../../testdata/geth-genesis/pow.js'
 import {
   dummy,
-  getRpcClient,
+  getRPCClient,
   gethGenesisStartLondon,
   runBlockWithTxs,
   setupChain,
 } from '../helpers.js'
 
+import type { LegacyTx } from '@ethereumjs/tx'
+
 const method = 'eth_gasPrice'
 
 describe(method, () => {
   it('call with legacy transaction data', async () => {
-    const { chain, common, execution, server } = await setupChain(pow, 'pow')
-    const rpc = getRpcClient(server)
+    const { chain, common, execution, server } = await setupChain(powData, 'pow')
+    const rpc = getRPCClient(server)
     const GAS_PRICE = 100
     // construct tx
-    const tx = LegacyTransaction.fromTxData(
+    const tx = createLegacyTx(
       { gasLimit: 21000, gasPrice: GAS_PRICE, to: '0x0000000000000000000000000000000000000000' },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
@@ -30,21 +32,21 @@ describe(method, () => {
     assert.equal(
       res.result,
       intToHex(GAS_PRICE),
-      'should return the correct suggested gas price with 1 legacy transaction'
+      'should return the correct suggested gas price with 1 legacy transaction',
     )
   })
 
   it('call with multiple legacy transactions', async () => {
-    const { chain, common, execution, server } = await setupChain(pow, 'pow')
-    const rpc = getRpcClient(server)
+    const { chain, common, execution, server } = await setupChain(powData, 'pow')
+    const rpc = getRPCClient(server)
     const iterations = BigInt(20)
     let averageGasPrice = BigInt(0)
     for (let i = 0; i < iterations; i++) {
       const gasPrice = i * 100
       averageGasPrice += BigInt(gasPrice)
-      const tx = LegacyTransaction.fromTxData(
+      const tx = createLegacyTx(
         { nonce: i, gasLimit: 21000, gasPrice, to: '0x0000000000000000000000000000000000000000' },
-        { common }
+        { common },
       ).sign(dummy.privKey)
       await runBlockWithTxs(chain, execution, [tx])
     }
@@ -54,23 +56,23 @@ describe(method, () => {
     assert.equal(
       res.result,
       bigIntToHex(averageGasPrice),
-      'should return the correct gas price with multiple legacy transactions'
+      'should return the correct gas price with multiple legacy transactions',
     )
   })
 
   it('call with multiple legacy transactions in a single block', async () => {
-    const { chain, common, execution, server } = await setupChain(pow, 'pow')
-    const rpc = getRpcClient(server)
+    const { chain, common, execution, server } = await setupChain(powData, 'pow')
+    const rpc = getRPCClient(server)
     const G1 = 100
     const G2 = 1231231
 
-    const tx1 = LegacyTransaction.fromTxData(
+    const tx1 = createLegacyTx(
       { gasLimit: 21000, gasPrice: G1, to: '0x0000000000000000000000000000000000000000' },
-      { common }
+      { common },
     ).sign(dummy.privKey)
-    const tx2 = LegacyTransaction.fromTxData(
+    const tx2 = createLegacyTx(
       { nonce: 1, gasLimit: 21000, gasPrice: G2, to: '0x0000000000000000000000000000000000000000' },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx1, tx2])
@@ -80,24 +82,24 @@ describe(method, () => {
     assert.equal(
       res.result,
       intToHex(Math.trunc(averageGasPrice)),
-      'should return the correct gas price with multiple legacy transactions in a block'
+      'should return the correct gas price with multiple legacy transactions in a block',
     )
   })
 
   it('call with 1559 transaction data', async () => {
     const { chain, common, execution, server } = await setupChain(
-      gethGenesisStartLondon(pow),
-      'powLondon'
+      gethGenesisStartLondon(powData),
+      'powLondon',
     )
-    const rpc = getRpcClient(server)
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const rpc = getRPCClient(server)
+    const tx = createFeeMarket1559Tx(
       {
         gasLimit: 21000,
         maxPriorityFeePerGas: 10,
         maxFeePerGas: 975000000,
         to: '0x0000000000000000000000000000000000000000',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
@@ -108,28 +110,28 @@ describe(method, () => {
     assert.equal(
       res.result,
       bigIntToHex(gasPrice),
-      'should return the correct gas price with 1 1559 transaction'
+      'should return the correct gas price with 1 1559 transaction',
     )
   })
 
   it('call with multiple 1559 transactions', async () => {
     const { chain, common, execution, server } = await setupChain(
-      gethGenesisStartLondon(pow),
-      'powLondon'
+      gethGenesisStartLondon(powData),
+      'powLondon',
     )
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const maxPriority1 = 10
     const maxPriority2 = 1231231
-    const tx1 = FeeMarketEIP1559Transaction.fromTxData(
+    const tx1 = createFeeMarket1559Tx(
       {
         gasLimit: 21000,
         maxPriorityFeePerGas: maxPriority1,
         maxFeePerGas: 975000000,
         to: '0x0000000000000000000000000000000000000000',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
-    const tx2 = FeeMarketEIP1559Transaction.fromTxData(
+    const tx2 = createFeeMarket1559Tx(
       {
         nonce: 1,
         gasLimit: 21000,
@@ -137,7 +139,7 @@ describe(method, () => {
         maxFeePerGas: 975000000,
         to: '0x0000000000000000000000000000000000000000',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx1, tx2])
@@ -149,37 +151,37 @@ describe(method, () => {
     assert.equal(
       res.result,
       bigIntToHex(gasPrice),
-      'should return the correct gas price with 1 1559 transaction'
+      'should return the correct gas price with 1 1559 transaction',
     )
   })
 
   it('compute average gas price for 21 blocks', async () => {
-    const { chain, common, execution, server } = await setupChain(pow, 'pow')
-    const rpc = getRpcClient(server)
+    const { chain, common, execution, server } = await setupChain(powData, 'pow')
+    const rpc = getRPCClient(server)
     const iterations = BigInt(21)
     const gasPrice = BigInt(20)
     const firstBlockGasPrice = BigInt(11111111111111)
-    let tx: LegacyTransaction
+    let tx: LegacyTx
     for (let i = 0; i < iterations; i++) {
       if (i === 0) {
-        tx = LegacyTransaction.fromTxData(
+        tx = createLegacyTx(
           {
             nonce: i,
             gasLimit: 21000,
             gasPrice: firstBlockGasPrice,
             to: '0x0000000000000000000000000000000000000000',
           },
-          { common }
+          { common },
         ).sign(dummy.privKey)
       } else {
-        tx = LegacyTransaction.fromTxData(
+        tx = createLegacyTx(
           {
             nonce: i,
             gasLimit: 21000,
             gasPrice,
             to: '0x0000000000000000000000000000000000000000',
           },
-          { common }
+          { common },
         ).sign(dummy.privKey)
       }
       await runBlockWithTxs(chain, execution, [tx!])
@@ -195,7 +197,7 @@ describe(method, () => {
     assert.equal(
       res.result,
       bigIntToHex(gasPrice),
-      'should return the correct gas price for 21 blocks'
+      'should return the correct gas price for 21 blocks',
     )
   })
 })

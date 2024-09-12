@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader, createBlock, createBlockHeader } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
@@ -96,12 +96,12 @@ export class Miner {
         const data = <BlockData>this.block.toJSON()
         data.header!.mixHash = solution.mixHash
         data.header!.nonce = solution.nonce
-        return Block.fromBlockData(data, { common: this.block.common })
+        return createBlock(data, { common: this.block.common })
       } else {
         const data = <HeaderData>this.blockHeader.toJSON()
         data.mixHash = solution.mixHash
         data.nonce = solution.nonce
-        return BlockHeader.fromHeaderData(data, { common: this.blockHeader.common })
+        return createBlockHeader(data, { common: this.blockHeader.common })
       }
     }
   }
@@ -227,7 +227,7 @@ export class Ethash {
       const p =
         (fnv(
           i ^ new DataView(s.buffer).getUint32(0, true),
-          new DataView(mix.buffer).getUint32((i % w) * 4, true)
+          new DataView(mix.buffer).getUint32((i % w) * 4, true),
         ) %
           Math.floor(n / mixhashes)) *
         mixhashes
@@ -344,7 +344,7 @@ export class Ethash {
         {
           keyEncoding: KeyEncoding.Number,
           valueEncoding: ValueEncoding.JSON,
-        }
+        },
       )
     } else {
       this.cache = data.cache.map((a: Uint8Array) => {

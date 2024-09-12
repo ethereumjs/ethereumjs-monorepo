@@ -37,7 +37,7 @@ export interface ECDSASignature {
 export function ecsign(
   msgHash: Uint8Array,
   privateKey: Uint8Array,
-  chainId?: bigint
+  chainId?: bigint,
 ): ECDSASignature {
   const sig = secp256k1.sign(msgHash, privateKey)
   const buf = sig.toCompactRawBytes()
@@ -75,7 +75,7 @@ export const ecrecover = function (
   v: bigint,
   r: Uint8Array,
   s: Uint8Array,
-  chainId?: bigint
+  chainId?: bigint,
 ): Uint8Array {
   const signature = concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32))
   const recovery = calculateSigRecovery(v, chainId)
@@ -93,11 +93,11 @@ export const ecrecover = function (
  * NOTE: Accepts `v === 0 | v === 1` for EIP1559 transactions
  * @returns Signature
  */
-export const toRpcSig = function (
+export const toRPCSig = function (
   v: bigint,
   r: Uint8Array,
   s: Uint8Array,
-  chainId?: bigint
+  chainId?: bigint,
 ): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
@@ -118,7 +118,7 @@ export const toCompactSig = function (
   v: bigint,
   r: Uint8Array,
   s: Uint8Array,
-  chainId?: bigint
+  chainId?: bigint,
 ): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
@@ -141,7 +141,7 @@ export const toCompactSig = function (
  * NOTE: After EIP1559, `v` could be `0` or `1` but this function assumes
  * it's a signed message (EIP-191 or EIP-712) adding `27` at the end. Remove if needed.
  */
-export const fromRpcSig = function (sig: PrefixedHexString): ECDSASignature {
+export const fromRPCSig = function (sig: PrefixedHexString): ECDSASignature {
   const bytes: Uint8Array = toBytes(sig)
 
   let r: Uint8Array
@@ -183,7 +183,7 @@ export const isValidSignature = function (
   r: Uint8Array,
   s: Uint8Array,
   homesteadOrLater: boolean = true,
-  chainId?: bigint
+  chainId?: bigint,
 ): boolean {
   if (r.length !== 32 || s.length !== 32) {
     return false

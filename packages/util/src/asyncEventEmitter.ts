@@ -18,7 +18,7 @@ export interface EventMap {
 async function runInSeries(
   context: any,
   tasks: Array<(data: unknown, callback?: (error?: Error) => void) => void>,
-  data: unknown
+  data: unknown,
 ): Promise<void> {
   let error: Error | undefined
   for await (const task of tasks) {
@@ -132,7 +132,7 @@ export class AsyncEventEmitter<T extends EventMap> extends EventEmitter {
     event: E & string,
     target: T[E],
     listener: T[E],
-    beforeOrAfter?: string
+    beforeOrAfter?: string,
   ) {
     let listeners = (this as any)._events[event] ?? []
     let i

@@ -1,36 +1,36 @@
-import { bytesToHex, bytesToUnprefixedHex, hexToBytes, short } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 
-import { OOGResult } from '../evm.js'
+import { EvmErrorResult, OOGResult } from '../evm.js'
+import { ERROR, EvmError } from '../exceptions.js'
+
+import { gasLimitCheck, moduloLengthCheck } from './util.js'
 
 import type { EVM } from '../evm.js'
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export function precompile08(opts: PrecompileInput): ExecResult {
-  const inputData = opts.data
-  // no need to care about non-divisible-by-192, because bn128.pairing will properly fail in that case
-  const inputDataSize = BigInt(Math.floor(inputData.length / 192))
-  const gasUsed =
-    opts.common.param('gasPrices', 'ecPairing') +
-    inputDataSize * opts.common.param('gasPrices', 'ecPairingWord')
-  if (opts._debug !== undefined) {
-    opts._debug(
-      `Run ECPAIRING (0x08) precompile data=${short(opts.data)} length=${
-        opts.data.length
-      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
-    )
+  if (!moduloLengthCheck(opts, 192, 'ECPAIRING (0x08)')) {
+    return EvmErrorResult(new EvmError(ERROR.INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
-  if (opts.gasLimit < gasUsed) {
-    if (opts._debug !== undefined) {
-      opts._debug(`ECPAIRING (0x08) failed: OOG`)
-    }
+  const inputDataSize = BigInt(Math.floor(opts.data.length / 192))
+  const gasUsed =
+    opts.common.param('ecPairingGas') + inputDataSize * opts.common.param('ecPairingWordGas')
+
+  if (!gasLimitCheck(opts, gasUsed, 'ECPAIRING (0x08)')) {
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = hexToBytes(
-    (opts._EVM as EVM)['_bn128'].ec_pairing(bytesToUnprefixedHex(inputData))
-  )
+  let returnData
+  try {
+    returnData = (opts._EVM as EVM)['_bn254'].pairing(opts.data)
+  } catch (e: any) {
+    if (opts._debug !== undefined) {
+      opts._debug(`ECPAIRING (0x08) failed: ${e.message}`)
+    }
+    return EvmErrorResult(e, opts.gasLimit)
+  }
 
   // check ecpairing success or failure by comparing the output length
   if (returnData.length !== 32) {

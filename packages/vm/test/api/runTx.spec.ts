@@ -1,12 +1,14 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlock, createBlockHeader } from '@ethereumjs/block'
+import { Blockchain, createBlockchain } from '@ethereumjs/blockchain'
+import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-  TransactionFactory,
+  Blob4844Tx,
+  EOACode7702Transaction,
+  FeeMarket1559Tx,
   TransactionType,
+  createFeeMarket1559Tx,
+  createLegacyTx,
+  createTxFromTxData,
 } from '@ethereumjs/tx'
 import {
   Account,
@@ -14,6 +16,10 @@ import {
   KECCAK256_NULL,
   MAX_INTEGER,
   bytesToHex,
+  createAccount,
+  createAddressFromPrivateKey,
+  createAddressFromString,
+  createZeroAddress,
   equalsBytes,
   hexToBytes,
   zeros,
@@ -21,11 +27,12 @@ import {
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../src/vm'
+import { createVM, runTx } from '../../src/index.js'
 
-import { createAccount, getTransaction, setBalance } from './utils'
+import { createAccountWithDefaults, getTransaction, setBalance } from './utils.js'
 
-import type { FeeMarketEIP1559TxData, TypedTxData } from '@ethereumjs/tx'
+import type { VM } from '../../src/vm.js'
+import type { FeeMarketEIP1559TxData, LegacyTx, TypedTxData } from '@ethereumjs/tx'
 
 const TRANSACTION_TYPES = [
   {
@@ -42,7 +49,7 @@ const TRANSACTION_TYPES = [
   },
 ]
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 common.events.setMaxListeners(100)
 describe('runTx() -> successful API parameter usage', async () => {
   async function simpleRun(vm: VM, msg: string) {
@@ -50,71 +57,68 @@ describe('runTx() -> successful API parameter usage', async () => {
       const tx = getTransaction(vm.common, txType.type, true)
 
       const caller = tx.getSenderAddress()
-      const acc = createAccount()
+      const acc = createAccountWithDefaults()
       await vm.stateManager.putAccount(caller, acc)
       let block
       if (vm.common.consensusType() === 'poa') {
         // Setup block with correct extraData for POA
-        block = Block.fromBlockData(
-          { header: { extraData: new Uint8Array(97) } },
-          { common: vm.common }
-        )
+        block = createBlock({ header: { extraData: new Uint8Array(97) } }, { common: vm.common })
       }
 
-      const res = await vm.runTx({ tx, block })
+      const res = await runTx(vm, { tx, block })
       assert.isTrue(res.totalGasSpent > BigInt(0), `${msg} (${txType.name})`)
     }
   }
 
   it('simple run (unmodified options)', async () => {
-    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    let vm = await VM.create({ common })
+    let common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+    let vm = await createVM({ common })
     await simpleRun(vm, 'mainnet (PoW), london HF, default SM - should run without errors')
 
-    common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
-    vm = await VM.create({
+    common = new Common({ chain: Goerli, hardfork: Hardfork.London })
+    vm = await createVM({
       common,
-      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+      blockchain: await createBlockchain({ validateConsensus: false, validateBlocks: false }),
     })
     await simpleRun(vm, 'goerli (PoA), london HF, default SM - should run without errors')
   })
 
   it('test successful hardfork matching', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const vm = await VM.create({
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+    const vm = await createVM({
       common,
-      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+      blockchain: await createBlockchain({ validateConsensus: false, validateBlocks: false }),
     })
     const tx = getTransaction(vm.common, 0, true)
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
-    const block = Block.fromBlockData({}, { common: vm.common.copy() })
-    await vm.runTx({ tx, block })
+    const block = createBlock({}, { common: vm.common.copy() })
+    await runTx(vm, { tx, block })
     assert.ok(true, 'matched hardfork should run without throwing')
   })
 
   it('test hardfork mismatch', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const vm = await VM.create({
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+    const vm = await createVM({
       common,
-      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+      blockchain: await createBlockchain({ validateConsensus: false, validateBlocks: false }),
     })
     const tx = getTransaction(vm.common, 0, true)
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
-    const block = Block.fromBlockData({}, { common: vm.common.copy() })
+    const block = createBlock({}, { common: vm.common.copy() })
 
     block.common.setHardfork(Hardfork.Paris)
     try {
-      await vm.runTx({ tx, block })
+      await runTx(vm, { tx, block })
       assert.fail('vm/block mismatched hardfork should have failed')
     } catch (e) {
       assert.equal(
         (e as Error).message.includes('block has a different hardfork than the vm'),
         true,
-        'block has a different hardfork than the vm'
+        'block has a different hardfork than the vm',
       )
       assert.ok(true, 'vm/tx mismatched hardfork correctly failed')
     }
@@ -122,97 +126,75 @@ describe('runTx() -> successful API parameter usage', async () => {
     tx.common.setHardfork(Hardfork.London)
     block.common.setHardfork(Hardfork.Paris)
     try {
-      await vm.runTx({ tx, block })
+      await runTx(vm, { tx, block })
       assert.fail('vm/tx mismatched hardfork should have failed')
     } catch (e) {
       assert.equal(
         (e as Error).message.includes('block has a different hardfork than the vm'),
         true,
-        'block has a different hardfork than the vm'
+        'block has a different hardfork than the vm',
       )
       assert.ok(true, 'vm/tx mismatched hardfork correctly failed')
     }
 
-    await vm.runTx({ tx, block, skipHardForkValidation: true })
+    await runTx(vm, { tx, block, skipHardForkValidation: true })
     assert.ok(true, 'runTx should not fail with mismatching hardforks if validation skipped')
   })
 
-  it('should ignore merge in hardfork mismatch', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
-    const vm = await VM.create({
-      common,
-      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
-    })
-    const tx = getTransaction(vm.common, 0, true)
-    const caller = tx.getSenderAddress()
-    const acc = createAccount()
-    await vm.stateManager.putAccount(caller, acc)
-    const block = Block.fromBlockData({}, { common: vm.common.copy() })
-
-    tx.common.setHardfork(Hardfork.GrayGlacier)
-    block.common.setHardfork(Hardfork.GrayGlacier)
-    try {
-      await vm.runTx({ tx, block })
-      assert.ok(true, 'successfully ignored merge hf while hf matching in runTx')
-    } catch (e) {
-      assert.fail('should have ignored merge hf while matching in runTx')
-    }
-  })
-
   it('should use passed in blockGasUsed to generate tx receipt', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const vm = await VM.create({ common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const vm = await createVM({ common })
 
     const tx = getTransaction(vm.common, 0, true)
 
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
 
     const blockGasUsed = BigInt(1000)
-    const res = await vm.runTx({ tx, blockGasUsed })
+    const res = await runTx(vm, { tx, blockGasUsed })
     assert.equal(
       res.receipt.cumulativeBlockGasUsed,
       blockGasUsed + res.totalGasSpent,
-      'receipt.gasUsed should equal block gas used + tx gas used'
+      'receipt.gasUsed should equal block gas used + tx gas used',
     )
   })
 
   it('Legacy Transaction with HF set to pre-Berlin', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const vm = await VM.create({ common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const vm = await createVM({ common })
 
     const tx = getTransaction(vm.common, 0, true)
 
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
 
-    const res = await vm.runTx({ tx })
+    const res = await runTx(vm, { tx })
     assert.isTrue(
       res.totalGasSpent > BigInt(0),
-      `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
+      `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`,
     )
   })
 
   it('custom block (block option), disabled block gas limit validation (skipBlockGasLimitValidation: true)', async () => {
     for (const txType of TRANSACTION_TYPES) {
-      const vm = await VM.create({ common })
+      const vm = await createVM({ common })
 
       const privateKey = hexToBytes(
-        '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+        '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
       )
-      const address = Address.fromPrivateKey(privateKey)
+      const address = createAddressFromPrivateKey(privateKey)
       const initialBalance = BigInt(10) ** BigInt(18)
 
       const account = await vm.stateManager.getAccount(address)
       await vm.stateManager.putAccount(
         address,
-        Account.fromAccountData({ ...account, balance: initialBalance })
+        createAccount({ ...account, balance: initialBalance }),
       )
 
       const transferCost = 21000
-      const unsignedTx = TransactionFactory.fromTxData(
+      const unsignedTx = createTxFromTxData(
         {
           to: address,
           gasLimit: transferCost,
@@ -222,12 +204,12 @@ describe('runTx() -> successful API parameter usage', async () => {
           maxPriorityFeePerGas: 50,
           maxFeePerGas: 50,
         } as TypedTxData,
-        { common }
+        { common },
       )
       const tx = unsignedTx.sign(privateKey)
 
       const coinbase = hexToBytes('0x00000000000000000000000000000000000000ff')
-      const block = Block.fromBlockData(
+      const block = createBlock(
         {
           header: {
             gasLimit: transferCost - 1,
@@ -235,10 +217,10 @@ describe('runTx() -> successful API parameter usage', async () => {
             baseFeePerGas: 7,
           },
         },
-        { common }
+        { common },
       )
 
-      const result = await vm.runTx({
+      const result = await runTx(vm, {
         tx,
         block,
         skipBlockGasLimitValidation: true,
@@ -249,7 +231,9 @@ describe('runTx() -> successful API parameter usage', async () => {
       // calculate expected coinbase balance
       const baseFee = block.header.baseFeePerGas!
       const inclusionFeePerGas =
-        tx instanceof FeeMarketEIP1559Transaction || tx instanceof BlobEIP4844Transaction
+        tx instanceof FeeMarket1559Tx ||
+        tx instanceof Blob4844Tx ||
+        tx instanceof EOACode7702Transaction
           ? tx.maxPriorityFeePerGas < tx.maxFeePerGas - baseFee
             ? tx.maxPriorityFeePerGas
             : tx.maxFeePerGas - baseFee
@@ -261,13 +245,13 @@ describe('runTx() -> successful API parameter usage', async () => {
       assert.equal(
         coinbaseAccount!.balance,
         expectedCoinbaseBalance,
-        `should use custom block (${txType.name})`
+        `should use custom block (${txType.name})`,
       )
 
       assert.equal(
         result.execResult.exceptionError,
         undefined,
-        `should run ${txType.name} without errors`
+        `should run ${txType.name} without errors`,
       )
     }
   })
@@ -275,58 +259,54 @@ describe('runTx() -> successful API parameter usage', async () => {
 
 describe('runTx() -> API parameter usage/data errors', () => {
   it('Typed Transaction with HF set to pre-Berlin', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const vm = await VM.create({ common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const vm = await createVM({ common })
 
-    const tx = getTransaction(
-      new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
-      1,
-      true
-    )
+    const tx = getTransaction(new Common({ chain: Mainnet, hardfork: Hardfork.Berlin }), 1, true)
 
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
 
     try {
-      await vm.runTx({ tx, skipHardForkValidation: true })
+      await runTx(vm, { tx, skipHardForkValidation: true })
       // TODO uncomment:
       // assert.fail('should throw error')
     } catch (e: any) {
       assert.ok(
         e.message.includes('(EIP-2718) not activated'),
-        `should fail for ${TRANSACTION_TYPES[1].name}`
+        `should fail for ${TRANSACTION_TYPES[1].name}`,
       )
     }
   })
 
   it('simple run (reportAccessList option)', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
     const tx = getTransaction(vm.common, 0, true)
 
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
 
-    const res = await vm.runTx({ tx, reportAccessList: true })
+    const res = await runTx(vm, { tx, reportAccessList: true })
     assert.isTrue(
       res.totalGasSpent > BigInt(0),
-      `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
+      `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`,
     )
     assert.deepEqual(res.accessList, [])
   })
 
   it('simple run (reportPreimages option)', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
     const tx = getTransaction(vm.common, 0, true)
 
     const caller = tx.getSenderAddress()
-    const acc = createAccount()
+    const acc = createAccountWithDefaults()
     await vm.stateManager.putAccount(caller, acc)
 
-    const res = await vm.runTx({ tx, reportPreimages: true })
+    const res = await runTx(vm, { tx, reportPreimages: true })
 
     const hashedCallerKey = vm.stateManager.getAppliedKey!(caller.bytes)
 
@@ -337,16 +317,16 @@ describe('runTx() -> API parameter usage/data errors', () => {
 
   it('run without signature', async () => {
     for (const txType of TRANSACTION_TYPES) {
-      const vm = await VM.create({ common })
+      const vm = await createVM({ common })
       const tx = getTransaction(vm.common, txType.type, false)
       try {
-        await vm.runTx({ tx })
+        await runTx(vm, { tx })
         assert.fail('should throw error')
       } catch (e: any) {
         assert.ok(
           e.message.includes('not signed') === true ||
             e.message.includes('Invalid Signature') === true,
-          `should fail for ${txType.name}`
+          `should fail for ${txType.name}`,
         )
       }
     }
@@ -354,55 +334,58 @@ describe('runTx() -> API parameter usage/data errors', () => {
 
   it('run with insufficient funds', async () => {
     for (const txType of TRANSACTION_TYPES) {
-      const vm = await VM.create({ common })
+      const vm = await createVM({ common })
       const tx = getTransaction(vm.common, txType.type, true)
       try {
-        await vm.runTx({ tx })
+        await runTx(vm, { tx })
       } catch (e: any) {
         assert.ok(
           e.message.toLowerCase().includes('enough funds'),
-          `should fail for ${txType.name}`
+          `should fail for ${txType.name}`,
         )
       }
     }
 
     // EIP-1559
     // Fail if signer.balance < gas_limit * max_fee_per_gas
-    const vm = await VM.create({ common })
-    let tx = getTransaction(vm.common, 2, true) as FeeMarketEIP1559Transaction
+    const vm = await createVM({ common })
+    let tx = getTransaction(vm.common, 2, true) as FeeMarket1559Tx
     const address = tx.getSenderAddress()
     tx = Object.create(tx)
     const maxCost: bigint = tx.gasLimit * tx.maxFeePerGas
-    await vm.stateManager.putAccount(address, createAccount(BigInt(0), maxCost - BigInt(1)))
+    await vm.stateManager.putAccount(
+      address,
+      createAccountWithDefaults(BigInt(0), maxCost - BigInt(1)),
+    )
     try {
-      await vm.runTx({ tx })
+      await runTx(vm, { tx })
       assert.fail('should throw error')
     } catch (e: any) {
       assert.ok(
         e.message.toLowerCase().includes('max cost'),
-        `should fail if max cost exceeds balance`
+        `should fail if max cost exceeds balance`,
       )
     }
     // set sufficient balance
-    await vm.stateManager.putAccount(address, createAccount(BigInt(0), maxCost))
-    const res = await vm.runTx({ tx })
+    await vm.stateManager.putAccount(address, createAccountWithDefaults(BigInt(0), maxCost))
+    const res = await runTx(vm, { tx })
     assert.ok(res, 'should pass if balance is sufficient')
   })
 
   it('run with insufficient eip1559 funds', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     const tx = getTransaction(common, 2, true, '0x0', false)
     const address = tx.getSenderAddress()
     await vm.stateManager.putAccount(address, new Account())
     const account = await vm.stateManager.getAccount(address)
     account!.balance = BigInt(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
     await vm.stateManager.putAccount(address, account!)
-    await vm.runTx({ tx })
+    await runTx(vm, { tx })
     account!.balance = BigInt(9000000)
     await vm.stateManager.putAccount(address, account!)
     const tx2 = getTransaction(common, 2, true, '0x64', false) // Send 100 wei; now balance < maxFeePerGas*gasLimit + callvalue
     try {
-      await vm.runTx({ tx: tx2 })
+      await runTx(vm, { tx: tx2 })
       assert.fail('cannot reach this')
     } catch (e: any) {
       assert.ok(true, 'successfully threw on insufficient balance for transaction')
@@ -410,7 +393,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
   })
 
   it('should throw on wrong nonces', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     const tx = getTransaction(common, 2, true, '0x0', false)
     const address = tx.getSenderAddress()
     await vm.stateManager.putAccount(address, new Account())
@@ -419,7 +402,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     account!.nonce = BigInt(1)
     await vm.stateManager.putAccount(address, account!)
     try {
-      await vm.runTx({ tx })
+      await runTx(vm, { tx })
       assert.fail('cannot reach this')
     } catch (e: any) {
       assert.ok(true, 'successfully threw on wrong nonces')
@@ -430,16 +413,16 @@ describe('runTx() -> API parameter usage/data errors', () => {
     // EIP-1559
     // Fail if transaction.maxFeePerGas < block.baseFeePerGas
     for (const txType of TRANSACTION_TYPES) {
-      const vm = await VM.create({ common })
+      const vm = await createVM({ common })
       const tx = getTransaction(vm.common, txType.type, true)
-      const block = Block.fromBlockData({ header: { baseFeePerGas: 100000 } }, { common })
+      const block = createBlock({ header: { baseFeePerGas: 100000 } }, { common })
       try {
-        await vm.runTx({ tx, block })
+        await runTx(vm, { tx, block })
         assert.fail('should fail')
       } catch (e: any) {
         assert.ok(
           e.message.includes("is less than the block's baseFeePerGas"),
-          'should fail with appropriate error'
+          'should fail with appropriate error',
         )
       }
     }
@@ -449,10 +432,10 @@ describe('runTx() -> API parameter usage/data errors', () => {
 describe('runTx() -> runtime behavior', () => {
   it('storage cache', async () => {
     for (const txType of TRANSACTION_TYPES) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-      const vm = await VM.create({ common })
+      const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
+      const vm = await createVM({ common })
       const privateKey = hexToBytes(
-        '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+        '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
       )
       /* Code which is deployed here:
         PUSH1 01
@@ -462,11 +445,11 @@ describe('runTx() -> runtime behavior', () => {
       */
       const code = hexToBytes('0x6001600055FE')
       const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
-      await vm.stateManager.putContractCode(address, code)
-      await vm.stateManager.putContractStorage(
+      await vm.stateManager.putCode(address, code)
+      await vm.stateManager.putStorage(
         address,
         hexToBytes(`0x${'00'.repeat(32)}`),
-        hexToBytes(`0x${'00'.repeat(31)}01`)
+        hexToBytes(`0x${'00'.repeat(31)}01`),
       )
       const txParams: any = {
         nonce: '0x00',
@@ -479,16 +462,16 @@ describe('runTx() -> runtime behavior', () => {
         txParams['accessList'] = []
         txParams['type'] = txType.type
       }
-      const tx = TransactionFactory.fromTxData(txParams, { common }).sign(privateKey)
+      const tx = createTxFromTxData(txParams, { common }).sign(privateKey)
 
-      await vm.stateManager.putAccount(tx.getSenderAddress(), createAccount())
+      await vm.stateManager.putAccount(tx.getSenderAddress(), createAccountWithDefaults())
 
-      await vm.runTx({ tx }) // this tx will fail, but we have to ensure that the cache is cleared
+      await runTx(vm, { tx }) // this tx will fail, but we have to ensure that the cache is cleared
 
       assert.equal(
         (<any>vm.stateManager).originalStorageCache.map.size,
         0,
-        `should clear storage cache after every ${txType.name}`
+        `should clear storage cache after every ${txType.name}`,
       )
     }
   })
@@ -497,55 +480,55 @@ describe('runTx() -> runtime behavior', () => {
 describe('runTx() -> runtime errors', () => {
   it('account balance overflows (call)', async () => {
     for (const txType of TRANSACTION_TYPES) {
-      const vm = await VM.create({ common })
+      const vm = await createVM({ common })
       const tx = getTransaction(vm.common, txType.type, true, '0x01')
 
       const caller = tx.getSenderAddress()
-      const from = createAccount()
+      const from = createAccountWithDefaults()
       await vm.stateManager.putAccount(caller, from)
 
-      const to = createAccount(BigInt(0), MAX_INTEGER)
+      const to = createAccountWithDefaults(BigInt(0), MAX_INTEGER)
       await vm.stateManager.putAccount(tx.to!, to)
 
-      const res = await vm.runTx({ tx })
+      const res = await runTx(vm, { tx })
 
       assert.equal(
         res.execResult!.exceptionError!.error,
         'value overflow',
-        `result should have 'value overflow' error set (${txType.name})`
+        `result should have 'value overflow' error set (${txType.name})`,
       )
       assert.equal(
         (<any>vm.stateManager)._checkpointCount,
         0,
-        `checkpoint count should be 0 (${txType.name})`
+        `checkpoint count should be 0 (${txType.name})`,
       )
     }
   })
 
   it('account balance overflows (create)', async () => {
     for (const txType of TRANSACTION_TYPES) {
-      const vm = await VM.create({ common })
+      const vm = await createVM({ common })
       const tx = getTransaction(vm.common, txType.type, true, '0x01', true)
 
       const caller = tx.getSenderAddress()
-      const from = createAccount()
+      const from = createAccountWithDefaults()
       await vm.stateManager.putAccount(caller, from)
 
-      const contractAddress = Address.fromString('0x61de9dc6f6cff1df2809480882cfd3c2364b28f7')
-      const to = createAccount(BigInt(0), MAX_INTEGER)
+      const contractAddress = createAddressFromString('0x61de9dc6f6cff1df2809480882cfd3c2364b28f7')
+      const to = createAccountWithDefaults(BigInt(0), MAX_INTEGER)
       await vm.stateManager.putAccount(contractAddress, to)
 
-      const res = await vm.runTx({ tx })
+      const res = await runTx(vm, { tx })
 
       assert.equal(
         res.execResult!.exceptionError!.error,
         'value overflow',
-        `result should have 'value overflow' error set (${txType.name})`
+        `result should have 'value overflow' error set (${txType.name})`,
       )
       assert.equal(
         (<any>vm.stateManager)._checkpointCount,
         0,
-        `checkpoint count should be 0 (${txType.name})`
+        `checkpoint count should be 0 (${txType.name})`,
       )
     }
   })
@@ -555,28 +538,28 @@ describe('runTx() -> runtime errors', () => {
 describe('runTx() -> API return values', () => {
   it('simple run, common return values', async () => {
     for (const txType of TRANSACTION_TYPES) {
-      const vm = await VM.create({ common })
+      const vm = await createVM({ common })
       const tx = getTransaction(vm.common, txType.type, true)
 
       const caller = tx.getSenderAddress()
-      const acc = createAccount()
+      const acc = createAccountWithDefaults()
       await vm.stateManager.putAccount(caller, acc)
 
-      const res = await vm.runTx({ tx })
+      const res = await runTx(vm, { tx })
       assert.equal(
         res.execResult.executionGasUsed,
         BigInt(0),
-        `execution result -> gasUsed -> 0 (${txType.name})`
+        `execution result -> gasUsed -> 0 (${txType.name})`,
       )
       assert.equal(
         res.execResult.exceptionError,
         undefined,
-        `execution result -> exception error -> undefined (${txType.name})`
+        `execution result -> exception error -> undefined (${txType.name})`,
       )
       assert.deepEqual(
         res.execResult.returnValue,
         Uint8Array.from([]),
-        `execution result -> return value -> empty Uint8Array (${txType.name})`
+        `execution result -> return value -> empty Uint8Array (${txType.name})`,
       )
       assert.equal(res.gasRefund, BigInt(0), `gasRefund -> 0 (${txType.name})`)
     }
@@ -584,21 +567,21 @@ describe('runTx() -> API return values', () => {
 
   it('simple run, runTx default return values', async () => {
     for (const txType of TRANSACTION_TYPES) {
-      const vm = await VM.create({ common })
+      const vm = await createVM({ common })
       const tx = getTransaction(vm.common, txType.type, true)
 
       const caller = tx.getSenderAddress()
-      const acc = createAccount()
+      const acc = createAccountWithDefaults()
       await vm.stateManager.putAccount(caller, acc)
 
-      const res = await vm.runTx({ tx })
+      const res = await runTx(vm, { tx })
 
       assert.equal(
         res.totalGasSpent,
-        tx.getBaseFee(),
-        `runTx result -> gasUsed -> tx.getBaseFee() (${txType.name})`
+        tx.getIntrinsicGas(),
+        `runTx result -> gasUsed -> tx.getIntrinsicGas() (${txType.name})`,
       )
-      if (tx instanceof FeeMarketEIP1559Transaction) {
+      if (tx instanceof FeeMarket1559Tx) {
         const baseFee = BigInt(7)
         const inclusionFeePerGas =
           tx.maxPriorityFeePerGas < tx.maxFeePerGas - baseFee
@@ -608,35 +591,35 @@ describe('runTx() -> API return values', () => {
         assert.equal(
           res.amountSpent,
           res.totalGasSpent * gasPrice,
-          `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
+          `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`,
         )
       } else {
         assert.equal(
           res.amountSpent,
-          res.totalGasSpent * (<LegacyTransaction>tx).gasPrice,
-          `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
+          res.totalGasSpent * (<LegacyTx>tx).gasPrice,
+          `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`,
         )
       }
 
       assert.deepEqual(
         res.bloom.bitvector,
         hexToBytes(`0x${'00'.repeat(256)}`),
-        `runTx result -> bloom.bitvector -> should be empty (${txType.name})`
+        `runTx result -> bloom.bitvector -> should be empty (${txType.name})`,
       )
       assert.equal(
         res.receipt.cumulativeBlockGasUsed,
         res.totalGasSpent,
-        `runTx result -> receipt.gasUsed -> result.gasUsed (${txType.name})`
+        `runTx result -> receipt.gasUsed -> result.gasUsed (${txType.name})`,
       )
       assert.deepEqual(
         res.receipt.bitvector,
         res.bloom.bitvector,
-        `runTx result -> receipt.bitvector -> result.bloom.bitvector (${txType.name})`
+        `runTx result -> receipt.bitvector -> result.bloom.bitvector (${txType.name})`,
       )
       assert.deepEqual(
         res.receipt.logs,
         [],
-        `runTx result -> receipt.logs -> empty array (${txType.name})`
+        `runTx result -> receipt.logs -> empty array (${txType.name})`,
       )
     }
   })
@@ -664,19 +647,19 @@ describe('runTx() -> consensus bugs', () => {
     const beforeBalance = BigInt(149123788000000000)
     const afterBalance = BigInt(129033829000000000)
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.SpuriousDragon })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.SpuriousDragon })
     common.setHardforkBy({ blockNumber: 2772981 })
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
-    const addr = Address.fromString('0xd3563d8f19a85c95beab50901fd59ca4de69174c')
+    const addr = createAddressFromString('0xd3563d8f19a85c95beab50901fd59ca4de69174c')
     await vm.stateManager.putAccount(addr, new Account())
     const acc = await vm.stateManager.getAccount(addr)
     acc!.balance = beforeBalance
     acc!.nonce = BigInt(2)
     await vm.stateManager.putAccount(addr, acc!)
 
-    const tx = LegacyTransaction.fromTxData(txData, { common })
-    await vm.runTx({ tx })
+    const tx = createLegacyTx(txData, { common })
+    await runTx(vm, { tx })
 
     const newBalance = (await vm.stateManager.getAccount(addr))!.balance
     assert.equal(newBalance, afterBalance)
@@ -703,41 +686,41 @@ describe('runTx() -> consensus bugs', () => {
       ],
     }
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const vm = await VM.create({ common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+    const vm = await createVM({ common })
 
-    const addr = Address.fromPrivateKey(pkey)
+    const addr = createAddressFromPrivateKey(pkey)
     await vm.stateManager.putAccount(addr, new Account())
     const acc = await vm.stateManager.getAccount(addr)
     acc!.balance = BigInt(10000000000000)
     await vm.stateManager.putAccount(addr, acc!)
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common }).sign(pkey)
+    const tx = createFeeMarket1559Tx(txData, { common }).sign(pkey)
 
-    const block = Block.fromBlockData({ header: { baseFeePerGas: 0x0c } }, { common })
-    const result = await vm.runTx({ tx, block })
+    const block = createBlock({ header: { baseFeePerGas: 0x0c } }, { common })
+    const result = await runTx(vm, { tx, block })
 
     assert.equal(
       result.totalGasSpent,
       BigInt(66382),
-      'should use the right amount of gas and not consume all'
+      'should use the right amount of gas and not consume all',
     )
   })
 })
 
 describe('runTx() -> RunTxOptions', () => {
   it('should throw on negative value args', async () => {
-    const vm = await VM.create({ common })
-    await setBalance(vm, Address.zero(), BigInt(10000000000))
+    const vm = await createVM({ common })
+    await setBalance(vm, createZeroAddress(), BigInt(10000000000))
     for (const txType of TRANSACTION_TYPES) {
       const tx = getTransaction(vm.common, txType.type, false)
-      tx.getSenderAddress = () => Address.zero()
+      tx.getSenderAddress = () => createZeroAddress()
       // @ts-ignore overwrite read-only property
       tx.value -= BigInt(1)
 
       for (const skipBalance of [true, false]) {
         try {
-          await vm.runTx({
+          await runTx(vm, {
             tx,
             skipBalance,
           })
@@ -745,7 +728,7 @@ describe('runTx() -> RunTxOptions', () => {
         } catch (err: any) {
           assert.ok(
             err.message.includes('value field cannot be negative'),
-            'throws on negative call value'
+            'throws on negative call value',
           )
         }
       }
@@ -754,65 +737,65 @@ describe('runTx() -> RunTxOptions', () => {
 })
 
 it('runTx() -> skipBalance behavior', async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-  const vm = await VM.create({ common })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
+  const vm = await createVM({ common })
   const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
-  const sender = Address.fromPrivateKey(senderKey)
+  const sender = createAddressFromPrivateKey(senderKey)
 
   for (const balance of [undefined, BigInt(5)]) {
     if (balance !== undefined) {
       await vm.stateManager.modifyAccountFields(sender, { nonce: BigInt(0), balance })
     }
-    const tx = LegacyTransaction.fromTxData({
+    const tx = createLegacyTx({
       gasLimit: BigInt(21000),
       value: BigInt(1),
-      to: Address.zero(),
+      to: createZeroAddress(),
     }).sign(senderKey)
 
-    const res = await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
+    const res = await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
     assert.ok(true, 'runTx should not throw with no balance and skipBalance')
     const afterTxBalance = (await vm.stateManager.getAccount(sender))!.balance
     assert.equal(
       afterTxBalance,
       balance !== undefined ? balance - 1n : BigInt(0),
-      `sender balance should be >= 0 after transaction with skipBalance`
+      `sender balance should be >= 0 after transaction with skipBalance`,
     )
     assert.equal(res.execResult.exceptionError, undefined, 'no exceptionError with skipBalance')
   }
 })
 
 it('Validate EXTCODEHASH puts KECCAK256_NULL on stack if calling account has no balance and zero nonce (but it did exist)', async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-  const vm = await VM.create({ common })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
+  const vm = await createVM({ common })
 
   const pkey = new Uint8Array(32).fill(1)
 
   // CALLER EXTCODEHASH PUSH 0 SSTORE STOP
   // Puts EXTCODEHASH of CALLER into slot 0
   const code = hexToBytes('0x333F60005500')
-  const codeAddr = Address.fromString('0x' + '20'.repeat(20))
-  await vm.stateManager.putContractCode(codeAddr, code)
+  const codeAddr = createAddressFromString('0x' + '20'.repeat(20))
+  await vm.stateManager.putCode(codeAddr, code)
 
-  const tx = LegacyTransaction.fromTxData({
+  const tx = createLegacyTx({
     gasLimit: 100000,
     gasPrice: 1,
     to: codeAddr,
   }).sign(pkey)
 
-  const addr = Address.fromPrivateKey(pkey)
+  const addr = createAddressFromPrivateKey(pkey)
   await vm.stateManager.putAccount(addr, new Account())
   const acc = await vm.stateManager.getAccount(addr)
   acc!.balance = BigInt(tx.gasLimit * tx.gasPrice)
   await vm.stateManager.putAccount(addr, acc!)
-  await vm.runTx({ tx, skipHardForkValidation: true })
+  await runTx(vm, { tx, skipHardForkValidation: true })
 
-  const hash = await vm.stateManager.getContractStorage(codeAddr, zeros(32))
+  const hash = await vm.stateManager.getStorage(codeAddr, zeros(32))
   assert.deepEqual(hash, KECCAK256_NULL, 'hash ok')
 })
 
 it('Validate CALL does not charge new account gas when calling CALLER and caller is non-empty', async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-  const vm = await VM.create({ common })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
+  const vm = await createVM({ common })
 
   const pkey = new Uint8Array(32).fill(1)
 
@@ -823,56 +806,56 @@ it('Validate CALL does not charge new account gas when calling CALLER and caller
 
   // Calls CALLER and sends back the ETH just sent with the transaction
   const code = hexToBytes('0x600080808034335AF100')
-  const codeAddr = Address.fromString('0x' + '20'.repeat(20))
-  await vm.stateManager.putContractCode(codeAddr, code)
+  const codeAddr = createAddressFromString('0x' + '20'.repeat(20))
+  await vm.stateManager.putCode(codeAddr, code)
 
-  const tx = LegacyTransaction.fromTxData({
+  const tx = createLegacyTx({
     gasLimit: 100000,
     gasPrice: 1,
     value: 1,
     to: codeAddr,
   }).sign(pkey)
 
-  const addr = Address.fromPrivateKey(pkey)
+  const addr = createAddressFromPrivateKey(pkey)
   await vm.stateManager.putAccount(addr, new Account())
   const acc = await vm.stateManager.getAccount(addr)
   acc!.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
   await vm.stateManager.putAccount(addr, acc!)
   assert.equal(
-    (await vm.runTx({ tx, skipHardForkValidation: true })).totalGasSpent,
+    (await runTx(vm, { tx, skipHardForkValidation: true })).totalGasSpent,
     BigInt(27818),
-    'did not charge callNewAccount'
+    'did not charge callNewAccount',
   )
 })
 
 it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER and caller is non-empty', async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-  const vm = await VM.create({ common })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
+  const vm = await createVM({ common })
 
   const pkey = new Uint8Array(32).fill(1)
 
   // CALLER EXTCODEHASH PUSH 0 SSTORE STOP
   // Puts EXTCODEHASH of CALLER into slot 0
   const code = hexToBytes('0x33FF')
-  const codeAddr = Address.fromString('0x' + '20'.repeat(20))
-  await vm.stateManager.putContractCode(codeAddr, code)
+  const codeAddr = createAddressFromString('0x' + '20'.repeat(20))
+  await vm.stateManager.putCode(codeAddr, code)
 
-  const tx = LegacyTransaction.fromTxData({
+  const tx = createLegacyTx({
     gasLimit: 100000,
     gasPrice: 1,
     value: 1,
     to: codeAddr,
   }).sign(pkey)
 
-  const addr = Address.fromPrivateKey(pkey)
+  const addr = createAddressFromPrivateKey(pkey)
   await vm.stateManager.putAccount(addr, new Account())
   const acc = await vm.stateManager.getAccount(addr)
   acc!.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
   await vm.stateManager.putAccount(addr, acc!)
   assert.equal(
-    (await vm.runTx({ tx, skipHardForkValidation: true })).totalGasSpent,
+    (await runTx(vm, { tx, skipHardForkValidation: true })).totalGasSpent,
     BigInt(13001),
-    'did not charge callNewAccount'
+    'did not charge callNewAccount',
   )
 })
 
@@ -880,8 +863,8 @@ describe('EIP 4844 transaction tests', () => {
   it('should work', async () => {
     const kzg = await loadKZG()
 
-    const genesisJson = await import('../../../block/test/testdata/4844-hardfork.json')
-    const common = Common.fromGethGenesis(genesisJson, {
+    const { hardfork4844Data } = await import('../../../block/test/testdata/4844-hardfork.js')
+    const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -892,9 +875,9 @@ describe('EIP 4844 transaction tests', () => {
 
     // Stub getBlock to produce a valid parent header under EIP 4844
     Blockchain.prototype.getBlock = async () => {
-      return Block.fromBlockData(
+      return createBlock(
         {
-          header: BlockHeader.fromHeaderData(
+          header: createBlockHeader(
             {
               excessBlobGas: 0n,
               number: 1,
@@ -903,26 +886,26 @@ describe('EIP 4844 transaction tests', () => {
             {
               common,
               skipConsensusFormatValidation: true,
-            }
+            },
           ),
         },
         {
           common,
           skipConsensusFormatValidation: true,
-        }
+        },
       )
     }
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       validateBlocks: false,
       validateConsensus: false,
     })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
 
-    const tx = getTransaction(common, 3, true) as BlobEIP4844Transaction
+    const tx = getTransaction(common, 3, true) as Blob4844Tx
 
-    const block = Block.fromBlockData(
+    const block = createBlock(
       {
-        header: BlockHeader.fromHeaderData(
+        header: createBlockHeader(
           {
             excessBlobGas: 1n,
             number: 2,
@@ -931,12 +914,12 @@ describe('EIP 4844 transaction tests', () => {
           {
             common,
             skipConsensusFormatValidation: true,
-          }
+          },
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      { common, skipConsensusFormatValidation: true },
     )
-    const res = await vm.runTx({ tx, block, skipBalance: true })
+    const res = await runTx(vm, { tx, block, skipBalance: true })
     assert.ok(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
     assert.equal(res.blobGasUsed, 131072n, 'returns correct blob gas used for 1 blob')
     Blockchain.prototype.getBlock = oldGetBlockFunction
