@@ -606,7 +606,7 @@ describe('runBlock() -> tx types', async () => {
 
       const chainIdBytes = unpadBytes(hexToBytes(`0x${chainId.toString(16)}`))
       const nonceBytes =
-        nonce !== undefined ? [unpadBytes(hexToBytes(`0x${nonce.toString(16)}`))] : []
+        nonce !== undefined ? unpadBytes(hexToBytes(`0x${nonce.toString(16)}`)) : new Uint8Array()
       const addressBytes = address.toBytes()
 
       const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
