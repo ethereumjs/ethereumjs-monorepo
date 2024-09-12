@@ -251,7 +251,7 @@ export interface EVMOpts {
    *
    * ```ts
    * const params = JSON.parse(JSON.stringify(paramsEVM))
-   * params['1679']['ecAddGas'] = 100 // 150
+   * params['1679']['bn254AddGas'] = 100 // 150
    * ```
    */
   params?: ParamsDict
