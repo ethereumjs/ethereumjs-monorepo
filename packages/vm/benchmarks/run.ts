@@ -21,7 +21,7 @@ async function main() {
     .default(hideBin(process.argv))
     .command('benchmarks <benchmarks>', 'Run benchmarks', (yargs) => {
       yargs.positional('benchmarks', {
-        describe: `Name(s) of benchmaks to run: BENCHMARK_NAME[:NUM_SAMPLES][,BENCHMARK_NAME[:NUM_SAMPLES]]. Benchmarks available: ${Object.keys(
+        describe: `Name(s) of benchmarks to run: BENCHMARK_NAME[:NUM_SAMPLES][,BENCHMARK_NAME[:NUM_SAMPLES]]. Benchmarks available: ${Object.keys(
           BENCHMARKS
         ).join(', ')}`,
         type: 'string',
