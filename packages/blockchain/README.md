@@ -244,6 +244,11 @@ The `Blockchain` class has a public property `events` which contains an `EventEm
 For the debugging output to show up, set the `DEBUG` environment variable, e.g. in Linux/Mac OS:
 `export DEBUG=ethjs,*`
 
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,thislog,thatlog,otherlog,otherlog:sublog,anotherLog:* node myscript.js`
+
 The following initial logger is currently available:
 
 | Logger              | Description                                                 |

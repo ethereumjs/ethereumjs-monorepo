@@ -378,6 +378,11 @@ If you want to understand your EVM runs we have added a hierarchically structure
 
 ![EthereumJS EVM Debug Logger](./debug.png?raw=true)
 
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,thislog,thatlog,otherlog,otherlog:sublog,anotherLog:* node myscript.js`
+
 The following loggers are currently available:
 
 | Logger                             | Description                                         |

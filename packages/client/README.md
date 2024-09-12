@@ -463,6 +463,11 @@ The above command outputs the log messages from all `devp2p` debug loggers avail
 DEBUG=ethjs,devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
 ```
 
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,thislog,thatlog,otherlog,otherlog:sublog,anotherLog:* node myscript.js`
+
 #### Hive testing
 
 See [DEVELOPER.md](./DEVELOPER.md)
