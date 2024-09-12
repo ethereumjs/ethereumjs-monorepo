@@ -457,7 +457,7 @@ For more in-depth debugging on networking the underlying [devp2p](../devp2p) lib
 DEBUG=ethjs,*,-babel [CLIENT_START_COMMAND]
 ```
 
-The above command outputs the log messages from all `devp2p` debug loggers available. For a more targeted logging the different loggers can also be activated separately, e.g.:
+The above command outputs the log messages from all `devp2p` debug loggers available. For more targeted logging, the different loggers can also be activated separately, e.g.:
 
 ```shell
 DEBUG=ethjs,devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
