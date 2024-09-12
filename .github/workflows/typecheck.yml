@@ -5,6 +5,9 @@ on:
       dep-cache-key:
         required: true
         type: string
+      submodule-cache-key:
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       dep-cache-key:
