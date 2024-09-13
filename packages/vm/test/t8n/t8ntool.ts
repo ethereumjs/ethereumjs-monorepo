@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { EVMMockBlockchain, MCLBLS, NobleBLS } from '@ethereumjs/evm'
+import { EVMMockBlockchain, NobleBLS } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
@@ -13,7 +13,6 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
 import { loadKZG } from 'kzg-wasm'
-import * as mcl from 'mcl-wasm'
 import { join } from 'path'
 
 import { buildBlock, createVM } from '../../src/index.js'
@@ -27,15 +26,7 @@ import { StateTracker } from './stateTracker.js'
 import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
 import type { BlockBuilder, VM } from '../../src/index.js'
 import type { AfterTxEvent } from '../../src/types.js'
-import type {
-  RunnerOptions,
-  T8NAlloc,
-  T8NEnv,
-  T8NOptions,
-  T8NOutput,
-  T8NReceipt,
-  T8NRejectedTx,
-} from './types.js'
+import type { T8NAlloc, T8NEnv, T8NOptions, T8NOutput, T8NReceipt, T8NRejectedTx } from './types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Log } from '@ethereumjs/evm'
 import type { TypedTxData } from '@ethereumjs/tx'
@@ -46,6 +37,10 @@ import type {
   WithdrawalRequestV1,
 } from '@ethereumjs/util'
 
+/**
+ * This is the TransitionTool class to run transitions. The entire class is marked `private` since
+ * it is only intended to be used **once**. To use it, use the single public entrypoint TransitionTool.run(args)
+ */
 export class TransitionTool {
   public options: T8NOptions
 
@@ -82,12 +77,12 @@ export class TransitionTool {
     this.receipts = []
   }
 
-  static async run(args: T8NOptions, runnerOptions: RunnerOptions = {}) {
-    await new TransitionTool(args).run(args, runnerOptions)
+  static async run(args: T8NOptions) {
+    await new TransitionTool(args).run(args)
   }
 
-  private async run(args: T8NOptions, runnerOptions: RunnerOptions = {}) {
-    await this.setup(args, runnerOptions)
+  private async run(args: T8NOptions) {
+    await this.setup(args)
 
     const block = makeBlockFromEnv(this.inputEnv, { common: this.common })
 
@@ -133,7 +128,7 @@ export class TransitionTool {
     this.writeOutput(args, convertedOutput, alloc)
   }
 
-  private async setup(args: T8NOptions, runnerOptions: RunnerOptions = {}) {
+  private async setup(args: T8NOptions) {
     this.common = getCommon(args.state.fork, await loadKZG())
 
     const blockchain = getBlockchain(this.inputEnv)
@@ -147,7 +142,7 @@ export class TransitionTool {
 
     this.stateTracker = new StateTracker(this.vm, this.alloc)
 
-    if (runnerOptions.log === true) {
+    if (args.log === true) {
       this.vm.events.on('beforeTx', () => {
         // eslint-disable-next-line no-console
         console.log('Processing new transaction...')

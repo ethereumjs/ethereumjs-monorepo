@@ -21,10 +21,11 @@ export type T8NOptions = {
     alloc: string
     body: string
   }
+  log: boolean
 }
 
 export type T8NAlloc = {
-  // TODO these are all string
+  // These are all PrefixedHexString, but TypeScript fails to coerce these in some places for some reason
   [address: string]: {
     nonce?: string
     balance: string
@@ -57,10 +58,6 @@ export type T8NEnv = {
   ommers: string[]
   withdrawals: string[]
   parentHash: string
-}
-
-export type RunnerOptions = {
-  log?: boolean
 }
 
 export type T8NRejectedTx = { index: number; error: string }

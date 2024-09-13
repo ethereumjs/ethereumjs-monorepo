@@ -59,6 +59,11 @@ export function getArguments() {
       type: 'string',
       default: 'txs.rlp',
     })
+    .option('log', {
+      describe: 'Optionally write light-trace logs to stdout',
+      type: 'boolean',
+      default: false,
+    })
     .strict()
     .help().argv
 
