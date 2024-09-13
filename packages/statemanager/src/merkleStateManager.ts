@@ -110,7 +110,7 @@ export class MerkleStateManager implements StateManagerInterface {
     this.DEBUG =
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
-    this._debug = debugDefault('statemanager:MerkleStateManager')
+    this._debug = debugDefault('statemanager:merkle')
 
     this.common = opts.common ?? new Common({ chain: Mainnet })
 

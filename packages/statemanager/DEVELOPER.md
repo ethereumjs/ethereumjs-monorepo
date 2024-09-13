@@ -22,22 +22,22 @@ Additional log selections can be added with a comma separated list (no spaces). 
 
 The following initial logger is currently available:
 
-| Logger                                     | Description                                              |
-| ------------------------------------------ | -------------------------------------------------------- |
-| `statemanager:MerkleStateManager`          | Operations happening on the `MerkleStateManager`         |
-| `statemanager:RPCStateManager`             | Operations happening on the `RPCStateManager`            |
-| `statemanager:StatefulVerkleStateManager`  | Operations happening on the `StatefulVerkleStateManager` |
-| `statemanager:StatelessVerkleStateManager` | Operations accessing verkle witnesses                    |
-| `statemanager:verkle:aw`                   | Operations accessing verkle witnesses                    |
-| `statemanager:cache`                       | Operations accessing statemanager caches                 |
-| `statemanager:cache:code`                  | Operations accessing statemanager code cache             |
-| `statemanager:cache:account`               | Operations accessing statemanager account cache          |
-| `statemanager:cache:storage`               | Operations accessing statemanager storage cache          |
+| Logger                          | Description                                              |
+| ------------------------------- | -------------------------------------------------------- |
+| `statemanager:merkle`           | Operations happening on the `MerkleStateManager`         |
+| `statemanager:rpc`              | Operations happening on the `RPCStateManager`            |
+| `statemanager:verkle:stateful`  | Operations happening on the `StatefulVerkleStateManager` |
+| `statemanager:verkle:stateless` | Operations accessing verkle witnesses                    |
+| `statemanager:verkle:aw`        | Operations accessing verkle witnesses                    |
+| `statemanager:cache`            | Operations accessing statemanager caches                 |
+| `statemanager:cache:code`       | Operations accessing statemanager code cache             |
+| `statemanager:cache:account`    | Operations accessing statemanager account cache          |
+| `statemanager:cache:storage`    | Operations accessing statemanager storage cache          |
 
 The following is an example for a logger run:
 
 Run with the clique logger:
 
 ```shell
-DEBUG=ethjs,statemanager:MerkleStateManager,statemanager:cache:* tsx test.ts
+DEBUG=ethjs,statemanager:merkle,statemanager:cache:* tsx test.ts
 ```
