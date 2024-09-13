@@ -54,6 +54,11 @@ export function getArguments() {
       type: 'string',
       demandOption: true,
     })
+    .option('output.body', {
+      deprecate: true,
+      description: 'File to write transaction RLPs to (currently unused)',
+      type: 'string',
+    })
     .option('log', {
       describe: 'Optionally write light-trace logs to stdout',
       type: 'boolean',
