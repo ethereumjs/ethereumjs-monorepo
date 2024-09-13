@@ -73,7 +73,7 @@
     "@ethereumjs/tx": "^5.4.0",
     "@ethereumjs/util": "^9.1.0",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^2.2.1"
+    "ethereum-cryptography": "^3.0.0"
   },
   "devDependencies": {
     "@ethereumjs/blockchain": "^7.3.0",
