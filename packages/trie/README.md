@@ -359,25 +359,25 @@ DEBUG=ethjs,trie npx vitest test/util/log.spec.ts
 Run with **put** method logging:
 
 ```shell
-DEBUG=ethjs,trie:put npx vitest test/util/log.spec.ts
+DEBUG=ethjs,trie:PUT npx vitest test/util/log.spec.ts
 ```
 
 Run with **trie** + **put**/**get**/**del** logging:
 
 ```shell
-DEBUG=ethjs,trie,trie:put,trie:get,trie:del npx vitest test/util/log.spec.ts
+DEBUG=ethjs,trie,trie:PUT,trie:GET,trie:DEL npx vitest test/util/log.spec.ts
 ```
 
 Run with **findPath** debug logging:
 
 ```shell
-DEBUG=ethjs,trie:find_path npx vitest test/util/log.spec.ts
+DEBUG=ethjs,trie:FIND_PATH npx vitest test/util/log.spec.ts
 ```
 
 Run with **findPath** verbose logging:
 
 ```shell
-DEBUG=ethjs,trie:find_path:* npx vitest test/util/log.spec.ts
+DEBUG=ethjs,trie:FIND_PATH:* npx vitest test/util/log.spec.ts
 ```
 
 Run with max logging:
