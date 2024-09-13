@@ -278,7 +278,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       case TrieNodeFetcher:
         // TODO update to check if heal phase completed successfully and then continue with next
         // healing phase
-        if (fetcherDoneFlags.trieNodeFetcher.healCycleRepeatCount > 0) {
+        if (fetcherDoneFlags.trieNodeFetcher.healCycleRepeatCount > 1) {
           fetcherDoneFlags.trieNodeFetcher.healCycleRepeatCount--
           break
         }
