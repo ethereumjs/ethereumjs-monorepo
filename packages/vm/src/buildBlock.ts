@@ -1,5 +1,6 @@
 import {
-  createBlockFromBlockData,
+  createBlock,
+  createSealedCliqueBlock,
   genRequestsTrieRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
@@ -7,7 +8,7 @@ import {
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { BlobEIP4844Transaction, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
+import { Blob4844Tx, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
 import {
   Address,
   BIGINT_0,
@@ -16,7 +17,8 @@ import {
   GWEI_TO_WEI,
   KECCAK256_RLP,
   TypeOutput,
-  Withdrawal,
+  createWithdrawal,
+  createZeroAddress,
   toBytes,
   toType,
   zeros,
@@ -38,6 +40,7 @@ import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './
 import type { VM } from './vm.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { Withdrawal } from '@ethereumjs/util'
 
 export enum BuildStatus {
   Reverted = 'reverted',
@@ -60,7 +63,7 @@ export class BlockBuilder {
   blobGasUsed = BIGINT_0
   /**
    * Value of the block, represented by the final transaction fees
-   * acruing to the miner.
+   * accruing to the miner.
    */
   private _minerValue = BIGINT_0
 
@@ -92,7 +95,7 @@ export class BlockBuilder {
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
       timestamp: opts.headerData?.timestamp ?? Math.round(Date.now() / 1000),
     }
-    this.withdrawals = opts.withdrawals?.map(Withdrawal.fromWithdrawalData)
+    this.withdrawals = opts.withdrawals?.map(createWithdrawal)
 
     if (
       this.vm.common.isActivatedEIP(1559) &&
@@ -181,7 +184,7 @@ export class BlockBuilder {
     const coinbase =
       this.headerData.coinbase !== undefined
         ? new Address(toBytes(this.headerData.coinbase))
-        : Address.zero()
+        : createZeroAddress()
     await rewardAccount(this.vm.evm, coinbase, reward, this.vm.common)
   }
 
@@ -231,11 +234,11 @@ export class BlockBuilder {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
     let blobGasUsed = undefined
-    if (tx instanceof BlobEIP4844Transaction) {
+    if (tx instanceof Blob4844Tx) {
       if (this.blockOpts.common?.isActivatedEIP(4844) === false) {
         throw Error('eip4844 not activated yet for adding a blob transaction')
       }
-      const blobTx = tx as BlobEIP4844Transaction
+      const blobTx = tx as Blob4844Tx
 
       // Guard against the case if a tx came into the pool without blobs i.e. network wrapper payload
       if (blobTx.blobs === undefined) {
@@ -256,13 +259,13 @@ export class BlockBuilder {
     }
 
     const blockData = { header, transactions: this.transactions }
-    const block = createBlockFromBlockData(blockData, this.blockOpts)
+    const block = createBlock(blockData, this.blockOpts)
 
     const result = await runTx(this.vm, { tx, block, skipHardForkValidation })
 
     // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
-    if (tx instanceof BlobEIP4844Transaction) {
-      const txData = tx as BlobEIP4844Transaction
+    if (tx instanceof Blob4844Tx) {
+      const txData = tx as Blob4844Tx
       this.blobGasUsed += BigInt(txData.blobVersionedHashes.length) * blobGasPerBlob
       tx = createMinimal4844TxFromNetworkWrapper(txData, {
         common: this.blockOpts.common,
@@ -362,7 +365,13 @@ export class BlockBuilder {
       requests,
     }
 
-    const block = createBlockFromBlockData(blockData, blockOpts)
+    let block
+    const cs = this.blockOpts.cliqueSigner
+    if (cs !== undefined) {
+      block = createSealedCliqueBlock(blockData, cs, this.blockOpts)
+    } else {
+      block = createBlock(blockData, blockOpts)
+    }
 
     if (this.blockOpts.putBlockIntoBlockchain === true) {
       await this.vm.blockchain.putBlock(block)

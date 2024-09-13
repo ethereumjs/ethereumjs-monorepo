@@ -1,15 +1,13 @@
 import {
-  KeyEncoding,
   Lock,
   MapDB,
-  ValueEncoding,
   bytesToHex,
   equalsBytes,
   intToHex,
+  matchingBytesLength,
   zeros,
 } from '@ethereumjs/util'
 import debug from 'debug'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import { CheckpointDB } from './db/checkpoint.js'
 import { InternalNode } from './node/internalNode.js'
@@ -22,8 +20,9 @@ import {
   type VerkleTreeOpts,
   type VerkleTreeOptsWithDefaults,
 } from './types.js'
-import { matchingBytesLength } from './util/index.js'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { createVerkleTree } from './constructors.js' // Imported so intellisense can display docs
 import type { DB, PutBatch, VerkleCrypto } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 interface Path {
@@ -62,7 +61,7 @@ export class VerkleTree {
    * Creates a new verkle tree.
    * @param opts Options for instantiating the verkle tree
    *
-   * Note: in most cases, the static {@link VerkleTree.create} constructor should be used.  It uses the same API but provides sensible defaults
+   * Note: in most cases, the static {@link createVerkleTree} constructor should be used.  It uses the same API but provides sensible defaults
    */
   constructor(opts?: VerkleTreeOpts) {
     if (opts !== undefined) {
@@ -103,40 +102,6 @@ export class VerkleTree {
     || Persistent: ${this._opts.useRootPersistence}
     || CacheSize: ${this._opts.cacheSize}
     || ----------------`)
-  }
-
-  static async create(opts?: VerkleTreeOpts) {
-    const key = ROOT_DB_KEY
-
-    if (opts?.db !== undefined && opts?.useRootPersistence === true) {
-      if (opts?.root === undefined) {
-        opts.root = await opts?.db.get(key, {
-          keyEncoding: KeyEncoding.Bytes,
-          valueEncoding: ValueEncoding.Bytes,
-        })
-      } else {
-        await opts?.db.put(key, opts.root, {
-          keyEncoding: KeyEncoding.Bytes,
-          valueEncoding: ValueEncoding.Bytes,
-        })
-      }
-    }
-
-    if (opts?.verkleCrypto === undefined) {
-      const verkleCrypto = await loadVerkleCrypto()
-      if (opts === undefined)
-        opts = {
-          verkleCrypto,
-          db: new MapDB<Uint8Array, Uint8Array>(),
-        }
-      else {
-        opts.verkleCrypto = verkleCrypto
-      }
-    }
-
-    const trie = new VerkleTree(opts)
-    await trie._createRootNode()
-    return trie
   }
 
   database(db?: DB<Uint8Array, Uint8Array>) {
@@ -187,39 +152,49 @@ export class VerkleTree {
   }
 
   /**
-   * Gets a value given a `key`
-   * @param key - the key to search for
-   * @returns A Promise that resolves to `Uint8Array` if a value was found or `undefined` if no value was found.
+   * Gets values at a given verkle `stem` and set of suffixes
+   * @param stem - the stem of the leaf node where we're seeking values
+   * @param suffixes - an array of suffixes corresponding to the values desired
+   * @returns A Promise that resolves to an array of `Uint8Array`s if a value
+   * was found or `undefined` if no value was found at a given suffixes.
    */
-  async get(key: Uint8Array): Promise<Uint8Array | undefined> {
-    if (key.length !== 32) throw new Error(`expected key with length 32; got ${key.length}`)
-    const stem = key.slice(0, 31)
-    const suffix = key[key.length - 1]
-    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffix}`, ['GET'])
+  async get(stem: Uint8Array, suffixes: number[]): Promise<(Uint8Array | undefined)[]> {
+    if (stem.length !== 31) throw new Error(`expected stem with length 31; got ${stem.length}`)
+    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffixes}`, ['GET'])
     const res = await this.findPath(stem)
     if (res.node instanceof LeafNode) {
       // The retrieved leaf node contains an array of 256 possible values.
-      // The index of the value we want is at the key's last byte
-      const value = res.node.getValue(suffix)
-      this.DEBUG &&
-        this.debug(`Value: ${value === undefined ? 'undefined' : bytesToHex(value)}`, ['GET'])
-      return value
+      // We read all the suffixes to get the desired values
+      const values = []
+      for (const suffix of suffixes) {
+        const value = res.node.getValue(suffix)
+        this.DEBUG &&
+          this.debug(
+            `Suffix: ${suffix}; Value: ${value === undefined ? 'undefined' : bytesToHex(value)}`,
+            ['GET'],
+          )
+        values.push(value)
+      }
+      return values
     }
 
-    return
+    return []
   }
 
   /**
-   * Stores a given `value` at the given `key` or do a delete if `value` is empty Uint8Array
-   * @param key - the key to store the value at
-   * @param value - the value to store
-   * @returns A Promise that resolves once value is stored.
+   * Stores given `values` at the given `stem` and `suffixes` or do a delete if `value` is empty Uint8Array
+   * @param key - the stem to store the value at (must be 31 bytes long)
+   * @param suffixes - array of suffixes at which to store individual values
+   * @param value - the value(s) to store
+   * @returns A Promise that resolves once value(s) are stored.
    */
-  async put(key: Uint8Array, value: Uint8Array): Promise<void> {
-    if (key.length !== 32) throw new Error(`expected key with length 32; got ${key.length}`)
-    const stem = key.slice(0, 31)
-    const suffix = key[key.length - 1]
-    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffix}`, ['PUT'])
+  async put(stem: Uint8Array, suffixes: number[], values: Uint8Array[] = []): Promise<void> {
+    if (stem.length !== 31) throw new Error(`expected stem with length 31, got ${stem.length}`)
+    if (values.length > 0 && values.length !== suffixes.length) {
+      // Must have an equal number of values and suffixes
+      throw new Error(`expected number of values; ${values.length} to equal ${suffixes.length}`)
+    }
+    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}`, ['PUT'])
 
     const putStack: [Uint8Array, VerkleNode][] = []
     // Find path to nearest node
@@ -254,19 +229,24 @@ export class VerkleTree {
       leafNode = await LeafNode.create(stem, this.verkleCrypto)
       this.DEBUG && this.debug(`Creating new leaf node at stem: ${bytesToHex(stem)}`, ['PUT'])
     }
-    // Update value in leaf node and push to putStack
-    if (equalsBytes(value, createDeletedLeafValue())) {
-      // Special case for when the deleted leaf value or zeroes is passed to `put`
-      // Writing the deleted leaf value to the suffix indicated in the key
-      leafNode.setValue(suffix, VerkleLeafNodeValue.Deleted)
-    } else {
-      leafNode.setValue(suffix, value)
+    for (let i = 0; i < values.length; i++) {
+      const value = values[i]
+      const suffix = suffixes[i]
+      // Update value(s) in leaf node
+      if (equalsBytes(value, createDeletedLeafValue())) {
+        // Special case for when the deleted leaf value or zeroes is passed to `put`
+        // Writing the deleted leaf value to the suffix
+        leafNode.setValue(suffix, VerkleLeafNodeValue.Deleted)
+      } else {
+        leafNode.setValue(suffix, value)
+      }
+      this.DEBUG &&
+        this.debug(
+          `Updating value for suffix: ${suffix} at leaf node with stem: ${bytesToHex(stem)}`,
+          ['PUT'],
+        )
     }
-    this.DEBUG &&
-      this.debug(
-        `Updating value for suffix: ${suffix} at leaf node with stem: ${bytesToHex(stem)}`,
-        ['PUT'],
-      )
+    // Push new/updated leafNode to putStack
     putStack.push([leafNode.hash(), leafNode])
 
     // `path` is the path to the last node pushed to the `putStack`
@@ -325,11 +305,9 @@ export class VerkleTree {
     await this.saveStack(putStack)
   }
 
-  async del(key: Uint8Array): Promise<void> {
-    const stem = key.slice(0, 31)
-    const suffix = key[key.length - 1]
-    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffix}`, ['DEL'])
-    await this.put(key, createDeletedLeafValue())
+  async del(stem: Uint8Array, suffixes: number[]): Promise<void> {
+    this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix(es): ${suffixes}`, ['DEL'])
+    await this.put(stem, suffixes, new Array(suffixes.length).fill(createDeletedLeafValue()))
   }
   /**
    * Helper method for updating or creating the parent internal node for a given leaf node
@@ -529,10 +507,10 @@ export class VerkleTree {
   }
 
   /**
-   * Creates a proof from a tree and key that can be verified using {@link VerkleTree.verifyProof}.
+   * Creates a proof from a tree and key that can be verified using {@link VerkleTree.verifyVerkleProof}.
    * @param key
    */
-  async createProof(_key: Uint8Array): Promise<Proof> {
+  async createVerkleProof(_key: Uint8Array): Promise<Proof> {
     throw new Error('Not implemented')
   }
 
@@ -544,7 +522,7 @@ export class VerkleTree {
    * @throws If proof is found to be invalid.
    * @returns The value from the key, or null if valid proof of non-existence.
    */
-  async verifyProof(
+  async verifyVerkleProof(
     _rootHash: Uint8Array,
     _key: Uint8Array,
     _proof: Proof,

@@ -1,5 +1,5 @@
-import { BlockHeader, createBlockFromValuesArray } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlockFromBytesArray, createBlockHeaderFromBytesArray } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import * as devp2p from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromBlockBodyData } from '@ethereumjs/tx'
@@ -21,7 +21,7 @@ import type { TypedTransaction } from '@ethereumjs/tx'
 
 const PRIVATE_KEY = randomBytes(32)
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 const bootstrapNodes = common.bootstrapNodes()
 const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {
@@ -174,7 +174,7 @@ rlpx.events.on('peer:added', (peer) => {
           }
 
           const expectedHash = CHECK_BLOCK
-          const header = BlockHeader.fromValuesArray(payload[1][0], { common })
+          const header = createBlockHeaderFromBytesArray(payload[1][0], { common })
           if (bytesToUnprefixedHex(header.hash()) === expectedHash) {
             console.log(`${addr} verified to be on the same side of the ${CHECK_BLOCK_TITLE}`)
             clearTimeout(forkDrop)
@@ -189,7 +189,7 @@ rlpx.events.on('peer:added', (peer) => {
           }
 
           let isValidPayload = false
-          const header = BlockHeader.fromValuesArray(payload[1][0], { common })
+          const header = createBlockHeaderFromBytesArray(payload[1][0], { common })
           while (requests.headers.length > 0) {
             const blockHash = requests.headers.shift()
             if (equalsBytes(header.hash(), blockHash)) {
@@ -238,7 +238,7 @@ rlpx.events.on('peer:added', (peer) => {
           const header = requests.bodies.shift()
           const txs = payload[1][0][0]
           const uncleHeaders = payload[1][0][1]
-          const block = createBlockFromValuesArray([header.raw(), txs, uncleHeaders], { common })
+          const block = createBlockFromBytesArray([header.raw(), txs, uncleHeaders], { common })
           const isValid = await isValidBlock(block)
           if (isValid) {
             isValidPayload = true
@@ -257,7 +257,7 @@ rlpx.events.on('peer:added', (peer) => {
       case devp2p.ETH.MESSAGE_CODES.NEW_BLOCK: {
         if (!forkVerified) break
 
-        const newBlock = createBlockFromValuesArray(payload[0], { common })
+        const newBlock = createBlockFromBytesArray(payload[0], { common })
         const isValidNewBlock = await isValidBlock(newBlock)
         if (isValidNewBlock) onNewBlock(newBlock, peer)
 

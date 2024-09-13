@@ -1,12 +1,11 @@
 import { Block } from '@ethereumjs/block'
-import { Hardfork } from '@ethereumjs/common'
-import { BIGINT_1, bytesToHex, bytesToUnprefixedHex, equalsBytes } from '@ethereumjs/util'
+import { bytesToHex, bytesToUnprefixedHex, equalsBytes } from '@ethereumjs/util'
 
 import { UNSUPPORTED_FORK } from '../../../error-code.js'
 import { type ChainCache } from '../types.js'
 
 import type { Chain } from '../../../../blockchain/index.js'
-import type { Common } from '@ethereumjs/common'
+import type { Common, Hardfork } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 /**
@@ -113,22 +112,6 @@ export const validHash = async (
   // if we are here, either we can't find valid parent till maxDepth or the ancestor was invalid
   // or there was a lookup error. in all these instances return null
   return null
-}
-
-/**
- * Validates that the block satisfies post-merge conditions.
- */
-export const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
-  const ttd = chain.config.chainCommon.hardforkTTD(Hardfork.Paris)
-  if (ttd === null) return false
-  const blockTd = await chain.getTd(block.hash(), block.header.number)
-
-  // Block is terminal if its td >= ttd and its parent td < ttd.
-  // In case the Genesis block has td >= ttd it is the terminal block
-  if (block.isGenesis()) return blockTd >= ttd
-
-  const parentBlockTd = await chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)
-  return blockTd >= ttd && parentBlockTd < ttd
 }
 
 export function validateHardforkRange(

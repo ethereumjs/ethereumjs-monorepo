@@ -1,5 +1,12 @@
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { Account, Address, bytesToHex, hexToBytes, unpadBytes } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bytesToHex,
+  createAddressFromString,
+  hexToBytes,
+  unpadBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createEVM } from '../src/index.js'
@@ -10,8 +17,8 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
   it('should work', async () => {
     // setup the evm
-    const genesisJSON = await import('../../client/test/testdata/geth-genesis/eip4844.json')
-    const common = createCommonFromGethGenesis(genesisJSON, {
+    const { eip4844Data } = await import('../../client/test/testdata/geth-genesis/eip4844.js')
+    const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
@@ -40,8 +47,8 @@ describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
 describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
   it('should work', async () => {
     // setup the evm
-    const genesisJSON = await import('../../client/test/testdata/geth-genesis/eip4844.json')
-    const common = createCommonFromGethGenesis(genesisJSON, {
+    const { eip4844Data } = await import('../../client/test/testdata/geth-genesis/eip4844.js')
+    const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
@@ -90,8 +97,8 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
 describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () => {
   it('should work', async () => {
     // setup the evm
-    const genesisJSON = await import('../../client/test/testdata/geth-genesis/eip4844.json')
-    const common = createCommonFromGethGenesis(genesisJSON, {
+    const { eip4844Data } = await import('../../client/test/testdata/geth-genesis/eip4844.js')
+    const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
@@ -131,7 +138,7 @@ describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () =>
       }
       const res = await evm.runCall(runCallArgs)
 
-      const address = Address.fromString(bytesToHex(res.execResult.returnValue.slice(12)))
+      const address = createAddressFromString(bytesToHex(res.execResult.returnValue.slice(12)))
       const code = await evm.stateManager.getCode(address)
 
       assert.equal(

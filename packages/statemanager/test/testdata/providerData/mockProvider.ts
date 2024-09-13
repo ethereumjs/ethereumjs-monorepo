@@ -1,4 +1,4 @@
-import type { JsonBlock } from '@ethereumjs/block'
+import type { JSONBlock } from '@ethereumjs/block'
 
 export type SupportedMethods =
   | 'eth_getProof'
@@ -7,35 +7,35 @@ export type SupportedMethods =
   | 'eth_getBlockByNumber'
   | 'eth_getTransactionByHash'
 
-export type JsonReturnType = {
+export type JSONReturnType = {
   eth_getProof: { id: number; result: any }
   eth_getStorageAt: { id: number; result: any }
   eth_getCode: { id: number; result: string }
-  eth_getBlockByNumber: { id: number; result: JsonBlock }
+  eth_getBlockByNumber: { id: number; result: JSONBlock }
   eth_getTransactionByHash: { id: number; result: any }
 }
 export const getValues = async <Method extends SupportedMethods>(
   method: Method,
   id: number,
-  params: any[],
-): Promise<JsonReturnType[Method]> => {
+  params: any,
+): Promise<JSONReturnType[Method]> => {
   switch (method) {
     case 'eth_getProof':
       return {
         id,
-        result: await getProofValues(params as any),
+        result: await getProofValues(params),
       }
 
     case 'eth_getBlockByNumber':
       return {
         id,
-        result: await getBlockValues(params as any),
+        result: await getBlockValues(params),
       }
 
     case 'eth_getTransactionByHash':
       return {
         id,
-        result: await getTransactionData(params as any),
+        result: await getTransactionData(params),
       }
 
     case 'eth_getCode': {
@@ -62,7 +62,7 @@ export const getValues = async <Method extends SupportedMethods>(
 const getProofValues = async (params: [address: string, _: [], blockTag: bigint | string]) => {
   const [address, _slot, blockTag] = params
   try {
-    const account = (await import(`./accounts/${address}.json`)).default
+    const { account } = await import(`./accounts/${address}.ts`)
     return account[blockTag.toString() ?? 'latest']
   } catch {
     return {
@@ -83,12 +83,12 @@ const getBlockValues = async (params: [blockTag: string, _: boolean]) => {
       number: 'latest',
       stateRoot: '0x2ffb7ec5bbe8616c24a222737f0817f389d00ab9268f9574e0b7dfe251fbfa05',
     }
-  const block = await import(`./blocks/block${blockTag}.json`)
-  return block.default
+  const { block } = await import(`./blocks/block${blockTag}.ts`)
+  return block
 }
 
 const getTransactionData = async (params: [txHash: string]) => {
   const [txHash] = params
-  const txData = await import(`./transactions/${txHash}.json`)
-  return txData
+  const { tx } = await import(`./transactions/${txHash}.ts`)
+  return tx
 }

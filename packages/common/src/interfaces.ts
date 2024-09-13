@@ -2,7 +2,7 @@
  * External Interfaces for other EthereumJS libraries
  */
 
-import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Account, Address, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
 
 export interface StorageDump {
   [key: string]: string
@@ -31,7 +31,9 @@ export interface StorageRange {
   nextKey: string | null
 }
 
-export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash'>>
+export type AccountFields = Partial<
+  Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash' | 'codeSize'>
+>
 
 export type StorageProof = {
   key: PrefixedHexString
@@ -48,46 +50,6 @@ export type Proof = {
   accountProof: PrefixedHexString[]
   storageProof: StorageProof[]
 }
-
-/*
- * Access List types
- */
-
-export type AccessListItem = {
-  address: PrefixedHexString
-  storageKeys: PrefixedHexString[]
-}
-
-/*
- * An Access List as a tuple of [address: Uint8Array, storageKeys: Uint8Array[]]
- */
-export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
-export type AccessListBytes = AccessListBytesItem[]
-export type AccessList = AccessListItem[]
-
-/**
- * Authorization list types
- */
-export type AuthorizationListItem = {
-  chainId: PrefixedHexString
-  address: PrefixedHexString
-  nonce: PrefixedHexString[]
-  yParity: PrefixedHexString
-  r: PrefixedHexString
-  s: PrefixedHexString
-}
-
-// Tuple of [chain_id, address, [nonce], y_parity, r, s]
-export type AuthorizationListBytesItem = [
-  Uint8Array,
-  Uint8Array,
-  Uint8Array[],
-  Uint8Array,
-  Uint8Array,
-  Uint8Array,
-]
-export type AuthorizationListBytes = AuthorizationListBytesItem[]
-export type AuthorizationList = AuthorizationListItem[]
 
 /**
  * Verkle related
@@ -148,6 +110,9 @@ export interface AccessWitnessInterface {
  *
  */
 export interface StateManagerInterface {
+  /*
+   * Core Access Functionality
+   */
   // Account methods
   getAccount(address: Address): Promise<Account | undefined>
   putAccount(address: Address, account?: Account): Promise<void>
@@ -164,35 +129,54 @@ export interface StateManagerInterface {
   putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
   clearStorage(address: Address): Promise<void>
 
-  // Checkpointing methods
+  /*
+   * Checkpointing Functionality
+   */
   checkpoint(): Promise<void>
   commit(): Promise<void>
   revert(): Promise<void>
 
-  // State root methods
+  /*
+   * State Root Functionality
+   */
   getStateRoot(): Promise<Uint8Array>
   setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
   hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
 
-  // Other
+  /*
+   * Extra Functionality
+   *
+   * Optional non-essential methods, these methods should always be guarded
+   * on usage (check for existence)
+   */
+  // Client RPC
   getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
-  shallowCopy(downlevelCaches?: boolean): StateManagerInterface
-  getAppliedKey?(address: Uint8Array): Uint8Array
+  dumpStorage?(address: Address): Promise<StorageDump>
+  dumpStorageRange?(address: Address, startKey: bigint, limit: number): Promise<StorageRange>
 
-  // Verkle (experimental)
-  checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
-}
-
-export interface EVMStateManagerInterface extends StateManagerInterface {
+  /*
+   * EVM/VM Specific Functionality
+   */
   originalStorageCache: {
     get(address: Address, key: Uint8Array): Promise<Uint8Array>
     clear(): void
   }
+  generateCanonicalGenesis?(initState: any): Promise<void> // TODO make input more typesafe
+  // only Verkle/EIP-6800 (experimental)
+  accessWitness?: AccessWitnessInterface
+  initVerkleExecutionWitness?(
+    blockNum: bigint,
+    executionWitness?: VerkleExecutionWitness | null,
+    accessWitness?: AccessWitnessInterface,
+  ): void
+  verifyVerkleProof?(): boolean
+  verifyPostState?(): boolean
+  checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
+  getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 
-  dumpStorage(address: Address): Promise<StorageDump> // only used in client
-  dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> // only used in client
-  generateCanonicalGenesis(initState: any): Promise<void> // TODO make input more typesafe
-  getProof(address: Address, storageSlots?: Uint8Array[]): Promise<Proof>
-
-  shallowCopy(downlevelCaches?: boolean): EVMStateManagerInterface
+  /*
+   * Utility
+   */
+  clearCaches(): void
+  shallowCopy(downlevelCaches?: boolean): StateManagerInterface
 }

@@ -1,8 +1,8 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { create1559FeeMarketTxFromRLP } from '@ethereumjs/tx'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { createFeeMarket1559TxFromRLP } from '@ethereumjs/tx'
 import { Account, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
@@ -18,10 +18,10 @@ import { destroy } from './util.js'
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
 
 // Stub out setStateRoot since correct state root doesn't exist in mock state.
-const ogSetStateRoot = DefaultStateManager.prototype.setStateRoot
-DefaultStateManager.prototype.setStateRoot = (): any => {}
-const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-DefaultStateManager.prototype.shallowCopy = function () {
+const ogSetStateRoot = MerkleStateManager.prototype.setStateRoot
+MerkleStateManager.prototype.setStateRoot = (): any => {}
+const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+MerkleStateManager.prototype.shallowCopy = function () {
   return this
 }
 async function setup(): Promise<[MockServer, FullEthereumService]> {
@@ -81,7 +81,7 @@ describe(
     })
     peer.eth!.send('NewBlockHashes', [[hash, BigInt(2)]])
 
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           number: 1,
@@ -94,7 +94,7 @@ describe(
 
     const txData =
       '0x02f901100180843b9aca00843b9aca008402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
-    const tx = create1559FeeMarketTxFromRLP(toBytes(txData))
+    const tx = createFeeMarket1559TxFromRLP(toBytes(txData))
     await service.execution.vm.stateManager.putAccount(
       tx.getSenderAddress(),
       new Account(BigInt(0), BigInt('40000000000100000')),
@@ -128,6 +128,6 @@ describe('should handle LES requests', async () => {
   await destroy(server, service)
 
   // unstub setStateRoot
-  DefaultStateManager.prototype.setStateRoot = ogSetStateRoot
-  DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+  MerkleStateManager.prototype.setStateRoot = ogSetStateRoot
+  MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
 }, 30000)

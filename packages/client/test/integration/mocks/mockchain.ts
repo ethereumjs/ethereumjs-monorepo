@@ -1,4 +1,4 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 
 import { Chain } from '../../../src/blockchain/index.js'
@@ -30,7 +30,7 @@ export class MockChain extends Chain {
     const common = this.config.chainCommon
     const blocks: Block[] = []
     for (let number = 0; number < this.height; number++) {
-      const block = createBlockFromBlockData(
+      const block = createBlock(
         {
           header: {
             number: number + 1,

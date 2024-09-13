@@ -2,6 +2,7 @@ import {
   Address,
   bytesToHex,
   concatBytes,
+  createZeroAddress,
   equalsBytes,
   hexToBytes,
   unpadBytes,
@@ -10,20 +11,19 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { DefaultStateManager } from '../src/index.js'
+import { Caches, MerkleStateManager } from '../src/index.js'
 
 import { createAccountWithDefaults } from './util.js'
 
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 describe('StateManager -> Storage', () => {
-  for (const storageCacheOpts of [
-    { deactivate: false },
-    { deactivate: true },
-    { deactivate: false, size: 0 },
-  ]) {
+  for (const storageCacheOpts of [{ size: 1000 }, { size: 0 }]) {
     for (const prefixStorageTrieKeys of [false, true]) {
       it.skipIf(isBrowser() === true)(`should dump storage`, async () => {
-        const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
+        const stateManager = new MerkleStateManager({
+          prefixStorageTrieKeys,
+          caches: new Caches({ storage: storageCacheOpts }),
+        })
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
         const account = createAccountWithDefaults()
 
@@ -39,7 +39,10 @@ describe('StateManager -> Storage', () => {
       })
 
       it("should validate the key's length when modifying a contract's storage", async () => {
-        const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
+        const stateManager = new MerkleStateManager({
+          prefixStorageTrieKeys,
+          caches: new Caches({ storage: storageCacheOpts }),
+        })
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
         const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
@@ -55,7 +58,10 @@ describe('StateManager -> Storage', () => {
       })
 
       it("should validate the key's length when reading a contract's storage", async () => {
-        const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
+        const stateManager = new MerkleStateManager({
+          prefixStorageTrieKeys,
+          caches: new Caches({ storage: storageCacheOpts }),
+        })
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
         const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
@@ -71,8 +77,11 @@ describe('StateManager -> Storage', () => {
       })
 
       it(`should throw on storage values larger than 32 bytes`, async () => {
-        const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
-        const address = Address.zero()
+        const stateManager = new MerkleStateManager({
+          prefixStorageTrieKeys,
+          caches: new Caches({ storage: storageCacheOpts }),
+        })
+        const address = createZeroAddress()
         const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
 
@@ -87,8 +96,11 @@ describe('StateManager -> Storage', () => {
       })
 
       it(`should strip zeros of storage values`, async () => {
-        const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
-        const address = Address.zero()
+        const stateManager = new MerkleStateManager({
+          prefixStorageTrieKeys,
+          caches: new Caches({ storage: storageCacheOpts }),
+        })
+        const address = createZeroAddress()
         const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
 
@@ -109,7 +121,7 @@ describe('StateManager -> Storage', () => {
       })
 
       it(`should delete storage values which only consist of zero bytes`, async () => {
-        const address = Address.zero()
+        const address = createZeroAddress()
         const key = zeros(32)
 
         const startValue = hexToBytes('0x01')
@@ -117,7 +129,10 @@ describe('StateManager -> Storage', () => {
         const zeroLengths = [0, 1, 31, 32] // checks for arbitrary-length zeros
 
         for (const length of zeroLengths) {
-          const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
+          const stateManager = new MerkleStateManager({
+            prefixStorageTrieKeys,
+            caches: new Caches({ storage: storageCacheOpts }),
+          })
           const account = createAccountWithDefaults()
           await stateManager.putAccount(address, account)
 
@@ -137,8 +152,11 @@ describe('StateManager -> Storage', () => {
       })
 
       it(`should not strip trailing zeros`, async () => {
-        const stateManager = new DefaultStateManager({ prefixStorageTrieKeys, storageCacheOpts })
-        const address = Address.zero()
+        const stateManager = new MerkleStateManager({
+          prefixStorageTrieKeys,
+          caches: new Caches({ storage: storageCacheOpts }),
+        })
+        const address = createZeroAddress()
         const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
 

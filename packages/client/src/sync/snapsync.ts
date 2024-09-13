@@ -4,7 +4,7 @@ import { Event } from '../types.js'
 import { short } from '../util/index.js'
 
 import { AccountFetcher } from './fetcher/index.js'
-import { getInitFecherDoneFlags } from './fetcher/types.js'
+import { getInitFetcherDoneFlags } from './fetcher/types.js'
 import { Synchronizer } from './sync.js'
 
 import type { VMExecution } from '../execution/index.js'
@@ -12,7 +12,7 @@ import type { Peer } from '../net/peer/peer.js'
 import type { Skeleton } from '../service/skeleton.js'
 import type { SnapFetcherDoneFlags } from './fetcher/types.js'
 import type { SynchronizerOptions } from './sync.js'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { MerkleStateManager } from '@ethereumjs/statemanager'
 
 interface SnapSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */
@@ -26,7 +26,7 @@ export class SnapSynchronizer extends Synchronizer {
   public running = false
   skeleton?: Skeleton
   private execution: VMExecution
-  readonly fetcherDoneFlags: SnapFetcherDoneFlags = getInitFecherDoneFlags()
+  readonly fetcherDoneFlags: SnapFetcherDoneFlags = getInitFetcherDoneFlags()
 
   constructor(options: SnapSynchronizerOptions) {
     super(options)
@@ -228,8 +228,8 @@ export class SnapSynchronizer extends Synchronizer {
       this.fetcher = new AccountFetcher({
         config: this.config,
         pool: this.pool,
-        stateManager: this.execution.vm.stateManager as DefaultStateManager,
         height,
+        stateManager: this.execution.vm.stateManager as MerkleStateManager,
         // This needs to be determined from the current state of the MPT dump
         first: BigInt(0),
         fetcherDoneFlags: this.fetcherDoneFlags,

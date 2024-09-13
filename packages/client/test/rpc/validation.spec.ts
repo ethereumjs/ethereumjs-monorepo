@@ -301,9 +301,9 @@ describe(prefix, () => {
     assert.ok(validatorResult(validators.blockOption(['0x01'], 0)))
 
     // invalid
-    assert.notOk(validatorResult(validators.blockOption(['lates'], 0)))
-    assert.notOk(validatorResult(validators.blockOption(['arliest'], 0)))
-    assert.notOk(validatorResult(validators.blockOption(['pendin'], 0)))
+    assert.notOk(validatorResult(validators.blockOption(['lates'], 0))) // cspell:disable-line
+    assert.notOk(validatorResult(validators.blockOption(['arliest'], 0))) // cspell:disable-line
+    assert.notOk(validatorResult(validators.blockOption(['pendin'], 0))) // cspell:disable-line
     assert.notOk(validatorResult(validators.blockOption(['0'], 0)))
     assert.notOk(validatorResult(validators.blockOption(['00'], 0)))
     assert.notOk(validatorResult(validators.blockOption(['1'], 0)))
@@ -327,7 +327,7 @@ describe(prefix, () => {
     assert.notOk(validatorResult(validators.bool(['true'], 0)))
     assert.notOk(validatorResult(validators.bool(['false'], 0)))
     assert.notOk(validatorResult(validators.bool(['tru'], 0)))
-    assert.notOk(validatorResult(validators.bool(['fals'], 0)))
+    assert.notOk(validatorResult(validators.bool(['fals'], 0))) // cspell:disable-line
   })
 
   it('hex', () => {

@@ -1,11 +1,11 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createZeroAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { TransactionType, createTxFromTxData, paramsTx } from '../src/index.js'
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.Paris,
   eips: [3860, 4844, 4895],
   params: paramsTx,
@@ -18,7 +18,7 @@ const txTypes = [
   TransactionType.FeeMarketEIP1559,
   //TransactionType.BlobEIP4844, // Explicitly commented out: BlobEIP4844 txs cannot create contracts
 ]
-const addressZero = Address.zero()
+const addressZero = createZeroAddress()
 
 describe('[EIP3860 tests]', () => {
   it(`Should instantiate create txs with MAX_INITCODE_SIZE`, () => {
@@ -91,12 +91,12 @@ describe('[EIP3860 tests]', () => {
           { data, type: txType },
           { common, allowUnlimitedInitCodeSize: true },
         )
-        const eip3860DeactivedTx = createTxFromTxData(
+        const eip3860DeactivatedTx = createTxFromTxData(
           { data, type: txType },
           { common, allowUnlimitedInitCodeSize: false },
         )
         assert.ok(
-          eip3860ActiveTx.getDataGas() === eip3860DeactivedTx.getDataGas(),
+          eip3860ActiveTx.getDataGas() === eip3860DeactivatedTx.getDataGas(),
           'charged initcode analysis gas',
         )
       }

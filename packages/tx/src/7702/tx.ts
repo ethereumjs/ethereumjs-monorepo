@@ -1,3 +1,4 @@
+import { Common } from '@ethereumjs/common'
 import {
   BIGINT_0,
   BIGINT_27,
@@ -17,7 +18,7 @@ import { paramsTx } from '../index.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, AuthorizationLists, validateNotArray } from '../util.js'
 
-import { create7702EOACodeTx } from './constructors.js'
+import { createEOACode7702Tx } from './constructors.js'
 
 import type {
   AccessList,
@@ -26,10 +27,9 @@ import type {
   TxValuesArray as AllTypesTxValuesArray,
   AuthorizationList,
   AuthorizationListBytes,
-  JsonTx,
+  JSONTx,
   TxOptions,
 } from '../types.js'
-import type { Common } from '@ethereumjs/common'
 
 export type TxData = AllTypesTxData[TransactionType.EOACodeEIP7702]
 export type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702]
@@ -40,7 +40,7 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702
  * - TransactionType: 4
  * - EIP: [EIP-7702](https://github.com/ethereum/EIPs/blob/62419ca3f45375db00b04a368ea37c0bfb05386a/EIPS/eip-7702.md)
  */
-export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.EOACodeEIP7702> {
+export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOACodeEIP7702> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
@@ -62,7 +62,12 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
     super({ ...txData, type: TransactionType.EOACodeEIP7702 }, opts)
     const { chainId, accessList, authorizationList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
-    this.common = this._getCommon(opts.common, chainId)
+    this.common = opts.common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
+    if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
+      throw new Error(
+        `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
+      )
+    }
     this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 
@@ -112,6 +117,13 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
     EIP2718.validateYParity(this)
     Legacy.validateHighS(this)
 
+    if (this.to === undefined) {
+      const msg = this._errorMsg(
+        `tx should have a "to" field and cannot be used to create contracts`,
+      )
+      throw new Error(msg)
+    }
+
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -147,12 +159,12 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, authorizationList, signatureYParity, signatureR, signatureS]`
    *
-   * Use {@link EOACodeEIP7702Transaction.serialize} to add a transaction to a block
-   * with {@link createBlockFromValuesArray}.
+   * Use {@link EOACode7702Transaction.serialize} to add a transaction to a block
+   * with {@link createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-   * representation for external signing use {@link EOACodeEIP7702Transaction.getMessageToSign}.
+   * representation for external signing use {@link EOACode7702Transaction.getMessageToSign}.
    */
   raw(): TxValuesArray {
     return [
@@ -216,7 +228,7 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use {@link EOACodeEIP7702Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * Use {@link EOACode7702Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
     return Legacy.hash(this)
@@ -241,12 +253,12 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
     convertV: boolean = false,
-  ): EOACodeEIP7702Transaction {
+  ): EOACode7702Transaction {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
 
-    return create7702EOACodeTx(
+    return createEOACode7702Tx(
       {
         chainId: this.chainId,
         nonce: this.nonce,
@@ -269,12 +281,12 @@ export class EOACodeEIP7702Transaction extends BaseTransaction<TransactionType.E
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  toJSON(): JsonTx {
+  toJSON(): JSONTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJson = super.toJSON()
+    const baseJSON = super.toJSON()
 
     return {
-      ...baseJson,
+      ...baseJSON,
       chainId: bigIntToHex(this.chainId),
       maxPriorityFeePerGas: bigIntToHex(this.maxPriorityFeePerGas),
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),

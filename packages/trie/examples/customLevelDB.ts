@@ -101,7 +101,10 @@ export class LevelDB<
    * @inheritDoc
    */
   async batch(opStack: BatchDBOp<TKey, TValue>[]): Promise<void> {
-    const levelOps = []
+    const levelOps: {
+      keyEncoding: string
+      valueEncoding: string
+    }[] = []
     for (const op of opStack) {
       const encodings = getEncodings(op.opts)
       levelOps.push({ ...op, ...encodings })
@@ -124,7 +127,7 @@ export class LevelDB<
 }
 
 async function main() {
-  const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION') as any) })
+  const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
   console.log(trie.database().db) // LevelDB { ...
 }
 void main()

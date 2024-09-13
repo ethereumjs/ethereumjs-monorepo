@@ -1,4 +1,11 @@
-import { Address, TypeOutput, bigIntToHex, bytesToHex, hexToBytes, toType } from '@ethereumjs/util'
+import {
+  TypeOutput,
+  bigIntToHex,
+  bytesToHex,
+  createAddressFromString,
+  hexToBytes,
+  toType,
+} from '@ethereumjs/util'
 import { type VM, encodeReceipt, runTx } from '@ethereumjs/vm'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code.js'
@@ -8,7 +15,7 @@ import { middleware, validators } from '../validation.js'
 import type { Chain } from '../../blockchain/index.js'
 import type { EthereumClient } from '../../index.js'
 import type { FullEthereumService } from '../../service/index.js'
-import type { RpcTx } from '../types.js'
+import type { RPCTx } from '../types.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -179,7 +186,13 @@ export class Debug {
       const memory = []
       let storage = {}
       if (opts.disableStorage === false) {
-        storage = await vmCopy.stateManager.dumpStorage(step.address)
+        if (!('dumpStorage' in vmCopy.stateManager)) {
+          throw {
+            message: 'stateManager has no dumpStorage implementation',
+            code: INTERNAL_ERROR,
+          }
+        }
+        storage = await vmCopy.stateManager.dumpStorage!(step.address)
       }
       if (opts.enableMemory === true) {
         for (let x = 0; x < step.memoryWordCount; x++) {
@@ -220,13 +233,13 @@ export class Debug {
   /**
    * Returns a trace of an eth_call within the context of the given block execution using the final state of the parent block
    * @param params an array of 3 parameters:
-   *    1. an {@link RpcTx} object that mirrors the eth_call parameters object
+   *    1. an {@link RPCTx} object that mirrors the eth_call parameters object
    *    2. A block hash or number formatted as a hex prefixed string
    *    3. An optional tracer options object
    * @returns an execution trace of an {@link eth_call} in the context of a given block execution
    * mirroring the output from {@link traceTransaction}
    */
-  async traceCall(params: [RpcTx, string, tracerOpts]) {
+  async traceCall(params: [RPCTx, string, tracerOpts]) {
     const [callArgs, blockOpt, tracerOpts] = params
 
     // Validate configuration and parameters
@@ -260,7 +273,13 @@ export class Debug {
       const memory = []
       let storage = {}
       if (opts.disableStorage === false) {
-        storage = await vm.stateManager.dumpStorage(step.address)
+        if (!('dumpStorage' in vm.stateManager)) {
+          throw {
+            message: 'stateManager has no dumpStorage implementation',
+            code: INTERNAL_ERROR,
+          }
+        }
+        storage = await vm.stateManager.dumpStorage!(step.address)
       }
       if (opts.enableMemory === true) {
         for (let x = 0; x < step.memoryWordCount; x++) {
@@ -292,8 +311,8 @@ export class Debug {
       next?.()
     })
     const runCallOpts = {
-      caller: from !== undefined ? Address.fromString(from) : undefined,
-      to: to !== undefined ? Address.fromString(to) : undefined,
+      caller: from !== undefined ? createAddressFromString(from) : undefined,
+      to: to !== undefined ? createAddressFromString(to) : undefined,
       gasLimit: toType(gasLimit, TypeOutput.BigInt),
       gasPrice: toType(gasPrice, TypeOutput.BigInt),
       value: toType(value, TypeOutput.BigInt),
@@ -347,15 +366,21 @@ export class Debug {
     const parentBlock = await this.chain.getBlock(block.header.parentHash)
     // Copy the VM and run transactions including the relevant transaction.
     const vmCopy = await this.vm.shallowCopy()
+    if (!('dumpStorageRange' in vmCopy.stateManager)) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: 'stateManager has no dumpStorageRange implementation',
+      }
+    }
     await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
     for (let i = 0; i <= txIndex; i++) {
       await runTx(vmCopy, { tx: block.transactions[i], block })
     }
 
     // await here so that any error can be handled in the catch below for proper response
-    return vmCopy.stateManager.dumpStorageRange(
+    return vmCopy.stateManager.dumpStorageRange!(
       // Validator already verified that `account` and `startKey` are properly formatted.
-      Address.fromString(account),
+      createAddressFromString(account),
       BigInt(startKey),
       limit,
     )

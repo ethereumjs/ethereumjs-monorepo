@@ -24,11 +24,11 @@ export const paramsEVM: ParamsDict = {
     createGas: 32000, // Base fee of the CREATE opcode
     callGas: 40, // Base fee of the CALL opcode
     callStipendGas: 2300, // Free gas given at beginning of call
-    callValueTransferGas: 9000, // Paid for CALL when the value transfor is non-zero
+    callValueTransferGas: 9000, // Paid for CALL when the value transfer is non-zero
     callNewAccountGas: 25000, // Paid for CALL when the destination address didn't exist prior
     selfdestructRefundGas: 24000, // Refunded following a selfdestruct operation
     memoryGas: 3, // Times the address of the (highest referenced byte in memory + 1). NOTE: referencing happens on read, write and in instructions such as RETURN and CALL
-    quadCoeffDivGas: 512, // Divisor for the quadratic particle of the memory cost equation
+    quadCoefficientDivGas: 512, // Divisor for the quadratic particle of the memory cost equation
     createDataGas: 200, //
     copyGas: 3, // Multiplied by the number of 32-byte words that are copied (round up) for any *COPY operation and added
     ecRecoverGas: 3000,
@@ -96,9 +96,7 @@ export const paramsEVM: ParamsDict = {
     returnGas: 0, // Base fee of the RETURN opcode
     invalidGas: 0, // Base fee of the INVALID opcode
     selfdestructGas: 0, // Base fee of the SELFDESTRUCT opcode
-    prevrandaoGas: 0, // TODO: these below 0-gas additons might also point to non-clean implementations in the code base
-    authGas: 0, // ...allowing access to non-existing gas parameters. Might be worth to fix at some point.
-    authcallGas: 0,
+    prevrandaoGas: 0, // TODO: these below 0-gas additions might also point to non-clean implementations in the code base
     // evm
     stackLimit: 1024, // Maximum size of VM stack allowed
     callCreateDepth: 1024, // Maximum depth of call/create stack
@@ -139,17 +137,17 @@ export const paramsEVM: ParamsDict = {
   609: {
     // gasPrices
     modexpGquaddivisorGas: 20, // Gquaddivisor from modexp precompile for gas calculation
-    ecAddGas: 500, // Gas costs for curve addition precompile
-    ecMulGas: 40000, // Gas costs for curve multiplication precompile
-    ecPairingGas: 100000, // Base gas costs for curve pairing precompile
-    ecPairingWordGas: 80000, // Gas costs regarding curve pairing precompile input length
+    bn254AddGas: 500, // Gas costs for curve addition precompile
+    bn254MulGas: 40000, // Gas costs for curve multiplication precompile
+    bn254PairingGas: 100000, // Base gas costs for curve pairing precompile
+    bn254PairingWordGas: 80000, // Gas costs regarding curve pairing precompile input length
     revertGas: 0, // Base fee of the REVERT opcode
     staticcallGas: 700, // Base fee of the STATICCALL opcode
     returndatasizeGas: 2, // Base fee of the RETURNDATASIZE opcode
     returndatacopyGas: 3, // Base fee of the RETURNDATACOPY opcode
   },
   /**
-.  * Constantinope HF Meta EIP
+.  * Constantinople HF Meta EIP
 .  */
   1013: {
     // gasPrices
@@ -185,10 +183,10 @@ export const paramsEVM: ParamsDict = {
   1679: {
     // gasPrices
     blake2RoundGas: 1, // Gas cost per round for the Blake2 F precompile
-    ecAddGas: 150, // Gas costs for curve addition precompile
-    ecMulGas: 6000, // Gas costs for curve multiplication precompile
-    ecPairingGas: 45000, // Base gas costs for curve pairing precompile
-    ecPairingWordGas: 34000, // Gas costs regarding curve pairing precompile input length
+    bn254AddGas: 150, // Gas costs for curve addition precompile
+    bn254MulGas: 6000, // Gas costs for curve multiplication precompile
+    bn254PairingGas: 45000, // Base gas costs for curve pairing precompile
+    bn254PairingWordGas: 34000, // Gas costs regarding curve pairing precompile input length
     sstoreSentryEIP2200Gas: 2300, // Minimum gas required to be present for an SSTORE call, not consumed
     sstoreNoopEIP2200Gas: 800, // Once per SSTORE operation if the value doesn't change
     sstoreDirtyEIP2200Gas: 800, // Once per SSTORE operation if a dirty value is changed
@@ -236,14 +234,14 @@ export const paramsEVM: ParamsDict = {
    */
   2537: {
     // gasPrices
-    Bls12381G1AddGas: 500, // Gas cost of a single BLS12-381 G1 addition precompile-call
-    Bls12381G1MulGas: 12000, // Gas cost of a single BLS12-381 G1 multiplication precompile-call
-    Bls12381G2AddGas: 800, // Gas cost of a single BLS12-381 G2 addition precompile-call
-    Bls12381G2MulGas: 45000, // Gas cost of a single BLS12-381 G2 multiplication precompile-call
-    Bls12381PairingBaseGas: 65000, // Base gas cost of BLS12-381 pairing check
-    Bls12381PairingPerPairGas: 43000, // Per-pair gas cost of BLS12-381 pairing check
-    Bls12381MapG1Gas: 5500, // Gas cost of BLS12-381 map field element to G1
-    Bls12381MapG2Gas: 75000, // Gas cost of BLS12-381 map field element to G2
+    bls12381G1AddGas: 500, // Gas cost of a single BLS12-381 G1 addition precompile-call
+    bls12381G1MulGas: 12000, // Gas cost of a single BLS12-381 G1 multiplication precompile-call
+    bls12381G2AddGas: 800, // Gas cost of a single BLS12-381 G2 addition precompile-call
+    bls12381G2MulGas: 45000, // Gas cost of a single BLS12-381 G2 multiplication precompile-call
+    bls12381PairingBaseGas: 65000, // Base gas cost of BLS12-381 pairing check
+    bls12381PairingPerPairGas: 43000, // Per-pair gas cost of BLS12-381 pairing check
+    bls12381MapG1Gas: 5500, // Gas cost of BLS12-381 map field element to G1
+    bls12381MapG2Gas: 75000, // Gas cost of BLS12-381 map field element to G2
   },
   /**
 .  * Gas cost increases for state access opcodes
@@ -276,15 +274,6 @@ export const paramsEVM: ParamsDict = {
     // evm
     historyStorageAddress: '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e', // The address where the historical blockhashes are stored
     historyServeWindow: 8192, // The amount of blocks to be served by the historical blockhash contract
-  },
-  /**
-.  * AUTH and AUTHCALL opcodes
-.  */
-  3074: {
-    // gasPrices
-    authGas: 3100, // Gas cost of the AUTH opcode
-    authcallGas: 0, // Gas cost of the AUTHCALL opcode
-    authcallValueTransferGas: 6700, // Paid for CALL when the value transfer is non-zero
   },
   /**
 .  * BASEFEE opcode
@@ -419,13 +408,5 @@ export const paramsEVM: ParamsDict = {
     // gasPrices
     eofcreateGas: 32000, // Base fee of the EOFCREATE opcode (Same as CREATE/CREATE2)
     returncontractGas: 0, // Base fee of the RETURNCONTRACT opcode
-  },
-  /**
-.  * Set EOA account code for one transaction
-.  */
-  7702: {
-    // TODO: Set correct minimum hardfork
-    // gasPrices
-    perAuthBaseGas: 2500, // Gas cost of each authority item
   },
 }

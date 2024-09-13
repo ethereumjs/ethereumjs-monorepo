@@ -1,4 +1,4 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
@@ -17,7 +17,7 @@ describe('Precompiles: MODEXP', () => {
   let addressStr: string
   let MODEXP: PrecompileFunc
   beforeAll(async () => {
-    common = new Common({ chain: Chain.Mainnet })
+    common = new Common({ chain: Mainnet })
     evm = await createEVM({
       common,
     })
@@ -35,8 +35,8 @@ describe('Precompiles: MODEXP', () => {
         common,
         _EVM: evm,
       })
-      const oput = bytesToHex(result.returnValue)
-      assert.equal(oput, expect)
+      const output = bytesToHex(result.returnValue)
+      assert.equal(output, expect)
     })
   }
 

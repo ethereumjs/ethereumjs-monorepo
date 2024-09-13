@@ -1,7 +1,7 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { create4844BlobTx } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createBlob4844Tx } from '@ethereumjs/tx'
+import { createAddressFromPrivateKey } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
 import { loadKZG } from 'kzg-wasm'
 
@@ -9,18 +9,18 @@ const main = async () => {
   const kzg = await loadKZG()
 
   const common = new Common({
-    chain: Chain.Mainnet,
+    chain: Mainnet,
     hardfork: Hardfork.Cancun,
     customCrypto: {
       kzg,
     },
   })
-  const blobTx = create4844BlobTx(
-    { blobsData: ['myFirstBlob'], to: Address.fromPrivateKey(randomBytes(32)) },
+  const blobTx = createBlob4844Tx(
+    { blobsData: ['myFirstBlob'], to: createAddressFromPrivateKey(randomBytes(32)) },
     { common },
   )
 
-  const block = createBlockFromBlockData(
+  const block = createBlock(
     {
       header: {
         excessBlobGas: 0n,

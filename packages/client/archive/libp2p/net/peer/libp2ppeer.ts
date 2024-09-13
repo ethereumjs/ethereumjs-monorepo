@@ -1,4 +1,5 @@
 //@ts-nocheck
+// cspell:ignore psender pnode muxed muxer
 import { multiaddr } from '@multiformats/multiaddr'
 
 import { Peer } from '../../../src/net/peer/peer'
@@ -31,7 +32,7 @@ export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transp
  *
  * const chain = await Chain.create()
  * const protocols = [new EthProtocol({ chain })]
- * const id = 'QmWYhkpLFDhQBwHCMSWzEebbJ5JzXWBKLJxjEuiL8wGzUu'
+ * const id = 'QmWYhkpLFDhQBwHCMSWzEebbJ5JzXWBKLJxjEuiL8wGzUu' // cspell:disable-line
  * const multiaddrs = [multiaddr('/ip4/192.0.2.1/tcp/12345')]
  *
  * new Libp2pPeer({ id, multiaddrs, protocols })
@@ -88,13 +89,13 @@ export class Libp2pPeer extends Peer {
   /**
    * Adds protocols to the peer given a libp2p node and peerId or multiaddr
    * @param node libp2p node
-   * @param peer libp2p peerId or mutliaddr
+   * @param peer libp2p peerId or multiaddr
    * @param server server that initiated connection
    */
   async bindProtocols(
     node: Libp2pNode,
     peer: PeerId | Multiaddr,
-    server?: Libp2pServer
+    server?: Libp2pServer,
   ): Promise<void> {
     await Promise.all(
       this.protocols.map(async (p) => {
@@ -106,10 +107,10 @@ export class Libp2pPeer extends Peer {
         } catch (err: any) {
           const peerInfo = isPeerId(peer) ? `id=${peer.toB58String()}` : `multiaddr=${peer}`
           this.config.logger.debug(
-            `Peer doesn't support protocol=${protocol} ${peerInfo} ${err.stack}`
+            `Peer doesn't support protocol=${protocol} ${peerInfo} ${err.stack}`,
           )
         }
-      })
+      }),
     )
     this.server = server
     this.connected = true

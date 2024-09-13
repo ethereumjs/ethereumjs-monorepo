@@ -1,13 +1,13 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { create4844BlobTx } from '@ethereumjs/tx'
+import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
-  Address,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
+  createAddressFromString,
   getBlobs,
   hexToBytes,
   privateToAddress,
@@ -16,8 +16,8 @@ import {
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
-import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
-import { VM, buildBlock, runBlock } from '../../../src/index.js'
+import { eip4844Data } from '../../../../client/test/testdata/geth-genesis/eip4844.js'
+import { buildBlock, createVM, runBlock } from '../../../src/index.js'
 import { setBalance } from '../utils.js'
 
 const pk = hexToBytes(`0x${'20'.repeat(32)}`)
@@ -27,12 +27,12 @@ describe('EIP4844 tests', () => {
   it('should build a block correctly with blobs', async () => {
     const kzg = await loadKZG()
 
-    const common = createCommonFromGethGenesis(genesisJSON, {
+    const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'eip4844',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
     })
-    const genesisBlock = createBlockFromBlockData(
+    const genesisBlock = createBlock(
       { header: { gasLimit: 50000, parentBeaconBlockRoot: zeros(32) } },
       { common },
     )
@@ -42,9 +42,9 @@ describe('EIP4844 tests', () => {
       validateBlocks: false,
       validateConsensus: false,
     })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
 
-    const address = Address.fromString(sender)
+    const address = createAddressFromString(sender)
     await setBalance(vm, address, 14680063125000000000n)
     const vmCopy = await vm.shallowCopy()
 
@@ -65,7 +65,7 @@ describe('EIP4844 tests', () => {
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
     const proofs = blobsToProofs(kzg, blobs, commitments)
-    const unsignedTx = create4844BlobTx(
+    const unsignedTx = createBlob4844Tx(
       {
         blobVersionedHashes,
         blobs,

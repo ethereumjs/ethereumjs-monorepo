@@ -1,7 +1,7 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Goerli } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { baseSetup, createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
+import { baseSetup, createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 const method = 'eth_chainId'
 
@@ -21,11 +21,11 @@ describe(method, () => {
     assert.equal(res.result, '0x1', 'should return chainId 1')
   })
 
-  it('returns 3 for Goerli', async () => {
+  it('returns 5 for Goerli', async () => {
     const manager = createManager(
-      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) }),
+      await createClient({ opened: true, commonChain: new Common({ chain: Goerli }) }),
     )
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [])
 

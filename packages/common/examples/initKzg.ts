@@ -1,10 +1,10 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { loadKZG } from 'kzg-wasm'
 
 const main = async () => {
   const kzg = await loadKZG()
   const common = new Common({
-    chain: Chain.Mainnet,
+    chain: Mainnet,
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
   })

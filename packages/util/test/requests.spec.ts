@@ -4,15 +4,25 @@ import { bytesToBigInt, randomBytes } from '../src/bytes.js'
 import {
   CLRequestFactory,
   CLRequestType,
+  createConsolidationRequest,
+  createDepositRequest,
+  createWithdrawalRequest,
+} from '../src/request.js'
+
+import type {
+  CLRequest,
   ConsolidationRequest,
   DepositRequest,
   WithdrawalRequest,
-} from '../src/requests.js'
-
-import type { CLRequest } from '../src/requests.js'
+} from '../src/request.js'
 
 describe('Requests', () => {
-  const testCases = [
+  const testCases: [
+    string,
+    any,
+    CLRequestType,
+    (...args: any) => ConsolidationRequest | DepositRequest | WithdrawalRequest,
+  ][] = [
     [
       'DepositRequest',
       {
@@ -23,7 +33,7 @@ describe('Requests', () => {
         index: bytesToBigInt(randomBytes(8)),
       },
       CLRequestType.Deposit,
-      DepositRequest,
+      createDepositRequest,
     ],
     [
       'WithdrawalRequest',
@@ -33,7 +43,7 @@ describe('Requests', () => {
         amount: bytesToBigInt(randomBytes(8)),
       },
       CLRequestType.Withdrawal,
-      WithdrawalRequest,
+      createWithdrawalRequest,
     ],
     [
       'ConsolidationRequest',
@@ -43,14 +53,12 @@ describe('Requests', () => {
         targetPubkey: randomBytes(48),
       },
       CLRequestType.Consolidation,
-      ConsolidationRequest,
+      createConsolidationRequest,
     ],
   ]
-  for (const [requestName, requestData, requestType, RequestInstanceType] of testCases) {
+  for (const [requestName, requestData, requestType, requestInstanceConstructor] of testCases) {
     it(`${requestName}`, () => {
-      const requestObject = RequestInstanceType.fromRequestData(
-        requestData,
-      ) as CLRequest<CLRequestType>
+      const requestObject = requestInstanceConstructor(requestData) as CLRequest<CLRequestType>
       const requestJSON = requestObject.toJSON()
       const serialized = requestObject.serialize()
       assert.equal(serialized[0], requestType)

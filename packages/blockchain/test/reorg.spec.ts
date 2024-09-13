@@ -1,5 +1,5 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { cliqueSigner, createBlock } from '@ethereumjs/block'
+import { Common, ConsensusAlgorithm, Goerli, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -13,8 +13,8 @@ import type { Block } from '@ethereumjs/block'
 
 describe('reorg tests', () => {
   it('should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
-    const genesis = createBlockFromBlockData(
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
+    const genesis = createBlock(
       {
         header: {
           number: BigInt(0),
@@ -66,11 +66,8 @@ describe('reorg tests', () => {
   })
 
   it('should correctly reorg a poa chain and remove blocks from clique snapshots', async () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
-    const genesisBlock = createBlockFromBlockData(
-      { header: { extraData: new Uint8Array(97) } },
-      { common },
-    )
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+    const genesisBlock = createBlock({ header: { extraData: new Uint8Array(97) } }, { common })
 
     const consensusDict: ConsensusDict = {}
     consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
@@ -92,7 +89,7 @@ describe('reorg tests', () => {
     const beneficiary1 = new Address(new Uint8Array(20).fill(1))
     const beneficiary2 = new Address(new Uint8Array(20).fill(2))
 
-    const block1_low = createBlockFromBlockData(
+    const block1_low = createBlock(
       {
         header: {
           ...base,
@@ -103,7 +100,7 @@ describe('reorg tests', () => {
       },
       { common },
     )
-    const block2_low = createBlockFromBlockData(
+    const block2_low = createBlock(
       {
         header: {
           ...base,
@@ -117,7 +114,7 @@ describe('reorg tests', () => {
       { common },
     )
 
-    const block1_high = createBlockFromBlockData(
+    const block1_high = createBlock(
       {
         header: {
           ...base,
@@ -128,7 +125,7 @@ describe('reorg tests', () => {
       },
       { common },
     )
-    const block2_high = createBlockFromBlockData(
+    const block2_high = createBlock(
       {
         header: {
           ...base,
@@ -139,7 +136,7 @@ describe('reorg tests', () => {
       },
       { common },
     )
-    const block3_high = createBlockFromBlockData(
+    const block3_high = createBlock(
       {
         header: {
           ...base,
@@ -171,7 +168,7 @@ describe('reorg tests', () => {
       !signerVotes.find(
         (v: any) =>
           v[0] === BigInt(2) &&
-          v[1][0].equal(block1_low.header.cliqueSigner()) &&
+          v[1][0].equal(cliqueSigner(block1_low.header)) &&
           v[1][1].equal(beneficiary1) &&
           equalsBytes(v[1][2], CLIQUE_NONCE_AUTH),
       ),
@@ -181,7 +178,7 @@ describe('reorg tests', () => {
     let blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
     assert.ok(
       !blockSigners.find(
-        (s: any) => s[0] === BigInt(1) && s[1].equal(block1_low.header.cliqueSigner()),
+        (s: any) => s[0] === BigInt(1) && s[1].equal(cliqueSigner(block1_low.header)),
       ),
       'should not find reorged block signer',
     )
@@ -200,7 +197,7 @@ describe('reorg tests', () => {
     blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
     assert.ok(
       !!blockSigners.find(
-        (s: any) => s[0] === BigInt(3) && s[1].equals(block3_high.header.cliqueSigner()),
+        (s: any) => s[0] === BigInt(3) && s[1].equals(cliqueSigner(block3_high.header)),
       ),
       'should find reorged block signer',
     )

@@ -1,14 +1,14 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address, bigIntToHex } from '@ethereumjs/util'
+import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
 
@@ -18,13 +18,13 @@ describe(
   method,
   () => {
     it('ensure balance deducts after a tx', async () => {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+      const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
       const blockchain = await createBlockchain({ common })
 
       const client = await createClient({ blockchain, commonChain: common, includeVM: true })
       const manager = createManager(client)
 
-      const rpc = getRpcClient(startRPC(manager.getMethods()))
+      const rpc = getRPCClient(startRPC(manager.getMethods()))
 
       const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
       assert.notEqual(execution, undefined, 'should have valid execution')
@@ -32,10 +32,10 @@ describe(
 
       // since synchronizer.run() is not executed in the mock setup,
       // manually run stateManager.generateCanonicalGenesis()
-      await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
+      await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))
 
       // genesis address with balance
-      const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+      const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
       // verify balance is genesis amount
       const genesisBalance = BigInt(0x15ac56edc4d12c0000)
@@ -52,7 +52,7 @@ describe(
       tx.getSenderAddress = () => {
         return address
       }
-      const block = createBlockFromBlockData({}, { common })
+      const block = createBlock({}, { common })
       block.transactions[0] = tx
 
       const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
@@ -98,7 +98,7 @@ describe(
 
       const client = await createClient({ blockchain, includeVM: true })
       const manager = createManager(client)
-      const rpc = getRpcClient(startRPC(manager.getMethods()))
+      const rpc = getRPCClient(startRPC(manager.getMethods()))
 
       const res = await rpc.request(method, [
         '0xccfd725760a68823ff1e062f4cc97e1360e8d997',

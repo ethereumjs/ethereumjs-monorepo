@@ -1,35 +1,10 @@
-import { equalsBytes, short } from '@ethereumjs/util'
+import { equalsBytes } from '@ethereumjs/util'
 
 import { BLS_GAS_DISCOUNT_PAIRS } from './constants.js'
 
 import type { PrecompileInput } from '../types.js'
 
 const ZERO_BYTES_16 = new Uint8Array(16)
-
-/**
- * Checks that the gas used remain under the gas limit.
- *
- * @param opts
- * @param gasUsed
- * @param pName
- * @returns
- */
-export const gasCheck = (opts: PrecompileInput, gasUsed: bigint, pName: string) => {
-  if (opts._debug !== undefined) {
-    opts._debug(
-      `Run ${pName} precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
-        opts.gasLimit
-      } gasUsed=${gasUsed}`,
-    )
-  }
-  if (opts.gasLimit < gasUsed) {
-    if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: OOG`)
-    }
-    return false
-  }
-  return true
-}
 
 /**
  * Calculates the gas used for the MSM precompiles based on the number of pairs and
@@ -54,47 +29,6 @@ export const msmGasUsed = (numPairs: number, gasUsedPerPair: bigint) => {
   }
   // (numPairs * multiplication_cost * discount) / multiplier
   return (BigInt(numPairs) * gasUsedPerPair * BigInt(gasDiscountMultiplier)) / BigInt(1000)
-}
-
-/**
- * Checks that the length of the provided data is equal to `length`.
- *
- * @param opts
- * @param length
- * @param pName
- * @returns
- */
-export const equalityLengthCheck = (opts: PrecompileInput, length: number, pName: string) => {
-  if (opts.data.length !== length) {
-    if (opts._debug !== undefined) {
-      opts._debug(
-        `${pName} failed: Invalid input length length=${opts.data.length} (expected: ${length})`,
-      )
-    }
-    return false
-  }
-  return true
-}
-
-/**
- * Checks that the total length of the provided data input can be subdivided into k equal parts
- * with `length` (without leaving some remainder bytes).
- *
- * @param opts
- * @param length
- * @param pName
- * @returns
- */
-export const moduloLengthCheck = (opts: PrecompileInput, length: number, pName: string) => {
-  if (opts.data.length % length !== 0) {
-    if (opts._debug !== undefined) {
-      opts._debug(
-        `${pName} failed: Invalid input length length=${opts.data.length} (expected: ${length}*k bytes)`,
-      )
-    }
-    return false
-  }
-  return true
 }
 
 /**

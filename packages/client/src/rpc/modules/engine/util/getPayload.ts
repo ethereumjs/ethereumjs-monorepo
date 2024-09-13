@@ -21,7 +21,7 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
       }
     : undefined
 
-  // ethereumjs doesnot provide any transaction censoring detection (yet) to suggest
+  // ethereumjs does not provide any transaction censoring detection (yet) to suggest
   // overriding builder/mev-boost blocks
   const shouldOverrideBuilder = false
   return { executionPayload, blockValue: bigIntToHex(value), blobsBundle, shouldOverrideBuilder }

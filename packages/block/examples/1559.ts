@@ -1,8 +1,9 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createTxFromTxData } from '@ethereumjs/tx'
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
-const block = createBlockFromBlockData(
+const block = createBlock(
   {
     header: {
       baseFeePerGas: BigInt(10),
@@ -19,7 +20,7 @@ console.log(Number(block.header.calcNextBaseFee())) // 11
 
 // So for creating a block with a matching base fee in a certain
 // chain context you can do:
-const blockWithMatchingBaseFee = createBlockFromBlockData(
+const blockWithMatchingBaseFee = createBlock(
   {
     header: {
       baseFeePerGas: block.header.calcNextBaseFee(),
@@ -31,3 +32,19 @@ const blockWithMatchingBaseFee = createBlockFromBlockData(
 )
 
 console.log(Number(blockWithMatchingBaseFee.header.baseFeePerGas)) // 11
+
+// successful validation does not throw error
+await blockWithMatchingBaseFee.validateData()
+
+// failed validation throws error
+const tx = createTxFromTxData(
+  { type: 2, maxFeePerGas: BigInt(20) },
+  { common: new Common({ chain: Mainnet, hardfork: Hardfork.London }) },
+)
+blockWithMatchingBaseFee.transactions.push(tx)
+console.log(blockWithMatchingBaseFee.getTransactionsValidationErrors()) // invalid transaction added to block
+try {
+  await blockWithMatchingBaseFee.validateData()
+} catch (err) {
+  console.log(err) // block validation fails
+}

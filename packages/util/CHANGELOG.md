@@ -6,7 +6,52 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 9.0.3 - 2024-03-05
+## 9.1.0 - 2024-08-15
+
+### Support for Partial Accounts
+
+For Verkle or other contexts it can be useful to create partial accounts not containing all the account parameters. This is now supported starting with this release, see PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269):
+
+```ts
+import { Account } from '@ethereumjs/util'
+
+const account = Account.fromPartialAccountData({
+  nonce: '0x02',
+  balance: '0x0384',
+})
+console.log(`Partial account with nonce=${account.nonce} and balance=${account.balance} created`)
+```
+
+### New `requests` Module
+
+This release introduces a new `requests` module (see PRs [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372), [#3393](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3393), [#3398](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3398) and [#3477](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3477)) with various type and an abstract base class for [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) general purpose execution layer requests to the CL (Prague hardfork) as well as concrete implementations for the currently supported request types:
+
+- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110): `DepositRequest` (Prague Hardfork)
+- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002): `WithdrawalRequest` (Prague Hardfork)
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251): `ConsolidationRequest` (Prague Hardfork)
+
+These request types are mainly used within the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library where applied usage instructions are provided in the README.
+
+### Verkle Updates
+
+- Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
+- Shift Verkle to `osaka` hardfork, PR [#3371](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3371)
+- New `verkle` module with utility methods and interfaces, PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462)
+- Rename verkle utils and refactor, PR [#3468](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3468)
+
+### Other Features
+
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Other Changes
+
+- Adjust `Account.isContract()` (in Verkle context work), PR [#3343](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3343)
+- Rename deposit receipt to deposit request, PR [#3408](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3408)
+- Adjust `Account.isEmpty()` to also work for partial accounts, PR [#3405](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3405)
+- Enhances typing of CL requests, PR [#3398](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3398)
+- Rename withdrawal request's `validatorPublicKey` to `validatorPubkey`, PR [#3474](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3474)
+
+## 9.0.3 - 2024-03-18
 
 - Allow optional `trustedSetupPath` for the `initKZG()` method, PR [#3296](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3296)
 
@@ -32,7 +77,7 @@ This release contains various fixes and spec updates related to the Dencun (Dene
 
 ### Other Changes
 
-- Performance: New reoccurringly used BigInt constants (`BIGINT_0`, `BIGINT_32`, `BIGINT_2EXP96`,...) in the `bytes` module for reusage along performance optimizations, PR [#3050](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3050)
+- Performance: New BigInt constants (`BIGINT_0`, `BIGINT_32`, `BIGINT_2EXP96`,...) in the `bytes` module for re-usage along performance optimizations, PR [#3050](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3050)
 - Performance: `bytesToBigInt()` performance optimization for 1-byte bytes, PR [#3054](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3054)
 - Fix a bug in `fromUtf8()`, PR [#3112](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3112)
 
@@ -56,7 +101,7 @@ While you could use our libraries in the browser libraries before, there had bee
 
 WE HAVE ELIMINATED ALL OF THEM.
 
-The largest two undertakings: First: we have rewritten all (half) of our API and elimited the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went throuh our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
+The largest two undertakings: First: we have rewritten all (half) of our API and eliminated the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went through our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
 
 Together with some few other modifications this now allows to run each (maybe adding an asterisk for client and devp2p) of our libraries directly in the browser - more or less without any modifications - see the `examples/browser.html` file in each package folder for an easy to set up example.
 
@@ -122,7 +167,7 @@ new Address()
 Address.fromPublicKey(pubKey: Uint8Array): Address
 Address.fromPrivateKey(privateKey: Uint8Array): Address
 Address.generate2(from: Address, salt: Uint8Array, initCode: Uint8Array): Address
-Adress.toBytes // old: Address.toBuffer()
+Address.toBytes // old: Address.toBuffer()
 
 // bytes
 // All Buffer related functionality removed, do "Buffer" search
@@ -179,7 +224,7 @@ We have converted existing Buffer conversion methods to Uint8Array conversion me
 - New `GWEI_TO_WEI` constant in a newly created `units` module, PR [#2483](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2483)
 - Change withdrawal amount representation from Wei to Gwei (see EIP-4895 PR [#6325](https://github.com/ethereum/EIPs/pull/6325)) in `withdrawal` module `Withdrawal` class, PR [#2483](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2483)
   )
-- Added `@chainsafe/ssz` dependency, new prepartory `ssz` container module, PR [#2488](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2488)
+- Added `@chainsafe/ssz` dependency, new preparatory `ssz` container module, PR [#2488](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2488)
 - Use literal value instead of formula for `MAX_INTEGER_BIGINT`, PR [#2536](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2536)
 
 ## 8.0.3 - 2022-12-09
@@ -228,7 +273,7 @@ Beta 2 release for the upcoming breaking release round on the [EthereumJS monore
 
 ### Removed Default Exports
 
-The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all across the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
 
 Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
 
@@ -396,7 +441,7 @@ See: PR [#1517](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1517)
 
 We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
 
-Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 #### Included Source Files
 
@@ -423,7 +468,7 @@ Function signatures for methods in `address` and `signature` are therefore expan
 
 All function signatures are still taking in a `number` input for backwards-compatibility reasons. If you use one of the following functions to implement generic use cases in your library where the chain ID is not yet known it is recommended to updated to one of the other input types (with plain `Buffer` likely be the most future-proof). Note that on some functions this changes the return value as well.
 
-- `account`: `toChecksumAddresss(hexAddress: string, eip1191ChainId?: number): string`
+- `account`: `toChecksumAddress(hexAddress: string, eip1191ChainId?: number): string`
   - -> `toChecksumAddress = function(hexAddress: string, eip1191ChainId?: BNLike): string`
 - `account`: `isValidChecksumAddress(hexAddress: string, eip1191ChainId?: number)`
   - -> `isValidChecksumAddress(hexAddress: string, eip1191ChainId?: BNLike)`
@@ -443,7 +488,7 @@ Along there is a new `toType()` helper function which can be used to easily conv
 
 ## [7.0.8] - 2021-02-01
 
-- New `Address.equals(address: Address)` function for easier address equality comparions, PR [#285](https://github.com/ethereumjs/ethereumjs-util/pull/285)
+- New `Address.equals(address: Address)` function for easier address equality comparisons, PR [#285](https://github.com/ethereumjs/ethereumjs-util/pull/285)
 - Fixed a bug in `fromRpcSig()` in the `signature` module not working correctly for chain IDs greater than 110, PR [#287](https://github.com/ethereumjs/ethereumjs-util/pull/287)
 
 [7.0.8]: https://github.com/ethereumjs/ethereumjs-util/compare/v7.0.7...v7.0.8
@@ -477,7 +522,7 @@ const account = new Account(
   new BN(0), // nonce, default: 0
   new BN(10).pow(new BN(18)), // balance, default: 0
   undefined, // stateRoot, default: KECCAK256_RLP (hash of RLP of null)
-  undefined // codeHash, default: KECCAK256_NULL (hash of null)
+  undefined, // codeHash, default: KECCAK256_NULL (hash of null)
 )
 ```
 
@@ -515,7 +560,7 @@ import { Address } from 'ethereumjs-util'
 
 const pubKey = Buffer.from(
   '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-  'hex'
+  'hex',
 )
 const address = Address.fromPublicKey(pubKey)
 ```
@@ -610,14 +655,14 @@ Changes to the API have been discussed in Issue
 [#172](https://github.com/ethereumjs/ethereumjs-util/issues/172) and are
 guided by the principles of:
 
-- Make the API more typestrict
+- Make the API more type-strict
 - Be less ambiguous regarding accepted values
 - Avoid implicit type conversions
 - Be more explicit on wrong input (just: throw)
 
 While the implemented changes come with some additional need for manual type
 conversions depending on the usage context, they should finally lead to
-cleaner usage patterns on the cosuming side and a more predictable, robust and
+cleaner usage patterns on the consuming side and a more predictable, robust and
 less error-prone control flow.
 
 Some note: for methods where `Buffer` usage is now enforced you can use the
@@ -655,7 +700,7 @@ and `Buffer` inputs are now enforced:
 
 #### Bytes Module
 
-##### Typestrict Methods and Type-Explicit Method Split-Up
+##### Type-strict Methods and Type-Explicit Method Split-Up
 
 PR: [#244](https://github.com/ethereumjs/ethereumjs-util/pull/244)
 
@@ -669,7 +714,7 @@ PR: [#244](https://github.com/ethereumjs/ethereumjs-util/pull/244)
 
 #### Hash Module
 
-##### Typestrict Methods and Type-Explicit Method Split-Up
+##### Type-strict Methods and Type-Explicit Method Split-Up
 
 PR [#247](https://github.com/ethereumjs/ethereumjs-util/pull/247)
 
@@ -704,10 +749,10 @@ The following methods are now `Buffer`-only:
   PR [#228](https://github.com/ethereumjs/ethereumjs-util/pull/228)
 - Updated `BN.js` library re-export from `4.x` to `5.x`,
   PR [#249], https://github.com/ethereumjs/ethereumjs-util/pull/249
-- Removed `secp2561` re-export (use methods provided or import directly),
+- Removed `secp256k1` re-export (use methods provided or import directly),
   PR [#228](https://github.com/ethereumjs/ethereumjs-util/pull/228)
 
-### Cryto Library Updates: Keccak, secp2561
+### Crypto Library Updates: Keccak, secp256k1
 
 `Keccak` dependency has been updated from `2.1.0` to `3.0.0`. This version
 comes with prebuilds for Linux, MacOS and Windows so most users won't need
@@ -716,7 +761,7 @@ to have `node-gyp` run on installation.
 The version update also brings in feature compatibility with newer Node.js
 versions.
 
-The `secp2561` ECDSA dependency has been updated from `3.0.1` to `4.0.1`.
+The `secp256k1` ECDSA dependency has been updated from `3.0.1` to `4.0.1`.
 
 ### Developer Improvements
 
@@ -877,7 +922,7 @@ see PR [#170](https://github.com/ethereumjs/ethereumjs-util/pull/170).
 ## [5.1.1] - 2017-02-10
 
 - Use hex utils from `ethjs-util`
-- Move secp vars into functions
+- Move secp256k1 vars into functions
 - Dependency updates
 
 [5.1.1]: https://github.com/ethereumjs/ethereumjs-util/compare/v5.1.0...v5.1.1

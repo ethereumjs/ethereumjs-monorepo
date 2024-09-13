@@ -1,13 +1,13 @@
-import { Address, BIGINT_0 } from '@ethereumjs/util'
+import { BIGINT_0, createZeroAddress } from '@ethereumjs/util'
 
 import type { PrecompileFunc } from './precompiles/index.js'
 import type { EOFEnv } from './types.js'
 import type { AccessWitnessInterface } from '@ethereumjs/common'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const defaults = {
   value: BIGINT_0,
-  caller: Address.zero(),
+  caller: createZeroAddress(),
   data: new Uint8Array(0),
   depth: 0,
   isStatic: false,
@@ -38,7 +38,6 @@ interface MessageOpts {
    */
   createdAddresses?: Set<PrefixedHexString>
   delegatecall?: boolean
-  authcallOrigin?: Address
   gasRefund?: bigint
   blobVersionedHashes?: Uint8Array[]
   accessWitness?: AccessWitnessInterface
@@ -69,11 +68,6 @@ export class Message {
    */
   createdAddresses?: Set<PrefixedHexString>
   delegatecall: boolean
-  /**
-   * This is used to store the origin of the AUTHCALL,
-   * the purpose is to figure out where `value` should be taken from (not from `caller`)
-   */
-  authcallOrigin?: Address
   gasRefund: bigint // Keeps track of the gasRefund at the start of the frame (used for journaling purposes)
   /**
    * List of versioned hashes if message is a blob transaction in the outer VM
@@ -97,7 +91,6 @@ export class Message {
     this.selfdestruct = opts.selfdestruct
     this.createdAddresses = opts.createdAddresses
     this.delegatecall = opts.delegatecall ?? defaults.delegatecall
-    this.authcallOrigin = opts.authcallOrigin
     this.gasRefund = opts.gasRefund ?? defaults.gasRefund
     this.blobVersionedHashes = opts.blobVersionedHashes
     this.accessWitness = opts.accessWitness

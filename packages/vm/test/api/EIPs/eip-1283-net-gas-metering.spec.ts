@@ -1,8 +1,8 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, bigIntToBytes, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/index.js'
+import { createVM } from '../../../src/index.js'
 import { createAccountWithDefaults } from '../utils.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -37,8 +37,8 @@ describe('Constantinople: EIP-1283', () => {
     const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     const key = setLengthLeft(bigIntToBytes(BigInt(0)), 32)
     for (const testCase of testCases) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
-      const vm = await VM.create({ common })
+      const common = new Common({ chain: Mainnet, hardfork: Hardfork.Constantinople })
+      const vm = await createVM({ common })
 
       const account = createAccountWithDefaults(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)

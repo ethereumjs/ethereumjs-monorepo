@@ -10,6 +10,7 @@ import {
   MAX_INTEGER,
   bigIntToBytes,
   bytesToUnprefixedHex,
+  createZeroAddress,
   equalsBytes,
   generateAddress,
   generateAddress2,
@@ -29,6 +30,21 @@ import { getOpcodesForHF } from './opcodes/index.js'
 import { paramsEVM } from './params.js'
 import { NobleBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
 import { TransientStorage } from './transientStorage.js'
+import {
+  type Block,
+  type CustomOpcode,
+  DELEGATION_7702_FLAG,
+  type EVMBLSInterface,
+  type EVMBN254Interface,
+  type EVMEvents,
+  type EVMInterface,
+  type EVMMockBlockchainInterface,
+  type EVMOpts,
+  type EVMResult,
+  type EVMRunCallOpts,
+  type EVMRunCodeOpts,
+  type ExecResult,
+} from './types.js'
 
 import type { InterpreterOpts } from './interpreter.js'
 import type { Timer } from './logger.js'
@@ -36,21 +52,7 @@ import type { MessageWithTo } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
 import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
-import type {
-  Block,
-  Blockchain,
-  CustomOpcode,
-  EVMBLSInterface,
-  EVMEvents,
-  EVMInterface,
-  EVMOpts,
-  EVMResult,
-  EVMRunCallOpts,
-  EVMRunCodeOpts,
-  ExecResult,
-  bn128,
-} from './types.js'
-import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
 
 const debug = debugDefault('evm:evm')
 const debugGas = debugDefault('evm:gas')
@@ -94,8 +96,8 @@ export class EVM implements EVMInterface {
   public readonly common: Common
   public readonly events: AsyncEventEmitter<EVMEvents>
 
-  public stateManager: EVMStateManagerInterface
-  public blockchain: Blockchain
+  public stateManager: StateManagerInterface
+  public blockchain: EVMMockBlockchainInterface
   public journal: Journal
 
   public readonly transientStorage: TransientStorage
@@ -142,7 +144,7 @@ export class EVM implements EVMInterface {
 
   protected readonly _emit: (topic: string, data: any) => Promise<void>
 
-  private _bn128: bn128
+  private _bn254: EVMBN254Interface
 
   /**
    *
@@ -155,7 +157,7 @@ export class EVM implements EVMInterface {
    * @param opts The EVM options
    * @param bn128 Initialized bn128 WASM object for precompile usage (internal)
    */
-  constructor(opts: EVMOpts, bn128: bn128) {
+  constructor(opts: EVMOpts) {
     this.common = opts.common!
     this.blockchain = opts.blockchain!
     this.stateManager = opts.stateManager!
@@ -171,18 +173,16 @@ export class EVM implements EVMInterface {
       }
     }
 
-    this._bn128 = bn128
     this.events = new AsyncEventEmitter()
     this._optsCached = opts
 
     // Supported EIPs
     const supportedEIPs = [
-      663, 1153, 1153, 1559, 1559, 2537, 2537, 2565, 2565, 2718, 2718, 2929, 2929, 2930, 2930, 2935,
-      2935, 3074, 3074, 3198, 3198, 3529, 3529, 3540, 3540, 3541, 3541, 3607, 3607, 3651, 3651,
-      3670, 3670, 3855, 3855, 3860, 3860, 4200, 4399, 4399, 4750, 4788, 4788, 4844, 4844, 4895,
-      4895, 5133, 5133, 5450, 5656, 5656, 6110, 6110, 6206, 6780, 6780, 6800, 6800, 7002, 7002,
-      7069, 7251, 7251, 7480, 7516, 7516, 7620, 7685, 7685, 7692, 7698, 7702, 7702, 7709, 7709,
+      663, 1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
+      3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780, 6800,
+      7002, 7069, 7251, 7480, 7516, 7620, 7685, 7692, 7698, 7702, 7709,
     ]
+
     for (const eip of this.common.eips()) {
       if (!supportedEIPs.includes(eip)) {
         throw new Error(`EIP-${eip} is not supported by the EVM`)
@@ -214,10 +214,12 @@ export class EVM implements EVMInterface {
     this.getActiveOpcodes()
     this._precompiles = getActivePrecompiles(this.common, this._customPrecompiles)
 
+    // Precompile crypto libraries
     if (this.common.isActivatedEIP(2537)) {
       this._bls = opts.bls ?? new NobleBLS()
       this._bls.init?.()
     }
+    this._bn254 = opts.bn254!
 
     this._emit = async (topic: string, data: any): Promise<void> => {
       return new Promise((resolve) => this.events.emit(topic as keyof EVMEvents, data, resolve))
@@ -246,7 +248,7 @@ export class EVM implements EVMInterface {
 
   protected async _executeCall(message: MessageWithTo): Promise<EVMResult> {
     let gasLimit = message.gasLimit
-    const fromAddress = message.authcallOrigin ?? message.caller
+    const fromAddress = message.caller
 
     if (this.common.isActivatedEIP(6800)) {
       const sendsValue = message.value !== BIGINT_0
@@ -302,13 +304,13 @@ export class EVM implements EVMInterface {
         if (gasLimit < BIGINT_0) {
           if (this.DEBUG) {
             debugGas(
-              `Proof of absense access charged(${absenceProofAccessGas}) caused OOG (-> ${gasLimit})`,
+              `Proof of absence access charged(${absenceProofAccessGas}) caused OOG (-> ${gasLimit})`,
             )
           }
           return { execResult: OOGResult(message.gasLimit) }
         } else {
           if (this.DEBUG) {
-            debugGas(`Proof of absense access used (${absenceProofAccessGas} gas (-> ${gasLimit}))`)
+            debugGas(`Proof of absence access used (${absenceProofAccessGas} gas (-> ${gasLimit}))`)
           }
         }
       }
@@ -392,7 +394,7 @@ export class EVM implements EVMInterface {
 
   protected async _executeCreate(message: Message): Promise<EVMResult> {
     let gasLimit = message.gasLimit
-    const fromAddress = message.authcallOrigin ?? message.caller
+    const fromAddress = message.caller
 
     if (this.common.isActivatedEIP(6800)) {
       if (message.depth === 0) {
@@ -703,6 +705,10 @@ export class EVM implements EVMInterface {
       }
     }
 
+    if (message.depth === 0) {
+      this.postMessageCleanup()
+    }
+
     return {
       createdAddress: message.to,
       execResult: result,
@@ -716,14 +722,14 @@ export class EVM implements EVMInterface {
     message: Message,
     opts: InterpreterOpts = {},
   ): Promise<ExecResult> {
-    let contract = await this.stateManager.getAccount(message.to ?? Address.zero())
+    let contract = await this.stateManager.getAccount(message.to ?? createZeroAddress())
     if (!contract) {
       contract = new Account()
     }
 
     const env = {
-      address: message.to ?? Address.zero(),
-      caller: message.caller ?? Address.zero(),
+      address: message.to ?? createZeroAddress(),
+      caller: message.caller ?? createZeroAddress(),
       callData: message.data ?? Uint8Array.from([0]),
       callValue: message.value ?? BIGINT_0,
       code: message.code as Uint8Array,
@@ -731,7 +737,7 @@ export class EVM implements EVMInterface {
       isCreate: message.isCreate ?? false,
       depth: message.depth ?? 0,
       gasPrice: this._tx!.gasPrice,
-      origin: this._tx!.origin ?? message.caller ?? Address.zero(),
+      origin: this._tx!.origin ?? message.caller ?? createZeroAddress(),
       block: this._block ?? defaultBlock(),
       contract,
       codeAddress: message.codeAddress,
@@ -814,9 +820,9 @@ export class EVM implements EVMInterface {
       this._block = opts.block ?? defaultBlock()
       this._tx = {
         gasPrice: opts.gasPrice ?? BIGINT_0,
-        origin: opts.origin ?? opts.caller ?? Address.zero(),
+        origin: opts.origin ?? opts.caller ?? createZeroAddress(),
       }
-      const caller = opts.caller ?? Address.zero()
+      const caller = opts.caller ?? createZeroAddress()
 
       const value = opts.value ?? BIGINT_0
       if (opts.skipBalance === true) {
@@ -952,14 +958,14 @@ export class EVM implements EVMInterface {
 
     this._tx = {
       gasPrice: opts.gasPrice ?? BIGINT_0,
-      origin: opts.origin ?? opts.caller ?? Address.zero(),
+      origin: opts.origin ?? opts.caller ?? createZeroAddress(),
     }
 
     const message = new Message({
       code: opts.code,
       data: opts.data,
       gasLimit: opts.gasLimit ?? BigInt(0xffffff),
-      to: opts.to ?? Address.zero(),
+      to: opts.to ?? createZeroAddress(),
       caller: opts.caller,
       value: opts.value,
       depth: opts.depth,
@@ -1011,6 +1017,19 @@ export class EVM implements EVMInterface {
         message.isCompiled = true
       } else {
         message.code = await this.stateManager.getCode(message.codeAddress)
+
+        // EIP-7702 delegation check
+        if (
+          this.common.isActivatedEIP(7702) &&
+          equalsBytes(message.code.slice(0, 3), DELEGATION_7702_FLAG)
+        ) {
+          const address = new Address(message.code.slice(3, 24))
+          message.code = await this.stateManager.getCode(address)
+          if (message.depth === 0) {
+            this.journal.addAlwaysWarmAddress(address.toString())
+          }
+        }
+
         message.isCompiled = false
         message.chargeCodeAccesses = true
       }
@@ -1037,7 +1056,7 @@ export class EVM implements EVMInterface {
     if (account.balance < BIGINT_0) {
       throw new EvmError(ERROR.INSUFFICIENT_BALANCE)
     }
-    const result = this.journal.putAccount(message.authcallOrigin ?? message.caller, account)
+    const result = this.journal.putAccount(message.caller, account)
     if (this.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
     }
@@ -1084,7 +1103,7 @@ export class EVM implements EVMInterface {
       stateManager: this.stateManager.shallowCopy(),
     }
     ;(opts.stateManager as any).common = common
-    return new EVM(opts, this._bn128)
+    return new EVM(opts)
   }
 
   public getPerformanceLogs() {
@@ -1148,8 +1167,7 @@ export function defaultBlock(): Block {
   return {
     header: {
       number: BIGINT_0,
-      cliqueSigner: () => Address.zero(),
-      coinbase: Address.zero(),
+      coinbase: createZeroAddress(),
       timestamp: BIGINT_0,
       difficulty: BIGINT_0,
       prevRandao: zeros(32),

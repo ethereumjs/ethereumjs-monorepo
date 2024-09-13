@@ -1,14 +1,14 @@
-import { getInitializedChains } from '@ethereumjs/common'
+import { Mainnet } from '@ethereumjs/common'
 import {
-  Address,
-  ConsolidationRequest,
-  DepositRequest,
-  WithdrawalRequest,
   bigIntToAddressBytes,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
+  createAddressFromString,
+  createConsolidationRequest,
+  createDepositRequest,
+  createWithdrawalRequest,
   setLengthLeft,
   unpadBytes,
 } from '@ethereumjs/util'
@@ -32,8 +32,7 @@ export const accumulateRequests = async (
 
   if (common.isActivatedEIP(6110)) {
     const depositContractAddress =
-      vm.common['_chainParams'].depositContractAddress ??
-      getInitializedChains().mainnet.depositContractAddress
+      vm.common['_chainParams'].depositContractAddress ?? Mainnet.depositContractAddress
     if (depositContractAddress === undefined)
       throw new Error('deposit contract address required with EIP 6110')
     await accumulateDeposits(depositContractAddress, txResults, requests)
@@ -65,26 +64,29 @@ const accumulateEIP7002Requests = async (
     bigIntToBytes(vm.common.param('withdrawalRequestPredeployAddress')),
     20,
   )
-  const withdrawalsAddress = Address.fromString(bytesToHex(addressBytes))
-
-  const code = await vm.stateManager.getCode(withdrawalsAddress)
-
-  if (code.length === 0) {
-    throw new Error(
-      'Attempt to accumulate EIP-7002 requests failed: the contract does not exist. Ensure the deployment tx has been run, or that the required contract code is stored',
-    )
-  }
+  const withdrawalsAddress = createAddressFromString(bytesToHex(addressBytes))
 
   const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
-  const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
+  const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
+  const systemAccount = await vm.stateManager.getAccount(systemAddress)
 
-  const originalAccount = await vm.stateManager.getAccount(systemAddress)
+  const originalAccount = await vm.stateManager.getAccount(withdrawalsAddress)
+
+  if (originalAccount === undefined) {
+    return
+  }
 
   const results = await vm.evm.runCall({
     caller: systemAddress,
     gasLimit: BigInt(1_000_000),
     to: withdrawalsAddress,
   })
+
+  if (systemAccount === undefined) {
+    await vm.stateManager.deleteAccount(systemAddress)
+  } else {
+    await vm.stateManager.putAccount(systemAddress, systemAccount)
+  }
 
   const resultsBytes = results.execResult.returnValue
   if (resultsBytes.length > 0) {
@@ -94,15 +96,8 @@ const accumulateEIP7002Requests = async (
       const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
       const validatorPubkey = slicedBytes.slice(20, 68) // 48 Bytes
       const amount = bytesToBigInt(unpadBytes(slicedBytes.slice(68, 76))) // 8 Bytes / Uint64
-      requests.push(WithdrawalRequest.fromRequestData({ sourceAddress, validatorPubkey, amount }))
+      requests.push(createWithdrawalRequest({ sourceAddress, validatorPubkey, amount }))
     }
-  }
-
-  if (originalAccount === undefined) {
-    await vm.stateManager.deleteAccount(systemAddress)
-  } else {
-    // Restore the original account (the `runCall` updates the nonce)
-    await vm.stateManager.putAccount(systemAddress, originalAccount)
   }
 }
 
@@ -115,26 +110,29 @@ const accumulateEIP7251Requests = async (
     bigIntToBytes(vm.common.param('consolidationRequestPredeployAddress')),
     20,
   )
-  const consolidationsAddress = Address.fromString(bytesToHex(addressBytes))
-
-  const code = await vm.stateManager.getCode(consolidationsAddress)
-
-  if (code.length === 0) {
-    throw new Error(
-      'Attempt to accumulate EIP-7251 requests failed: the contract does not exist. Ensure the deployment tx has been run, or that the required contract code is stored',
-    )
-  }
+  const consolidationsAddress = createAddressFromString(bytesToHex(addressBytes))
 
   const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
-  const systemAddress = Address.fromString(bytesToHex(systemAddressBytes))
+  const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
+  const systemAccount = await vm.stateManager.getAccount(systemAddress)
 
-  const originalAccount = await vm.stateManager.getAccount(systemAddress)
+  const originalAccount = await vm.stateManager.getAccount(consolidationsAddress)
+
+  if (originalAccount === undefined) {
+    return
+  }
 
   const results = await vm.evm.runCall({
     caller: systemAddress,
     gasLimit: BigInt(1_000_000),
     to: consolidationsAddress,
   })
+
+  if (systemAccount === undefined) {
+    await vm.stateManager.deleteAccount(systemAddress)
+  } else {
+    await vm.stateManager.putAccount(systemAddress, systemAccount)
+  }
 
   const resultsBytes = results.execResult.returnValue
   if (resultsBytes.length > 0) {
@@ -144,17 +142,8 @@ const accumulateEIP7251Requests = async (
       const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
       const sourcePubkey = slicedBytes.slice(20, 68) // 48 Bytes
       const targetPubkey = slicedBytes.slice(68, 116) // 48 bytes
-      requests.push(
-        ConsolidationRequest.fromRequestData({ sourceAddress, sourcePubkey, targetPubkey }),
-      )
+      requests.push(createConsolidationRequest({ sourceAddress, sourcePubkey, targetPubkey }))
     }
-  }
-
-  if (originalAccount === undefined) {
-    await vm.stateManager.deleteAccount(systemAddress)
-  } else {
-    // Restore the original account (the `runCall` updates the nonce)
-    await vm.stateManager.putAccount(systemAddress, originalAccount)
   }
 }
 
@@ -177,9 +166,9 @@ const accumulateDeposits = async (
         // 5. Repeat steps 3-4 for each field
         const pubKeyIdx = bytesToInt(log[2].slice(0, 32))
         const pubKeySize = bytesToInt(log[2].slice(pubKeyIdx, pubKeyIdx + 32))
-        const withdrawalCredsIdx = bytesToInt(log[2].slice(32, 64))
-        const withdrawalCredsSize = bytesToInt(
-          log[2].slice(withdrawalCredsIdx, withdrawalCredsIdx + 32),
+        const withdrawalCreditsIdx = bytesToInt(log[2].slice(32, 64))
+        const withdrawalCreditsSize = bytesToInt(
+          log[2].slice(withdrawalCreditsIdx, withdrawalCreditsIdx + 32),
         )
         const amountIdx = bytesToInt(log[2].slice(64, 96))
         const amountSize = bytesToInt(log[2].slice(amountIdx, amountIdx + 32))
@@ -189,8 +178,8 @@ const accumulateDeposits = async (
         const indexSize = bytesToInt(log[2].slice(indexIdx, indexIdx + 32))
         const pubkey = log[2].slice(pubKeyIdx + 32, pubKeyIdx + 32 + pubKeySize)
         const withdrawalCredentials = log[2].slice(
-          withdrawalCredsIdx + 32,
-          withdrawalCredsIdx + 32 + withdrawalCredsSize,
+          withdrawalCreditsIdx + 32,
+          withdrawalCreditsIdx + 32 + withdrawalCreditsSize,
         )
         const amountBytes = log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize)
         const amountBytesBigEndian = new Uint8Array([
@@ -222,7 +211,7 @@ const accumulateDeposits = async (
         ])
         const index = bytesToBigInt(indexBytesBigEndian)
         requests.push(
-          DepositRequest.fromRequestData({
+          createDepositRequest({
             pubkey,
             withdrawalCredentials,
             amount,

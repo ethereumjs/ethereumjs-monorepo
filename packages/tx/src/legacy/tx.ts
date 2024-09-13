@@ -1,3 +1,4 @@
+import { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_2,
@@ -22,10 +23,9 @@ import { createLegacyTx } from './constructors.js'
 import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
-  JsonTx,
+  JSONTx,
   TxOptions,
 } from '../types.js'
-import type { Common } from '@ethereumjs/common'
 
 export type TxData = AllTypesTxData[TransactionType.Legacy]
 export type TxValuesArray = AllTypesTxValuesArray[TransactionType.Legacy]
@@ -39,7 +39,7 @@ function meetsEIP155(_v: bigint, chainId: bigint) {
 /**
  * An Ethereum non-typed (legacy) transaction
  */
-export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
+export class LegacyTx extends BaseTransaction<TransactionType.Legacy> {
   public readonly gasPrice: bigint
 
   public readonly common: Common
@@ -55,7 +55,14 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   public constructor(txData: TxData, opts: TxOptions = {}) {
     super({ ...txData, type: TransactionType.Legacy }, opts)
 
-    this.common = this._validateTxV(this.v, opts.common)
+    this.common = opts.common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
+    const chainId = this._validateTxV(this.common, this.v)
+    if (chainId !== undefined && chainId !== this.common.chainId()) {
+      throw new Error(
+        `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
+      )
+    }
+
     this.common.updateParams(opts.params ?? paramsTx)
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
     this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice))
@@ -100,7 +107,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
    *
    * For legacy txs this is also the correct format to add transactions
-   * to a block with {@link createBlockFromValuesArray} (use the `serialize()` method
+   * to a block with {@link createBlockFromBytesArray} (use the `serialize()` method
    * for typed txs).
    *
    * For an unsigned tx this method returns the empty Bytes values
@@ -222,7 +229,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
     convertV: boolean = false,
-  ): LegacyTransaction {
+  ): LegacyTx {
     r = toBytes(r)
     s = toBytes(s)
     if (convertV && this.supports(Capability.EIP155ReplayProtection)) {
@@ -250,10 +257,10 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   /**
    * Returns an object with the JSON representation of the transaction.
    */
-  toJSON(): JsonTx {
-    const baseJson = super.toJSON()
+  toJSON(): JSONTx {
+    const baseJSON = super.toJSON()
     return {
-      ...baseJson,
+      ...baseJSON,
       gasPrice: bigIntToHex(this.gasPrice),
     }
   }
@@ -261,7 +268,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   /**
    * Validates tx's `v` value
    */
-  protected _validateTxV(_v?: bigint, common?: Common): Common {
+  protected _validateTxV(common: Common, _v?: bigint): BigInt | undefined {
     let chainIdBigInt
     const v = _v !== undefined ? Number(_v) : undefined
     // Check for valid v values in the scope of a signed legacy tx
@@ -279,29 +286,26 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     if (
       v !== undefined &&
       v !== 0 &&
-      (!common || common.gteHardfork('spuriousDragon')) &&
+      common.gteHardfork('spuriousDragon') &&
       v !== 27 &&
       v !== 28
     ) {
-      if (common) {
-        if (!meetsEIP155(BigInt(v), common.chainId())) {
-          throw new Error(
-            `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`,
-          )
-        }
-      } else {
-        // Derive the original chain ID
-        let numSub
-        if ((v - 35) % 2 === 0) {
-          numSub = 35
-        } else {
-          numSub = 36
-        }
-        // Use derived chain ID to create a proper Common
-        chainIdBigInt = BigInt(v - numSub) / BIGINT_2
+      if (!meetsEIP155(BigInt(v), common.chainId())) {
+        throw new Error(
+          `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`,
+        )
       }
+      // Derive the original chain ID
+      let numSub
+      if ((v - 35) % 2 === 0) {
+        numSub = 35
+      } else {
+        numSub = 36
+      }
+      // Use derived chain ID to create a proper Common
+      chainIdBigInt = BigInt(v - numSub) / BIGINT_2
     }
-    return this._getCommon(common, chainIdBigInt)
+    return chainIdBigInt
   }
 
   /**

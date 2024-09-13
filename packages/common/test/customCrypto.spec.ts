@@ -1,7 +1,7 @@
 import { concatBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, createCustomCommon } from '../src/index.js'
+import { Common, Mainnet, createCustomCommon } from '../src/index.js'
 
 import type { ECDSASignature } from '@ethereumjs/util'
 
@@ -34,7 +34,7 @@ describe('[Common]: Custom Crypto', () => {
     }
     const value = new Uint8Array([2])
 
-    let c = new Common({ chain: Chain.Mainnet, customCrypto })
+    let c = new Common({ chain: Mainnet, customCrypto })
     let msg = 'Should initialize with custom keccak256 function and use properly (main constructor)'
     assert.deepEqual(c.customCrypto.keccak256!(value), new Uint8Array([2, 1]), msg)
 
@@ -42,7 +42,7 @@ describe('[Common]: Custom Crypto', () => {
     assert.deepEqual(c.copy().customCrypto.keccak256!(value), new Uint8Array([2, 1]), msg)
 
     const customChainParams = { name: 'custom', chainId: 123 }
-    c = createCustomCommon(customChainParams, { customCrypto })
+    c = createCustomCommon(customChainParams, Mainnet, { customCrypto })
     msg = 'Should initialize with custom keccak256 function and use properly (custom() constructor)'
     assert.deepEqual(c.customCrypto.keccak256!(value), new Uint8Array([2, 1]), msg)
   })
@@ -51,7 +51,7 @@ describe('[Common]: Custom Crypto', () => {
     const customCrypto = {
       ecrecover: customEcrecover,
     }
-    const c = new Common({ chain: Chain.Mainnet, customCrypto })
+    const c = new Common({ chain: Mainnet, customCrypto })
     assert.deepEqual(
       Uint8Array.from([1, 2, 3, 4]),
       c.customCrypto.ecrecover!(
@@ -68,7 +68,7 @@ describe('[Common]: Custom Crypto', () => {
       sha256: customSha256,
     }
     const msg = Uint8Array.from([0, 1, 2, 3])
-    const c = new Common({ chain: Chain.Mainnet, customCrypto })
+    const c = new Common({ chain: Mainnet, customCrypto })
     assert.equal(c.customCrypto.sha256!(msg)[0], 0xff, 'used custom sha256 function')
   })
 
@@ -76,7 +76,7 @@ describe('[Common]: Custom Crypto', () => {
     const customCrypto = {
       ecsign: customEcSign,
     }
-    const c = new Common({ chain: Chain.Mainnet, customCrypto })
+    const c = new Common({ chain: Mainnet, customCrypto })
     assert.equal(c.customCrypto.ecsign!(randomBytes(32), randomBytes(32), 0n).v, 0n)
     assert.equal(c.customCrypto.ecsign!(randomBytes(32), randomBytes(32)).v, 27n)
   })

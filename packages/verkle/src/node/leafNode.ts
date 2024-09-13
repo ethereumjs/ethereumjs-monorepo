@@ -127,7 +127,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       case VerkleLeafNodeValue.Untouched:
         return undefined
       case VerkleLeafNodeValue.Deleted:
-        // Return zeroes if a value is "deleted" (i.e. overwitten with zeroes)
+        // Return zeroes if a value is "deleted" (i.e. overwritten with zeroes)
         return new Uint8Array(32)
       default:
         return value
@@ -180,12 +180,13 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       oldCCommitment = this.c1
       this.c1 = cCommitment
     } else {
-      oldCCommitment
+      oldCCommitment = this.c2
       this.c2 = cCommitment
     }
+
     // Set the new values in the values array
     this.values[index] = value
-    // Update leaf node commitment -- c1 if index is < 128 or c2 otherwise
+    // Update leaf node commitment -- c1 (2) if index is < 128 or c2 (3) otherwise
     const cIndex = index < 128 ? 2 : 3
     this.commitment = this.verkleCrypto.updateCommitment(
       this.commitment,

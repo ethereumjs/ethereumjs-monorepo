@@ -1,8 +1,13 @@
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
-import { Common, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import {
+  Common,
+  Mainnet,
+  createCommonFromGethGenesis,
+  createCustomCommon,
+} from '@ethereumjs/common'
 import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
-import { assert, describe, it, vi } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../src/blockchain/index.js'
 import { Config } from '../../src/config.js'
@@ -10,7 +15,8 @@ import { getLogger } from '../../src/logging.js'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.js'
 import { short } from '../../src/util/index.js'
 import { wait } from '../integration/util.js'
-import genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import { mergeTestnetData } from '../testdata/common/mergeTestnet.js'
+import { postMergeData } from '../testdata/geth-genesis/post-merge.js'
 
 import type { Block } from '@ethereumjs/block'
 type Subchain = {
@@ -18,24 +24,15 @@ type Subchain = {
   tail: bigint
 }
 
-const common = new Common({ chain: 1 })
-const block49 = createBlockFromBlockData({ header: { number: 49 } }, { common })
-const block49B = createBlockFromBlockData(
-  { header: { number: 49, extraData: utf8ToBytes('B') } },
-  { common },
-)
-const block50 = createBlockFromBlockData(
-  { header: { number: 50, parentHash: block49.hash() } },
-  { common },
-)
-const block50B = createBlockFromBlockData(
+const common = new Common({ chain: Mainnet })
+const block49 = createBlock({ header: { number: 49 } }, { common })
+const block49B = createBlock({ header: { number: 49, extraData: utf8ToBytes('B') } }, { common })
+const block50 = createBlock({ header: { number: 50, parentHash: block49.hash() } }, { common })
+const block50B = createBlock(
   { header: { number: 50, parentHash: block49.hash(), gasLimit: 999 } },
   { common },
 )
-const block51 = createBlockFromBlockData(
-  { header: { number: 51, parentHash: block50.hash() } },
-  { common },
-)
+const block51 = createBlock({ header: { number: 51, parentHash: block50.hash() } }, { common })
 
 describe('[Skeleton]/ startup scenarios ', () => {
   it('starts the chain when starting the skeleton', async () => {
@@ -244,7 +241,8 @@ describe('[Skeleton] / initSync', async () => {
       }
 
       if (testCase.oldState) {
-        skeleton['status'].progress.subchains = testCase.oldState as any
+        skeleton['status'].progress.subchains =
+          testCase.oldState as Skeleton['status']['progress']['subchains']
       }
 
       await skeleton.initSync(testCase.head)
@@ -405,9 +403,9 @@ describe('[Skeleton] / setHead', async () => {
 
   it(`skeleton init should throw error if merge not set`, async () => {
     const genesis = {
-      ...genesisJSON,
+      ...postMergeData,
       config: {
-        ...genesisJSON.config,
+        ...postMergeData.config,
         // skip the merge hardfork
         terminalTotalDifficulty: undefined,
         clique: undefined,
@@ -419,7 +417,7 @@ describe('[Skeleton] / setHead', async () => {
     const common = createCommonFromGethGenesis(genesis, { chain: 'merge-not-set' })
     const config = new Config({ common })
     const chain = await Chain.create({ config })
-    ;(chain.blockchain as any)._validateBlocks = false
+    ;(chain.blockchain['_validateBlocks'] as any) = false
     try {
       new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     } catch (e) {
@@ -430,20 +428,20 @@ describe('[Skeleton] / setHead', async () => {
   it('should init/setHead properly from genesis', async () => {
     const config = new Config({ common })
     const chain = await Chain.create({ config })
-    ;(chain.blockchain as any)._validateBlocks = false
+    ;(chain.blockchain['_validateBlocks'] as any) = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
 
     const genesis = await chain.getBlock(BigInt(0))
-    const block1 = createBlockFromBlockData(
+    const block1 = createBlock(
       { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
-    const block2 = createBlockFromBlockData(
+    const block2 = createBlock(
       { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
-    const block3 = createBlockFromBlockData(
+    const block3 = createBlock(
       { header: { number: 3, difficulty: 100 } },
       { common, setHardfork: true },
     )
@@ -542,28 +540,28 @@ describe('[Skeleton] / setHead', async () => {
   it('should fill the canonical chain after being linked to genesis', async () => {
     const config = new Config({ common, logger: getLogger({ logLevel: 'debug' }) })
     const chain = await Chain.create({ config })
-    ;(chain.blockchain as any)._validateBlocks = false
+    ;(chain.blockchain['_validateBlocks'] as any) = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
 
     const genesis = await chain.getBlock(BigInt(0))
-    const block1 = createBlockFromBlockData(
+    const block1 = createBlock(
       { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
-    const block2 = createBlockFromBlockData(
+    const block2 = createBlock(
       { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
-    const block3 = createBlockFromBlockData(
+    const block3 = createBlock(
       { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
-    const block4 = createBlockFromBlockData(
+    const block4 = createBlock(
       { header: { number: 4, parentHash: block3.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
-    const block5 = createBlockFromBlockData(
+    const block5 = createBlock(
       { header: { number: 5, parentHash: block4.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
@@ -618,7 +616,7 @@ describe('[Skeleton] / setHead', async () => {
   it('should fill the canonical chain after being linked to a canonical block past genesis', async () => {
     const config = new Config({ common, engineNewpayloadMaxExecute: 10 })
     const chain = await Chain.create({ config })
-    ;(chain.blockchain as any)._validateBlocks = false
+    ;(chain.blockchain['_validateBlocks'] as any) = false
 
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
@@ -626,23 +624,23 @@ describe('[Skeleton] / setHead', async () => {
 
     const genesis = await chain.getBlock(BigInt(0))
 
-    const block1 = createBlockFromBlockData(
+    const block1 = createBlock(
       { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
-    const block2 = createBlockFromBlockData(
+    const block2 = createBlock(
       { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
-    const block3 = createBlockFromBlockData(
+    const block3 = createBlock(
       { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
-    const block4 = createBlockFromBlockData(
+    const block4 = createBlock(
       { header: { number: 4, parentHash: block3.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
-    const block5 = createBlockFromBlockData(
+    const block5 = createBlock(
       { header: { number: 5, parentHash: block4.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
@@ -695,15 +693,15 @@ describe('[Skeleton] / setHead', async () => {
     // restore linkedStatus
     skeleton['status'].linked = prevLinked
 
-    const block41 = createBlockFromBlockData(
+    const block41 = createBlock(
       { header: { number: 4, parentHash: block3.hash(), difficulty: 101 } },
       { common, setHardfork: true },
     )
-    const block51 = createBlockFromBlockData(
+    const block51 = createBlock(
       { header: { number: 5, parentHash: block41.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
-    const block61 = createBlockFromBlockData(
+    const block61 = createBlock(
       { header: { number: 6, parentHash: block51.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
@@ -726,20 +724,20 @@ describe('[Skeleton] / setHead', async () => {
     assert.equal(skeleton['status'].linked, true, 'should be linked')
     assert.equal(chain.blocks.height, BigInt(6), 'all blocks should be in chain')
 
-    const block71 = createBlockFromBlockData(
+    const block71 = createBlock(
       { header: { number: 7, parentHash: block61.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
-    const block81 = createBlockFromBlockData(
+    const block81 = createBlock(
       { header: { number: 8, parentHash: block71.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
-    const block91 = createBlockFromBlockData(
+    const block91 = createBlock(
       { header: { number: 9, parentHash: block81.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
 
-    // lets jump ahead and add the block 81 and 71 with annoucements and trigger tryTailBackfill
+    // lets jump ahead and add the block 81 and 71 with announcements and trigger tryTailBackfill
     await skeleton.forkchoiceUpdate(block91)
     assert.equal(skeleton['status'].progress.subchains.length, 1, '1 subchain with older dropped')
     assert.equal(
@@ -777,11 +775,11 @@ describe('[Skeleton] / setHead', async () => {
     )
 
     // do a very common reorg that happens in a network: reorged head block
-    const block92 = createBlockFromBlockData(
+    const block92 = createBlock(
       { header: { number: 9, parentHash: block81.hash(), difficulty: 101 } },
       { common, setHardfork: true },
     )
-    const block102 = createBlockFromBlockData(
+    const block102 = createBlock(
       { header: { number: 10, parentHash: block92.hash(), difficulty: 100 } },
       { common, setHardfork: true },
     )
@@ -813,56 +811,45 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should abort filling the canonical chain if the terminal block is invalid', async () => {
-    const genesis = {
-      ...genesisJSON,
-      config: {
-        ...genesisJSON.config,
-        terminalTotalDifficulty: 200,
-        clique: undefined,
-        ethash: {},
-      },
-      extraData: '0x00000000000000000',
-      difficulty: '0x1',
-    }
-    const common = createCommonFromGethGenesis(genesis, { chain: 'post-merge' })
-    common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
+    const common = createCustomCommon(mergeTestnetData, Mainnet)
+    common.setHardforkBy({ blockNumber: BigInt(0) })
     const config = new Config({
       common,
       accountCache: 10000,
       storageCache: 1000,
     })
     const chain = await Chain.create({ config })
-    ;(chain.blockchain as any)._validateBlocks = false
+    ;(chain.blockchain['_validateBlocks'] as any) = false
     await chain.open()
     const genesisBlock = await chain.getBlock(BigInt(0))
 
-    const block1 = createBlockFromBlockData(
+    const block1 = createBlock(
       { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
       { common },
     )
-    const block2 = createBlockFromBlockData(
+    const block2 = createBlock(
       { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
       { common },
     )
-    const block3PoW = createBlockFromBlockData(
+    const block3PoW = createBlock(
       { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
       { common },
     )
-    const block3PoS = createBlockFromBlockData(
+    const block3PoS = createBlock(
       { header: { number: 3, parentHash: block2.hash(), difficulty: 0 } },
-      { common, setHardfork: BigInt(200) },
+      { common, setHardfork: true },
     )
-    const block4InvalidPoS = createBlockFromBlockData(
+    const block4InvalidPoS = createBlock(
       { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
-      { common, setHardfork: BigInt(200) },
+      { common, setHardfork: true },
     )
-    const block4PoS = createBlockFromBlockData(
+    const block4PoS = createBlock(
       { header: { number: 4, parentHash: block3PoS.hash(), difficulty: 0 } },
-      { common, setHardfork: BigInt(200) },
+      { common, setHardfork: true },
     )
-    const block5 = createBlockFromBlockData(
+    const block5 = createBlock(
       { header: { number: 5, parentHash: block4PoS.hash(), difficulty: 0 } },
-      { common, setHardfork: BigInt(200) },
+      { common, setHardfork: true },
     )
 
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -914,158 +901,5 @@ describe('[Skeleton] / setHead', async () => {
     await skeleton.setHead(block5, true)
     await wait(200)
     assert.equal(skeleton.bounds().head, BigInt(5), 'should update to new height')
-  })
-
-  it('should abort filling the canonical chain and backstep if the terminal block is invalid', async () => {
-    const genesis = {
-      ...genesisJSON,
-      config: {
-        ...genesisJSON.config,
-        terminalTotalDifficulty: 200,
-        clique: undefined,
-        ethash: {},
-      },
-      extraData: '0x00000000000000000',
-      difficulty: '0x1',
-    }
-    const common = createCommonFromGethGenesis(genesis, { chain: 'post-merge' })
-    common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
-    const config = new Config({
-      common,
-      accountCache: 10000,
-      storageCache: 1000,
-    })
-    const chain = await Chain.create({ config })
-    ;(chain.blockchain as any)._validateBlocks = false
-    ;(chain.blockchain as any)._validateConsensus = false
-    await chain.open()
-    const genesisBlock = await chain.getBlock(BigInt(0))
-
-    const block1 = createBlockFromBlockData(
-      { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
-      { common },
-    )
-    const block2 = createBlockFromBlockData(
-      { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
-      { common },
-    )
-    const block3PoW = createBlockFromBlockData(
-      { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
-      { common },
-    )
-    const block4InvalidPoS = createBlockFromBlockData(
-      { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
-      { common, setHardfork: 200 },
-    )
-
-    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    await skeleton.open()
-
-    await skeleton.initSync(block4InvalidPoS)
-    await skeleton.putBlocks([block3PoW, block2])
-    assert.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
-    await skeleton.putBlocks([block1])
-    await wait(200)
-    assert.equal(
-      chain.blocks.height,
-      BigInt(2),
-      'canonical height should stop at block 2 (valid terminal block), since block 3 is invalid (past ttd)',
-    )
-    assert.equal(
-      skeleton['status'].progress.subchains[0].tail,
-      BigInt(1),
-      `Subchain should have been backstepped to 1`,
-    )
-  })
-
-  it('should abort filling the canonical chain if a PoS block comes too early without hitting ttd', async () => {
-    const genesis = {
-      ...genesisJSON,
-      config: {
-        ...genesisJSON.config,
-        terminalTotalDifficulty: 200,
-        skeletonFillCanonicalBackStep: 0,
-      },
-      difficulty: '0x1',
-    }
-    const common = createCommonFromGethGenesis(genesis, { chain: 'post-merge' })
-    common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
-    const config = new Config({
-      common,
-      logger: getLogger({ logLevel: 'debug' }),
-      accountCache: 10000,
-      storageCache: 1000,
-    })
-
-    const chain = await Chain.create({ config })
-    ;(chain.blockchain as any)._validateConsensus = false
-    // Only add td validations to the validateBlock
-    chain.blockchain.validateBlock = async (block: Block) => {
-      if (!(block.header.common.consensusType() === 'pos') && block.header.difficulty === 0n) {
-        throw Error(
-          `Invalid header difficulty=${
-            block.header.difficulty
-          } for consensus=${block.header.common.consensusType()}`,
-        )
-      }
-    }
-
-    const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
-    BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
-    vi.doMock('@ethereumjs/block', () => BlockHeader)
-    await chain.open()
-    const genesisBlock = await chain.getBlock(BigInt(0))
-
-    const block1 = createBlockFromBlockData(
-      { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
-      { common },
-    )
-    const block2 = createBlockFromBlockData(
-      { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
-      { common },
-    )
-    const block2PoS = createBlockFromBlockData(
-      { header: { number: 2, parentHash: block1.hash(), difficulty: 0 } },
-      { common },
-    )
-    const block3 = createBlockFromBlockData(
-      { header: { number: 3, parentHash: block2.hash(), difficulty: 0 } },
-      { common },
-    )
-
-    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    await skeleton.open()
-
-    await skeleton.initSync(block2PoS)
-    await skeleton.putBlocks([block1])
-
-    await wait(200)
-    assert.equal(
-      chain.blocks.height,
-      BigInt(1),
-      'canonical height should stop at block 1 (valid PoW block), since block 2 is invalid (invalid PoS, not past ttd)',
-    )
-    // Put correct chain
-    await skeleton.initSync(block3)
-    try {
-      await skeleton.putBlocks([block2])
-    } catch (error: any) {
-      if (error !== errSyncMerged) {
-        assert.fail(error)
-      }
-    }
-    await wait(200)
-    assert.equal(
-      chain.blocks.height,
-      BigInt(3),
-      'canonical height should now be at head with correct chain',
-    )
-    const latestHash = chain.headers.latest?.hash()
-    assert.ok(
-      latestHash !== undefined && equalsBytes(latestHash, block3.hash()),
-      'canonical height should now be at head with correct chain',
-    )
-
-    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
   })
 })

@@ -10,7 +10,7 @@ import {
 } from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { RunBlockResult } from '@ethereumjs/vm'
 import { Mockchain } from './mockchain.js'
 
@@ -34,8 +34,8 @@ export async function getPreState(
     [k: string]: StateTestPreAccount
   },
   common: Common,
-): Promise<DefaultStateManager> {
-  const state = new DefaultStateManager()
+): Promise<MerkleStateManager> {
+  const state = new MerkleStateManager()
   await state.checkpoint()
   for (const k in pre) {
     const address = new Address(hexToBytes(isHexString(k) ? k : `0x${k}`))

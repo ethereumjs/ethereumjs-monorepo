@@ -1,9 +1,9 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { Address, createAccount, hexToBytes } from '@ethereumjs/util'
+import { Address, createAccount, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -12,12 +12,12 @@ describe('EIP 2929: gas cost tests', () => {
   const initialGas = BigInt(0xffffffffff)
   const address = new Address(hexToBytes('0x000000000000000000000000636F6E7472616374'))
   const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
 
   const runTest = async function (test: any) {
     let i = 0
     let currentGas = initialGas
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     vm.evm.events!.on('step', function (step: any) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
@@ -70,8 +70,8 @@ describe('EIP 2929: gas cost tests', () => {
     )
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
-    const vm = await VM.create({ common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
+    const vm = await createVM({ common })
 
     await vm.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
 
@@ -84,7 +84,7 @@ describe('EIP 2929: gas cost tests', () => {
 
     const tx = unsignedTx.sign(privateKey)
 
-    const address = Address.fromPrivateKey(privateKey)
+    const address = createAddressFromPrivateKey(privateKey)
     const initialBalance = BigInt(10) ** BigInt(18)
 
     const account = await vm.stateManager.getAccount(address)
@@ -209,7 +209,7 @@ describe('EIP 2929: gas cost tests', () => {
   })
 
   // Calls the `identity`-precompile (cheap), then calls an account (expensive)
-  // and `staticcall`s the sameaccount (cheap)
+  // and `staticcall`s the same account (cheap)
   it('should charge for pre-compiles and staticcalls correctly', async () => {
     const test = {
       code: '0x60008080808060046000f15060008080808060ff6000f15060008080808060ff6000fa5000',

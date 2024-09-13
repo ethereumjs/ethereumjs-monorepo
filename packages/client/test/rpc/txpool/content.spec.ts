@@ -1,13 +1,13 @@
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import { randomBytes } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
 import type { Block } from '@ethereumjs/block'
@@ -16,7 +16,7 @@ const method = 'txpool_content'
 
 describe(method, () => {
   it('call with valid arguments', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
@@ -25,14 +25,14 @@ describe(method, () => {
 
     const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
-    await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
+    await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))
     const gasLimit = 2000000
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           parentHash: parent.hash(),
@@ -51,9 +51,9 @@ describe(method, () => {
     service.execution.vm.common.setHardfork('london')
     service.chain.config.chainCommon.setHardfork('london')
     const headBlock = await service.chain.getCanonicalHeadBlock()
-    const londonBlock = createBlockFromBlockData(
+    const londonBlock = createBlock(
       {
-        header: BlockHeader.fromHeaderData(
+        header: createBlockHeader(
           {
             baseFeePerGas: 1000000000n,
             number: 2n,

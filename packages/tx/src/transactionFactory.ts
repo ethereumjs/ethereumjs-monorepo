@@ -1,10 +1,9 @@
 import { fetchFromProvider, getProvider } from '@ethereumjs/util'
 
-import { create1559FeeMarketTx, create1559FeeMarketTxFromRLP } from './1559/constructors.js'
-import { create2930AccessListTx, create2930AccessListTxFromRLP } from './2930/constructors.js'
-import { create4844BlobTx, create4844BlobTxFromRLP } from './4844/constructors.js'
-import { create7702EOACodeTx, create7702EOACodeTxFromRLP } from './7702/constructors.js'
-import { normalizeTxParams } from './fromRpc.js'
+import { createFeeMarket1559Tx, createFeeMarket1559TxFromRLP } from './1559/constructors.js'
+import { createAccessList2930Tx, createAccessList2930TxFromRLP } from './2930/constructors.js'
+import { createBlob4844Tx, createBlob4844TxFromRLP } from './4844/constructors.js'
+import { createEOACode7702Tx, createEOACode7702TxFromRLP } from './7702/constructors.js'
 import {
   createLegacyTx,
   createLegacyTxFromBytesArray,
@@ -12,12 +11,13 @@ import {
 } from './legacy/constructors.js'
 import {
   TransactionType,
-  isAccessListEIP2930TxData,
-  isBlobEIP4844TxData,
-  isEOACodeEIP7702TxData,
-  isFeeMarketEIP1559TxData,
+  isAccessList2930TxData,
+  isBlob4844TxData,
+  isEOACode7702TxData,
+  isFeeMarket1559TxData,
   isLegacyTxData,
 } from './types.js'
+import { normalizeTxParams } from './util.js'
 
 import type { Transaction, TxData, TxOptions, TypedTxData } from './types.js'
 import type { EthersProvider } from '@ethereumjs/util'
@@ -37,14 +37,14 @@ export function createTxFromTxData<T extends TransactionType>(
   } else {
     if (isLegacyTxData(txData)) {
       return createLegacyTx(txData, txOptions) as Transaction[T]
-    } else if (isAccessListEIP2930TxData(txData)) {
-      return create2930AccessListTx(txData, txOptions) as Transaction[T]
-    } else if (isFeeMarketEIP1559TxData(txData)) {
-      return create1559FeeMarketTx(txData, txOptions) as Transaction[T]
-    } else if (isBlobEIP4844TxData(txData)) {
-      return create4844BlobTx(txData, txOptions) as Transaction[T]
-    } else if (isEOACodeEIP7702TxData(txData)) {
-      return create7702EOACodeTx(txData, txOptions) as Transaction[T]
+    } else if (isAccessList2930TxData(txData)) {
+      return createAccessList2930Tx(txData, txOptions) as Transaction[T]
+    } else if (isFeeMarket1559TxData(txData)) {
+      return createFeeMarket1559Tx(txData, txOptions) as Transaction[T]
+    } else if (isBlob4844TxData(txData)) {
+      return createBlob4844Tx(txData, txOptions) as Transaction[T]
+    } else if (isEOACode7702TxData(txData)) {
+      return createEOACode7702Tx(txData, txOptions) as Transaction[T]
     } else {
       throw new Error(`Tx instantiation with type ${(txData as TypedTxData)?.type} not supported`)
     }
@@ -65,13 +65,13 @@ export function createTxFromSerializedData<T extends TransactionType>(
     // Determine the type.
     switch (data[0]) {
       case TransactionType.AccessListEIP2930:
-        return create2930AccessListTxFromRLP(data, txOptions) as Transaction[T]
+        return createAccessList2930TxFromRLP(data, txOptions) as Transaction[T]
       case TransactionType.FeeMarketEIP1559:
-        return create1559FeeMarketTxFromRLP(data, txOptions) as Transaction[T]
+        return createFeeMarket1559TxFromRLP(data, txOptions) as Transaction[T]
       case TransactionType.BlobEIP4844:
-        return create4844BlobTxFromRLP(data, txOptions) as Transaction[T]
+        return createBlob4844TxFromRLP(data, txOptions) as Transaction[T]
       case TransactionType.EOACodeEIP7702:
-        return create7702EOACodeTxFromRLP(data, txOptions) as Transaction[T]
+        return createEOACode7702TxFromRLP(data, txOptions) as Transaction[T]
       default:
         throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
     }
@@ -119,12 +119,12 @@ export async function createTxFromRPC<T extends TransactionType>(
 
 /**
  *  Method to retrieve a transaction from the provider
- * @param provider - a url string for a JSON-RPC provider or an Ethers JsonRPCProvider object
+ * @param provider - a url string for a JSON-RPC provider or an Ethers JSONRPCProvider object
  * @param txHash - Transaction hash
  * @param txOptions - The transaction options
  * @returns the transaction specified by `txHash`
  */
-export async function createTxFromJsonRpcProvider(
+export async function createTxFromJSONRPCProvider(
   provider: string | EthersProvider,
   txHash: string,
   txOptions?: TxOptions,

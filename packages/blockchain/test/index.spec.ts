@@ -1,19 +1,20 @@
 import {
-  BlockHeader,
-  createBlockFromBlockData,
-  createBlockFromRLPSerializedBlock,
+  createBlock,
+  createBlockFromRLP,
+  createBlockHeader,
+  createBlockHeaderFromBytesArray,
 } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Goerli, Hardfork, Holesky, Mainnet, Sepolia } from '@ethereumjs/common'
 import { MapDB, bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Blockchain, createBlockchain, createBlockchainFromBlocksData } from '../src/index.js'
 
-import blocksData from './testdata/blocks_mainnet.json'
-import * as testDataPreLondon from './testdata/testdata_pre-london.json'
+import { blocksMainnetData } from './testdata/blocks_mainnet.js'
+import { preLondonData } from './testdata/testdata_pre-london.js'
 import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util.js'
 
-import type { Block, BlockData, BlockOptions } from '@ethereumjs/block'
+import type { Block, BlockOptions } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('blockchain test', () => {
@@ -26,7 +27,7 @@ describe('blockchain test', () => {
   })
 
   it('should initialize correctly', async () => {
-    const common = new Common({ chain: Chain.Mainnet })
+    const common = new Common({ chain: Mainnet })
     let blockchain = await createBlockchain({ common })
 
     const iteratorHead = await blockchain.getIteratorHead()
@@ -48,7 +49,7 @@ describe('blockchain test', () => {
   it('should initialize holesky correctly', async () => {
     // Taken from: https://github.com/eth-clients/holesky/blob/f1d14b9a80085c3f0cb9d729fea9172cde445588/README.md#hole%C5%A1ky-hole%C5%A1ovice-testnet
     const holeskyHash = '0xb5f7f912443c940f21fd611f12828d75b534364ed9e95ca4e307729a4661bde4'
-    const common = new Common({ chain: Chain.Holesky })
+    const common = new Common({ chain: Holesky })
     const blockchain = await createBlockchain({
       common,
     })
@@ -58,8 +59,8 @@ describe('blockchain test', () => {
   })
 
   it('should initialize correctly with createBlockchainFromBlocksData()', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchainFromBlocksData(blocksData as BlockData[], {
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
+    const blockchain = await createBlockchainFromBlocksData(blocksMainnetData, {
       validateBlocks: true,
       validateConsensus: false,
       common,
@@ -69,11 +70,11 @@ describe('blockchain test', () => {
   })
 
   it('should only initialize with supported consensus validation options', async () => {
-    let common = new Common({ chain: Chain.Mainnet })
+    let common = new Common({ chain: Mainnet })
     try {
       await createBlockchain({ common, validateConsensus: true })
       await createBlockchain({ common, validateBlocks: true })
-      common = new Common({ chain: Chain.Goerli })
+      common = new Common({ chain: Goerli })
       await createBlockchain({ common, validateConsensus: true })
       const chain = await createBlockchain({ common, validateBlocks: true })
       assert.ok(chain instanceof Blockchain, 'should not throw')
@@ -83,8 +84,8 @@ describe('blockchain test', () => {
   })
 
   it('should add a genesis block without errors', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const genesisBlock = createBlockFromBlockData({ header: { number: 0 } }, { common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
+    const genesisBlock = createBlock({ header: { number: 0 } }, { common })
     const blockchain = await createBlockchain({
       common,
       validateBlocks: true,
@@ -99,7 +100,7 @@ describe('blockchain test', () => {
   })
 
   it('should not validate a block incorrectly flagged as genesis', async () => {
-    const genesisBlock = createBlockFromBlockData({ header: { number: BigInt(8) } })
+    const genesisBlock = createBlock({ header: { number: BigInt(8) } })
     try {
       await createBlockchain({
         validateBlocks: true,
@@ -123,9 +124,9 @@ describe('blockchain test', () => {
   it('should add 12 blocks, one at a time', async () => {
     const blocks: Block[] = []
     const gasLimit = 8000000
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
-    const genesisBlock = createBlockFromBlockData({ header: { gasLimit } }, { common })
+    const genesisBlock = createBlock({ header: { gasLimit } }, { common })
     blocks.push(genesisBlock)
 
     const blockchain = await createBlockchain({
@@ -146,7 +147,7 @@ describe('blockchain test', () => {
           gasLimit,
         },
       }
-      const block = createBlockFromBlockData(blockData, {
+      const block = createBlock(blockData, {
         calcDifficultyFromHeader: lastBlock.header,
         common,
       })
@@ -168,9 +169,9 @@ describe('blockchain test', () => {
   it('getBlock(): should get block by number', async () => {
     const blocks: Block[] = []
     const gasLimit = 8000000
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
-    const genesisBlock = createBlockFromBlockData({ header: { gasLimit } }, { common })
+    const genesisBlock = createBlock({ header: { gasLimit } }, { common })
     blocks.push(genesisBlock)
 
     const blockchain = await createBlockchain({
@@ -188,7 +189,7 @@ describe('blockchain test', () => {
         gasLimit,
       },
     }
-    const block = createBlockFromBlockData(blockData, {
+    const block = createBlock(blockData, {
       calcDifficultyFromHeader: genesisBlock.header,
       common,
     })
@@ -204,9 +205,9 @@ describe('blockchain test', () => {
   })
 
   it('getBlock(): should get block by hash / not existing', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const gasLimit = 8000000
-    const genesisBlock = createBlockFromBlockData({ header: { gasLimit } }, { common })
+    const genesisBlock = createBlock({ header: { gasLimit } }, { common })
 
     const blockchain = await createBlockchain({
       common,
@@ -431,23 +432,23 @@ describe('blockchain test', () => {
 
     await blockchain.putBlocks(blocks.slice(1))
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const headerData = {
       number: 15,
       parentHash: blocks[14].hash(),
       gasLimit: 8000000,
       timestamp: BigInt(blocks[14].header.timestamp) + BigInt(1),
     }
-    const forkHeader = BlockHeader.fromHeaderData(headerData, {
+    const forkHeader = createBlockHeader(headerData, {
       common,
       calcDifficultyFromHeader: blocks[14].header,
     })
 
-    blockchain._heads['staletest'] = blockchain._headHeaderHash
+    blockchain._heads['staleTest'] = blockchain._headHeaderHash
 
     await blockchain.putHeader(forkHeader)
 
-    assert.deepEqual(blockchain._heads['staletest'], blocks[14].hash(), 'should update stale head')
+    assert.deepEqual(blockchain._heads['staleTest'], blocks[14].hash(), 'should update stale head')
     assert.deepEqual(blockchain._headBlockHash, blocks[14].hash(), 'should update stale headBlock')
   })
 
@@ -455,7 +456,7 @@ describe('blockchain test', () => {
     const { blockchain, blocks, error } = await generateBlockchain(15)
     assert.equal(error, null, 'no error')
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const headerData = {
       number: 15,
       parentHash: blocks[14].hash(),
@@ -463,16 +464,16 @@ describe('blockchain test', () => {
       //eslint-disable-next-line
       timestamp: BigInt(blocks[14].header.timestamp) + BigInt(1),
     }
-    const forkHeader = BlockHeader.fromHeaderData(headerData, {
+    const forkHeader = createBlockHeader(headerData, {
       common,
       calcDifficultyFromHeader: blocks[14].header,
     })
 
-    blockchain._heads['staletest'] = blockchain._headHeaderHash
+    blockchain._heads['staleTest'] = blockchain._headHeaderHash
 
     await blockchain.putHeader(forkHeader)
 
-    assert.deepEqual(blockchain._heads['staletest'], blocks[14].hash(), 'should update stale head')
+    assert.deepEqual(blockchain._heads['staleTest'], blocks[14].hash(), 'should update stale head')
     assert.deepEqual(blockchain._headBlockHash, blocks[14].hash(), 'should update stale headBlock')
 
     await blockchain.delBlock(forkHeader.hash())
@@ -530,13 +531,13 @@ describe('blockchain test', () => {
     const block2HeaderValuesArray = blocks[2].header.raw()
 
     block2HeaderValuesArray[1] = new Uint8Array(32)
-    const block2Header = BlockHeader.fromValuesArray(block2HeaderValuesArray, {
+    const block2Header = createBlockHeaderFromBytesArray(block2HeaderValuesArray, {
       common: blocks[2].common,
     })
     await blockchain.putHeader(block2Header)
     try {
       await blockchain.getBlock(BigInt(2))
-      assert.fail('block should not be constucted')
+      assert.fail('block should not be constructed')
     } catch (e: any) {
       assert.equal(
         e.message,
@@ -547,9 +548,9 @@ describe('blockchain test', () => {
   })
 
   it('should put multiple blocks at once', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blocks: Block[] = []
-    const genesisBlock = createBlockFromBlockData({ header: { gasLimit: 8000000 } }, { common })
+    const genesisBlock = createBlock({ header: { gasLimit: 8000000 } }, { common })
     blocks.push(...generateBlocks(15, [genesisBlock]))
     const blockchain = await createBlockchain({
       validateBlocks: true,
@@ -560,14 +561,14 @@ describe('blockchain test', () => {
   })
 
   it('should validate', async () => {
-    const genesisBlock = createBlockFromBlockData({ header: { gasLimit: 8000000 } })
+    const genesisBlock = createBlock({ header: { gasLimit: 8000000 } })
     const blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
       genesisBlock,
     })
 
-    const invalidBlock = createBlockFromBlockData({ header: { number: 50 } })
+    const invalidBlock = createBlock({ header: { number: 50 } })
     try {
       await blockchain.putBlock(invalidBlock)
       assert.fail('should not validate an invalid block')
@@ -577,17 +578,17 @@ describe('blockchain test', () => {
   })
 
   it('should add block with body', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisRlp = hexToBytes(testDataPreLondon.genesisRLP as PrefixedHexString)
-    const genesisBlock = createBlockFromRLPSerializedBlock(genesisRlp, { common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const genesisRlp = hexToBytes(preLondonData.genesisRLP as PrefixedHexString)
+    const genesisBlock = createBlockFromRLP(genesisRlp, { common })
     const blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
       genesisBlock,
     })
 
-    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+    const blockRlp = hexToBytes(preLondonData.blocks[0].rlp as PrefixedHexString)
+    const block = createBlockFromRLP(blockRlp, { common })
     await blockchain.putBlock(block)
   })
 
@@ -613,8 +614,8 @@ describe('blockchain test', () => {
     const db = new MapDB()
     const gasLimit = 8000000
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisBlock = createBlockFromBlockData({ header: { gasLimit } }, { common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const genesisBlock = createBlock({ header: { gasLimit } }, { common })
     let blockchain = await createBlockchain({
       db,
       validateBlocks: true,
@@ -628,7 +629,7 @@ describe('blockchain test', () => {
       gasLimit,
       timestamp: genesisBlock.header.timestamp + BigInt(1),
     }
-    const header = BlockHeader.fromHeaderData(headerData, {
+    const header = createBlockHeader(headerData, {
       calcDifficultyFromHeader: genesisBlock.header,
       common,
     })
@@ -650,10 +651,10 @@ describe('blockchain test', () => {
 
   it('should get latest', async () => {
     const gasLimit = 8000000
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const opts: BlockOptions = { common }
 
-    const genesisBlock = createBlockFromBlockData({ header: { gasLimit } }, opts)
+    const genesisBlock = createBlock({ header: { gasLimit } }, opts)
     const blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
@@ -669,7 +670,7 @@ describe('blockchain test', () => {
       },
     }
     opts.calcDifficultyFromHeader = genesisBlock.header
-    const block = createBlockFromBlockData(blockData, opts)
+    const block = createBlock(blockData, opts)
 
     const headerData1 = {
       number: 1,
@@ -678,7 +679,7 @@ describe('blockchain test', () => {
       gasLimit,
     }
     opts.calcDifficultyFromHeader = genesisBlock.header
-    const header1 = BlockHeader.fromHeaderData(headerData1, opts)
+    const header1 = createBlockHeader(headerData1, opts)
     const headers = [header1]
 
     const headerData2 = {
@@ -688,7 +689,7 @@ describe('blockchain test', () => {
       gasLimit,
     }
     opts.calcDifficultyFromHeader = block.header
-    const header2 = BlockHeader.fromHeaderData(headerData2, opts)
+    const header2 = createBlockHeader(headerData2, opts)
     headers.push(header2)
 
     await blockchain.putHeaders(headers)
@@ -709,10 +710,10 @@ describe('blockchain test', () => {
   })
 
   it('mismatched chains', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const gasLimit = 8000000
 
-    const genesisBlock = createBlockFromBlockData({ header: { gasLimit } }, { common })
+    const genesisBlock = createBlock({ header: { gasLimit } }, { common })
 
     const blockData1 = {
       header: {
@@ -730,12 +731,12 @@ describe('blockchain test', () => {
 
     const blocks = [
       genesisBlock,
-      createBlockFromBlockData(blockData1, {
+      createBlock(blockData1, {
         common,
         calcDifficultyFromHeader: genesisBlock.header,
       }),
-      createBlockFromBlockData(blockData2, {
-        common: new Common({ chain: Chain.Sepolia, hardfork: Hardfork.Chainstart }),
+      createBlock(blockData2, {
+        common: new Common({ chain: Sepolia, hardfork: Hardfork.Chainstart }),
         calcDifficultyFromHeader: genesisBlock.header,
       }),
     ]
@@ -766,7 +767,7 @@ describe('blockchain test', () => {
 describe('initialization tests', () => {
   it('should read genesis from database', async () => {
     const common = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.Chainstart,
     })
     const blockchain = await createBlockchain({ common })
@@ -790,8 +791,8 @@ describe('initialization tests', () => {
   })
 
   it('should allow to put a custom genesis block', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const genesisBlock = createBlockFromBlockData(
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
+    const genesisBlock = createBlock(
       {
         header: {
           extraData: utf8ToBytes('custom extra data'),
@@ -818,8 +819,8 @@ describe('initialization tests', () => {
   })
 
   it('should not allow to change the genesis block in the database', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const genesisBlock = createBlockFromBlockData(
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
+    const genesisBlock = createBlock(
       {
         header: {
           extraData: utf8ToBytes('custom extra data'),
@@ -831,7 +832,7 @@ describe('initialization tests', () => {
     const blockchain = await createBlockchain({ common, genesisBlock })
     const db = blockchain.db
 
-    const otherGenesisBlock = createBlockFromBlockData(
+    const otherGenesisBlock = createBlock(
       {
         header: {
           extraData: utf8ToBytes('other extra data'),
@@ -872,7 +873,7 @@ describe('initialization tests', () => {
 })
 
 it('should correctly derive mainnet genesis block hash and stateRoot', async () => {
-  const common = new Common({ chain: Chain.Mainnet })
+  const common = new Common({ chain: Mainnet })
   const blockchain = await createBlockchain({ common })
   const mainnetGenesisBlockHash = hexToBytes(
     '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',

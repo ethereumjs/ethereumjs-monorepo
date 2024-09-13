@@ -1,68 +1,85 @@
 import { assert, describe, it } from 'vitest'
 
 import {
-  Chain,
   Common,
   ConsensusAlgorithm,
   ConsensusType,
+  Goerli,
   Hardfork,
-  isSupportedChainId,
+  Mainnet,
+  getPresetChainConfig,
 } from '../src/index.js'
+
+import type { ChainConfig } from '../src/index.js'
 
 describe('[Common/Chains]: Initialization / Chain params', () => {
   it('Should initialize with chain provided', () => {
-    let c = new Common({ chain: 'mainnet' })
+    const c = new Common({ chain: Mainnet })
     assert.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
     assert.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
-    assert.equal(c.hardfork(), Hardfork.Shanghai, 'should set hardfork to current default hardfork')
+    assert.equal(c.hardfork(), Hardfork.Cancun, 'should set hardfork to current default hardfork')
     assert.equal(
       c.hardfork(),
       c.DEFAULT_HARDFORK,
       'should set hardfork to hardfork set as DEFAULT_HARDFORK',
     )
-
-    c = new Common({ chain: 1 })
-    assert.equal(c.chainName(), 'mainnet', 'should initialize with chain Id')
   })
 
-  it('Should initialize with chain provided by Chain enum', () => {
-    const c = new Common({ chain: Chain.Mainnet })
-    assert.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
-    assert.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
-    assert.equal(c.hardfork(), Hardfork.Shanghai, 'should set hardfork to current default hardfork')
-    assert.equal(
-      c.hardfork(),
-      c.DEFAULT_HARDFORK,
-      'should set hardfork to hardfork set as DEFAULT_HARDFORK',
-    )
+  it('Deep copied common object should have parameters that are independent of the original copy', async () => {
+    let chainConfig: ChainConfig
+    let c: Common
+    const setCommon = async () => {
+      chainConfig = JSON.parse(JSON.stringify(Mainnet))
+      c = new Common({ chain: chainConfig })
+      assert.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
+      assert.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
+    }
+
+    const resetCommon = async () => {
+      // modify chain config
+      const cCopy = c.copy()
+      chainConfig.chainId = 2
+      chainConfig.name = 'testnet'
+      assert.equal(cCopy.chainName(), 'mainnet', 'should return original chain name')
+      assert.equal(cCopy.chainId(), BigInt(1), 'should return original chain Id')
+    }
+
+    await setCommon()
+    await resetCommon()
+  })
+
+  it('Should initialize with chain provided by chain name or network Id', () => {
+    let chain = getPresetChainConfig('mainnet')
+    let c = new Common({ chain })
+    assert.equal(c.chainName(), 'mainnet')
+    chain = getPresetChainConfig(5)
+    c = new Common({ chain })
+    assert.equal(c.chainName(), 'goerli')
+    chain = getPresetChainConfig(123)
+    c = new Common({ chain })
+    assert.equal(c.chainName(), 'mainnet')
   })
 
   it('Should initialize with chain and hardfork provided', () => {
-    const c = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
+    const c = new Common({ chain: Mainnet, hardfork: 'byzantium' })
     assert.equal(c.hardfork(), 'byzantium', 'should return correct hardfork name')
   })
 
   it('Should initialize with chain and hardfork provided by Chain and Hardfork enums', () => {
-    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    const c = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
     assert.equal(c.hardfork(), 'byzantium', 'should return correct hardfork name')
   })
 
   it('Should handle initialization errors', () => {
-    let f = function () {
-      new Common({ chain: 'chainnotexisting' })
+    const f = function () {
+      new Common({ chain: Mainnet, hardfork: 'hardforkNotExisting' })
     }
-    let msg = 'should throw an exception on non-existing chain'
-    assert.throws(f, /not supported$/, undefined, msg) // eslint-disable-line no-new
-
-    f = function () {
-      new Common({ chain: 'mainnet', hardfork: 'hardforknotexisting' })
-    }
-    msg = 'should throw an exception on non-existing hardfork'
+    const msg = 'should throw an exception on non-existing hardfork'
     assert.throws(f, /not supported$/, undefined, msg) // eslint-disable-line no-new
   })
 
   it('Should provide correct access to chain parameters', () => {
-    let c = new Common({ chain: 'mainnet', hardfork: 'tangerineWhistle' })
+    let c = new Common({ chain: Mainnet, hardfork: 'tangerineWhistle' })
     assert.equal(c.hardforks()[3]['block'], 2463000, 'should return correct hardfork data')
     assert.equal(typeof c.bootstrapNodes()[0].port, 'number', 'should return a port as number')
     assert.equal(
@@ -77,7 +94,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     )
     assert.deepEqual(c.consensusConfig(), {}, 'should return empty dictionary for consensus config')
 
-    c = new Common({ chain: 'goerli', hardfork: 'spuriousDragon' })
+    c = new Common({ chain: Goerli, hardfork: 'spuriousDragon' })
     assert.equal(c.hardforks()[3]['block'], 0, 'should return correct hardfork data')
     assert.equal(typeof c.bootstrapNodes()[0].port, 'number', 'should return a port as number')
     assert.equal(
@@ -98,7 +115,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
   })
 
   it('Should provide the bootnode information in a uniform way', () => {
-    const configs = ['mainnet', 'goerli']
+    const configs = [Mainnet, Goerli]
     for (const network of configs) {
       const c = new Common({ chain: network })
       const bootnode = c.bootstrapNodes()[0]
@@ -119,7 +136,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
   })
 
   it('Should provide DNS network information in a uniform way', () => {
-    const configs = ['mainnet', 'goerli']
+    const configs = [Mainnet, Goerli]
     for (const network of configs) {
       const c = new Common({ chain: network })
       const dnsNetworks = c.dnsNetworks()
@@ -129,19 +146,9 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
   })
 })
 
-describe('[Common]: isSupportedChainId static method', () => {
-  it('Should return true for supported chainId', () => {
-    assert.equal(isSupportedChainId(BigInt(1)), true, 'returns true')
-  })
-
-  it('Should return false for unsupported chainId', () => {
-    assert.equal(isSupportedChainId(BigInt(0)), false, 'returns false')
-  })
-})
-
 describe('[Common]: copy() listener tests', () => {
   it('Should work', () => {
-    const common = new Common({ chain: 'mainnet' })
+    const common = new Common({ chain: Mainnet })
     // Add two listeners
     common.events.on('hardforkChanged', () => {})
     common.events.on('hardforkChanged', () => {})

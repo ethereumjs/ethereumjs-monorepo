@@ -1,4 +1,4 @@
-import { Chain, Common, createCustomCommon, isSupportedChainId } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import {
   Address,
   BIGINT_0,
@@ -18,7 +18,7 @@ import { Capability, TransactionType } from './types.js'
 import { checkMaxInitCodeSize } from './util.js'
 
 import type {
-  JsonTx,
+  JSONTx,
   Transaction,
   TransactionCache,
   TransactionInterface,
@@ -26,7 +26,6 @@ import type {
   TxOptions,
   TxValuesArray,
 } from './types.js'
-import type { BigIntLike } from '@ethereumjs/util'
 
 /**
  * This base class will likely be subject to further
@@ -63,7 +62,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   /**
    * List of tx type defining EIPs,
    * e.g. 1559 (fee market) and 2930 (access lists)
-   * for FeeMarketEIP1559Transaction objects
+   * for FeeMarket1559Tx objects
    */
   protected activeCapabilities: number[] = []
 
@@ -75,9 +74,11 @@ export abstract class BaseTransaction<T extends TransactionType>
    *
    * @hidden
    */
-  protected DEFAULT_CHAIN = Chain.Mainnet
+  protected DEFAULT_CHAIN = Mainnet
 
   constructor(txData: TxData[T], opts: TxOptions) {
+    this.common = opts.common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
+
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
     this._type = Number(bytesToBigInt(toBytes(type)))
 
@@ -108,10 +109,14 @@ export abstract class BaseTransaction<T extends TransactionType>
 
     const createContract = this.to === undefined || this.to === null
     const allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
-    const common = opts.common ?? this._getCommon()
-    common.updateParams(opts.params ?? paramsTx)
-    if (createContract && common.isActivatedEIP(3860) && allowUnlimitedInitCodeSize === false) {
-      checkMaxInitCodeSize(common, this.data.length)
+
+    this.common.updateParams(opts.params ?? paramsTx)
+    if (
+      createContract &&
+      this.common.isActivatedEIP(3860) &&
+      allowUnlimitedInitCodeSize === false
+    ) {
+      checkMaxInitCodeSize(this.common, this.data.length)
     }
   }
 
@@ -235,7 +240,7 @@ export abstract class BaseTransaction<T extends TransactionType>
    * Returns a Uint8Array Array of the raw Bytes of this transaction, in order.
    *
    * Use {@link BaseTransaction.serialize} to add a transaction to a block
-   * with {@link createBlockFromValuesArray}.
+   * with {@link createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
@@ -340,7 +345,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  toJSON(): JsonTx {
+  toJSON(): JSONTx {
     return {
       type: bigIntToHex(BigInt(this.type)),
       nonce: bigIntToHex(this.nonce),
@@ -371,52 +376,6 @@ export abstract class BaseTransaction<T extends TransactionType>
     s: Uint8Array | bigint,
     convertV?: boolean,
   ): Transaction[T]
-
-  /**
-   * Does chain ID checks on common and returns a common
-   * to be used on instantiation
-   * @hidden
-   *
-   * @param common - {@link Common} instance from tx options
-   * @param chainId - Chain ID from tx options (typed txs) or signature (legacy tx)
-   */
-  protected _getCommon(common?: Common, chainId?: BigIntLike) {
-    // Chain ID provided
-    if (chainId !== undefined) {
-      const chainIdBigInt = bytesToBigInt(toBytes(chainId))
-      if (common) {
-        if (common.chainId() !== chainIdBigInt) {
-          const msg = this._errorMsg(
-            `The chain ID does not match the chain ID of Common. Got: ${chainIdBigInt}, expected: ${common.chainId()}`,
-          )
-          throw new Error(msg)
-        }
-        // Common provided, chain ID does match
-        // -> Return provided Common
-        return common.copy()
-      } else {
-        if (isSupportedChainId(chainIdBigInt)) {
-          // No Common, chain ID supported by Common
-          // -> Instantiate Common with chain ID
-          return new Common({ chain: chainIdBigInt })
-        } else {
-          // No Common, chain ID not supported by Common
-          // -> Instantiate custom Common derived from DEFAULT_CHAIN
-          return createCustomCommon(
-            {
-              name: 'custom-chain',
-              chainId: chainIdBigInt,
-            },
-            { baseChain: this.DEFAULT_CHAIN },
-          )
-        }
-      }
-    } else {
-      // No chain ID provided
-      // -> return Common provided or create new default Common
-      return common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
-    }
-  }
 
   /**
    * Validates that an object with BigInt values cannot exceed the specified bit limit.

@@ -1,5 +1,5 @@
-import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { create4844BlobTx } from '@ethereumjs/tx'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
@@ -9,12 +9,11 @@ import {
 import { loadKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { createBlockFromBlockData } from '../src/constructors.js'
-import { BlockHeader } from '../src/header.js'
 import { fakeExponential, getNumBlobs } from '../src/helpers.js'
+import { createBlock, createBlockHeader } from '../src/index.js'
 import { paramsBlock } from '../src/params.js'
 
-import gethGenesis from './testdata/4844-hardfork.json'
+import { hardfork4844Data } from './testdata/4844-hardfork.js'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { Kzg } from '@ethereumjs/util'
@@ -25,7 +24,7 @@ describe('EIP4844 header tests', () => {
   beforeAll(async () => {
     const kzg = await loadKZG()
 
-    common = createCommonFromGethGenesis(gethGenesis, {
+    common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -33,11 +32,11 @@ describe('EIP4844 header tests', () => {
   })
 
   it('should work', () => {
-    const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const earlyCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
     assert.throws(
       () => {
-        BlockHeader.fromHeaderData(
+        createBlockHeader(
           {
             excessBlobGas: 1n,
           },
@@ -53,7 +52,7 @@ describe('EIP4844 header tests', () => {
 
     assert.throws(
       () => {
-        BlockHeader.fromHeaderData(
+        createBlockHeader(
           {
             blobGasUsed: 1n,
           },
@@ -67,7 +66,7 @@ describe('EIP4844 header tests', () => {
       'should throw when setting blobGasUsed with EIP4844 not being activated',
     )
 
-    const excessBlobGas = BlockHeader.fromHeaderData(
+    const excessBlobGas = createBlockHeader(
       {},
       { common, skipConsensusFormatValidation: true },
     ).excessBlobGas
@@ -77,7 +76,7 @@ describe('EIP4844 header tests', () => {
       'instantiates block with reasonable default excess blob gas value when not provided',
     )
     assert.doesNotThrow(() => {
-      BlockHeader.fromHeaderData(
+      createBlockHeader(
         {
           excessBlobGas: 0n,
         },
@@ -88,9 +87,9 @@ describe('EIP4844 header tests', () => {
       )
     }, 'correctly instantiates an EIP4844 block header')
 
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
-        header: BlockHeader.fromHeaderData({}, { common, skipConsensusFormatValidation: true }),
+        header: createBlockHeader({}, { common, skipConsensusFormatValidation: true }),
       },
       { common, skipConsensusFormatValidation: true },
     )
@@ -103,7 +102,7 @@ describe('blob gas tests', () => {
   let blobGasPerBlob: bigint
   beforeAll(async () => {
     const kzg = await loadKZG()
-    common = createCommonFromGethGenesis(gethGenesis, {
+    common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       params: paramsBlock,
@@ -112,7 +111,10 @@ describe('blob gas tests', () => {
     blobGasPerBlob = common.param('blobGasPerBlob')
   })
   it('should work', () => {
-    const preShardingHeader = BlockHeader.fromHeaderData({})
+    const preShardingHeader = createBlockHeader(
+      {},
+      { common: new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai }) },
+    )
 
     let excessBlobGas = preShardingHeader.calcNextExcessBlobGas()
     assert.equal(
@@ -128,7 +130,7 @@ describe('blob gas tests', () => {
       'calcDataFee throws when header has no excessBlobGas field',
     )
 
-    const lowGasHeader = BlockHeader.fromHeaderData(
+    const lowGasHeader = createBlockHeader(
       { number: 1, excessBlobGas: 5000 },
       { common, skipConsensusFormatValidation: true },
     )
@@ -137,7 +139,7 @@ describe('blob gas tests', () => {
     let blobGasPrice = lowGasHeader.getBlobGasPrice()
     assert.equal(excessBlobGas, 0n, 'excess blob gas should be 0 for small parent header blob gas')
     assert.equal(blobGasPrice, 1n, 'blob gas price should be 1n when low or no excess blob gas')
-    const highGasHeader = BlockHeader.fromHeaderData(
+    const highGasHeader = createBlockHeader(
       { number: 1, excessBlobGas: 6291456, blobGasUsed: BigInt(6) * blobGasPerBlob },
       { common, skipConsensusFormatValidation: true },
     )
@@ -161,7 +163,7 @@ describe('transaction validation tests', () => {
   let blobGasPerBlob: bigint
   beforeAll(async () => {
     kzg = await loadKZG()
-    common = createCommonFromGethGenesis(gethGenesis, {
+    common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       params: paramsBlock,
@@ -174,7 +176,7 @@ describe('transaction validation tests', () => {
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
 
-    const tx1 = create4844BlobTx(
+    const tx1 = createBlob4844Tx(
       {
         blobVersionedHashes,
         blobs,
@@ -185,7 +187,7 @@ describe('transaction validation tests', () => {
       },
       { common },
     ).sign(randomBytes(32))
-    const tx2 = create4844BlobTx(
+    const tx2 = createBlob4844Tx(
       {
         blobVersionedHashes,
         blobs,
@@ -197,7 +199,7 @@ describe('transaction validation tests', () => {
       { common },
     ).sign(randomBytes(32))
 
-    const parentHeader = BlockHeader.fromHeaderData(
+    const parentHeader = createBlockHeader(
       { number: 1n, excessBlobGas: 4194304, blobGasUsed: 0 },
       { common, skipConsensusFormatValidation: true },
     )
@@ -207,7 +209,7 @@ describe('transaction validation tests', () => {
     function getBlock(transactions: TypedTransaction[]) {
       const blobs = getNumBlobs(transactions)
 
-      const blockHeader = BlockHeader.fromHeaderData(
+      const blockHeader = createBlockHeader(
         {
           number: 2n,
           parentHash: parentHeader.hash(),
@@ -216,7 +218,7 @@ describe('transaction validation tests', () => {
         },
         { common, skipConsensusFormatValidation: true },
       )
-      const block = createBlockFromBlockData(
+      const block = createBlock(
         { header: blockHeader, transactions },
         { common, skipConsensusFormatValidation: true },
       )
@@ -233,9 +235,10 @@ describe('transaction validation tests', () => {
       () => blockWithValidTx.validateBlobTransactions(parentHeader),
       'does not throw when all tx maxFeePerBlobGas are >= to block blob gas fee',
     )
-    const blockJson = blockWithValidTx.toJSON()
-    blockJson.header!.blobGasUsed = '0x0'
-    const blockWithInvalidHeader = createBlockFromBlockData(blockJson, { common })
+    const blockJSON = blockWithValidTx.toJSON()
+    blockJSON.header!.blobGasUsed = '0x0'
+    // @ts-expect-error
+    const blockWithInvalidHeader = createBlock(blockJSON, { common })
     assert.throws(
       () => blockWithInvalidHeader.validateBlobTransactions(parentHeader),
       'block blobGasUsed mismatch',
@@ -267,7 +270,7 @@ describe('transaction validation tests', () => {
         .getTransactionsValidationErrors()
         .join(' ')
         .includes('exceed maximum blob gas per block'),
-      'tx erros includes correct error message when too many blobs in a block',
+      'tx errors includes correct error message when too many blobs in a block',
     )
   })
 })

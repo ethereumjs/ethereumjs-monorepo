@@ -1,22 +1,22 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
-import { createCustomCommon } from '@ethereumjs/common'
-import { create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
-import { Address, hexToBytes } from '@ethereumjs/util'
+import { createBlock } from '@ethereumjs/block'
+import { Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { createBlob4844Tx, createLegacyTx } from '@ethereumjs/tx'
+import { createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, dummy, getRpcClient, startRPC } from '../helpers.js'
+import { createClient, createManager, dummy, getRPCClient, startRPC } from '../helpers.js'
 
 const kzg = await loadKZG()
 
-const common = createCustomCommon({ chainId: 1 }, { customCrypto: { kzg } })
+const common = createCustomCommon({ chainId: 1 }, Mainnet, { customCrypto: { kzg } })
 
 common.setHardfork('cancun')
 const mockedTx1 = createLegacyTx({}).sign(dummy.privKey)
 const mockedTx2 = createLegacyTx({ nonce: 1 }).sign(dummy.privKey)
-const mockedBlobTx3 = create4844BlobTx(
-  { nonce: 2, blobsData: ['0x1234'], to: Address.zero() },
+const mockedBlobTx3 = createBlob4844Tx(
+  { nonce: 2, blobsData: ['0x1234'], to: createZeroAddress() },
   { common },
 ).sign(dummy.privKey)
 const blockHash = hexToBytes('0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5')
@@ -25,14 +25,13 @@ const transactions2 = [mockedTx2]
 
 const block = {
   hash: () => blockHash,
-  serialize: () =>
-    createBlockFromBlockData({ header: { number: 1 }, transactions: transactions2 }).serialize(),
+  serialize: () => createBlock({ header: { number: 1 }, transactions: transactions2 }).serialize(),
   header: {
     number: BigInt(1),
     hash: () => blockHash,
   },
   toJSON: () => ({
-    ...createBlockFromBlockData({ header: { number: 1 } }).toJSON(),
+    ...createBlock({ header: { number: 1 } }).toJSON(),
     transactions: transactions2,
   }),
   transactions: transactions2,
@@ -45,12 +44,12 @@ function createChain(headBlock = block) {
   )
   const genesisBlock = {
     hash: () => genesisBlockHash,
-    serialize: () => createBlockFromBlockData({ header: { number: 0 }, transactions }).serialize(),
+    serialize: () => createBlock({ header: { number: 0 }, transactions }).serialize(),
     header: {
       number: BigInt(0),
     },
     toJSON: () => ({
-      ...createBlockFromBlockData({ header: { number: 0 } }).toJSON(),
+      ...createBlock({ header: { number: 0 } }).toJSON(),
       transactions,
     }),
     transactions,
@@ -71,7 +70,7 @@ const method = 'eth_getBlockByNumber'
 describe(method, async () => {
   it('call with valid arguments', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0', false])
     assert.equal(res.result.number, '0x0', 'should return a valid block')
@@ -79,7 +78,7 @@ describe(method, async () => {
 
   it('call with false for second argument', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0', false])
     assert.equal(res.result.number, '0x0', 'should return a valid block')
@@ -92,7 +91,7 @@ describe(method, async () => {
 
   it('call with earliest param', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['earliest', false])
     assert.equal(res.result.number, '0x0', 'should return the genesis block number')
@@ -100,7 +99,7 @@ describe(method, async () => {
 
   it('call with latest param', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['latest', false])
     assert.equal(res.result.number, '0x1', 'should return a block number')
@@ -109,7 +108,7 @@ describe(method, async () => {
 
   it('call with unimplemented pending param', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['pending', true])
 
@@ -119,7 +118,7 @@ describe(method, async () => {
 
   it('call with non-string block number', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [10, true])
     assert.equal(res.error.code, INVALID_PARAMS)
@@ -128,7 +127,7 @@ describe(method, async () => {
 
   it('call with invalid block number', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['WRONG BLOCK NUMBER', true])
     assert.equal(res.error.code, INVALID_PARAMS)
@@ -141,7 +140,7 @@ describe(method, async () => {
 
   it('call without second parameter', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0'])
     assert.equal(res.error.code, INVALID_PARAMS)
@@ -150,7 +149,7 @@ describe(method, async () => {
 
   it('call with invalid second parameter', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0', 'INVALID PARAMETER'])
     assert.equal(res.error.code, INVALID_PARAMS)
@@ -158,7 +157,7 @@ describe(method, async () => {
 
   it('call with transaction objects', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, ['latest', true])
 
     assert.equal(typeof res.result.transactions[0], 'object', 'should include tx objects')
@@ -166,8 +165,8 @@ describe(method, async () => {
 
   describe('call with block with blob txs', () => {
     it('retrieves a block with a blob tx in it', async () => {
-      const genesisBlock = createBlockFromBlockData({ header: { number: 0 } })
-      const block1 = createBlockFromBlockData(
+      const genesisBlock = createBlock({ header: { number: 0 } })
+      const block1 = createBlock(
         {
           header: { number: 1, parentHash: genesisBlock.header.hash() },
           transactions: [mockedBlobTx3],
@@ -175,7 +174,7 @@ describe(method, async () => {
         { common },
       )
       const manager = createManager(await createClient({ chain: createChain(block1 as any) }))
-      const rpc = getRpcClient(startRPC(manager.getMethods()))
+      const rpc = getRPCClient(startRPC(manager.getMethods()))
       const res = await rpc.request(method, ['latest', true])
 
       assert.equal(

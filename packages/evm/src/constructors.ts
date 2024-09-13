@@ -1,14 +1,12 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { SimpleStateManager } from '@ethereumjs/statemanager'
-import { initRustBN } from 'rustbn-wasm'
 
-import { DefaultBlockchain } from './types.js'
+import { NobleBN254 } from './precompiles/index.js'
+import { EVMMockBlockchain } from './types.js'
 
 import { EVM } from './index.js'
 
-import type { EVMOpts, bn128 } from './index.js'
-
-let initializedRustBN: bn128 | undefined = undefined
+import type { EVMOpts } from './index.js'
 
 /**
  * Use this async static constructor for the initialization
@@ -19,20 +17,20 @@ let initializedRustBN: bn128 | undefined = undefined
  */
 export async function createEVM(createOpts?: EVMOpts) {
   const opts = createOpts ?? ({} as EVMOpts)
-  const bn128 = initializedRustBN ?? ((await initRustBN()) as bn128)
-  initializedRustBN = bn128
+
+  opts.bn254 = new NobleBN254()
 
   if (opts.common === undefined) {
-    opts.common = new Common({ chain: Chain.Mainnet })
+    opts.common = new Common({ chain: Mainnet })
   }
 
   if (opts.blockchain === undefined) {
-    opts.blockchain = new DefaultBlockchain()
+    opts.blockchain = new EVMMockBlockchain()
   }
 
   if (opts.stateManager === undefined) {
     opts.stateManager = new SimpleStateManager()
   }
 
-  return new EVM(opts, bn128)
+  return new EVM(opts)
 }

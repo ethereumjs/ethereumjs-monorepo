@@ -1,12 +1,12 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
-import { BlobEIP4844Transaction, Capability, isBlobEIP4844Tx } from '@ethereumjs/tx'
+import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
   BIGINT_0,
+  BIGINT_1,
   KECCAK256_NULL,
   bytesToBigInt,
   bytesToHex,
@@ -36,18 +36,22 @@ import type {
 } from './types.js'
 import type { VM } from './vm.js'
 import type { Block } from '@ethereumjs/block'
-import type { AccessList, AccessListItem, Common } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import type { EVM } from '@ethereumjs/evm'
 import type {
-  AccessListEIP2930Transaction,
+  AccessList,
+  AccessList2930Transaction,
+  AccessListItem,
   EIP7702CompatibleTx,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
+  FeeMarket1559Tx,
+  LegacyTx,
   TypedTransaction,
 } from '@ethereumjs/tx'
 
 const debug = debugDefault('vm:tx')
 const debugGas = debugDefault('vm:tx:gas')
+
+const DEFAULT_HEADER = createBlockHeader()
 
 let enableProfiler = false
 const initLabel = 'EVM journal init, address/slot warming, fee validation'
@@ -60,32 +64,11 @@ const journalCacheCleanUpLabel = 'Journal/cache cleanup'
 const receiptsLabel = 'Receipts'
 const entireTxLabel = 'Entire tx'
 
-/**
- * Returns the hardfork excluding the merge hf which has
- * no effect on the vm execution capabilities.
- *
- * This is particularly useful in executing/evaluating the transaction
- * when chain td is not available at many places to correctly set the
- * hardfork in for e.g. vm or txs or when the chain is not fully synced yet.
- *
- * @returns Hardfork name
- */
-function execHardfork(
-  hardfork: Hardfork | string,
-  preMergeHf: Hardfork | string,
-): string | Hardfork {
-  return hardfork !== Hardfork.Paris ? hardfork : preMergeHf
-}
+// EIP-7702 flag: if contract code starts with these 3 bytes, it is a 7702-delegated EOA
+const DELEGATION_7702_FLAG = new Uint8Array([0xef, 0x01, 0x00])
 
 /**
- * Process a transaction. Run the vm. Transfers eth. Checks balances.
- *
- * This method modifies the state. If an error is thrown, the modifications are reverted, except
- * when the error is thrown from an event handler. In the latter case the state may or may not be
- * reverted.
- *
- * @param {VM} vm
- * @param {RunTxOpts} opts
+ * @ignore
  */
 export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (vm['_opts'].profilerOpts?.reportAfterTx === true) {
@@ -102,34 +85,20 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     console.time(entireTxLabel)
   }
 
-  // create a reasonable default if no block is given
-  opts.block = opts.block ?? createBlockFromBlockData({}, { common: vm.common })
-
-  if (opts.skipHardForkValidation !== true) {
-    // Find and set preMerge hf for easy access later
-    const hfs = vm.common.hardforks()
-    const preMergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined) - 1
-    // If no pre merge hf found, set it to first hf even if its merge
-    const preMergeHf = preMergeIndex >= 0 ? hfs[preMergeIndex].name : hfs[0].name
-
+  if (opts.skipHardForkValidation !== true && opts.block !== undefined) {
     // If block and tx don't have a same hardfork, set tx hardfork to block
-    if (
-      execHardfork(opts.tx.common.hardfork(), preMergeHf) !==
-      execHardfork(opts.block.common.hardfork(), preMergeHf)
-    ) {
+    if (opts.tx.common.hardfork() !== opts.block.common.hardfork()) {
       opts.tx.common.setHardfork(opts.block.common.hardfork())
     }
-    if (
-      execHardfork(opts.block.common.hardfork(), preMergeHf) !==
-      execHardfork(vm.common.hardfork(), preMergeHf)
-    ) {
+    if (opts.block.common.hardfork() !== vm.common.hardfork()) {
       // Block and VM's hardfork should match as well
       const msg = _errorMsg('block has a different hardfork than the vm', vm, opts.block, opts.tx)
       throw new Error(msg)
     }
   }
 
-  if (opts.skipBlockGasLimitValidation !== true && opts.block.header.gasLimit < opts.tx.gasLimit) {
+  const gasLimit = opts.block?.header.gasLimit ?? DEFAULT_HEADER.gasLimit
+  if (opts.skipBlockGasLimitValidation !== true && gasLimit < opts.tx.gasLimit) {
     const msg = _errorMsg('tx has a higher gas limit than the block', vm, opts.block, opts.tx)
     throw new Error(msg)
   }
@@ -175,7 +144,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw new Error(msg)
     }
 
-    const castedTx = <AccessListEIP2930Transaction>opts.tx
+    const castedTx = <AccessList2930Transaction>opts.tx
 
     for (const accessListItem of castedTx.AccessListJSON) {
       vm.evm.journal.addAlwaysWarmAddress(accessListItem.address, true)
@@ -223,18 +192,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   let stateAccesses
   if (vm.common.isActivatedEIP(6800)) {
-    if (!(vm.stateManager instanceof StatelessVerkleStateManager)) {
+    if (typeof vm.stateManager.initVerkleExecutionWitness !== 'function') {
       throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
     }
-    stateAccesses = (vm.stateManager as StatelessVerkleStateManager).accessWitness
+    stateAccesses = vm.stateManager.accessWitness!
   }
   const txAccesses = stateAccesses?.shallowCopy()
 
   const { tx, block } = opts
-
-  if (!block) {
-    throw new Error('block required')
-  }
 
   /**
    * The `beforeTx` event
@@ -266,7 +231,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       vm.evm.journal.addAlwaysWarmAddress(bytesToUnprefixedHex(tx.to.bytes))
     }
     if (vm.common.isActivatedEIP(3651)) {
-      vm.evm.journal.addAlwaysWarmAddress(bytesToUnprefixedHex(block.header.coinbase.bytes))
+      const coinbase = block?.header.coinbase.bytes ?? DEFAULT_HEADER.coinbase.bytes
+      vm.evm.journal.addAlwaysWarmAddress(bytesToUnprefixedHex(coinbase))
     }
   }
 
@@ -294,7 +260,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // Ensure that the user was willing to at least pay the base fee
     // assert transaction.max_fee_per_gas >= block.base_fee_per_gas
     const maxFeePerGas = 'maxFeePerGas' in tx ? tx.maxFeePerGas : tx.gasPrice
-    const baseFeePerGas = block.header.baseFeePerGas!
+    const baseFeePerGas = block?.header.baseFeePerGas ?? DEFAULT_HEADER.baseFeePerGas!
     if (maxFeePerGas < baseFeePerGas) {
       const msg = _errorMsg(
         `Transaction's ${
@@ -325,12 +291,29 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   // EIP-3607: Reject transactions from senders with deployed code
   if (vm.common.isActivatedEIP(3607) && !equalsBytes(fromAccount.codeHash, KECCAK256_NULL)) {
-    const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', vm, block, tx)
-    throw new Error(msg)
+    const isActive7702 = vm.common.isActivatedEIP(7702)
+    switch (isActive7702) {
+      case true: {
+        const code = await state.getCode(caller)
+        // If the EOA is 7702-delegated, sending txs from this EOA is fine
+        if (equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) break
+        // Trying to send TX from account with code (which is not 7702-delegated), falls through and throws
+      }
+      default: {
+        const msg = _errorMsg(
+          'invalid sender address, address is not EOA (EIP-3607)',
+          vm,
+          block,
+          tx,
+        )
+        throw new Error(msg)
+      }
+    }
   }
 
   // Check balance against upfront tx cost
-  const upFrontCost = tx.getUpfrontCost(block.header.baseFeePerGas)
+  const baseFeePerGas = block?.header.baseFeePerGas ?? DEFAULT_HEADER.baseFeePerGas
+  const upFrontCost = tx.getUpfrontCost(baseFeePerGas)
   if (balance < upFrontCost) {
     if (opts.skipBalance === true && fromAccount.balance < upFrontCost) {
       if (tx.supports(Capability.EIP1559FeeMarket) === false) {
@@ -357,10 +340,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // EIP-1559 spec:
     // The signer must be able to afford the transaction
     // `assert balance >= gas_limit * max_fee_per_gas`
-    maxCost += tx.gasLimit * (tx as FeeMarketEIP1559Transaction).maxFeePerGas
+    maxCost += tx.gasLimit * (tx as FeeMarket1559Tx).maxFeePerGas
   }
 
-  if (tx instanceof BlobEIP4844Transaction) {
+  if (isBlob4844Tx(tx)) {
     if (!vm.common.isActivatedEIP(4844)) {
       const msg = _errorMsg('blob transactions are only valid with EIP4844 active', vm, block, tx)
       throw new Error(msg)
@@ -368,24 +351,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // EIP-4844 spec
     // the signer must be able to afford the transaction
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
-    const castTx = tx as BlobEIP4844Transaction
-    totalblobGas = vm.common.param('blobGasPerBlob') * BigInt(castTx.numBlobs())
-    maxCost += totalblobGas * castTx.maxFeePerBlobGas
+    totalblobGas = vm.common.param('blobGasPerBlob') * BigInt(tx.numBlobs())
+    maxCost += totalblobGas * tx.maxFeePerBlobGas
 
     // 4844 minimum blobGas price check
-    if (opts.block === undefined) {
+    blobGasPrice = opts.block?.header.getBlobGasPrice() ?? DEFAULT_HEADER.getBlobGasPrice()
+    if (tx.maxFeePerBlobGas < blobGasPrice) {
       const msg = _errorMsg(
-        `Block option must be supplied to compute blob gas price`,
-        vm,
-        block,
-        tx,
-      )
-      throw new Error(msg)
-    }
-    blobGasPrice = opts.block.header.getBlobGasPrice()
-    if (castTx.maxFeePerBlobGas < blobGasPrice) {
-      const msg = _errorMsg(
-        `Transaction's maxFeePerBlobGas ${castTx.maxFeePerBlobGas}) is less than block blobGasPrice (${blobGasPrice}).`,
+        `Transaction's maxFeePerBlobGas ${tx.maxFeePerBlobGas}) is less than block blobGasPrice (${blobGasPrice}).`,
         vm,
         block,
         tx,
@@ -427,23 +400,23 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // EIP-1559 tx
   if (tx.supports(Capability.EIP1559FeeMarket)) {
     // TODO make txs use the new getEffectivePriorityFee
-    const baseFee = block.header.baseFeePerGas!
+    const baseFee = block?.header.baseFeePerGas ?? DEFAULT_HEADER.baseFeePerGas!
     inclusionFeePerGas = tx.getEffectivePriorityFee(baseFee)
 
     gasPrice = inclusionFeePerGas + baseFee
   } else {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
-    gasPrice = (<LegacyTransaction>tx).gasPrice
+    gasPrice = (<LegacyTx>tx).gasPrice
     if (vm.common.isActivatedEIP(1559)) {
-      const baseFee = block.header.baseFeePerGas!
-      inclusionFeePerGas = (<LegacyTransaction>tx).gasPrice - baseFee
+      const baseFee = block?.header.baseFeePerGas ?? DEFAULT_HEADER.baseFeePerGas!
+      inclusionFeePerGas = (<LegacyTx>tx).gasPrice - baseFee
     }
   }
 
   // EIP-4844 tx
   let blobVersionedHashes
-  if (tx instanceof BlobEIP4844Transaction) {
-    blobVersionedHashes = (tx as BlobEIP4844Transaction).blobVersionedHashes
+  if (isBlob4844Tx(tx)) {
+    blobVersionedHashes = tx.blobVersionedHashes
   }
 
   // Update from account's balance
@@ -456,9 +429,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   await vm.evm.journal.putAccount(caller, fromAccount)
 
-  const writtenAddresses = new Set<string>()
+  let gasRefund = BIGINT_0
+
   if (tx.supports(Capability.EIP7702EOACode)) {
-    // Add contract code for authroity tuples provided by EIP 7702 tx
+    // Add contract code for authority tuples provided by EIP 7702 tx
     const authorizationList = (<EIP7702CompatibleTx>tx).authorizationList
     const MAGIC = new Uint8Array([5])
     for (let i = 0; i < authorizationList.length; i++) {
@@ -472,33 +446,59 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
       // Address to take code from
       const address = data[1]
-      const nonceList = data[2]
+      const nonce = data[2]
       const yParity = bytesToBigInt(data[3])
       const r = data[4]
       const s = data[5]
 
-      const rlpdSignedMessage = RLP.encode([chainId, address, nonceList])
+      const rlpdSignedMessage = RLP.encode([chainId, address, nonce])
       const toSign = keccak256(concatBytes(MAGIC, rlpdSignedMessage))
-      const pubKey = ecrecover(toSign, yParity, r, s)
+      let pubKey
+      try {
+        pubKey = ecrecover(toSign, yParity, r, s)
+      } catch (e) {
+        // Invalid signature, continue
+        continue
+      }
       // Address to set code to
       const authority = new Address(publicToAddress(pubKey))
-      const account = (await vm.stateManager.getAccount(authority)) ?? new Account()
+      const accountMaybeUndefined = await vm.stateManager.getAccount(authority)
+      const accountExists = accountMaybeUndefined !== undefined
+      const account = accountMaybeUndefined ?? new Account()
 
-      if (account.isContract()) {
-        // Note: vm also checks if the code has already been set once by a previous tuple
-        // So, if there are multiply entires for the same address, then vm is fine
-        continue
-      }
-      if (nonceList.length !== 0 && account.nonce !== bytesToBigInt(nonceList[0])) {
-        continue
-      }
-
-      const addressConverted = new Address(address)
-      const addressCode = await vm.stateManager.getCode(addressConverted)
-      await vm.stateManager.putCode(authority, addressCode)
-
-      writtenAddresses.add(authority.toString())
+      // Add authority address to warm addresses
       vm.evm.journal.addAlwaysWarmAddress(authority.toString())
+      if (account.isContract()) {
+        const code = await vm.stateManager.getCode(authority)
+        if (!equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
+          // Account is a "normal" contract
+          continue
+        }
+      }
+
+      // Nonce check
+      if (caller.toString() === authority.toString()) {
+        if (account.nonce + BIGINT_1 !== bytesToBigInt(nonce)) {
+          // Edge case: caller is the authority, so is self-signing the delegation
+          // In this case, we "virtually" bump the account nonce by one
+          // We CANNOT put this updated nonce into the account trie, because then
+          // the EVM will bump the nonce once again, thus resulting in a wrong nonce
+          continue
+        }
+      } else if (account.nonce !== bytesToBigInt(nonce)) {
+        continue
+      }
+
+      if (accountExists) {
+        const refund = tx.common.param('perEmptyAccountCost') - tx.common.param('perAuthBaseGas')
+        gasRefund += refund
+      }
+
+      account.nonce++
+      await vm.evm.journal.putAccount(authority, account)
+
+      const addressCode = concatBytes(DELEGATION_7702_FLAG, address)
+      await vm.stateManager.putCode(authority, addressCode)
     }
   }
 
@@ -582,12 +582,12 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Add blob gas used to result
-  if (isBlobEIP4844Tx(tx)) {
+  if (isBlob4844Tx(tx)) {
     results.blobGasUsed = totalblobGas
   }
 
   // Process any gas refund
-  let gasRefund = results.execResult.gasRefund ?? BIGINT_0
+  gasRefund += results.execResult.gasRefund ?? BIGINT_0
   results.gasRefund = gasRefund
   const maxRefundQuotient = vm.common.param('maxRefundQuotient')
   if (gasRefund !== BIGINT_0) {
@@ -622,15 +622,15 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Update miner's balance
   let miner
   if (vm.common.consensusType() === ConsensusType.ProofOfAuthority) {
-    miner = block.header.cliqueSigner()
+    miner = cliqueSigner(block?.header ?? DEFAULT_HEADER)
   } else {
-    miner = block.header.coinbase
+    miner = block?.header.coinbase ?? DEFAULT_HEADER.coinbase
   }
 
   let minerAccount = await state.getAccount(miner)
   if (minerAccount === undefined) {
     if (vm.common.isActivatedEIP(6800)) {
-      ;(state as StatelessVerkleStateManager).accessWitness!.touchAndChargeProofOfAbsence(miner)
+      state.accessWitness!.touchAndChargeProofOfAbsence(miner)
     }
     minerAccount = new Account()
   }
@@ -642,7 +642,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (vm.common.isActivatedEIP(6800)) {
     // use vm utility to build access but the computed gas is not charged and hence free
-    ;(state as StatelessVerkleStateManager).accessWitness!.touchTxTargetAndComputeGas(miner, {
+    state.accessWitness!.touchTxTargetAndComputeGas(miner, {
       sendsValue: true,
     })
   }
@@ -679,15 +679,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         debug(`tx selfdestruct on address=${address}`)
       }
     }
-  }
-
-  /**
-   * Cleanup code of accounts written to in a 7702 transaction
-   */
-
-  for (const str of writtenAddresses) {
-    const address = Address.fromString(str)
-    await vm.stateManager.putCode(address, new Uint8Array())
   }
 
   if (enableProfiler) {
@@ -736,7 +727,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Generate the tx receipt
-  const gasUsed = opts.blockGasUsed !== undefined ? opts.blockGasUsed : block.header.gasUsed
+  const gasUsed =
+    opts.blockGasUsed !== undefined
+      ? opts.blockGasUsed
+      : (block?.header.gasUsed ?? DEFAULT_HEADER.gasUsed)
   const cumulativeGasUsed = gasUsed + results.totalGasSpent
   results.receipt = await generateTxReceipt(
     vm,
@@ -845,7 +839,7 @@ export async function generateTxReceipt(
     }
   } else {
     // Typed EIP-2718 Transaction
-    if (isBlobEIP4844Tx(tx)) {
+    if (isBlob4844Tx(tx)) {
       receipt = {
         blobGasUsed,
         blobGasPrice,
@@ -868,8 +862,9 @@ export async function generateTxReceipt(
  * @param msg Base error message
  * @hidden
  */
-function _errorMsg(msg: string, vm: VM, block: Block, tx: TypedTransaction) {
-  const blockErrorStr = 'errorStr' in block ? block.errorStr() : 'block'
+function _errorMsg(msg: string, vm: VM, block: Block | undefined, tx: TypedTransaction) {
+  const blockOrHeader = block ?? DEFAULT_HEADER
+  const blockErrorStr = 'errorStr' in blockOrHeader ? blockOrHeader.errorStr() : 'block'
   const txErrorStr = 'errorStr' in tx ? tx.errorStr() : 'tx'
 
   const errorMsg = `${msg} (${vm.errorStr()} -> ${blockErrorStr} -> ${txErrorStr})`

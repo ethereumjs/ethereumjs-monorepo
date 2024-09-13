@@ -1,13 +1,13 @@
 import { Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { Blob4844Tx } from '@ethereumjs/tx'
 import {
-  Address,
   BIGINT_1,
   BIGINT_2,
   TypeOutput,
   bigIntToUnpaddedBytes,
   bytesToHex,
   concatBytes,
+  createZeroAddress,
   equalsBytes,
   toBytes,
   toType,
@@ -104,13 +104,8 @@ export class PendingBlock {
     const { timestamp, mixHash, parentBeaconBlockRoot, coinbase } = headerData
     let { gasLimit } = parentBlock.header
 
-    if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
-      throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
-    }
-    const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
     vm.common.setHardforkBy({
       blockNumber: number,
-      td,
       timestamp,
     })
 
@@ -140,7 +135,7 @@ export class PendingBlock {
         const validatorIndex = bigIntToUnpaddedBytes(
           toType(withdrawal.validatorIndex ?? 0, TypeOutput.BigInt),
         )
-        const address = toType(withdrawal.address ?? Address.zero(), TypeOutput.Uint8Array)
+        const address = toType(withdrawal.address ?? createZeroAddress(), TypeOutput.Uint8Array)
         const amount = bigIntToUnpaddedBytes(toType(withdrawal.amount ?? 0, TypeOutput.BigInt))
         withdrawalsBufTemp.push(concatBytes(indexBuf, validatorIndex, address, amount))
       }
@@ -189,7 +184,7 @@ export class PendingBlock {
       withdrawals,
       blockOpts: {
         putBlockIntoBlockchain: false,
-        setHardfork: td,
+        setHardfork: true,
       },
     })
 
@@ -324,7 +319,7 @@ export class PendingBlock {
       switch (addTxResult) {
         case AddTxResult.Success:
           // Push the tx in blobTxs only after successful addTransaction
-          if (tx instanceof BlobEIP4844Transaction) blobTxs.push(tx)
+          if (tx instanceof Blob4844Tx) blobTxs.push(tx)
           break
 
         case AddTxResult.BlockFull:
@@ -384,10 +379,10 @@ export class PendingBlock {
   /**
    * An internal helper for storing the blob bundle associated with each transaction in an EIP4844 world
    * @param payloadId the payload Id of the pending block
-   * @param txs an array of {@BlobEIP4844Transaction } transactions
+   * @param txs an array of {@Blob4844Tx } transactions
    * @param blockHash the blockhash of the pending block (computed from the header data provided)
    */
-  private constructBlobsBundle = (payloadId: string, txs: BlobEIP4844Transaction[]) => {
+  private constructBlobsBundle = (payloadId: string, txs: Blob4844Tx[]) => {
     let blobs: Uint8Array[] = []
     let commitments: Uint8Array[] = []
     let proofs: Uint8Array[] = []
@@ -399,7 +394,7 @@ export class PendingBlock {
     }
 
     for (let tx of txs) {
-      tx = tx as BlobEIP4844Transaction
+      tx = tx as Blob4844Tx
       if (tx.blobs !== undefined && tx.blobs.length > 0) {
         blobs = blobs.concat(tx.blobs)
         commitments = commitments.concat(tx.kzgCommitments!)

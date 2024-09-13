@@ -2,26 +2,26 @@ import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import blocks from '../../testdata/blocks/beacon.json'
-import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import { getRpcClient, setupChain } from '../helpers.js'
+import { beaconData } from '../../testdata/blocks/beacon.js'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
+import { getRPCClient, setupChain } from '../helpers.js'
 
 const method = 'engine_newPayloadV3'
 
-// blocks are missing excessBlobGas and blobGasUsed which will be set to default 0 for 4844 blocks
+// Blocks are missing excessBlobGas and blobGasUsed which will be set to default 0 for 4844 blocks
 // however its not required to set to correct value to test for versioned hashes test cases
-const [blockData] = blocks
+const [blockData] = beaconData
 
 describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
     const kzg = await loadKZG()
 
-    const { server } = await setupChain(genesisJSON, 'post-merge', {
+    const { server } = await setupChain(eip4844Data, 'post-merge', {
       engine: true,
       customCrypto: { kzg },
     })
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const parentBeaconBlockRoot =
       '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2bea7961a639ef29d64'
     const blockDataExtraVersionedHashes = [

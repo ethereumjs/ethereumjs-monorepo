@@ -2,15 +2,15 @@ import { assert, describe, it } from 'vitest'
 
 import { ENR } from '../src/dns/index.js'
 
-import * as testdata from './testdata.json'
+import { testData } from './testdata.js'
 
-const dns = testdata.dns
+const dns = testData.dns
 
 describe('ENR tests', () => {
   // Root DNS entries
   it('ENR (root): should parse and verify and DNS root entry', () => {
     const subdomain = ENR.parseAndVerifyRoot(dns.enrRoot, dns.publicKey)
-    assert.equal(subdomain, 'JORXBYVVM7AEKETX5DGXW44EAY', 'returns correct subdomain')
+    assert.equal(subdomain, 'JORXBYVVM7AEKETX5DGXW44EAY', 'returns correct subdomain') // cspell:disable-line
   })
 
   it('ENR (root): should error if DNS root entry is mis-prefixed', () => {
@@ -79,9 +79,11 @@ describe('ENR tests', () => {
   // Branch entries
   it('ENR (branch): should parse and verify a single component DNS branch entry', () => {
     const expected = [
+      // cspell:disable
       'D2SNLTAGWNQ34NTQTPHNZDECFU',
       '67BLTJEU5R2D5S3B4QKJSBRFCY',
       'A2HDMZBB4JIU53VTEGC4TG6P4A',
+      // cspell:enable
     ]
 
     const branches = ENR.parseBranch(dns.enrBranch)

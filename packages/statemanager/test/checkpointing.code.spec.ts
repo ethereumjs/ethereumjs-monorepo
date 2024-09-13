@@ -2,7 +2,7 @@ import { type StateManagerInterface } from '@ethereumjs/common'
 import { Account, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { DefaultStateManager, SimpleStateManager } from '../src/index.js'
+import { Caches, MerkleStateManager, SimpleStateManager } from '../src/index.js'
 
 const codeEval = async (
   sm: StateManagerInterface,
@@ -18,7 +18,7 @@ const codeEval = async (
 describe('StateManager -> Code Checkpointing', () => {
   const address = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
 
-  const stateManagers = [DefaultStateManager, SimpleStateManager]
+  const stateManagers = [MerkleStateManager, SimpleStateManager]
 
   const value = hexToBytes('0x01')
   const root = hexToBytes('0x5fe7f977e71dba2ea1a68e21057beebb9be2ac30c6410aa38d4f3fbe41dcffd2')
@@ -93,7 +93,19 @@ describe('StateManager -> Code Checkpointing', () => {
   for (const SM of stateManagers) {
     for (const c of codeSets) {
       it(`No CP -> C1 -> Flush() (-> C1)`, async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.putCode(address, c.c1.value)
@@ -107,7 +119,12 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`CP -> C1.1 -> Commit -> Flush() (-> C1.1)`, async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
         await sm.putAccount(address, new Account())
 
         await sm.checkpoint()
@@ -121,7 +138,13 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`CP -> C1.1 -> Revert -> Flush() (-> Undefined)`, async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.checkpoint()
@@ -137,7 +160,13 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`C1.1 -> CP -> Commit -> Flush() (-> C1.1)`, async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.putCode(address, c.c1.value)
@@ -151,7 +180,13 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`C1.1 -> CP -> Revert -> Flush() (-> C1.1)`, async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.putCode(address, c.c1.value)
@@ -165,7 +200,13 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`C1.1 -> CP -> C1.2 -> Commit -> Flush() (-> C1.2)`, async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.putCode(address, c.c1.value)
@@ -180,7 +221,13 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`C1.1 -> CP -> C1.2 -> Commit -> C1.3 -> Flush() (-> C1.3)`, async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.putCode(address, c.c1.value)
@@ -196,7 +243,13 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`C1.1 -> CP -> C1.2 -> C1.3 -> Commit -> Flush() (-> C1.3)`, async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.putCode(address, c.c1.value)
@@ -212,7 +265,13 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`CP -> C1.1 -> C1.2 -> Commit -> Flush() (-> C1.2)`, async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.checkpoint()
@@ -227,7 +286,13 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`CP -> C1.1 -> C1.2 -> Revert -> Flush() (-> Undefined)`, async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.checkpoint()
@@ -243,7 +308,13 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it(`C1.1 -> CP -> C1.2 -> Revert -> Flush() (-> C1.1)`, async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.putCode(address, c.c1.value)
@@ -258,7 +329,13 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it('C1.1 -> CP -> C1.2 -> CP -> C1.3 -> Commit -> Commit -> Flush() (-> C1.3)', async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.putCode(address, c.c1.value)
@@ -276,7 +353,13 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it('C1.1 -> CP -> C1.2 -> CP -> C1.3 -> Commit -> Revert -> Flush() (-> C1.1)', async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.putCode(address, c.c1.value)
@@ -294,7 +377,13 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it('C1.1 -> CP -> C1.2 -> CP -> C1.3 -> Revert -> Commit -> Flush() (-> C1.2)', async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.putCode(address, c.c1.value)
@@ -312,7 +401,13 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it('C1.1 -> CP -> C1.2 -> CP -> C1.3 -> Revert -> C1.4 -> Commit -> Flush() (-> C1.4)', async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.putCode(address, c.c1.value)
@@ -331,7 +426,13 @@ describe('StateManager -> Code Checkpointing', () => {
       })
 
       it('C1.1 -> CP -> C1.2 -> CP -> C1.3 -> Revert -> C1.4 -> CP -> C1.5 -> Commit -> Commit -> Flush() (-> C1.5)', async () => {
-        const sm = new SM()
+        let sm: MerkleStateManager | SimpleStateManager
+        if (SM === MerkleStateManager) {
+          sm = new SM({ caches: new Caches() })
+        } else {
+          sm = new SM()
+        }
+
         await sm.putAccount(address, new Account())
 
         await sm.putCode(address, c.c1.value)

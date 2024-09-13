@@ -7,11 +7,15 @@
   "scripts": {
     "checkNpmVersion": "./scripts/check-npm-version.sh",
     "clean": "./config/cli/clean-root.sh",
+    "cspell": "npm run cspell:ts && npm run cspell:md",
+    "cspell:ts": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/wallet/test\" -e \"./packages/client/archive\" -c ./config/cspell-ts.json \"./packages/**/*.ts\" --cache --show-suggestions --show-context",
+    "cspell:md": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/client/withdrawals-testnet/**\" -e \"./packages/**/docs\" -c ./config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
     "docs:build": "npm run docs:build --workspaces --if-present",
     "e2e:inject": "node ./scripts/e2e-inject-resolutions.js",
     "e2e:publish": "./scripts/e2e-publish.sh",
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "examples": "npm run examples --workspaces --if-present",
+    "examples:build": "npm run examples:build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "lint:fix": "npm run lint:fix --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
@@ -30,9 +34,10 @@
     "@types/tape": "4.13.2",
     "@typescript-eslint/eslint-plugin": "5.33.1",
     "@typescript-eslint/parser": "5.33.1",
-    "@vitest/coverage-v8": "^v2.0.0-beta.1",
-    "@vitest/ui": "^v2.0.0-beta.12",
+    "@vitest/coverage-v8": "^2.1.0",
+    "@vitest/ui": "^2.1.0",
     "c8": "7.12.0",
+    "cspell": "^8.13.3",
     "embedme": "1.22.1",
     "eslint": "8.57.0",
     "eslint-config-prettier": "^9.1.0",
@@ -51,16 +56,19 @@
     "sort-package-json": "1.57.0",
     "tape": "5.6.0",
     "tsx": "^4.6.2",
-    "typedoc": "0.23.10",
-    "typedoc-plugin-markdown": "3.13.4",
-    "typescript": "4.7.4",
+    "typedoc": "^0.26.6",
+    "typedoc-plugin-markdown": "^4.2.5",
+    "typescript": "5.0.4",
     "vite-plugin-node-polyfills": "^0.21.0",
     "vite-plugin-top-level-await": "^1.4.1",
     "vite-plugin-wasm": "^3.3.0",
-    "vitest": "^v2.0.0-beta.12"
+    "vitest": "^2.1.0"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "*"
   },
   "peerDependencies": {
-    "@vitest/browser": "^v2.0.0-beta.12",
+    "@vitest/browser": "2.1.0",
     "webdriverio": "^8.39.0"
   },
   "peerDependenciesMeta": {

@@ -1,7 +1,7 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Goerli, Holesky } from '@ethereumjs/common'
 import { assert, describe, it, vi } from 'vitest'
 
-import { baseSetup, createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
+import { baseSetup, createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 const method = 'net_version'
 
@@ -28,9 +28,9 @@ describe(method, () => {
 
   it('call on holesky', async () => {
     const manager = createManager(
-      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Holesky }) }),
+      await createClient({ opened: true, commonChain: new Common({ chain: Holesky }) }),
     )
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [])
 
@@ -42,9 +42,9 @@ describe(method, () => {
 
   it('call on goerli', async () => {
     const manager = createManager(
-      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) }),
+      await createClient({ opened: true, commonChain: new Common({ chain: Goerli }) }),
     )
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [])
     const { result } = res

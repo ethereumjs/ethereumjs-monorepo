@@ -86,7 +86,7 @@ describe('fetchFromProvider', () => {
     vi.unstubAllGlobals()
   })
 
-  it('handles the corner case of res.text() failing because of a network error not recieving the full response', async () => {
+  it('handles the corner case of res.text() failing because of a network error not receiving the full response', async () => {
     vi.stubGlobal('fetch', async (_url: string, _req: any) => {
       return {
         text: async () => {

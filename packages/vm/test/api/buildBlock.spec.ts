@@ -1,33 +1,44 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import {
+  cliqueSigner,
+  cliqueVerifySignature,
+  createBlock,
+  createSealedCliqueBlock,
+} from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
-  Chain,
   Common,
   ConsensusAlgorithm,
   Hardfork,
+  Mainnet,
   createCommonFromGethGenesis,
 } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
-import { create1559FeeMarketTx, createLegacyTx } from '@ethereumjs/tx'
-import { Address, concatBytes, createAccount, hexToBytes } from '@ethereumjs/util'
+import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
+import {
+  Address,
+  concatBytes,
+  createAccount,
+  createAddressFromPrivateKey,
+  createZeroAddress,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { buildBlock, runBlock } from '../../src/index.js'
-import { VM } from '../../src/vm.js'
+import { buildBlock, createVM, runBlock } from '../../src/index.js'
 
 import { setBalance } from './utils.js'
 
-import type { ConsensusDict } from '@ethereumjs/blockchain'
+import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
-const pKeyAddress = Address.fromPrivateKey(privateKey)
+const pKeyAddress = createAddressFromPrivateKey(privateKey)
 
 describe('BlockBuilder', () => {
   it('should build a valid block', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisBlock = createBlockFromBlockData({ header: { gasLimit: 50000 } }, { common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const genesisBlock = createBlock({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
 
     await setBalance(vm, pKeyAddress)
 
@@ -41,7 +52,7 @@ describe('BlockBuilder', () => {
 
     // Set up tx
     const tx = createLegacyTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false },
     ).sign(privateKey)
 
@@ -60,9 +71,9 @@ describe('BlockBuilder', () => {
   })
 
   it('should throw if adding a transaction exceeds the block gas limit', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const vm = await VM.create({ common })
-    const genesis = createBlockFromBlockData({}, { common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const vm = await createVM({ common })
+    const genesis = createBlock({}, { common })
 
     const blockBuilder = await buildBlock(vm, { parentBlock: genesis })
     const gasLimit = genesis.header.gasLimit + BigInt(1)
@@ -89,8 +100,8 @@ describe('BlockBuilder', () => {
   })
 
   it('should correctly seal a PoW block', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisBlock = createBlockFromBlockData({ header: { gasLimit: 50000 } }, { common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const genesisBlock = createBlock({ header: { gasLimit: 50000 } }, { common })
 
     const consensusDict: ConsensusDict = {}
     consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())
@@ -100,7 +111,7 @@ describe('BlockBuilder', () => {
       validateConsensus: false,
       consensusDict,
     })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
 
     await setBalance(vm, pKeyAddress)
 
@@ -111,7 +122,7 @@ describe('BlockBuilder', () => {
 
     // Set up tx
     const tx = createLegacyTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false },
     ).sign(privateKey)
 
@@ -125,7 +136,9 @@ describe('BlockBuilder', () => {
 
     assert.deepEqual(block.header.mixHash, sealOpts.mixHash)
     assert.deepEqual(block.header.nonce, sealOpts.nonce)
-    assert.doesNotThrow(async () => vm.blockchain.consensus!.validateDifficulty(block.header))
+    assert.doesNotThrow(async () =>
+      (vm.blockchain as Blockchain).consensus!.validateDifficulty(block.header),
+    )
   })
 
   it('should correctly seal a PoA block', async () => {
@@ -191,13 +204,14 @@ describe('BlockBuilder', () => {
 
     // extraData: [vanity, activeSigner, seal]
     const extraData = concatBytes(new Uint8Array(32), signer.address.toBytes(), new Uint8Array(65))
-    const cliqueSigner = signer.privateKey
-    const genesisBlock = createBlockFromBlockData(
+    const cliqueSignerKey = signer.privateKey
+    const genesisBlock = createSealedCliqueBlock(
       { header: { gasLimit: 50000, extraData } },
-      { common, cliqueSigner },
+      cliqueSignerKey,
+      { common },
     )
     const blockchain = await createBlockchain({ genesisBlock, common })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
 
     // add balance for tx
     await vm.stateManager.putAccount(signer.address, createAccount({ balance: 100000 }))
@@ -205,12 +219,12 @@ describe('BlockBuilder', () => {
     const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
       headerData: { difficulty: 2, extraData: new Uint8Array(97) },
-      blockOpts: { cliqueSigner, freeze: false },
+      blockOpts: { cliqueSigner: cliqueSignerKey, freeze: false },
     })
 
     // Set up tx
     const tx = createLegacyTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false },
     ).sign(signer.privateKey)
 
@@ -218,19 +232,19 @@ describe('BlockBuilder', () => {
 
     const block = await blockBuilder.build()
 
-    assert.ok(block.header.cliqueVerifySignature([signer.address]), 'should verify signature')
+    assert.ok(cliqueVerifySignature(block.header, [signer.address]), 'should verify signature')
     assert.deepEqual(
-      block.header.cliqueSigner(),
+      cliqueSigner(block.header),
       signer.address,
       'should recover the correct signer address',
     )
   })
 
   it('should throw if block already built or reverted', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisBlock = createBlockFromBlockData({ header: { gasLimit: 50000 } }, { common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const genesisBlock = createBlock({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
 
     await setBalance(vm, pKeyAddress)
 
@@ -240,7 +254,7 @@ describe('BlockBuilder', () => {
     })
 
     const tx = createLegacyTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false },
     ).sign(privateKey)
 
@@ -255,13 +269,13 @@ describe('BlockBuilder', () => {
         'block should be in reverted status',
       )
     } catch (error: any) {
-      assert.fail('shoud not throw')
+      assert.fail('should not throw')
     }
 
     blockBuilder = await buildBlock(vm, { parentBlock: genesisBlock })
 
     const tx2 = createLegacyTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1, nonce: 1 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 1, nonce: 1 },
       { common, freeze: false },
     ).sign(privateKey)
 
@@ -276,15 +290,15 @@ describe('BlockBuilder', () => {
         'block should be in reverted status',
       )
     } catch (error: any) {
-      assert.fail('shoud not throw')
+      assert.fail('should not throw')
     }
   })
 
   it('should build a block without any txs', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisBlock = createBlockFromBlockData({ header: { gasLimit: 50000 } }, { common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const genesisBlock = createBlock({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
     const vmCopy = await vm.shallowCopy()
 
     const blockBuilder = await buildBlock(vm, {
@@ -303,13 +317,13 @@ describe('BlockBuilder', () => {
   })
 
   it('should build a 1559 block with legacy and 1559 txs', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [1559] })
-    const genesisBlock = createBlockFromBlockData(
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London, eips: [1559] })
+    const genesisBlock = createBlock(
       { header: { gasLimit: 50000, baseFeePerGas: 100 } },
       { common },
     )
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
 
     await setBalance(vm, pKeyAddress)
 
@@ -323,12 +337,12 @@ describe('BlockBuilder', () => {
 
     // Set up underpriced txs to test error response
     const tx1 = createLegacyTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false },
     ).sign(privateKey)
 
-    const tx2 = create1559FeeMarketTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, maxFeePerGas: 10 },
+    const tx2 = createFeeMarket1559Tx(
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, maxFeePerGas: 10 },
       { common, freeze: false },
     ).sign(privateKey)
 
@@ -346,12 +360,12 @@ describe('BlockBuilder', () => {
 
     // Set up correctly priced txs
     const tx3 = createLegacyTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 101 },
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 101 },
       { common, freeze: false },
     ).sign(privateKey)
 
-    const tx4 = create1559FeeMarketTx(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, maxFeePerGas: 101, nonce: 1 },
+    const tx4 = createFeeMarket1559Tx(
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, maxFeePerGas: 101, nonce: 1 },
       { common, freeze: false },
     ).sign(privateKey)
 

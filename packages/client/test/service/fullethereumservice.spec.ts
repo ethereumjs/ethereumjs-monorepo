@@ -1,4 +1,4 @@
-import { Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { TransactionType, createTxFromTxData } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
@@ -7,9 +7,9 @@ import { Chain } from '../../src/blockchain/index.js'
 import { Config, SyncMode } from '../../src/config.js'
 import { RlpxServer } from '../../src/net/server/index.js'
 import { Event } from '../../src/types.js'
-import genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import { postMergeData } from '../testdata/geth-genesis/post-merge.js'
 
-import type { BeaconSynchronizer } from '../../src/sync'
+import type { BeaconSynchronizer } from '../../src/sync/index.js'
 import type { Log } from '@ethereumjs/evm'
 
 vi.mock('../../src/net/peerpool.js', () => {
@@ -96,7 +96,7 @@ describe('should open', async () => {
   expect(service.synchronizer!.open).toBeCalled()
   expect(server.addProtocols).toBeCalled()
   service.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
-    it('should syncronize', () => {
+    it('should synchronize', () => {
       assert.ok('synchronized')
     })
   })
@@ -211,13 +211,13 @@ describe('should call handleNewBlock on NewBlock and handleNewBlockHashes on New
 })
 
 describe('should ban peer for sending NewBlock/NewBlockHashes after merge', async () => {
-  const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Paris })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Paris })
   const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
   chain.config.chainCommon.setHardfork(Hardfork.Paris)
   const service = new FullEthereumService({ config, chain })
   service.pool.ban = () => {
-    it('should ban peeer', () => {
+    it('should ban peer', () => {
       assert.ok(true, 'banned peer when NewBlock/NewBlockHashes announced after Merge')
     })
   }
@@ -292,7 +292,7 @@ describe('should handle NewPooledTransactionHashes', async () => {
   const service = new FullEthereumService({ config, chain })
   service.txPool.handleAnnouncedTxHashes = async (msg, _peer, _pool) => {
     it('should handle NewPooledTransactionHashes', () => {
-      assert.deepEqual(msg[0], hexToBytes('0xabcd'), 'handled NewPooledTransactionhashes')
+      assert.deepEqual(msg[0], hexToBytes('0xabcd'), 'handled NewPooledTransactionHashes')
     })
   }
 
@@ -386,8 +386,8 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
 })
 
 describe('should start on beacon sync when past merge', async () => {
-  const common = createCommonFromGethGenesis(genesisJSON, { chain: 'post-merge' })
-  common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
+  const common = createCommonFromGethGenesis(postMergeData, { chain: 'post-merge' })
+  common.setHardforkBy({ blockNumber: BigInt(0) })
   const config = new Config({ accountCache: 10000, storageCache: 1000, common })
   const chain = await Chain.create({ config })
   it('should be available', () => {

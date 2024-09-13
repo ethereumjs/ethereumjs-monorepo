@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/genesis",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A module to provide genesis states of well known networks",
   "keywords": [
     "ethereum",
@@ -59,13 +59,13 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^4.3.0",
-    "@ethereumjs/util": "^9.0.3"
+    "@ethereumjs/common": "^4.4.0",
+    "@ethereumjs/util": "^9.1.0"
   },
   "engines": {
     "node": ">=18"
   },
   "devDependencies": {
-    "@ethereumjs/trie": "^6.2.0"
+    "@ethereumjs/trie": "^6.2.1"
   }
 }

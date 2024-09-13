@@ -108,7 +108,7 @@ export class ECIES {
     const x = ecdhX(this._remotePublicKey, privateKey)
     const key = concatKDF(x, 32)
     const ekey = key.subarray(0, 16) // encryption key
-    const mkey = crypto.createHash('sha256').update(key.subarray(16, 32)).digest() // MAC key
+    const mKey = crypto.createHash('sha256').update(key.subarray(16, 32)).digest() // MAC key
 
     // encrypt
     const IV = getRandomBytesSync(16)
@@ -121,7 +121,7 @@ export class ECIES {
       sharedMacData = Uint8Array.from([])
     }
     const tag = Uint8Array.from(
-      crypto.createHmac('sha256', mkey).update(concatBytes(dataIV, sharedMacData)).digest(),
+      crypto.createHmac('sha256', mKey).update(concatBytes(dataIV, sharedMacData)).digest(),
     )
 
     const publicKey = secp256k1.getPublicKey(privateKey, false)
@@ -144,14 +144,14 @@ export class ECIES {
     const x = ecdhX(publicKey, this._privateKey)
     const key = concatKDF(x, 32)
     const ekey = key.subarray(0, 16) // encryption key
-    const mkey = Uint8Array.from(crypto.createHash('sha256').update(key.subarray(16, 32)).digest()) // MAC key
+    const mKey = Uint8Array.from(crypto.createHash('sha256').update(key.subarray(16, 32)).digest()) // MAC key
 
     // check the tag
     if (!sharedMacData) {
       sharedMacData = Uint8Array.from([])
     }
     const _tag = crypto
-      .createHmac('sha256', mkey)
+      .createHmac('sha256', mKey)
       .update(concatBytes(dataIV, sharedMacData))
       .digest()
     assertEq(_tag, tag, 'should have valid tag', debug)
@@ -237,7 +237,7 @@ export class ECIES {
 
     let signature = null
     let recoveryId = null
-    let heid = null
+    let heId = null
     let remotePublicKey = null
     let nonce = null
 
@@ -246,7 +246,7 @@ export class ECIES {
 
       signature = decrypted.subarray(0, 64)
       recoveryId = decrypted[64]
-      heid = decrypted.subarray(65, 97) // 32 bytes
+      heId = decrypted.subarray(65, 97) // 32 bytes
       remotePublicKey = id2pk(decrypted.subarray(97, 161))
       nonce = decrypted.subarray(161, 193)
     } else {
@@ -277,10 +277,10 @@ export class ECIES {
 
     if (this._remoteEphemeralPublicKey === null) return
     this._ephemeralSharedSecret = ecdhX(this._remoteEphemeralPublicKey, this._ephemeralPrivateKey)
-    if (heid !== null && this._remoteEphemeralPublicKey !== null) {
+    if (heId !== null && this._remoteEphemeralPublicKey !== null) {
       assertEq(
         this._keccakFunction(pk2id(this._remoteEphemeralPublicKey)),
-        heid,
+        heId,
         'the hash of the ephemeral key should match',
         debug,
       )
@@ -356,7 +356,7 @@ export class ECIES {
     this.parseAckPlain(data.subarray(2), data.subarray(0, 2))
   }
 
-  createHeader(size: number): Uint8Array | undefined {
+  createBlockHeader(size: number): Uint8Array | undefined {
     const bufSize = zfill(intToBytes(size), 3)
     const headerData = RLP.encode([0, 0]) // [capability-id, context-id] (currently unused in spec)
     let header = concatBytes(bufSize, headerData)

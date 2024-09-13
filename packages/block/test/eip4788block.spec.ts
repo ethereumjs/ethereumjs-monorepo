@@ -1,18 +1,17 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlockFromBlockData } from '../src/constructors.js'
-import { BlockHeader } from '../src/header.js'
+import { createBlock, createBlockHeader } from '../src/index.js'
 
 describe('EIP4788 header tests', () => {
   it('should work', () => {
-    const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [4788] })
+    const earlyCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [4788] })
 
     assert.throws(
       () => {
-        BlockHeader.fromHeaderData(
+        createBlockHeader(
           {
             parentBeaconBlockRoot: zeros(32),
           },
@@ -28,7 +27,7 @@ describe('EIP4788 header tests', () => {
 
     assert.throws(
       () => {
-        BlockHeader.fromHeaderData(
+        createBlockHeader(
           {
             blobGasUsed: 1n,
           },
@@ -42,7 +41,7 @@ describe('EIP4788 header tests', () => {
       'should throw when setting blobGasUsed with EIP4844 not being activated',
     )
     assert.doesNotThrow(() => {
-      BlockHeader.fromHeaderData(
+      createBlockHeader(
         {
           excessBlobGas: 0n,
           blobGasUsed: 0n,
@@ -55,9 +54,9 @@ describe('EIP4788 header tests', () => {
       )
     }, 'correctly instantiates an EIP4788 block header')
 
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
-        header: BlockHeader.fromHeaderData({}, { common }),
+        header: createBlockHeader({}, { common }),
       },
       { common, skipConsensusFormatValidation: true },
     )

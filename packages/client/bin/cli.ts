@@ -1,22 +1,25 @@
 #!/usr/bin/env node
 
-import { createBlockFromValuesArray } from '@ethereumjs/block'
+import { createBlockFromBytesArray } from '@ethereumjs/block'
 import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
   Chain,
   Common,
   ConsensusAlgorithm,
   Hardfork,
+  Mainnet,
   createCommonFromGethGenesis,
-  getInitializedChains,
+  createCustomCommon,
+  getPresetChainConfig,
 } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
-  Address,
   BIGINT_2,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
+  createAddressFromPrivateKey,
+  createAddressFromString,
   ecrecover,
   ecsign,
   hexToBytes,
@@ -56,22 +59,22 @@ import { Event } from '../src/types.js'
 import { parseMultiaddrs } from '../src/util/index.js'
 import { setupMetrics } from '../src/util/metrics.js'
 
-import { helprpc, startRPCServers } from './startRpc.js'
+import { helpRPC, startRPCServers } from './startRPC.js'
 
 import type { Logger } from '../src/logging.js'
 import type { FullEthereumService } from '../src/service/index.js'
 import type { ClientOpts } from '../src/types.js'
-import type { RPCArgs } from './startRpc.js'
+import type { RPCArgs } from './startRPC.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { CustomCrypto } from '@ethereumjs/common'
-import type { GenesisState, PrefixedHexString } from '@ethereumjs/util'
+import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 import type { Server as RPCServer } from 'jayson/promise/index.js'
 
 type Account = [address: Address, privateKey: Uint8Array]
 
-const networks = Object.entries(getInitializedChains().names)
+const networks = Object.keys(Chain).map((network) => network.toLowerCase())
 
 let logger: Logger
 
@@ -82,12 +85,15 @@ const args: ClientOpts = yargs
   })
   .option('network', {
     describe: 'Network',
-    choices: networks.map((n) => n[1]).filter((el) => isNaN(parseInt(el))),
+    choices: networks,
+    coerce: (arg: string) => arg.toLowerCase(),
     default: 'mainnet',
   })
   .option('chainId', {
     describe: 'Chain ID',
-    choices: networks.map((n) => parseInt(n[0])).filter((el) => !isNaN(el)),
+    choices: Object.entries(Chain)
+      .map((n) => parseInt(n[1] as string))
+      .filter((el) => !isNaN(el)),
     default: undefined,
     conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and chainId
   })
@@ -95,7 +101,9 @@ const args: ClientOpts = yargs
     describe: 'Network ID',
     deprecated: true,
     deprecate: 'use --chainId instead',
-    choices: networks.map((n) => parseInt(n[0])).filter((el) => !isNaN(el)),
+    choices: Object.entries(Chain)
+      .map((n) => parseInt(n[1] as string))
+      .filter((el) => !isNaN(el)),
     default: undefined,
     conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and networkId
   })
@@ -218,7 +226,7 @@ const args: ClientOpts = yargs
     describe: 'Provide a file containing a hex encoded jwt secret for Engine RPC server',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
   })
-  .option('helpRpc', {
+  .option('helpRPC', {
     describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
     boolean: true,
   })
@@ -371,7 +379,7 @@ const args: ClientOpts = yargs
     describe:
       'Address for mining rewards (etherbase). If not provided, defaults to the primary account',
     string: true,
-    coerce: (coinbase) => Address.fromString(coinbase),
+    coerce: (coinbase) => createAddressFromString(coinbase),
   })
   .option('saveReceipts', {
     describe:
@@ -422,7 +430,7 @@ const args: ClientOpts = yargs
   })
   .option('isSingleNode', {
     describe:
-      'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automically activated in the "dev" mode',
+      'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automatically activated in the "dev" mode',
     boolean: true,
   })
   .option('vmProfileBlocks', {
@@ -452,7 +460,7 @@ const args: ClientOpts = yargs
   })
   .option('engineNewpayloadMaxExecute', {
     describe:
-      'Number of unexecuted blocks (including ancestors) that can be blockingly executed in engine`s new payload (if required and possible) to determine the validity of the block',
+      'Number of unexecuted blocks (including ancestors) that can be executed per-block in engine`s new payload (if required and possible) to determine the validity of the block',
     number: true,
   })
   .option('skipEngineExec', {
@@ -462,15 +470,9 @@ const args: ClientOpts = yargs
   })
   .option('ignoreStatelessInvalidExecs', {
     describe:
-      'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution faliures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
+      'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution failures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
     boolean: true,
     hidden: true,
-  })
-  .option('initialVerkleStateRoot', {
-    describe:
-      'Provides an initial stateRoot to start the StatelessVerkleStateManager. This is required to bootstrap verkle witness proof verification, since they depend on the stateRoot of the parent block',
-    string: true,
-    coerce: (initialVerkleStateRoot: PrefixedHexString) => hexToBytes(initialVerkleStateRoot),
   })
   .option('useJsCrypto', {
     describe: 'Use pure Javascript cryptography functions',
@@ -595,14 +597,9 @@ async function startExecutionFrom(client: EthereumClient) {
 
   const startExecutionBlock = await client.chain.getBlock(startExecutionFrom)
   const startExecutionParent = await client.chain.getBlock(startExecutionBlock.header.parentHash)
-  const startExecutionParentTd = await client.chain.getTd(
-    startExecutionParent.hash(),
-    startExecutionParent.header.number,
-  )
 
   const startExecutionHardfork = client.config.execCommon.getHardforkBy({
     blockNumber: startExecutionBlock.header.number,
-    td: startExecutionParentTd,
     timestamp: startExecutionBlock.header.timestamp,
   })
 
@@ -682,7 +679,7 @@ async function startClient(
       let buf = RLP.decode(blockRlp, true)
       while (buf.data?.length > 0 || buf.remainder?.length > 0) {
         try {
-          const block = createBlockFromValuesArray(buf.data as BlockBytes, {
+          const block = createBlockFromBytesArray(buf.data as BlockBytes, {
             common: config.chainCommon,
             setHardfork: true,
           })
@@ -806,6 +803,8 @@ async function inputAccounts() {
   const accounts: Account[] = []
 
   const rl = readline.createInterface({
+    // @ts-ignore Looks like there is a type incompatibility in NodeJS ReadStream vs what this package expects
+    // TODO: See whether package needs to be updated or not
     input: process.stdin,
     output: process.stdout,
   })
@@ -835,14 +834,14 @@ async function inputAccounts() {
     const isFile = existsSync(path.resolve(addresses[0]))
     if (!isFile) {
       for (const addressString of addresses) {
-        const address = Address.fromString(addressString)
+        const address = createAddressFromString(addressString)
         const inputKey = (await question(
           `Please enter the 0x-prefixed private key to unlock ${address}:\n`,
         )) as PrefixedHexString
         ;(rl as any).history = (rl as any).history.slice(1)
         const privKey = hexToBytes(inputKey)
-        const derivedAddress = Address.fromPrivateKey(privKey)
-        if (address.equals(derivedAddress)) {
+        const derivedAddress = createAddressFromPrivateKey(privKey)
+        if (address.equals(derivedAddress) === true) {
           accounts.push([address, privKey])
         } else {
           console.error(
@@ -854,7 +853,7 @@ async function inputAccounts() {
     } else {
       const acc = readFileSync(path.resolve(args.unlock!), 'utf-8').replace(/(\r\n|\n|\r)/gm, '')
       const privKey = hexToBytes(`0x${acc}`) // See docs: acc has to be non-zero prefixed in the file
-      const derivedAddress = Address.fromPrivateKey(privKey)
+      const derivedAddress = createAddressFromPrivateKey(privKey)
       accounts.push([derivedAddress, privKey])
     }
   } catch (e: any) {
@@ -870,7 +869,7 @@ async function inputAccounts() {
  */
 function generateAccount(): Account {
   const privKey = randomBytes(32)
-  const address = Address.fromPrivateKey(privKey)
+  const address = createAddressFromPrivateKey(privKey)
   console.log('='.repeat(50))
   console.log('Account generated for mining blocks:')
   console.log(`Address: ${address}`)
@@ -923,16 +922,17 @@ const stopClient = async (
  * Main entry point to start a client
  */
 async function run() {
-  if (args.helpRpc === true) {
+  if (args.helpRPC === true) {
     // Output RPC help and exit
-    return helprpc()
+    return helpRPC()
   }
 
   // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
   // loaded and initialized on the sharding hardfork activation
   // Give chainId priority over networkId
   // Give networkId precedence over network name
-  const chain = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
+  const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
+  const chain = getPresetChainConfig(chainName)
   const cryptoFunctions: CustomCrypto = {}
   const kzg = await loadKZG()
 
@@ -1017,12 +1017,11 @@ async function run() {
     try {
       const customChainParams = JSON.parse(readFileSync(args.customChain, 'utf-8'))
       customGenesisState = JSON.parse(readFileSync(args.customGenesisState!, 'utf-8'))
-      common = new Common({
-        chain: customChainParams.name,
-        customChains: [customChainParams],
+      common = createCustomCommon(customChainParams, Mainnet, {
         customCrypto: cryptoFunctions,
       })
     } catch (err: any) {
+      console.error(err)
       console.error(`invalid chain parameters: ${err.message}`)
       process.exit()
     }
@@ -1117,10 +1116,16 @@ async function run() {
       const reqUrl = new url.URL(req.url, `http://${req.headers.host}`)
       const route = reqUrl.pathname
 
-      if (route === '/metrics') {
-        // Return all metrics in the Prometheus exposition format
-        res.setHeader('Content-Type', register.contentType)
-        res.end(await register.metrics())
+      switch (route) {
+        case '/metrics':
+          // Return all metrics in the Prometheus exposition format
+          res.setHeader('Content-Type', register.contentType)
+          res.end(await register.metrics())
+          break
+        default:
+          res.statusCode = 404
+          res.end('Not found')
+          return
       }
     })
     // Start the HTTP server which exposes the metrics on http://localhost:${args.prometheusPort}/metrics

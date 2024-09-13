@@ -24,8 +24,8 @@ RlpxPeer.prototype.accept = vi.fn((input: object) => {
 })
 RlpxPeer.capabilities = vi.fn()
 vi.doMock('../../../src/net/peer/rlpxpeer', () => {
-  {
-    RlpxPeer
+  return {
+    RlpxPeer,
   }
 })
 
@@ -41,8 +41,8 @@ DPT.prototype.bind = vi.fn()
 DPT.prototype.getDnsPeers = vi.fn()
 
 vi.doMock('@ethereumjs/devp2p', () => {
-  {
-    RLPx
+  return {
+    RLPx,
   }
 })
 
@@ -159,7 +159,7 @@ describe('should return rlpx server info with ip4 as default', async () => {
   }
   ;(server as any).rlpx = { destroy: vi.fn() }
 
-  server.rlpx!.id = hexToBytes('0x' + mockId)
+  server.rlpx!.id = hexToBytes(`0x${mockId}`)
   await server.start()
   const nodeInfo = server.getRlpxInfo()
   it('tests nodeinfo', () => {
@@ -187,9 +187,9 @@ describe('should return rlpx server info with ip6', async () => {
   const server = new RlpxServer({
     config,
     bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
-  }) as any
-  ;(server as any).initDpt = vi.fn()
-  ;(server as any).initRlpx = vi.fn()
+  })
+  server['initDpt'] = vi.fn()
+  server['initRlpx'] = vi.fn()
   server.dpt = {
     destroy: vi.fn(),
     getDnsPeers: vi.fn(),
@@ -205,10 +205,11 @@ describe('should return rlpx server info with ip6', async () => {
       )
         throw new Error('err0')
     }),
-  }
+  } as any
   ;(server as any).rlpx = { destroy: vi.fn() }
 
-  server.rlpx!.id = hexToBytes('0x' + mockId)
+  //@ts-expect-error
+  server.rlpx!.id = hexToBytes(`0x${mockId}`)
 
   config.events.on(Event.SERVER_ERROR, (err) => {
     it('should error', async () => {
@@ -243,9 +244,9 @@ describe('should handle errors', () => {
       if (err.message === 'err1') assert.ok(true, 'got peer error - err1')
     })
   })
-  ;(server as any).error(new Error('EPIPE'))
-  ;(server as any).error(new Error('err0'))
-  ;(server as any).error(new Error('err1'))
+  server['error'](new Error('EPIPE'))
+  server['error'](new Error('err0'))
+  server['error'](new Error('err1'))
   it('should count errors', async () => {
     assert.equal(count, 2, 'ignored error')
   })
@@ -286,7 +287,7 @@ describe('should handles errors from id-less peers', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const server = new RlpxServer({ config })
   const rlpxPeer = new RlpxPeer()
-  ;(rlpxPeer as any).getId = vi.fn().mockReturnValue(utf8ToBytes('test'))
+  rlpxPeer.getId = vi.fn().mockReturnValue(utf8ToBytes('test'))
   RlpxPeer.prototype.accept = vi.fn((input) => {
     if (JSON.stringify(input[0]) === JSON.stringify(rlpxPeer) && input[1] instanceof RlpxPeer) {
       return
@@ -294,7 +295,7 @@ describe('should handles errors from id-less peers', async () => {
       throw new Error('expected input check has failed')
     }
   })
-  ;(server as any).initRlpx().catch((error: Error) => {
+  server['initRlpx']().catch((error: Error) => {
     throw error
   })
   config.events.on(Event.SERVER_ERROR, (err) => {
@@ -309,7 +310,7 @@ describe('should init rlpx', async () => {
   const server = new RlpxServer({ config })
   const rlpxPeer = new RlpxPeer()
 
-  ;(rlpxPeer as any).getId = vi.fn().mockReturnValue(new Uint8Array([1]))
+  rlpxPeer.getId = vi.fn().mockReturnValue(new Uint8Array([1]))
   RlpxPeer.prototype.accept = vi.fn((input) => {
     if (JSON.stringify(input[0]) === JSON.stringify(rlpxPeer) && input[1] instanceof RlpxPeer) {
       return

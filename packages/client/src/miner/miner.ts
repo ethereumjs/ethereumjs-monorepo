@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { type BlockHeader, createSealedCliqueBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { BIGINT_0, BIGINT_1, BIGINT_2, bytesToHex, equalsBytes } from '@ethereumjs/util'
@@ -12,7 +12,7 @@ import type { Config } from '../config.js'
 import type { VMExecution } from '../execution/index.js'
 import type { FullEthereumService } from '../service/index.js'
 import type { FullSynchronizer } from '../sync/index.js'
-import type { CliqueConsensus } from '@ethereumjs/blockchain'
+import type { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { Miner as EthashMiner, Solution } from '@ethereumjs/ethash'
 
@@ -90,7 +90,6 @@ export class Miner {
     // Check if the new block to be minted isn't PoS
     const nextBlockHf = this.config.chainCommon.getHardforkBy({
       blockNumber: this.service.chain.headers.height + BIGINT_1,
-      td: this.service.chain.headers.td,
     })
     if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Paris)) {
       this.config.logger.info('Miner: reached merge hardfork - stopping')
@@ -209,10 +208,10 @@ export class Miner {
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
       // Abort if we have too recently signed
       const cliqueSigner = this.config.accounts[0][1]
-      const header = BlockHeader.fromHeaderData(
-        { number },
-        { common: this.config.chainCommon, cliqueSigner },
-      )
+      const header = createSealedCliqueBlockHeader({ number }, cliqueSigner, {
+        common: this.config.chainCommon,
+        freeze: false,
+      })
       if (
         (this.service.chain.blockchain as any).consensus.cliqueCheckRecentlySigned(header) === true
       ) {
@@ -245,10 +244,9 @@ export class Miner {
       const [signerAddress, signerPrivKey] = this.config.accounts[0]
       cliqueSigner = signerPrivKey
       // Determine if signer is INTURN (2) or NOTURN (1)
-      inTurn = await (vmCopy.blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
-        signerAddress,
-        number,
-      )
+      inTurn = await (
+        (vmCopy.blockchain as Blockchain).consensus as CliqueConsensus
+      ).cliqueSignerInTurn(signerAddress, number)
       difficulty = inTurn ? 2 : 1
     }
 

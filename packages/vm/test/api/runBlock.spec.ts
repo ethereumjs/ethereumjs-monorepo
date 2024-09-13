@@ -1,16 +1,18 @@
 import {
-  createBlockFromBlockData,
-  createBlockFromRLPSerializedBlock,
-  createBlockFromValuesArray,
+  createBlock,
+  createBlockFromBytesArray,
+  createBlockFromRLP,
+  createSealedCliqueBlock,
 } from '@ethereumjs/block'
-import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Capability,
-  LegacyTransaction,
-  create1559FeeMarketTx,
-  create2930AccessListTx,
-  create7702EOACodeTx,
+  LegacyTx,
+  createAccessList2930Tx,
+  createEOACode7702Tx,
+  createFeeMarket1559Tx,
   createLegacyTx,
 } from '@ethereumjs/tx'
 import {
@@ -18,8 +20,9 @@ import {
   Address,
   BIGINT_1,
   KECCAK256_RLP,
-  bigIntToBytes,
   concatBytes,
+  createAddressFromString,
+  createZeroAddress,
   ecsign,
   equalsBytes,
   hexToBytes,
@@ -32,47 +35,47 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
-import { runBlock } from '../../src/index.js'
-import { VM } from '../../src/vm.js'
+import { createVM, runBlock } from '../../src/index.js'
 import { getDAOCommon, setupPreConditions } from '../util.js'
 
 import * as testData from './testdata/blockchain.json'
 import * as testnet from './testdata/testnet.json'
 import { createAccountWithDefaults, setBalance, setupVM } from './utils.js'
 
+import type { VM } from '../../src/index.js'
 import type {
   AfterBlockEvent,
   PostByzantiumTxReceipt,
   PreByzantiumTxReceipt,
   RunBlockOpts,
-} from '../../src/types'
+} from '../../src/types.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
-import type { AuthorizationListBytesItem, ChainConfig } from '@ethereumjs/common'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { ChainConfig } from '@ethereumjs/common'
+import type { MerkleStateManager } from '@ethereumjs/statemanager'
+import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 describe('runBlock() -> successful API parameter usage', async () => {
   async function simpleRun(vm: VM) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const genesisRlp = hexToBytes(testData.genesisRLP as PrefixedHexString)
-    const genesis = createBlockFromRLPSerializedBlock(genesisRlp, { common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+    const genesisRlp = hexToBytes(testData.default.genesisRLP as PrefixedHexString)
+    const genesis = createBlockFromRLP(genesisRlp, { common })
 
-    const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+    const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+    const block = createBlockFromRLP(blockRlp, { common })
 
     await setupPreConditions(vm.stateManager, testData)
 
     assert.deepEqual(
-      (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      (vm.stateManager as MerkleStateManager)['_trie'].root(),
       genesis.header.stateRoot,
       'genesis state root should match calculated state root',
     )
 
     const res = await runBlock(vm, {
       block,
-      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      root: (vm.stateManager as MerkleStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -89,43 +92,43 @@ describe('runBlock() -> successful API parameter usage', async () => {
 
     await setupPreConditions(vm.stateManager, testData)
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const block1Rlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-    const block1 = createBlockFromRLPSerializedBlock(block1Rlp, { common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+    const block1Rlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+    const block1 = createBlockFromRLP(block1Rlp, { common })
     await runBlock(vm, {
       block: block1,
-      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      root: (vm.stateManager as MerkleStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
 
-    const block2Rlp = hexToBytes(testData.blocks[1].rlp as PrefixedHexString)
-    const block2 = createBlockFromRLPSerializedBlock(block2Rlp, { common })
+    const block2Rlp = hexToBytes(testData.default.blocks[1].rlp as PrefixedHexString)
+    const block2 = createBlockFromRLP(block2Rlp, { common })
     await runBlock(vm, {
       block: block2,
 
-      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      root: (vm.stateManager as MerkleStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
 
-    const block3Rlp = toBytes(testData.blocks[2].rlp as PrefixedHexString)
-    const block3 = createBlockFromRLPSerializedBlock(block3Rlp, { common })
+    const block3Rlp = toBytes(testData.default.blocks[2].rlp as PrefixedHexString)
+    const block3 = createBlockFromRLP(block3Rlp, { common })
     await runBlock(vm, {
       block: block3,
 
-      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      root: (vm.stateManager as MerkleStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
 
     const uncleReward = (await vm.stateManager.getAccount(
-      Address.fromString('0xb94f5374fce5ed0000000097c15331677e6ebf0b'),
+      createAddressFromString('0xb94f5374fce5ed0000000097c15331677e6ebf0b'),
     ))!.balance.toString(16)
 
     assert.equal(
       `0x${uncleReward}`,
-      testData.postState['0xb94f5374fce5ed0000000097c15331677e6ebf0b'].balance,
+      testData.default.postState['0xb94f5374fce5ed0000000097c15331677e6ebf0b'].balance,
       'calculated balance should equal postState balance',
     )
   }
@@ -142,8 +145,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
 
   it('PoW block, Common custom chain (createCustomCommon() static constructor)', async () => {
     const customChainParams = { name: 'custom', chainId: 123 }
-    const common = createCustomCommon(customChainParams, {
-      baseChain: 'mainnet',
+    const common = createCustomCommon(customChainParams, Mainnet, {
       hardfork: 'berlin',
     })
     const vm = await setupVM({ common })
@@ -151,21 +153,22 @@ describe('runBlock() -> successful API parameter usage', async () => {
   })
 
   it('PoW block, Common custom chain (Common customChains constructor option)', async () => {
-    const customChains = [testnet] as ChainConfig[]
-    const common = new Common({ chain: 'testnet', hardfork: Hardfork.Berlin, customChains })
+    const common = createCustomCommon(testnet.default as ChainConfig, Mainnet, {
+      hardfork: Hardfork.Berlin,
+    })
     const vm = await setupVM({ common })
     await simpleRun(vm)
   })
 
   it('setHardfork option', async () => {
     const common1 = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.MuirGlacier,
     })
 
     // Have to use an unique common, otherwise the HF will be set to muirGlacier and then will not change back to chainstart.
     const common2 = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.Chainstart,
     })
 
@@ -174,7 +177,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     )
 
     function getBlock(common: Common): Block {
-      return createBlockFromBlockData(
+      return createBlock(
         {
           header: {
             number: BigInt(10000000),
@@ -193,8 +196,8 @@ describe('runBlock() -> successful API parameter usage', async () => {
       )
     }
 
-    const vm = await VM.create({ common: common1, setHardfork: true })
-    const vm_noSelect = await VM.create({ common: common2 })
+    const vm = await createVM({ common: common1, setHardfork: true })
+    const vm_noSelect = await createVM({ common: common2 })
 
     const txResultMuirGlacier = await runBlock(vm, {
       block: getBlock(common1),
@@ -220,12 +223,12 @@ describe('runBlock() -> successful API parameter usage', async () => {
 })
 
 describe('runBlock() -> API parameter usage/data errors', async () => {
-  const vm = await VM.create({ common })
+  const vm = await createVM({ common })
 
   it('should fail when runTx fails', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+    const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+    const block = createBlockFromRLP(blockRlp, { common })
 
     // The mocked VM uses a mocked runTx
     // which always returns an error.
@@ -235,9 +238,9 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   })
 
   it('should fail when block gas limit higher than 2^63-1', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
-    const block = createBlockFromBlockData({
+    const block = createBlock({
       header: {
         gasLimit: hexToBytes('0x8000000000000000'),
       },
@@ -248,10 +251,11 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   })
 
   it('should fail when block validation fails', async () => {
-    const vm = await VM.create({ common })
+    const blockchain = await createBlockchain()
+    const vm = await createVM({ common, blockchain })
 
-    const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-    const block = Object.create(createBlockFromRLPSerializedBlock(blockRlp, { common }))
+    const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+    const block = Object.create(createBlockFromRLP(blockRlp, { common }))
 
     await runBlock(vm, { block })
       .then(() => assert.fail('should have returned error'))
@@ -264,9 +268,9 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   })
 
   it('should fail when no `validateHeader` method exists on blockchain class', async () => {
-    const vm = await VM.create({ common })
-    const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-    const block = Object.create(createBlockFromRLPSerializedBlock(blockRlp, { common }))
+    const vm = await createVM({ common })
+    const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+    const block = Object.create(createBlockFromRLP(blockRlp, { common }))
     ;(vm.blockchain as any).validateHeader = undefined
     try {
       await runBlock(vm, { block })
@@ -280,16 +284,16 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   })
 
   it('should fail when tx gas limit higher than block gas limit', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
-    const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-    const block = Object.create(createBlockFromRLPSerializedBlock(blockRlp, { common }))
+    const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+    const block = Object.create(createBlockFromRLP(blockRlp, { common }))
     // modify first tx's gasLimit
     const { nonce, gasPrice, to, value, data, v, r, s } = block.transactions[0]
 
     const gasLimit = BigInt('0x3fefba')
     const opts = { common: block.common }
-    block.transactions[0] = new LegacyTransaction(
+    block.transactions[0] = new LegacyTx(
       { nonce, gasPrice, gasLimit, to, value, data, v, r, s },
       opts,
     )
@@ -307,10 +311,12 @@ describe('runBlock() -> runtime behavior', async () => {
 
     const vm = await setupVM({ common })
 
-    const block1 = RLP.decode(testData.blocks[0].rlp as PrefixedHexString) as NestedUint8Array
+    const block1 = RLP.decode(
+      testData.default.blocks[0].rlp as PrefixedHexString,
+    ) as NestedUint8Array
     // edit extra data of this block to "dao-hard-fork"
     block1[0][12] = utf8ToBytes('dao-hard-fork')
-    const block = createBlockFromValuesArray(block1 as BlockBytes, { common })
+    const block = createBlockFromBytesArray(block1 as BlockBytes, { common })
     await setupPreConditions(vm.stateManager, testData)
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
@@ -354,7 +360,7 @@ describe('runBlock() -> runtime behavior', async () => {
   })
 
   it('should allocate to correct clique beneficiary', async () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.Istanbul })
     const vm = await setupVM({ common })
 
     const signer = {
@@ -376,14 +382,15 @@ describe('runBlock() -> runtime behavior', async () => {
     // add balance to otherUser to send two txs to zero address
     await vm.stateManager.putAccount(otherUser.address, new Account(BigInt(0), BigInt(42000)))
     const tx = createLegacyTx(
-      { to: Address.zero(), gasLimit: 21000, gasPrice: 1 },
+      { to: createZeroAddress(), gasLimit: 21000, gasPrice: 1 },
       { common },
     ).sign(otherUser.privateKey)
 
     // create block with the signer and txs
-    const block = createBlockFromBlockData(
+    const block = createSealedCliqueBlock(
       { header: { extraData: new Uint8Array(97) }, transactions: [tx, tx] },
-      { common, cliqueSigner: signer.privateKey },
+      signer.privateKey,
+      { common },
     )
 
     await runBlock(vm, { block, skipNonce: true, skipBlockValidation: true, generate: true })
@@ -418,14 +425,14 @@ async function runBlockAndGetAfterBlockEvent(
 }
 
 it('should correctly reflect generated fields', async () => {
-  const vm = await VM.create()
+  const vm = await createVM()
 
   // We create a block with a receiptTrie and transactionsTrie
   // filled with 0s and no txs. Once we run it we should
   // get a receipt trie root of for the empty receipts set,
   // which is a well known constant.
   const bytes32Zeros = new Uint8Array(32)
-  const block = createBlockFromBlockData({
+  const block = createBlock({
     header: { receiptTrie: bytes32Zeros, transactionsTrie: bytes32Zeros, gasUsed: BigInt(1) },
   })
 
@@ -441,11 +448,11 @@ it('should correctly reflect generated fields', async () => {
 })
 
 async function runWithHf(hardfork: string) {
-  const common = new Common({ chain: Chain.Mainnet, hardfork })
+  const common = new Common({ chain: Mainnet, hardfork })
   const vm = await setupVM({ common })
 
-  const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-  const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+  const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+  const block = createBlockFromRLP(blockRlp, { common })
 
   await setupPreConditions(vm.stateManager, testData)
 
@@ -480,8 +487,8 @@ describe('runBlock() -> tx types', async () => {
   async function simpleRun(vm: VM, transactions: TypedTransaction[]) {
     const common = vm.common
 
-    const blockRlp = hexToBytes(testData.blocks[0].rlp as PrefixedHexString)
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common, freeze: false })
+    const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+    const block = createBlockFromRLP(blockRlp, { common, freeze: false })
 
     //@ts-ignore read-only property
     block.transactions = transactions
@@ -509,10 +516,10 @@ describe('runBlock() -> tx types', async () => {
   }
 
   it('legacy tx', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
     const vm = await setupVM({ common })
 
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
     const tx = createLegacyTx({ gasLimit: 53000, value: 1 }, { common, freeze: false })
@@ -525,13 +532,13 @@ describe('runBlock() -> tx types', async () => {
   })
 
   it('access list tx', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
     const vm = await setupVM({ common })
 
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const tx = create2930AccessListTx(
+    const tx = createAccessList2930Tx(
       { gasLimit: 53000, value: 1, v: 1, r: 1, s: 1 },
       { common, freeze: false },
     )
@@ -544,13 +551,13 @@ describe('runBlock() -> tx types', async () => {
   })
 
   it('fee market tx', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const vm = await setupVM({ common })
 
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const tx = create1559FeeMarketTx(
+    const tx = createFeeMarket1559Tx(
       { maxFeePerGas: 10, maxPriorityFeePerGas: 4, gasLimit: 100000, value: 6 },
       { common, freeze: false },
     )
@@ -579,8 +586,8 @@ describe('runBlock() -> tx types', async () => {
     const defaultSenderPkey = hexToBytes(`0x${'40'.repeat(32)}`)
     const defaultSenderAddr = new Address(privateToAddress(defaultSenderPkey))
 
-    const code1Addr = Address.fromString(`0x${'01'.repeat(20)}`)
-    const code2Addr = Address.fromString(`0x${'02'.repeat(20)}`)
+    const code1Addr = createAddressFromString(`0x${'01'.repeat(20)}`)
+    const code2Addr = createAddressFromString(`0x${'02'.repeat(20)}`)
 
     type GetAuthListOpts = {
       chainId?: number
@@ -599,18 +606,20 @@ describe('runBlock() -> tx types', async () => {
 
       const chainIdBytes = unpadBytes(hexToBytes(`0x${chainId.toString(16)}`))
       const nonceBytes =
-        nonce !== undefined ? [unpadBytes(hexToBytes(`0x${nonce.toString(16)}`))] : []
+        nonce !== undefined ? unpadBytes(hexToBytes(`0x${nonce.toString(16)}`)) : new Uint8Array()
       const addressBytes = address.toBytes()
 
       const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
       const msgToSign = keccak256(concatBytes(new Uint8Array([5]), rlpdMsg))
       const signed = ecsign(msgToSign, pkey)
 
-      return [chainIdBytes, addressBytes, nonceBytes, bigIntToBytes(signed.v), signed.r, signed.s]
+      const yParity = signed.v === BigInt(27) ? new Uint8Array() : new Uint8Array([1])
+
+      return [chainIdBytes, addressBytes, nonceBytes, yParity, signed.r, signed.s]
     }
 
     const common = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.Cancun,
       eips: [7702],
     })
@@ -631,12 +640,13 @@ describe('runBlock() -> tx types', async () => {
     const authorizationListOpts2 = [
       {
         address: code2Addr,
+        nonce: 1,
       },
     ]
 
     const authList = authorizationListOpts.map((opt) => getAuthorizationListItem(opt))
     const authList2 = authorizationListOpts2.map((opt) => getAuthorizationListItem(opt))
-    const tx1 = create7702EOACodeTx(
+    const tx1 = createEOACode7702Tx(
       {
         gasLimit: 1000000000,
         maxFeePerGas: 100000,
@@ -647,7 +657,7 @@ describe('runBlock() -> tx types', async () => {
       },
       { common },
     ).sign(defaultSenderPkey)
-    const tx2 = create7702EOACodeTx(
+    const tx2 = createEOACode7702Tx(
       {
         gasLimit: 1000000000,
         maxFeePerGas: 100000,
@@ -659,7 +669,7 @@ describe('runBlock() -> tx types', async () => {
       },
       { common },
     ).sign(defaultSenderPkey)
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         transactions: [tx1, tx2],
       },

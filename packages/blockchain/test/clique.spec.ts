@@ -1,13 +1,23 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
 import {
-  Chain,
+  cliqueEpochTransitionSigners,
+  createBlock,
+  createSealedCliqueBlock,
+} from '@ethereumjs/block'
+import {
   Common,
   ConsensusAlgorithm,
   ConsensusType,
+  Goerli,
   Hardfork,
   createCustomCommon,
 } from '@ethereumjs/common'
-import { Address, concatBytes, hexToBytes } from '@ethereumjs/util'
+import {
+  Address,
+  concatBytes,
+  createAddressFromString,
+  createZeroAddress,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP, CliqueConsensus } from '../src/consensus/clique.js'
@@ -17,7 +27,7 @@ import type { Blockchain, ConsensusDict } from '../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 
-const COMMON = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+const COMMON = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 const EXTRA_DATA = new Uint8Array(97)
 const GAS_LIMIT = BigInt(8000000)
 
@@ -84,10 +94,7 @@ const initWithSigners = async (signers: Signer[], common?: Common) => {
     ...signers.map((s) => s.address.toBytes()),
     new Uint8Array(65),
   )
-  const genesisBlock = createBlockFromBlockData(
-    { header: { gasLimit: GAS_LIMIT, extraData } },
-    { common },
-  )
+  const genesisBlock = createBlock({ header: { gasLimit: GAS_LIMIT, extraData } }, { common })
   blocks.push(genesisBlock)
 
   const consensusDict: ConsensusDict = {}
@@ -114,7 +121,7 @@ function getBlock(
   common = common ?? COMMON
   const number = lastBlock.header.number + BigInt(1)
 
-  let coinbase = Address.zero()
+  let coinbase = createZeroAddress()
   let nonce = CLIQUE_NONCE_DROP
   let extraData = EXTRA_DATA
   if (beneficiary) {
@@ -152,7 +159,7 @@ function getBlock(
   // set signer
   const cliqueSigner = signer.privateKey
 
-  return createBlockFromBlockData(blockData, { common, freeze: false, cliqueSigner })
+  return createSealedCliqueBlock(blockData, cliqueSigner, { common })
 }
 
 const addNextBlockReorg = async (
@@ -193,7 +200,7 @@ const addNextBlock = async (
 
 describe('Clique: Initialization', () => {
   it('should initialize a clique blockchain', async () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
     const consensusDict: ConsensusDict = {}
     consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
     const blockchain = await createBlockchain({ common, consensusDict })
@@ -203,7 +210,7 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(head.header.number + BigInt(1)),
-      head.header.cliqueEpochTransitionSigners(),
+      cliqueEpochTransitionSigners(head.header),
       'correct genesis signers',
     )
   })
@@ -214,17 +221,17 @@ describe('Clique: Initialization', () => {
     // _validateConsensus needs to be true to trigger this test condition
     ;(blockchain as any)._validateConsensus = true
     const number = (COMMON.consensusConfig() as CliqueConfig).epoch
-    const unauthorizedSigner = Address.fromString('0x00a839de7922491683f547a67795204763ff8237')
+    const unauthorizedSigner = createAddressFromString('0x00a839de7922491683f547a67795204763ff8237')
     const extraData = concatBytes(
       new Uint8Array(32),
       A.address.toBytes(),
       unauthorizedSigner.toBytes(),
       new Uint8Array(65),
     )
-    const block = createBlockFromBlockData(
-      { header: { number, extraData } },
-      { common: COMMON, cliqueSigner: A.privateKey },
-    )
+    const block = createSealedCliqueBlock({ header: { number, extraData } }, A.privateKey, {
+      common: COMMON,
+      freeze: false,
+    })
     try {
       await blockchain.putBlock(block)
       assert.fail('should fail')
@@ -243,7 +250,7 @@ describe('Clique: Initialization', () => {
     const number = BigInt(2)
     const extraData = new Uint8Array(97)
     let difficulty = BigInt(5)
-    let block = createBlockFromBlockData(
+    let block = createBlock(
       {
         header: {
           number,
@@ -268,7 +275,7 @@ describe('Clique: Initialization', () => {
 
     difficulty = BigInt(1)
     const cliqueSigner = A.privateKey
-    block = createBlockFromBlockData(
+    block = createSealedCliqueBlock(
       {
         header: {
           number,
@@ -278,7 +285,8 @@ describe('Clique: Initialization', () => {
           timestamp: parentHeader.timestamp + BigInt(10000),
         },
       },
-      { common: COMMON, cliqueSigner },
+      cliqueSigner,
+      { common: COMMON },
     )
 
     try {
@@ -527,7 +535,7 @@ describe('Clique: Initialization', () => {
         blocks[blocks.length - 1].header.number + BigInt(1),
       ),
       [A.address, B.address],
-      'deauth votes',
+      'deauthorized votes',
     )
   })
 
@@ -547,7 +555,7 @@ describe('Clique: Initialization', () => {
     )
   })
 
-  it('Clique Voting: Changes reaching consensus out of bounds (via a deauth) execute on touch', async () => {
+  it('Clique Voting: Changes reaching consensus out of bounds (via a deauthorization) execute on touch', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B, C, D])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B)
@@ -569,7 +577,7 @@ describe('Clique: Initialization', () => {
     )
   })
 
-  it('Clique Voting: Changes reaching consensus out of bounds (via a deauth) may go out of consensus on first touch', async () => {
+  it('Clique Voting: Changes reaching consensus out of bounds (via a deauthorization) may go out of consensus on first touch', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B, C, D])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B)
@@ -631,8 +639,8 @@ describe('Clique: Initialization', () => {
           },
         },
       },
+      Goerli,
       {
-        baseChain: Chain.Goerli,
         hardfork: Hardfork.Chainstart,
       },
     )
@@ -687,8 +695,8 @@ describe('Clique: Initialization', () => {
           },
         },
       },
+      Goerli,
       {
-        baseChain: Chain.Goerli,
         hardfork: Hardfork.Chainstart,
       },
     )
@@ -794,7 +802,7 @@ describe('clique: reorgs', () => {
     const { blocks, blockchain } = await initWithSigners([A, B])
     const genesis = blocks[0]
     await addNextBlock(blockchain, blocks, A, [C, true])
-    const headBlockUnforked = await addNextBlock(blockchain, blocks, B, [C, true])
+    const headBlockNotForked = await addNextBlock(blockchain, blocks, B, [C, true])
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         blocks[blocks.length - 1].header.number + BigInt(1),
@@ -802,7 +810,7 @@ describe('clique: reorgs', () => {
       [A.address, B.address, C.address],
       'address C added to signers',
     )
-    assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
+    assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlockNotForked.hash())
     await addNextBlockReorg(blockchain, blocks, genesis, B)
     const headBlock = await addNextBlock(blockchain, blocks, A)
     assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlock.hash())
@@ -844,7 +852,7 @@ describe('clique: reorgs', () => {
       await addNextBlock(blockchain, blocks, A, [C, true], undefined, common)
       await addNextBlock(blockchain, blocks, B, [C, true], undefined, common)
       await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
-      const headBlockUnforked = await addNextBlock(
+      const headBlockNotForked = await addNextBlock(
         blockchain,
         blocks,
         B,
@@ -859,7 +867,7 @@ describe('clique: reorgs', () => {
         [A.address, B.address, C.address],
         'address C added to signers'
       )
-     assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
+     assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlockNotForked.hash())
       await addNextBlockReorg(blockchain, blocks, genesis, B, undefined, undefined, common)
       await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
 

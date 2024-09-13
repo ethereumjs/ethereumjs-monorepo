@@ -1,6 +1,5 @@
 import { createBlockFromExecutionPayload } from '@ethereumjs/block'
-import { Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { Blob4844Tx } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 
 import { short } from '../../../../util/index.js'
@@ -26,11 +25,7 @@ export const assembleBlock = async (
   const { config } = chain
   const common = config.chainCommon.copy()
 
-  // This is a post merge block, so set its common accordingly
-  // Can't use setHardfork flag, as the transactions will need to be deserialized
-  // first before the header can be constucted with their roots
-  const ttd = common.hardforkTTD(Hardfork.Paris)
-  common.setHardforkBy({ blockNumber, td: ttd !== null ? ttd : undefined, timestamp })
+  common.setHardforkBy({ blockNumber, timestamp })
 
   try {
     const block = await createBlockFromExecutionPayload(payload, { common })
@@ -64,7 +59,7 @@ export const validate4844BlobVersionedHashes = (
   // Collect versioned hashes in the flat array `txVersionedHashes` to match with received
   const txVersionedHashes = []
   for (const tx of headBlock.transactions) {
-    if (tx instanceof BlobEIP4844Transaction) {
+    if (tx instanceof Blob4844Tx) {
       for (const vHash of tx.blobVersionedHashes) {
         txVersionedHashes.push(vHash)
       }

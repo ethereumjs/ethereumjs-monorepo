@@ -1,9 +1,9 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, bytesToInt, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -18,12 +18,12 @@ const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3d
 
 describe('EIP 1153: transient storage', () => {
   const initialGas = BigInt(0xffffffffff)
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [1153] })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [1153] })
 
   const runTest = async function (test: Test) {
     let i = 0
     let currentGas = initialGas
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
     vm.evm.events!.on('step', function (step: any) {
       const gasUsed = currentGas - step.gasLeft

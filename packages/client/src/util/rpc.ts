@@ -12,7 +12,7 @@ import type { Logger } from '../logging.js'
 import type { RPCManager } from '../rpc/index.js'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
-const { json: jsonParser } = bodyParser
+const { json: JSONParser } = bodyParser
 const { decode } = jwt
 
 const algorithm: TAlgorithm = 'HS256'
@@ -29,7 +29,7 @@ type CreateRPCServerReturn = {
   namespaces: string
 }
 type CreateRPCServerListenerOpts = {
-  rpcCors?: string
+  RPCCors?: string
   server: any
   withEngineMiddleware?: WithEngineMiddleware
 }
@@ -166,7 +166,6 @@ export function createRPCServer(
   server.on('response', onBatchResponse)
   const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
 
-  //@ts-ignore
   return { server, methods, namespaces }
 }
 
@@ -183,12 +182,12 @@ function checkHeaderAuth(req: any, jwtSecret: Uint8Array): void {
 }
 
 export function createRPCServerListener(opts: CreateRPCServerListenerOpts): HttpServer {
-  const { server, withEngineMiddleware, rpcCors } = opts
+  const { server, withEngineMiddleware, RPCCors } = opts
 
   const app = Connect() as any
-  if (typeof rpcCors === 'string') app.use(cors({ origin: rpcCors }))
+  if (typeof RPCCors === 'string') app.use(cors({ origin: RPCCors }))
   // GOSSIP_MAX_SIZE_BELLATRIX is proposed to be 10MiB
-  app.use(jsonParser({ limit: '11mb' }))
+  app.use(JSONParser({ limit: '11mb' }))
 
   if (withEngineMiddleware) {
     const { jwtSecret, unlessFn } = withEngineMiddleware
@@ -207,14 +206,13 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
       }
     })
   }
-  //@ts-ignore
   app.use(server.middleware())
   const httpServer = createServer(app)
   return httpServer
 }
 
 export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer | undefined {
-  const { server, withEngineMiddleware, rpcCors } = opts
+  const { server, withEngineMiddleware, RPCCors } = opts
 
   // Get the server to hookup upgrade request on
   let httpServer = opts.httpServer
@@ -222,7 +220,7 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
     const app = Connect()
     // In case browser pre-flights the upgrade request with an options request
     // more likely in case of wss connection
-    if (typeof rpcCors === 'string') app.use(cors({ origin: rpcCors }))
+    if (typeof RPCCors === 'string') app.use(cors({ origin: RPCCors }))
     httpServer = createServer(app)
   }
   const wss = server.websocket({ noServer: true })

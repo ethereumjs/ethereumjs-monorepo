@@ -1,14 +1,14 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
-  AccessListEIP2930Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
+  AccessList2930Transaction,
+  FeeMarket1559Tx,
+  LegacyTx,
   TransactionType,
-  create1559FeeMarketTx,
-  create2930AccessListTx,
+  createAccessList2930Tx,
+  createFeeMarket1559Tx,
   createLegacyTx,
   createTxFromBlockBodyData,
   createTxFromSerializedData,
@@ -16,7 +16,7 @@ import {
 } from '../src/index.js'
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.London,
 })
 
@@ -25,31 +25,31 @@ const pKey = hexToBytes('0x46464646464646464646464646464646464646464646464646464
 const unsignedLegacyTx = createLegacyTx({})
 const signedLegacyTx = unsignedLegacyTx.sign(pKey)
 
-const unsignedEIP2930Tx = create2930AccessListTx({ chainId: BigInt(1) }, { common })
+const unsignedEIP2930Tx = createAccessList2930Tx({ chainId: BigInt(1) }, { common })
 const signedEIP2930Tx = unsignedEIP2930Tx.sign(pKey)
-const unsignedEIP1559Tx = create1559FeeMarketTx({ chainId: BigInt(1) }, { common })
+const unsignedEIP1559Tx = createFeeMarket1559Tx({ chainId: BigInt(1) }, { common })
 const signedEIP1559Tx = unsignedEIP1559Tx.sign(pKey)
 
 const txTypes = [
   {
-    class: LegacyTransaction,
-    name: 'LegacyTransaction',
+    class: LegacyTx,
+    name: 'LegacyTx',
     unsigned: unsignedLegacyTx,
     signed: signedLegacyTx,
     eip2718: false,
     type: TransactionType.Legacy,
   },
   {
-    class: AccessListEIP2930Transaction,
-    name: 'AccessListEIP2930Transaction',
+    class: AccessList2930Transaction,
+    name: 'AccessList2930Transaction',
     unsigned: unsignedEIP2930Tx,
     signed: signedEIP2930Tx,
     eip2718: true,
     type: TransactionType.AccessListEIP2930,
   },
   {
-    class: FeeMarketEIP1559Transaction,
-    name: 'FeeMarketEIP1559Transaction',
+    class: FeeMarket1559Tx,
+    name: 'FeeMarket1559Tx',
     unsigned: unsignedEIP1559Tx,
     signed: signedEIP1559Tx,
     eip2718: true,
@@ -73,7 +73,7 @@ describe('[TransactionFactory]: Basic functions', () => {
   it('fromSerializedData() -> error cases', () => {
     for (const txType of txTypes) {
       if (txType.eip2718) {
-        const unsupportedCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+        const unsupportedCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
         assert.throws(
           () => {
             createTxFromSerializedData(txType.unsigned.serialize(), {
@@ -149,7 +149,7 @@ describe('[TransactionFactory]: Basic functions', () => {
   })
 
   it('fromTxData() -> error cases', () => {
-    const unsupportedCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const unsupportedCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     assert.throws(() => {
       createTxFromTxData({ type: 1 }, { common: unsupportedCommon })
     })

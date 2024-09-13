@@ -1,3 +1,4 @@
+// cspell:ignore ppeer pnode pserver
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import debug from 'debug'

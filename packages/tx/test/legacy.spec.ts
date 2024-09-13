@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork, createCustomCommon } from '@ethereumjs/common'
+import { Common, Goerli, Hardfork, Mainnet, Sepolia, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   bytesToBigInt,
@@ -17,7 +17,7 @@ import {
   createLegacyTxFromRLP,
 } from '../src/index.js'
 
-import txFixturesEip155 from './json/ttTransactionTestEip155VitaliksTests.json'
+import txFixturesEip155 from './json/ttTransactionTestEip155VitaliksTests.json' // cspell:disable-line
 import txFixtures from './json/txs.json'
 
 import type { TransactionType, TxData, TypedTransaction } from '../src/index.js'
@@ -59,29 +59,31 @@ describe('[Transaction]', () => {
   })
 
   it('Initialization', () => {
-    const nonEIP2930Common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const nonEIP2930Common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     assert.ok(
       createLegacyTx({}, { common: nonEIP2930Common }),
-      'should initialize on a pre-Berlin Harfork (EIP-2930 not activated)',
+      'should initialize on a pre-Berlin Hardfork (EIP-2930 not activated)',
     )
-
+    let common = new Common({ chain: Goerli })
     const txData = txFixtures[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
     txData[6] = intToBytes(45) // v with 0-parity and chain ID 5
-    let tx = createLegacyTxFromBytesArray(txData)
+    let tx = createLegacyTxFromBytesArray(txData, { common })
     assert.ok(
       tx.common.chainId() === BigInt(5),
       'should initialize Common with chain ID (supported) derived from v value (v with 0-parity)',
     )
 
     txData[6] = intToBytes(46) // v with 1-parity and chain ID 5
-    tx = createLegacyTxFromBytesArray(txData)
+    tx = createLegacyTxFromBytesArray(txData, { common })
     assert.ok(
       tx.common.chainId() === BigInt(5),
       'should initialize Common with chain ID (supported) derived from v value (v with 1-parity)',
     )
 
+    common = createCustomCommon({ chainId: 999 }, Mainnet)
+
     txData[6] = intToBytes(2033) // v with 0-parity and chain ID 999
-    tx = createLegacyTxFromBytesArray(txData)
+    tx = createLegacyTxFromBytesArray(txData, { common })
     assert.equal(
       tx.common.chainId(),
       BigInt(999),
@@ -89,7 +91,7 @@ describe('[Transaction]', () => {
     )
 
     txData[6] = intToBytes(2034) // v with 1-parity and chain ID 999
-    tx = createLegacyTxFromBytesArray(txData)
+    tx = createLegacyTxFromBytesArray(txData, { common })
     assert.equal(
       tx.common.chainId(),
       BigInt(999),
@@ -97,7 +99,7 @@ describe('[Transaction]', () => {
     )
   })
 
-  it('Initialization -> decode with fromValuesArray()', () => {
+  it('Initialization -> decode with createWithdrawalFromBytesArray()', () => {
     for (const tx of txFixtures.slice(0, 4)) {
       const txData = tx.raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
       const pt = createLegacyTxFromBytesArray(txData)
@@ -122,19 +124,19 @@ describe('[Transaction]', () => {
   })
 
   it('Initialization -> throws when creating a a transaction with incompatible chainid and v value', () => {
-    let common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Petersburg })
+    let common = new Common({ chain: Goerli, hardfork: Hardfork.Petersburg })
     let tx = createLegacyTx({}, { common })
     assert.equal(tx.common.chainId(), BigInt(5))
     const privKey = hexToBytes(`0x${txFixtures[0].privateKey}`)
     tx = tx.sign(privKey)
     const serialized = tx.serialize()
-    common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
+    common = new Common({ chain: Mainnet, hardfork: Hardfork.Petersburg })
     assert.throws(() => createLegacyTxFromRLP(serialized, { common }))
   })
 
   it('Initialization -> throws if v is set to an EIP155-encoded value incompatible with the chain id', () => {
     assert.throws(() => {
-      const common = new Common({ chain: 42, hardfork: Hardfork.Petersburg })
+      const common = new Common({ chain: Sepolia, hardfork: Hardfork.Petersburg })
       createLegacyTx({ v: BigInt(1) }, { common })
     })
   })
@@ -150,7 +152,7 @@ describe('[Transaction]', () => {
 
   it('addSignature() -> correctly adds correct signature values from ecrecover with ChainID protection enabled', () => {
     const privKey = hexToBytes(`0x${txFixtures[0].privateKey}`)
-    const tx = createLegacyTx({}, { common: new Common({ chain: Chain.Sepolia }) })
+    const tx = createLegacyTx({}, { common: new Common({ chain: Sepolia }) })
     const signedTx = tx.sign(privKey)
     // `convertV` set to false, since we use the raw value from the signed tx
     const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!, false)
@@ -161,7 +163,7 @@ describe('[Transaction]', () => {
 
   it('addSignature() -> throws when adding the wrong v value', () => {
     const privKey = hexToBytes(`0x${txFixtures[0].privateKey}`)
-    const tx = createLegacyTx({}, { common: new Common({ chain: Chain.Sepolia }) })
+    const tx = createLegacyTx({}, { common: new Common({ chain: Sepolia }) })
     const signedTx = tx.sign(privKey)
     // `convertV` set to true: this will apply EIP-155 replay transaction twice, so it should throw!
     assert.throws(() => {
@@ -203,7 +205,7 @@ describe('[Transaction]', () => {
   })
 
   it('getDataGas() -> should return correct data fee for istanbul', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     let tx = createLegacyTx({}, { common })
     assert.equal(tx.getDataGas(), BigInt(0))
 
@@ -217,7 +219,7 @@ describe('[Transaction]', () => {
   })
 
   it('getDataGas() -> should invalidate cached value on hardfork change', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
     const tx = createLegacyTxFromBytesArray(
       txFixtures[0].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
       {
@@ -269,7 +271,7 @@ describe('[Transaction]', () => {
 
   it('hash() / getHashedMessageToSign() / getMessageToSign()', () => {
     const common = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.TangerineWhistle,
     })
 
@@ -354,7 +356,7 @@ describe('[Transaction]', () => {
 
     // Note that Vitalik's example has a very similar value denoted "signing data".
     // It's not the output of `serialize()`, but the pre-image of the hash returned by `tx.hash(false)`.
-    // We don't have a getter for such a value in LegacyTransaction.
+    // We don't have a getter for such a value in LegacyTx.
     assert.equal(
       bytesToHex(pt.serialize()),
       '0xec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080',
@@ -371,7 +373,7 @@ describe('[Transaction]', () => {
   })
 
   it('sign(), getSenderPublicKey() (implicit call) -> EIP155 hashing when singing', () => {
-    const common = new Common({ chain: 1, hardfork: Hardfork.Petersburg })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Petersburg })
     for (const txData of txFixtures.slice(0, 3)) {
       const tx = createLegacyTxFromBytesArray(
         txData.raw.slice(0, 6).map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
@@ -403,7 +405,7 @@ describe('[Transaction]', () => {
     const privateKey = hexToBytes(
       '0xDE3128752F183E8930D7F00A2AAA302DCB5E700B2CBA2D8CA5795660F07DEFD5',
     )
-    const common = createCustomCommon({ chainId: 3 })
+    const common = createCustomCommon({ chainId: 3 }, Mainnet)
     const tx = createLegacyTxFromBytesArray(
       txRaw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString)),
       { common },
@@ -430,7 +432,7 @@ describe('[Transaction]', () => {
     )
 
     const common = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: Hardfork.TangerineWhistle,
     })
 
@@ -489,7 +491,7 @@ describe('[Transaction]', () => {
   })
 
   it('sign(), verifySignature(): sign tx with chainId specified in params', () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Petersburg })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.Petersburg })
     let tx = createLegacyTx({}, { common })
     assert.equal(tx.common.chainId(), BigInt(5))
 
@@ -512,10 +514,10 @@ describe('[Transaction]', () => {
   })
 
   it('common propagates from the common of tx, not the common in TxOptions', () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const pkey = hexToBytes(`0x${txFixtures[0].privateKey}`)
     const txn = createLegacyTx({}, { common, freeze: false })
-    const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
+    const newCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Paris })
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
       get() {

@@ -70,12 +70,6 @@ export type ForkchoiceResponseV1 = {
   payloadId: Bytes8 | null
 }
 
-export type TransitionConfigurationV1 = {
-  terminalTotalDifficulty: Uint256
-  terminalBlockHash: Bytes32
-  terminalBlockNumber: Uint64
-}
-
 export type BlobsBundleV1 = {
   commitments: Bytes48[]
   blobs: Blob[]

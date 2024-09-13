@@ -1,8 +1,8 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { assert } from 'vitest'
 
 import { DPT, ETH, RLPx, genPrivateKey } from '../../src/index.js'
-import * as testdata from '../testdata.json'
+import { testData } from '../testdata.js'
 
 import type { Capabilities } from '../../src/index.js'
 import type { it } from 'vitest'
@@ -44,7 +44,7 @@ export function getTestDPTsWithDns(numDPTs: number, basePort: number) {
       },
       timeout: 1000,
       refreshInterval: 400,
-      dnsNetworks: [testdata.dns.enrTree],
+      dnsNetworks: [testData.dns.enrTree],
       shouldFindNeighbours: false,
       shouldGetDnsPeers: true,
     })
@@ -79,7 +79,7 @@ export function getTestRLPXs(
     capabilities = [ETH.eth66, ETH.eth65, ETH.eth64, ETH.eth63, ETH.eth62]
   }
   if (!common) {
-    common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
   }
   const dpts = getTestDPTs(numRLPXs, basePort)
 

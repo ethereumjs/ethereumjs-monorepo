@@ -1,29 +1,29 @@
-import { createBlockFromBlockData, genWithdrawalsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genWithdrawalsTrieRoot } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
-import { create1559FeeMarketTx } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
   GWEI_TO_WEI,
   KECCAK256_RLP,
-  Withdrawal,
   bytesToHex,
+  createWithdrawalFromBytesArray,
   hexToBytes,
   parseGethGenesisState,
   zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/withdrawals.json'
-import { VM, buildBlock, runBlock } from '../../../src/index.js'
+import { withdrawalsData } from '../../../../client/test/testdata/geth-genesis/withdrawals.js'
+import { buildBlock, createVM, runBlock } from '../../../src/index.js'
 
 import type { Block } from '@ethereumjs/block'
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.Paris,
   eips: [4895],
 })
@@ -34,7 +34,8 @@ const gethWithdrawals8BlockRlp =
 
 describe('EIP4895 tests', () => {
   it('EIP4895: withdrawals execute as expected', async () => {
-    const vm = await VM.create({ common })
+    const blockchain = await createBlockchain()
+    const vm = await createVM({ common, blockchain })
     const withdrawals = <WithdrawalData[]>[]
     const addresses = ['20'.repeat(20), '30'.repeat(20), '40'.repeat(20)]
     const amounts = [BigInt(1000), BigInt(3000), BigInt(5000)]
@@ -67,7 +68,7 @@ describe('EIP4895 tests', () => {
       hexToBytes(`0x73${addresses[0]}3160005260206000F3`),
     )
 
-    const transaction = create1559FeeMarketTx({
+    const transaction = createFeeMarket1559Tx({
       to: contractAddress,
       maxFeePerGas: BigInt(7),
       maxPriorityFeePerGas: BigInt(0),
@@ -90,7 +91,7 @@ describe('EIP4895 tests', () => {
       })
       index++
     }
-    const block = createBlockFromBlockData(
+    const block = createBlock(
       {
         header: {
           baseFeePerGas: BigInt(7),
@@ -127,10 +128,11 @@ describe('EIP4895 tests', () => {
     assert.deepEqual(zeros(0), slotValue, 'withdrawals do not invoke code')
   })
 
-  it('EIP4895: state updation should exclude 0 amount updates', async () => {
-    const vm = await VM.create({ common })
+  it('EIP4895: state update should exclude 0 amount updates', async () => {
+    const blockchain = await createBlockchain()
+    const vm = await createVM({ common, blockchain })
 
-    await vm.stateManager.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
+    await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(withdrawalsData))
     const preState = bytesToHex(await vm.stateManager.getStateRoot())
     assert.equal(
       preState,
@@ -140,14 +142,14 @@ describe('EIP4895 tests', () => {
 
     const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp))
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>
-      Withdrawal.fromValuesArray(wa),
+      createWithdrawalFromBytesArray(wa),
     )
     assert.equal(withdrawals[0].amount, BigInt(0), 'withdrawal 0 should have 0 amount')
     let block: Block
     let postState: string
 
     // construct a block with just the 0th withdrawal should have no effect on state
-    block = createBlockFromBlockData(
+    block = createBlock(
       {
         header: {
           baseFeePerGas: BigInt(7),
@@ -169,7 +171,7 @@ describe('EIP4895 tests', () => {
     )
 
     // construct a block with all the withdrawals
-    block = createBlockFromBlockData(
+    block = createBlock(
       {
         header: {
           baseFeePerGas: BigInt(7),
@@ -191,9 +193,9 @@ describe('EIP4895 tests', () => {
   })
 
   it('should build a block correctly with withdrawals', async () => {
-    const common = createCommonFromGethGenesis(genesisJSON, { chain: 'custom' })
+    const common = createCommonFromGethGenesis(withdrawalsData, { chain: 'custom' })
     common.setHardfork(Hardfork.Shanghai)
-    const genesisState = parseGethGenesisState(genesisJSON)
+    const genesisState = parseGethGenesisState(withdrawalsData)
     const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
@@ -207,15 +209,14 @@ describe('EIP4895 tests', () => {
       '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
       'correct state root should be generated',
     )
-    const vm = await VM.create({ common, blockchain })
-    await vm.stateManager.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
+    const vm = await createVM({ common, blockchain })
+    await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(withdrawalsData))
     const vmCopy = await vm.shallowCopy()
 
     const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp))
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>
-      Withdrawal.fromValuesArray(wa),
+      createWithdrawalFromBytesArray(wa),
     )
-    const td = await blockchain.getTotalDifficulty(genesisBlock.hash())
 
     const blockBuilder = await buildBlock(vm, {
       parentBlock: genesisBlock,
@@ -223,7 +224,6 @@ describe('EIP4895 tests', () => {
       blockOpts: {
         calcDifficultyFromHeader: genesisBlock.header,
         freeze: false,
-        setHardfork: td,
       },
     })
 

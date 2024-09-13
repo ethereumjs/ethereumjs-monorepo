@@ -1,13 +1,12 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import {
   Capability,
-  create4844BlobTxFromSerializedNetworkWrapper,
+  createBlob4844TxFromSerializedNetworkWrapper,
   createTxFromSerializedData,
   createTxFromTxData,
 } from '@ethereumjs/tx'
 import {
-  Address,
   BIGINT_0,
   BIGINT_1,
   BIGINT_100,
@@ -16,6 +15,8 @@ import {
   bigIntMax,
   bigIntToHex,
   bytesToHex,
+  createAddressFromString,
+  createZeroAddress,
   equalsBytes,
   hexToBytes,
   intToHex,
@@ -34,7 +35,7 @@ import {
 } from '@ethereumjs/vm'
 
 import { INTERNAL_ERROR, INVALID_HEX_STRING, INVALID_PARAMS, PARSE_ERROR } from '../error-code.js'
-import { callWithStackTrace, getBlockByOption, jsonRpcTx } from '../helpers.js'
+import { callWithStackTrace, getBlockByOption, toJSONRPCTx } from '../helpers.js'
 import { middleware, validators } from '../validation.js'
 
 import type { Chain } from '../../blockchain/index.js'
@@ -42,16 +43,12 @@ import type { ReceiptsManager } from '../../execution/receipt.js'
 import type { EthereumClient } from '../../index.js'
 import type { EthProtocol } from '../../net/protocol/index.js'
 import type { FullEthereumService, Service } from '../../service/index.js'
-import type { RpcTx } from '../types.js'
-import type { Block, JsonRpcBlock } from '@ethereumjs/block'
+import type { RPCTx } from '../types.js'
+import type { Block, JSONRPCBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
-import type {
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-  TypedTransaction,
-} from '@ethereumjs/tx'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const EMPTY_SLOT = `0x${'00'.repeat(32)}`
 
@@ -68,7 +65,7 @@ type GetLogsParams = {
   // neither fromBlock nor toBlock are allowed.
 }
 
-type JsonRpcReceipt = {
+type JSONRPCReceipt = {
   transactionHash: string // DATA, 32 Bytes - hash of the transaction.
   transactionIndex: string // QUANTITY - integer of the transactions index position in the block.
   blockHash: string // DATA, 32 Bytes - hash of the block where this transaction was in.
@@ -79,7 +76,7 @@ type JsonRpcReceipt = {
   effectiveGasPrice: string // QUANTITY - The final gas price per gas paid by the sender in wei.
   gasUsed: string // QUANTITY - The amount of gas used by this specific transaction alone.
   contractAddress: string | null // DATA, 20 Bytes - The contract address created, if the transaction was a contract creation, otherwise null.
-  logs: JsonRpcLog[] // Array - Array of log objects, which this transaction generated.
+  logs: JSONRPCLog[] // Array - Array of log objects, which this transaction generated.
   logsBloom: string // DATA, 256 Bytes - Bloom filter for light clients to quickly retrieve related logs.
   // It also returns either:
   root?: string // DATA, 32 bytes of post-transaction stateroot (pre Byzantium)
@@ -88,7 +85,7 @@ type JsonRpcReceipt = {
   blobGasPrice?: string // QUAntity, blob gas price for block including this transaction (if blob transaction)
   type: string // QUANTITY, transaction type
 }
-type JsonRpcLog = {
+type JSONRPCLog = {
   removed: boolean // TAG - true when the log was removed, due to a chain reorganization. false if it's a valid log.
   logIndex: string | null // QUANTITY - integer of the log index position in the block. null when it's pending.
   transactionIndex: string | null // QUANTITY - integer of the transactions index position log was created from. null when it's pending.
@@ -105,15 +102,15 @@ type JsonRpcLog = {
 /**
  * Returns block formatted to the standard JSON-RPC fields
  */
-const jsonRpcBlock = async (
+const toJSONRPCBlock = async (
   block: Block,
   chain: Chain,
   includeTransactions: boolean,
-): Promise<JsonRpcBlock> => {
+): Promise<JSONRPCBlock> => {
   const json = block.toJSON()
   const header = json!.header!
   const transactions = block.transactions.map((tx, txIndex) =>
-    includeTransactions ? jsonRpcTx(tx, block, txIndex) : bytesToHex(tx.hash()),
+    includeTransactions ? toJSONRPCTx(tx, block, txIndex) : bytesToHex(tx.hash()),
   )
   const withdrawalsAttr =
     header.withdrawalsRoot !== undefined
@@ -157,13 +154,13 @@ const jsonRpcBlock = async (
 /**
  * Returns log formatted to the standard JSON-RPC fields
  */
-const jsonRpcLog = async (
+const toJSONRPCLog = async (
   log: Log,
   block?: Block,
   tx?: TypedTransaction,
   txIndex?: number,
   logIndex?: number,
-): Promise<JsonRpcLog> => ({
+): Promise<JSONRPCLog> => ({
   removed: false, // TODO implement
   logIndex: logIndex !== undefined ? intToHex(logIndex) : null,
   transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
@@ -178,7 +175,7 @@ const jsonRpcLog = async (
 /**
  * Returns receipt formatted to the standard JSON-RPC fields
  */
-const jsonRpcReceipt = async (
+const toJSONRPCReceipt = async (
   receipt: TxReceipt,
   gasUsed: bigint,
   effectiveGasPrice: bigint,
@@ -189,7 +186,7 @@ const jsonRpcReceipt = async (
   contractAddress?: Address,
   blobGasUsed?: bigint,
   blobGasPrice?: bigint,
-): Promise<JsonRpcReceipt> => ({
+): Promise<JSONRPCReceipt> => ({
   transactionHash: bytesToHex(tx.hash()),
   transactionIndex: intToHex(txIndex),
   blockHash: bytesToHex(block.hash()),
@@ -201,7 +198,7 @@ const jsonRpcReceipt = async (
   gasUsed: bigIntToHex(gasUsed),
   contractAddress: contractAddress?.toString() ?? null,
   logs: await Promise.all(
-    receipt.logs.map((l, i) => jsonRpcLog(l, block, tx, txIndex, logIndex + i)),
+    receipt.logs.map((l, i) => toJSONRPCLog(l, block, tx, txIndex, logIndex + i)),
   ),
   logsBloom: bytesToHex(receipt.bitvector),
   root:
@@ -501,7 +498,7 @@ export class Eth {
    *   2. integer block number, or the string "latest", "earliest" or "pending"
    * @returns The return value of the executed contract.
    */
-  async call(params: [RpcTx, string]) {
+  async call(params: [RPCTx, string]) {
     const [transaction, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
@@ -517,8 +514,8 @@ export class Eth {
     const data = transaction.data ?? transaction.input
 
     const runCallOpts = {
-      caller: from !== undefined ? Address.fromString(from) : undefined,
-      to: to !== undefined ? Address.fromString(to) : undefined,
+      caller: from !== undefined ? createAddressFromString(from) : undefined,
+      to: to !== undefined ? createAddressFromString(to) : undefined,
       gasLimit: toType(gasLimit, TypeOutput.BigInt),
       gasPrice: toType(gasPrice, TypeOutput.BigInt),
       value: toType(value, TypeOutput.BigInt),
@@ -526,6 +523,13 @@ export class Eth {
       block,
     }
     const { execResult } = await vm.evm.runCall(runCallOpts)
+    if (execResult.exceptionError !== undefined) {
+      throw {
+        code: 3,
+        data: bytesToHex(execResult.returnValue),
+        message: execResult.exceptionError.error,
+      }
+    }
     return bytesToHex(execResult.returnValue)
   }
 
@@ -555,7 +559,7 @@ export class Eth {
    *   2. integer block number, or the string "latest", "earliest" or "pending" (optional)
    * @returns The amount of gas used.
    */
-  async estimateGas(params: [RpcTx, string?]) {
+  async estimateGas(params: [RPCTx, string?]) {
     const [transaction, blockOpt] = params
     const block = await getBlockByOption(blockOpt ?? 'latest', this._chain)
 
@@ -585,7 +589,7 @@ export class Eth {
       gasLimit: transaction.gas,
     }
 
-    const blockToRunOn = createBlockFromBlockData(
+    const blockToRunOn = createBlock(
       {
         header: {
           parentHash: block.hash(),
@@ -608,7 +612,9 @@ export class Eth {
 
     // set from address
     const from =
-      transaction.from !== undefined ? Address.fromString(transaction.from) : Address.zero()
+      transaction.from !== undefined
+        ? createAddressFromString(transaction.from)
+        : createZeroAddress()
     tx.getSenderAddress = () => {
       return from
     }
@@ -631,7 +637,7 @@ export class Eth {
    */
   async getBalance(params: [string, string]) {
     const [addressHex, blockOpt] = params
-    const address = Address.fromString(addressHex)
+    const address = createAddressFromString(addressHex)
     const block = await getBlockByOption(blockOpt, this._chain)
 
     if (this._vm === undefined) {
@@ -674,7 +680,7 @@ export class Eth {
 
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
-      return await jsonRpcBlock(block, this._chain, includeTransactions)
+      return await toJSONRPCBlock(block, this._chain, includeTransactions)
     } catch (error) {
       return null
     }
@@ -696,7 +702,7 @@ export class Eth {
     }
     try {
       const block = await getBlockByOption(blockOpt, this._chain)
-      const response = await jsonRpcBlock(block, this._chain, includeTransactions)
+      const response = await toJSONRPCBlock(block, this._chain, includeTransactions)
       return response
     } catch {
       return null
@@ -737,7 +743,7 @@ export class Eth {
     const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const address = Address.fromString(addressHex)
+    const address = createAddressFromString(addressHex)
     const code = await vm.stateManager.getCode(address)
     return bytesToHex(code)
   }
@@ -778,7 +784,7 @@ export class Eth {
     const block = await getBlockByOption(blockOpt, this._chain)
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const address = Address.fromString(addressHex)
+    const address = createAddressFromString(addressHex)
     const account = await vm.stateManager.getAccount(address)
     if (account === undefined) {
       return EMPTY_SLOT
@@ -806,7 +812,7 @@ export class Eth {
       }
 
       const tx = block.transactions[txIndex]
-      return jsonRpcTx(tx, block, txIndex)
+      return toJSONRPCTx(tx, block, txIndex)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
@@ -831,7 +837,7 @@ export class Eth {
       }
 
       const tx = block.transactions[txIndex]
-      return jsonRpcTx(tx, block, txIndex)
+      return toJSONRPCTx(tx, block, txIndex)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
@@ -853,7 +859,7 @@ export class Eth {
     const [_receipt, blockHash, txIndex] = result
     const block = await this._chain.getBlock(blockHash)
     const tx = block.transactions[txIndex]
-    return jsonRpcTx(tx, block, txIndex)
+    return toJSONRPCTx(tx, block, txIndex)
   }
 
   /**
@@ -875,7 +881,7 @@ export class Eth {
     const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const address = Address.fromString(addressHex)
+    const address = createAddressFromString(addressHex)
     const account = await vm.stateManager.getAccount(address)
     if (account === undefined) {
       return '0x0'
@@ -955,15 +961,15 @@ export class Eth {
         const { blobGasPrice, blobGasUsed } = runBlockResult.receipts[i] as EIP4844BlobTxReceipt
         const effectiveGasPrice =
           tx.supports(Capability.EIP1559FeeMarket) === true
-            ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
-              (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block.header.baseFeePerGas!
-              ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
-              : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
+            ? (tx as FeeMarket1559Tx).maxPriorityFeePerGas <
+              (tx as FeeMarket1559Tx).maxFeePerGas - block.header.baseFeePerGas!
+              ? (tx as FeeMarket1559Tx).maxPriorityFeePerGas
+              : (tx as FeeMarket1559Tx).maxFeePerGas -
                 block.header.baseFeePerGas! +
                 block.header.baseFeePerGas!
-            : (tx as LegacyTransaction).gasPrice
+            : (tx as LegacyTx).gasPrice
 
-        return jsonRpcReceipt(
+        return toJSONRPCReceipt(
           r,
           totalGasSpent,
           effectiveGasPrice,
@@ -1006,13 +1012,13 @@ export class Eth {
     const parentBlock = await this._chain.getBlock(block.header.parentHash)
     const tx = block.transactions[txIndex]
     const effectiveGasPrice = tx.supports(Capability.EIP1559FeeMarket)
-      ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
-        (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block.header.baseFeePerGas!
-        ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
-        : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
+      ? (tx as FeeMarket1559Tx).maxPriorityFeePerGas <
+        (tx as FeeMarket1559Tx).maxFeePerGas - block.header.baseFeePerGas!
+        ? (tx as FeeMarket1559Tx).maxPriorityFeePerGas
+        : (tx as FeeMarket1559Tx).maxFeePerGas -
           block.header.baseFeePerGas! +
           block.header.baseFeePerGas!
-      : (tx as LegacyTransaction).gasPrice
+      : (tx as LegacyTx).gasPrice
 
     const vmCopy = await this._vm!.shallowCopy()
     vmCopy.common.setHardfork(tx.common.hardfork())
@@ -1025,7 +1031,7 @@ export class Eth {
 
     const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
     const { blobGasPrice, blobGasUsed } = runBlockResult.receipts[txIndex] as EIP4844BlobTxReceipt
-    return jsonRpcReceipt(
+    return toJSONRPCReceipt(
       receipt,
       totalGasSpent,
       effectiveGasPrice,
@@ -1124,7 +1130,7 @@ export class Eth {
     const logs = await this.receiptsManager.getLogs(from, to, addressBytes, formattedTopics)
     return Promise.all(
       logs.map(({ log, block, tx, txIndex, logIndex }) =>
-        jsonRpcLog(log, block, tx, txIndex, logIndex),
+        toJSONRPCLog(log, block, tx, txIndex, logIndex),
       ),
     )
   }
@@ -1162,10 +1168,10 @@ export class Eth {
       const txBuf = hexToBytes(serializedTx)
       if (txBuf[0] === 0x03) {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
-        tx = create4844BlobTxFromSerializedNetworkWrapper(txBuf, { common })
+        tx = createBlob4844TxFromSerializedNetworkWrapper(txBuf, { common })
 
-        const blobGasLimit = common.param('maxblobGasPerBlock')
-        const blobGasPerBlob = common.param('blobGasPerBlob')
+        const blobGasLimit = tx.common.param('maxblobGasPerBlock')
+        const blobGasPerBlob = tx.common.param('blobGasPerBlob')
 
         if (BigInt((tx.blobs ?? []).length) * blobGasPerBlob > blobGasLimit) {
           throw Error(
@@ -1245,7 +1251,7 @@ export class Eth {
     }
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const address = Address.fromString(addressHex)
+    const address = createAddressFromString(addressHex)
     const slots = slotsHex.map((slotHex) => setLengthLeft(hexToBytes(slotHex), 32))
     const proof = await vm.stateManager.getProof!(address, slots)
     for (const p of proof.storageProof) {
@@ -1331,7 +1337,7 @@ export class Eth {
       let priorityFee = BIGINT_0
       const block = await this._chain.getBlock(latest.number)
       for (const tx of block.transactions) {
-        const maxPriorityFeePerGas = (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+        const maxPriorityFeePerGas = (tx as FeeMarket1559Tx).maxPriorityFeePerGas
         priorityFee += maxPriorityFeePerGas
       }
 
@@ -1350,7 +1356,7 @@ export class Eth {
         }
 
         for (const tx of block.transactions) {
-          const txGasPrice = (tx as LegacyTransaction).gasPrice
+          const txGasPrice = (tx as LegacyTx).gasPrice
           gasPrice += txGasPrice
           txCount++
         }

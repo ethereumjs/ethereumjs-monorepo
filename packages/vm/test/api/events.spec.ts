@@ -1,16 +1,15 @@
 import { Block } from '@ethereumjs/block'
-import { create1559FeeMarketTx } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, toBytes } from '@ethereumjs/util'
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
+import { Account, bytesToHex, createAddressFromPrivateKey, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { runBlock, runTx } from '../../src/index.js'
-import { VM } from '../../src/vm.js'
+import { createVM, runBlock, runTx } from '../../src/index.js'
 
 describe('VM events', () => {
   const privKey = toBytes('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
 
   it('should emit the Block before running it', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let emitted
     vm.events.on('beforeBlock', (val: any) => {
@@ -29,7 +28,7 @@ describe('VM events', () => {
   })
 
   it('should emit a RunBlockResult after running a block', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let emitted
     vm.events.on('afterBlock', (val: any) => {
@@ -49,14 +48,14 @@ describe('VM events', () => {
   })
 
   it('should emit the Transaction before running it', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let emitted
     vm.events.on('beforeTx', (val: any) => {
       emitted = val
     })
 
-    const tx = create1559FeeMarketTx({
+    const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
@@ -68,15 +67,15 @@ describe('VM events', () => {
   })
 
   it('should emit RunTxResult after running a tx', async () => {
-    const vm = await VM.create()
-    const address = Address.fromPrivateKey(privKey)
+    const vm = await createVM()
+    const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.events.on('afterTx', (val: any) => {
       emitted = val
     })
 
-    const tx = create1559FeeMarketTx({
+    const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
@@ -89,15 +88,15 @@ describe('VM events', () => {
   })
 
   it('should emit the Message before running it', async () => {
-    const vm = await VM.create()
-    const address = Address.fromPrivateKey(privKey)
+    const vm = await createVM()
+    const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.evm.events!.on('beforeMessage', (val: any) => {
       emitted = val
     })
 
-    const tx = create1559FeeMarketTx({
+    const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
@@ -111,15 +110,15 @@ describe('VM events', () => {
   })
 
   it('should emit EVMResult after running a message', async () => {
-    const vm = await VM.create()
-    const address = Address.fromPrivateKey(privKey)
+    const vm = await createVM()
+    const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.evm.events!.on('afterMessage', (val: any) => {
       emitted = val
     })
 
-    const tx = create1559FeeMarketTx({
+    const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
@@ -132,7 +131,7 @@ describe('VM events', () => {
   })
 
   it('should emit InterpreterStep on each step', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let lastEmitted: any
     vm.evm.events!.on('step', (val: any) => {
@@ -142,7 +141,7 @@ describe('VM events', () => {
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
     // This deploys a contract which has a single byte of code, 0x41.
-    const tx = create1559FeeMarketTx({
+    const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
@@ -154,7 +153,7 @@ describe('VM events', () => {
   })
 
   it('should emit a NewContractEvent on new contracts', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
 
     let emitted: any
     vm.evm.events!.on('newContract', (val: any) => {
@@ -164,7 +163,7 @@ describe('VM events', () => {
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
     // This deploys a contract which has a single byte of code, 0x41.
-    const tx = create1559FeeMarketTx({
+    const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
       maxFeePerGas: 40000,
       data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',

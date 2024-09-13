@@ -1,11 +1,11 @@
-import { BlockHeader, createBlockFromValuesArray } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlockFromBytesArray, createBlockHeaderFromBytesArray } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import * as devp2p from '@ethereumjs/devp2p'
 import { bytesToHex, bytesToInt, hexToBytes, intToBytes, randomBytes } from '@ethereumjs/util'
 import chalk from 'chalk'
 import ms from 'ms'
 
-import type { Block } from '@ethereumjs/block'
+import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Peer } from '@ethereumjs/devp2p'
 
 const PRIVATE_KEY = randomBytes(32)
@@ -15,7 +15,7 @@ const GENESIS_HASH = hexToBytes(
   '0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177',
 )
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 const bootstrapNodes = common.bootstrapNodes()
 const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {
@@ -109,7 +109,7 @@ rlpx.events.on('peer:added', (peer) => {
           )
           break
         }
-        const header = BlockHeader.fromValuesArray(payload[2][0], { common })
+        const header = createBlockHeaderFromBytesArray(payload[2][0], { common })
 
         setTimeout(() => {
           les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_BODIES, [
@@ -132,7 +132,7 @@ rlpx.events.on('peer:added', (peer) => {
         const header2 = requests.bodies.shift()
         const txs = payload[2][0][0]
         const uncleHeaders = payload[2][0][1]
-        const block = createBlockFromValuesArray([header2.raw(), txs, uncleHeaders], { common })
+        const block = createBlockFromBytesArray([header2.raw(), txs, uncleHeaders], { common })
         const isValid = await isValidBlock(block)
         let isValidPayload = false
         if (isValid) {

@@ -1,5 +1,4 @@
 import {
-  Account,
   Address,
   BIGINT_0,
   BIGINT_1,
@@ -8,7 +7,6 @@ import {
   BIGINT_224,
   BIGINT_255,
   BIGINT_256,
-  BIGINT_27,
   BIGINT_2EXP160,
   BIGINT_2EXP224,
   BIGINT_2EXP96,
@@ -18,7 +16,6 @@ import {
   BIGINT_8,
   BIGINT_96,
   MAX_INTEGER_BIGINT,
-  SECP256K1_ORDER_DIV_2,
   TWO_POW256,
   bigIntToAddressBytes,
   bigIntToBytes,
@@ -26,22 +23,20 @@ import {
   bytesToHex,
   bytesToInt,
   concatBytes,
-  ecrecover,
-  getVerkleTreeIndexesForStorageSlot,
-  hexToBytes,
-  publicToAddress,
+  getVerkleTreeIndicesForStorageSlot,
   setLengthLeft,
-  setLengthRight,
 } from '@ethereumjs/util'
+import { equalBytes } from '@noble/curves/abstract/utils'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { EOFContainer, EOFContainerMode } from '../eof/container.js'
 import { EOFError } from '../eof/errors.js'
 import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.js'
 import { ERROR } from '../exceptions.js'
+import { DELEGATION_7702_FLAG } from '../types.js'
 
 import {
-  addresstoBytes,
+  createAddressFromStackBigInt,
   describeLocation,
   exponentiation,
   fromTwos,
@@ -56,8 +51,6 @@ import {
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
-const EIP3074MAGIC = hexToBytes('0x04')
-
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
 }
@@ -67,6 +60,21 @@ export interface AsyncOpHandler {
 }
 
 export type OpHandler = SyncOpHandler | AsyncOpHandler
+
+function getEIP7702DelegatedAddress(code: Uint8Array) {
+  if (equalBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
+    return new Address(code.slice(3, 24))
+  }
+}
+
+async function eip7702CodeCheck(runState: RunState, code: Uint8Array) {
+  const address = getEIP7702DelegatedAddress(code)
+  if (address !== undefined) {
+    return runState.stateManager.getCode(address)
+  }
+
+  return code
+}
 
 // the opcode functions
 export const handlers: Map<number, OpHandler> = new Map([
@@ -428,7 +436,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x31,
     async function (runState) {
       const addressBigInt = runState.stack.pop()
-      const address = new Address(addresstoBytes(addressBigInt))
+      const address = createAddressFromStackBigInt(addressBigInt)
       const balance = await runState.interpreter.getExternalBalance(address)
       runState.stack.push(balance)
     },
@@ -520,20 +528,20 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3b: EXTCODESIZE
   [
     0x3b,
-    async function (runState) {
+    async function (runState, common) {
       const addressBigInt = runState.stack.pop()
-      const address = new Address(addresstoBytes(addressBigInt))
+      const address = createAddressFromStackBigInt(addressBigInt)
       // EOF check
-      const code = await runState.stateManager.getCode(address)
+      let code = await runState.stateManager.getCode(address)
       if (isEOF(code)) {
         // In legacy code, the target code is treated as to be "EOFBYTES" code
         runState.stack.push(BigInt(EOFBYTES.length))
         return
+      } else if (common.isActivatedEIP(7702)) {
+        code = await eip7702CodeCheck(runState, code)
       }
 
-      const size = BigInt(
-        await runState.stateManager.getCodeSize(new Address(addresstoBytes(addressBigInt))),
-      )
+      const size = BigInt(code.length)
 
       runState.stack.push(size)
     },
@@ -541,15 +549,18 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3c: EXTCODECOPY
   [
     0x3c,
-    async function (runState) {
+    async function (runState, common) {
       const [addressBigInt, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
 
       if (dataLength !== BIGINT_0) {
-        let code = await runState.stateManager.getCode(new Address(addresstoBytes(addressBigInt)))
+        const address = createAddressFromStackBigInt(addressBigInt)
+        let code = await runState.stateManager.getCode(address)
 
         if (isEOF(code)) {
           // In legacy code, the target code is treated as to be "EOFBYTES" code
           code = EOFBYTES
+        } else if (common.isActivatedEIP(7702)) {
+          code = await eip7702CodeCheck(runState, code)
         }
 
         const data = getDataSlice(code, codeOffset, dataLength)
@@ -562,9 +573,9 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3f: EXTCODEHASH
   [
     0x3f,
-    async function (runState) {
+    async function (runState, common) {
       const addressBigInt = runState.stack.pop()
-      const address = new Address(addresstoBytes(addressBigInt))
+      const address = createAddressFromStackBigInt(addressBigInt)
 
       // EOF check
       const code = await runState.stateManager.getCode(address)
@@ -573,6 +584,21 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Therefore, push the hash of EOFBYTES to the stack
         runState.stack.push(bytesToBigInt(EOFHASH))
         return
+      } else if (common.isActivatedEIP(7702)) {
+        const possibleDelegatedAddress = getEIP7702DelegatedAddress(code)
+        if (possibleDelegatedAddress !== undefined) {
+          const account = await runState.stateManager.getAccount(possibleDelegatedAddress)
+          if (!account || account.isEmpty()) {
+            runState.stack.push(BIGINT_0)
+            return
+          }
+
+          runState.stack.push(BigInt(bytesToHex(account.codeHash)))
+          return
+        } else {
+          runState.stack.push(bytesToBigInt(keccak256(code)))
+          return
+        }
       }
 
       const account = await runState.stateManager.getAccount(address)
@@ -644,7 +670,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
         if (common.isActivatedEIP(6800)) {
-          const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(number)
+          const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(number)
           // create witnesses and charge gas
           const statelessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             historyAddress,
@@ -1419,7 +1445,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState: RunState, common: Common) {
       const [_currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(7)
-      const toAddress = new Address(addresstoBytes(toAddr))
+      const toAddress = createAddressFromStackBigInt(toAddr)
 
       let data = new Uint8Array(0)
       if (inLength !== BIGINT_0) {
@@ -1447,7 +1473,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState: RunState, common: Common) {
       const [_currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(7)
-      const toAddress = new Address(addresstoBytes(toAddr))
+      const toAddress = createAddressFromStackBigInt(toAddr)
 
       let gasLimit = runState.messageGasLimit!
       if (value !== BIGINT_0) {
@@ -1476,7 +1502,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const value = runState.interpreter.getCallValue()
       const [_currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(6)
-      const toAddress = new Address(addresstoBytes(toAddr))
+      const toAddress = createAddressFromStackBigInt(toAddr)
 
       let data = new Uint8Array(0)
       if (inLength !== BIGINT_0) {
@@ -1490,119 +1516,6 @@ export const handlers: Map<number, OpHandler> = new Map([
       // Write return data to memory
       writeCallOutput(runState, outOffset, outLength)
       runState.stack.push(ret)
-    },
-  ],
-  // 0xf6: AUTH
-  [
-    0xf6,
-    async function (runState) {
-      // eslint-disable-next-line prefer-const
-      let [authority, memOffset, memLength] = runState.stack.popN(3)
-
-      if (memLength > BigInt(97)) {
-        memLength = BigInt(97)
-      }
-
-      let mem = runState.memory.read(Number(memOffset), Number(memLength))
-      if (mem.length < 97) {
-        mem = setLengthRight(mem, 97)
-      }
-
-      const yParity = BigInt(mem[0])
-      const r = mem.subarray(1, 33)
-      const s = mem.subarray(33, 65)
-      const commit = mem.subarray(65, 97)
-
-      if (bytesToBigInt(s) > SECP256K1_ORDER_DIV_2) {
-        runState.stack.push(BIGINT_0)
-        runState.auth = undefined
-        return
-      }
-      if (yParity > BIGINT_1) {
-        runState.stack.push(BIGINT_0)
-        runState.auth = undefined
-        return
-      }
-
-      // we don't want strick check here on authority being in address range just last 20 bytes
-      const expectedAddress = new Address(bigIntToAddressBytes(authority, false))
-      const account = (await runState.stateManager.getAccount(expectedAddress)) ?? new Account()
-
-      if (account.isContract()) {
-        // EXTCODESIZE > 0
-        runState.stack.push(BIGINT_0)
-        runState.auth = undefined
-        return
-      }
-
-      const accountNonce = account.nonce
-
-      const invokedAddress = setLengthLeft(runState.interpreter._env.address.bytes, 32)
-      const chainId = setLengthLeft(bigIntToBytes(runState.interpreter.getChainId()), 32)
-      const nonce = setLengthLeft(bigIntToBytes(accountNonce), 32)
-      const message = concatBytes(EIP3074MAGIC, chainId, nonce, invokedAddress, commit)
-
-      const keccakFunction = runState.interpreter._evm.common.customCrypto.keccak256 ?? keccak256
-      const msgHash = keccakFunction(message)
-
-      let recover
-      const ecrecoverFunction = runState.interpreter._evm.common.customCrypto.ecrecover ?? ecrecover
-      try {
-        recover = ecrecoverFunction(msgHash, yParity + BIGINT_27, r, s)
-      } catch (e) {
-        // Malformed signature, push 0 on stack, clear auth variable
-        runState.stack.push(BIGINT_0)
-        runState.auth = undefined
-        return
-      }
-
-      const addressBuffer = publicToAddress(recover)
-      const address = new Address(addressBuffer)
-      runState.auth = address
-
-      if (!expectedAddress.equals(address)) {
-        // expected address does not equal the recovered address, clear auth variable
-        runState.stack.push(BIGINT_0)
-        runState.auth = undefined
-        return
-      }
-
-      runState.auth = address
-      runState.stack.push(BIGINT_1)
-    },
-  ],
-  // 0xf7: AUTHCALL (3074) / RETURNDATALOAD (7069)
-  [
-    0xf7,
-    async function (runState, common) {
-      if (common.isActivatedEIP(3074) && runState.env.eof === undefined) {
-        // AUTHCALL logic
-        const [_currentGasLimit, addr, value, argsOffset, argsLength, retOffset, retLength] =
-          runState.stack.popN(7)
-
-        const toAddress = new Address(addresstoBytes(addr))
-
-        const gasLimit = runState.messageGasLimit!
-        runState.messageGasLimit = undefined
-
-        let data = new Uint8Array(0)
-        if (argsLength !== BIGINT_0) {
-          data = runState.memory.read(Number(argsOffset), Number(argsLength))
-        }
-
-        const ret = await runState.interpreter.authcall(gasLimit, toAddress, value, data)
-        // Write return data to memory
-        writeCallOutput(runState, retOffset, retLength)
-        runState.stack.push(ret)
-      } else if (common.isActivatedEIP(7069)) {
-        // RETURNDATALOAD logic
-        const returnDataOffset = runState.stack.pop()
-        const data = getDataSlice(runState.interpreter.getReturnData(), returnDataOffset, BIGINT_32)
-        runState.stack.push(bytesToBigInt(data))
-      } else {
-        // This should be unreachable
-        trap(ERROR.INVALID_OPCODE)
-      }
     },
   ],
   // 0xf8: EXTCALL
@@ -1625,7 +1538,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           return
         }
 
-        const toAddress = new Address(addresstoBytes(toAddr))
+        const toAddress = createAddressFromStackBigInt(toAddr)
 
         let data = new Uint8Array(0)
         if (inLength !== BIGINT_0) {
@@ -1660,7 +1573,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           return
         }
 
-        const toAddress = new Address(addresstoBytes(toAddr))
+        const toAddress = createAddressFromStackBigInt(toAddr)
 
         const code = await runState.stateManager.getCode(toAddress)
 
@@ -1687,7 +1600,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const value = BIGINT_0
       const [_currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(6)
-      const toAddress = new Address(addresstoBytes(toAddr))
+      const toAddress = createAddressFromStackBigInt(toAddr)
 
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
@@ -1724,7 +1637,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           return
         }
 
-        const toAddress = new Address(addresstoBytes(toAddr))
+        const toAddress = createAddressFromStackBigInt(toAddr)
 
         let data = new Uint8Array(0)
         if (inLength !== BIGINT_0) {
@@ -1766,7 +1679,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0xff,
     async function (runState) {
       const selfdestructToAddressBigInt = runState.stack.pop()
-      const selfdestructToAddress = new Address(addresstoBytes(selfdestructToAddressBigInt))
+      const selfdestructToAddress = createAddressFromStackBigInt(selfdestructToAddressBigInt)
       return runState.interpreter.selfDestruct(selfdestructToAddress)
     },
   ],

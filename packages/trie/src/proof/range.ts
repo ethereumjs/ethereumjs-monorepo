@@ -277,7 +277,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
 
     return false
   } else if (node instanceof BranchNode) {
-    // Unset all internal nodes in the forkpoint
+    // Unset all internal nodes in the forkPoint
     for (let i = left[pos] + 1; i < right[pos]; i++) {
       node.setBranch(i, null)
     }
@@ -317,7 +317,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
  * @throws If proof is found to be invalid.
  * @returns The value from the key, or null if valid proof of non-existence.
  */
-async function verifyProof(
+async function verifyMerkleProof(
   rootHash: Uint8Array,
   key: Uint8Array,
   proof: Uint8Array[],
@@ -450,7 +450,7 @@ export async function verifyRangeProof(
   if (proof !== null && firstKey !== null && lastKey === null) {
     // Zero element proof
     if (keys.length === 0) {
-      const { trie, value } = await verifyProof(
+      const { trie, value } = await verifyMerkleProof(
         rootHash,
         nibblesTypeToPackedBytes(firstKey),
         proof,
@@ -473,7 +473,7 @@ export async function verifyRangeProof(
 
   // One element proof
   if (keys.length === 1 && nibblesCompare(firstKey, lastKey) === 0) {
-    const { trie, value } = await verifyProof(
+    const { trie, value } = await verifyMerkleProof(
       rootHash,
       nibblesTypeToPackedBytes(firstKey),
       proof,

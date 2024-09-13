@@ -1,11 +1,11 @@
-import { createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import genesisJSON from '../../testdata/geth-genesis/debug.json'
-import { baseSetup, dummy, getRpcClient, runBlockWithTxs, setupChain } from '../helpers.js'
+import { debugData } from '../../testdata/geth-genesis/debug.js'
+import { baseSetup, dummy, getRPCClient, runBlockWithTxs, setupChain } from '../helpers.js'
 
 const method = 'debug_traceTransaction'
 
@@ -19,8 +19,8 @@ describe(method, () => {
   })
 
   it('call with invalid parameters', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge')
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(debugData, 'post-merge')
+    const rpc = getRPCClient(server)
     let res = await rpc.request(method, ['abcd', {}])
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(res.error.message.includes('hex string without 0x prefix'))
@@ -45,10 +45,10 @@ describe(method, () => {
   })
 
   it('call with valid parameters', async () => {
-    const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+    const { chain, common, execution, server } = await setupChain(debugData, 'post-merge', {
       txLookupLimit: 0,
     })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // construct block with tx
     const tx = createTxFromTxData(
       {
@@ -64,7 +64,7 @@ describe(method, () => {
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = createBlockFromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
@@ -74,10 +74,10 @@ describe(method, () => {
   })
 
   it('call with reverting code', async () => {
-    const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+    const { chain, common, execution, server } = await setupChain(debugData, 'post-merge', {
       txLookupLimit: 0,
     })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // construct block with tx
     const tx = createTxFromTxData(
       {
@@ -93,7 +93,7 @@ describe(method, () => {
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = createBlockFromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
@@ -103,10 +103,10 @@ describe(method, () => {
   })
 
   it('call with memory enabled', async () => {
-    const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+    const { chain, common, execution, server } = await setupChain(debugData, 'post-merge', {
       txLookupLimit: 0,
     })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // construct block with tx
     const tx = createTxFromTxData(
       {
@@ -122,7 +122,7 @@ describe(method, () => {
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = createBlockFromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
@@ -136,10 +136,10 @@ describe(method, () => {
   })
 
   it('call with stack disabled', async () => {
-    const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+    const { chain, common, execution, server } = await setupChain(debugData, 'post-merge', {
       txLookupLimit: 0,
     })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // construct block with tx
     const tx = createTxFromTxData(
       {
@@ -155,7 +155,7 @@ describe(method, () => {
     tx.getSenderAddress = () => {
       return dummy.addr
     }
-    const block = createBlockFromBlockData({}, { common })
+    const block = createBlock({}, { common })
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 

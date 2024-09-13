@@ -9,13 +9,13 @@
  *      - Input length < 32 bytes (reverts)
  */
 
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlock, createBlockHeader } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type TransactionType, type TxData, createTxFromTxData } from '@ethereumjs/tx'
 import {
-  Address,
   bigIntToBytes,
   bytesToBigInt,
+  createAddressFromString,
   hexToBytes,
   setLengthLeft,
   setLengthRight,
@@ -23,19 +23,20 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runBlock as runBlockVM } from '../../../src/index.js'
+import { createVM, runBlock as runBlockVM } from '../../../src/index.js'
 
+import type { VM } from '../../../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.Cancun,
   eips: [4788],
 })
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
-const contractAddress = Address.fromString('0x' + 'c0de'.repeat(10))
+const contractAddress = createAddressFromString('0x' + 'c0de'.repeat(10))
 
 function beaconrootBlock(
   blockroot: bigint,
@@ -56,14 +57,14 @@ function beaconrootBlock(
   }
 
   const root = setLengthLeft(bigIntToBytes(blockroot), 32)
-  const header = BlockHeader.fromHeaderData(
+  const header = createBlockHeader(
     {
       parentBeaconBlockRoot: root,
       timestamp,
     },
     { common, freeze: false },
   )
-  const block = createBlockFromBlockData(
+  const block = createBlock(
     {
       header,
       transactions: newTxData,
@@ -93,7 +94,7 @@ const CODE = ('0x365F5F375F5F365F5F' +
   '5AF15F553D5F5F3E3D5FF3') as PrefixedHexString
 const BROOT_CODE =
   '0x3373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500'
-const BROOT_Address = Address.fromString(`0x${BROOT_AddressString}`)
+const BROOT_Address = createAddressFromString(`0x${BROOT_AddressString}`)
 
 /**
  * Run a block inside a 4788 VM
@@ -101,7 +102,7 @@ const BROOT_Address = Address.fromString(`0x${BROOT_AddressString}`)
  * @returns Two fields: block return status, and callStatus (field saved in the contract)
  */
 async function runBlock(block: Block) {
-  const vm = await VM.create({
+  const vm = await createVM({
     common,
   })
 
@@ -135,7 +136,7 @@ async function runBlockTest(input: {
   timestampBlock: bigint // Timestamp of the block (this is saved in the precompile)
   blockRoot: bigint // Blockroot of the block (also saved in the precompile)
   extLeft?: number // Extend length left of the input (defaults to 32)
-  extRight?: number // Extend lenght right of the input (defaults to 32) - happens after extendLeft
+  extRight?: number // Extend length right of the input (defaults to 32) - happens after extendLeft
   expRet: bigint // Expected return value
   expCallStatus: bigint // Expected call status (either 0 or 1)
 }) {

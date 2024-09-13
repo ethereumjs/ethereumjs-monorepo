@@ -1,13 +1,13 @@
-import { BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { BlockHeader, createBlock, createBlockHeader } from '@ethereumjs/block'
 import {
   Common,
-  Chain as CommonChain,
+  Goerli,
   Hardfork,
   createCommonFromGethGenesis,
   createCustomCommon,
 } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { create1559FeeMarketTx, createLegacyTx } from '@ethereumjs/tx'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
 // import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -22,7 +22,7 @@ import { wait } from '../integration/util.js'
 
 import type { FullSynchronizer } from '../../src/sync/index.js'
 import type { Block } from '@ethereumjs/block'
-import type { CliqueConsensus } from '@ethereumjs/blockchain'
+import type { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
 
 const A = {
@@ -45,7 +45,7 @@ BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
 
 // Stub out setStateRoot so txPool.validate checks will pass since correct state root
 // doesn't exist in fakeChain state anyway
-DefaultStateManager.prototype.setStateRoot = vi.fn()
+MerkleStateManager.prototype.setStateRoot = vi.fn()
 
 class FakeChain {
   open() {}
@@ -53,21 +53,21 @@ class FakeChain {
   update() {}
   get headers() {
     return {
-      latest: BlockHeader.fromHeaderData(),
+      latest: createBlockHeader(),
       height: BigInt(0),
     }
   }
   get blocks() {
     return {
-      latest: createBlockFromBlockData(),
+      latest: createBlock(),
       height: BigInt(0),
     }
   }
   getBlock() {
-    return BlockHeader.fromHeaderData()
+    return createBlockHeader()
   }
   getCanonicalHeadHeader() {
-    return BlockHeader.fromHeaderData()
+    return createBlockHeader()
   }
   blockchain: any = {
     putBlock: async () => {},
@@ -79,7 +79,7 @@ class FakeChain {
     },
     validateHeader: () => {},
     getIteratorHead: () => {
-      return createBlockFromBlockData({ header: { number: 1 } })
+      return createBlock({ header: { number: 1 } })
     },
     getTotalDifficulty: () => {
       return 1n
@@ -150,7 +150,7 @@ const customConfig = new Config({
 })
 customConfig.events.setMaxListeners(50)
 
-const goerliCommon = new Common({ chain: CommonChain.Goerli, hardfork: Hardfork.Berlin })
+const goerliCommon = new Common({ chain: Goerli, hardfork: Hardfork.Berlin })
 goerliCommon.events.setMaxListeners(50)
 const goerliConfig = new Config({
   accountCache: 10000,
@@ -242,7 +242,9 @@ describe('assembleBlocks() -> with a single tx', async () => {
   await txPool.add(txA01)
 
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
+  ;((vm.blockchain as Blockchain).consensus as CliqueConsensus).cliqueActiveSigners = () => [
+    A.address,
+  ] // stub
 
   chain.putBlocks = (blocks: Block[]) => {
     it('should include tx in new block', () => {
@@ -280,7 +282,9 @@ describe('assembleBlocks() -> with a hardfork mismatching tx', async () => {
   })
 
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
+  ;((vm.blockchain as Blockchain).consensus as CliqueConsensus).cliqueActiveSigners = () => [
+    A.address,
+  ] // stub
 
   chain.putBlocks = (blocks: Block[]) => {
     it('should not include tx', () => {
@@ -327,7 +331,7 @@ describe('assembleBlocks() -> with multiple txs, properly ordered by gasPrice an
   ;(vm.blockchain as any)._validateConsensus = false
 
   chain.putBlocks = (blocks: Block[]) => {
-    it('sholud be properly orded by gasPrice and nonce', () => {
+    it('should be properly ordered by gasPrice and nonce', () => {
       const msg = 'txs in block should be properly ordered by gasPrice and nonce'
       const expectedOrder = [txB01, txA01, txA02, txA03]
       for (const [index, tx] of expectedOrder.entries()) {
@@ -382,7 +386,7 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
   ;(vm.blockchain as any)._validateConsensus = false
 
   chain.putBlocks = async (blocks: Block[]) => {
-    it('should be properly orded by gasPrice and nonce', async () => {
+    it('should be properly ordered by gasPrice and nonce', async () => {
       const msg = 'txs in block should be properly ordered by gasPrice and nonce'
       const expectedOrder = [txB01, txA01, txA02, txA03]
       for (const [index, tx] of expectedOrder.entries()) {
@@ -418,8 +422,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
       { name: 'london', block: 0 },
     ],
   }
-  const common = createCustomCommon(customChainParams, {
-    baseChain: CommonChain.Goerli,
+  const common = createCustomCommon(customChainParams, Goerli, {
     hardfork: Hardfork.London,
   })
   const config = new Config({
@@ -430,7 +433,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
     common,
   })
   const chain = new FakeChain() as any
-  const block = createBlockFromBlockData({}, { common })
+  const block = createBlock({}, { common })
   Object.defineProperty(chain, 'headers', {
     get() {
       return { latest: block.header, height: block.header.number }
@@ -454,7 +457,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
 
   // the default block baseFee will be 7
   // add tx with maxFeePerGas of 6
-  const tx = create1559FeeMarketTx({ to: B.address, maxFeePerGas: 6 }, { common }).sign(
+  const tx = createFeeMarket1559Tx({ to: B.address, maxFeePerGas: 6 }, { common }).sign(
     A.privateKey,
   )
   try {
@@ -478,10 +481,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
 describe("assembleBlocks() -> should stop assembling a block after it's full", async () => {
   const chain = new FakeChain() as any
   const gasLimit = 100000
-  const block = createBlockFromBlockData(
-    { header: { gasLimit } },
-    { common: customCommon, setHardfork: true },
-  )
+  const block = createBlock({ header: { gasLimit } }, { common: customCommon, setHardfork: true })
   Object.defineProperty(chain, 'headers', {
     get() {
       return { latest: block.header, height: BigInt(0) }
@@ -570,7 +570,7 @@ describe.skip('assembleBlocks() -> should stop assembling when a new block is re
   for (let i = 0; i < 1000; i++) {
     // In order not to pollute TxPool with too many txs from the same address
     // (or txs which are already known), keep generating a new address for each tx
-    const address = Address.fromPrivateKey(privateKey)
+    const address = createAddressFromPrivateKey(privateKey)
     await setBalance(vm, address, BigInt('200000000000001'))
     const tx = createTx({ address, privateKey })
     await txPool.add(tx)
