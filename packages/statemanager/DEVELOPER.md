@@ -13,6 +13,8 @@ Tests and checks are run in CI using [Github Actions](https://github.com/ethereu
 
 ## Debugging
 
+This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
+
 For the debugging output to show up, set the `DEBUG` environment variable, e.g. in Linux/Mac OS:
 `export DEBUG=ethjs,*`
 

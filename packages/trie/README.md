@@ -335,6 +335,8 @@ npm run profiling
 
 ## Debugging
 
+This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
+
 The `Trie` class features optional debug logging.. Individual debug selections can be activated on the CL with `DEBUG=ethjs,[Logger Selection]`.
 
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.

@@ -82,6 +82,8 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ## Debugging
 
+This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
+
 The `Verkle` class features optional debug logging.. Individual debug selections can be activated on the CL with `DEBUG=ethjs,[Logger Selection]`.
 
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.

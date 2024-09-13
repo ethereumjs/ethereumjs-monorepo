@@ -241,6 +241,8 @@ The `Blockchain` class has a public property `events` which contains an `EventEm
 
 ## Debugging
 
+This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
+
 For the debugging output to show up, set the `DEBUG` environment variable, e.g. in Linux/Mac OS:
 `export DEBUG=ethjs,*`
 
