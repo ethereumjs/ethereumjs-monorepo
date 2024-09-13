@@ -27,7 +27,7 @@ import type { EthersProvider } from '@ethereumjs/util'
  * @param txData - The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction)
  * @param txOptions - Options to pass on to the constructor of the transaction
  */
-export function createTxFromTxData<T extends TransactionType>(
+export function createTx<T extends TransactionType>(
   txData: TypedTxData,
   txOptions: TxOptions = {},
 ): Transaction[T] {
@@ -114,7 +114,7 @@ export async function createTxFromRPC<T extends TransactionType>(
   txData: TxData[T],
   txOptions: TxOptions = {},
 ): Promise<Transaction[T]> {
-  return createTxFromTxData(normalizeTxParams(txData), txOptions)
+  return createTx(normalizeTxParams(txData), txOptions)
 }
 
 /**

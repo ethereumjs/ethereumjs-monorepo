@@ -13,7 +13,7 @@ export {
   createTxFromJSONRPCProvider,
   createTxFromRPC,
   createTxFromSerializedData,
-  createTxFromTxData,
+  createTx,
 } from './transactionFactory.js'
 
 // Types

@@ -8,7 +8,7 @@ import {
   TransactionType,
   createFeeMarket1559Tx,
   createLegacyTx,
-  createTxFromTxData,
+  createTx,
 } from '@ethereumjs/tx'
 import {
   Account,
@@ -194,7 +194,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       )
 
       const transferCost = 21000
-      const unsignedTx = createTxFromTxData(
+      const unsignedTx = createTx(
         {
           to: address,
           gasLimit: transferCost,
@@ -462,7 +462,7 @@ describe('runTx() -> runtime behavior', () => {
         txParams['accessList'] = []
         txParams['type'] = txType.type
       }
-      const tx = createTxFromTxData(txParams, { common }).sign(privateKey)
+      const tx = createTx(txParams, { common }).sign(privateKey)
 
       await vm.stateManager.putAccount(tx.getSenderAddress(), createAccountWithDefaults())
 

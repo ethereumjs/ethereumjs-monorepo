@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import {
   BIGINT_0,
   BIGINT_256,
@@ -63,7 +63,7 @@ const produceBlockWith4844Tx = async (
       }
     }
     await blockBuilder.addTransaction(
-      createTxFromTxData(
+      createTx(
         {
           type: 3,
           gasLimit: 21000,

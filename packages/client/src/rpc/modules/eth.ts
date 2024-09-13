@@ -4,7 +4,7 @@ import {
   Capability,
   createBlob4844TxFromSerializedNetworkWrapper,
   createTxFromSerializedData,
-  createTxFromTxData,
+  createTx,
 } from '@ethereumjs/tx'
 import {
   BIGINT_0,
@@ -608,7 +608,7 @@ export class Eth {
       blockNumber: blockToRunOn.header.number,
     })
 
-    const tx = createTxFromTxData(txData, { common: vm.common, freeze: false })
+    const tx = createTx(txData, { common: vm.common, freeze: false })
 
     // set from address
     const from =

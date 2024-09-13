@@ -1,6 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Holesky } from '@ethereumjs/common'
-import { TransactionType, createFeeMarket1559Tx, createTxFromTxData } from '@ethereumjs/tx'
+import { TransactionType, createFeeMarket1559Tx, createTx } from '@ethereumjs/tx'
 import {
   bigIntToBytes,
   bytesToBigInt,
@@ -226,10 +226,10 @@ describe('[EthProtocol]', () => {
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
 
-    const legacyTx = createTxFromTxData({ type: 0 }, { common: config.chainCommon })
-    const eip2929Tx = createTxFromTxData({ type: 1 }, { common: config.chainCommon })
-    const eip1559Tx = createTxFromTxData({ type: 2 }, { common: config.chainCommon })
-    const blobTx = createTxFromTxData(
+    const legacyTx = createTx({ type: 0 }, { common: config.chainCommon })
+    const eip2929Tx = createTx({ type: 1 }, { common: config.chainCommon })
+    const eip1559Tx = createTx({ type: 2 }, { common: config.chainCommon })
+    const blobTx = createTx(
       {
         type: 3,
         to: createZeroAddress(),
@@ -265,7 +265,7 @@ describe('[EthProtocol]', () => {
     })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
-    const fakeTx = createTxFromTxData({}).sign(randomBytes(32))
+    const fakeTx = createTx({}).sign(randomBytes(32))
     const fakeHash = fakeTx.hash()
     const encoded = p.encode(
       p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],
