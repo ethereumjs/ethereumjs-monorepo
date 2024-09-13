@@ -86,11 +86,6 @@ This library uses the [debug](https://github.com/visionmedia/debug) debugging ut
 
 The `Verkle` class features optional debug logging.. Individual debug selections can be activated on the CL with `DEBUG=ethjs,[Logger Selection]`.
 
-`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
-Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
-
-`DEBUG=ethjs,thislog,thatlog,otherlog,otherlog:sublog,anotherLog:* node myscript.js`
-
 The following options are available:
 
 | Logger              | Description                                      |
@@ -125,6 +120,11 @@ Run with max logging:
 ```shell
 DEBUG=ethjs,verkle:* npx vitest test/verkle.spec.ts
 ```
+
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,tie:PUT,trie:FIND_PATH:* npx vitest test/proof.spec.ts`
 
 ## References
 

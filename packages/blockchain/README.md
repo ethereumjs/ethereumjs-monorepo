@@ -243,11 +243,6 @@ The `Blockchain` class has a public property `events` which contains an `EventEm
 
 This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
 
-`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
-Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
-
-`DEBUG=ethjs,thislog,thatlog,otherlog,otherlog:sublog,anotherLog:* node myscript.js`
-
 The following initial logger is currently available:
 
 | Logger              | Description                                                 |
@@ -261,6 +256,11 @@ Run with the clique logger:
 ```shell
 DEBUG=ethjs,blockchain:clique tsx test.ts
 ```
+
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,statemanager:cache:*,trie,statemanager:merkle npx vitest test/statemanager.spec.ts`
 
 ## EthereumJS
 

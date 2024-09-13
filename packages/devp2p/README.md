@@ -436,11 +436,6 @@ Events emitted:
 
 This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
 
-`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
-Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
-
-`DEBUG=ethjs,thislog,thatlog,otherlog,otherlog:sublog,anotherLog:* node myscript.js`
-
 Use the `DEBUG` environment variable to activate the logger output you are interested in, e.g.:
 
 ```shell
@@ -459,6 +454,11 @@ The following loggers are available:
 | `devp2p:rlpx:peer`    | RLPx peer message exchange logging (`PING`, `PONG`, `HELLO`, `DISCONNECT`,... messages)  |
 | `devp2p:eth`          | ETH protocol message logging (`STATUS`, `GET_BLOCK_HEADER`, `TRANSACTIONS`,... messages) |
 | `devp2p:les`          | LES protocol message logging (`STATUS`, `GET_BLOCK_HEADER`, `GET_PROOFS`,... messages)   |
+
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,devp2p:dns:dns,devp2p:dpt:*,devp2p:rlpx:peer npx vitest test/dns.spec.ts`
 
 ### Debug Verbosity
 
