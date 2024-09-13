@@ -8,7 +8,7 @@ import { numberToBytes } from './utils.js'
 const { bytesToHex, hexToBytes } = utils
 
 describe('official tests', () => {
-  for (const [testName, test] of Object.entries(official.tests)) {
+  for (const [testName, test] of Object.entries(official.default.tests)) {
     it(`should pass ${testName}`, () => {
       let incoming: any = test.in
       // if we are testing a big number

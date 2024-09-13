@@ -92,8 +92,8 @@ const setup = () => {
 describe('[PendingBlock]', async () => {
   BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
   vi.doMock('@ethereumjs/block', () => {
-    {
-      BlockHeader
+    return {
+      BlockHeader,
     }
   })
 
