@@ -54,11 +54,6 @@ export function getArguments() {
       type: 'string',
       demandOption: true,
     })
-    .option('output.body', {
-      describe: 'File to write the txs RLP to',
-      type: 'string',
-      default: 'txs.rlp',
-    })
     .option('log', {
       describe: 'Optionally write light-trace logs to stdout',
       type: 'boolean',
@@ -78,7 +73,6 @@ export function getArguments() {
     basedir: (<any>args)['output.basedir'],
     result: (<any>args)['output.result'],
     alloc: (<any>args)['output.alloc'],
-    body: (<any>args)['output.body'],
   }
   args.state = {
     fork: (<any>args)['state.fork'],

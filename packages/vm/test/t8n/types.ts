@@ -19,7 +19,6 @@ export type T8NOptions = {
     basedir: string
     result: string
     alloc: string
-    body: string
   }
   log: boolean
 }
