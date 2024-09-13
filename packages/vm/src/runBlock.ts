@@ -17,7 +17,7 @@ import {
   concatBytes,
   createAddressFromString,
   equalsBytes,
-  getVerkleTreeIndexesForStorageSlot,
+  getVerkleTreeIndicesForStorageSlot,
   hexToBytes,
   intToBytes,
   setLengthLeft,
@@ -510,7 +510,7 @@ export async function accumulateParentBlockHash(
 
     // generate access witness
     if (vm.common.isActivatedEIP(6800)) {
-      const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(ringKey)
+      const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(ringKey)
       // just create access witnesses without charging for the gas
       vm.stateManager.accessWitness!.touchAddressOnWriteAndComputeGas(
         historyAddress,

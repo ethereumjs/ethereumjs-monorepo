@@ -1,6 +1,6 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import { EVMMockBlockchain, createEVM, getActivePrecompiles } from '@ethereumjs/evm'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, createAccount, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import { VM } from './vm.js'
@@ -22,7 +22,7 @@ export async function createVM(opts: VMOpts = {}): Promise<VM> {
   }
 
   if (opts.stateManager === undefined) {
-    opts.stateManager = new DefaultStateManager({
+    opts.stateManager = new MerkleStateManager({
       common: opts.common,
     })
   }

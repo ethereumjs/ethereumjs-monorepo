@@ -20,7 +20,6 @@ import {
   Address,
   BIGINT_1,
   KECCAK256_RLP,
-  bigIntToBytes,
   concatBytes,
   createAddressFromString,
   createZeroAddress,
@@ -52,7 +51,7 @@ import type {
 } from '../../src/types.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { ChainConfig } from '@ethereumjs/common'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
@@ -69,14 +68,14 @@ describe('runBlock() -> successful API parameter usage', async () => {
     await setupPreConditions(vm.stateManager, testData)
 
     assert.deepEqual(
-      (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      (vm.stateManager as MerkleStateManager)['_trie'].root(),
       genesis.header.stateRoot,
       'genesis state root should match calculated state root',
     )
 
     const res = await runBlock(vm, {
       block,
-      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      root: (vm.stateManager as MerkleStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -98,7 +97,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     const block1 = createBlockFromRLP(block1Rlp, { common })
     await runBlock(vm, {
       block: block1,
-      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      root: (vm.stateManager as MerkleStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -108,7 +107,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     await runBlock(vm, {
       block: block2,
 
-      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      root: (vm.stateManager as MerkleStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -118,7 +117,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
     await runBlock(vm, {
       block: block3,
 
-      root: (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      root: (vm.stateManager as MerkleStateManager)['_trie'].root(),
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -607,14 +606,16 @@ describe('runBlock() -> tx types', async () => {
 
       const chainIdBytes = unpadBytes(hexToBytes(`0x${chainId.toString(16)}`))
       const nonceBytes =
-        nonce !== undefined ? [unpadBytes(hexToBytes(`0x${nonce.toString(16)}`))] : []
+        nonce !== undefined ? unpadBytes(hexToBytes(`0x${nonce.toString(16)}`)) : new Uint8Array()
       const addressBytes = address.toBytes()
 
       const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
       const msgToSign = keccak256(concatBytes(new Uint8Array([5]), rlpdMsg))
       const signed = ecsign(msgToSign, pkey)
 
-      return [chainIdBytes, addressBytes, nonceBytes, bigIntToBytes(signed.v), signed.r, signed.s]
+      const yParity = signed.v === BigInt(27) ? new Uint8Array() : new Uint8Array([1])
+
+      return [chainIdBytes, addressBytes, nonceBytes, yParity, signed.r, signed.s]
     }
 
     const common = new Common({
@@ -639,6 +640,7 @@ describe('runBlock() -> tx types', async () => {
     const authorizationListOpts2 = [
       {
         address: code2Addr,
+        nonce: 1,
       },
     ]
 

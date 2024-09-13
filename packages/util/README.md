@@ -176,6 +176,42 @@ console.log(`Recovered public key ${bytesToHex(pubkey)} from valid signature val
 
 Various TypeScript types. Direct usage is not recommended, type structure might change in the future.
 
+### Module: [verkle](src/verkle.ts)
+
+Various functions for accessing verkle state:
+
+```ts
+// ./examples/verkle.ts
+
+import {
+  VerkleLeafType,
+  bytesToHex,
+  decodeVerkleLeafBasicData,
+  getVerkleKey,
+  hexToBytes,
+} from '@ethereumjs/util'
+
+const state = {
+  '0xdf67dea9181141d6255ac05c7ada5a590fb30a375023f16c31223f067319e300':
+    '0x0000000000000000000000000000000000000000000000000000000000000000',
+  '0xdf67dea9181141d6255ac05c7ada5a590fb30a375023f16c31223f067319e301':
+    '0x923672e5275a0104000000000000000000000000000000000000000000000000',
+  '0xdf67dea9181141d6255ac05c7ada5a590fb30a375023f16c31223f067319e302':
+    '0x2c01000000000000000000000000000000000000000000000000000000000000',
+  '0xdf67dea9181141d6255ac05c7ada5a590fb30a375023f16c31223f067319e303':
+    '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+  '0xdf67dea9181141d6255ac05c7ada5a590fb30a375023f16c31223f067319e304': null,
+}
+
+const stem = hexToBytes('0xdf67dea9181141d6255ac05c7ada5a590fb30a375023f16c31223f067319e3')
+
+const basicDataKey = getVerkleKey(stem, VerkleLeafType.BasicData)
+const basicDataRaw = state[bytesToHex(basicDataKey)]
+const basicData = decodeVerkleLeafBasicData(hexToBytes(basicDataRaw!))
+
+console.log(basicData) // { version: 0, nonce: 0n, codeSize: 0, balance: 0n }
+```
+
 ### Module: [withdrawal](src/withdrawal.ts)
 
 Class representing an `EIP-4895` `Withdrawal` with different constructors as well as conversion and output helpers.
@@ -183,9 +219,9 @@ Class representing an `EIP-4895` `Withdrawal` with different constructors as wel
 ```ts
 // ./examples/withdrawal.ts
 
-import { Withdrawal } from '@ethereumjs/util'
+import { createWithdrawal } from '@ethereumjs/util'
 
-const withdrawal = Withdrawal.fromWithdrawalData({
+const withdrawal = createWithdrawal({
   index: 0n,
   validatorIndex: 65535n,
   address: '0x0000000000000000000000000000000000000000',

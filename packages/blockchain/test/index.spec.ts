@@ -10,11 +10,11 @@ import { assert, describe, it } from 'vitest'
 
 import { Blockchain, createBlockchain, createBlockchainFromBlocksData } from '../src/index.js'
 
-import blocksData from './testdata/blocks_mainnet.json'
-import * as testDataPreLondon from './testdata/testdata_pre-london.json'
+import { blocksMainnetData } from './testdata/blocks_mainnet.js'
+import { preLondonData } from './testdata/testdata_pre-london.js'
 import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util.js'
 
-import type { Block, BlockData, BlockOptions } from '@ethereumjs/block'
+import type { Block, BlockOptions } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('blockchain test', () => {
@@ -60,7 +60,7 @@ describe('blockchain test', () => {
 
   it('should initialize correctly with createBlockchainFromBlocksData()', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchainFromBlocksData(blocksData as BlockData[], {
+    const blockchain = await createBlockchainFromBlocksData(blocksMainnetData, {
       validateBlocks: true,
       validateConsensus: false,
       common,
@@ -579,7 +579,7 @@ describe('blockchain test', () => {
 
   it('should add block with body', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisRlp = hexToBytes(testDataPreLondon.genesisRLP as PrefixedHexString)
+    const genesisRlp = hexToBytes(preLondonData.genesisRLP as PrefixedHexString)
     const genesisBlock = createBlockFromRLP(genesisRlp, { common })
     const blockchain = await createBlockchain({
       validateBlocks: true,
@@ -587,7 +587,7 @@ describe('blockchain test', () => {
       genesisBlock,
     })
 
-    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(preLondonData.blocks[0].rlp as PrefixedHexString)
     const block = createBlockFromRLP(blockRlp, { common })
     await blockchain.putBlock(block)
   })

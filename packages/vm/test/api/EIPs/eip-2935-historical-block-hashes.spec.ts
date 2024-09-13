@@ -181,7 +181,7 @@ describe('EIP 2935: historical block hashes', () => {
       commonGenesis.setHardforkBy({
         timestamp: 1,
       })
-      const genesis = await vm.blockchain.getBlock(0)
+      const genesis = (await vm.blockchain.getBlock(0)) as Block
       const block = await (
         await buildBlock(vm, {
           parentBlock: genesis,
@@ -216,7 +216,7 @@ describe('EIP 2935: historical block hashes', () => {
         validateConsensus: false,
       })
       const vm = await createVM({ common, blockchain })
-      let lastBlock = await vm.blockchain.getBlock(0)
+      let lastBlock = (await vm.blockchain.getBlock(0)) as Block
       for (let i = 1; i <= blocksToBuild; i++) {
         lastBlock = await (
           await buildBlock(vm, {

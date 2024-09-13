@@ -9,7 +9,7 @@ import * as testnetMerge from './testdata/testnetMerge.json'
 import { setupVM } from './utils.js'
 
 import type { ChainConfig } from '@ethereumjs/common'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { MerkleStateManager } from '@ethereumjs/statemanager'
 
 /**
  * Tests for the main constructor API and
@@ -31,7 +31,7 @@ describe('VM -> basic instantiation / boolean switches', () => {
     const vm = await createVM()
     assert.ok(vm.stateManager)
     assert.deepEqual(
-      (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      (vm.stateManager as MerkleStateManager)['_trie'].root(),
       KECCAK256_RLP,
       'it has default trie',
     )
@@ -41,7 +41,7 @@ describe('VM -> basic instantiation / boolean switches', () => {
   it('should be able to activate precompiles', async () => {
     const vm = await createVM({ activatePrecompiles: true })
     assert.notDeepEqual(
-      (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      (vm.stateManager as MerkleStateManager)['_trie'].root(),
       KECCAK256_RLP,
       'it has different root',
     )
@@ -183,7 +183,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     let common = createCustomCommon({ chainId: 3 }, Mainnet)
     common.setHardfork(Hardfork.Byzantium)
     let vm = await createVM({ common })
-    assert.equal(vm.common.param('ecAddGas'), BigInt(500))
+    assert.equal(vm.common.param('bn254AddGas'), BigInt(500))
 
     try {
       common = new Common({ chain: Mainnet, hardfork: 'extraCheese' })
@@ -231,7 +231,7 @@ describe('VM -> setHardfork, blockchain', () => {
   it('should instantiate', async () => {
     const vm = await setupVM()
     assert.deepEqual(
-      (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      (vm.stateManager as MerkleStateManager)['_trie'].root(),
       KECCAK256_RLP,
       'it has default trie',
     )

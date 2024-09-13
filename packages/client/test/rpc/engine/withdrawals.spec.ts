@@ -4,8 +4,8 @@ import { bigIntToHex, bytesToHex, createWithdrawal, intToHex } from '@ethereumjs
 import { assert, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import genesisJSON from '../../testdata/geth-genesis/withdrawals.json'
-import { getRpcClient, setupChain } from '../helpers.js'
+import { withdrawalsData } from '../../testdata/geth-genesis/withdrawals.js'
+import { getRPCClient, setupChain } from '../helpers.js'
 
 import type { ExecutionPayload } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -112,8 +112,8 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       computedWithdrawalsRoot,
       'withdrawalsRoot computation should match',
     )
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(withdrawalsData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     let res = await rpc.request('engine_forkchoiceUpdatedV2', [
       validForkChoiceState,
       validPayloadAttributes,

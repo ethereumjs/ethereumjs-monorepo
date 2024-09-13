@@ -18,7 +18,7 @@ import { Capability, TransactionType } from './types.js'
 import { checkMaxInitCodeSize } from './util.js'
 
 import type {
-  JsonTx,
+  JSONTx,
   Transaction,
   TransactionCache,
   TransactionInterface,
@@ -345,7 +345,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  toJSON(): JsonTx {
+  toJSON(): JSONTx {
     return {
       type: bigIntToHex(BigInt(this.type)),
       nonce: bigIntToHex(this.nonce),

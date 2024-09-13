@@ -5,7 +5,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createBlockchain } from '../src/index.js'
 
-import gethGenesisJSON from './testdata/post-merge.json'
+import { postMergeData } from './testdata/post-merge.js'
 
 import type { Blockchain } from '../src/blockchain.js'
 
@@ -21,7 +21,7 @@ async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
 
 describe('[Utils/Parse]', () => {
   it('should properly parse genesis state from gethGenesis', async () => {
-    const genesisState = parseGethGenesisState(gethGenesisJSON)
+    const genesisState = parseGethGenesisState(postMergeData)
     const stateRoot = await genesisStateRoot(genesisState)
     assert.equal(
       bytesToHex(stateRoot),
@@ -31,7 +31,7 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should initialize blockchain from gethGenesis', async () => {
-    const blockchain = await getBlockchain(gethGenesisJSON)
+    const blockchain = await getBlockchain(postMergeData)
     const genesisHash = blockchain.genesisBlock.hash()
 
     assert.equal(

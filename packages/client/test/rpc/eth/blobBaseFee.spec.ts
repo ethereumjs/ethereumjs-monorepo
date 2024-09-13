@@ -14,8 +14,8 @@ import { buildBlock } from '@ethereumjs/vm'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
-import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import { getRpcClient, setupChain } from '../helpers.js'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
+import { getRPCClient, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain/chain.js'
 import type { VMExecution } from '../../../src/execution/vmexecution.js'
@@ -90,7 +90,7 @@ const produceBlockWith4844Tx = async (
 describe(method, () => {
   it('call', async () => {
     const kzg = await loadKZG()
-    const { server } = await setupChain(genesisJSON, 'post-merge', {
+    const { server } = await setupChain(eip4844Data, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
       customCrypto: {
@@ -98,14 +98,14 @@ describe(method, () => {
       },
     })
 
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, [])
     assert.equal(res.result, '0x1')
   })
 
   it('call with more realistic blockchain', async () => {
     const kzg = await loadKZG()
-    const { server, execution, chain } = await setupChain(genesisJSON, 'post-merge', {
+    const { server, execution, chain } = await setupChain(eip4844Data, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
       customCrypto: {
@@ -116,7 +116,7 @@ describe(method, () => {
     for (let i = 0; i < 10; i++) {
       await produceBlockWith4844Tx(execution, chain, [6])
     }
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, [])
     assert.equal(res.result, '0x3')
   })

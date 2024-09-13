@@ -232,12 +232,12 @@ export function parseGethGenesis(json: any, name?: string) {
     }
 
     // We copy the JSON object here because it's frozen in browser and properties can't be modified
-    const finalJson = { ...json }
+    const finalJSON = { ...json }
 
     if (name !== undefined) {
-      finalJson.name = name
+      finalJSON.name = name
     }
-    return parseGethParams(finalJson)
+    return parseGethParams(finalJSON)
   } catch (e: any) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }

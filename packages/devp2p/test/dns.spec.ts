@@ -3,10 +3,10 @@ import { assert, describe, it } from 'vitest'
 
 import { DNS } from '../src/dns/index.js'
 
-import * as testdata from './testdata.json'
+import { testData } from './testdata.js'
 
 describe('DNS', () => {
-  const mockData = testdata.default.dns
+  const mockData = testData.dns
   const mockDns = td.replace<any>('dns')
 
   let dns: DNS

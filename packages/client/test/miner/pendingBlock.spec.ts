@@ -1,7 +1,7 @@
 import { BlockHeader, createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
@@ -19,7 +19,7 @@ import { createVM } from '@ethereumjs/vm'
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it, vi } from 'vitest'
 
-import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
+import { hardfork4844Data } from '../../../block/test/testdata/4844-hardfork.js'
 import { Config } from '../../src/config.js'
 import { getLogger } from '../../src/logging.js'
 import { PendingBlock } from '../../src/miner/index.js'
@@ -92,12 +92,12 @@ const setup = () => {
 describe('[PendingBlock]', async () => {
   BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
   vi.doMock('@ethereumjs/block', () => {
-    {
-      BlockHeader
+    return {
+      BlockHeader,
     }
   })
 
-  DefaultStateManager.prototype.setStateRoot = vi.fn()
+  MerkleStateManager.prototype.setStateRoot = vi.fn()
 
   const createTx = (
     from = A,
@@ -344,7 +344,7 @@ describe('[PendingBlock]', async () => {
 
   it('construct blob bundles', async () => {
     const kzg = await loadKZG()
-    const common = createCommonFromGethGenesis(gethGenesis, {
+    const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: {
@@ -423,10 +423,9 @@ describe('[PendingBlock]', async () => {
   })
 
   it('should exclude missingBlobTx', async () => {
-    const gethGenesis = await import('../../../block/test/testdata/4844-hardfork.json')
     const kzg = await loadKZG()
 
-    const common = createCommonFromGethGenesis(gethGenesis, {
+    const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },

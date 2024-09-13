@@ -25,9 +25,9 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 const client = Client.http({ port: 8545 })
 
 const network = 'mainnet'
-const networkJson = require(`./configs/${network}.json`)
-const common = createCommonFromGethGenesis(networkJson, { chain: network })
-const customGenesisState = parseGethGenesisState(networkJson)
+const networkJSON = require(`./configs/${network}.json`)
+const common = createCommonFromGethGenesis(networkJSON, { chain: network })
+const customGenesisState = parseGethGenesisState(networkJSON)
 
 const pkey = hexToBytes('0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e')
 // 0x97C9B168C5E14d5D369B6D88E9776E5B7b11dcC1

@@ -8,13 +8,13 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import blocks from '../../testdata/blocks/beacon.json'
-import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseSetup, batchBlocks, getRpcClient, setupChain } from '../helpers.js'
+import { beaconData } from '../../testdata/blocks/beacon.js'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
+import { baseSetup, batchBlocks, getRPCClient, setupChain } from '../helpers.js'
 
 const method = 'engine_newPayloadV1'
 
-const [blockData] = blocks
+const [blockData] = beaconData
 
 describe(method, () => {
   it('call with invalid block hash without 0x', async () => {
@@ -48,8 +48,8 @@ describe(method, () => {
   })
 
   it('call with non existent block hash', async () => {
-    const { server } = await setupChain(genesisJSON, 'merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(postMergeData, 'merge', { engine: true })
+    const rpc = getRPCClient(server)
     const blockDataNonExistentBlockHash = [
       {
         ...blockData,
@@ -62,8 +62,8 @@ describe(method, () => {
   })
 
   it('call with non existent parent hash', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     const blockDataNonExistentParentHash = [
       {
         ...blockData,
@@ -77,35 +77,35 @@ describe(method, () => {
   })
 
   it('call with unknown parent hash to store in remoteBlocks, then call valid ancestor in fcU', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
-    let res = await rpc.request(method, [blocks[1]])
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
+    let res = await rpc.request(method, [beaconData[1]])
 
     assert.equal(res.result.status, 'ACCEPTED')
 
-    res = await rpc.request(method, [blocks[0]])
+    res = await rpc.request(method, [beaconData[0]])
 
     assert.equal(res.result.status, 'VALID')
 
     // should return syncing as block1 would still not be executed
     const state = {
-      headBlockHash: blocks[1].blockHash,
-      safeBlockHash: blocks[1].blockHash,
-      finalizedBlockHash: blocks[0].blockHash,
+      headBlockHash: beaconData[1].blockHash,
+      safeBlockHash: beaconData[1].blockHash,
+      finalizedBlockHash: beaconData[0].blockHash,
     }
     res = await rpc.request('engine_forkchoiceUpdatedV1', [state])
 
     assert.equal(res.result.payloadStatus.status, 'SYNCING')
 
     // now block2 should be executed
-    res = await rpc.request(method, [blocks[1]])
+    res = await rpc.request(method, [beaconData[1]])
 
     assert.equal(res.result.status, 'VALID')
   })
 
   it('call with valid data', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, [blockData])
 
     assert.equal(res.result.status, 'VALID')
@@ -113,8 +113,8 @@ describe(method, () => {
   })
 
   it('call with valid data but invalid transactions', async () => {
-    const { chain, server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { chain, server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
     chain.config.logger.silent = true
     const blockDataWithInvalidTransaction = {
       ...blockData,
@@ -132,8 +132,10 @@ describe(method, () => {
   })
 
   it('call with valid data & valid transaction but not signed', async () => {
-    const { server, common, chain } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const { server, common, chain } = await setupChain(postMergeData, 'post-merge', {
+      engine: true,
+    })
+    const rpc = getRPCClient(server)
     chain.config.logger.silent = true
 
     // Let's mock a non-signed transaction so execution fails
@@ -166,9 +168,9 @@ describe(method, () => {
     )
     const accountAddress = createAddressFromPrivateKey(accountPk)
     const newGenesisJSON = {
-      ...genesisJSON,
+      ...postMergeData,
       alloc: {
-        ...genesisJSON.alloc,
+        ...postMergeData.alloc,
         [accountAddress.toString()]: {
           balance: '0x1000000',
         },
@@ -176,7 +178,7 @@ describe(method, () => {
     }
 
     const { server, common } = await setupChain(newGenesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const tx = createFeeMarket1559Tx(
       {
         maxFeePerGas: '0x7',
@@ -206,9 +208,9 @@ describe(method, () => {
     )
     const accountAddress = createAddressFromPrivateKey(accountPk)
     const newGenesisJSON = {
-      ...genesisJSON,
+      ...postMergeData,
       alloc: {
-        ...genesisJSON.alloc,
+        ...postMergeData.alloc,
         [accountAddress.toString()]: {
           balance: '0x100000000',
         },
@@ -218,7 +220,7 @@ describe(method, () => {
     const { chain, server, common } = await setupChain(newGenesisJSON, 'post-merge', {
       engine: true,
     })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const transactions = Array.from({ length: 101 }, (_v, i) => {
       const tx = createFeeMarket1559Tx(
         {
@@ -258,15 +260,15 @@ describe(method, () => {
   })
 
   it('re-execute payload and verify that no errors occur', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
-    await batchBlocks(rpc, blocks)
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
+    await batchBlocks(rpc, beaconData)
 
     let res = await rpc.request('engine_forkchoiceUpdatedV1', [
       {
-        headBlockHash: blocks[2].blockHash,
-        finalizedBlockHash: blocks[2].blockHash,
-        safeBlockHash: blocks[2].blockHash,
+        headBlockHash: beaconData[2].blockHash,
+        finalizedBlockHash: beaconData[2].blockHash,
+        safeBlockHash: beaconData[2].blockHash,
       },
     ])
 
@@ -280,14 +282,14 @@ describe(method, () => {
   })
 
   it('parent hash equals to block hash', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
     const blockDataHasBlockHashSameAsParentHash = [
       {
         ...blockData,
         blockHash: blockData.parentHash,
       },
     ]
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     const res = await rpc.request(method, blockDataHasBlockHashSameAsParentHash)
 
     assert.equal(res.result.status, 'INVALID_BLOCK_HASH')

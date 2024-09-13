@@ -7,7 +7,7 @@ import * as invalid from './fixture/invalid.json'
 const { hexToBytes } = utils
 
 describe('invalid tests', () => {
-  for (const [testName, test] of Object.entries(invalid.tests)) {
+  for (const [testName, test] of Object.entries(invalid.default.tests)) {
     it(`should pass ${testName}`, () => {
       let { out } = test
       if (out[0] === '0' && out[1] === 'x') {

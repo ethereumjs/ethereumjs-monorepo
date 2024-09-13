@@ -119,12 +119,12 @@ export async function createTxFromRPC<T extends TransactionType>(
 
 /**
  *  Method to retrieve a transaction from the provider
- * @param provider - a url string for a JSON-RPC provider or an Ethers JsonRPCProvider object
+ * @param provider - a url string for a JSON-RPC provider or an Ethers JSONRPCProvider object
  * @param txHash - Transaction hash
  * @param txOptions - The transaction options
  * @returns the transaction specified by `txHash`
  */
-export async function createTxFromJsonRpcProvider(
+export async function createTxFromJSONRPCProvider(
   provider: string | EthersProvider,
   txHash: string,
   txOptions?: TxOptions,

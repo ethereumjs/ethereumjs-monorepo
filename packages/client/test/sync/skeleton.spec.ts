@@ -15,11 +15,10 @@ import { getLogger } from '../../src/logging.js'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.js'
 import { short } from '../../src/util/index.js'
 import { wait } from '../integration/util.js'
-import mergeGenesisParams from '../testdata/common/mergeTestnet.json'
-import genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import { mergeTestnetData } from '../testdata/common/mergeTestnet.js'
+import { postMergeData } from '../testdata/geth-genesis/post-merge.js'
 
 import type { Block } from '@ethereumjs/block'
-import type { ChainConfig } from '@ethereumjs/common'
 type Subchain = {
   head: bigint
   tail: bigint
@@ -242,7 +241,8 @@ describe('[Skeleton] / initSync', async () => {
       }
 
       if (testCase.oldState) {
-        skeleton['status'].progress.subchains = testCase.oldState as any
+        skeleton['status'].progress.subchains =
+          testCase.oldState as Skeleton['status']['progress']['subchains']
       }
 
       await skeleton.initSync(testCase.head)
@@ -403,9 +403,9 @@ describe('[Skeleton] / setHead', async () => {
 
   it(`skeleton init should throw error if merge not set`, async () => {
     const genesis = {
-      ...genesisJSON,
+      ...postMergeData,
       config: {
-        ...genesisJSON.config,
+        ...postMergeData.config,
         // skip the merge hardfork
         terminalTotalDifficulty: undefined,
         clique: undefined,
@@ -417,7 +417,7 @@ describe('[Skeleton] / setHead', async () => {
     const common = createCommonFromGethGenesis(genesis, { chain: 'merge-not-set' })
     const config = new Config({ common })
     const chain = await Chain.create({ config })
-    ;(chain.blockchain as any)._validateBlocks = false
+    ;(chain.blockchain['_validateBlocks'] as any) = false
     try {
       new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     } catch (e) {
@@ -428,7 +428,7 @@ describe('[Skeleton] / setHead', async () => {
   it('should init/setHead properly from genesis', async () => {
     const config = new Config({ common })
     const chain = await Chain.create({ config })
-    ;(chain.blockchain as any)._validateBlocks = false
+    ;(chain.blockchain['_validateBlocks'] as any) = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
 
@@ -540,7 +540,7 @@ describe('[Skeleton] / setHead', async () => {
   it('should fill the canonical chain after being linked to genesis', async () => {
     const config = new Config({ common, logger: getLogger({ logLevel: 'debug' }) })
     const chain = await Chain.create({ config })
-    ;(chain.blockchain as any)._validateBlocks = false
+    ;(chain.blockchain['_validateBlocks'] as any) = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
 
@@ -616,7 +616,7 @@ describe('[Skeleton] / setHead', async () => {
   it('should fill the canonical chain after being linked to a canonical block past genesis', async () => {
     const config = new Config({ common, engineNewpayloadMaxExecute: 10 })
     const chain = await Chain.create({ config })
-    ;(chain.blockchain as any)._validateBlocks = false
+    ;(chain.blockchain['_validateBlocks'] as any) = false
 
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
@@ -811,7 +811,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should abort filling the canonical chain if the terminal block is invalid', async () => {
-    const common = createCustomCommon(mergeGenesisParams as ChainConfig, Mainnet)
+    const common = createCustomCommon(mergeTestnetData, Mainnet)
     common.setHardforkBy({ blockNumber: BigInt(0) })
     const config = new Config({
       common,
@@ -819,7 +819,7 @@ describe('[Skeleton] / setHead', async () => {
       storageCache: 1000,
     })
     const chain = await Chain.create({ config })
-    ;(chain.blockchain as any)._validateBlocks = false
+    ;(chain.blockchain['_validateBlocks'] as any) = false
     await chain.open()
     const genesisBlock = await chain.getBlock(BigInt(0))
 

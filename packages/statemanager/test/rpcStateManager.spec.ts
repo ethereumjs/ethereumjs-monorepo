@@ -1,4 +1,4 @@
-import { createBlockFromJsonRpcProvider, createBlockFromRPC } from '@ethereumjs/block'
+import { createBlockFromJSONRPCProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
 import { createFeeMarket1559Tx, createTxFromRPC } from '@ethereumjs/tx'
@@ -17,14 +17,14 @@ import {
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
+import { MerkleStateManager } from '../src/merkleStateManager.js'
 import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
-import { DefaultStateManager } from '../src/stateManager.js'
 
-import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
+import { block as blockData } from './testdata/providerData/blocks/block0x7a120.js'
 import { getValues } from './testdata/providerData/mockProvider.js'
-import * as txData from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json'
+import { tx as txData } from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.js'
 
-import type { JsonRpcBlock } from '@ethereumjs/block'
+import type { EVMMockBlockchainInterface } from '@ethereumjs/evm'
 
 const provider = process.env.PROVIDER ?? 'http://cheese'
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
@@ -33,7 +33,7 @@ const provider = process.env.PROVIDER ?? 'http://cheese'
 
 describe('RPC State Manager initialization tests', async () => {
   vi.mock('@ethereumjs/util', async () => {
-    const util = (await vi.importActual('@ethereumjs/util')) as any
+    const util = await vi.importActual('@ethereumjs/util')
     return {
       ...util,
       fetchFromProvider: vi.fn().mockImplementation(async (url, { method, params }: any) => {
@@ -201,7 +201,7 @@ describe('RPC State Manager API tests', () => {
     assert.deepEqual({}, clearedStorage, 'storage cache should be empty after clear')
 
     try {
-      await createBlockFromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)
+      await createBlockFromJSONRPCProvider(provider, 'fakeBlockTag', {} as any)
       assert.fail('should have thrown')
     } catch (err: any) {
       assert.ok(
@@ -231,7 +231,7 @@ describe('runTx custom transaction test', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
     const state = new RPCStateManager({ provider, blockTag: 1n })
-    const vm = await createVM({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
+    const vm = await createVM({ common, stateManager: <any>state }) // TODO fix the type MerkleStateManager back to StateManagerInterface in VM
 
     const vitalikDotEth = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const privateKey = hexToBytes(
@@ -290,7 +290,7 @@ describe('runBlock test', () => {
     common.setHardforkBy({ blockNumber: blockTag - 1n })
 
     const vm = await createVM({ common, stateManager: state })
-    const block = createBlockFromRPC(blockData.default as JsonRpcBlock, [], { common })
+    const block = createBlockFromRPC(blockData, [], { common })
     try {
       const res = await runBlock(vm, {
         block,
@@ -310,7 +310,7 @@ describe('runBlock test', () => {
 
 describe('blockchain', () =>
   it('uses blockhash', async () => {
-    const blockchain = new RPCBlockChain(provider)
+    const blockchain = new RPCBlockChain(provider) as unknown as EVMMockBlockchainInterface
     const blockTag = 1n
     const state = new RPCStateManager({ provider, blockTag })
     const evm = await createEVM({ blockchain, stateManager: state })
@@ -322,7 +322,7 @@ describe('blockchain', () =>
     await evm.stateManager.setStateRoot(
       hexToBytes('0xf8506f559699a58a4724df4fcf2ad4fd242d20324db541823f128f5974feb6c7'),
     )
-    const block = await createBlockFromJsonRpcProvider(provider, 500000n, { setHardfork: true })
+    const block = await createBlockFromJSONRPCProvider(provider, 500000n, { setHardfork: true })
     await evm.stateManager.putCode(contractAddress, hexToBytes(code))
     const runCallArgs: Partial<EVMRunCallOpts> = {
       caller,
@@ -337,17 +337,17 @@ describe('blockchain', () =>
     )
   }))
 
-describe('Should return same value as DefaultStateManager when account does not exist', () => {
+describe('Should return same value as MerkleStateManager when account does not exist', () => {
   it('should work', async () => {
     const rpcState = new RPCStateManager({ provider, blockTag: 1n })
-    const defaultState = new DefaultStateManager()
+    const defaultState = new MerkleStateManager()
 
     const account0 = await rpcState.getAccount(new Address(hexToBytes(`0x${'01'.repeat(20)}`)))
     const account1 = await defaultState.getAccount(new Address(hexToBytes(`0x${'01'.repeat(20)}`)))
     assert.equal(
       account0,
       account1,
-      'Should return same value as DefaultStateManager when account does not exist',
+      'Should return same value as MerkleStateManager when account does not exist',
     )
   })
 })

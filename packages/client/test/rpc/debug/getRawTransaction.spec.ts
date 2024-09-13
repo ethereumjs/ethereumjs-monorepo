@@ -2,10 +2,10 @@ import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import pow from '../../testdata/geth-genesis/pow.json'
+import { powData } from '../../testdata/geth-genesis/pow.js'
 import {
   dummy,
-  getRpcClient,
+  getRPCClient,
   gethGenesisStartLondon,
   runBlockWithTxs,
   setupChain,
@@ -15,8 +15,10 @@ const method = 'debug_getRawTransaction'
 
 describe(method, () => {
   it('call with legacy tx', async () => {
-    const { chain, common, execution, server } = await setupChain(pow, 'pow', { txLookupLimit: 1 })
-    const rpc = getRpcClient(server)
+    const { chain, common, execution, server } = await setupChain(powData, 'pow', {
+      txLookupLimit: 1,
+    })
+    const rpc = getRPCClient(server)
     // construct tx
     const tx = createLegacyTx(
       { gasLimit: 2000000, gasPrice: 100, to: '0x0000000000000000000000000000000000000000' },
@@ -37,10 +39,10 @@ describe(method, () => {
 
   it('call with 1559 tx', async () => {
     const { chain, common, execution, server } = await setupChain(
-      gethGenesisStartLondon(pow),
+      gethGenesisStartLondon(powData),
       'powLondon',
     )
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // construct tx
     const tx = createFeeMarket1559Tx(
       {
@@ -60,8 +62,8 @@ describe(method, () => {
   })
 
   it('call with unknown tx hash', async () => {
-    const { server } = await setupChain(pow, 'pow')
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(powData, 'pow')
+    const rpc = getRPCClient(server)
     // get a random tx hash
     const res = await rpc.request(method, [
       '0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0',

@@ -23,7 +23,7 @@ import { createLegacyTx } from './constructors.js'
 import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
-  JsonTx,
+  JSONTx,
   TxOptions,
 } from '../types.js'
 
@@ -257,10 +257,10 @@ export class LegacyTx extends BaseTransaction<TransactionType.Legacy> {
   /**
    * Returns an object with the JSON representation of the transaction.
    */
-  toJSON(): JsonTx {
-    const baseJson = super.toJSON()
+  toJSON(): JSONTx {
+    const baseJSON = super.toJSON()
     return {
-      ...baseJson,
+      ...baseJSON,
       gasPrice: bigIntToHex(this.gasPrice),
     }
   }

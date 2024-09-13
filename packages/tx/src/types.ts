@@ -215,7 +215,7 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   getSenderAddress(): Address
   getSenderPublicKey(): Uint8Array
   sign(privateKey: Uint8Array): Transaction[T]
-  toJSON(): JsonTx
+  toJSON(): JSONTx
   errorStr(): string
 }
 
@@ -513,7 +513,7 @@ export type BlobEIP4844NetworkValuesArray = [
   Uint8Array[],
 ]
 
-type JsonAccessListItem = { address: string; storageKeys: string[] }
+type JSONAccessListItem = { address: string; storageKeys: string[] }
 
 /**
  * Generic interface for all tx types with a
@@ -523,7 +523,7 @@ type JsonAccessListItem = { address: string; storageKeys: string[] }
  * and not all the values are present on all tx types
  * (an EIP1559 tx e.g. lacks a `gasPrice`).
  */
-export interface JsonTx {
+export interface JSONTx {
   nonce?: PrefixedHexString
   gasPrice?: PrefixedHexString
   gasLimit?: PrefixedHexString
@@ -534,7 +534,7 @@ export interface JsonTx {
   s?: PrefixedHexString
   value?: PrefixedHexString
   chainId?: PrefixedHexString
-  accessList?: JsonAccessListItem[] // TODO should this not be AccessList?
+  accessList?: JSONAccessListItem[] // TODO should this not be AccessList?
   authorizationList?: AuthorizationList
   type?: PrefixedHexString
   maxPriorityFeePerGas?: PrefixedHexString
@@ -544,7 +544,7 @@ export interface JsonTx {
   yParity?: PrefixedHexString
 }
 
-export type JsonBlobTxNetworkWrapper = JsonTx & {
+export type JSONBlobTxNetworkWrapper = JSONTx & {
   blobs: PrefixedHexString[]
   kzgCommitments: PrefixedHexString[]
   kzgProofs: PrefixedHexString[]
@@ -553,7 +553,7 @@ export type JsonBlobTxNetworkWrapper = JsonTx & {
 /*
  * Based on https://ethereum.org/en/developers/docs/apis/json-rpc/
  */
-export interface JsonRpcTx {
+export interface JSONRPCTx {
   blockHash: string | null // DATA, 32 Bytes - hash of the block where this transaction was in. null when it's pending.
   blockNumber: string | null // QUANTITY - block number where this transaction was in. null when it's pending.
   from: string // DATA, 20 Bytes - address of the sender.
@@ -562,7 +562,7 @@ export interface JsonRpcTx {
   maxFeePerGas?: string // QUANTITY - max total fee per gas provided by the sender in wei.
   maxPriorityFeePerGas?: string // QUANTITY - max priority fee per gas provided by the sender in wei.
   type: string // QUANTITY - EIP-2718 Typed Transaction type
-  accessList?: JsonTx['accessList'] // EIP-2930 access list
+  accessList?: JSONTx['accessList'] // EIP-2930 access list
   chainId?: string // Chain ID that this transaction is valid on.
   hash: string // DATA, 32 Bytes - hash of the transaction.
   input: string // DATA - the data send along with the transaction.
@@ -600,7 +600,7 @@ export type AccessList = AccessListItem[]
 export type AuthorizationListItem = {
   chainId: PrefixedHexString
   address: PrefixedHexString
-  nonce: PrefixedHexString[]
+  nonce: PrefixedHexString
   yParity: PrefixedHexString
   r: PrefixedHexString
   s: PrefixedHexString
@@ -610,7 +610,7 @@ export type AuthorizationListItem = {
 export type AuthorizationListBytesItem = [
   Uint8Array,
   Uint8Array,
-  Uint8Array[],
+  Uint8Array,
   Uint8Array,
   Uint8Array,
   Uint8Array,

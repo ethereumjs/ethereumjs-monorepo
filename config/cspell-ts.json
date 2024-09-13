@@ -12,6 +12,8 @@
     }
   ],
   "words": [
+    "!Json",
+    "!Rpc",
     "Hardfork",
     "hardfork",
     "Chainstart",
@@ -594,6 +596,15 @@
     "patarapolw",
     "nickdodson",
     "Kintsugi",
-    "deauthorization"
+    "deauthorization",
+    "mixhash",
+    "blockperiodseconds",
+    "filledwith",
+    "lllcversion",
+    "Netsplit",
+    "Statetest",
+    "testeth",
+    "PUSHDATA",
+    "chunkified"
   ]
 }

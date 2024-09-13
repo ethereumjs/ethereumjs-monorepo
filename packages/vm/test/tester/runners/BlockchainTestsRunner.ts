@@ -3,7 +3,7 @@ import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
-import { Caches, DefaultStateManager } from '@ethereumjs/statemanager'
+import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { createTxFromSerializedData } from '@ethereumjs/tx'
 import {
@@ -20,7 +20,7 @@ import { buildBlock, createVM, runBlock } from '../../../src/index.js'
 import { setupPreConditions, verifyPostConditions } from '../../util.js'
 
 import type { Block } from '@ethereumjs/block'
-import type { ConsensusDict } from '@ethereumjs/blockchain'
+import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type * as tape from 'tape'
@@ -48,7 +48,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   let cacheDB = new MapDB()
   let state = new Trie({ useKeyHashing: true, common })
-  let stateManager = new DefaultStateManager({
+  let stateManager = new MerkleStateManager({
     caches: new Caches(),
     trie: state,
     common,
@@ -161,7 +161,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       // transactionSequence is provided when txs are expected to be rejected.
       // To run this field we try to import them on the current state.
       if (raw.transactionSequence !== undefined) {
-        const parentBlock = await vm.blockchain.getIteratorHead()
+        const parentBlock = await (vm.blockchain as Blockchain).getIteratorHead()
         const blockBuilder = await buildBlock(vm, {
           parentBlock,
           blockOpts: { calcDifficultyFromHeader: parentBlock.header },
@@ -221,7 +221,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         // testData.postState to the actual postState, rather than to the preState.
         if (options.debug !== true) {
           // make sure the state is set before checking post conditions
-          const headBlock = await vm.blockchain.getIteratorHead()
+          const headBlock = await (vm.blockchain as Blockchain).getIteratorHead()
           await vm.stateManager.setStateRoot(headBlock.header.stateRoot)
         } else {
           await verifyPostConditions(state, testData.postState, t)
