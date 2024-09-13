@@ -390,7 +390,7 @@ export class Wallet {
       throw new Error('Key derivation failed - possibly wrong passphrase')
     }
 
-    const seed = await aes.decrypt(
+    const seed = aes.decrypt(
       ciphertext,
       keccak256(derivedKey.subarray(0, 16)).subarray(0, 16),
       unprefixedHexToBytes(json.Crypto.IV),
@@ -446,7 +446,7 @@ export class Wallet {
       throw new Error('Key derivation failed - possibly wrong passphrase')
     }
 
-    const seed = await aes.decrypt(
+    const seed = aes.decrypt(
       ciphertext,
       derivedKey.subarray(0, 16),
       unprefixedHexToBytes(json.crypto.cipherparams.iv),
@@ -478,7 +478,7 @@ export class Wallet {
     // seed decoding (IV is first 16 bytes)
     // NOTE: crypto (derived from openssl) when used with aes-*-cbc will handle PKCS#7 padding internally
     //       see also http://stackoverflow.com/a/31614770/4964819
-    const seed = await aes.decrypt(
+    const seed = aes.decrypt(
       encseed.subarray(16),
       derivedKey,
       encseed.subarray(0, 16),
@@ -600,7 +600,7 @@ export class Wallet {
         throw new Error('Unsupported kdf')
     }
 
-    const ciphertext = await aes.encrypt(
+    const ciphertext = aes.encrypt(
       this.privKey,
       derivedKey.subarray(0, 16),
       v3Params.iv,
