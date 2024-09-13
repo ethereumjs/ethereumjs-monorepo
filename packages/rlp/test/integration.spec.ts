@@ -30,7 +30,7 @@ describe.skipIf(isBrowser)('CLI command', () => {
   it(
     'should return valid values for official tests',
     async () => {
-      for (const [testName, test] of Object.entries(official.tests)) {
+      for (const [testName, test] of Object.entries(official.default.tests)) {
         const { in: incoming, out } = test
 
         // skip if testing a big number

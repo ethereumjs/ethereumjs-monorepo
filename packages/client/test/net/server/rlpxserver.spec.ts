@@ -24,8 +24,8 @@ RlpxPeer.prototype.accept = vi.fn((input: object) => {
 })
 RlpxPeer.capabilities = vi.fn()
 vi.doMock('../../../src/net/peer/rlpxpeer', () => {
-  {
-    RlpxPeer
+  return {
+    RlpxPeer,
   }
 })
 
@@ -41,8 +41,8 @@ DPT.prototype.bind = vi.fn()
 DPT.prototype.getDnsPeers = vi.fn()
 
 vi.doMock('@ethereumjs/devp2p', () => {
-  {
-    RLPx
+  return {
+    RLPx,
   }
 })
 
