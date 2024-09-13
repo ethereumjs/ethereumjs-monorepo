@@ -461,6 +461,17 @@ The above command outputs the log messages from all `devp2p` debug loggers avail
 
 ```shell
 DEBUG=ethjs,devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
+
+The following options are available:
+
+| Logger              | Description                                      |
+| ------------------- | ------------------------------------------------ |
+| `client:fetcher`            | This option enables logging for all fetchers      |
+| `client:fetcher:bytecode`   | This option enables logging for the snap sync bytecode fetcher         |
+| `client:fetcher:storage`    | This option enables logging for the snap sync storage fetcher  |
+| `client:fetcher:trienode`   | This option enables logging for the snap sync trienode fetcher      |
+| `client:fetcher:account`    | This option enables logging for the snap sync account fetcher      |
+
 ```
 
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
