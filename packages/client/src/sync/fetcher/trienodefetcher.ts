@@ -102,7 +102,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    */
   constructor(options: TrieNodeFetcherOptions) {
     super(options)
-    this.height = options.height
     this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
     this.pathToNodeRequestData = new OrderedMap<string, NodeRequestData>()
     this.requestedNodeToPath = new Map<string, string>()
@@ -151,16 +150,27 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
     // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
     const latest = await peer?.latest()
+    // console.log('dbg850')
     if (latest !== undefined && latest.stateRoot !== undefined) {
-      const currentHeight = this.height
+      const currentHeight = this.fetcherDoneFlags.trieNodeFetcher.currentHeight
       const newestHeight = latest.number
+      // console.log(currentHeight)
+      // console.log(newestHeight)
+      // console.log(this.config.snapLookbackWindow)
+      // console.log(newestHeight - currentHeight >= this.config.snapLookbackWindow)
       if (newestHeight - currentHeight >= this.config.snapLookbackWindow) {
         this.debug('dbg810: updating roots')
         // update latest height and root
         this.fetcherDoneFlags.snapTargetHeight = latest.number
         this.fetcherDoneFlags.snapTargetRoot = latest.stateRoot
         this.fetcherDoneFlags.snapTargetHash = latest.hash()
-        this.height = newestHeight
+        this.fetcherDoneFlags.trieNodeFetcher.currentHeight = newestHeight
+
+        // console.log('dbg811')
+        // console.log(latest.number)
+        // console.log(bytesToHex(latest.stateRoot))
+        // console.log(bytesToHex(latest.hash()))
+        // console.log(latest.toJSON())
 
         // clear any tasks or requests and create new request for newest root set to
         this.clear()
@@ -332,6 +342,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               await this.accountTrie.lookupNode(childNode.nodeHash as Uint8Array)
             }
           } catch (e) {
+            // console.log('dbg901')
             // if error is thrown, than the node is unknown and should be queued for fetching
             unknownChildNodeCount++
             const { parentAccountHash } = this.pathToNodeRequestData.getElementByKey(

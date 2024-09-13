@@ -394,7 +394,7 @@ export class Config {
   // distance from head at which we can safely transition from a synced snapstate to vmexecution
   // randomly kept it at 5 for fast testing purposes but ideally should be >=32 slots
   public static readonly SNAP_TRANSITION_SAFE_DEPTH = BigInt(5)
-  public static readonly SNAP_LOOKBACK_WINDOW = 2
+  public static readonly SNAP_LOOKBACK_WINDOW = 1
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode

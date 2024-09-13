@@ -39,6 +39,8 @@ export type SnapFetcherDoneFlags = {
     first: bigint
     count: bigint
     done: boolean
+    healCycleRepeatCount: number // used in AccountFetcher to determine how many times to repeat heal cycles
+    currentHeight: bigint
   }
   stateRoot?: Uint8Array
 }
@@ -70,6 +72,8 @@ export function getInitFecherDoneFlags(): SnapFetcherDoneFlags {
       first: BigInt(0),
       count: BigInt(0),
       done: false,
+      healCycleRepeatCount: Number(process.env.HEAL_CYCLE_REPEATS ?? '0'),
+      currentHeight: BigInt(0),
     },
   }
 }
