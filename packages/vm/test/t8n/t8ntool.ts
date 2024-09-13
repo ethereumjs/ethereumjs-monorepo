@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { EVMMockBlockchain, MCLBLS } from '@ethereumjs/evm'
+import { EVMMockBlockchain, MCLBLS, NobleBLS } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromTxData } from '@ethereumjs/tx'
 import {
@@ -139,11 +139,8 @@ export class TransitionTool {
     const blockchain = getBlockchain(this.inputEnv)
 
     // Setup BLS
-    // TODO: use Noble
-    await mcl.init(mcl.BLS12_381)
-    const bls = new MCLBLS(mcl)
     const evmOpts = {
-      bls,
+      bls: new NobleBLS(),
     }
     this.vm = await createVM({ common: this.common, blockchain, evmOpts })
     await setupPreConditions(this.vm.stateManager, { pre: this.alloc })
