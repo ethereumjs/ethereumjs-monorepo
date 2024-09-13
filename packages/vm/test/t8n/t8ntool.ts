@@ -2,9 +2,15 @@ import { Block } from '@ethereumjs/block'
 import { EVMMockBlockchain, MCLBLS } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromTxData } from '@ethereumjs/tx'
-import { CLRequestType, bigIntToHex, hexToBytes, toBytes, zeros } from '@ethereumjs/util'
+import {
+  CLRequestType,
+  bigIntToHex,
+  bytesToHex,
+  hexToBytes,
+  toBytes,
+  zeros,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
 import { readFileSync, writeFileSync } from 'fs'
 import { loadKZG } from 'kzg-wasm'
 import * as mcl from 'mcl-wasm'
@@ -33,7 +39,12 @@ import type {
 import type { Common } from '@ethereumjs/common'
 import type { Log } from '@ethereumjs/evm'
 import type { TypedTxData } from '@ethereumjs/tx'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type {
+  ConsolidationRequestV1,
+  DepositRequestV1,
+  PrefixedHexString,
+  WithdrawalRequestV1,
+} from '@ethereumjs/util'
 
 export class TransitionTool {
   public options: T8NOptions
@@ -242,11 +253,11 @@ export class TransitionTool {
 
       for (const request of block.requests) {
         if (request.type === CLRequestType.Deposit) {
-          output.depositRequests!.push(request.toJSON())
+          output.depositRequests!.push(<DepositRequestV1>request.toJSON())
         } else if (request.type === CLRequestType.Withdrawal) {
-          output.withdrawalRequests!.push(request.toJSON())
+          output.withdrawalRequests!.push(<WithdrawalRequestV1>request.toJSON())
         } else if (request.type === CLRequestType.Consolidation) {
-          output.consolidationRequests!.push(request.toJSON())
+          output.consolidationRequests!.push(<ConsolidationRequestV1>request.toJSON())
         }
       }
     }
