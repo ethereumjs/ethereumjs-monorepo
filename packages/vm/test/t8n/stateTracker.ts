@@ -13,7 +13,7 @@ import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
 
 export class StateTracker {
   private allocTracker: {
-    // TODO these are all PrefixexHexString
+    // TODO these are all PrefixedHexString
     [address: string]: {
       storage: string[]
     }
