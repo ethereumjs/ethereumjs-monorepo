@@ -30,6 +30,10 @@ export const SKIP_BROKEN = [
   // This test is thus not supposed to pass
   // TODO: remove me once this test is removed from the releases
   'filling_unexpectedException',
+
+  // Internal tests for ethereum/tests (which are exposed?), which should be skipped
+  'lastblockhashException',
+  'wrongRLPGenesis',
 ]
 
 /**
