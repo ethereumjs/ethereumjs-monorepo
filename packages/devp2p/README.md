@@ -436,9 +436,6 @@ Events emitted:
 
 This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
 
-For the debugging output to show up, set the `DEBUG` environment variable, e.g. in Linux/Mac OS:
-`export DEBUG=ethjs,*,-babel`
-
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
 Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
 
