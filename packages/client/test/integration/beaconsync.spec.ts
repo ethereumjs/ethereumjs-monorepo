@@ -13,8 +13,8 @@ common.setHardforkBy({ blockNumber: BigInt(0) })
 describe('should sync blocks', async () => {
   BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
   vi.doMock('@ethereumjs/block', () => {
-    {
-      BlockHeader
+    return {
+      BlockHeader,
     }
   })
 
