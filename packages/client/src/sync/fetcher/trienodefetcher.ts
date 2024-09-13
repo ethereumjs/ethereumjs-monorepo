@@ -69,9 +69,6 @@ type NodeRequestData = {
 export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
   protected debug: Debugger
 
-  // height of block being targeted for snap sync
-  height: bigint
-
   stateManager: DefaultStateManager
   fetcherDoneFlags: SnapFetcherDoneFlags
   accountTrie: Trie
