@@ -3,7 +3,7 @@ import { Trie } from '@ethereumjs/trie'
 import {
   type TxOptions,
   createTxFromBlockBodyData,
-  createTxFromSerializedData,
+  createTxFromRLP,
   createTx,
   normalizeTxParams,
 } from '@ethereumjs/tx'
@@ -391,7 +391,7 @@ export async function createBlockFromExecutionPayload(
   const txs = []
   for (const [index, serializedTx] of transactions.entries()) {
     try {
-      const tx = createTxFromSerializedData(hexToBytes(serializedTx as PrefixedHexString), {
+      const tx = createTxFromRLP(hexToBytes(serializedTx as PrefixedHexString), {
         common: opts?.common,
       })
       txs.push(tx)

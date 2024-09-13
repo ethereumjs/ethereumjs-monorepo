@@ -3,7 +3,7 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   Capability,
   createBlob4844TxFromSerializedNetworkWrapper,
-  createTxFromSerializedData,
+  createTxFromRLP,
   createTx,
 } from '@ethereumjs/tx'
 import {
@@ -1181,7 +1181,7 @@ export class Eth {
           )
         }
       } else {
-        tx = createTxFromSerializedData(txBuf, { common })
+        tx = createTxFromRLP(txBuf, { common })
       }
     } catch (e: any) {
       throw {

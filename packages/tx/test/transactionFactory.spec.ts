@@ -11,7 +11,7 @@ import {
   createFeeMarket1559Tx,
   createLegacyTx,
   createTxFromBlockBodyData,
-  createTxFromSerializedData,
+  createTxFromRLP,
   createTx,
 } from '../src/index.js'
 
@@ -61,7 +61,7 @@ describe('[TransactionFactory]: Basic functions', () => {
   it('fromSerializedData() -> success cases', () => {
     for (const txType of txTypes) {
       const serialized = txType.unsigned.serialize()
-      const factoryTx = createTxFromSerializedData(serialized, { common })
+      const factoryTx = createTxFromRLP(serialized, { common })
       assert.equal(
         factoryTx.constructor.name,
         txType.class.name,
@@ -76,7 +76,7 @@ describe('[TransactionFactory]: Basic functions', () => {
         const unsupportedCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
         assert.throws(
           () => {
-            createTxFromSerializedData(txType.unsigned.serialize(), {
+            createTxFromRLP(txType.unsigned.serialize(), {
               common: unsupportedCommon,
             })
           },
@@ -89,7 +89,7 @@ describe('[TransactionFactory]: Basic functions', () => {
           () => {
             const serialized = txType.unsigned.serialize()
             serialized[0] = 99 // edit the transaction type
-            createTxFromSerializedData(serialized, { common })
+            createTxFromRLP(serialized, { common })
           },
           undefined,
           undefined,

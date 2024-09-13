@@ -2,7 +2,7 @@ import { createBlock } from '@ethereumjs/block'
 import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createEVM } from '@ethereumjs/evm'
 import { Caches, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
-import { createTxFromSerializedData } from '@ethereumjs/tx'
+import { createTxFromRLP } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { describe, it } from 'vitest'
@@ -18,7 +18,7 @@ const common = createCustomCommon(customChainParams, Mainnet, {
   eips: [2935, 4895, 6800],
 })
 const decodedTxs = verkleKaustinen6Block72Data.transactions?.map((tx) =>
-  createTxFromSerializedData(hexToBytes(tx as PrefixedHexString), { common }),
+  createTxFromRLP(hexToBytes(tx as PrefixedHexString), { common }),
 )
 
 const parentStateRoot = hexToBytes(

@@ -5,7 +5,7 @@ import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
 import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { createTxFromSerializedData } from '@ethereumjs/tx'
+import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   MapDB,
   bytesToBigInt,
@@ -174,7 +174,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const shouldFail = txData.valid === 'false'
           try {
             const txRLP = hexToBytes(txData.rawBytes as PrefixedHexString)
-            const tx = createTxFromSerializedData(txRLP, { common })
+            const tx = createTxFromRLP(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
               t.fail('tx should fail, but did not fail')

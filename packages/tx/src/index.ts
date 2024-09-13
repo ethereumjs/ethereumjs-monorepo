@@ -12,7 +12,7 @@ export {
   createTxFromBlockBodyData,
   createTxFromJSONRPCProvider,
   createTxFromRPC,
-  createTxFromSerializedData,
+  createTxFromRLP,
   createTx,
 } from './transactionFactory.js'
 

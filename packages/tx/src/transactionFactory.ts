@@ -57,7 +57,7 @@ export function createTx<T extends TransactionType>(
  * @param data - The data Uint8Array
  * @param txOptions - The transaction options
  */
-export function createTxFromSerializedData<T extends TransactionType>(
+export function createTxFromRLP<T extends TransactionType>(
   data: Uint8Array,
   txOptions: TxOptions = {},
 ): Transaction[T] {
@@ -94,7 +94,7 @@ export function createTxFromBlockBodyData(
   txOptions: TxOptions = {},
 ) {
   if (data instanceof Uint8Array) {
-    return createTxFromSerializedData(data, txOptions)
+    return createTxFromRLP(data, txOptions)
   } else if (Array.isArray(data)) {
     // It is a legacy transaction
     return createLegacyTxFromBytesArray(data, txOptions)
