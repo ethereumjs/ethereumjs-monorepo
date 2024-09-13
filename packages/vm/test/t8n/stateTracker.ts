@@ -97,12 +97,12 @@ export class StateTracker {
         }
         const value = await this.vm.stateManager.getStorage(address, setLengthLeft(keyBytes, 32))
         if (value.length === 0) {
-          delete outputAlloc[addressString].storage[storageKeyTrimmed]
+          delete outputAlloc[addressString].storage![storageKeyTrimmed]
           // To be sure, also delete any keys which are left-padded to 32 bytes
-          delete outputAlloc[addressString].storage[key]
+          delete outputAlloc[addressString].storage![key]
           continue
         }
-        outputAlloc[addressString].storage[storageKeyTrimmed] = bytesToHex(value)
+        outputAlloc[addressString].storage![storageKeyTrimmed] = bytesToHex(value)
       }
     }
     return outputAlloc
