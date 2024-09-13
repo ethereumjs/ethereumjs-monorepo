@@ -111,13 +111,13 @@ DEBUG=ethjs,verkle npx vitest test/verkle.spec.ts
 Run with **put** method logging:
 
 ```shell
-DEBUG=ethjs,verkle:PUT npx vitest test/verkle.spec.ts
+DEBUG=ethjs,verkle:put npx vitest test/verkle.spec.ts
 ```
 
 Run with **verkle** + **put**/**get**/**del** logging:
 
 ```shell
-DEBUG=ethjs,verkle,verkle:PUT,verkle:GET,verkle:DEL npx vitest test/verkle.spec.ts
+DEBUG=ethjs,verkle,verkle:put,verkle:get,verkle:del npx vitest test/verkle.spec.ts
 ```
 
 Run with max logging:
