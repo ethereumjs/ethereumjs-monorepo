@@ -10,9 +10,9 @@ import {
   createAccessList2930Tx,
   createFeeMarket1559Tx,
   createLegacyTx,
+  createTx,
   createTxFromBlockBodyData,
   createTxFromRLP,
-  createTx,
 } from '../src/index.js'
 
 const common = new Common({

@@ -2,9 +2,9 @@ import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
   type TxOptions,
+  createTx,
   createTxFromBlockBodyData,
   createTxFromRLP,
-  createTx,
   normalizeTxParams,
 } from '@ethereumjs/tx'
 import {

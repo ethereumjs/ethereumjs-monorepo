@@ -4,9 +4,9 @@ import { assert, describe, it } from 'vitest'
 
 import {
   TransactionType,
+  createTx,
   createTxFromJSONRPCProvider,
   createTxFromRPC,
-  createTx,
 } from '../src/index.js'
 import { normalizeTxParams } from '../src/util.js'
 

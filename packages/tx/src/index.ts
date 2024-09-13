@@ -9,11 +9,11 @@ export * from './params.js'
 
 // Transaction factory
 export {
+  createTx,
   createTxFromBlockBodyData,
   createTxFromJSONRPCProvider,
-  createTxFromRPC,
   createTxFromRLP,
-  createTx,
+  createTxFromRPC,
 } from './transactionFactory.js'
 
 // Types

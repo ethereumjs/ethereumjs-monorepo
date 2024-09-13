@@ -3,8 +3,8 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   Capability,
   createBlob4844TxFromSerializedNetworkWrapper,
-  createTxFromRLP,
   createTx,
+  createTxFromRLP,
 } from '@ethereumjs/tx'
 import {
   BIGINT_0,
