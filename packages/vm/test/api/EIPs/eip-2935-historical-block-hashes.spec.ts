@@ -178,6 +178,8 @@ describe('EIP 2935: historical block hashes', () => {
         validateConsensus: false,
       })
       const vm = await createVM({ common: commonGenesis, blockchain })
+      // Ensure 2935 system code exists
+      await vm.stateManager.putCode(historyAddress, contract2935Code)
       commonGenesis.setHardforkBy({
         timestamp: 1,
       })
@@ -216,6 +218,8 @@ describe('EIP 2935: historical block hashes', () => {
         validateConsensus: false,
       })
       const vm = await createVM({ common, blockchain })
+      // Ensure 2935 system code exists
+      await vm.stateManager.putCode(historyAddress, contract2935Code)
       let lastBlock = (await vm.blockchain.getBlock(0)) as Block
       for (let i = 1; i <= blocksToBuild; i++) {
         lastBlock = await (

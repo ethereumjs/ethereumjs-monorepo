@@ -90,7 +90,7 @@ export class BlockBuilder {
 
     this.headerData = {
       ...opts.headerData,
-      parentHash: opts.parentBlock.hash(),
+      parentHash: opts.headerData?.parentHash ?? opts.parentBlock.hash(),
       number: opts.headerData?.number ?? opts.parentBlock.header.number + BIGINT_1,
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
       timestamp: opts.headerData?.timestamp ?? Math.round(Date.now() / 1000),
@@ -213,7 +213,10 @@ export class BlockBuilder {
    */
   async addTransaction(
     tx: TypedTransaction,
-    { skipHardForkValidation }: { skipHardForkValidation?: boolean } = {},
+    {
+      skipHardForkValidation,
+      allowNoBlobs,
+    }: { skipHardForkValidation?: boolean; allowNoBlobs?: boolean } = {},
   ) {
     this.checkStatus()
 
@@ -242,7 +245,11 @@ export class BlockBuilder {
 
       // Guard against the case if a tx came into the pool without blobs i.e. network wrapper payload
       if (blobTx.blobs === undefined) {
-        throw new Error('blobs missing for 4844 transaction')
+        // TODO: verify if we want this, do we want to allow the block builder to accept blob txs without the actual blobs?
+        // (these must have at least one `blobVersionedHashes`, this is verified at tx-level)
+        if (allowNoBlobs !== true) {
+          throw new Error('blobs missing for 4844 transaction')
+        }
       }
 
       if (this.blobGasUsed + BigInt(blobTx.numBlobs()) * blobGasPerBlob > blobGasLimit) {
