@@ -197,30 +197,6 @@ export class RPCStateManager implements StateManagerInterface {
   }
 
   /**
-   * Checks if an `account` exists at `address`
-   * @param address - Address of the `account` to check
-   */
-  async accountExists(address: Address): Promise<boolean> {
-    if (this.DEBUG) this._debug?.(`verify if ${address.toString()} exists`)
-
-    const localAccount = this._caches.account?.get(address)
-    if (localAccount !== undefined) return true
-    // Get merkle proof for `address` from provider
-    const proof = await fetchFromProvider(this._provider, {
-      method: 'eth_getProof',
-      params: [address.toString(), [] as any, this._blockTag],
-    })
-
-    const proofBuf = proof.accountProof.map((proofNode: PrefixedHexString) => toBytes(proofNode))
-
-    const verified = await verifyTrieProof(address.bytes, proofBuf, {
-      useKeyHashing: true,
-    })
-    // if not verified (i.e. verifyProof returns null), account does not exist
-    return verified === null ? false : true
-  }
-
-  /**
    * Gets the account associated with `address` or `undefined` if account does not exist
    * @param address - Address of the `account` to get
    */
