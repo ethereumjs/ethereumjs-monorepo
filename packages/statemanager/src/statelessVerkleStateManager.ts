@@ -489,23 +489,6 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     await modifyAccountFields(this, address, accountFields)
   }
 
-  getProof(_: Address, __: Uint8Array[] = []): Promise<Proof> {
-    throw new Error('Not implemented yet')
-  }
-  /**
-   * Verifies whether the execution witness matches the stateRoot
-   * @param {Uint8Array} stateRoot - The stateRoot to verify the executionWitness against
-   * @returns {boolean} - Returns true if the executionWitness matches the provided stateRoot, otherwise false
-   */
-  verifyVerkleProof(): boolean {
-    if (this._executionWitness === undefined) {
-      this.DEBUG && this._debug('Missing executionWitness')
-      return false
-    }
-
-    return verifyVerkleProof(this.verkleCrypto, this._executionWitness)
-  }
-
   // Verifies that the witness post-state matches the computed post-state
   verifyPostState(): boolean {
     // track what all chunks were accessed so as to compare in the end if any chunks were missed
