@@ -190,7 +190,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      const block = createBlockFromRLP(blockRlp, { common })
+      const block = createBlockFromRLP(blockRlp, { common, setHardfork: true })
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
@@ -205,7 +205,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await runBlock(vm, { block, root: parentState })
+            await runBlock(vm, { block, root: parentState, setHardfork: true })
             // set as new head block
           } catch (error: any) {
             // remove invalid block
