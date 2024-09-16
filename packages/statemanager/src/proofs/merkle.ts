@@ -112,7 +112,6 @@ export async function addMerkleStateStorageProof(
  * @returns A new MerkleStateManager with elements from the given proof included in its backing state trie
  */
 export async function fromMerkleStateProof(
-  sm: MerkleStateManager,
   proof: Proof | Proof[],
   safe: boolean = false,
   opts: MerkleStateManagerOpts = {},
@@ -144,7 +143,7 @@ export async function fromMerkleStateProof(
       return sm
     }
   } else {
-    return fromMerkleStateProof(sm, [proof], safe, opts)
+    return fromMerkleStateProof([proof], safe, opts)
   }
 }
 
