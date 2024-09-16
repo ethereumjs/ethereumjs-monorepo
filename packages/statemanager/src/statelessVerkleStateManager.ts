@@ -42,7 +42,7 @@ import type {
   VerkleProof,
 } from '@ethereumjs/util'
 
-const debug = debugDefault('statemanager:verkle')
+const debug = debugDefault('statemanager:verkle:stateless')
 
 const PUSH_OFFSET = 95
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

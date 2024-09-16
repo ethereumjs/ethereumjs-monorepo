@@ -258,7 +258,7 @@ DEBUG=ethjs,blockchain:clique tsx test.ts
 ```
 
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
-Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions (currently do not apply for blockchain debugging, example taken from another library).
 
 `DEBUG=ethjs,statemanager:cache:*,trie,statemanager:merkle npx vitest test/statemanager.spec.ts`
 
