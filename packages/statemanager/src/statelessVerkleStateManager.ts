@@ -22,7 +22,7 @@ import {
   toBytes,
   verifyVerkleProof,
 } from '@ethereumjs/util'
-import debugDefault from 'debug'
+import debugDefault, { Debugger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { AccessWitness, AccessedStateType, decodeValue } from './accessWitness.js'
@@ -41,8 +41,6 @@ import type {
   VerkleExecutionWitness,
   VerkleProof,
 } from '@ethereumjs/util'
-
-const debug = debugDefault('statemanager:verkle:stateless')
 
 const PUSH_OFFSET = 95
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -72,11 +70,13 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
 
   protected _caches?: Caches
 
+  protected _debug: Debugger
+
   /**
    * StateManager is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
    *
-   * Safeguards on debug() calls are added for
+   * Safeguards on this._debug() calls are added for
    * performance reasons to avoid string literal evaluation
    * @hidden
    */
@@ -111,6 +111,8 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
 
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
+    this._debug = debugDefault('statemanager:verkle:stateless')
+
     if (opts.verkleCrypto === undefined) {
       throw new Error('verkle crypto required')
     }
@@ -134,7 +136,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     this._blockNum = blockNum
     if (executionWitness === null || executionWitness === undefined) {
       const errorMsg = `Invalid executionWitness=${executionWitness} for initVerkleExecutionWitness`
-      debug(errorMsg)
+      this._debug(errorMsg)
       throw Error(errorMsg)
     }
 
@@ -189,8 +191,8 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     }, {})
 
     this._postState = postState
-    debug('initVerkleExecutionWitness preState', this._state)
-    debug('initVerkleExecutionWitness postState', this._postState)
+    this._debug('initVerkleExecutionWitness preState', this._state)
+    this._debug('initVerkleExecutionWitness postState', this._postState)
   }
 
   async checkChunkWitnessPresent(address: Address, codeOffset: number) {
@@ -222,7 +224,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    */
   async putCode(address: Address, value: Uint8Array): Promise<void> {
     if (this.DEBUG) {
-      debug(`putCode address=${address.toString()} value=${short(value)}`)
+      this._debug(`putCode address=${address.toString()} value=${short(value)}`)
     }
 
     this._caches?.code?.put(address, value)
@@ -246,7 +248,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    */
   async getCode(address: Address): Promise<Uint8Array> {
     if (this.DEBUG) {
-      debug(`getCode address=${address.toString()}`)
+      this._debug(`getCode address=${address.toString()}`)
     }
 
     const elem = this._caches?.code?.get(address)
@@ -275,7 +277,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       const codeChunk = this._state[chunkKey]
       if (codeChunk === null) {
         const errorMsg = `Invalid access to a non existent code chunk with chunkKey=${chunkKey}`
-        this.DEBUG && debug(errorMsg)
+        this.DEBUG && this._debug(errorMsg)
         throw Error(errorMsg)
       }
 
@@ -306,7 +308,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
         elem.accountRLP !== undefined ? createPartialAccountFromRLP(elem.accountRLP) : undefined
       if (account === undefined) {
         const errorMsg = `account=${account} in cache`
-        this.DEBUG && debug(errorMsg)
+        this.DEBUG && this._debug(errorMsg)
         throw Error(errorMsg)
       }
       return account.codeSize
@@ -404,7 +406,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
         const errorMsg = `Invalid witness for a non existing address=${address} stem=${bytesToHex(
           stem,
         )}`
-        this.DEBUG && debug(errorMsg)
+        this.DEBUG && this._debug(errorMsg)
         throw Error(errorMsg)
       } else {
         return undefined
@@ -416,13 +418,13 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       const errorMsg = `Invalid codeHashRaw=${codeHashRaw} for address=${address} chunkKey=${bytesToHex(
         codeHashKey,
       )}`
-      this.DEBUG && debug(errorMsg)
+      this.DEBUG && this._debug(errorMsg)
       throw Error(errorMsg)
     }
 
     if (basicDataRaw === undefined && codeHashRaw === undefined) {
       const errorMsg = `No witness bundled for address=${address} stem=${bytesToHex(stem)}`
-      this.DEBUG && debug(errorMsg)
+      this.DEBUG && this._debug(errorMsg)
       throw Error(errorMsg)
     }
 
@@ -443,7 +445,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     })
 
     if (this.DEBUG) {
-      debug(`getAccount address=${address.toString()} stem=${short(stem)}`)
+      this._debug(`getAccount address=${address.toString()} stem=${short(stem)}`)
     }
 
     this._caches?.account?.put(address, account, true)
@@ -453,7 +455,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
 
   async putAccount(address: Address, account: Account): Promise<void> {
     if (this.DEBUG) {
-      debug(`putAccount address=${address.toString()}`)
+      this._debug(`putAccount address=${address.toString()}`)
     }
 
     if (this._caches?.account === undefined) {
@@ -477,7 +479,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    */
   async deleteAccount(address: Address) {
     if (this.DEBUG) {
-      debug(`Delete account ${address}`)
+      this._debug(`Delete account ${address}`)
     }
 
     this._caches?.deleteAccount(address)
@@ -497,7 +499,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    */
   verifyVerkleProof(): boolean {
     if (this._executionWitness === undefined) {
-      this.DEBUG && debug('Missing executionWitness')
+      this.DEBUG && this._debug('Missing executionWitness')
       return false
     }
 
@@ -526,7 +528,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       const computedValue = this.getComputedValue(accessedState) ?? this._preState[chunkKey]
       if (computedValue === undefined) {
         this.DEBUG &&
-          debug(
+          this._debug(
             `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
           )
         postFailures++
@@ -537,7 +539,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
 
       if (canonicalValue === undefined) {
         this.DEBUG &&
-          debug(
+          this._debug(
             `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
           )
         postFailures++
@@ -571,24 +573,25 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
             : `${canonicalValue} (${decodedCanonicalValue})`
 
         this.DEBUG &&
-          debug(
+          this._debug(
             `Block accesses mismatch address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
           )
-        this.DEBUG && debug(`expected=${displayCanonicalValue}`)
-        this.DEBUG && debug(`computed=${displayComputedValue}`)
+        this.DEBUG && this._debug(`expected=${displayCanonicalValue}`)
+        this.DEBUG && this._debug(`computed=${displayComputedValue}`)
         postFailures++
       }
     }
 
     for (const canChunkKey of Object.keys(this._postState)) {
       if (accessedChunks.get(canChunkKey) === undefined) {
-        this.DEBUG && debug(`Missing chunk access for canChunkKey=${canChunkKey}`)
+        this.DEBUG && this._debug(`Missing chunk access for canChunkKey=${canChunkKey}`)
         postFailures++
       }
     }
 
     const verifyPassed = postFailures === 0
-    this.DEBUG && debug(`verifyPostState verifyPassed=${verifyPassed} postFailures=${postFailures}`)
+    this.DEBUG &&
+      this._debug(`verifyPostState verifyPassed=${verifyPassed} postFailures=${postFailures}`)
 
     return verifyPassed
   }
@@ -644,7 +647,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
           const account = createPartialAccountFromRLP(encodedAccount)
           if (account.isContract()) {
             const errorMsg = `Code cache not found for address=${address.toString()}`
-            this.DEBUG && debug(errorMsg)
+            this.DEBUG && this._debug(errorMsg)
             throw Error(errorMsg)
           } else {
             return null
