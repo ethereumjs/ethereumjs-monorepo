@@ -1,7 +1,7 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import {
   bytesToHex,
   createAddressFromPrivateKey,
@@ -71,7 +71,7 @@ describe('VM initialized with custom state', () => {
     await vm.stateManager.generateCanonicalGenesis!(genesisState)
 
     const to = '0x00000000000000000000000000000000000000ff'
-    const tx = createTxFromTxData(
+    const tx = createTx(
       {
         type: 0,
         to,
