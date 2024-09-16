@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { EVMMockBlockchain, NobleBLS } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import {
   CLRequestType,
   bigIntToHex,
@@ -101,7 +101,7 @@ export class TransitionTool {
 
     for (const txData of this.txsData) {
       try {
-        const tx = createTxFromTxData(txData, { common: this.common })
+        const tx = createTx(txData, { common: this.common })
         // Set `allowNoBlobs` to `true`, since the test might not have the blob
         // The 4844-tx at this should still be valid, since it has the `blobHashes` field
         await builder.addTransaction(tx, { allowNoBlobs: true })
