@@ -1,7 +1,7 @@
 import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import { Account, bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
@@ -47,7 +47,7 @@ describe(method, () => {
 
     account!.balance = 0xfffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
-    const tx = createTxFromTxData(
+    const tx = createTx(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
@@ -57,7 +57,7 @@ describe(method, () => {
       },
       { common },
     ).sign(pkey)
-    const tx2 = createTxFromTxData(
+    const tx2 = createTx(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
@@ -129,7 +129,7 @@ describe(method, () => {
 
     account!.balance = 0xfffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
-    const tx = createTxFromTxData(
+    const tx = createTx(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
@@ -139,7 +139,7 @@ describe(method, () => {
       },
       { common },
     ).sign(pkey)
-    const tx2 = createTxFromTxData(
+    const tx2 = createTx(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,

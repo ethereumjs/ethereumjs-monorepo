@@ -2,9 +2,9 @@ import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
   type TxOptions,
+  createTx,
   createTxFromBlockBodyData,
-  createTxFromSerializedData,
-  createTxFromTxData,
+  createTxFromRLP,
   normalizeTxParams,
 } from '@ethereumjs/tx'
 import {
@@ -77,7 +77,7 @@ export function createBlock(blockData: BlockData = {}, opts?: BlockOptions) {
   // parse transactions
   const transactions = []
   for (const txData of txsData ?? []) {
-    const tx = createTxFromTxData(txData, {
+    const tx = createTx(txData, {
       ...opts,
       // Use header common in case of setHardfork being activated
       common: header.common,
@@ -288,7 +288,7 @@ export function createBlockFromRPC(
   const opts = { common: header.common }
   for (const _txParams of blockParams.transactions ?? []) {
     const txParams = normalizeTxParams(_txParams)
-    const tx = createTxFromTxData(txParams, opts)
+    const tx = createTx(txParams, opts)
     transactions.push(tx)
   }
 
@@ -391,7 +391,7 @@ export async function createBlockFromExecutionPayload(
   const txs = []
   for (const [index, serializedTx] of transactions.entries()) {
     try {
-      const tx = createTxFromSerializedData(hexToBytes(serializedTx as PrefixedHexString), {
+      const tx = createTxFromRLP(hexToBytes(serializedTx as PrefixedHexString), {
         common: opts?.common,
       })
       txs.push(tx)

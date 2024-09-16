@@ -2,7 +2,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createZeroAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { TransactionType, createTxFromTxData, paramsTx } from '../src/index.js'
+import { TransactionType, createTx, paramsTx } from '../src/index.js'
 
 const common = new Common({
   chain: Mainnet,
@@ -25,7 +25,7 @@ describe('[EIP3860 tests]', () => {
     const data = new Uint8Array(Number(maxInitCodeSize))
     for (const txType of txTypes) {
       try {
-        createTxFromTxData({ data, type: txType }, { common })
+        createTx({ data, type: txType }, { common })
         assert.ok('Instantiated create tx with MAX_INITCODE_SIZE data')
       } catch (e) {
         assert.fail('Did not instantiate create tx with MAX_INITCODE_SIZE')
@@ -37,7 +37,7 @@ describe('[EIP3860 tests]', () => {
     const data = new Uint8Array(Number(maxInitCodeSize))
     for (const txType of txTypes) {
       try {
-        createTxFromTxData({ data, type: txType, to: addressZero }, { common })
+        createTx({ data, type: txType, to: addressZero }, { common })
         assert.ok('Instantiated tx with MAX_INITCODE_SIZE')
       } catch (e) {
         assert.fail('Did not instantiated tx with MAX_INITCODE_SIZE')
@@ -49,7 +49,7 @@ describe('[EIP3860 tests]', () => {
     const data = new Uint8Array(Number(maxInitCodeSize) + 1)
     for (const txType of txTypes) {
       try {
-        createTxFromTxData({ data, type: txType }, { common })
+        createTx({ data, type: txType }, { common })
         assert.fail('Instantiated create tx with MAX_INITCODE_SIZE+1')
       } catch (e) {
         assert.ok('Did not instantiate create tx with MAX_INITCODE_SIZE+1')
@@ -61,7 +61,7 @@ describe('[EIP3860 tests]', () => {
     const data = new Uint8Array(Number(maxInitCodeSize) + 1)
     for (const txType of txTypes) {
       try {
-        createTxFromTxData({ data, type: txType, to: addressZero }, { common })
+        createTx({ data, type: txType, to: addressZero }, { common })
         assert.ok('Instantiated tx with MAX_INITCODE_SIZE+1')
       } catch (e) {
         assert.fail('Did not instantiate tx with MAX_INITCODE_SIZE+1')
@@ -74,7 +74,7 @@ describe('[EIP3860 tests]', () => {
       const data = new Uint8Array(Number(maxInitCodeSize) + 1)
       for (const txType of txTypes) {
         try {
-          createTxFromTxData({ data, type: txType }, { common, allowUnlimitedInitCodeSize: true })
+          createTx({ data, type: txType }, { common, allowUnlimitedInitCodeSize: true })
           assert.ok('Instantiated create tx with MAX_INITCODE_SIZE+1')
         } catch (e) {
           assert.fail('Did not instantiate tx with MAX_INITCODE_SIZE+1')
@@ -87,11 +87,11 @@ describe('[EIP3860 tests]', () => {
     it('should work', () => {
       const data = new Uint8Array(Number(maxInitCodeSize))
       for (const txType of txTypes) {
-        const eip3860ActiveTx = createTxFromTxData(
+        const eip3860ActiveTx = createTx(
           { data, type: txType },
           { common, allowUnlimitedInitCodeSize: true },
         )
-        const eip3860DeactivatedTx = createTxFromTxData(
+        const eip3860DeactivatedTx = createTx(
           { data, type: txType },
           { common, allowUnlimitedInitCodeSize: false },
         )

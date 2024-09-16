@@ -5,7 +5,7 @@ import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
 import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { createTxFromSerializedData } from '@ethereumjs/tx'
+import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   MapDB,
   bytesToBigInt,
@@ -174,7 +174,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const shouldFail = txData.valid === 'false'
           try {
             const txRLP = hexToBytes(txData.rawBytes as PrefixedHexString)
-            const tx = createTxFromSerializedData(txRLP, { common })
+            const tx = createTxFromRLP(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
               t.fail('tx should fail, but did not fail')
@@ -190,7 +190,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      const block = createBlockFromRLP(blockRlp, { common })
+      const block = createBlockFromRLP(blockRlp, { common, setHardfork: true })
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
@@ -205,7 +205,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await runBlock(vm, { block, root: parentState })
+            await runBlock(vm, { block, root: parentState, setHardfork: true })
             // set as new head block
           } catch (error: any) {
             // remove invalid block
