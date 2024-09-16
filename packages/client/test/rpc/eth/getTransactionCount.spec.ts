@@ -2,7 +2,7 @@ import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { createLegacyTx, createTxFromTxData } from '@ethereumjs/tx'
+import { createLegacyTx, createTx } from '@ethereumjs/tx'
 import {
   Account,
   createAddressFromPrivateKey,
@@ -95,7 +95,7 @@ describe(method, () => {
     const account = await service.execution.vm.stateManager.getAccount(address)
     account!.balance = 0xffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
-    const tx = createTxFromTxData({
+    const tx = createTx({
       to: randomBytes(20),
       value: 1,
       maxFeePerGas: 0xffffff,

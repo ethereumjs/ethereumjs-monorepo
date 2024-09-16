@@ -3,8 +3,8 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   Capability,
   createBlob4844TxFromSerializedNetworkWrapper,
-  createTxFromSerializedData,
-  createTxFromTxData,
+  createTx,
+  createTxFromRLP,
 } from '@ethereumjs/tx'
 import {
   BIGINT_0,
@@ -608,7 +608,7 @@ export class Eth {
       blockNumber: blockToRunOn.header.number,
     })
 
-    const tx = createTxFromTxData(txData, { common: vm.common, freeze: false })
+    const tx = createTx(txData, { common: vm.common, freeze: false })
 
     // set from address
     const from =
@@ -1181,7 +1181,7 @@ export class Eth {
           )
         }
       } else {
-        tx = createTxFromSerializedData(txBuf, { common })
+        tx = createTxFromRLP(txBuf, { common })
       }
     } catch (e: any) {
       throw {

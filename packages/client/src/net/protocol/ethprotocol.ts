@@ -4,7 +4,7 @@ import {
   Blob4844Tx,
   createBlob4844TxFromSerializedNetworkWrapper,
   createTxFromBlockBodyData,
-  createTxFromSerializedData,
+  createTxFromRLP,
   isAccessList2930Tx,
   isBlob4844Tx,
   isEOACode7702Tx,
@@ -133,7 +133,7 @@ export class EthProtocol extends Protocol {
             BIGINT_0, // Use chainstart,
           timestamp: this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000),
         })
-        return txs.map((txData) => createTxFromSerializedData(txData, { common }))
+        return txs.map((txData) => createTxFromRLP(txData, { common }))
       },
     },
     {
