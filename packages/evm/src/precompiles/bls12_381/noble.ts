@@ -28,7 +28,7 @@ type Fp2 = {
   c1: bigint
 }
 // Copied from @noble/curves/abstract/curve.ts (not exported in ethereum-cryptography)
-export type AffinePoint<T> = {
+type AffinePoint<T> = {
   x: T
   y: T
 } & { z?: never; t?: never }

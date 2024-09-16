@@ -7,12 +7,11 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { bn254 } from '@noble/curves/bn254'
+import { bn254 } from 'ethereum-cryptography/bn.js'
 
 import { ERROR, EvmError } from '../../exceptions.js'
 
 import type { EVMBN254Interface } from '../../types.js'
-import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
 
 const G1_INFINITY_POINT_BYTES = new Uint8Array(64)
 const G2_INFINITY_POINT_BYTES = new Uint8Array(128)
@@ -22,6 +21,12 @@ const G2_POINT_BYTE_LENGTH = 128
 
 const ZERO_BUFFER = new Uint8Array(32)
 const ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
+
+// Copied from @noble/curves/abstract/curve.ts (not exported in ethereum-cryptography)
+export type AffinePoint<T> = {
+  x: T
+  y: T
+} & { z?: never; t?: never }
 
 /**
  * Converts an Uint8Array to a Noble G1 point.
