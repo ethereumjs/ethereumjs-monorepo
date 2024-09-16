@@ -2,6 +2,8 @@
   "language": "en-US",
   "ignoreRegExpList": ["/0x[0-9A-Fa-f]+/"],
   "words": [
+    "t8ntool",
+    "calldatasize",
     "Dencun",
     "Hardfork",
     "acolytec",
