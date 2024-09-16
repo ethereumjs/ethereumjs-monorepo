@@ -1,6 +1,7 @@
 import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
@@ -47,7 +48,6 @@ import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
-import { StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
 
 const debug = debugDefault('vm:block')
 
