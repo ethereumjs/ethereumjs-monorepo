@@ -73,8 +73,7 @@ function toFrPoint(input: Uint8Array): bigint {
  * @param input Input Uint8Array. Should be 256 bytes
  * @returns Noble G2 point
  */
-function toG2Point(input: Uint8Array): any {
-  // TODO: remove any type, temporary fix due to conflicting @noble/curves versions
+function toG2Point(input: Uint8Array) {
   if (equalsBytes(input, G2_INFINITY_POINT_BYTES)) {
     return bn254.G2.ProjectivePoint.ZERO
   }
@@ -120,8 +119,8 @@ function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
 }
 
 /**
- * Implementation of the `EVMBN254Interface` using the `@noble/curves` JS library,
- * see https://github.com/paulmillr/noble-curves.
+ * Implementation of the `EVMBN254Interface` using the `ethereum-cryptography (`@noble/curves`)
+ * JS library, see https://github.com/ethereum/js-ethereum-cryptography.
  *
  * This is the EVM default implementation.
  */

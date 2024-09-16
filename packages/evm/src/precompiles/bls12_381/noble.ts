@@ -80,8 +80,7 @@ function BLS12_381_FromG1Point(input: AffinePoint<bigint>): Uint8Array {
  * @param input Input Uint8Array. Should be 256 bytes
  * @returns Noble G2 point
  */
-function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true): any {
-  // TODO: remove any type, temporary fix due to conflicting @noble/curves versions
+function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true) {
   if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES)) {
     return G2_ZERO
   }
@@ -160,8 +159,7 @@ function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array) {
   return FP
 }
 
-function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array): any {
-  // TODO: remove any type, temporary fix due to conflicting @noble/curves versions
+function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
   // check if the coordinates are in the field
   if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
     throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
@@ -177,8 +175,8 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
 }
 
 /**
- * Implementation of the `EVMBLSInterface` using the `@noble/curves` JS library,
- * see https://github.com/paulmillr/noble-curves.
+ * Implementation of the `EVMBLSInterface` using the `ethereum-cryptography (`@noble/curves`)
+ * JS library, see https://github.com/ethereum/js-ethereum-cryptography.
  *
  * This is the EVM default implementation.
  */
