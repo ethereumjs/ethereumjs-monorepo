@@ -2,7 +2,7 @@ import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import { randomBytes } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
@@ -73,7 +73,7 @@ describe(method, () => {
     await runBlock(vm, { block: londonBlock, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
     ;(service.txPool as any).validate = () => {}
-    await service.txPool.add(createTxFromTxData({ type: 2 }, {}).sign(randomBytes(32)))
+    await service.txPool.add(createTx({ type: 2 }, {}).sign(randomBytes(32)))
 
     const res = await rpc.request(method, [])
     assert.equal(

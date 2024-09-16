@@ -11,6 +11,7 @@ import {
 import {
   Account,
   Address,
+  TypeOutput,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
@@ -21,6 +22,7 @@ import {
   isHexString,
   setLengthLeft,
   toBytes,
+  toType,
   unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -300,6 +302,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     currentTimestamp,
     currentGasLimit,
     previousHash,
+    parentHash,
     currentCoinbase,
     currentDifficulty,
     currentExcessBlobGas,
@@ -313,7 +316,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   const headerData: any = {
     number: currentNumber,
     coinbase: currentCoinbase,
-    parentHash: previousHash,
+    parentHash: previousHash ?? parentHash,
     difficulty: currentDifficulty,
     gasLimit: currentGasLimit,
     timestamp: currentTimestamp,
@@ -333,7 +336,10 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     }
   }
   if (opts?.common && opts.common.gteHardfork('paris')) {
-    headerData['mixHash'] = currentRandom
+    headerData['mixHash'] = setLengthLeft(
+      <Uint8Array>toType(currentRandom, TypeOutput.Uint8Array)!,
+      32,
+    )
     headerData['difficulty'] = 0
   }
   if (opts?.common && opts.common.gteHardfork('cancun')) {

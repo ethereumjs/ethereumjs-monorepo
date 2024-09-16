@@ -1,5 +1,5 @@
 import { createBlock } from '@ethereumjs/block'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, expect, expectTypeOf, it } from 'vitest'
 
@@ -51,7 +51,7 @@ describe('trace a call', async () => {
   })
   const rpc = getRPCClient(server)
   // construct block with tx
-  const tx = createTxFromTxData(
+  const tx = createTx(
     {
       type: 0x2,
       gasLimit: 0xfffff,

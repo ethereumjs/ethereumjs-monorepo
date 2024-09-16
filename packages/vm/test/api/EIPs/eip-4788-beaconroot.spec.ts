@@ -11,7 +11,7 @@
 
 import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { type TransactionType, type TxData, createTxFromTxData } from '@ethereumjs/tx'
+import { type TransactionType, type TxData, createTx } from '@ethereumjs/tx'
 import {
   bigIntToBytes,
   bytesToBigInt,
@@ -46,7 +46,7 @@ function beaconrootBlock(
   const newTxData = []
 
   for (const txData of transactions) {
-    const tx = createTxFromTxData({
+    const tx = createTx({
       gasPrice: 7,
       gasLimit: 100000,
       ...txData,
