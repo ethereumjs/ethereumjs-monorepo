@@ -16,13 +16,13 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
 import { MerkleStateManager } from '../src/index.js'
+import { getMerkleStateProof, verifyMerkleStateProof } from '../src/proofs/index.js'
 
 import { ropstenContractWithStorageData } from './testdata/ropsten_contractWithStorage.js'
 import { ropstenNonexistentAccountData } from './testdata/ropsten_nonexistentAccount.js'
 import { ropstenValidAccountData } from './testdata/ropsten_validAccount.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
-import { getMerkleStateProof, verifyMerkleStateProof } from '../src/proofs/index.js'
 
 describe('ProofStateManager', () => {
   it(`should return quantity-encoded RPC representation`, async () => {

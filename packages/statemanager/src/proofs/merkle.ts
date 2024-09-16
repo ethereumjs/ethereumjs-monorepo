@@ -1,4 +1,4 @@
-import { Proof, StorageProof } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   createMerkleProof,
   createTrieFromProof,
@@ -6,12 +6,10 @@ import {
   verifyTrieProof,
 } from '@ethereumjs/trie'
 import {
-  Address,
   KECCAK256_NULL,
   KECCAK256_NULL_S,
   KECCAK256_RLP,
   KECCAK256_RLP_S,
-  PrefixedHexString,
   bigIntToHex,
   bytesToHex,
   createAccountFromRLP,
@@ -21,9 +19,12 @@ import {
   setLengthLeft,
   unpadBytes,
 } from '@ethereumjs/util'
+
 import { MerkleStateManager } from '../merkleStateManager.js'
-import { MerkleStateManagerOpts } from '../index.js'
-import { RLP } from '@ethereumjs/rlp'
+
+import type { MerkleStateManagerOpts } from '../index.js'
+import type { Proof, StorageProof } from '@ethereumjs/common'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 /**
  * Get an EIP-1186 proof

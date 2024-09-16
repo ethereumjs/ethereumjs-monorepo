@@ -16,13 +16,13 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import { CacheType, Caches, MerkleStateManager } from '../src/index.js'
-
-import type { PrefixedHexString } from '@ethereumjs/util'
 import {
   addMerkleStateProofData,
   fromMerkleStateProof,
   getMerkleStateProof,
 } from '../src/proofs/index.js'
+
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 export const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 function verifyAccount(
