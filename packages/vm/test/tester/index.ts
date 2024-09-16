@@ -1,4 +1,5 @@
 import { MCLBLS, NobleBLS, NobleBN254, RustBN254 } from '@ethereumjs/evm'
+import { jsKZG } from '@ethereumjs/tx'
 import { loadKZG } from 'kzg-wasm'
 import * as mcl from 'mcl-wasm'
 import * as minimist from 'minimist'
@@ -125,7 +126,7 @@ async function runTests() {
   /**
    * Run-time configuration
    */
-  const kzg = await loadKZG()
+  const kzg = jsKZG
   const runnerArgs: {
     forkConfigVM: string
     forkConfigTestSuite: string

@@ -1,6 +1,8 @@
 import { type Kzg, bytesToBigInt, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { KZG } from 'micro-eth-signer/kzg'
+// @ts-ignore
 import { trustedSetup as slow } from 'trusted-setups'
+// @ts-ignore
 import { trustedSetup as fast } from 'trusted-setups/fast.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'

@@ -21,3 +21,6 @@ export * from './types.js'
 
 // Utils
 export * from './util.js'
+
+// KZG Wrapper
+export * from './jsKZGWrapper.js'
