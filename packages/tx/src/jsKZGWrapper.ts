@@ -1,21 +1,19 @@
 import { type Kzg, bytesToBigInt, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { KZG } from 'micro-eth-signer/kzg'
-// @ts-ignore
-import { trustedSetup as slow } from 'trusted-setups'
-// @ts-ignore
-import { trustedSetup as fast } from 'trusted-setups/fast.js'
+
+//@ts-ignore  NOTE: Have placed the "fast" version of the trusted setup here for now till the `trusted-setups` package is published
+import { trustedSetup as fast } from './fast.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 // import { trustedSetup as fast } from 'trusted-setups/fast.js'
 
 const kzg = new KZG(fast)
-// const slowKZG = new KZG(slow)
+
 export const jsKZG: Kzg = {
   blobToKzgCommitment(blob: Uint8Array): Uint8Array {
     return hexToBytes(kzg.blobToKzgCommitment(bytesToHex(blob)) as PrefixedHexString)
   },
   computeBlobKzgProof(blob: Uint8Array, commitment: Uint8Array): Uint8Array {
-    console.log(kzg.computeBlobProof)
     return hexToBytes(
       kzg.computeBlobProof(bytesToHex(blob), bytesToHex(commitment)) as PrefixedHexString,
     )
