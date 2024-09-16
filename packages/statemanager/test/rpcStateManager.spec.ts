@@ -1,6 +1,7 @@
 import { createBlockFromJSONRPCProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
+import { verifyTrieProof } from '@ethereumjs/trie'
 import { createFeeMarket1559Tx, createTxFromRPC } from '@ethereumjs/tx'
 import {
   Address,
@@ -12,12 +13,14 @@ import {
   equalsBytes,
   hexToBytes,
   setLengthLeft,
+  toBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { MerkleStateManager } from '../src/merkleStateManager.js'
+import { getRPCStateProof } from '../src/proofs/index.js'
 import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
 
 import { block as blockData } from './testdata/providerData/blocks/block0x7a120.js'
@@ -25,10 +28,7 @@ import { getValues } from './testdata/providerData/mockProvider.js'
 import { tx as txData } from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.js'
 
 import type { EVMMockBlockchainInterface } from '@ethereumjs/evm'
-import { PrefixedHexString } from '@ethereumjs/util'
-import { toBytes } from '@ethereumjs/util'
-import { verifyTrieProof } from '@ethereumjs/trie'
-import { getRPCStateProof } from '../src/proofs/index.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const provider = process.env.PROVIDER ?? 'http://cheese'
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url

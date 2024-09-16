@@ -3,8 +3,8 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   MerkleStateManager,
   StatelessVerkleStateManager,
-  getVerkleStateProof,
   getMerkleStateProof,
+  getVerkleStateProof,
 } from '@ethereumjs/statemanager'
 import {
   Capability,

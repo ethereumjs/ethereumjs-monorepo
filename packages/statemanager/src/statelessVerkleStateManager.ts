@@ -20,9 +20,8 @@ import {
   setLengthRight,
   short,
   toBytes,
-  verifyVerkleProof,
 } from '@ethereumjs/util'
-import debugDefault, { Debugger } from 'debug'
+import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { AccessWitness, AccessedStateType, decodeValue } from './accessWitness.js'
@@ -33,7 +32,7 @@ import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { Caches } from './cache/index.js'
 import type { StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
 import type { MerkleStateManager } from './merkleStateManager.js'
-import type { AccountFields, Proof, StateManagerInterface } from '@ethereumjs/common'
+import type { AccountFields, StateManagerInterface } from '@ethereumjs/common'
 import type {
   Address,
   PrefixedHexString,
@@ -41,6 +40,7 @@ import type {
   VerkleExecutionWitness,
   VerkleProof,
 } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 
 const PUSH_OFFSET = 95
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

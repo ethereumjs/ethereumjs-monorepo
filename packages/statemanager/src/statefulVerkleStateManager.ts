@@ -37,7 +37,6 @@ import type { Caches } from './cache/caches.js'
 import type { StatefulVerkleStateManagerOpts } from './types.js'
 import type {
   AccountFields,
-  Proof,
   StateManagerInterface,
   StorageDump,
   StorageRange,

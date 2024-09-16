@@ -1,5 +1,7 @@
-import { Address, bytesToHex, fetchFromProvider } from '@ethereumjs/util'
-import { Proof, RPCStateManager } from '../index.js'
+import { bytesToHex, fetchFromProvider } from '@ethereumjs/util'
+
+import type { Proof, RPCStateManager } from '../index.js'
+import type { Address } from '@ethereumjs/util'
 
 /**
  * Get an EIP-1186 proof from the provider

@@ -1,7 +1,8 @@
-import { Proof } from '../index.js'
-import { StatelessVerkleStateManager } from '../statelessVerkleStateManager.js'
+import { verifyVerkleProof } from '@ethereumjs/util'
 
-import { Address, verifyVerkleProof } from '@ethereumjs/util'
+import type { Proof } from '../index.js'
+import type { StatelessVerkleStateManager } from '../statelessVerkleStateManager.js'
+import type { Address } from '@ethereumjs/util'
 
 export function getVerkleStateProof(
   sm: StatelessVerkleStateManager,

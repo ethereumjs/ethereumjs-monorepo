@@ -1,6 +1,5 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { verifyTrieProof } from '@ethereumjs/trie'
 import {
   Account,
   bigIntToHex,
@@ -19,9 +18,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { Caches, OriginalStorageCache } from './cache/index.js'
 import { modifyAccountFields } from './util.js'
 
-import type { Proof, RPCStateManagerOpts } from './index.js'
+import type { RPCStateManagerOpts } from './index.js'
 import type { AccountFields, StateManagerInterface, StorageDump } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(2)

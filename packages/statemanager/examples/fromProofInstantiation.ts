@@ -1,8 +1,8 @@
 import {
   MerkleStateManager,
-  getMerkleStateProof,
-  fromMerkleStateProof,
   addMerkleStateProofData,
+  fromMerkleStateProof,
+  getMerkleStateProof,
 } from '@ethereumjs/statemanager'
 import { Address, hexToBytes } from '@ethereumjs/util'
 
