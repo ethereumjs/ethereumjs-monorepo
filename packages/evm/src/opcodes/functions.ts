@@ -23,10 +23,10 @@ import {
   bytesToHex,
   bytesToInt,
   concatBytes,
+  equalsBytes,
   getVerkleTreeIndicesForStorageSlot,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { equalBytes } from '@noble/curves/abstract/utils'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { EOFContainer, EOFContainerMode } from '../eof/container.js'
@@ -62,7 +62,7 @@ export interface AsyncOpHandler {
 export type OpHandler = SyncOpHandler | AsyncOpHandler
 
 function getEIP7702DelegatedAddress(code: Uint8Array) {
-  if (equalBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
+  if (equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
     return new Address(code.slice(3, 24))
   }
 }

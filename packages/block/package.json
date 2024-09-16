@@ -52,7 +52,7 @@
     "@ethereumjs/trie": "^6.2.1",
     "@ethereumjs/tx": "^5.4.0",
     "@ethereumjs/util": "^9.1.0",
-    "ethereum-cryptography": "^2.2.1"
+    "ethereum-cryptography": "^3.0.0"
   },
   "devDependencies": {
     "kzg-wasm": "^0.4.0"
