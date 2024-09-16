@@ -436,10 +436,7 @@ Events emitted:
 
 This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
 
-For the debugging output to show up, set the `DEBUG` environment variable (e.g. in Linux/Mac OS:
-`export DEBUG=ethjs,*,-babel`).
-
-Use the `DEBUG` environment variable to active the logger output you are interested in, e.g.:
+Use the `DEBUG` environment variable to activate the logger output you are interested in, e.g.:
 
 ```shell
 DEBUG=ethjs,devp2p:dpt:\*,devp2p:eth node -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
@@ -458,6 +455,11 @@ The following loggers are available:
 | `devp2p:eth`          | ETH protocol message logging (`STATUS`, `GET_BLOCK_HEADER`, `TRANSACTIONS`,... messages) |
 | `devp2p:les`          | LES protocol message logging (`STATUS`, `GET_BLOCK_HEADER`, `GET_PROOFS`,... messages)   |
 
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,devp2p:dns:dns,devp2p:dpt:*,devp2p:rlpx:peer npx vitest test/dns.spec.ts`
+
 ### Debug Verbosity
 
 For more verbose output on logging (e.g. to output the entire msg payload) use the `verbose` logger
@@ -465,7 +467,7 @@ in addition:
 
 DEBUG=ethjs,devp2p:dpt:\*,devp2p:eth,verbose node -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
 
-Exemplary logging output:
+Example logging output:
 
 ```shell
 Add peer: 52.3.158.184:30303 Geth/v1.7.3-unstable-479aa61f/linux-amd64/go1.9 (eth63) (total: 2)
@@ -495,7 +497,7 @@ on two message names along `ETH` protocol debugging:
 DEBUG=ethjs,devp2p:eth:GET_BLOCK_HEADERS,devp2p:eth:BLOCK_HEADERS -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
-Exemplary logging output:
+Example logging output:
 
 ```shell
 devp2p:eth:GET_BLOCK_HEADERS Received GET_BLOCK_HEADERS message from 207.154.201.177:30303: d188659b37d8e321bc52c782198181c08080 +50ms
@@ -519,7 +521,7 @@ DEBUG=ethjs,devp2p:3.209.45.79 -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
 
 #### First Connected
 
-Logging can be limited to the peer the first successful subprotocol (e.g. `ETH`) connection could be established:
+Logging can be limited to the peer with which the first successful subprotocol (e.g. `ETH`) connection could be established:
 
 ```shell
 DEBUG=ethjs,devp2p:FIRST_PEER -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
