@@ -1,4 +1,9 @@
-import { MerkleStateManager } from '@ethereumjs/statemanager'
+import {
+  MerkleStateManager,
+  getMerkleStateProof,
+  fromMerkleStateProof,
+  addMerkleStateProofData,
+} from '@ethereumjs/statemanager'
 import { Address, hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
@@ -19,12 +24,15 @@ const main = async () => {
   await stateManager.putStorage(contractAddress, storageKey1, storageValue1)
   await stateManager.putStorage(contractAddress, storageKey2, storageValue2)
 
-  const proof = await stateManager.getProof(contractAddress)
-  const proofWithStorage = await stateManager.getProof(contractAddress, [storageKey1, storageKey2])
-  const partialStateManager = await MerkleStateManager.fromProof(proof)
+  const proof = await getMerkleStateProof(stateManager, contractAddress)
+  const proofWithStorage = await getMerkleStateProof(stateManager, contractAddress, [
+    storageKey1,
+    storageKey2,
+  ])
+  const partialStateManager = await fromMerkleStateProof(proof)
 
   // To add more proof data, use `addProofData`
-  await partialStateManager.addProofData(proofWithStorage)
+  await addMerkleStateProofData(partialStateManager, proofWithStorage)
   console.log(await partialStateManager.getCode(contractAddress)) // contract bytecode is not included in proof
   console.log(await partialStateManager.getStorage(contractAddress, storageKey1), storageValue1) // should match
   console.log(await partialStateManager.getStorage(contractAddress, storageKey2), storageValue2) // should match
