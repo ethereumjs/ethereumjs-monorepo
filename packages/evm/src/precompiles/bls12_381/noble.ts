@@ -6,7 +6,7 @@ import {
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { bls12_381 } from '@noble/curves/bls12-381'
+import { bls12_381 } from 'ethereum-cryptography/bls.js'
 
 import { ERROR, EvmError } from '../../exceptions.js'
 
@@ -21,13 +21,17 @@ import {
 } from './constants.js'
 
 import type { EVMBLSInterface } from '../../types.js'
-import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
 
 // Copied from @noble/curves/bls12-381 (only local declaration)
 type Fp2 = {
   c0: bigint
   c1: bigint
 }
+// Copied from @noble/curves/abstract/curve.ts (not exported in ethereum-cryptography)
+export type AffinePoint<T> = {
+  x: T
+  y: T
+} & { z?: never; t?: never }
 
 const G1_ZERO = bls12_381.G1.ProjectivePoint.ZERO
 const G2_ZERO = bls12_381.G2.ProjectivePoint.ZERO
