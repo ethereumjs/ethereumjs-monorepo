@@ -47,6 +47,7 @@ import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
+import { StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
 
 const debug = debugDefault('vm:block')
 
@@ -150,7 +151,10 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     // Populate the execution witness
     stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
-    if (stateManager.verifyVerkleProof!() === false) {
+    if (
+      stateManager instanceof StatelessVerkleStateManager &&
+      verifyVerkleStateProof(stateManager) === false
+    ) {
       throw Error(`Verkle proof verification failed`)
     }
 
