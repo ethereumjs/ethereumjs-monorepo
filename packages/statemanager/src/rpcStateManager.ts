@@ -296,22 +296,6 @@ export class RPCStateManager implements StateManagerInterface {
   }
 
   /**
-   * Get an EIP-1186 proof from the provider
-   * @param address address to get proof of
-   * @param storageSlots storage slots to get proof of
-   * @returns an EIP-1186 formatted proof
-   */
-  async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
-    if (this.DEBUG) this._debug(`retrieving proof from provider for ${address.toString()}`)
-    const proof = await fetchFromProvider(this._provider, {
-      method: 'eth_getProof',
-      params: [address.toString(), storageSlots.map(bytesToHex), this._blockTag],
-    })
-
-    return proof
-  }
-
-  /**
    * Returns the applied key for a given address
    * Used for saving preimages
    * @param address - The address to return the applied key
