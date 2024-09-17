@@ -126,11 +126,13 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
     Legacy.validateHighS(this)
 
     for (const hash of this.blobVersionedHashes) {
-      if (hash.length !== 32) {
+      if (hash.length !== 66) {
+        // 66 is the length of a 32 byte hash as a PrefixedHexString
         const msg = this._errorMsg('versioned hash is invalid length')
         throw new Error(msg)
       }
-      if (BigInt(hash[0]) !== this.common.param('blobCommitmentVersionKzg')) {
+      if (BigInt(parseInt(hash.slice(2, 4))) !== this.common.param('blobCommitmentVersionKzg')) {
+        // We check the first "byte" of the hash (starts at position 2 since hash is a PrefixedHexString)
         const msg = this._errorMsg('versioned hash does not start with KZG commitment version')
         throw new Error(msg)
       }

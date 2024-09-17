@@ -459,9 +459,9 @@ describe('Network wrapper tests', () => {
       'throws when blobs/commitments/hashes mismatch',
     )
 
-    const mangledValue = commitments[0][0]
+    const originalValue = commitments[0]
+    commitments[0] = (originalValue.slice(0, 31) + 'c') as PrefixedHexString
 
-    commitments[0][0] = 154
     const txWithInvalidCommitment = createBlob4844Tx(
       {
         blobVersionedHashes,
@@ -487,8 +487,8 @@ describe('Network wrapper tests', () => {
       'throws when kzg proof cant be verified',
     )
 
-    blobVersionedHashes[0][1] = 2
-    commitments[0][0] = mangledValue
+    blobVersionedHashes[0] = ('0x0102' + blobVersionedHashes[0].slice(6)) as PrefixedHexString
+    commitments[0] = originalValue
 
     const txWithInvalidVersionedHashes = createBlob4844Tx(
       {
@@ -640,9 +640,9 @@ describe('Network wrapper deserialization test', () => {
     assert.deepEqual(txData, jsonData as any, 'toJSON should give correct json')
 
     assert.equal(deserializedTx.blobs?.length, 1, 'contains the correct number of blobs')
-    assert.equal((deserializedTx.blobs![0], blobs[0]), 'blobs should match')
-    assert.equal((deserializedTx.kzgCommitments![0], commitments[0]), 'commitments should match')
-    assert.equal((deserializedTx.kzgProofs![0], proofs[0]), 'proofs should match')
+    assert.equal(deserializedTx.blobs![0], blobs[0], 'blobs should match')
+    assert.equal(deserializedTx.kzgCommitments![0], commitments[0], 'commitments should match')
+    assert.equal(deserializedTx.kzgProofs![0], proofs[0], 'proofs should match')
 
     const unsignedHash = bytesToHex(deserializedTx.getHashedMessageToSign())
     const hash = bytesToHex(deserializedTx.hash())
