@@ -1,10 +1,8 @@
 import { getBlobs } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
-import { beforeAll, bench, describe } from 'vitest'
+import { bench, describe } from 'vitest'
 
-import { jsKZG } from '../src/jsKZGWrapper.js'
-
-import type { Kzg } from '@ethereumjs/util'
+import { jsKZG } from '../src/kzg.js'
 
 describe('benchmarks', async () => {
   const kzg = await loadKZG()
