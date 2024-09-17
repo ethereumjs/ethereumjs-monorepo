@@ -117,9 +117,9 @@ See below example for common usage:
 
 import {
   MerkleStateManager,
-  getMerkleStateProof,
-  fromMerkleStateProof,
   addMerkleStateProofData,
+  fromMerkleStateProof,
+  getMerkleStateProof,
 } from '@ethereumjs/statemanager'
 import { Address, hexToBytes } from '@ethereumjs/util'
 
@@ -148,7 +148,7 @@ const main = async () => {
   ])
   const partialStateManager = await fromMerkleStateProof(proof)
 
-  // To add more proof data, use `addProofData`
+  // To add more proof data, use `addMerkleStateProofData`
   await addMerkleStateProofData(partialStateManager, proofWithStorage)
   console.log(await partialStateManager.getCode(contractAddress)) // contract bytecode is not included in proof
   console.log(await partialStateManager.getStorage(contractAddress, storageKey1), storageValue1) // should match
