@@ -37,6 +37,8 @@ import type { HeaderData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
 
+import debugDefault, { Debugger } from 'debug'
+
 /**
  * Blockchain implementation to create and maintain a valid canonical chain
  * of block headers or blocks with support for reorgs and the ability to provide
@@ -88,6 +90,9 @@ export class Blockchain implements BlockchainInterface {
    */
   private _deletedBlocks: Block[] = []
 
+  private DEBUG: boolean // Guard for debug logs
+  private _debug: Debugger
+
   /**
    * Creates new Blockchain object.
    *
@@ -99,6 +104,10 @@ export class Blockchain implements BlockchainInterface {
    * {@link BlockchainOptions}.
    */
   constructor(opts: BlockchainOptions = {}) {
+    this.DEBUG =
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this._debug = debugDefault('blockchain:core')
+
     if (opts.common) {
       this.common = opts.common
     } else {
@@ -328,6 +337,11 @@ export class Blockchain implements BlockchainInterface {
     })
     if (this._deletedBlocks.length > 0) {
       this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      for (const block of this._deletedBlocks)
+        this.DEBUG &&
+          this._debug(
+            `deleted block: number ${block.header.number} hash ${bytesToHex(block.hash())}`,
+          )
       this._deletedBlocks = []
     }
   }
@@ -452,6 +466,8 @@ export class Blockchain implements BlockchainInterface {
         await this.dbManager.batch(ops)
 
         await this.consensus?.newBlock(block, commonAncestor, ancestorHeaders)
+        this.DEBUG &&
+          this._debug(`put block: number ${block.header.number} hash ${bytesToHex(block.hash())}`)
       } catch (e) {
         // restore head to the previously sane state
         this._heads = oldHeads
@@ -462,6 +478,11 @@ export class Blockchain implements BlockchainInterface {
     })
     if (this._deletedBlocks.length > 0) {
       this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      for (const block of this._deletedBlocks)
+        this.DEBUG &&
+          this._debug(
+            `deleted block: number ${block.header.number} hash ${bytesToHex(block.hash())}`,
+          )
       this._deletedBlocks = []
     }
   }
@@ -829,6 +850,11 @@ export class Blockchain implements BlockchainInterface {
 
     if (this._deletedBlocks.length > 0) {
       this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      for (const block of this._deletedBlocks)
+        this.DEBUG &&
+          this._debug(
+            `deleted block: number ${block.header.number} hash ${bytesToHex(block.hash())}`,
+          )
       this._deletedBlocks = []
     }
   }
