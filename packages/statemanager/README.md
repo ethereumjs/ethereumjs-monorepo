@@ -26,13 +26,13 @@ The `StateManager` provides high-level access and manipulation methods to and fo
 This library includes several different implementations that all implement the `StateManager` interface which is accepted by the `vm` library. These include:
 
 - [`SimpleStateManager`](./src/simpleStateManager.ts) -a minimally functional (and dependency minimized) version of the state manager suitable for most basic EVM bytecode operations
-- [`DefaultStateManager`](./src//stateManager.ts) - a Merkle-Patricia Trie-based `DefaultStateManager` implementation that is used by the `@ethereumjs/client` and `@ethereumjs/vm`
+- [`MerkleStateManager`](./src//stateManager.ts) - a Merkle-Patricia Trie-based `MerkleStateManager` implementation that is used by the `@ethereumjs/client` and `@ethereumjs/vm`
 - [`RPCStateManager`](./src/rpcStateManager.ts) - a light-weight implementation that sources state and history data from an external JSON-RPC provider
 - [`StatelessVerkleStateManager`](./src/statelessVerkleStateManager.ts) - an experimental implementation of a "stateless" state manager that uses Verkle proofs to provide necessary state access for processing verkle-trie based blocks
 
 It also includes a checkpoint/revert/commit mechanism to either persist or revert state changes and provides a sophisticated caching mechanism under the hood to reduce the need reading state accesses from disk.
 
-### `DefaultStateManager`
+### `MerkleStateManager`
 
 #### Usage example
 
@@ -95,11 +95,11 @@ const main = async () => {
 void main()
 ```
 
-### `DefaultStateManager` -> Proofs
+### `MerkleStateManager` -> Proofs
 
 #### Instantiating from a Proof
 
-The `DefaultStateManager` has a static constructor `fromProof` that accepts one or more [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) [proofs](./src/stateManager.ts) and will instantiate a `DefaultStateManager` with a partial trie containing the state provided by the proof(s). Be aware that this constructor accepts the `StateManagerOpts` dictionary as a third parameter (i.e. `stateManager.fromProof(proof, safe, opts)`). Therefore, if you need to use a customized trie (e.g. one that does not use key hashing) or specify caching options, you can pass them in here. If you do instantiate a trie and pass it into the `fromProof` constructor, you also need to instantiate the trie using the corresponding `fromProof` constructor to ensure the state root matches when the proof data is added to the trie. See [this test](./test/stateManager.spec.ts#L287-L288) for more details.
+The `MerkleStateManager` has a static constructor `fromProof` that accepts one or more [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) [proofs](./src/stateManager.ts) and will instantiate a `MerkleStateManager` with a partial trie containing the state provided by the proof(s). Be aware that this constructor accepts the `StateManagerOpts` dictionary as a third parameter (i.e. `stateManager.fromProof(proof, safe, opts)`). Therefore, if you need to use a customized trie (e.g. one that does not use key hashing) or specify caching options, you can pass them in here. If you do instantiate a trie and pass it into the `fromProof` constructor, you also need to instantiate the trie using the corresponding `fromProof` constructor to ensure the state root matches when the proof data is added to the trie. See [this test](./test/stateManager.spec.ts#L287-L288) for more details.
 
 See below example for common usage:
 
