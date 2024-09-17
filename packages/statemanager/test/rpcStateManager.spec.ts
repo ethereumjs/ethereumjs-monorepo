@@ -1,6 +1,7 @@
 import { createBlockFromJSONRPCProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
+import { verifyTrieProof } from '@ethereumjs/trie'
 import { createFeeMarket1559Tx, createTxFromRPC } from '@ethereumjs/tx'
 import {
   Address,
@@ -12,12 +13,14 @@ import {
   equalsBytes,
   hexToBytes,
   setLengthLeft,
+  toBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { MerkleStateManager } from '../src/merkleStateManager.js'
+import { getRPCStateProof } from '../src/proofs/index.js'
 import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
 
 import { block as blockData } from './testdata/providerData/blocks/block0x7a120.js'
@@ -25,6 +28,7 @@ import { getValues } from './testdata/providerData/mockProvider.js'
 import { tx as txData } from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.js'
 
 import type { EVMMockBlockchainInterface } from '@ethereumjs/evm'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const provider = process.env.PROVIDER ?? 'http://cheese'
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
@@ -83,9 +87,12 @@ describe('RPC State Manager API tests', () => {
     )
 
     assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
-    const doesThisAccountExist = await state.accountExists(
-      createAddressFromString('0xccAfdD642118E5536024675e776d32413728DD07'),
-    )
+    const address = createAddressFromString('0xccAfdD642118E5536024675e776d32413728DD07')
+    const proof = await getRPCStateProof(state, address)
+    const proofBuf = proof.accountProof.map((proofNode: PrefixedHexString) => toBytes(proofNode))
+    const doesThisAccountExist = await verifyTrieProof(address.bytes, proofBuf, {
+      useKeyHashing: true,
+    })
     assert.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
 
     assert.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')

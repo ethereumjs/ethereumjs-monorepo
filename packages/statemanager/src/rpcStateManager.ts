@@ -1,6 +1,5 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { verifyTrieProof } from '@ethereumjs/trie'
 import {
   Account,
   bigIntToHex,
@@ -19,9 +18,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { Caches, OriginalStorageCache } from './cache/index.js'
 import { modifyAccountFields } from './util.js'
 
-import type { Proof, RPCStateManagerOpts } from './index.js'
+import type { RPCStateManagerOpts } from './index.js'
 import type { AccountFields, StateManagerInterface, StorageDump } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(2)
@@ -197,30 +196,6 @@ export class RPCStateManager implements StateManagerInterface {
   }
 
   /**
-   * Checks if an `account` exists at `address`
-   * @param address - Address of the `account` to check
-   */
-  async accountExists(address: Address): Promise<boolean> {
-    if (this.DEBUG) this._debug?.(`verify if ${address.toString()} exists`)
-
-    const localAccount = this._caches.account?.get(address)
-    if (localAccount !== undefined) return true
-    // Get merkle proof for `address` from provider
-    const proof = await fetchFromProvider(this._provider, {
-      method: 'eth_getProof',
-      params: [address.toString(), [] as any, this._blockTag],
-    })
-
-    const proofBuf = proof.accountProof.map((proofNode: PrefixedHexString) => toBytes(proofNode))
-
-    const verified = await verifyTrieProof(address.bytes, proofBuf, {
-      useKeyHashing: true,
-    })
-    // if not verified (i.e. verifyProof returns null), account does not exist
-    return verified === null ? false : true
-  }
-
-  /**
    * Gets the account associated with `address` or `undefined` if account does not exist
    * @param address - Address of the `account` to get
    */
@@ -317,22 +292,6 @@ export class RPCStateManager implements StateManagerInterface {
       this._debug(`deleting account corresponding to ${address.toString()}`)
     }
     this._caches.account?.del(address)
-  }
-
-  /**
-   * Get an EIP-1186 proof from the provider
-   * @param address address to get proof of
-   * @param storageSlots storage slots to get proof of
-   * @returns an EIP-1186 formatted proof
-   */
-  async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
-    if (this.DEBUG) this._debug(`retrieving proof from provider for ${address.toString()}`)
-    const proof = await fetchFromProvider(this._provider, {
-      method: 'eth_getProof',
-      params: [address.toString(), storageSlots.map(bytesToHex), this._blockTag],
-    })
-
-    return proof
   }
 
   /**
