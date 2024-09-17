@@ -38,7 +38,7 @@ export class EthashConsensus implements Consensus {
     }
     this.DEBUG &&
       this._debug(
-        `valid PoW consenus block: number ${block.header.number} hash ${bytesToHex(block.hash())}`,
+        `valid PoW consensus block: number ${block.header.number} hash ${bytesToHex(block.hash())}`,
       )
   }
 
