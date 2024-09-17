@@ -69,7 +69,7 @@ There are now two cache options available: an unbounded cache (`CacheType.ORDERE
 
 Caches now "survive" a flush operation and especially long-lived usage scenarios will benefit from increased performance by a growing and more "knowing" cache leading to less and less trie reads.
 
-Have a loot at the extended `CacheOptions` on how to use and leverage the new cache system.
+Have a look at the extended `CacheOptions` on how to use and leverage the new cache system.
 
 ### `SimpleStateManager`
 
