@@ -1,6 +1,5 @@
 import { MCLBLS, NobleBLS, NobleBN254, RustBN254 } from '@ethereumjs/evm'
-import { jsKZG } from '@ethereumjs/tx'
-import { loadKZG } from 'kzg-wasm'
+import { jsKZG } from '@ethereumjs/util'
 import * as mcl from 'mcl-wasm'
 import * as minimist from 'minimist'
 import * as path from 'path'
