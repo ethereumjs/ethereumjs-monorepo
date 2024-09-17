@@ -34,10 +34,6 @@ export class EthashConsensus implements Consensus {
   async validateConsensus(block: Block): Promise<void> {
     const valid = await this._ethash.verifyPOW(block)
     if (!valid) {
-      this.DEBUG &&
-        this._debug(
-          `invalid PoW consenus block: number ${block.header.number} hash ${bytesToHex(block.hash())}`,
-        )
       throw new Error('invalid POW')
     }
     this.DEBUG &&
@@ -56,10 +52,6 @@ export class EthashConsensus implements Consensus {
     }
     const parentHeader = await this.blockchain['_getHeader'](header.parentHash)
     if (header.ethashCanonicalDifficulty(parentHeader) !== header.difficulty) {
-      this.DEBUG &&
-        this._debug(
-          `invalid difficulty header: number ${header.number} difficulty ${header.difficulty} parentHash ${bytesToHex(header.parentHash)}`,
-        )
       throw new Error(`invalid difficulty ${header.errorStr()}`)
     }
     this.DEBUG &&
