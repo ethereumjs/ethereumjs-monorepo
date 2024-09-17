@@ -10,6 +10,7 @@ import {
   equalsBytes,
   getBlobs,
   hexToBytes,
+  jsKZG as kzg,
   randomBytes,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -24,7 +25,6 @@ import {
   createTx,
   paramsTx,
 } from '../src/index.js'
-import { jsKZG as kzg } from '../src/jsKZGWrapper.js'
 
 import blobTx from './json/serialized4844tx.json'
 
