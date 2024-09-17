@@ -7,8 +7,6 @@ const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
   // Use the safe static constructor which awaits the init method
   const blockchain = await createBlockchain({
-    validateBlocks: false, // Skipping validation so we can make a simple chain without having to provide complete blocks
-    validateConsensus: false,
     common,
   })
 
