@@ -1,10 +1,11 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
+import { bytesToHex } from '@ethereumjs/util'
+import debugDefault from 'debug'
 
 import type { Blockchain } from '../index.js'
 import type { Consensus, ConsensusOptions } from '../types.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
-import debugDefault, { Debugger } from 'debug'
-import { bytesToHex } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 
 type MinimalEthashInterface = {
   cacheDB?: any

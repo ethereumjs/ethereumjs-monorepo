@@ -13,6 +13,7 @@ import {
   concatBytes,
   equalsBytes,
 } from '@ethereumjs/util'
+import debugDefault from 'debug'
 
 import { CasperConsensus } from './consensus/casper.js'
 import {
@@ -36,8 +37,7 @@ import type {
 import type { HeaderData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
-
-import debugDefault, { Debugger } from 'debug'
+import type { Debugger } from 'debug'
 
 /**
  * Blockchain implementation to create and maintain a valid canonical chain
