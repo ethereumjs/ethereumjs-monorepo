@@ -24,13 +24,13 @@ import type {
   TxOptions,
 } from '../types.js'
 import type { TxData, TxValuesArray } from './tx.js'
-import type { Kzg } from '@ethereumjs/util'
+import type { Kzg, PrefixedHexString } from '@ethereumjs/util'
 
 const validateBlobTransactionNetworkWrapper = (
-  blobVersionedHashes: Uint8Array[],
-  blobs: Uint8Array[],
-  commitments: Uint8Array[],
-  kzgProofs: Uint8Array[],
+  blobVersionedHashes: PrefixedHexString[],
+  blobs: PrefixedHexString[],
+  commitments: PrefixedHexString[],
+  kzgProofs: PrefixedHexString[],
   version: number,
   kzg: Kzg,
 ) => {
@@ -53,7 +53,7 @@ const validateBlobTransactionNetworkWrapper = (
 
   for (let x = 0; x < blobVersionedHashes.length; x++) {
     const computedVersionedHash = computeVersionedHash(commitments[x], version)
-    if (!equalsBytes(computedVersionedHash, blobVersionedHashes[x])) {
+    if (computedVersionedHash !== blobVersionedHashes[x]) {
       throw new Error(`commitment for blob at index ${x} does not match versionedHash`)
     }
   }
@@ -91,13 +91,15 @@ export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
     if (txData.kzgProofs !== undefined) {
       throw new Error('cannot have both raw blobs data and KZG proofs in constructor')
     }
-    txData.blobs = getBlobs(txData.blobsData.reduce((acc, cur) => acc + cur))
-    txData.kzgCommitments = blobsToCommitments(kzg, txData.blobs as Uint8Array[])
-    txData.blobVersionedHashes = commitmentsToVersionedHashes(txData.kzgCommitments as Uint8Array[])
+    txData.blobs = getBlobs(txData.blobsData.reduce((acc, cur) => acc + cur)) as PrefixedHexString[]
+    txData.kzgCommitments = blobsToCommitments(kzg, txData.blobs as PrefixedHexString[])
+    txData.blobVersionedHashes = commitmentsToVersionedHashes(
+      txData.kzgCommitments as PrefixedHexString[],
+    )
     txData.kzgProofs = blobsToProofs(
       kzg,
-      txData.blobs as Uint8Array[],
-      txData.kzgCommitments as Uint8Array[],
+      txData.blobs as PrefixedHexString[],
+      txData.kzgCommitments as PrefixedHexString[],
     )
   }
 
@@ -250,19 +252,22 @@ export function createBlob4844TxFromSerializedNetworkWrapper(
   commonCopy.updateParams(opts.params ?? paramsTx)
 
   const version = Number(commonCopy.param('blobCommitmentVersionKzg'))
+  const blobsHex = blobs.map((blob) => bytesToHex(blob))
+  const commsHex = kzgCommitments.map((com) => bytesToHex(com))
+  const proofsHex = kzgProofs.map((proof) => bytesToHex(proof))
   validateBlobTransactionNetworkWrapper(
     decodedTx.blobVersionedHashes,
-    blobs,
-    kzgCommitments,
-    kzgProofs,
+    blobsHex,
+    commsHex,
+    proofsHex,
     version,
     opts.common.customCrypto.kzg,
   )
 
   // set the network blob data on the tx
-  decodedTx.blobs = blobs
-  decodedTx.kzgCommitments = kzgCommitments
-  decodedTx.kzgProofs = kzgProofs
+  decodedTx.blobs = blobsHex
+  decodedTx.kzgCommitments = commsHex
+  decodedTx.kzgProofs = proofsHex
 
   // freeze the tx
   const freeze = opts?.freeze ?? true
@@ -323,9 +328,9 @@ export function blobTxNetworkWrapperToJSON(
     maxFeePerGas: bigIntToHex(tx.maxFeePerGas),
     accessList: accessListJSON,
     maxFeePerBlobGas: bigIntToHex(tx.maxFeePerBlobGas),
-    blobVersionedHashes: tx.blobVersionedHashes.map((hash) => bytesToHex(hash)),
-    blobs: tx.blobs!.map((bytes) => bytesToHex(bytes)),
-    kzgCommitments: tx.kzgCommitments!.map((bytes) => bytesToHex(bytes)),
-    kzgProofs: tx.kzgProofs!.map((bytes) => bytesToHex(bytes)),
+    blobVersionedHashes: tx.blobVersionedHashes,
+    blobs: tx.blobs!,
+    kzgCommitments: tx.kzgCommitments!,
+    kzgProofs: tx.kzgProofs!,
   }
 }

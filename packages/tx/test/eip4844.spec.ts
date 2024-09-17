@@ -284,7 +284,7 @@ describe('Network wrapper tests', () => {
     assert.equal(jsonData.blobs?.length, blobs.length, 'contains the correct number of blobs')
     for (let i = 0; i < jsonData.blobs.length; i++) {
       const b1 = jsonData.blobs[i]
-      const b2 = bytesToHex(signedTx.blobs![i])
+      const b2 = signedTx.blobs![i]
       assert.equal(b1, b2, 'contains the same blobs')
     }
     assert.equal(
@@ -294,7 +294,7 @@ describe('Network wrapper tests', () => {
     )
     for (let i = 0; i < jsonData.kzgCommitments.length; i++) {
       const c1 = jsonData.kzgCommitments[i]
-      const c2 = bytesToHex(signedTx.kzgCommitments![i])
+      const c2 = signedTx.kzgCommitments![i]
       assert.equal(c1, c2, 'contains the same commitments')
     }
     assert.equal(
@@ -304,7 +304,7 @@ describe('Network wrapper tests', () => {
     )
     for (let i = 0; i < jsonData.kzgProofs.length; i++) {
       const p1 = jsonData.kzgProofs[i]
-      const p2 = bytesToHex(signedTx.kzgProofs![i])
+      const p2 = signedTx.kzgProofs![i]
       assert.equal(p1, p2, 'contains the same proofs')
     }
 
@@ -341,8 +341,8 @@ describe('Network wrapper tests', () => {
     )
 
     assert.equal(
-      bytesToHex(unsignedTx.blobVersionedHashes[0]),
-      bytesToHex(simpleBlobTx.blobVersionedHashes[0]),
+      unsignedTx.blobVersionedHashes[0],
+      simpleBlobTx.blobVersionedHashes[0],
       'tx versioned hash for simplified blob txData constructor matches fully specified versioned hashes',
     )
 
@@ -640,12 +640,9 @@ describe('Network wrapper deserialization test', () => {
     assert.deepEqual(txData, jsonData as any, 'toJSON should give correct json')
 
     assert.equal(deserializedTx.blobs?.length, 1, 'contains the correct number of blobs')
-    assert.ok(equalsBytes(deserializedTx.blobs![0], blobs[0]), 'blobs should match')
-    assert.ok(
-      equalsBytes(deserializedTx.kzgCommitments![0], commitments[0]),
-      'commitments should match',
-    )
-    assert.ok(equalsBytes(deserializedTx.kzgProofs![0], proofs[0]), 'proofs should match')
+    assert.equal((deserializedTx.blobs![0], blobs[0]), 'blobs should match')
+    assert.equal((deserializedTx.kzgCommitments![0], commitments[0]), 'commitments should match')
+    assert.equal((deserializedTx.kzgProofs![0], proofs[0]), 'proofs should match')
 
     const unsignedHash = bytesToHex(deserializedTx.getHashedMessageToSign())
     const hash = bytesToHex(deserializedTx.hash())
