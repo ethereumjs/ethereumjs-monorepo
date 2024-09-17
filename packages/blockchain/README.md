@@ -245,16 +245,18 @@ This library uses the [debug](https://github.com/visionmedia/debug) debugging ut
 
 The following initial logger is currently available:
 
-| Logger              | Description                                                 |
-| ------------------- | ----------------------------------------------------------- |
-| `blockchain:clique` | Clique operations like updating the vote and/or signer list |
+| Logger                        | Description                                                              |
+| ----------------------------- | ------------------------------------------------------------------------ |
+| `blockchain:core`             | Core blockchain operations like when a block or header is put or deleted |
+| `blockchain:consensus:clique` | Clique consensus operations like updating the vote and/or signer list    |
+| `blockchain:consensus:ethash` | Ethash consensus operations like PoW block or header validation          |
 
 The following is an example for a logger run:
 
 Run with the clique logger:
 
 ```shell
-DEBUG=ethjs,blockchain:clique tsx test.ts
+DEBUG=ethjs,blockchain:consensus:clique tsx test.ts
 ```
 
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
