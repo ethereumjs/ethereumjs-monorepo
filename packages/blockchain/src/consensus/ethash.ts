@@ -3,6 +3,8 @@ import { ConsensusAlgorithm } from '@ethereumjs/common'
 import type { Blockchain } from '../index.js'
 import type { Consensus, ConsensusOptions } from '../types.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
+import debugDefault, { Debugger } from 'debug'
+import { bytesToHex } from '@ethereumjs/util'
 
 type MinimalEthashInterface = {
   cacheDB?: any
@@ -17,7 +19,14 @@ export class EthashConsensus implements Consensus {
   algorithm: ConsensusAlgorithm
   _ethash: MinimalEthashInterface
 
+  private DEBUG: boolean // Guard for debug logs
+  private _debug: Debugger
+
   constructor(ethash: MinimalEthashInterface) {
+    this.DEBUG =
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this._debug = debugDefault('blockchain:ethash')
+
     this.algorithm = ConsensusAlgorithm.Ethash
     this._ethash = ethash
   }
@@ -25,8 +34,16 @@ export class EthashConsensus implements Consensus {
   async validateConsensus(block: Block): Promise<void> {
     const valid = await this._ethash.verifyPOW(block)
     if (!valid) {
+      this.DEBUG &&
+        this._debug(
+          `invalid PoW consenus block: number ${block.header.number} hash ${bytesToHex(block.hash())}`,
+        )
       throw new Error('invalid POW')
     }
+    this.DEBUG &&
+      this._debug(
+        `valid PoW consenus block: number ${block.header.number} hash ${bytesToHex(block.hash())}`,
+      )
   }
 
   /**
@@ -39,8 +56,16 @@ export class EthashConsensus implements Consensus {
     }
     const parentHeader = await this.blockchain['_getHeader'](header.parentHash)
     if (header.ethashCanonicalDifficulty(parentHeader) !== header.difficulty) {
+      this.DEBUG &&
+        this._debug(
+          `invalid difficulty header: number ${header.number} difficulty ${header.difficulty} parentHash ${bytesToHex(header.parentHash)}`,
+        )
       throw new Error(`invalid difficulty ${header.errorStr()}`)
     }
+    this.DEBUG &&
+      this._debug(
+        `valid difficulty header: number ${header.number} difficulty ${header.difficulty} parentHash ${bytesToHex(header.parentHash)}`,
+      )
   }
 
   public async genesisInit(): Promise<void> {}
