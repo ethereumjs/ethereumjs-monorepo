@@ -18,7 +18,7 @@ import debugDefault from 'debug'
 
 const DEBUG =
   typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
-const debug = debugDefault('blockchain:core')
+const debug = debugDefault('blockchain')
 
 export async function createBlockchain(opts: BlockchainOptions = {}) {
   const blockchain = new Blockchain(opts)

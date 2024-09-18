@@ -26,7 +26,7 @@ export class EthashConsensus implements Consensus {
   constructor(ethash: MinimalEthashInterface) {
     this.DEBUG =
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
-    this._debug = debugDefault('blockchain:consensus:ethash')
+    this._debug = debugDefault('blockchain:ethash')
 
     this.algorithm = ConsensusAlgorithm.Ethash
     this._ethash = ethash
