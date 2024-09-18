@@ -1,6 +1,7 @@
 import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
@@ -150,7 +151,10 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     // Populate the execution witness
     stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
-    if (stateManager.verifyVerkleProof!() === false) {
+    if (
+      stateManager instanceof StatelessVerkleStateManager &&
+      verifyVerkleStateProof(stateManager) === false
+    ) {
       throw Error(`Verkle proof verification failed`)
     }
 
@@ -494,14 +498,12 @@ export async function accumulateParentBlockHash(
 
   // getAccount with historyAddress will throw error as witnesses are not bundled
   // but we need to put account so as to query later for slot
-  try {
-    if ((await vm.stateManager.getAccount(historyAddress)) === undefined) {
-      const emptyHistoryAcc = new Account(BigInt(1))
-      await vm.evm.journal.putAccount(historyAddress, emptyHistoryAcc)
-    }
-  } catch (_e) {
-    const emptyHistoryAcc = new Account(BigInt(1))
-    await vm.evm.journal.putAccount(historyAddress, emptyHistoryAcc)
+  const code = await vm.stateManager.getCode(historyAddress)
+
+  if (code.length === 0) {
+    // Exit early, system contract has no code so no storage is written
+    // TODO: verify with Gabriel that this is fine regarding verkle (should we put an empty account?)
+    return
   }
 
   async function putBlockHash(vm: VM, hash: Uint8Array, number: bigint) {
@@ -537,23 +539,16 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
   const timestampExtended = timestampIndex + historicalRootsLength
 
   /**
-   * Note: (by Jochem)
-   * If we don't do vm (put account if undefined / non-existent), block runner crashes because the beacon root address does not exist
-   * vm is hence (for me) again a reason why it should /not/ throw if the address does not exist
-   * All ethereum accounts have empty storage by default
-   */
-
-  /**
    * Note: (by Gabriel)
    * Get account will throw an error in stateless execution b/c witnesses are not bundled
    * But we do need an account so we are able to put the storage
    */
-  try {
-    if ((await vm.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
-      await vm.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
-    }
-  } catch (_) {
-    await vm.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
+  const code = await vm.stateManager.getCode(parentBeaconBlockRootAddress)
+
+  if (code.length === 0) {
+    // Exit early, system contract has no code so no storage is written
+    // TODO: verify with Gabriel that this is fine regarding verkle (should we put an empty account?)
+    return
   }
 
   await vm.stateManager.putStorage(

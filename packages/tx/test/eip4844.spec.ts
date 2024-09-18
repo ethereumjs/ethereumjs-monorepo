@@ -22,7 +22,7 @@ import {
   createBlob4844TxFromRLP,
   createBlob4844TxFromSerializedNetworkWrapper,
   createMinimal4844TxFromNetworkWrapper,
-  createTxFromTxData,
+  createTx,
   paramsTx,
 } from '../src/index.js'
 
@@ -116,7 +116,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
     }
     const tx = createBlob4844Tx(txData, { common })
     assert.equal(tx.type, 3, 'successfully instantiated a blob transaction from txData')
-    const factoryTx = createTxFromTxData(txData, { common })
+    const factoryTx = createTx(txData, { common })
     assert.equal(factoryTx.type, 3, 'instantiated a blob transaction from the tx factory')
 
     const serializedTx = tx.serialize()

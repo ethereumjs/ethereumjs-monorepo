@@ -1,6 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import {
   Account,
   blobsToCommitments,
@@ -94,7 +94,7 @@ describe(method, () => {
     const txVersionedHashes = commitmentsToVersionedHashes(txCommitments)
     const txProofs = blobsToProofs(kzg, txBlobs, txCommitments)
 
-    const tx = createTxFromTxData(
+    const tx = createTx(
       {
         type: 0x03,
         blobVersionedHashes: txVersionedHashes,

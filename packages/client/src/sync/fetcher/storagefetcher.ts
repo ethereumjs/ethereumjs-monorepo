@@ -94,7 +94,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this.fetcherDoneFlags.storageFetcher.count = BigInt(this.storageRequests.length)
 
     this.accountToHighestKnownHash = new Map<String, Uint8Array>()
-    this.debug = debugDefault('client:StorageFetcher')
+    this.debug = debugDefault('client:fetcher:storage')
     if (this.storageRequests.length > 0) {
       const fullJob = {
         task: { storageRequests: this.storageRequests },

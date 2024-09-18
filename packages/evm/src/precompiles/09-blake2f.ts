@@ -5,6 +5,8 @@ import { ERROR, EvmError } from '../exceptions.js'
 
 import { gasLimitCheck } from './util.js'
 
+import { getPrecompileName } from './index.js'
+
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
@@ -160,10 +162,11 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
 }
 
 export function precompile09(opts: PrecompileInput): ExecResult {
+  const pName = getPrecompileName('09')
   const data = opts.data
   if (data.length !== 213) {
     if (opts._debug !== undefined) {
-      opts._debug(`BLAKE2F (0x09) failed: OUT_OF_RANGE dataLength=${data.length}`)
+      opts._debug(`${pName} failed: OUT_OF_RANGE dataLength=${data.length}`)
     }
     return {
       returnValue: new Uint8Array(0),
@@ -174,7 +177,7 @@ export function precompile09(opts: PrecompileInput): ExecResult {
   const lastByte = data.subarray(212, 213)[0]
   if (lastByte !== 1 && lastByte !== 0) {
     if (opts._debug !== undefined) {
-      opts._debug(`BLAKE2F (0x09) failed: OUT_OF_RANGE lastByte=${lastByte}`)
+      opts._debug(`${pName} failed: OUT_OF_RANGE lastByte=${lastByte}`)
     }
     return {
       returnValue: new Uint8Array(0),
@@ -192,7 +195,7 @@ export function precompile09(opts: PrecompileInput): ExecResult {
 
   let gasUsed = opts.common.param('blake2RoundGas')
   gasUsed *= BigInt(rounds)
-  if (!gasLimitCheck(opts, gasUsed, 'BLAKE2F (0x09)')) {
+  if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
   }
 
@@ -220,7 +223,7 @@ export function precompile09(opts: PrecompileInput): ExecResult {
   }
 
   if (opts._debug !== undefined) {
-    opts._debug(`BLAKE2F (0x09) return hash=${bytesToHex(output)}`)
+    opts._debug(`${pName} return hash=${bytesToHex(output)}`)
   }
 
   return {

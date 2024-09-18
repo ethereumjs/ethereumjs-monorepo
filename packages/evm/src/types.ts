@@ -251,7 +251,7 @@ export interface EVMOpts {
    *
    * ```ts
    * const params = JSON.parse(JSON.stringify(paramsEVM))
-   * params['1679']['ecAddGas'] = 100 // 150
+   * params['1679']['bn254AddGas'] = 100 // 150
    * ```
    */
   params?: ParamsDict
@@ -287,8 +287,8 @@ export interface EVMOpts {
   customPrecompiles?: CustomPrecompile[]
 
   /**
-   * For the EIP-2537 BLS Precompiles, the native JS `@noble/curves`
-   * https://github.com/paulmillr/noble-curves BLS12-381 curve implementation
+   * For the EIP-2537 BLS Precompiles, the native JS `ethereum-cryptography` (`@noble/curves`)
+   * https://github.com/ethereum/js-ethereum-cryptography BLS12-381 curve implementation
    * is used (see `noble.ts` file in the `precompiles/bls12_381/` folder).
    *
    * To use an alternative implementation this option can be used by passing
@@ -309,8 +309,8 @@ export interface EVMOpts {
   bls?: EVMBLSInterface
 
   /**
-   * For the EIP-196/EIP-197 BN254 (alt_BN128) EC precompiles, the native JS `@noble/curves`
-   * https://github.com/paulmillr/noble-curves BN254 curve implementation
+   * For the EIP-196/EIP-197 BN254 (alt_BN128) EC precompiles, the native JS `ethereum-cryptography`
+   * (`@noble/curves`) https://github.com/ethereum/js-ethereum-cryptography BN254 curve implementation
    * is used (see `noble.ts` file in the `precompiles/bn254/` folder).
    *
    * To use an alternative implementation this option can be used by passing

@@ -1,5 +1,5 @@
 import { createBlock } from '@ethereumjs/block'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -50,7 +50,7 @@ describe(method, () => {
     })
     const rpc = getRPCClient(server)
     // construct block with tx
-    const tx = createTxFromTxData(
+    const tx = createTx(
       {
         type: 0x2,
         gasLimit: 0xfffff,
@@ -79,7 +79,7 @@ describe(method, () => {
     })
     const rpc = getRPCClient(server)
     // construct block with tx
-    const tx = createTxFromTxData(
+    const tx = createTx(
       {
         type: 0x2,
         gasLimit: 0xfffff,
@@ -108,7 +108,7 @@ describe(method, () => {
     })
     const rpc = getRPCClient(server)
     // construct block with tx
-    const tx = createTxFromTxData(
+    const tx = createTx(
       {
         type: 0x2,
         gasLimit: 0xfffff,
@@ -141,7 +141,7 @@ describe(method, () => {
     })
     const rpc = getRPCClient(server)
     // construct block with tx
-    const tx = createTxFromTxData(
+    const tx = createTx(
       {
         type: 0x2,
         gasLimit: 0xfffff,

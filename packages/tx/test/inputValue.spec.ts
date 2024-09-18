@@ -8,7 +8,7 @@ import {
   createAccessList2930TxFromBytesArray,
   createLegacyTx,
   createLegacyTxFromBytesArray,
-  createTxFromTxData,
+  createTx,
 } from '../src/index.js'
 
 import type { TxValuesArray } from '../src/index.js'
@@ -152,7 +152,7 @@ describe('[Invalid Array Input values]', () => {
     ]
     for (const signed of [false, true]) {
       for (const txType of txTypes) {
-        let tx = createTxFromTxData({ type: txType })
+        let tx = createTx({ type: txType })
         if (signed) {
           tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
         }
@@ -216,7 +216,7 @@ describe('[Invalid Access Lists]', () => {
         for (const invalidAccessListItem of invalidAccessLists) {
           let tx: any
           try {
-            tx = createTxFromTxData({
+            tx = createTx({
               type: txType,
               accessList: <any>invalidAccessListItem,
             })
@@ -226,7 +226,7 @@ describe('[Invalid Access Lists]', () => {
             assert.fail('did not fail on `fromTxData`')
           } catch (e: any) {
             assert.ok(true, 'failed ok on decoding in `fromTxData`')
-            tx = createTxFromTxData({ type: txType })
+            tx = createTx({ type: txType })
             if (signed) {
               tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
             }
