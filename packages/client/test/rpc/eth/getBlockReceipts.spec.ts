@@ -20,6 +20,8 @@ import {
   setupChain,
 } from '../helpers.js'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 const method = 'eth_getTransactionReceipt'
 const method2 = 'eth_getBlockReceipts'
 
@@ -123,7 +125,9 @@ describe(method, () => {
       const blobs = getBlobs('hello world')
       const commitments = blobsToCommitments(kzg, blobs)
       const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-      const proofs = blobs.map((blob, ctx) => kzg.computeBlobKZGProof(blob, commitments[ctx]))
+      const proofs = blobs.map((blob, ctx) =>
+        kzg.computeBlobKZGProof(blob, commitments[ctx]),
+      ) as PrefixedHexString[]
       const tx = createBlob4844Tx(
         {
           blobVersionedHashes,

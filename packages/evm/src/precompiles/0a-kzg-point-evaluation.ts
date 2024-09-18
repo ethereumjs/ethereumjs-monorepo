@@ -38,13 +38,13 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
 
   const version = Number(opts.common.param('blobCommitmentVersionKzg'))
   const fieldElementsPerBlob = opts.common.param('fieldElementsPerBlob')
-  const versionedHash = opts.data.subarray(0, 32)
-  const z = opts.data.subarray(32, 64)
-  const y = opts.data.subarray(64, 96)
-  const commitment = opts.data.subarray(96, 144)
-  const kzgProof = opts.data.subarray(144, 192)
+  const versionedHash = bytesToHex(opts.data.subarray(0, 32))
+  const z = bytesToHex(opts.data.subarray(32, 64))
+  const y = bytesToHex(opts.data.subarray(64, 96))
+  const commitment = bytesToHex(opts.data.subarray(96, 144))
+  const kzgProof = bytesToHex(opts.data.subarray(144, 192))
 
-  if (bytesToHex(computeVersionedHash(commitment, version)) !== bytesToHex(versionedHash)) {
+  if (computeVersionedHash(commitment, version) !== versionedHash) {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: INVALID_COMMITMENT`)
     }
@@ -53,9 +53,9 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
 
   if (opts._debug !== undefined) {
     opts._debug(
-      `${pName}: proof verification with commitment=${bytesToHex(
-        commitment,
-      )} z=${bytesToHex(z)} y=${bytesToHex(y)} kzgProof=${bytesToHex(kzgProof)}`,
+      `${pName}: proof verification with commitment=${
+        commitment
+      } z=${z} y=${y} kzgProof=${kzgProof}`,
     )
   }
   try {

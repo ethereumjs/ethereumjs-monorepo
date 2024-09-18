@@ -23,6 +23,7 @@ import { getRPCClient, gethGenesisStartLondon, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain/index.js'
 import type { VMExecution } from '../../../src/execution/index.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_feeHistory'
 
@@ -146,9 +147,9 @@ const produceBlockWith4844Tx = async (
     },
   })
   for (let i = 0; i < blobsCount.length; i++) {
-    const blobVersionedHashes = []
-    const blobs = []
-    const kzgCommitments = []
+    const blobVersionedHashes = [] as PrefixedHexString[]
+    const blobs = [] as PrefixedHexString[]
+    const kzgCommitments = [] as PrefixedHexString[]
     const to = createZeroAddress()
     if (blobsCount[i] > 0) {
       for (let blob = 0; blob < blobsCount[i]; blob++) {

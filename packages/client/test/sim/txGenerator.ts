@@ -96,7 +96,7 @@ async function run(data: any) {
     await sleep(1000)
   }
 
-  const blobs = get_blobs(data)
+  const blobs = get_blobs(data).map((blob) => bytesToHex(blob))
   const commitments = blobsToCommitments(kzg, blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
@@ -165,8 +165,8 @@ async function run(data: any) {
     return false
   }
 
-  const expected_kzgs = bytesToHex(blobTx.kzgCommitments![0])
-  if (blob_kzg !== bytesToHex(blobTx.kzgCommitments![0])) {
+  const expected_kzgs = blobTx.kzgCommitments![0]
+  if (blob_kzg !== blobTx.kzgCommitments![0]) {
     console.log(`Unexpected KZG commitment: expected ${expected_kzgs}, got ${blob_kzg}`)
     return false
   } else {

@@ -19,6 +19,7 @@ import { getRPCClient, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain/chain.js'
 import type { VMExecution } from '../../../src/execution/vmexecution.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 const method = 'eth_blobBaseFee'
 
 const privateKey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
@@ -51,9 +52,9 @@ const produceBlockWith4844Tx = async (
     },
   })
   for (let i = 0; i < blobsCount.length; i++) {
-    const blobVersionedHashes = []
-    const blobs = []
-    const kzgCommitments = []
+    const blobVersionedHashes = [] as PrefixedHexString[]
+    const blobs = [] as PrefixedHexString[]
+    const kzgCommitments = [] as PrefixedHexString[]
     const to = createZeroAddress()
     if (blobsCount[i] > 0) {
       for (let blob = 0; blob < blobsCount[i]; blob++) {

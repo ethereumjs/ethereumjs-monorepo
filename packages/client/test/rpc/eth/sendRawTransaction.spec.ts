@@ -18,6 +18,7 @@ import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/er
 import { baseSetup } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_sendRawTransaction'
 
@@ -237,7 +238,9 @@ describe(method, () => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobs.map((blob, ctx) => kzg.computeBlobKZGProof(blob, commitments[ctx]))
+    const proofs = blobs.map((blob, ctx) =>
+      kzg.computeBlobKZGProof(blob, commitments[ctx]),
+    ) as PrefixedHexString[]
     const pk = randomBytes(32)
     const tx = createBlob4844Tx(
       {
@@ -275,6 +278,7 @@ describe(method, () => {
     await vm.stateManager.putAccount(tx.getSenderAddress(), account!)
 
     const res = await rpc.request(method, [bytesToHex(tx.serializeNetworkWrapper())])
+
     const res2 = await rpc.request(method, [bytesToHex(replacementTx.serializeNetworkWrapper())])
 
     assert.equal(res.error, undefined, 'initial blob transaction accepted')

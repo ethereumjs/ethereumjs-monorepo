@@ -5,7 +5,6 @@ import {
   Account,
   blobsToCommitments,
   blobsToProofs,
-  bytesToHex,
   commitmentsToVersionedHashes,
   createAddressFromPrivateKey,
   createZeroAddress,
@@ -127,9 +126,9 @@ describe(method, () => {
       'equal commitments, proofs and blobs',
     )
     assert.equal(blobs.length, 1, '1 blob should be returned')
-    assert.equal(proofs[0], bytesToHex(txProofs[0]), 'proof should match')
-    assert.equal(commitments[0], bytesToHex(txCommitments[0]), 'commitment should match')
-    assert.equal(blobs[0], bytesToHex(txBlobs[0]), 'blob should match')
+    assert.equal(proofs[0], txProofs[0], 'proof should match')
+    assert.equal(commitments[0], txCommitments[0], 'commitment should match')
+    assert.equal(blobs[0], txBlobs[0], 'blob should match')
 
     MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
     MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy

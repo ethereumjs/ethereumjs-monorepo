@@ -10,7 +10,6 @@ import {
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
-  equalsBytes,
   getBlobs,
   hexToBytes,
   randomBytes,
@@ -417,9 +416,9 @@ describe('[PendingBlock]', async () => {
     assert.equal(blobsBundles!.proofs.length, 6, 'maximum 6 proofs should be included')
 
     const pendingBlob = blobsBundles!.blobs[0]
-    assert.ok(pendingBlob !== undefined && equalsBytes(pendingBlob, blobs[0]))
+    assert.ok(pendingBlob !== undefined && pendingBlob === blobs[0])
     const blobProof = blobsBundles!.proofs[0]
-    assert.ok(blobProof !== undefined && equalsBytes(blobProof, proofs[0]))
+    assert.ok(blobProof !== undefined && blobProof === proofs[0])
   })
 
   it('should exclude missingBlobTx', async () => {
