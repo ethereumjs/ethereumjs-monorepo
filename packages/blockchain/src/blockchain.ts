@@ -467,7 +467,7 @@ export class Blockchain implements BlockchainInterface {
 
         await this.consensus?.newBlock(block, commonAncestor, ancestorHeaders)
         this.DEBUG &&
-          this._debug(`put block: number ${block.header.number} hash ${bytesToHex(block.hash())}`)
+          this._debug(`put block: number ${block.header.number} hash ${bytesToHex(blockHash)}`)
       } catch (e) {
         // restore head to the previously sane state
         this._heads = oldHeads
@@ -852,9 +852,7 @@ export class Blockchain implements BlockchainInterface {
       this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
       for (const block of this._deletedBlocks)
         this.DEBUG &&
-          this._debug(
-            `deleted block: number ${block.header.number} hash ${bytesToHex(block.hash())}`,
-          )
+          this._debug(`deleted block: number ${block.header.number} hash ${blockHash})}`)
       this._deletedBlocks = []
     }
   }
