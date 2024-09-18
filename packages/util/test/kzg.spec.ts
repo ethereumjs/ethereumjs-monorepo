@@ -6,31 +6,31 @@ import { assert, beforeAll, describe, it } from 'vitest'
 
 import { getBlobs } from '../src/blobs.js'
 
-import type { Kzg } from '../src/kzg.js'
+import type { KZG } from '../src/kzg.js'
 
 export const jsKZGinner = new microEthKZG(fast)
 
-export const jsKZG: Kzg = {
-  blobToKzgCommitment(blob: string): string {
+export const jsKZG: KZG = {
+  blobToKZGCommitment(blob: string): string {
     return jsKZGinner.blobToKzgCommitment(blob)
   },
-  computeBlobKzgProof(blob: string, commitment: string): string {
+  computeBlobKZGProof(blob: string, commitment: string): string {
     return jsKZGinner.computeBlobProof(blob, commitment)
   },
-  verifyKzgProof(polynomialKzg: string, z: string, y: string, kzgProof: string): boolean {
-    return jsKZGinner.verifyProof(polynomialKzg, z, y, kzgProof)
+  verifyKZGProof(polynomialKZG: string, z: string, y: string, kzgProof: string): boolean {
+    return jsKZGinner.verifyProof(polynomialKZG, z, y, kzgProof)
   },
-  verifyBlobKzgProofBatch(
+  verifyBlobKZGProofBatch(
     blobs: string[],
-    expectedKzgCommitments: string[],
+    expectedKZGCommitments: string[],
     kzgProofs: string[],
   ): boolean {
-    return jsKZGinner.verifyBlobProofBatch(blobs, expectedKzgCommitments, kzgProofs)
+    return jsKZGinner.verifyBlobProofBatch(blobs, expectedKZGCommitments, kzgProofs)
   },
 }
 
-describe('kzg API tests', () => {
-  let wasmKZG: Kzg
+describe('KZG API tests', () => {
+  let wasmKZG: KZG
   beforeAll(async () => {
     wasmKZG = await loadKZG({
       n1: 4096,
@@ -41,22 +41,22 @@ describe('kzg API tests', () => {
   })
   it('should produce the same outputs', () => {
     const blob = getBlobs('hello')[0]
-    const commit = wasmKZG.blobToKzgCommitment(blob)
-    const proof = wasmKZG.computeBlobKzgProof(blob, commit)
+    const commit = wasmKZG.blobToKZGCommitment(blob)
+    const proof = wasmKZG.computeBlobKZGProof(blob, commit)
 
     assert.equal(
-      wasmKZG.blobToKzgCommitment(blob).toLowerCase(),
-      jsKZG.blobToKzgCommitment(blob).toLowerCase(),
+      wasmKZG.blobToKZGCommitment(blob).toLowerCase(),
+      jsKZG.blobToKZGCommitment(blob).toLowerCase(),
     )
 
     assert.equal(
-      wasmKZG.computeBlobKzgProof(blob, commit).toLowerCase(),
-      jsKZG.computeBlobKzgProof(blob, commit).toLowerCase(),
+      wasmKZG.computeBlobKZGProof(blob, commit).toLowerCase(),
+      jsKZG.computeBlobKZGProof(blob, commit).toLowerCase(),
     )
 
     assert.equal(
-      wasmKZG.verifyBlobKzgProofBatch([blob], [commit], [proof]),
-      jsKZG.verifyBlobKzgProofBatch([blob], [commit], [proof]),
+      wasmKZG.verifyBlobKZGProofBatch([blob], [commit], [proof]),
+      jsKZG.verifyBlobKZGProofBatch([blob], [commit], [proof]),
     )
   })
 })

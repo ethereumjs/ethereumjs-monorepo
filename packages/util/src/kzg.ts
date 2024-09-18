@@ -1,13 +1,13 @@
 /**
  * Interface for an externally provided kzg library used when creating blob transactions
  */
-export interface Kzg {
-  blobToKzgCommitment(blob: string): string
-  computeBlobKzgProof(blob: string, commitment: string): string
-  verifyKzgProof(polynomialKzg: string, z: string, y: string, kzgProof: string): boolean
-  verifyBlobKzgProofBatch(
+export interface KZG {
+  blobToKZGCommitment(blob: string): string
+  computeBlobKZGProof(blob: string, commitment: string): string
+  verifyKZGProof(polynomialKZG: string, z: string, y: string, KZGProof: string): boolean
+  verifyBlobKZGProofBatch(
     blobs: string[],
-    expectedKzgCommitments: string[],
-    kzgProofs: string[],
+    expectedKZGCommitments: string[],
+    KZGProofs: string[],
   ): boolean
 }

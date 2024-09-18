@@ -2,7 +2,7 @@ import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 import { bytesToHex, hexToBytes, utf8ToBytes } from './bytes.js'
 
-import type { Kzg } from './kzg.js'
+import type { KZG } from './kzg.js'
 import type { PrefixedHexString } from './types.js'
 
 /**
@@ -57,21 +57,21 @@ export const getBlobs = (input: string) => {
   return blobs
 }
 
-export const blobsToCommitments = (kzg: Kzg, blobs: PrefixedHexString[]) => {
+export const blobsToCommitments = (kzg: KZG, blobs: PrefixedHexString[]) => {
   const commitments: PrefixedHexString[] = []
   for (const blob of blobs) {
-    commitments.push(kzg.blobToKzgCommitment(blob) as PrefixedHexString)
+    commitments.push(kzg.blobToKZGCommitment(blob) as PrefixedHexString)
   }
   return commitments
 }
 
 export const blobsToProofs = (
-  kzg: Kzg,
+  kzg: KZG,
   blobs: PrefixedHexString[],
   commitments: PrefixedHexString[],
 ) => {
   const proofs = blobs.map((blob, ctx) =>
-    kzg.computeBlobKzgProof(blob, commitments[ctx]),
+    kzg.computeBlobKZGProof(blob, commitments[ctx]),
   ) as PrefixedHexString[]
 
   return proofs
