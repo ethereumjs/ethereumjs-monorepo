@@ -1,6 +1,7 @@
 import { MCLBLS, NobleBLS, NobleBN254, RustBN254 } from '@ethereumjs/evm'
-import { jsKZG } from '@ethereumjs/util'
+import trustedSetup from '@paulmillr/trusted-setups/fast.js'
 import * as mcl from 'mcl-wasm'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import * as minimist from 'minimist'
 import * as path from 'path'
 import * as process from 'process'
@@ -22,6 +23,7 @@ import { getTestFromSource, getTestsFromArgs } from './testLoader.js'
 
 import type { Common } from '@ethereumjs/common'
 import type { EVMBLSInterface, EVMBN254Interface } from '@ethereumjs/evm'
+import type { KZG } from '@ethereumjs/util'
 
 /**
  * Test runner
@@ -53,6 +55,27 @@ import type { EVMBLSInterface, EVMBN254Interface } from '@ethereumjs/evm'
  */
 
 const argv = minimist.default(process.argv.slice(2))
+
+export const jsKZGinner = new microEthKZG(trustedSetup.trustedSetup)
+
+export const jsKZG: KZG = {
+  blobToKZGCommitment(blob: string): string {
+    return jsKZGinner.blobToKzgCommitment(blob)
+  },
+  computeBlobKZGProof(blob: string, commitment: string): string {
+    return jsKZGinner.computeBlobProof(blob, commitment)
+  },
+  verifyKZGProof(polynomialKZG: string, z: string, y: string, kzgProof: string): boolean {
+    return jsKZGinner.verifyProof(polynomialKZG, z, y, kzgProof)
+  },
+  verifyBlobKZGProofBatch(
+    blobs: string[],
+    expectedKZGCommitments: string[],
+    kzgProofs: string[],
+  ): boolean {
+    return jsKZGinner.verifyBlobProofBatch(blobs, expectedKZGCommitments, kzgProofs)
+  },
+}
 
 async function runTests() {
   let name: 'GeneralStateTests' | 'BlockchainTests'
