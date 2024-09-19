@@ -4,13 +4,13 @@ import { assert, beforeAll, describe, it } from 'vitest'
 
 import { createEVM, getActivePrecompiles } from '../../src/index.js'
 
-import fuzzer from './modexp-testdata.json'
+import { testData } from './modexp-testdata.js'
 
 import type { EVM } from '../../src/index.js'
 import type { PrecompileFunc } from '../../src/precompiles/types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
-const fuzzerTests = fuzzer.data as PrefixedHexString[][]
+const fuzzerTests = testData.data as PrefixedHexString[][]
 describe('Precompiles: MODEXP', () => {
   let common: Common
   let evm: EVM

@@ -14,7 +14,7 @@ import {
   toBytes,
 } from '../src/index.js'
 
-import eip1014Testdata from './testdata/eip1014Examples.json'
+import { eip1404ExamplesData } from './testdata/eip1014Examples.js'
 
 import type { PrefixedHexString } from '../src/index.js'
 
@@ -103,7 +103,7 @@ describe('Address', () => {
   })
 
   it('should generate address for CREATE2', () => {
-    for (const testdata of eip1014Testdata) {
+    for (const testdata of eip1404ExamplesData) {
       const { address, salt, initCode, result } = testdata
       const from = createAddressFromString(address)
       const addr = createContractAddress2(
