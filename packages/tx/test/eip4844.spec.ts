@@ -22,11 +22,11 @@ import {
   createBlob4844TxFromRLP,
   createBlob4844TxFromSerializedNetworkWrapper,
   createMinimal4844TxFromNetworkWrapper,
-  createTxFromTxData,
+  createTx,
   paramsTx,
 } from '../src/index.js'
 
-import blobTx from './json/serialized4844tx.json'
+import { serialized4844TxData } from './testData/serialized4844tx.js'
 
 import type { BlobEIP4844TxData } from '../src/index.js'
 import type { Common } from '@ethereumjs/common'
@@ -116,7 +116,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
     }
     const tx = createBlob4844Tx(txData, { common })
     assert.equal(tx.type, 3, 'successfully instantiated a blob transaction from txData')
-    const factoryTx = createTxFromTxData(txData, { common })
+    const factoryTx = createTx(txData, { common })
     assert.equal(factoryTx.type, 3, 'instantiated a blob transaction from the tx factory')
 
     const serializedTx = tx.serialize()
@@ -657,7 +657,7 @@ describe('Network wrapper deserialization test', () => {
     const commitments = blobsToCommitments(kzg, blobs)
     const proofs = blobsToProofs(kzg, blobs, commitments)
 
-    const wrapper = hexToBytes(blobTx.tx as PrefixedHexString)
+    const wrapper = hexToBytes(serialized4844TxData.tx as PrefixedHexString)
     const deserializedTx = createBlob4844TxFromSerializedNetworkWrapper(wrapper, {
       common,
     })
@@ -677,7 +677,7 @@ describe('Network wrapper deserialization test', () => {
     const networkSerialized = bytesToHex(deserializedTx.serializeNetworkWrapper())
     const serialized = bytesToHex(deserializedTx.serialize())
     const sender = deserializedTx.getSenderAddress().toString()
-    assert.equal(networkSerialized, blobTx.tx, 'network serialization should match')
+    assert.equal(networkSerialized, serialized4844TxData.tx, 'network serialization should match')
 
     assert.deepEqual(
       txMeta,

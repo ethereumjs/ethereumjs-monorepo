@@ -33,7 +33,7 @@ import {
   utf8ToBytes,
 } from '../src/index.js'
 
-import eip1014Testdata from './testdata/eip1014Examples.json'
+import { eip1404ExamplesData } from './testdata/eip1014Examples.js'
 
 import type { AccountBodyBytes, AccountData, PrefixedHexString } from '../src/index.js'
 import type { Input } from '@ethereumjs/rlp'
@@ -538,7 +538,7 @@ describe('Utility Functions', () => {
   })
 
   it('generateAddress2: EIP-1014 testdata examples', () => {
-    for (const testdata of eip1014Testdata) {
+    for (const testdata of eip1404ExamplesData) {
       const { address, comment, result, salt, initCode } = testdata
       const addr = generateAddress2(
         hexToBytes(address as PrefixedHexString),
@@ -550,7 +550,7 @@ describe('Utility Functions', () => {
   })
 
   it('generateAddress2: non-buffer inputs', () => {
-    const { address, salt, initCode } = eip1014Testdata[0]
+    const { address, salt, initCode } = eip1404ExamplesData[0]
 
     assert.throws(
       function () {

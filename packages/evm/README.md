@@ -382,9 +382,10 @@ The following loggers are currently available:
 
 | Logger                             | Description                                         |
 | ---------------------------------- | --------------------------------------------------- |
-| `evm`                              |  EVM control flow, CALL or CREATE message execution |
+| `evm:evm`                          |  EVM control flow, CALL or CREATE message execution |
 | `evm:gas`                          |  EVM gas logger                                     |
-| `evm:eei:gas`                      |  EEI gas logger                                     |
+| `evm:precompiles`                  |  EVM precompiles logger                             |
+| `evm:journal`                      |  EVM journal logger                                 |
 | `evm:ops`                          |  Opcode traces                                      |
 | `evm:ops:[Lower-case opcode name]` | Traces on a specific opcode                         |
 
@@ -419,6 +420,11 @@ Run some specific loggers including a logger specifically logging the `SSTORE` e
 ```shell
 DEBUG=ethjs,evm,evm:ops:sstore,evm:*:gas tsx test.ts
 ```
+
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,evm:journal,evm:ops:* npx vitest test/runCall.spec.ts`
 
 ### Internal Structure
 

@@ -1,10 +1,16 @@
 import { createBlock } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import {
+  MerkleStateManager,
+  StatelessVerkleStateManager,
+  getMerkleStateProof,
+  getVerkleStateProof,
+} from '@ethereumjs/statemanager'
+import {
   Capability,
   createBlob4844TxFromSerializedNetworkWrapper,
-  createTxFromSerializedData,
-  createTxFromTxData,
+  createTx,
+  createTxFromRLP,
 } from '@ethereumjs/tx'
 import {
   BIGINT_0,
@@ -608,7 +614,7 @@ export class Eth {
       blockNumber: blockToRunOn.header.number,
     })
 
-    const tx = createTxFromTxData(txData, { common: vm.common, freeze: false })
+    const tx = createTx(txData, { common: vm.common, freeze: false })
 
     // set from address
     const from =
@@ -1181,7 +1187,7 @@ export class Eth {
           )
         }
       } else {
-        tx = createTxFromSerializedData(txBuf, { common })
+        tx = createTxFromRLP(txBuf, { common })
       }
     } catch (e: any) {
       throw {
@@ -1246,14 +1252,19 @@ export class Eth {
 
     const vm = await this._vm.shallowCopy()
 
-    if (!('getProof' in vm.stateManager)) {
-      throw new Error('getProof RPC method not supported with the StateManager provided')
-    }
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = createAddressFromString(addressHex)
     const slots = slotsHex.map((slotHex) => setLengthLeft(hexToBytes(slotHex), 32))
-    const proof = await vm.stateManager.getProof!(address, slots)
+    let proof: Proof
+    if (vm.stateManager instanceof MerkleStateManager) {
+      proof = await getMerkleStateProof(vm.stateManager, address, slots)
+    } else if (vm.stateManager instanceof StatelessVerkleStateManager) {
+      proof = await getVerkleStateProof(vm.stateManager, address, slots)
+    } else {
+      throw new Error('getProof RPC method not supported with the StateManager provided')
+    }
+
     for (const p of proof.storageProof) {
       p.key = bigIntToHex(BigInt(p.key))
     }

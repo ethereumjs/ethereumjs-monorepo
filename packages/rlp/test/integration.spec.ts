@@ -2,7 +2,7 @@ import { assert, beforeAll, describe, it } from 'vitest'
 
 import { RLP } from '../src/index.js'
 
-import * as official from './fixture/rlptest.json'
+import { rlpTestData } from './fixture/rlptest.js'
 import { bytesToUtf8 } from './utils.js'
 
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -30,7 +30,7 @@ describe.skipIf(isBrowser)('CLI command', () => {
   it(
     'should return valid values for official tests',
     async () => {
-      for (const [testName, test] of Object.entries(official.default.tests)) {
+      for (const [testName, test] of Object.entries(rlpTestData.tests)) {
         const { in: incoming, out } = test
 
         // skip if testing a big number

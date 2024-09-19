@@ -3,11 +3,11 @@ import { assert, describe, it } from 'vitest'
 import { parseGethGenesisState } from '../src/genesis.js'
 
 // kiln genesis with deposit contract storage set
-import gethGenesisKilnJSON from './testdata/geth-genesis-kiln.json'
+import { gethGenesisKilnData } from './testdata/gethGenesisKiln.js'
 
 describe('[Util/genesis]', () => {
   it('should properly generate stateRoot from gethGenesis', () => {
-    const genesisState = parseGethGenesisState(gethGenesisKilnJSON)
+    const genesisState = parseGethGenesisState(gethGenesisKilnData)
     // just check for deposit contract inclusion
     assert.equal(
       genesisState['0x4242424242424242424242424242424242424242'][1].includes(

@@ -6,14 +6,14 @@ import { assert, describe, it } from 'vitest'
 import { createVM } from '../../../src/index.js'
 
 // See https://github.com/holiman/go-ethereum/blob/2c99023b68c573ba24a5b01db13e000bd9b82417/core/vm/testdata/precompiles/modexp_eip2565.json
-import testData from '../testdata/eip-2565.json'
+import { eip2565Data } from '../testdata/eip-2565.js'
 
 describe('EIP-2565 ModExp gas cost tests', () => {
   it('Test return data, gas cost and execution status against testdata', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium, eips: [2565] })
     const vm = await createVM({ common })
 
-    for (const test of testData) {
+    for (const test of eip2565Data) {
       const testName = test.Name
       const to = new Address(hexToBytes('0x0000000000000000000000000000000000000005'))
       const result = await vm.evm.runCall({

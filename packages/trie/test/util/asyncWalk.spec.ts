@@ -10,18 +10,18 @@ import {
 } from '../../src/index.js'
 import { _walkTrie } from '../../src/util/asyncWalk.js'
 import { bytesToNibbles } from '../../src/util/nibbles.js'
-import trieTests from '../fixtures/trietest.json'
+import { trieTestData } from '../fixtures/trieTest.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('walk the tries from official tests', async () => {
-  const testNames = Object.keys(trieTests.tests) as (keyof typeof trieTests.tests)[]
+  const testNames = Object.keys(trieTestData.tests) as (keyof typeof trieTestData.tests)[]
 
   for await (const testName of testNames) {
     const trie = new Trie()
     describe(testName, async () => {
-      const inputs = trieTests.tests[testName].in
-      const expect = trieTests.tests[testName].root
+      const inputs = trieTestData.tests[testName].in
+      const expect = trieTestData.tests[testName].root
       const testKeys: Map<PrefixedHexString, Uint8Array | null> = new Map()
       const testStrings: Map<string, [string, string | null]> = new Map()
       for await (const [idx, input] of inputs.entries()) {
@@ -65,8 +65,8 @@ describe('walk the tries from official tests', async () => {
 
 describe('walk a sparse trie', async () => {
   const trie = new Trie()
-  const inputs = trieTests.tests.jeff.in
-  const expect = trieTests.tests.jeff.root
+  const inputs = trieTestData.tests.jeff.in
+  const expect = trieTestData.tests.jeff.root
 
   // Build a Trie
   for await (const input of inputs) {

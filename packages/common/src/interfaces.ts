@@ -150,7 +150,6 @@ export interface StateManagerInterface {
    * on usage (check for existence)
    */
   // Client RPC
-  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
   dumpStorage?(address: Address): Promise<StorageDump>
   dumpStorageRange?(address: Address, startKey: bigint, limit: number): Promise<StorageRange>
 
@@ -169,7 +168,6 @@ export interface StateManagerInterface {
     executionWitness?: VerkleExecutionWitness | null,
     accessWitness?: AccessWitnessInterface,
   ): void
-  verifyVerkleProof?(): boolean
   verifyPostState?(): boolean
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages

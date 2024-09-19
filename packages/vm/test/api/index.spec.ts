@@ -5,10 +5,9 @@ import { assert, describe, it } from 'vitest'
 
 import { type VMOpts, createVM, paramsVM } from '../../src/index.js'
 
-import * as testnetMerge from './testdata/testnetMerge.json'
+import { testnetMergeData } from './testdata/testnetMerge.js'
 import { setupVM } from './utils.js'
 
-import type { ChainConfig } from '@ethereumjs/common'
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
 
 /**
@@ -217,7 +216,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
 
 describe('VM -> setHardfork, blockchain', () => {
   it('setHardfork', async () => {
-    const common = createCustomCommon(testnetMerge.default as ChainConfig, Mainnet, {
+    const common = createCustomCommon(testnetMergeData, Mainnet, {
       hardfork: Hardfork.Istanbul,
     })
 

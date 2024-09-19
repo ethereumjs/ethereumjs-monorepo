@@ -37,7 +37,6 @@ import type { Caches } from './cache/caches.js'
 import type { StatefulVerkleStateManagerOpts } from './types.js'
 import type {
   AccountFields,
-  Proof,
   StateManagerInterface,
   StorageDump,
   StorageRange,
@@ -84,7 +83,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._trie =
       opts.trie ??
       new VerkleTree({ verkleCrypto: opts.verkleCrypto, db: new MapDB<Uint8Array, Uint8Array>() })
-    this._debug = debugDefault('statemanager:statefulVerkleStatemanager')
+    this._debug = debugDefault('statemanager:verkle:stateful')
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this._caches = opts.caches
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
@@ -455,16 +454,10 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   hasStateRoot(_root: Uint8Array): Promise<boolean> {
     throw new Error('Method not implemented.')
   }
-  getProof?(_address: Address, _storageSlots: Uint8Array[]): Promise<Proof> {
-    throw new Error('Method not implemented.')
-  }
   dumpStorage?(_address: Address): Promise<StorageDump> {
     throw new Error('Method not implemented.')
   }
   dumpStorageRange?(_address: Address, _startKey: bigint, _limit: number): Promise<StorageRange> {
-    throw new Error('Method not implemented.')
-  }
-  verifyVerkleProof?(): boolean {
     throw new Error('Method not implemented.')
   }
   clearCaches(): void {

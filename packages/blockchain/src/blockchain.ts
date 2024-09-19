@@ -8,11 +8,13 @@ import {
   KECCAK256_RLP,
   Lock,
   MapDB,
+  bigIntToHex,
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
   equalsBytes,
 } from '@ethereumjs/util'
+import debugDefault from 'debug'
 
 import { CasperConsensus } from './consensus/casper.js'
 import {
@@ -36,6 +38,7 @@ import type {
 import type { HeaderData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 
 /**
  * Blockchain implementation to create and maintain a valid canonical chain
@@ -88,6 +91,9 @@ export class Blockchain implements BlockchainInterface {
    */
   private _deletedBlocks: Block[] = []
 
+  private DEBUG: boolean // Guard for debug logs
+  private _debug: Debugger
+
   /**
    * Creates new Blockchain object.
    *
@@ -99,6 +105,10 @@ export class Blockchain implements BlockchainInterface {
    * {@link BlockchainOptions}.
    */
   constructor(opts: BlockchainOptions = {}) {
+    this.DEBUG =
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this._debug = debugDefault('blockchain')
+
     if (opts.common) {
       this.common = opts.common
     } else {
@@ -262,6 +272,8 @@ export class Blockchain implements BlockchainInterface {
     for (let i = 0; i < blocks.length; i++) {
       await this.putBlock(blocks[i])
     }
+
+    this.DEBUG && this._debug(`put ${blocks.length} blocks`)
   }
 
   /**
@@ -289,6 +301,8 @@ export class Blockchain implements BlockchainInterface {
     for (let i = 0; i < headers.length; i++) {
       await this.putHeader(headers[i])
     }
+
+    this.DEBUG && this._debug(`put ${headers.length} headers`)
   }
 
   /**
@@ -312,8 +326,10 @@ export class Blockchain implements BlockchainInterface {
    */
 
   async resetCanonicalHead(canonicalHead: bigint) {
+    let hash: Uint8Array | undefined
+    const canonicalHeadHash = (await this.getCanonicalHeadHeader()).hash()
     await this.runWithLock<void>(async () => {
-      const hash = await this.dbManager.numberToHash(canonicalHead)
+      hash = await this.dbManager.numberToHash(canonicalHead)
       if (hash === undefined) {
         throw new Error(`no block for ${canonicalHead} found in DB`)
       }
@@ -328,6 +344,17 @@ export class Blockchain implements BlockchainInterface {
     })
     if (this._deletedBlocks.length > 0) {
       this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      for (const block of this._deletedBlocks)
+        this.DEBUG &&
+          this._debug(
+            `deleted block along head reset: number ${block.header.number} hash ${bytesToHex(block.hash())}`,
+          )
+
+      this.DEBUG &&
+        this._debug(
+          `Canonical head set from ${bytesToHex(canonicalHeadHash)} to ${bytesToHex(hash!)} (number ${bigIntToHex(canonicalHead)})`,
+        )
+
       this._deletedBlocks = []
     }
   }
@@ -452,6 +479,8 @@ export class Blockchain implements BlockchainInterface {
         await this.dbManager.batch(ops)
 
         await this.consensus?.newBlock(block, commonAncestor, ancestorHeaders)
+        this.DEBUG &&
+          this._debug(`put block number=${block.header.number} hash=${bytesToHex(blockHash)}`)
       } catch (e) {
         // restore head to the previously sane state
         this._heads = oldHeads
@@ -462,6 +491,11 @@ export class Blockchain implements BlockchainInterface {
     })
     if (this._deletedBlocks.length > 0) {
       this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      for (const block of this._deletedBlocks)
+        this.DEBUG &&
+          this._debug(
+            `delete stale canonical block number=${block.header.number} hash=${bytesToHex(block.hash())}`,
+          )
       this._deletedBlocks = []
     }
   }
@@ -829,6 +863,11 @@ export class Blockchain implements BlockchainInterface {
 
     if (this._deletedBlocks.length > 0) {
       this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      for (const block of this._deletedBlocks)
+        this.DEBUG &&
+          this._debug(
+            `delete stale canonical block number=${block.header.number} hash=${blockHash})}`,
+          )
       this._deletedBlocks = []
     }
   }
@@ -1018,6 +1057,9 @@ export class Blockchain implements BlockchainInterface {
     if (!equalsBytes(header.hash(), newHeader.hash())) {
       throw new Error('Failed to find ancient header')
     }
+
+    this.DEBUG && this._debug(`found common ancestor with hash=${bytesToHex(header.hash())}`)
+    this.DEBUG && this._debug(`total ancestor headers num=${ancestorHeaders.size}`)
     return {
       commonAncestor: header,
       ancestorHeaders: Array.from(ancestorHeaders),
@@ -1080,6 +1122,10 @@ export class Blockchain implements BlockchainInterface {
 
         hash = await this.safeNumberToHash(blockNumber)
       }
+
+      this.DEBUG &&
+        this._deletedBlocks.length > 0 &&
+        this._debug(`deleted ${this._deletedBlocks.length} stale canonical blocks in total`)
     } catch (e) {
       // Ensure that if this method throws, `_deletedBlocks` is reset to the empty array
       this._deletedBlocks = []
@@ -1162,6 +1208,8 @@ export class Blockchain implements BlockchainInterface {
     if (staleHeadBlock) {
       this._headBlockHash = currentCanonicalHash
     }
+
+    this.DEBUG && this._debug(`stale heads found num=${staleHeads.length}`)
   }
 
   /* Helper functions */

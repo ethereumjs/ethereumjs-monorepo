@@ -109,7 +109,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.codeDB = this.stateManager['_getCodeDB']()
 
     this.nodeCount = 0
-    this.debug = debug('client:TrieNodeFetcher')
+    this.debug = debug('client:fetcher:trienode')
 
     this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 

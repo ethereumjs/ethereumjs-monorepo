@@ -99,7 +99,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.stateManager = options.stateManager ?? new MerkleStateManager()
     this.accountTrie = this.stateManager['_getAccountTrie']()
 
-    this.debug = debugDefault('client:AccountFetcher')
+    this.debug = debugDefault('client:fetcher:account')
 
     this.storageFetcher = new StorageFetcher({
       config: this.config,
