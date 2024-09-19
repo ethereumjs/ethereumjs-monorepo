@@ -1059,7 +1059,7 @@ export class Blockchain implements BlockchainInterface {
     }
 
     this.DEBUG && this._debug(`found common ancestor with hash=${bytesToHex(header.hash())}`)
-    this.DEBUG && this._debug(`total ancestor headers num=${ancestorHeaders.size}}`)
+    this.DEBUG && this._debug(`total ancestor headers num=${ancestorHeaders.size}`)
     return {
       commonAncestor: header,
       ancestorHeaders: Array.from(ancestorHeaders),
@@ -1125,7 +1125,7 @@ export class Blockchain implements BlockchainInterface {
 
       this.DEBUG &&
         this._deletedBlocks.length > 0 &&
-        this._debug(`deleted ${this._deletedBlocks.length} stale canoncial blocks in total`)
+        this._debug(`deleted ${this._deletedBlocks.length} stale canonical blocks in total`)
     } catch (e) {
       // Ensure that if this method throws, `_deletedBlocks` is reset to the empty array
       this._deletedBlocks = []
