@@ -21,7 +21,7 @@ import { CacheType, Caches, StatelessVerkleStateManager } from '../src/index.js'
 import { testnetVerkleKaustinenData } from './testdata/testnetVerkleKaustinen.js'
 import { verkleKaustinen6Block72Data } from './testdata/verkleKaustinen6Block72.js'
 
-import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+import type { VerkleCrypto } from '@ethereumjs/util'
 
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   let verkleCrypto: VerkleCrypto
@@ -34,7 +34,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   const decodedTxs = verkleKaustinen6Block72Data.transactions?.map((tx) =>
-    createTxFromRLP(hexToBytes(tx as PrefixedHexString), { common }),
+    createTxFromRLP(hexToBytes(tx), { common }),
   )
   const block = createBlock(
     { ...verkleKaustinen6Block72Data, transactions: decodedTxs },
