@@ -3,17 +3,17 @@ import { assert, describe, it } from 'vitest'
 
 import { Trie } from '../src/index.js'
 
-import trieAnyOrderTests from './fixtures/trieanyorder.json' // cspell:disable-line
-import trieTests from './fixtures/trietest.json'
+import { trieAnyOrderData } from './fixtures/trieAnyOrder.js'
+import { trieTestData } from './fixtures/trieTest.js'
 
 describe('official tests', () => {
   it('should work', async () => {
-    const testNames = Object.keys(trieTests.tests) as (keyof typeof trieTests.tests)[]
+    const testNames = Object.keys(trieTestData.tests) as (keyof typeof trieTestData.tests)[]
     let trie = new Trie()
 
     for (const testName of testNames) {
-      const inputs = trieTests.tests[testName].in
-      const expect = trieTests.tests[testName].root
+      const inputs = trieTestData.tests[testName].in
+      const expect = trieTestData.tests[testName].root
       for (const input of inputs) {
         const processedInput = input.map((item) => {
           if (item === null) {
@@ -33,12 +33,10 @@ describe('official tests', () => {
 
 describe('official tests any order', async () => {
   it('should work', async () => {
-    const testNames = Object.keys(
-      trieAnyOrderTests.tests,
-    ) as (keyof typeof trieAnyOrderTests.tests)[]
+    const testNames = Object.keys(trieAnyOrderData.tests) as (keyof typeof trieAnyOrderData.tests)[]
     let trie = new Trie()
     for (const testName of testNames) {
-      const test = trieAnyOrderTests.tests[testName]
+      const test = trieAnyOrderData.tests[testName]
       const keys = Object.keys(test.in)
       for (const stringKey of keys) {
         const stringValue: string = test.in[stringKey as keyof typeof test.in]

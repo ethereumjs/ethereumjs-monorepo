@@ -10,15 +10,13 @@ import { describe, it } from 'vitest'
 import { verkleKaustinen6Block72Data } from '../../../../statemanager/test/testdata/verkleKaustinen6Block72.js'
 import { createVM, runBlock } from '../../../src/index.js'
 
-import type { PrefixedHexString } from '@ethereumjs/util'
-
 const customChainParams = { name: 'custom', chainId: 69420 }
 const common = createCustomCommon(customChainParams, Mainnet, {
   hardfork: Hardfork.Cancun,
   eips: [2935, 4895, 6800],
 })
 const decodedTxs = verkleKaustinen6Block72Data.transactions?.map((tx) =>
-  createTxFromRLP(hexToBytes(tx as PrefixedHexString), { common }),
+  createTxFromRLP(hexToBytes(tx), { common }),
 )
 
 const parentStateRoot = hexToBytes(
