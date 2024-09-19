@@ -1,3 +1,4 @@
+// cspell:disable
 export const rlpTestData = {
   source: 'https://github.com/ethereum/tests/blob/develop/RLPTests/rlptest.json',
   version: 'ethereum/tests v6.0.0-beta.3',
