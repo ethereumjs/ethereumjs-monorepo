@@ -1,8 +1,11 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
+import { bytesToHex } from '@ethereumjs/util'
+import debugDefault from 'debug'
 
 import type { Blockchain } from '../index.js'
 import type { Consensus, ConsensusOptions } from '../types.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Debugger } from 'debug'
 
 type MinimalEthashInterface = {
   cacheDB?: any
@@ -17,7 +20,14 @@ export class EthashConsensus implements Consensus {
   algorithm: ConsensusAlgorithm
   _ethash: MinimalEthashInterface
 
+  private DEBUG: boolean // Guard for debug logs
+  private _debug: Debugger
+
   constructor(ethash: MinimalEthashInterface) {
+    this.DEBUG =
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this._debug = debugDefault('blockchain:ethash')
+
     this.algorithm = ConsensusAlgorithm.Ethash
     this._ethash = ethash
   }
@@ -27,6 +37,10 @@ export class EthashConsensus implements Consensus {
     if (!valid) {
       throw new Error('invalid POW')
     }
+    this.DEBUG &&
+      this._debug(
+        `valid PoW consensus block: number ${block.header.number} hash ${bytesToHex(block.hash())}`,
+      )
   }
 
   /**
@@ -41,6 +55,10 @@ export class EthashConsensus implements Consensus {
     if (header.ethashCanonicalDifficulty(parentHeader) !== header.difficulty) {
       throw new Error(`invalid difficulty ${header.errorStr()}`)
     }
+    this.DEBUG &&
+      this._debug(
+        `valid difficulty header: number ${header.number} difficulty ${header.difficulty} parentHash ${bytesToHex(header.parentHash)}`,
+      )
   }
 
   public async genesisInit(): Promise<void> {}
