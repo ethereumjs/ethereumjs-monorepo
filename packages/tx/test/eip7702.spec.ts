@@ -22,7 +22,7 @@ const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [77
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const addr = createAddressFromPrivateKey(pkey)
 
-const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
+const ones32: PrefixedHexString = `0x${'01'.repeat(32)}`
 
 function getTxData(override: Partial<AuthorizationListItem> = {}): TxData {
   const validAuthorizationList: AuthorizationListItem = {
