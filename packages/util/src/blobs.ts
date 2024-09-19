@@ -60,7 +60,7 @@ export const getBlobs = (input: string) => {
 export const blobsToCommitments = (kzg: KZG, blobs: PrefixedHexString[]) => {
   const commitments: PrefixedHexString[] = []
   for (const blob of blobs) {
-    commitments.push(kzg.blobToKZGCommitment(blob).toLowerCase() as PrefixedHexString)
+    commitments.push(kzg.blobToKzgCommitment(blob).toLowerCase() as PrefixedHexString)
   }
   return commitments
 }
@@ -71,7 +71,7 @@ export const blobsToProofs = (
   commitments: PrefixedHexString[],
 ) => {
   const proofs = blobs.map((blob, ctx) =>
-    kzg.computeBlobKZGProof(blob, commitments[ctx]).toLowerCase(),
+    kzg.computeBlobProof(blob, commitments[ctx]).toLowerCase(),
   ) as PrefixedHexString[]
 
   return proofs

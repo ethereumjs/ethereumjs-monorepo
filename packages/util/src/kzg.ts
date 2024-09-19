@@ -2,10 +2,10 @@
  * Interface for an externally provided kzg library used when creating blob transactions
  */
 export interface KZG {
-  blobToKZGCommitment(blob: string): string
-  computeBlobKZGProof(blob: string, commitment: string): string
-  verifyKZGProof(polynomialKZG: string, z: string, y: string, KZGProof: string): boolean
-  verifyBlobKZGProofBatch(
+  blobToKzgCommitment(blob: string): string
+  computeBlobProof(blob: string, commitment: string): string
+  verifyProof(polynomialKZG: string, z: string, y: string, KZGProof: string): boolean
+  verifyBlobProofBatch(
     blobs: string[],
     expectedKZGCommitments: string[],
     KZGProofs: string[],

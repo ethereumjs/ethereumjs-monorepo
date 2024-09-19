@@ -23,7 +23,6 @@ import { getTestFromSource, getTestsFromArgs } from './testLoader.js'
 
 import type { Common } from '@ethereumjs/common'
 import type { EVMBLSInterface, EVMBN254Interface } from '@ethereumjs/evm'
-import type { KZG } from '@ethereumjs/util'
 
 /**
  * Test runner
@@ -55,27 +54,6 @@ import type { KZG } from '@ethereumjs/util'
  */
 
 const argv = minimist.default(process.argv.slice(2))
-
-export const jsKZGinner = new microEthKZG(trustedSetup.trustedSetup)
-
-export const jsKZG: KZG = {
-  blobToKZGCommitment(blob: string): string {
-    return jsKZGinner.blobToKzgCommitment(blob)
-  },
-  computeBlobKZGProof(blob: string, commitment: string): string {
-    return jsKZGinner.computeBlobProof(blob, commitment)
-  },
-  verifyKZGProof(polynomialKZG: string, z: string, y: string, kzgProof: string): boolean {
-    return jsKZGinner.verifyProof(polynomialKZG, z, y, kzgProof)
-  },
-  verifyBlobKZGProofBatch(
-    blobs: string[],
-    expectedKZGCommitments: string[],
-    kzgProofs: string[],
-  ): boolean {
-    return jsKZGinner.verifyBlobProofBatch(blobs, expectedKZGCommitments, kzgProofs)
-  },
-}
 
 async function runTests() {
   let name: 'GeneralStateTests' | 'BlockchainTests'
@@ -148,7 +126,7 @@ async function runTests() {
   /**
    * Run-time configuration
    */
-  const kzg = jsKZG
+  const kzg = new microEthKZG(trustedSetup.trustedSetup)
   const runnerArgs: {
     forkConfigVM: string
     forkConfigTestSuite: string

@@ -72,7 +72,6 @@
     "@types/node-dir": "^0.0.34",
     "@types/rollup-plugin-visualizer": "^4.2.4",
     "benchmark": "^2.1.4",
-    "kzg-wasm": "^0.5.0",
     "level": "^8.0.0",
     "mcl-wasm": "^1.5.0",
     "memory-level": "^1.0.0",
@@ -81,7 +80,9 @@
     "rollup-plugin-visualizer": "^5.12.0",
     "rustbn-wasm": "^0.4.0",
     "solc": "^0.8.1",
-    "split": "^1.0.1"
+    "split": "^1.0.1",
+    "@paulmillr/trusted-setups": "^0.1.0",
+    "micro-eth-signer": "^0.11.0"
   },
   "engines": {
     "node": ">=18"

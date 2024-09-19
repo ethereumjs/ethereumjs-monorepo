@@ -14,7 +14,7 @@ describe('benchmarks', async () => {
       kzg.blobToKZGCommitment(blob)
     })
     bench('js commits', () => {
-      jsKZG.blobToKZGCommitment(blob)
+      jsKZG.blobToKzgCommitment(blob)
     })
   })
   describe('proofs', async () => {
@@ -22,7 +22,7 @@ describe('benchmarks', async () => {
       kzg.computeBlobKZGProof(blob, commit)
     })
     bench('js proofs', () => {
-      jsKZG.computeBlobKZGProof(blob, commit)
+      jsKZG.computeBlobProof(blob, commit)
     })
   })
   describe('verifying proof', async () => {
@@ -30,7 +30,7 @@ describe('benchmarks', async () => {
       kzg.verifyBlobKZGProofBatch([blob], [commit], [proof])
     })
     bench('js verifyProof', () => {
-      jsKZG.verifyBlobKZGProofBatch([blob], [commit], [proof])
+      jsKZG.verifyBlobProofBatch([blob], [commit], [proof])
     })
   })
 })

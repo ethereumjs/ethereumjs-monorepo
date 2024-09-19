@@ -43,7 +43,7 @@ const validateBlobTransactionNetworkWrapper = (
 
   let isValid
   try {
-    isValid = kzg.verifyBlobKZGProofBatch(blobs, commitments, kzgProofs)
+    isValid = kzg.verifyBlobProofBatch(blobs, commitments, kzgProofs)
   } catch (error) {
     throw new Error(`KZG verification of blobs fail with error=${error}`)
   }
