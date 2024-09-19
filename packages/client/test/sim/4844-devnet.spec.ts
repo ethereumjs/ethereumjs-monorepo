@@ -1,5 +1,5 @@
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { randomBytes } from 'node:crypto'
@@ -187,7 +187,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
       maxPriorityFeePerGas: 0xf,
     }
 
-    const tx = createTxFromTxData({ type: 2, ...txData }, { common }).sign(pkey)
+    const tx = createTx({ type: 2, ...txData }, { common }).sign(pkey)
 
     const txResult = await client.request(
       'eth_sendRawTransaction',

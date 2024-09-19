@@ -239,15 +239,17 @@ The `Blockchain` class has a public property `events` which contains an `EventEm
 | ------------------------ | ------------------------------------------- |
 | `deletedCanonicalBlocks` | Emitted when blocks are reorged and deleted |
 
-## Developer
+## Debugging
 
-For debugging blockchain control flows the [debug](https://github.com/visionmedia/debug) library is used and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js`.
+This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
 
 The following initial logger is currently available:
 
-| Logger              | Description                                                 |
-| ------------------- | ----------------------------------------------------------- |
-| `blockchain:clique` | Clique operations like updating the vote and/or signer list |
+| Logger              | Description                                                              |
+| ------------------- | ------------------------------------------------------------------------ |
+| `blockchain`        | Core blockchain operations like when a block or header is put or deleted |
+| `blockchain:clique` | Clique consensus operations like updating the vote and/or signer list    |
+| `blockchain:ethash` | Ethash consensus operations like PoW block or header validation          |
 
 The following is an example for a logger run:
 
@@ -256,6 +258,11 @@ Run with the clique logger:
 ```shell
 DEBUG=ethjs,blockchain:clique tsx test.ts
 ```
+
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions (currently do not apply for blockchain debugging, example taken from another library).
+
+`DEBUG=ethjs,statemanager:cache:*,trie,statemanager:merkle npx vitest test/statemanager.spec.ts`
 
 ## EthereumJS
 

@@ -117,6 +117,13 @@ export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOAC
     EIP2718.validateYParity(this)
     Legacy.validateHighS(this)
 
+    if (this.to === undefined) {
+      const msg = this._errorMsg(
+        `tx should have a "to" field and cannot be used to create contracts`,
+      )
+      throw new Error(msg)
+    }
+
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)

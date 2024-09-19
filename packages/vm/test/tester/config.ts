@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
-import { type Kzg, intToHex } from '@ethereumjs/util'
+import { type Kzg } from '@ethereumjs/util'
 import * as path from 'path'
 
 import type { HardforkTransitionConfig } from '@ethereumjs/common'
@@ -243,18 +243,13 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
       })
     } else {
       // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
-      if (ttd === undefined && timestamp === undefined) {
-        testHardforks.push({
-          name: hf.name,
-          //forkHash: hf.forkHash,
-          block: null,
-        })
-      } else if (hf.name === 'paris' && ttd !== undefined) {
-        // merge will currently always be after a hardfork, so add it here
+      if (
+        (ttd === undefined && timestamp === undefined) ||
+        (hf.name === 'paris' && ttd !== undefined)
+      ) {
         testHardforks.push({
           name: hf.name,
           block: null,
-          ttd: intToHex(ttd),
         })
       }
       if (timestamp !== undefined && hf.name !== Hardfork.Dao) {

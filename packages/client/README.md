@@ -457,11 +457,27 @@ For more in-depth debugging on networking the underlying [devp2p](../devp2p) lib
 DEBUG=ethjs,*,-babel [CLIENT_START_COMMAND]
 ```
 
-The above command outputs the log messages from all `devp2p` debug loggers available. For a more targeted logging the different loggers can also be activated separately, e.g.:
+The above command outputs the log messages from all `devp2p` debug loggers available. For more targeted logging, the different loggers can also be activated separately, e.g.:
 
 ```shell
 DEBUG=ethjs,devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
+
+The following options are available:
+
+| Logger              | Description                                      |
+| ------------------- | ------------------------------------------------ |
+| `client:fetcher`            | This option enables logging for all fetchers      |
+| `client:fetcher:bytecode`   | This option enables logging for the snap sync bytecode fetcher         |
+| `client:fetcher:storage`    | This option enables logging for the snap sync storage fetcher  |
+| `client:fetcher:trienode`   | This option enables logging for the snap sync trienode fetcher      |
+| `client:fetcher:account`    | This option enables logging for the snap sync account fetcher      |
+
 ```
+
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,client:fetcher:*,devp2p:eth npm run client:start`
 
 #### Hive testing
 

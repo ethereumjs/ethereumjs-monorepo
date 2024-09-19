@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { TransactionType, createTxFromTxData } from '@ethereumjs/tx'
+import { TransactionType, createTx } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
 
@@ -7,7 +7,7 @@ import { Chain } from '../../src/blockchain/index.js'
 import { Config, SyncMode } from '../../src/config.js'
 import { RlpxServer } from '../../src/net/server/index.js'
 import { Event } from '../../src/types.js'
-import genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import { postMergeData } from '../testdata/geth-genesis/post-merge.js'
 
 import type { BeaconSynchronizer } from '../../src/sync/index.js'
 import type { Log } from '@ethereumjs/evm'
@@ -272,14 +272,14 @@ describe('should handle Transactions', async () => {
   const service = new FullEthereumService({ config, chain })
   service.txPool.handleAnnouncedTxs = async (msg, _peer, _pool) => {
     it('should handle transaction message', () => {
-      assert.deepEqual(msg[0], createTxFromTxData({ type: 2 }), 'handled Transactions message')
+      assert.deepEqual(msg[0], createTx({ type: 2 }), 'handled Transactions message')
     })
   }
 
   await service.handle(
     {
       name: 'Transactions',
-      data: [createTxFromTxData({ type: 2 })],
+      data: [createTx({ type: 2 })],
     },
     'eth',
     undefined as any,
@@ -316,7 +316,7 @@ describe('should handle GetPooledTransactions', async () => {
   const service = new FullEthereumService({ config, chain })
   ;(service.txPool as any).validate = () => {}
 
-  const tx = createTxFromTxData({ type: 2 }).sign(randomBytes(32))
+  const tx = createTx({ type: 2 }).sign(randomBytes(32))
   await service.txPool.add(tx)
 
   await service.handle(
@@ -386,7 +386,7 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
 })
 
 describe('should start on beacon sync when past merge', async () => {
-  const common = createCommonFromGethGenesis(genesisJSON, { chain: 'post-merge' })
+  const common = createCommonFromGethGenesis(postMergeData, { chain: 'post-merge' })
   common.setHardforkBy({ blockNumber: BigInt(0) })
   const config = new Config({ accountCache: 10000, storageCache: 1000, common })
   const chain = await Chain.create({ config })

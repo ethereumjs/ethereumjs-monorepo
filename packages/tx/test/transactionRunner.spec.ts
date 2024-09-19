@@ -3,7 +3,7 @@ import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import minimist from 'minimist'
 import { assert, describe, it } from 'vitest'
 
-import { createTxFromSerializedData } from '../src/transactionFactory.js'
+import { createTxFromRLP } from '../src/transactionFactory.js'
 
 import { getTests } from './testLoader.js'
 
@@ -70,7 +70,7 @@ describe('TransactionTests', async () => {
             if (activateEIPs !== undefined) {
               common.setEIPs(activateEIPs)
             }
-            const tx = createTxFromSerializedData(rawTx, { common })
+            const tx = createTxFromRLP(rawTx, { common })
             const sender = tx.getSenderAddress().toString()
             const hash = bytesToHex(tx.hash())
             const txIsValid = tx.isValid()

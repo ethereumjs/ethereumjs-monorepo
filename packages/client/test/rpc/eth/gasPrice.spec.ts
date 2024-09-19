@@ -2,7 +2,7 @@ import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { bigIntToHex, intToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import pow from '../../testdata/geth-genesis/pow.json'
+import { powData } from '../../testdata/geth-genesis/pow.js'
 import {
   dummy,
   getRPCClient,
@@ -17,7 +17,7 @@ const method = 'eth_gasPrice'
 
 describe(method, () => {
   it('call with legacy transaction data', async () => {
-    const { chain, common, execution, server } = await setupChain(pow, 'pow')
+    const { chain, common, execution, server } = await setupChain(powData, 'pow')
     const rpc = getRPCClient(server)
     const GAS_PRICE = 100
     // construct tx
@@ -37,7 +37,7 @@ describe(method, () => {
   })
 
   it('call with multiple legacy transactions', async () => {
-    const { chain, common, execution, server } = await setupChain(pow, 'pow')
+    const { chain, common, execution, server } = await setupChain(powData, 'pow')
     const rpc = getRPCClient(server)
     const iterations = BigInt(20)
     let averageGasPrice = BigInt(0)
@@ -61,7 +61,7 @@ describe(method, () => {
   })
 
   it('call with multiple legacy transactions in a single block', async () => {
-    const { chain, common, execution, server } = await setupChain(pow, 'pow')
+    const { chain, common, execution, server } = await setupChain(powData, 'pow')
     const rpc = getRPCClient(server)
     const G1 = 100
     const G2 = 1231231
@@ -88,7 +88,7 @@ describe(method, () => {
 
   it('call with 1559 transaction data', async () => {
     const { chain, common, execution, server } = await setupChain(
-      gethGenesisStartLondon(pow),
+      gethGenesisStartLondon(powData),
       'powLondon',
     )
     const rpc = getRPCClient(server)
@@ -116,7 +116,7 @@ describe(method, () => {
 
   it('call with multiple 1559 transactions', async () => {
     const { chain, common, execution, server } = await setupChain(
-      gethGenesisStartLondon(pow),
+      gethGenesisStartLondon(powData),
       'powLondon',
     )
     const rpc = getRPCClient(server)
@@ -156,7 +156,7 @@ describe(method, () => {
   })
 
   it('compute average gas price for 21 blocks', async () => {
-    const { chain, common, execution, server } = await setupChain(pow, 'pow')
+    const { chain, common, execution, server } = await setupChain(powData, 'pow')
     const rpc = getRPCClient(server)
     const iterations = BigInt(21)
     const gasPrice = BigInt(20)

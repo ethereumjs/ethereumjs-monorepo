@@ -21,8 +21,8 @@ describe(
   () => {
     it('call with valid arguments', async () => {
       // Use custom genesis so we can test EIP1559 txs more easily
-      const genesisJSON = await import('../../testdata/geth-genesis/rpctestnet.json')
-      const common = createCommonFromGethGenesis(genesisJSON, {
+      const { RPCTestnetData } = await import('../../testdata/geth-genesis/rpctestnet.js')
+      const common = createCommonFromGethGenesis(RPCTestnetData, {
         chain: 'testnet',
         hardfork: 'berlin',
       })

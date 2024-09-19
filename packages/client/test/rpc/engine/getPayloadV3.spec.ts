@@ -1,6 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import {
   Account,
   blobsToCommitments,
@@ -16,7 +16,7 @@ import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
 import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
 
 // Since the genesis is copy of withdrawals with just sharding hardfork also started
@@ -70,7 +70,7 @@ describe(method, () => {
 
     const kzg = await loadKZG()
 
-    const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
+    const { service, server, common } = await setupChain(eip4844Data, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -94,7 +94,7 @@ describe(method, () => {
     const txVersionedHashes = commitmentsToVersionedHashes(txCommitments)
     const txProofs = blobsToProofs(kzg, txBlobs, txCommitments)
 
-    const tx = createTxFromTxData(
+    const tx = createTx(
       {
         type: 0x03,
         blobVersionedHashes: txVersionedHashes,

@@ -19,11 +19,11 @@ const BLS_MODULUS = BigInt(
 
 describe('Precompiles: point evaluation', () => {
   it('should work', async () => {
-    const genesisJSON = await import('../../../client/test/testdata/geth-genesis/eip4844.json')
+    const { eip4844Data } = await import('../../../client/test/testdata/geth-genesis/eip4844.js')
 
     const kzg = await loadKZG()
 
-    const common = createCommonFromGethGenesis(genesisJSON, {
+    const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },

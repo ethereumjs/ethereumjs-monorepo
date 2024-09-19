@@ -110,7 +110,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.codeDB = this.stateManager['_getCodeDB']()
 
     this.nodeCount = 0
-    this.debug = debug('client:TrieNodeFetcher')
+    this.debug = debug('client:fetcher:trienode')
 
     this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
@@ -120,11 +120,12 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       nodeParentHash: '', // root node does not have a parent
     } as NodeRequestData)
 
-    this.debug(
-      `Trie node fetcher instantiated with ${this.pathToNodeRequestData.size()} node requests destroyWhenDone=${
-        this.destroyWhenDone
-      }`,
-    )
+    this.DEBUG &&
+      this.debug(
+        `Trie node fetcher instantiated with ${this.pathToNodeRequestData.size()} node requests destroyWhenDone=${
+          this.destroyWhenDone
+        }`,
+      )
   }
 
   setDestroyWhenDone() {
@@ -161,7 +162,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     // yet synced.
     const requestedNodeCount = pathStrings.length
     if (rangeResult === undefined || requestedNodeCount < rangeResult.nodes.length) {
-      this.debug(`Peer rejected trienode request`)
+      this.DEBUG && this.debug(`Peer rejected trienode request`)
 
       return undefined
     }
@@ -180,7 +181,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       }
       return Object.assign([], [receivedNodes], { completed: true })
     } catch (e) {
-      this.debug(e)
+      this.DEBUG && this.debug(e)
     }
   }
 
@@ -210,7 +211,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    * @param result fetch result
    */
   async store(result: Uint8Array[]): Promise<void> {
-    this.debug('At start of store phase')
+    this.DEBUG && this.debug('At start of store phase')
 
     try {
       // process received node data and request unknown child nodes
@@ -232,7 +233,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               const newStoragePath = nodePath.concat(bytesToHex(Uint8Array.from([i])))
               const syncPath =
                 storagePath === undefined ? newStoragePath : [accountPath, newStoragePath].join('/')
-              this.debug('branch node found')
+              this.DEBUG && this.debug('branch node found')
               childNodes.push({
                 nodeHash: embeddedNode,
                 path: syncPath,
@@ -240,7 +241,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             }
           }
         } else if (node instanceof ExtensionNode) {
-          this.debug('extension node found')
+          this.DEBUG && this.debug('extension node found')
           const stringPath = bytesToHex(pathToHexKey(nodePath, node.key(), 'hex'))
           const syncPath =
             storagePath === undefined ? stringPath : [accountPath, stringPath].join('/')
@@ -250,13 +251,13 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           }
           childNodes.push(val)
         } else {
-          this.debug('leaf node found')
+          this.DEBUG && this.debug('leaf node found')
           if (storagePath === undefined) {
-            this.debug('account leaf node found')
+            this.DEBUG && this.debug('account leaf node found')
             const account = createAccountFromRLP(node.value())
             const storageRoot: Uint8Array = account.storageRoot
             if (equalsBytes(storageRoot, KECCAK256_RLP) === false) {
-              this.debug('storage component found')
+              this.DEBUG && this.debug('storage component found')
               const syncPath = [
                 bytesToHex(pathToHexKey(accountPath, node.key(), 'hex')),
                 storagePath,
@@ -273,7 +274,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               // TODO
             }
           } else {
-            this.debug('Storage leaf node found')
+            this.DEBUG && this.debug('Storage leaf node found')
           }
         }
 
@@ -333,7 +334,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
       // for an initial implementation, just put nodes into trie and see if root matches stateRoot
       if (this.pathToNodeRequestData.length === 0) {
-        this.debug('All requests for current heal phase have been filled')
+        this.DEBUG && this.debug('All requests for current heal phase have been filled')
         const ops: BatchDBOp[] = []
         for (const [_, data] of this.fetchedAccountNodes) {
           const { nodeData, path, pathToStorageNode } = data
@@ -367,24 +368,26 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               await storageTrie.batch(storageTrieOps, true)
               await storageTrie.persistRoot()
               const a = createAccountFromRLP(node.value())
-              this.debug(
-                `Stored storageTrie with root actual=${bytesToHex(
-                  storageTrie.root(),
-                )} expected=${bytesToHex(a.storageRoot)}`,
-              )
+              this.DEBUG &&
+                this.debug(
+                  `Stored storageTrie with root actual=${bytesToHex(
+                    storageTrie.root(),
+                  )} expected=${bytesToHex(a.storageRoot)}`,
+                )
             }
           }
         }
         await this.accountTrie.batch(ops, true)
         await this.accountTrie.persistRoot()
-        this.debug(
-          `Stored accountTrie with root actual=${bytesToHex(
-            this.accountTrie.root(),
-          )} expected=${bytesToHex(this.root)}`,
-        )
+        this.DEBUG &&
+          this.debug(
+            `Stored accountTrie with root actual=${bytesToHex(
+              this.accountTrie.root(),
+            )} expected=${bytesToHex(this.root)}`,
+          )
       }
     } catch (e) {
-      this.debug(e)
+      this.DEBUG && this.debug(e)
     }
   }
 
@@ -417,18 +420,18 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             if (nodeHash === undefined) throw Error('Path should exist')
             this.requestedNodeToPath.set(nodeHash as unknown as string, pathString)
           }
-          this.debug('At start of mergeAndFormatPaths')
+          this.DEBUG && this.debug('At start of mergeAndFormatPaths')
           const paths = mergeAndFormatKeyPaths(requestedPathStrings) as unknown as Uint8Array[][]
           tasks.push({
             pathStrings: requestedPathStrings,
             paths,
           })
-          this.debug(`Created new tasks num=${tasks.length}`)
+          this.DEBUG && this.debug(`Created new tasks num=${tasks.length}`)
         }
       }
-      this.debug(`Created new tasks num=${tasks.length}`)
+      this.DEBUG && this.debug(`Created new tasks num=${tasks.length}`)
     } catch (e) {
-      this.debug(e)
+      this.DEBUG && this.debug(e)
     }
 
     return tasks
@@ -444,11 +447,11 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             count += task.pathStrings.length
             this.enqueueTask(task, true)
           }
-          this.debug(`Fetcher pending with ${count} path requested`)
+          this.DEBUG && this.debug(`Fetcher pending with ${count} path requested`)
         }
       }
     } catch (err) {
-      this.debug(err)
+      this.DEBUG && this.debug(err)
     }
   }
 

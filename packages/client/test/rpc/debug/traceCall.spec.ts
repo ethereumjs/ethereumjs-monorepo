@@ -1,10 +1,10 @@
 import { createBlock } from '@ethereumjs/block'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, expect, expectTypeOf, it } from 'vitest'
 
 import { toRPCTx } from '../../../src/rpc/types.js'
-import genesisJSON from '../../testdata/geth-genesis/debug.json'
+import { debugData } from '../../testdata/geth-genesis/debug.js'
 import {
   createClient,
   createManager,
@@ -46,12 +46,12 @@ describe(method, async () => {
 })
 
 describe('trace a call', async () => {
-  const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+  const { chain, common, execution, server } = await setupChain(debugData, 'post-merge', {
     txLookupLimit: 0,
   })
   const rpc = getRPCClient(server)
   // construct block with tx
-  const tx = createTxFromTxData(
+  const tx = createTx(
     {
       type: 0x2,
       gasLimit: 0xfffff,

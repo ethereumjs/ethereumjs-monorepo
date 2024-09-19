@@ -1,6 +1,7 @@
 import { createBlockFromJSONRPCProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
+import { verifyTrieProof } from '@ethereumjs/trie'
 import { createFeeMarket1559Tx, createTxFromRPC } from '@ethereumjs/tx'
 import {
   Address,
@@ -18,13 +19,14 @@ import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { MerkleStateManager } from '../src/merkleStateManager.js'
+import { getRPCStateProof } from '../src/proofs/index.js'
 import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
 
-import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
+import { block as blockData } from './testdata/providerData/blocks/block0x7a120.js'
 import { getValues } from './testdata/providerData/mockProvider.js'
-import * as txData from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json'
+import { tx as txData } from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.js'
 
-import type { JSONRPCBlock } from '@ethereumjs/block'
+import type { EVMMockBlockchainInterface } from '@ethereumjs/evm'
 
 const provider = process.env.PROVIDER ?? 'http://cheese'
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
@@ -33,7 +35,7 @@ const provider = process.env.PROVIDER ?? 'http://cheese'
 
 describe('RPC State Manager initialization tests', async () => {
   vi.mock('@ethereumjs/util', async () => {
-    const util = (await vi.importActual('@ethereumjs/util')) as any
+    const util = await vi.importActual('@ethereumjs/util')
     return {
       ...util,
       fetchFromProvider: vi.fn().mockImplementation(async (url, { method, params }: any) => {
@@ -83,9 +85,12 @@ describe('RPC State Manager API tests', () => {
     )
 
     assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
-    const doesThisAccountExist = await state.accountExists(
-      createAddressFromString('0xccAfdD642118E5536024675e776d32413728DD07'),
-    )
+    const address = createAddressFromString('0xccAfdD642118E5536024675e776d32413728DD07')
+    const proof = await getRPCStateProof(state, address)
+    const proofBuf = proof.accountProof.map((proofNode) => hexToBytes(proofNode))
+    const doesThisAccountExist = await verifyTrieProof(address.bytes, proofBuf, {
+      useKeyHashing: true,
+    })
     assert.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
 
     assert.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
@@ -290,7 +295,7 @@ describe('runBlock test', () => {
     common.setHardforkBy({ blockNumber: blockTag - 1n })
 
     const vm = await createVM({ common, stateManager: state })
-    const block = createBlockFromRPC(blockData.default as JSONRPCBlock, [], { common })
+    const block = createBlockFromRPC(blockData, [], { common })
     try {
       const res = await runBlock(vm, {
         block,
@@ -310,7 +315,7 @@ describe('runBlock test', () => {
 
 describe('blockchain', () =>
   it('uses blockhash', async () => {
-    const blockchain = new RPCBlockChain(provider)
+    const blockchain = new RPCBlockChain(provider) as unknown as EVMMockBlockchainInterface
     const blockTag = 1n
     const state = new RPCStateManager({ provider, blockTag })
     const evm = await createEVM({ blockchain, stateManager: state })

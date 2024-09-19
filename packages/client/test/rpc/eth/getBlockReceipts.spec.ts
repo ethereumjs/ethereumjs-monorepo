@@ -11,7 +11,7 @@ import {
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
-import pow from '../../testdata/geth-genesis/pow.json'
+import { powData } from '../../testdata/geth-genesis/pow.js'
 import {
   dummy,
   getRPCClient,
@@ -25,7 +25,7 @@ const method2 = 'eth_getBlockReceipts'
 
 describe(method, () => {
   it('call with legacy tx', async () => {
-    const { chain, common, execution, server } = await setupChain(pow, 'pow')
+    const { chain, common, execution, server } = await setupChain(powData, 'pow')
     const rpc = getRPCClient(server)
     // construct tx
     const tx = createLegacyTx(
@@ -54,7 +54,7 @@ describe(method, () => {
 
   it('call with 1559 tx', async () => {
     const { chain, common, execution, server } = await setupChain(
-      gethGenesisStartLondon(pow),
+      gethGenesisStartLondon(powData),
       'powLondon',
     )
     const rpc = getRPCClient(server)
@@ -89,7 +89,7 @@ describe(method, () => {
   })
 
   it('call with unknown block hash', async () => {
-    const { server } = await setupChain(pow, 'pow')
+    const { server } = await setupChain(powData, 'pow')
     const rpc = getRPCClient(server)
     // get a random tx hash
     const res = await rpc.request(method, [

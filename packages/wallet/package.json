@@ -50,7 +50,7 @@
   "dependencies": {
     "@ethereumjs/util": "^9.1.0",
     "@scure/base": "^1.1.7",
-    "ethereum-cryptography": "^2.2.1",
+    "ethereum-cryptography": "^3.0.0",
     "js-md5": "^0.8.3",
     "uuid": "^9.0.1"
   },
