@@ -1,3 +1,4 @@
+//cspell:disable
 export const trieTestNextPrevData = {
   source: 'https://github.com/ethereum/tests/blob/develop/TrieTests/trietestnextprev.json',
   commit: '7d66cbfff1e6561d1046e45df8b7918d186b136f',
