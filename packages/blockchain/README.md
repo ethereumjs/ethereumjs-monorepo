@@ -256,7 +256,7 @@ The following is an example for a logger run:
 Run with the clique logger:
 
 ```shell
-DEBUG=ethjs,blockchain:consensus:clique tsx test.ts
+DEBUG=ethjs,blockchain:clique tsx test.ts
 ```
 
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.

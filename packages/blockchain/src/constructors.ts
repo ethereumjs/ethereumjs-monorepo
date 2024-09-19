@@ -1,5 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { BIGINT_0, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import debugDefault from 'debug'
 
 import {
   Blockchain,
@@ -13,8 +14,6 @@ import {
 import type { BlockchainOptions, DBOp } from './index.js'
 import type { BlockData } from '@ethereumjs/block'
 import type { Chain } from '@ethereumjs/common'
-
-import debugDefault from 'debug'
 
 const DEBUG =
   typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
