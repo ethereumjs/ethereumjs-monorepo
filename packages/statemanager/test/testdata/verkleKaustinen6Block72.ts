@@ -1,6 +1,9 @@
 import type { BlockData } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
-export const verkleKaustinen6Block72Data = {
+export const verkleKaustinen6Block72Data: Omit<BlockData, 'transactions'> & {
+  transactions: PrefixedHexString[]
+} = {
   header: {
     number: '0x48',
     parentHash: '0xf3ecb69d884749d580a08fed05e05ee3967dffc66844715c0d6640c853962d3b',
@@ -198,4 +201,4 @@ export const verkleKaustinen6Block72Data = {
       },
     },
   },
-} as BlockData
+}
