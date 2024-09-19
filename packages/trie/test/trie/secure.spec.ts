@@ -11,7 +11,7 @@ import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 
 import { ROOT_DB_KEY, Trie, createMerkleProof, verifyTrieProof } from '../../src/index.js'
-import secureTrieTests from '../fixtures/trietest_secureTrie.json'
+import { trieTestSecureTrieData } from '../fixtures/trieTestSecureTrie.js'
 
 describe('SecureTrie', () => {
   const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
@@ -78,31 +78,31 @@ describe('secure tests', () => {
   let trie = new Trie({ useKeyHashing: true, db: new MapDB() })
 
   it('empty values', async () => {
-    for (const row of secureTrieTests.tests.emptyValues.in) {
+    for (const row of trieTestSecureTrieData.tests.emptyValues.in) {
       const val = row[1] !== undefined && row[1] !== null ? utf8ToBytes(row[1]) : null
       await trie.put(utf8ToBytes(row[0]!), val)
     }
-    assert.equal(bytesToHex(trie.root()), secureTrieTests.tests.emptyValues.root)
+    assert.equal(bytesToHex(trie.root()), trieTestSecureTrieData.tests.emptyValues.root)
   })
 
   it('branchingTests', async () => {
     trie = new Trie({ useKeyHashing: true, db: new MapDB() })
-    for (const row of secureTrieTests.tests.branchingTests.in) {
+    for (const row of trieTestSecureTrieData.tests.branchingTests.in) {
       const val = row[1] !== undefined && row[1] !== null ? utf8ToBytes(row[1]) : null
       await trie.put(utf8ToBytes(row[0]!), val)
     }
-    assert.equal(bytesToHex(trie.root()), secureTrieTests.tests.branchingTests.root)
+    assert.equal(bytesToHex(trie.root()), trieTestSecureTrieData.tests.branchingTests.root)
   })
 
   it('jeff', async () => {
-    for (const row of secureTrieTests.tests.jeff.in) {
+    for (const row of trieTestSecureTrieData.tests.jeff.in) {
       let val: string | null | Uint8Array = row[1]
       if (val !== undefined && val !== null) {
         val = hexToBytes(`0x${row[1]!.slice(2)}`)
       }
       await trie.put(hexToBytes(`0x${row[0]!.slice(2)}`), val)
     }
-    assert.equal(bytesToHex(trie.root()), secureTrieTests.tests.jeff.root)
+    assert.equal(bytesToHex(trie.root()), trieTestSecureTrieData.tests.jeff.root)
   })
 
   it('put fails if the key is the ROOT_DB_KEY', async () => {
