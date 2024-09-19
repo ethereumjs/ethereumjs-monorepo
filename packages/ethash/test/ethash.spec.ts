@@ -6,16 +6,16 @@ import { assert, describe, it } from 'vitest'
 import { Ethash } from '../src/index.js'
 import { getCacheSize, getEpoc, getFullSize } from '../src/util.js'
 
-import { ethhashTests } from './ethash_tests.js'
+import { ethashTests } from './ethash_tests.js'
 
 const ethash = new Ethash()
-const tests = Object.keys(ethhashTests) as (keyof typeof ethhashTests)[]
+const tests = Object.keys(ethashTests) as (keyof typeof ethashTests)[]
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
 describe('POW tests', () => {
   it('should work', async () => {
     for (const key of tests) {
-      const test = ethhashTests[key]
+      const test = ethashTests[key]
       const header = createBlockHeaderFromRLP(hexToBytes(`0x${test.header}`), { common })
 
       const headerHash = ethash.headerHash(header.raw())

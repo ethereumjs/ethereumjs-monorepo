@@ -1,4 +1,4 @@
-export const ethhashTests = {
+export const ethashTests = {
   first: {
     nonce: '4242424242424242',
     mixHash: '58f759ede17a706c93f13030328bcea40c1d1341fb26f2facd21ceb0dae57017',

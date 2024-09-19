@@ -1,3 +1,4 @@
+// cspell:disable
 export const blockTestsData = {
   _info: {
     comment: '',
