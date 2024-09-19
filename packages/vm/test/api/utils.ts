@@ -104,7 +104,7 @@ export function getTransaction(
     txParams['blobs'] = getBlobs('hello world')
     txParams['kzgCommitments'] = blobsToCommitments(common.customCrypto!.kzg!, txParams['blobs'])
     txParams['kzgProofs'] = txParams['blobs'].map((blob: PrefixedHexString, ctx: number) =>
-      common.customCrypto!.kzg!.computeBlobKZGProof(blob, txParams['kzgCommitments'][ctx]),
+      common.customCrypto!.kzg!.computeBlobProof(blob, txParams['kzgCommitments'][ctx]),
     )
     txParams['blobVersionedHashes'] = txParams['kzgCommitments'].map(
       (commitment: PrefixedHexString) => computeVersionedHash(commitment, 0x1),

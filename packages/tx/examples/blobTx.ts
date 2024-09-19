@@ -1,8 +1,11 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createBlob4844Tx } from '@ethereumjs/tx'
-import { bytesToHex, jsKZG as kzg } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
+import trustedSetup from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
 const main = async () => {
+  const kzg = new microEthKZG(trustedSetup.trustedSetup)
   const common = new Common({
     chain: Mainnet,
     hardfork: Hardfork.Shanghai,
