@@ -16,6 +16,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
 import { MerkleStateManager } from '../src/index.js'
+import { getMerkleStateProof, verifyMerkleStateProof } from '../src/proofs/index.js'
 
 import { ropstenContractWithStorageData } from './testdata/ropsten_contractWithStorage.js'
 import { ropstenNonexistentAccountData } from './testdata/ropsten_nonexistentAccount.js'
@@ -29,7 +30,7 @@ describe('ProofStateManager', () => {
     const key = zeros(32)
     const stateManager = new MerkleStateManager()
 
-    const proof = await stateManager.getProof(address, [key])
+    const proof = await getMerkleStateProof(stateManager, address, [key])
     assert.equal(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
     assert.equal(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
   })
@@ -44,7 +45,7 @@ describe('ProofStateManager', () => {
 
     await stateManager.putStorage(address, key, new Uint8Array([10]))
 
-    const proof = await stateManager.getProof(address, [key])
+    const proof = await getMerkleStateProof(stateManager, address, [key])
     assert.ok(!equalsBytes(hexToBytes(proof.storageHash), storageRoot))
   })
 
@@ -56,14 +57,14 @@ describe('ProofStateManager', () => {
     const account = new Account()
     await stateManager.putAccount(address, account)
 
-    const proof = await stateManager.getProof(address, [key])
+    const proof = await getMerkleStateProof(stateManager, address, [key])
     assert.equal(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
     assert.equal(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
 
     account.balance = BigInt(1)
     await stateManager.putAccount(address, account)
 
-    const proof2 = await stateManager.getProof(address, [key])
+    const proof2 = await getMerkleStateProof(stateManager, address, [key])
     assert.equal(proof2.balance, '0x1', 'Balance correctly encoded')
     assert.equal(proof2.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
 
@@ -71,7 +72,7 @@ describe('ProofStateManager', () => {
     account.nonce = BigInt(1)
     await stateManager.putAccount(address, account)
 
-    const proof3 = await stateManager.getProof(address, [key])
+    const proof3 = await getMerkleStateProof(stateManager, address, [key])
     assert.equal(proof3.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
     assert.equal(proof3.nonce, '0x1', 'Nonce is correctly encoded')
   })
@@ -97,13 +98,14 @@ describe('ProofStateManager', () => {
     await stateManager.commit()
     await stateManager.flush()
 
-    const proof = await stateManager.getProof(address, [key])
-    assert.ok(await stateManager.verifyProof(proof))
-    const nonExistenceProof = await stateManager.getProof(
+    const proof = await getMerkleStateProof(stateManager, address, [key])
+    assert.ok(await verifyMerkleStateProof(stateManager, proof))
+    const nonExistenceProof = await getMerkleStateProof(
+      stateManager,
       createAddressFromPrivateKey(randomBytes(32)),
     )
     assert.equal(
-      await stateManager.verifyProof(nonExistenceProof),
+      await verifyMerkleStateProof(stateManager, nonExistenceProof),
       true,
       'verified proof of non-existence of account',
     )
@@ -128,9 +130,9 @@ describe('ProofStateManager', () => {
       await trie['_db'].put(key, bufferData)
     }
     trie.root(stateRoot!)
-    const proof = await stateManager.getProof(address)
+    const proof = await getMerkleStateProof(stateManager, address)
     assert.deepEqual(ropstenValidAccountData, proof)
-    assert.ok(await stateManager.verifyProof(ropstenValidAccountData))
+    assert.ok(await verifyMerkleStateProof(stateManager, ropstenValidAccountData))
   })
 
   it('should report data equal to geth output for EIP 1178 proofs - nonexistent account', async () => {
@@ -152,9 +154,9 @@ describe('ProofStateManager', () => {
       await trie['_db'].put(key, bufferData)
     }
     trie.root(stateRoot!)
-    const proof = await stateManager.getProof(address)
+    const proof = await getMerkleStateProof(stateManager, address)
     assert.deepEqual(ropstenNonexistentAccountData, proof)
-    assert.ok(await stateManager.verifyProof(ropstenNonexistentAccountData))
+    assert.ok(await verifyMerkleStateProof(stateManager, ropstenNonexistentAccountData))
   })
 
   it('should report data equal to geth output for EIP 1178 proofs - account with storage', async () => {
@@ -190,9 +192,9 @@ describe('ProofStateManager', () => {
     stateManager['_storageTries'][addressHex] = storageTrie
     trie.root(stateRoot!)
 
-    const proof = await stateManager.getProof(address, storageKeys)
+    const proof = await getMerkleStateProof(stateManager, address, storageKeys)
     assert.deepEqual(ropstenContractWithStorageData, proof)
-    await stateManager.verifyProof(ropstenContractWithStorageData)
+    await verifyMerkleStateProof(stateManager, ropstenContractWithStorageData)
   })
 
   it(`should throw on invalid proofs - existing accounts/slots`, async () => {
@@ -235,7 +237,7 @@ describe('ProofStateManager', () => {
       try {
         ;(testData[tamper as keyof typeof testData] as PrefixedHexString) =
           `0x9${original.slice(3)}`
-        await stateManager.verifyProof(testData)
+        await verifyMerkleStateProof(stateManager, testData)
         // note: this implicitly means that newField !== original,
         // if newField === original then the proof would be valid and test would fail
         assert.fail('should throw')
@@ -251,7 +253,7 @@ describe('ProofStateManager', () => {
       const original = slot.value
       slot.value = `0x9${original.slice(3)}`
       try {
-        await stateManager.verifyProof(testData)
+        await verifyMerkleStateProof(stateManager, testData)
         assert.fail('should throw')
       } catch {
         assert.ok(true, 'threw on invalid proof')
@@ -293,7 +295,7 @@ describe('ProofStateManager', () => {
       try {
         const newField = `0x9${original.slice(3)}`
         testdata[tamper] = newField
-        await stateManager.verifyProof(testdata)
+        await verifyMerkleStateProof(stateManager, testdata)
         // note: this implicitly means that newField !== original,
         // if newField === original then the proof would be valid and test would fail
         assert.fail('should throw')

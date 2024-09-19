@@ -1,6 +1,7 @@
 import { createBlockFromJSONRPCProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
+import { verifyTrieProof } from '@ethereumjs/trie'
 import { createFeeMarket1559Tx, createTxFromRPC } from '@ethereumjs/tx'
 import {
   Address,
@@ -18,6 +19,7 @@ import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { MerkleStateManager } from '../src/merkleStateManager.js'
+import { getRPCStateProof } from '../src/proofs/index.js'
 import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
 
 import { block as blockData } from './testdata/providerData/blocks/block0x7a120.js'
@@ -83,9 +85,12 @@ describe('RPC State Manager API tests', () => {
     )
 
     assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
-    const doesThisAccountExist = await state.accountExists(
-      createAddressFromString('0xccAfdD642118E5536024675e776d32413728DD07'),
-    )
+    const address = createAddressFromString('0xccAfdD642118E5536024675e776d32413728DD07')
+    const proof = await getRPCStateProof(state, address)
+    const proofBuf = proof.accountProof.map((proofNode) => hexToBytes(proofNode))
+    const doesThisAccountExist = await verifyTrieProof(address.bytes, proofBuf, {
+      useKeyHashing: true,
+    })
     assert.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
 
     assert.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')

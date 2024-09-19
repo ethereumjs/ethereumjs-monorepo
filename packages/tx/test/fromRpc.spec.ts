@@ -4,9 +4,9 @@ import { assert, describe, it } from 'vitest'
 
 import {
   TransactionType,
+  createTx,
   createTxFromJSONRPCProvider,
   createTxFromRPC,
-  createTxFromTxData,
 } from '../src/index.js'
 import { normalizeTxParams } from '../src/util.js'
 
@@ -74,7 +74,7 @@ describe('[fromJSONRPCProvider]', () => {
 describe('[normalizeTxParams]', () => {
   it('should work', () => {
     const normedTx = normalizeTxParams(rpcTx)
-    const tx = createTxFromTxData(normedTx)
+    const tx = createTx(normedTx)
     assert.equal(normedTx.gasLimit, 21000n, 'correctly converted "gas" to "gasLimit"')
     assert.equal(
       bytesToHex(tx.hash()),

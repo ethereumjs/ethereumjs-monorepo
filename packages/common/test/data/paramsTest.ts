@@ -13,7 +13,7 @@ export const paramsTest: ParamsDict = {
    */
   609: {
     // gasPrices
-    ecAddGas: 500, // Gas costs for curve addition precompile
+    bn254AddGas: 500, // Gas costs for curve addition precompile
     // pow
     minerReward: '3000000000000000000', // the amount a miner get rewarded for mining a block
   },
@@ -38,13 +38,13 @@ export const paramsTest: ParamsDict = {
    */
   1679: {
     // gasPrices
-    ecAddGas: 150, // Gas costs for curve addition precompile
+    bn254AddGas: 150, // Gas costs for curve addition precompile
   },
   /**
    * BLS12-381 precompiles
    */
   2537: {
     // gasPrices
-    Bls12381G1AddGas: 500, // Gas cost of a single BLS12-381 G1 addition precompile-call
+    bls12381G1AddGas: 500, // Gas cost of a single BLS12-381 G1 addition precompile-call
   },
 }

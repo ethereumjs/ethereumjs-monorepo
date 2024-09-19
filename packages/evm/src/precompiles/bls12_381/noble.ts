@@ -6,7 +6,7 @@ import {
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { bls12_381 } from '@noble/curves/bls12-381'
+import { bls12_381 } from 'ethereum-cryptography/bls.js'
 
 import { ERROR, EvmError } from '../../exceptions.js'
 
@@ -21,13 +21,17 @@ import {
 } from './constants.js'
 
 import type { EVMBLSInterface } from '../../types.js'
-import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
 
 // Copied from @noble/curves/bls12-381 (only local declaration)
 type Fp2 = {
   c0: bigint
   c1: bigint
 }
+// Copied from @noble/curves/abstract/curve.ts (not exported in ethereum-cryptography)
+type AffinePoint<T> = {
+  x: T
+  y: T
+} & { z?: never; t?: never }
 
 const G1_ZERO = bls12_381.G1.ProjectivePoint.ZERO
 const G2_ZERO = bls12_381.G2.ProjectivePoint.ZERO
@@ -76,8 +80,7 @@ function BLS12_381_FromG1Point(input: AffinePoint<bigint>): Uint8Array {
  * @param input Input Uint8Array. Should be 256 bytes
  * @returns Noble G2 point
  */
-function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true): any {
-  // TODO: remove any type, temporary fix due to conflicting @noble/curves versions
+function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true) {
   if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES)) {
     return G2_ZERO
   }
@@ -156,8 +159,7 @@ function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array) {
   return FP
 }
 
-function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array): any {
-  // TODO: remove any type, temporary fix due to conflicting @noble/curves versions
+function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
   // check if the coordinates are in the field
   if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
     throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
@@ -173,8 +175,8 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
 }
 
 /**
- * Implementation of the `EVMBLSInterface` using the `@noble/curves` JS library,
- * see https://github.com/paulmillr/noble-curves.
+ * Implementation of the `EVMBLSInterface` using the `ethereum-cryptography (`@noble/curves`)
+ * JS library, see https://github.com/ethereum/js-ethereum-cryptography.
  *
  * This is the EVM default implementation.
  */

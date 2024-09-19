@@ -50,7 +50,7 @@
     "@ethereumjs/rlp": "^5.0.2",
     "@ethereumjs/util": "^9.1.0",
     "bigint-crypto-utils": "^3.2.2",
-    "ethereum-cryptography": "^2.2.1"
+    "ethereum-cryptography": "^3.0.0"
   },
   "devDependencies": {
     "@ethereumjs/common": "^4.4.0"

@@ -57,7 +57,7 @@
     "@ethereumjs/verkle": "^0.1.0",
     "@js-sdsl/ordered-map": "^4.4.2",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^2.2.1",
+    "ethereum-cryptography": "^3.0.0",
     "lru-cache": "10.1.0"
   },
   "devDependencies": {

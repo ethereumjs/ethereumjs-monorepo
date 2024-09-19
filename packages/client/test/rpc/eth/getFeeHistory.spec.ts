@@ -1,6 +1,6 @@
 import { paramsBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import {
   BIGINT_0,
   BIGINT_256,
@@ -92,7 +92,7 @@ const produceBlockWithTx = async (
     const maxPriorityFeePerGas = maxPriorityFeesPerGas[i]
     const gasLimit = gasLimits[i]
     await blockBuilder.addTransaction(
-      createTxFromTxData(
+      createTx(
         {
           type: 2,
           gasLimit,
@@ -158,7 +158,7 @@ const produceBlockWith4844Tx = async (
       }
     }
     await blockBuilder.addTransaction(
-      createTxFromTxData(
+      createTx(
         {
           type: 3,
           gasLimit: 21000,

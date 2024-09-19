@@ -61,7 +61,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
-    this.debug = debug('client:ByteCodeFetcher')
+    this.debug = debug('client:fetcher:bytecode')
     if (this.hashes.length > 0) {
       const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Uint8Array[], Uint8Array>
       this.DEBUG &&

@@ -27,7 +27,7 @@ import type { EthersProvider } from '@ethereumjs/util'
  * @param txData - The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction)
  * @param txOptions - Options to pass on to the constructor of the transaction
  */
-export function createTxFromTxData<T extends TransactionType>(
+export function createTx<T extends TransactionType>(
   txData: TypedTxData,
   txOptions: TxOptions = {},
 ): Transaction[T] {
@@ -57,7 +57,7 @@ export function createTxFromTxData<T extends TransactionType>(
  * @param data - The data Uint8Array
  * @param txOptions - The transaction options
  */
-export function createTxFromSerializedData<T extends TransactionType>(
+export function createTxFromRLP<T extends TransactionType>(
   data: Uint8Array,
   txOptions: TxOptions = {},
 ): Transaction[T] {
@@ -94,7 +94,7 @@ export function createTxFromBlockBodyData(
   txOptions: TxOptions = {},
 ) {
   if (data instanceof Uint8Array) {
-    return createTxFromSerializedData(data, txOptions)
+    return createTxFromRLP(data, txOptions)
   } else if (Array.isArray(data)) {
     // It is a legacy transaction
     return createLegacyTxFromBytesArray(data, txOptions)
@@ -114,7 +114,7 @@ export async function createTxFromRPC<T extends TransactionType>(
   txData: TxData[T],
   txOptions: TxOptions = {},
 ): Promise<Transaction[T]> {
-  return createTxFromTxData(normalizeTxParams(txData), txOptions)
+  return createTx(normalizeTxParams(txData), txOptions)
 }
 
 /**
