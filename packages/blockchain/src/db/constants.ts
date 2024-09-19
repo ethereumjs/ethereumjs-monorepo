@@ -28,7 +28,6 @@ const TD_SUFFIX = utf8ToBytes('t')
  * headerPrefix + number + numSuffix -> hash
  */
 const NUM_SUFFIX = utf8ToBytes('n')
-
 /**
  * blockHashPrefix + hash -> number
  */

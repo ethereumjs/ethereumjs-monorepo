@@ -1,3 +1,4 @@
+import type { PutOpts } from './db/operation.js'
 import type { Blockchain } from './index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Common, ConsensusAlgorithm } from '@ethereumjs/common'
@@ -16,7 +17,7 @@ export interface BlockchainInterface {
    *
    * @param block - The block to be added to the blockchain.
    */
-  putBlock(block: Block): Promise<void>
+  putBlock(block: Block, opts?: PutOpts): Promise<void>
 
   /**
    * Deletes a block from the blockchain. All child blocks in the chain are

@@ -95,6 +95,9 @@ export class DBManager {
     if (blockId instanceof Uint8Array) {
       hash = blockId
       number = await this.hashToNumber(blockId)
+      if (number === undefined) {
+        return undefined
+      }
     } else if (typeof blockId === 'bigint') {
       number = blockId
       hash = await this.numberToHash(blockId)
@@ -163,12 +166,32 @@ export class DBManager {
     return createBlockHeaderFromBytesArray(headerValues as Uint8Array[], opts)
   }
 
+  async getHeaderSafe(blockHash: Uint8Array, blockNumber: bigint) {
+    const encodedHeader = await this.get(DBTarget.Header, { blockHash, blockNumber })
+
+    const opts: BlockOptions = { common: this.common, setHardfork: true }
+    return encodedHeader !== undefined
+      ? createBlockHeaderFromBytesArray(RLP.decode(encodedHeader) as Uint8Array[], opts)
+      : undefined
+  }
+
   /**
    * Fetches total difficulty for a block given its hash and number.
    */
   async getTotalDifficulty(blockHash: Uint8Array, blockNumber: bigint): Promise<bigint> {
     const td = await this.get(DBTarget.TotalDifficulty, { blockHash, blockNumber })
+    if (td === undefined) {
+      throw Error(`totalDifficulty not found`)
+    }
     return bytesToBigInt(RLP.decode(td) as Uint8Array)
+  }
+
+  async getTotalDifficultySafe(
+    blockHash: Uint8Array,
+    blockNumber: bigint,
+  ): Promise<bigint | undefined> {
+    const td = await this.get(DBTarget.TotalDifficulty, { blockHash, blockNumber })
+    return td !== undefined ? bytesToBigInt(RLP.decode(td) as Uint8Array) : undefined
   }
 
   /**
