@@ -2,13 +2,13 @@ import { assert, describe, it } from 'vitest'
 
 import { RLP, utils } from '../src/index.js'
 
-import * as official from './fixture/rlptest.json'
+import { rlpTestData } from './fixture/rlptest.js'
 import { numberToBytes } from './utils.js'
 
 const { bytesToHex, hexToBytes } = utils
 
 describe('official tests', () => {
-  for (const [testName, test] of Object.entries(official.default.tests)) {
+  for (const [testName, test] of Object.entries(rlpTestData.tests)) {
     it(`should pass ${testName}`, () => {
       let incoming: any = test.in
       // if we are testing a big number

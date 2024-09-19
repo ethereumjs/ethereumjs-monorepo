@@ -2,12 +2,12 @@ import { assert, describe, it } from 'vitest'
 
 import { RLP, utils } from '../src/index.js'
 
-import * as invalid from './fixture/invalid.json'
+import { invalidData } from './fixture/invalid.js'
 
 const { hexToBytes } = utils
 
 describe('invalid tests', () => {
-  for (const [testName, test] of Object.entries(invalid.default.tests)) {
+  for (const [testName, test] of Object.entries(invalidData.tests)) {
     it(`should pass ${testName}`, () => {
       let { out } = test
       if (out[0] === '0' && out[1] === 'x') {
