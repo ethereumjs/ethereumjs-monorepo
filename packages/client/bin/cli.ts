@@ -28,7 +28,7 @@ import {
   setLengthLeft,
   short,
 } from '@ethereumjs/util'
-import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import trustedSetup from '@paulmillr/trusted-setups/fast.js'
 import {
   keccak256 as keccak256WASM,
   secp256k1Expand,
@@ -934,7 +934,7 @@ async function run() {
   const chain = getPresetChainConfig(chainName)
   const cryptoFunctions: CustomCrypto = {}
 
-  const kzg = new microEthKZG(fast)
+  const kzg = new microEthKZG(trustedSetup.trustedSetup)
   // Initialize WASM crypto if JS crypto is not specified
   if (args.useJsCrypto === false) {
     await waitReadyPolkadotSha256()
