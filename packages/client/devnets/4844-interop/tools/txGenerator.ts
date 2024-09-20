@@ -12,9 +12,9 @@ import {
 
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
-import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
-const kzg = new microEthKZG(fast)
+const kzg = new microEthKZG(trustedSetup)
 
 // CLI Args
 const clientPort = parseInt(process.argv[2]) // EL client port number

@@ -10,7 +10,7 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm'
-import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
@@ -25,7 +25,7 @@ import {
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { TxReceipt } from '@ethereumjs/vm'
-const kzg = new microEthKZG(fast)
+const kzg = new microEthKZG(trustedSetup)
 
 const method = 'eth_getTransactionReceipt'
 const method2 = 'debug_getRawReceipts'

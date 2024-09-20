@@ -1,4 +1,4 @@
-import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
@@ -6,7 +6,7 @@ import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { beaconData } from '../../testdata/blocks/beacon.js'
 import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
 import { getRPCClient, setupChain } from '../helpers.js'
-const kzg = new microEthKZG(fast)
+const kzg = new microEthKZG(trustedSetup)
 
 const method = 'engine_newPayloadV3'
 

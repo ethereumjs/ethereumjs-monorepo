@@ -11,7 +11,7 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
-import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
@@ -23,7 +23,7 @@ import type { VMExecution } from '../../../src/execution/vmexecution.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_blobBaseFee'
-const kzg = new microEthKZG(fast)
+const kzg = new microEthKZG(trustedSetup)
 const privateKey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
 const accountAddress = createAddressFromPrivateKey(privateKey)
 const produceBlockWith4844Tx = async (

@@ -6,7 +6,7 @@ import {
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
-import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
@@ -19,7 +19,7 @@ import { hardfork4844Data } from './testdata/4844-hardfork.js'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 describe('EIP4844 header tests', () => {
-  const kzg = new microEthKZG(fast)
+  const kzg = new microEthKZG(trustedSetup)
 
   const common = createCommonFromGethGenesis(hardfork4844Data, {
     chain: 'customChain',
@@ -94,7 +94,7 @@ describe('EIP4844 header tests', () => {
 })
 
 describe('blob gas tests', () => {
-  const kzg = new microEthKZG(fast)
+  const kzg = new microEthKZG(trustedSetup)
 
   const common = createCommonFromGethGenesis(hardfork4844Data, {
     chain: 'customChain',
@@ -152,7 +152,7 @@ describe('blob gas tests', () => {
 })
 
 describe('transaction validation tests', () => {
-  const kzg = new microEthKZG(fast)
+  const kzg = new microEthKZG(trustedSetup)
 
   const common = createCommonFromGethGenesis(hardfork4844Data, {
     chain: 'customChain',

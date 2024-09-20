@@ -15,7 +15,7 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
-import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it, vi } from 'vitest'
 
@@ -29,7 +29,7 @@ import { mockBlockchain } from '../rpc/mockBlockchain.js'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
-const kzg = new microEthKZG(fast)
+const kzg = new microEthKZG(trustedSetup)
 
 const A = {
   address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),

@@ -10,7 +10,7 @@ import {
   toBytes,
   zeros,
 } from '@ethereumjs/util'
-import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
@@ -37,7 +37,7 @@ import type {
   PrefixedHexString,
   WithdrawalRequestV1,
 } from '@ethereumjs/util'
-const kzg = new microEthKZG(fast)
+const kzg = new microEthKZG(trustedSetup)
 
 /**
  * This is the TransitionTool class to run transitions. The entire class is marked `private` since

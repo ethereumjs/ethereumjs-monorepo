@@ -11,7 +11,7 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
@@ -23,7 +23,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_sendRawTransaction'
 
-const kzg = new microEthKZG(fast)
+const kzg = new microEthKZG(trustedSetup)
 describe(method, () => {
   it('call with valid arguments', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available

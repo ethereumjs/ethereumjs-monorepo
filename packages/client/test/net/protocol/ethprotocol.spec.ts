@@ -8,14 +8,14 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/chain.js'
 import { Config } from '../../../src/config.js'
 import { EthProtocol } from '../../../src/net/protocol/index.js'
-const kzg = new microEthKZG(fast)
+const kzg = new microEthKZG(trustedSetup)
 
 describe('[EthProtocol]', () => {
   it('should get properties', async () => {

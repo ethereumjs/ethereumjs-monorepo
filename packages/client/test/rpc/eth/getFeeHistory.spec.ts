@@ -13,7 +13,7 @@ import {
   getBlobs,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
-import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
@@ -35,7 +35,7 @@ const privateKey4844 = hexToBytes(
   '0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8',
 )
 const p4844Address = createAddressFromPrivateKey(privateKey4844)
-const kzg = new microEthKZG(fast)
+const kzg = new microEthKZG(trustedSetup)
 
 const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gasUsed: bigint) => {
   const { vm } = execution

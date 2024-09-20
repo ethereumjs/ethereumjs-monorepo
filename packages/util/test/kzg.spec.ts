@@ -1,5 +1,5 @@
 import { trustedSetup as slow } from '@paulmillr/trusted-setups'
-import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { loadKZG } from 'kzg-wasm'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, beforeAll, describe, it } from 'vitest'
@@ -8,7 +8,7 @@ import { getBlobs } from '../src/blobs.js'
 
 import type { KZG } from '../src/kzg.js'
 
-export const jsKZG = new microEthKZG(fast)
+export const jsKZG = new microEthKZG(trustedSetup)
 
 describe('KZG API tests', () => {
   let wasm: Awaited<ReturnType<typeof loadKZG>>
