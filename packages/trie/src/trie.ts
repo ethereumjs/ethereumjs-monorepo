@@ -392,7 +392,8 @@ export class Trie {
           )
         const _progress = progress
         for (const k of node.key()) {
-          this.DEBUG && this.debug(`NextNode: ${node.value()}`, ['find_path', 'extension_node'])
+          this.DEBUG &&
+            this.debug(`NextNode: ${bytesToHex(node.value())}`, ['find_path', 'extension_node'])
           if (k !== targetKey[progress]) {
             result = { node: null, remaining: targetKey.slice(_progress), stack }
             return
