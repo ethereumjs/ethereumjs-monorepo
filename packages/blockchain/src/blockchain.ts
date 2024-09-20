@@ -355,7 +355,7 @@ export class Blockchain implements BlockchainInterface {
 
       this.DEBUG &&
         this._debug(
-          `Canonical head set from ${canonicalHeadHash ? bytesToHex(canonicalHeadHash) : 'unkown'} to ${bytesToHex(hash!)} (number ${bigIntToHex(canonicalHead)})`,
+          `Canonical head set from ${canonicalHeadHash ? bytesToHex(canonicalHeadHash) : 'unknown'} to ${bytesToHex(hash!)} (number ${bigIntToHex(canonicalHead)})`,
         )
 
       this._deletedBlocks = []
