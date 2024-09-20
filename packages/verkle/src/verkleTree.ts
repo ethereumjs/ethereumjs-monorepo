@@ -55,7 +55,7 @@ export class VerkleTree {
 
   /** Debug logging */
   protected DEBUG: boolean
-  protected _debug: Debugger = debug('verkle')
+  protected _debug: Debugger = debug('verkle:#')
   protected debug: (...args: any) => void
   /**
    * Creates a new verkle tree.
