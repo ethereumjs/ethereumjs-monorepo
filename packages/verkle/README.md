@@ -88,12 +88,13 @@ The `Verkle` class features optional debug logging. Individual debug selections 
 
 The following options are available:
 
-| Logger              | Description                                      |
-| ------------------- | ------------------------------------------------ |
-| `verkle`            | minimal info logging for all verkle methods      |
-| `verkle:<METHOD>`   | debug logging for specific verkle method         |
-| `verkle:<METHOD>:*` | verbose debug logging for specific verkle method |
-| `verkle:*`          | verbose debug logging for all verkle methods     |
+| Logger              | Description                          |
+| ------------------- | ------------------------------------ |
+| `verkle:put`        | a verkle put operation has occured   |
+| `verkle:get`        | a verkle get operation has occured   |
+| `verkle:del`        | a verkle del operation has occured   |
+| `verkle:find_path`  | a node is being searched for         |
+| `verkle:initialize` | a verkle object has been initialized |
 
 To observe the logging in action at different levels:
 
