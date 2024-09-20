@@ -343,13 +343,13 @@ The following options are available:
 
 | Logger                          | Description                                           |
 | ------------------------------- | ----------------------------------------------------- |
-| `trie`                          | minimal info logging for all trie methods             |
+| `trie:#`                        | minimal info logging for all trie methods             |
 | `trie:put`                      | a trie put operation has occured                      |
 | `trie:get`                      | a trie get operation has occured                      |
 | `trie:del`                      | a trie del operation has occured                      |
 | `trie:find_path`                | a node is being searched for                          |
 | `trie:find_path:branch_node`    | a branch node has been found during a node search     |
-| `trie:find_path"extension_node` | an extension node has been found during a node search |
+| `trie:find_path:extension_node` | an extension node has been found during a node search |
 | `trie:lookup_node`              | node lookup operations                                |
 | `trie:lookup_node:raw_node`     | node lookup operations that have hit a raw node       |
 | `trie:lookup_node:by_hash`      | node lookup operations that have hit a node hash      |
