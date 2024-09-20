@@ -1,5 +1,5 @@
 import { MCLBLS, NobleBLS, NobleBN254, RustBN254 } from '@ethereumjs/evm'
-import trustedSetup from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as mcl from 'mcl-wasm'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import * as minimist from 'minimist'
@@ -126,7 +126,7 @@ async function runTests() {
   /**
    * Run-time configuration
    */
-  const kzg = new microEthKZG(trustedSetup.trustedSetup)
+  const kzg = new microEthKZG(trustedSetup)
   const runnerArgs: {
     forkConfigVM: string
     forkConfigTestSuite: string

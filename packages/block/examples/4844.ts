@@ -2,12 +2,12 @@ import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import { createAddressFromPrivateKey } from '@ethereumjs/util'
-import trustedSetup from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { randomBytes } from 'crypto'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
 const main = async () => {
-  const kzg = new microEthKZG(trustedSetup.trustedSetup)
+  const kzg = new microEthKZG(trustedSetup)
 
   const common = new Common({
     chain: Mainnet,
