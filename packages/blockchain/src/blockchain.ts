@@ -327,7 +327,10 @@ export class Blockchain implements BlockchainInterface {
 
   async resetCanonicalHead(canonicalHead: bigint) {
     let hash: Uint8Array | undefined
-    const canonicalHeadHash = (await this.getCanonicalHeadHeader()).hash()
+    let canonicalHeadHash: Uint8Array | undefined
+    if (this.DEBUG) {
+      canonicalHeadHash = (await this.getCanonicalHeadHeader()).hash()
+    }
     await this.runWithLock<void>(async () => {
       hash = await this.dbManager.numberToHash(canonicalHead)
       if (hash === undefined) {
@@ -352,7 +355,7 @@ export class Blockchain implements BlockchainInterface {
 
       this.DEBUG &&
         this._debug(
-          `Canonical head set from ${bytesToHex(canonicalHeadHash)} to ${bytesToHex(hash!)} (number ${bigIntToHex(canonicalHead)})`,
+          `Canonical head set from ${canonicalHeadHash ? bytesToHex(canonicalHeadHash) : 'unkown'} to ${bytesToHex(hash!)} (number ${bigIntToHex(canonicalHead)})`,
         )
 
       this._deletedBlocks = []
