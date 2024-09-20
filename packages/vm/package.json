@@ -79,7 +79,7 @@
     "@ethereumjs/blockchain": "^7.3.0",
     "@ethereumjs/ethash": "^3.0.3",
     "@ethersproject/abi": "^5.0.12",
-    "@paulmillr/trusted-setups": "^0.1.0",
+    "@paulmillr/trusted-setups": "^0.1.1",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
     "@types/minimist": "^1.2.2",

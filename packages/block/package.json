@@ -55,7 +55,7 @@
     "ethereum-cryptography": "^3.0.0"
   },
   "devDependencies": {
-    "@paulmillr/trusted-setups": "^0.1.0",
+    "@paulmillr/trusted-setups": "^0.1.1",
     "micro-eth-signer": "^0.11.0"
   },
   "engines": {
