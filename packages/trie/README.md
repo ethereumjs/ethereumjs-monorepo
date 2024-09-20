@@ -344,9 +344,9 @@ The following options are available:
 | Logger                          | Description                                           |
 | ------------------------------- | ----------------------------------------------------- |
 | `trie:#`                        | minimal info logging for all trie methods             |
-| `trie:put`                      | a trie put operation has occured                      |
-| `trie:get`                      | a trie get operation has occured                      |
-| `trie:del`                      | a trie del operation has occured                      |
+| `trie:put`                      | a trie put operation has occurred                     |
+| `trie:get`                      | a trie get operation has occurred                     |
+| `trie:del`                      | a trie del operation has occurred                     |
 | `trie:find_path`                | a node is being searched for                          |
 | `trie:find_path:branch_node`    | a branch node has been found during a node search     |
 | `trie:find_path:extension_node` | an extension node has been found during a node search |
@@ -355,10 +355,10 @@ The following options are available:
 | `trie:lookup_node:by_hash`      | node lookup operations that have hit a node hash      |
 | `trie:persist_root`             | operations writing the state root to the disk         |
 | `trie:checkpoint`               | checkpoint operations                                 |
-| `trie:commit`                   | operations commiting checkpoints to the disk          |
-| `trie:revert:before`            | the stateRoot before reverting commited checkpoints   |
-| `trie:revert:after`             | the stateRoot after reverting commited checkpoints    |
-| `trie:flush_checkpoints`        | checkoints are being flushed                          |
+| `trie:commit`                   | operations committing checkpoints to the disk         |
+| `trie:revert:before`            | the stateRoot before reverting committed checkpoints  |
+| `trie:revert:after`             | the stateRoot after reverting committed checkpoints   |
+| `trie:flush_checkpoints`        | checkpoints are being flushed                         |
 
 To observe the logging in action at different levels:
 

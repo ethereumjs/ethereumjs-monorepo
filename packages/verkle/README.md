@@ -90,9 +90,9 @@ The following options are available:
 
 | Logger              | Description                          |
 | ------------------- | ------------------------------------ |
-| `verkle:put`        | a verkle put operation has occured   |
-| `verkle:get`        | a verkle get operation has occured   |
-| `verkle:del`        | a verkle del operation has occured   |
+| `verkle:put`        | a verkle put operation has occurred  |
+| `verkle:get`        | a verkle get operation has occurred  |
+| `verkle:del`        | a verkle del operation has occurred  |
 | `verkle:find_path`  | a node is being searched for         |
 | `verkle:initialize` | a verkle object has been initialized |
 
