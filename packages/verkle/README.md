@@ -107,13 +107,13 @@ DEBUG=ethjs,verkle npx vitest test/verkle.spec.ts
 Run with **put** method logging:
 
 ```shell
-DEBUG=ethjs,verkle:PUT npx vitest test/verkle.spec.ts
+DEBUG=ethjs,verkle:put npx vitest test/verkle.spec.ts
 ```
 
 Run with **verkle** + **put**/**get**/**del** logging:
 
 ```shell
-DEBUG=ethjs,verkle,verkle:PUT,verkle:GET,verkle:DEL npx vitest test/verkle.spec.ts
+DEBUG=ethjs,verkle,verkle:put,verkle:get,verkle:del npx vitest test/verkle.spec.ts
 ```
 
 Run with max logging:
@@ -125,7 +125,7 @@ DEBUG=ethjs,verkle:* npx vitest test/verkle.spec.ts
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
 Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
 
-`DEBUG=ethjs,tie:PUT,trie:FIND_PATH:* npx vitest test/proof.spec.ts`
+`DEBUG=ethjs,tie:put,trie:find_path:* npx vitest test/proof.spec.ts`
 
 ## References
 
