@@ -371,25 +371,25 @@ DEBUG=ethjs,trie npx vitest test/util/log.spec.ts
 Run with **put** method logging:
 
 ```shell
-DEBUG=ethjs,trie:PUT npx vitest test/util/log.spec.ts
+DEBUG=ethjs,trie:put npx vitest test/util/log.spec.ts
 ```
 
 Run with **trie** + **put**/**get**/**del** logging:
 
 ```shell
-DEBUG=ethjs,trie,trie:PUT,trie:GET,trie:DEL npx vitest test/util/log.spec.ts
+DEBUG=ethjs,trie,trie:put,trie:get,trie:del npx vitest test/util/log.spec.ts
 ```
 
 Run with **findPath** debug logging:
 
 ```shell
-DEBUG=ethjs,trie:FIND_PATH npx vitest test/util/log.spec.ts
+DEBUG=ethjs,trie:find_path npx vitest test/util/log.spec.ts
 ```
 
 Run with **findPath** verbose logging:
 
 ```shell
-DEBUG=ethjs,trie:FIND_PATH:* npx vitest test/util/log.spec.ts
+DEBUG=ethjs,trie:find_path:* npx vitest test/util/log.spec.ts
 ```
 
 Run with max logging:
@@ -401,7 +401,7 @@ DEBUG=ethjs,trie:* npx vitest test/util/log.spec.ts
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
 Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
 
-`DEBUG=ethjs,tie:PUT,trie:FIND_PATH:* npx vitest test/proof.spec.ts`
+`DEBUG=ethjs,tie:put,trie:find_path:* npx vitest test/proof.spec.ts`
 
 ## References
 
