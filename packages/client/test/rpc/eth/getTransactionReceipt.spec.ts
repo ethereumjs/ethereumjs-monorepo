@@ -7,7 +7,8 @@ import {
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { powData } from '../../testdata/geth-genesis/pow.js'
@@ -22,7 +23,7 @@ import {
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_getTransactionReceipt'
-
+const kzg = new microEthKZG(fast)
 describe(method, () => {
   it('call with legacy tx', async () => {
     const { chain, common, execution, server } = await setupChain(powData, 'pow')
@@ -87,8 +88,6 @@ describe(method, () => {
     } else {
       const { hardfork4844Data } = await import('../../../../block/test/testdata/4844-hardfork.js')
 
-      const kzg = await loadKZG()
-
       const common = createCommonFromGethGenesis(hardfork4844Data, {
         chain: 'customChain',
         hardfork: Hardfork.Cancun,
@@ -106,7 +105,7 @@ describe(method, () => {
       const commitments = blobsToCommitments(kzg, blobs)
       const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
       const proofs = blobs.map((blob, ctx) =>
-        kzg.computeBlobKZGProof(blob, commitments[ctx]),
+        kzg.computeBlobProof(blob, commitments[ctx]),
       ) as PrefixedHexString[]
       const tx = createBlob4844Tx(
         {

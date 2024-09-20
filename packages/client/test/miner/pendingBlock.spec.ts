@@ -15,7 +15,8 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it, vi } from 'vitest'
 
 import { hardfork4844Data } from '../../../block/test/testdata/4844-hardfork.js'
@@ -28,6 +29,7 @@ import { mockBlockchain } from '../rpc/mockBlockchain.js'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
+const kzg = new microEthKZG(fast)
 
 const A = {
   address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
@@ -342,7 +344,6 @@ describe('[PendingBlock]', async () => {
   })
 
   it('construct blob bundles', async () => {
-    const kzg = await loadKZG()
     const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -422,8 +423,6 @@ describe('[PendingBlock]', async () => {
   })
 
   it('should exclude missingBlobTx', async () => {
-    const kzg = await loadKZG()
-
     const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,

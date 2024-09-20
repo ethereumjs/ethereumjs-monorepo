@@ -11,7 +11,8 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code.js'
@@ -22,6 +23,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_sendRawTransaction'
 
+const kzg = new microEthKZG(fast)
 describe(method, () => {
   it('call with valid arguments', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
@@ -222,8 +224,6 @@ describe(method, () => {
     BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
     const { hardfork4844Data } = await import('../../../../block/test/testdata/4844-hardfork.js')
 
-    const kzg = await loadKZG()
-
     const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -239,7 +239,7 @@ describe(method, () => {
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
     const proofs = blobs.map((blob, ctx) =>
-      kzg.computeBlobKZGProof(blob, commitments[ctx]),
+      kzg.computeBlobProof(blob, commitments[ctx]),
     ) as PrefixedHexString[]
     const pk = randomBytes(32)
     const tx = createBlob4844Tx(

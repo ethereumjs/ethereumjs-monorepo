@@ -8,8 +8,9 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
+import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
 import { Client } from 'jayson/promise'
-import { loadKZG } from 'kzg-wasm'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
 import type { TransactionType, TxData } from '@ethereumjs/tx'
 
@@ -25,9 +26,7 @@ const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
 const pkey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
 const sender = createAddressFromPrivateKey(pkey)
-
-const kzg = await loadKZG()
-
+const kzg = new microEthKZG(fast)
 function get_padded(data: any, blobs_len: number) {
   const pData = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
   const dataLen = (data as Uint8Array).byteLength

@@ -11,12 +11,14 @@ import {
   getBlobs,
   hexToBytes,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup as fast } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
 import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
+const kzg = new microEthKZG(fast)
 
 // Since the genesis is copy of withdrawals with just sharding hardfork also started
 // at 0, we can re-use the same payload args
@@ -66,8 +68,6 @@ describe(method, () => {
     MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
-
-    const kzg = await loadKZG()
 
     const { service, server, common } = await setupChain(eip4844Data, 'post-merge', {
       engine: true,
