@@ -4,6 +4,7 @@ import { assert, beforeAll, describe, it } from 'vitest'
 
 import { createVerkleTree } from '../src/constructors.js'
 
+import type { LeafNode } from '../src/index.js'
 import type { VerkleCrypto } from '@ethereumjs/util'
 
 describe('rust-verkle test vectors', () => {
@@ -18,6 +19,9 @@ describe('rust-verkle test vectors', () => {
     ])
     const trie = await createVerkleTree({ verkleCrypto, db: new MapDB() })
     await trie.put(rustKey.slice(0, 31), [rustKey[31]], [rustKey])
+    const node = await trie.findPath(rustKey.slice(0, 31))
+    console.log(bytesToHex(verkleCrypto.hashCommitment((node.node as LeafNode)!.c1)))
+    console.log(bytesToHex(verkleCrypto.hashCommitment((node.node as LeafNode)!.c2)))
     assert.equal(
       bytesToHex(trie.root()),
       '0x029b6c4c8af9001f0ac76472766c6579f41eec84a73898da06eb97ebdab80a09',
