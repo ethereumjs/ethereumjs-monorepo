@@ -187,13 +187,13 @@ export class Trie {
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
   async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
-    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['GET'])
+    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['get'])
     const { node, remaining } = await this.findPath(this.appliedKey(key), throwIfMissing)
     let value: Uint8Array | null = null
     if (node && remaining.length === 0) {
       value = node.value()
     }
-    this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(value)}`, ['GET'])
+    this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(value)}`, ['get'])
     return value
   }
 
@@ -209,8 +209,8 @@ export class Trie {
     value: Uint8Array | null,
     skipKeyTransform: boolean = false,
   ): Promise<void> {
-    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['PUT'])
-    this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(key)}`, ['PUT'])
+    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['put'])
+    this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(key)}`, ['put'])
     if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
       throw new Error(`Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`)
     }
@@ -272,7 +272,7 @@ export class Trie {
    * @returns A Promise that resolves once value is deleted.
    */
   async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
-    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['DEL'])
+    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['del'])
     await this._lock.acquire()
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
     const { node, stack } = await this.findPath(appliedKey)
@@ -331,7 +331,7 @@ export class Trie {
       stack[i] = partialPath.stack[i]
       progress += stack[i] instanceof BranchNode ? 1 : (<ExtensionNode>stack[i]).keyLength()
     }
-    this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['FIND_PATH'])
+    this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['find_path'])
     let result: Path | null = null
 
     const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
@@ -343,8 +343,8 @@ export class Trie {
           const branchIndex = targetKey[progress]
           this.DEBUG &&
             this.debug(`Looking for node on branch index: [${branchIndex}]`, [
-              'FIND_PATH',
-              'BranchNode',
+              'find_path',
+              'branch_node',
             ])
           const branchNode = node.getBranch(branchIndex)
           this.DEBUG &&
@@ -354,7 +354,7 @@ export class Trie {
                 : branchNode instanceof Uint8Array
                   ? `NodeHash: ${bytesToHex(branchNode)}`
                   : `Raw_Node: ${branchNode.toString()}`,
-              ['FIND_PATH', 'BranchNode', branchIndex.toString()],
+              ['find_path', 'branch_node', branchIndex.toString()],
             )
           if (!branchNode) {
             result = { node: null, remaining: targetKey.slice(progress), stack }
@@ -388,11 +388,11 @@ export class Trie {
               node.key().toString()
             }]
             `,
-            ['FIND_PATH', 'ExtensionNode'],
+            ['find_path', 'extension_node'],
           )
         const _progress = progress
         for (const k of node.key()) {
-          this.DEBUG && this.debug(`NextNode: ${node.value()}`, ['FIND_PATH', 'ExtensionNode'])
+          this.DEBUG && this.debug(`NextNode: ${node.value()}`, ['find_path', 'extension_node'])
           if (k !== targetKey[progress]) {
             result = { node: null, remaining: targetKey.slice(_progress), stack }
             return
@@ -408,7 +408,7 @@ export class Trie {
       this.DEBUG &&
         this.debug(
           `Walking trie from ${startingNode === undefined ? 'ROOT' : 'NODE'}: ${bytesToHex(start)}`,
-          ['FIND_PATH'],
+          ['find_path'],
         )
       await this.walkTrie(start, onFound)
     } catch (error: any) {
@@ -425,7 +425,7 @@ export class Trie {
         result.node !== null
           ? `Target Node FOUND for ${bytesToNibbles(key)}`
           : `Target Node NOT FOUND`,
-        ['FIND_PATH'],
+        ['find_path'],
       )
 
     result.stack = result.stack.filter((e) => e !== undefined)
@@ -436,7 +436,7 @@ export class Trie {
         || Remaining: [${result.remaining}]\n|| Stack: ${result.stack
           .map((e) => e.constructor.name)
           .join(', ')}`,
-        ['FIND_PATH'],
+        ['find_path'],
       )
     return result
   }
@@ -503,10 +503,10 @@ export class Trie {
   async lookupNode(node: Uint8Array | Uint8Array[]): Promise<TrieNode> {
     if (isRawNode(node)) {
       const decoded = decodeRawNode(node)
-      this.DEBUG && this.debug(`${decoded.constructor.name}`, ['LOOKUP_NODE', 'RAW_NODE'])
+      this.DEBUG && this.debug(`${decoded.constructor.name}`, ['lookup_node', 'raw_node'])
       return decoded
     }
-    this.DEBUG && this.debug(`${`${bytesToHex(node)}`}`, ['LOOKUP_NODE', 'BY_HASH'])
+    this.DEBUG && this.debug(`${`${bytesToHex(node)}`}`, ['lookup_node', 'by_hash'])
     const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, node) : node
     const value = (await this._db.get(key)) ?? null
 
@@ -516,7 +516,7 @@ export class Trie {
     }
 
     const decoded = decodeNode(value)
-    this.DEBUG && this.debug(`${decoded.constructor.name} found in DB`, ['LOOKUP_NODE', 'BY_HASH'])
+    this.DEBUG && this.debug(`${decoded.constructor.name} found in DB`, ['lookup_node', 'by_hash'])
     return decoded
   }
 
@@ -965,7 +965,7 @@ export class Trie {
           `Persisting root: \n|| RootHash: ${bytesToHex(this.root())}\n|| RootKey: ${bytesToHex(
             this.appliedKey(ROOT_DB_KEY),
           )}`,
-          ['PERSIST_ROOT'],
+          ['persist_root'],
         )
       let key = this.appliedKey(ROOT_DB_KEY)
       key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, key) : key
@@ -1020,7 +1020,7 @@ export class Trie {
    * After this is called, all changes can be reverted until `commit` is called.
    */
   checkpoint() {
-    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['CHECKPOINT'])
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['checkpoint'])
     this._db.checkpoint(this.root())
   }
 
@@ -1033,7 +1033,7 @@ export class Trie {
     if (!this.hasCheckpoints()) {
       throw new Error('trying to commit when not checkpointed')
     }
-    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['COMMIT'])
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['commit'])
     await this._lock.acquire()
     await this._db.commit()
     await this.persistRoot()
@@ -1050,12 +1050,12 @@ export class Trie {
       throw new Error('trying to revert when not checkpointed')
     }
 
-    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['REVERT', 'BEFORE'])
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['revert', 'before'])
     await this._lock.acquire()
     this.root(await this._db.revert())
     await this.persistRoot()
     this._lock.release()
-    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['REVERT', 'AFTER'])
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['revert', 'after'])
   }
 
   /**
@@ -1063,7 +1063,7 @@ export class Trie {
    */
   flushCheckpoints() {
     this.DEBUG &&
-      this.debug(`Deleting ${this._db.checkpoints.length} checkpoints.`, ['FLUSH_CHECKPOINTS'])
+      this.debug(`Deleting ${this._db.checkpoints.length} checkpoints.`, ['flush_checkpoints'])
     this._db.checkpoints = []
   }
 
