@@ -81,7 +81,7 @@
     "rustbn-wasm": "^0.4.0",
     "solc": "^0.8.1",
     "split": "^1.0.1",
-    "@paulmillr/trusted-setups": "^0.1.1",
+    "@paulmillr/trusted-setups": "^0.1.2",
     "micro-eth-signer": "^0.11.0"
   },
   "engines": {
