@@ -12,9 +12,10 @@ import {
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as fs from 'fs/promises'
-import { loadKZG } from 'kzg-wasm'
 import { Level } from 'level'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
 import qs from 'qs'
@@ -30,8 +31,7 @@ import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
-
-const kzg = await loadKZG()
+const kzg = new microEthKZG(trustedSetup)
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // This function switches between the native web implementation and a nodejs implementation

@@ -28,6 +28,7 @@ import {
   setLengthLeft,
   short,
 } from '@ethereumjs/util'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import {
   keccak256 as keccak256WASM,
   secp256k1Expand,
@@ -41,8 +42,8 @@ import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import * as http from 'http'
-import { loadKZG } from 'kzg-wasm'
 import { Level } from 'level'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { homedir } from 'os'
 import * as path from 'path'
 import * as promClient from 'prom-client'
@@ -927,15 +928,13 @@ async function run() {
     return helpRPC()
   }
 
-  // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
-  // loaded and initialized on the sharding hardfork activation
   // Give chainId priority over networkId
   // Give networkId precedence over network name
   const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
   const chain = getPresetChainConfig(chainName)
   const cryptoFunctions: CustomCrypto = {}
-  const kzg = await loadKZG()
 
+  const kzg = new microEthKZG(trustedSetup)
   // Initialize WASM crypto if JS crypto is not specified
   if (args.useJsCrypto === false) {
     await waitReadyPolkadotSha256()
