@@ -13,10 +13,9 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../src/index.js'
 
-import * as testChain from './testdata/testnet.json'
-import * as testnetMerge from './testdata/testnetMerge.json'
+import { testnetData } from './testdata/testnet.js'
+import { testnetMergeData } from './testdata/testnetMerge.js'
 
-import type { ChainConfig } from '@ethereumjs/common'
 import type { AccountState, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 
 const storage: Array<[PrefixedHexString, PrefixedHexString]> = [
@@ -49,7 +48,7 @@ const genesisState: GenesisState = {
   [contractAddress]: accountState,
 }
 
-const common = createCustomCommon(testChain.default as ChainConfig, Mainnet, {
+const common = createCustomCommon(testnetData, Mainnet, {
   hardfork: Hardfork.Chainstart,
 })
 const block = createBlock(
@@ -115,7 +114,7 @@ describe('VM initialized with custom state', () => {
   })
 
   it('setHardfork', async () => {
-    const common = createCustomCommon(testnetMerge.default as ChainConfig, Mainnet, {
+    const common = createCustomCommon(testnetMergeData, Mainnet, {
       hardfork: Hardfork.Istanbul,
     })
 

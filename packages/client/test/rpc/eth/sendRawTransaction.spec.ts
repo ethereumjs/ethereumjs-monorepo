@@ -11,16 +11,19 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code.js'
 import { baseSetup } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_sendRawTransaction'
 
+const kzg = new microEthKZG(trustedSetup)
 describe(method, () => {
   it('call with valid arguments', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
@@ -221,8 +224,6 @@ describe(method, () => {
     BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
     const { hardfork4844Data } = await import('../../../../block/test/testdata/4844-hardfork.js')
 
-    const kzg = await loadKZG()
-
     const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -237,7 +238,9 @@ describe(method, () => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobs.map((blob, ctx) => kzg.computeBlobKZGProof(blob, commitments[ctx]))
+    const proofs = blobs.map((blob, ctx) =>
+      kzg.computeBlobProof(blob, commitments[ctx]),
+    ) as PrefixedHexString[]
     const pk = randomBytes(32)
     const tx = createBlob4844Tx(
       {
@@ -275,6 +278,7 @@ describe(method, () => {
     await vm.stateManager.putAccount(tx.getSenderAddress(), account!)
 
     const res = await rpc.request(method, [bytesToHex(tx.serializeNetworkWrapper())])
+
     const res2 = await rpc.request(method, [bytesToHex(replacementTx.serializeNetworkWrapper())])
 
     assert.equal(res.error, undefined, 'initial blob transaction accepted')

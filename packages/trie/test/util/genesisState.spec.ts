@@ -4,13 +4,13 @@ import { assert, describe, it } from 'vitest'
 
 import { genesisStateRoot } from '../../src/util/genesisState.js'
 // kiln genesis with deposit contract storage set
-import gethGenesisKilnJSON from '../fixtures/geth-genesis-kiln.json'
+import { gethGenesisKilnData } from '../fixtures/gethGenesisKiln.js'
 
 import type { GenesisState } from '@ethereumjs/util'
 
 describe('[Util/genesisStateRoot]', () => {
   it('should properly generate stateRoot from gethGenesis', async () => {
-    const genesisState = parseGethGenesisState(gethGenesisKilnJSON)
+    const genesisState = parseGethGenesisState(gethGenesisKilnData)
     const stateRoot = await genesisStateRoot(genesisState)
     assert.equal(
       bytesToHex(stateRoot),

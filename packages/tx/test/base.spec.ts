@@ -30,9 +30,9 @@ import {
   paramsTx,
 } from '../src/index.js'
 
-import eip1559Fixtures from './json/eip1559txs.json'
-import eip2930Fixtures from './json/eip2930txs.json'
-import legacyFixtures from './json/txs.json'
+import { eip1559TxsData } from './testData/eip1559txs.js'
+import { eip2930TxsData } from './testData/eip2930txs.js'
+import { txsData } from './testData/txs.js'
 
 import type { BaseTransaction } from '../src/baseTransaction.js'
 import type { AccessList2930TxData, FeeMarketEIP1559TxData, LegacyTxData } from '../src/index.js'
@@ -42,17 +42,17 @@ describe('[BaseTransaction]', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
   const legacyTxs: BaseTransaction<TransactionType.Legacy>[] = []
-  for (const tx of legacyFixtures.slice(0, 4)) {
+  for (const tx of txsData.slice(0, 4)) {
     legacyTxs.push(createLegacyTx(tx.data as LegacyTxData, { common }))
   }
 
   const eip2930Txs: BaseTransaction<TransactionType.AccessListEIP2930>[] = []
-  for (const tx of eip2930Fixtures) {
+  for (const tx of eip2930TxsData) {
     eip2930Txs.push(createAccessList2930Tx(tx.data as AccessList2930TxData, { common }))
   }
 
   const eip1559Txs: BaseTransaction<TransactionType.FeeMarketEIP1559>[] = []
-  for (const tx of eip1559Fixtures) {
+  for (const tx of eip1559TxsData) {
     eip1559Txs.push(createFeeMarket1559Tx(tx.data as FeeMarketEIP1559TxData, { common }))
   }
 
@@ -64,7 +64,7 @@ describe('[BaseTransaction]', () => {
       type: TransactionType.Legacy,
       values: Array(6).fill(zero),
       txs: legacyTxs,
-      fixtures: legacyFixtures,
+      fixtures: txsData,
       activeCapabilities: [],
       create: {
         txData: createLegacyTx,
@@ -84,7 +84,7 @@ describe('[BaseTransaction]', () => {
       type: TransactionType.AccessListEIP2930,
       values: [new Uint8Array([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
-      fixtures: eip2930Fixtures,
+      fixtures: eip2930TxsData,
       activeCapabilities: [Capability.EIP2718TypedTransaction, Capability.EIP2930AccessLists],
       create: {
         txData: createAccessList2930Tx,
@@ -99,7 +99,7 @@ describe('[BaseTransaction]', () => {
       type: TransactionType.FeeMarketEIP1559,
       values: [new Uint8Array([1])].concat(Array(8).fill(zero)),
       txs: eip1559Txs,
-      fixtures: eip1559Fixtures,
+      fixtures: eip1559TxsData,
       activeCapabilities: [
         Capability.EIP1559FeeMarket,
         Capability.EIP2718TypedTransaction,

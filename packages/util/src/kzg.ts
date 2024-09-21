@@ -1,5 +1,13 @@
-import type { loadKZG } from 'kzg-wasm'
 /**
  * Interface for an externally provided kzg library used when creating blob transactions
  */
-export type KZG = Awaited<ReturnType<typeof loadKZG>>
+export interface KZG {
+  blobToKzgCommitment(blob: string): string
+  computeBlobProof(blob: string, commitment: string): string
+  verifyProof(polynomialKZG: string, z: string, y: string, KZGProof: string): boolean
+  verifyBlobProofBatch(
+    blobs: string[],
+    expectedKZGCommitments: string[],
+    KZGProofs: string[],
+  ): boolean
+}
