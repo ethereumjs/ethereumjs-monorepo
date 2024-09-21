@@ -28,7 +28,6 @@ import {
   setLengthLeft,
   short,
 } from '@ethereumjs/util'
-//@ts-ignore trusted-setups doesn't include types
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import {
   keccak256 as keccak256WASM,
