@@ -47,6 +47,7 @@ export class Common {
   protected _hardfork: string | Hardfork
   protected _eips: number[] = []
   protected _params: ParamsDict
+  protected _includedParams: string[] = []
 
   public readonly customCrypto: CustomCrypto
 
@@ -101,8 +102,15 @@ export class Common {
    * ```
    *
    * @param params
+   * @param name Provide a self-chosen name for a param set to not unnecessarily re-include parameters
    */
-  updateParams(params: ParamsDict) {
+  updateParams(params: ParamsDict, name?: string) {
+    if (name !== undefined) {
+      if (this._includedParams.includes(name)) {
+        return
+      }
+      this._includedParams.push(name)
+    }
     for (const [eip, paramsConfig] of Object.entries(params)) {
       if (!(eip in this._params)) {
         this._params[eip] = JSON.parse(JSON.stringify(paramsConfig)) // copy
@@ -111,26 +119,6 @@ export class Common {
       }
     }
 
-    this._buildParamsCache()
-  }
-
-  /**
-   * Fully resets the internal Common EIP params set with the values provided.
-   *
-   * Example Format:
-   *
-   * ```ts
-   * {
-   *   1559: {
-   *     initialBaseFee: 1000000000,
-   *   }
-   * }
-   * ```
-   *
-   * @param params
-   */
-  resetParams(params: ParamsDict) {
-    this._params = JSON.parse(JSON.stringify(params)) // copy
     this._buildParamsCache()
   }
 

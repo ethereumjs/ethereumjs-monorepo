@@ -110,7 +110,7 @@ export abstract class BaseTransaction<T extends TransactionType>
     const createContract = this.to === undefined || this.to === null
     const allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
 
-    this.common.updateParams(opts.params ?? paramsTx)
+    this.common.updateParams(opts.params ?? paramsTx, '@ethereumjs/tx')
     if (
       createContract &&
       this.common.isActivatedEIP(3860) &&

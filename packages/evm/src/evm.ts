@@ -195,7 +195,7 @@ export class EVM implements EVMInterface {
       )
     }
 
-    this.common.updateParams(opts.params ?? paramsEVM)
+    this.common.updateParams(opts.params ?? paramsEVM, '@ethereumjs/evm')
 
     this.allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
     this.allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false

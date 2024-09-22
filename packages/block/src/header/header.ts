@@ -99,7 +99,7 @@ export class BlockHeader {
         chain: Mainnet, // default
       })
     }
-    this.common.updateParams(opts.params ?? paramsBlock)
+    this.common.updateParams(opts.params ?? paramsBlock, '@ethereumjs/block')
 
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
 

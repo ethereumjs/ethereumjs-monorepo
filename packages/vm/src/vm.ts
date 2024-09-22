@@ -68,7 +68,7 @@ export class VM {
    */
   constructor(opts: VMOpts = {}) {
     this.common = opts.common!
-    this.common.updateParams(opts.params ?? paramsVM)
+    this.common.updateParams(opts.params ?? paramsVM, '@ethereumjs/vm')
     this.stateManager = opts.stateManager!
     this.blockchain = opts.blockchain!
     this.evm = opts.evm!
