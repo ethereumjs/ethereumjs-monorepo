@@ -39,7 +39,7 @@ import type { AccessList2930TxData, FeeMarketEIP1559TxData, LegacyTxData } from 
 
 describe('[BaseTransaction]', () => {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+  let common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
   const legacyTxs: BaseTransaction<TransactionType.Legacy>[] = []
   for (const tx of txsData.slice(0, 4)) {
@@ -148,6 +148,7 @@ describe('[BaseTransaction]', () => {
         `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
 
+      common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
       const params = JSON.parse(JSON.stringify(paramsTx))
       params['1']['txGas'] = 30000 // 21000
       tx = txType.create.txData({}, { common, params })

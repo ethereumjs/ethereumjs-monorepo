@@ -830,6 +830,13 @@ export class Common {
    */
   copy(): Common {
     const copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
+    // TODO: hotfix since copy() method is still not working properly in Common,
+    // discovered along double association of this.common in the tx library
+    // (BaseTransaction + Subclass), where not all properties made it to the
+    // copied object. So this copy() should be replaced with a more robust/correct
+    // method (simple re-instantiation likely, needs various tests though to secure)
+    copy._buildParamsCache()
+    copy._buildActivatedEIPsCache()
     copy.events = new EventEmitter()
     return copy
   }
