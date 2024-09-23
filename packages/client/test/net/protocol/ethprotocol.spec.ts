@@ -70,7 +70,7 @@ describe('[EthProtocol]', () => {
       'encode status',
     )
     const status = p.decodeStatus({
-      chainId: [0x01],
+      chainId: Uint8Array.from([0x01]),
       td: hexToBytes('0x64'),
       bestHash: '0xaa',
       genesisHash: '0xbb',

@@ -84,7 +84,7 @@ describe('[LesProtocol]', () => {
         bytesToHex(status['flowControl/MRC'][0][2]) === '0x0a',
       'encode status',
     )
-    status = { ...status, chainId: [0x01] }
+    status = { ...status, chainId: Uint8Array.from([0x01]) }
     status = p.decodeStatus(status)
     assert.ok(
       status.chainId === BigInt(1) &&
