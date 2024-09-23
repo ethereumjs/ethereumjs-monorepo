@@ -34,6 +34,8 @@ export const unprefixedHexToBytes = (hex: string) => {
 }
 
 export const bytesToHex = (bytes: Uint8Array): PrefixedHexString => {
+  console.log(bytes)
+  if (bytes === undefined || bytes.length === 0) return '0x'
   const unprefixedHex = bytesToUnprefixedHex(bytes)
   return ('0x' + unprefixedHex) as PrefixedHexString
 }
@@ -53,6 +55,9 @@ export const bytesToBigInt = (bytes: Uint8Array, littleEndian = false): bigint =
   if (littleEndian) {
     bytes.reverse()
   }
+
+  // Ensure that bytes are actually bytes (and not just an array of numbers)
+  bytes = Uint8Array.from(bytes)
   const hex = bytesToHex(bytes)
   if (hex === '0x') {
     return BIGINT_0
