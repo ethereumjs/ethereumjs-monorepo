@@ -401,7 +401,7 @@ DEBUG=ethjs,trie:* npx vitest test/util/log.spec.ts
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
 Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
 
-`DEBUG=ethjs,tie:put,trie:find_path:* npx vitest test/proof.spec.ts`
+`DEBUG=ethjs,trie:put,trie:find_path:* npx vitest test/proof.spec.ts`
 
 ## References
 
