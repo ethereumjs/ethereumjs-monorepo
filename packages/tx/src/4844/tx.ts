@@ -3,11 +3,13 @@ import {
   BIGINT_0,
   BIGINT_27,
   MAX_INTEGER,
+  TypeOutput,
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  bytesToHex,
+  hexToBytes,
   toBytes,
+  toType,
 } from '@ethereumjs/util'
 
 import { BaseTransaction } from '../baseTransaction.js'
@@ -30,6 +32,7 @@ import type {
   JSONTx,
   TxOptions,
 } from '../types.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 export type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
 export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
@@ -49,10 +52,10 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
   public readonly maxFeePerBlobGas: bigint
 
   public readonly common: Common
-  public blobVersionedHashes: Uint8Array[]
-  blobs?: Uint8Array[] // This property should only be populated when the transaction is in the "Network Wrapper" format
-  kzgCommitments?: Uint8Array[] // This property should only be populated when the transaction is in the "Network Wrapper" format
-  kzgProofs?: Uint8Array[] // This property should only be populated when the transaction is in the "Network Wrapper" format
+  public blobVersionedHashes: PrefixedHexString[]
+  blobs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
+  kzgCommitments?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
+  kzgProofs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -116,16 +119,20 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
       toBytes((maxFeePerBlobGas ?? '') === '' ? '0x' : maxFeePerBlobGas),
     )
 
-    this.blobVersionedHashes = (txData.blobVersionedHashes ?? []).map((vh) => toBytes(vh))
+    this.blobVersionedHashes = (txData.blobVersionedHashes ?? []).map((vh) =>
+      toType(vh, TypeOutput.PrefixedHexString),
+    )
     EIP2718.validateYParity(this)
     Legacy.validateHighS(this)
 
     for (const hash of this.blobVersionedHashes) {
-      if (hash.length !== 32) {
+      if (hash.length !== 66) {
+        // 66 is the length of a 32 byte hash as a PrefixedHexString
         const msg = this._errorMsg('versioned hash is invalid length')
         throw new Error(msg)
       }
-      if (BigInt(hash[0]) !== this.common.param('blobCommitmentVersionKzg')) {
+      if (BigInt(parseInt(hash.slice(2, 4))) !== this.common.param('blobCommitmentVersionKzg')) {
+        // We check the first "byte" of the hash (starts at position 2 since hash is a PrefixedHexString)
         const msg = this._errorMsg('versioned hash does not start with KZG commitment version')
         throw new Error(msg)
       }
@@ -144,9 +151,11 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
       throw new Error(msg)
     }
 
-    this.blobs = txData.blobs?.map((blob) => toBytes(blob))
-    this.kzgCommitments = txData.kzgCommitments?.map((commitment) => toBytes(commitment))
-    this.kzgProofs = txData.kzgProofs?.map((proof) => toBytes(proof))
+    this.blobs = txData.blobs?.map((blob) => toType(blob, TypeOutput.PrefixedHexString))
+    this.kzgCommitments = txData.kzgCommitments?.map((commitment) =>
+      toType(commitment, TypeOutput.PrefixedHexString),
+    )
+    this.kzgProofs = txData.kzgProofs?.map((proof) => toType(proof, TypeOutput.PrefixedHexString))
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -201,7 +210,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
       this.data,
       this.accessList,
       bigIntToUnpaddedBytes(this.maxFeePerBlobGas),
-      this.blobVersionedHashes,
+      this.blobVersionedHashes.map((hash) => hexToBytes(hash)),
       this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : new Uint8Array(0),
       this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
       this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : new Uint8Array(0),
@@ -297,7 +306,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),
       accessList: accessListJSON,
       maxFeePerBlobGas: bigIntToHex(this.maxFeePerBlobGas),
-      blobVersionedHashes: this.blobVersionedHashes.map((hash) => bytesToHex(hash)),
+      blobVersionedHashes: this.blobVersionedHashes,
     }
   }
 
