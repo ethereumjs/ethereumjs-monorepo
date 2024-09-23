@@ -34,7 +34,6 @@ export const unprefixedHexToBytes = (hex: string) => {
 }
 
 export const bytesToHex = (bytes: Uint8Array): PrefixedHexString => {
-  console.log(bytes)
   if (bytes === undefined || bytes.length === 0) return '0x'
   const unprefixedHex = bytesToUnprefixedHex(bytes)
   return ('0x' + unprefixedHex) as PrefixedHexString
