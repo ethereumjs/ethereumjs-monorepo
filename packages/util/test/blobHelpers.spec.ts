@@ -1,14 +1,19 @@
 import { assert, describe, it } from 'vitest'
 
-import { commitmentsToVersionedHashes, computeVersionedHash, getBlobs } from '../src/index.js'
+import {
+  bytesToHex,
+  commitmentsToVersionedHashes,
+  computeVersionedHash,
+  getBlobs,
+} from '../src/index.js'
 
 describe('blob helper tests', () => {
-  it('getBlobs should return an array of Uint8Array blobs', () => {
+  it('getBlobs should return an array of PrefixedHexString blobs', () => {
     const input = 'test input'
     const blobs = getBlobs(input)
     assert(Array.isArray(blobs))
 
-    for (const blob of blobs) assert(blob instanceof Uint8Array)
+    for (const blob of blobs) assert(typeof blob === 'string' && blob.slice(0, 2) === '0x')
   })
 
   it('getBlobs should throw an error for invalid blob data', () => {
@@ -24,19 +29,21 @@ describe('blob helper tests', () => {
   it('computeVersionedHash should return a versioned hash', () => {
     const commitment = new Uint8Array([1, 2, 3])
     const blobCommitmentVersion = 0x01
-    const versionedHash = computeVersionedHash(commitment, blobCommitmentVersion)
-    assert(versionedHash instanceof Uint8Array)
-    assert.lengthOf(versionedHash, 32)
+    const versionedHash = computeVersionedHash(bytesToHex(commitment), blobCommitmentVersion)
+    assert(typeof versionedHash === 'string')
+    assert.lengthOf(versionedHash, 66)
   })
 
   it('commitmentsToVersionedHashes should return an array of versioned hashes', () => {
     const commitments = [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])]
-    const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
+    const blobVersionedHashes = commitmentsToVersionedHashes(
+      commitments.map((com) => bytesToHex(com)),
+    )
     assert(Array.isArray(blobVersionedHashes))
 
     for (const versionedHash of blobVersionedHashes) {
-      assert(versionedHash instanceof Uint8Array)
-      assert.lengthOf(versionedHash, 32)
+      assert(typeof versionedHash === 'string')
+      assert.lengthOf(versionedHash, 66)
     }
   })
 })

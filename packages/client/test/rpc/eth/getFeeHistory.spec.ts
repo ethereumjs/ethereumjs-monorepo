@@ -13,8 +13,9 @@ import {
   getBlobs,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import { loadKZG } from 'kzg-wasm'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
@@ -23,6 +24,7 @@ import { getRPCClient, gethGenesisStartLondon, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain/index.js'
 import type { VMExecution } from '../../../src/execution/index.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_feeHistory'
 
@@ -33,6 +35,7 @@ const privateKey4844 = hexToBytes(
   '0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8',
 )
 const p4844Address = createAddressFromPrivateKey(privateKey4844)
+const kzg = new microEthKZG(trustedSetup)
 
 const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gasUsed: bigint) => {
   const { vm } = execution
@@ -123,7 +126,6 @@ const produceBlockWith4844Tx = async (
   chain: Chain,
   blobsCount: number[],
 ) => {
-  const kzg = await loadKZG()
   // 4844 sample blob
   const sampleBlob = getBlobs('hello world')
   const commitment = blobsToCommitments(kzg, sampleBlob)
@@ -146,9 +148,9 @@ const produceBlockWith4844Tx = async (
     },
   })
   for (let i = 0; i < blobsCount.length; i++) {
-    const blobVersionedHashes = []
-    const blobs = []
-    const kzgCommitments = []
+    const blobVersionedHashes = [] as PrefixedHexString[]
+    const blobs = [] as PrefixedHexString[]
+    const kzgCommitments = [] as PrefixedHexString[]
     const to = createZeroAddress()
     if (blobsCount[i] > 0) {
       for (let blob = 0; blob < blobsCount[i]; blob++) {
@@ -427,7 +429,6 @@ describe(method, () => {
   it(
     `${method} - Should correctly return the right blob base fees and ratios for a chain with 4844 active`,
     async () => {
-      const kzg = await loadKZG()
       const { chain, execution, server } = await setupChain(eip4844Data, 'post-merge', {
         engine: true,
         hardfork: Hardfork.Cancun,
