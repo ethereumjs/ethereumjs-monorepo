@@ -90,6 +90,7 @@ The following options are available:
 
 | Logger              | Description                          |
 | ------------------- | ------------------------------------ |
+| `verkle:#`          | a core verkle operation has occurred |
 | `verkle:put`        | a verkle put operation has occurred  |
 | `verkle:get`        | a verkle get operation has occurred  |
 | `verkle:del`        | a verkle del operation has occurred  |
