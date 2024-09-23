@@ -26,9 +26,9 @@ import {
 describe('Verkle cryptographic helpers', () => {
   let verkle: VerkleCrypto
   beforeAll(async () => {
-    console.trace(intToBytes(VerkleLeafType.BasicData))
     verkle = await loadVerkleCrypto()
   })
+
   it('getVerkleStem(): returns the expected stems', () => {
     // Empty address
     assert.equal(
