@@ -36,6 +36,7 @@ export interface VerkleCrypto {
   serializeCommitment: (commitment: Uint8Array) => Uint8Array
   createProof: (bytes: ProverInput[]) => Uint8Array
   verifyProof: (proof: Uint8Array, verifierInput: VerifierInput[]) => boolean
+  commitToScalars: (vector: Uint8Array[]) => Uint8Array
 }
 
 export interface ProverInput {

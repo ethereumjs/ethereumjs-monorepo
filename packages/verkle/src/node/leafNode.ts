@@ -148,33 +148,18 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
         value === VerkleLeafNodeValue.Untouched
           ? createUntouchedLeafValue()
           : createDeletedLeafValue()
+
+    // Set the new values in the values array
+    this.values[index] = value
     // First we update c1 or c2 (depending on whether the index is < 128 or not)
     // Generate the 16 byte values representing the 32 byte values in the half of the values array that
     // contain the old value for the leaf node
     const cValues =
       index < 128 ? createCValues(this.values.slice(0, 128)) : createCValues(this.values.slice(128))
-    // The commitment index is 2 * the suffix (i.e. the position of the value in the values array)
-    // here because each 32 byte value in the leaf node is represented as two 16 byte values in the
-    // cValues array.
-    const commitmentIndex = index < 128 ? index * 2 : (index - 128) * 2
-    let cCommitment = index < 128 ? this.c1 : this.c2
-    // Update the commitment for the first 16 bytes of the value
-    cCommitment = this.verkleCrypto.updateCommitment(
-      cCommitment!,
-      commitmentIndex,
-      cValues[commitmentIndex],
-      // Right pad the value with zeroes since commitments require 32 byte scalars
-      setLengthRight(val.slice(0, 16), 32),
-    )
-    // Update the commitment for the second 16 bytes of the value
-    cCommitment = this.verkleCrypto.updateCommitment(
-      cCommitment!,
-      commitmentIndex + 1,
-      cValues[commitmentIndex + 1],
-      // Right pad the value with zeroes since commitments require 32 byte scalars
-      setLengthRight(val.slice(16), 32),
-    )
-    // Update the cCommitment corresponding to the index
+
+    // Create a commitment to the cValues returned and then use this to replace the c1/c2 commitment value
+    const cCommitment = this.verkleCrypto.commitToScalars(cValues)
+
     let oldCCommitment: Uint8Array | undefined
     if (index < 128) {
       oldCCommitment = this.c1
@@ -184,8 +169,6 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       this.c2 = cCommitment
     }
 
-    // Set the new values in the values array
-    this.values[index] = value
     // Update leaf node commitment -- c1 (2) if index is < 128 or c2 (3) otherwise
     const cIndex = index < 128 ? 2 : 3
     this.commitment = this.verkleCrypto.updateCommitment(
