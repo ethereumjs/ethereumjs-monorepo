@@ -19,9 +19,6 @@ export function callWithStackTrace(handler: Function, debug: boolean) {
       const res = await handler(...args)
       return res
     } catch (error) {
-      if (!(error instanceof Error)) {
-        error = new Error(error)
-      }
       const e: RPCError = {
         code: error.code ?? INTERNAL_ERROR,
         message: error.message,
