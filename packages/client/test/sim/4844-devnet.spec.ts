@@ -97,7 +97,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
 
     assert.equal(
       eth2kzgs[0],
-      bytesToHex(txResult.tx.kzgCommitments![0]),
+      txResult.tx.kzgCommitments![0],
       'found expected blob commitments on CL',
     )
   }, 60_000)

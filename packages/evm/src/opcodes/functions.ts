@@ -762,7 +762,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const index = runState.stack.pop()
       if (runState.env.blobVersionedHashes.length > Number(index)) {
-        runState.stack.push(bytesToBigInt(runState.env.blobVersionedHashes[Number(index)]))
+        runState.stack.push(BigInt(runState.env.blobVersionedHashes[Number(index)]))
       } else {
         runState.stack.push(BIGINT_0)
       }

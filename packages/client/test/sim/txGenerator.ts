@@ -8,8 +8,9 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { Client } from 'jayson/promise'
-import { loadKZG } from 'kzg-wasm'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
 import type { TransactionType, TxData } from '@ethereumjs/tx'
 
@@ -25,9 +26,7 @@ const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
 const pkey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
 const sender = createAddressFromPrivateKey(pkey)
-
-const kzg = await loadKZG()
-
+const kzg = new microEthKZG(trustedSetup)
 function get_padded(data: any, blobs_len: number) {
   const pData = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
   const dataLen = (data as Uint8Array).byteLength
@@ -96,7 +95,7 @@ async function run(data: any) {
     await sleep(1000)
   }
 
-  const blobs = get_blobs(data)
+  const blobs = get_blobs(data).map((blob) => bytesToHex(blob))
   const commitments = blobsToCommitments(kzg, blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
@@ -165,8 +164,8 @@ async function run(data: any) {
     return false
   }
 
-  const expected_kzgs = bytesToHex(blobTx.kzgCommitments![0])
-  if (blob_kzg !== bytesToHex(blobTx.kzgCommitments![0])) {
+  const expected_kzgs = blobTx.kzgCommitments![0]
+  if (blob_kzg !== blobTx.kzgCommitments![0]) {
     console.log(`Unexpected KZG commitment: expected ${expected_kzgs}, got ${blob_kzg}`)
     return false
   } else {

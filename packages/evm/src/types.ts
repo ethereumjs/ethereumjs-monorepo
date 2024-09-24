@@ -85,7 +85,7 @@ interface EVMRunOpts {
   /**
    * Versioned hashes for each blob in a blob transaction
    */
-  blobVersionedHashes?: Uint8Array[]
+  blobVersionedHashes?: PrefixedHexString[]
 }
 
 export interface EVMRunCodeOpts extends EVMRunOpts {

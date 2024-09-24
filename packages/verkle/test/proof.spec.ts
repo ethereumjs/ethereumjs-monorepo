@@ -9,6 +9,7 @@ import { LeafNode } from '../src/index.js'
 import { createProof, verifyProof } from './util.js'
 
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+import type { ProverInput, VerifierInput } from 'verkle-cryptography-wasm'
 
 describe('lets make proofs', () => {
   let verkleCrypto: VerkleCrypto
@@ -46,17 +47,28 @@ describe('lets make proofs', () => {
     const path = await trie.findPath(keys[0].slice(0, 31))
 
     const leafNode = path.node! as LeafNode
-    const valuesArray = new Array<Uint8Array>(256)
+    const valuesArray = []
     for (let x = 0; x < 256; x++) {
       let value = leafNode.getValue(x)
       if (value === undefined) value = new Uint8Array(32)
-      valuesArray[x] = value
+      valuesArray.push(value)
     }
-    const proof = createProof(verkleCrypto, leafNode.commitment, valuesArray, 1)
+    const proofInput: ProverInput = {
+      serializedCommitment: verkleCrypto.serializeCommitment(leafNode.commitment), // serialized (not hashed!) node commitment
+      vector: valuesArray, // All values from node
+      indices: [1], // Position in values array (aka "z value")
+    }
+
+    const proof = verkleCrypto.createProof([proofInput])
+
+    const verificationInput: VerifierInput = {
+      serializedCommitment: verkleCrypto.serializeCommitment(leafNode.commitment), // serialized leafNode commitment
+      indexValuePairs: [{ index: 1, value: leafNode.getValue(1)! }], // Position in values array (aka "z value")
+    }
 
     try {
-      const result = verifyProof(verkleCrypto, proof, leafNode.commitment, 1, leafNode.getValue(1)!)
-      assert.ok(result)
+      const res = verkleCrypto.verifyProof(proof, [verificationInput])
+      assert.ok(res)
     } catch (err) {
       assert.fail(`Failed to verify proof: ${err}`)
     }

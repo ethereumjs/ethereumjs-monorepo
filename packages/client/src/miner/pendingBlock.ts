@@ -20,7 +20,7 @@ import type { Config } from '../config.js'
 import type { TxPool } from '../service/txpool.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { WithdrawalData } from '@ethereumjs/util'
+import type { PrefixedHexString, WithdrawalData } from '@ethereumjs/util'
 import type { BlockBuilder, TxReceipt, VM } from '@ethereumjs/vm'
 
 interface PendingBlockOpts {
@@ -35,9 +35,9 @@ interface PendingBlockOpts {
 }
 
 export interface BlobsBundle {
-  blobs: Uint8Array[]
-  commitments: Uint8Array[]
-  proofs: Uint8Array[]
+  blobs: PrefixedHexString[]
+  commitments: PrefixedHexString[]
+  proofs: PrefixedHexString[]
 }
 /**
  * In the future this class should build a pending block by keeping the
@@ -383,9 +383,9 @@ export class PendingBlock {
    * @param blockHash the blockhash of the pending block (computed from the header data provided)
    */
   private constructBlobsBundle = (payloadId: string, txs: Blob4844Tx[]) => {
-    let blobs: Uint8Array[] = []
-    let commitments: Uint8Array[] = []
-    let proofs: Uint8Array[] = []
+    let blobs: PrefixedHexString[] = []
+    let commitments: PrefixedHexString[] = []
+    let proofs: PrefixedHexString[] = []
     const bundle = this.blobsBundles.get(payloadId)
     if (bundle !== undefined) {
       blobs = bundle.blobs
