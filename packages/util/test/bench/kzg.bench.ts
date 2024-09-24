@@ -2,8 +2,11 @@ import { getBlobs } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
 import { bench, describe } from 'vitest'
 
-import { jsKZG } from './kzg.spec.js'
+import { jsKZG } from '../kzg.spec.js'
 
+/**
+ * These benchmarks compare performance of various KZG related functions for our two supported backends
+ */
 describe('benchmarks', async () => {
   const kzg = await loadKZG()
   const blob = getBlobs('hello')[0]

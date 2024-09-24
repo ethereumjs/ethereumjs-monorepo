@@ -22,6 +22,7 @@ const config = defineConfig({
   ],
   optimizeDeps: {
     exclude: ['kzg-wasm'],
+    include: ['vite-plugin-node-polyfills/shims/buffer', 'vite-plugin-node-polyfills/shims/global', 'vite-plugin-node-polyfills/shims/process'] 
   },
 })
 

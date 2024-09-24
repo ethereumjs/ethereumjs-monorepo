@@ -202,16 +202,34 @@ function parseHexByte(hexByte: string): number {
   return byte
 }
 
-// Caching slows it down 2-3x
-function hexToBytes(hex: string): Uint8Array {
-  if (typeof hex !== 'string') {
-    throw new TypeError('hexToBytes: expected string, got ' + typeof hex)
-  }
-  if (hex.length % 2) throw new Error('hexToBytes: received invalid unpadded hex')
-  const array = new Uint8Array(hex.length / 2)
-  for (let i = 0; i < array.length; i++) {
-    const j = i * 2
-    array[i] = parseHexByte(hex.slice(j, j + 2))
+// Borrowed from @noble/curves to avoid dependency
+// Original code here - https://github.com/paulmillr/noble-curves/blob/d0a8d2134c5737d9d0aa81be13581cd416ebdeb4/src/abstract/utils.ts#L63-L91
+const asciis = { _0: 48, _9: 57, _A: 65, _F: 70, _a: 97, _f: 102 } as const
+function asciiToBase16(char: number): number | undefined {
+  if (char >= asciis._0 && char <= asciis._9) return char - asciis._0
+  if (char >= asciis._A && char <= asciis._F) return char - (asciis._A - 10)
+  if (char >= asciis._a && char <= asciis._f) return char - (asciis._a - 10)
+  return
+}
+
+/**
+ * @example hexToBytes('0xcafe0123') // Uint8Array.from([0xca, 0xfe, 0x01, 0x23])
+ */
+export function hexToBytes(hex: string): Uint8Array {
+  if (hex.slice(0, 2) === '0x') hex = hex.slice(0, 2)
+  if (typeof hex !== 'string') throw new Error('hex string expected, got ' + typeof hex)
+  const hl = hex.length
+  const al = hl / 2
+  if (hl % 2) throw new Error('padded hex string expected, got unpadded hex of length ' + hl)
+  const array = new Uint8Array(al)
+  for (let ai = 0, hi = 0; ai < al; ai++, hi += 2) {
+    const n1 = asciiToBase16(hex.charCodeAt(hi))
+    const n2 = asciiToBase16(hex.charCodeAt(hi + 1))
+    if (n1 === undefined || n2 === undefined) {
+      const char = hex[hi] + hex[hi + 1]
+      throw new Error('hex string expected, got non-hex character "' + char + '" at index ' + hi)
+    }
+    array[ai] = n1 * 16 + n2
   }
   return array
 }
