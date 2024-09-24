@@ -88,14 +88,14 @@ The `Verkle` class features optional debug logging. Individual debug selections 
 
 The following options are available:
 
-| Logger              | Description                          |
-| ------------------- | ------------------------------------ |
-| `verkle:#`          | a core verkle operation has occurred |
-| `verkle:put`        | a verkle put operation has occurred  |
-| `verkle:get`        | a verkle get operation has occurred  |
-| `verkle:del`        | a verkle del operation has occurred  |
-| `verkle:find_path`  | a node is being searched for         |
-| `verkle:initialize` | a verkle object has been initialized |
+| Logger                | Description                          |
+| --------------------- | ------------------------------------ |
+| `verkle:#`            | a core verkle operation has occurred |
+| `verkle:#:put`        | a verkle put operation has occurred  |
+| `verkle:#:get`        | a verkle get operation has occurred  |
+| `verkle:#:del`        | a verkle del operation has occurred  |
+| `verkle:#:find_path`  | a node is being searched for         |
+| `verkle:#:initialize` | a verkle object has been initialized |
 
 To observe the logging in action at different levels:
 
