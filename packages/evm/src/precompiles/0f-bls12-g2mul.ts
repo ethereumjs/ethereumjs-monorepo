@@ -41,7 +41,10 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
   let returnValue
   try {
     returnValue = bls.mulG2(opts.data)
-  } catch (e: any) {
+  } catch (e) {
+    if (!(e instanceof Error)) {
+      e = new Error(e)
+    }
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: ${e.message}`)
     }
