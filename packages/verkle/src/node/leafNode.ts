@@ -41,7 +41,15 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     values?: (Uint8Array | VerkleLeafNodeValue)[],
   ): Promise<LeafNode> {
     // Generate the value arrays for c1 and c2
-    values = values !== undefined ? values : createDefaultLeafValues()
+    if (values !== undefined) {
+      values = values.map((el) => {
+        // Checks for instances of zeros and replaces with the "deleted" leaf node value
+        if (el instanceof Uint8Array && equalsBytes(el, new Uint8Array(32)))
+          return VerkleLeafNodeValue.Deleted
+        return el
+      })
+    } else values = createDefaultLeafValues()
+
     const c1Values = createCValues(values.slice(0, 128))
     const c2Values = createCValues(values.slice(128))
     let c1 = verkleCrypto.zeroCommitment
@@ -150,13 +158,13 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
           : createDeletedLeafValue()
 
     // Set the new values in the values array
-    this.values[index] = value
+    this.values[index] = val
+
     // First we update c1 or c2 (depending on whether the index is < 128 or not)
     // Generate the 16 byte values representing the 32 byte values in the half of the values array that
     // contain the old value for the leaf node
     const cValues =
       index < 128 ? createCValues(this.values.slice(0, 128)) : createCValues(this.values.slice(128))
-
     // Create a commitment to the cValues returned and then use this to replace the c1/c2 commitment value
     const cCommitment = this.verkleCrypto.commitToScalars(cValues)
 

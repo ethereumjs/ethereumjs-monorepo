@@ -42,18 +42,15 @@ export function isInternalNode(node: VerkleNode): node is InternalNode {
 export const createUntouchedLeafValue = () => new Uint8Array(32)
 
 /**
- * Generates a 32 byte array of zeroes and sets the 129th bit to 1, which the EIP
- * refers to as the leaf marker to indicate a leaf value that has been touched previously
+ * Generates a 32 byte array of zeroes and sets the 129th bit to 1 (if `setLeafMarker` is set),
+ * which the EIP refers to as the leaf marker to indicate a leaf value that has been touched previously
  * and contains only zeroes
- *
- * Note: this value should only used in the commitment update process
- *
- * @returns a 32 byte array of zeroes with the 129th bit set to 1
+ * @returns a 32 byte array of zeroes (optionally with 129th bit set to 1)
  */
-export const createDeletedLeafValue = () => {
+export const createDeletedLeafValue = (setLeafMarker = false) => {
   const bytes = new Uint8Array(32)
   // Set the 129th bit to 1 directly by setting the 17th byte (index 16) to 1 (since these bytes are little endian)
-  bytes[16] = 1
+  if (setLeafMarker) bytes[16] = 1
 
   return bytes
 }
@@ -81,7 +78,7 @@ export const createCValues = (values: (Uint8Array | VerkleLeafNodeValue)[]) => {
         val = createUntouchedLeafValue()
         break
       case VerkleLeafNodeValue.Deleted: // Leaf value that has been written with zeros (either zeroes or a deleted value)
-        val = createDeletedLeafValue()
+        val = createDeletedLeafValue(true)
         break
       default:
         val = retrievedValue

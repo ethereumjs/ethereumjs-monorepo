@@ -6,8 +6,6 @@ import { assert, beforeAll, describe, it } from 'vitest'
 import { createVerkleTree } from '../src/constructors.js'
 import { LeafNode } from '../src/index.js'
 
-import { createProof, verifyProof } from './util.js'
-
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 import type { ProverInput, VerifierInput } from 'verkle-cryptography-wasm'
 
@@ -77,20 +75,24 @@ describe('lets make proofs', () => {
     const trie = await createVerkleTree({ verkleCrypto, db: new MapDB() })
 
     await trie['_createRootNode']()
-    const proof = createProof(
-      verkleCrypto,
-      // Get commitment from root node
-      (await trie.findPath(new Uint8Array(31))).stack![0][0].commitment,
-      new Array(256).fill(new Uint8Array(32).fill(0)),
-      0,
-    )
-    const res = verifyProof(
-      verkleCrypto,
-      proof,
-      (await trie.findPath(new Uint8Array(31))).stack![0][0].commitment,
-      0,
-      new Uint8Array(32),
-    )
+    const proof = verkleCrypto.createProof([
+      {
+        // Get commitment from root node
+        serializedCommitment: verkleCrypto.serializeCommitment(
+          (await trie.findPath(new Uint8Array(31))).stack![0][0].commitment,
+        ),
+        vector: new Array(256).fill(new Uint8Array(32).fill(0)),
+        indices: [0],
+      },
+    ])
+    const res = verkleCrypto.verifyProof(proof, [
+      {
+        serializedCommitment: verkleCrypto.serializeCommitment(
+          (await trie.findPath(new Uint8Array(31))).stack![0][0].commitment,
+        ),
+        indexValuePairs: [{ index: 0, value: new Uint8Array(32) }],
+      },
+    ])
     assert.ok(res)
   })
   it.skip('should verify proof for single leaf node', async () => {
