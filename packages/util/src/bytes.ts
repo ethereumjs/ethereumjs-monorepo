@@ -1,6 +1,9 @@
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 // eslint-disable-next-line no-restricted-imports
-import { bytesToHex as _bytesToUnprefixedHex } from 'ethereum-cryptography/utils.js'
+import {
+  bytesToHex as _bytesToUnprefixedHex,
+  hexToBytes as nobleH2B,
+} from 'ethereum-cryptography/utils.js'
 
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexString, padToEven, stripHexPrefix } from './internal.js'
@@ -14,48 +17,26 @@ const BIGINT_0 = BigInt(0)
  */
 export const bytesToUnprefixedHex = _bytesToUnprefixedHex
 
-// hexToBytes cache
-const hexToBytesMapFirstKey: { [key: string]: number } = {}
-const hexToBytesMapSecondKey: { [key: string]: number } = {}
-
-for (let i = 0; i < 16; i++) {
-  const vSecondKey = i
-  const vFirstKey = i * 16
-  const key = i.toString(16).toLowerCase()
-  hexToBytesMapSecondKey[key] = vSecondKey
-  hexToBytesMapSecondKey[key.toUpperCase()] = vSecondKey
-  hexToBytesMapFirstKey[key] = vFirstKey
-  hexToBytesMapFirstKey[key.toUpperCase()] = vFirstKey
-}
-
 /**
- * @deprecated
+ * Converts a {@link PrefixedHexString} to a {@link Uint8Array}
+ * @param {PrefixedHexString} hex The 0x-prefixed hex string to convert
+ * @returns {Uint8Array} The converted bytes
+ * @throws If the input is not a valid 0x-prefixed hex string
  */
-export const unprefixedHexToBytes = (inp: string) => {
-  if (inp.slice(0, 2) === '0x') {
-    throw new Error('hex string is prefixed with 0x, should be unprefixed')
-  } else {
-    inp = padToEven(inp)
-    const byteLen = inp.length
-    const bytes = new Uint8Array(byteLen / 2)
-    for (let i = 0; i < byteLen; i += 2) {
-      bytes[i / 2] = hexToBytesMapFirstKey[inp[i]] + hexToBytesMapSecondKey[inp[i + 1]]
-    }
-    return bytes
-  }
+export const hexToBytes = (hex: string) => {
+  if (!hex.startsWith('0x')) throw new Error('input string must be 0x prefixed')
+  return nobleH2B(padToEven(stripHexPrefix(hex)))
 }
 
-/****************  Borrowed from @chainsafe/ssz */
-// Caching this info costs about ~1000 bytes and speeds up toHexString() by x6
-const hexByByte = Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'))
+export const unprefixedHexToBytes = (hex: string) => {
+  if (hex.startsWith('0x')) throw new Error('input string cannot be 0x prefixed')
+  return nobleH2B(padToEven(hex))
+}
 
 export const bytesToHex = (bytes: Uint8Array): PrefixedHexString => {
-  let hex: PrefixedHexString = `0x`
-  if (bytes === undefined || bytes.length === 0) return hex
-  for (const byte of bytes) {
-    hex = `${hex}${hexByByte[byte]}`
-  }
-  return hex
+  if (bytes === undefined || bytes.length === 0) return '0x'
+  const unprefixedHex = bytesToUnprefixedHex(bytes)
+  return ('0x' + unprefixedHex) as PrefixedHexString
 }
 
 // BigInt cache for the numbers 0 - 256*256-1 (two-byte bytes)
@@ -99,26 +80,6 @@ export const bytesToInt = (bytes: Uint8Array): number => {
   return res
 }
 
-/**
- * Converts a {@link PrefixedHexString} to a {@link Uint8Array}
- * @param {PrefixedHexString} hex The 0x-prefixed hex string to convert
- * @returns {Uint8Array} The converted bytes
- * @throws If the input is not a valid 0x-prefixed hex string
- */
-export const hexToBytes = (hex: PrefixedHexString): Uint8Array => {
-  if (typeof hex !== 'string') {
-    throw new Error(`hex argument type ${typeof hex} must be of type string`)
-  }
-
-  if (!/^0x[0-9a-fA-F]*$/.test(hex)) {
-    throw new Error(`Input must be a 0x-prefixed hexadecimal string, got ${hex}`)
-  }
-
-  const unprefixedHex = hex.slice(2)
-
-  return unprefixedHexToBytes(unprefixedHex)
-}
-
 /******************************************/
 
 /**
@@ -130,7 +91,7 @@ export const intToHex = (i: number): PrefixedHexString => {
   if (!Number.isSafeInteger(i) || i < 0) {
     throw new Error(`Received an invalid integer type: ${i}`)
   }
-  return `0x${i.toString(16)}`
+  return ('0x' + i.toString(16)) as PrefixedHexString
 }
 
 /**
