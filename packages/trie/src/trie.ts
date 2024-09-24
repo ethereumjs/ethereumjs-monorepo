@@ -347,15 +347,21 @@ export class Trie {
               'branch_node',
             ])
           const branchNode = node.getBranch(branchIndex)
-          this.DEBUG &&
-            this.debug(
-              `branch index: ${branchIndex.toString()} - ` + branchNode === null
-                ? 'NULL'
-                : branchNode instanceof Uint8Array
+
+          if (this.DEBUG) {
+            let debugString: string
+            if (branchNode === null) {
+              debugString = 'NULL'
+            } else {
+              debugString = `Branch index: ${branchIndex.toString()} - `
+              debugString +=
+                branchNode instanceof Uint8Array
                   ? `NodeHash: ${bytesToHex(branchNode)}`
-                  : `Raw_Node: ${branchNode!.toString()}`,
-              ['find_path', 'branch_node'],
-            )
+                  : `Raw_Node: ${branchNode!.toString()}`
+            }
+
+            this.debug(debugString, ['find_path', 'branch_node'])
+          }
           if (!branchNode) {
             result = { node: null, remaining: targetKey.slice(progress), stack }
           } else {
