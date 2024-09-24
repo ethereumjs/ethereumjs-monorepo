@@ -10,9 +10,10 @@ import {
   toBytes,
   zeros,
 } from '@ethereumjs/util'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
-import { loadKZG } from 'kzg-wasm'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { join } from 'path'
 
 import { buildBlock, createVM } from '../../src/index.js'
@@ -36,6 +37,7 @@ import type {
   PrefixedHexString,
   WithdrawalRequestV1,
 } from '@ethereumjs/util'
+const kzg = new microEthKZG(trustedSetup)
 
 /**
  * This is the TransitionTool class to run transitions. The entire class is marked `private` since
@@ -129,7 +131,7 @@ export class TransitionTool {
   }
 
   private async setup(args: T8NOptions) {
-    this.common = getCommon(args.state.fork, await loadKZG())
+    this.common = getCommon(args.state.fork, kzg)
 
     const blockchain = getBlockchain(this.inputEnv)
 

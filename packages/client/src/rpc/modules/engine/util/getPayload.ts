@@ -1,4 +1,4 @@
-import { bigIntToHex, bytesToHex } from '@ethereumjs/util'
+import { bigIntToHex } from '@ethereumjs/util'
 
 import type { BlobsBundle } from '../../../../miner/index.js'
 import type { BlobsBundleV1 } from '../types.js'
@@ -13,13 +13,7 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
   if (executionPayload.parentBeaconBlockRoot !== undefined) {
     delete executionPayload.parentBeaconBlockRoot
   }
-  const blobsBundle: BlobsBundleV1 | undefined = bundle
-    ? {
-        commitments: bundle.commitments.map(bytesToHex),
-        blobs: bundle.blobs.map(bytesToHex),
-        proofs: bundle.proofs.map(bytesToHex),
-      }
-    : undefined
+  const blobsBundle: BlobsBundleV1 | undefined = bundle ? bundle : undefined
 
   // ethereumjs does not provide any transaction censoring detection (yet) to suggest
   // overriding builder/mev-boost blocks

@@ -12,7 +12,9 @@ import {
 
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+const kzg = new microEthKZG(trustedSetup)
 
 // CLI Args
 const clientPort = parseInt(process.argv[2]) // EL client port number
@@ -27,8 +29,6 @@ async function getNonce(client: Client, account: string) {
 }
 
 async function run(data: any) {
-  const kzg = await loadKZG()
-
   const common = createCommonFromGethGenesis(genesisJSON, {
     chain: genesisJSON.ChainName ?? 'devnet',
     hardfork: Hardfork.Cancun,

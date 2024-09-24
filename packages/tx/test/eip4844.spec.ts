@@ -12,8 +12,9 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
-import { assert, beforeAll, describe, it } from 'vitest'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { assert, describe, it } from 'vitest'
 
 import { hardfork4844Data } from '../../block/test/testdata/4844-hardfork.js'
 import {
@@ -29,20 +30,17 @@ import {
 import { serialized4844TxData } from './testData/serialized4844tx.js'
 
 import type { BlobEIP4844TxData } from '../src/index.js'
-import type { Common } from '@ethereumjs/common'
-import type { Kzg, PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const pk = randomBytes(32)
+const kzg = new microEthKZG(trustedSetup)
 describe('EIP4844 addSignature tests', () => {
-  let common: Common
-  beforeAll(async () => {
-    const kzg = await loadKZG()
-    common = createCommonFromGethGenesis(hardfork4844Data, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      customCrypto: { kzg },
-    })
+  const common = createCommonFromGethGenesis(hardfork4844Data, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
   })
+
   it('addSignature() -> correctly adds correct signature values', () => {
     const privateKey = pk
     const tx = createBlob4844Tx(
@@ -98,15 +96,12 @@ describe('EIP4844 addSignature tests', () => {
 })
 
 describe('EIP4844 constructor tests - valid scenarios', () => {
-  let common: Common
-  beforeAll(async () => {
-    const kzg = await loadKZG()
-    common = createCommonFromGethGenesis(hardfork4844Data, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      customCrypto: { kzg },
-    })
+  const common = createCommonFromGethGenesis(hardfork4844Data, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
   })
+
   it('should work', () => {
     const txData = {
       type: 0x03,
@@ -136,15 +131,12 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
 })
 
 describe('fromTxData using from a json', () => {
-  let common: Common
-  beforeAll(async () => {
-    const kzg = await loadKZG()
-    common = createCommonFromGethGenesis(hardfork4844Data, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      customCrypto: { kzg },
-    })
+  const common = createCommonFromGethGenesis(hardfork4844Data, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
   })
+
   it('should work', () => {
     const txData = {
       type: '0x3',
@@ -208,15 +200,12 @@ describe('fromTxData using from a json', () => {
 })
 
 describe('EIP4844 constructor tests - invalid scenarios', () => {
-  let common: Common
-  beforeAll(async () => {
-    const kzg = await loadKZG()
-    common = createCommonFromGethGenesis(hardfork4844Data, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      customCrypto: { kzg },
-    })
+  const common = createCommonFromGethGenesis(hardfork4844Data, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
   })
+
   it('should work', () => {
     const baseTxData = {
       type: 0x03,
@@ -264,17 +253,13 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
 })
 
 describe('Network wrapper tests', () => {
-  let kzg: Kzg
-  let common: Common
-  beforeAll(async () => {
-    kzg = await loadKZG()
-    common = createCommonFromGethGenesis(hardfork4844Data, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      params: paramsTx,
-      customCrypto: { kzg },
-    })
+  const common = createCommonFromGethGenesis(hardfork4844Data, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    params: paramsTx,
+    customCrypto: { kzg },
   })
+
   it('should work', async () => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(kzg, blobs)
@@ -301,7 +286,7 @@ describe('Network wrapper tests', () => {
     assert.equal(jsonData.blobs?.length, blobs.length, 'contains the correct number of blobs')
     for (let i = 0; i < jsonData.blobs.length; i++) {
       const b1 = jsonData.blobs[i]
-      const b2 = bytesToHex(signedTx.blobs![i])
+      const b2 = signedTx.blobs![i]
       assert.equal(b1, b2, 'contains the same blobs')
     }
     assert.equal(
@@ -311,7 +296,7 @@ describe('Network wrapper tests', () => {
     )
     for (let i = 0; i < jsonData.kzgCommitments.length; i++) {
       const c1 = jsonData.kzgCommitments[i]
-      const c2 = bytesToHex(signedTx.kzgCommitments![i])
+      const c2 = signedTx.kzgCommitments![i]
       assert.equal(c1, c2, 'contains the same commitments')
     }
     assert.equal(
@@ -321,7 +306,7 @@ describe('Network wrapper tests', () => {
     )
     for (let i = 0; i < jsonData.kzgProofs.length; i++) {
       const p1 = jsonData.kzgProofs[i]
-      const p2 = bytesToHex(signedTx.kzgProofs![i])
+      const p2 = signedTx.kzgProofs![i]
       assert.equal(p1, p2, 'contains the same proofs')
     }
 
@@ -358,8 +343,8 @@ describe('Network wrapper tests', () => {
     )
 
     assert.equal(
-      bytesToHex(unsignedTx.blobVersionedHashes[0]),
-      bytesToHex(simpleBlobTx.blobVersionedHashes[0]),
+      unsignedTx.blobVersionedHashes[0],
+      simpleBlobTx.blobVersionedHashes[0],
       'tx versioned hash for simplified blob txData constructor matches fully specified versioned hashes',
     )
 
@@ -476,9 +461,9 @@ describe('Network wrapper tests', () => {
       'throws when blobs/commitments/hashes mismatch',
     )
 
-    const mangledValue = commitments[0][0]
+    const originalValue = commitments[0]
+    commitments[0] = (originalValue.slice(0, 31) + 'c') as PrefixedHexString
 
-    commitments[0][0] = 154
     const txWithInvalidCommitment = createBlob4844Tx(
       {
         blobVersionedHashes,
@@ -504,8 +489,8 @@ describe('Network wrapper tests', () => {
       'throws when kzg proof cant be verified',
     )
 
-    blobVersionedHashes[0][1] = 2
-    commitments[0][0] = mangledValue
+    blobVersionedHashes[0] = ('0x0102' + blobVersionedHashes[0].slice(6)) as PrefixedHexString
+    commitments[0] = originalValue
 
     const txWithInvalidVersionedHashes = createBlob4844Tx(
       {
@@ -535,15 +520,12 @@ describe('Network wrapper tests', () => {
 })
 
 describe('hash() and signature verification', () => {
-  let common: Common
-  beforeAll(async () => {
-    const kzg = await loadKZG()
-    common = createCommonFromGethGenesis(hardfork4844Data, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      customCrypto: { kzg },
-    })
+  const common = createCommonFromGethGenesis(hardfork4844Data, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
   })
+
   it('should work', async () => {
     const unsignedTx = createBlob4844Tx(
       {
@@ -584,8 +566,7 @@ describe('hash() and signature verification', () => {
   })
 })
 
-it('getEffectivePriorityFee()', async () => {
-  const kzg = await loadKZG()
+it('getEffectivePriorityFee()', () => {
   const common = createCommonFromGethGenesis(hardfork4844Data, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
@@ -610,19 +591,15 @@ it('getEffectivePriorityFee()', async () => {
 })
 
 describe('Network wrapper deserialization test', () => {
-  let kzg: Kzg
-  let common: Common
-  beforeAll(async () => {
-    kzg = await loadKZG()
-    common = createCommonFromGethGenesis(hardfork4844Data, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      params: paramsTx,
-      customCrypto: {
-        kzg,
-      },
-    })
+  const common = createCommonFromGethGenesis(hardfork4844Data, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    params: paramsTx,
+    customCrypto: {
+      kzg,
+    },
   })
+
   it('should work', async () => {
     const txData = {
       type: '0x3',
@@ -665,12 +642,9 @@ describe('Network wrapper deserialization test', () => {
     assert.deepEqual(txData, jsonData as any, 'toJSON should give correct json')
 
     assert.equal(deserializedTx.blobs?.length, 1, 'contains the correct number of blobs')
-    assert.ok(equalsBytes(deserializedTx.blobs![0], blobs[0]), 'blobs should match')
-    assert.ok(
-      equalsBytes(deserializedTx.kzgCommitments![0], commitments[0]),
-      'commitments should match',
-    )
-    assert.ok(equalsBytes(deserializedTx.kzgProofs![0], proofs[0]), 'proofs should match')
+    assert.equal(deserializedTx.blobs![0], blobs[0], 'blobs should match')
+    assert.equal(deserializedTx.kzgCommitments![0], commitments[0], 'commitments should match')
+    assert.equal(deserializedTx.kzgProofs![0], proofs[0], 'proofs should match')
 
     const unsignedHash = bytesToHex(deserializedTx.getHashedMessageToSign())
     const hash = bytesToHex(deserializedTx.hash())

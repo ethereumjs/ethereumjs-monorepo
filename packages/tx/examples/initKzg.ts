@@ -1,9 +1,9 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
 const main = async () => {
-  const kzg = await loadKZG()
-
+  const kzg = new microEthKZG(trustedSetup)
   // Instantiate `common`
   const common = new Common({
     chain: Mainnet,

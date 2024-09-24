@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
-import { type Kzg } from '@ethereumjs/util'
+import { type KZG } from '@ethereumjs/util'
 import * as path from 'path'
 
 import type { HardforkTransitionConfig } from '@ethereumjs/common'
@@ -214,7 +214,7 @@ export function getTestDirs(network: string, testType: string) {
  * @param ttd If set: total terminal difficulty to switch to merge
  * @returns
  */
-function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: number, kzg?: Kzg) {
+function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: number, kzg?: KZG) {
   let networkLowercase: string // This only consists of the target hardfork, so without the EIPs
   if (network.includes('+')) {
     const index = network.indexOf('+')
@@ -286,7 +286,7 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
  * For instance, "London+3855+3860" will also activate EIP-3855 and EIP-3860.
  * @returns the Common which should be used
  */
-export function getCommon(network: string, kzg?: Kzg): Common {
+export function getCommon(network: string, kzg?: KZG): Common {
   if (retestethAlias[network as keyof typeof retestethAlias] !== undefined) {
     network = retestethAlias[network as keyof typeof retestethAlias]
   }

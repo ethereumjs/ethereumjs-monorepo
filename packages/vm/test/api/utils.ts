@@ -17,7 +17,7 @@ import type { VMOpts } from '../../src/types.js'
 import type { VM } from '../../src/vm.js'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 export function createAccountWithDefaults(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)
@@ -103,14 +103,11 @@ export function getTransaction(
     txParams['maxFeePerBlobGas'] = BigInt(100)
     txParams['blobs'] = getBlobs('hello world')
     txParams['kzgCommitments'] = blobsToCommitments(common.customCrypto!.kzg!, txParams['blobs'])
-    txParams['kzgProofs'] = txParams['blobs'].map((blob: Uint8Array, ctx: number) =>
-      common.customCrypto!.kzg!.computeBlobKzgProof(
-        blob,
-        txParams['kzgCommitments'][ctx] as Uint8Array,
-      ),
+    txParams['kzgProofs'] = txParams['blobs'].map((blob: PrefixedHexString, ctx: number) =>
+      common.customCrypto!.kzg!.computeBlobProof(blob, txParams['kzgCommitments'][ctx]),
     )
-    txParams['blobVersionedHashes'] = txParams['kzgCommitments'].map((commitment: Uint8Array) =>
-      computeVersionedHash(commitment, 0x1),
+    txParams['blobVersionedHashes'] = txParams['kzgCommitments'].map(
+      (commitment: PrefixedHexString) => computeVersionedHash(commitment, 0x1),
     )
   }
 

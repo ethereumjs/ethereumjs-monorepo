@@ -11,7 +11,8 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
@@ -19,8 +20,10 @@ import { getRPCClient, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain/chain.js'
 import type { VMExecution } from '../../../src/execution/vmexecution.js'
-const method = 'eth_blobBaseFee'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
+const method = 'eth_blobBaseFee'
+const kzg = new microEthKZG(trustedSetup)
 const privateKey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
 const accountAddress = createAddressFromPrivateKey(privateKey)
 const produceBlockWith4844Tx = async (
@@ -28,7 +31,6 @@ const produceBlockWith4844Tx = async (
   chain: Chain,
   blobsCount: number[],
 ) => {
-  const kzg = await loadKZG()
   // 4844 sample blob
   const sampleBlob = getBlobs('hello world')
   const commitment = blobsToCommitments(kzg, sampleBlob)
@@ -51,9 +53,9 @@ const produceBlockWith4844Tx = async (
     },
   })
   for (let i = 0; i < blobsCount.length; i++) {
-    const blobVersionedHashes = []
-    const blobs = []
-    const kzgCommitments = []
+    const blobVersionedHashes = [] as PrefixedHexString[]
+    const blobs = [] as PrefixedHexString[]
+    const kzgCommitments = [] as PrefixedHexString[]
     const to = createZeroAddress()
     if (blobsCount[i] > 0) {
       for (let blob = 0; blob < blobsCount[i]; blob++) {
@@ -89,7 +91,6 @@ const produceBlockWith4844Tx = async (
 
 describe(method, () => {
   it('call', async () => {
-    const kzg = await loadKZG()
     const { server } = await setupChain(eip4844Data, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
@@ -104,7 +105,6 @@ describe(method, () => {
   })
 
   it('call with more realistic blockchain', async () => {
-    const kzg = await loadKZG()
     const { server, execution, chain } = await setupChain(eip4844Data, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,

@@ -2,13 +2,13 @@ import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createBlob4844Tx, createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex, createZeroAddress, hexToBytes } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, dummy, getRPCClient, startRPC } from '../helpers.js'
-
-const kzg = await loadKZG()
+const kzg = new microEthKZG(trustedSetup)
 
 const common = createCustomCommon({ chainId: 1 }, Mainnet, { customCrypto: { kzg } })
 

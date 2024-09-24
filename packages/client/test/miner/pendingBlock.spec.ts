@@ -10,13 +10,13 @@ import {
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
-  equalsBytes,
   getBlobs,
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it, vi } from 'vitest'
 
 import { hardfork4844Data } from '../../../block/test/testdata/4844-hardfork.js'
@@ -29,6 +29,7 @@ import { mockBlockchain } from '../rpc/mockBlockchain.js'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
+const kzg = new microEthKZG(trustedSetup)
 
 const A = {
   address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
@@ -343,7 +344,6 @@ describe('[PendingBlock]', async () => {
   })
 
   it('construct blob bundles', async () => {
-    const kzg = await loadKZG()
     const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -417,14 +417,12 @@ describe('[PendingBlock]', async () => {
     assert.equal(blobsBundles!.proofs.length, 6, 'maximum 6 proofs should be included')
 
     const pendingBlob = blobsBundles!.blobs[0]
-    assert.ok(pendingBlob !== undefined && equalsBytes(pendingBlob, blobs[0]))
+    assert.ok(pendingBlob !== undefined && pendingBlob === blobs[0])
     const blobProof = blobsBundles!.proofs[0]
-    assert.ok(blobProof !== undefined && equalsBytes(blobProof, proofs[0]))
+    assert.ok(blobProof !== undefined && blobProof === proofs[0])
   })
 
   it('should exclude missingBlobTx', async () => {
-    const kzg = await loadKZG()
-
     const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,

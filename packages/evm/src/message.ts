@@ -39,7 +39,7 @@ interface MessageOpts {
   createdAddresses?: Set<PrefixedHexString>
   delegatecall?: boolean
   gasRefund?: bigint
-  blobVersionedHashes?: Uint8Array[]
+  blobVersionedHashes?: PrefixedHexString[]
   accessWitness?: AccessWitnessInterface
 }
 
@@ -72,7 +72,7 @@ export class Message {
   /**
    * List of versioned hashes if message is a blob transaction in the outer VM
    */
-  blobVersionedHashes?: Uint8Array[]
+  blobVersionedHashes?: PrefixedHexString[]
   accessWitness?: AccessWitnessInterface
 
   constructor(opts: MessageOpts) {

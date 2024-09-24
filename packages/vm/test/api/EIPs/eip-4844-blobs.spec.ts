@@ -13,7 +13,8 @@ import {
   privateToAddress,
   zeros,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { eip4844Data } from '../../../../client/test/testdata/geth-genesis/eip4844.js'
@@ -24,9 +25,8 @@ const pk = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = bytesToHex(privateToAddress(pk))
 
 describe('EIP4844 tests', () => {
+  const kzg = new microEthKZG(trustedSetup)
   it('should build a block correctly with blobs', async () => {
-    const kzg = await loadKZG()
-
     const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'eip4844',
       hardfork: Hardfork.Cancun,

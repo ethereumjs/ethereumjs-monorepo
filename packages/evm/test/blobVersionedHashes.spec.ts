@@ -32,7 +32,7 @@ describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
       gasLimit: BigInt(0xffffffffff),
       // calldata -- retrieves the versioned hash at index 0 and returns it from memory
       data: hexToBytes(getBlobHashIndex0Code),
-      blobVersionedHashes: [hexToBytes('0xab')],
+      blobVersionedHashes: ['0xab'],
     }
     const res = await evm.runCall(runCallArgs)
 
@@ -81,7 +81,7 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
         gasLimit: BigInt(0xffffffffff),
         // calldata -- retrieves the versioned hash at index 0 and returns it from memory
         data: hexToBytes(staticCallCode),
-        blobVersionedHashes: [hexToBytes('0xab')],
+        blobVersionedHashes: ['0xab'],
       }
       const res = await evm.runCall(runCallArgs)
 
@@ -134,7 +134,7 @@ describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () =>
         gasLimit: BigInt(0xffffffffff),
         // calldata -- retrieves the versioned hash at index 0 and returns it from memory
         data: hexToBytes(staticCallCode),
-        blobVersionedHashes: [hexToBytes('0xab')],
+        blobVersionedHashes: ['0xab'],
       }
       const res = await evm.runCall(runCallArgs)
 

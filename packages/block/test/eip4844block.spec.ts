@@ -6,8 +6,9 @@ import {
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
-import { assert, beforeAll, describe, it } from 'vitest'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { assert, describe, it } from 'vitest'
 
 import { fakeExponential, getNumBlobs } from '../src/helpers.js'
 import { createBlock, createBlockHeader } from '../src/index.js'
@@ -16,19 +17,14 @@ import { paramsBlock } from '../src/params.js'
 import { hardfork4844Data } from './testdata/4844-hardfork.js'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { Kzg } from '@ethereumjs/util'
 
 describe('EIP4844 header tests', () => {
-  let common: Common
+  const kzg = new microEthKZG(trustedSetup)
 
-  beforeAll(async () => {
-    const kzg = await loadKZG()
-
-    common = createCommonFromGethGenesis(hardfork4844Data, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      customCrypto: { kzg },
-    })
+  const common = createCommonFromGethGenesis(hardfork4844Data, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
   })
 
   it('should work', () => {
@@ -98,18 +94,16 @@ describe('EIP4844 header tests', () => {
 })
 
 describe('blob gas tests', () => {
-  let common: Common
-  let blobGasPerBlob: bigint
-  beforeAll(async () => {
-    const kzg = await loadKZG()
-    common = createCommonFromGethGenesis(hardfork4844Data, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      params: paramsBlock,
-      customCrypto: { kzg },
-    })
-    blobGasPerBlob = common.param('blobGasPerBlob')
+  const kzg = new microEthKZG(trustedSetup)
+
+  const common = createCommonFromGethGenesis(hardfork4844Data, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    params: paramsBlock,
+    customCrypto: { kzg },
   })
+  const blobGasPerBlob = common.param('blobGasPerBlob')
+
   it('should work', () => {
     const preShardingHeader = createBlockHeader(
       {},
@@ -158,19 +152,16 @@ describe('blob gas tests', () => {
 })
 
 describe('transaction validation tests', () => {
-  let kzg: Kzg
-  let common: Common
-  let blobGasPerBlob: bigint
-  beforeAll(async () => {
-    kzg = await loadKZG()
-    common = createCommonFromGethGenesis(hardfork4844Data, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      params: paramsBlock,
-      customCrypto: { kzg },
-    })
-    blobGasPerBlob = common.param('blobGasPerBlob')
+  const kzg = new microEthKZG(trustedSetup)
+
+  const common = createCommonFromGethGenesis(hardfork4844Data, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    params: paramsBlock,
+    customCrypto: { kzg },
   })
+  const blobGasPerBlob = common.param('blobGasPerBlob')
+
   it('should work', () => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(kzg, blobs)

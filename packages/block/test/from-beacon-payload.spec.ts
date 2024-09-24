@@ -1,6 +1,7 @@
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { loadKZG } from 'kzg-wasm'
-import { assert, beforeAll, describe, it } from 'vitest'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { assert, describe, it } from 'vitest'
 
 import { devnet4844Config } from '../../client/test/sim/configs/4844-devnet.js'
 import { createBlockFromBeaconPayloadJSON, createBlockHeader } from '../src/index.js'
@@ -10,21 +11,18 @@ import { payloadSlot87335Data } from './testdata/payload-slot-87335.js'
 import { payloadSlot87475Data } from './testdata/payload-slot-87475.js'
 import { testnetVerkleKaustinenData } from './testdata/testnetVerkleKaustinen.js'
 
-import type { Common } from '@ethereumjs/common'
-
+const kzg = new microEthKZG(trustedSetup)
 describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
-  let common: Common
-  beforeAll(async () => {
-    const kzg = await loadKZG()
-
-    const commonConfig = { ...devnet4844Config }
-    commonConfig.config = { ...commonConfig.config, chainId: 4844001005 }
-    const network = 'sharding'
-    common = createCommonFromGethGenesis(commonConfig, { chain: network, customCrypto: { kzg } })
-    // safely change chainId without modifying underlying json
-
-    common.setHardfork(Hardfork.Cancun)
+  const commonConfig = { ...devnet4844Config }
+  commonConfig.config = { ...commonConfig.config, chainId: 4844001005 }
+  const network = 'sharding'
+  const common = createCommonFromGethGenesis(commonConfig, {
+    chain: network,
+    customCrypto: { kzg },
   })
+  // safely change chainId without modifying underlying json
+
+  common.setHardfork(Hardfork.Cancun)
 
   it('reconstruct cancun block with blob txs', async () => {
     for (const payload of [payloadSlot87335Data, payloadSlot87475Data]) {

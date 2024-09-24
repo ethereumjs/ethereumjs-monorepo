@@ -1,6 +1,6 @@
 import { createBlockFromExecutionPayload } from '@ethereumjs/block'
 import { Blob4844Tx } from '@ethereumjs/tx'
-import { equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { hexToBytes } from '@ethereumjs/util'
 
 import { short } from '../../../../util/index.js'
 import { Status } from '../types.js'
@@ -72,7 +72,7 @@ export const validate4844BlobVersionedHashes = (
     // match individual hashes
     for (let vIndex = 0; vIndex < blobVersionedHashes.length; vIndex++) {
       // if mismatch, record error and break
-      if (!equalsBytes(hexToBytes(blobVersionedHashes[vIndex]), txVersionedHashes[vIndex])) {
+      if (blobVersionedHashes[vIndex] !== txVersionedHashes[vIndex]) {
         validationError = `Error verifying blobVersionedHashes: mismatch at index=${vIndex} expected=${short(
           txVersionedHashes[vIndex],
         )} received=${short(blobVersionedHashes[vIndex])}`
