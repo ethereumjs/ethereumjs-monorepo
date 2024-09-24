@@ -127,7 +127,10 @@ export class VM {
     let hf = ''
     try {
       hf = this.common.hardfork()
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       hf = 'error'
     }
     const errorStr = `vm hf=${hf}`
