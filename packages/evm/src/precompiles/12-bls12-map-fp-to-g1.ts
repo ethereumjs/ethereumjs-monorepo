@@ -35,9 +35,6 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   try {
     returnValue = bls.mapFPtoG1(opts.data)
   } catch (e) {
-    if (!(e instanceof Error)) {
-      e = new Error(e)
-    }
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: ${e.message}`)
     }

@@ -321,9 +321,6 @@ export class EVM implements EVMInterface {
       try {
         await this._addToBalance(toAccount, message)
       } catch (e) {
-        if (!(e instanceof Error)) {
-          e = new Error(e)
-        }
         errorMessage = e
       }
     }
@@ -509,9 +506,6 @@ export class EVM implements EVMInterface {
     try {
       await this._addToBalance(toAccount, message as MessageWithTo)
     } catch (e) {
-      if (!(e instanceof Error)) {
-        e = new Error(e)
-      }
       errorMessage = e
     }
 

@@ -46,9 +46,6 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   try {
     returnValue = bls.addG2(opts.data)
   } catch (e) {
-    if (!(e instanceof Error)) {
-      e = new Error(e)
-    }
     return EvmErrorResult(e, opts.gasLimit)
   }
 

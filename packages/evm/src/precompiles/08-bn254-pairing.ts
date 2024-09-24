@@ -29,9 +29,6 @@ export function precompile08(opts: PrecompileInput): ExecResult {
   try {
     returnData = (opts._EVM as EVM)['_bn254'].pairing(opts.data)
   } catch (e) {
-    if (!(e instanceof Error)) {
-      e = new Error(e)
-    }
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: ${e.message}`)
     }

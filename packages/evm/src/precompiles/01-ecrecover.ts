@@ -58,10 +58,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
       )
     }
     publicKey = ecrecoverFunction(msgHash, bytesToBigInt(v), r, s)
-  } catch (e) {
-    if (!(e instanceof Error)) {
-      e = new Error(e)
-    }
+  } catch {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: PK recovery failed`)
     }
