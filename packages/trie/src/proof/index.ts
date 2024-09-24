@@ -72,12 +72,12 @@ export function verifyTrieRangeProof(
  * @param key key to create a proof for
  */
 export async function createMerkleProof(trie: Trie, key: Uint8Array): Promise<Proof> {
-  trie['DEBUG'] && trie['debug'](`Creating Proof for Key: ${bytesToHex(key)}`, ['CREATE_PROOF'])
+  trie['DEBUG'] && trie['debug'](`Creating Proof for Key: ${bytesToHex(key)}`, ['create_proof'])
   const { stack } = await trie.findPath(trie['appliedKey'](key))
   const p = stack.map((stackElem) => {
     return stackElem.serialize()
   })
-  trie['DEBUG'] && trie['debug'](`Proof created with (${stack.length}) nodes`, ['CREATE_PROOF'])
+  trie['DEBUG'] && trie['debug'](`Proof created with (${stack.length}) nodes`, ['create_proof'])
   return p
 }
 
@@ -94,7 +94,7 @@ export async function updateTrieFromMerkleProof(
   proof: Proof,
   shouldVerifyRoot: boolean = false,
 ) {
-  trie['DEBUG'] && trie['debug'](`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
+  trie['DEBUG'] && trie['debug'](`Saving (${proof.length}) proof nodes in DB`, ['from_proof'])
   const opStack = proof.map((nodeValue) => {
     let key = Uint8Array.from(trie['hash'](nodeValue))
     key = trie['_opts'].keyPrefix ? concatBytes(trie['_opts'].keyPrefix, key) : key
