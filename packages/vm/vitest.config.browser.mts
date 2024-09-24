@@ -16,6 +16,5 @@ export default mergeConfig(
         'test/api/t8ntool/t8ntool.spec.ts'
       ],
     },
-    optimizeDeps: { entries: ['vite-plugin-node-polyfills/shims/buffer', 'vite-plugin-node-polyfills/shims/global', 'vite-plugin-node-polyfills/shims/process'] }
   }
   ))
