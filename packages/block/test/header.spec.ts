@@ -123,7 +123,10 @@ describe('[Block]: Header functions', () => {
   it('Initialization -> fromRLPSerializedHeader() -> error cases', () => {
     try {
       createBlockHeaderFromRLP(RLP.encode('a'))
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       const expectedError = 'Invalid serialized header input. Must be array'
       assert.ok(e.message.includes(expectedError), 'should throw with header as rlp encoded string')
     }
@@ -170,14 +173,20 @@ describe('[Block]: Header functions', () => {
     headerArray[15] = zeros(4) // bad data
     try {
       createBlockHeaderFromBytesArray(headerArray)
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       const expectedError = 'invalid header. More values than expected were received'
       assert.ok(e.message.includes(expectedError), 'should throw on more values than expected')
     }
 
     try {
       createBlockHeaderFromBytesArray(headerArray.slice(0, 5))
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       const expectedError = 'invalid header. Less values than expected were received'
       assert.ok(e.message.includes(expectedError), 'should throw on less values than expected')
     }
@@ -208,7 +217,10 @@ describe('[Block]: Header functions', () => {
     try {
       createBlockHeader({ ...data, extraData }, opts)
       assert.ok(true, testCase)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.fail(testCase)
     }
 
@@ -219,7 +231,10 @@ describe('[Block]: Header functions', () => {
     try {
       createBlockHeader({ ...data, extraData }, opts)
       assert.ok(testCase)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.fail(testCase)
     }
 
@@ -230,7 +245,10 @@ describe('[Block]: Header functions', () => {
     try {
       createBlockHeader({ ...data, extraData }, opts)
       assert.fail(testCase)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok((error.message as string).includes('invalid amount of extra data'), testCase)
     }
 
@@ -250,7 +268,10 @@ describe('[Block]: Header functions', () => {
     try {
       createBlockHeader({ ...data, extraData }, opts)
       assert.ok(true, testCase)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.fail(testCase)
     }
 
@@ -260,7 +281,10 @@ describe('[Block]: Header functions', () => {
     try {
       createBlockHeader({ ...data, extraData }, opts)
       assert.fail(testCase)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok(
         (error.message as string).includes(
           'extraData must be 97 bytes on non-epoch transition blocks, received 32 bytes',
@@ -281,7 +305,10 @@ describe('[Block]: Header functions', () => {
     try {
       createBlockHeader({ ...data, number: epoch, extraData }, opts)
       assert.fail(testCase)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok(
         (error.message as string).includes(
           'invalid signer list length in extraData, received signer length of 41 (not divisible by 20)',
@@ -301,7 +328,10 @@ describe('[Block]: Header functions', () => {
         true,
         'should instantiate header with invalid extraData when skipConsensusFormatValidation === true',
       )
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.fail('should not throw')
     }
   })
@@ -358,7 +388,10 @@ describe('[Block]: Header functions', () => {
     try {
       await header.validate(blockchain)
       assert.fail(testCase)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error);
+      }
       assert.ok((error.message as string).includes('invalid timestamp diff (lower than period)'), testCase)
     }
 
@@ -368,7 +401,10 @@ describe('[Block]: Header functions', () => {
     try {
       await header.validate(blockchain)
       assert.ok(true, testCase)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error);
+      }
       assert.fail(testCase)
     }
 
@@ -379,7 +415,10 @@ describe('[Block]: Header functions', () => {
     try {
       await header.validate(blockchain)
       assert.fail('should throw')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error);
+      }
       if ((error.message as string).includes('coinbase must be filled with zeros on epoch transition blocks')) {
         assert.ok(true, 'error thrown')
       } else {
@@ -395,7 +434,10 @@ describe('[Block]: Header functions', () => {
     try {
       await header.validate(blockchain)
       assert.fail('should throw')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error);
+      }
       if ((error.message as string).includes('mixHash must be filled with zeros')) {
         assert.ok(true, 'error thrown')
       } else {
@@ -410,7 +452,10 @@ describe('[Block]: Header functions', () => {
     try {
       header.validateCliqueDifficulty(blockchain)
       assert.fail(testCase)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error);
+      }
       if ((error.message as string).includes('difficulty for clique block must be INTURN (2) or NOTURN (1)')) {
         assert.ok(true, 'error thrown on invalid clique difficulty')
       } else {
@@ -431,7 +476,10 @@ describe('[Block]: Header functions', () => {
     try {
       const res = header.validateCliqueDifficulty(poaBlockchain)
       assert.equal(res, true, testCase)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error);
+      }
       assert.fail(testCase)
     }
 
@@ -442,7 +490,10 @@ describe('[Block]: Header functions', () => {
     try {
       const res = header.validateCliqueDifficulty(poaBlockchain)
       assert.equal(res, false, testCase)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error);
+      }
       assert.fail(testCase)
     }
       })

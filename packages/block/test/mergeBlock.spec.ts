@@ -53,7 +53,10 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       }
       createBlockHeader(headerData, { common })
       assert.fail('should throw')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(true, 'should throw on wrong uncleHash')
     }
 
@@ -64,7 +67,10 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       }
       createBlockHeader(headerData, { common })
       assert.fail('should throw')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(true, 'should throw on wrong difficulty')
     }
 
@@ -75,7 +81,10 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       }
       createBlockHeader(headerData, { common })
       assert.fail('should throw')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(true, 'should throw on invalid extraData length')
     }
 
@@ -85,7 +94,10 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       }
       createBlockHeader(headerData, { common })
       assert.fail('should throw')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(true, 'should throw on invalid mixHash length')
     }
 
@@ -96,7 +108,10 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       }
       createBlockHeader(headerData, { common })
       assert.fail('should throw')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(true, 'should throw on wrong nonce')
     }
   })
@@ -107,7 +122,10 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
         common,
       })
       assert.fail('should have thrown')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(true, 'should throw')
     }
   })
@@ -126,7 +144,10 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
     try {
       block.header.prevRandao
       assert.fail('should have thrown')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(true, 'prevRandao should throw if EIP-4399 is not activated')
     }
   })
