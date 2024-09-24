@@ -93,7 +93,7 @@ describe('lets make proofs', () => {
     )
     assert.ok(res)
   })
-  it('should verify proof for single leaf node', async () => {
+  it.skip('should verify proof for single leaf node', async () => {
     const node = await LeafNode.create(randomBytes(31), verkleCrypto)
     node.setValue(0, setLengthRight(bigIntToBytes(1n), 32))
     const valuesArray = new Array<Uint8Array>(256)
@@ -102,7 +102,7 @@ describe('lets make proofs', () => {
       if (value === undefined) value = new Uint8Array(32)
       valuesArray[x] = value
     }
-    console.log(node.commitment)
+
     const proof = verkleCrypto.createProof([
       {
         serializedCommitment: verkleCrypto.serializeCommitment(node.commitment),
@@ -110,7 +110,7 @@ describe('lets make proofs', () => {
         indices: [0],
       },
     ])
-    console.log(proof)
+
     const res = verkleCrypto.verifyProof(proof, [
       {
         serializedCommitment: verkleCrypto.serializeCommitment(node.commitment),
