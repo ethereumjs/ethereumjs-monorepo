@@ -755,7 +755,10 @@ export class Blockchain implements BlockchainInterface {
         let block
         try {
           block = await this.getBlock(blockId)
-        } catch (err: any) {
+        } catch (err) {
+          if (!(err instanceof Error)) {
+            err = new Error(err)
+          }
           if (err.message.includes('not found in DB') === true) {
             return
           } else throw err
@@ -796,7 +799,10 @@ export class Blockchain implements BlockchainInterface {
         let number
         try {
           number = await this.dbManager.hashToNumber(hashes[mid])
-        } catch (err: any) {
+        } catch (err) {
+          if (!(err instanceof Error)) {
+            err = new Error(err)
+          }
           if (err.message.includes('not found in DB') === true) {
             number = undefined
           } else throw err
@@ -917,7 +923,10 @@ export class Blockchain implements BlockchainInterface {
     try {
       const childHeader = await this.getCanonicalHeader(blockNumber + BIGINT_1)
       await this._delChild(childHeader.hash(), childHeader.number, headHash, ops)
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       if (err.message.includes('not found in canonical chain') !== true) {
         throw err
       }
@@ -997,7 +1006,10 @@ export class Blockchain implements BlockchainInterface {
             }
             // Successful execution of onBlock, move the head pointer
             blocksRanCounter++
-          } catch (error: any) {
+          } catch (error) {
+            if (!(error instanceof Error)) {
+              error = new Error(error)
+            }
             if ((error.message as string).includes('not found in DB')) {
               break
             } else {
