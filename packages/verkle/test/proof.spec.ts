@@ -1,5 +1,4 @@
-import { MapDB, bigIntToBytes, hexToBytes, setLengthRight } from '@ethereumjs/util'
-import { randomBytes } from 'crypto'
+import { MapDB, bigIntToBytes, hexToBytes, randomBytes, setLengthRight } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
