@@ -323,9 +323,6 @@ export class Interpreter {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
       } catch (e) {
-        if (!(e instanceof Error)) {
-          e = new Error(e)
-        }
         if (overheadTimer !== undefined) {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
