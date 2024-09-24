@@ -447,7 +447,10 @@ export class Engine {
       if (headBlock.common.isActivatedEIP(4844)) {
         try {
           headBlock.validateBlobTransactions(parent.header)
-        } catch (error: any) {
+        } catch (error) {
+          if (!(error instanceof Error)) {
+            error = new Error(error)
+          }
           const validationError = `Invalid 4844 transactions: ${error}`
           const latestValidHash = await validHash(
             hexToBytes(parentHash as PrefixedHexString),
@@ -470,7 +473,10 @@ export class Engine {
       if (!executedParentExists) {
         throw new Error(`Parent block not yet executed number=${parent.header.number}`)
       }
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       // Stash the block for a potential forced forkchoice update to it later.
       this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
 
@@ -1380,7 +1386,10 @@ export class Engine {
         BigInt(executionPayload.executionPayload.timestamp),
       )
       return executionPayload
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       if (validEngineCodes.includes(error.code)) throw error
       throw {
         code: INTERNAL_ERROR,
