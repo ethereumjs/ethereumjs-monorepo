@@ -126,9 +126,6 @@ export class RlpxPeer extends Peer {
         await this.bindProtocols(rlpxPeer)
         this.config.events.emit(Event.PEER_CONNECTED, this)
       } catch (error) {
-        if (!(error instanceof Error)) {
-          error = new Error(error)
-        }
         this.config.events.emit(Event.PEER_ERROR, error, this)
       }
     }

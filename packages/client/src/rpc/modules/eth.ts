@@ -1076,10 +1076,7 @@ export class Eth {
     if (blockHash !== undefined) {
       try {
         from = to = await this._chain.getBlock(hexToBytes(blockHash))
-      } catch (error) {
-        if (!(error instanceof Error)) {
-          error = new Error(error)
-        }
+      } catch {
         throw {
           code: INVALID_PARAMS,
           message: 'unknown blockHash',

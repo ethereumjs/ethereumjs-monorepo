@@ -35,9 +35,6 @@ export class RlpxSender extends Sender {
     try {
       this.sender.sendStatus(status)
     } catch (err) {
-      if (!(err instanceof Error)) {
-        err = new Error(err)
-      }
       this.emit('error', err)
     }
   }
@@ -52,9 +49,6 @@ export class RlpxSender extends Sender {
       //@ts-ignore "type number is not assignable to type never"
       this.sender.sendMessage(code, data)
     } catch (err) {
-      if (!(err instanceof Error)) {
-        err = new Error(err)
-      }
       this.emit('error', err)
     }
   }

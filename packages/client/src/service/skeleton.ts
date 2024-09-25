@@ -1401,10 +1401,7 @@ export class Skeleton extends MetaDBManager {
         throw Error(`SkeletonBlock rlp lookup failed for ${number} onlyCanonical=${onlyCanonical}`)
       }
       return this.skeletonBlockRlpToBlock(skeletonBlockRlp)
-    } catch (error) {
-      if (!(error instanceof Error)) {
-        error = new Error(error)
-      }
+    } catch {
       // If skeleton is linked, it probably has deleted the block and put it into the chain
       if (onlyCanonical && !this.status.linked) return undefined
       // As a fallback, try to get the block from the canonical chain in case it is available there
@@ -1477,10 +1474,7 @@ export class Skeleton extends MetaDBManager {
       await this.delete(DBKey.SkeletonBlockHashToNumber, block.hash())
       await this.delete(DBKey.SkeletonUnfinalizedBlockByHash, block.hash())
       return true
-    } catch (error) {
-      if (!(error instanceof Error)) {
-        error = new Error(error)
-      }
+    } catch {
       return false
     }
   }

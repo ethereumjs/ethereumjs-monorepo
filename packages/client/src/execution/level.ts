@@ -68,9 +68,6 @@ export class LevelDB<
       value = await this._leveldb.get(key, encodings)
       if (value === null) return undefined
     } catch (error) {
-      if (!(error instanceof Error)) {
-        error = new Error(error)
-      }
       // https://github.com/Level/abstract-level/blob/915ad1317694d0ce8c580b5ab85d81e1e78a3137/abstract-level.js#L309
       // This should be `true` if the error came from LevelDB
       // so we can check for `NOT true` to identify any non-404 errors

@@ -554,10 +554,7 @@ async function executeBlocks(client: EthereumClient) {
     if ((blockRange[0][1] as string[]).length > 0 && blockRange.length === 2) {
       throw new Error('wrong input')
     }
-  } catch (e) {
-    if (!(e instanceof Error)) {
-      e = new Error(e)
-    }
+  } catch {
     client.config.logger.error(
       'Wrong input format for block execution, allowed format types: 5, 5-10, 5[0xba4b5fd92a26badad3cad22eb6f7c7e745053739b5f5d1e8a3afb00f8fb2a280,[TX_HASH_2],...], 5[*] (all txs in verbose mode)',
     )

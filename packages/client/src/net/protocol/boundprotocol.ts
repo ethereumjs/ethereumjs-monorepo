@@ -80,9 +80,6 @@ export class BoundProtocol {
           }
         }
       } catch (error) {
-        if (!(error instanceof Error)) {
-          error = new Error(error)
-        }
         this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
       }
     })
@@ -121,9 +118,6 @@ export class BoundProtocol {
     try {
       data = this.protocol.decode(message, incoming.payload)
     } catch (e) {
-      if (!(e instanceof Error)) {
-        e = new Error(e)
-      }
       error = new Error(`Could not decode message ${message.name}: ${e}`)
     }
     const resolver = this.resolvers.get(incoming.code)
