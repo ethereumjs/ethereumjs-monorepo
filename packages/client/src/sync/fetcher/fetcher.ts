@@ -82,7 +82,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
     this.config = options.config
-    this.debug = debug('client:fetcher')
+    this.debug = debug('client:fetcher:#')
 
     this.pool = options.pool
     this.timeout = options.timeout ?? 8000
