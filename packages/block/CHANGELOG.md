@@ -320,7 +320,7 @@ This is generally a big thing for Ethereum cause this brings the full Ethereum E
 
 This will allow for easy-to-setup browser applications both around the existing as well as the upcoming Ethereum EL protocol stack in the future. 🏄🏾‍♂️ We are beyond excitement to see what you guys will be building with this for "Browser-Ethereum". 🤓
 
-Browser is not the only thing though why this release round is exciting: default Shanghai hardfork, full Cancun support, significantly smaller bundle sizes for various libraries, new database abstractions, a simpler to use EVM, API clean-ups throughout the whole stack. These are just the most prominent additional things here to mention which will make the developer heart beat a bit faster hopefully when you are scanning to the vast release notes for every of the 15 (!) releases! 🧑🏽‍💻
+Browser is not the only thing though why this release round is exciting: default Shanghai hardfork, full Cancun support, significantly smaller bundle sizes for various libraries, new database abstractions, a simpler to use EVM, API clean-ups throughout the whole stack. These are just the most prominent additional things here to mention which will make the developer's heart beat a bit faster hopefully when you are scanning to the vast release notes for every of the 15 (!) releases! 🧑🏽‍💻
 
 So: jump right in and enjoy. We can't wait to hear your feedback and see if you agree that these releases are as good as we think they are. 🙂 ❤️
 
@@ -751,7 +751,7 @@ We have gotten rid of a lot of technical debt and inconsistencies and removed un
 
 We are very much confident that users of the libraries will greatly benefit from the changes being introduced. However - along the upgrade process - these releases require some extra attention and care since the changeset is both so big and deep reaching. We highly recommend to closely read the release notes, we have done our best to create a full picture on the changes with some special emphasis on delicate code and API parts and give some explicit guidance on how to upgrade and where problems might arise!
 
-So, enjoy the releases (this is a first round of Beta releases, with final releases following a couple of weeks after if things go well)! 🎉
+So, enjoy the releases (this is the first round of Beta releases, with final releases following a couple of weeks after if things go well)! 🎉
 
 The EthereumJS Team
 
@@ -907,7 +907,7 @@ const block = Block.fromBlockData(
 
 ### Additional Error Context for Error Messages
 
-This release extends the text of the error messages in the library with some consistent context information (see PR [#1540](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1540)), here an example for illustration:
+This release extends the text of the error messages in the library with some consistent context information (see PR [#1540](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1540)), here is an example for illustration:
 
 Before:
 
@@ -921,7 +921,7 @@ New:
 invalid transaction trie (block number=1 hash=0xe074b7b8d725c4000f278ae55cedbc76262e28906c283899d996cd27ab19b145 hf=istanbul baseFeePerGas=none txs=7 uncles=0)
 ```
 
-The extended errors give substantial more object and chain context and should ease debugging.
+The extended errors give substantially more object and chain context and should ease debugging.
 
 **Potentially breaking**: Attention! If you do react on errors in your code and do exact error matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisons and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
 
