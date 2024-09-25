@@ -6,7 +6,7 @@ This class encapsulates Clique-related consensus functionality when used with th
 Note: reorgs which happen between epoch transitions, which change the internal voting state over the reorg
 will result in failure and is currently not supported.
 The hotfix for this could be: re-load the latest epoch block (this has the clique state in the extraData of the header)
-Now replay all blocks on top of it. This should validate the chain up to the new/reorged tip which previously threw.
+Now replay all blocks on top of it. This should validate the chain up to the new/reorged tip which previously thrown.
 
 ## Implements
 
