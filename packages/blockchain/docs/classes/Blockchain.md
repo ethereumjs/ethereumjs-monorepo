@@ -640,7 +640,7 @@ ___
 ▸ **setIteratorHead**(`tag`, `headHash`): `Promise`<`void`\>
 
 Set header hash of a certain `tag`.
-When calling the iterator, the iterator will start running the first child block after the header hash currently stored.
+When calling the iterator, the iterator will start running the first child block after the header hash is currently stored.
 
 #### Parameters
 
