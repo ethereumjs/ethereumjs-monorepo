@@ -42,18 +42,15 @@ export function isInternalNode(node: VerkleNode): node is InternalNode {
 export const createUntouchedLeafValue = () => new Uint8Array(32)
 
 /**
- * Generates a 32 byte array of zeroes and sets the 129th bit to 1, which the EIP
- * refers to as the leaf marker to indicate a leaf value that has been touched previously
+ * Generates a 32 byte array of zeroes and sets the 129th bit to 1 (if `setLeafMarker` is set),
+ * which the EIP refers to as the leaf marker to indicate a leaf value that has been touched previously
  * and contains only zeroes
- *
- * Note: this value should only used in the commitment update process
- *
- * @returns a 32 byte array of zeroes with the 129th bit set to 1
+ * @returns a 32 byte array of zeroes (optionally with 129th bit set to 1)
  */
-export const createDeletedLeafValue = () => {
+export const createDeletedLeafValue = (setLeafMarker = false) => {
   const bytes = new Uint8Array(32)
-  // Set the 129th bit to 1 directly by setting the 17th byte (index 16) to 0x80
-  bytes[16] = 0x80
+  // Set the 129th bit to 1 directly by setting the 17th byte (index 16) to 1 (since these bytes are little endian)
+  if (setLeafMarker) bytes[16] = 1
 
   return bytes
 }
@@ -81,16 +78,22 @@ export const createCValues = (values: (Uint8Array | VerkleLeafNodeValue)[]) => {
         val = createUntouchedLeafValue()
         break
       case VerkleLeafNodeValue.Deleted: // Leaf value that has been written with zeros (either zeroes or a deleted value)
-        val = createDeletedLeafValue()
+        val = createDeletedLeafValue(true)
         break
       default:
         val = retrievedValue
         break
     }
-    // We add 16 trailing zeros to each value since all commitments are padded to an array of 32 byte values
+    // We add 16 trailing zeros to each value since all commitments are little endian and padded to 32 bytes
     expandedValues[x * 2] = setLengthRight(val.slice(0, 16), 32)
-    // Apply leaf marker to all touched values (i.e. flip 129th bit)
-    if (retrievedValue !== VerkleLeafNodeValue.Untouched) expandedValues[x * 2][16] = 0x80
+    // Apply leaf marker to all touched values (i.e. flip 129th bit) of the lower value (the 16 lower bytes
+    // of the original 32 byte value array)
+    // This is counterintuitive since the 129th bit is little endian byte encoding so 10000000 in bits but
+    // each byte in a Javascript Uint8Array is still "big endian" so the 16th byte (which contains the 129-137th bits)
+    // should be 1 and not 256.  In other words, the little endian value 10000000 is represented as an integer 1 in the byte
+    // at index 16 of the Uint8Array since each byte is big endian at the system level so we have to invert that
+    // value to get the correct representation
+    if (retrievedValue !== VerkleLeafNodeValue.Untouched) expandedValues[x * 2][16] = 1
     expandedValues[x * 2 + 1] = setLengthRight(val.slice(16), 32)
   }
   return expandedValues
