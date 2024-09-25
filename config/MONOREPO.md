@@ -27,7 +27,7 @@ Above is the quickest way to set you up.
 
 ### ℹ️ Note for Windows users:
 
-Windows users might run into the following error when trying to install the repo: `'.' is not recognized as an internal or external command`. To remediate for this, you can force Windows to use Git bash to run scripts (you'll need to install [Git for Windows](https://git-scm.com/download/win) for this) with the following command:
+Windows users might run into the following error when trying to install the repo: `'.' is not recognized as an internal or external command`. To remediate this, you can force Windows to use Git bash to run scripts (you'll need to install [Git for Windows](https://git-scm.com/download/win) for this) with the following command:
 
 ```sh
 npm config set script-shell "C:\\Program Files (x86)\\git\\bin\\bash.exe"
