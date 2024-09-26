@@ -334,7 +334,7 @@ describe('testing checkpoints', () => {
     },
   ]
 
-  async function trieEval(trie: Trie, value: any) {
+  const trieEval = async (trie: Trie, value: any) => {
     const actualValue = await trie.get(key)
     const pass = actualValue === null ? value === null : equalsBytes(actualValue, value)
     return pass
@@ -345,17 +345,17 @@ describe('testing checkpoints', () => {
       const trie = new Trie()
 
       await trie.put(key, kv.v1)
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, kv.v1))
     })
     it('CP -> V1 -> Commit -> Flush() (-> V1)', async () => {
       const trie = new Trie()
 
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v1)
       await trie.commit()
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, kv.v1))
     })
@@ -363,10 +363,10 @@ describe('testing checkpoints', () => {
     it('CP -> V1 -> Revert -> Flush() (-> Undefined)', async () => {
       const trie = new Trie()
 
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v1)
       await trie.revert()
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, null))
     })
@@ -375,9 +375,9 @@ describe('testing checkpoints', () => {
       const trie = new Trie()
 
       await trie.put(key, kv.v1)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.commit()
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, kv.v1))
     })
@@ -386,9 +386,9 @@ describe('testing checkpoints', () => {
       const trie = new Trie()
 
       await trie.put(key, kv.v1)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.revert()
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, kv.v1))
     })
@@ -397,10 +397,10 @@ describe('testing checkpoints', () => {
       const trie = new Trie()
 
       await trie.put(key, kv.v1)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v2)
       await trie.commit()
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, kv.v2))
     })
@@ -409,11 +409,11 @@ describe('testing checkpoints', () => {
       const trie = new Trie()
 
       await trie.put(key, kv.v1)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v2)
       await trie.commit()
       await trie.put(key, kv.v3)
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, kv.v3))
     })
@@ -422,11 +422,11 @@ describe('testing checkpoints', () => {
       const trie = new Trie()
 
       await trie.put(key, kv.v1)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v2)
       await trie.put(key, kv.v3)
       await trie.commit()
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, kv.v3))
     })
@@ -434,11 +434,11 @@ describe('testing checkpoints', () => {
     it('CP -> V1 -> V2 -> Commit -> Flush() (-> V2)', async () => {
       const trie = new Trie()
 
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v1)
       await trie.put(key, kv.v2)
       await trie.commit()
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, kv.v2))
     })
@@ -446,12 +446,12 @@ describe('testing checkpoints', () => {
     it('CP -> V1 -> V2 -> Revert -> Flush() (-> Undefined)', async () => {
       const trie = new Trie()
 
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v1)
 
       await trie.put(key, kv.v2)
       await trie.revert()
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, null))
     })
@@ -460,10 +460,10 @@ describe('testing checkpoints', () => {
       const trie = new Trie()
 
       await trie.put(key, kv.v1)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v2)
       await trie.revert()
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, kv.v1))
     })
@@ -472,13 +472,13 @@ describe('testing checkpoints', () => {
       const trie = new Trie()
 
       await trie.put(key, kv.v1)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v2)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v3)
       await trie.commit()
       await trie.commit()
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, kv.v3))
     })
@@ -487,13 +487,13 @@ describe('testing checkpoints', () => {
       const trie = new Trie()
 
       await trie.put(key, kv.v1)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v2)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v3)
       await trie.commit()
       await trie.revert()
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, kv.v1))
     })
@@ -502,13 +502,13 @@ describe('testing checkpoints', () => {
       const trie = new Trie()
 
       await trie.put(key, kv.v1)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v2)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v3)
       await trie.revert()
       await trie.commit()
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, kv.v2))
     })
@@ -517,14 +517,14 @@ describe('testing checkpoints', () => {
       const trie = new Trie()
 
       await trie.put(key, kv.v1)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v2)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v3)
       await trie.revert()
       await trie.put(key, kv.v4)
       await trie.commit()
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, kv.v4))
     })
@@ -533,17 +533,17 @@ describe('testing checkpoints', () => {
       const trie = new Trie()
 
       await trie.put(key, kv.v1)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v2)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v3)
       await trie.revert()
       await trie.put(key, kv.v4)
-      await trie.checkpoint()
+      trie.checkpoint()
       await trie.put(key, kv.v5)
       await trie.commit()
       await trie.commit()
-      await trie.flushCheckpoints()
+      trie.flushCheckpoints()
 
       assert.ok(await trieEval(trie, kv.v5))
     })
