@@ -2,10 +2,9 @@ import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 import { Trie } from '../../src/index.js'
 
-describe('testing checkpoints', () => {
-  // exhaustive testing of checkpoint, revert, flush, and commit functionality of trie, inspired by
-  // the statemanager checkpointing.*.spec.ts tests
-
+// exhaustive testing of checkpoint, revert, flush, and commit functionality of trie, inspired by
+// the statemanager checkpointing.*.spec.ts tests
+describe('trie: checkpointing', () => {
   // Sample key-value pairs using Uint8Array
   const key = hexToBytes('0x11')
   const value1 = hexToBytes('0xaa')
