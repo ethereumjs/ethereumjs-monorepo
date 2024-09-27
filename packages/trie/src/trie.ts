@@ -34,7 +34,6 @@ import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from '
 import { WalkController } from './util/walkController.js'
 
 import type {
-  EmbeddedNode,
   FoundNodeFunction,
   Nibbles,
   Path,
@@ -610,7 +609,7 @@ export class Trie {
           // shrinking extension or leaf
           lastNode.key(lastKey)
           const formattedNode = this._formatNode(lastNode, false, toSave)
-          newBranchNode.setBranch(branchKey, formattedNode as EmbeddedNode)
+          newBranchNode.setBranch(branchKey, formattedNode)
         } else {
           // remove extension or attaching
           this._formatNode(lastNode, false, toSave, true)
@@ -728,7 +727,7 @@ export class Trie {
 
     // nodes on the branch
     // count the number of nodes on the branch
-    const branchNodes: [number, EmbeddedNode][] = lastNode.getChildren()
+    const branchNodes: [number, Uint8Array | Uint8Array[]][] = lastNode.getChildren()
 
     // if there is only one branch node left, collapse the branch node
     if (branchNodes.length === 1) {
@@ -819,7 +818,7 @@ export class Trie {
     topLevel: boolean,
     opStack: BatchDBOp[],
     remove: boolean = false,
-  ): Uint8Array | (EmbeddedNode | null)[] {
+  ): Uint8Array | (Uint8Array | Uint8Array[] | null)[] {
     const encoded = node.serialize()
 
     if (encoded.length >= 32 || topLevel) {

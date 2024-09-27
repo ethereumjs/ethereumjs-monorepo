@@ -1,9 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 
-import type { EmbeddedNode } from '../types.js'
-
 export class BranchNode {
-  _branches: (EmbeddedNode | null)[]
+  _branches: (Uint8Array | Uint8Array[] | null)[]
   _value: Uint8Array
 
   constructor() {
@@ -26,11 +24,11 @@ export class BranchNode {
     return this._value
   }
 
-  setBranch(i: number, v: EmbeddedNode | null) {
+  setBranch(i: number, v: Uint8Array | Uint8Array[] | null) {
     this._branches[i] = v
   }
 
-  raw(): (EmbeddedNode | null)[] {
+  raw(): (Uint8Array | Uint8Array[] | null)[] {
     return [...this._branches, this._value]
   }
 
@@ -47,8 +45,8 @@ export class BranchNode {
     }
   }
 
-  getChildren(): [number, EmbeddedNode][] {
-    const children: [number, EmbeddedNode][] = []
+  getChildren(): [number, Uint8Array | Uint8Array[]][] {
+    const children: [number, Uint8Array | Uint8Array[]][] = []
     for (let i = 0; i < 16; i++) {
       const b = this._branches[i]
       if (b !== null && b.length > 0) {

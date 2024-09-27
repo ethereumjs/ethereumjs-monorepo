@@ -10,7 +10,7 @@ export type Nibbles = number[]
 
 // Branch and extension nodes might store
 // hash to next node, or embed it if its len < 32
-export type EmbeddedNode = Uint8Array | Uint8Array[]
+// export type EmbeddedNode = Uint8Array | Uint8Array[]
 
 export type Proof = Uint8Array[]
 
