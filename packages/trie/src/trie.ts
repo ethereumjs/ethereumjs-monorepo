@@ -710,7 +710,7 @@ export class Trie {
     }
 
     if (lastNode instanceof BranchNode) {
-      lastNode.value(null)
+      lastNode.value()
     } else {
       // the lastNode has to be a leaf if it's not a branch.
       // And a leaf's parent, if it has one, must be a branch.

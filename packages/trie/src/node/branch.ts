@@ -4,11 +4,11 @@ import type { EmbeddedNode } from '../types.js'
 
 export class BranchNode {
   _branches: (EmbeddedNode | null)[]
-  _value: Uint8Array | null
+  _value: Uint8Array
 
   constructor() {
     this._branches = new Array(16).fill(null)
-    this._value = null
+    this._value = new Uint8Array(0)
   }
 
   static fromArray(arr: Uint8Array[]): BranchNode {
@@ -18,12 +18,12 @@ export class BranchNode {
     return node
   }
 
-  value(v?: Uint8Array | null): Uint8Array | null {
-    if (v !== null && v !== undefined) {
+  value(v?: Uint8Array): Uint8Array {
+    if (v !== undefined) {
       this._value = v
     }
 
-    return this._value && this._value.length > 0 ? this._value : null
+    return this._value
   }
 
   setBranch(i: number, v: EmbeddedNode | null) {
