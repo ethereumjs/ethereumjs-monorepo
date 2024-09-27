@@ -78,7 +78,7 @@ export const paramsVM: ParamsDict = {
   7002: {
     // config
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the withdrawal requests predeploy address
-    withdrawalRequestPredeployAddress: '0x00A3ca265EBcb825B45F985A16CEFB49958cE017', // Address of the validator excess address
+    withdrawalRequestPredeployAddress: '0x05F27129610CB42103b665629CB5c8C00296AaAa', // Address of the validator excess address
   },
 
   /**
@@ -87,6 +87,6 @@ export const paramsVM: ParamsDict = {
   7251: {
     // config
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the consolidation requests predeploy address
-    consolidationRequestPredeployAddress: '0x00b42dbF2194e931E80326D950320f7d9Dbeac02', // Address of the consolidations contract
+    consolidationRequestPredeployAddress: '0x00706203067988Ab3E2A2ab626EdCD6f28bDBbbb', // Address of the consolidations contract
   },
 }
