@@ -11,7 +11,6 @@ import {
   equalsBytes,
   toBytes,
   toType,
-  zeros,
 } from '@ethereumjs/util'
 import { BuildStatus, buildBlock } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -121,12 +120,12 @@ export class PendingBlock {
     // potentially included in the fcU in future and can be safely added in uniqueness calc
     const timestampBuf = bigIntToUnpaddedBytes(toType(timestamp ?? 0, TypeOutput.BigInt))
     const gasLimitBuf = bigIntToUnpaddedBytes(gasLimit)
-    const mixHashBuf = toType(mixHash!, TypeOutput.Uint8Array) ?? zeros(32)
+    const mixHashBuf = toType(mixHash!, TypeOutput.Uint8Array) ?? new Uint8Array(32)
     const parentBeaconBlockRootBuf =
-      toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
-    const coinbaseBuf = toType(coinbase ?? zeros(20), TypeOutput.Uint8Array)
+      toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? new Uint8Array(32)
+    const coinbaseBuf = toType(coinbase ?? new Uint8Array(20), TypeOutput.Uint8Array)
 
-    let withdrawalsBuf = zeros(0)
+    let withdrawalsBuf = new Uint8Array()
 
     if (withdrawals !== undefined && withdrawals !== null) {
       const withdrawalsBufTemp: Uint8Array[] = []

@@ -30,7 +30,6 @@ import {
   toBytes,
   unpadBytes,
   utf8ToBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
@@ -674,7 +673,7 @@ describe('runBlock() -> tx types', async () => {
     )
 
     await runBlock(vm, { block, skipBlockValidation: true, generate: true })
-    const storage = await vm.stateManager.getStorage(defaultAuthAddr, zeros(32))
+    const storage = await vm.stateManager.getStorage(defaultAuthAddr, new Uint8Array(32))
     assert.ok(equalsBytes(storage, new Uint8Array([2])))
   })
 })

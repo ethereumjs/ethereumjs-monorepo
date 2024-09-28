@@ -5,7 +5,6 @@ import {
   equalsBytes,
   intToHex,
   matchingBytesLength,
-  zeros,
 } from '@ethereumjs/util'
 import debug from 'debug'
 
@@ -70,7 +69,7 @@ export class VerkleTree {
 
     this.database(opts?.db)
 
-    this.EMPTY_TREE_ROOT = zeros(32)
+    this.EMPTY_TREE_ROOT = new Uint8Array(32)
     this._hashLen = this.EMPTY_TREE_ROOT.length
     this._root = this.EMPTY_TREE_ROOT
 
