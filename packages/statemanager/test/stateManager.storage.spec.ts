@@ -6,7 +6,6 @@ import {
   equalsBytes,
   hexToBytes,
   unpadBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
@@ -85,7 +84,7 @@ describe('StateManager -> Storage', () => {
         const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
 
-        const key = zeros(32)
+        const key = new Uint8Array(32)
         const value = hexToBytes(`0x${'aa'.repeat(33)}`)
         try {
           await stateManager.putStorage(address, key, value)
@@ -104,14 +103,14 @@ describe('StateManager -> Storage', () => {
         const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
 
-        const key0 = zeros(32)
+        const key0 = new Uint8Array(32)
         const value0 = hexToBytes(`0x00${'aa'.repeat(30)}`) // put a value of 31-bytes length with a leading zero byte
         const expect0 = unpadBytes(value0)
         await stateManager.putStorage(address, key0, value0)
         const slot0 = await stateManager.getStorage(address, key0)
         assert.ok(equalsBytes(slot0, expect0), 'value of 31 bytes padded correctly')
 
-        const key1 = concatBytes(zeros(31), hexToBytes('0x01'))
+        const key1 = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
         const value1 = hexToBytes(`0x0000${'aa'.repeat(1)}`) // put a value of 1-byte length with two leading zero bytes
         const expect1 = unpadBytes(value1)
         await stateManager.putStorage(address, key1, value1)
@@ -122,7 +121,7 @@ describe('StateManager -> Storage', () => {
 
       it(`should delete storage values which only consist of zero bytes`, async () => {
         const address = createZeroAddress()
-        const key = zeros(32)
+        const key = new Uint8Array(32)
 
         const startValue = hexToBytes('0x01')
 
@@ -136,7 +135,7 @@ describe('StateManager -> Storage', () => {
           const account = createAccountWithDefaults()
           await stateManager.putAccount(address, account)
 
-          const value = zeros(length)
+          const value = new Uint8Array(length)
           await stateManager.putStorage(address, key, startValue)
           const currentValue = await stateManager.getStorage(address, key)
           if (!equalsBytes(currentValue, startValue)) {
@@ -146,7 +145,7 @@ describe('StateManager -> Storage', () => {
             // delete the value
             await stateManager.putStorage(address, key, value)
             const deleted = await stateManager.getStorage(address, key)
-            assert.ok(equalsBytes(deleted, zeros(0)), 'the storage key should be deleted')
+            assert.ok(equalsBytes(deleted, new Uint8Array()), 'the storage key should be deleted')
           }
         }
       })
@@ -160,7 +159,7 @@ describe('StateManager -> Storage', () => {
         const account = createAccountWithDefaults()
         await stateManager.putAccount(address, account)
 
-        const key = zeros(32)
+        const key = new Uint8Array(32)
         const value = hexToBytes('0x0000aabb00')
         const expect = hexToBytes('0xaabb00')
 

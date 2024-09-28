@@ -10,7 +10,6 @@ import {
   equalsBytes,
   hexToBytes,
   randomBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
@@ -27,7 +26,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 describe('ProofStateManager', () => {
   it(`should return quantity-encoded RPC representation`, async () => {
     const address = createZeroAddress()
-    const key = zeros(32)
+    const key = new Uint8Array(32)
     const stateManager = new MerkleStateManager()
 
     const proof = await getMerkleStateProof(stateManager, address, [key])
@@ -37,7 +36,7 @@ describe('ProofStateManager', () => {
 
   it(`should correctly return the right storage root / account root`, async () => {
     const address = createZeroAddress()
-    const key = zeros(32)
+    const key = new Uint8Array(32)
     const stateManager = new MerkleStateManager()
 
     await stateManager.putAccount(address, new Account(BigInt(100), BigInt(200)))
@@ -51,7 +50,7 @@ describe('ProofStateManager', () => {
 
   it(`should return quantity-encoded RPC representation for existing accounts`, async () => {
     const address = createZeroAddress()
-    const key = zeros(32)
+    const key = new Uint8Array(32)
     const stateManager = new MerkleStateManager()
 
     const account = new Account()
@@ -79,7 +78,7 @@ describe('ProofStateManager', () => {
 
   it(`should get and verify EIP 1178 proofs`, async () => {
     const address = createZeroAddress()
-    const key = zeros(32)
+    const key = new Uint8Array(32)
     const value = hexToBytes('0x0000aabb00')
     const code = hexToBytes('0x6000')
     const stateManager = new MerkleStateManager()

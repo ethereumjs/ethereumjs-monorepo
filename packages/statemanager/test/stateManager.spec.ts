@@ -11,7 +11,6 @@ import {
   intToBytes,
   setLengthLeft,
   utf8ToBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -53,7 +52,7 @@ describe('StateManager -> General', () => {
     const sm = new MerkleStateManager()
 
     try {
-      const storage = await sm.getStorage(createZeroAddress(), zeros(32))
+      const storage = await sm.getStorage(createZeroAddress(), new Uint8Array(32))
       assert.ok(equalsBytes(storage, new Uint8Array()))
     } catch {
       assert.fail('should not throw')

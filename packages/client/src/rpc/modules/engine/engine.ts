@@ -6,7 +6,6 @@ import {
   equalsBytes,
   hexToBytes,
   toBytes,
-  zeros,
 } from '@ethereumjs/util'
 
 import { ExecStatus } from '../../../execution/index.js'
@@ -71,7 +70,7 @@ import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
 
-const zeroBlockHash = zeros(32)
+const zeroBlockHash = new Uint8Array(32)
 
 /**
  * engine_* RPC module
@@ -486,7 +485,7 @@ export class Engine {
         const latestValidHash =
           this.chain.blocks.latest !== null
             ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
-            : bytesToHex(zeros(32))
+            : bytesToHex(new Uint8Array(32))
         const response = {
           status: Status.INVALID,
           validationError: this.skeleton.fillStatus.validationError ?? '',
@@ -555,7 +554,7 @@ export class Engine {
       const latestValidHash =
         this.chain.blocks.latest !== null
           ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
-          : bytesToHex(zeros(32))
+          : bytesToHex(new Uint8Array(32))
       const response = {
         status: Status.INVALID,
         validationError: this.skeleton.fillStatus.validationError ?? '',
@@ -978,7 +977,7 @@ export class Engine {
       const latestValidHash =
         this.chain.blocks.latest !== null
           ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
-          : bytesToHex(zeros(32))
+          : bytesToHex(new Uint8Array(32))
       const response = {
         payloadStatus: {
           status: Status.INVALID,

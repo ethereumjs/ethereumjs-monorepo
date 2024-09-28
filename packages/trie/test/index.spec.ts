@@ -274,10 +274,8 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         const a = hexToBytes('0x1a26338f0d905e295fccb71fa9ea849ffa12aaf4')
 
         const storageRoot = new Uint8Array(32)
-        storageRoot.fill(0)
 
         const startAmount = new Uint8Array(26)
-        startAmount.fill(0)
         startAmount[0] = 1
 
         const account = [startAmount, 0, storageRoot, KECCAK256_NULL]
@@ -338,11 +336,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         const useKeyHashingFunction: HashKeysFunction = (msg) => {
           const hashLen = 32
           if (msg.length <= hashLen - 5) {
-            return concatBytes(
-              utf8ToBytes('hash_'),
-              new Uint8Array(hashLen - msg.length).fill(0),
-              msg,
-            )
+            return concatBytes(utf8ToBytes('hash_'), new Uint8Array(hashLen - msg.length), msg)
           } else {
             return concatBytes(utf8ToBytes('hash_'), msg.slice(0, hashLen - 5))
           }

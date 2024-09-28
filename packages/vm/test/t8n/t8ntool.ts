@@ -2,14 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { EVMMockBlockchain, NobleBLS } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { createTx } from '@ethereumjs/tx'
-import {
-  CLRequestType,
-  bigIntToHex,
-  bytesToHex,
-  hexToBytes,
-  toBytes,
-  zeros,
-} from '@ethereumjs/util'
+import { CLRequestType, bigIntToHex, bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
@@ -180,7 +173,7 @@ export class TransitionTool {
         blockNumber: bytesToHex(toBytes(builder['headerData'].number)),
         transactionHash: bytesToHex(event.transaction.hash()),
         transactionIndex: bigIntToHex(BigInt(txIndex)),
-        blockHash: bytesToHex(zeros(32)),
+        blockHash: bytesToHex(new Uint8Array(32)),
         logIndex: bigIntToHex(BigInt(formattedLogs.length)),
         removed: 'false',
       }
@@ -294,7 +287,7 @@ function getBlockchain(inputEnv: T8NEnv) {
     }
     return {
       hash() {
-        return zeros(32)
+        return new Uint8Array(32)
       },
     }
   }

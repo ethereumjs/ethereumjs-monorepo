@@ -12,7 +12,6 @@ import {
   equalsBytes,
   hexToBytes,
   setLengthLeft,
-  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -100,7 +99,7 @@ describe('EIP-7002 tests', () => {
       {
         header: {
           number: 2,
-          parentBeaconBlockRoot: zeros(32),
+          parentBeaconBlockRoot: new Uint8Array(32),
         },
         transactions: [tx],
       },
@@ -146,7 +145,7 @@ describe('EIP-7002 tests', () => {
       {
         header: {
           number: 3,
-          parentBeaconBlockRoot: zeros(32),
+          parentBeaconBlockRoot: new Uint8Array(32),
         },
         transactions: [tx2, tx3],
       },

@@ -12,7 +12,6 @@ import {
   hexToBytes,
   padToEven,
   unpadBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
@@ -744,7 +743,9 @@ describe('RunCall tests', () => {
       }
       await evm.runCall(runCallArgs)
 
-      const callResult = bytesToHex(await evm.stateManager.getStorage(callerAddress, zeros(32)))
+      const callResult = bytesToHex(
+        await evm.stateManager.getStorage(callerAddress, new Uint8Array(32)),
+      )
       // Expect slot to have value of either: 0 since CALLCODE and CODE did not have enough gas to execute
       // Or 1, if CALL(CODE) has enough gas to enter the new call frame
       assert.equal(callResult, expectedOutput, `should have result ${expectedOutput}`)

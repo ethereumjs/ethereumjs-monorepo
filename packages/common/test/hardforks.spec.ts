@@ -1,4 +1,4 @@
-import { hexToBytes, zeros } from '@ethereumjs/util'
+import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -312,7 +312,7 @@ describe('[Common]: Hardfork logic', () => {
       hardfork: Hardfork.Cancun,
       mergeForkIdPostMerge: true,
     }
-    const genesisHash = zeros(32)
+    const genesisHash = new Uint8Array(32)
     const zeroCommon = createCommonFromGethGenesis(defaultConfig, gethConfig)
 
     const zeroCommonShanghaiFork = zeroCommon.forkHash(Hardfork.Shanghai, genesisHash)

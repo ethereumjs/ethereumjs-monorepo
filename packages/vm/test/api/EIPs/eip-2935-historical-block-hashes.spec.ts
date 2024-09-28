@@ -15,7 +15,6 @@ import {
   generateAddress,
   privateToAddress,
   setLengthLeft,
-  zeros,
 } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
@@ -280,10 +279,10 @@ describe('EIP 2935: historical block hashes', () => {
           if (i >= blocksToBuild - 256) {
             assert.ok(equalsBytes(ret.execResult.returnValue, setLengthLeft(block.hash(), 64)))
           } else {
-            assert.ok(equalsBytes(ret.execResult.returnValue, zeros(64)))
+            assert.ok(equalsBytes(ret.execResult.returnValue, new Uint8Array(64)))
           }
         } else {
-          assert.ok(equalsBytes(ret.execResult.returnValue, zeros(64)))
+          assert.ok(equalsBytes(ret.execResult.returnValue, new Uint8Array(64)))
         }
       }
 
