@@ -34,6 +34,7 @@ import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from '
 import { WalkController } from './util/walkController.js'
 
 import type {
+  BranchNodeBranchValue,
   FoundNodeFunction,
   Nibbles,
   NodeReferenceOrRawNode,
@@ -357,7 +358,7 @@ export class Trie {
               debugString +=
                 branchNode instanceof Uint8Array
                   ? `NodeHash: ${bytesToHex(branchNode)}`
-                  : `Raw_Node: ${branchNode!.toString()}`
+                  : `Raw_Node: ${branchNode.toString()}`
             }
 
             this.debug(debugString, ['find_path', 'branch_node'])
@@ -564,8 +565,8 @@ export class Trie {
       }
 
       if (
-        matchingNibbleLength(lastNode.key(), key.slice(l)) === lastNode.key().length &&
-        keyRemainder.length === 0
+        keyRemainder.length === 0 &&
+        matchingNibbleLength(lastNode.key(), key.slice(l)) === lastNode.key().length
       ) {
         matchLeaf = true
       }
@@ -574,7 +575,7 @@ export class Trie {
     if (matchLeaf) {
       // just updating a found value
       lastNode.value(value)
-      stack.push(lastNode as TrieNode)
+      stack.push(lastNode)
     } else if (lastNode instanceof BranchNode) {
       stack.push(lastNode)
       if (keyRemainder.length !== 0) {
@@ -703,7 +704,7 @@ export class Trie {
 
     let key = bytesToNibbles(k)
 
-    if (!parentNode) {
+    if (parentNode === undefined) {
       // the root here has to be a leaf.
       this.root(this.EMPTY_TRIE_ROOT)
       return
@@ -753,10 +754,8 @@ export class Trie {
 
       // look up node
       const foundNode = await this.lookupNode(branchNode)
-      // if (foundNode) {
       key = processBranchNode(key, branchNodeKey, foundNode, parentNode as TrieNode, stack)
       await this.saveStack(key, stack, opStack)
-      // }
     } else {
       // simple removing a leaf and recalculation the stack
       if (parentNode) {
@@ -819,7 +818,7 @@ export class Trie {
     topLevel: boolean,
     opStack: BatchDBOp[],
     remove: boolean = false,
-  ): Uint8Array | (NodeReferenceOrRawNode | null)[] {
+  ): Uint8Array | NodeReferenceOrRawNode | BranchNodeBranchValue[] {
     const encoded = node.serialize()
 
     if (encoded.length >= 32 || topLevel) {

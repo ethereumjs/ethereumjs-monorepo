@@ -8,12 +8,12 @@ import type { Nibbles, RawExtensionNode, RawLeafNode } from '../types.js'
 export abstract class ExtensionOrLeafNodeBase {
   _nibbles: Nibbles
   _value: Uint8Array
-  _terminator: boolean
+  _isLeaf: boolean
 
-  constructor(nibbles: Nibbles, value: Uint8Array, terminator: boolean) {
+  constructor(nibbles: Nibbles, value: Uint8Array, isLeaf: boolean) {
     this._nibbles = nibbles
     this._value = value
-    this._terminator = terminator
+    this._isLeaf = isLeaf
   }
 
   static decodeKey(key: Nibbles): Nibbles {
@@ -21,7 +21,7 @@ export abstract class ExtensionOrLeafNodeBase {
   }
 
   encodedKey(): Nibbles {
-    return addHexPrefix(this._nibbles.slice(0), this._terminator)
+    return addHexPrefix(this._nibbles.slice(0), this._isLeaf)
   }
 
   key(k?: Nibbles): Nibbles {
