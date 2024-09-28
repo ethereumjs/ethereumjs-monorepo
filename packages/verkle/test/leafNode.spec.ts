@@ -1,4 +1,4 @@
-import { type VerkleCrypto, equalsBytes, randomBytes, setLengthLeft } from '@ethereumjs/util'
+import { type VerkleCrypto, equalsBytes, randomBytes, setLengthRight } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
@@ -61,8 +61,8 @@ describe('verkle node - leaf', () => {
     const node = await LeafNode.create(key.slice(0, 31), verkleCrypto)
     assert.ok(node instanceof LeafNode)
     assert.equal(node.getValue(0), undefined)
-    node.setValue(0, setLengthLeft(Uint8Array.from([5]), 32))
-    assert.deepEqual(node.getValue(0), setLengthLeft(Uint8Array.from([5]), 32))
+    node.setValue(0, setLengthRight(Uint8Array.from([5]), 32))
+    assert.deepEqual(node.getValue(0), setLengthRight(Uint8Array.from([5]), 32))
     node.setValue(0, VerkleLeafNodeValue.Deleted)
     assert.deepEqual(node.getValue(0), new Uint8Array(32))
   })
@@ -72,7 +72,7 @@ describe('verkle node - leaf', () => {
     const node = await LeafNode.create(key.slice(0, 31), verkleCrypto)
     node.setValue(0, VerkleLeafNodeValue.Deleted)
     const c1Values = createCValues(node.values.slice(0, 128))
-    assert.equal(c1Values[0][16], 0x80)
+    assert.equal(c1Values[0][16], 1)
   })
 
   it('should update a commitment when setting a value', async () => {
@@ -91,9 +91,11 @@ describe('verkle node - leaf', () => {
     const node = await LeafNode.create(stem, verkleCrypto, values)
     const serialized = node.serialize()
     const decodedNode = decodeNode(serialized, verkleCrypto)
+
     assert.deepEqual(node, decodedNode)
 
     const defaultNode = await LeafNode.create(randomBytes(31), verkleCrypto)
+
     assert.deepEqual(defaultNode, decodeNode(defaultNode.serialize(), verkleCrypto))
   })
 })
