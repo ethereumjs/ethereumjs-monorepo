@@ -3,9 +3,9 @@ import { RLP } from '@ethereumjs/rlp'
 import { addHexPrefix, removeHexPrefix } from '../util/hex.js'
 import { nibblesTypeToPackedBytes } from '../util/nibbles.js'
 
-import type { Nibbles } from '../types.js'
+import type { Nibbles, RawExtensionNode, RawLeafNode } from '../types.js'
 
-export class Node {
+export abstract class ExtensionOrLeafNodeBase {
   _nibbles: Nibbles
   _value: Uint8Array
   _terminator: boolean
@@ -18,6 +18,10 @@ export class Node {
 
   static decodeKey(key: Nibbles): Nibbles {
     return removeHexPrefix(key)
+  }
+
+  encodedKey(): Nibbles {
+    return addHexPrefix(this._nibbles.slice(0), this._terminator)
   }
 
   key(k?: Nibbles): Nibbles {
@@ -40,11 +44,7 @@ export class Node {
     return this._value
   }
 
-  encodedKey(): Nibbles {
-    return addHexPrefix(this._nibbles.slice(0), this._terminator)
-  }
-
-  raw(): [Uint8Array, Uint8Array] {
+  raw(): RawExtensionNode | RawLeafNode {
     return [nibblesTypeToPackedBytes(this.encodedKey()), this._value]
   }
 
