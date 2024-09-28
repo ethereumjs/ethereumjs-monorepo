@@ -8,9 +8,17 @@ export type TrieNode = BranchNode | ExtensionNode | LeafNode
 
 export type Nibbles = number[]
 
+// [ encodedPath, key ]
+export type RawExtensionNode = [Uint8Array, Uint8Array]
+
+// [ encodedPath, value ]
+export type RawLeafNode = [Uint8Array, Uint8Array]
+
 // Branch and extension nodes might store
-// hash to next node, or embed it if its len < 32
-export type EmbeddedNode = Uint8Array | Uint8Array[]
+// hash to next node, or a raw node if its length < 32
+export type NodeReferenceOrRawNode = Uint8Array | RawExtensionNode | RawLeafNode
+
+export type BranchNodeBranchValue = NodeReferenceOrRawNode | null
 
 export type Proof = Uint8Array[]
 
