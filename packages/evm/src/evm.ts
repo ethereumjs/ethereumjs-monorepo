@@ -15,7 +15,6 @@ import {
   generateAddress,
   generateAddress2,
   short,
-  zeros,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
@@ -1170,7 +1169,7 @@ export function defaultBlock(): Block {
       coinbase: createZeroAddress(),
       timestamp: BIGINT_0,
       difficulty: BIGINT_0,
-      prevRandao: zeros(32),
+      prevRandao: new Uint8Array(32),
       gasLimit: BIGINT_0,
       baseFeePerGas: undefined,
       getBlobGasPrice: () => undefined,

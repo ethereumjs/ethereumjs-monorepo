@@ -16,7 +16,7 @@ const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1
 const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
 function get_padded(data: Uint8Array, blobs_len: number): Uint8Array {
-  const pData = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB).fill(0)
+  const pData = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
   pData.set(data)
   pData[data.byteLength] = 0x80
   return pData

@@ -207,7 +207,7 @@ export class RPCStateManager implements StateManagerInterface {
 
     const accountFromProvider = await this.getAccountFromProvider(address)
     const account =
-      equalsBytes(accountFromProvider.codeHash, new Uint8Array(32).fill(0)) ||
+      equalsBytes(accountFromProvider.codeHash, new Uint8Array(32)) ||
       equalsBytes(accountFromProvider.serialize(), KECCAK256_RLP_EMPTY_ACCOUNT)
         ? undefined
         : createAccountFromRLP(accountFromProvider.serialize())

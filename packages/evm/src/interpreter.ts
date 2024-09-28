@@ -503,7 +503,7 @@ export class Interpreter {
 
   // Returns all valid jump and jumpsub destinations.
   _getValidJumpDestinations(code: Uint8Array) {
-    const jumps = new Uint8Array(code.length).fill(0)
+    const jumps = new Uint8Array(code.length)
     const pushes: { [pc: number]: bigint } = {}
 
     const opcodesCached = Array(code.length)

@@ -117,15 +117,6 @@ export const bigIntToBytes = (num: bigint, littleEndian = false): Uint8Array => 
 }
 
 /**
- * Returns a Uint8Array filled with 0s.
- * @param {number} bytes the number of bytes of the Uint8Array
- * @return {Uint8Array}
- */
-export const zeros = (bytes: number): Uint8Array => {
-  return new Uint8Array(bytes)
-}
-
-/**
  * Pads a `Uint8Array` with zeros till it has `length` bytes.
  * Truncates the beginning or end of input if its length exceeds `length`.
  * @param {Uint8Array} msg the value to pad
@@ -136,12 +127,12 @@ export const zeros = (bytes: number): Uint8Array => {
 const setLength = (msg: Uint8Array, length: number, right: boolean): Uint8Array => {
   if (right) {
     if (msg.length < length) {
-      return new Uint8Array([...msg, ...zeros(length - msg.length)])
+      return new Uint8Array([...msg, ...new Uint8Array(length - msg.length)])
     }
     return msg.subarray(0, length)
   } else {
     if (msg.length < length) {
-      return new Uint8Array([...zeros(length - msg.length), ...msg])
+      return new Uint8Array([...new Uint8Array(length - msg.length), ...msg])
     }
     return msg.subarray(-length)
   }

@@ -29,16 +29,7 @@ import {
   unprefixedHexToBytes,
   validateNoLeadingZeroes,
   zeroAddress,
-  zeros,
 } from '../src/index.js'
-
-describe('zeros function', () => {
-  it('should produce lots of 0s', () => {
-    const z60 = zeros(30)
-    const zs60 = '0x000000000000000000000000000000000000000000000000000000000000'
-    assert.equal(bytesToHex(z60), zs60)
-  })
-})
 
 describe('zero address', () => {
   it('should generate a zero address', () => {
@@ -164,14 +155,14 @@ describe('bytesToInt', () => {
 describe('fromSigned', () => {
   it('should convert an unsigned (negative) Uint8Array to a signed number', () => {
     const neg = '-452312848583266388373324160190187140051835877600158453279131187530910662656'
-    const bytes = zeros(32)
+    const bytes = new Uint8Array(32)
     bytes[0] = 255
 
     assert.equal(fromSigned(bytes).toString(), neg)
   })
   it('should convert an unsigned (positive) Uint8Array to a signed number', () => {
     const neg = '452312848583266388373324160190187140051835877600158453279131187530910662656'
-    const bytes = zeros(32)
+    const bytes = new Uint8Array(32)
     bytes[0] = 1
 
     assert.equal(fromSigned(bytes).toString(), neg)

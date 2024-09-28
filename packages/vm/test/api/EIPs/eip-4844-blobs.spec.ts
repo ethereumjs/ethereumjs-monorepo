@@ -11,7 +11,6 @@ import {
   getBlobs,
   hexToBytes,
   privateToAddress,
-  zeros,
 } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
@@ -33,7 +32,7 @@ describe('EIP4844 tests', () => {
       customCrypto: { kzg },
     })
     const genesisBlock = createBlock(
-      { header: { gasLimit: 50000, parentBeaconBlockRoot: zeros(32) } },
+      { header: { gasLimit: 50000, parentBeaconBlockRoot: new Uint8Array(32) } },
       { common },
     )
     const blockchain = await createBlockchain({

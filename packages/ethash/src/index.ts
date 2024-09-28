@@ -12,7 +12,6 @@ import {
   equalsBytes,
   hexToBytes,
   setLengthLeft,
-  zeros,
 } from '@ethereumjs/util'
 import { keccak256, keccak512 } from 'ethereum-cryptography/keccak.js'
 
@@ -292,7 +291,7 @@ export class Ethash {
     // gives the seed the first epoc found
     const findLastSeed = async (epoc: number): Promise<[Uint8Array, number]> => {
       if (epoc === 0) {
-        return [zeros(32), 0]
+        return [new Uint8Array(32), 0]
       }
 
       const dbData = await this.cacheDB!.get(epoc, {
