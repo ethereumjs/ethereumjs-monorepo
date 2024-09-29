@@ -212,8 +212,9 @@ export class Engine {
           [validators.object(executionPayloadV4FieldValidators)],
           [validators.array(validators.bytes32)],
           [validators.bytes32],
+          [validators.array(validators.hex)],
         ],
-        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot'],
+        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot', 'executionRequests'],
       ),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response }),
     )
@@ -337,9 +338,9 @@ export class Engine {
    *   3. validationError: String|null - validation error message
    */
   private async newPayload(
-    params: [ExecutionPayload, (Bytes32[] | null)?, (Bytes32 | null)?],
+    params: [ExecutionPayload, (Bytes32[] | null)?, (Bytes32 | null)?, (PrefixedHexString[] | null)?],
   ): Promise<PayloadStatusV1> {
-    const [payload, blobVersionedHashes, parentBeaconBlockRoot] = params
+    const [payload, blobVersionedHashes, parentBeaconBlockRoot, executionRequests] = params
     if (this.config.synchronized) {
       this.connectionManager.newPayloadLog()
     }
@@ -361,6 +362,7 @@ export class Engine {
         ...payload,
         // ExecutionPayload only handles undefined
         parentBeaconBlockRoot: parentBeaconBlockRoot ?? undefined,
+        executionRequests: executionRequests ?? undefined,
       },
       this.chain,
       this.chainCache,
