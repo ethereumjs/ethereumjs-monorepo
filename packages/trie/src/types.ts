@@ -8,7 +8,9 @@ export type TrieNode = BranchNode | ExtensionNode | LeafNode
 
 export type Nibbles = number[]
 
-// Raw nodes as specified in the MPT spec
+// A raw node refers to the non-serialized, array form of the node
+// A raw extension node is a 2-item node, where the first item is the encoded path to the next node, and the second item is the reference to the next node
+// A raw leaf node is a 2-item node, where the first item is the remaining path to the leaf node, and the second item is the value
 // To learn more: https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/#optimization
 export type RawExtensionNode = [Uint8Array, Uint8Array]
 export type RawLeafNode = [Uint8Array, Uint8Array]
