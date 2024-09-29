@@ -3,8 +3,7 @@ import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
-import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
+import { StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   MapDB,
@@ -15,6 +14,7 @@ import {
   stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
+import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import { buildBlock, createVM, runBlock } from '../../../src/index.js'
 import { setupPreConditions, verifyPostConditions } from '../../util.js'
@@ -46,13 +46,12 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   let common = options.common.copy() as Common
   common.setHardforkBy({ blockNumber: 0 })
 
-  let cacheDB = new MapDB()
-  let state = new Trie({ useKeyHashing: true, common })
-  let stateManager = new MerkleStateManager({
-    caches: new Caches(),
-    trie: state,
-    common,
+  const verkleCrypto = await loadVerkleCrypto()
+  const state = new StatefulVerkleStateManager({
+    verkleCrypto,
   })
+
+  let cacheDB = new MapDB()
 
   let validatePow = false
   // Only run with block validation when sealEngine present in test file
@@ -86,7 +85,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   })
 
   if (validatePow) {
-    ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB as any
+    ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB
   }
 
   const begin = Date.now()
@@ -96,7 +95,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     bn254: options.bn254,
   }
   let vm = await createVM({
-    stateManager,
+    stateManager: state,
     blockchain,
     common,
     setHardfork: true,
