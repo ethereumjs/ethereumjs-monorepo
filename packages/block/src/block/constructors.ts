@@ -12,10 +12,7 @@ import {
   bigIntToHex,
   bytesToHex,
   bytesToUtf8,
-  createConsolidationRequestFromJSON,
-  createDepositRequestFromJSON,
   createWithdrawal,
-  createWithdrawalRequestFromJSON,
   equalsBytes,
   fetchFromProvider,
   getProvider,
@@ -49,8 +46,6 @@ import type {
 } from '../types.js'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type {
-  CLRequest,
-  CLRequestType,
   EthersProvider,
   PrefixedHexString,
   RequestBytes,
@@ -383,9 +378,7 @@ export async function createBlockFromExecutionPayload(
     feeRecipient: coinbase,
     transactions,
     withdrawals: withdrawalsData,
-    depositRequests,
-    withdrawalRequests,
-    consolidationRequests,
+    executionRequests,
     executionWitness,
   } = payload
 
@@ -408,32 +401,9 @@ export async function createBlockFromExecutionPayload(
     ? await genWithdrawalsTrieRoot(withdrawals, new Trie({ common: opts?.common }))
     : undefined
 
-  const hasDepositRequests = depositRequests !== undefined && depositRequests !== null
-  const hasWithdrawalRequests = withdrawalRequests !== undefined && withdrawalRequests !== null
-  const hasConsolidationRequests =
-    consolidationRequests !== undefined && consolidationRequests !== null
-
-  const requests =
-    hasDepositRequests || hasWithdrawalRequests || hasConsolidationRequests
-      ? ([] as CLRequest<CLRequestType>[])
-      : undefined
-
-  if (depositRequests !== undefined && depositRequests !== null) {
-    for (const dJSON of depositRequests) {
-      requests!.push(createDepositRequestFromJSON(dJSON))
-    }
-  }
-  if (withdrawalRequests !== undefined && withdrawalRequests !== null) {
-    for (const wJSON of withdrawalRequests) {
-      requests!.push(createWithdrawalRequestFromJSON(wJSON))
-    }
-  }
-  if (consolidationRequests !== undefined && consolidationRequests !== null) {
-    for (const cJSON of consolidationRequests) {
-      requests!.push(createConsolidationRequestFromJSON(cJSON))
-    }
-  }
-
+  const requests = executionRequests?.map((req) =>
+    CLRequestFactory.fromSerializedRequest(hexToBytes(req)),
+  )
   const keccakFunction = opts?.common?.customCrypto.keccak256 ?? keccak256
   const requestsRoot = requests ? await genRequestsRoot(requests, keccakFunction) : undefined
 

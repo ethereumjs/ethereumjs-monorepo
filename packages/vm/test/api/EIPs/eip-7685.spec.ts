@@ -1,13 +1,7 @@
 import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import {
-  KECCAK256_RLP,
-  bytesToBigInt,
-  createDepositRequest,
-  hexToBytes,
-  randomBytes,
-} from '@ethereumjs/util'
+import { KECCAK256_RLP, createDepositRequest, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, expect, it } from 'vitest'
 
@@ -23,9 +17,9 @@ function getRandomDepositRequest(): CLRequest<CLRequestType> {
   const depositRequestData = {
     pubkey: randomBytes(48),
     withdrawalCredentials: randomBytes(32),
-    amount: bytesToBigInt(randomBytes(8)),
+    amount: randomBytes(8),
     signature: randomBytes(96),
-    index: bytesToBigInt(randomBytes(8)),
+    index: randomBytes(8),
   }
   return createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
 }

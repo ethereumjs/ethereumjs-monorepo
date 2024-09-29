@@ -7,8 +7,6 @@ import type {
   BytesLike,
   CLRequest,
   CLRequestType,
-  ConsolidationRequestV1,
-  DepositRequestV1,
   JSONRPCWithdrawal,
   NumericString,
   PrefixedHexString,
@@ -16,7 +14,6 @@ import type {
   VerkleExecutionWitness,
   WithdrawalBytes,
   WithdrawalData,
-  WithdrawalRequestV1,
 } from '@ethereumjs/util'
 
 /**
@@ -274,7 +271,5 @@ export type ExecutionPayload = {
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
   // VerkleExecutionWitness is already a hex serialized object
   executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
-  depositRequests?: DepositRequestV1[] // Array of 6110 deposit requests
-  withdrawalRequests?: WithdrawalRequestV1[] // Array of 7002 withdrawal requests
-  consolidationRequests?: ConsolidationRequestV1[] // Array of 7251 consolidation requests
+  executionRequests?: PrefixedHexString[] | null // null implies not available
 }

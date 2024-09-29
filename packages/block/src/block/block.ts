@@ -4,7 +4,6 @@ import { Trie } from '@ethereumjs/trie'
 import { Blob4844Tx, Capability } from '@ethereumjs/tx'
 import {
   BIGINT_0,
-  CLRequestType,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   bytesToHex,
@@ -35,14 +34,7 @@ import {
 import type { BlockBytes, BlockOptions, ExecutionPayload, JSONBlock } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
-import type {
-  CLRequest,
-  ConsolidationRequest,
-  DepositRequest,
-  VerkleExecutionWitness,
-  Withdrawal,
-  WithdrawalRequest,
-} from '@ethereumjs/util'
+import type { CLRequest, CLRequestType, VerkleExecutionWitness, Withdrawal } from '@ethereumjs/util'
 
 /**
  * Class representing a block in the Ethereum network. The {@link BlockHeader} has its own
@@ -545,6 +537,10 @@ export class Block {
     const header = blockJSON.header!
     const transactions = this.transactions.map((tx) => bytesToHex(tx.serialize())) ?? []
     const withdrawalsArr = blockJSON.withdrawals ? { withdrawals: blockJSON.withdrawals } : {}
+    const executionRequestsArr =
+      this.requests !== undefined
+        ? { executionRequests: this.requests.map((req) => bytesToHex(req.serialize())) }
+        : undefined
 
     const executionPayload: ExecutionPayload = {
       blockNumber: header.number!,
@@ -566,35 +562,7 @@ export class Block {
       ...withdrawalsArr,
       parentBeaconBlockRoot: header.parentBeaconBlockRoot,
       executionWitness: this.executionWitness,
-
-      // lets add the  request fields first and then iterate over requests to fill them up
-      depositRequests: this.common.isActivatedEIP(6110) ? [] : undefined,
-      withdrawalRequests: this.common.isActivatedEIP(7002) ? [] : undefined,
-      consolidationRequests: this.common.isActivatedEIP(7251) ? [] : undefined,
-    }
-
-    if (this.requests !== undefined) {
-      for (const request of this.requests) {
-        switch (request.type) {
-          case CLRequestType.Deposit:
-            executionPayload.depositRequests!.push((request as DepositRequest).toJSON())
-            continue
-
-          case CLRequestType.Withdrawal:
-            executionPayload.withdrawalRequests!.push((request as WithdrawalRequest).toJSON())
-            continue
-
-          case CLRequestType.Consolidation:
-            executionPayload.consolidationRequests!.push((request as ConsolidationRequest).toJSON())
-            continue
-        }
-      }
-    } else if (
-      executionPayload.depositRequests !== undefined ||
-      executionPayload.withdrawalRequests !== undefined ||
-      executionPayload.consolidationRequests !== undefined
-    ) {
-      throw Error(`Undefined requests for activated deposit or withdrawal requests`)
+      ...executionRequestsArr,
     }
 
     return executionPayload

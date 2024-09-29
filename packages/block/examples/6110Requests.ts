@@ -18,9 +18,9 @@ const main = async () => {
   const depositRequestData = {
     pubkey: randomBytes(48),
     withdrawalCredentials: randomBytes(32),
-    amount: bytesToBigInt(randomBytes(8)),
+    amount: randomBytes(8),
     signature: randomBytes(96),
-    index: bytesToBigInt(randomBytes(8)),
+    index: randomBytes(8),
   }
   const request = createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
   const requests = [request]

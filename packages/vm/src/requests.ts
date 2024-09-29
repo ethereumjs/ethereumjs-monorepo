@@ -2,7 +2,6 @@ import { Mainnet } from '@ethereumjs/common'
 import {
   bigIntToAddressBytes,
   bigIntToBytes,
-  bytesToBigInt,
   bytesToHex,
   bytesToInt,
   createAddressFromString,
@@ -10,7 +9,6 @@ import {
   createDepositRequest,
   createWithdrawalRequest,
   setLengthLeft,
-  unpadBytes,
 } from '@ethereumjs/util'
 
 import type { RunTxResult } from './types.js'
@@ -95,7 +93,7 @@ const accumulateEIP7002Requests = async (
       const slicedBytes = resultsBytes.slice(startByte, startByte + 76)
       const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
       const validatorPubkey = slicedBytes.slice(20, 68) // 48 Bytes
-      const amount = bytesToBigInt(unpadBytes(slicedBytes.slice(68, 76))) // 8 Bytes / Uint64
+      const amount = slicedBytes.slice(68, 76) // 8 Bytes / Uint64 LE
       requests.push(createWithdrawalRequest({ sourceAddress, validatorPubkey, amount }))
     }
   }
@@ -176,40 +174,16 @@ const accumulateDeposits = async (
         const sigSize = bytesToInt(log[2].slice(sigIdx, sigIdx + 32))
         const indexIdx = bytesToInt(log[2].slice(128, 160))
         const indexSize = bytesToInt(log[2].slice(indexIdx, indexIdx + 32))
+
         const pubkey = log[2].slice(pubKeyIdx + 32, pubKeyIdx + 32 + pubKeySize)
         const withdrawalCredentials = log[2].slice(
           withdrawalCreditsIdx + 32,
           withdrawalCreditsIdx + 32 + withdrawalCreditsSize,
         )
-        const amountBytes = log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize)
-        const amountBytesBigEndian = new Uint8Array([
-          amountBytes[7],
-          amountBytes[6],
-          amountBytes[5],
-          amountBytes[4],
-          amountBytes[3],
-          amountBytes[2],
-          amountBytes[1],
-          amountBytes[0],
-        ])
-        const amount = bytesToBigInt(amountBytesBigEndian)
-
+        const amount = log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize)
         const signature = log[2].slice(sigIdx + 32, sigIdx + 32 + sigSize)
+        const index = log[2].slice(indexIdx + 32, indexIdx + 32 + indexSize)
 
-        const indexBytes = log[2].slice(indexIdx + 32, indexIdx + 32 + indexSize)
-
-        // Convert the little-endian array to big-endian array
-        const indexBytesBigEndian = new Uint8Array([
-          indexBytes[7],
-          indexBytes[6],
-          indexBytes[5],
-          indexBytes[4],
-          indexBytes[3],
-          indexBytes[2],
-          indexBytes[1],
-          indexBytes[0],
-        ])
-        const index = bytesToBigInt(indexBytesBigEndian)
         requests.push(
           createDepositRequest({
             pubkey,
